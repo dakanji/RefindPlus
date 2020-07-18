@@ -85,6 +85,167 @@ static BOOLEAN egHasGraphics = FALSE;
 static UINTN egScreenWidth  = 800;
 static UINTN egScreenHeight = 600;
 
+
+// Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
+VOID egDumpGOPVideoModes(VOID) {
+    EFI_STATUS  Status;
+    UINT32      MaxMode;
+    UINT32      Mode;
+    UINTN       SizeOfInfo;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+    CHAR16      *PixelFormatDesc;
+
+    if (GraphicsOutput == NULL) {
+        return;
+    }
+
+    // get dump
+    MaxMode = GraphicsOutput->Mode->MaxMode;
+    Mode = GraphicsOutput->Mode->Mode;
+    Print(L"Available graphics modes for refit.conf screen_resolution:\n");
+    Print(L"Curr. Mode = %d, Modes = %d, FB = %lx, FB size=0x%x\n",
+           Mode, MaxMode, GraphicsOutput->Mode->FrameBufferBase, GraphicsOutput->Mode->FrameBufferSize);
+
+    for (Mode = 0; Mode < MaxMode; Mode++) {
+        Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
+        if (Status == EFI_SUCCESS) {
+
+            switch (Info->PixelFormat) {
+                case PixelRedGreenBlueReserved8BitPerColor:
+                    PixelFormatDesc = L"8bit RGB";
+                    break;
+
+                case PixelBlueGreenRedReserved8BitPerColor:
+                    PixelFormatDesc = L"8bit BGR";
+                    break;
+
+                case PixelBitMask:
+                    PixelFormatDesc = L"BITMASK";
+                    break;
+
+                case PixelBltOnly:
+                    PixelFormatDesc = L"NO FB";
+                    break;
+
+                default:
+                    PixelFormatDesc = L"invalid";
+                    break;
+            }
+
+            Print(L"- Mode %d: %dx%d PixFmt = %s, PixPerScanLine = %d\n",
+                      Mode, Info->HorizontalResolution, Info->VerticalResolution, PixelFormatDesc, Info->PixelsPerScanLine);
+        } else {
+             Print(L"- Mode %d: %r\n", Mode, Status);
+        }
+    }
+
+}
+
+//
+// Sets mode via GOP protocol, and reconnects simple text out drivers
+//
+
+static EFI_STATUS GopSetModeAndReconnectTextOut(IN UINT32 ModeNumber)
+{
+    EFI_STATUS  Status;
+
+    if (GraphicsOutput == NULL) {
+        return EFI_UNSUPPORTED;
+    }
+
+    Status = GraphicsOutput->SetMode(GraphicsOutput, ModeNumber);
+    Print(L"Video mode change to mode #%d: %r\n", ModeNumber, Status);
+
+    return Status;
+}
+
+EFI_STATUS egSetMode(INT32 Next)
+{
+  EFI_STATUS  Status = EFI_UNSUPPORTED;
+  UINT32      MaxMode;
+  UINTN       SizeOfInfo;
+  EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+  INT32      Mode;
+  UINT32     Index = 0;
+
+  if (GraphicsOutput == NULL) {
+    return EFI_UNSUPPORTED;
+  }
+
+  MaxMode = GraphicsOutput->Mode->MaxMode;
+  Mode = GraphicsOutput->Mode->Mode;
+  while (EFI_ERROR(Status) && Index <= MaxMode) {
+    Mode = Mode + Next;
+    Mode = (Mode >= (INT32)MaxMode)?0:Mode;
+    Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
+    Status = GraphicsOutput->QueryMode(GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
+    Print(L"QueryMode %d Status=%r\n", Mode, Status);
+    if (Status == EFI_SUCCESS) {
+      Status = GopSetModeAndReconnectTextOut((UINT32)Mode);
+      egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+      egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+    }
+    Index++;
+  }
+
+  return Status;
+}
+
+EFI_STATUS egSetMaxResolution()
+{
+  EFI_STATUS  Status = EFI_UNSUPPORTED;
+  UINT32      Width = 0;
+  UINT32      Height = 0;
+  UINT32      BestMode = 0;
+  UINT32      MaxMode;
+  UINT32      Mode;
+  UINTN       SizeOfInfo;
+  EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+
+  if (GraphicsOutput == NULL) {
+    return EFI_UNSUPPORTED;
+  }
+
+  Print(L"SetMaxResolution: ");
+  MaxMode = GraphicsOutput->Mode->MaxMode;
+  for (Mode = 0; Mode < MaxMode; Mode++) {
+    Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
+    if (Status == EFI_SUCCESS) {
+      if (Width > Info->HorizontalResolution) {
+        continue;
+      }
+      if (Height > Info->VerticalResolution) {
+        continue;
+      }
+      Width = Info->HorizontalResolution;
+      Height = Info->VerticalResolution;
+      BestMode = Mode;
+    }
+  }
+  Print(L"found best mode %d: %dx%d\n", BestMode, Width, Height);
+  // check if requested mode is equal to current mode
+  if (BestMode == GraphicsOutput->Mode->Mode) {
+    Print(L" - already set\n");
+    egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+    egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+    Status = EFI_SUCCESS;
+  } else {
+    Status = GopSetModeAndReconnectTextOut(BestMode);
+    if (Status == EFI_SUCCESS) {
+      egScreenWidth = Width;
+      egScreenHeight = Height;
+      Print(L" - set\n", Status);
+    } else {
+      // we can not set BestMode - search for first one that we can
+      Print(L" - %r\n", Status);
+      Status = egSetMode(1);
+    }
+  }
+
+  return Status;
+}
+
+
 //
 // Screen handling
 //
@@ -131,18 +292,50 @@ VOID egInitScreen(VOID)
 
     // get protocols
     Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &ConsoleControl);
-    if (EFI_ERROR(Status))
+    if (EFI_ERROR(Status)) {
         ConsoleControl = NULL;
+        Print(L"ConsoleControl !ok\n");
+    } else {
+    	Print(L"ConsoleControl ok\n");
+    }
 
     Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &UgaDraw);
-    if (EFI_ERROR(Status))
+    if (EFI_ERROR(Status)) {
         UgaDraw = NULL;
+    	Print(L"UgaDraw !ok\n");
+    } else {
+    	Print(L"UgaDraw ok\n");
+    }
 
     Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &GraphicsOutput);
-    if (EFI_ERROR(Status))
+    if (EFI_ERROR(Status)) {
         GraphicsOutput = NULL;
+    	Print(L"GraphicsOutput !ok\n");
+    } else {
+    	Print(L"GraphicsOutput ok\n");
+    }
 
-    egDetermineScreenSize();
+//    egDetermineScreenSize();
+
+    // get screen size
+    egHasGraphics = FALSE;
+    if (GraphicsOutput != NULL) {
+        egDumpGOPVideoModes();
+        egSetMaxResolution();
+        egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+        egHasGraphics = TRUE;
+    } else if (UgaDraw != NULL) {
+    	UINT32 Width, Height, Depth, RefreshRate;
+        Status = UgaDraw->GetMode(UgaDraw, &Width, &Height, &Depth, &RefreshRate);
+        if (EFI_ERROR(Status)) {
+            UgaDraw = NULL;   // graphics not available
+        } else {
+            egScreenWidth  = Width;
+            egScreenHeight = Height;
+            egHasGraphics = TRUE;
+        }
+    }
 }
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in

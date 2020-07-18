@@ -5,4 +5,4 @@
   PACKAGE_VERSION                = 4.5.0
 
 [Includes]
-  StdLib/Include
+  ../StdLib/Include

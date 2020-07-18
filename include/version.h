@@ -10,5 +10,4 @@
  *
  */
 
-#define REFIND_VERSION L"0.12.0"
-
+#define REFIND_VERSION L"0.12.0 +GOPScreen"

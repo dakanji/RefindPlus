@@ -92,8 +92,7 @@ GNUEFI_LIBS       = -lefi -lgnuefi $(shell $(CC) -print-libgcc-file-name)
 
 # ...and for TianoCore....
 ENTRYPOINT=efi_main
-TIANO_LDSCRIPT   = $(TIANOBASE)/BaseTools/Scripts/gcc4.9-ld-script
-#TIANO_LDSCRIPT  = /usr/local/UDK2014/MyWorkSpace/BaseTools/Scripts/gcc4.9-ld-script
+TIANO_LDSCRIPT   = $(TIANOBASE)/BaseTools/Scripts/GccBase.lds
 TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(TIANO_LDSCRIPT) \
                   --entry $(ENTRYPOINT) -u $(ENTRYPOINT) -m $(LD_CODE)
 
@@ -111,9 +110,9 @@ FORMAT_DRIVER   = --target=efi-bsdrv-$(ARCH)
 ifeq ($(ARCH),x86_64)
   GNUEFI_LDFLAGS += -znocombreloc -zdefs
 
-  ARCH_CFLAGS = -DEFIX64 -DEFI_FUNCTION_WRAPPER -m64 -mno-red-zone 
+  ARCH_CFLAGS = -DEFIX64 -DEFI_FUNCTION_WRAPPER -m64 -mno-red-zone
 ifeq ($(MAKEWITH),TIANO)
-  ARCH_CFLAGS += -mcmodel=large "-DEFIAPI=__attribute__((ms_abi))" 
+  ARCH_CFLAGS += -mcmodel=large "-DEFIAPI=__attribute__((ms_abi))"
 endif
   ARCHDIR = X64
   UC_ARCH = X64

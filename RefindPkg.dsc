@@ -80,7 +80,6 @@
   RefindPkg/gptsync.inf
   RefindPkg/filesystems/ext2.inf
   RefindPkg/filesystems/ext4.inf
-  RefindPkg/filesystems/btrfs.inf
   RefindPkg/filesystems/reiserfs.inf
   RefindPkg/filesystems/hfs.inf
   RefindPkg/filesystems/iso9660.inf

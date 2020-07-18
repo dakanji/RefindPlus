@@ -10,7 +10,7 @@ Vcs-Git: https://salsa.debian.org/debian/refind.git
 
 Package: refind
 Architecture: amd64 arm64 i386
-Depends: debconf, efibootmgr, gdisk, openssl, ${misc:Depends}
+Depends: debconf, efibootmgr, gdisk, openssl, util-linux, ${misc:Depends}
 Recommends: python3, sbsigntool
 Description: boot manager for EFI-based computers
  A graphical boot manager for EFI- and UEFI-based computers, such as all
