@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: refind\n"
+"Report-Msgid-Bugs-To: refind@packages.debian.org\n"
+"POT-Creation-Date: 2015-12-12 18:35-0500\n"
+"PO-Revision-Date: 2017-11-30 11:21+0500\n"
+"Last-Translator: Lev Lamberov <dogsleg@debian.org>\n"
+"Language-Team: \n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.4\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid "Automatically install rEFInd to the ESP?"
+msgstr "Автоматически установить rEFInd в ESP?"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"It is necessary to install rEFInd to the EFI System Partition (ESP) for it "
+"to control the boot process."
+msgstr ""
+"Для управления процессом загрузки требуется установить rEFInd в системный "
+"раздел EFI (ESP)."
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"Not installing the new rEFInd binary on the ESP may leave the system in an "
+"unbootable state. Alternatives to automatically installing rEFInd include "
+"running /usr/sbin/refind-install by hand or installing the rEFInd binaries "
+"manually by copying them from subdirectories of /usr/share/refind-{version}."
+msgstr ""
+"Если новые двоичные файлы rEFInd не будут установлены в раздел ESP, то это "
+"может привести к невозможности загрузить систему. В качестве альтернатив "
+"установке rEFInd можно вручную запустить /usr/sbin/refind-install или "
+"установить двоичные файлы rEFInd самостоятельно путём их копирования из "
+"подкаталогов /usr/share/refind-{версия}."

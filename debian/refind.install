@@ -1,0 +1,13 @@
+# refind-install symlink is added to usr/sbin as well (see refind.links)
+banners usr/share/refind
+drivers_* usr/share/refind/refind
+fonts usr/share/refind
+icons/*.png usr/share/refind/refind/icons
+icons/README usr/share/refind/refind/icons
+keys etc/refind.d
+mkrlconf usr/sbin
+mvrefind usr/sbin
+refind-install usr/share/refind
+refind-mkdefault usr/sbin
+refind.conf-sample usr/share/refind/refind
+refind/refind*.efi usr/share/refind/refind

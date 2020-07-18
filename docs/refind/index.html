@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<h2>Introduction</h2>
+
+<p>This page describes rEFInd, my fork of the <a href="http://refit.sourceforge.net">rEFIt</a> boot manager for computers based on the <a href="http://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface">Extensible Firmware Interface (EFI) and Unified EFI (UEFI).</a> Like rEFIt, rEFInd is a <i>boot manager,</i> meaning that it presents a menu of options to the user when the computer first starts up, as shown below. rEFInd is not a <i>boot loader,</i> which is a program that loads an OS kernel and hands off control to it. (Since version 3.3.0, the Linux kernel has included a built-in boot loader, though, so this distinction is rather artificial these days, at least for Linux.) Many popular boot managers, such as <a href="http://www.gnu.org/software/grub/">the Grand Unified Bootloader (GRUB),</a> are also boot loaders, which can blur the distinction in many users' minds. All EFI-capable OSes include boot loaders, so this limitation isn't a problem. If you're using Linux, you should be aware that several EFI boot loaders are available, so choosing between them can be a challenge. In fact, the Linux kernel can function as an EFI boot loader for itself, which gives rEFInd characteristics similar to a boot loader for Linux. See <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">my Web page on this topic</a> for more information.</p>
+
+    <br /><center><img src="refind.png" align="center" width="750"
+    height="558" alt="rEFInd presents a graphical menu for selecting your
+    boot OS." border=2> </center><br />
+
+<div style="float:right; width:55%">
+
+<p>In theory, EFI implementations should provide boot managers. Unfortunately, in practice these boot managers are often so poor as to be useless. The worst I've personally encountered is on <a href="https://www.rodsbooks.com/gb-hybrid-efi/">Gigabyte's Hybrid EFI,</a> which provides you with no boot options whatsoever, beyond choosing the boot device (hard disk vs. optical disc, for instance). I've heard of others that are just as bad. For this reason, a good EFI boot manager&mdash;either standalone or as part of a boot loader&mdash;is a practical necessity for multi-booting on an EFI computer. That's where rEFInd comes into play.</p>
+
+<p>I decided to fork the earlier rEFIt project because, although rEFIt is a useful program, it suffers from several important limitations, such as poor control over the boot loader detection process and an ability to display at most a handful of boot loader entries on its main screen. Christoph Pfisterer, rEFIt's author, stopped updating rEFIt with version 0.14, which was released in March of 2010. Since I forked rEFIt to rEFInd, Christoph has begun pointing rEFIt users to rEFInd as a successor project.</p>
+
+<p>As already noted, rEFInd is a boot manager for EFI and UEFI computers. (I use "EFI" to refer to either version unless the distinction is important.) You're likely to benefit from it on computers that boot multiple OSes, such as two or more of Linux, macOS, and Windows. You will <i>not</i> find rEFInd useful on older BIOS-based computers or on systems with other types of firmware, such as older PowerPC-based Macs. Prior to mid-2011, few computers outside of Intel-based Macs used EFI; but starting in 2011, computer manufacturers began adopting UEFI in droves, so most computers bought since then use EFI. Even so, many modern PCs support both EFI-style booting and BIOS-style booting, the latter via a BIOS compatibility mode that's known as the <i>Compatibility Support Module (CSM).</i> Thus, you may be using BIOS-style booting on an EFI-based computer. <a href="https://www.rodsbooks.com/efi-bootloaders/csm-good-bad-ugly.html">My page on the CSM</a> describes how it works and why it can create problems in more detail. If you're unsure which boot method your computer uses, check the first of the subsections, <a href="bootmode.html">What's Your Boot Mode</a>.</p>
+
+<p>Subsequent sections of this document are on separate pages. Be aware that you probably don't need to read them all; just skip to the sections that interest you:</p>
+
+<p><b>Note:</b> I consider rEFInd to be <i>beta-quality software!</i> That said, rEFInd is a usable program in its current form on many systems. If you have problems, feel free to drop me a line.</p>
+
+</div>
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul>
+
+<li class="tight"><a href="bootmode.html">What's Your Boot Mode?</a>&mdash;Information to help you determine whether you're using EFI or BIOS booting</li>
+
+<li class="tight"><a href="features.html">rEFInd Features</a>&mdash;An overview of rEFInd's features</li>
+
+<li class="tight"><a href="getting.html">Getting rEFInd</a>&mdash;Links to download rEFInd</li>
+
+<li class="tight"><a href="installing.html">Installing and Uninstalling rEFInd</a>&mdash;Instructions for installing rEFInd, using Linux, OS X, and Windows</li>
+
+<li class="tight"><a href="bootcoup.html">Keeping rEFInd Booting</a>&mdash;Instructions for keeping rEFInd in charge of the boot process or recovering when another OS takes control</li>
+
+<li class="tight"><a href="yosemite.html">rEFInd and OS X 10.10 (Yosemite)</a>&mdash;Apple's OS X 10.10 makes some changes that require your attention (this subpage is rendered obsolete by rEFInd 0.8.4 and later)</li>
+
+<li class="tight"><a href="sip.html">rEFInd and System Integrity Protection</a>&mdash;How to install rEFInd on Macs running OS X 10.11 (El Capitan)</a>
+
+<li class="tight"><a href="using.html">Using rEFInd</a>&mdash;Basic usage instructions for the boot loader</li>
+
+<li class="tight"><a href="configfile.html">Configuring the Boot Manager</a>&mdash;For advanced users, information on customizing a rEFInd installation</li>
+
+<li class="tight"><a href="drivers.html">Using EFI Drivers</a>&mdash;Why and how to have rEFInd launch EFI drivers</li>
+
+<li class="tight"><a href="themes.html">Theming rEFind</a>&mdash;Information on third-party themes for rEFInd</li>
+
+<li class="tight"><a href="linux.html">Options for Booting Linux</a>&mdash;Methods of booting Linux, particularly with the EFI stub loader (distribution maintainers should read this!)</li>
+
+<li class="tight"><a href="secureboot.html">Managing Secure Boot</a>&mdash;Some pointers on using rEFInd on a computer with Secure Boot active</li>
+
+<li class="tight"><a href="revisions.html">Revisions</a>&mdash;Information on the history of rEFInd releases</li>
+
+<li class="tight"><a href="todo.html">The Future of rEFInd</a>&mdash;Current bugs that need squashing and features that I hope to one day add</a></li>
+
+<hr />
+
+<li class="tight">Manual (man) pages for rEFInd support scripts:
+
+  <ul>
+
+  <li><a href="mkrlconf.html"><tt>mkrlconf</tt></a>&mdash;This Linux-only tool creates a <tt>/boot/refind_linux.conf</tt> file to hold Linux kernel options.</li>
+
+  <li><a href="mvrefind.html"><tt>mvrefind</tt></a>&mdash;This Linux-only script moves a rEFInd installation from one location to another on the EFI System Partition (ESP).</li>
+
+  <li><a href="refind-install.html"><tt>refind-install</tt></a>&mdash;This Linux and OS X script installs rEFInd with minimal fuss.</li>
+
+  <li><a href="refind-mkdefault.html"><tt>refind-mkdefault</tt></a>&mdash;This Linux script makes rEFInd the default boot program with minimal fuss.</li>
+
+</ul></li>
+
+</ul>
+
+</div>
+
+<a name="references">
+<h2>References and Additional Information</h2>
+</a>
+
+<ul>
+
+<li><b>Informational Web pages</b>
+
+<ul>
+
+<li><a href="https://jdebp.eu/FGA/efi-boot-process.html">The EFI Boot Process</a> describes, in broad strokes, how EFI systems boot.</li>
+
+<li><a href="https://blog.uncooperative.org/blog/2014/02/06/the-efi-system-partition/">The EFI System Partition and the Default Boot Behavior</a> covers the EFI boot process in more technical terms and in greater detail, as well as how Fedora's <tt>fallback.efi</tt> program works.</li>
+
+<li><a href="https://lkml.org/lkml/2011/10/17/81">A Linux kernel mailing list thread</a> describing the new EFI stub loader that was introduced in the Linux 3.3 kernel series.</li>
+
+<li>The <a href="https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface">Arch Linux UEFI wiki page</a> has a great deal of information on UEFI and Linux.</li>
+
+<li>My own <a href="https://www.rodsbooks.com/efi-bootloaders/">EFI Boot Loaders for Linux</a> page provides information on installing and configuring several common Linux EFI boot loaders and boot managers.</li>
+
+<li><a href="https://www.rodsbooks.com/linux-uefi/">My Linux on UEFI: A Quick Installation Guide</a> page provides helpful tips on how to install Linux on EFI-based systems.</li>
+
+<li>Phoenix Technologies maintains a <a href="http://wiki.phoenix.com/wiki/index.php/Main_Page">wiki on EFI topics,</a> including <a href="http://wiki.phoenix.com/wiki/index.php/Category:UEFI_2.0">information on many EFI system calls</a> useful to programmers.</li>
+
+<li>Matthew J. Garrett, the developer of the shim boot loader to manage Secure Boot, maintains <a href="http://mjg59.dreamwidth.org/">a blog</a> in which he often writes about EFI issues.</li>
+
+<li>Adam Williamson has written a good <a href="https://www.happyassassin.net/2014/01/25/uefi-boot-how-does-that-actually-work-then/">summary of what EFI is and how it works.</a></li>
+
+<li>J. A. Watson has a <a href="http://www.zdnet.com/the-refind-boot-loader-for-uefi-systems-7000010275/">review of rEFInd on an HP laptop</a> on ZDNet. He had serious problems because of the HP's UEFI bugs, but finally got it to work.</li>
+
+<li>James Jesudason has a tutorial on installing Ubuntu 13.04 beta on a Macbook Retina Pro on <a href="http://randomtutor.blogspot.com/2013_02_01_archive.html">this blog page.</a> I'd recommend using a Linux filesystem driver to read the kernel directly from a Linux filesystem rather than copy the kernel to the OS X partition as in the tutorial, but either method will work.</li>
+
+<li>The Windows <a href="https://docs.microsoft.com/en-us/windows/deployment/mbr-to-gpt">MBR2GPT utility,</a> part of Windows 10 Creator's Update, can convert a Windows computer that boots in BIOS mode from an MBR disk to one that boots in EFI mode from a GPT disk. Note that I've never used this tool, and I have no idea how it would cope with a multi-boot configuration.</li>
+
+<!-- <li><a href="http://sdnalloh.com/converting-win7-from-mbr-to-gpt/">This blog post</a> describes how to convert Windows from BIOS-mode to EFI-mode booting. This task is rarely necessary, but when you need it, you <i>really</i> need it.</li> -->
+
+<li>If you're interested in developing EFI software yourself, my <a href="https://www.rodsbooks.com/efi-programming/">Programming for EFI</a> can help you get started.</li>
+
+<li><a href="https://medium.com/@manujarvinen/setting-up-a-multi-boot-of-5-linux-distributions-ca1fcf8d502">This page</a> describes how to set up a multi-boot of five Linux distributions and Windows using rEFInd. The method described was sub-optimal in a few ways (such as re-installing rEFInd in each distribution rather than using <tt>refind-mkdefault</tt> to adjust the boot order), but it does work.</li>
+
+</ul></li> <!-- Informational Web pages -->
+
+<li><b>Additional programs</b>
+
+<ul>
+
+<li><a href="http://refit.sourceforge.net">The official rEFIt Web page</a></li>
+
+<li><a href="http://elilo.sourceforge.net/">The official ELILO Web page</a></li>
+
+<li><a href="http://www.gnu.org/software/grub/">The official GRUB Web page</a></li>
+
+<li><a href="https://www.rodsbooks.com/gdisk/">The official GPT fdisk partitioning software Web page</a></li>
+
+<li>The <a href="http://sourceforge.net/projects/cloverefiboot/">Clover</a> boot loader is a Hackintosh boot loader that incorporates, among other things, its own unique forks of rEFIt and of DUET (a <a href="http://sourceforge.net/apps/mediawiki/tianocore/index.php?title=Welcome">TianoCore</a> tool to boot UEFI on BIOS-based computers).</li>
+
+<li>Pete Batard's <a href="https://github.com/pbatard/efifs">efifs</a> project aims to port GRUB's filesystem drivers to function as standalone EFI filesystem drivers. It's currently a work in progress but shows great promise, and several drivers are usable today.</li>
+
+</ul></li> <!-- Additional programs -->
+
+<li><b>Communications</b>
+
+<ul>
+
+<li>The <a href="https://sourceforge.net/p/refind/discussion/">rEFInd discussion forum on Sourceforge</a> provides a way to discuss rEFInd with other users or with me.</li>
+
+<li>You can <a href="mailto:rodsmith@rodsbooks.com">e-mail me</a> with queries or bug reports.</li>
+
+<li><a href="http://forums.macrumors.com/showthread.php?t=696523">This thread</a> on MacRumors details efforts to boot Windows 7 and Windows 8 in EFI mode, rather than using Boot Camp, on 64-bit Macs. It can be done with some models, but is difficult, particularly for Windows 7. Be aware that the thread is long and has many false leads.</li>
+
+</ul></li>
+
+</ul>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

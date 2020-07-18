@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: The Future of rEFInd</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />The Future of rEFInd</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<p>This page exists to document some of rEFInd's known bugs and limitations, as well as features I hope to add in the future. Some of the items on this list are things that you may be able to help with, so if you'd like to contribute, feel free to drop me a line!</p>
+
+<p>The following list groups things that need to be done into broad categories. In some cases, there's some ambiguity about how an item might best be classified. Without further ado, then:</p>
+
+<ul>
+
+<li><b>Tasks with which non-programmers can help:</b>
+
+    <ul>
+
+    <li>Testing! rEFIt was complex enough that changes such as the ones
+	I've made have the potential to disrupt the program's operation in
+	unexpected ways. Since the initial 0.2.0 release, I've continued to
+	add features to rEFInd, and every new feature is another way for
+	bugs to get into the program. I can only test on a handful of
+	systems with a limited number of configurations. Therefore, if you
+	try rEFInd and run into bugs, please report them to me!</li>
+
+    <li>rEFIt's original design, and hence rEFInd's design, enables easy
+	theming by replacing icon files. If you'd like to design a new theme
+	for rEFInd, feel free to submit it. I might or might not replace the
+	icons it uses now (most of which come from the <a
+	href="http://alecive.deviantart.com/art/AwOken-163570862">Aw0ken</a>
+	icons package), but I may provide links to themes on this Web site
+	(or even host them on the project's Sourceforge page). For more
+	information on designing themes for rEFInd, see the <a
+	href="themes.html">Theming rEFInd</a> page.</li>
+
+    </ul></li> <!-- Non-programmer help -->
+
+<li><b>Improvements to existing features:</b>
+
+    <ul>
+
+    <li>As described in reference to version 0.9.2 on the <a
+	href="revisions.html">Revisions</a> page, rEFInd includes a
+	delicate and hackish workaround to a problem introduced by Shim
+	0.8. Developing a better solution to that problem is a high
+	priority.</li>
+
+    <li>rEFInd's <tt>Makefile</tt>s and, to a lesser extent, C code,
+	support <i>x</i>86, <i>x</i>86-64, and ARM64 CPUs. EFI is also
+	available for Itanium (IA-64) and ARM32 CPUs, so I'd like to add
+	this support.</li>
+
+    <li>Currently, rEFInd can detect whether it's compiled for <i>x</i>86,
+	<i>x</i>86-64, or ARM64 systems and displays this information in
+	its "About" screen (<tt>AboutrEFInd()</tt> in <tt>main.c</tt>). I'd
+	like to add detection for Itanium and 32-bit ARM systems, but I
+	have no way to test such changes.</li>
+
+    <li>Further to the preceding, rEFInd's GPT-scanning code (used to
+	extract partition names) includes assumptions about byte order, and
+	so will work only on little-endian CPUs such as the x86 and
+	x86-64.</li>
+
+    <li>A way to set the color of the font would be useful for theming
+        purposes.</li>
+
+    <li>The program's font features could be greatly improved by enabling
+	use of a standard font format, by enabling use of non-ASCII
+	characters, and by enabling use of variable-width as well as
+	monospace fonts.</li>
+
+    <li>The <tt>default_selection</tt> might be expanded to support some
+	form of specification of disk types, as in a special entry for any
+	optical disk or any external disk, no matter what its name is.</li>
+
+    <li>It would be useful to be able to specify paths to boot loaders
+	and/or initial RAM disks relative to the rEFInd directory (or the
+	boot loader's directory, in the case of initrds).</li>
+
+    <li>Currently the background for certain subscreens (such as the
+	information page or submenu listings) is a solid color based on the
+	upper-left corner of the screen. Having an option to support a
+	transparent background is desirable to some users.</li>
+
+    <li>When delivering rEFInd as a boot loader from a network server,
+	rEFInd is limited to its default options and can boot only local
+	OSes, not network OSes. The cause is that the server delivers a
+	single file, so rEFInd is divorced from its configuration and
+	support files.</li>
+
+    <li>A way to identify specific Windows versions and present unique
+	icons or change the text is desirable. Currently, a crude
+	distinction of XP and earlier vs. Vista and later is possible for
+	BIOS-booting on Macs, but no such distinction is made for EFI-mode
+	booting, and nothing finer-grained is attempted. Improvements will
+	probably require identifying unique features of each version's boot
+	loader files or boot sector code.</li>
+
+    <li>The support for booting legacy (BIOS) OSes on UEFI-based PCs
+	currently has a number of limitations. Most importantly, it works
+	off of the list of boot devices stored in the computer's NVRAM. I'd
+	prefer to have it scan disks and partitions, as the Mac's legacy
+	boot support does. Also, the UEFI legacy boot code presents empty
+	optical drives and uses generic icons rather than OS-specific icons.
+	This said, BIOS support is becoming increasingly unimportant as the
+	transition from BIOS to EFI continues, so I'm unlikely to put effort
+	into this issue myself.</li>
+
+</ul></li> <!-- Improvements -->
+
+<li><b>Known bugs that need squashing:</b>
+
+    <ul>
+
+    <li>I've been receiving reports of blank screens when using rEFInd on
+	some recent Mac models. I've investigated this with the help of one
+	user, and I suspect that Apple has made changes to its firmware that
+	are likely to affect just about any EFI program. I don't have a
+	definitive solution, but at least one user has reported that
+	removing rEFInd's drivers has caused the problem to go into
+	remission. Changes made in version 0.11.0 improve error reporting on
+	Macs, which may help with this issue.</li>
+
+    <li>Another Mac-specific display problem relates to "retina" displays:
+	Some users report that rEFInd comes up in a lower resolution than
+	the screen supports, and that this setting persists into the running
+	macOS instance, and can't be adjusted using the usual macOS means.
+	I've just recently (mid-2017) purchased an iMac with a "retina"
+	display, so I can now begin to investigate this problem, but as of
+	rEFInd 0.11.0, I haven't yet had a chance to look into it in depth.
+	I've heard that this problem affects not just rEFInd, but also GRUB,
+	and even Windows when dual-booting on a Mac; see <a
+	href="https://youtu.be/tgTMxB-ffjM?t=3m44s">this YouTube video</a>
+	and <a
+	href="http://askubuntu.com/questions/866920/limited-resolution-booting-with-refind-on-imac-5k">This
+	AskUbuntu question and answers,</a> for instance.</li>
+
+    <li>Some EFIs have bugs that cause the allegedly case-insensitive
+	<tt>StriCmp()</tt> function to perform a case-sensitive comparison.
+	This causes any number of bugs in file matching. For instance:
+	Changing the case of icon filename extensions (or various other
+	parts of icon filenames) causes icons to be replaced by ugly
+	"generic" ones; and rEFInd sometimes appears in its own menu (the
+	firmware sometimes returns an all-caps version of the filename, but
+	other times returns the filename with the correct case, causing a
+	mismatch if the path includes lowercase elements). This problem is
+	worse when compiling rEFInd with GNU-EFI than with Tianocore.
+	Version 0.9.1 has made improvements on this score, but some issues
+	may continue to lurk.</li>
+
+    <li>The Shutdown option works correctly on Macs, but not on many UEFI-based
+	PCs. On such systems, Shutdown reboots the computer. This should be
+	fixed.</li>
+
+    <li>The media-ejection feature (F12) should be extended to work on
+	UEFI-based PCs and early Macs. At the moment, it relies on an
+	Apple-specific EFI extension, and I know of no standard EFI way to
+	do it.</li>
+
+    <li>A couple of Mac users have reported that the brightness-adjustment
+	features in Windows don't work when Windows is booted via rEFInd,
+	but that these features do work when Windows is booted via the Mac's
+	built-in boot manager. Unfortunately, I have no idea what causes
+	this problem, I have no Windows installation on my Macs, and I have
+	no way to debug it. Therefore, it's unlikely that I'll be able to
+	fix this problem myself; but if you have the equipment and skill to
+	do so, I'd be interested in receiving a patch.</li>
+
+    <li>If you use a true MBR disk on a Mac to boot Windows or some other
+	BIOS-only OS, and if that disk has an extended partition, bogus
+	additional BIOS/legacy-bootable options may appear in the rEFInd
+	menu. The reason appears to be a bug in the handling of
+	extended/logical partitions in the <tt>refind/lib.c</tt> file, but
+	I haven't fully tracked it down.</li>
+
+    <li>The re-scan feature occasionally produces odd results, such as
+	ignoring new media or keeping old media that have been ejected.
+	This should be investigated and fixed.</li>
+
+    <li>The "scanning for boot loaders" message that appears at startup and
+	during the re-scan feature is primitive. Some sort of dynamic icon
+	would be nice, but perhaps impractical, given the single-tasking
+	nature of EFI.</li>
+
+    <li>On my Mac Mini, launching a shell, returning, and performing a
+	re-scan causes the system to be unable to launch the shell again. I
+	have not observed this behavior on UEFI-based PCs. It seems to be
+	caused by a truncated DevicePath to the shell, which includes the
+	shell's pathname but not the device identifier.</li>
+
+    <li>When specifying a volume by name in <tt>dont_scan_dirs</tt>,
+	slashes are converted to backslashes in the specification but not
+	in the actual volume name read from disk. Thus, you can't specify a
+	volume by name if it includes a slash (as in <tt>Fedora
+	/boot</tt>). Workarounds are to rename the volume to omit the slash
+	and to use a partition GUID rather than a volume label.</li>
+
+    <li>The code is in need of review to search for memory leaks and
+	similar problems.</li>
+
+    <li>If the user has a Linux software RAID 1 array with Btrfs, HFS+, or
+	FAT filesystem, rEFInd will detect kernels or boot loaders in RAID 1
+	twice. Checks to prevent this with ext2/3/4fs and ReiserFS already
+	exist; these checks could be expanded to block such duplication with
+	more filesystems. Using the in-rEFInd hiding feature (activated by
+	the Delete or minus [<tt>-</tt>] key) can remove a redundant
+	entry.</li>
+
+    <li>Some Macs experience problems with waking up from suspend states
+	when rEFInd is installed. <a
+	href="apple.stackexchange.com/questions/91139/why-does-my-mbp-sleep-on-mountain-lion-and-often-not-wake-up/91150#91150">Using
+	<tt>pmset</tt> to disable the <tt>autopoweroff</tt> option</a> is <a
+	href="http://apple.stackexchange.com/questions/91529/macbook-air-not-waking-up-from-suspend-sleep-with-refind-boot-manager-installed">claimed
+	by some</a> to at least partially fix the problem, though. Using the
+	<tt>--ownhfs</tt> installation option may also help in some
+	cases.</li>
+
+    <li>If you activate BIOS-mode support on UEFI-based PCs, you may find
+	multiple copies of the BIOS-mode loaders added to your firmware's
+	boot manager. Only one copy shows up in rEFInd, though.</li>
+
+    <li>If you have a manual boot stanza for a Linux kernel with both an
+	<tt>initrd</tt> line and a second initrd file specified on the
+	<tt>options</tt> line, both initrd files will be passed to the
+	kernel in most situations; <i>however,</i> one will be omitted if
+	you enter the submenu (via F2, Insert, or Tab) and select the
+	default entry there. This bug is caused by the convoluted way rEFInd
+	generates its submenus, and I'm putting off fixing it until I can
+	give that code the overhaul it desperately needs.</li>
+
+    </ul></li> <!-- Known bugs -->
+
+<li><b>New features I'd like to add:</b>
+
+    <ul>
+
+    <li>Currently, debugging rEFInd requires adding <tt>Print()</tt>
+	statements to the code. Adding a logging facility that supports
+	multiple log levels and writes the output to a file would help with
+	debugging, especially when dealing with problem reports from
+	users.</li>
+
+    <li>I'd like to find a way to enable users to enter customizations for
+	boot options and then save them to the <tt>refind.conf</tt> file.
+	One possible way to implement this would be to have manual boot
+	stanzas override auto-detected boot loader definitions for the same
+	boot loader file.</li>
+
+    <li>Along similar lines, some users have asked for a way to take
+	detected boot programs and create a set of manual boot stanzas for
+	them, so that they can be modified manually.</li>
+
+    <li>Better support for touchscreens and/or configurable buttons for
+	rEFInd's actions would enable use of rEFInd on tablet computers that
+	lack complete keyboards. (Version 0.10.4 supports <i>some</i>
+	touchscreens, but this feature relies on support in the firmware,
+	which is not universally present.)</li>
+
+    <li>The ability to rotate the display for users who rotate their
+	monitors or who use tablets would be helpful.</li>
+
+    <li>GRUB provides a configuration-file command called <tt>outb</tt>
+	that enables manipulating hardware registers. Something similar,
+	via the <tt>mm</tt> command, can be done in the EFI shell. I'd like
+	to add such a feature to rEFInd, since it enables doing things like
+	disabling one or another video output on Macs with two video
+	cards.</li>
+
+    <li>I have thoughts about creating an EFI configuration tool and
+	information utility&mdash;something to tell you about your hard
+	disks, enable you to manage MOKs, adjust boot loader priority in
+	the NVRAM, and so on. This would be useful in system maintenance
+	and in recovering from boot problems.</li>
+
+    <li>An installation tool for the EFI environment would be useful. A
+	simple EFI shell script might work, but because this function
+	requires access to the <tt>bcfg</tt> command, this would work only
+	from a version 2 shell or if <tt>bcfg</tt> were implemented as a
+	standalone program. Another alternative would be a program written
+	in C. Since Python is now available in EFI, a Python-based script
+	might also work; but that would require installing Python.</li>
+
+    <li>It should be possible to override specific auto-detected boot loader
+	settings&mdash;say, to change the icon for one specific boot
+	loader.</li>
+
+    <li>A GUI configuration tool for host OSes (Linux, macOS, Windows, etc.)
+	would be nice, but it's low on my personal priority list. If you'd
+	like to contribute, I prefer something written in a cross-platform
+	GUI toolkit, so that a single code base can be used on any of the
+	major OSes.</li>
+
+    <li>The ability to produce audio output (at least a simple "beep") to signal
+        to visually impaired users when rEFInd is ready to accept input would be
+        helpful.</li>
+
+    <li>There's currently no way to create a manual boot stanza for a
+	BIOS-booted OS. This isn't a big priority for me personally, but I
+	can see how it could be for some people.</li>
+
+    </ul></li> <!-- New features -->
+
+<li><b>Improvements to the EFI drivers:</b>
+
+    <ul>
+
+    <li>Drivers for additional filesystems are desirable. Only XFS and JFS
+	are missing from the major Linux filesystems. UDF would also be a
+	welcome addition, as might drivers for other OSes (say, for the
+	BSDs, especially if BSD developers create a boot loader similar to
+	Linux's EFI stub loader). Also along these lines, adding drivers
+	for Linux LVM and RAID setups would be useful.</li>
+
+    <li>This may not be possible, or it may require a new driver, but a way
+	to have the drivers access files (like a Linux loopback mount) is
+	desirable.</li>
+
+    <li>When built with the GNU-EFI package, an attempt to load more than
+        one driver on my 32-bit Mac Mini causes the computer to hang. I do
+	<i>not</i> have this problem with 64-bit drivers on my UEFI-based
+	computers. I don't know if this is a 32-bit issue or a Mac issue.
+	This is <i>not</i> relevant if you're using my binary package,
+	since I build it with the TianoCore EDK2, and the drivers built in
+	that way don't exhibit this bug.</li>
+
+    </ul></li> <!-- Drivers -->
+
+<li><b>Improvements to <tt>gptsync</tt>, <tt>refind-install</tt>, or other
+    support tools:</b>
+
+    <ul>
+
+    <li>The <tt>gptsync</tt> program can return misleading error codes
+	under some circumstances, such as when it makes no changes to the
+	partition table. Fix this.</li>
+
+    <li>rEFInd's support for network booting is primitive and relies on the
+	external iPXE package. In my own testing, iPXE retrieves the
+	BIOS-mode boot loader from some servers that offer both, which
+	makes it useless on those networks.</li>
+
+    <li>The handling of encrypted local Secure Boot keys by
+	<tt>refind-install</tt> could be improved. Specifically, if you
+	install without encrypted keys and then run <tt>refind-install</tt>
+	with <tt>--encryptkeys</tt>, or vice-versa, the script is likely to
+	ask for keys repeatedly. Error handling (if an incorrect key is
+	entered, for instance) is also poor. If an encrypted key is used and
+	a rEFInd RPM or Debian package is installed, that installation may
+	fail to set things up correctly.</li>
+
+    <li>A Mac-specific package is highly desirable.</li>
+
+    </ul></li>
+
+</ul>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="using.html">Learn about problems with and the future of rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

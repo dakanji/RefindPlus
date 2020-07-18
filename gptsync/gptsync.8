@@ -1,0 +1,16 @@
+.TH "gptsync" 8 "2006 Jul 2" "Debian" "rEFIt"
+.SH NAME
+gptsync \- GPT partition table to MBR partition table synchronisation
+.SH "SYNOPSIS"
+.BI "gptsync " "device"
+.SH "DESCRIPTION"
+Reads the GPT partition table on the device and synchronise content of
+MBR partition table on the device.  Useful for situations (as in
+mactel linux) where legacy operating systems require MBR partition
+table to function properly, while most other operating systems can
+work with GPT.
+
+.SH "Author"
+Written by Christoph Pfisterer. This manual page contributed for Debian by
+Junichi Uekawa <dancer@debian.org>, but may be used for others.
+

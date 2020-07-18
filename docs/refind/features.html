@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: rEFInd Features</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />rEFInd Features</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<p>rEFInd is a fork of the <a href="http://refit.sourceforge.net">rEFIt</a> boot manager. As such, it has many features in common with rEFIt. These include the following:</p>
+
+<ul>
+
+<li>Support for both text-mode and graphical operation.</li>
+
+<li>Auto-detection of EFI and BIOS boot loaders.</li>
+
+<li>User-configurable graphics and icons&mdash;you can set your own background, set new icons, and so on.</li>
+
+<li>Launch EFI boot loaders.</li>
+
+<li>Launch legacy (BIOS) boot loaders on Macs. (rEFInd also supports legacy boots on some UEFI PCs; see below.)</li>
+
+<li>Launch options for an external EFI shell or disk partitioner. (See the <a href="installing.html">Installing rEFInd</a> section for information on how to obtain and install these components.)</li>
+
+<li>Provide the <tt>gptsync</tt> utility for creating hybrid MBRs. Note that rEFInd's version of <tt>gptsync</tt> is significantly updated compared to rEFIt's. Also, this tool should be used only on Macs that dual-boot with a BIOS-based OS, such as Windows; or <i>very</i> rarely on other computers.</li>
+
+<li>Set OS-specific boot options, such as to launch macOS with verbose text-mode debug messages.</li>
+
+<li>Load EFI drivers for filesystems or hardware devices not supported natively by your firmware. (This feature is absent in some builds of rEFIt and in rEFInd prior to version 0.2.7.)</li>
+
+<li>Inclusion of drivers for the Linux ReiserFS and ext2 filesystems in the
+    main package. (These drivers are absent from rEFInd prior to version
+    0.4.0. See below concerning drivers for additional filesystems.)</li>
+
+</ul>
+
+<p>rEFInd expands on rEFIt by providing features that improve on or go beyond those of rEFIt, such as:</p>
+
+<ul>
+
+<li>Bug fixes, focusing on those that have bothered me personally.</li>
+
+<li>The ability to specify a configuration file to use at program launch
+    time via the <tt>-c <tt class="variable">filename</tt></tt>
+    command-line option.</li>
+
+<li>User-configurable methods of detecting boot loaders:
+
+    <ul>
+    <li>Auto-detection of EFI boot loaders, independently on internal hard disks, external hard disks, optical discs, and network boot loaders.</li>
+    <li>Auto-detection of legacy BIOS boot loaders, independently on internal hard disks, external hard disks, and optical discs.</li>
+    <li>Manually via the configuration file</li>
+    </ul>
+
+    You can select which of these methods to use to construct the rEFInd main boot menu. Although rEFIt supports auto-detection, it does not support manual configuration; and rEFIt's options to enable, disable, and prioritize individual boot loader detection methods are primitive compared to those in rEFInd.</li>
+
+<li>Beginning with rEFInd 0.8.4, <i>experimental</i> network boot loader support via the <a href="http://ipxe.org">iPXE</a> EFI binaries. When activated, rEFInd should add a network-boot option to its menu when a suitable network boot server is available.</li>
+
+<li>Support for launching legacy BIOS boot loaders on UEFI PCs with
+suitable CSM support (as of version 0.4.6, with significant improvements in
+version 0.8.0). Note that some UEFI PCs,
+such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
+
+<li>Improved flexibility in setting the default OS to boot. rEFInd enables specifying the default by any substring in the description. You can also specify multiple defaults, so that if the first isn't available, another will take its place (which is useful when using removable disks). You can also add time specifications to set a default to be used only during certain hours of the day. If no default loader is set, rEFInd defaults to the last-booted loader.</li>
+
+<li>Support for partition names or GUID values as fallbacks for filesystem labels in certain configuration file settings. Partition names may be shown as values to be displayed as part of the descriptive text for boot tags on the main menu, too, if a filesystem has no label.</li>
+
+<li>The ability to fine-tune options passed to EFI boot loaders, via manual configuration.</li>
+
+<li>An option editor to enable you to edit the options passed to an EFI boot loader on a per-boot basis.</li>
+
+<li>The ability to specify additional directories to scan for boot loaders and drivers (as of version 0.2.7).</li>
+
+<li>The ability to specify volumes and directories to <i>not</i> be scanned for boot loaders, even if they would ordinarily be scanned (as of version 0.6.0 for volumes and 0.4.2 for directories).</li>
+
+<li>The ability to specify boot loader files to be ignored. This can be set either in the configuration file or dynamically as you're using rEFInd.</li>
+
+<li>The ability to re-scan boot loaders, to assist when changing removable media or after making a change to the configuration file with an EFI shell (as of version 0.3.5).</li>
+
+<li>A configurable delay before scanning for boot loaders, for systems on which there's a delay before disks become available (as of version 0.4.6).</li>
+
+<li>The ability to specify an additional icon storage directory, to assist in efforts to customize rEFInd's appearance (as of version 0.3.4).</li>
+
+<li>Support for icons, selection backgrounds, and banner graphics in PNG and JPEG formats, in addition to the ICNS and BMP formats supported by rEFIt.</li>
+
+<li>Support for full-screen banner images.</li>
+
+<li>Support for scaling icons, to adjust icon size for users with high-resolution displays, poor eyesight, or simply for personal preference reasons.</li>
+
+<li>The ability to set the screen's graphics resolution, within limits imposed by the EFI (as of rEFInd 0.3.0). Similarly, as of version 0.6.0, you can specify the text-mode resolution.</li>
+
+<li>Proper handling of more OS options than can fit on the screen. (rEFIt displays an empty list in graphical mode when it detects too many OSes.)</li>
+
+<li>The ability to handle <i>some</i> (but not all) touch-screen displays, as used on tablet computers.</li>
+
+<li>On some (but not all) computers, the ability to handle mouse input to select the boot loader to run.</li>
+
+<li>Additional OS icons (most of which are Linux distributions, at least so far). This can make it easier to find a specific distribution in the boot list if you've installed multiple Linux distributions.</li>
+
+<li>Support for loading user-defined fonts, in the form of PNG files containing ASCII characters 32 through 126 plus a glyph to be used for values outside that range.</li>
+
+<li>The ability to auto-detect Linux initial RAM disk files and to read Linux kernel options from a <tt>refind_linux.conf</tt> file. These features support (nearly) automatic handling of Linux kernels with embedded EFI stub loader support (a new feature with Linux 3.3.0).</li>
+
+<li>The ability to "fold" multiple Linux kernels into a single entry in the main menu. Additional kernels appear as options in the submenu. This feature is enabled by default, but can be disabled by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>.</li>
+
+<li>In the absence of a <tt>refind_linux.conf</tt> file, the ability to pass minimal Linux boot options to a kernel based on the contents of <tt>/etc/fstab</tt>. This is limited to cases in which the kernel resides on the Linux root (<tt>/</tt>) filesystem, though, and it won't work if the installation requires any unusual options.</li>
+
+<li>As of rEFInd 0.9.0, if a Linux root (<tt>/</tt>) filesystem is identified by the type code specified by the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Specification (DPS)</a> and the root filesystem cannot be identified via <tt>refind_linux.conf</tt> or <tt>/etc/fstab</tt>, rEFInd passes a kernel <tt>root=</tt> identifier based on the identified DPS root (<tt>/</tt>) type code.</li>
+
+<li>Fixes to display problems on many UEFI-based PCs.</li>
+
+<li>Beginning with version 0.6.10, a screen saver feature, activated by the <tt>screensaver <tt class="variable">seconds</tt></tt> token in <tt>refind.conf</tt>: Set <tt class="variable">seconds</tt> to the number of seconds before the screen will blank to prevent burn-in.</li>
+
+<li>Detection of a fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/BOOT/bootia32.efi</tt>) that's redundant with another boot loader, to keep the fallback boot loader out of menus when it's unnecessary.</li>
+
+<li>An "exit" option (disabled by default), so that you can return to whatever shell or boot manager you used to launch rEFInd, should this ability be desirable. (This feature first appeared in rEFInd 0.2.4.)</li>
+
+<li>Drivers for ISO-9660, NTFS, HFS+, ext4fs, and Btrfs, which are not included in rEFIt. (The NTFS driver has proven troublesome, and so is not compiled by default.) The ISO-9660 driver is based on code from the rEFIt project, but was never completed by its original author. It was completed by Oracle for VirtualBox. The ext4fs driver is derived from the rEFIt ext2fs driver, and the Btrfs and NTFS drivers are derived from the rEFIt and GRUB 2.0 driver code.</li>
+
+<li>Beginning with version 0.5.0, the ability to "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">shim boot loader</a> to validate binaries supported by shim or its machine owner key (MOK) list when booting with Secure Boot active.</li>
+
+<li>The <tt>gptsync</tt> utility, included with rEFInd 0.6.9 and later, has safety checks to prevent creating a fresh hybrid MBR if the MBR side has been adjusted without adjusting the GPT side&mdash;a common source of problems. This update also prioritizes partition inclusion in the hybrid MBR, which can help on disks that have many partitions. OTOH, as of rEFInd 0.6.9, this version of <tt>gptsync</tt> is relatively untested.</li>
+
+<li>The ability to set the VMX bit on certain Intel CPUs. This feature is necessary for certain virtualization tools, such as Hyper-V, and not all EFIs enable users to set it.</li>
+
+<li>Beginning with version 0.10.0, the ability to spoof the booting of macOS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
+
+<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in macOS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
+
+<li>Beginning with version 0.10.1, support for ARM64 (aka AARCH64 or AA64) CPUs. Such systems that boot using UEFI are quite rare, at least in December of 2015.</li>
+
+</ul>
+
+<p>On the flip side, at least for Mac users, rEFInd comes with less sophisticated Mac installation tools than does rEFIt, in favor of more OS-agnostic packaging.</p>
+
+<p>If these features sound useful, then read on and try rEFInd. If not, you may need to look elsewhere. My <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page may be useful to you in this case.</p>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="getting.html">Learn how to obtain rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

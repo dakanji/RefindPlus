@@ -1,0 +1,152 @@
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of MVREFIND</TITLE>
+</HEAD><BODY>
+<H1>MVREFIND</H1>
+Section: rEFInd Manual (8)<BR>Updated: 0.12.0<BR><A HREF="#index">Index</A>
+<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+mvrefind - Move a rEFInd installation from one location to another
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>mvrefind </B><I>SOURCE DEST</I>
+
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<P>
+Move a rEFInd installation from <I>SOURCE</I> to <I>DEST</I>, where both
+<I>SOURCE</I> and <I>DEST</I> are directories on the EFI System Partition
+(ESP), with <I>SOURCE</I> containing a working rEFInd installation. This
+operation entails taking several actions:
+<P>
+<DL COMPACT>
+<DT><B>*</B>
+
+<DD>
+Renaming the <I>SOURCE</I> directory to <I>DEST</I>.
+<P>
+<DT><B>*</B>
+
+<DD>
+Renaming the rEFInd binary to a suitable value given the new destination.
+For instance, if <I>DEST</I> is EFI/BOOT on the EFI System Partition (ESP),
+the rEFInd binary should be <I>bootx64.efi</I> (or something similar but
+with a different architecture code).
+<P>
+<DT><B>*</B>
+
+<DD>
+Altering the computer's NVRAM entries to point to rEFInd at its new
+location.
+<P>
+<DT><B>*</B>
+
+<DD>
+If Shim is detected, renaming operations and NVRAM entry pointers are
+adjusted appropriately.
+<P>
+<DT><B>*</B>
+
+<DD>
+If the <I>DEST</I> exists, its contents are preserved.
+<P>
+</DL>
+<P>
+
+<P>
+Broadly speaking, <I>mvrefind</I> understands three types of locations for
+both <I>SOURCE</I> and <I>DEST</I>, relative to the root of the ESP:
+<P>
+<DL COMPACT>
+<DT><B>*</B>
+
+<DD>
+<B>EFI/BOOT</B> -- The <I>bootx64.efi</I> (or similar for other
+architectures) filename in this location is the &quot;fallback filename,&quot; which
+is used by removable boot media and as a boot loader of last resort on hard
+disks. Some EFIs can't remember their normal boot entries, and on them,
+rEFInd must be installed here (or as the Windows boot loader). When this
+directory is the <I>DEST</I> and it already exists, the existing
+<I>EFI/BOOT</I> is backed up to <I>EFI/BOOT-rEFIndBackup</I>; and if the
+<I>SOURCE</I> is <I>EFI/BOOT</I> and <I>EFI/BOOT-rEFIndBackup</I> exists, it
+is renamed to <I>EFI/BOOT</I> after rEFInd is moved to its destination.
+<P>
+<DT><B>*</B>
+
+<DD>
+<B>EFI/Microsoft/boot</B> -- The <I>bootmgfw.efi</I> file in this location
+normally holds the Windows boot loader. Machines with broken EFIs may
+refuse to accept or remember proper boot entries and will instead boot this
+entry in preference to all others. In such cases, using rEFInd requires
+moving the Microsoft boot loader elsewhere and replacing it with rEFInd.
+When this directory is the <I>DEST</I>, <I>mvrefind</I> moves the original
+<I>bootmgfw.efi</I> file down one level (to <I>EFI/Microsoft</I>) and stores
+<I>refind_x64.efi</I> (or Shim) in that location. When moving from
+<I>EFI/Microsoft/boot</I>, this process is reversed.
+<P>
+<DT><B>*</B>
+
+<DD>
+<B>Anything else</B> -- Any other <I>SOURCE</I> or <I>DEST</I> location is
+treated as a regular rEFInd installation, with a proper NVRAM entry created
+by <I>efibootmgr</I>.
+<P>
+</DL>
+<P>
+
+<P>
+<I>mvrefind</I> attempts to identify the ESP and refuses to move between the
+ESP and any other partition. When it does move files, it moves the main
+rEFInd binary, the <I>refind.conf</I> file, any identified Shim binary, and
+the <I>icons</I>, <I>icons-backup</I>, <I>drivers_*</I>, and <I>keys</I>
+subdirectories. If other rEFInd files or directories are present in
+<I>SOURCE</I> (such as a custom theme/icons directory), they will not be
+moved. If <I>SOURCE</I> is empty after the specified files and
+subdirectories are moved, <I>SOURCE</I> will be deleted.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>AUTHORS</H2>
+
+Primary author: Roderick W. Smith (<A HREF="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</A>)
+<P>
+<A NAME="lbAF">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B><A HREF="/cgi-bin/man/man2html?8+mkrlconf">mkrlconf</A></B>(8),
+
+<B><A HREF="/cgi-bin/man/man2html?8+refind-install">refind-install</A></B>(8).
+
+<P>
+<I><A HREF="https://www.rodsbooks.com/refind/">https://www.rodsbooks.com/refind/</A></I>
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H2>AVAILABILITY</H2>
+
+The <B>mvrefind</B> command is part of the <I>rEFInd</I> package and is
+available from Roderick W. Smith.
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">AUTHORS</A><DD>
+<DT><A HREF="#lbAF">SEE ALSO</A><DD>
+<DT><A HREF="#lbAG">AVAILABILITY</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 13:22:49 GMT, March 13, 2020
+</BODY>
+</HTML>

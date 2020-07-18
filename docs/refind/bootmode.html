@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: What's Your Boot Mode?</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />What's Your Boot Mode?</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul>
+
+<li class="tight"><a href="#identifying">Identifying Your Hardware's Capabilities</li>
+
+<li class="tight"><a href="#linux">Identifying Your Linux Boot Mode</a></li>
+
+<li class="tight"><a href="#windows">Identifying Your Windows Boot Mode</a>
+
+  <ul>
+
+  <li class="tight"><a href="#msinfo32">Using System Information</a></li>
+
+  <li class="tight"><a href="#parttable">Using Your Partition Table Type</a></li>
+
+  </ul></li>
+
+</ul>
+
+</div>
+
+<p>Before you invest time in downloading and trying to install rEFInd, you may want to verify that you can actually use the program at all. rEFInd is useful only on EFI-based computers, not older BIOS-based computers. In fact, most EFI-based <i>x</i>86-64 computers provide a Compatibility Support Module (CSM), which is essentially a BIOS emulation mode. Some EFI implementations are in fact built atop a conventional BIOS, and retain BIOS's boot abilities via this underlying code. Thus, it's possible that you're currently booting a modern EFI-capable computer in BIOS mode. In addition to this page, you may want to check out <a href="https://www.rodsbooks.com/efi-bootloaders/csm-good-bad-ugly.html">my page on the CSM,</a> which describes why the CSM exists, how to control it, and how it can create problems.</p>
+
+<p>Unfortunately, determining which mode you're using can be tricky; the clues are subtle or hidden in ways that require specialized knowledge to extract. This page will help you figure it out. I first present general information on identifying your hardware's capabilities. I then describe ways to identify your current boot mode in both Linux and Windows.</p>
+
+<a name="identifying">
+<h2>Identifying Your Hardware's Capabilities</h2>
+</a>
+
+<p>Let's get the easy case out of the way: If you have a Macintosh with an Intel CPU, it's got EFI capabilities, and you'll be able to use rEFInd. Earlier Macs with PowerPC CPUs use OpenFirmware, and rEFInd can't be used with them. If your computer shipped new with Windows 8 or later, it almost certainly supports EFI; Microsoft requires that computers that bear a Windows 8 (or later) logo support EFI, and boot in EFI mode. Most x86 and x86-64 computers released after late 2011 support EFI, although there are some laggards, particularly among server-class machines. Almost everything sold new since about 2014 is based on a decent EFI implementation.</p>
+
+<p>For everything else, it can be harder to tell. Your best bet is to locate a PDF version of your computer's or motherboard's manual and search it for the string <i>EFI</i>. Checking your firmware's options via the firmware setup utility (typically access by pressing Del, F2, F10, or F12 at boot time) is also worth doing, but you'll need to check every option yourself. Most EFI-enabled PCs include at least one reference to an option you can set; however, manuals and firmware setup tools often don't make a big deal of this feature, particularly on boards with relatively primitive EFI support. For instance, the manual for a Gigabyte GA-78LMT-S2P motherboard includes the following paragraph, on p. 28:</p>
+
+<div class="quote">
+<ul>
+<li><b>EFI CD/DVD Boot Option</b><br/>Set this item to <b>EFI</b> if you want to install the operating system to a hard drive larger than 2.2 TB. Make sure the operating system to be installed supports booting from a GPT partition, such as Windows 7 64-bit and Windows Server 2003 64-bit. <b>Auto</b> lets the BIOS automatically configure this setting depending on the hard drive you install. (Default: Auto)</li>
+</ul>
+</div>
+
+<p>A casual reader might easily overlook this option, or misinterpret it to mean that the feature is much less important than it is. In fact, this particular motherboard offers very poor control over its EFI vs. BIOS booting features. (See <a href="https://www.rodsbooks.com/gb-hybrid-efi/">my Web page on this EFI implementation</a> for details.)</p>
+
+<p>Some manuals omit even mention of EFI, and instead refer to "legacy boot" or some similar term, referring to BIOS-style booting. The firmware for my ASUS P8H77-I motherboard uses the technical term <i>CSM,</i> which of course will be baffling to the uninitiated. (I referred to it earlier. It's the <i>Compatibility Support Module</i>&mdash;in other words, the BIOS support code.) Such references may imply that the firmware supports EFI booting if the "legacy boot" mode is disabled or restricted in some way.</p>
+
+<p>Understated EFI features often indicate a slapdash approach to EFI. Such systems sometimes implement EFI as a layer atop a conventional BIOS. More modern EFIs, though, completely replace the BIOS. Some manufacturers, such as ASUS and its sibling ASRock, are now actively promoting their more advanced EFI implementations. Such products often come with flashy new GUIs in their firmware.</p>
+
+<p>Positive identification of EFI support in your firmware does <i>not</i> guarantee that your current OSes are booting in EFI mode. (MacOS booting on a Mac is an exception to this rule, though.) For that, you'll need to run some tests in your running OSes.</p>
+
+<a name="linux">
+<h2>Identifying Your Linux Boot Mode</h2>
+</a>
+
+<p>Identifying your boot mode in Linux is relatively straightforward. The simplest way is to check for the presence of a <tt>/sys/firmware/efi</tt> directory. The mere existence of this directory indicates that the computer has booted in EFI mode. Its absence suggests a BIOS-mode boot&mdash;but see below for an important caveat.</p>
+
+<p>Another test, which produces more detailed information about the EFI implementation, is to check the kernel ring buffer for references to EFI. You can do this as follows:</p>
+
+<ol>
+
+<li>Launch a terminal program in GUI mode, or log in using text mode.</li>
+
+<li>Type <b><tt>dmesg | grep -i EFI</tt></b>.
+
+</ol>
+
+<p>The result on a BIOS-based computer should be few or no lines of output. On an EFI-based computer, though, the output will be extensive:</p>
+
+<pre class="listing">
+[    0.000000] efi: EFI v2.31 by INSYDE Corp.
+[    0.000000] efi:  ACPI=0x9cffe000  ACPI 2.0=0x9cffe014  SMBIOS=0x9cebef98 
+[    0.000000] efi: mem00: type=3, attr=0xf, range=[0x0000000000000000-0x0000000000001000) (0MB)
+[    0.000000] efi: mem01: type=2, attr=0xf, range=[0x0000000000001000-0x0000000000008000) (0MB)
+...
+[    0.000000] efi: mem62: type=11, attr=0x8000000000000001, range=[0x00000000ff980000-0x0000000100000000) (6MB)
+[    0.000000] ACPI: UEFI 000000009cffc000 00236 (v01 LENOVO CB-01    00000001 ACPI 00040000)
+[    0.632723] efifb: probing for efifb
+[    0.634127] efifb: framebuffer at 0xa0000000, mapped to 0xffffc90021780000, using 8100k, total 8100k
+[    0.634129] efifb: mode is 1920x1080x32, linelength=7680, pages=1
+[    0.634130] efifb: scrolling: redraw
+[    0.634132] efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+[    0.644648] fb0: EFI VGA frame buffer device
+[    0.754748] EFI Variables Facility v0.08 2004-May-17
+[    1.305636] fb: conflicting fb hw usage inteldrmfb vs EFI VGA - removing generic driver
+</pre>
+
+<p>I've actually cut quite a few lines from this output; there are a total of 62 <tt>EFI: mem<i>##</i></tt> lines on this computer. (Another of my computers has 148 such lines!) A BIOS-based computer will lack most or all of these lines, and certainly the <tt>EFI: mem<i>##</i></tt> lines. I've heard of some BIOS-based computers that produce the <tt>EFI Variables Facility</tt> line, though.</p>
+
+<p>One caveat exists to these tests: It's possible to boot Linux in EFI mode but disable the EFI features that create the <tt>/sys/firmware/efi</tt> directory and the copious EFI output in <tt>dmesg</tt>. This can happen because your kernel was compiled without EFI support or because you've added the <tt>noefi</tt> line to your existing BIOS boot loader configuration. Some of these features will also be absent if the <tt>efivars</tt> driver is not built into the kernel and is not loaded as a module. Typing <tt class="userinput">modprobe efivars</tt> should load this module, so you might try that before concluding you've booted in BIOS mode. To the best of my knowledge, no major Linux distribution ships with EFI support disabled in any of these ways, so chances are your tests won't mislead you to thinking you're using BIOS mode unless you've recompiled your kernel or deliberately added a <tt>noefi</tt> parameter to your boot loader configuration.</p>
+
+<a name="windows">
+<h2>Identifying Your Windows Boot Mode</h2>
+</a>
+
+<p>Depending on your Windows version, at least two ways of identifying your boot mode exist. The first method, <a href="#msinfo32">using the Windows <tt>msinfo32</tt> tool,</a> works in Windows 8 and later, and is likely to be more reliable. The second method, <a href="#parttable">checking your partition table,</a> works in any version of Windows but can be tricky or misleading, particularly if your computer has multiple hard disks.</p>
+
+<a name="msinfo32"><h3>Using System Information</h3></a>
+
+<p>To use System Information to identify your boot mode, follow these steps:</p>
+
+<ol>
+
+<li>Press Win+R to open the Run dialog box.</li>
+
+<li>Type <tt class="userinput">msinfo32</tt> into the Open field in this box and click OK. The System Information dialog box appears, as shown here:</li>
+
+    <br /><img src="msinfo32.png" align="center" width="761" height="511"
+    alt="The msinfo32 program provides information about your computer,
+    including its boot mode." border=2> <br />
+
+<li>Locate the BIOS Mode line in the list of information. (This line is highlighted in the above figure.)</li>
+
+<li>If the BIOS Mode is identified as UEFI, you've booted in EFI mode; if it reads Legacy, you've booted in BIOS/CSM/legacy mode.</li>
+
+<li>Close the System Information dialog box.</li>
+
+</ol>
+
+<p>Note that there are other ways to launch the System Information tool, so feel free to use one of them if you prefer it. Unfortunately, although Windows 7 provides the System Information utility, that version of the tool does not provide the boot mode information, so if you're using Windows 7, you must use another method to determine your boot mode.</p>
+
+<a name="parttable"><h3>Using Your Partition Table Type</h3></a>
+
+<p>If you can't use System Information to determine your boot mode, you can examine your partitions to identify your boot mode. Microsoft has tied use of the GUID Partition Table (GPT) to EFI booting. If you've booted from a GPT disk, then you must be using EFI, and if you've booted from a Master Boot Record (MBR) disk, you have almost certainly booted in BIOS mode. (I've heard of some exceptions to this rule, but they're exceedingly rare.) Therefore, you can check your partition table type as a proxy for your boot mode. To do this in Windows 7, follow these steps:</p>
+
+<ol>
+
+<li>Open the Control Panel.</li>
+
+<li>Click System and Security.</li>
+
+<li>Click Create and Format Hard Disk Partitions under Administrative Tools. The Disk Management window should open.</li>
+
+<li>Right-click on Disk 0 on the left side of the bottom pane of the window. A context menu should appear.</li>
+
+<li>Click Properties in the context menu. A Properties dialog box should open.</li>
+
+<li>Select the Volumes tab. The result should resemble the below figure. The Partition Style item identifies the partition table type&mdash;GPT in this example.</li>
+
+</ol>
+
+    <br /><img src="windows-gpt.png" align="center" width="414"
+    height="461" alt="Under Windows, you can use the disk's partition table
+    type to determine your boot mode." border=2> <br />
+
+<p>An important caveat with this method is that you must examine your boot disk. It's possible to use GPT on a data disk even on a BIOS-based computer, or to use an MBR data disk even on an EFI-based computer. Thus, if you examine the wrong disk, you can be led to an incorrect conclusion about your computer's boot mode.</p>
+
+<p>Another caveat relates to the use of a <a href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR,</a> which is a variant on a GPT disk that's most often used on Macs to permit booting Windows in BIOS mode and macOS in EFI mode. Most Windows tools will identify a hybrid MBR disk as an MBR disk, but most non-Windows tools will identify it as a GPT disk. Of course, as hybrid MBRs are generally used to enable dual-booting Windows and macOS, and as macOS boots in EFI mode, you should be able to install rEFInd from macOS to help manage such a dual-boot configuration.</p>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="using.html">Learn how to use rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

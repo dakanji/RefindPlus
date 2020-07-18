@@ -1,0 +1,108 @@
+Although I (Roderick W. Smith) am releasing rEFInd in its current form, the
+program is not the work of a single person. Others have contributed to the
+program, both in its original version (rEFIt) and by providing features
+I've incorporated into the current version. Specifically:
+
+Program (C source code and script) files:
+-----------------------------------------
+
+* Christoph Pfisterer was the original author of rEFIt. See its Web page,
+  http://refit.sourceforge.net, for this version of the program. Christoph
+  has therefore contributed more to rEFInd than anybody else, myself
+  included; my changes are comparatively small additions to the original
+  rEFIt base.
+
+* The Debian project has made a version of rEFIt available that
+  incorporates a number of patches, all attributed to Julien BLACHE
+  (jblache@debian.org), to enable it to build properly on a Linux system.
+  It was this version of rEFIt that I used as a starting point for creating
+  rEFInd. See http://packages.debian.org/sid/refit for this version of the
+  program.
+
+* The filesystem drivers released with version 0.4.0 rely on a filesystem
+  wrapper created by Christoph Phisterer. They then passed through Oracle's
+  VirtualBox (https://www.virtualbox.org) and the Clover boot loader
+  project (https://sourceforge.net/projects/cloverefiboot/). The
+  filesystem-specific code comes from various sources, including Apple,
+  the Linux kernel, and Christoph Pfisterer.
+
+* Assorted support code is borrowed from the TianoCore EDK2
+  (https://sourceforge.net/projects/tianocore/), which is the reference
+  implementation for EFI.
+
+* Dave Vasilevsky (dave@vasilevsky.ca) contributed the disk-ejection
+  code.
+
+* John Bressler (jrb1327@gmail.com) contributed the code to boot BIOS-based
+  OSes on UEFI-based PCs.
+
+* CJ Vaughter contributed the code for support of touch displays and mice,
+  with some improvements to the former by Tom Briden.
+
+* The code for editing boot options (cursor_left(), cursor_right(), and
+  line_edit() in screen.c) is taken from gummiboot
+  (http://freedesktop.org/wiki/Software/gummiboot).
+
+* Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver
+  into one that can read ext4fs.
+
+* Samuel Liao ported the GRUB 2 Btrfs and NTFS code into EFI drivers and
+  contributed them to this project, along with several miscellaneous
+  improvements.
+
+* Martin Whitaker (other@martin-whitaker.me.uk) added 64-bit support
+  to the ext4fs driver.
+
+* Emerson Barcelos (emerson_freitas@yahoo.com.br) wrote the code for
+  enabling Intel VMX support (the enable_and_lock_vmx token in
+  refind.conf).
+
+* Rohan Sehgal (rohan.sehgal.su@gmail.com) wrote code to help rEFInd
+  detect network boot options and launch them, with the help of the
+  external ipxe.efi and ipxe_discover.efi programs.
+
+* Matthew J. Garrett (mjg@redhat.com) wrote the shim boot loader upon which
+  rEFInd relies for its Secure Boot functionality. I took a few shim
+  functions to help out on the rEFInd side, too; see the mok/mok.c source
+  code file.
+
+* James Bottomley (James.Bottomley@HansenPartnership.com) wrote the
+  Linux Foundation's PreBootloader, which is an alternative to shim. I've
+  found that much of its code is also useful in implementing Secure Boot
+  functionality in rEFInd. Most of the files in the mok subdirectory are
+  based on Bottomley's PreBootloader code.
+
+* The PNG support, in the files libeg/lodepng.c and libeg/lodepng.h, is a
+  slightly modified version of LodePNG (http://lodev.org/lodepng/) by Lode
+  Vandevenne. (The libeg/lodepng_xtra.c file provides some necessary
+  ancillary and interface functions written by me.)
+
+* Pavel Penev contributed the code to enable encrypting rEFInd's locally
+  generated signing keys in refind-install.
+
+* The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
+  rEFInd in the traditional TianoCore way, come from
+  https://github.com/snarez/refind-edk2.
+
+Icons and graphics:
+-------------------
+
+* Most icons are derived from the AwOken icon set, version 2.5, by
+  Alessandro Roncone (aka alecive); see
+  http://alecive.deviantart.com/art/AwOken-163570862. Many of these icons
+  have been scaled or altered in color from their original forms.
+
+* The Debian icon is based on the SVG available from
+  https://commons.wikimedia.org/wiki/File:Debian-OpenLogo.svg. I modified
+  it to fit the general style set by the AwOken icons.
+
+* The Elementary OS icon is based on the SVG available from
+  https://commons.wikimedia.org/wiki/File:Elementary_logo.svg. I modified
+  it to fit the general style set by the AwOken icons.
+
+* Erik Kemperman provided the original (pre-0.9.3) rEFInd icon, which is a
+  combination of the common refresh/reload icon and the search/find icon.
+  For version 0.9.3, I created a new icon from Erik's basic design concept,
+  but to match the AwOken flat-with-drop-shadow style.
+
+* Additional icons were created by me.

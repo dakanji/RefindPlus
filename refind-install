@@ -1,0 +1,1475 @@
+#!/bin/bash
+#
+# Linux/MacOS X script to install rEFInd
+#
+# Usage:
+#
+# ./refind-install [options]
+#
+# options include:
+#    "--notesp" to install to the OS X root filesystem rather than to the ESP.
+#           This option is valid only under OS X.
+#    "--usedefault {devicefile}" to install as default
+#           (/EFI/BOOT/BOOTX64.EFI and similar) to the specified device
+#           (/dev/sdd1 or whatever) without registering with the NVRAM.
+#    "--ownhfs {devicefile}" to install to an HFS+ volume that's NOT currently
+#           an OS X boot volume. Valid only in OS X.
+#    "--root {dir}" to specify installation using the specified directory
+#           as the system's root
+#    "--alldrivers" to install all drivers along with regular files
+#    "--nodrivers" to suppress driver installation (default in Linux is
+#           driver used on /boot; --nodrivers is OS X default).
+#    "--shim {shimfile}" to install a shim.efi file for Secure Boot. Valid
+#           only under Linux.
+#    "--preloader" is synonymous with "--shim". Valid only under Linux.
+#    "--encryptkeys" password-protects the Secure Boot private key.
+#    "--localkeys" to re-sign x86-64 binaries with a locally-generated key.
+#           Valid only under Linux.
+#    "--keepname" to keep refind_x64.efi name as such even when using shim.
+#           Valid only under Linux.
+#    "--yes" to assume a "yes" response to all prompts
+#
+# This program is copyright (c) 2012-2020 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# Revision history:
+#
+# 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
+#            activate install and bootorder features when using --usedefault
+#            option.
+# 0.11.5  -- Remove excessive slashes (/) from some filenames
+# 0.11.4  -- Fixed generation of GUID when automount of ESP in use on Linux
+# 0.11.3  -- Added support for ESP mounted at /efi under Linux
+# 0.11.1  -- In Linux, be less aggressive about replacing existing NVRAM entries
+# 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
+# 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
+# 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
+# 0.10.6  -- Improved identification of the root device under macOS.
+# 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
+# 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
+# 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
+#            and fixed bug that could cause mountesp to be installed as a FILE
+#            called /usr/local/bin in OS X.
+# 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
+#            Add support for AMD64 (aka AARCH64, aa64) platform. Added
+#            warning when --alldrivers used without --usedefault.
+# 0.10.0  -- Enable running under OS X's recovery system & add warning about
+#            SIP & brief instructions on how to deal with it if SIP is
+#            detected to be enabled. Also change way refind_linux.conf default
+#            options are found; use /proc/cmdline as base.
+# 0.9.2   -- Added --keepname option.
+# 0.8.7   -- Better detection of Secure Boot mode & fixed errors when copying
+#            Shim & MokManager files over themselves; fixed bug that caused
+#            inappropriate installation to EFI/BOOT/bootx64.efi
+# 0.8.6   -- Fixed bugs that caused misidentification of ESP on disks with
+#            partition numbers over 10 on OS X and misidentification of mount
+#            point if already-mounted ESP had space in path.
+# 0.8.5   -- Refinement/cleanup of new OS X ESP-as-default policy
+# 0.8.4   -- OS X default changed to install to ESP under /EFI/BOOT
+# 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
+# 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
+#            to locate and mount ESP on Linux, if it's not mounted
+# 0.7.6   -- Added --ownhfs {device-filename} option
+# 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
+# 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
+# 0.7.0   -- Added support for the new Btrfs driver
+# 0.6.12  -- Added support for PreLoader as well as for shim
+# 0.6.11  -- Improvements in script's ability to handle directories with spaces
+#            in their names
+# 0.6.9   -- Install gptsync on Macs
+# 0.6.8   -- Bug fix: ESP scan now uses "uniq".
+# 0.6.6   -- Bug fix: Upgrade drivers when installed to EFI/BOOT. Also enable
+#            copying shim.efi and MokManager.efi over themselves.
+# 0.6.4   -- Copies ext2 driver rather than ext4 driver for ext2/3fs
+# 0.6.3   -- Support for detecting rEFInd in EFI/BOOT and EFI/Microsoft/Boot
+#            directories & for installing to EFI/BOOT in BIOS mode
+# 0.6.2-1 -- Added --yes option & tweaked key-copying for use with RPM install script
+# 0.6.1   -- Added --root option; minor bug fixes
+# 0.6.0   -- Changed --drivers to --alldrivers and added --nodrivers option;
+#            changed default driver installation behavior in Linux to install
+#            the driver needed to read /boot (if available)
+# 0.5.1.2 -- Fixed bug that caused failure to generate refind_linux.conf file
+# 0.5.1.1 -- Fixed bug that caused script failure under OS X
+# 0.5.1   -- Added --shim & --localkeys options & create sample refind_linux.conf
+#            in /boot
+# 0.5.0   -- Added --usedefault & --drivers options & changed "esp" option to "--esp"
+# 0.4.5   -- Fixed check for rEFItBlesser in OS X
+# 0.4.2   -- Added notice about BIOS-based OSes & made NVRAM changes in Linux smarter
+# 0.4.1   -- Added check for rEFItBlesser in OS X
+# 0.3.3.1 -- Fixed OS X 10.7 bug; also works as make target
+# 0.3.2.1 -- Check for presence of source files; aborts if not present
+# 0.3.2   -- Initial version
+#
+# Note: install.sh version numbers match those of the rEFInd package
+# with which they first appeared.
+
+RootDir="/"
+TargetDir=/EFI/refind
+LocalKeysBase="refind_local"
+ShimSource="none"
+ShimType="none"
+KeepName=0
+TargetShim="default"
+TargetX64="refind_x64.efi"
+TargetIA32="refind_ia32.efi"
+LocalKeys=0
+EncryptKeys=0
+DeleteRefindDir=0
+AlwaysYes=0
+EspGuid="C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+
+#
+# Functions used by both OS X and Linux....
+#
+
+GetParams() {
+   InstallToEspOnMac=1
+   # Install the driver required to read Linux /boot, if it's available
+   # Note: Under OS X, this will be installed only if a Linux partition
+   # is detected, in which case the ext4fs driver will be installed.
+   InstallDrivers="boot"
+   while [[ $# -gt 0 ]]; do
+      case $1 in
+         --notesp) InstallToEspOnMac=0
+              ;;
+         --ownhfs) OwnHfs=1
+              InstallToEspOnMac=0
+              TargetPart="$2"
+              TargetDir=/System/Library/CoreServices
+              shift
+              ;;
+         --usedefault) TargetDir=/EFI/BOOT
+              TargetPart="$2"
+              TargetX64="bootx64.efi"
+              TargetIA32="bootia32.efi"
+              shift
+              ;;
+         --root) RootDir="$2"
+              InstallToEspOnMac=0
+              shift
+              ;;
+         --localkeys) LocalKeys=1
+              ;;
+         --encryptkeys) EncryptKeys=1
+              ;;
+         --shim | --preloader) ShimSource="$2"
+              ShimType=`basename $ShimSource`
+              shift
+              ;;
+         --keepname) KeepName=1
+              ;;
+         --drivers | --alldrivers) InstallDrivers="all"
+              ;;
+         --nodrivers) InstallDrivers="none"
+              ;;
+         --yes) AlwaysYes=1
+              ;;
+         * ) echo "Usage: $0 [--notesp | --usedefault {device-file} | --root {dir} |"
+             echo "                     --ownhfs {device-file} ] [--keepname]"
+             echo "                  [--nodrivers | --alldrivers] [--shim {shimfile}]"
+             echo "                  [--localkeys [--encryptkeys]] [--keepname] [--yes]"
+             exit 1
+      esac
+      shift
+   done
+   if [[ "$InstallToEspOnMac" == 0 && "$RootDir" == '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
+      echo "You may use --notesp OR --usedefault, but not both! Aborting!"
+      exit 1
+   fi
+   if [[ "$RootDir" != '/' && "$TargetDir" == '/EFI/BOOT' ]] ; then
+      echo "You may use --root OR --usedefault, but not both! Aborting!"
+      exit 1
+   fi
+   if [[ "$TargetDir" != '/System/Library/CoreServices' && "$OwnHfs" == '1' ]] ; then
+      echo "If you use --ownhfs, you may NOT use --usedefault! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$ShimSource" == "none" ]] ; then
+      echo "The --keepname option is meaningful only in conjunction with --shim"
+      echo "or --preloader! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$OSTYPE" != "linux" && "$OSTYPE" != "linux-gnu" ]] ; then
+      echo "The --keepname option is valid only under Linux! Aborting!"
+      exit 1
+   fi
+   if [[ "$KeepName" == 1 && "$TargetDir" == "/EFI/BOOT" ]] ; then
+      echo "The --keepname option is incompatible with --usedefault! Aborting!"
+      exit 1
+   fi
+   if [[ "$InstallDrivers" == "all" && "$TargetDir" != "/EFI/BOOT" ]] ; then
+      echo "The --alldrivers option is meant for creating USB flash drives with (near-)"
+      echo "universal boot support. Using it on a hard disk partition runs the risk of"
+      echo "creating serious problems, up to and including rendering your computer"
+      echo -n "unbootable. Are you SURE you want to proceed (Y/N)? "
+      ReadYesNo
+      if [[ "$YesNo" != "Y" && "$YesNo" != "y" ]] ; then
+         echo "Aborting installation!"
+         exit 0
+      fi
+   fi
+   if [[ "$EncryptKeys" == 1 && "$LocalKeys" == 0 ]] ; then
+      echo "The --encryptkeys option requires the use of --localkeys! Aborting!"
+      exit 1
+   fi
+   RLConfFile="$RootDir/boot/refind_linux.conf"
+   EtcKeysDir="$RootDir/etc/refind.d/keys"
+} # GetParams()
+
+# Get a yes/no response from the user and place it in the YesNo variable.
+# If the AlwaysYes variable is set to 1, skip the user input and set "Y"
+# in the YesNo variable.
+ReadYesNo() {
+   if [[ $AlwaysYes == 1 ]] ; then
+      YesNo="Y"
+      echo "Y"
+   else
+      read YesNo
+   fi
+}
+
+
+# Get a passphrase for decrpyting a private key, and store it in the
+# KeyPassphrase variable.
+#   $1   Set to "--no-confirm" to skip passphrase input confirmation.
+ReadKeyPassphrase() {
+   if [[ $EncryptKeys == 1 ]]  && [ -z "$KeyPassphrase" ]; then
+      while true; do
+         echo -n "Private key passphrase (no echo): "
+         read -r -s
+         KeyPassphrase="$REPLY"
+         REPLY="shred value"
+         echo
+         if [ "$1" == "--no-confirm" ]; then
+            break
+         else
+            echo -n "Confirm passphrase (no echo): "
+            read -r -s
+            echo
+            if [ "$KeyPassphrase" == "$REPLY" ]; then
+               REPLY="shred value"
+               break
+            fi
+         fi
+      done
+   fi
+}
+
+# Determine what CPU type and EFI bit depth we're using.
+# Sets Platform global variable to lowercase EFI platform code (currently
+# "x64", "ia32", or "aa64") -- the same code used in filenames.
+DeterminePlatform() {
+   local CpuType
+   case "$OSTYPE" in
+   darwin*)
+      CpuType=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
+      if [[ "$CpuType" == EFI32 ]] ; then
+         Platform="ia32"
+      else
+         Platform="x64"
+      fi
+      ;;
+   linux*)
+      CpuType=`uname -m`
+      case "$CpuType" in
+      aarch64)
+         Platform="aa64"
+         ;;
+      x86_64)
+         Platform="x64"
+         ;;
+      i?86)
+         Platform="ia32"
+         # If we're in EFI mode, do some sanity checks, and alert the user or even
+         # abort. Not in BIOS mode, though, since that could be used on an emergency
+         # disc to try to recover a troubled Linux installation.
+         if [[ -d /sys/firmware/efi ]] ; then
+            if [[ "$ShimSource" != "none" && "$TargetDir" != "/BOOT/EFI" ]] ; then
+               echo ""
+               echo "CAUTION: shim does not currently supports 32-bit systems, so you should not"
+               echo "use the --shim option to install on such systems. Aborting!"
+               echo ""
+               exit 1
+            fi
+            echo
+            echo "CAUTION: This Linux installation uses a 32-bit kernel. 32-bit EFI-based"
+            echo "computers are VERY RARE. If you've installed a 32-bit version of Linux"
+            echo "on a 64-bit computer, you should manually install the 64-bit version of"
+            echo "rEFInd. If you're positive you want to continue with this installation,"
+            echo "answer 'Y' to the following question..."
+            echo
+            echo -n "Are you sure you want to continue (Y/N)? "
+            ReadYesNo
+            if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+               echo "OK; continuing with the installation..."
+            else
+               exit 0
+            fi
+         fi # In EFI mode
+         ;;
+      *)
+         echo "Unknown CPU type '$CpuType'; aborting!"
+         exit 1
+         ;;
+      esac # case "$CpuType"....
+      ;;
+   *)
+      echo "Unknown OS; aborting!"
+      exit 1
+      ;;
+   esac # case "$OSTYPE"....
+} # DeterminePlatform()
+
+# Abort if the rEFInd files can't be found.
+# Also sets $ConfFile to point to the configuration file,
+# $IconsDir to point to the icons directory,
+# $ShimSource to the source of the shim.efi file (if necessary),
+# $ThisDir to point to the directory in which this script resides,
+# and $RefindDir to point to where the rEFInd binaries live
+CheckForFiles() {
+   # Note: $ThisDir points to real (not symlinked) script home on Linux,
+   # enabling creating a symlink in /usr/sbin (or wherever); but on OS X,
+   # "readlink" doesn't do the same thing as under Linux, so the script
+   # must not be a symlink under OS X.
+   case "$OSTYPE" in
+      darwin*)
+           ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
+           ;;
+      linux*)
+           ThisDir="$(dirname "$(readlink -f "$0")")"
+           ;;
+   esac
+   RefindDir="$ThisDir/refind"
+
+   if [[ ! -f "$RefindDir/refind_$Platform.efi" ]] ; then
+      echo "The rEFInd binary file is missing! Aborting installation!"
+      exit 1
+   fi
+
+   if [[ -f "$RefindDir/refind.conf-sample" ]] ; then
+      ConfFile="$RefindDir/refind.conf-sample"
+   elif [[ -f "$ThisDir/refind.conf-sample" ]] ; then
+      ConfFile="$ThisDir/refind.conf-sample"
+   else
+      echo "The sample configuration file is missing! Aborting installation!"
+      exit 1
+   fi
+
+   if [[ -d "$RefindDir/icons" ]] ; then
+      IconsDir="$RefindDir/icons"
+   elif [[ -d "$ThisDir/icons" ]] ; then
+      IconsDir="$ThisDir/icons"
+   else
+      echo "The icons directory is missing! Aborting installation!"
+      exit 1
+   fi
+
+   echo "ShimSource is $ShimSource"
+   if [[ "$ShimSource" != "none" ]] ; then
+      if [[ -f "$ShimSource" ]] ; then
+         if [[ $ShimType == "shimx64.efi" || $ShimType == "shim.efi" || $ShimType == "shimx64.efi.signed" ]] ; then
+            TargetX64="grubx64.efi"
+            TargetAARCH64="grubaa64.efi"
+            MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi.signed
+            if [[ ! -f "$MokManagerSource" ]] ; then
+                MokManagerSource=`dirname "$ShimSource"`/mm$Platform.efi
+            fi
+            if [[ ! -f "$MokManagerSource" ]] ; then
+                MokManagerSource=`dirname "$ShimSource"`/MokManager.efi
+            fi
+         elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+            TargetX64="loader.efi"
+            MokManagerSource=`dirname "$ShimSource"`/HashTool.efi
+         else
+            echo "Unknown shim/PreBootloader filename: $ShimType!"
+            echo "Known filenames are shimx64.efi, shim.efi, and PreLoader.efi. Aborting!"
+            exit 1
+         fi
+      else
+         echo "The specified shim/PreBootloader file, $ShimSource, doesn't exist!"
+         echo "Aborting installation!"
+         exit 1
+      fi
+   fi
+} # CheckForFiles()
+
+# Helper for CopyRefindFiles; copies shim files (including MokManager, if it's
+# available) to target.
+CopyShimFiles() {
+   local inode1=`ls -i "$ShimSource" 2> /dev/null | cut -f 1 -d " "`
+   local inode2=`ls -i "$InstallDir/$TargetDir/$TargetShim" 2> /dev/null | cut -f 1 -d " "`
+   if [[ $inode1 != $inode2 ]] ; then
+      cp -fb "$ShimSource" "$InstallDir/$TargetDir/$TargetShim"
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+   fi
+   inode1=`ls -i "$MokManagerSource" 2> /dev/null | cut -f 1 -d " "`
+   local TargetMMName=`basename $MokManagerSource`
+   if [[ $TargetMMName == "mm$Platform.efi.signed" ]] ; then
+       TargetMMName="mm$Platform.efi"
+   fi
+   inode2=`ls -i "$InstallDir/$TargetDir/$TargetMMName" 2> /dev/null | cut -f 1 -d " "`
+   if [[ $inode1 != $inode2 ]] ; then
+      if [[ -f "$MokManagerSource" ]] ; then
+         cp -fb "$MokManagerSource" "$InstallDir/$TargetDir/$TargetMMName"
+      fi
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+   fi
+} # CopyShimFiles()
+
+# Copy the public keys to the installation medium
+CopyKeys() {
+   if [[ $LocalKeys == 1 ]] ; then
+      mkdir -p "$InstallDir/$TargetDir/keys/"
+      cp "$EtcKeysDir/$LocalKeysBase.cer" "$InstallDir/$TargetDir/keys/"
+      cp "$EtcKeysDir/$LocalKeysBase.crt" "$InstallDir/$TargetDir/keys/"
+   fi
+} # CopyKeys()
+
+# Set varaibles for installation in EFI/BOOT directory
+SetVarsForBoot() {
+   TargetDir="/EFI/BOOT"
+   if [[ $ShimSource == "none" ]] ; then
+      TargetX64="bootx64.efi"
+      TargetIA32="bootia32.efi"
+      TargetAARCH64="bootaa64.efi"
+   else
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType == "shimx64.efi.signed" || $ShimType = "shimaa64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+         TargetAARCH64="grubaa64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
+      TargetIA32="bootia32.efi"
+      TargetShim="boot$Platform.efi"
+   fi
+   if [[ $KeepName == 1 ]] ; then
+      echo "Installation is to /EFI/BOOT, which is incompatible with --keepname! Aborting!"
+      exit 1
+   fi
+} # SetVarsForBoot()
+
+# Set variables for installation in EFI/Microsoft/Boot directory
+SetVarsForMsBoot() {
+   TargetDir="/EFI/Microsoft/Boot"
+   if [[ $ShimSource == "none" ]] ; then
+      TargetX64="bootmgfw.efi"
+      TargetIA32="bootmgfw.efi"
+      TargetAARCH64="bootmgfw.efi"
+   else
+      if [[ $ShimType == "shim.efi" || $ShimType == "shimx64.efi" || $ShimType == "shimaa64.efi" ]] ; then
+         TargetX64="grubx64.efi"
+         TargetAARCH64="grubaa64.efi"
+      elif [[ $ShimType == "preloader.efi" || $ShimType == "PreLoader.efi" ]] ; then
+         TargetX64="loader.efi"
+      else
+         echo "Unknown shim/PreBootloader type: $ShimType"
+         echo "Aborting!"
+         exit 1
+      fi
+      TargetShim="bootmgfw.efi"
+   fi
+   if [[ $KeepName == 1 ]] ; then
+      echo "Installation is to /EFI/Microsoft/Boot, which is incompatible with --keepname!"
+      echo "Aborting!"
+      exit 1
+   fi
+} # SetVarsForMsBoot()
+
+# TargetDir defaults to /EFI/refind; however, this function adjusts it as follows:
+# - If an existing refind.conf is available in /EFI/BOOT or /EFI/Microsoft/Boot,
+#   install to that directory under the suitable name; but DO NOT do this if
+#   refind.conf is also in /EFI/refind.
+# - If booted in BIOS mode and the ESP lacks any other EFI files, install to
+#   /EFI/BOOT
+# - If booted in BIOS mode and there's no refind.conf file and there is a
+#   /EFI/Microsoft/Boot/bootmgfw.efi file, move it down one level and
+#   install under that name, "hijacking" the Windows boot loader filename
+DetermineTargetDir() {
+   Upgrade=0
+
+   if [[ -f $InstallDir/EFI/BOOT/refind.conf && ! -f $InstallDir/EFI/refind/refind.conf ]] ; then
+      SetVarsForBoot
+      Upgrade=1
+   fi
+   if [[ -f $InstallDir/EFI/Microsoft/Boot/refind.conf && ! -f $InstallDir/EFI/refind/refind.conf ]] ; then
+      SetVarsForMsBoot
+      Upgrade=1
+   fi
+   if [[ -f $InstallDir/EFI/refind/refind.conf ]] ; then
+      TargetDir="/EFI/refind"
+      if [[ $ShimSource == "none" || $KeepName == 1 ]] ; then
+         TargetX64="refind_x64.efi"
+         TargetIA32="refind_ia32.efi"
+         TargetAARCH64="refind_aa64.efi"
+      fi
+      Upgrade=1
+   fi
+   if [[ $Upgrade == 1 ]] ; then
+      echo "Found rEFInd installation in $InstallDir$TargetDir; upgrading it."
+   fi
+
+   if [[ ! -d /sys/firmware/efi && ! $OSTYPE == darwin* && $Upgrade == 0 ]] ; then     # BIOS-mode
+      FoundEfiFiles=`find "$InstallDir/EFI/BOOT" -name "*.efi" 2> /dev/null`
+      FoundConfFiles=`find "$InstallDir" -name "refind\.conf" 2> /dev/null`
+      if [[ ! -n "$FoundConfFiles" && -f "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" ]] ; then
+         mv -n "$InstallDir/EFI/Microsoft/Boot/bootmgfw.efi" "$InstallDir/EFI/Microsoft" &> /dev/null
+         SetVarsForMsBoot
+         echo "Running in BIOS mode with a suspected Windows installation; moving boot loader"
+         echo "files so as to install to $InstallDir$TargetDir."
+      elif [[ ! -n "$FoundEfiFiles" ]] ; then  # In BIOS mode and no default loader; install as default loader
+         SetVarsForBoot
+         echo "Running in BIOS mode with no existing default boot loader; installing to"
+         echo $InstallDir$TargetDir
+      else
+         echo "Running in BIOS mode with an existing default boot loader; backing it up and"
+         echo "installing rEFInd in its place."
+         if [[ -d "$InstallDir/EFI/BOOT-rEFIndBackup" ]] ; then
+            echo ""
+            echo "Caution: An existing backup of a default boot loader exists! If the current"
+            echo "default boot loader and the backup are different boot loaders, the current"
+            echo "one will become inaccessible."
+            echo ""
+            echo -n "Do you want to proceed with installation (Y/N)? "
+            ReadYesNo
+            if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+               echo "OK; continuing with the installation..."
+            else
+               exit 0
+            fi
+         fi
+         mv -n "$InstallDir/EFI/BOOT" "$InstallDir/EFI/BOOT-rEFIndBackup"
+         SetVarsForBoot
+      fi
+   fi # BIOS-mode
+} # DetermineTargetDir()
+
+# Determine (or guess) the filesystem used on the Linux /boot filesystem.
+# Store the result in the BootFS global variable.
+SetBootFS() {
+   BootFS=""
+   case "$OSTYPE" in
+      linux*)
+           if command -v blkid &>/dev/null; then
+              BootPart=`df $RootDir/boot | grep dev | cut -f 1 -d " "`
+              BootFS=`blkid -o export $BootPart 2> /dev/null | grep TYPE= | cut -f 2 -d =`
+           fi
+           ;;
+      darwin*)
+           # 0FC63DAF-8483-4772-8E79-3D69D8477DE4 = Linux filesystem
+           # BC13C2FF-59E6-4262-A352-B275FD6F7172 = Freedesktop $boot partition
+           # 933AC7E1-2EB4-4F13-B844-0E14E2AEF915 = Freedesktop Linux /home
+           # E6D6D379-F507-44C2-A23C-238F2A3DF928 = Linux LVM
+           # A19D880F-05FC-4D3B-A006-743F0F84911E = Linux RAID
+           # 0657FD6D-A4AB-43C4-84E5-0933C84B4F4F = Linux swap
+           Temp=$(diskutil list | grep -i '0FC63DAF-8483-4772-8E79-3D69D8477DE4\|BC13C2FF-59E6-4262-A352-B275FD6F7172\|933AC7E1-2EB4-4F13-B844-0E14E2AEF915\|E6D6D379-F507-44C2-A23C-238F2A3DF928\|A19D880F-05FC-4D3B-A006-743F0F84911E\|0657FD6D-A4AB-43C4-84E5-0933C84B4F4F\|Linux')
+           BootFS=""
+           if [[ -n $Temp ]] ; then
+              echo "Found suspected Linux partition(s); installing ext4fs driver."
+              BootFS="ext4"
+           fi
+           ;;
+   esac
+} # SetBootFS()
+
+# Copy drivers from $RefindDir/drivers_$1 to $InstallDir/$TargetDir/drivers_$1,
+# honoring the $InstallDrivers condition. Must be passed a suitable
+# architecture code (ia32 or x64).
+CopyDrivers() {
+   if [[ $InstallDrivers == "all" ]] ; then
+      mkdir -p "$InstallDir/$TargetDir/drivers_$1"
+      cp "$ThisDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
+      cp "$RefindDir"/drivers_$1/*_$1.efi "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
+   elif [[ "$InstallDrivers" == "boot" ]] ; then
+      SetBootFS
+      DriverType=""
+      case $BootFS in
+         ext2 | ext3) DriverType="ext2"
+              # Could use ext4, but that can create unwanted entries from symbolic
+              # links in / to /boot/vmlinuz if a separate /boot partition is used.
+              ;;
+         ext4) DriverType="ext4"
+              ;;
+         reiserfs) DriverType="reiserfs"
+              ;;
+         btrfs) DriverType="btrfs"
+              ;;
+         hfsplus) DriverType="hfs"
+              ;;
+         ntfs) DriverType="ntfs"
+              ;;
+         *) BootFS=""
+      esac
+      if [[ -n $BootFS ]] ; then
+         echo "Installing driver for $BootFS (${DriverType}_$1.efi)"
+         mkdir -p "$InstallDir/$TargetDir/drivers_$1"
+         cp "$ThisDir/drivers_$1/${DriverType}_$1.efi" "$InstallDir/$TargetDir/drivers_$1/" 2> /dev/null
+         cp "$RefindDir/drivers_$1/${DriverType}_$1.efi" "$InstallDir/$TargetDir/drivers_$1"/ 2> /dev/null
+      fi
+   fi
+} # CopyDrivers()
+
+# Copy tools (currently only gptsync, and that only on Macs) to the EFI/tools
+# directory on the ESP. Must be passed a suitable architecture code (ia32
+# or x64).
+CopyTools() {
+   mkdir -p "$InstallDir/EFI/tools"
+   if [[ $OSTYPE == darwin* ]] ; then
+      cp -f "$RefindDir/tools_$1/gptsync_$1.efi" "$InstallDir/EFI/tools/"
+      if [[ -f "$InstallDir/EFI/tools/gptsync.efi" ]] ; then
+         mv "$InstallDir/EFI/tools/gptsync.efi" "$InstallDir/EFI/tools/gptsync.efi-disabled"
+         echo "Found old gptsync.efi; disabling it by renaming it to gptsync.efi-disabled"
+      fi
+   fi
+} # CopyTools()
+
+# Copy the rEFInd files to the ESP or OS X root partition.
+# Sets Problems=1 if any critical commands fail.
+CopyRefindFiles() {
+   mkdir -p "$InstallDir/$TargetDir"
+   if [[ "$TargetDir" == '/EFI/BOOT' ]] ; then
+      cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32" 2> /dev/null
+      if [[ $? != 0 ]] ; then
+         echo "Note: IA32 (x86) binary not installed!"
+      fi
+      cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64" 2> /dev/null
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+      cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64" 2> /dev/null
+      if [[ $? != 0 && $Platform == "aa64" ]] ; then
+         Problems=1
+      fi
+      if [[ "$ShimSource" != "none" ]] ; then
+         TargetShim="bootx64.efi"
+         CopyShimFiles
+      fi
+      if [[ $InstallDrivers == "all" ]] ; then
+         cp -r "$RefindDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
+         cp -r "$ThisDir"/drivers_* "$InstallDir/$TargetDir/" 2> /dev/null
+      elif [[ $Upgrade == 1 || $InstallToEspOnMac == 1 ]] ; then
+         CopyDrivers "$Platform"
+         CopyTools "$Platform"
+      fi
+      Refind="boot$Platform.efi"
+      CopyKeys
+   elif [[ $Platform == 'x64' || $TargetDir == "/EFI/Microsoft/Boot" ]] ; then
+      cp "$RefindDir/refind_x64.efi" "$InstallDir/$TargetDir/$TargetX64"
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+      CopyDrivers x64
+      CopyTools x64
+      Refind="refind_x64.efi"
+      CopyKeys
+      if [[ "$ShimSource" != "none" ]] ; then
+         if [[ "$TargetShim" == "default" ]] ; then
+            TargetShim=`basename "$ShimSource"`
+         fi
+         CopyShimFiles
+         Refind="$TargetShim"
+         if [[ $LocalKeys == 0 ]] ; then
+            echo "Storing copies of rEFInd Secure Boot public keys in $EtcKeysDir"
+            mkdir -p "$EtcKeysDir"
+            cp "$ThisDir/keys/refind.cer" "$EtcKeysDir" 2> /dev/null
+            cp "$ThisDir/keys/refind.crt" "$EtcKeysDir" 2> /dev/null
+         fi
+      fi
+      if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
+         SetupMacHfs $TargetX64
+      fi
+   elif [[ $Platform == 'ia32' || $Platform == 'aa64' ]] ; then
+      if [[ $Platform == 'ia32' ]] ; then
+         cp "$RefindDir/refind_ia32.efi" "$InstallDir/$TargetDir/$TargetIA32"
+         if [[ $? != 0 ]] ; then
+            Problems=1
+         fi
+      else
+         cp "$RefindDir/refind_aa64.efi" "$InstallDir/$TargetDir/$TargetAARCH64"
+         if [[ $? != 0 ]] ; then
+            Problems=1
+         fi
+      fi
+      CopyDrivers $Platform
+      CopyTools $Platform
+      Refind="refind_$Platform.efi"
+      if [[ "$TargetDir" == '/System/Library/CoreServices' ]] ; then
+         SetupMacHfs $TargetIA32
+      fi
+   else
+      echo "Unknown platform! Aborting!"
+      exit 1
+   fi
+   echo "Copied rEFInd binary files"
+   echo ""
+   if [[ -d "$InstallDir/$TargetDir/icons" ]] ; then
+      rm -rf "$InstallDir/$TargetDir/icons-backup" &> /dev/null
+      mv -f "$InstallDir/$TargetDir/icons" "$InstallDir/$TargetDir/icons-backup"
+      echo "Notice: Backed up existing icons directory as icons-backup."
+   fi
+   cp -r "$IconsDir" "$InstallDir/$TargetDir"
+   if [[ $? != 0 ]] ; then
+      Problems=1
+   fi
+   mkdir -p "$InstallDir/$TargetDir/keys"
+   cp -rf "$ThisDir"/keys/*.[cd]er "$InstallDir/$TargetDir/keys/" 2> /dev/null
+   cp -rf "$EtcKeysDir"/*.[cd]er "$InstallDir/$TargetDir/keys/" 2> /dev/null
+   if [[ -f "$InstallDir/$TargetDir/refind.conf" ]] ; then
+      echo "Existing refind.conf file found; copying sample file as refind.conf-sample"
+      echo "to avoid overwriting your customizations."
+      echo ""
+      cp -f "$ConfFile" "$InstallDir/$TargetDir"
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+   else
+      echo "Copying sample configuration file as refind.conf; edit this file to configure"
+      echo "rEFInd."
+      echo ""
+      cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf"
+      if [[ $? != 0 ]] ; then
+         Problems=1
+      fi
+   fi
+   # If installing to the fallback/EFI default filename, make a duplicate copy
+   # of refind.conf and edit the main copy to include the "install" and "bootorder"
+   # options, so that the system can be used to install rEFInd if it's on a USB
+   # flash drive or CD-R....
+   if [[ "$TargetDir" == '/EFI/BOOT' ]] ; then
+      cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf-sample"
+      sed -i 's/#showtools shell/showtools install, shell/g' "$InstallDir/$TargetDir/refind.conf"
+   fi
+   if [[ $DeleteRefindDir == 1 ]] ; then
+      echo "Deleting the temporary directory $RefindDir"
+      rm -r "$RefindDir"
+   fi
+} # CopyRefindFiles()
+
+# Mount the partition the user specified with the --usedefault or --ownhfs option
+MountDefaultTarget() {
+   InstallDir=/tmp/refind_install
+   mkdir -p "$InstallDir"
+   UnmountEsp=1
+   if [[ $OSTYPE == darwin* ]] ; then
+      if [[ $OwnHfs == '1' ]] ; then
+         Temp=`diskutil info "$TargetPart" | grep "Mount Point"`
+         InstallDir=`echo $Temp | cut -f 3-30 -d ' ' | sed 's/\/\+/\//g'`
+         if [[ $InstallDir == '' ]] ; then
+            InstallDir=/tmp/refind_install
+            mount -t hfs "$TargetPart" "$InstallDir"
+         else
+            UnmountEsp=0
+         fi
+      else
+         mount -t msdos "$TargetPart" "$InstallDir"
+      fi
+   elif [[ $OSTYPE == linux* ]] ; then
+      mount -t vfat "$TargetPart" "$InstallDir"
+   fi
+   if [[ $? != 0 ]] ; then
+      echo "Couldn't mount $TargetPart ! Aborting!"
+      rmdir "$InstallDir"
+      exit 1
+   fi
+} # MountDefaultTarget()
+
+# Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
+# should the system's boot entry list be lost
+CreateBootCsvFile() {
+   IConv=`which iconv 2> /dev/null`
+   if [[ -x "$IConv" ]] ; then
+      if [[ "$Platform" == "x64" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetX64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+      if [[ "$Platform" == "ia32" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetIA32,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+      if [[ "$Platform" == "aarch64" && -d "$InstallDir/$TargetDir" ]] ; then
+         echo "$TargetAARCH64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
+              $IConv -t UCS-2 > "$InstallDir/$TargetDir/BOOT.CSV"
+      fi
+   fi
+   exit
+} # CreateBootCsvFile()
+
+#
+# A series of OS X support functions....
+#
+
+# Mount the ESP at /Volumes/ESP or determine its current mount
+# point.
+# Sets InstallDir to the ESP mount point
+# Sets UnmountEsp if we mounted it
+MountOSXESP() {
+   # Identify the ESP. Note: This returns the FIRST ESP found;
+   # if the system has multiple disks, this could be wrong!
+   Temp=$(mount | sed -n -E "/^(\/dev\/disk.*) on \/ \(.*$/s//\1/p")
+   if [ $Temp ]; then
+      Temp=$(diskutil list | grep " EFI " | grep -o 'disk.*' | head -n 1)
+      if [ -z $Temp ]; then
+         echo "Warning: root device doesn't have an EFI System Partition"
+      fi
+   else
+      echo "Warning: root device could not be found"
+   fi
+   if [ -z $Temp ]; then
+      Temp=$(diskutil list | sed -n -E '/^ *[0-9]+:[ ]+EFI EFI[ ]+[0-9.]+ [A-Z]+[ ]+(disk[0-9]+s[0-9]+)$/ { s//\1/p
+             q
+         }' )
+
+      if [ -z $Temp ]; then
+         echo "Could not find an EFI System Partition. Aborting!"
+         exit 1
+      fi
+   fi
+   Esp=/dev/`echo $Temp`
+   # If the ESP is mounted, use its current mount point....
+   Temp=`df -P | grep "$Esp "`
+   InstallDir=`echo $Temp | cut -f 6- -d ' ' | sed 's/\/\+/\//g'`
+   if [[ "$InstallDir" == '' ]] ; then
+      mkdir /Volumes/ESP &> /dev/null
+      mount -t msdos "$Esp" /Volumes/ESP
+      # Some systems have HFS+ "ESPs." They shouldn't, but they do. If this is
+      # detected, mount it as such and set appropriate options.
+      if [[ $? != 0 ]] ; then
+         mount -t hfs "$Esp" /Volumes/Esp
+         OwnHfs=1
+         InstallToEspOnMac=0
+         if [[ $? != 0 ]] ; then
+            echo "Unable to mount ESP! Aborting!\n"
+            exit 1
+         fi
+      fi
+      UnmountEsp=1
+      InstallDir="/Volumes/ESP"
+   fi
+} # MountOSXESP()
+
+# Set up for booting from Mac HFS+ volume that boots rEFInd in MJG's way
+# (http://mjg59.dreamwidth.org/7468.html)
+# Must be passed the original rEFInd binary filename (without a path).
+SetupMacHfs() {
+   if [[ -s "$InstallDir/mach_kernel" ]] ; then
+      echo "Attempt to install rEFInd to a partition with a /mach_kernel file! Aborting!"
+      exit 1
+   fi
+   cp -n "$InstallDir/$TargetDir/boot.efi" "$InstallDir/$TargetDir/boot.efi-backup" &> /dev/null
+   ln -f "$InstallDir/$TargetDir/$1" "$InstallDir/$TargetDir/boot.efi"
+   touch "$InstallDir/mach_kernel"
+   rm "$InstallDir/$TargetDir/SystemVersion.plist" &> /dev/null
+   cat - << ENDOFHERE >> "$InstallDir/$TargetDir/SystemVersion.plist"
+<xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+        <key>ProductBuildVersion</key>
+        <string></string>
+        <key>ProductName</key>
+        <string>rEFInd</string>
+        <key>ProductVersion</key>
+        <string>0.12.0</string>
+</dict>
+</plist>
+ENDOFHERE
+} # SetupMacHfs()
+
+CheckForSIP() {
+   if [[ -x "/usr/bin/csrutil" && -z "$TargetPart" ]] ; then
+      local OKToInstall=`/usr/bin/csrutil status | \
+                         grep "Protection status: disabled\|enabled (Apple Internal)\|NVRAM Protections: disabled"`
+      if [[ -z "$OKToInstall" ]] ; then
+         echo
+         echo "**** ALERT: SIP ENABLED! ****"
+         echo
+         if [[ "$Upgrade" == "1" ]] ; then
+            echo "You are attempting to upgrade an existing installation, but it appears that"
+            echo "System Integrity Protection (SIP) is enabled. If rEFInd is working now, then"
+            echo "this is fine; you can upgrade your existing rEFInd. If rEFInd is not working,"
+            echo "though, re-installing from this boot will not help. To re-enable rEFInd, you"
+            echo "must re-install it from a Recovery system or from another OS. To enter the"
+            echo "Recovery system and re-install rEFInd:"
+         else
+            echo "rEFInd cannot be installed because System Integrity Protection (SIP) seems"
+            echo "to be enabled! You must install rEFInd from your Recovery installation or"
+            echo "from another OS. To install from the Recovery system:"
+         fi
+         echo
+         echo "  1. Reboot"
+         echo "  2. Hold down Command+R as the chime sounds"
+         echo "  3. When the OS has booted, select Utilities->Terminal"
+         echo "  4. Change to this directory with the 'cd' command; it will probably be under"
+         if [[ "`pwd | cut -b 1-8`" == "/Volumes" ]] ; then
+            echo "     `pwd`"
+         else
+            local RootName=`diskutil info -plist / | grep -A 1 VolumeName | grep string | cut -d \> -f 2 | cut -d \< -f 1`
+            echo "     /Volumes/$RootName`pwd`"
+         fi
+         echo "  5. Re-run this script."
+         echo
+         if [[ "$Upgrade" != "1" ]] ; then
+            echo "If you believe SIP is NOT enabled, you may attempt an installation anyhow,"
+            echo "but it may fail."
+            echo
+         fi
+         echo "For more on this subject, see http://www.rodsbooks.com/refind/sip.html"
+         echo
+         echo -n "Do you want to attempt installation (Y/N)? "
+         ReadYesNo
+         if [[ $YesNo == "N" || $YesNo == "n" ]] ; then
+            echo "Exiting!"
+            exit
+         fi
+      fi # csrutil status suggests OK to install
+   fi # csrutil exists
+} # CheckForSIP()
+
+# Control the OS X installation.
+# Sets Problems=1 if problems found during the installation.
+InstallOnOSX() {
+   echo "Installing rEFInd on macOS...."
+   if [[ "$InstallToEspOnMac" == "1" && -z "$TargetPart" ]] ; then
+      MountOSXESP
+   elif [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
+      MountDefaultTarget
+   else
+      InstallDir="$RootDir/"
+      InstallDir=`echo $InstallDir  | sed 's/\/\+/\//g'`
+   fi
+   echo "Installing rEFInd to the partition mounted at $InstallDir"
+   DetermineTargetDir
+   CheckForSIP
+   CopyRefindFiles
+   mkdir -p /usr/local/bin &> /dev/null
+   cp "$ThisDir/mountesp" /usr/local/bin/ &> /dev/null
+   if [[ $InstallToEspOnMac == "1" && -z "$TargetPart" ]] ; then
+      bless --mount "$InstallDir" --setBoot --file "$InstallDir/$TargetDir/$Refind" --shortform
+   elif [[ "$TargetDir" != "/EFI/BOOT" ]] ; then
+      bless --setBoot --folder "$InstallDir/$TargetDir" --file "$InstallDir/$TargetDir/$Refind"
+   fi
+   if [[ $? != 0 ]] ; then
+      Problems=1
+   fi
+   if [[ -f /Library/StartupItems/rEFItBlesser || -d /Library/StartupItems/rEFItBlesser ]] ; then
+      echo
+      echo "/Library/StartupItems/rEFItBlesser found!"
+      echo "This program is part of rEFIt, and will cause rEFInd to fail to work after"
+      echo -n "its first boot. Do you want to remove rEFItBlesser (Y/N)? "
+      ReadYesNo
+      if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+         echo "Deleting /Library/StartupItems/rEFItBlesser..."
+         rm -r /Library/StartupItems/rEFItBlesser
+      else
+         echo "Not deleting rEFItBlesser."
+      fi
+   fi
+} # InstallOnOSX()
+
+
+#
+# Now a series of Linux support functions....
+#
+
+# Check for evidence that we're running in Secure Boot mode. If so, and if
+# appropriate options haven't been set, warn the user and offer to abort.
+# If we're NOT in Secure Boot mode but the user HAS specified the --shim
+# or --localkeys option, warn the user and offer to abort.
+CheckSecureBoot() {
+   IsSecureBoot="0"
+   if [[ -f /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c ]] ; then
+      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c | awk '{print substr($0,length,1)}'`
+   elif [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+      IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
+   fi
+   if [[ $IsSecureBoot == "1" && "$TargetDir" != '/EFI/BOOT' && "$ShimSource" == "none" ]] ; then
+      echo ""
+      echo "CAUTION: Your computer appears to be booted with Secure Boot, but you haven't"
+      echo "specified a valid shim.efi file source. Chances are you should re-run with"
+      echo "the --shim option. You can read more about this topic at"
+      echo "http://www.rodsbooks.com/refind/secureboot.html."
+      echo ""
+      echo -n "Do you want to proceed with installation (Y/N)? "
+      ReadYesNo
+      if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+         echo "OK; continuing with the installation..."
+      else
+         exit 0
+      fi
+   fi
+
+   if [[ "$ShimSource" != "none" && ! $IsSecureBoot == "1" ]] ; then
+      echo ""
+      echo "You've specified installing using a shim.efi file, but your computer does not"
+      echo "appear to be running in Secure Boot mode. Although installing in this way"
+      echo "should work, it's unnecessarily complex. You may continue, but unless you"
+      echo "plan to enable Secure Boot, you should consider stopping and omitting the"
+      echo "--shim option. You can read more about this topic at"
+      echo "http://www.rodsbooks.com/refind/secureboot.html."
+      echo ""
+      echo -n "Do you want to proceed with installation (Y/N)? "
+      ReadYesNo
+      if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+         echo "OK; continuing with the installation..."
+      else
+         exit 0
+      fi
+   fi
+
+   if [[ $LocalKeys != 0 && ! $IsSecureBoot == "1" ]] ; then
+      echo ""
+      echo "You've specified re-signing your rEFInd binaries with locally-generated keys,"
+      echo "but your computer does not appear to be running in Secure Boot mode. The"
+      echo "keys you generate will be useless unless you enable Secure Boot. You may"
+      echo "proceed with this installation, but before you do so, you may want to read"
+      echo "more about it at http://www.rodsbooks.com/refind/secureboot.html."
+      echo ""
+      echo -n "Do you want to proceed with installation (Y/N)? "
+      ReadYesNo
+      if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+         echo "OK; continuing with the installation..."
+      else
+         exit 0
+      fi
+   fi
+
+} # CheckSecureBoot()
+
+# Check for the presence of locally-generated keys from a previous installation in
+# $EtcKeysDir (/etc/refind.d/keys). If they're not present, generate them using
+# openssl.
+GenerateKeys() {
+   PrivateKey="$EtcKeysDir/$LocalKeysBase.key"
+   CertKey="$EtcKeysDir/$LocalKeysBase.crt"
+   DerKey="$EtcKeysDir/$LocalKeysBase.cer"
+   OpenSSL=`which openssl 2> /dev/null`
+
+   # Do the work only if one or more of the necessary keys is missing
+   # TODO: Technically, we don't need the DerKey; but if it's missing and openssl
+   # is also missing, this will fail. This could be improved.
+   if [[ ! -f "$PrivateKey" || ! -f "$CertKey" || ! -f "$DerKey" ]] ; then
+      echo "Generating a fresh set of local keys...."
+      mkdir -p "$EtcKeysDir"
+      chmod 0700 "$EtcKeysDir"
+      if [[ ! -x "$OpenSSL" ]] ; then
+         echo "Can't find openssl, which is required to create your private signing keys!"
+         echo "Aborting!"
+         exit 1
+      fi
+      if [[ -f "$PrivateKey" ]] ; then
+         echo "Backing up existing $PrivateKey"
+         cp -f "$PrivateKey" "$PrivateKey.backup" 2> /dev/null
+      fi
+      if [[ -f "$CertKey" ]] ; then
+         echo "Backing up existing $CertKey"
+         cp -f "$CertKey" "$CertKey.backup" 2> /dev/null
+      fi
+      if [[ -f "$DerKey" ]] ; then
+         echo "Backing up existing $DerKey"
+         cp -f "$DerKey" "$DerKey.backup" 2> /dev/null
+      fi
+      if [[ $EncryptKeys == 1 ]]; then
+         KeyEncryptionArgument=""
+      else
+         KeyEncryptionArgument="-nodes"
+      fi
+      "$OpenSSL" req -new -x509 -newkey rsa:2048 -keyout "$PrivateKey" -out "$CertKey" \
+                     $KeyEncryptionArgument -days 3650 -subj "/CN=Locally-generated rEFInd key/"
+      "$OpenSSL" x509 -in "$CertKey" -out "$DerKey" -outform DER
+      chmod 0600 "$PrivateKey"
+   else
+      echo "Using existing local keys...."
+   fi
+} # GenerateKeys()
+
+# Sign a single binary. Requires parameters:
+#   $1 = source file
+#   $2 = destination file
+# Also assumes that the SBSign and various key variables are set appropriately.
+# Aborts script on error
+SignOneBinary() {
+   ReadKeyPassphrase --no-confirm
+   if [[ "$EncryptKeys" == 1 ]] ; then
+      SbSignCommand=$(printf "%q " "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1")
+      echo "$KeyPassphrase" |
+         script -qefc "$SbSignCommand" --force /dev/null 2>&1 | ( \
+              head -n 2 >/dev/null # Skip the first two lines (incl. passphrase).
+              grep -v "data remaining.*gaps between PE/COFF sections"
+            )
+       local status="${PIPESTATUS[1]}"
+   else
+      "$SBSign" --key "$PrivateKey" --cert "$CertKey" --output "$2" "$1" 2>&1 >/dev/null | \
+                grep -v "data remaining.*gaps between PE/COFF sections"
+      local status="${PIPESTATUS[0]}"
+   fi
+   if [[ "$status" != 0 ]] ; then
+      echo "Problem signing the binary $1! Aborting!"
+      exit 1
+   fi
+} # SignOneBinary()
+
+# Re-sign the x86-64 binaries with a locally-generated key, First look for appropriate
+# key files in $EtcKeysDir. If they're present, use them to re-sign the binaries. If
+# not, try to generate new keys and store them in $EtcKeysDir.
+ReSignBinaries() {
+   SBSign=`which sbsign 2> /dev/null`
+   echo "Found sbsign at $SBSign"
+   TempDir="/tmp/refind_local"
+   if [[ ! -x "$SBSign" ]] ; then
+      echo "Can't find sbsign, which is required to sign rEFInd with your own keys!"
+      echo "Aborting!"
+      exit 1
+   fi
+   GenerateKeys
+   mkdir -p "$TempDir/drivers_$Platform"
+   cp "$RefindDir/refind.conf-sample $TempDir" 2> /dev/null
+   cp "$ThisDir/refind.conf-sample $TempDir" 2> /dev/null
+   cp "$RefindDir/refind_ia32.efi $TempDir" 2> /dev/null
+   cp -a "$RefindDir/drivers_ia32 $TempDir" 2> /dev/null
+   cp -a "$ThisDir/drivers_ia32 $TempDir" 2> /dev/null
+   SignOneBinary "$RefindDir/refind_$Platform.efi" "$TempDir/refind_$Platform.efi"
+   SaveIFS=$IFS
+   IFS=$(echo -en "\n\b")
+   for Driver in `ls "$RefindDir"/drivers_$Platform/*.efi "$ThisDir"/drivers_$Platform/*.efi 2> /dev/null` ; do
+      TempName=`basename "$Driver"`
+      SignOneBinary "$Driver" "$TempDir/drivers_$Platform/$TempName"
+   done
+   IFS=$SaveIFS
+   RefindDir="$TempDir"
+   DeleteRefindDir=1
+} # ReSignBinaries()
+
+# Locate and mount an ESP, if possible. Should be called only if /boot/efi
+# is NOT an acceptable ESP. If successful, sets:
+# * InstallDir to the mounted ESP's path ($RootDir/boot/efi)
+# * EspFilesystem to the filesystem (always "vfat")
+# Neither variable is altered if no ESP could be found
+FindLinuxESP() {
+   local Dmraid
+   local DmStatus
+   local FatPart
+   local IsItRaid
+   local ParentDisk
+   local PartNum
+   local PotentialParent
+   local Sgdisk
+   local TypeCode
+
+   echo "The ESP doesn't seem to be mounted! Trying to find it...."
+   Dmraid=`which dmraid 2> /dev/null`
+   Sgdisk=`which sgdisk 2> /dev/null`
+   if [[ ! -x "$Sgdisk" ]] ; then
+      echo "The sgdisk program (part of the gdisk package) is not installed; please"
+      echo "install it and try again."
+      exit 1
+   fi
+   # Iterate through all FAT partitions in the hopes of finding an ESP....
+   # (Note: FatPart with be set to "/dev/{whatever}".)
+   for FatPart in `blkid -t TYPE="vfat" -o device` ; do
+      # For each FAT partition, find its parent disk device, since we need
+      # the disk device and partition number as separate components to feed
+      # to efibootmgr....
+      # (Note: PotentialParent will be lacking "/dev/" prefix.)
+      for PotentialParent in `lsblk | grep disk | cut -f 1 -d " "` ; do
+         IsItRaid=0
+         # Exclude anything that looks like it's on software RAID....
+         if [[ -x "$Dmraid" ]] ; then
+            DmStatus=`dmraid -r | grep $PotentialParent`
+            if [ -n "$DmStatus" ] ; then
+               echo "/dev/$PotentialParent seems to be part of a RAID array; skipping!"
+               IsItRaid=1
+            fi
+         fi # if dmraid utility exists
+         # If FAT partition is in the $PotentialParent disk & it's NOT part
+         # of a software RAID setup, then we've found what we want; set it
+         # and break out of the loop....
+         if [[ $FatPart == *"/dev/$PotentialParent"* && $IsItRaid == 0 ]] ; then
+            ParentDisk=$PotentialParent
+            break
+         fi
+      done
+      if [[ $IsItRaid == 0 ]] ; then
+         PartNum=`grep -Eo '[0-9]{1,4}' <<< $FatPart | tail -n 1`
+         TypeCode=`$Sgdisk -i $PartNum /dev/$ParentDisk | grep "GUID code"`
+         shopt -s nocasematch
+         if [[ $TypeCode == *$EspGuid* ]] ; then
+             InstallDir="$RootDir/boot/efi"
+             InstallDir=`echo $InstallDir | sed 's/\/\+/\//g'`
+             echo "Mounting ESP ($FatPart) at $InstallDir"
+             mkdir -p $InstallDir
+             mount $FatPart $InstallDir
+             EspFilesystem="vfat"
+             shopt -u nocasematch
+             break
+         fi
+         shopt -u nocasematch
+      fi
+   done
+} # FindLinuxESP()
+
+# Identifies the ESP's location (/boot, /boot/efi, /efi, or these locations
+# under the directory specified by --root); aborts if the ESP isn't mounted at
+# any of these locations.
+# Sets InstallDir to the ESP mount point.
+FindMountedESP() {
+   mount /boot &> /dev/null
+   mount /boot/efi &> /dev/null
+   mount /efi &> /dev/null
+   EspLine=`df "$RootDir/efi" 2> /dev/null | grep efi`
+   if [[ ! -n "$EspLine" ]] ; then
+      EspLine=`df "$RootDir"/boot/efi 2> /dev/null | grep boot/efi`
+   fi
+   if [[ ! -n "$EspLine" ]] ; then
+      EspLine=`df "$RootDir"/boot 2> /dev/null | grep boot`
+   fi
+   InstallDir=`echo $EspLine | cut -d " " -f 6 | sed 's/\/\+/\//g'`
+
+   if [[ -n "$InstallDir" ]] ; then
+      EspFilesystem=`grep -w "$InstallDir" /etc/mtab | uniq | grep -v autofs | cut -d " " -f 3 | uniq`
+   fi
+   if [[ $EspFilesystem != 'vfat' ]] ; then
+      FindLinuxESP
+   fi
+   if [[ $EspFilesystem != 'vfat' ]] ; then
+      echo "$RootDir/$InstallDir doesn't seem to be on a VFAT filesystem. The ESP must be"
+      echo "mounted at $RootDir/boot, $RootDir/efi, or $RootDir/boot/efi, and it must be"
+      echo "VFAT (not msdos)! Aborting!"
+      if [[ -d /sys/firmware/efi ]] ; then
+         exit 1
+      else
+         echo "The computer appears to be running in BIOS mode and has no ESP. You should"
+         echo "create an ESP, and ideally boot in EFI mode, before installing rEFInd."
+         exit 0
+      fi
+   fi
+   echo "ESP was found at $InstallDir using $EspFilesystem"
+} # FindMountedESP
+
+# Uses efibootmgr to add an entry for rEFInd to the EFI's NVRAM, if necessary.
+# If this fails, sets Problems=1
+AddBootEntry() {
+   local PartNum
+   local InstallDisk
+   local InstallPart
+   local InstallPartGuid
+   local Name
+   local ExistingEntry
+   local KeepExistingEntry=0
+   local ExistingEntryBootNum
+   local FirstBoot
+
+   Efibootmgr=`which efibootmgr 2> /dev/null`
+   if [[ "$Efibootmgr" ]] ; then
+      InstallPart=`grep "$InstallDir " /etc/mtab | grep -v autofs | cut -d " " -f 1 | tail -n1`
+      for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do
+         if [[ $InstallPart == *"$Name"* ]] ; then
+            InstallDisk="/dev/"$Name
+            PartNum=${InstallPart#$InstallDisk}
+            PartNum=`echo "${PartNum//[!0-9]/}"`
+            break
+         fi
+      done
+      if [[ -z $InstallDisk || -z $PartNum ]] ; then
+         echo "Could not identify ESP in AddBootEntry()!"
+         Problems=1
+         return 1
+      fi
+      EntryFilename="$TargetDir/$Refind"
+      EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
+      EfiEntryFilename2=`echo ${EfiEntryFilename} | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
+      InstallPartGuid=`blkid -s PARTUUID -o value "$InstallPart"`
+      FirstBoot=`"$Efibootmgr" | grep BootOrder | cut -c 12-15`
+      ExistingEntry=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | head -n 1`
+      ExistingEntryFirstBoot=`"$Efibootmgr" -v | grep -i "$EfiEntryFilename2" | grep -i "$InstallPartGuid" | grep "Boot$FirstBoot"`
+
+      if [[ "$ExistingEntry" ]] ; then
+         ExistingEntryBootNum=`echo "$ExistingEntry" | cut -c 5-8`
+         if [[ ! -n "$ExistingEntryFirstBoot" ]] ; then
+            echo "An existing rEFInd boot entry exists, but isn't set as the default boot"
+            echo "manager. The boot order is being adjusted to make rEFInd the default boot"
+            echo "manager. If this is NOT what you want, you should use efibootmgr to"
+            echo "manually adjust your EFI's boot order."
+            "$Efibootmgr" -b $ExistingEntryBootNum -B &> /dev/null
+         else
+            KeepExistingEntry=1
+         fi
+      fi
+
+      if [[ "$KeepExistingEntry" == 0 ]] ; then
+         echo "Creating new NVRAM entry"
+         if [[ "$KeepName" == 0 ]] ; then
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+         else
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum \
+                           -u "$TargetShim $TargetX64" &> /dev/null
+         fi
+      else
+         echo "Keeping existing NVRAM entry"
+      fi
+      if [[ $? != 0 ]] ; then
+         EfibootmgrProblems=1
+         Problems=1
+      fi
+
+   else # efibootmgr not found
+      EfibootmgrProblems=1
+      Problems=1
+   fi
+
+   if [[ $EfibootmgrProblems ]] ; then
+      echo
+      echo "ALERT: There were problems running the efibootmgr program! You may need to"
+      echo "rename the $Refind binary to the default name (EFI/BOOT/bootx64.efi"
+      echo "on x86-64 systems, EFI/BOOT/bootia32.efi on x86 systems, or"
+      echo "EFI/BOOT/bootaa64.efi on ARM64 systems) to have it run!"
+      echo
+   else
+      echo "rEFInd is set as the default boot manager."
+   fi
+} # AddBootEntry()
+
+# Create a minimal/sample refind_linux.conf file in /boot.
+GenerateRefindLinuxConf() {
+   if [[ -f "$RLConfFile" ]] ; then
+      echo "Existing $RLConfFile found; not overwriting."
+   else
+      echo "Creating $RLConfFile; edit it to adjust kernel options."
+      RootFS=`df "$RootDir" | grep dev | cut -f 1 -d " "`
+      StartOfDevname=`echo "$RootFS" | cut -b 1-7`
+      if [[ "$StartOfDevname" == "/dev/sd" || "$StartOfDevName" == "/dev/hd" ]] ; then
+         # Identify root filesystem by UUID rather than by device node, if possible
+         Uuid=`blkid -o export -s UUID "$RootFS" 2> /dev/null | grep UUID=`
+         if [[ -n $Uuid ]] ; then
+            RootFS="$Uuid"
+         fi
+      fi
+      if [[ $RootDir == "/" ]] ; then
+         local FirstCmdlineOption=`cat /proc/cmdline | cut -d ' ' -f 1`
+         if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
+            DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+         else
+            DefaultOptions=`cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+         fi
+      else
+         if [[ -f "$RootDir/etc/default/grub" ]] ; then
+            # We want the default options used by the distribution, stored here....
+            source "$RootDir/etc/default/grub"
+            echo "Setting default boot options based on $RootDir/etc/default/grub"
+         fi
+         DefaultOptions="ro root=$RootFS $GRUB_CMDLINE_LINUX $GRUB_CMDLINE_LINUX_DEFAULT"
+      fi
+      echo "\"Boot with standard options\"  \"$DefaultOptions\"" > $RLConfFile
+      echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> $RLConfFile
+      echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> $RLConfFile
+   fi
+}
+
+# Controls rEFInd installation under Linux.
+# Sets Problems=1 if something goes wrong.
+InstallOnLinux() {
+   if [[ "$TargetDir" == "/System/Library/CoreServices" ]] ; then
+      echo "You may not use the --ownhfs option under Linux! Aborting!"
+      exit 1
+   fi
+   echo "Installing rEFInd on Linux...."
+   modprobe efivars &> /dev/null
+   if [[ $TargetDir == "/EFI/BOOT" ]] ; then
+      MountDefaultTarget
+   else
+      FindMountedESP
+      DetermineTargetDir
+   fi
+
+   if [[ $LocalKeys == 1 ]] ; then
+      ReSignBinaries
+   fi
+
+   CheckSecureBoot
+   CopyRefindFiles
+   if [[ "$TargetDir" != "/EFI/BOOT" && "$TargetDir" != "/EFI/Microsoft/Boot" ]] ; then
+      AddBootEntry
+      GenerateRefindLinuxConf
+   fi
+} # InstallOnLinux()
+
+#
+# The main part of the script. Sets a few environment variables,
+# performs a few startup checks, and then calls functions to
+# install under OS X or Linux, depending on the detected platform.
+#
+GetParams "$@"
+if [[ $UID != 0 ]] ; then
+   echo "Not running as root; attempting to elevate privileges via sudo...."
+   sudo "$BASH_SOURCE" "$@"
+   if [[ $? != 0 ]] ; then
+      echo "This script must be run as root (or using sudo). Exiting!"
+      exit 1
+   else
+      exit 0
+   fi
+fi
+DeterminePlatform
+CheckForFiles
+case "$OSTYPE" in
+   darwin*)
+        if [[ "$ShimSource" != "none" ]] ; then
+           echo "The --shim option is not supported on macOS! Exiting!"
+           exit 1
+        fi
+        if [[ "$LocalKeys" != 0 ]] ; then
+           echo "The --localkeys option is not supported on macOS! Exiting!"
+           exit 1
+        fi
+        InstallOnOSX $1
+        ;;
+   linux*)
+        InstallOnLinux
+        ;;
+   *)
+        echo "Running on unknown OS; aborting!"
+        if [[ "$InstallToEspOnMac" == 0 ]] ; then
+           echo "The --notesp option is not supported on Linux! Exiting!"
+           exit 1
+        fi
+esac
+CreateBootCsvFile
+
+if [[ $Problems ]] ; then
+   echo
+   echo "ALERT:"
+   echo "Installation has completed, but problems were detected. Review the output for"
+   echo "error messages and take corrective measures as necessary. You may need to"
+   echo "re-run this script or install manually before rEFInd will work."
+   echo
+else
+   echo
+   echo "Installation has completed successfully."
+   echo
+fi
+
+if [[ $UnmountEsp == '1' ]] ; then
+   echo "Unmounting install dir"
+   case "$OSTYPE" in
+   darwin*)
+      diskutil unmount $InstallDir
+      ;;
+   *)
+      umount $InstallDir
+      ;;
+   esac
+fi
+
+if [[ "$InstallDir" == /tmp/refind_install ]] ; then
+#   sleep 5
+   rmdir "$InstallDir"
+fi

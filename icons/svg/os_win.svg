@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="135"
+   height="135"
+   id="svg9607"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="os_win-01-color.svg"
+   inkscape:export-filename="/home/rodsmith/programming/refind/current/icons-build/os_win-color.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs9609">
+    <filter
+       id="filter3815"
+       inkscape:label="Drop Shadow"
+       color-interpolation-filters="sRGB">
+      <feFlood
+         id="feFlood3817"
+         flood-opacity="0.7"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite3819"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur3821"
+         stdDeviation="3"
+         result="blur" />
+      <feOffset
+         id="feOffset3823"
+         dx="3"
+         dy="3"
+         result="offset" />
+      <feComposite
+         id="feComposite3825"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4.9497475"
+     inkscape:cx="67.177703"
+     inkscape:cy="66.242938"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:grid-bbox="true"
+     inkscape:document-units="px"
+     inkscape:window-width="1143"
+     inkscape:window-height="936"
+     inkscape:window-x="354"
+     inkscape:window-y="81"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata9612">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     transform="translate(0,87)">
+    <g
+       id="g9738"
+       transform="translate(7.0761681e-7,-6.3639605)"
+       style="filter:url(#filter3815)">
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="rect9615"
+         d="m 4.7203518,-11.741735 c 12.0209472,-14.272787 44.5029732,-16.021563 56.1714892,0 l 0,43.560551 c -13.716554,-12.936189 -38.510159,-14.30236 -56.1714892,0 z"
+         style="fill:#0000ff;fill-opacity:1;stroke:#0000ff;stroke-width:1.17263913" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="rect9615-6"
+         d="m 4.6350396,-64.86804 c 12.0209444,-14.272787 44.5029724,-16.021562 56.1714884,0 l 0,43.560551 c -12.154227,-12.865477 -36.38669,-14.364515 -56.1714884,0 z"
+         style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:1.17263913" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="rect9615-6-7"
+         d="m 67.538565,-17.822259 c 12.020945,14.2727869 44.502975,16.0215625 56.171495,0 l 0,-43.56055 c -12.15423,12.865476 -36.386696,14.364514 -56.171495,0 z"
+         style="fill:#00ff00;fill-opacity:1;stroke:#00ff00;stroke-width:1.17263913" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="rect9615-6-7-5"
+         d="m 67.597521,34.686314 c 12.020945,14.272786 44.502979,16.021562 56.171499,0 l 0,-43.5605509 c -12.15423,12.8654779 -36.386701,14.3645156 -56.171499,0 z"
+         style="fill:#ffff00;fill-opacity:1;stroke:#ffff00;stroke-width:1.17263913" />
+    </g>
+  </g>
+</svg>

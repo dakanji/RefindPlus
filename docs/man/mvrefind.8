@@ -1,0 +1,99 @@
+.\" Copyright 2015-2020 Roderick W. Smith (rodsmith@rodsbooks.com)
+.\" May be distributed under the GNU Free Documentation License version 1.3 or
+any later version
+.TH "MVREFIND" "8" "0.12.0" "Roderick W. Smith" "rEFInd Manual"
+.SH "NAME"
+mvrefind \- Move a rEFInd installation from one location to another
+.SH "SYNOPSIS"
+.BI "mvrefind \fISOURCE DEST\fR"
+
+.SH "DESCRIPTION"
+
+Move a rEFInd installation from \fISOURCE\fR to \fIDEST\fR, where both
+\fISOURCE\fR and \fIDEST\fR are directories on the EFI System Partition
+(ESP), with \fISOURCE\fR containing a working rEFInd installation. This
+operation entails taking several actions:
+
+.TP 
+.B *
+Renaming the \fISOURCE\fR directory to \fIDEST\fR.
+
+.TP 
+.B *
+Renaming the rEFInd binary to a suitable value given the new destination.
+For instance, if \fIDEST\fR is EFI/BOOT on the EFI System Partition (ESP),
+the rEFInd binary should be \fIbootx64.efi\fR (or something similar but
+with a different architecture code).
+
+.TP 
+.B *
+Altering the computer's NVRAM entries to point to rEFInd at its new
+location.
+
+.TP
+.B *
+If Shim is detected, renaming operations and NVRAM entry pointers are
+adjusted appropriately.
+
+.TP
+.B *
+If the \fIDEST\fR exists, its contents are preserved.
+
+.PP
+
+Broadly speaking, \fImvrefind\fR understands three types of locations for
+both \fISOURCE\fR and \fIDEST\fR, relative to the root of the ESP:
+
+.TP
+.B *
+\fBEFI/BOOT\fR -- The \fIbootx64.efi\fR (or similar for other
+architectures) filename in this location is the "fallback filename," which
+is used by removable boot media and as a boot loader of last resort on hard
+disks. Some EFIs can't remember their normal boot entries, and on them,
+rEFInd must be installed here (or as the Windows boot loader). When this
+directory is the \fIDEST\fR and it already exists, the existing
+\fIEFI/BOOT\fR is backed up to \fIEFI/BOOT\-rEFIndBackup\fR; and if the
+\fISOURCE\fR is \fIEFI/BOOT\fR and \fIEFI/BOOT\-rEFIndBackup\fR exists, it
+is renamed to \fIEFI/BOOT\fR after rEFInd is moved to its destination.
+
+.TP
+.B *
+\fBEFI/Microsoft/boot\fR -- The \fIbootmgfw.efi\fR file in this location
+normally holds the Windows boot loader. Machines with broken EFIs may
+refuse to accept or remember proper boot entries and will instead boot this
+entry in preference to all others. In such cases, using rEFInd requires
+moving the Microsoft boot loader elsewhere and replacing it with rEFInd.
+When this directory is the \fIDEST\fR, \fImvrefind\fR moves the original
+\fIbootmgfw.efi\fR file down one level (to \fIEFI/Microsoft\fR) and stores
+\fIrefind_x64.efi\fR (or Shim) in that location. When moving from
+\fIEFI/Microsoft/boot\fR, this process is reversed.
+
+.TP
+.B *
+\fBAnything else\fR -- Any other \fISOURCE\fR or \fIDEST\fR location is
+treated as a regular rEFInd installation, with a proper NVRAM entry created
+by \fIefibootmgr\fR.
+
+.PP 
+
+\fImvrefind\fR attempts to identify the ESP and refuses to move between the
+ESP and any other partition. When it does move files, it moves the main
+rEFInd binary, the \fIrefind.conf\fR file, any identified Shim binary, and
+the \fIicons\fR, \fIicons\-backup\fR, \fIdrivers_*\fR, and \fIkeys\fR
+subdirectories. If other rEFInd files or directories are present in
+\fISOURCE\fR (such as a custom theme/icons directory), they will not be
+moved. If \fISOURCE\fR is empty after the specified files and
+subdirectories are moved, \fISOURCE\fR will be deleted.
+
+.SH "AUTHORS"
+Primary author: Roderick W. Smith (rodsmith@rodsbooks.com)
+
+.SH "SEE ALSO"
+.BR mkrlconf (8),
+.BR refind-install (8).
+
+\fIhttps://www.rodsbooks.com/refind/\fR
+
+.SH "AVAILABILITY"
+The \fBmvrefind\fR command is part of the \fIrEFInd\fR package and is
+available from Roderick W. Smith.

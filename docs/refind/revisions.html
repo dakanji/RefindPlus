@@ -1,0 +1,1031 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Revisions</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+<h1>The rEFInd Boot Manager:<br />Revisions</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Last Web page update: 2/12/2020</p>
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<p>The following summarizes changes in rEFInd's public releases:</p>
+
+<ul>
+
+<li><b>0.12.0 (3/13/2020)</b>&mdash;This release sees a couple of major new
+    features and some other more minor changes:
+
+    <ul>
+
+    <li>A new <i>EFI</i> (not rEFInd) boot order maintenance feature is now
+	available, albeit disabled by default. To enable it, uncomment the
+	<tt>showtools</tt> option in <tt>refind.conf</tt> and ensure that
+	<tt>bootorder</tt> is among the options. The new feature will then
+	appear next time rEFInd is launched. This options enables you to
+	adjust the <i>EFI's</i> boot order. Selecting an option and pressing
+	the Enter key moves it to the top of the list. Selecting it and
+	pressing the minus (<tt>-</tt>) key or Delete deletes the entry. The
+	goal is to enable changing the computer's boot order from a rEFInd
+	emergency disk after a boot coup or similar problem. This feature is
+	therefore covered in more detail <a href="bootcoup.html#refind">on
+	the page on boot coups.</a> Although this feature is disabled by
+	default, it's enabled on my USB flash drive and CD-R images.</li>
+
+    <li>A new self-installation option is available, albeit disabled by
+	default. (It's enabled on my USB flash drive and CD-R images.) To
+	enable it, uncomment the <tt>showtools</tt> option in
+	<tt>refind.conf</tt> and add the <tt>install</tt> token to the list.
+	When active, an installation icon appears on the second row,
+	enabling you to install from the booted version of rEFInd to an ESP
+	that you select: Pick the target ESP from among those listed and
+	press Enter to install rEFInd. For more details, see the <a
+	href="installing.html#from_refind">Installing rEFInd page.</a></li>
+
+    <li>Previous versions of rEFInd all passed the rEFInd filename as the
+	first option to all follow-on programs, much as the EFI shell does.
+	This caused problems with a new <a
+	href="https://systemd.io/BOOT_LOADER_SPECIFICATION/#type-2-efi-unified-kernel-images">unified
+	Linux kernel image format,</a> though. (This new format includes the
+	kernel, initrd file, and some other elements into a single file.)
+	Thus, I've switched to passing no options by default, which is the
+	same way GRUB 2 and gummiboot/systemd-boot work.</li>
+
+    <li>Fixed a bug that caused <tt>gptsync</tt> to sometimes hang on
+        launch.</li>
+
+    <li>Changed internal identification of rEFInd's volume to use a GUID
+	rather than a volume name. A GUID is more precise and less likely to
+	result in mis-identification in rEFInd's loader scanning.</li>
+
+    <li>Added FAT serial number data as pseudo-GUIDs, which may help prevent
+	mistaken mis-identification of two FAT partitions with the same name
+	as RAID elements.</li>
+
+    <li>The handling of screen resets on return from a program has been
+	tweaked. Previously, this could result in error messages being
+	erased. This should now be less likely to happen.</li>
+
+    <li>Identification of the ESP in <tt>refind-install</tt> in Linux has
+	been improved. This should make proper identification of the ESP on
+	NVMe disks more reliable. Note that this change also requires that
+	the <tt>sgdisk</tt> program (part of my <a
+	href="https://www.rodsbooks.com/gdisk/">GPT fdisk</a> package) be
+	available; but <tt>parted</tt> is no longer required. I've updated
+	the RPM and Debian package dependencies appropriately.</li>
+
+    <li>I've plugged several memory leaks. This should have no noticeable
+	performance effect, but is good programming practice. Several leaks
+	remain, though.</li>
+
+    <li>I've re-structured the source code to split the former
+	<tt>main.c</tt> across four files (<tt>main.c</tt>,
+	<tt>launch_efi.c</tt>, <tt>linux.c</tt>, and <tt>scan.c</tt>), since
+	the old <tt>main.c</tt> was getting ridiculously large. This change
+	will have no performance effects, but should help development
+	efforts.</li>
+
+    <li>I'm officially deprecating the ELILO- and XOM-specific code in
+	rEFInd. ELILO hasn't seen development on its Sourceforge page since
+	2013, and XOM was rendered obsolete by Boot Camp and seems to have
+	faded into non-existence. The deprecated code is located in rEFInd's
+	<tt>scan.c</tt> file and simply creates sub-menus that pass options
+	to these boot loaders. If anybody wants to experiment with obsolete
+	boot loaders, they can achieve the same effect with manual boot
+	stanzas; and if they don't need to pass options to these boot
+	loaders, they'll still work fine from rEFInd as "generic" boot
+	loaders. For the moment, the code remains in place, but I may remove
+	it on no further notice in the future.</li>
+
+    </ul>
+
+</li>
+
+<li><b>0.11.5 (2/12/2020)</b>&mdash;This release fixes a handful of
+    bugs and makes a few miscellaneous changes:
+    <ul>
+
+    <li>Fixed a bug that caused screen corruption when exiting the EFI
+        shell (and perhaps other programs) on some systems.</li>
+
+    <li>Implemented a workaround for buggy filesystem drivers that
+        could cause rEFInd to hang when re-scanning devices.</li>
+
+    <li>The NTFS driver is no longer built by default because it's produced
+	too many reports of hung systems. The source code is still included
+	and it can still be built, but the binary is now omitted.</li>
+
+    <li>Cleaned up excessive slashes (<tt>/</tt>) in pathname specifications
+	in <tt>refind-install</tt> script.</li>
+
+    <li>Corrected incorrect display of <tt>scanning for boot loaders</tt>
+        message under some circumstances.</li>
+
+    <li>Fine-tune the use of <tt>%v</tt> in <tt>refind_linux.conf</tt>: Do
+	<i>not</i> include the auto-detected initrd file when <tt>%v</tt> is
+	used, to give the user greater control over initrd file
+	specification. <b>Note: <i>Some users may need to adjust their
+	configuration files because of this change!</i></b></li>
+
+    <li>Updated the LodePNG library to the latest version (20200211).</li>
+
+    <li>Renamed <tt>.der</tt> certificate files to use <tt>.cer</tt>
+	extensions, for better compatibility with <tt>KeyTool.efi</tt>.</li>
+
+    <li>Minor man page formatting changes.</li>
+
+    <li>Updated documentation to remove out-of-date references that have
+        accumulated over time.</li>
+
+    </ul>
+</li>
+
+<li><b>0.11.4 (11/12/2018)</b>&mdash;This release fixes a couple of small
+    but annoying bugs introduced in version 0.11.3 and improves some
+    filesystem drivers. More specifically:
+    <ul>
+
+    <li>Samuel Liao provided bug fixes to the NTFS driver relating to
+        fragmented files and filesystems with cluster sizes of over
+	4KiB.</li>
+
+    <li>Samuel Liao also added support for zstd decompression to the
+        btrfs driver. He's also fixed a RAID1 issue and added support
+	for RAID5 and 6.</li>
+
+    <li>Version 0.11.3 introduced a bug in both <tt>refind-install</tt>
+        and <tt>mountesp</tt> that caused these scripts to fail in
+	macOS's Recovery environment. These bugs have been squashed.</li>
+
+    <li><tt>refind-install</tt> has long had a bug that caused it to
+        fail to properly identify the ESP in Linux when autofs was in
+	use. This bug has been squashed.</li>
+
+    <li>rEFInd 0.11.3 introduced a bug that caused the default of
+        booting to the last-booted OS to be lost unless it was set
+	explicitly via <tt>default_selection</tt> in <tt>refind.conf</tt>.
+	This has been fixed.</li>
+
+    <li>rEFInd would fail to compile with recent versions of EDK2
+        (obtained via <tt>git</tt>) because of an issue with
+	<tt>Refind.Pkg.dsc</tt>. This problem has been corrected.</li>
+
+    <li>I've added references to several themes in <tt>themes.html</tt>, and
+	fixed a broken link or two. Thanks especially to <a
+	href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">AliciaTransmuted,</a>
+	who's been cranking out rEFInd themes!</li>
+
+    </ul>
+</li>
+
+<li><b>0.11.3 (7/22/2018)</b>&mdash;This release implements a number of
+    minor bug fixes and some more major improvements; its two changes are:
+    <ul>
+
+    <li>The new <tt>shutdown_after_timeout</tt> token in
+	<tt>refind.conf</tt>, if set, causes rEFInd to try to shut down the
+	computer rather than launch the <tt>default_selection</tt> when the
+	<tt>timeout</tt> value is reached. Note, however, that this feature
+	relies on EFI features that are not implemented by some EFIs. If the
+	feature is not implemented, the computer will reboot or hang. This
+	option is disabled by default, which results in the same behavior as
+	in previous versions of rEFInd.</li>
+
+    <li>The new <tt>use_nvram</tt> token, if set to <tt>false</tt>,
+	<tt>off</tt>, or <tt>0</tt>, causes rEFInd to store its variables to
+	files on the hard disk (in the <tt>vars</tt> subdirectory of
+	rEFInd's home directory). When <tt>use_nvram</tt> is set to
+	<tt>true</tt> or one of its synonym, as is the default, these
+	variables are stored in NVRAM, as was always the case for previous
+	versions. This feature is intended to improve functionality on
+	computers with flaky NVRAM and to reduce wear-and-tear on the
+	computer's NVRAM, albeit at the cost of increasing the risk of
+	filesystem damage. (There's no free lunch.)</li>
+
+    <li>rEFInd now support JPEG images for banners. Note that rEFInd's JPEG
+	support does not support transparency, so although you <i>can</i>
+	use JPEGs for icons, PNGs usually work better. Also, rEFInd's JPEG
+	support is based on the <a
+	href="https://keyj.emphy.de/nanojpeg/">NanoJPEG library,</a> which
+	has some significant limitations, such as a lack of support for
+	progressive encoding. Thus, if you have problems with a particular
+	image, you may need to re-save it in a more basic form.</li>
+
+    <li>I've eliminated the <tt>Scanning for boot loaders; please wait</tt>
+        message, which has generated a lot of negative comments.</li>
+
+    <li>I've fixed a bug that caused portions of the <tt>Pausing before disk
+	scan...</tt> message to be retained when <tt>scan_delay</tt> was set
+	to a value over <tt>1</tt>.</li>
+
+    <li>The <tt>+</tt> symbol in <tt>default_selection</tt> may now be used
+	in any position in the list to refer to the previously-booted OS.
+	For instance, <tt>bzImage,+,vmlinuz</tt> now works, prioritizing any
+	<tt>bzImage</tt> files over the previous boot, but the previous boot
+	over <tt>vmlinuz</tt> files.</li>
+
+    <li>I've added icons for Void Linux, Ubuntu 17.10 (Artful Aardvark), and
+	Ubuntu 18.04 (Bionic Beaver). I've also copied the gummiboot icon to
+	<tt>os_systemd.png</tt>, since gummiboot has been renamed
+	systemd-boot.</li>
+
+    <li>I've fixed a bug that caused rEFInd to ignore the entire
+	<tt>refind.conf</tt> file if its first line was empty.</li>
+
+    </ul>
+</li>
+
+<li><b>0.11.2 (10/22/2017)</b>&mdash;This is a minor bug-fix release; its
+    two notable improvements are:
+    <ul>
+
+    <li>I've fixed a bug, introduced in version 0.11.1, that caused setting
+        volumes in manual boot stanzas to not work.</li>
+
+    <li>I've fixed a bug, present since version 0.11.0, that caused the new
+	tag-hiding feature to not work unless it was explicitly enabled in
+	<tt>refind.conf</tt>. (It should have been enabled by default.)</li>
+
+    </ul>
+</li>
+
+<li><b>0.11.1 (10/9/2017)</b>&mdash;This version is mainly a maintenance
+    release in response to Apple's release of macOS 10.13 ("High Sierra"),
+    although there are a couple of unrelated improvements. Its specific
+    changes are:
+    <ul>
+
+    <li>The new Apple Filesystem (APFS) uses subvolumes, which appear as
+	subdirectories with UUIDs as names to the EFI and EFI programs such
+	as rEFInd. This fact means that the location of Apple's boot loader
+	has changed, from rEFInd's perspective, necessitating a code
+	update. This version provides that update.</li>
+
+    <li>As a follow-on to the preceding change, I discovered that compiling
+	rEFInd with GNU-EFI resulted in a failure to properly track some
+	files on APFS volumes. I don't know if this failure reflected a bug
+	in Apple's EFI, in GNU-EFI, or in rEFInd; but I changed the way
+	rEFInd tracks boot loader files internally to work around the
+	problem. Although I've tested this version on an unusually wide
+	number of computers, it's possible that this change will introduce
+	new bugs. Thus, if you upgrade and have problems with boot loaders
+	not being detected or not launching, dropping back to version 0.11.0
+	may be worth trying. (Be sure to <a
+	href="mailto:rodsmith@rodsbooks.com">contact me</a> with a bug
+	report, too!)</li>
+
+    <li>I've modified <tt>refind-install</tt> to be smarter about modifying
+	existing NVRAM entries for rEFInd under Linux. Previously,
+	<tt>refind-install</tt> was quite aggressive about deleting and
+	re-creating these entries; however, this was causing failures on a
+	few computers. The script now checks more carefully to see if an
+	existing entry boots rEFInd and is set as the default; and if so, it
+	leaves that entry alone.</li>
+
+    <li>I fixed a bug that could cause the hidden-tag maintenance feature to
+        crash the program.</li>
+
+    <li>I fixed a bug, introduced in version 0.11.0, that caused both Apple
+	and Microsoft second-row recovery tools to go undiscovered.</li>
+
+    </ul>
+
+<li><b>0.11.0 (8/13/2017)</b>&mdash;In addition to a few bug fixes,
+    this version sees several new features, many of which are likely
+    to be important to a significant number of people....
+    <ul>
+
+    <li>CJ Vaughter has improved his touch-screen code. This should both
+	make more tablets' touch screens work and expands the support to
+	work with mice. Both input methods are disabled by default; you must
+	enable one by uncommenting the <tt>enable_touch</tt> or
+	<tt>enable_mouse</tt> options in <tt>refind.conf</tt>. (Enable only
+	<i>one</i> of these features, though; they're mutually exclusive!)
+	If you enable mouse support, the <tt>mouse_speed</tt> and
+	<tt>mouse_size</tt> options affect the mouse tracking speed and the
+	size of the mouse pointer, too. Note that not all computers support
+	mouse input, much less touch input. The former seems to be largely
+	unrelated to whether the firmware's own user interface supports
+	mice, in my testing. If you enable one of these features and your
+	computer doesn't support it, you can still use rEFInd; but you may
+	see a useless mouse pointer, and the default selection may not come
+	up in a highlighted state. Also, these features do not work on
+	32-bit systems.</li>
+
+    <li>You can now hide OSes and external tool tags from the rEFInd main
+	menu by pressing the minus key (<tt>-</tt>) or Delete key (on PC
+	keyboards; some third-party Mac keyboards label this key Del, but
+	most Apple keyboards lack this key entirely). If you accidentally
+	hide a loder, you can recover it using the new tag recovery tool,
+	which uses a recycle icon on the second row. Hiding or un-hiding
+	loaders relies on the <tt>hidden_tags</tt> option being set on the
+	<tt>showtools</tt> line; but if you hide a tag and then remove the
+	<tt>hidden_tags</tt> option, rEFInd will continue to honor the
+	hidden settings. This option is set by default, but if you've edited
+	<tt>showtools</tt> for a previous installation and upgrade rEFInd,
+	you'll need to add <tt>hidden_tags</tt> to use this new
+	feature.</li>
+
+    <li>A new <tt>refind.conf</tt> option, <tt>dont_scan_tools</tt>, works
+	much like <tt>dont_scan_files</tt>, but applies to external tools
+	(shells, MokManager binaries, etc.). You can use this option to hide
+	duplicate external tools.</li>
+
+    <li>Thanks to Pavel Penev, the <tt>refind-install</tt> script now
+	supports a new option, <tt>--encryptkeys</tt>, which causes it to
+	encrypt and password-protect its local Secure Boot public key. This
+	option is useful only in conjunction with <tt>--localkeys</tt>. This
+	feature should help prevent abuse should somebody break into your
+	computer; the intruder won't be able to sign malware with your own
+	key and insert it into your boot path. You must set and remember a
+	password if you use this feature, though.</li>
+
+    <li>The <tt>refind-install</tt> and <tt>mvrefind</tt> scripts now create
+	a file called <tt>BOOT.CSV</tt> and place it in the directory where
+	rEFInd is installed. This file is used by the <tt>fallback.efi</tt>
+	(aka <tt>fbx64.efi</tt>) program, which Fedora and some other
+	distributions are now installing, to regenerate a working boot list
+	should the NVRAM-based boot order be lost. See the page on <a
+	href="bootcoup.html">keeping rEFInd booting</a> for more on how to
+	control this functionality.</li>
+
+    <li>Disk partitions can now be identified by partition GUID values in
+	more places&mdash;namely, in <tt>dont_scan_dirs</tt> and
+	<tt>dont_scan_files</tt>. Note that the GUIDs are <i>partition</i>
+	GUIDs, which some Linux tools identify as <tt>PARTUUID</tt> values.
+	Filesystem UUIDs are different. Partition GUIDs are fundamentally
+	GPT features; they don't exist on MBR disks. rEFInd assigns one
+	"fake" partition GUID to all MBR partitions, so MBR partitions can
+	be referred to, but cannot be distinguished from one another, in
+	this way.</li>
+
+    <li>Identifying partitions by filesystem number (e.g., <tt>fs0:</tt> or
+	<tt>fs2:</tt>), which was deprecated with version 0.8.7 in 2015, is
+	now no longer supported&mdash;the relevant code has been removed.
+	You now <i>must</i> use filesystem labels, partition names, or
+	partition GUIDs instead of the unreliable filesystem numbers.</li>
+
+    <li>In the past, some error messages on Macs would never appear on the
+	display, sometimes including a prompt to press a key to continue,
+	which could make it seem as if rEFInd had hung. rEFInd now includes
+	new features that enable such messages to appear in <i>most</i> (but
+	not yet all) cases, so you're less likely to see mysterious hangs
+	that aren't quite hangs on Macs. This does not affect UEFI-based
+	PCs.</li>
+
+    <li>I've fixed a bug that caused disk badges to not be scaled along with
+        the main loader tag.</li>
+
+    <li>Apple has updated at least some EFIs in a way that broke the
+	<tt>spoof_osx_version</tt> feature. This has been fixed.</li>
+
+    <li>I've fixed a bug that caused rEFInd to ignore references to the
+	fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt>) in
+	<tt>dont_scan_files</tt> in some cases.</li>
+
+    <li>I've fixed a bug in <tt>mvrefind</tt> that caused it to not restore
+	<tt>EFI/BOOT-rEFIndBackup</tt> when moving rEFInd out of the
+	<tt>EFI/BOOT</tt> location.</li>
+
+    <li>I've fixed a bug that caused rEFInd to not properly sort a
+	Fedora/CentOS/RHEL <tt>vmlinuz-0-rescue*</tt> kernel to the bottom
+	of the kernel list.</li>
+
+    </ul>
+</li>
+
+<li><b>0.10.9 (7/30/2017)</b>&mdash;This version sees changes in some
+    graphics features and in the build process....
+    <ul>
+
+    <li>To better support HiDPI/retina displays, rEFInd now automatically
+	scales its icons and text to twice the usual size on displays wider
+	than 1920 pixels. This change does <i>not</i> affect text mode (for
+	which setting the <tt>textmode</tt> option in <tt>refind.conf</tt>
+	is still necessary. Explicitly setting either
+	<tt>small_icon_size</tt> or <tt>big_icon_size</tt> in
+	<tt>refind.conf</tt> disables this feature, so you can explicitly
+	set any icon or font size you like in the usual way.</li>
+
+    <li>rEFInd now displays its background/banner image before scanning for
+	boot loaders, and displays a notice that it's scanning for boot
+	loaders at this time. This will barely be noticeable on most
+	systems, but if you have lots of OSes or kernels, you may notice the
+	change.</li>
+
+    <li>On rare occasion, when rEFInd runs into a problem, it displays a
+	text-mode error message and prompts the user to continue, even when
+	it's operating in text mode. On Macs, this has caused what looks
+	like a hang, since this text would not be displayed, but the pause
+	for user input would still occur. rEFInd now at least displays the
+	prompt to continue, although the error text may not appear. (This
+	feature still needs more work.)</li>
+
+    <li>I've added icons for the Trusty (14.04), Xenial (16.04), and Zesty
+	(17.04) versions of Ubuntu, for those who install multiple Ubuntu
+	versions and want to distinguish them by separate icons. Sooner or
+	later I'm likely to remove these icons as their versions reach
+	end-of-life status.</li>
+
+    <li>I've updated the LodePNG library, which rEFInd uses to load PNG
+	images. This is unlikely to have any obvious effects for users.</li>
+
+    <li>I've significantly reworked the build process when using the
+	TianoCore toolkit. In brief, in addition to the <tt>tiano</tt>
+	target for <tt>make</tt>, a new <tt>edk2</tt> target exists, which
+	works with newer versions of TianoCore. Behind the scenes, the new
+	version builds rEFInd in a way that's more akin to what most
+	TianoCore projects use. See the <tt>BUILDING.txt</tt> file for
+	details. I'm also building most of my own binary packages with
+	UDK2017 rather than UDK2014, which I'd been using for the past few
+	years. (My PPA packages still use GNU-EFI.)</li>
+
+    <li>My USB flash drive and CD-R images now include the <tt>gdisk</tt>
+	and <tt>gptsync</tt> binaries, although the latter is inactive by
+	default, even on Macs.</li>
+
+    </ul>
+</li>
+
+<li><b>0.10.8 (5/21/2017)</b>&mdash;This version's changes are modest,
+    although a couple will be important to a few users....
+    <ul>
+
+    <li>I've added <tt>shimx64.efi.signed</tt> as a valid Shim filename, and
+	<tt>mmx64.efi.signed</tt> as a valid MokManager filename, to
+	<tt>refind-install</tt>, so that Ubuntu users can point to the
+	signed Shim binaries on their root (<tt>/</tt>) partition, rather
+	than a copy on their ESP.</li>
+
+    <li>I've made changes to enable compilation with GNU-EFI 3.0.5, which
+        was failing with the previous version.</li>
+
+    <li>I've added an icon for Devuan GNU+Linux (a Debian spinoff that does
+        not use <tt>systemd</tt>).</li>
+
+    <li>I've made some minor code efficiency improvements. These are
+	unlikely to have a noticeable impact on performance by
+	themselves.</li>
+
+    <li>I've enabled the use of partition unique GUID values with
+	<tt>dont_scan_volumes</tt>. This should help users keep duplicate
+	boot loaders from showing up on RAID 1 arrays.</li>
+
+    <li>I've changed "OS X" to "macOS" in assorted on-screen messages, to
+	conform with Apple's name change as of macOS 10.12 (Sierra). Note
+	that <b>this change may require updating <tt>default_selection</tt>
+	options that rely on the string <tt>OS X</tt>!</b></li>
+
+    </ul>
+</li>
+
+<li><b>0.10.7 (4/17/2017)</b>&mdash;Soon after releasing version
+    0.10.6, I discovered a potentially serious bug it introduced, and
+    so I've made this new release, with the following new features:
+    <ul>
+
+    <li>Although the memory management bug introduced with version 0.10.6
+	seems to be harmless on most systems, it caused hangs on one
+	computer (using UEFI DUET), hence my rushing out this update.</li>
+
+    <li>I've answered too many queries from people who are confused by the
+	fact that many OS X installations are identified as <tt>Boot OS X
+	from Recovery HD</tt> on the rEFInd menu. Apple puts the boot loader
+	for its regular installation on the <tt>Recovery HD</tt> volume if
+	you use LVM or encrypt your root (<tt>/</tt>) partition, so rEFInd's
+	identification is correct, but it confuses people. I've therefore
+	adjusted rEFInd to omit the <tt>from Recovery HD</tt> part of that
+	message.</li>
+
+    <li>I've updated <tt>refind-install</tt> to recognize <tt>mmx64.efi</tt>
+	(or the equivalent for other architectures) as an alternative name
+	for <tt>MokManager.efi</tt>.</li>
+    </ul>
+</li>
+
+<li><b>0.10.6 (4/16/2017)</b>&mdash;This version includes a few small
+    bug fixes and one new feature:
+    <ul>
+
+    <li>The new feature is the <tt>extra_kernel_version_strings</tt> token
+	in <tt>refind.conf</tt>. This token accepts a comma-delimited list
+	of strings that will be treated similarly to digits for purposes of
+	matching Linux initrd files to Linux kernels. See the description on
+	the <a href="configfile.html">Configuring the Boot Manager</a> page
+	for details.</li>
+
+    <li>Some distributions have renamed <tt>MokManager.efi</tt> to
+	<tt>mm<i>arch</i>.efi</tt> (where <tt><i>arch</i></tt> is an
+	architecture code, such as <tt>x64</tt>). I've adjusted rEFInd to
+	recognize MokManager under this new name. I've also added
+	<tt>fb<i>arch</i>.efi</tt> to the list of loaders that are not
+	scanned by default. This loader restores a machine's NVRAM-based EFI
+	boot manager entries from a backup file and then launches the
+	default boot loader.</li>
+
+    <li>I've squashed a bug that could cause filesystems managed by rEFInd's
+	filesystem drivers to not be mounted.</li>
+
+    <li>I've fixed a bug in <tt>mvrefind</tt> that would cause it to fail to
+	move a rEFInd installation if the target directory did not exist.
+	The script now creates the specified target, if necessary.</li>
+
+    <li>Previously, rEFInd would explicitly set the video mode when it
+	started, even when the display was already running in that mode.
+	This version no longer does so. This is a shot-in-the-dark attempt
+	to work around problems on Macs with "retina" displays, which tend
+	to boot up in suboptimal resolutions when rEFInd is used.</li>
+
+    </ul>
+</li> 
+
+<li><b>0.10.5 (3/4/2017)</b>&mdash;This version includes a number of
+    modest changes, most of which will be of interest to relatively few
+    people:
+    <ul>
+
+    <li>The touch/tablet support has been improved and so may work with
+        a few more systems.</li>
+
+    <li>The <tt>refind-install</tt> script has been updated to work better
+	with disks other than those whose names take the form
+	<tt>/dev/sd?</tt> and <tt>/dev/hd?</tt> (in Linux).</li>
+
+    <li>For the benefit of new Apple laptops that lack physical Esc and
+	function keys, additional keybindings have been added: Backspace
+	(Delete on most Mac keyboards) now works the same as Esc, and Tab
+	now works the same as F2/Insert/<tt>+</tt>.</li>
+
+    <li>The Linux initial RAM disk detection code has been expanded so that,
+	if two initial RAM disk files are found for a kernel, the one with
+	more characters after the version string that match the equivalent
+	characters in the kernel filename will be used. For instance,
+	suppose the kernel filename is <tt>vmlinuz-4.8.0-32-standard</tt>,
+	and two initial RAM disk files are
+	<tt>initrd-4.8.0-32-standard</tt> and
+	<tt>initrd-4.8.0-32-debug</tt>. The first of those files has nine
+	matching characters after the version string (<tt>-standard</tt>),
+	vs. just one matching character (<tt>-</tt>) for the second. Thus,
+	the first file will be used.</li>
+
+    <li>A second change to Linux initial RAM disk detection is that you can
+	now specify the kernel version string with the string <tt>%v</tt> in
+	the <tt>refind_linux.conf</tt> file's options field. Thus, if your
+	distribution provides two initial RAM disk files per kernel, and
+	also provides numbered kernels, you can create a
+	<tt>refind_linux.conf</tt> file that enables you to boot with either
+	(or both) of the initial RAM disk files that match a specific
+	kernel.</li>
+
+    <li>I've done some minor code optimization in the functions that search
+	for boot loaders. This had no noticeable effect on speed for me, and
+	is likely to be more than offset by the more complex initial RAM
+	disk processing noted above; but it might help a little bit on
+	systems with many boot loaders or kernels.</li>
+
+    </ul>
+</li>
+
+<li><b>0.10.4 (10/9/2016)</b>&mdash;The number of changes in this
+    version is modest, but some features are important to some people:
+
+    <ul>
+
+    <li>Thanks to code submitted by an anonymous contributor, rEFInd now
+	supports <i>some</i> touch screens. This feature relies on support
+	in the firmware itself, though, and even some tablets lack this
+	support, so this feature does not work on all tablets.</li>
+
+    <li>Martin Whitaker has contributed updates to the ext4fs driver to make
+	it compatible with filesystems created with 64-bit pointers. As a
+	practical matter, this is important because 64-bit pointers are now
+	being used by default in some distributions. In theory, this feature
+	may enable use on over-16TiB filesystems, but this is untested at
+	the moment.</li>
+
+    <li>GNU-EFI version 3.0.3 or 3.0.4 has made changes that caused rEFInd's
+	drivers to fail to compile. This version addresses those compilation
+	problems.</li>
+
+    <li>A rEFInd coding error manifested with previous versions of rEFInd
+	when compiled with GNU-EFI starting at version 3.0.3 or 3.0.4,
+	causing the main rEFInd binary to crash. This problem has been
+	fixed. To the best of my knowledge, this bug has never manifested
+	with earlier versions of GNU-EFI or Tianocore builds.</li>
+
+    <li>The <tt>refind-install</tt> script now does a better job of
+	detecting disks that have exotic names&mdash;those other than
+	<tt>/dev/sd?</tt> or <tt>/dev/hd?</tt>.</li>
+
+    </ul>
+
+</li>
+
+<li><b>0.10.3 (4/24/2016)</b>&mdash;This version features mostly modest changes and additions:
+
+  <ul>
+
+  <li>A new Linux script, <tt>refind-mkdefault</tt>, simplifies the task of resetting rEFInd as the default boot program. It's documented <a href="refind-mkdefault.html">here.</a> I've also written a new <a href="bootcoup.html">documentation page on the problem generally,</a> which covers how to handle the problem in multiple OSes.</li>
+
+  <li>I've modified the SIP/CSR rotation code so that the SIP/CSR rotation tool will appear more reliably on Apple computers.</li>
+
+  <li>The NTFS driver has been improved to reduce the chances of it hanging randomly.</li>
+
+  <li>The code that excludes shell binaries from appearing in the main boot list has been altered to reduce the odds of an incorrect exclusion from occurring.</li>
+
+  <li>rEFInd now recognizes the <tt>fwupx64.efi</tt> program as a special case: If detected, this program is presented as a second-row option rather than as a regular boot loader. (This tool is used to update firmware on some computers.)</li>
+
+  <li>BIOS/CSM/legacy-mode OSes all now include the string <tt>Legacy</tt> in their descriptions on Macs.</li>
+
+  </ul>
+
+</li>
+
+<li><b>0.10.2 (1/26/2016)</b>&mdash;Changes to this version are relatively modest and focus on bug fixes:
+
+  <ul>
+
+  <li>A bug in <tt>refind-install</tt> under OS X could cause the <tt>mountesp</tt> script to be installed as a <i>file</i> called <tt>/usr/local/bin</tt> if that directory was absent. This bug has been fixed.</li>
+
+  <li>Another OS X <tt>refind-install</tt> bug caused the <tt>--usedefault</tt> option to not work properly. This has been fixed.</li>
+
+  <li>A Linux <tt>refind-install</tt> bug caused Secure Boot detection to fail in some cases. This has also been fixed.</li>
+
+  <li>The <tt>mvrefind</tt> script could fail to move the Windows boot loader file (<tt>bootmgfw.efi</tt>) under some circumstances. Another bug in the same script caused <tt>mvrefind</tt> to register rEFInd using its default filename (<tt>rEFInd Boot Manager</tt>) rather than the name <tt>Windows Boot Manager</tt> when moving rEFInd to the Windows boot manager's location. Both of these bugs have been squashed.</li>
+
+  <li>A long-standing but obscure bug/quirk affects some EFIs, such as that in the HP ProBook 6470b: These EFIs connect useless drivers to partitions with no known filesystems, <i>before</i> rEFInd can load filesystem drivers. The result is that drivers loaded by rEFInd could not read the partitions in question. This version of rEFInd works around this problem.</li>
+
+  <li>A bug introduced in rEFInd 0.10.1 caused custom volume badge icons (read from an icon directory specified by <tt>icons_dir</tt> in <tt>refind.conf</tt>) to be ignored. I've fixed this bug.</li>
+
+  <li>Finally, a small non-bug improvement: I've added <tt>centos.crt</tt> and <tt>centos.cer</tt> public-key files for CentOS to the <tt>keys</tt> directory.</li>
+
+  </ul>
+
+</li>
+
+<li><b>0.10.1 (12/12/2015)</b>&mdash;This version of the program features one big change that will affect very few people, another big behind-the-scenes change, and a number of small changes that will affect more people:
+
+  <ul>
+
+  <li>rEFInd now compiles and runs on ARM64 (aka AARCH64 or AA64) systems. To date, I've tested it only using QEMU, so this support is <i>very</i> preliminary, almost to the point of being theoretical.</li>
+
+  <li>I've made significant changes to the <tt>Makefiles</tt> used to compile rEFInd. This should have no effect on the way rEFInd functions, or even in how most programming tasks are done; but the changes should help simplify some future changes.</li>
+
+  <li>I've made font changes: I've removed Luxi Sans Mono and changed the default font from Nimbus Mono to Liberation Mono.</li>
+
+  <li>A bug that causes rEFInd to fail to detect boot loaders on removable media when rEFInd itself was launched from the fallback filename is now history.</li>
+
+  <li>Fedora, Red Hat, and CentOS use a special recovery kernel with a name beginning <tt>vmlinuz-0-rescue</tt>. This kernel could be newer than others, which would make it the default on in a "folded" set of kernels&mdash;a highly undesirable situation. I've therefore modified rEFInd's loader-sorting algorithm to move this rescue kernel to the end of the list, no matter what its time stamp reads.</li>
+
+  <li>I've added a workaround to <tt>gptsync</tt> to fix problems that caused it to skip through its menus using the defaults without taking user input on some Macs. I've also added 53746F72-6167-11AA-AA11-00306543ECAC (Apple Core Storage, <tt>gdisk</tt> type AF05) to the list of partition types that <tt>gptsync</tt> recognizes.</li>
+
+  <li>The <tt>refind-install</tt> script can now be run as a symbolic link in Linux, which means it can be run as a normal command.</li>
+
+  <li>I've fixed bugs in <tt>refind-install</tt> and in <tt>mkrlconf</tt> that could cause them to misidentify kernel options. See <tt>NEWS.txt</tt> for details.</li>
+
+  <li>I've moved the detailed description of <tt>refind-install</tt> from <a href="installing.html">Installing rEFInd</a> to <a href="refind-install.html">a man page,</a> and I've created HTML versions of the three man pages that the project now includes.</li>
+
+  <li>I've added <tt>kernel*</tt> as a pattern for matching Linux kernels, since Gentoo Linux names its kernels by this pattern.</li>
+
+  <li>I've updated <a href="http://lodev.org/lodepng/">LodePNG,</a> which is the PNG graphics library that rEFInd uses, to version 20151024.</li>
+
+  <li>The rEFInd PPA now asks for confirmation before installing to the ESP when the package is first installed. Updates follow the instructions given on first installation. You can modify this setting by typing <tt class="userinput">dpkg-reconfigure refind</tt>.</li>
+
+  </ul>
+
+</li>
+
+<li><b>0.10.0 (11/8/2015)</b>&mdash;I've given this version an extra-large version number bump because of some highly user-visible changes, especially for Mac users. Changes include:
+
+  <ul>
+
+  <li>I've swapped out the old icons for new ones. I've replaced the old
+      icons because the OS icons were becoming a hopeless mish-mash of
+      styles and because I wanted to consolidate the icon collection to use
+      a more limited set of original sources for record-keeping purposes.
+      If you prefer the old icons, you can continue to use them. After
+      upgrading, rename <tt>icons-backup</tt> to something else (say,
+      <tt>icons-classic</tt>) and add a line to <tt>refind.conf</tt> to
+      reference the new directory, as in <tt>icons_dir
+      icons-classic</tt>.</li>
+
+  <li>A new feature, <tt>spoof_osx_version</tt>, causes rEFInd to tell a
+      Mac that it's about to launch OS X. This alters how some Macs
+      initialize hardware, which can make secondary video chipsets work on
+      some Macs. See the comments in <tt>refind.conf-sample</tt> or on the
+      <a href="using.html">Using rEFInd</a> page for details. This feature
+      has no effect on UEFI-based PCs.</li>
+
+  <li>Another new feature enables you to adjust a Mac's System Integrity
+      Protection (SIP) settings from within rEFInd. To use this feature,
+      you must adjust two lines in <tt>refind.conf</tt>: The new
+      <tt>csr_values</tt> line sets hexadecimal values through which you
+      can rotate using a new second-row tag that's activated by the new
+      <tt>scanfor</tt> line option of <tt>csr_rotate</tt>. Thus, you must
+      add or change both the <tt>scanfor</tt> and <tt>csr_values</tt>
+      lines. See the new <a href="sip.html">rEFInd and System Integrity
+      Protection</a> page for information on how to use this new feature.
+      Although this feature can work on UEFI-based PCs if they contain the
+      necessary NVRAM variable, such systems are unlikely to have this
+      variable, and it's unlikely to be useful even if it's present.</li>
+
+  <li>If the SIP NVRAM variable is set, rEFInd now displays its current
+      value in the About screen.</li>
+
+  <li>I've renamed several support scripts: <tt>install.sh</tt> to
+      <tt>refind-install</tt>, <tt>mvrefind.sh</tt> to <tt>mvrefind</tt>,
+      and <tt>mkrlconf.sh</tt> to <tt>mkrlconf</tt>. I've also added man
+      pages for <tt>mvrefind</tt> and <tt>mkrlconf</tt>.</li>
+
+  <li>Under OS X, <tt>refind-install</tt> now checks the machine's SIP
+      status and warns the user if it's active. To help with such
+      installations, the script can also now be run from a boot of the
+      Recovery HD.</li>
+
+  <li>Under Linux, <tt>refind-install</tt> and <tt>mkrlconf</tt> now use
+      <tt>/proc/cmdline</tt> as a source for the default boot options for
+      Linux kernels, rather than trying to extract them from GRUB
+      configuration files&mdash;<i>except</i> when the <tt>--root</tt>
+      option is used, in which case the script continues to use the GRUB
+      configuration files as a source of boot options. This change should
+      help rEFInd pick up exotic boot options that GRUB computes at boot
+      time, such as Btrfs subvolume options.</li>
+
+  <li>I've added a new script, called <tt>mountesp</tt>, which mounts the
+      ESP on Macs, using the same algorithm used by
+      <tt>refind-install</tt>. This should help Mac users who want to edit
+      their rEFInd configurations.</li>
+
+  <li>I've changed the default <tt>also_scan_dirs</tt> setting from
+      <tt>boot</tt> to <tt>boot,@/boot</tt>. This change helps rEFInd pick
+      up kernels from Btrfs volumes.</li>
+
+  <li>I've changed from <tt>.zip</tt> to a tarball (<tt>.tar.gz</tt>) as
+      the file format for the source code package. This change simply
+      reflects the fact that Linux is the only supported build environment
+      for rEFInd, and tarballs are more in line with that platform than are
+      <tt>.zip</tt> files. The primary binary file format remains a
+      <tt>.zip</tt> file, with Debian packages and RPMs also
+      available.</li>
+
+  <li>My 32-bit Mac Mini suffered from a bug that caused rEFInd's
+      icon-resizing code to hang in a conversion from floating-point to
+      integer values. I've therefore adjusted the icon-resizing code to
+      avoid doing floating-point computations. This change has a drawback,
+      though: It causes some images to acquire artifacts when resized,
+      particularly on 32-bit systems. If you run into such a problem, you
+      should scale your icon(s) or banner/background image so that it does
+      not need to be resized. Sorry, but between a system crash and minor
+      graphics artifacts, the graphics artifacts are the lesser of two
+      evils.</li>
+
+  </ul></li>
+
+<li><b>0.9.2 (9/19/2015)</b>&mdash;Soon after releasing 0.9.1, I started receiving bug reports about problems with it and Shim 0.8. (See <a href="https://sourceforge.net/p/refind/discussion/general/thread/2c248b11/?limit=25#1324">this thread</a> for one such report.) It turns out that the problem was not a new bug in rEFInd, but rather a change from Shim 0.7 to Shim 0.8 that made it next to useless with rEFInd. Specifically, Shim 0.8 now de-registers itself from the EFI after a follow-on program launches another one. This is done to avoid problems in a boot path in which Shim launches <tt>fallback.efi</tt>, which in turn launches <i>another</i> Shim. This creates a new problem, though: rEFInd can validate just one binary before it's "cut off" from Shim. Since rEFInd's drivers are binaries, if you use a single driver, that means that you won't be able to launch anything that requires validation via Shim. I quickly discovered a workaround, which I've implemented in this release. I consider this a "band-aid" patch, though, because it relies on a quirk of Shim's logic to bypass its de-registration. As such, the workaround in this release may break with a future Shim. A true fix will take longer to develop. I want to release this workaround version to head off further problems in the near term, though. This version also introduces a new feature, which is also Shim-related: Since version 0.7, Shim has supported launching binaries other than <tt>grubx64.efi</tt> by passing them on the command line. (Actually, Shim 0.4 supported this, but it required a broken path specification.) I've added support for this feature to <tt>install.sh</tt>: Adding the <tt>--keepname</tt> option to install.sh causes the script to preserve rEFInd's regular filename and to register the approprirate follow-on parameters to have Shim launch rEFInd by that name. This works, but is likely to be more delicate than using the default Shim follow-on name of <tt>grubx64.efi</tt>. The advantage, of course, is that rEFInd needn't "lie" about its name, which makes for less confusion in filenames. For the moment, the RPM and Debian packages I build do <i>not</i> use this new naming feature, since I can't be sure what version of Shim might be picked up. These changes do not affect users who do not use Secure Boot.</li>
+
+<li><b>0.9.1 (9/13/2015)</b>&mdash;This version has improved the Discoverable Partitions Specification (DPS) support in a number of ways that should make it more reliable when <tt>/etc/fstab</tt> omits references to the root (<tt>/</tt>) partition or when the GPT read-only or do-not-automount options are used to control these features. A stray DPS-related debugging print command has also been removed. I've improved rEFInd's ability to guess the Linux distribution by having it examine <tt>/etc/lsb-release</tt> as well as <tt>/etc/os_release</tt>, and I've added an icon for Elementary OS. Finally, I've made improvements to rEFInd's handling of case-insensitive string comparisons, which were buggy on some EFIs, particularly when rEFInd was compiled with GNU-EFI. rEFInd is still at the mercy of the EFI and support libraries, but many problem cases should now be resolved.</li>
+
+<li><b>0.9.0 (7/26/2015</b>&mdash;This version gets a bump up to 0.9.0 mainly because of a highly user-visible new feature: <i>kernel folding.</i> With kernel folding active, multiple Linux kernels in a single directory appear as just one main-menu entry, which launches the most recent kernel (by file timestamp) by default. Older kernels appear on the first one's submenu (accessed by hitting F2 or Insert). You can disable this new feature by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>. Another new feature is support for the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Spec,</a> which enables rEFInd to locate the Linux root (<tt>/</tt>) partition without a <tt>refind_linux.conf</tt> or <tt>/etc/fstab</tt> entry. I know of no distribution that automatically sets up its partitions in this way, but if and when this starts to happen, rEFInd will be ready. Other changes are relatively minor: The Debian <tt>postinst</tt> script now calls <tt>install.sh</tt> with <tt>--localkeys</tt> if <tt>sbsign</tt> and <tt>openssl</tt> are available, which helps if using the Ubuntu PPA on a system with custom Secure Boot keys; I've fixed a packaging bug that prevented IA32 versions of filesystem drivers and <tt>gptsync</tt> to not be built in the PPA; <tt>mkrlconf.sh</tt> now refuses to run under OS X; rEFInd now skips checking for BIOS-mode boot code on UEFI-based PCs, which should speed it up a little; I've fixed a bug that caused rEFInd to crash if it found an existing but empty <tt>refind_linux.conf</tt> file; I've made minor code changes to enable rEFInd to build under GCC 5.1; and I've added a new icon for Kali Linux (provided by Francesco D'Eugenio).</li>
+
+<li><b>0.8.7 (3/1/2015)</b>&mdash;This release provides bug fixes and refinements to existing features. Several changes should reduce the odds of rEFInd crashing because of assorted problems. Other changes improve Secure Boot handling, including improved Secure Boot detection in <tt>install.sh</tt>, recognition of <tt>KeyTool.efi</tt> and <tt>KeyTool-signed.efi</tt> as MOK manager utilities, and reporting of Secure Boot status for <i>x</i>86 (IA-32) systems in the rEFInd information screen. Filesystem detection is improved (again), and XFS has been added as a known filesystem. Detection of FreeBSD's BIOS-mode boot loader is improved, which should give more Mac users the right OS icon when booting FreeBSD in BIOS mode. A bug in <tt>install.sh</tt> that caused inappropriate installation to the filename <tt>bootx64.efi</tt> or <tt>bootia32.efi</tt>, and failure to update the computer's boot list, has been squashed. Finally, I'm <i><b>deprecating</b></i> the use of <tt>fs<tt class="variable">x</tt>:</tt> notation for referring to filesystems. The numbering of filesystems is simply unreliable, and better alternatives (the use of partition GUIDs, partition names, and filesystem names) have been added in previous releases. The <tt>fs<tt class="variable">x</tt>:</tt> code remains in rEFInd, and if it's working for you, you can continue to use it; but sooner or later I'll remove that code, so you're advised to change your manual boot stanzas and other options that use it before that happens.</li>
+
+<li><b>0.8.6 (2/8/2015)</b>&mdash;Most (but not all) of this release's changes focus on Windows dual-booting and Mac-specific issues. There's a new Windows 8 icon, which is now used by default as the Windows icon, although the old icon remains available and is used for Windows XP and earlier boots on Macs. If the NTFS driver is loaded, rEFInd will now exclude non-bootable NTFS volumes from the Mac boot list (this change does not affect UEFI-based PCs). A bug that caused misidentification of whole disks and NTFS volumes as being FAT has been fixed (again, this problem affected Macs, not PCs). A couple of Mac-specific <tt>install.sh</tt> bugs have been fixed, resulting in more reliable identification of the ESP and of the installation directory. Previous versions ignored a volume name of "HFS+ volume" because that name was produced by earlier versions of the rEFInd HFS+ driver for all HFS+ volumes; but the current HFS+ driver produces a real volume name, so I've removed that special case from the code. I've removed the r472 rEFIt commit, introduced in 0.8.5, because it was causing some BMP files to fail to load. Finally, the <tt>hideui</tt> token in <tt>refind.conf</tt> now accepts a value of <tt>badges</tt>, which has the effect of hiding the disk-type badges associated with OS launch icons.</li>
+
+<li><b>0.8.5 (2/1/2015)</b>&mdash;The biggest single change with this version is a new NTFS driver contributed by Samuel Liao, who also contributed the Btrfs driver. Samuel also contributed some miscellaneous driver fixes and a change to the way the keyboard is handled, which improves responsiveness on some systems. This version also improves the way <tt>install.sh</tt> works under OS X. In particular, it tweaks the <tt>bless</tt> command in a way that may eliminate startup delays and it does a better job of detecting and replacing existing rEFInd installations (on the ESP), rather than blindly writing to <tt>EFI/BOOT</tt>. Finally, this version applies <a href="https://sourceforge.net/p/refit/code/commit_browser">commits from late in rEFIt's history:</a> r467, which improves handling of BIOS/legacy boots from the second and subsequent disks on Macs; and r472, which enables handling BMP images that are not vertically flipped. These commits were not present in rEFInd from the start because the starting point for rEFInd was a Debian source package taken from a slightly earlier version.</li>
+
+<li><b>0.8.4 (12/8/2014)</b>&mdash;OS X 10.10 ("Yosemite") made changes that necessitated alterations to both rEFInd's <tt>install.sh</tt> script and rEFInd defaults. Specifically, Yosemite now uses a form of <a href="http://en.wikipedia.org/wiki/Logical_volume_management">logical volume management (LVM)</a> that makes installing rEFInd to the OS X root directory impossible, so the default location is changed to the ESP. Changes to the default for <tt>dont_scan_volumes</tt> are necessary to make the new location for the OS X boot loader show up. Another big change is in the new (but <i>experimental</i>) support for network booting, with the help of iPXE. See the <tt>BUILDING.txt</tt> file in the source package for details on how to build and install the necessary files. A new option for <tt>refind.conf</tt>, <tt>enable_and_lock_vmx</tt>, sets the VMX bit on Intel CPUs, which is necessary for booting some hypervisors, such as Hyper-V. This feature can be set on many computers' EFIs, but some, such as Macs, lack this ability. (<i>Do not</i> set this option on AMD CPUs or older Intel CPUs that lack this feature, though!) If rEFInd can't find its icons directory, it now drops back to text mode. A bug in <tt>dont_scan_files</tt> has been fixed, enabling you to specify a complete path to certain special-case boot loaders to omit them from scans. Finally, I've updated the icons for Fedora and Ubuntu and added an icon for Xubuntu.</li>
+
+<li><b>0.8.3 (7/6/2014)</b>&mdash;This version introduces a number of minor bug fixes and feature improvements. The most user-visible of these are that on Macs, rEFInd now displays a partition's label for BIOS-bootable OSes on filesystems that rEFInd can't read; and you can now pass <tt>timeout = -1</tt> in <tt>refind.conf</tt> to have rEFInd boot the default OS immediately <i>unless</i> there's a keypress when rEFInd loads, in which case that keypress is read as a shortcut key. A change that's less likely to be noticed is that the default setting for <tt>scan_all_linux_kernels</tt> is now <tt>true</tt>. Since this option had been uncommented in the sample configuration file, this change will not affect most people. I've fixed a bug that caused rEFInd to unload drivers as soon as they were loaded. This didn't affect rEFInd's drivers because they ignored the relevant EFI calls; but this was preventing some other drivers from working. I've added two new icons, one for Mythbuntu and the other for the Clover boot manager. Finally, I've removed Oracle's GPLv2 code from the core filesystem driver code, since it was incompatible with the GPLv3 used by the Btrfs driver. This change <i>shouldn't</i> affect the operation of the drivers, but there's a slim chance that it will.</li>
+
+<li><b>0.8.2 (6/8/2014)</b>&mdash;I've continued to refine the UEFI BIOS-mode boot code with this version; it now uses the BIOS-mode boot entries provided by the firmware by default, and actively scans for new entries only if the <tt>deep_uefi_legacy_scan</tt> token is present in <tt>refind.conf</tt>. This change is motivated by reports I've received of BIOS-mode boot entries multiplying on some systems; however, a deep scan is required to detect the second and subsequent disks on other computers. A second important change is that the default selection is now the last-booted item rather than the first item in the list. You can still set a fixed default via the <tt>default_selection</tt> token, and in fact if you provide a list that begins with <tt>+</tt>, the default will be the previously-booted item unless it can't be found, in which case the subsequent items in the list will be tried. Minor changes include the addition of an icon for Mageia Linux, a minor bug fix in GUID-parsing code, and an update of my personal build system from TianoCore UDK2010.SR1.UP1.P1 to UDK2014. This last item will affect anybody else who uses TianoCore to build rEFInd, since some default paths have changed, so you may need to update yourself or adjust the path in <tt>Make.tiano</tt>.</li>
+
+<li><b>0.8.1 (5/15/2014)</b>&mdash;The biggest code change in this version is that rEFInd's UEFI-style BIOS-mode boot code now works when rEFInd is built with GNU-EFI as well as when built with Tianocore. This change won't affect users of my binary builds, which have long been made with Tianocore, but if your distribution builds rEFInd with GNU-EFI, it might interest you. Some user-noticeable bug fixes include a fix to a bug that could cause rEFInd to omit boot loaders on a partition's root directory, a fix to a bug that caused <tt>.VolumeIcon.icns</tt> to take a higher-than-intended precedence on OS X boot volumes, a fix to a bug that could cause a BIOS-mode boot from the wrong device in UEFI mode, and improved centering of BIOS-mode boot descriptions on the screen. Other changes include two new optional bitmap fonts (Ubuntu Mono and Nimbus Mono), omission of messages about scanning of boot loaders when <tt>scan_delay</tt> is set to <tt>1</tt>, a change to the search order for icons (PNG files now override ICNS files), and a conversion of all the icons in the icons directory from ICNS to PNG format. Note that this last change may necessitate changing manual boot stanzas if you refer to icons in the default icon directory, depending on how you upgrade rEFInd.</li>
+
+<li><b>0.8.0 (5/4/2014)</b>&mdash;The biggest changes with this version relate to BIOS/CSM/legacy support, particularly on UEFI-based PCs. This version can now boot from the second (or later) hard disk on such computers, and is more likely to be able to cope with removable disks. On both Macs and PCs, you can also now use <tt>dont_scan_volumes</tt> to remove a legacy-boot option from the boot list, so long as it has a unique name (as shown in rEFInd's main menu when you highlight the option). This version also introduces the ability to use partition names and partition GUIDs to refer to devices (in <tt>dont_scan_volumes</tt>, displayed in the rEFInd menu, and so on). Note that partition names are stored in GPT data structures. These are different from filesystem names, which are stored in filesystem data structures. rEFInd now limits the length of the firmware identity string shown in the "About" screen, to prevent problems with the string overrunning the space available on an 800x600 display. Finally, I've fixed a memory-allocation bug that caused error message displays on some systems when re-scanning boot loaders. This bug might conceivably have caused some systems to hang when re-scanning, too.</li>
+
+<li><b>0.7.9 (4/20/2014)</b>&mdash;This version includes a number of bug fixes: <tt>install.sh</tt> no longer displays error messages if the <tt>dmraid</tt> utility isn't available; the HFS+ driver now reports a correct volume name; filesystem driver bugs that could cause lockups have been fixed; a redundant "utility" in the MOK utility's description has been removed; and an (as-yet untested) attempt to fix a continuous-rescanning problem after ejecting a disc on some computers has been implemented. In addition, rEFInd now removes redundant kernel entries on Ubuntu systems to keep the menu uncluttered and a new <tt>gdisk</tt> option has been added to the <tt>showtools</tt> item. (An EFI version of my <a href="https://www.rodsbooks.com/gdisk/"><tt>gdisk</tt></a> utility can be built with the help of the <a href="https://sourceforge.net/projects/uefigptfdisk/?source=directory">UEFI GPT fdisk</a> library.)</li>
+
+<li><b>0.7.8 (3/9/2014</b>&mdash;This version emphasizes changes to icon and banner graphics handling. Internally, rEFInd can now scale graphics, which previous versions could not do. To make use of this feature, three new <tt>refind.conf</tt> tokens now exist: <tt>big_icon_size</tt> and <tt>small_icon_size</tt> set the sizes of big (first-row OS) and small (second-row tool) icons; and <tt>banner_scale</tt> tells rEFInd to draw banners to a 1:1 scale (<tt>noscale</tt>, the default) or to scale the banner to fill the screen (<tt>fillscreen</tt>). See <a href="configfile.html#table1">Table 1 on the configuration page of this document</a> for more on these new options. I've also adjusted the post-installation script used by the RPM and Debian packages to search for existing Shim programs called <tt>shimx64.efi</tt>, not just <tt>shim.efi</tt> (as had been done before). This should help when installing a package on distributions that use the <tt>shimx64.efi</tt> filename, such as Ubuntu. Finally, I'm providing a preliminary set of Debian packaging files, which may help distribution maintainers to adopt rEFInd.</li>
+
+<li><b>0.7.7 (1/3/2014)</b>&mdash;A new configuration file token, <tt>windows_recovery_files</tt>, leads this list of changes; you can use it to specify files that boot Windows recovery tools. If you include the <tt>windows_recovery</tt> option on the <tt>showtools</tt> line, these files will then be represented by a small Windows recovery badge on the second row rather than as a full-sized OS loader, thus reducing clutter and making the purpose of this loader clearer. You can also now specify a complete path to <tt>dont_scan_files</tt> items, including a volume specifier. The <tt>use_graphics_for</tt>, <tt>also_scan_dirs</tt>, <tt>dont_scan_dirs</tt>, <tt>dont_scan_files</tt>, <tt>scan_driver_dirs</tt>, and <tt>windows_recovery_files</tt> tokens can all now accept <tt>+</tt> as their first option, which causes subsequent list items to be added to their defaults rather than replacing them. The configuration file can now be specified at program launch by passing a <tt>-c</tt> option, as in <tt>-c myconf.conf</tt>; you can use this feature to set up a manual boot stanza that launches rEFInd with modified boot options. Scans of ext2/3/4fs and ReiserFS partitions now omit partitions with filesystem UUIDs that have already been seen. This is an effort to reduce clutter from such partitions that are components of RAID 1 arrays. The <tt>install.sh</tt> script now attempts to locate and mount an unmounted ESP when run under Linux. Finally, I've fixed a bug in both <tt>install.sh</tt> and <tt>mkrlconf.sh</tt> that caused the generated <tt>refind_linux.conf</tt> file to contain a stray line break and unnecessary <tt>PARTUUID=</tt> specification on some systems.</li>
+
+<li><b>0.7.6 (12/15/2013)</b>&mdash;The biggest changes in this version relate to the <tt>default_selection</tt> setting. You can now provide multiple default selections by listing them <i>within quotes</i> and separated by commas, as in <tt>default_selection "ubuntu,fedora"</tt> which boots <tt>ubuntu</tt> if it's present and <tt>fedora</tt> if <tt>ubuntu</tt> is not present but <tt>fedora</tt> is. This should be helpful with removable disks. You can also include two times, in 24-hour format, following a <tt>default_selection</tt> specification, as in <tt>default_selection Maintenance 1:00 2:00</tt>, which boots <tt>Maintenance</tt> by default between 1:00 and 2:00. If another <tt>default_selection</tt> without a time specification preceded this line, the earlier one will still apply at other times. Another change to the main program is that you can now set <tt>screensaver -1</tt> to have rEFInd come up with its screen blanked. You'll probably want to combine this with a short <tt>timeout</tt> value to have rEFInd boot your default OS quickly unless you press a key first. Finally, I've added a new option to the <tt>install.sh</tt> script: <tt>--ownhfs <i>target_partition</i></tt>. This option is valid only under OS X. It installs rEFInd to an HFS+ volume that does <i><b>not</b></i> currently hold an OS X installation. The installation method differs from the usual rEFInd installation in that the result looks to the firmware more like an OS X installation. This makes rEFInd appear as an option in the firmware's own boot manager and it may help suspend-to-RAM operations.</li>
+
+<li><b>0.7.5 (11/10/2013)</b>&mdash;This version fixes a few bugs, the most important of which is one that caused some Macs to hang when multiple EFI drivers were present. Another squashed bug caused the screen to clear to the default gray rather than the actual background color when launching OSes in graphics mode. rEFInd no longer shows all exFAT partitions as being bootable on Macs when legacy boot options are enabled; now such partitions only show up as bootable if rEFInd spots a known boot loader installed on them. Finally, I've fixed a bug that caused <tt>install.sh</tt> to fail when installing to the ESP with recent versions of OS X.</li>
+
+<li><b>0.7.4 (8/25/2013)</b>&mdash;This version fixes problems in booting VMware's <tt>mboot64.efi</tt> boot loader and when launching boot loaders from some types of Mac drives. These fixes might improve matters for other boot loaders, too. I've also added a space to the end of the <tt>Boot <i>X</i> from <i>Y</i></tt> description, which means you can use <tt><i>Y</i></tt> in the <tt>default_selection</tt> field even if another entry contains the same <tt><i>Y</i></tt> string, but with something added. To do this, you must enclose <tt><i>Y</i></tt> in quotes and add a space to its end, as in <tt>default_selection "Bit "</tt>, which sets the first boot loader on the <tt>Bit</tt> volume as the default, even if you also have a disk called <tt>Bitten</tt>. Finally, this version adds explicit support for the new EFI version of <a href="http://www.memtest86.com/download.htm">Memtest86.</a> See the <a href="installing.html#addons">"Installing Additional Components"</a> section of the <a href="installing.html">Installing rEFInd</a> page for details on this support.</li>
+
+<li><b>0.7.3 (8/7/2013)</b>&mdash;This version fixes a bug that caused boot failures when launching BIOS-mode OSes on Macs. It also fixes a bug that caused such OSes' disk-type icons to disappear.</li>
+
+<li><b>0.7.2 (8/6/2013)</b>&mdash;This version primarily fixes a number of minor bugs: A display glitch when the second row of icons is empty; improper scanning when a volume specification was used in <tt>also_scan_dirs</tt>; improper reading of volume badges from user-specific icons directory or from <tt>.VolumeBadge.icns</tt> files. Also, This version adds protection against loading invalid files as drivers, which can crash some EFIs, adds an icon for Funtoo Linux, and adds <tt>PreLoader.efi</tt> and <tt>shim-fedora.efi</tt> to the default <tt>dont_scan_files</tt> list.</li>
+
+<li><b>0.7.1 (7/8/2013)</b>&mdash;The most important improvement to this version is a bug fix to the filesystem drivers. In version 0.7.0, drivers could hang the system (the Btrfs driver in particular generated problem reports, although the bug could theoretically affect any driver). Version 0.7.1 fixes this problem. I've also fixed a build problem with development versions of the TianoCore EDK2. In rEFInd proper, I've added a scan for <tt>EFI/Microsoft/Boot/bkpbootmgfw.efi</tt>, which is how recent versions of Ubuntu's Boot Repair utility rename the Windows boot loader. This change enables rEFInd to launch Windows even on systems that have been "repaired" by this overzealous tool. I've also fixed a bug that caused volume specifications in <tt>also_scan_dirs</tt> tokens to be ignored.</li>
+
+<li><b>0.7.0 (6/27/2013)</b>&mdash;Improvements to the filesystem drivers dominate this version. The biggest change is a new Btrfs driver, created by Samuel Liao and based in part on the GRUB 2.0 Btrfs support. The drivers also now include a read cache to improve their speed. This has only a tiny effect on most computers, but on some it can speed boot times by a few seconds, and under VirtualBox the effect is dramatic&mdash;the ext2fs driver goes from a sluggish three <i>minutes</i> to load a kernel and initrd to three <i>seconds</i>. I've also changed some critical filesystem driver pointers from 32-bit to 64-bit, which may enable some of them to work with larger filesystems, although this isn't yet tested. The main rEFInd binary sports only two changes: It can now identify Btrfs volumes as such for labelling purposes and it can now filter out invalid loaders (those for the wrong architecture or Linux kernels that lack EFI stub loader support, for instance).</li>
+
+<li><b>0.6.12 (6/18/2013)</b>&mdash;This version changes relatively little code, but it adds one feature that will simplify rEFInd installation for some users: The program can now deduce minimal Linux boot options based on an <tt>/etc/fstab</tt> file <i>if</i> that file is on the same partition as the kernel (in other words, if you do <i>not</i> use a separate <tt>/boot</tt> partition). Put another way, <tt>refind_linux.conf</tt> is no longer required for some installations, although it's still desirable. If you're already using rEFInd, this isn't likely to be important, but it can help when you're just starting out. In addition, this version adds support for the Linux Foundation's PreBootloader in the <tt>install.sh</tt> script. I've also changed the default 64-bit shell included on the CD-R and USB flash drive images to a modified version 2 shell, so as to enable use of the <tt>bcfg</tt> command to help install rEFInd (or make other changes to the firmware's boot manager configuration).</li>
+
+<li><b>0.6.11 (5/13/2013)</b>&mdash;Two new features may have a noticeable affect for many users: First, rEFInd now ignores symbolic links on filesystems that support them. I've implemented this change because I've been receiving too many reports from users who want to remove redundant or non-functional Linux boot entries caused by symbolic links created by distributions. Although this is possible by editing the <tt>dont_scan_dirs</tt> or <tt>dont_scan_files</tt> options in <tt>refind.conf</tt>, telling users how to do this has become tedious. If you <i>want</i> to use links to create multiple entries for one kernel or boot loader, use hard links instead of symbolic links. The second major user-visible change is that rEFInd now tries to guess the distribution type based on the naming of the kernel file (effective only for Fedora and RHEL) or the contents of the <tt>/etc/os-release</tt> file (effective only if the installation does <i>not</i> have a separate </tt>/boot</tt> partition or if <tt>/etc/os-release</tt> is copied to that location on the partition that holds the kernel). There are several other minor cosmetic issues that some users may notice, including icons for Lubuntu and Kubuntu and a change in the name of the "Reboot to Firmware User Interface" option to "Reboot to Computer Setup Utility." I've also fixed a bug in <tt>gptsync</tt> that could cause it to hang if the disk had too few GPT partitions. Finally, I've improved the <tt>install.sh</tt> script so that it works better from a path with directory names that include spaces.</li>
+
+<li><b>0.6.10 (5/5/2013)</b>&mdash;This version adds a number of minor improvements: The ability to create multiple screen shots under a sequence of names rather than using just one name; a new screen saver feature, activated by the <tt>screensaver</tt> token in <tt>refind.conf</tt>; and an option to reboot the computer into the firmware's setup utility on computers that support this feature. I've also added an OS for ChromeOS (<tt>os_chrome.icns</tt>), and I've updated the LodePNG library to the latest version, which might improve rendering of some PNG files.</li>
+
+<li><b>0.6.9 (4/25/2013)</b>&mdash;The most visible change to this version is to the rEFInd banner image, which now includes an icon provided by Erik Kemperman. The biggest change with this version is the inclusion of an updated version of <tt>gptsync</tt>, which is popular on Macs as a means of maintaining the <a href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR</a> that's required to boot Windows in BIOS mode on that platform. Because hybrid MBRs are ugly and dangerous, though, the rEFInd <tt>install.sh</tt> script installs the program only under OS X, and even then it must be activated by uncommending the <tt>scanfor</tt> line in <tt>refind.conf</tt> and adding <tt>gptsync</tt> to its options list. If you want to use <tt>gptsync</tt> on a PC, you can, but you'll need to copy the program file manually to the ESP's <tt>EFI/tools</tt> directory. Other changes with this version include working around a suspected firmware bug that can cause hangs when rEFInd starts on some systems and changing the timeout code so that rEFInd will launch its default OS even if the computer is started without a keyboard.</li>
+
+<li><b>0.6.8 (3/18/2013)</b>&mdash;This version fixes a few obscure bugs but adds only one minor new feature. Most notably, it fixes a problem that caused "Invalid Parameter" errors to appear when scanning for boot loaders on some systems; fixes a bug that caused icons defined in files named after boot loaders to not appear; and fixes a bug in the <tt>install.sh</tt> script that caused the script to fail on some systems. It also enables you to name a shell <tt>shell.efi</tt> in the root directory (previously only <tt>shell_<i>arch</i>.efi</tt> worked in the root directory, although <tt>shell.efi</tt> worked in the <tt>EFI/tools</tt> directory).</li>
+
+<li><b>0.6.7 (2/3/2013)</b>&mdash;This version fixes a few bugs and adds some minor features relating to Secure Boot. Bug fixes include keeping rEFInd out of its own menu when it's launched as <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>; keeping the <tt>dont_scan_volumes</tt> option out of the <tt>also_scan_dirs</tt> list; a fix for <tt>dont_scan_volumes</tt> so that it applies to the OS X boot loader; and a fix for a bug that caused PNG files in a user-specified icons directory to be ignored if an ICNS file was available in the standard icons directory. New features include support for the Linux Foundation's <tt>HashTool.efi</tt> as a MOK utility, scanning for MOK utilities on all volumes, and a more verbose error message when a Secure Boot authentication failure occurs.</li>
+
+<li><b>0.6.6 (1/26/2013)</b>&mdash;This version includes two new features and a number of minor bug fixes. The first new feature is support for changing rEFInd's font via the <tt>font</tt> token in <tt>refind.conf</tt>. You're limited to monospace fonts that are encoded as PNG files; you can't use variable-width fonts or normal font files like TrueType fonts. The fonts support only ASCII characters. See the <a href="themes.html#fonts">fonts section on the Theming rEFInd page</a> for details. I've also changed the default font to a slightly larger one that's anti-aliased. The second new feature is that rEFInd now detects when the <tt>EFI/BOOT/bootx64.efi</tt> (or <tt>EFI/BOOT/bootia32.efi</tt> on 32-bit systems) boot loader is a duplicate of another boot loader, and automatically excludes it from the OS list. This is useful on systems that boot with Windows, since Windows tends to install its boot loader twice, once using the <tt>EFI/BOOT/bootx64.efi</tt> filename. Bug fixes are described in the <tt>NEWS.txt</tt> file, and include fixes for bugs that prevented manual boot stanzas in included configuration files from being detected; that caused an <tt>ASSERT</tt> error to appear on the screen on some systems if <tt>default_selection</tt> was not set; the caused <tt>Binary is whitelisted</tt> messages to persist on the screen when loading signed EFI drivers with Secure Boot active; that caused rEFInd to ignore <tt>icon</tt> tokens in <tt>refind.conf</tt> manual boot stanzas; and that caused the <tt>install.sh</tt> script to fail to update drivers when rEFInd was installed to <tt>EFI/BOOT</tt>.</li>
+
+<li><b>0.6.5 (1/16/2013)</b>&mdash;Most of this version's changes relate to icon, graphics, and theming features. The biggest code change is in support for PNG files for banners, icons, and selection backgrounds. I've also fixed bugs that prevented large banners from being used; you can now use banners as big as the screen (or bigger, but they'll be cropped), as illustrated on the <a href="themes.html">Theming rEFInd</a> page. The text color also now automatically switches between black and white depending on the background over which it's displayed. If you don't use these features, you're likely to notice some changes in where certain elements are displayed. Most obviously, the banner appears higher on the screen than it did previously, so as to minimize the chance of overlap with text displays such as the information screen. These text displays should appear correctly even on tiny 640x480 displays (they were blank on such small displays in the past). I've added icons for <a href="https://www.haiku-os.org/">Haiku</a> and <a href="http://www.altlinux.com/">ALT Linux.</a> Finally, the only non-graphics development is the addition of a "safe mode" boot option for OS X, which you can disable by adding <tt>safemode</tt> to the <tt>hideui</tt> option in <tt>refind.conf</tt>.</li>
+
+<li><b>0.6.4 (1/8/2013)</b>&mdash;Bug fixes motivate this release; it corrects a couple of memory management bugs in 0.6.3 that cause rEFInd to hang at startup on some computers (unfortunately not on any of mine, so I missed this). I've also made a small change to the <tt>install.sh</tt> script so that it installs the ext2fs driver rather than the ext4fs driver if the script detects that a Linux kernel is on an ext2fs or ext3fs partition. This can keep rEFInd from scanning ext4fs partitions and picking up non-functional symbolic links to vmlinuz on such partitions.</li>
+
+<li><b>0.6.3 (1/6/2013)</b>&mdash;The installation script and related tools see the biggest changes in this version of the program. The <tt>install.sh</tt> script can now detect a rEFInd installation in <tt>EFI/BOOT</tt> or <tt>EFI/Microsoft/Boot</tt> and update it rather than install to the default location of <tt>EFI/refind</tt>. It will also install to one of these fallback locations if it's run in BIOS mode, thus helping users who want to get a BIOS-mode install of Linux running on an EFI-based computer. A new <tt>mvrefind.sh</tt> script can move the installation between these three locations (or more exotic locations). Outside of scripts, the <tt>dont_scan_dirs</tt> and <tt>also_scan_dirs</tt> tokens can now accept volume specifications, as in <tt>myvol:EFI/bogus</tt> to not scan (or scan) the <tt>EFI/bogus</tt> directory on the <tt>myvol</tt> volume. I've also fixed a bug that caused rEFInd to ignore default boot loaders on removable disks if rEFInd was installed using the fallback filename. I've also modified the ISO-9660 driver so that it works with ISO-9660 images written to non-optical media. This may help with getting "hybrid ISO" images written to USB flash drives to boot.</li>
+
+<li><b>0.6.2 (12/30/2012)</b>&mdash;This version's biggest changes are "behind-the-scenes" improvements. Specifically, I've completely re-worked the shim/MOK Secure Boot code, based largely on an approach used by James Bottomley in his PreLoader boot loader. This fixes some bugs, such as the inability to launch more than one EFI boot loader in Secure Boot mode. The EFI filesystem drivers can now be built with GNU-EFI, which may help distribution maintainers. I'm also providing RPM packages of rEFInd, although I recommend installing from the binary zip file. Finally, I've changed rEFInd's default text-mode setting behavior to not adjust the text mode. (Recent previous versions forced the system to use text mode 0, which cuased problems on some systems.)</li>
+
+<li><b>0.6.1 (12/21/2012)</b>&mdash;(Mayan apocalypse edition!) This version features a number of refinements and minor bug fixes. The <tt>install.sh</tt> script now includes a new <tt>--root</tt> option to enable easier installation of rEFInd to a regular OS installation from an emergency disc. The ext4fs driver now supports the <tt>meta_bg</tt> filesystem feature. I've fixed a number of obscure display resolution-setting bugs and a bug that caused the screen to clear after displaying certain error messages but before prompting you to continue. Instead of displaying a blank filesystem label as the "from" location for a boot loader, rEFInd now describes the filesystem by its type (FAT, ext4fs, etc.) and/or size. rEFInd also now uses the filesystem label as a hint about what type of icon to display for a boot loader.</li>
+
+<li><b>0.6.0 (12/16/2012)</b>&mdash;The donation of a working ext4fs driver from Stefan Agner has prompted another big jump in the rEFInd version number, since this driver will greatly simplify installation on many systems: You may be able to simply run the <tt>install.sh</tt> script to get a working rEFInd that boots your Linux kernels directly, bypassing GRUB or ELILO. Other improvements in this version include bug fixes and minor changes to <tt>install.sh</tt>, the addition of hint text to the rEFInd main menu, the ability to disable the options editor via the <tt>editor</tt> option to <tt>hideui</tt> in <tt>refind.conf</tt>, a new <tt>textmode</tt> option to <tt>refind.conf</tt> to set the size of the text-mode display, a change to the code that adds your initial RAM disk to the boot options so that if you specify one manually (via <tt>refind_linux.conf</tt>), it will take precedence, and assorted obscure bug fixes. The <tt>NEWS.txt</tt> file goes into more details about many of these changes, as do the relevant pages of this HTML documentation.</li>
+
+<li><b>0.5.1.1 (12/12/2012)</b>&mdash;This is a micro-update to fix a bug in the <tt>install.sh</tt> script that prevented it from working under OS X. Aside from that, and a few small documentation changes, this version changes nothing in rEFInd.</li>
+
+<li><b>0.5.1 (12/11/2012)</b>&mdash;The most important changes to this version are to the <tt>install.sh</tt> script. It now supports two options, <tt>--shim</tt> and <tt>--localkeys</tt>, to aid in installation on a Secure Boot system. See the <a href="installing.html">Installing rEFInd</a> and <a href="secureboot.html">Managing Secure Boot</a> pages for details. The script also now creates a sample <tt>/boot/refind_linux.conf</tt> file to assist in setting up boots via the Linux EFI stub loader. All of these <tt>install.sh</tt> improvements work only in Linux. A separate <tt>mkrlconf.sh</tt> script creates a <tt>/boot/refind_linux.conf</tt> file if it doesn't exist, for help in post-installation configuration. In rEFInd itself, I've fixed the bug that caused ELILO to be unable to locate its configuration file when launched in Secure Boot mode and fixed a couple of more obscure bugs. I've also added an <tt>include</tt> token to <tt>refind.conf</tt>, to enable you to create a secondary configuration file (say, one managed by scripts while leaving the main file untouched; or one dedicated to manual boot stanzas).</li>
+
+<li><b>0.5.0 (12/6/2012)</b>&mdash;I've focused on adding support for Matthew J. Garrett's shim program to this version of rEFInd; with this support, rEFInd is capable of launching Linux kernels and other programs signed with a suitable key while the computer is in Secure Boot mode. This initial release, however, requires significant manual configuration and has some known bugs and limitations. See the <a href="secureboot.html">Managing Secure Boot</a> page for details. Beyond this major new feature, this version includes several more minor improvements. These include a change to the <tt>resolution</tt> token so that it applies to text mode as well as to graphics mode; a bug fix that caused the line editor to blank out lines that were left unedited; a new <tt>dont_scan_files</tt> option to blacklist boot programs by filename; support for launching MokManager and Apple's Recovery HD partitions via tools (2nd-row) icons; new <tt>--usedefault</tt> and <tt>--drivers</tt> options to the <tt>install.sh</tt> script; a change of the <tt>esp</tt> installation script option to <tt>--esp</tt>; and the ability to use quote marks inside option strings by doubling them up.</li>
+
+<li><b>0.4.7 (11/6/2012)</b>&mdash;The most important new feature in this version is a boot options editor. From rEFInd's main menu, press Insert or F2 to see the options menu. Select one of the options and press Insert or F2 again and the screen switches to a text-mode display in which you can edit the options that will be passed to the boot loader. A second new feature is a new icon for <a href="http://freedesktop.org/wiki/Software/gummiboot">gummiboot,</a> which is another EFI boot manager. This version also alters the behavior of the <tt>scan_delay</tt> option, since I've been told that the previous version didn't work; the new one does. Finally, this version omits the space that followed boot options when booting most OSes. This behavior was inherited from rEFIt; a comment in the source code indicates it's needed by OS X, but I've been told it causes boot failures when launching Linux on some Macs. Thus, rEFInd now adds this space only when booting Mac OS X.</li>
+
+<li><b>0.4.6 (10/6/2012)</b>&mdash;Thanks to contributor John Bressler, rEFInd can now boot legacy (BIOS) boot loaders on many UEFI PCs. (Previously, rEFInd could do this only on Macs.) Other changes include a new <tt>scan_delay</tt> option that inserts a delay between rEFInd starting and disk scans (to help detect disks that are slow to appear to the firmware) and a change in the default <tt>scanfor</tt> value so that legacy OSes are detected by default on Macs (but not on PCs). I've also fixed some memory management problems that caused error messages to appear on some systems when rEFInd was compiled with the TianoCore EDK2 toolkit. Finally, I'm now using the TianoCore toolkit to make my primary binary builds, since the new UEFI legacy boot support requires the TianoCore environment. (rEFInd still builds with GNU-EFI, but it doesn't support booting legacy OSes on UEFI systems when built in this way.)</li>
+
+<li><b>0.4.5 (8/12/2012)</b>&mdash;This version fixes a couple of Mac-related bugs. The most important is that version 0.4.3 and 0.4.4 couldn't boot BIOS-based (aka CSM or Boot Camp) OS installations; 0.4.5 restores this important feature. The second bug is in the <tt>install.sh</tt> script, which would often fail to detect rEFItBlesser, thus leaving it enabled and causing rEFInd to fail to start after the first reboot into OS X.</li>
+
+<li><b>0.4.4 (6/23/2012)</b>&mdash;This is a bug-fix release. Most importantly, it fixes a bug in the new <tt>use_graphics_for</tt> feature; in 0.4.3, the options were set incorrectly (they just happened to work as expected on my main test configuration). I've also fixed problems with volume names in the 32-bit versions of both the drivers and the TianoCore EDK2 build of rEFInd itself. Finally, I've tweaked the <tt>install.sh</tt> script to do a better job of identifying the computer's ESP under OS X.</li>
+
+<li><b>0.4.3 (6/21/2012)</b>&mdash;The major user-visible change to this version is the addition of the <tt>use_graphics_for</tt> option, which enables you to specify the OSes that rEFInd launches in graphics mode vs. text mode. This effect is tiny on most systems, but can be important on some, as noted on the <a href="configfile.html">"Configuring the Boot Manager"</a> page. There's also a change to the way graphics-mode boots are handled, to make for a slightly smoother visual transition. This version also fixes the incompatibility between the drivers and the firmware used by Macs (and probably other EFI 1.x systems). I've removed <tt>linux.conf</tt> as a valid alternative name for the <tt>refind_linux.conf</tt> file, so if you're still using the old name, now is the time to rename it! The biggest change is behind the scenes, though: I've added support for compiling rEFInd using the TianoCore EDK2, as well as the GNU-EFI toolkit that I've used up to this point. I have no intention of removing GNU-EFI support, but there's a chance that the TianoCore toolkit will help in implementing some future features or in debugging some problems. You can download either version from the <a href="https://www.rodsbooks.com/refind/getting.html">downloads page.</a></li>
+
+<li><b>0.4.2 (6/3/2012)</b>&mdash;I've added a new <tt>dont_scan_dirs</tt> option to the configuration file, enabling creation of a directory-scanning "blacklist." See the <a href="configfile.html">"Configuring the Boot Manager"</a> page for details. This version also makes a couple of changes to the <tt>install.sh</tt> script. The first is a reminder for Mac users to update <tt>refind.conf</tt> if they need to boot BIOS-based OSes. The second change makes the script a bit smarter about updating NVRAM settings when run from Linux; it now attempts to make itself the default boot loader if an entry for rEFInd already exists but isn't the default. I've made this change in response to problem reports from users; apparently some distributions' GRUB update scripts make GRUB the default boot loader under all circumstances, which causes rEFInd to be taken out of the picture after a GRUB update. The previous <tt>install.sh</tt> code wouldn't add rEFInd back to the "top spot" after this happened, but the new code should do the trick. (Although re-installing rEFInd is overkill in this case, it's something many users would logically try.)</li>
+
+<li><b>0.4.1 (5/25/2012)</b>&mdash;This version provides a number of small bug fixes and improvements: When re-scanning (initiated by pressing Esc in the main menu), a message that re-scanning is occurring appears on the screen; I've fixed a bug that could cause rEFInd to appear as an option in its own menu after running a shell program and re-scanning; the <tt>install.sh</tt> script now checks for, and optionally deletes, the rEFItBlesser program when run under OS X; and the HFS+ driver now returns a volume label of <tt>HFS+ volume</tt>, rather than nothing at all (unlike other drivers, the HFS+ driver can't yet return the volume's true label).</li>
+
+<li><b>0.4.0 (5/20/2012)</b>&mdash;I've bumped up this version number more than usual to reflect the addition of four filesystem drivers (for ext2fs, ReiserFS, HFS+, and ISO-9660) to the rEFInd package. These drivers originate with the original rEFIt, VirtualBox, and Clover boot loader projects. You can learn more on the <a href="drivers.html">drivers page.</a> To facilitate inclusion of drivers on the CD image, rEFInd also now supports reading drivers from architecture-specific subdirectories&mdash;<tt>drivers_x64</tt> and <tt>drivers_ia32</tt> for <i>x</i>86-64 and <i>x</i>86 systems, respectively. This version also adds the ability to eject removable media on some Macs (this won't work on UEFI-based PCs, unfortunately). Finally, this version fixes a problem that could cause GRUB 2 to be unable to read its configuration file in some settings when launched from rEFInd.</li>
+
+<li><b>0.3.5 (5/15/2012)</b>&mdash;This version's biggest new feature is the ability to re-scan for boot loaders after launching the program. This is done by pressing the Esc key, which causes rEFInd to re-read its configuration file, to tell the EFI to reconnect all disks, and to do a fresh scan of all disks for loaders. This is useful if you insert a removable disk after starting the computer, if rEFInd starts before a disk has fully settled, if you make a change to the configuration file, or if you manually load a driver. This version also fixes a minor bug that could cause the scroll-right arrow to be replaced with a left-pointing arrow under some circumstances; and I've removed the scan for a BIOS Boot Partition that I added in 0.3.2, since I'm told it isn't launching correctly. (BIOS-mode GRUB 2 can still be launched on Macs from its boot code in the MBR.)</li>
+
+<li><b>0.3.4 (5/9/2012)</b>&mdash;The biggest change to this version is the addition of the <tt>icons_dir</tt> configuration file token, which enables you to specify a directory that holds icons that override those in the default <tt>icons</tt> subdirectory. See the <a href="themes.html">Theming rEFInd</a> and <a href="configfile.html">Configuring the Boot Manager</a> pages for details. This version also reduces flicker when moving your selection around the screen and modifies the <tt>install.sh</tt> script so that it can be used directly after building rEFInd from source code. Related to this, building from source now creates a binary that includes an architecture code&mdash;<tt>refind_ia32.efi</tt> or <tt>refind_x64.efi</tt> rather than <tt>refind.efi</tt>.</li>
+
+<li><b>0.3.3 (5/6/2012)</b>&mdash;I've focused on user interface improvements for this release. The biggest improvement is in the text-mode interface, which suffered from assorted display glitches in previous releases. These have now been fixed, so the text-mode interface should be more usable. I've also fine-tuned the use of keyboard keys, particularly in graphical mode. The up and down arrow keys now move between the two rows of the display, and Page Up and Page Down scroll the first row if it's too big for the display. (They'll also move between rows, but only when at the end of the first row or the start of the second.) Returning from a failed loader or a tool or built-in function now renders that tag as the currently-selected item, rather than setting the default loader as active, as happened with previous versions.</li>
+
+<li><b>0.3.2 (5/4/2012)</b>&mdash;rEFInd's core functionality changes very little with this version; I've tweaked the detection of BIOS-mode boot loaders to keep unbootable FAT partitions created under Linux and Windows out of the boot list, while adding detection of GRUB BIOS Boot Partitions to the list. I've also made a change that improves screen-clearing when launching EFI utilities and OSes in text mode. The major change to this version is the addition of a new Linux/OS X installation script, <tt>install.sh</tt>. In most cases, this makes it possible to install rEFInd simply by typing <tt class="userinput">./install.sh</tt> from the rEFInd package directory; however, you should see the <a href="installing.html">Installing rEFInd</a> page for details. In some cases, manual installation may still be required. Also, you may prefer to copy over the old rEFInd program file with the new one when upgrading.</li>
+
+<li><b>0.3.1 (4/27/2012)</b>&mdash;You'll find a few minor enhancements and bug fixes in this version, none of which affect the configuration files. rEFInd now sorts its boot loader entries <i>within each directory</i> by date, with the newest items first. The intent is that you can specify a directory name as the <tt>default_selection</tt> and the most recent boot loader in that directory will become the default. This may obviate the need to adjust the default after adding a new Linux kernel with EFI stub loader support. I've also improved the handling of <tt>.icns</tt> files for Linux kernels that lack <tt>.efi</tt> extensions; loader-specific icons for these kernels should now take the name of the kernel plus <tt>.icns</tt>&mdash;for instance, <tt>vmlinuz-0.3.2.icns</tt> for <tt>vmlinuz-0.3.2</tt>. rEFInd also now hides all <tt>.icns</tt> files from the boot loader list. Finally, this version fixes a bug, introduced in version 0.3.0, that could cause spurious <tt>Unsupported while scanning the root directory</tt> errors under some conditions on Macs.</li>
+
+<li><b>0.3.0 (4/22/2012)</b>&mdash;This version marks the official transition from alpha to beta status for rEFInd. This isn't because of any important objective milestone being passed; it's just that rEFInd has been used by many people who have reported no show-stopping bugs, so I'm now confident that rEFInd is stable enough for general use. That's not to say it's perfect; it still has numerous <a href="todo.html">known bugs and limitations.</a> That's why it's still beta. To get down to specifics, this version adds two new configuration file tokens: <tt>resolution</tt>, which sets the screen resolution; and <tt>scan_all_linux_kernels</tt>, which adds Linux kernel files to the boot loader list even if they lack <tt>.efi</tt> filename extensions. See the <a href="configfile.html">Configuring the Boot Manager</a> page for details on these new options. I've also fixed some bugs: One that sometimes caused Macs to crash when returning from the EFI shell or other programs; another that caused rEFInd to fail to scan filesystems if the filesystem driver didn't return a volume name; and a third that caused rEFInd to fail to detect boot loaders depending on the case of the filename on some EFIs (this is really a workaround for an EFI implementation bug). The first of these is a <i>very</i> tentative fix and it could have negative effects on some systems (non-Mac EFI 1.x systems or Macs that weren't affected by the bug in other recent releases), so be sure to <a href="mailto:rodsmith@rodsbooks.com">contact me</a> if rEFInd crashes or otherwise misbehaves after you use an EFI shell.</li>
+
+<li><b>0.2.7 (4/19/2012)</b>&mdash;I've added two new tokens to the <tt>refind.conf</tt> file, with associated new functionality. The new <tt>scan_driver_dirs</tt> option tells rEFInd where to scan for EFI drivers, in addition to the default of the <tt>drivers</tt> subdirectory of the rEFInd installation directory. For more on EFI drivers, see <a href="drivers.html">Using EFI Drivers.</a> Note that previous versions of rEFInd couldn't load drivers at all, although they could make use of hardware and filesystems activated by drivers loaded before rEFInd launched. The second new token is <tt>also_scan_dirs</tt>, which adds arbitrary directories to the list that rEFInd scans for boot loaders. (Without this option, rEFInd scans each volume's boot directory and every subdirectory of the <tt>/EFI</tt> directory, with the exception of <tt>/EFI/tools</tt> and rEFInd's own directory.) This version also fixes a minor bug that caused rEFInd to sometimes include itself in the list of OS options. Finally, if you build rEFInd yourself, you should be aware that it now requires a newer version of the GNU-EFI library than it required in the past. See the <tt>BUILDING.txt</tt> file, included in the source code package, for details.</li>
+
+<li><b>0.2.6 (4/14/2012)</b>&mdash;This version provides one bug fix and one new feature. The bug was introduced in version 0.2.5 and prevents rEFInd from identifying a Linux initial RAM disk file on some (but not all) EFI implementations. The new feature is the <tt>volume</tt> stanza token, which enables you to manually load a boot program from a filesystem other than the one from which rEFInd launched. You can specify a volume either by its label (as in <tt>volume KERNELS</tt> to load from the volume with a filesystem name <tt>KERNELS</tt>) or by number followed by a colon (as in <tt>volume 0:</tt> for the first filesystem or <tt>volume 1:</tt> for the second). See the <a href="configfile.html">Configuring the Boot Manager</a> page for more on this new feature.</li>
+
+<li><b>0.2.5 (4/9/2012)</b>&mdash;Icon-handling improvements are key in this version. I've fixed a bug that caused icons to be replaced with ugly "not-found" default icons when rEFInd was launched in certain ways. I've also added support for <tt>.VolumeIcon.icns</tt> and <tt>.VolumeBadge.icns</tt> files to set loader tags and disk-type badges, respectively. (See the <a href="configfile.html">configuration page</a> for details.) I've also fixed a bug that prevented rEFInd from finding the correct initial RAM disk for Linux kernels stored in the root directory of a partition.</li>
+
+<li><b>0.2.4 (4/5/2012)</b>&mdash;This version adds support for a new location for EFI shells (<tt>shell<tt class="variable">arch</tt>.efi</tt> in the ESP's root directory. It also adds two new <tt>refind.conf</tt> options: <tt>showtools</tt> and <tt>max_tags</tt>, and removes another one (<tt>disable</tt>). The options available in <tt>hideui</tt> are now essentially a combination of what <tt>disable</tt> and <tt>hideui</tt> did, minus functionality now present in <tt>showtools</tt>. I made these changes to reduce redundancy and to increase flexibility. See the <a href="configfile.html">Configuring the Boot Manager</a> page for details.</li>
+
+<li><b>0.2.3 (3/26/2012)</b>&mdash;I've changed the Linux kernel configuration filename from <tt>linux.conf</tt> to <tt>refind_linux.conf</tt> with this version, to avoid a name collision with a planned future Linux kernel ability to read its options from a file called <tt>linux.conf</tt>. This version also includes a tentative bug fix for a problem that caused rEFInd to hang upon launching the second program (say, a boot loader after using a shell) on some systems; but on some computers, this fix causes an (apparently harmless) error message about "(re)opening our installation volume" upon returning from the first program. I've also added a logo for Arch Linux.</li>
+
+<li><b>0.2.2 (3/23/2012)</b>&mdash;This version fixes three bugs: One caused submenus to not appear on systems with screens of 800x600 or smaller; another caused rEFInd to hang when boot loader names were too long; and the third caused the program to fail when Linux kernels and their initial RAM disk files lacked version numbers.</li>
+
+<li><b>0.2.1 (3/19/2012)</b>&mdash;This version adds the ability to auto-scan Linux kernels with EFI stub loader support, provided a suitable <tt>linux.conf</tt> file exists in the kernel's directory. It also adds support for manual specification of submenus in <tt>refind.conf</tt>.</li>
+
+<li><b>0.2.0 (3/14/2012)</b>&mdash;This is the program's initial public release. It's based on rEFIt 0.14 plus a large number of patches taken from Debian's Linux-compilable rEFIt package. I then added UEFI-specific fixes, support for OS definition stanzas in the configuration file, a scrolling icon list on the main menu, and other minor improvements. This release has quite a few <a href="todo.html">known bugs and limitations.</a></li>
+
+</ul>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="todo.html">Learn about problems with and the future of rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

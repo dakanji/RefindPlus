@@ -1,0 +1,22 @@
+#
+# EfiLib/Make.tiano
+# Build control file for EfiLib components of rEFInd, using TianoCore EDK2
+#
+
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+include ../Make.common
+
+SOURCE_NAMES     = legacy BmLib BdsConnect DevicePath BdsHelper BdsTianoCore
+OBJS             = $(SOURCE_NAMES:=.obj)
+
+all: $(AR_TARGET)
+
+$(AR_TARGET): $(OBJS)
+	$(AR) -cr $(AR_TARGET).lib $(OBJS)
+
+clean:
+	rm -f $(OBJS) *~ *.lib

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Using EFI Drivers</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />Using EFI Drivers</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 4/19/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul>
+
+<li class="tight"><a href="#why">Why Should You Use Drivers?</li>
+
+<li class="tight"><a href="#installing">Installing rEFInd's EFI Drivers</a></li>
+
+<li class="tight"><a href="#selecting">Selecting an EFI Driver</a></li>
+
+<li class="tight"><a href="#finding">Finding Additional Drivers</a></li>
+
+<li class="tight"><a href="#notes">Notes on Specific Drivers</a></li>
+
+</ul>
+
+</div>
+
+<p>Although EFI implementations should be able to load drivers prior to rEFInd's launch, in my experience, most EFI implementations offer such poor control over EFI driver loading that they can't be counted on to do this. Thus, if you want to use EFI drivers, rEFInd's ability to do so can be useful. This page tells you why you might want to use drivers, how you can install and use rEFInd's own drivers, where you can go to find other drivers, and provides tips on a few specific drivers.</p>
+
+<br/>
+<a name="why">
+<h2>Why Should You Use EFI Drivers?</h2>
+</a>
+
+<p>EFI supports drivers, which can activate hardware or filesystems in the pre-boot environment. At the moment, EFI drivers are few and far between; but you can or might want to use them for various reasons:</p>
+
+<ul>
+
+<li>You can load a filesystem driver to gain access to files on a filesystem other than FAT (or HFS+ on Macs or ISO-9660 on some systems). This is most likely to be useful on a Linux installation, since a filesystem driver can enable you to store a Linux kernel with EFI stub loader or for use by ELILO on a Linux-native filesystem if your EFI System Partition (ESP) is getting crowded.</li>
+
+<li>You can load a driver for a plug-in disk controller to give the EFI access to its disks. Note that this is <i>not</i> required if you place your boot loader (and perhaps your OS kernel) on another disk, or if the plug-in disk controller includes EFI-capable firmware. It could be handy, perhaps in conjunction with a filesystem driver, to enable the EFI to read a boot loader or kernel from a disk on a plug-in controller, though. I've received one report of the NVMe driver from <a href="https://sourceforge.net/projects/cloverefiboot/">Clover</a> being useful to boot from an aftermarket NVMe disk on a Mac, for instance.</li>
+
+<li>You can load a driver for a plug-in network card to enable the computer to boot from the network, or to access the network without booting an OS.</li>
+
+<li>You can load a video card driver to set an appropriate video mode or to support a plug-in card that lacks EFI support in ts own firmware.</li>
+
+<li>You can load a mouse or touchscreen driver to enable the mouse or touchscreen to work even if your firmware lacks this support. (Note that you must also explicitly activate rEFInd's mouse or touch support in <tt>refind.conf</tt> for the driver to be useful.) Note that I've not tested this myself or heard of it working, but in theory it should work, provided you find a compatible driver.</li>
+
+</ul>
+
+<p>Note that most of these uses are theoretical, at least to me; I don't know of any specific examples of EFI drivers (available as separate files) for most hardware, although <a href="https://sourceforge.net/projects/cloverefiboot/">the Clover boot loader project</a> provides a few such drivers. I haven't tested these, though. Hardware drivers are often embedded in the firmware of the devices themselves, and should be loaded automatically by the EFI. Chances are good that a few such drivers are available, unknown to me, and more may become available in the future. If you happen to have a device and need support for it under EFI, searching for drivers is certainly worth doing.</p>
+
+<p>To the best of my knowledge, the best reason to want EFI driver support in rEFInd is to provide access to filesystems. Although EFI filesystem driver choices are currently somewhat limited, those that are available can help to improve your installation and configuration options, particularly if you've found yourself "boxed in" by awkward installation or bugs, such as the dinky ESP that Ubuntu creates by default or the bug that prevents a Linux kernel with <a href="https://www.rodsbooks.com/efi-bootloaders/efistub.html">EFI stub loader support</a> from booting from the ESP of at least some Macs.</p>
+
+<p>As a side note, using an ISO-9660 driver can theoretically help you keep the size of a custom Linux boot CD/DVD down to a reasonable value. This is because EFI systems normally boot from optical discs by reading a FAT image file in El Torito format and treating that file as an ESP. If you need to store the kernel both in that file and directly in the ISO-9660 filesystem (to maintain bootability on BIOS systems), that can represent an unwanted extra space requirement. Placing rEFInd and an ISO-9660 driver in the FAT image file should enable you to store the kernel on the disc only once. Unfortunately, this doesn't work in practice. When the ISO-9660 driver is loaded from the El Torito image, the driver discovers that the optical disc is in use and refuses to access it. It's possible to use EFI shell commands to give the ISO-9660 driver access to the shell device, but this causes the El Torito access to go away, which means that anything loaded from the El Torito image (such as rEFInd) is likely to malfunction. Also, some EFI implementations include ISO-9660 drivers, so you might not need a separate ISO-9660 driver if you're building a disc for a particular computer.</p>
+
+<a name="installing">
+<h2>Installing rEFInd's EFI Drivers</h2>
+</a>
+
+<p>If you install rEFInd via the <tt>refind-install</tt> script or by installing an RPM or Debian package in a Linux distribution, the script should install the driver that matches the filesystem on which your kernels are stored automatically, with a couple of important caveats:</p>
+
+<ul>
+
+<li>The driver must be included with the rEFInd package. As described in the next section, <a href="#selecting">Selecting an EFI Driver,</a> drivers for ext2fs, ext3fs, ext4fs, ReiserFS, Btrfs, and a few non-native filesystems come with rEFInd. If your kernels reside on XFS, JFS, ZFS, or some other more exotic filesystem, you'll need to track down drivers elsewhere, as described in <a href="#finding">Finding Additional Drivers,</a> and install them manually.</li>
+
+<li>If you run <tt>refind-install</tt> from macOS, the script installs only the ext4fs driver, and that only if the script finds an existing Linux partition. Thus, if you install rEFInd <i>before</i> installing Linux, chances are <tt>refind-install</tt> will not install any Linux driver. Also, if you use any filesystem other than ext2/3/4fs to hold your kernel, <tt>refind-install</tt> won't install the correct driver. If you install rEFInd followed by Linux and want to use rEFInd's driver, you can either re-install rEFInd or install the appropriate driver manually. The <tt>refind-install</tt> script installs all the available drivers if you pass it the <tt>--alldrivers</tt> option. (I do <i>not</i> recommend using this feature except for creating general-purpose USB flash drives with rEFInd, since having too many drivers can cause various problems.) See the <a href="installing.html">Installing rEFInd</a> page for details.</li>
+
+</ul>
+
+<p>rEFInd's filesystem drivers reside in the <tt>refind/drivers_<tt class="variable">arch</tt></tt> subdirectory of the rEFInd <tt>.zip</tt> file, where <tt class="variable">arch</tt> is a CPU architecture code, such as <tt>x64</tt> or <tt>ia32</tt>. If you installed rEFInd using an RPM or Debian package, chances are the relevant files will be stored in <tt>/usr/share/refind/refind/drivers_x64/</tt> or a similar location. You can type <tt class="userinput">find /usr/share/ -name "ext4*"</tt> to find the exact location, or use your package manager to list all the files installed from the <tt>refind</tt> package. The files are named after the filesystems they handle, such as <tt>ext4_x64.efi</tt> for the x86-64 ext4fs driver.</p>
+
+<p>To install a driver, you must copy it from the package <tt>.zip</tt> file or from where the rEFInd RPM or Debian package placed it to the <tt>drivers</tt> or <tt>drivers_<tt class="variable">arch</tt></tt> subdirectory of the main rEFInd installation directory. The main rEFInd directory is usually either <tt>EFI/refind</tt> or <tt>EFI/BOOT</tt> on the EFI System Partition (ESP). How to identify and access the ESP varies from one OS to another:</p>
+
+<ul>
+
+<li>Under Linux, the ESP is normally mounted at <tt>/boot/efi</tt>, or sometimes <tt>/boot</tt> or <tt>/efi</tt>.</li>
+
+<li>On macOS, the ESP is not normally mounted, but the <tt>mountesp</tt> script that comes with rEFInd will mount it and identify the mount point.</li>
+
+<li>Windows also does not normally mount the ESP, but it can be mounted from an <i>Administrator</i> command prompt window by typing <tt class="userinput">mountvol S: /S</tt>. (You can change <tt>S:</tt> to another drive identifier, if you like.)</li>
+
+</ul>
+
+<p>Be careful to install drivers only for your own architecture. Attempting to load drivers for the wrong CPU type will cause a small delay at best, or may cause the computer to crash at worst. I've placed rEFInd's drivers in directories that are named to minimize this risk, but you should exercise care when copying driver files.</p>
+
+<p class="sidebar"><b>Warning:</b> <i>Do not</i> place EFI program files in your driver directories! Unfortunately, EFI uses the same <tt>.efi</tt> filename extension to identify both EFI program files and EFI drivers. Therefore, rEFInd can't distinguish between the two prior to loading them, and if you place program files in a drivers directory, rEFInd will run the EFI program file when it does its driver scan.</p>
+
+<p>When you reboot after installing drivers, rEFInd should automatically detect and use the drivers you install. There's likely to be an extra delay, typically from one to five seconds, as rEFInd loads the drivers and tells the EFI to detect the filesystems they handle. For this reason, and because of the possibility of drivers harboring bugs, I recommend installing only those drivers that you need. If you like, you can install drivers you don't plan on using to some other directory, such as <tt>/drivers</tt> on the ESP's root. You can then load these drivers manually with the EFI shell's <tt>load</tt> command if the need arises in the future. You can then tell the shell to re-assign drive identifiers with <tt>map -r</tt>:</p>
+
+<pre class="listing">
+fs0: <tt class="userinput">load btrfs_x64.efi</tt>
+fs0: <tt class="userinput">map -r</tt>
+</pre>
+
+<a name="selecting">
+<h2>Selecting an EFI Driver</h2>
+</a>
+
+<p class="sidebar"><b>Warning:</b> When compiled with GNU-EFI, rEFInd's drivers hang when run on my 32-bit Mac Mini. The Tianocore-compiled versions are fine, and the GNU-EFI-built binaries are fine on a 32-bit VirtualBox. The 64-bit GNU-EFI-built versions are fine on a MacBook Pro. Thus, the problem is very limited in scope. The problem can be quite serious if you run into it, though, since you must bypass rEFInd to boot the computer. In debugging the problem, I found that a key funtion was being entered mid-function, which suggests either an EFI bug or a problem with the compiler or related tools. In any event, the solution is simple: Use driver binaries built with Tianocore if you have a 32-bit Mac.</p>
+
+<p>rEFInd ships with a small collection of read-only EFI filesystem drivers. These are:</p>
+
+<ul>
+
+<li><b>Ext2fs</b>&mdash;This driver originated with rEFIt. It's useful for
+    reading Linux kernels from a separate <tt>/boot</tt> partition, or even
+    from a root (<tt>/</tt>) filesystem, if you use ext2fs on it. Although
+    it's called an "ext2fs" driver, it also works with ext3fs.</li>
+
+<li><b>Ext4fs</b>&mdash;Stefan Agner <a
+    href="https://github.com/falstaff84/rEFInd">modified the rEFIt/rEFInd
+    ext2fs driver</a> so that it could handle ext4fs. I'm including this as
+    a separate driver from the ext2fs driver, although the ext4fs version
+    can handle ext2fs and ext3fs, too. Providing both drivers enables easy
+    filesystem separation&mdash;for instance, you can use ext2fs on a
+    <tt>/boot</tt> partition and ext4fs on your root (<tt>/</tt>) partition,
+    to have the EFI scan only the former. This driver has some limitations
+    and may not work with all ext4 filesystems. Although it supports (as of
+    version 0.10.4) 64-bit pointers, this support is untested on over-16TiB
+    volumes. As of version 0.6.1, this driver supports the <tt>meta_bg</tt>
+    feature, which can also be used on ext2fs and ext3fs. Thus, it can
+    handle some ext2fs and ext3fs partitions that the ext2fs driver can't
+    handle. You can learn about your ext2/3/4 filesystem features by typing
+    <tt class="userinput">dumpe2fs <i>/dev/sda2</i> | grep features</tt>,
+    changing <tt class="userinput"><i>/dev/sda2</i></tt> to your
+    filesystem's device.</li>
+
+<li><b>ReiserFS</b>&mdash;This driver originated with rEFIt. It can be used
+    in the same way as the ext2fs and ext4fs drivers. <b>Caution:</b> If you
+    use this driver, you should use the <tt>notail</tt> option in Linux's
+    <tt>/etc/fstab</tt> file for the partition(s) you want the EFI to read.
+    This is because the driver doesn't properly handle ReiserFS's
+    "tail-packing" feature, so files can seem to be corrupted in EFI if you
+    use this feature, which is disabled by <tt>notail</tt>. In my tests,
+    this is the fastest of rEFInd's EFI filesystem drivers, so if you find
+    your kernel load times are slow, you might consider moving your kernel
+    to a ReiserFS <tt>/boot</tt> partition. (Such problems affect a small
+    subset of EFI-based computers.)</li>
+
+<li><b>Btrfs</b>&mdash;</b>Samuel Liao contributed this driver, which is
+    based on the rEFIt/rEFInd driver framework and algorithms from the GRUB
+    2.0 Btrfs driver. I've tested this driver with simple one-partition
+    filesystems on several installations, and with a filesystem that spans
+    two physical devices on one (although I've made no attempt to ensure
+    that the driver can actually read files that span both devices). Samuel
+    Liao has used the driver with a compressed Btrfs volume. The driver will
+    handle subvolumes, but you may need to add kernel options if you're
+    booting a Linux kernel directly from a filesystem that uses subvolumes.
+    For instance, prior to rEFInd 0.10.0, when booting Ubuntu from Btrfs,
+    <tt>also_scan_dirs + @/boot</tt> must be set in <tt>refind.conf</tt>.
+    (The option is set by default beginning with rEFInd 0.10.0.) With any
+    version of rEFInd, <tt>rootflags=subvol=@</tt> must be added to the
+    kernel options in <tt>refind_linux.conf</tt>. If <tt>@/boot</tt> is not
+    scanned, rEFInd can not locate the kernel; and without the
+    <tt>rootflags=subvol=@</tt> kernel option, the boot fails with a message
+    to the effect that the initial RAM disk could not find
+    <tt>/sbin/init</tt>. The <tt>refind-install</tt> and <tt>mkrlconf</tt>
+    scripts should pick up the root flags, assuming the system is booted
+    into the regular installation. These additions make it easier to set up
+    rEFInd to work with Btrfs. Nonetheless, some distributions may have
+    distribution-specific Btrfs peculiarities, so you should be alert to
+    this possibility.</li>
+
+<p class="sidebar"><b>Tip:</b> If you partition a USB flash drive and use <tt>dd</tt> to copy Linux <tt>.iso</tt> images to the drive's individual partitions, the rEFInd ISO-9660 driver enables rEFInd to boot multiple Linux distributions' installers from the USB flash drive. I can't promise this feature will work with all distributions, but it does work with some.</p>
+
+<li><b>ISO-9660</b>&mdash;This driver originated with rEFIt's author, but
+    he never released a final version. Its code was improved by Oracle for
+    use in its VirtualBox product, and then further modified by the authors
+    of the <a
+    href="https://sourceforge.net/projects/cloverefiboot/">Clover</a> boot
+    loader. If your firmware doesn't provide its own ISO-9660 driver, this
+    one can be helpful; however, you may need to install it on your hard
+    disk before you can read an optical disc.</li>
+
+<li><b>HFS+</b>&mdash;Oracle wrote this driver, apparently with some code
+    taken from open source Apple examples. It was then further modified by
+    the Clover authors. I expect this driver to have limited appeal to most
+    rEFInd users. Macs don't need it, since Apple's EFI implementation
+    provides its own HFS+ driver, and HFS+ isn't normally used on
+    UEFI-based PCs. Some CDs are mastered with both ISO-9660 and HFS+, or
+    even with HFS+ alone, and it's conceivable that an HFS+ driver would be
+    useful when accessing such discs. Also, one unusual feature of this
+    driver is that it can read files from within an Apple LVM setup, which
+    Apple's own EFI HFS+ driver can't do. The upshot of this feature is
+    that if you load this driver on a Mac that uses Apple's LVM, rEFInd is
+    likely to show two macOS boot options. Ordinarily this is pointless, but
+    it could be helpful if your Recovery HD volume becomes damaged. I'm
+    providing the driver mainly because it compiled cleanly with no extra
+    work, aside from providing a Makefile entry for it.</li>
+
+<p class="sidebar"><b>Warning:</b> I've received multiple reports of system hangs when using the NTFS driver; however, I've been unable to replicate the problem. (The problem is probably triggered either by interactions with specific EFIs or by unique features of the "problem" NTFS volumes.) I therefore recommend avoiding the NTFS driver unless it's absolutely necessary, and as of rEFInd version 0.11.5, this driver is no longer built by default. See the <tt>BUILDING.txt</tt> file in the rEFInd source code package for information on building this driver, if you need it.</p>
+
+<li><b>NTFS</b>&mdash;Samuel Liao contributed this driver. <b>As of rEFInd
+    0.11.5, this driver is not built by default; see the Warning sidebar to
+    the right.</b> Note that this driver is <i><b>not</b></i> required to
+    boot Windows with rEFInd, since Windows stores its EFI boot loader on
+    the (FAT) ESP, and the BIOS boot process (generally used when
+    dual-booting on a Mac) relies only on the partition's boot sector, which
+    is read without the benefit of this driver. Reasons to use this driver
+    include:
+    <ul>
+    <li>If you want to use Windows to write large files, such as RAM
+        disk images, to be read from EFI.</li>
+    <li>If you have a Mac and NTFS data partitions, loading this driver
+	should exclude those data partitions from the boot menu. (rEFInd
+	provides several other means of <a
+	href="configfile.html#hiding">hiding unwanted boot entries,</a>
+	though.)</li>
+    <li>If you have a Mac that dual-boots with Windows, using this driver
+        should provide NTFS volume names in the boot menu.</li>
+    </ul>
+    </li>
+
+</ul>
+
+<p>All of these drivers rely on filesystem wrapper code written by rEFIt's author, Christoph Phisterer.</p>
+
+<p>Although Linux filesystems are all case-sensitive, these drivers treat them in a case-insensitive way. Symbolic links work; however, rEFInd gnores symbolic links, since many distributions use them in a way that creates redundant or non-functional entries in the rEFInd menu. You should be able to use hard links if you want to use a single kernel file in multiple ways (say for two distributions).</p>
+
+<a name="finding">
+<h2>Finding Additional EFI Drivers</h2>
+</a>
+
+<p>As already noted, I know of few EFI drivers for EFI hardware, aside from those that are built into motherboards' EFI implementations. I do, however, know of a few EFI filesystem drivers, in addition to those provided with rEFInd:</p>
+
+<ul>
+
+<li><b><a href="http://efi.akeo.ie">Pete Batard's efifs drivers</a></b>&mdash;This project is an EFI driver wrapper around GRUB 2's filesystem drivers. Once compiled, the result is that GRUB 2's drivers become standalone EFI filesystem drivers, loadable independently or by rEFInd. (rEFInd version 0.8.3 or later is required.) At present (driver version 1.3; February, 2020), several drivers, including NTFS, exFAT, ext2fs, ReiserFS, Btrfs, JFS, and XFS, are usable. The last time I tested them (version 0.7), some drivers were slow, and they hung on some computers, such as one of my Macs. They may have improved since then, and are likely to improve more in the future. Note that the ext2fs driver from this set works with ext3fs and ext4fs, too. In addition to the main link, you can check the <a href="https://github.com/pbatard/efifs">github repository</a> for the source code.</li>
+
+<li><b><a href="https://github.com/efidroid/uefi_apps_LKL">The LKL driver project</a></b>&mdash;I have yet to look closely at this project, but I think it's a porting of the Linux kernel's filesystem drivers to EFI. The developer stated on the EFI developers' mailing list that they aren't yet stable, as of November 2016.</li>
+
+<li><b><a href="http://refit.sourceforge.net">rEFIt's ext2fs and ReiserFS drivers</a></b>&mdash;You can gain read-only access to ext2fs, ext3fs, and ReiserFS volumes with these drivers, originally written by Christoph Pfisterer. You can use the binaries in the <tt>refit-bin-0.14/efi/tools/drivers</tt> directory of the binary package directly on a Mac. On a UEFI-based PC, though, you'll need to break the Mac-style "fat" binary into its 32- and 64-bit components. You can use my <a href="https://www.rodsbooks.com/thin/index.html"><tt>thin</tt></a> program for this job. As a practical matter, there's no advantage to using these drivers over rEFInd's drivers, since the latter are updated versions of the former.</li>
+
+<li><b><a href="https://sourceforge.net/projects/cloverefiboot/">Clover EFI's ISO-9660, ext2fs, ext4fs, and HFS+ drivers</a></b>&mdash;This project is an offshoot of Tianocore, the main UEFI project. It's primarily a Hackintosh boot loader, but it includes drivers for ISO-9660, ext2fs, ext4fs, and HFS+; however, building them requires a fair amount of expertise. These drivers are closely related to rEFInd's own drivers; however, Clover has a large number of developers working on it, and some of its drivers (especially the HFS+ driver) have diverged significantly from rEFInd's version.</li>
+
+<li><b><a href="https://www.virtualbox.org/browser/vbox/trunk/src/VBox/Devices/EFI/Firmware/VBoxPkg/VBoxFsDxe/">VirtualBox's HFS+ and ISO-9660 drivers</a></b>&mdash;These drivers are available in source code form, and come with VirtualBox binaries. I've not attempted to compile them myself, but I've seen a report that suggests they may include assumptions that require use of <a href="http://www.mingw.org/">MinGW,</a> a GCC-based compiler for Windows (and cross-compiler to build Windows executables under Linux). I don't know of a source for binaries suitable for use on EFI-based computers; if you want to use them, you'll need to figure out how to compile them yourself. As noted earlier, rEFInd's drivers are closely related to these.</li>
+
+<li><b><a href="https://github.com/GunioRobot/Ext2Pkg">Ext2Pkg</a></b>&mdash;This driver, which hasn't been updated since 2011, appears to be an ext2fs/ext3fs driver built independently of the driver written by Christoph Pfisterer. The linked-to sites provide access to source code via <tt>git</tt> but do not provide binaries. When I built binaries, they failed to work. Under VirtualBox, the driver loaded but then hung when I tried to access an ext2 filesystem. On a 32-bit Mac Mini, I got error messages when I tried to access an ext2 filesystem. As I write, the code was last updated in March of 2012. If you check the project and it's been updated more recently, it might be worth trying. Otherwise, I can't recommend this driver. I mention it here only in case it improves in the future.</li>
+
+<li><b>Paragon's UFSD</b>&mdash;According to <a href="http://blog.paragon-software.com/?p=2951">this 2013 blog post,</a> Paragon Software has ported its <a href="https://www.paragon-software.com/home/ufsd-value-pack/screenshots.html">Universal File System Drivers (UFSD)</a> to EFI, providing "transparent access to NTFS, HFS+, ExFAT, and ExtFS" (sic). Neither the blog post nor the main UFSD page provides any download links, and it's unclear if the product is (or will be) available for free, on a pay basis, or even at all.</li>
+
+<li><b>Apple's APFS</b>&mdash;Apple provides an EFI driver for its Apple Filesystem (APFS), which is an optional feature of macOS 10.12 ("Sierra") and a mandatory feature of macOS 10.13 ("High Sierra") when using flash storage devices such as SSDs. When updating to macOS 10.13, your firmware should receive an update that includes this driver, so you shouldn't need to do anything to use APFS (with one caveat, described shortly). Apple also provides the driver as an EFI binary file, stored at <tt>/usr/standalone/i386/apfs.efi</tt> in the installed OS. You can load this driver from rEFInd, but doing so is likely to be pointless&mdash;on Macs, the driver should be built into the firmware, and on non-Macs, APFS is unlikely to hold files that rEFInd could use. On the off chance that a firmware update failed, though, copying this file to the rEFInd <tt>drivers</tt> subdirectory may enable you to boot macOS. Note that APFS includes built-in LVM-like features, similar to Btrfs. Under EFI, APFS volumes are identified by directories with UUIDs as filenames. This fact means that rEFInd 0.11.1 needed modifications to locate the macOS boot loader, since its location changed, as viewed from rEFInd. If you had used rEFInd 0.11.0 or earlier, update to macOS 10.13, and find that you can no longer boot macOS, try updating rEFInd to 0.11.1 or later.</li>
+
+</ul>
+
+<p>The rEFIt, Clover filesystem, and VirtualBox drivers are related, and all of them
+have fed into rEFInd's drivers. Specific versions can have their own
+quirks, though. For instance, the Clover (and I suspect VirtualBox) drivers
+don't return volume labels, which causes rEFInd to display loaders on those
+volumes as being on a disk called <tt>Unknown</tt>. (I fixed that bug for
+rEFInd's version, and it wasn't present in the original rEFIt drivers.)
+Most of these drivers also suffer from speed problems on some computers.
+This is worst with the ext2fs drivers under VirtualBox; on my main
+computer, that combination takes 3 minutes to load a Linux kernel and
+initial RAM disk file! Most real computers don't suffer nearly so badly,
+but some can take an extra five seconds or so to boot a kernel. I've fixed
+the worst of the speed problems in rEFInd's drivers as of version 0.7.0; however, I still see occasional reports of speed problems on specific computers.</p>
+
+<p>Although I know of no readily-available hardware drivers, I do know of a couple of non-hardware non-filesystem drivers:</p>
+
+<ul>
+
+<li><a href="https://github.com/NikolajSchlej/CrScreenshotDxe"><b>CrScreenshot</b></a>&mdash;This driver adds a screenshot capability to any EFI. Note that it's available only as source code that requires the Tianocore EDK2 to build. I have not tested it. (Note also that rEFInd provides its own screen shot capability; pressing F10 takes a screen shot within rEFInd.)</li>
+
+<li><a href="https://github.com/rcpao-enmotus/RamDiskPkg"><b>RamDiskPkg</a></b>&mdash;This is a rudimentary RAM disk driver. It must be compiled with a RAM disk image; the resulting binary is hard-coded with a fixed RAM disk image. It's therefore useful mostly for developers.</li>
+
+<li><b><a href="https://sourceforge.net/projects/cloverefiboot/files/Bootable_ISO/">Clover's non-filesystem drivers</a></b>&mdash;In addition to its filesystem drivers, Clover includes a number of hardware drivers, such as one for NVMe devices (<tt>nvmexpressdxe-64.efi</tt>) and two mouse drivers (<tt>ps2mousedxe-64.efi</tt> and <tt>usbmousedxe-64.efi</tt>, for PS/2 and USB mice, respectively). I haven't tested these drivers, but I've received a report that the NVMe driver, at least, is useful to enable booting OSes installed on NVMe devices. The easiest way to obtain these drivers is likely to be to download the <tt>.iso</tt> file, mount it, and copy the drivers from the <tt>efi/clover/drivers*</tt> directories (there are several, with varying purposes). I recommend caution when testing them, though; using an inappropriate driver could cause a system hang.</li>
+
+</ul>
+
+<p>The first two of these drivers are useful mainly for developers, but the Clover filesystem drivers could be useful to ordinary people.</p>
+
+</ul>
+
+<p>Driver availability could increase in the future. If you know of
+additional EFI drivers, please <a href="mailto:rodsmith@rodsbooks.com">tell
+me about them,</a> so I can share the information here.</p>
+
+<p>Once you've obtained an EFI driver, you can install it in rEFInd just as you would install rEFInd's own drivers, as described earlier.</p>
+
+</ul>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="linux.html">Learn about how to adjust rEFInd's appearance</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

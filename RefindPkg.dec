@@ -1,0 +1,8 @@
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = RefindPkg
+  PACKAGE_GUID                   = 0eae8e1b-55be-4c3c-852a-f0273e22ca3c
+  PACKAGE_VERSION                = 4.5.0
+
+[Includes]
+  StdLib/Include

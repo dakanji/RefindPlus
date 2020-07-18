@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="118"
+   height="118"
+   id="svg9364"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="os_legacy-03-color.svg">
+  <defs
+     id="defs9366">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 64 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="104.75 : 54 : 1"
+       inkscape:persp3d-origin="64 : 42.666667 : 1"
+       id="perspective9372" />
+    <filter
+       id="filter3667"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood3669"
+         flood-opacity="0.7"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite3671"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur3673"
+         in="composite"
+         stdDeviation="3"
+         result="blur" />
+      <feOffset
+         id="feOffset3675"
+         dx="3"
+         dy="3"
+         result="offset" />
+      <feComposite
+         id="feComposite3677"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6568542"
+     inkscape:cx="85.868388"
+     inkscape:cy="65.110614"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:document-units="px"
+     inkscape:grid-bbox="true"
+     inkscape:window-width="1112"
+     inkscape:window-height="983"
+     inkscape:window-x="127"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata9369">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     transform="translate(0,54)">
+    <g
+       id="g3661"
+       style="filter:url(#filter3667)">
+      <rect
+         inkscape:transform-center-x="27.5"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         y="-35.485481"
+         x="47.871014"
+         height="34.010544"
+         width="34.010544"
+         id="rect9388"
+         style="fill:#e6e6e6;fill-opacity:1;stroke:#e6e6e6;stroke-width:0.98945653000000000" />
+      <rect
+         inkscape:transform-center-x="27.5"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         y="-35.640812"
+         x="8.5925779"
+         height="34.010544"
+         width="34.010544"
+         id="rect9388-5"
+         style="fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:0.98945653000000000" />
+      <rect
+         inkscape:transform-center-x="27.5"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         y="-74.810493"
+         x="8.5460062"
+         height="34.010544"
+         width="34.010544"
+         id="rect9388-1"
+         style="fill:#f2f2f2;fill-opacity:1;stroke:#f2f2f2;stroke-width:0.98945653000000000" />
+      <rect
+         inkscape:transform-center-x="27.5"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         y="-74.565689"
+         x="48.078125"
+         height="34.010544"
+         width="34.010544"
+         id="rect9388-4"
+         style="fill:#cccccc;fill-opacity:1;stroke:#cccccc;stroke-width:0.98945653000000000" />
+    </g>
+  </g>
+</svg>

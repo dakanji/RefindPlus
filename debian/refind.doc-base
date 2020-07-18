@@ -1,0 +1,8 @@
+Document: refind
+Title: The rEFInd Boot Manager Manual
+Author: Roderick W. Smith
+Section: System/Administration
+
+Format: HTML
+Index: /usr/share/doc/refind/refind/index.html
+Files: /usr/share/doc/refind/refind/*.html

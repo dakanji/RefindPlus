@@ -1,0 +1,137 @@
+## @file
+#
+# gptsync.inf file to build gptsync using the EDK2/UDK201# development
+# kit.
+#
+# Copyright (c) 2012-2017 by Roderick W. Smith
+# Released under the terms of the GPLv3 (or, at your discretion, any later
+# version), a copy of which should come with this file.
+#
+##
+
+[Defines]
+  INF_VERSION                   = 0x00010005
+  BASE_NAME                     = gptsync
+  FILE_GUID                     = 2767A966-477A-4EC0-8E95-EFFC2C29583D
+  MODULE_TYPE                   = UEFI_APPLICATION
+  EDK_RELEASE_VERSION		= 0x00020000
+  EFI_SPECIFICATION_VERSION	= 0x00010000
+  VERSION_STRING                = 1.0
+  ENTRY_POINT                   = efi_main
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC
+#
+
+[Sources]
+  gptsync/lib.c
+  gptsync/gptsync.c
+  gptsync/os_efi.c
+  gptsync/showpart.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  IntelFrameworkPkg/IntelFrameworkPkg.dec
+  IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  UefiApplicationEntryPoint
+
+[LibraryClasses.AARCH64]
+  BaseStackCheckLib
+# Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
+  CompilerIntrinsicsLib
+
+[Guids]
+  gEfiAcpiTableGuid
+  gEfiAcpi10TableGuid
+  gEfiAcpi20TableGuid
+  gEfiDxeServicesTableGuid
+  gEfiEventReadyToBootGuid
+  gEfiEventVirtualAddressChangeGuid
+  gEfiEventExitBootServicesGuid
+  gEfiFileInfoGuid                              ## CONSUMES ## GUID
+  gEfiFileSystemInfoGuid                        ## CONSUMES ## GUID
+  gEfiFileSystemVolumeLabelInfoIdGuid
+  gEfiGlobalVariableGuid
+  gEfiPartTypeLegacyMbrGuid
+  gEfiPartTypeSystemPartGuid
+  gEfiSmbiosTableGuid
+  gEfiSasDevicePathGuid
+
+[Ppis]
+
+[Protocols]
+  gEfiComponentName2ProtocolGuid                          # ALWAYS_CONSUMED
+  gEfiDevicePathToTextProtocolGuid                        # ALWAYS_CONSUMED
+  gEfiSimpleFileSystemProtocolGuid                        # ALWAYS_CONSUMED
+  gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
+  gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
+  gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
+  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED  
+  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
+  
+  gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
+  gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
+  gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
+  gEfiDebugPortProtocolGuid                     # PROTOCOL CONSUMES
+  gEfiDevicePathProtocolGuid                    # PROTOCOL CONSUMES
+  gEfiDiskIoProtocolGuid                        # PROTOCOL CONSUMES
+  gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
+  gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
+  gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
+  gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
+  gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
+  gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
+  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES 
+  gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
+  gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
+  
+  gEfiAbsolutePointerProtocolGuid
+  gEfiAcpiTableProtocolGuid
+  gEfiEdidActiveProtocolGuid
+  gEfiEdidDiscoveredProtocolGuid
+  gEfiHiiDatabaseProtocolGuid
+  gEfiHiiImageProtocolGuid
+  gEfiHiiProtocolGuid
+  gEfiSimplePointerProtocolGuid
+  gEfiSmbiosProtocolGuid
+  gEfiSecurityArchProtocolGuid  
+  gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
+  gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
+
+  gEfiLegacyBiosProtocolGuid                    # PROTOCOL TO_START
+
+  gEfiLoadFile2ProtocolGuid
+  gEfiLoadFileProtocolGuid
+  gEfiHiiPackageListProtocolGuid
+
+[FeaturePcd]
+  gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
+
+[Pcd]
+
+
+[BuildOptions.IA32]
+  XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
+
+[BuildOptions.X64]
+  XCODE:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
+
+[BuildOptions.AARCH64]
+  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIAARCH64 -D__MAKEWITH_TIANO
+  GCC:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO

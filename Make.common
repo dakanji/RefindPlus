@@ -1,0 +1,195 @@
+#
+# Make.common
+# Common make rules for building with gnu-efi
+#
+
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# This file contains make definitions common to several (or all) of the make
+# files in the rEFInd code subdirectories. Some options are specific to
+# particular architectures or build systems and others are more universal.
+
+#
+# Environment definitions -- where stuff is and what sort of system is being
+# used to compile rEFInd....
+#
+
+EFIINC          = /usr/include/efi
+GNUEFILIB       = /usr/lib
+EFILIB          = /usr/lib
+EFICRT0         = /usr/lib
+
+# Comment out above and uncomment below if using locally-compiled GNU-EFI....
+#EFIINC          = /usr/local/include/efi
+#GNUEFILIB       = /usr/local/lib
+#EFILIB          = /usr/local/lib
+#EFICRT0         = /usr/local/lib
+
+HOSTARCH        = $(shell uname -m | sed s,i[3456789]86,ia32,)
+ARCH            ?= $(HOSTARCH)
+
+# Note: TIANOBASE is defined in master Makefile and exported
+GENFW           = $(TIANOBASE)/BaseTools/Source/C/bin/GenFw
+prefix          = /usr/bin/
+ifeq ($(ARCH),aarch64)
+  CC            = $(prefix)aarch64-linux-gnu-gcc
+  AS            = $(prefix)aarch64-linux-gnu-as
+  LD            = $(prefix)aarch64-linux-gnu-ld
+  AR            = $(prefix)aarch64-linux-gnu-ar
+  RANLIB        = $(prefix)aarch64-linux-gnu-ranlib
+  OBJCOPY       = $(prefix)aarch64-linux-gnu-objcopy
+else
+  CC            = $(prefix)gcc
+  AS            = $(prefix)as
+  LD            = $(prefix)ld
+  AR            = $(prefix)ar
+  RANLIB        = $(prefix)ranlib
+  OBJCOPY       = $(prefix)objcopy
+endif
+
+ifeq ($(MAKEWITH),TIANO)
+# Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, GCC46, or GCC47)
+include $(TIANOBASE)/Conf/target.txt
+endif
+
+#
+# C compiler flags
+#
+
+# ...for both GNU-EFI and TianoCore....
+OPTIMFLAGS      = -Os -fno-strict-aliasing
+CFLAGS          = $(OPTIMFLAGS) -fno-stack-protector -fshort-wchar -Wall
+
+# ...for GNU-EFI....
+GNUEFI_CFLAGS   = -fpic -I$(EFIINC) -I$(EFIINC)/$(ARCH) -I$(EFIINC)/protocol -I../include -I../refind -I../libeg -I../mok
+
+# ...and for TianoCore....
+TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
+                     -I $(TIANOBASE)/MdePkg/Include \
+                     -I $(TIANOBASE)/MdeModulePkg/ \
+                     -I $(TIANOBASE)/MdeModulePkg/Include \
+                     -I $(TIANOBASE)/IntelFrameworkPkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
+                     -I .. \
+                     -I ../refind \
+                     -I ../libeg \
+                     -I ../include \
+                     -I ../mok
+#
+# Linker flags
+#
+
+# for GNU-EFI....
+SUBSYSTEM_LDFLAG  =
+GNUEFI_LDSCRIPT   = $(EFICRT0)/elf_$(ARCH)_efi.lds
+CRTOBJS           = $(EFICRT0)/crt0-efi-$(ARCH).o
+GNUEFI_LDFLAGS    = -T $(GNUEFI_LDSCRIPT) -shared -Bsymbolic -nostdlib -L$(EFILIB) -L$(GNUEFILIB) $(CRTOBJS)
+GNUEFI_LIBS       = -lefi -lgnuefi $(shell $(CC) -print-libgcc-file-name)
+#LIBS            = -lefi -lgnuefi $(shell $(CC) $(ARCH3264) -print-libgcc-file-name)
+
+# ...and for TianoCore....
+ENTRYPOINT=efi_main
+TIANO_LDSCRIPT   = $(TIANOBASE)/BaseTools/Scripts/gcc4.9-ld-script
+#TIANO_LDSCRIPT  = /usr/local/UDK2014/MyWorkSpace/BaseTools/Scripts/gcc4.9-ld-script
+TIANO_LDFLAGS   = -nostdlib -n -q --gc-sections --script=$(TIANO_LDSCRIPT) \
+                  --entry $(ENTRYPOINT) -u $(ENTRYPOINT) -m $(LD_CODE)
+
+#
+# objcopy flags for GNU-EFI
+#
+
+FORMAT          = --target=efi-app-$(ARCH)
+FORMAT_DRIVER   = --target=efi-bsdrv-$(ARCH)
+
+#
+# Modifications on a per-architecture basis....
+#
+
+ifeq ($(ARCH),x86_64)
+  GNUEFI_LDFLAGS += -znocombreloc -zdefs
+
+  ARCH_CFLAGS = -DEFIX64 -DEFI_FUNCTION_WRAPPER -m64 -mno-red-zone 
+ifeq ($(MAKEWITH),TIANO)
+  ARCH_CFLAGS += -mcmodel=large "-DEFIAPI=__attribute__((ms_abi))" 
+endif
+  ARCHDIR = X64
+  UC_ARCH = X64
+  FILENAME_CODE = x64
+  LD_CODE = elf_x86_64
+endif
+
+ifeq ($(ARCH),ia32)
+  GNUEFI_LDFLAGS += -znocombreloc -zdefs
+
+  # In practice, cross-compiling filesystem drivers works, but not the main
+  # rEFInd binary....
+  ifeq ($(HOSTARCH),x86_64)
+    GNUEFILIB := $(GNUEFILIB)32
+    EFILIB    := $(EFILIB)32
+    EFICRT0   := $(EFICRT0)32
+  endif
+
+  ARCH_CFLAGS = -m32 -DEFI32 -malign-double
+  ARCHDIR = Ia32
+  UC_ARCH = IA32
+  FILENAME_CODE = ia32
+  LD_CODE = elf_i386
+endif
+
+ifeq ($(ARCH), aarch64)
+  GNUEFI_CFLAGS += -DEFIAARCH64
+  FORMAT          = -O binary
+  FORMAT_DRIVER   = -O binary
+  SUBSYSTEM_LDFLAG = -defsym=EFI_SUBSYSTEM=0xa
+  LDFLAGS         += --warn-common --no-undefined --fatal-warnings
+
+  ARCH_CFLAGS = -fno-merge-constants -ffreestanding -DEFIAARCH64
+  ifeq ($(MAKEWITH),TIANO)
+    ARCH_CFLAGS += -mcmodel=large -Wno-address -Wno-missing-braces -Wno-array-bounds -ffunction-sections -fdata-sections
+  endif
+  ifeq ($(MAKEWITH),GNUEFI)
+    ARCH_CFLAGS += -fno-stack-check
+  endif
+  ARCHDIR = AArch64
+  UC_ARCH = AARCH64
+  FILENAME_CODE = aa64
+  LD_CODE = aarch64elf
+endif
+
+# GNU-EFI compilation path uses .o files for compiled object code
+%.o: %.c
+	$(CC) $(CFLAGS) $(ARCH_CFLAGS) $(GNUEFI_CFLAGS) $(LOCAL_GNUEFI_CFLAGS) \
+	      -D__MAKEWITH_GNUEFI -c $< -o $@
+
+# TianoCore compilation path uses .obj files for compiled object code
+%.obj: %.c
+	$(CC) $(CFLAGS) $(ARCH_CFLAGS) $(TIANO_INCLUDE_DIRS) -DNO_BUILTIN_VA_FUNCS \
+	      -D__MAKEWITH_TIANO -c $< -o $@
+
+# rules for EFI applications
+
+ifneq (,$(filter %.efi,$(TARGET)))
+
+SHLIB_TARGET = $(subst .efi,.so,$(TARGET))
+
+endif
+
+
+# rules for libraries
+
+ifneq (,$(filter %.a,$(TARGET)))
+
+$(TARGET): $(OBJS)
+	$(AR) cq $@ $(OBJS)
+
+endif
+
+# utility rules
+
+#clean:
+#	rm -f $(TARGET) *~ *.so $(OBJS) *.efi *.obj refind_*.txt refind_*.dll *.lib
+
+# EOF

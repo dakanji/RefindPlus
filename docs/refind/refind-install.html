@@ -1,0 +1,354 @@
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of REFIND-INSTALL</TITLE>
+</HEAD><BODY>
+<H1>REFIND-INSTALL</H1>
+Section: rEFInd Manual (8)<BR>Updated: 0.12.0<BR><A HREF="#index">Index</A>
+<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+refind-install - Install rEFInd to the ESP and create an NVRAM entry
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+<B>refind-install </B>
+
+[--notesp | --usedefault <I>device-file</I> | --root <I>mount-point</I> |
+--ownhfs <I>device-file</I> ] [--keepname] [--nodrivers | --alldrivers]
+[--shim <I>shim-filename</I>] [--localkeys] [--encryptkeys] [--yes]
+<P>
+<P>
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<P>
+To be useful, the rEFInd boot manager must be installed to the computer's
+EFI System Partition (ESP) or other EFI-accessible location. In most cases,
+an NVRAM entry describing rEFInd's location must also be created. These
+steps can be performed manually; however, the <B>refind-install</B> command
+provides an automated way to perform these tasks under both Linux and OS X.
+The exact behavior and options vary depending on the OS, however.
+<P>
+Some details that can affect how the script runs include the following:
+<P>
+<DL COMPACT>
+<DT><B>*</B>
+
+<DD>
+If you run the script as an ordinary user, it attempts to acquire
+<B>root</B> privileges by using the <B>sudo</B> command. This works on Mac OS
+X and some Linux installations (such as under Ubuntu or if you've added
+yourself to the <B>sudo</B> users list), but on some Linux installations
+this will fail. On such systems, you should run <B>refind-install</B> as
+root.
+<P>
+<DT><B>*</B>
+
+<DD>
+Under OS X, you can run the script with a mouse by opening a Terminal
+session and then dragging-and-dropping the <B>refind-install</B> file to
+the Terminal window. You'll need to press the Return or Enter key to run
+the script.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you're using OS X 10.7's Whole Disk Encryption (WDE) feature, or the
+loogical volumes feature in OS X 10.10, you must install rEFInd to the ESP
+or to a separate HFS+ partition. The default in rEFInd 0.8.4 and later is
+to install to the ESP. If you prefer to use a separate HFS+ volume, the
+<B>--ownhfs </B><I>device-file</I> option to <B>refind-install</B> is required.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you're not using WDE or logical volumes, you can install rEFInd to the
+OS X root (/) partition by using the --notesp option to
+<B>refind-install</B>. Using this option is recommended when upgrading from
+a working rEFInd installation in this location.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you're replacing rEFIt with rEFInd on a Mac, there's a chance that
+<B>refind-install</B> will warn you about the presence of a program called
+<B>/Library/StartupItems/rEFItBlesser</B> and ask if you want to delete it.
+This program is designed to keep rEFIt set as the boot manager by
+automatically re-blessing it if the default boot manager changes. This is
+obviously undesirable if you install rEFInd as your primary boot manager,
+so it's generally best to remove this program. If you prefer to keep your
+options open, you can answer <B>N</B> when <B>refind-install</B> asks if you
+want to delete rEFItBlesser, and instead manually copy it elsewhere. If you
+subsequently decide to go back to using rEFIt as your primary boot manager,
+you can restore rEFItBlesser to its place.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you intend to boot BIOS-based OSes on a UEFI-based PC, you must edit the
+<B>refind.conf</B> file's <B>scanfor</B> line to enable the relevant
+searches. This is not necessary on Macs, though; because of the popularity
+of dual boots with Windows on Macs, the BIOS/legacy scans are enabled by
+default on Macs.
+<P>
+<DT><B>*</B>
+
+<DD>
+On Linux, <B>refind-install</B> checks the filesystem type of the
+<B>/boot</B> directory and, if a matching filesystem driver is available,
+installs it. Note that the &quot;<B>/boot</B> directory&quot; may be on a separate
+partition or it may be part of your root (<B>/</B>) filesystem, in which
+case the driver for your root filesystem is installed. This feature is
+unlikely to work properly from an emergency system, although it might if
+you have a separate <B>/boot</B> partition and if you mount that partition
+at <B>/boot</B> in your emergency system, and the ESP at <B>/boot/efi</B>.
+<P>
+<DT><B>*</B>
+
+<DD>
+On OS X, <B>refind-install</B> checks your partition tables for signs of a
+Linux installation. If such a sign is found, the script installs the EFI
+filesystem driver for the Linux ext4 filesystem. This will enable rEFInd to
+read your Linux kernel if it's on an ext2, ext3, or ext4 filesystem. Note
+that some configurations will require a <B>/boot/refind_linux.conf</B> file,
+which can be reliably generated only under Linux. (The <B>mkrlconf</B>
+script that comes with rEFInd will do this job once you've booted Linux.)
+In the meantime, you can launch GRUB from rEFInd or press F2 or Insert
+twice after highlighting the Linux option in rEFInd. This will enable you
+to enter a <B>root=</B><I>/dev/whatever</I> specification, where
+<I>/dev/whatever</I> is the device identifier of your Linux root (<B>/</B>)
+filesystem.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you run <B>refind-install</B> on Linux and if
+<B>/boot/refind_linux.conf</B> doesn't already exist, <B>refind-install</B>
+creates this file and populates it with a few sample entries. If
+<B>/boot</B> is on a FAT partition (or HFS+ on a Mac), or if it's on an
+ext2fs, ext3fs, ext4fs, ReiserFS, Btrfs, or HFS+ partition and you install
+an appropriate driver, the result is that rEFInd will detect your kernel
+and will probably boot it correctly. Some systems will require manual
+tweaking to <B>refind_linux.conf</B>, though -- for instance, to add
+<B>dolvm</B> to the boot options on Gentoo systems that use LVM.
+<P>
+<DT><B>*</B>
+
+<DD>
+If you pass the <B>--shim</B> option to the script (along with a filename
+for a Shim binary), the script sets up for a Secure Boot configuration via
+Shim. By default, this causes the rEFInd binary to be renamed as
+<B>grubx64.efi</B>. Recent versions of Shim support passing the name of the
+follow-on program to Shim via a parameter, though. If you want to use this
+feature, you can pass the <B>--keepname</B> option to
+<B>refind-install</B>.
+<P>
+</DL>
+<P>
+
+<P>
+After you run <B>refind-install</B>, you should peruse the script's output
+to ensure that everything looks OK. <B>refind-install</B> displays error
+messages when it encounters errors, such as if the ESP is mounted read-only
+or if you run out of disk space. You may need to correct such problems
+manually and re-run the script. In some cases you may need to fall back on
+manual installation, which gives you better control over details such as
+which partition to use for installation.
+<P>
+<A NAME="lbAE">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+<P>
+<DL COMPACT>
+<DT><B>--notesp</B>
+
+<DD>
+This option, which is valid only under OS X, tells <B>refind-install</B> to
+install rEFInd to the OS X root partition rather than to the ESP. This
+behavior was the default in rEFInd 0.8.3 and earlier, so you may want to
+use it when upgrading installations of that version, unless you used
+--esp (which is now the default behavior, although the --esp option no
+longer exists) or --ownhfs. You may also want to use --notesp on new
+installations if you're sure you're not using whole-disk encryption or
+logical volumes.
+<P>
+<DT><B>--usedefault </B><I>device-file</I>
+
+<DD>
+You can install rEFInd to a disk using the default/fallback filename of
+<B>EFI/BOOT/bootx64.efi</B> (as well as <B>EFI/BOOT/bootia32.efi</B> and
+<B>EFI/BOOT/bootaa64.efi</B>, if the IA-32 and ARM64
+builds are available) using this option. The device-file should be an
+unmounted ESP, or at least a FAT partition, as in <B>--usedefault
+/dev/sdc1</B>. Your computer's NVRAM entries will not be modified when
+installing in this way. The intent is that you can create a bootable USB
+flash drive or install rEFInd on a computer that tends to &quot;forget&quot; its
+NVRAM settings with this option. This option is mutually exclusive with
+--notesp and --root.
+<P>
+<DT><B>--ownhfs </B><I>device-file</I>
+
+<DD>
+This option should be used only under OS X. It's used to install rEFInd to
+an HFS+ volume other than a standard Mac boot volume. The result should be
+that rEFInd will show up in the Mac's own boot manager. More importantly,
+suspend-to-RAM operations may work correctly. Note that this option
+requires an HFS+ volume that is not currently an OS X boot volume. This can
+be a data volume or a dedicated rEFInd partition. The ESP might also work,
+if it's converted to use HFS+; however, HFS+ is a non-standard filesystem
+for an ESP, and so is not recommended.
+<P>
+<DT><B>--root </B><I>mount-point</I>
+
+<DD>
+This option is intended to help install rEFInd from a &quot;live CD&quot; or other
+emergency system. To use it, you should mount your regular installation at
+<I>/mount-point</I>, including your /boot directory (if it's separate) at
+<I>/mount-point</I>/boot and (on Linux) your ESP at that location or at
+<I>/mount-point</I>/boot/efi. The <B>refind-install</B> script then
+installs rEFInd to the appropriate location -- on Linux,
+<I>/mount-point</I>/boot/EFI/refind or
+<I>/mount-point</I>/boot/efi/EFI/refind, depending on where you've mounted
+your ESP. Under OS X, this option is useful only in conjunction with
+--notesp, in which case rEFInd will install to
+<I>/mount-point</I>/EFI/refind. The script also adds an entry to your NVRAM
+for rEFInd at this location. You cannot use this option with
+--usedefault. Note that this option is not needed when doing a dual-boot
+Linux/OS X installation; just install normally in OS X.
+<P>
+<DT><B>--nodrivers</B>
+
+<DD>
+Ordinarily <B>refind-install</B> attempts to install the driver required to
+read /boot on Linux. This attempt works only if you're using ext2fs,
+ext3fs, ext4fs, ReiserFS, or Btrfs on the relevant partition. If you want
+to forego this driver installation, pass the --nodrivers option. This
+option is implicit when you use --usedefault.
+<P>
+<DT><B>--alldrivers</B>
+
+<DD>
+When you specify this option, <B>refind-install</B> copies all the driver
+files for your architecture. You may want to remove unused driver files
+after you use this option. Note that some computers hang or fail to work
+with any drivers if you use this option, so use it with caution.
+<P>
+<DT><B>--shim </B><I>shim-filename</I> or <B>--preloader </B><I>preloader-filename</I><B></B>
+
+<DD>
+If you pass this option to <B>refind-install</B>, the script will copy the
+specified shim program file to the target directory, copy the
+MokManager.efi file from the shim program file's directory to the target
+directory, copy the 64-bit version of rEFInd as grubx64.efi, and register
+shim with the firmware. (If you also specify --usedefault, the NVRAM
+registration is skipped. If you also use --keepname, the renaming to
+grubx64.efi is skipped.) When the target file is identified as PreLoader,
+much the same thing happens, but <B>refind-install</B> copies HashTool.efi
+instead of MokManager.efi and copies rEFInd as loader.efi rather than as
+grubx64.efi. The intent is to simplify rEFInd installation on a computer
+that uses Secure Boot; when so set up, rEFInd will boot in Secure Boot
+mode, with one caveat: The first time you boot, MokManager/HashTool will
+launch, and you must use it to locate and install a public key or register
+rEFInd as a trusted application. The rEFInd public key file will be located
+in the rEFInd directory's keys subdirectory under the name refind.cer.
+<P>
+<DT><B>--localkeys</B>
+
+<DD>
+This option tells <B>refind-install</B> to generate a new Machine Owner Key
+(MOK), store it in /etc/refind.d/keys as refind_local.*, and re-sign all
+the 64-bit rEFInd binaries with this key before installing them. This is
+the preferable way to install rEFInd in Secure Boot mode, since it means
+your binaries will be signed locally rather than with my own key, which is
+used to sign many other users' binaries; however, this method requires that
+both the <B>openssl</B> and <B>sbsign</B> binaries be installed. The former
+is readily available in most distributions' repositories, but the latter is
+not, so this option is not the default.
+<P>
+<DT><B>--encryptkeys</B>
+
+<DD>
+Ordinarily, if you use the --localkeys option, <B>refind-install</B>
+stores the local key files on your hard disk in an unencrypted form. Thus,
+should your computer be compromised, the intruder could use your own key to
+sign a modified boot loader, eliminating the benefits of Secure Boot. If you
+use this option, then the private key is stored in an encrypted form,
+secured via an encryption password. You must enter this password before the
+key can be used to sign any binary, thus reducing the risk that an intruder
+could hijack your boot process. This is obviously a highly desirable option,
+but the downside is that you must remember the password and enter it
+whenever you update rEFInd or any other program signed with your private
+key. This also makes a fully automated update of rEFInd impossible.
+<P>
+<DT><B>--keepname</B>
+
+<DD>
+This option is useful only in conjunction with --shim. It tells
+<B>refind-install</B> to keep rEFInd's regular filename (typically
+refind_x64.efi) when used with shim, rather than rename the binary to
+grubx64.efi. This change cuts down on the chance of confusion because of
+filename issues; however, this feature requires that shim be launched with
+a command-line parameter that points to the rEFInd binary under its real
+name. versions of shim prior to 0.7 do not properly support this feature.
+(Version 0.4 supports it but with a buggy interpretation of the follow-on
+loader specification.) If your NVRAM variables become corrupted or are
+forgotten, this feature may make rEFInd harder to launch. This option is
+incompatible with --usedefault and is unavailable when run under OS X or
+without the --shim option. If the script discovers an existing rEFInd
+installation under EFI/BOOT or EFI/Microsoft/Boot and no other rEFInd
+installation when this option is used, it will abort.
+<P>
+<DT><B>--yes</B>
+
+<DD>
+This option causes the script to assume a <B>Y</B> input to every yes/no
+prompt that can be generated under certain conditions, such as if you
+specify --shim but <B>refind-install</B> detects no evidence of a Secure
+Boot installation. This option is intended mainly for use by scripts such
+as those that might be used as part of an installation via an RPM or Debian
+package.
+<P>
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>AUTHORS</H2>
+
+Primary author: Roderick W. Smith (<A HREF="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</A>)
+<P>
+<A NAME="lbAG">&nbsp;</A>
+<H2>SEE ALSO</H2>
+
+<B><A HREF="/cgi-bin/man/man2html?8+mkrlconf">mkrlconf</A></B>(8),
+
+<B><A HREF="/cgi-bin/man/man2html?8+mvrefind">mvrefind</A></B>(8).
+
+<P>
+<I><A HREF="https://www.rodsbooks.com/refind/">https://www.rodsbooks.com/refind/</A></I>
+<P>
+<A NAME="lbAH">&nbsp;</A>
+<H2>AVAILABILITY</H2>
+
+The <B>refind-install</B> command is part of the <I>rEFInd</I> package and is
+available from Roderick W. Smith.
+<P>
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">OPTIONS</A><DD>
+<DT><A HREF="#lbAF">AUTHORS</A><DD>
+<DT><A HREF="#lbAG">SEE ALSO</A><DD>
+<DT><A HREF="#lbAH">AVAILABILITY</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 13:22:49 GMT, March 13, 2020
+</BODY>
+</HTML>

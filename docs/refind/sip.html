@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: rEFInd and System Integrity Protection</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />rEFInd and System Integrity Protection</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 11/8/2015; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul>
+
+<li class="tight"><a href="#what_is">What Is SIP?</li>
+
+<li class="tight"><a href="#sip_enabled">Installing rEFInd with SIP Enabled</a>
+
+  <ul>
+
+  <li class="tight"><a href="#recovery">Using Recovery Mode</a></li>
+
+  <li class="tight"><a href="#disable">Disabling SIP</a>
+  <ul>
+
+  <li class="tight"><a href="#disable_in_osx">Disabling SIP with Recovery HD</a></li>
+
+  <li class="tight"><a href="#disable_in_refind">Disabling SIP with rEFInd</a></li>
+
+  </ul></li>
+
+  <li class="tight"><a href="#another">Using Another OS</a></li>
+
+  </ul></li>
+
+<li class="tight"><a href="#refind_manage">Using rEFInd to Manage SIP</a></li>
+
+<li class="tight"><a href="#conclusion">Conclusion</a></li>
+
+</ul>
+
+</div>
+
+<p>Apple's macOS 10.11 (aka <i>El Capitan</i>) added a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature causes some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
+
+<a name="what_is">
+<h2>What Is SIP?</h2>
+</a>
+
+<p>To understand SIP, you should first know that Unix-like systems, including macOS, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, digital photos, etc.), but cannot write to system files (programs, system configuration files, etc.)&mdash;and users cannot even read some system files. This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used. On Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs, in contrast to traditional Unix mainframes and minicomputers from the 20th century, are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. MacOS has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
+
+<p>Apple has apparently decided that these safeguards are no longer sufficient, at least for certain tasks, such as writing files to certain system directories and installing boot loaders. I won't try to speak for Apple or explain their motivations, but the result of Apple's decisions is SIP. With SIP active, as is the default, macOS 10.11 and later limits your ability to perform some of these administrative tasks. You can still install and remove most third-party programs, configure your network, and so on; but some critical directories can no longer be written, even as <tt>root</tt>, and some utilities cannot be used in certain ways, even as <tt>root</tt>. These restrictions impact rEFInd because one of the affected tools, a command called <tt>bless</tt>, is required to tell the Mac to boot rEFInd rather than to boot macOS directly.</p>
+
+<a name="sip_enabled">
+<h2>Installing rEFInd with SIP Enabled</h2>
+</a>
+
+<p>The end result of SIP is that rEFInd cannot be installed under macOS 10.11 and later in the way described on the <a href="installing.html">Installing rEFInd</a> page&mdash;at least, not without first booting into <a href="#recovery">Recovery mode,</a> in which SIP restrictions are ignored; or <a href="#disable">disabling SIP</a> (either temporarily or permanently). This page covers these two options in more detail, as well as a third: <a href="#another">Using another OS</a> to install rEFInd.</p>
+
+<a name="recovery">
+<h3>Using Recovery Mode</h3>
+</a>
+
+<p>Unless you've deleted it, the Recovery HD partition should be present on your Mac as a way to perform emergency recovery operations. The nature of this tool means that SIP cannot be enabled when using it, so you can install rEFInd from a boot to this partition. The trouble is that this installation is not a full-fledged macOS system, so you may have trouble using it if you're not comfortable with such a bare-bones environment. Nonetheless, it is a good way to install rEFInd on a Mac that runs macOS 10.11 or later. To do so, follow these steps:</p>
+
+<ol>
+
+<li><a href="getting.html">Download the rEFInd binary <tt>.zip</tt> file</a> and unpack it. You can unpack it on your regular hard disk or on a USB flash drive. Pay attention to where it's located, though; you'll need to find it later. Pay attention to both the name of the volume and the <i>complete</i> path to the directory in which it's stored. (Your home directory is normally <tt>/Users/<tt class="variable">yourname</tt></tt>, where <tt class="variable">yourname</tt> is your username. Your Desktop is normally <tt>/Users/<tt class="variable">yourname</tt>/Desktop</tt>.</li>
+
+<li>Reboot the computer.</li>
+
+<li>At the startup chime, hold down the Command+R key combination. The computer should launch into the Recovery system. This is a very bare system, with only a window providing a way to launch a handful of utilities and a menu bar. You must use the latter.</li>
+
+<p class="sidebar"><b>Note:</b> If you see no option to launch the Terminal, disabling FileVault may help. I've received some reports of the Terminal being missing from the Recovery boot, one of which indicates that FileVault is the cause.</p>
+
+<li>Select Utilities -&gt; Terminal from the menu bar. A Terminal window should open.</li>
+
+<li>If you unpacked rEFInd on a USB flash drive, insert it and wait for its access light (if it has one) to stop blinking.</li>
+
+<li>Increase the size of the Terminal a bit. (This just makes its output more legible, since the next step produces long lines.)</li>
+
+<li>Type <tt class="userinput">df -h</tt> in the Terminal. This produces a list of partitions that are mounted. Locate the one on which you unpacked the rEFInd files. It will normally be <tt>/Volumes/<tt class="variable">Somename</tt></tt>, where <tt class="variable">Somename</tt> is the volume's name.</li>
+
+<li>In the Terminal, use <tt>cd</tt> to change to the directory where the rEFInd files you unpacked earlier are stored. For instance, on my MacBook, I would type <tt class="userinput">cd /Volumes/Macintosh\ HD/Users/rodsmith/Desktop/refind-0.11.5</tt>. Note that if any element of this path includes a space, you must either enclose the <i>entire path</i> in quotes or precede the space with a backslash (<tt>\</tt>), as in this example's <tt>Macintosh\ HD</tt> volume name.</li>
+
+<li>Type <tt class="userinput">ls</tt> to verify that <tt>refind-install</tt> is present in this directory.</li>
+
+<li>Type <tt class="userinput">./refind-install</tt> to run the installation script. It should run normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You can add options, if you like, as described on that page. Alternatively, you can perform a manual installation, also as described on that page.</li>
+
+<li>Reboot.</li>
+
+</ol>
+
+<p>At this point, rEFInd should come up and enable you to boot into macOS and any other OS(es) that are already installed. You should not need to perform these steps again unless macOS re-installs its own boot loader or a subsequent OS installation overrides the default boot option. You can install an updated rEFInd from within your regular macOS system and it should install correctly, provided you're installing it to the EFI System Partition (ESP). The <tt>refind-install</tt> script may complain about a failure, but because you're overwriting one rEFInd binary with another one, it should continue to boot. (If you installed rEFInd to an HFS+ partition, though, replacing the original file will require using <tt>bless</tt> to tell the firmware about the change, so updating such an installation probably won't work with SIP active.)</p>
+
+<a name="disable">
+<h3>Disabling SIP</h3>
+</a>
+
+<p>Another option is to disable SIP for your regular boot. This is a viable option if you're an expert who needs regular access to tools with which SIP interferes, such as low-level disk utilities. Regular users should probably avoid this option unless the preceding procedure does not work&mdash;and in that case, you should disable SIP temporarily and then re-enable it when you've finished installing rEFInd. On this page, I describe two methods of disabling SIP: <a href="#disable_in_osx">using macOS's Recovery HD system</a> and <a href="#disable_in_refind">using rEFInd on CD-R or USB flash drive.</a></p>
+
+<a name="disable_in_osx">
+<h4>Disabling SIP with Recovery HD</h4>
+</a>
+
+<p>You can use the Recovery HD, as in the previous procedure, to disable SIP. To do so, boot it and launch a Terminal window, as described in the previous section. Instead of locating and running the <tt>refind-install</tt> script, though, you should type:</p>
+
+<pre class="listing"># <tt class="userinput">csrutil disable</tt></pre>
+
+<p>This command will disable SIP for all OSes that honor this setting. (In theory, multiple versions of macOS might be installed on a single computer, and all of them that support SIP should honor the SIP settings. To the best of my knowledge, no non-Apple OS honors SIP settings, although that could change.)</p>
+
+<p>Once you've typed this command, you can reboot the computer. When you return to your regular macOS installation, SIP should be disabled and rEFInd should install normally, as described on the <a href="installing.html">Installing rEFInd</a> page. You will also be able to use disk partitioning tools like my <a href="https://www.rodsbooks.com/gdisk/">GPT fdisk,</a> write to directories that are normally off-limits, and so on. Note that disabling SIP does <i>not</i> disable normal Unix-style protections&mdash;you'll still need to use <tt>sudo</tt> (or enter your password in a GUI dialog box) to acquire <tt>root</tt> privileges to perform these system-administration tasks. You'll be no less safe with SIP disabled under macOS 10.11 or later than you would be with macOS 10.10 or earlier; you simply won't have its added protections against user error or malicious software.</p>
+
+<p>If you want to re-enable SIP, you can do so in exactly the way you disabled it, except that you should type <tt class="userinput">csrutil enable</tt> rather than <tt class="userinput">csrutil disable</tt> in the Recovery environment.</p>
+
+<a name="disable_in_refind">
+<h4>Disabling SIP with rEFInd</h4>
+</a>
+
+<p>As described later on this page, rEFInd 0.10.0 and later provide SIP control features, but they're disabled by default&mdash;except on the USB flash drive and CD-R images available from the <a href="https://www.rodsbooks.com/refind/getting.html">rEFInd downloads page.</a> On these images, the SIP control features are enabled, and can toggle between the two main modes you can set via <tt class="userinput">csrutil enable</tt> and <tt class="userinput">csrutil disable</tt> in the Recovery HD system. Thus, to disable SIP to install rEFInd, you can:</p>
+
+<ol>
+
+<li>Download the USB flash drive or CD-R version of rEFInd, as suitable for your computer.</li>
+
+<li>Prepare a boot medium. With the CD-R image, you can use your favorite disc-burning software. With the USB flash drive image, you can use <tt>dd</tt> to copy the image to a blank disk, as in <tt class="userinput">dd if=refind-flashdrive-0.11.5.img of=/dev/disk3</tt> to write the image to <tt>/dev/disk3</tt>. <b>Any existing data on the target disk will be destroyed!</b> For this reason, it's <b><i>imperative</i></b> that you specify the correct target (<tt>of=</tt>) disk; if you accidentally point this command to your regular hard disk, recovery will be difficult! (Note that one of the points of SIP is to prevent such accidental damage; SIP blocks low-level writes to internal hard disks, but not to USB flash drives. I don't advise testing that this works, though!)</li>
+
+<li>Reboot and hold down the Option (or Alt) key to see the Mac's built-in boot manager.</li>
+
+<li>Select your external boot medium to boot to rEFInd.</li>
+
+<li>Use the SIP "shield" icon on the second row to toggle between SIP settings, as described in more detail in <a href="#refind_manage">Using rEFInd to Manage SIP.</a></li>
+
+</ol>
+
+<p>Once you install rEFInd, you can leave SIP enabled, enable your newly-installed rEFInd's SIP features and use them to disable SIP, or boot again from your external rEFInd to disable SIP.</p>
+
+<p>This procedure has the advantage of being a bit quicker than using the Recovery HD&mdash;at least, if you've already got rEFInd 0.10.0 or later on an external medium. It will also work if your Recovery HD installation is missing or broken. On the other hand, it's probably easier to boot to the Recovery HD once or twice than to download and prepare a rEFInd boot medium. Also, some Macs are a little flaky when it comes to booting from external media, so you may have trouble booting in this way. Finally, if you don't already have rEFInd on an external medium and if you don't have an optical drive, writing a USB flash drive with <tt>dd</tt> carries a small risk of accidentally trashing your hard disk, particularly if you're unfamiliar with disk devices and <tt>dd</tt>.</p>
+
+<a name="another">
+<h3>Using Another OS</h3>
+</a>
+
+<p>A final option for installing rEFInd on a Mac that runs with SIP enabled is to do the installation using another OS. This other OS could be an OS that's already installed or an emergency boot disk, such as an <a href="http://www.ubuntu.com">Ubuntu</a> installation/recovery system.</p>
+
+<p>If you follow this path, you'll need to know something about how to boot and use your non-Apple OS. The options are quite varied, so I can't provide every detail; however, I do have a few tips:</p>
+
+<ul>
+
+<li>If you've already installed another OS but can't boot it because of an upgrade to macOS 10.11 or later, you can use rEFInd on CD-R or USB flash drive to boot to your other OS. You can download images for both media from the <a href="getting.html">rEFInd downloads page.</a> Prepare a boot medium, insert it in your computer, reboot, and hold down the Option (or Alt) key. The Mac's built-in boot menu should appear, enabling you to boot rEFInd from the removable disk. It should then let you boot your already-installed OS, whereupon you can follow the <a href="installing.html">regular rEFInd installation instructions</a> for that OS.</li>
+
+<li>It's imperative that your rEFInd installation occur in an <i>EFI-mode boot!</i> Many Windows installations on Macs, in particular, are done in BIOS/CSM/legacy mode, and so cannot be used for installing rEFInd. rEFInd can boot most Linux installations in EFI mode (as above), but if a BIOS-mode GRUB is installed, you might accidentally boot it. See the <a href="bootmode.html">What's Your Boot Mode?</a> page for information on how to determine your boot mode.</li>
+
+<li>You can use many Linux distributions' installers to run a minimal Linux system that you can use for installing rEFInd. This can be a useful trick even if you don't intend to run Linux normally. An <a href="http://www.ubuntu.com">Ubuntu</a> image can be useful for this. You should insert the boot medium and hold down Option (or Alt) while booting to launch the installer, but be sure to pick the option to "try Ubuntu before installing" (or a similar option for other Linux distributions). You may need to install the <tt>efibootmgr</tt> package to install rEFInd. (Typing <tt class="userinput">sudo apt-get install efibootmgr</tt> should do this in Ubuntu.)</li>
+
+</ul>
+
+<p>I've tested this method of installing rEFInd on my MacBook Air (purchased in late 2014) and on my first-generation 32-bit Mac Mini, but I can't promise it will work on all Macs&mdash;or even on a Mac that's identical to one of mine but with a configuration that's different from mine. This installation method has worked well for me, and reports I've seen recently suggest it works fine for many others, too. On the other hand, in the past (mid-2010s and earlier), this method was less reliable. I assume that improvements to Linux kernels and <tt>efibootmgr</tt> have rendered this method more reliable, so I recommend using the latest Linux (or other OS) version you can find if you want to use this method.</p>
+
+<a name="refind_manage">
+<h2>Using rEFInd to Manage SIP</h2>
+</a>
+
+<p>Once rEFInd is installed, you can use it to manage SIP features; however, the rEFInd features needed to do this are disabled by default. You must uncomment or add two lines to your <tt>refind.conf</tt> file:</p>
+
+<p class="sidebar"><b>Note:</b> Apple code samples and technical discussions are filled with the acronym "CSR." I don't know what this acronym means, but as it appears to be used in preference to "SIP" or "rootless" when referring to specific values, I used it in the <tt>refind.conf</tt> file's token names.</p>
+
+<ul>
+
+<li><tt class="userinput">showtools</tt>&mdash;This line specifies tools that appear on the second row of icons in rEFInd. The new tool for managing SIP is called <tt>csr_rotate</tt>, so you must uncomment <tt>showtools</tt> and add this option, or create a new <tt>showtools</tt> line.</li>
+
+<li><tt class="userinput">csr_values</tt>&mdash;This line lists the hexadecimal values through which you can rotate once <tt>csr_rotate</tt> is active on the <tt>showtools</tt> line. The trick to this token is selecting appropriate options. Several sites, such as <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">this one,</a> describe the meanings of the various options, but often not in much detail. Apple's own <tt>csrutil</tt> command sets values of 77 (disabled) or 10 (enabled). Note also that you specify hexadecimal values on this line, but without a leading <tt>0x</tt> or other hexadecimal-notation indicator. If you specify gibberish values, or hexadecimal values higher than those used by SIP, rEFInd ignores the bad entries. Thus, if some of your values are being ignored, you should check your <tt>csr_values</tt> line for typos.</li>
+
+</ul>
+
+<p>Note that <i><b>both</b></i> of these options must be set appropriately. If either of them is missing or misconfigured, rEFInd will not display the SIP tool. A typical configuration using these features might look like this:</p>
+
+<pre class="listing">showtools shell,memtest,gdisk,csr_rotate,apple_recovery,windows_recovery,about,shutdown,reboot
+csr_values 10,77</pre>
+
+    <img src="func_csr_rotate.png" align="right" width="48" height="48"
+    alt="The SIP rotation tool rotates through all the CSR values you set"
+    border=2 background="gray"/>
+
+<p>Once these options are set and you reboot into rEFInd, you should see a new shield icon on the second row, as shown at the right. When you select this tool, rEFInd identifies the next available CSR value from the list you specified and switches to that mode, rotating back to the start of the list once the end is reached. To confirm that the SIP mode has changed, rEFInd displays, for three seconds, a message identifying the new mode.</p>
+
+<p>Whether or not you've enabled these SIP features in <tt>refind.conf</tt>, rEFInd displays the current SIP status on its "About" page:</p>
+
+    <br /><center><img src="about.png" align="center" width="525"
+    height="559" alt="rEFInd presents a graphical menu for selecting your
+    boot OS." border=2> </center><br />
+
+<p>Note the line that reads "System Integrity Protection is disabled (0x77)" (highlighted in this screen shot). This line will be updated whenever you use the CSR rotation tool, so if you've specified a large number of values and have forgotten where you are in your rotation, you can use the About screen to figure it out.</p>
+
+<p>If your Mac doesn't yet run macOS 10.11, rEFInd claims that SIP is enabled in the "About" screen. If you set the <tt>showtools</tt> and <tt>csr_values</tt> options as described earlier, you can adjust the SIP settings on such a Mac, but this will have no effect because neither pre-10.11 version of macOS nor any other OS honors these settings. On UEFI-based PCs, rEFInd won't display SIP status <i>unless</i> you store the <tt>csr-active-config</tt> NVRAM variable in some way. If you do, rEFInd will enable you to adjust it, but it won't have any effect on the OSes most commonly found on UEFI-based PCs.</p>
+
+<p>I provide these features in rEFInd as a convenience for developers and other advanced users who have a need to adjust their SIP settings. Using rEFInd for this purpose is much faster than booting into the macOS Recovery system to make these adjustments. I discourage others from playing with these settings, since changing them inappropriately could cause problems; that's why they're not enabled in rEFInd by default.</p>
+
+<a name="conclusion">
+<h2>Conclusion</h2>
+</a>
+
+<p>Although the goal of increased security is a good one, SIP is causing problems for intermediate and advanced users. The good news is that the process to install rEFInd on a system that runs macOS 10.11 or later, although more complex than it used to be, is not an impossible one. Furthermore, once you've done it, you shouldn't have to do it again for a while. (An update to macOS's boot loader is entirely possible, though. If nothing else, the next major macOS update may require re-installing rEFInd.) For advanced users, rEFInd can adjust SIP settings, which can be helpful if you occasionally want to do something that require greater-than-typical privileges.</p>
+
+<hr />
+
+<p>copyright &copy; 2015&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="using.html">Learn how to use rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

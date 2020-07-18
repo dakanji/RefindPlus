@@ -1,0 +1,138 @@
+.\" Copyright 2016-2020 Roderick W. Smith (rodsmith@rodsbooks.com)
+.\" May be distributed under the GNU Free Documentation License version 1.3 or
+any later version
+.TH "REFIND-MKDEFAULT" "8" "0.12.0" "Roderick W. Smith" "rEFInd Manual"
+.SH "NAME"
+refind-mkdefault \- Set rEFInd as the default EFI boot option
+.SH "SYNOPSIS"
+.BI "refind-mkdefault "
+[ \-L|\-\-label <name> ]
+
+.SH "DESCRIPTION"
+
+EFI booting normally relies on boot manager entries stored in NVRAM, which
+describe the locations of EFI boot programs and the order in which the
+firmware will attempt to launch them. In Linux, these entries can be
+created, deleted, and manipulated with the \fIefibootmgr\fR utility.
+
+Many OSes and Linux packages assume that they should control the boot
+process, and so both create NVRAM boot entries for themselves and set these
+entries first in the boot order. If you intend rEFInd to control the boot
+process, though, such changes are undesirable and require adjustment via
+\fIefibootmgr\fR. Such adjustments are annoying to make and can be
+intimidating to non-experts.
+
+The \fIrefind-mkdefault\fR script simplifies matters: Running this script
+with no options sets rEFInd as the default boot program. The details of what
+the script does depends on the current state of the boot order list and
+existing boot entries:
+
+.TP
+.B *
+If a rEFInd entry already exists in the boot order and is already first
+in the list, no changes are made.
+
+.TP
+.B *
+If a rEFInd entry already exists in the boot order but is not first in
+the list, that entry is moved to the first position in the boot order.
+
+.TP
+.B *
+If more than one rEFInd entry exists in the boot order,
+\fIrefind-mkdefault\fR moves the one that comes earliest to the front of the
+boot order list.
+
+.TP
+.B *
+If no rEFInd entry exists in the boot order but a rEFInd boot entry
+can be found in the list of \fBBoot####\fR entries, it is added to the boot
+order and placed at the front of the list.
+
+.TP
+.B *
+If multiple rEFInd boot entries exist but none is in the boot order, all the
+entries are added to the boot order, but which one is first is uncontrolled.
+
+.PP
+
+A rEFInd entry is defined as one that contains the string \fBrefind\fR
+(case-insensitive). This string could exist in the description or in the
+filename. The string used to define the rEFInd entry can be changed via the
+\fI\-\-label\fR (\fI\-L\fR) option.
+
+The intent is that \fIrefind-mkdefault\fR can be called after booting via
+GRUB or some other means to restore rEFInd as the default boot program.  It
+can also be placed in a startup and/or shutdown script to restore rEFInd to
+its default position automatically. Because it does not re-write the boot
+order if rEFInd is listed as the first boot entry, this practice should be
+low in risk.
+
+.SH "OPTIONS"
+
+.TP
+.B \-L | \-\-label \fI<name>\fR
+Instead of searching for the string \fBrefind\fR in \fIefibootmgr\fR output
+as a way to identify rEFInd, search for the string \fBname\fR.
+
+.SH "RETURN VALUES"
+
+\fIrefind-mkdefault\fR returns the following values:
+
+.TP
+.B 0
+The script completed successfully, which can mean either that no change was
+necessary or that the call to \fIefibootmgr\fR returned a success code.
+
+.TP
+.B 1
+EFI boot order variables are available, and a rEFInd entry was found, but
+the call to \fIefibootmgr\fR returned a failure code.
+
+.TP
+.B 2
+EFI boot entries are not available. This condition is often an indication of
+a buggy EFI or badly damaged NVRAM contents.
+
+.TP
+.B 3
+No rEFInd entry could be found in the list of boot options, and so
+no changes were made to the boot order list.
+
+.TP
+.B 4
+The script could not run because of OS issues -- the OS was not Linux,
+the \fIefibootmgr\fR utility was not available, or the script was not run
+as \fIroot\fR.
+
+.SH "LIMITATIONS"
+
+.TP
+.B *
+\fIrefind-mkdefault\fR does not work when booted in BIOS mode (including
+via a Compatibility Support Module, or CSM, on an EFI-based computer).
+Similarly, it does not work if \fIefibootmgr\fR is not installed or fails
+to work for any reason.
+
+.TP
+.B *
+The script uses a very simple algorithm to determine what to move to
+the start of the boot order list. This algorithm may fail if the system
+has redundant or non-functional rEFInd boot entries or if those entries
+are not named in an expected fashion. Cleaning up the boot entries by
+manual use of \fIefibootmgr\fR may be necessary in such cases.
+
+.SH "AUTHORS"
+Primary author: Roderick W. Smith (rodsmith@rodsbooks.com)
+
+.SH "SEE ALSO"
+.BR mvrefind (8),
+.BR mkrlconf (8),
+.BR refind-install (8),
+.BR efibootmgr (8).
+
+\fIhttps://www.rodsbooks.com/refind/\fR
+
+.SH "AVAILABILITY"
+The \fBrefind-mkdefault\fR command is part of the \fIrEFInd\fR package and is
+available from Roderick W. Smith.

@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Theming rEFInd</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />Theming rEFInd</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 4/19/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul>
+
+<li class="tight"><a href="#basics">Theming Basics</li>
+
+<li class="tight"><a href="#banners">Banner and Backgrounds</a></li>
+
+<li class="tight"><a href="#icons">Icons</a></li>
+
+<li class="tight"><a href="#icon_backgrounds">Icon Selection Backgrounds</a></li>
+
+<li class="tight"><a href="#fonts">Fonts</a></li>
+
+<li class="tight"><a href="#known_themes">Known Themes</a></li>
+
+</ul>
+
+</div>
+
+<p>rEFInd relies on both built-in and external graphical elements in its user interface, and all of these elements can be replaced by user-specified files. This fact makes rEFInd's "look and feel" highly adjustable even by non-programmers. This page will help you get started in making such changes to each of the major sets of features: banners and backgrounds, icons, icon selection backgrounds, and fonts. I conclude this page with pointers to a few themes that users have created for rEFInd.</p><a name="basics">
+<h2>Theming Basics</h2>
+</a>
+
+<p>Broadly speaking, rEFInd's graphical elements fall into four categories:</p>
+
+<ul>
+
+<li><b>Banners and backgrounds</b>&mdash;A <i>banner</i> is a logo or small graphical element that rEFInd displays horizontally centered in the top half of the screen. The rest of the screen is filled with a solid color derived from the color used in the top-left pixel of the banner image. rEFInd includes a built-in banner image that's used if you don't specify another image with the <tt>banner</tt> token in <tt>refind.conf</tt>. A <i>background</i> is simply a banner image that fills the screen. As a general rule, PNG and JPEG files work best for this element.</li>
+
+<li><b>Icons</b>&mdash;rEFInd uses icons for its OS and utility selection tags. The vast majority of these icons are loaded from disk files and so are easily replaced without adjusting the <tt>refind.conf</tt> file. Alternatively, you can specify a new icons directory with the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. Icons are generally PNG or ICNS files, with the latter being a Mac-centric format and so less common.</li>
+
+<li><b>Icon selection backgrounds</b>&mdash;When an icon is selected, it's merged with a slightly larger selection icon, which you can change by specifying a new file with the <tt>selection_big</tt> and <tt>selection_small</tt> tokens in <tt>refind.conf</tt>. These elements are generally best done as PNG files.</li>
+
+<li><b>fonts</b>&mdash;rEFInd uses a 14-point monospaced sans serif font by default. If you don't like this font, you can change it to another monospaced font by using the <tt>font</tt> token in <tt>refind.conf</tt>; however, the font file is a simple image of the font's characters, which limits rEFInd's font capabilities. The PNG format works best for a font.</li>
+
+</ul>
+
+<p>Of course, not all of these elements are likely to be included in all themes. You might want to change just one or two elements&mdash;say, to add an icon for your OS or to change the banner or background.</p>
+
+<p>As noted in the <a href="configfile.html#icons">Setting OS Icons</a> section of the <a href="configfile.html">Configuring the Boot Manager</a> page, rEFInd supports four image file formats: <a href="http://en.wikipedia.org/wiki/Apple_Icon_Image_format">Apple's ICNS</a> format, <a href="http://en.wikipedia.org/wiki/Portable_Network_Graphics">Portable Network Graphics (PNG)</a> format, <a href="https://en.wikipedia.org/wiki/BMP_file_format">bitmap image file (BMP)</a> format, and <a href="https://en.wikipedia.org/wiki/JPEG">Joint Photographic Experts Group (JPEG)</a> format. The demands of each type of image mean that certain file formats work best for it, as noted above; however, you can in principle use any file format for any purpose. Specific file format limitations include:</p>
+
+<ul>
+
+<li>rEFInd's BMP and JPEG implementations lack support for transparency, which is highly desirable in icons, icon backgrounds, and fonts.</li>
+
+<li>Apple's ICNS format supports a limited range of sizes, all of which are square, not rectangular. On the other hand, ICNS supports multiple resolutions in one file, which can be desirable for icons.</li>
+
+<li>rEFInd's BMP implementation does not support compression, so full-screen BMP images will be quite large.</li>
+
+</ul>
+
+<p>rEFInd relies on the <a href="https://lodev.org/lodepng/">LodePNG</a> and <a href="https://keyj.emphy.de/nanojpeg/">NanoJPEG</a> libraries for PNG and JPEG support, respectively. These libraries have certain limitations; for instance, NanoJPEG, and therefore rEFInd, does not support progressive JPEGs. If you have problems with a specific icon or banner image, check the libraries' pages and re-save or convert the image into a more generic form, or even to a different format.</p>
+
+<a name="banners">
+<h2>Banners and Backgrounds</h2>
+</a>
+
+<p>You can create a new background image and logo by placing an image file in rEFInd's main directory and passing its filename to rEFInd with the <tt>banner</tt> option in <tt>refind.conf</tt>. If the image is smaller than the screen, the color in the top-left pixel of the image will be used for the rest of the display. This pixel's color is also used as the background color for submenu text, even for full-screen backgrounds. Using a full-screen background image can produce a dramatically different "look" for rEFInd:</p>
+
+    <br /><center><img src="refind-background.png" align="center"
+    width="750" height="563" alt="rEFInd provides extensive theming
+    options." border=2> </center><br />
+
+<p class="sidebar"><b>Tip:</b> If you use a laptop, you can create a banner or background that includes your contact information. If you lose your laptop and it's found by an honest person, this should facilitate your getting it back. Setting <tt>timeout 0</tt> in <tt>refind.conf</tt> will ensure that the message remains on the screen indefinitely unless a loader is launched.</p>
+
+<p>Note that in this example, the text immediately below the icons is white, whereas the hint text at the bottom of the screen is black. (The "Rod Smith's Laptop" and other text at the top is part of the image.) The text color is determined by the brightness of the background; rEFInd uses black text against light backgrounds and white text against dark backgrounds. This adjustment is done on a line-by-line basis, so it copes better with horizontal lines than with vertical lines.</p>
+
+<p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> or <tt>refind-banner.svg</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
+
+<p>It's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can now do this with just one image file.</p>
+
+<a name="icons">
+<h2>Icons</h2>
+</a>
+
+<p class="sidebar">Prior to version 0.10.0, rEFInd's icons came from a variety of sources&mdash;mostly from the <a href="http://deviantdark.deviantart.com/art/Oxygen-Refit-70199755">Oxygen Refit</a> package, with OS icons from rEFIt and assorted other sources. If you prefer these icons to the new ones, you can pull them out of a rEFInd 0.9.2 (or earlier) package</p>
+
+<p>The core icons in rEFInd 0.10.0 and later come from the <a
+href="http://alecive.deviantart.com/art/AwOken-163570862">AwOken 2.5 icon
+set,</a> with additional icons created by me, and a few others taken from
+other sources. (The details are documented in the <tt>README</tt> file in
+the <tt>icons</tt> subdirectory.) These icons have a "flat" appearance, but
+with drop shadows to provide a type of depth. Most of the individual icons
+use just one color, aside from the drop shadow. Of course, the point of
+themes is that you might get bored with, or simply not like, the default
+graphics, so you can change them.</p>
+
+<p>As described on various other pages of this document, rEFInd relies on icon files located in its <tt>icons</tt> subdirectory, and occasionally elsewhere, to define its overall appearance. You can adjust rEFInd's icons in a few ways:</p>
+
+<ul>
+
+<li>You can create new icons, place them in a subdirectory of rEFInd's main directory, and tell the program to use the new icons by setting the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. This will affect the appearance of the OS tags, the utility tags, and so on. The names of these icons should match those in the <tt>icons</tt> subdirectory (although you can substitute file formats, with a suitable filename change), and are fairly self-explanatory. The default size for OS tags is 128x128 pixels, tags for 2nd-row utilities are ordinarily 48x48 pixels, and drive-type badges are 32x32 pixels by default. If an icon is missing from the directory specified by <tt>icons_dir</tt>, rEFInd falls back to the icon from the standard <tt>icons</tt> subdirectory; thus, you can replace just a subset of the standard icons. rEFInd can use icons in any of several formats, as described earlier, in <a href="#basics">Theming Basics.</a> PNG files are the easiest to generate on most platforms. You can generate ICNS files in various Apple programs or by using the <a href="http://icns.sourceforge.net/">libicns</a> library (and in particular its <tt>png2icns</tt> program) in Linux.</li>
+
+<li>You can do as above, but place your new icons in the default <tt>icons</tt> subdirectory. This method is discouraged because using the <tt>refind-install</tt> script to upgrade rEFInd will replace your customized icons.</li>
+
+<li>You can customize the appearance of an individual boot loader by placing an ICNS or PNG file in its directory with the same name as the boot loader but with a suitable image file extension, such as <tt>.icns</tt> or <tt>.png</tt>. For instance, if your boot loader program is <tt>elilo.efi</tt>, you can create a custom icon by naming it <tt>elilo.png</tt>.</li>
+
+<li>You can provide an icon for boot loaders stored in the root directory of a filesystem by placing a file called <tt>.VolumeIcon.icns</tt>, <tt>.VolumeIcon.png</tt>, <tt>.VolumeIcon.bmp</tt>, <tt>.VolumeIcon.jpg</tt>, or <tt>.VolumeIcon.jpeg</tt> in that volume's root.</li>
+
+<li>You can set a custom badge (the icon that identifies the disk type) by creating a file called <tt>.VolumeBadge.icns</tt>, <tt>.VolumeBadge.png</tt>, <tt>.VolumeBadge.bmp</tt>, <tt>.VolumeBadge.jpg</tt>, or <tt>.VolumeBadge.jpeg</tt> in that volume's root. This setting applies to all the boot loaders found on this volume, even if they're in subdirectories.</li>
+
+<li>You can adjust the sizes of icons by using the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>. These tokens adjust the size of the first-row OS and second-row tool icons, respectively. The <tt>big_icon_size</tt> option also indirectly sets the disk-type badge size; badges have sides that are 1/4 the size of OS icons. The icons provided with rEFInd are 128x128 for OS icons, 48x48 for tools, and 32x32 for badges. The <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens cause these icons to be scaled to the desired value; however, for best results you should replace the default icons with ones generated natively in the desired size. (All the image file formats supported by rEFInd are bitmap formats, and so the images will be degraded by scaling operations.)</li>
+
+</ul>
+
+<p>As an example of what the combination of icons and backgrounds can do, consider my own <a href="https://sourceforge.net/projects/refind/files/themes/">Snowy theme,</a> showing the same boot options as the preceding image:</p>
+
+    <br /><center><img src="refind-background-snowy.png" align="center"
+    width="750" height="563" alt="The Snowy theme uses predominantly white
+    icons and a background image to match its name" border=2>
+    </center><br />
+
+<a name="icon_backgrounds">
+<h2>Icon Selection Backgrounds</h2>
+</a>
+
+<p>rEFInd identifies the current selection by displaying a partially-transparent icon "between" the OS or tool icon and the background image. The default icon works reasonably well on both solid and image backgrounds, but if you like, you can customize it by creating new icons. You should create both 144x144 and 64x64 images and tell rEFInd about them by using the <tt>selection_big</tt> and <tt>selection_small</tt> tokens, respectively, in <tt>refind.conf</tt>. (If you scale your icons, you may want to adjust the selection tile images appropriately. The big image is 9/8 the size of its matching icons, while the small tile is 4/3 the size of its icons.) If you omit the large icon, rEFInd will stretch the small icon to fit the larger space; if you omit the small icon, rEFInd will use the default small icon. Because PNG supports both transparency and the unusual sizes of the selection icon, PNG is best if you want your selection background to show the underlying image beneath it. (You can create the illusion of transparency on a solid background by matching the colors, though.)</p>
+
+<a name="fonts">
+<h2>Fonts</h2>
+</a>
+
+<p>rEFInd's default font is a 14-point (12-point in 0.6.5 and earlier) serif monospaced font. I also include a handful of alternatives in the <tt>fonts</tt> subdirectory. rEFInd's font support is extremely rudimentary, though; it reads an image file that holds the glyphs from ASCII 32 (space) through ASCII 126 (tilde, <tt>~</tt>), plus a glyph that's displayed for all characters outside of this range. Thus, rEFInd can't currently display non-ASCII characters or use proportional (variable-width) fonts. You can change the font from one monospaced font to another and change the font size, though.</p>
+
+<p>If you want to create your own fonts, you can do so. If you're using Linux, the <tt>mkfont.sh</tt> script in the <tt>fonts</tt> subdirectory will convert an installed <i>monospace</i> font into a suitable format. (This script works properly for most fonts, but if a font is unusually thin or wide, you will have to adjust the <tt>let CellWidth=</tt> line near the end of the file.) You can use it like this:</p>
+
+<pre class="listing">
+$ <tt class="userinput">./mkfont.sh Liberation-Mono-Italic 14 -1 liberation-mono-italic-14.png</tt>
+</pre>
+
+<p>The result is a PNG file, <tt>liberation-mono-italic-14.png</tt>, that you can copy to your rEFInd directory and load with the <tt>font</tt> token in <tt>refind.conf</tt>, as in:</p>
+
+<pre class="listing">font liberation-mono-italic-14.png</pre>
+
+<p>The <tt>mkfont.sh</tt> script takes four arguments:</p>
+
+<ul>
+
+<li><b>The font name</b>&mdash;Type <tt class="userinput">convert -list font | less</tt> to obtain a list of fonts available on your computer. Note, however, that rEFInd requires <i>monospaced</i> (fixed-width) fonts, and most of the fonts installed on most computers are variable-width.</li>
+
+<li><b>The font size in points</b></li>
+
+<li><b>A y offset</b>&mdash;Many fonts require an adjustment up (negative values), or occasionally down (positive values) to fit in the PNG image area. You'll have to use trial and error to get this to work.</li>
+
+<li><b>The output filename</b></li>
+
+</ul>
+
+<p>I recommend checking the PNG file in a graphics program like <tt>eog</tt> before using it. Note that the font files should have an alpha layer, which many graphics programs display as a gray-and-white checkered background. This requirement, combined with ICNS's limited set of supported sizes, makes PNG the only practical file format for rEFInd fonts.</p>
+
+<p>If you're not using Linux, or if you want to use some other method of
+generating fonts, you can do so. The font files must contain glyphs for the
+95 characters between ASCII 32 (space) and ASCII 126 (tilde, ~), inclusive,
+plus a 96th glyph that rEFInd displays for out-of-range characters. To work
+properly, the characters must be evenly spaced and the PNG image must be a
+multiple of 96 pixels wide, with divisions at appropriate points. In theory,
+you should be able to take a screen shot of a program displaying the
+relevant characters and then crop it to suit your needs and convert the
+background color to transparency. In practice, this is likely to be
+tedious.</p>
+
+<a name="known_themes">
+<h2>Known Themes</h2>
+</a>
+
+<p>In addition to this default icon set, I've received word of a few other rEFInd themes:</p>
+
+<ul>
+
+<li><a href="https://sourceforge.net/projects/refind/files/themes/">Snowy</a> is my own theme. It's built from (mostly) white variants of rEFInd's standard icons and includes a photo of a snowy field as a background image. It's shown earlier on this page.</li>
+
+<li><a href="http://ecto-plazm.deviantart.com/art/rEFInd-Icon-Theme-296571397">ecto-plazm's theme</a> was one of the first independent themes to be created for rEFInd.</li>
+
+<li>Evan Purkhiser's <a href="https://github.com/EvanPurkhiser/rEFInd-minimal-theme">Minimal theme</a> uses black icons on a gray background of varied brightness, as shown here:</li>
+
+    <br /><center><a
+    href="https://github.com/EvanPurkhiser/rEFInd-minimal"><img
+    src="https://camo.githubusercontent.com/999cff82d4bea54f222e165d647b5df597f45b86/687474703a2f2f692e696d6775722e636f6d2f33624d473655372e706e67"
+    align="center" width="750" alt="Minimal uses flat icons and a subtly-graded background" border=2> </a></center><br />
+
+<li>John Trenton Cary's <a href="https://github.com/JohnTrentonCary/rEFInd-Metro">rEFInd Metro</a> theme is another minimal theme. It uses a solid background color and a number of OS icons.</li>
+
+    <br /><center><a href="rEFInd-Metro.png"><img
+    src="rEFInd-Metro.png"
+    align="center" width="500" alt="rEFInd Next uses simple white icons against green artwork" border=2> </a></center><br />
+
+<li>Sean Gibbons' <a href="http://sdbinwiiexe.deviantart.com/art/rEFInd-Next-Theme-407754566">rEFInd Next</a> theme is "inspired by both iOS 7 and Windows 8 interfaces." It includes both a background image and a number of OS icons.</li>
+
+    <br /><center><a
+    href="http://sdbinwiiexe.deviantart.com/art/rEFInd-Next-Theme-407754566"><img
+    src="http://orig15.deviantart.net/5db2/f/2013/290/b/d/refind_next_theme_by_sdbinwiiexe-d6qrlfq.png"
+    align="center" width="750" alt="rEFInd Next uses simple white icons against green artwork" border=2> </a></center><br />
+
+<li>Zhu Qunying has created a <a href="http://zhu-qy.blogspot.com/2014/02/a-slackware-banner-logo-for-refind-boot.html">Slackware-themed banner logo</a> for rEFInd. Although it's not a full theme, I thought I'd mention it.</li>
+
+<li>naymlezwun has created an <a href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750">macOS theme</a> for rEFInd.</li>
+
+    <br /><center><a
+    href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750"><img
+    src="http://pre11.deviantart.net/6da5/th/pre/f/2014/202/9/e/refind_os_x_theme_by_naymlezwun-d7rplza.png"
+    align="center" width="750" alt="the rEFInd macOS theme uses Mac-like icons" border=2> </a></center><br />
+
+<li>jamaladdeen on deviantART has created another <a href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1">macOS theme</a> that resembles the macOS environment.</li>
+
+    <br /><center><a
+    href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1"><img
+    src="http://orig06.deviantart.net/6a20/f/2014/310/3/5/refind_osx_standard_theme_1_0_by_jamaladdeen-d85g1no.png"
+    align="center" width="750" alt="Another macOS-like theme" border=2> </a></center><br />
+
+<li>Brian Lechthaler has created an <a href="http://sta.sh/0raifz8774v">alternative rEFInd banner:</a>
+
+    <br /><center><a href="http://sta.sh/0raifz8774v"><img
+    src="http://orig10.deviantart.net/2799/f/2015/013/2/c/refind_banner_by_brianlechthaler-d8dt90h.png"
+    align="center" alt="An alternative simple banner for rEFInd" border=2>
+    </a></center><br />
+
+<li>User munlik has created a theme called <a href="http://munlik.deviantart.com/art/rEFInd-boot-manager-theme-Regular-theme-512091944">Regular-theme</a> on Deviantart. The original developer of this theme seems to have abandoned it, but bobafetthotmail provides a variant with additional icons <a href="https://github.com/bobafetthotmail/refind-theme-regular">hosted on github.</a></li>
+
+    <br /><center><a
+    href="http://munlik.deviantart.com/art/Regular-rEFInd-theme-512091944"><img
+    src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/a0bb119c-973b-4db8-a589-a27c75e57b9c/d8gvwo8-c60dbd9c-6d8e-4758-9cf5-2756f1c2b5f1.png/v1/fill/w_854,h_480,q_80,strp/refind_theme_by_munlik_d8gvwo8-fullview.jpg"
+    align="center" width="750" alt="A clean theme with a purple background"
+    border=2> </a></center><br />
+
+<li>Despite its name, the <a href="https://github.com/pradyumnasagar/tux4ubuntu">Tux Boot Loader Theme for Ubuntu</a> can be used with any Linux distribution (or on a system without Linux installed at all).</li>
+
+    <br /><center><a href="tux-refind-theme.png"><img
+    src="tux-refind-theme.png" align="center" width="584" alt="A theme with
+    a dark background and icons with a disk-icon theme" border=2>
+    </a></center><br />
+
+<li>The <a href="https://github.com/lukechilds/refind-ambience">rEFInd Ambience Theme</a> is another one with minimalistic icons against a shaded background.</li>
+
+    <br /><center><a href="ambience.png"><img
+    src="ambience.png" align="center" width="800" alt="A theme with
+    a shaded background and simple icons" border=2>
+    </a></center><br />
+
+<li>The <a
+    href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-chalkboard-762215180">rEFInd-Chalkboard</a>
+    theme by AliciaTransmuted emulates the appearance of writing on a
+    chalkboard. See <a
+    href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">here</a>
+    for all of AliciaTransmuted's rEFInd themes.</li>
+
+    <br /><center><a
+    href="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/776e3e1b-262f-4374-b52a-54cc6ff65e3b/dclswzw-59ecacee-8436-452e-a0c6-18e6d34aa70f.png/v1/fill/w_995,h_803,q_70,strp/refind_chalkboard_by_aliciatransmuted_dclswzw-pre.jpg"><img
+    src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/776e3e1b-262f-4374-b52a-54cc6ff65e3b/dclswzw-59ecacee-8436-452e-a0c6-18e6d34aa70f.png/v1/fill/w_995,h_803,q_70,strp/refind_chalkboard_by_aliciatransmuted_dclswzw-pre.jpg"
+    align="center" width="800" alt="A theme that emulates the look of
+    writing on a chalkboard" border=2> </a></center><br />
+
+<li>The <a
+    href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-details-763439854">rEFInd-Details</a>
+    theme by AliciaTransmuted implements many unique and colorful icons. See <a
+    href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">here</a>
+    for all of AliciaTransmuted's rEFInd themes.</li>
+
+    <br /><center><a
+    href="https://pre00.deviantart.net/bf4e/th/pre/f/2018/258/5/6/refind_details_by_aliciatransmuted-dcmj5ym.png"><img
+    src="https://pre00.deviantart.net/bf4e/th/pre/f/2018/258/5/6/refind_details_by_aliciatransmuted-dcmj5ym.png"
+    align="center" width="800" alt="A theme that emulates the look of
+    writing on a chalkboard" border=2> </a></center><br />
+
+<li>The <a
+    href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-indulgence-763759027">rEFInd-Indulgence</a>
+    theme by AliciaTransmuted uses a background that resembles soft
+    leather. See <a
+    href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">here</a>
+    for all of AliciaTransmuted's rEFInd themes.</li>
+
+    <br /><center><a
+    href="https://orig00.deviantart.net/74e4/f/2018/258/1/9/refind_indulgence_by_aliciatransmuted-dcmq08j.png"><img
+    src="https://orig00.deviantart.net/74e4/f/2018/258/1/9/refind_indulgence_by_aliciatransmuted-dcmq08j.png"
+    align="center" width="800" alt="A theme that emulates the look of
+    writing on a chalkboard" border=2> </a></center><br />
+
+<li>The <a
+    href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-wildside-763760054">rEFInd-Wildside</a>
+    theme by AliciaTransmuted uses a dark background and dark red icons. See <a
+    href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">here</a>
+    for all of AliciaTransmuted's rEFInd themes.</li>
+
+    <br /><center><a
+    href="https://orig00.deviantart.net/fb59/f/2018/258/8/5/refind_wildside_by_aliciatransmuted-dcmq112.png"><img
+    src="https://orig00.deviantart.net/fb59/f/2018/258/8/5/refind_wildside_by_aliciatransmuted-dcmq112.png"
+    align="center" width="800" alt="A theme that emulates the look of
+    writing on a chalkboard" border=2> </a></center><br />
+
+
+
+
+<li>The <a
+    href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-splash-771160419">rEFInd-splash</a>
+    theme by AliciaTransmuted provides a swimming pool theme to the rEFInd main screen. See <a
+    href="https://www.deviantart.com/aliciatransmuted/gallery/67179261/rEFInd-themes">here</a>
+    for all of AliciaTransmuted's rEFInd themes.</li>
+
+    <br /><center><a
+    href="https://orig00.deviantart.net/c1f2/f/2018/307/8/5/refind_splash_by_aliciatransmuted-dcr4n6r.png"><img
+    src="https://orig00.deviantart.net/c1f2/f/2018/307/8/5/refind_splash_by_aliciatransmuted-dcr4n6r.png"
+    align="center" width="800" alt="A theme that emulates the look of
+    writing on a chalkboard" border=2> </a></center><br />
+
+
+</ul>
+
+<p>If you've created or discovered another rEFInd theme, please <a href="mailto:rodsmith@rodsbooks.com">tell me about it</a> so that I can provide a link to it from this page.</p>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="linux.html">Learn about methods of booting Linux with rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

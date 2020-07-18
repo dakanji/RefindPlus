@@ -1,0 +1,286 @@
+.\" Copyright 2015-2020 Roderick W. Smith (rodsmith@rodsbooks.com)
+.\" May be distributed under the GNU Free Documentation License version 1.3 or
+any later version
+.TH "REFIND-INSTALL" "8" "0.12.0" "Roderick W. Smith" "rEFInd Manual"
+.SH "NAME"
+refind-install \- Install rEFInd to the ESP and create an NVRAM entry
+.SH "SYNOPSIS"
+.BI "refind-install "
+[--notesp | --usedefault \fIdevice-file\fR | --root \fImount-point\fR |
+--ownhfs \fIdevice-file\fR ] [--keepname] [--nodrivers | --alldrivers]
+[--shim \fIshim-filename\fR] [--localkeys] [--encryptkeys] [--yes]
+
+
+.SH "DESCRIPTION"
+
+To be useful, the rEFInd boot manager must be installed to the computer's
+EFI System Partition (ESP) or other EFI-accessible location. In most cases,
+an NVRAM entry describing rEFInd's location must also be created. These
+steps can be performed manually; however, the \fBrefind-install\fR command
+provides an automated way to perform these tasks under both Linux and OS X.
+The exact behavior and options vary depending on the OS, however.
+
+Some details that can affect how the script runs include the following:
+
+.TP
+.B *
+If you run the script as an ordinary user, it attempts to acquire
+\fBroot\fR privileges by using the \fBsudo\fR command. This works on Mac OS
+X and some Linux installations (such as under Ubuntu or if you've added
+yourself to the \fBsudo\fR users list), but on some Linux installations
+this will fail. On such systems, you should run \fBrefind\-install\fR as
+root.
+
+.TP
+.B *
+Under OS X, you can run the script with a mouse by opening a Terminal
+session and then dragging\-and\-dropping the \fBrefind\-install\fR file to
+the Terminal window. You'll need to press the Return or Enter key to run
+the script.
+
+.TP
+.B *
+If you're using OS X 10.7's Whole Disk Encryption (WDE) feature, or the
+loogical volumes feature in OS X 10.10, you must install rEFInd to the ESP
+or to a separate HFS+ partition. The default in rEFInd 0.8.4 and later is
+to install to the ESP. If you prefer to use a separate HFS+ volume, the
+\fB\-\-ownhfs \fIdevice-file\fR option to \fBrefind\-install\fR is required.
+
+.TP
+.B *
+If you're not using WDE or logical volumes, you can install rEFInd to the
+OS X root (/) partition by using the \-\-notesp option to
+\fBrefind\-install\fR. Using this option is recommended when upgrading from
+a working rEFInd installation in this location.
+
+.TP
+.B *
+If you're replacing rEFIt with rEFInd on a Mac, there's a chance that
+\fBrefind\-install\fR will warn you about the presence of a program called
+\fB/Library/StartupItems/rEFItBlesser\fR and ask if you want to delete it.
+This program is designed to keep rEFIt set as the boot manager by
+automatically re\-blessing it if the default boot manager changes. This is
+obviously undesirable if you install rEFInd as your primary boot manager,
+so it's generally best to remove this program. If you prefer to keep your
+options open, you can answer \fBN\fR when \fBrefind\-install\fR asks if you
+want to delete rEFItBlesser, and instead manually copy it elsewhere. If you
+subsequently decide to go back to using rEFIt as your primary boot manager,
+you can restore rEFItBlesser to its place.
+
+.TP
+.B *
+If you intend to boot BIOS-based OSes on a UEFI-based PC, you must edit the
+\fBrefind.conf\fR file's \fBscanfor\fR line to enable the relevant
+searches. This is not necessary on Macs, though; because of the popularity
+of dual boots with Windows on Macs, the BIOS/legacy scans are enabled by
+default on Macs.
+
+.TP
+.B *
+On Linux, \fBrefind\-install\fR checks the filesystem type of the
+\fB/boot\fR directory and, if a matching filesystem driver is available,
+installs it. Note that the "\fB/boot\fR directory" may be on a separate
+partition or it may be part of your root (\fB/\fR) filesystem, in which
+case the driver for your root filesystem is installed. This feature is
+unlikely to work properly from an emergency system, although it might if
+you have a separate \fB/boot\fR partition and if you mount that partition
+at \fB/boot\fR in your emergency system, and the ESP at \fB/boot/efi\fR.
+
+.TP
+.B *
+On OS X, \fBrefind\-install\fR checks your partition tables for signs of a
+Linux installation. If such a sign is found, the script installs the EFI
+filesystem driver for the Linux ext4 filesystem. This will enable rEFInd to
+read your Linux kernel if it's on an ext2, ext3, or ext4 filesystem. Note
+that some configurations will require a \fB/boot/refind_linux.conf\fR file,
+which can be reliably generated only under Linux. (The \fBmkrlconf\fR
+script that comes with rEFInd will do this job once you've booted Linux.)
+In the meantime, you can launch GRUB from rEFInd or press F2 or Insert
+twice after highlighting the Linux option in rEFInd. This will enable you
+to enter a \fBroot=\fI/dev/whatever\fR specification, where
+\fI/dev/whatever\fR is the device identifier of your Linux root (\fB/\fR)
+filesystem.
+
+.TP
+.B *
+If you run \fBrefind\-install\fR on Linux and if
+\fB/boot/refind_linux.conf\fR doesn't already exist, \fBrefind\-install\fR
+creates this file and populates it with a few sample entries. If
+\fB/boot\fR is on a FAT partition (or HFS+ on a Mac), or if it's on an
+ext2fs, ext3fs, ext4fs, ReiserFS, Btrfs, or HFS+ partition and you install
+an appropriate driver, the result is that rEFInd will detect your kernel
+and will probably boot it correctly. Some systems will require manual
+tweaking to \fBrefind_linux.conf\fR, though -- for instance, to add
+\fBdolvm\fR to the boot options on Gentoo systems that use LVM.
+
+.TP
+.B *
+If you pass the \fB\-\-shim\fR option to the script (along with a filename
+for a Shim binary), the script sets up for a Secure Boot configuration via
+Shim. By default, this causes the rEFInd binary to be renamed as
+\fBgrubx64.efi\fR. Recent versions of Shim support passing the name of the
+follow-on program to Shim via a parameter, though. If you want to use this
+feature, you can pass the \fB\-\-keepname\fR option to
+\fBrefind\-install\fR.
+
+.PP
+
+After you run \fBrefind\-install\fR, you should peruse the script's output
+to ensure that everything looks OK. \fBrefind\-install\fR displays error
+messages when it encounters errors, such as if the ESP is mounted read-only
+or if you run out of disk space. You may need to correct such problems
+manually and re\-run the script. In some cases you may need to fall back on
+manual installation, which gives you better control over details such as
+which partition to use for installation.
+
+.SH "OPTIONS"
+
+.TP
+.B \-\-notesp
+This option, which is valid only under OS X, tells \fBrefind-install\fR to
+install rEFInd to the OS X root partition rather than to the ESP. This
+behavior was the default in rEFInd 0.8.3 and earlier, so you may want to
+use it when upgrading installations of that version, unless you used
+\-\-esp (which is now the default behavior, although the \-\-esp option no
+longer exists) or \-\-ownhfs. You may also want to use \-\-notesp on new
+installations if you're sure you're not using whole\-disk encryption or
+logical volumes.
+
+.TP
+.B \-\-usedefault \fIdevice-file\fR
+You can install rEFInd to a disk using the default/fallback filename of
+\fBEFI/BOOT/bootx64.efi\fR (as well as \fBEFI/BOOT/bootia32.efi\fR and
+\fBEFI/BOOT/bootaa64.efi\fR, if the IA\-32 and ARM64
+builds are available) using this option. The device\-file should be an
+unmounted ESP, or at least a FAT partition, as in \fB\-\-usedefault
+/dev/sdc1\fR. Your computer's NVRAM entries will not be modified when
+installing in this way. The intent is that you can create a bootable USB
+flash drive or install rEFInd on a computer that tends to "forget" its
+NVRAM settings with this option. This option is mutually exclusive with
+\-\-notesp and \-\-root.
+
+.TP
+.B \-\-ownhfs \fIdevice-file\fR
+This option should be used only under OS X. It's used to install rEFInd to
+an HFS+ volume other than a standard Mac boot volume. The result should be
+that rEFInd will show up in the Mac's own boot manager. More importantly,
+suspend\-to\-RAM operations may work correctly. Note that this option
+requires an HFS+ volume that is not currently an OS X boot volume. This can
+be a data volume or a dedicated rEFInd partition. The ESP might also work,
+if it's converted to use HFS+; however, HFS+ is a non\-standard filesystem
+for an ESP, and so is not recommended.
+
+.TP
+.B \-\-root \fImount-point\fR
+This option is intended to help install rEFInd from a "live CD" or other
+emergency system. To use it, you should mount your regular installation at
+\fI/mount\-point\fR, including your /boot directory (if it's separate) at
+\fI/mount\-point\fR/boot and (on Linux) your ESP at that location or at
+\fI/mount\-point\fR/boot/efi. The \fBrefind\-install\fR script then
+installs rEFInd to the appropriate location -- on Linux,
+\fI/mount\-point\fR/boot/EFI/refind or
+\fI/mount\-point\fR/boot/efi/EFI/refind, depending on where you've mounted
+your ESP. Under OS X, this option is useful only in conjunction with
+\-\-notesp, in which case rEFInd will install to
+\fI/mount\-point\fR/EFI/refind. The script also adds an entry to your NVRAM
+for rEFInd at this location. You cannot use this option with
+\-\-usedefault. Note that this option is not needed when doing a dual-boot
+Linux/OS X installation; just install normally in OS X.
+
+.TP
+.B \-\-nodrivers
+Ordinarily \fBrefind\-install\fR attempts to install the driver required to
+read /boot on Linux. This attempt works only if you're using ext2fs,
+ext3fs, ext4fs, ReiserFS, or Btrfs on the relevant partition. If you want
+to forego this driver installation, pass the \-\-nodrivers option. This
+option is implicit when you use \-\-usedefault.
+
+.TP
+.B \-\-alldrivers
+When you specify this option, \fBrefind\-install\fR copies all the driver
+files for your architecture. You may want to remove unused driver files
+after you use this option. Note that some computers hang or fail to work
+with any drivers if you use this option, so use it with caution.
+
+.TP
+.B \-\-shim \fIshim\-filename\fR or \fB\-\-preloader \fIpreloader\-filename\fR\fB
+If you pass this option to \fBrefind\-install\fR, the script will copy the
+specified shim program file to the target directory, copy the
+MokManager.efi file from the shim program file's directory to the target
+directory, copy the 64-bit version of rEFInd as grubx64.efi, and register
+shim with the firmware. (If you also specify \-\-usedefault, the NVRAM
+registration is skipped. If you also use \-\-keepname, the renaming to
+grubx64.efi is skipped.) When the target file is identified as PreLoader,
+much the same thing happens, but \fBrefind\-install\fR copies HashTool.efi
+instead of MokManager.efi and copies rEFInd as loader.efi rather than as
+grubx64.efi. The intent is to simplify rEFInd installation on a computer
+that uses Secure Boot; when so set up, rEFInd will boot in Secure Boot
+mode, with one caveat: The first time you boot, MokManager/HashTool will
+launch, and you must use it to locate and install a public key or register
+rEFInd as a trusted application. The rEFInd public key file will be located
+in the rEFInd directory's keys subdirectory under the name refind.cer.
+
+.TP
+.B \-\-localkeys
+This option tells \fBrefind\-install\fR to generate a new Machine Owner Key
+(MOK), store it in /etc/refind.d/keys as refind_local.*, and re-sign all
+the 64-bit rEFInd binaries with this key before installing them. This is
+the preferable way to install rEFInd in Secure Boot mode, since it means
+your binaries will be signed locally rather than with my own key, which is
+used to sign many other users' binaries; however, this method requires that
+both the \fBopenssl\fR and \fBsbsign\fR binaries be installed. The former
+is readily available in most distributions' repositories, but the latter is
+not, so this option is not the default.
+
+.TP
+.B \-\-encryptkeys
+Ordinarily, if you use the \-\-localkeys option, \fBrefind\-install\fR
+stores the local key files on your hard disk in an unencrypted form. Thus,
+should your computer be compromised, the intruder could use your own key to
+sign a modified boot loader, eliminating the benefits of Secure Boot. If you
+use this option, then the private key is stored in an encrypted form,
+secured via an encryption password. You must enter this password before the
+key can be used to sign any binary, thus reducing the risk that an intruder
+could hijack your boot process. This is obviously a highly desirable option,
+but the downside is that you must remember the password and enter it
+whenever you update rEFInd or any other program signed with your private
+key. This also makes a fully automated update of rEFInd impossible.
+
+.TP
+.B \-\-keepname
+This option is useful only in conjunction with \-\-shim. It tells
+\fBrefind\-install\fR to keep rEFInd's regular filename (typically
+refind_x64.efi) when used with shim, rather than rename the binary to
+grubx64.efi. This change cuts down on the chance of confusion because of
+filename issues; however, this feature requires that shim be launched with
+a command-line parameter that points to the rEFInd binary under its real
+name. versions of shim prior to 0.7 do not properly support this feature.
+(Version 0.4 supports it but with a buggy interpretation of the follow-on
+loader specification.) If your NVRAM variables become corrupted or are
+forgotten, this feature may make rEFInd harder to launch. This option is
+incompatible with \-\-usedefault and is unavailable when run under OS X or
+without the \-\-shim option. If the script discovers an existing rEFInd
+installation under EFI/BOOT or EFI/Microsoft/Boot and no other rEFInd
+installation when this option is used, it will abort.
+
+.TP
+.B \-\-yes
+This option causes the script to assume a \fBY\fR input to every yes/no
+prompt that can be generated under certain conditions, such as if you
+specify \-\-shim but \fBrefind\-install\fR detects no evidence of a Secure
+Boot installation. This option is intended mainly for use by scripts such
+as those that might be used as part of an installation via an RPM or Debian
+package.
+
+.SH "AUTHORS"
+Primary author: Roderick W. Smith (rodsmith@rodsbooks.com)
+
+.SH "SEE ALSO"
+.BR mkrlconf (8),
+.BR mvrefind (8).
+
+\fIhttps://www.rodsbooks.com/refind/\fR
+
+.SH "AVAILABILITY"
+The \fBrefind\-install\fR command is part of the \fIrEFInd\fR package and is
+available from Roderick W. Smith.

@@ -1,0 +1,11 @@
+Template: refind/install_to_esp
+Type: boolean
+Default: true
+_Description: Automatically install rEFInd to the ESP?
+ It is necessary to install rEFInd to the EFI System Partition (ESP) for
+ it to control the boot process.
+ .
+ Not installing the new rEFInd binary on the ESP may leave the system in an
+ unbootable state. Alternatives to automatically installing rEFInd include
+ running /usr/sbin/refind-install by hand or installing the rEFInd binaries
+ manually by copying them from subdirectories of /usr/share/refind-{version}.

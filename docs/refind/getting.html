@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Getting rEFInd</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />Getting rEFInd</h1>
+
+  <p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<p><b>Note:</b> I consider rEFInd to be <i>beta-quality software!</i> I'm discovering bugs (old and new) and fixing them every few days. That said, rEFInd is a usable program in its current form on many systems. If you have problems, feel free to drop me a line.</p>
+
+<h2>Getting rEFInd from Sourceforge</h2>
+
+<p>You can find the rEFInd source code and binary packages at <a href="http://www.sourceforge.net/projects/refind/">its SourceForge page.</a> Note that rEFInd is OS-independent&mdash;it runs before the OS, so you can download the same binary package for any OS (although some OS-specific packages are also available, for ease of installation). You can obtain rEFInd in several different forms:</p>
+
+<ul>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-bin-0.12.0.zip/download">A
+    binary zip file</a></b>&mdash;Download this file if you want to install
+    rEFInd and/or its filesystem drivers on an <i>x</i>86, <i>x</i>86-64, or
+    ARM64 computer and have no need to test rEFInd first by booting it on an
+    optical disc or USB flash drive. This zip file package includes
+    <i>x</i>86 (aka IA32), <i>x</i>86-64 (aka <i>x</i>64, AMD64, or EM64T),
+    and ARM64 (aka AARCH64 or AA64) versions of rEFInd. Which you install
+    depends on your architecture, as described on the <a
+    href="installing.html">Installing rEFInd</a> page. Some users of Arch
+    Linux have reported problems booting some specific Arch Linux kernels
+    with rEFInd and some other tools. For them, a <a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-bin-gnuefi-0.12.0.zip/download">variant
+    package</a> exists in which the <i>x</i>86-64 binary was compiled with
+    GNU-EFI rather than the usual TianoCore EDK2. This change helps some
+    users with this problem.</li>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-0.12.0-1.x86_64.rpm/download">A
+    binary RPM file</a></b>&mdash;If you use an RPM-based <i>x</i>86-64
+    Linux system such as Fedora or openSUSE, you can install the binary RPM
+    package rather than use the binary zip file. (I don't provide
+    equivalent 32-bit [<i>x</i>86] or ARM64 packages.) This package runs the
+    <tt>refind-install</tt> script (described on the <a
+    href="installing.html">Installing rEFInd</a> page) as part of the
+    installation process. Distribution maintainers can examine the
+    <tt>refind.spec</tt> file in the source package and tweak it to their
+    needs. The <a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-0.12.0-1.src.rpm/download">source
+    RPM file</a> might or might not build on your system as-is; it relies
+    on assumptions about the locations of the GNU-EFI development
+    files.</li>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind_0.12.0-1_amd64.deb/download">A
+    binary Debian package</a></b>&mdash;If you use an <i>x</i>86-64 version
+    of Debian, Ubuntu, Mint, or another Debian-based distribution, you can
+    install from this package, which was converted from the binary RPM
+    package using <tt>alien</tt>. Note that an <a href="#ppa">Ubuntu
+    PPA</a> is available, which may install more smoothly and will cause
+    rEFInd to automatically update with other packages.</li>
+
+<p class="sidebar"><b>Note:</b> At the moment, neither the bootable CD-R image file nor the bootable USB flash drive image file supports booting with Secure Boot active. The x86-64 version of the <a href="http://en.altlinux.org/Rescue">ALT Linux Rescue disc</a> uses a Secure Boot-enabled rEFInd, though, so you may find that useful in some situations.</p>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-cd-0.12.0.zip/download">A
+    CD-R image file</a></b>&mdash;This download contains the same files as
+    the binary zip file, but you can burn it to a CD-R to test rEFInd
+    (and its filesystem drivers) without installing it first. (It boots on
+    UEFI PCs, but fails on some older Macs.) If you like it, you can then
+    copy the files from the CD-R to your hard disk. The files are named in
+    such a way that the disc should boot on either 64-bit (<i>x</i>86-64)
+    or 32-bit (<i>x</i>86) EFI computers. I've included an open source EFI
+    shell program on this disc that's not included in the binary zip file,
+    so that you can access an EFI shell from a bootable disc even if you
+    don't have an EFI shell available from your regular hard disk. This can
+    be an extremely valuable diagnostic tool if you know how to use an EFI
+    shell.</li>
+
+<p class="sidebar"><b>Tip:</b> If you want to make your own bootable USB
+flash drive, download the binary zip file or CD-R image file, prepare a USB
+flash drive with a FAT32 partition, and then use the
+<tt>refind-install</tt> program's <tt>--usedefault</tt> option, and perhaps
+the <tt>--alldrivers</tt> option, as in <tt class="userinput">bash
+refind-install --usedefault /dev/sdd1 --alldrivers</tt> to install to the
+first partition on <tt>/dev/sdd</tt>. This procedure should work even on a
+BIOS-booted computer.</p>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-flashdrive-0.12.0.zip/download">A
+    USB flash drive image file</a></b>&mdash;Although you can create your
+    own rEFInd USB flash drive using the binary <tt>.zip</tt> file and its
+    <tt>refind-install</tt> script, you may find it easier to download this
+    version and copy it to your USB drive with <tt>dd</tt> or some other
+    low-level disk copying utility.</li>
+
+<li><b><a
+    href="http://sourceforge.net/projects/refind/files/0.12.0/refind-src-0.12.0.tar.gz/download">A
+    source code tarball</a></b>&mdash;This is useful if you want to compile
+    the software locally. Note that I use Linux with the <a
+    href="https://sourceforge.net/projects/tianocore/">TianoCore EFI
+    Development Kit 2 (EDK2)</a> to build my binary packages (above),
+    although the <a
+    href="http://sourceforge.net/projects/gnu-efi">GNU-EFI</a> development
+    tools are also supported, and are used in building the Ubuntu PPA.</li>
+
+<li><b><a href="https://sourceforge.net/p/refind/code/ci/master/tree/">Source code via
+    git</a></b>&mdash;If you want to peruse the source code in your Web
+    browser or get the very latest version (including pre-release bug fixes
+    and updates), you can use the Sourceforge git repository. This access
+    method is most useful to programmers, or at least to those who are
+    familiar with programming tools. If you need to ask "what's git?", this
+    is probably not the best way for you to obtain rEFInd.</li>
+
+</ul>
+
+<p>If you're using a platform other than <i>x</i>86, <i>x</i>86-64, or ARM64, you can give rEFInd a try; however, you'll need to build it from source code yourself or track down a binary from another source. (Perhaps by the time you read this it will be included in Linux distributions built for unusual CPUs.)</p>
+
+<p>To extract the files from the zip file images I've provided, you'll need a tool such as <tt>unzip</tt>, which is included with Linux and Mac OS X. Numerous Windows utilities also support this format, such as <a href="http://www.pkware.com/software/pkzip/">PKZIP</a> and <a href="http://www.7-zip.org/">7-Zip.</a> The source files come in tarball format, for which a tool such as the Unix/Linux <tt>tar</tt> utility is appropriate.</p>
+
+<h2>Getting rEFInd from Your OS's Repositories</h2>
+
+<p>I know of a small number of pre-packaged versions of rEFInd, either in official OS repositories or in ancillary repositories:</p>
+
+<ul>
+
+<li><b>Debian</b>&mdash;Debian added rEFInd 0.10.3 to its "sid" (unstable")
+    repository in June of 2016. As of early 2020, rEFInd is now part of the
+    "stable" Debian release. You can download and install it as a separate
+    package <a
+    href="https://packages.debian.org/unstable/admin/refind">here.</a>
+    Debian's inclusion of rEFInd means that derivative distributions, such
+    as Ubuntu and Mint, will eventually receive rEFInd packages, too. Be
+    aware that Debian's package is not signed with a Secure Boot key,
+    although if the <tt>sbsigntool</tt> package is installed, the
+    installation scripts will generate and use their own Secure Boot keys
+    and sign the binary with them.</li>
+
+<li><b>Ubuntu</b>&mdash;Two Ubuntu-specific methods of installing rEFInd in
+    this distribution exist:
+
+    <ul>
+
+    <a name="ubuntu">
+    <li>Ubuntu 17.04 ("Zesty Zapus") and later include rEFInd. Note that,
+	like the Debian package, this one is not signed for use with Secure
+	Boot, but if your system includes the <tt>sbsigntool</tt> package,
+	the installer will generate a local key for this purpose. If you
+	want a more recent version, you can use my PPA or install my Debian
+	package.</li></a>
+
+    <a name="ppa">
+    <li>I've created a <a
+	href="https://launchpad.net/~rodsmith/+archive/refind">rEFInd
+	PPA</a> for Ubuntu. To use it, open a Terminal window and type the following commands:</a>
+
+<pre class="listing">$ <b>sudo apt-add-repository ppa:rodsmith/refind</b>
+$ <b>sudo apt update</b>
+$ <b>sudo apt install refind</b></pre>
+
+	You'll be asked whether to install
+	rEFInd to the ESP when you first install it. Thereafter, the rEFInd
+	version will update along with your other software. This package is
+	built with GNU-EFI and is not signed with a Secure Boot key;
+	however, the install script should sign the binary with a
+	locally-generated key if it detects that your system uses Secure
+	Boot. Thus, if you've previously installed one of my binaries on a
+	Secure Boot system and added its key as a MOK, you'll have to add
+	your local key when you reboot.</li>
+
+    </ul></li>
+
+<li><b>Arch Linux</b>&mdash;You can obtain rEFInd from the Arch
+    repositories, in both a stable version (the <tt>refind-efi</tt> package
+    installable via <tt>pacman</tt>) and an experimental release built from
+    rEFInd's git repository in the Arch User Repository (AUR), under the
+    name <tt>refind-efi-git</tt>. The git release is likely to include
+    pre-release bug fixes and new features, but those features may be
+    poorly tested or undocumented.</li>
+
+<li><b>ALT Linux</b>&mdash;This RPM-based distribution uses
+    rEFInd by default on EFI-based computers. If I understand correctly,
+    ALT's optical disc installer boots with a combination of rEFInd and
+    ELILO. The distribution provides an RPM of rEFInd; see <a
+    href="http://packages.altlinux.org/en/Sisyphus/srpms/refind">this
+    page</a> for details.</li>
+
+<li><b>Gentoo Linux</b>&mdash;An official ebuild of rEFInd is available; see
+    <a href="https://packages.gentoo.org/packages/sys-boot/refind">here</a>
+    for details and <a href="https://wiki.gentoo.org/wiki/Refind">here</a>
+    for Gentoo's official rEFInd documentation.</a> Because Gentoo packages
+    are compiled locally, there is no version that's pre-signed with Secure
+    Boot keys; but as with any rEFInd binary, you can sign it yourself, and
+    the installer script should do so automatically if <tt>sbsign</tt> is
+    available.</li>
+
+<li><b>Slackware</b>&mdash;As far as I know, an official rEFInd package is
+    not available as part of Slackware; however, a <a
+    href="https://www.slackbuilds.org/result/?search=refind&sv=">Slackware
+    package from SlackBuilds</a> is available.</li>
+
+<li><b><a href="http://distro.ibiblio.org/fatdog/web/">Fat
+    Dog</a></b>&mdash;This variant of Puppy Linux uses a combination of
+    rEFInd and GRUB 2 to boot its installation medium in EFI mode and
+    provides a rEFInd package in its repository set.</li>
+
+<li><b>The <a href="http://nixos.org/nixpkgs/">Nix Packages
+    collection</a></b>&mdash;This site creates packages for a number of
+    OSes using its own packaging system.</li>
+
+</ul>
+
+<p>Please keep in mind that OS package repositories lag behind the official rEFInd releases. This time lag can be trivial or significant, depending on the distribution's update policy and release schedule. If you have a problem with rEFInd, please check the latest official release version and, if it's newer than what you've installed from a package repository, update it.</p>
+
+<p>If you hear of rEFInd being included in another OS's official package set, feel free to <a href="mailto:rodsmith@rodsbooks.com">drop me a line.</a></p>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="installing.html">Learn how to install rEFInd</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

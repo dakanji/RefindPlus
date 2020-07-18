@@ -1,0 +1,60 @@
+#
+# gptsync/Make.tiano
+# Build control file for gptsync utility, built with TianoCore EDK2
+#
+
+include ../Make.common
+
+# Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
+#include $(TIANOBASE)/Conf/target.txt
+
+EFILIB          = $(TIANOBASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
+ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
+		  $(EFILIB)/BasePrintLib/BasePrintLib/OUTPUT/BasePrintLib.lib \
+		  $(EFILIB)/BasePcdLibNull/BasePcdLibNull/OUTPUT/BasePcdLibNull.lib \
+		  $(EFILIB)/UefiDebugLibConOut/UefiDebugLibConOut/OUTPUT/UefiDebugLibConOut.lib \
+		  $(EFILIB)/BaseLib/BaseLib/OUTPUT/BaseLib.lib \
+		  $(EFILIB)/BaseMemoryLib/BaseMemoryLib/OUTPUT/BaseMemoryLib.lib \
+		  $(EFILIB)/UefiBootServicesTableLib/UefiBootServicesTableLib/OUTPUT/UefiBootServicesTableLib.lib \
+		  $(EFILIB)/UefiMemoryAllocationLib/UefiMemoryAllocationLib/OUTPUT/UefiMemoryAllocationLib.lib \
+		  $(EFILIB)/UefiDevicePathLib/UefiDevicePathLib/OUTPUT/UefiDevicePathLib.lib \
+		  $(EFILIB)/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib/OUTPUT/UefiRuntimeServicesTableLib.lib \
+		  $(EFILIB)/UefiLib/UefiLib/OUTPUT/UefiLib.lib \
+		  $(EFILIB)/UefiApplicationEntryPoint/UefiApplicationEntryPoint/OUTPUT/UefiApplicationEntryPoint.lib
+
+ifeq ($(ARCH),aarch64)
+  ALL_EFILIBS +=  $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
+endif
+
+TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
+                     -I $(TIANOBASE)/MdePkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
+	             -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Framework/Include \
+		     -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Library/Dxe/Include \
+		     -I $(TIANOBASE)/MdeModulePkg/ \
+                     -I $(TIANOBASE)/MdeModulePkg/Include \
+                     -I $(TIANOBASE)/IntelFrameworkPkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
+		     -I ../libeg \
+		     -I ../include \
+		     -I ..
+
+GPTSYNC_NAMES    = gptsync lib os_efi AutoGen ../EfiLib/BmLib
+OBJS             = $(GPTSYNC_NAMES:=.obj)
+BUILDME          = gptsync_$(FILENAME_CODE).efi
+
+ifneq (,$(filter %.efi,$(BUILDME)))
+
+DLL_TARGET = $(subst .efi,.dll,$(BUILDME))
+
+all: $(BUILDME)
+
+$(DLL_TARGET): $(OBJS)
+	$(LD) -o gptsync_$(FILENAME_CODE).dll $(TIANO_LDFLAGS) --start-group $(ALL_EFILIBS) $(OBJS) --end-group
+
+$(BUILDME): $(DLL_TARGET)
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)
+	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME) $(DLL_TARGET)
+
+endif
+

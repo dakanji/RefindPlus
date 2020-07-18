@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+# Script to create a refind_linux.conf file for the current Linux
+# installation.
+
+# copyright (c) 2012-2015 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# Usage:
+#
+# ./mkrlconf [--force]
+#
+# Options:
+#
+#   --force  -- Overwrite an existing file (default is to not replace existing file)
+
+# Revision history:
+#
+# 0.10.1  -- Improve extraction of kernel options from /proc/cmdline
+# 0.10.0  -- Renamed from mkrlconf.sh to mkrlconf; changed to get $DefaultOptions
+#            from /proc/cmdline rather than from GRUB
+# 0.9.0   -- Added check for OS type, to keep from running pointlessly on OS X
+# 0.7.7   -- Fixed bug that caused stray PARTUUID= and line breaks in generated file
+# 0.5.1   -- Initial release
+#
+# Note: mkrlconf version numbers match those of the rEFInd package
+# with which they first appeared.
+
+RLConfFile="/boot/refind_linux.conf"
+
+if [[ `uname -s` != "Linux" ]] ; then
+    echo "This script is intended to be run from Linux. Aborting!"
+    echo ""
+    exit 1
+fi
+
+if [[ ! -f $RLConfFile || $1 == "--force" ]] ; then
+    RootFS=`df / | grep dev | cut -f 1 -d " "`
+    StartOfDevname=`echo $RootFS | cut -b 1-7`
+    if [[ $StartOfDevname == "/dev/sd" || $StartOfDevName == "/dev/hd" ]] ; then
+        # Identify root filesystem by UUID rather than by device node, if possible
+        Uuid=`blkid -o export -s UUID $RootFS 2> /dev/null | grep UUID=`
+        if [[ -n $Uuid ]] ; then
+            RootFS=$Uuid
+        fi
+    fi
+    FirstCmdlineOption=`cat /proc/cmdline | cut -d ' ' -f 1`
+    if [[ "$FirstCmdlineOption" =~ (vmlinuz|bzImage|kernel) ]] ; then
+        DefaultOptions=`cat /proc/cmdline | cut -d ' ' -f 2- | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+    else
+        DefaultOptions=`cat /proc/cmdline | sed 's/\S*initrd=\S*//g' | sed 's/ *$//' | sed 's/^ *//'`
+    fi
+    echo "\"Boot with standard options\"  \"$DefaultOptions\"" > $RLConfFile
+    echo "\"Boot to single-user mode\"    \"$DefaultOptions single\"" >> $RLConfFile
+    echo "\"Boot with minimal options\"   \"ro root=$RootFS\"" >> $RLConfFile
+else
+    echo "Existing $RLConfFile found! Not overwriting!"
+    echo "To force overwriting, pass the --force option."
+    echo ""
+fi

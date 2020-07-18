@@ -1,0 +1,51 @@
+# Dutch translation of refind debconf templates.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the refind package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: refind\n"
+"Report-Msgid-Bugs-To: refind@packages.debian.org\n"
+"POT-Creation-Date: 2015-12-12 18:35-0500\n"
+"PO-Revision-Date: 2016-08-01 22:17+0200\n"
+"Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
+"Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Gtranslator 2.91.6\n"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid "Automatically install rEFInd to the ESP?"
+msgstr "rEFInd automatisch installeren op de ESP?"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"It is necessary to install rEFInd to the EFI System Partition (ESP) for it "
+"to control the boot process."
+msgstr ""
+"Om controle te hebben over het opstartproces moet rEFInd op de EFI-"
+"systeempartitie (ESP) geïnstalleerd worden."
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"Not installing the new rEFInd binary on the ESP may leave the system in an "
+"unbootable state. Alternatives to automatically installing rEFInd include "
+"running /usr/sbin/refind-install by hand or installing the rEFInd binaries "
+"manually by copying them from subdirectories of /usr/share/refind-{version}."
+msgstr ""
+"Het nieuwe rEFInd-programma niet op de ESP installeren kan ertoe leiden dat "
+"uw systeem niet meer opstart. Alternatieven voor het automatisch installeren "
+"van rEFInd zijn het handmatig uitvoeren van het commando /usr/sbin/refind-"
+"install of het handmatig installeren van de binaire bestanden van rEFInd "
+"door ze te kopiëren uit onderliggende mappen van /usr/share/refind-{versie}."

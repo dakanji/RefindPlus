@@ -1,0 +1,40 @@
+#
+# gptsync/Make.gnuefi
+# Build control file for the gptsync tool, built with GNU-EFI
+#
+
+#LOCAL_GNUEFI_CFLAGS  = -I. -I../include
+LOCAL_LIBS      = 
+
+OBJS            = gptsync.o lib.o os_efi.o
+#TARGET          = gptsync.efi
+
+include ../Make.common
+
+ifeq ($(ARCH),ia32)
+  TARGET = gptsync_ia32.efi
+endif
+
+ifeq ($(ARCH),x86_64)
+  TARGET = gptsync_x64.efi
+endif
+
+ifeq ($(ARCH),aarch64)
+  TARGET = gptsync_aa64.efi
+endif
+
+all: $(TARGET)
+
+SHLIB_TARGET = $(subst .efi,.so,$(TARGET))
+
+$(SHLIB_TARGET): $(OBJS)
+	$(LD) $(GNUEFI_LDFLAGS) $(SUBSYSTEM_LDFLAG) $(OBJS) -o $@ $(LOCAL_LIBS) $(GNUEFI_LIBS)
+
+$(TARGET): $(SHLIB_TARGET)
+	$(OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel \
+	           -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* \
+		   -j .reloc $(FORMAT) $< $@
+	chmod a-x $(TARGET)
+
+
+# EOF

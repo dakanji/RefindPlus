@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+
+"""
+Set rEFInd as the default boot loader, using Linux's efibootmgr tool.
+
+Copyright (c) 2016 Roderick W. Smith
+
+Authors:
+  Roderick W. Smith <rodsmith@rodsbooks.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 3, or
+(at your option) any later version, as published by the Free Software
+Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import shlex
+import shutil
+import sys
+
+from subprocess import Popen, PIPE
+from argparse import ArgumentParser
+
+
+def discover_data():
+    """Extract boot entry and boot order information.
+
+    :returns:
+        boot_entries, boot_order
+    """
+    command = "efibootmgr -v"
+    bootinfo_bytes = (Popen(shlex.split(command), stdout=PIPE)
+                      .communicate()[0])
+    bootinfo = (bootinfo_bytes.decode(encoding="utf-8", errors="ignore")
+                .splitlines())
+    boot_entries = {}
+    boot_order = []
+    if len(bootinfo) > 1:
+        for s in bootinfo:
+            if "BootOrder" in s:
+                try:
+                    boot_order = s.split(":")[1].replace(" ", "").split(",")
+                except IndexError:
+                    pass
+            else:
+                # On Boot#### lines, #### is characters 4-8....
+                hex_value = s[4:8]
+                # ....and the description starts at character 10
+                name = s[10:]
+                try:
+                    # In normal efibootmgr output, only Boot#### entries
+                    # have characters 4-8 that can be interpreted as
+                    # hex values, so this will harmlessly error out on all
+                    # but Boot#### entries....
+                    int(hex_value, 16)
+                    boot_entries[hex_value] = name
+                except ValueError:
+                    pass
+    return boot_entries, boot_order
+
+
+def add_unordered_entry(boot_entries, boot_order, label):
+    """Find a rEFInd boot_entry and add it to the boot_order list.
+
+    Run if the boot_order list includes no rEFInd entry, in the
+    hopes of finding an existing rEFInd boot_entry that can be
+    used.
+    :param boot_entries:
+        Dictionary of boot entries, with string (hex-encoded number) as
+        key and description as value
+    :param boot_order:
+        List of boot numbers as strings, in boot order
+    :param label:
+        String used to identify rEFInd entry in efibootmgr output
+    :returns:
+        True if an entry was added, False otherwise
+    """
+    added = False
+    for boot_num, description in boot_entries.items():
+        if label.lower() in description.lower():
+            print("Adding Boot{} from boot options list.".format(boot_num))
+            boot_order.insert(0, boot_num)
+            added = True
+    return added
+
+
+def set_refind_first(boot_entries, boot_order, label):
+    """Adjust boot_order so that rEFInd is first.
+
+    :param boot_entries:
+        Dictionary of boot entries, with string (hex-encoded number) as
+        key and description as value
+    :param boot_order:
+        List of boot numbers as strings, in boot order
+    :param label:
+        String used to identify rEFInd entry in efibootmgr output
+    :returns:
+        * -1 if order already OK
+        * 0 if order adjusted
+        * 3 if label was not found in available entries
+    """
+    first_refind_number = i = -1
+    retval = 0
+    found_first_refind = ""
+    show_multiple_warning = True
+    for entry in boot_order:
+        i += 1
+        if label.lower() in boot_entries[entry].lower():
+            if found_first_refind:
+                if show_multiple_warning:
+                    print("Found multiple {} entries! The earliest in the boot order will be made".format(label))
+                    print("the default, but this may not be what you want. Manually checking with")
+                    print("efibootmgr is advisable!\n")
+                    show_multiple_warning = False
+            else:
+                found_first_refind = entry
+                first_refind_number = i
+    if first_refind_number == -1:
+        if not add_unordered_entry(boot_entries, boot_order, label):
+            print("{} was not found in the boot options list!".format(label))
+            print("You should create a {} entry with efibootmgr or by re-installing".format(label))
+            print("(with refind-install, for example)")
+            retval = 3
+    elif first_refind_number == 0:
+        print("{} is already the first entry".format(label))
+        retval = -1
+    elif first_refind_number > 0:
+        del boot_order[first_refind_number]
+        boot_order.insert(0, found_first_refind)
+
+        print("{} is not the first boot entry; adjusting....".format(label))
+    return retval
+
+
+def save_changes(boot_order):
+    """Save an altered boot_order.
+
+    :param boot_order:
+        List of boot numbers as strings, in boot order
+    :returns:
+        0 if there were no problems, 1 otherwise
+    """
+    retval = 0
+    order_string = ",".join(boot_order)
+    command = "efibootmgr -o {}".format(order_string)
+    print("Setting a boot order of {}".format(order_string))
+    try:
+        Popen(shlex.split(command), stdout=PIPE).communicate()[0]
+    except:
+        print("An error occurred setting the new boot order!")
+        retval = 1
+    return retval
+
+
+def main():
+    """Set rEFInd as the default boot option."""
+    description = "Sets rEFInd as the default EFI boot option"
+    parser = ArgumentParser(description=description)
+    parser.add_argument("-L", "--label",
+                        default="rEFInd",
+                        help=("The label used to identify rEFInd (default=rEFInd)"))
+    args = parser.parse_args()
+
+    if sys.platform != "linux":
+        print("This program is useful only under Linux; exiting!")
+        return(4)
+    if shutil.which("efibootmgr") is None:
+        print("The efibootmgr utility is not installed; exiting!")
+        return(4)
+    if not os.geteuid() == 0:
+        print("This program must be run as root (or via sudo); exiting!")
+        return(4)
+
+    retval = 0
+    boot_entries, boot_order = discover_data()
+    if boot_entries == {}:
+        print("No EFI boot entries are available. This may indicate a firmware problem.")
+        retval = 2
+    if boot_order == []:
+        print("The EFI BootOrder variable is not available. This may indicate a firmware")
+        print("problem.")
+    if (retval == 0):
+        changed = set_refind_first(boot_entries, boot_order, args.label)
+        if (changed == 0):
+            retval = save_changes(boot_order)
+        else:
+            print("No changes saved.")
+            if changed > 0:
+                retval = changed
+    else:
+        print("No changes saved.")
+    return(retval)
+
+if __name__ == '__main__':
+    sys.exit(main())

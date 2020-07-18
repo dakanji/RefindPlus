@@ -1,0 +1,69 @@
+#
+# filesystems/Make.tiano
+# Build control file for rEFInd's EFI filesystem drivers
+#
+
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+include ../Make.common
+
+# Below file defines TARGET (RELEASE or DEBUG) and TOOL_CHAIN_TAG (GCC44, GCC45, or GCC46)
+#include $(TIANOBASE)/Conf/target.txt
+
+EFILIB          = $(TIANOBASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
+ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
+		  $(EFILIB)/BasePrintLib/BasePrintLib/OUTPUT/BasePrintLib.lib \
+		  $(EFILIB)/BasePcdLibNull/BasePcdLibNull/OUTPUT/BasePcdLibNull.lib \
+		  $(EFILIB)/UefiDebugLibConOut/UefiDebugLibConOut/OUTPUT/UefiDebugLibConOut.lib \
+		  $(EFILIB)/BaseLib/BaseLib/OUTPUT/BaseLib.lib \
+		  $(EFILIB)/BaseMemoryLib/BaseMemoryLib/OUTPUT/BaseMemoryLib.lib \
+		  $(EFILIB)/UefiBootServicesTableLib/UefiBootServicesTableLib/OUTPUT/UefiBootServicesTableLib.lib \
+		  $(EFILIB)/UefiMemoryAllocationLib/UefiMemoryAllocationLib/OUTPUT/UefiMemoryAllocationLib.lib \
+		  $(EFILIB)/UefiDevicePathLib/UefiDevicePathLib/OUTPUT/UefiDevicePathLib.lib \
+		  $(EFILIB)/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib/OUTPUT/UefiRuntimeServicesTableLib.lib \
+		  $(EFILIB)/UefiLib/UefiLib/OUTPUT/UefiLib.lib \
+		  $(EFILIB)/UefiDriverEntryPoint/UefiDriverEntryPoint/OUTPUT/UefiDriverEntryPoint.lib
+
+ifeq ($(ARCH),aarch64)
+  ALL_EFILIBS +=  $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
+endif
+
+TIANO_INCLUDE_DIRS = -I $(TIANOBASE)/MdePkg \
+                     -I $(TIANOBASE)/MdePkg/Include \
+                     -I $(TIANOBASE)/MdePkg/Include/$(ARCHDIR) \
+		     -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Framework/Include \
+		     -I $(TIANOBASE)/EdkCompatibilityPkg/Foundation/Library/Dxe/Include
+
+FSW_NAMES       = fsw_efi fsw_core fsw_efi_lib fsw_lib AutoGen
+OBJS            = $(FSW_NAMES:=.obj)
+#DRIVERNAME      = ext2
+BUILDME          = $(DRIVERNAME)_$(FILENAME_CODE).efi
+
+ENTRYPOINT = _ModuleEntryPoint
+
+%.obj: %.c
+	$(CC) $(ARCH_CFLAGS) $(CFLAGS) $(TIANO_INCLUDE_DIRS) \
+	      -DFSTYPE=$(DRIVERNAME) -DNO_BUILTIN_VA_FUNCS \
+	      -D__MAKEWITH_TIANO -c $< -o $@
+
+ifneq (,$(filter %.efi,$(BUILDME)))
+
+DLL_TARGET = $(subst .efi,.dll,$(BUILDME))
+
+all: $(BUILDME)
+
+$(DLL_TARGET): $(OBJS) fsw_$(DRIVERNAME).obj
+	$(LD) -o $(DRIVERNAME)_$(FILENAME_CODE).dll $(TIANO_LDFLAGS) \
+	      --start-group $(ALL_EFILIBS) $(OBJS) fsw_$(DRIVERNAME).obj --end-group
+
+$(BUILDME): $(DLL_TARGET)
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)
+	$(GENFW) -e UEFI_DRIVER -o $(BUILDME) $(DLL_TARGET)
+	mkdir -p ../drivers_$(FILENAME_CODE)
+	cp $(BUILDME) ../drivers_$(FILENAME_CODE)
+
+endif
+

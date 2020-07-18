@@ -1,0 +1,74 @@
+#
+# Makefile for gptsync on Unix platforms
+#
+
+RM = rm -f
+CC = gcc
+
+GPTSYNC_TARGET = gptsync
+GPTSYNC_OBJS   = gptsync.unix.o lib.unix.o os_unix.gptsync.o
+
+SHOWPART_TARGET = showpart
+SHOWPART_OBJS   = showpart.unix.o lib.unix.o os_unix.showpart.o
+
+CPPFLAGS = -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I../include
+CFLAGS   = -Wall
+LDFLAGS  =
+LIBS     =
+
+# system-dependent additions
+
+system = $(shell uname)
+ifeq ($(system),Darwin)
+  CC        = gcc-4.0
+  # TODO: re-enable this once the code is no longer little-endian specific
+  #CFLAGS   += -arch i386 -arch ppc
+  #LDFLAGS  += -arch i386 -arch ppc
+  ifeq (/Developer/SDKs/MacOSX10.4u.sdk,$(wildcard /Developer/SDKs/MacOSX10.4u.sdk))
+    CPPFLAGS += -isysroot /Developer/SDKs/MacOSX10.4u.sdk
+    LDFLAGS  += -Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk
+  endif
+endif
+
+# real making
+
+all: $(GPTSYNC_TARGET) $(SHOWPART_TARGET)
+
+$(GPTSYNC_TARGET): $(GPTSYNC_OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(GPTSYNC_OBJS) $(LIBS)
+
+gptsync.unix.o: gptsync.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+os_unix.gptsync.o: os_unix.c
+	$(CC) $(CPPFLAGS) -DPROGNAME=gptsync $(CFLAGS) -c $< -o $@
+
+$(SHOWPART_TARGET): $(SHOWPART_OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(SHOWPART_OBJS) $(LIBS)
+
+showpart.unix.o: showpart.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+os_unix.showpart.o: os_unix.c
+	$(CC) $(CPPFLAGS) -DPROGNAME=showpart -DNOREADONLYWARN $(CFLAGS) -c $< -o $@
+
+lib.unix.o: lib.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+# additional dependencies
+
+gptsync.unix.o: gptsync.h ../include/syslinux_mbr.h
+os_unix.gptsync.o: gptsync.h
+
+showpart.unix.o: gptsync.h
+os_unix.showpart.o: gptsync.h
+
+lib.unix.o: gptsync.h
+
+# cleanup
+
+clean:
+	$(RM) *.o *~ *% $(GPTSYNC_TARGET) $(SHOWPART_TARGET)
+
+distclean: clean
+	$(RM) .depend
+
+# eof

@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE := 1
+
+include /usr/share/dpkg/architecture.mk
+ifeq (amd64, $(DEB_HOST_ARCH_CPU))
+	ARCH := x86_64
+	EFI_ARCH := x64
+else
+ifeq (i386, $(DEB_HOST_ARCH_CPU))
+	ARCH := ia32
+	EFI_ARCH := ia32
+else
+ifeq (arm64, $(DEB_HOST_ARCH_CPU))
+	ARCH = aarch64
+	EFI_ARCH := aa64
+else
+	$(warning EFI architecture for $(DEB_HOST_ARCH_CPU) is unknown)
+	ARCH := $(DEB_HOST_ARCH_CPU)
+	EFI_ARCH := $(DEB_HOST_ARCH_CPU)
+endif
+endif
+endif
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf drivers_*/
+
+override_dh_auto_build:
+	dh_auto_build -- gnuefi 'ARCH=$(ARCH)'
+	dh_auto_build -- fs_gnuefi 'ARCH=$(ARCH)'
+
+override_dh_auto_install:
+	# "make install" actually runs "efi-install" for the current system, so let's not do that :)
+
+override_dh_install:
+	dh_install
+	mkdir -p debian/refind/usr/share/refind/refind/tools_$(EFI_ARCH)
+	cp gptsync/gptsync_$(EFI_ARCH).efi debian/refind/usr/share/refind/refind/tools_$(EFI_ARCH)/
+
+override_dh_installchangelogs:
+	dh_installchangelogs NEWS.txt

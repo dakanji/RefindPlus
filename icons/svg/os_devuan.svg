@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="428.74014"
+   height="421.65353"
+   viewBox="0 0 428.74015 421.65351"
+   id="svg3668"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="os_devuan-01-color.svg">
+  <title
+     id="title3714">Devuan Logo</title>
+  <defs
+     id="defs3670">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Drop Shadow"
+       id="filter5007">
+      <feFlood
+         flood-opacity="0.498039"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         id="feFlood5009" />
+      <feComposite
+         in="flood"
+         in2="SourceGraphic"
+         operator="in"
+         result="composite1"
+         id="feComposite5011" />
+      <feGaussianBlur
+         in="composite1"
+         stdDeviation="3"
+         result="blur"
+         id="feGaussianBlur5013" />
+      <feOffset
+         dx="6"
+         dy="6"
+         result="offset"
+         id="feOffset5015" />
+      <feComposite
+         in="SourceGraphic"
+         in2="offset"
+         operator="over"
+         result="composite2"
+         id="feComposite5017" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.1910325"
+     inkscape:cx="171.72821"
+     inkscape:cy="222.47055"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1368"
+     inkscape:window-height="759"
+     inkscape:window-x="28"
+     inkscape:window-y="194"
+     inkscape:window-maximized="0"
+     units="px" />
+  <metadata
+     id="metadata3673">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Devuan Logo</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>hellekin</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:publisher>
+          <cc:Agent>
+            <dc:title>Dyne.org Foundation</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title>hellekin, golinux, Centurion_Dan</dc:title>
+          </cc:Agent>
+        </dc:contributor>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-461.83765,-154.95046)">
+    <path
+       sodipodi:nodetypes="ccssscsc"
+       style="display:inline;fill:#a02c2c;fill-opacity:1;stroke:none;stroke-width:0.57134259;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter5007)"
+       d="m 548.23991,250.16619 c 449.42273,107.25074 24.27898,194.46203 24.27898,194.46203 -8.37575,1.33845 -15.13191,5.70144 -19.19935,12.3315 -4.5692,7.44796 -4.95639,17.51142 -0.68955,24.58678 5.19201,8.60951 11.7705,11.58775 17.44425,12.87038 8.92658,2.018 16.13192,-1.19771 16.13192,-1.19771 0,0 217.34283,-64.58853 215.70905,-129.10442 -0.82016,-32.38784 -66.6446,-87.17046 -253.6753,-113.94856 z"
+       id="path4338"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

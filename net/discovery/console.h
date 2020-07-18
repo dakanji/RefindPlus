@@ -1,0 +1,1 @@
+#undef CONSOLE_EFI

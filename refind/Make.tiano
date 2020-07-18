@@ -1,0 +1,59 @@
+#
+# refind/Make.tiano
+# Build control file for rEFInd, using TianoCore EDK2
+# Requires that EfiLib, mok, and libeg subdirectories be built before this
+# file is used.
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+include ../Make.common
+
+EFILIB          = $(TIANOBASE)/Build/Mde/$(TARGET)_$(TOOL_CHAIN_TAG)/$(UC_ARCH)/MdePkg/Library
+ALL_EFILIBS     = $(EFILIB)/BaseDebugPrintErrorLevelLib/BaseDebugPrintErrorLevelLib/OUTPUT/BaseDebugPrintErrorLevelLib.lib \
+                  $(EFILIB)/BasePrintLib/BasePrintLib/OUTPUT/BasePrintLib.lib \
+                  $(EFILIB)/BasePcdLibNull/BasePcdLibNull/OUTPUT/BasePcdLibNull.lib \
+                  $(EFILIB)/UefiDebugLibStdErr/UefiDebugLibStdErr/OUTPUT/UefiDebugLibStdErr.lib \
+                  $(EFILIB)/BaseLib/BaseLib/OUTPUT/BaseLib.lib \
+                  $(EFILIB)/BaseMemoryLib/BaseMemoryLib/OUTPUT/BaseMemoryLib.lib \
+                  $(EFILIB)/UefiBootServicesTableLib/UefiBootServicesTableLib/OUTPUT/UefiBootServicesTableLib.lib \
+                  $(EFILIB)/UefiMemoryAllocationLib/UefiMemoryAllocationLib/OUTPUT/UefiMemoryAllocationLib.lib \
+                  $(EFILIB)/UefiRuntimeServicesTableLib/UefiRuntimeServicesTableLib/OUTPUT/UefiRuntimeServicesTableLib.lib \
+                  $(EFILIB)/UefiDevicePathLib/UefiDevicePathLib/OUTPUT/UefiDevicePathLib.lib \
+                  $(EFILIB)/UefiLib/UefiLib/OUTPUT/UefiLib.lib \
+                  $(EFILIB)/BasePeCoffExtraActionLibNull/BasePeCoffExtraActionLibNull/OUTPUT/PeCoffExtraActionLibNull.lib \
+                  $(EFILIB)/UefiApplicationEntryPoint/UefiApplicationEntryPoint/OUTPUT/UefiApplicationEntryPoint.lib \
+                  $(EFILIB)/DxeServicesLib/DxeServicesLib/OUTPUT/DxeServicesLib.lib \
+                  $(EFILIB)/DxeServicesTableLib/DxeServicesTableLib/OUTPUT/DxeServicesTableLib.lib \
+                  $(EFILIB)/DxeHobLib/DxeHobLib/OUTPUT/DxeHobLib.lib \
+                  $(EFILIB)/BasePeCoffLib/BasePeCoffLib/OUTPUT/BasePeCoffLib.lib
+
+ifeq ($(ARCH),aarch64)
+  ALL_EFILIBS +=    $(EFILIB)/BaseStackCheckLib/BaseStackCheckLib/OUTPUT/BaseStackCheckLib.lib
+endif
+
+SOURCE_NAMES     = apple AutoGen config crc32 driver_support gpt icns \
+                   install  launch_efi launch_legacy lib line_edit linux \
+                   main menu mystrings pointer scan screen
+OBJS             = $(SOURCE_NAMES:=.obj)
+
+all: $(BUILDME)
+
+$(AR_TARGET): $(OBJS)
+	$(AR) -cr $(AR_TARGET).lib $(OBJS)
+
+$(DLL_TARGET)_$(FILENAME_CODE).dll: $(OBJS) ../libeg/libeg.lib ../EfiLib/EfiLib.lib ../mok/mok.lib
+	$(LD) -o $(DLL_TARGET)_$(FILENAME_CODE).dll $(TIANO_LDFLAGS) \
+		  --start-group $(ALL_EFILIBS) $(OBJS) ../libeg/libeg.lib \
+		  ../EfiLib/EfiLib.lib ../mok/mok.lib --end-group
+
+$(BUILDME): $(DLL_TARGET)_$(FILENAME_CODE).dll
+	$(OBJCOPY) --strip-unneeded -R .eh_frame $(DLL_TARGET)_$(FILENAME_CODE).dll
+	$(GENFW) -e UEFI_APPLICATION -o $(BUILDME)_$(FILENAME_CODE).efi \
+		 $(DLL_TARGET)_$(FILENAME_CODE).dll
+
+clean:
+	make clean

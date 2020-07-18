@@ -1,0 +1,106 @@
+/*
+ * \file design.dox
+ * Documentation title page with design information
+ */
+
+
+/**
+\mainpage File System Wrapper Documentation
+
+Welcome to the documentation for FSW. This doxygen-generated documentation
+is intended for developers that either want to integrate FSW into their
+own project or want to write additional file system drivers.
+
+\section goals Design Goals
+
+File System Wrapper wants to provide reusable, read-only file system drivers
+for a range of common file systems. Reusability is achieved through a common
+abstraction layer (called the "core"), which serves as the API for the host
+environment driver. Once the required glue code is written for a host
+environment, that host has access to all file system types implemented by FSW,
+with no code to be written per file system type.
+
+Why read-only? There are a range of reasons why FSW only provides read-only
+access:
+
+- Read-only drivers are much easier to write than read-write drivers.
+- Write access isn't easily abstracted in an OS-independent way because
+  of more delicate buffer I/O handling requirements and features like
+  journalling.
+- There is no risk of destroying data on the disk.
+- Having read access is much better than having no access at all.
+  (Read-only drivers for several file systems can be written in the time
+  it would take to develop a read-write driver for just one file system.)
+- Boot loaders only need read access in most cases.
+
+\section model Object and Data Model
+
+\subsection main_objects Main Objects
+
+There are three main "objects" that FSW works with: volume, dnode, and shandle.
+
+The fsw_volume structure keeps the information that applies to a file
+system volume as a whole. Most importantly, it keeps pointers to the host driver
+and file system driver dispatch tables, which are used by the core to call
+the appropriate functions.
+
+The fsw_dnode structure represents a "directory node", that is any file-like
+object in the file system: regular files, directories, symbolic links as well
+as special files like device nodes. When compared with Unix-style file systems,
+a dnode is very similar to an inode, but it retains some essential information
+from the directory: the canonical name and the parent directory. FSW requires that
+a dnode is uniquely identified by an integer number (currently 32 bit in size).
+Inode numbers can be used for this purpose, non-Unix file systems will have to
+come up with a unique number in some way.
+
+The fsw_shandle structure is used to access file data ("storage handle").
+A dnode only represents the file as such and doesn't offer access to its data.
+An shandle is linked to a certain dnode, but there may be several shandles per
+dnode. The shandle stores a file position pointer (byte offset) that can be changed
+at will. With the current design, an shandle is also used for directory iteration,
+even if the file system stores directory information in a central tree structure.
+
+\subsection disk_access Disk Data Access
+
+Data on the disk is accessed in blocks, addressed by a sequential number starting
+at zero. The block size to use can be set by the file system driver. FSW supports
+two separate block sizes: the "physical block size" is used when accessing the disk,
+the "logical block size" is used when accessing a file's data. For most file
+systems, these two are identical, but there may be some where the file allocation
+block size is larger than the sector or block size used to store metadata. (FAT
+comes to mind as an example.)
+
+For accessing the actual file data, the file system driver doesn't handle the
+disk I/O, but merely returns information about the mapping from file logical
+blocks to disk physical blocks in the fsw_extent structure. This allows host OS
+buffer mechanisms to be used for file data. In special cases, like tail-packing,
+fragments or compressed file systems, the file system driver can return file data
+in an allocated buffer.
+
+\subsection data_hooks Data Extension Hooks
+
+File system specific data can be stored by extending the fsw_volume and fsw_dnode
+structures. The core code uses the structure sizes stored in the fsw_fstype_table
+to allocate memory for these structures. The fsw_shandle and fsw_extent structures
+are not designed to be extended.
+
+Host specific data must be stored in separate structures private to the host
+environment driver. The fsw_volume structure provides a host_data variable to
+store a pointer. The fsw_dnode structure has no such field, because it is assumed
+that all actions regarding dnodes are initiated on the host side and so the
+host-specific private structure is known.
+
+\section callconv Calling Conventions
+
+All functions that can fail return a status code in a fsw_status_t. This type is an
+integer. A boolean test yields true if there was an error and false if the function
+executed successfully, i.e. success is signalled by a 0 return value.
+
+Functions that return data do so either by filling a structure passed in by the caller,
+or by allocating a structure on the heap and returning a pointer through a
+double-indirect parameter. A returned object pointer is the last parameter in the
+parameter list.
+
+(More to be written about specific conventions for dnodes, shandles, strings.)
+
+*/

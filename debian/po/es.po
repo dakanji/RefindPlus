@@ -1,0 +1,70 @@
+# refind po-debconf translation to Spanish.
+# Copyright (C) 2018 Software in the Public Interest
+# This file is distributed under the same license as the refind package.
+#
+# - Initial translation
+# Jonathan Bustillos <jathanblackred@openmailbox.com>, 2018.
+#
+# Traductores, si no conocen el formato PO, merece la pena leer la
+# documentación de gettext, especialmente las secciones dedicadas a este
+# formato, por ejemplo ejecutando:
+# info -n '(gettext)PO Files'
+# info -n '(gettext)Header Entry'
+#
+# Equipo de traducción al español, por favor lean antes de traducir
+# los siguientes documentos:
+#
+# - El proyecto de traducción de Debian al español
+# http://www.debian.org/intl/spanish/
+# especialmente las notas y normas de traducción en
+# http://www.debian.org/intl/spanish/notas
+#
+# - La guía de traducción de po's de debconf:
+# /usr/share/doc/po-debconf/README-trans
+# o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: refind\n"
+"Report-Msgid-Bugs-To: refind@packages.debian.org\n"
+"POT-Creation-Date: 2015-12-12 18:35-0500\n"
+"PO-Revision-Date: 2018-05-27 10:17+0200\n"
+"Last-Translator: Jonathan Bustillos <jathanblackred@openmailbox.com>\n"
+"Language-Team: Debian Spanish <debian-l10n-spanish@lists.debian.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Gtranslator 2.91.7\n"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid "Automatically install rEFInd to the ESP?"
+msgstr "¿Instalar automáticamente REFInd en el ESP?"
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"It is necessary to install rEFInd to the EFI System Partition (ESP) for it "
+"to control the boot process."
+msgstr ""
+"Es necesario instalar rEFInd en la partición del sistema EFI (ESP) para que "
+"controle el proceso de arranque."
+
+#. Type: boolean
+#. Description
+#: ../templates:1001
+msgid ""
+"Not installing the new rEFInd binary on the ESP may leave the system in an "
+"unbootable state. Alternatives to automatically installing rEFInd include "
+"running /usr/sbin/refind-install by hand or installing the rEFInd binaries "
+"manually by copying them from subdirectories of /usr/share/refind-{version}."
+msgstr ""
+"No instalar el nuevo binario de rEFInd en el ESP puede dejar el sistema en "
+"un estado no arrancable. Alternativas para la instalación automática de "
+"rEFInd incluyen ejecutar /usr/sbin/refind-install a mano o instalar los "
+"binarios de rEFInd manualmente copiándolos de los subdirectorios de /usr/"
+"share/refind-{version}."

@@ -1,0 +1,98 @@
+#!/bin/bash
+# Post-installation script (run on USER'S system after installing the
+# main rEFInd package)
+
+set -e
+
+if [ -f /usr/share/debconf/confmodule ] ; then
+    . /usr/share/debconf/confmodule
+fi
+
+install_to_esp() {
+    # Remove any existing NVRAM entry for rEFInd, to avoid creating a duplicate.
+    ExistingEntry=`efibootmgr | grep "rEFInd Boot Manager" | cut -c 5-8`
+    if [[ -n $ExistingEntry ]] ; then
+        efibootmgr --bootnum $ExistingEntry --delete-bootnum &> /dev/null
+    fi
+
+    cd /usr/share/refind
+
+    if [[ -f /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data ]] ; then
+        IsSecureBoot=`od -An -t u1 /sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data | tr -d '[[:space:]]'`
+    else
+        IsSecureBoot="0"
+    fi
+    # Note: Two find operations for ShimFile favors shim over PreLoader -- if both are
+    # present, the script uses shim rather than PreLoader.
+    declare ShimFile=`find /boot -name shim\.efi -o -name shimx64\.efi -o -name PreLoader\.efi 2> /dev/null | head -n 1`
+    if [[ ! -n $ShimFile ]] ; then
+        declare ShimFile=`find /boot -name PreLoader\.efi 2> /dev/null | head -n 1`
+    fi
+    declare SBSign=`which sbsign 2> /dev/null`
+    declare OpenSSL=`which openssl 2> /dev/null`
+
+    # Run the rEFInd installation script. Do so with the --shim option
+    # if Secure Boot mode is suspected and if a shim program can be
+    # found, or without it if not. If a shim installation is attempted
+    # and the sbsign and openssl programs can be found, do the install
+    # using a local signing key. Note that this option is undesirable
+    # for a distribution, since it would then require the user to
+    # enroll an extra MOK. I'm including it here because I'm NOT a
+    # distribution maintainer, and I want to encourage users to use
+    # their own local keys.
+    if [[ $IsSecureBoot == "1" && -n $ShimFile ]] ; then
+        if [[ -n $SBSign && -n $OpenSSL ]] ; then
+            ./refind-install --shim $ShimFile --localkeys --yes > /dev/null
+        else
+            ./refind-install --shim $ShimFile --yes > /dev/null
+        fi
+    else
+        if [[ -n $SBSign && -n $OpenSSL ]] ; then
+            ./refind-install --localkeys --yes > /dev/null
+        else
+            ./refind-install --yes > /dev/null
+        fi
+    fi
+} # install_to_esp()
+
+#
+# Main part of script begins
+#
+
+case "$1" in
+    configure)
+        db_get refind/install_to_esp || true;
+        if [ x"$RET" = x"true" ]; then
+            echo "Installing rEFInd to the ESP..."
+            install_to_esp
+        else
+            echo "** Not installing rEFInd to the ESP! **"
+            echo "If you want rEFInd to control the boot process, you can do so by runing:"
+            echo ""
+            echo "dpkg-reconfigure refind"
+            echo ""
+        fi
+    ;;
+
+    reconfigure)
+        db_get refind/install_to_esp || true;
+        if [ x"$RET" = x"true" ]; then
+            echo "Installing rEFInd to the ESP..."
+            install_to_esp
+        else
+            echo "If rEFInd was previously configured to be your primary boot manager, you must"
+            echo "use efibootmgr to set the computer to boot with something else."
+        fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        exit 0
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 0
+    ;;
+esac
+
+#DEBHELPER#

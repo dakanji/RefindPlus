@@ -1,0 +1,522 @@
+Requirements
+============
+
+To compile rEFInd, you'll need the following:
+
+* A Linux installation. Note that this installation does NOT need to be
+  EFI-based. It can use IA32 (aka x86, i386, or other things), X64 (aka
+  x86-64, AMD64, or EM64T), or AA64 (aka AARCH64 or ARM64), but unless you
+  use a cross-compiler, it must use the same CPU type and bit depth as your
+  EFI implementation. (Normally that means 64-bit X64.) If you don't
+  normally run Linux, you can run it in a VirtualBox or similar virtual
+  machine. (I describe some unsupported non-Linux build options later.)
+
+* A standard set of Linux development tools, based on GCC. (I've tried
+  using Clang 3.4 under Ubuntu, with partial success. The main rEFInd
+  binary, gptsync, and some drivers compile successfully; but only gptsync
+  runs normally. The drivers I've tried and the main rEFInd binary crash.)
+
+* One of the following:
+
+  * The TianoCore EDK2/UDK package (https://github.com/tianocore/edk2). This
+    toolkit is available in an unstable development version (EDK2) or in
+    "frozen" forms (UDK2014, UDK2017, UDK2018, and so on); however, the term
+    "EDK2" is often used in reference to the TianoCore toolkit generally. To
+    simplify matters, I officially support only one UDK version at any given
+    moment. Currently (rEFInd 0.11.3), this version is UDK2018; however, I
+    used UDK2017 for rEFInd 0.10.9 through 0.11.2, and UDK2014 unofficially
+    works via a different build procedure (see below), which is now
+    deprecated.
+
+  * The GNU-EFI package (http://sourceforge.net/projects/gnu-efi/). You can
+    install this from a package called "gnu-efi"; however, rEFInd relies on
+    features that were added sometime between version 3.0s and 3.0u, so I
+    recommend using 3.0u or later. The latest versions of GNU-EFI have
+    abandoned the trailing letter and switched to a more traditional
+    additional number, as in 3.0.4. You should check your GNU-EFI version
+    number; you may need to download the latest source code, compile it, and
+    install it locally. The Makefiles assume a GNU-EFI package installed via
+    a package manager. If you install from source code, you may need to
+    adjust those Makefiles' paths.
+
+Of the two toolkits, I prefer to use TianoCore because it produces binaries
+that are about 5-30KiB smaller than those made by GNU-EFI, and I can easily
+build 32-bit binaries on my 64-bit Linux installations. Also, I've had
+problems on a 32-bit Mac Mini with the drivers produced by GNU-EFI hanging
+the system. (I haven't encountered this problem on UEFI-based PCs.) That
+said, the TianoCore EDK2 package is much harder to install, so you may
+prefer to use GNU-EFI unless you have a specific need for the TianoCore
+toolkit. Also, somewhere between GCC 5.4 and 7.3, problems have appeared
+that prevent compiling the i386/IA32 binaries via TianoCore. Automated build
+tools like the OpenSUSE Build Service (OBS) and the Ubuntu Personal Package
+Archive (PPA) mechanism don't yet support TianoCore.
+
+
+Preparing Your Development Kit
+==============================
+
+If you're using Linux, GNU-EFI is the easiest way to compile rEFInd. I
+don't describe GNU-EFI's setup here because it's likely to be fairly easy.
+If your distribution provides a recent enough version, you should be able
+to install a package called gnu-efi and be done with it. If not, you'll
+need to download the source code tarball, build it, and install it. This
+process is fairly typical of Linux packages. Read the GNU-EFI documentation
+if you need help. If you're using GNU-EFI, you can skip the rest of this
+section.
+
+You might want to use the TianoCore toolkit if you have problems with
+GNU-EFI or if you want to build rEFInd on a non-Linux platform.
+Unfortunately, the TianoCore toolkit is weird by Linux programming
+standards. It's also quite large -- it's intended as a means to develop a
+complete EFI firmware implementation, so it contains much more code than is
+needed to develop standalone EFI applications. I don't know of any Linux
+distribution packages for it in RPM, Debian package file, or other formats;
+you MUST install the kit from source code using its own unusual compilation
+procedure. The installation documentation also omits at least one step and
+is a bit unclear about others. Here's how to install the toolkit (note that
+you'll need to be root to do this in the specified location):
+
+1. Download UDK2018 from
+   https://github.com/tianocore/tianocore.github.io/wiki/UDK2018. (If you
+   must use it for some reason, you can download the older
+   UDK2014.SR1.UP1.P1 from
+   https://github.com/tianocore/tianocore.github.io/wiki/UDK2014-Releases
+   instead.) If you want to live on the "bleeding edge," you can use an EDK2
+   daily release version from https://github.com/tianocore/edk2. This
+   document describes three distinct compilation methods for TianoCore, each
+   of which has compatibility problems with some architectures.
+   Specifically, the "make tiano" target fails with EDK2 and UDK2018 for all
+   architectures; and the "make edk2" and "build" procedures work with EDK2
+   and UDK2018 for all architectures but require modifications of project
+   files to work with AARCH64.
+
+2. Preparation procedures deviate depending on which development kit you're
+   using. For UDK2018 or an EDK2 daily build, follow these steps:
+
+   A. Type "cd /usr/local/".
+
+   B. Unzip the downloaded file (edk2-vUDK2018.zip) in the current directory
+      (/usr/local), or use git to pull down the latest source code. This
+      creates a subdirectory tree called edk2-vUDK2018.
+
+   C. Type "cd edk2-vUDK2018" to change into the extracted directory.
+
+3. If you're using the older UDK2014, follow these steps:
+
+   A. Type "mkdir /usr/local/UDK2014". You can use another directory, but
+      the rEFInd Makefile assumes this location. You'll need to edit the
+      TIANOBASE variable in the top-level Makefile if you install somewhere
+      else.
+
+   B. Type "cd /usr/local/UDK2014".
+
+   C. Unzip the downloaded file
+      (UDK2014.SR1.UP1.P1.Complete.MyWorkSpace.zip) in the current directory
+      (/usr/local/UDK2014). This creates a handful of files, including a
+      tarball and a couple of .zip files.
+
+   D. Type "unzip UDK2014.SR1.UP1.MyWorkSpace.zip". This extracts the
+      platform-neutral portion of the development kit.
+
+   E. Type "cd MyWorkSpace".
+
+   F. Type "tar xvf ../BaseTools\(Unix\).tar". This extracts the
+      Linux/Unix-specific portions of the toolkit.
+
+4. With any TianoCore version, type "source edksetup.sh BaseTools". This
+   sets up some environment variables, so subsequent steps (NOT including
+   compiling rEFInd or its drivers) must be typed in the shell you use for
+   this step.
+
+5. Edit Conf/target.txt and change the following:
+    - ACTIVE_PLATFORM = MdePkg/MdePkg.dsc
+    - TARGET = RELEASE (DEBUG might work, but I've not tested it).
+    - TARGET_ARCH = X64 (on x86-64; leave this as IA32 on x86 or change it
+      to AARCH64 on ARM64). If you plan to build multiple architectures,
+      you can set this to "IA32 X64" or some other combination.
+    - TOOL_CHAIN_TAG = GCC49 (or other value depending on your GCC version;
+      type "gcc -v" to learn your GCC version number). Note that support
+      for the latest GCC version takes a while to make it into the
+      TianoCore toolkit, so if you're using a very recent GCC, you may need
+      to specify an earlier version and hope for the best or modify
+      Conf/tools_def.txt, as described shortly.
+    - MAX_CONCURRENT_THREAD_NUMBER = {#CPUs + 1}; set this to one more
+      than the number of CPUs in your computer to optimize build time
+      when using the "edk2" targets with UDK2018 or an EDK2 daily build.
+      This setting has no effect when using the "tiano" targets with
+      UDK2014.
+   The TianoCore Makefiles read some of these variables from this file
+   and use them when accessing directories, so be sure to type these
+   entries in the case specified.
+
+6. The documentation refers to editing Conf/tools_def.txt in addition to
+   Conf/target.txt, but doesn't specify what to change in
+   Conf/tools_def.txt. I haven't found it necessary to make any changes in
+   Conf/tools_def.txt EXCEPT for two cases:
+
+    * When using GCC 4.7 on a Fedora 17 system with the original UDK2014,
+      GCC 4.7 was newer than the most recent GCC that TianoCore supported at
+      that time. With that setup, I found it necessary to change the
+      following line:
+        *_GCC46_X64_ASM_FLAGS            = DEF(GCC46_ASM_FLAGS) -m64 -melf_x86_64
+        to:
+        *_GCC46_X64_ASM_FLAGS            = DEF(GCC46_ASM_FLAGS) -m64
+      Although GCC 4.7 and Fedora 17 are both ancient, something similar may
+      be necessary if you're using a very recent GCC or some other compiler.
+
+    * When cross-compiling for ARM64 (AARCH64) on an x86-64 system,
+      I needed to edit various entries to point to the cross-compiler
+      rather than the usual compilers. For instance:
+        *_GCC49_AARCH64_CC_PATH           = ENV(GCC49_AARCH64_PREFIX)gcc
+        to:
+        *_GCC49_AARCH64_CC_PATH          = /usr/bin/aarch64-linux-gnu-gcc
+      Similar changes for other variables in the same block are necessary.
+
+7. Type "make -C BaseTools/Source/C". (This step is not documented on the
+   EDK Web page.) Note that this requires the g++ compiler and UUID
+   development libraries.
+
+8. Type "build" to build the main set of EDK2 files. This process is
+   likely to take a few minutes. This step requires Python 2; if you have
+   Python 3 installed, you may need to adjust the default python for this
+   build (for instance, by typing "eselect python set python2.7" in
+   Gentoo).
+
+If you installed in a location other than the one I've specified, you must
+edit the EDK2BASE (for "make edk2" builds) or TIANOBASE (for the deprecated
+"make tiano" builds) variable in the top-level Makefile in the rEFInd source
+package. Once the toolkit is installed, you can build the filesystem drivers
+or rEFInd, as described below.
+
+
+Compiling rEFInd the Unix/Linux Way
+===================================
+
+With your development system set up, you can compile rEFInd as follows:
+
+1. Download and uncompress the rEFInd source code archive. (If you're
+   reading this file, you've probably already done this task.)
+
+2. Open a Linux shell prompt
+
+3. Change into the archive's main directory. You should see several files
+   including this BUILDING.txt file and several subdirectories such as
+   "refind", "libeg", "mok", "filesystems", and "include".
+
+4. If you want to build with the TianoCore toolkit and you installed in a
+   location other than the one specified in "Preparing Your Development
+   Kit," you must edit Makefile in the main rEFInd directory: change the
+   EDK2BASE and/or TIANOBASE variables to point to your toolkit's location.
+   The EDK2BASE variable is used with the "edk2" target, which is useful
+   with all versions of TianoCore, with some caveats (described later), and
+   TIANOBASE is used with the "tiano" target (which can be used with
+   UDK2014, but not later versions).
+
+5. Type "make" to build rEFInd and gptsync, or "make fs" to build the
+   filesystem drivers. The Makefile checks for the TianoCore toolkit and
+   tries to use it if it's present. Additional "make" targets enable you to
+   fine-tune how rEFInd is built and what components are built, as described
+   shortly. With any luck, rEFInd will compile without error, leaving the
+   "refind_ia32.efi", "refind_x64.efi", or "refind_aa64.efi" file, depending
+   on your platform, in the "refind" subdirectory. This same step builds the
+   "gptsync_ia32.efi", "gptsync_x64.efi", or "gptsync_aa64.efi" program
+   file, in the "gptsync" subdirectory. If you want to build IA32 binaries
+   on an x86-64 (X64) system and if you're using TianoCore, type "ARCH=ia32
+   make". (As noted earlier, this facility broke somewhere between GCC 5.4
+   and GCC 7.3.) Similarly, you can specify "ARCH=aarch64" to cross-compile
+   for ARM64, but this works only if you're using the TianoCore build kit,
+   and only if you set up TianoCore for cross-compiling. If you plan to
+   build multiple architectures, be sure to copy the .efi file for the first
+   build out of the refind subdirectory and type "make clean" before
+   building the second architecture.
+
+The top-level rEFInd Makefile supports three toolchains, each of which
+provides several options to compile a subset of rEFInd's programs. (Note
+that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
+"make" targets are:
+
+* gnuefi -- This target builds refind_x64.efi and gptsync_x64.efi with
+  the GNU-EFI toolkit.
+* gptsync_gnuefi -- This target builds just the gptsync.efi program
+  with the GNU-EFI toolkit.
+* fs_gnuefi -- This target builds all the filesystem drivers with the
+  GNU-EFI toolkit.
+* all_gnuefi -- This target builds everything (refind_x64.efi,
+  gptsync_x64.efi, and the filesystem drivers) with the GNU-EFI toolkit.
+* tiano -- This deprecated target builds refind_x64.efi and gptsync_x64.efi
+  with the TianoCore toolkit by using custom Makefile rules, bypassing the
+  TianoCore toolkit's "build" command. The result is slightly faster
+  compilation in a more traditional Unix/Linux way; but the compilation
+  rules are fragile and work only with the UDK2014 toolkit. Also, the
+  gptsync_x64.efi program is not built on ARM64/AARCH64 because the build
+  process fails. (As hybrid MBRs are likely to be useless on this platform,
+  the inability to build gptsync_aa64.efi is no great loss.)
+* gptsync_tiano -- This target works like the preceding one, but builds
+  only gptsync_x64.efi.
+* fs_tiano -- This target works like the preceding two, but builds the
+  filesystem drivers.
+* all_tiano -- This target builds refind_x64.efi, gptsync_x64.efi, and
+  the filesystem drivers using custom Makefile rules.
+* edk2 -- Like the "tiano" target, this one builds with the TianoCore
+  toolkit; but it employs a build method more like that favored by
+  TianoCore. It relies on .dsc, .dec, and .inf files as well as the "build"
+  program that comes with TianoCore. This method works with UDK2014,
+  UDK2018, and the latest (as of July, 2017) EDK2 snapshot. It also works
+  under OS X, if TianoCore is properly prepared. One limitation is that
+  building with UDK2014 for ARM64/AARCH64 requires modifying the .inf files
+  to remove the reference to CompilerIntrinsicsLib. This build method is
+  also a little bit slower than the preceding ones, in part because
+  EVERYTHING is built; narrower targets simply copy fewer of the resulting
+  files from within the TianoCore directory tree. Note that this method,
+  unlike the preceding ones, requires WRITE access to the TianoCore build
+  tree, or at least to the Build and Conf subdirectories of that tree, as
+  well as to the root of the tree. (This method creates a symbolic link of
+  the main rEFInd directory into the root of the TianoCore tree, and the
+  build process creates a subdirectory called Build/Refind to hold temporary
+  files and the final .efi files. The "make" utility then copies these files
+  to the same locations used by the tiano and gnuefi targets.)
+* gptsync_edk2 -- This target copies just the gptsync_x64.efi binary to its
+  final destination.
+* fs_edk2 -- This target works like the "edk2" target, but copies only
+  the filesystem drivers to their destination.
+* all_edk2 -- This target builds and copies everything using the
+  TianoCore-style build process.
+* all -- This is the default target. It runs the "edk2" target if
+  the EDK2BASE variable points to a valid TianoCore toolkit. If not, it runs
+  the "tiano" target if the TIANOBASE variable points to a valid TianoCore
+  toolkit. If neither of these variables points to a valid TianoCore
+  toolkit, the "gnuefi" target is tried.
+* gptsync -- This target builds the gptsync_x64.efi program using the
+  same precedence for toolkits as the "all" target.
+* fs -- This target builds the filesystem drivers using the same precedence
+  for toolkits as the "all" target.
+* clean -- This target deletes intermediate build files. Note that it
+  deletes intermediate files generated by ALL the build methods (gnuefi,
+  tiano, and edk2).
+* install -- This target runs the refind-install script with no
+  arguments.
+
+If rEFInd doesn't compile correctly, you'll need to track down the source
+of the problem. Double-check that you've got all the necessary development
+tools installed, including GCC, make, and either GNU-EFI or TianoCore EDK2.
+You may also need to adjust the Makefile or Make.common file; or possibly
+Make* files in code subdirectories. (The main Makefile controls the process
+for both toolkits, while Make.common holds most common options.) The most
+likely thing you'll need to change is the path to the various GNU-EFI
+include files and libraries. Since rEFInd 0.6.2, the default Make.common
+file includes the following GNU-EFI definitions:
+
+EFIINC          = /usr/include/efi
+GNUEFILIB       = /usr/lib
+EFILIB          = /usr/lib
+EFICRT0         = /usr/lib
+
+If you've installed GNU-EFI from source code, you may need to add "local" to
+those paths, as in "/usr/local/include/efi". You might need to change
+references to "lib" to "lib32" or "lib64" on some systems. Recall that you
+need at least GNU-EFI version 3.0u to build rEFInd, and some older or
+behind-the-times distributions might provide out-of-date versions of this
+package.
+
+If you're using TianoCore's EDK2, as noted earlier, you may need to adjust
+the TIANOBASE or EDKBASE variable in Makefile.
+
+
+A Note about NTFS
+=================
+
+Over the years, I've received far too many queries from people who've had
+problems with rEFInd hanging because of the NTFS driver. Thus, beginning
+with rEFInd 0.11.5, the NTFS driver is NOT compiled by default. (If using
+Tianocore EDK2, the file is actually compiled, but it's not copied to the
+output directory.) If you need it, you can still compile it manually by
+changing into the filesystems directory and typing "make ntfs_gnuefi" if
+you're using GNU-EFI; or by copying the file from
+Build/Refind/RELEASE_GCC5/X64/ntfs.efi (or the equivalent for other
+architectures) in the Tianocore EDK2 installation location if you're using
+Tianocore EDK2. Alternatively, you can look at the NTFS driver in Pete
+Batard's efifs project (http://efi.akeo.ie). I can't promise this driver
+will be more reliable than rEFInd's, but it might be.
+
+
+
+Compiling rEFInd the TianoCore Way
+==================================
+
+If you use TianoCore, you may know that the standard way to build
+applications under that environment does not follow the typical Unix/Linux
+development model described above. Instead, the application to be compiled
+is dropped into the main TianoCore source tree and compiled there using the
+"build" command. rEFInd can be compiled in this way. I am providing
+instructions on compiling in this way because it may work better than
+rEFInd's Makefiles in some cases, especially if you're using a non-Linux
+platform for development. I've successfully compiled rEFInd 0.10.8 under OS
+X in this way. (I present details and caveats shortly.) Note that the "edk2"
+and related Makefile targets use this method behind the scenes. The
+procedure is:
+
+1. Download and prepare the TianoCore toolkit, as described earlier,
+   under "Preparing Your Development Kit." Note that you will have to adjust
+   this procedure if you're using a non-Linux OS.
+
+2. Change to the directory that holds the BaseTools, MdePkg, ShellPkg, and
+   other directories and files. If you use the UDK2014.SR1.UP1.P1 package
+   noted earlier, this would be the MyWorkSpace directory.
+
+3. Unpack the rEFInd source tarball in the current directory.
+
+4. Rename the rEFInd directory (refind-{version}, where {version} is the
+   version number) to RefindPkg. Alternatively, create a symbolic link
+   called RefindPkg that points to the real directory.
+
+5. Type "source edksetup.sh BaseTools". (You can skip this step if you're
+   using the same login session you used to build the TianoCore toolkit; you
+   need to type this command only if you've logged out and back in again,
+   are using a different window from the one you used to build TianoCore, or
+   have otherwise modified the environment variables set in edksetup.sh.)
+
+6. If you're using UDK2014 AND you're compiling for AARCH64, you must
+   open refind.inf, gptsync.inf, and the .inf files for all the drivers in
+   the filesystems subdirectory and comment out the line that reads
+   "CompilerIntrinsicsLib". This library is needed for later versions of
+   EDK2 but is not present in (and not required for) UDK2014.
+
+7. Type "build -p RefindPkg/RefindPkg.dsc" to build rEFInd. If you've
+   properly configured your TianoCore installation for cross-compiling, you
+   may add "-a {ARCH}", where {ARCH} is an architecture code, to compile for
+   that platform. For instance, "build -a IA32 -p RefindPkg/RefindPkg.dsc"
+   builds for IA32 (32-bit x86), even on another type of computer.
+
+The rEFInd package should build, leaving binaries buried ridiculously deep
+within the directory tree. For instance, on my test build, the rEFInd
+binaries were at:
+
+Build/Refind/RELEASE_GCC49/X64/btrfs.efi
+Build/Refind/RELEASE_GCC49/X64/ext2.efi
+Build/Refind/RELEASE_GCC49/X64/ext4.efi
+Build/Refind/RELEASE_GCC49/X64/gptsync.efi
+Build/Refind/RELEASE_GCC49/X64/hfs.efi
+Build/Refind/RELEASE_GCC49/X64/iso9660.efi
+Build/Refind/RELEASE_GCC49/X64/ntfs.efi
+Build/Refind/RELEASE_GCC49/X64/refind.efi
+Build/Refind/RELEASE_GCC49/X64/reiserfs.efi
+
+I've tested this procedure under Ubuntu 16.04 with GCC 5.4.0 and under OS X
+10.11 with both Clang 7.0.0/XCode 7.1.1 and Clang 8.0.0/XCode 8.1.1. (See
+below for Mac caveats.) In theory, it might work under Windows, but if you
+use anything but a GCC- or Clang-derived compiler, there's a good chance
+you'll run into a compiler-specific code incompatibility.
+
+
+Compiling rEFInd Under OS X
+===========================
+
+Building under OS X is *NOT SUPPORTED.* I've tested this procedure and it
+seems to work in minimal testing. My build under OS X required several
+changes for compilation to succeed:
+
+* A relatively recent TianoCore EDK2 from the TianoCore git repository is
+  required; the stable UDK2014 and UDK2015 DO NOT work. I have yet to test
+  with the final release of UDK2017 or UDK2018, but I expect they might
+  work.
+
+* Setting up the Mac development environment required following instructions
+  at https://github.com/tianocore/tianocore.github.io/wiki/Xcode, with the
+  caveat that the UnixPkg directory described there is essentially empty;
+  instead, I compiled the BaseTools/Source/C code, as described earlier. (I
+  don't know if this was strictly necessary, but the tools did compile,
+  despite several warnings.) I also skipped installing QEMU.
+
+* Instead of "TOOL_CHAIN_TAG = GCC49", I set "TOOL_CHAIN_TAG = XCODE5" in
+  Conf/target.txt.
+
+* I had to edit Conf/tools_def.txt and edit the RELEASE_XCODE5_X64_CC_FLAGS
+  line to remove the "-Werror" option. With this option set, the main rEFInd
+  binary and several drivers failed to build. **CAUTION:** The warnings that
+  prevented the rEFInd binary from compiling with "-Werror" intact related
+  to ((sysv_abi)) declarations in mok/mok.h. This makes me think that the
+  resulting binary may be incompatible with Shim, although I've not tested
+  this; my only testing of the binary built under OS X were on systems with
+  Secure Boot disabled or with the Secure Boot system under my complete
+  control and without Shim installed.
+
+* I had to edit refind.inf and uncomment the line in the Packages section
+  that reads "StdLib/StdLib.dec".
+
+* I've been unable to get the Btrfs driver to build. To adjust the package
+  to omit this driver, edit the RefindPkg.dsc file and remove the line near
+  the bottom that reads "RefindPkg/filesystems/btrfs.inf".
+
+Note that if you want to use macOS or Windows to compile rEFInd, you might
+be able to create a project or Makefile for your non-GCC compiler or use a
+GCC port, such as MinGW (http://www.mingw.org), along with the procedure
+described earlier, under "Compiling rEFInd the Unix/Linux Way." You'd
+probably need to adjust the Makefiles in the latter case.
+
+
+Installing rEFInd
+=================
+
+With rEFInd compiled, you can install it. The easiest way to do this is
+with the refind-install script, which works on both Linux and macOS.
+Alternatively, you can type "make install" to install using this script.
+Note that this script copies files to the ESP and uses "efibootmgr" (on
+Linux) or "bless" (on macOS) to add rEFInd to the firmware's boot loader
+list. The docs/man/refind-install.8 file (and its HTML conversion,
+docs/refind/refind-install.html) provides more details on this script and
+its use.
+
+If refind-install doesn't work for you or if you prefer to do the job
+manually, you may. On a UEFI-based system, you'll want to copy files on the
+ESP as follows:
+
+* Create a directory for rEFInd, such as EFI/refind.
+* Copy refind/refind_ia32.efi or refind_x64.efi to the ESP's EFI/refind
+  directory.
+* Copy refind.conf-sample to the EFI/refind directory as refind.conf.
+* Copy the icons subdirectory, including all its files, to EFI/refind.
+
+You'll then need to activate rEFInd in your EFI. This can be done with
+tools such as "efibootmgr" under Linux or "bless" under OS X. See the
+docs/refind/installing.html file for details.
+
+
+Note to Distribution Maintainers
+================================
+
+The refind-install script, and therefore the "install" target in the
+Makefile, installs the program directly to the ESP and it modifies the
+*CURRENT COMPUTER's* NVRAM. Thus, you should *NOT* use this target as part
+of the build process for your binary packages (RPMs, Debian packages, etc.).
+(Gentoo could use it in an ebuild, though....) You COULD, however, install
+the files to a directory somewhere (/usr/share/refind or whatever) and then
+call refind-install as part of the binary package installation process.
+Placing the files directly in /boot/efi/EFI/{distname}/refind and then
+having a post-install script call efibootmgr could also work, but this
+assumes that the ESP is mounted at /boot/efi. Also, Debian packages try to
+create symbolic links when updating packages, which won't work on an ESP,
+which should use FAT. For packaging examples, see the refind.spec file and
+debian subdirectory of the rEFInd source tarball.
+
+
+Adding Support for Network Boot
+===============================
+
+rEFInd provides EXPERIMENTAL support for booting over the network using
+iPXE (http://ipxe.org) as a means to receive the payload. In order to
+enable this feature you'll want to follow these instructions:
+
+* cd net/
+* make source
+* make netboot
+* copy bin/ipxe.efi and bin/ipxe_discover.efi to the EFI volume at EFI/tools/
+
+Note that you may need to install additional development packages, such as
+libiberty-dev and binutils-dev, in addition to those needed to build rEFInd
+itself.
+
+My own tests show this support to work under optimal conditions; however,
+architecture (EFI vs. BIOS) detection may not work, and some computers will
+hang or won't retrieve boot files from the network. For these reasons, this
+support is disabled by default in rEFInd, and I do not provide iPXE
+binaries.

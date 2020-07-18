@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Keeping rEFInd Booting</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />Keeping rEFInd Booting</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 4/24/2016; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul class="tight">
+
+<li class="tight"><a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS</a></li>
+
+<li class="tight"><a href="#counter_revolution">Staging a Counter-Revolution: Re-Installing rEFInd</a></li>
+
+<li class="tight"><a href="#linux">Recovering from a Coup Using Linux</a>
+
+  <ul class="tight">
+
+  <li class="tight"><a href="#refind-mkdefault">Using <tt>refind-mkdefault</tt> to Adjust Your Boot Priority</a></li>
+
+  <li class="tight"><a href="#efibootmgr">Using <tt>efibootmgr</tt> to Adjust Your Boot Priority</a></li>
+
+  <li class="tight"><a href="#disabling_grub">Preventing a Linux Coup by Disabling GRUB Updates</a></li>
+
+  </ul></li>
+
+<li class="tight"><a href="#osx">Recovering from a Coup Using MacOS</a>
+
+  <ul class="tight">
+
+  <li class="tight"><a href="#startup_disk">Using Startup Disk to Adjust Your Boot Priority</a></li>
+
+  <li class="tight"><a href="#bless">Using <tt>bless</tt> to Adjust Your Boot Priority</a></li>
+
+  </ul></li>
+
+<li class="tight"><a href="#windows">Recovering from a Coup Using Windows</a>
+
+  <ul class="tight">
+
+  <li class="tight"><a href="#easyuefi">Using EasyUEFI to Adjust Your Boot Priority</a></li>
+
+  <li class="tight"><a href="#bcdedit">Using <tt>bcdedit</tt> to Adjust Your Boot Priority</a></li>
+
+  </ul></li>
+
+<li class="tight"><a href="#refind">Recovering from a Coup Using rEFInd</a></li>
+
+<li class="tight"><a href="#firmware">Using Your Firmware to Repair a Boot Coup</a>
+
+  <ul class="tight">
+
+  <li class="tight"><a href="#firmware_builtin">Using Built-in Firmware Features to Adjust Your Boot Priority</a></li>
+
+  <li class="tight"><a href="#efi_shell">Using an EFI Shell to Adjust Your Boot Priority</a></li>
+
+  </ul></li>
+
+<li class="tight"><a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups</a></li>
+
+<li class="tight"><a href="#fallback">Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt></a></li>
+
+</ul>
+
+</div>
+
+<p>Once you've installed rEFInd, you may face a new challenge: Keeping it set as your default boot manager. Users of multi-boot computers have long faced similar challenges, because most OSes provide mechanisms to keep themselves booting, even at the cost of disrupting other OSes&mdash;or overriding your own choices. On this page, I refer to such unwanted changes as <i>boot coups.</i> Experienced multi-booters know the tools and techniques to avoid or recover from boot coups. If you're new to the EFI world, though, most of the techniques you may know for helping with BIOS-mode booting don't apply to EFI-mode booting.</p>
+
+<p>This page describes tools and techniques you can use to keep rEFInd set as your default boot manager, or at least to recover it as the default boot option if something else takes over. This page is organized by OS, describing the tools and techniques you can use in each OS to recover from a boot coup&mdash;or in some cases, to prevent one from occurring. I begin and end with information on firmware-based tools, though. Chances are you should not read this page straight through; instead, peruse the Contents to the left and pick an OS and, perhaps, a recovery tool or technique you wish to pursue and read the relevant section. In most cases, the recovery technique is fairly quick and painless, once you understand how to do it. Note also that, in extreme cases, a full rEFInd re-installation may be required. It may also be easier to re-run <tt>refind-install</tt> than to learn about esoteric commands such as <tt>efibootmgr</tt>, <tt>bless</tt>, or <tt>bcdedit</tt>.</p>
+
+<a name="evade_guards">
+<h2>Evading the Guards: Performing a One-Time Boot to Your Desired OS</h2>
+</a>
+
+<p>Most EFIs provide their own built-in boot managers. These tools are primitive, and in some cases they can be difficult to reach, but they can be useful if you need to bypass a new system default in order to boot an OS that has the tools you need to control the boot process.</p>
+
+<p>On Macs, holding the Option key (or Alt with a PC keyboard) while powering on the computer brings up the Mac's boot manager. Typically, the Esc key, Enter key, or a function key (usually F8 or above) does the job on UEFI-based PCs. Some computers provide a prompt for what key to use to access the boot menu, but this isn't always true. Sometimes the keyboard is disabled in the early stages of the boot process by default&mdash;part of a strategy to speed up system boots. Disabling a "fast start" feature in the firmware may work around this problem. Getting into the firmware can be a challenge on such computers, though. Microsoft provides a way to do this in Windows 8 and later; see <a href="http://www.howtogeek.com/126016/three-ways-to-access-the-windows-8-boot-options-menu/">this How-To Geek article</a> for documentation on how to use this feature. If a Linux distribution uses the popular <tt>systemd</tt> initialization system, you can type <tt class="userinput">systemctl reboot --firmware</tt> as <tt>root</tt> (or using <tt>sudo</tt>) to do the same from Linux.</p>
+
+<p>Once you've found the built-in boot manager, you'll see its display, which is typically a text-mode listing of boot options. On UEFI-based PCs, the user interface is typically similar to the one used in years past on BIOS-based computers to select the boot device; it's simply been upgraded to include the descriptions held in NVRAM for specific boot loaders. (In fact, prompts are often outdated and misleading; as in the below example, they may refer to "boot devices," when in fact most of the options are EFI boot loader programs, not hardware devices.) As an example, an ASUS P8 H77-I's boot manager looks like this:</p>
+
+    <br /><center><img src="asus-bootmanager.jpg" align="center" width="392"
+    height="268" alt="A typical EFI boot manager display is very
+    rudimentary." border=2> </center><br />
+
+<p>You typically select the option you want to boot by using the arrow keys, then hit the Enter key to boot it. If rEFInd is working but has been overridden as the default, you can select it; or if your preferred OS has its own option, you may be able to launch it directly.</p>
+
+<p>Keep in mind, though, that some of the options on the built-in boot manager's menu may not work, or may work in unexpected ways. For instance, you might see options to boot hard disks in BIOS/CSM/legacy mode. These options might not work; and even if they do, they'll boot the computer in BIOS mode, so you won't be able to use the tools described on this page to correct your boot problems.</p>
+
+<a name="counter_revolution">
+<h2>Staging a Counter-Revolution: Re-Installing rEFInd</h2>
+</a>
+
+<p>The most general, and in some cases the easiest, solution to a boot coup is to re-install rEFInd. If you haven't updated rEFInd in a while, this approach has the advantage of providing an update to rEFInd (assuming you first download the latest version). The <a href="installing.html">Installing rEFInd</a> page describes how to install rEFInd from Linux, macOS, Windows, an EFI shell, or from rEFInd booted from a removable medium. The <tt>refind-install</tt> script and installing from rEFInd both preserve your existing <tt>refind.conf</tt> configuration file, so an upgrade should not affect your customizations. (The rEFInd icons will be updated to the latest versions, but <tt>refind-install</tt> moves the original icons to a backup directory, so you can restore them if you've customized them or if they've changed and you don't like the new icons.)</p>
+
+<p>One possible complication to this approach is if you're stuck booting in an unfamiliar OS. In such a case, you may be able to boot into your preferred OS on a one-time basis by using your computer's built-in boot manager, as described in <a href="#evade_guards">the previous section.</a> The trouble is that how you do this varies greatly from one computer to another.</p>
+
+<a name="linux">
+<h2>Recovering from a Coup Using Linux</h2>
+</a>
+
+<p>Linux's primary tool for adjusting the EFI boot order is <tt>efibootmgr</tt>. If you installed rEFInd from Linux, chances are you used this tool, even if you don't realize it. (The <tt>refind-install</tt> script calls <tt>efibootmgr</tt>, and this script is called automatically by the rEFInd RPM and Debian packages.) The easiest way to do this is to use the <a href="#refind-mkdefault"><tt>refind-mkdefault</tt> script</a>. A more complex but flexible approach is to <a href="#efibootmgr">use <tt>efibootmgr</tt> directly.</a> I also describe some steps you can take to <a href="#disabling_grub">make it less likely that Linux will stage a boot coup</a> to begin with, thus obviating the need to perform a repair.</p>
+
+<a name="refind-mkdefault">
+<h3>Using <tt>refind-mkdefault</tt> to Adjust Your Boot Priority</h3>
+</a>
+
+<p>Since version 0.10.3, rEFInd has shipped with a script called <tt>refind-mkdefault</tt>, which uses <tt>efibootmgr</tt> to identify rEFInd and set it as the default (first) boot option. Use of this script is quite simple: Launch it as root (or via <tt>sudo</tt>):</p>
+
+<pre class="listing">$ <tt class="userinput">sudo refind-mkdefault</tt>
+rEFInd is not the first boot entry; adjusting....
+Setting a boot order of 0000,0002,0085,0003</pre>
+
+<p>The exact output of the script depends on the current state of the system; it might also respond that rEFInd is already the default boot entry or that it could not identify a rEFInd entry, for instance. The boot order shown in this example is meaningless by itself. It's the boot order as identified by <tt>efibootmgr</tt>; for details, see <a href="#efibootmgr">the next section.</a></p>
+
+<p>Instead of using <tt>refind-mkdefault</tt> manually, you might consider running it automatically at every boot or shutdown. You can, for instance, call it from <tt>/etc/rc.local</tt> or create a script in <tt>/etc/rc6.d</tt> that calls it to have it run when you start up or shut down the computer, respectively. Details, however, vary from one distribution to another, so you should consult your distribution's documentation for information on startup and shutdown scripts. If you use it in this way, rEFInd should correct a boot coup caused by an update to GRUB; however, this repair will happen only <i>after</i> a reboot if you call <tt>refind-mkdefault</tt> in a startup script. If you call it from a shutdown script, rEFInd should correct such a coup before it has a chance to cause problems; but then it won't run if the computer crashes. Note that <tt>refind-mkdefault</tt> does <i>not</i> touch the NVRAM variables if rEFInd is already the default boot option. Thus, calling this script as a regular part of your startup or shutdown procedure poses little risk of causing problems because of unnecessary NVRAM writes. If you decide to stop using rEFInd, though, you'll have to remember to remove the call to <tt>refind-mkdefault</tt> from your startup and shutdown scripts.</p>
+
+<p>If you've given the rEFInd entry an unusual name, you can pass the script the <tt>-L <tt class="variable">name</tt></tt> or <tt>--label <tt class="variable">name</tt></tt> option, as in:</p>
+
+<pre class="listing">$ <tt class="userinput">sudo refind-mkdefault -L ubuntu</tt></pre>
+
+<p>This example moves an entry that contains the string <tt>ubuntu</tt> (case-insensitive) to the top of the boot order. Thus, <tt>refind-mkdefault</tt> can set <i>any</i> boot program as the default, so long as it's already registered with the firmware. The script searches the entirety of output lines created by <tt>efibootmgr -v</tt> (as described shortly), and so it matches on descriptions, filenames, and even the obscure EFI codes that identify devices.</p>
+
+<a name="efibootmgr">
+<h3>Using <tt>efibootmgr</tt> to Adjust Your Boot Priority</h3>
+</a>
+
+<p>Adjusting your boot order using <tt>efibootmgr</tt> is a two-step process: First you must identify the existing boot entries. With that done, you specify a new boot order. You can identify boot entries by typing <tt class="userinput">efibootmgr</tt> alone (as <tt>root</tt> or via <tt>sudo</tt>):</p>
+
+<pre class="listing">
+$ <tt class="userinput">sudo efibootmgr</tt>
+BootCurrent: 0000
+Timeout: 0 seconds
+BootOrder: 0002,0000,0085,0003
+Boot0000* rEFInd Boot Manager
+Boot0002* Windows Boot Manager
+Boot0003* Windows Boot Manager
+Boot0085* ubuntu
+</pre>
+
+<p>In this example, labels were clear and accurate; you can see that the <tt>BootOrder</tt> line identifies a boot order of <tt>Boot0002</tt> (Windows) followed by <tt>Boot0000</tt> (rEFInd), then various others. If you're in doubt about your entries, you can examine more complete output with <tt>efibootmgr -v</tt>:</p>
+
+<pre class="listing"
+$ <tt class="userinput">sudo efibootmgr -v</tt>
+BootCurrent: 0000
+Timeout: 0 seconds
+BootOrder: 0002,0000,0085,0003
+Boot0000* rEFInd Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\refind\shimx64.efi)
+Boot0002* Windows Boot Manager	HD(2,113800,113000,8b0b6d94-06af-4894-b9de-13ca354714a5)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
+Boot0003* Windows Boot Manager	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(\EFI\Microsoft\Boot\bootmgfw.efi)WINDOWS.........x...B.C.D.O.B.J.E.C.T.=.{.9.d.e.a.8.6.2.c.-.5.c.d.d.-.4.e.7.0.-.a.c.c.1.-.f.3.2.b.3.4.4.d.4.7.9.5.}....................
+Boot0085* ubuntu	HD(1,800,113000,2491a00e-2a89-4dc4-af21-34c436c8f88a)File(EFI\Ubuntu\grubx64.efi)</pre>
+
+<p>Much of this output looks like gibberish, and is useful only for very advanced diagnostics. Note, however, the part of most lines that specifies a filename, in parentheses after <tt>File</tt>&mdash;this information can help disambiguate a misleading or duplicate name. In this example, for instance, there are two <tt>Windows Boot Manager</tt> entries on two different partitions; each boots a different version of Windows.</p>
+
+<p>To adjust the boot order, you must identify the rEFInd entry and then use the <tt>-o</tt> option to <tt>efibootmgr</tt> to adjust the order:</p>
+
+<pre class="listing">$ <tt class="userinput">sudo efibootmgr -o 0000,0085,0002,0003</tt>
+BootCurrent: 0000
+Timeout: 0 seconds
+BootOrder: 0000,0085,0002,0003
+Boot0000* rEFInd Boot Manager
+Boot0002* Windows Boot Manager
+Boot0003* Windows Boot Manager
+Boot0085* ubuntu</pre>
+
+<p>In this example, I moved rEFInd to the top of the list, followed by <tt>ubuntu</tt> (GRUB) and then the two Windows installations. You can adjust the order in any way you want. You can also omit items you don't want to include&mdash;but be aware that if you omit Windows entirely from the boot list, it's likely to add itself back (at the top of the list) the next time you boot it.</p>
+
+<a name="disabling_grub">
+<h3>Preventing a Linux Coup by Disabling GRUB Updates</h3>
+</a>
+
+<p>Once Linux is installed, the usual cause of a Linux boot coup is an update of GRUB. Such updates are relatively rare, but they can happen at any time when the distribution maintainer pushes out a version of GRUB with a bug fix. Therefore, one way to prevent a Linux boot coup is to disable such updates. Unfortunately, the details of how to do this vary from one distribution to another. Furthermore, disabling such updates has its drawbacks.</p>
+
+<p>One problem with disabling GRUB updates is that you'll be cut off from the benefits they bring&mdash;GRUB updates are normally distributed because they contain important bug fixes. These updates might even be security-related. Of course, if you're booting via rEFInd without involving GRUB, you may not care about such updates. This possibility suggests the first way to disable GRUB updates: Remove GRUB entirely.</p>
+
+<p>To remove GRUB, you must employ your package management system. For instance, on an RPM-based system, you might type:</p>
+
+<pre class="listing"># <tt class="userinput">rpm -e grub2 grub2-efi grub2-tools</tt></pre>
+
+<p>On a system that uses Debian packages, a similar command is:</p>
+
+<pre class="listing"># <tt class="userinput">dpkg -P grub-efi-amd64 grub-efi-amd64-signed grub-common grub-efi-amd64-bin \
+  grub2-common grub-pc-bin shim-signed os-prober</tt></pre>
+
+<p class="sidebar"><b>Warning:</b> I've seen one report that, on an Ubuntu installation, system updates may fail if you remove GRUB because the update may require the <tt>intel-microcode</tt> package, which in turn requires a working GRUB. (If you have an AMD64 CPU, you would instead use the <tt>amd64-microcode</tt> package.) Thus, completely removing GRUB may be impractical, or at least inadvisable. (Keeping up-to-date on CPU microcode updates is highly advisable.) On the other hand, if you never launch GRUB, any updates it manages would never be installed.</p>
+
+<p>The details of what packages you must remove vary from one distribution to another, though. (The preceding examples are from Fedora and Ubuntu installations.) If you're unsure what packages to remove, you may need to use your package management tools to track down all GRUB-related packages. GUI tools, such as Yumex for Fedora and Synaptic for Debian-based systems, can be very helpful in this task. Unfortunately, you must sometimes remove packages that you might not want to remove&mdash;for instance, the preceding example removes <tt>shim-signed</tt> from Ubuntu because <tt>shim-signed</tt> contains a dependency on GRUB, but rEFInd can use Shim for its Secure Boot support. Fortunately, if rEFInd is already booting via Shim, removing the <tt>shim-signed</tt> package will <i>not</i> remove the <tt>shimx64.efi</tt> binary from rEFInd's directory, so the system will continue to boot&mdash;but you also won't receive any Shim updates that might roll along.</p>
+
+<p>Note also that removing the GRUB packages will <i>not</i> remove the files installed to the EFI System Partition (ESP), so rEFInd will continue to show a GRUB option, normally with an icon for your distribution, in its main menu. If you want to remove that menu entry, you can delete the relevant files, normally from <tt>/boot/efi/EFI/<tt class="variable">distribution_name</tt></tt>.</p>
+
+<p>An added bonus to removing the GRUB packages is that you will no longer have to wait while GRUB's scripts scan your system every time your kernel updates. (Such scans can take well over a minute on a system with lots of installed OSes, which can be quite annoying.) Of course, these scans keep the GRUB menu up-to-date, so if they stop, GRUB will eventually stop working, even if you leave its binaries installed on your ESP.</p>
+
+<p>One limitation to removing GRUB packages is that your distribution may try to re-install GRUB. As a workaround for Ubuntu systems, I use <a href="https://www.rodsbooks.com/refind/grub-pc_3.0-1_all.deb">this dummy package,</a> which claims to be "GRUB 3"&mdash;a version high enough that no GRUB 2 update should ever try to displace it. My "GRUB 3" dummy package contains nothing but a few empty directories.</p>
+
+<p>A less radical approach to preventing boot coups related to GRUB updates is to use your packaging system to lock the current version in place. You can do this with Debian-based installations with the <tt>apt-mark hold</tt> command, as in:</p>
+
+<pre class="listing"># <tt class="userinput">apt-mark hold grub-efi-amd64 grub-efi-amd64-signed grub-common grub-efi-amd64-bin \
+  grub-common grub2-common</tt></pre>
+
+<p>You can achieve a similar result in Fedora by installing the <tt>yum-plugin-versionlock</tt> package, ensuring that <tt>enabled = 1</tt> is set in <tt>/etc/yum/pluginconf.d/versionlock.conf</tt>, and editing <tt>/etc/yum/pluginconf.d/versionlock.list</tt> to include the names and versions of packages you want to lock at a particular version.</p>
+
+<a name="osx">
+<h2>Recovering from a Coup Using MacOS</h2>
+</a>
+
+<p>A boot coup that leaves a computer booting straight to macOS was most likely caused by an update to macOS&mdash;either a software update that installed a fresh copy of the macOS boot loader or a complete re-installation of the OS. In either event, the solution is conceptually similar to the Linux solution, but the tools you use to correct the problem differ. In macOS, you would either <a href="#startup_disk">use Startup Disk</a> to set rEFInd as the default or <a href="#bless">use <tt>bless</tt></a> to do the same.</p>
+
+<a name="startup_disk">
+<h3>Using Startup Disk to Adjust Your Boot Priority</h3>
+</a>
+
+<p>The Startup Disk utility appears in the System Preferences tool. Unfortunately, it will likely be useless if you installed rEFInd using <tt>refind-install</tt> and its default options, since Startup Disk is designed to switch between macOS installations; it's not smart enough to detect a rEFInd installation and re-activate it.</p>
+
+<p>If, however, you installed rEFInd by using the <tt>--ownhfs</tt> option to <tt>refind-install</tt>, your rEFInd installation volume should show up as an option in the Startup Disk utility. You should be able to click on it and then click Restart. Note that the name of the rEFInd volume may not be rEFInd, as it is in this screen shot; the name will match whatever volume holds rEFInd on your computer.</p>
+
+    <br /><center><img src="startup-disk.png" align="center" width="669"
+    height="402" alt="Startup Disk may enable you to reset rEFInd to being
+    the default boot program." border=2> </center><br />
+
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, macOS updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
+
+<a name="bless">
+<h3>Using <tt>bless</tt> to Adjust Your Boot Priority</h3>
+</a>
+
+<p>The more general solution to resetting rEFInd as the default boot manager from macOS is to follow a subset of the <a href="installing.html#osx">manual macOS installation instructions.</a> Unfortunately, some details depend on where rEFInd is installed&mdash;on the ESP, on the main macOS root (<tt>/</tt>) partition, or on a separate HFS+ volume. If rEFInd is installed on its own HFS+ partition, using Startup Disk, as described in <a href="#startup_disk">the previous section,</a> is likely to be the easier solution. For the other two options, you should first figure out where rEFInd is installed and then follow this procedure:</p>
+
+<ol>
+
+<li>Open a Terminal window in which you'll type the following
+    commands.</li>
+
+<li>If rEFInd is installed on your ESP, you must first mount it. The
+    easy way to do this is to use the <tt>mountesp</tt> script that comes
+    with rEFInd. When you run it, the script should tell you where the ESP
+    was mounted. You can do the job manually by typing <b><tt>mkdir
+    /Volumes/ESP</tt></b> followed by <b><tt>sudo mount -t msdos
+    /dev/disk0s1 /Volumes/ESP</tt></b>. Note that you may need to change
+    <tt>/dev/disk0s1</tt> to something else if your ESP is at an unusual
+    location. Type <tt class="userinput">diskutil list</tt> or use a tool
+    such as my <a href="https://www.rodsbooks.com/gdisk/">GPT fdisk
+    (<tt>gdisk</tt>)</a> to examine your partition table to find your ESP
+    if necessary.</li>
+
+<li>"Bless" rEFInd by typing one of the following two commands:
+    <ul>
+    <li>If rEFInd is installed on the ESP, type <tt
+	class="userinput">sudo bless --mount /Volumes/ESP --setBoot --file
+	/Volumes/ESP/efi/refind/refind_x64.efi --shortform</tt>, adjusting
+	the mount point and exact path to the file as appropriate for your
+	installation.</li>
+    <li>If rEFInd is installed on an ordinary HFS+ volume, type <tt
+	class="userinput">sudo bless --setBoot --folder /efi/refind --file
+	/efi/refind/refind_x64.efi</tt>. (Adjust the path and filename as
+	necessary if you're placing rEFInd somewhere else or using the
+	32-bit version.)</li>
+    </ul></li>
+
+</ol>
+
+<p>One major caveat is that the <tt>bless</tt> command will fail if System Integrity Protection (SIP) is active. This feature is part of macOS 10.11 (El Capitan) and later, and you will have dealt with it during rEFInd installation if it's active. See <a href="sip.html">this page of the rEFInd documentation</a> for more on this subject. You can use any of the procedures outlined there with reference to installing rEFInd for dealing with a boot coup, as well.</p>
+
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Fortunately, macOS updates that create boot coups are fairly rare, but you'll have to resign yourself to the fact that the problem may recur in the future.</p>
+
+<a name="windows">
+<h2>Recovering from a Coup Using Windows</h2>
+</a>
+
+<p>A couple of tools exist to help you manage the boot order in Windows. The easiest of these to use is the third-party <a href="#easyuefi">EasyUEFI.</a> Microsoft's <a href="#bcdedit"><tt>bcdedit</tt>,</a> though, has the advantage of working around a problem in which Windows keeps setting its own boot manager as the default. (This problem is rare, but crops up from time to time.)</p>
+
+<a name="easyuefi">
+<h3>Using EasyUEFI to Adjust Your Boot Priority</h3>
+</a>
+
+<p>The third-party <a href="http://www.easyuefi.com/index-us.html">EasyUEFI program</a> is a user-friendly GUI tool for managing EFI boot entries. A free trial is available, but if you want to use it in the long term, you'll need to pay for it. If a Windows update resets Windows as the default boot program, you can use EasyUEFI to restore rEFInd as the default. Doing so is pretty straightforward:</p>
+
+<ol>
+
+<li>Download and install EasyUEFI.</li>
+
+<li>Launch EasyUEFI. The resulting display will look something like this:</li>
+
+    <br /><center><img src="easyuefi.png" align="center" width="804"
+    height="629" alt="The Windows EasyUEFI tool enables adjusting the EFI
+    boot entries in a GUI environment." border=2> </center><br />
+
+<li>Click the rEFInd entry.</li>
+
+<li>Click the green up-arrow button (at the top of the column of icons between the <i>Boot order</i> and <i>Detailed information</i> panes) as many times as needed to bring rEFInd to the top of the list.</li>
+
+<li>Exit from EasyUEFI. Alternatively, you can select the Power -&gt; Reboot menu entry to reboot and test the change immediately.</li>
+
+</ol>
+
+<p>Note that EasyUEFI's menu shows the <i>names</i> of the boot entries. In some cases, rEFInd may be registered under another name. This is particularly likely if you used macOS's <tt>bless</tt> or Windows' <tt>bcdedit</tt> tools to register rEFInd with the firmware. You may be able to locate the rEFInd binary by examining the <i>File path</i> entry in the <i>Detailed information</i> pane, after selecting a "candidate" entry.</p>
+
+<p>Like most of the remedies described on this page, this one makes an immediate change to the boot order but does not guarantee that the problem will not recur. In most cases, rEFInd will remain the primary boot program until it's changed again by another OS update, but all bets are off when that happens.</p>
+
+<a name="bcdedit">
+<h3>Using <tt>bcdedit</tt> to Adjust Your Boot Priority</h3>
+</a>
+
+<p>You can use a truncated version of the <a href="installing.html#windows">Windows installation instructions</a> to restore rEFInd as the default boot manager:</p>
+
+<ol>
+
+<li>Locate Command Prompt in the Start menu, right-click it, and select Run as Administrator. This action opens a Command Prompt window with administrative privileges.</li>
+
+<li>Type <b><tt>bcdedit /set "{bootmgr}" path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>"{bootmgr}"</tt> is entered as such; that's not a notation for a variable. Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use. If you use Shim or PreLoader to boot with Secure Boot active, you should change the name of the binary appropriately.</li>
+
+<li>If you like, type <b><tt>bcdedit /set "{bootmgr}" description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
+
+</ol>
+
+<p>This procedure, unlike the EasyUEFI one, creates a new boot menu item. It requires that you know the exact path to the rEFInd binary. (If you don't know this detail, you can mount your ESP, as described in the <a href="installing.html#windows">Windows installation instructions,</a> and try to find it.) Overall, it's likely to be easier to use EasyUEFI; however, this procedure has one potential advantage: I've seen reports of cases in which Windows changes the default boot program on every boot. This procedure sometimes puts an end to such shenanigans. Thus, it can serve as a preventive measure against at least some future boot coups. I can't promise that it will work in all such cases, though. In particular, some EFIs, especially older ones, are buggy and ignore or forget their entries. Using <tt>bcdedit</tt> will not help protect against this problem.</p>
+
+<a name="refind">
+<h2>Recovering from a Coup Using rEFInd</h2>
+</a>
+
+    <img src="func_bootorder.png" align="right" width="48" height="48"
+    alt="The EFI boot order icon launches the EFI boot order maintenance
+    feature" border=2 background="gray"/>
+
+<p>rEFInd 0.12.0 introduced a new EFI boot order maintenance feature. This feature is primitive compared to some boot order maintenance tools, but it's adequate to recover from a boot coup, provided you can boot rEFInd once. To use it, the <tt>showtools</tt> line in <tt>refind.conf</tt> must include the <tt>bootorder</tt> option. This option is disabled by default, except on the USB flash drive and CD-R images I distribute; but if you regularly encounter boot coups, you may want to enable this feature. When it's active, a boot order icon will appear on the second row of rEFInd icons, as shown at the right. Selecting this option will produce a display of EFI boot options, as shown here:</p>
+
+    <br /><center><img src="bootorder.png" align="center" width="643"
+    height="226" alt="rEFInd's EFI boot order maintenance tool enables you to set a default boot option or delete unwanted options." border=2> </center><br />
+
+<p>The list provides up to four pices of information about each boot entry: its boot number (such as <tt>Boot0004</tt>; its description (such as <tt>rEFInd Boot Manager</tt>, its filename (such as <tt>EFI\refind\refind_x64.efi</tt>, and its volume name (such as <tt>ESP</tt>). Sometimes one or more of these pieces of information can be missing. In the preceding example, for instance, the final four items on the list lack filenames and volume names. (This is common for entries created by the firmware for its own hardware devices.) If you can't figure out which entry you want to delete or elevate to the first position, I recommend booting into Linux or Windows and using <tt>efibootmgr</tt> or the commercial <a href="https://www.easyuefi.com/">EasyUEFI,</a> respectively.</p>
+
+<p>You can use the arrow keys to move up and down in the list to select a boot entry. Once you've picked an option, you can perform either of three actions from this menu:</p>
+
+<ul>
+
+<li>Pressing the Enter key causes the selected item to be moved to the top of the boot order list.</li>
+
+<li>Pressing the Delete or minus (<tt>-</tt>) key completely deletes the entry, both from the boot order list and from the (potentially larger) list of all boot items.</li>
+
+<li>Pressing Esc or certain other unmapped keys returns to the main menu without making any changes.</li>
+
+</ul>
+
+<p>rEFInd's EFI boot maintenance tool does not enable you to fine-tune the order of multiple items all at once. You can do so by making repeated calls to the program, however. For instance, to convert the entries shown earlier to a boot order of <tt>0006</tt>, <tt>0005</tt>, <tt>0004</tt>, you would call the function twice &mdash; once to move <tt>0005</tt> to the top of the list and then to move <tt>0006</tt> there.</p>
+
+<p>As with most of the fixes described on this page, this method of recovering from a boot coup will not protect you from future boot coups. Preparing a USB flash drive or CD-R with rEFInd on it can help you when boot coups occur, though, especially if the boot coup corrupts your boot list so that you can't start rEFInd. If you can boot from the external medium, you can use it to launch rEFInd and adjust the boot order, or even <a href="installing.html#from_refind">completely re-install rEFInd</a> from the external disk.</p>
+
+<p>Note that this feature adjust <i>the EFI's</i> boot order, <i>not</i> the boot order of loaders shown on rEFInd's screen. That order is determined by the order in which rEFInd detects different boot loaders, which is not easy to control.</p>
+
+<a name="firmware">
+<h2>Using Your Firmware to Repair a Boot Coup</h2>
+</a>
+
+<p>If a boot coup has left your computer unbootable, or if the OS to which you're booting provides poor or non-functional tools for repairing a boot coup, you may be able to use your firmware to fix the problem. There are two basic approaches to doing so: <a href="#firmware_builtin">using built-in firmware features</a> (which may or may not be present, depending on your computer) and <a href="#efi_shell">using an EFI shell</a> (which may or may not be installed on your computer).</p>
+
+<a name="firmware_builtin">
+<h3>Using Built-in Firmware Features to Adjust Your Boot Priority</h3>
+</a>
+
+<p>Some, but not all, EFIs provide the means to adjust the boot order themselves. The details of how this works vary greatly from one implementation to another, so I can provide only fairly broad guidance on this point. As an example, consider how to adjust the boot order with the ASUS P8 H77-I motherboard:</p>
+
+<ol>
+
+<li>Turn on the computer.</li>
+
+<li>As the computer begins its Power-On Self-Test (POST), there will be a brief window in which you can hit the F2 or Del key to enter the firmware setup utility. Do so.</li>
+
+<li>In the "EZ-Mode" menu shown below, the boot order is shown graphically near the bottom of the screen. As you move the mouse over the entries, you'll see an expansion of each one. In the screen shot below, the second item is highlighted, and you can see it's rEFInd.</li>
+
+    <br /><center><img src="asus-bootorder.jpg" align="center" width="800"
+    height="600" alt="Some EFIs provide a way to adjust the boot order."
+    border=2> </center><br />
+
+<li>Click and drag the rEFInd entry to move it to the front of the list (all the way to the left).</li>
+
+<li>Hit F10 to save your changes. A dialog box will ask for confirmation; click <i>Save Changes & Reset.</i></li>
+
+</ol>
+
+<p>This procedure is only an example for one EFI. In fact, some EFIs, including the one in the ASUS P8 H77-I, feature multiple user interface modes. The ASUS has an "Advanced" mode, for instance, in which the procedure would be slightly different. They key point, though, is to locate whatever menu displays the boot order and use that menu to adjust it. Such a menu may be shown on the main screen, as in the case of the ASUS' "EZ-Mode," or on a menu you must select&mdash;often called "Boot" or something similar. Some EFIs, particularly for low-end fully-assembled desktop and laptop computers, lack this functionality altogether.</p>
+
+<p>As with most other fixes described on this page, this one won't protect you from future boot coups. Most boot coups are caused by actions of an OS, so prevention must be handled on an OS-by-OS basis.</p>
+
+<a name="efi_shell">
+<h3>Using an EFI Shell to Adjust Your Boot Priority</h3>
+</a>
+
+<p>Version 2 of the EFI shell provides a command, <tt>bcfg</tt>, which can adjust the EFI boot order. Unfortunately, this tool is not present in version 1 of the EFI shell, and version 2 is reliable only with EFI version 2.3 and later, although at least one binary claims to work around that problem. To date (early 2020), all Intel-based Macs use EFI 1.1, and many PCs sold prior to Windows 8's release use UEFI (EFI 2.x) versions prior to 2.3. Thus, this approach may not work for you.</p>
+
+<p>Even if your computer works with a version 2 shell, it may not have one built in. In fact, most EFIs I've seen lack a built-in shell. If a shell is available, it should appear on the EFI's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> If a shell is not built into your firmware, you can add one; here are a couple of links that may be helpful:</p>
+
+<ul>
+
+<li><a href="https://github.com/tianocore/edk2/releases/latest/download/ShellBinPkg.zip">EFI version 2 shell binaries for multiple architectures</a> (from the official Tianocore EDK II build)</li>
+
+<li><a href="https://drive.google.com/uc?export=download&id=1OBXYj6MEs7VAZbYnjD9FxOYcZYIQoq36">EFI version 2 shell binary for <i>x</i>86-64, modified to work on pre-2.3 EFIs</a> (from the Clover boot loader, hosted on Google Drive and of unknown provenance)</li>
+
+</ul>
+
+<p class="sidebar"><b>Note:</b> You can use an OS other than Linux to prepare the EFI shell boot disk, but you'll need to adjust the commands appropriately.</p>
+
+<p>If you need to use the shell to overcome a boot coup, your best bet is to install it to a USB flash drive and boot from it. You can do so as follows in Linux:</p>
+
+<ol>
+
+<li>Prepare a USB flash drive with a FAT filesystem. Depending on your firmware, it may need to use GPT and the partition may need to be marked as an EFI System Partition (ESP)&mdash;that is, with a type code of EF00 in <tt>gdisk</tt> or with its "boot flag" set in <tt>parted</tt> or GParted.</li>
+
+<li>Mount the USB flash drive. In this procedure, I assume it's mounted at <tt>/mnt</tt>. If you mount it elsewhere, adjust the following commands appropriately.</li>
+
+<li>Type <tt class="userinput">mkdir -p /mnt/EFI/BOOT</tt> to create the <tt>EFI/BOOT</tt> directory on the USB drive.</li>
+
+<li>Copy the shell binary you downloaded to <tt>/mnt/EFI/BOOT/bootx64.efi</tt> (for a system with a 64-bit EFI) or to <tt>/mnt/EFI/BOOT/bootia32.efi</tt> (for a system with a 32-bit EFI).</li>
+
+<li>Unmount the USB drive.</li>
+
+</ol>
+
+<p>At this point, you should have a working USB flash drive with an EFI shell. It should show up in your computer's built-in boot manager, as described earlier, in <a href="#evade_guards">Evading the Guards: Performing a One-Time Boot to Your Desired OS.</a> It will probably appear there under the brand name of the USB drive, perhaps with "UEFI" in the description. (If the boot medium shows up twice, select the option that includes "UEFI" in the description.) One major caveat is that the EFI shell is not signed with a Secure Boot key, so to use it on a computer with Secure Boot active, you must disable Secure Boot.</p>
+
+<p>Once you've booted the EFI shell, you can follow a subset of the <a href="installing.html#efishell">EFI shell rEFInd installation instructions</a> to repair the boot coup:</p>
+
+<ol>
+
+<li>Type <tt class="userinput">bcfg boot dump -b</tt> to see a list of
+    existing NVRAM entries. Pay attention to their numbers (labelled
+    <tt>Option:</tt> and <tt>Variable:</tt>, with the latter number
+    preceded by the string <tt>Boot</tt>, as in <tt>Boot0007</tt>). Look
+    for the existing rEFInd entry.</li>
+
+<li>Type <tt class="userinput">bcfg boot mv <i>#</i> 0</tt>, substituting
+    the option number for the rEFInd entry you identified for <tt
+    class="variable">#</tt>. This moves rEFInd to the top of the boot
+    order.</li>
+
+<li>Type <tt class="userinput">reset</tt> to reboot the computer.</li>
+
+</ol>
+
+<p class="sidebar"><b>Tip:</b> If you install the EFI shell as <tt>EFI/tools/shell.efi</tt> or <tt>EFI/tools/shellx64.efi</tt> (on x86-64 systems; <tt>EFI/TOOLS/shellia32.efi</tt> on IA-32 systems) on your hard disk's ESP, rEFInd will detect it and enable you to launch it from rEFInd. If you register the shell with the firmware's boot manager, you'll be able to launch it that way without using a USB flash drive.</p>
+
+<p>With any luck, rEFInd will be restored as the default boot manager at this point. As with most of the methods described on this page, this procedure will do nothing to prevent future boot coups, so you may need to repeat the process in the future.</p>
+
+<p>Because of the complexity of the procedure for starting an EFI shell if one is not already prepared, this procedure works best if one is built into your EFI or if you already have one ready.</p>
+
+<a name="unstable">
+<h2>The Unstable State: Dealing With Persistent Boot Coups</h2>
+</a>
+
+<p>If your computer simply refuses to boot into rEFInd, chances are your firmware is either ignoring its boot entries or forgetting them. For the most part, which is the case doesn't really matter, since the solutions are similar for both cases. There are a few obscure exceptions, though; for instance, an entry will be ignored if it's malformed&mdash;such as if the filename specification includes a typo. Also, there is at least one <a href="http://mjg59.dreamwidth.org/20187.html">known bug</a> that causes the computer to ignore boot loader entries except for those named "Windows Boot Manager" or "Red Hat Enterprise Linux." Such problems can be fixed by creating a fresh NVRAM entry for rEFInd that fix the typo or give the entry the name that the EFI expects (even if it's a misleading name).</p>
+
+<p>More common are problems in which the firmware ignores or forgets its boot entries. Such problems used to be quite common, but are becoming rarer as manufacturers (slowly) improve their products. My general advice for fixing such problems is to attempt each of the following, in more-or-less the stated order:</p>
+
+<ol>
+
+<li>Upgrade your firmware. Go to the manufacturer's Web page and search for a firmware update. (Most manufacturers call these "BIOS updates.") After you apply the update, you may need to add the rEFInd entry back (re-installing it will do so).</li>
+
+<li>Reset your firmware settings to their default values. Most EFIs provide an option to do this. The idea is that corrupted settings may be causing the firmware to misbehave, so resetting everything to factory defaults may work around the problem. You may need to re-install rEFInd, or at least re-create its NVRAM entry.</li>
+
+<li>Use another tool. The Linux <tt>efibootmgr</tt> tool sometimes doesn't work correctly even when another tool does work. As noted earlier, the <a href="#bcdedit">Windows <tt>bcdedit</tt> program</a> can overcome some persistent problems related to Windows; and the EFI shell's <tt>bcfg</tt> works better than <tt>efibootmgr</tt> on a small number of EFIs.</li>
+
+<li>Return the computer for a refund. If none of the preceding steps works, chances are your firmware is just plain defective. Note that by "defective" I mean "defective by design," not a sample defect, so you should not exchange the computer for another of the same model. (Indeed, even another model of the same brand may suffer from the same problem.) Your best bet in this case is to return the product to the store for a refund and <i>write to the manufacturer about the problem.</i> Manufacturers will not fix problems that they don't know exist, so informing them of the problem is important. Unfortunately, many people learn of such problems only after having owned a computer for months, so a return is not always practical....</li>
+
+<li>Use the <tt>fallback.efi</tt> program. This approach is described shortly, in <a href="#fallback">Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt>.</a></li>
+
+<li>Use a fallback filename. You can use <tt>mvrefind</tt> in Linux to rename rEFInd to use either of two fallback filenames:
+
+  <ul>
+
+  <li>Type <tt class="userinput">mvrefind /boot/efi/EFI/refind /boot/efi/EFI/BOOT</tt> to rename rEFInd to use the official EFI fallback filename of <tt>EFI/BOOT/bootx64.efi</tt>. (Change <tt>/boot/efi</tt> to the ESP's mount point if it's something else.) This location works well if you're single-booting Linux, or booting multiple Linux distributions.</li>
+
+  <li>Type <tt class="userinput">mvrefind /boot/efi/EFI/refind /boot/efi/EFI/Microsoft/Boot</tt> to rename the Microsoft boot loader as a backup filename and to rename rEFInd as the Microsoft boot loader (<tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>). This is a somewhat confusing hack, but it's necessary on some very badly broken EFIs, particularly if you're dual-booting Windows and another OS. Unfortunately, Windows might, quite reasonably, replace rEFInd with a fresh copy of its own boot loader if a system update provides a new boot loader, or even for other reasons. Thus, you might need to re-install rEFInd and repeat this hack at some point in the future.</li>
+
+  </ul>
+
+  You can perform these actions in another OS, too, but you'll need to do so manually. See the <a href="installing.html#manual_renaming">Renaming Files Manually</a> section of the rEFInd installation page for details. If you upgrade rEFInd in the future, the <tt>refind-install</tt> script should detect rEFInd at its altered location and upgrade it there, so you should not need to repeat this step after a future rEFInd upgrade.</li>
+
+</ol>
+
+<p>Persistent boot coups may also be related to OS actions. As noted earlier, Windows will sometimes cause repeated problems, which can usually be fixed via <tt>bcdedit</tt>. Repeated problems in Linux can be caused by by frequent GRUB updates or by a combination of bad NVRAM handling and the <tt>fallback.efi</tt> program. If GRUB is updating so frequently that's it's causing annoyance, it can be dealt with by use of <a href="#refind-mkdefault"><tt>refind-mkdefault</tt></a> in a startup or shutdown script or by <a href="#disabling_grub">disabling GRUB updates.</a> If <tt>fallback.efi</tt> is causing you grief, read <a href="#fallback">the following section</a> for information on how to reconfigure it.</p>
+
+<p>Another thing that can produce symptoms similar to a persistent boot coup is Secure Boot. If Secure Boot is enabled on your computer and you install rEFInd without a Shim or PreLoader program, your computer will probably refuse to launch rEFInd. In this case, inserting Shim or PreLoader into the boot process, as described on the <a href="secureboot.html">rEFInd Secure Boot page,</a> normally overcomes this problem. On rare occasions, though, Shim or PreLoader won't work with a particular computer. In such a case, you may need to <a href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">disable Secure Boot.</a> Note that this level of Secure Boot malfunction is quite rare. I see many posts in online forums that jump to the conclusion that Secure Boot is causing a problem, when in fact there's another more likely cause. Thus, I urge you to investigate other possibilities before concluding that Secure Boot is causing an inability to boot rEFInd.</p>
+
+<a name="fallback">
+<h2>Managing Boot Coups with <tt>fallback.efi</tt>/<tt>fbx86.efi</tt></h2>
+</a>
+
+<p>One type of boot problem is similar to a boot coup, but has a unique cause: Some EFIs, especially older ones (mostly from 2012 or earlier) have a tendency to forget their NVRAM entries. Such computers boot from the fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt>) or from the Microsoft boot loader (<tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>), but that's about it. A similar problem is that some computers remove invalid boot entries from their boot lists. This is helpful if you delete a boot loader, but it's less than helpful if you temporarily unplug your boot disk and then plug it back in.</p>
+
+<p>In either of these cases, your computer may boot to an unwanted OS or completely fail to boot. One solution to this problem is to install rEFInd to the fallback filename, as described earlier, in <a href="#unstable">The Unstable State: Dealing With Persistent Boot Coups.</a> Another is to use an EFI program called <tt>fallback.efi</tt>, <tt>fbx64.efi</tt>, or an equivalent filename on other platforms. To use this program, you would install it to <tt>EFI/BOOT</tt> on the ESP, either renaming it to <tt>bootx64.efi</tt> (that is, <tt>fallback.efi</tt> uses the fallback filename) or installing Shim as <tt>bootx64.efi</tt>. Shim will try to launch <tt>fallback.efi</tt> or <tt>fbx64.efi</tt> when it boots, so either way, this program will launch. (Be sure to match your Shim and <tt>fallback.efi</tt>/<tt>fbx864.efi</tt> binaries, so that Shim launches the correct program!) For simplicity, I call this program <tt>fallback.efi</tt> hereafter.</p>
+
+<p>When <tt>fallback.efi</tt> launches, it reads every subdirectory of <tt>EFI</tt> on the ESP <i>except</i> for <tt>EFI/BOOT</tt> and looks for a file called <tt>BOOT.CSV</tt>. If this file exists and contains a <i>UCS-2</i> (UTF-16 also seems to work) text file, that file is read and used to create a new NVRAM boot variable. The format of <tt>BOOT.CSV</tt> is simple; it consists of one or more lines, each of which consists of four comma-separated fields:</p>
+
+<ul>
+
+<li><b><i>filename</i></b>&mdash;This is the filename of the file, in the same directory as <tt>BOOT.CSV</tt>, to be added to the NVRAM-based boot list.</li>
+
+<li><b><i>label</i></b>&mdash;This is the label to be associated with the file. This label is displayed by the firmware's own built-in boot manager.</li>
+
+<li><b><i>options</i></b>&mdash;If the boot loader requires options, you'd specify them here. rEFInd doesn't normally take options, so this field is likely to be empty.</li>
+
+<li><b><i>description</i></b>&mdash;This field describes the entry. It's not used by <tt>fallback.efi</tt>; it exists solely for human consumption.</li>
+
+</ul>
+
+<p>An example <tt>BOOT.CSV</tt> file for rEFInd might look like this:</p>
+
+<pre class="listing">refind_x64.efi,rEFInd,,This is the boot entry for rEFInd</pre>
+
+<p>This example is suitable for use with rEFInd if Secure Boot is not in use. (If you're using Secure Boot with Shim, you'd probably specify <tt>shimx64.efi</tt> rather than <tt>refind_x64.efi</tt> in this file and give rEFInd the filename <tt>grubx64.efi</tt>.) This example adds an entry for <tt>refind_x64.efi</tt>, with a label of <tt>rEFInd</tt>, to the NVRAM-based boot order list.</p>
+
+<p>One key point is that this file must be a UCS-2 or UTF-16 file. Most Linux (and Windows and macOS) text editors create ASCII files by default. You can use <tt>iconv</tt> to convert to an appropriate format. For instance, suppose you have an ASCII file called <tt>boot.csv</tt> in your home directory and you want to write it to <tt>/boot/efi/EFI/refind</tt> as a UCS-2 file. You could do so in two steps as follows:</p>
+
+<pre class="listing">$ <b>iconv -t UCS-2 < ~/boot.csv > ~/BOOT.CSV</b>
+$ <b>sudo cp ~/BOOT.CSV /boot/efi/EFI/refind/</b></pre>
+
+<p>Depending on permissions on your ESP and the account you use, you could do the same thing in a single step by writing directly to the ESP.</p>
+
+<p>Note that <tt>fallback.efi</tt> can <i>create</i> boot coups, in addition to fixing them. If it's run inappropriately, this program can modify your NVRAM-based boot list, causing something you don't want to run to become the default boot loader. Thus, if you're experiencing boot coups, you may want to check for the presence of this program and either delete it or adjust the <tt>BOOT.CSV</tt> files on your ESP. You can find all the <tt>BOOT.CSV</tt> files as follows, assuming the ESP is mounted at <tt>/boot/efi</tt>:</p>
+
+<pre class="listing">$ <b>find /boot/efi -iname BOOT.CSV</b></pre>
+
+<p>By default, Fedora and its relatives install <tt>fallback.efi</tt> in the
+fallback position (typically launched by Shim, actually) and set up a
+<tt>BOOT.CSV</tt> file in the directory that holds the distribution's GRUB.
+This is good for keeping Fedora booting, but if you want to boot with
+rEFInd, this configuration can result in a boot coup should the fallback
+boot loader run for any reason. One way to fix such a problem is to delete
+or rename <tt>BOOT.CSV</tt> in the GRUB boot loader's directory and create a
+suitable <tt>BOOT.CSV</tt> in the rEFInd directory on the ESP. The
+<tt>refind-install</tt> and <tt>mvrefind</tt> scripts in rEFInd 0.11.0 and later create such a file automatically. This file is harmless if <tt>fallback.efi</tt> never runs.</p>
+
+<p>Note that <tt>fallback.efi</tt> does not guarantee the order in which boot entries are created, nor does it provide any mechanism for controlling the boot order when the program runs. These details are determined by the order in which the program locates <tt>BOOT.CSV</tt> files. Thus, if you have multiple boot loaders with <tt>BOOT.CSV</tt> files, you'll end up with an essentially random boot loader selected as the default. With any luck, you'll be able to adjust the boot order with <tt>efibootmgr</tt>, EasyUEFI, or some other program once the system has booted. If your computer completely forgets its boot entries on every boot, though, your best bet is likely to be to delete all the <tt>BOOT.CSV</tt> files except for the one associated with the boot program you want to control the computer.</p>
+
+<hr />
+
+<p>copyright &copy; 2016&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="yosemite.html">Comments on rEFInd and OS X 10.10 (Yosemite)</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

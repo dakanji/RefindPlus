@@ -1,0 +1,1172 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>The rEFInd Boot Manager: Installing rEFInd</title>
+  <link href="../Styles/styles.css" rel="stylesheet" type="text/css" />
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<body>
+  <h1>The rEFInd Boot Manager:<br />Installing rEFInd</h1>
+
+<p class="subhead">by Roderick W. Smith, <a
+href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
+
+<p>Originally written: 3/14/2012; last Web page update:
+3/13/2020, referencing rEFInd 0.12.0</p>
+
+
+<p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
+
+<table border="1">
+<tr>
+<td>Donate $1.00</td>
+<td>Donate $2.50</td>
+<td>Donate $5.00</td>
+<td>Donate $10.00</td>
+<td>Donate $20.00</td>
+<td>Donate another value</td>
+</tr>
+<tr>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="1.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="2.50">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="5.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="10.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="amount" value="20.00">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td>
+
+<td>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="rodsmith@rodsbooks.com">
+<input type="hidden" name="lc" value="US">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="item_name" value="rEFInd Boot Manager">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="donate.png" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+</form>
+</td></tr>
+</table>
+
+<hr />
+
+<p>This page is part of the documentation for the rEFInd boot manager. If a Web search has brought you here, you may want to start at the <a href="index.html">main page.</a></p>
+
+<hr />
+
+<div style="float:right; width:55%">
+
+<p><b>Don't be scared by the length of this page!</b> Only portions of this page apply to any given user, and most people can install rEFInd from an RPM or Debian package in a matter of seconds or by using the <tt>refind-install</tt> script in minute or two.</p>
+
+<p>Once you've obtained a rEFInd binary file, as described on <a href="getting.html">the preceding page,</a> you must install it to your computer's EFI System Partition (ESP) (or conceivably to some other location). The details of how you do this depend on your OS and your computer (UEFI-based PC vs. Macintosh). The upcoming sections provide details. See the Contents sidebar to the left for links to specific installation procedures. For most Linux users, an RPM or Debian package is the best way to go. If your Linux system doesn't support these formats, though, or if you're running macOS, using the <tt>refind-install</tt> script can be a good way to go. If you're using Windows, you'll have to install manually.</p>
+
+<p class="sidebar" style="width:95%"><b>Important:</b> A rEFInd zip file, when uncompressed, creates a directory called <tt>refind-<i>version</i></tt>, where <tt><i>version</i></tt> is the version number. This directory includes a subdirectory called <tt>refind</tt> that holds the rEFInd binary along with another that holds documentation, as well as miscellaneous files in <tt>refind-<i>version</i></tt> itself. When I refer to "the <tt>refind</tt> directory" on this page, I mean the directory with that precise name, not the <tt>refind-<i>version</i></tt> directory that is its parent.</p>
+
+<p class="sidebar" style="width:95%"><b>Note:</b> As of version 10.12 ("Sierra"), Apple has renamed its <i>OS X</i> OS to <i>macOS.</i> I now use "macOS" to refer to any version of this OS. I've seen reports of rEFInd not working with macOS 10.12; however, my own experience is that it works fine&mdash;with the caveat that the upgrade produces a <i>boot coup,</i> as described on <a href="bootcoup.html">this page of the rEFInd documentation,</a></p>
+
+</div>
+
+<div class="navbar">
+
+<h4 class="tight">Contents</h4>
+
+<ul class="tight">
+
+<li class="tight"><a href="#packagefile">Installing rEFInd using an RPM or Debian package file</a></li>
+
+<li class="tight"><a href="#installsh">Installing rEFInd Using <tt>refind-install</tt> under Linux or MacOS</a>
+
+<li class="tight"><a href="#manual">Installing rEFInd Manually</a>
+
+   <ul>
+
+   <li class="tight"><a href="#linux">Installing rEFInd Manually Using Linux</a></li>
+
+   <li class="tight"><a href="#osx">Installing rEFInd Manually Using MacOS</a></li>
+
+   <li class="tight"><a href="#windows">Installing rEFInd Manually Using Windows</a></li>
+
+   <li class="tight"><a href="#efishell">Installing rEFInd Manually Using an EFI Shell</a></ul></li>
+
+<li class="tight"><a href="#from_refind">Installing rEFInd from within rEFInd</a></li>
+
+<li class="tight"><a href="#naming">Alternative Naming Options</a>
+
+   <ul>
+
+   <li class="tight"><a href="#mvrefind">Using <tt>mvrefind</tt></li>
+
+   <li class="tight"><a href="#manual_renaming">Renaming Files Manually</li>
+
+   </ul></li>
+
+<li class="tight"><a href="#upgrading">Upgrading rEFInd</a></li>
+
+<li class="tight"><a href="#addons">Installing Additional Components</a></li>
+
+<li class="tight"><a href="#sluggish">Fixing a  Macintosh Boot</a>
+
+   <ul>
+
+   <li class="tight"><a href="#shortform">Using the <tt>--shortform</tt> Option</a></li>
+
+   <li class="tight"><a href="#fallback">Using the Fallback Filename</a></li>
+
+   <li class="tight"><a href="#moving">Moving rEFInd to an HFS+ Volume</a></li>
+
+   <li class="tight"><a href="#clearing">Clearing the NVRAM Entries</a></li>
+
+   <li class="tight"><a href="#wakeprobs">Fixing Wake Problems</a></li>
+
+   <li class="tight"><a href="#nolinux">Fixing a Failure to Find Linux</a></li>
+
+   </ul></li>
+
+<li class="tight"><a href="#winprob">Fixing Windows Boot Problems</a></li>
+
+<li class="tight"><a href="#uninstalling">Uninstalling rEFInd</a>
+
+   <ul>
+
+   <li class="tight"><a href="#uinst_linux">Uninstalling rEFInd from Linux</a></li>
+
+   <li class="tight"><a href="#uinst_osx">Uninstalling rEFInd from macOS</a></li>
+
+   <li class="tight"><a href="#uinst_windows">Uninstalling rEFInd from Windows</a></li>
+
+   <li class="tight"><a href="#post_uninst">Post-Uninstallation Activity (UEFI-Based PCs)</a></li>
+
+</ul></ul></li>
+
+</div>
+
+<a name="packagefile">
+<h2>Installing rEFInd Using an RPM or Debian Package File</h2>
+</a>
+
+<p>I provide RPM and Debian package files for rEFInd; and I maintain an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
+
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.12.0-1.x86_64.rpm</tt></pre>
+
+<p>On a Debian-based system, the equivalent command is:</p>
+
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.12.0-1_amd64.deb</tt></pre>
+
+<p class="sidebar"><b>Warning:</b> The initial release of Ubuntu 16.04's <tt>sbsigntool</tt> package had a bug that caused the <tt>sbsign</tt> utility to crash randomly. (See <a href="https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372">this bug report</a> for details.) This bug would cause rEFInd installation to fail. It's been fixed with <tt>sbsigntool</tt> version 0.6-0ubuntu10.1, so be sure your <tt>sbsigntool</tt> is up-to-date before installing rEFInd!</p>
+
+<p>Either command produces output similar to that described for <a href="#installsh">using the <tt>refind-install</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Since version 0.11.0, <tt>refind-install</tt> supports storing Secure Boot private keys in an encrypted form. If you set up rEFInd in this way, the RPM or Debian package will fail to install, since it assumes an unencrypted Secure Boot key.</p>
+
+<a name="ppa">
+<p>If you're using Ubuntu, you should be able to install using the PPA as follows:</p></a>
+
+<pre class="listing">$ <tt class="userinput">sudo apt-add-repository ppa:rodsmith/refind</tt>
+$ <tt class="userinput">sudo apt-get update</tt>
+$ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
+
+<p class="sidebar"><b>Warning:</b> I know of one bug with the version of rEFInd built with GNU-EFI: On my 32-bit Mac Mini, the filesystem drivers hang when launched. This can render the system unbootable until you bypass rEFInd. This bug does <i>not</i> manifest when running the same binaries under a 32-bit VirtualBox, and I've never run into it on any 64-bit system (including a 64-bit MacBook Air). Debugging suggests that a function is being entered mid-function, which implies a bug in the EFI or in the development tools. In any event, the bottom line is to not use the PPA on a 32-bit Mac.</p>
+
+<p>The PPA version asks if you want to install rEFInd to your ESP. (Chances are you want to respond affirmatively.) The PPA version will update automatically with your other software, which you might or might not want to have happen. It's also built with GNU-EFI rather than with TianoCore. This last detail <i>should</i> have no practical effects, but it might be important if you've got a buggy EFI or if there's some undiscovered rEFInd bug that interacts with the build environment.</p>
+
+<p>The installation script makes an attempt to install rEFInd in a bootable way even if you run the script from a BIOS-mode boot, and therefore the RPM and Debian packages do the same. I cannot guarantee that this will work, though, and even if it does, some of the tricks that <tt>refind-install</tt> uses might not persist for long. You might therefore want to use <tt><a href="#mvrefind">mvrefind</a></tt> to move your rEFInd installation to another name after you boot Linux for the first time from rEFInd.</p>
+
+<p>My package files install the rEFInd binaries to <tt>/usr/share/refind-<tt class="variable">version</tt></tt>, the documentation to <tt>/usr/share/doc/refind-<tt class="variable">version</tt></tt>, and a few miscellaneous files elsewhere. (The PPA package omits the version number from the file paths.) Upon installation, the package runs the <tt>refind-install</tt> script to copy the files to the ESP. This enables you to re-install rEFInd after the fact by running <tt>refind-install</tt>, should some other tool or OS wipe the ESP or should the installation go awry. In such cases you can <a href="#installsh">use <tt>refind-install</tt></a> or <a href="#manual">install manually.</a></p>
+
+<a name="installsh">
+<h2>Installing rEFInd Using <tt>refind-install</tt> under Linux or MacOS</h2>
+
+<p>If you're using Linux or macOS, and if you can't or don't want to use a distribution package file, the easiest way to install rEFInd is to use the <tt>refind-install</tt> script. This script automatically copies rEFInd's files to your ESP or other target location and makes changes to your firmware's NVRAM settings so that rEFInd will start the next time you boot. If you've booted to macOS or in non-Secure-Boot EFI mode to Linux on a UEFI-based PC, <tt>refind-install</tt> will probably do the right thing, so you can get by with the quick instructions. If your setup is unusual, if your computer uses Secure Boot, or if you want to create a USB flash drive with rEFInd on it, you should read the <a href="refind-install.html">man page</a> for this utility.</p>
+
+<p class="sidebar"><b>Warning:</b> MacOS 10.11 ("El Capitan") implements a new feature called System Integrity Protection (SIP; aka "rootless" or "CSR"). When enabled, SIP prevents the final step of rEFInd installation&mdash;registering the boot loader with the firmware. Thus, to install rEFInd, you must either disable SIP or perform the installation from something other than your regular macOS installation. The <a href="sip.html">rEFInd and System Integrity Protection</a> page of this document describes the options.</p>
+
+<p>By default, the <tt>refind-install</tt> script installs rEFInd to your disk's ESP. Under macOS, you can instead install rEFInd to your current macOS boot partition by passing the script the <tt>--notesp</tt> option, or to a non-boot HFS+ partition by using the <tt>--ownhfs <tt class="variable">devicefile</tt></tt> option. Under either OS, you can install to something other than the currently-running OS by using the <tt>--root <tt class="variable">/mountpoint</tt></tt> option.</p>
+
+<p>Under Linux, <tt>refind-install</tt> will be most reliable if your ESP is already mounted at <tt>/boot</tt>, <tt>/boot/efi</tt>, or <tt>/efi</tt>, as described in more detail in the <a href="#linux">Installing rEFInd Manually Using Linux</a> section. (If you installed Linux in EFI mode, chances are your ESP is properly mounted.) If your ESP is not so mounted, <tt>refind-install</tt> will attempt to locate and mount an ESP, but this action is not guaranteed to work correctly. If you run <tt>refind-install</tt> from a BIOS/legacy-mode boot, particularly on a computer that also runs Windows, you should be aware that the tricks the script uses to install itself from BIOS mode are rather delicate. You can convert to a more conventional configuration using the <a href="#mvrefind"><tt>mvrefind</tt> script</a> after you've booted in EFI mode.</p>
+
+<p>Prior to version 0.8.4, <tt>refind-install</tt> installed rEFInd to the macOS root partition by default. I changed this because the default configuration for macOS 10.10 ("Yosemite") makes this placement unusable. Instead, <tt>refind-install</tt> now installs to the ESP under macOS, just as it does under Linux. <i>If you're upgrading a working install of rEFInd to the macOS root partition, it's best to pass the <tt>--notesp</tt> option to <tt>refind-install</tt>.</i> This option is described in more detail shortly.</p>
+
+<p>A sample run under Linux looks something like this:</p>
+
+<pre class="listing">
+# <tt class="userinput">./refind-install</tt>
+Installing rEFInd on Linux....
+ESP was found at /boot/efi using vfat
+Installing driver for ext4 (ext4_x64.efi)
+Copied rEFInd binary files
+
+Copying sample configuration file as refind.conf; edit this file to configure
+rEFInd.
+
+
+Installation has completed successfully.</pre>
+
+<p>The output under macOS is a bit different:</p>
+
+<pre class="listing">
+$ <tt class="userinput">./refind-install</tt>
+Not running as root; attempting to elevate privileges via sudo....
+Password:
+Installing rEFInd on macOS....
+Installing rEFInd to the partition mounted at /Volumes/ESP
+Found suspected Linux partition(s); installing ext4fs driver.
+Installing driver for ext4 (ext4_ia32.efi)
+Copied rEFInd binary files
+
+Copying sample configuration file as refind.conf; edit this file to configure
+rEFInd.
+
+Installation has completed successfully.
+
+Unmounting install dir</pre>
+
+<p>In either case, the details of the output differ depending on your existing configuration and how you ran the program. Unless you see an obvious warning or error, you shouldn't be concerned about minor deviations from these examples. If you run into such a situation, or if you want to install in an unusual way, read on....</p>
+
+<p>Note that the change to an ESP location for rEFInd with version 0.8.4 means that, if you upgrade rEFInd from an earlier version, you may notice a rEFInd boot option in the rEFInd menu. This option will boot the old version of rEFInd (or the new one, if something went wrong and the old version continues to boot). You can rid yourself of the unwanted boot menu by deleting the old files or by using <tt>dont_scan_dirs</tt> or <tt>dont_scan_files</tt> in <tt>refind.conf</tt>. Before you do this, you should use rEFInd to identify the unwanted files&mdash;the filename and volume identifier appear under the icons when you highlight the option. You can then locate and delete them from within macOS. Before you delete the old files, though, you may want to copy over any changes you've made to the rEFInd configuration, icons, and other support files.</p>
+
+<p>The <tt>refind-install</tt> script supports a number of options that can affect how it operates. For information on these options, consult the script's man page: Type <tt class="userinput">man refind-install</tt> if you installed rEFInd via an RPM or Debian package; or read it in <a href="refind-install.html">HTML form.</a></p>
+
+<a name="manual">
+<h2>Installing rEFInd Manually</h2>
+</a>
+
+<p>Sometimes the <tt>refind-install</tt> script just won't do the job, or you may need to install using an OS that it doesn't support, such as Windows. In these cases, you'll have to install rEFInd the old-fashioned way, using file-copying commands and utilities to add the program to your EFI's boot loader list. I describe how to do this with <a href="#linux">Linux</a>, <a href="#osx">macOS</a>, <a href="#windows">Windows</a>, and <a href="#efishell">the EFI shell.</a></p>
+
+<a name="linux">
+<h3>Installing rEFInd Manually Using Linux</h3>
+</a>
+
+<p>On a UEFI-based PC, you'll normally install rEFInd to the ESP, which is usually mounted at <tt>/boot/efi</tt>. You can verify that this is the case by using the <tt>df</tt> command:</p>
+
+<pre class="listing">
+$ <b>df /boot/efi</b>
+Filesystem     1K-blocks  Used Available Use% Mounted on
+/dev/sda1         191284 16604    174681   9% /boot/efi
+</pre>
+
+<p>This example shows that <tt>/dev/sda1</tt> is mounted at <tt>/boot/efi</tt>, which is a typical configuration. (The ESP can be on another disk or partition, but <tt>/dev/sda1</tt> is the most common place for an ESP.) If your output shows <tt>/boot</tt> or <tt>/</tt> under the <tt>Mounted on</tt> column, then your ESP isn't mounted. (An exception is if you're mounting the ESP at <tt>/boot</tt>. This is an unusual configuration. If you're using it, you can proceed, making suitable adjustments to subsequent commands.) If you get a <tt>df: `/boot/efi': No such file or directory</tt> error message, then the <tt>/boot/efi</tt> directory doesn't even exist. In such cases, you may need to jump through some extra hoops, as described on my <a href="https://www.rodsbooks.com/efi-bootloaders/installation.html">EFI Boot Loader Installation</a> page.</p>
+
+<p>Assuming the ESP is mounted at <tt>/boot/efi</tt>, you can install the rEFInd files as follows (you must be <tt>root</tt> to issue these commands, or precede each of them with <tt><b>sudo</b></tt>):</p>
+
+<ol>
+
+<li>Type <tt><b>cp -r refind /boot/efi/EFI/</b></tt> from the <tt>refind-<i>version</i></tt> directory in which the <tt>refind</tt> directory exists. This copies all the files that rEFInd needs to work. Note that this includes <i>all</i> of rEFInd's drivers. This command also copies the rEFInd binaries as signed by me; if you prefer to re-sign the binaries yourself, you'll have to do so before or during the copy operation, as described on the <a href="secureboot.html">Managing Secure Boot</a> page.</li>
+
+<li>Type <tt><b>cd /boot/efi/EFI/refind</b></tt> to change into rEFInd's new directory on the ESP.</li>
+
+<li>You may optionally remove the rEFInd binaries for the CPU types you're not using. For instance, you might type <tt class="userinput">rm refind_ia32.efi refind_aa64.efi</tt> to remove the IA32 and AARCH64 binaries if you're using an <i>x</i>86-64 (AMD64, X64) system.</li>
+
+<li>Similarly, you may optionally remove the drivers subdirectories for the CPU types you're not using. For instance, you could type <tt class="userinput">rm -r drivers_ia32 drivers_aa64</tt> to remove the <i>x</i>86 and ARM64 drivers from an <i>x</i>86-64 system.</li>
+
+<li>I strongly recommend that you remove some or all of the drivers for the architecture you are using. If you don't need them, they'll slow down the start process, and worse, loading unnecessary drivers can cause some systems to hang or interfere with the drivers you do need. See the <a href="drivers.html">page on drivers</a> for more on this topic. Chances are you need only one filesystem driver, for whatever filesystem holds your Linux kernels.</li>
+
+<li>Rename the configuration file by typing <tt><b>mv refind.conf-sample refind.conf</b></tt>. Consult the <a href="configfile.html">Editing the rEFInd Configuration File</a> page for information on how to adjust your options.</li>
+
+<p class="sidebar"><b>Weird:</b> A <a href="http://mjg59.dreamwidth.org/20187.html">bug exists</a> in some Lenovo computers (and perhaps in some others, too) that causes the firmware's boot manager to refuse to boot any boot loader that doesn't have the name <tt>Windows Boot Manager</tt> or <tt>Red Hat Enterprise Linux</tt>. If you have such a system, you must pass one of those names (in quotes) rather than <tt>rEFInd</tt> to <tt>efibootmgr</tt> via its <tt>-L</tt> option. This bug was reported to Lenovo in mid-November 2012, and by late 2013, at least some Lenovos were mercifully free of this bug.</p>
+
+<a name="efibootmgr">
+<li>On a UEFI-based system, type <tt><b>efibootmgr -c -l \\EFI\\refind\\refind_x64.efi -L rEFInd</b></tt> to add rEFInd to your EFI's list of available boot loaders, which it stores in NVRAM. Adjust the path to the binary as required if you install somewhere else. You may also need to include additional options if your ESP isn't on <tt>/dev/sda1</tt> or if your configuration is otherwise unusual; consult the <tt>efibootmgr</tt> man page for details. You may need to install this program on some systems; it's a standard part of most distributions' repositories. Also, if you're installing in Secure Boot mode, you must normally register <tt>shim.efi</tt> rather than the rEFInd binary, and rename <tt>refind_x64.efi</tt> to <tt>grubx64.efi</tt>. Shim 0.7 and later enables you to keep rEFInd's usual name by adding a <tt>-u "shim.efi refind_x64.efi"</tt> option to your <tt>efibootmgr</tt> command line, though. Change the filenames to the ones used by your actual Shim and rEFInd binaries, respectively.</li>
+</a>
+
+<li>If other boot loaders are already installed, you can use <tt>efibootmgr</tt> to adjust their boot order. For instance, <b><tt>efibootmgr -o 3,7,2</tt></b> sets the firmware to try boot loader #3 first, followed by #7, followed by #2. (The program should have displayed a list of boot loaders when you added yours in the preceding step.) Place rEFInd's number first to set it as the default boot program.</li>
+
+</ol>
+
+<p>Note the use of doubled-up backslashes (<tt>\\</tt>) rather than forward slashes (<tt>/</tt>) in the directory separators when using <tt>efibootmgr</tt>. This command will work on most systems that are already booted into EFI mode; however, it won't work if you're booted in BIOS mode. You may also need to add options if your ESP is in some unusual location or if your system is unusual in some way. Consult the <tt>efibootmgr</tt> man page if you need help.</p>
+
+<p>On some systems, <tt>efibootmgr</tt> won't do what you expect. On such systems, you may have better luck renaming the rEFInd files, as described in the <a href="#naming">Alternative Naming Options</a> section.</p>
+
+<a name="osx">
+<h3>Installing rEFInd Manually Using MacOS</h3>
+</a>
+
+<p class="sidebar"><b>Warning:</b> macOS 10.11 ("El Capitan") implements a new feature called System Integrity Protection (SIP; aka "rootless" or "CSR"). When enabled, SIP prevents the final step of rEFInd installation&mdash;registering the boot loader with the firmware. Thus, to install rEFInd, you must either disable SIP or perform the installation from something other than your regular macOS installation. The <a href="sip.html">rEFInd and System Integrity Protection</a> page of this document describes the options. If you're an advanced enough user to be considering a manual rEFInd installation procedure, doing the job from the Recovery HD environment may be your best option.</p>
+
+<p>Before installing rEFInd on a Mac, you must determine whether it uses a 32-bit or 64-bit EFI implementation. Most Intel-based Macs have 64-bit EFIs, so you should use the <tt>refind_x64.efi</tt> file with them; but very early Intel-based Macs have 32-bit EFIs (and sometimes 32-bit CPUs), which require the <tt>refind_ia32.efi</tt> file. You can determine whether your Mac needs the <i>x</i>86-64 or IA32 build by typing the following command in a Mac Terminal window:</p>
+
+<pre class="listing">
+$ <b>ioreg -l -p IODeviceTree | grep firmware-abi</b>
+</pre>
+
+<p>The result should include either <tt>EFI32</tt> or <tt>EFI64</tt>, indicating that you should use the <tt>refind_ia32.efi</tt> or <tt>refind_x64.efi</tt> binary, respectively.</p>
+
+<p>You should also be aware of your macOS version and installation options. If you used whole-disk encryption (WDE) or a logical volume for installation, you <i>cannot</i> install to the macOS root partition; you <i>must</i> install to the ESP or to a separate HFS+ partition. WDE became an option with macOS 10.7 and logical volumes are the default in macOS 10.10 and later. If in doubt, proceed with an installation to the ESP or to a separate HFS+ partition.</p>
+
+<p class="sidebar"><b>Warning:</b> Numerous rEFIt bug reports indicate disk corruption problems on disks over about 500 GiB. <a href="https://sourceforge.net/tracker/?func=detail&aid=3218104&group_id=161917&atid=821764">This</a> report on the problem, and particularly the post by mic-marchen, suggests that the problem is related to a bug in macOS's <tt>bless</tt> utility, and particularly its <tt>--info</tt> option, that causes it to corrupt data on disks with 4 KiB sectors. These <i>Advanced Format</i> disks are becoming increasingly common, particularly at larger disk sizes. Therefore, I <i>strongly</i> recommend that you <i>not</i> type <tt class="userinput">sudo bless --info</tt> to check the status of your installation if you have such a disk, or even if you suspect you might have such a disk. (I've seen Advanced Format disks as small as 320 GB.)</p>
+
+<p>The procedure for installing rEFInd on a Mac is similar to that for installing it under Linux, except that you must use the <tt>bless</tt> utility rather than <tt>efibootmgr</tt> to register the program with the firmware. Also, you'll probably have to mount your ESP manually, since that's not done by default under macOS. To be precise, you should follow these steps:</p>
+
+<ol>
+
+<li>Open a Terminal window in which you'll type the following
+    commands.</li>
+
+<li>If you want to install rEFInd on your ESP, you must first mount it. The
+    easy way to do this is to use the <tt>mountesp</tt> script that comes
+    with rEFInd. When you run it, the script should tell you where the ESP
+    was mounted. You can do the job manually by typing <b><tt>mkdir
+    /Volumes/ESP</tt></b> followed by <b><tt>sudo mount -t msdos
+    /dev/disk0s1 /Volumes/ESP</tt></b>. Note that you may need to change
+    <tt>/dev/disk0s1</tt> to something else if your ESP is at an unusual
+    location. Type <tt class="userinput">diskutil list</tt> or use a tool
+    such as my <a href="https://www.rodsbooks.com/gdisk/">GPT fdisk
+    (<tt>gdisk</tt>)</a> to examine your partition table to find your ESP
+    if necessary.</li>
+
+<li>Type <b><tt>sudo mkdir -p /Volumes/ESP/efi/refind</tt></b> to create a
+    suitable directory for rEFInd. If you want to place rEFInd on the macOS
+    root partition, you should adjust the pathname appropriately, as in
+    <tt>/efi/refind</tt>. Alternatively, you can use the Finder to create
+    the directory.</li>
+
+<li>Copy the files in the <tt>refind</tt> subdirectory of the rEFInd binary
+    package to the like-named directory you've just created. You can do
+    this in the Finder or by typing <b><tt>sudo cp -r refind/*
+    /Volumes/ESP/efi/refind/</tt></b> in your Terminal window after
+    changing into the rEFInd package's main directory.</li>
+
+<li>Remove the files for the versions of rEFInd you're not using, as in <tt
+    class="userinput">sudo rm Volumes/esp/efi/refind/refind_ia32.efi
+    Volumes/esp/efi/refind/refind_aa64.efi</tt> on a Mac with a 64-bit EFI
+    or <tt class="userinput">sudo rm /Volumes/ESP/efi/refind/refind_x64.efi
+    Volumes/esp/efi/refind/refind_aa64.efi</tt> on a Mac with a 32-bit
+    EFI.</li>
+
+<li>Optionally, remove the drivers directories for the architectures you're
+    not using&mdash;<tt>/Volumes/ESP/efi/refind/drivers_ia32</tt> or
+    <tt>/Volumes/ESP/efi/refind/drivers_x64</tt>, as appropriate. (No Mac
+    uses an ARM CPU, so you'd also remove
+    <tt>/Volumes/ESP/efi/refind/drivers_aa64</tt>.</li>
+
+<li>I strongly recommend that you remove some or all of the drivers for the
+    architecture you are using; if you don't need them, they'll slow down
+    the start process and can even hang rEFInd if a driver is buggy and it
+    encounters a damaged filesystem. See the <a href="drivers.html">page on
+    drivers</a> for more on this topic. Note that Apple's firmware includes
+    its own HFS+ driver, so the HFS+ driver provided with rEFInd is useless
+    on Macs. Normally, you only need a filesystem driver if you're
+    dual-booting with Linux, and in that case you need only the driver for
+    the filesystem that holds the Linux kernel.</li>
+
+<li>If this is your first installation, type <b><tt>sudo mv
+    /Volumes/ESP/efi/refind/refind.conf-sample
+    /Volumes/ESP/efi/refind/refind.conf</tt></b> (adjusting the path as
+    necessary) to rename the sample configuration file so that it will
+    serve as a real configuration file. (Again, you can do this with the
+    Finder, if you prefer.)</li>
+
+<li>"Bless" rEFInd by typing one of the following two commands:
+    <ul>
+    <li>If you're installing rEFInd on the ESP, type <tt
+	class="userinput">sudo bless --mount /Volumes/ESP --setBoot --file
+	/Volumes/ESP/efi/refind/refind_x64.efi --shortform</tt>, adjusting
+	the mount point and exact path to the file as appropriate for your
+	installation.</li>
+    <li>If you're installing rEFInd to an ordinary HFS+ volume, type <tt
+	class="userinput">sudo bless --setBoot --folder /efi/refind --file
+	/efi/refind/refind_x64.efi</tt>. (Adjust the path and filename as
+	necessary if you're placing rEFInd somewhere else or using the
+	32-bit version.)</li>
+    </ul>
+    This is the step that's likely to fail if your system is booted
+    with SIP active.</li>
+
+<li>If you don't want to reboot immediately after installing rEFInd, you
+    may optionally unmount the ESP by typing <tt class="userinput">sudo
+    umount /dev/disk0s1</tt> or <tt class="userinput">sudo umount
+    /Volumes/ESP</tt>. This step isn't strictly required, but if you want
+    to keep the ESP out of your directory tree, it can be useful.</li>
+
+</ol>
+
+<p>When you reboot, your Mac should bring up the rEFInd menu, and should continue to do so thereafter. If you make changes that break this association, you can re-run the <tt>bless</tt> command (if necessary, restoring the rEFInd files first). This might be necessary after installing system updates from Apple or if you upgrade rEFInd to a newer version.</p>
+
+<p>If you're replacing rEFIt, you may discover that rEFInd works on the first boot, but the system reverts back to rEFIt or a direct boot to macOS on the second boot. To fix this problem, you can remove the rEFItBlesser program, which is located at <tt>/Library/StartupItems/rEFItBlesser</tt>. This program attempts to keep rEFIt set as the default boot loader, but it also has the purpose of protecting the computer from launching the wrong OS after waking from sleep. If you want that protection, my suggestion is to install rEFIt and rEFItBlesser and then replace the <tt>refit.efi</tt> file with <tt>refind_x64.efi</tt> or <tt>refind_ia32.efi</tt> (renaming it to <tt>refit.efi</tt>). Used in this way, rEFInd will still look for its own configuration file, <tt>refind.conf</tt>, so you'll need to move it but <i>not</i> rename it. If you don't move the icons from the rEFInd package, your icons will continue to look like rEFIt icons, and you'll be missing the new icons for specific Linux distributions that rEFInd provides. One final caveat: It's conceivable that rEFItBlesser is what's causing filesystem corruption for some users, so if you've been having this problem with rEFIt, it might be worth disabling this program and not using it with rEFInd.</p>
+
+<a name="windows">
+<h3>Installing rEFInd Manually Using Windows</h3>
+</a>
+
+<p class="sidebar"><b>Warning:</b> Windows 8 and later implement a fast shutdown feature that helps speed up shutdown and startup operations on a single-boot computer. Unfortunately, this feature can cause filesystem corruption if it's used on a multi-boot computer. You can disable the feature by launching an Administrator Command Prompt window and typing <tt class="userinput">powercfg /h off</tt> in it.</p>
+
+<p>I know relatively little about Windows EFI management tools; however, I do know that at least two relevant tools exist: the standard <tt>bcdedit</tt> and the third-party <i>EasyUEFI.</i> Because Windows is not my primary OS, I'm less familiar with its tools and procedures than I am with those used by Linux. Some third-party documentation, such as <a href="https://schdck.github.io/Installing-refind-from-Windows-10">this blog post,</a> may be of help if you run into problems installing rEFInd in Windows.</p>
+
+<p>The <a href="http://www.easyuefi.com/index-us.html">EasyUEFI tool</a> is GUI tool for managing EFI boot programs. At one time it was free, but the latest version costs $29.95, albeit with a free trial available. It's fairly intuitive and easy to use, but I don't have detailed instructions on how to use it. If you want to use EasyUEFI, you'll have to use it in place of <tt>bcdedit</tt> at the end of the following procedure.</p>
+
+<p>Attempt this method of installation only on a UEFI-based PC; this method will not work on Windows that's installed on a Mac in BIOS/CSM/legacy mode. To install rEFInd under Windows, you must first find a way to access the ESP, which Windows normally hides from view. One way to accomplish this goal, and to proceed forward once the ESP is accessible, is as follows:</p>
+
+<ol>
+
+<li>Locate Command Prompt in the Start menu, right-click it, and select Run as Administrator. This action opens a Command Prompt window with administrative privileges.</li>
+
+<li>Type <b><tt>mountvol S: /S</tt></b> in the Administrator Command Prompt window. This makes the ESP accessible as drive <tt>S:</tt> from that window. (You can use a drive identifier other than <tt>S:</tt> if you like.)</li>
+
+<li>Change into the main rEFInd package directory, so that the <tt>refind</tt> subdirectory is visible when you type <b><tt>dir</tt></b>.</li>
+
+<li>Type <b><tt>xcopy /E refind S:\EFI\refind\</tt></b> to copy the <tt>refind</tt> directory tree to the ESP's <tt>EFI</tt> directory. If you omit the trailing backslash from this command, <tt>xcopy</tt> will ask if you want to create the <tt>refind</tt> directory. Tell it to do so.</li>
+
+<li>Type <b><tt>S:</tt></b> to change to the ESP.</li>
+
+<li>Type <b><tt>cd EFI\refind</tt></b> to change into the <tt>refind</tt> subdirectory</li>
+
+<li>You may want to selectively delete some of the drivers in the <tt>drivers_x64</tt>, <tt>drivers_ia32</tt>, or <tt>drivers_aa64</tt> directory, depending on your architecture and needs. Unnecessary drivers will slow the rEFInd start process, and can even cause the drivers you need to not work or cause a system crash. See the <a href="drivers.html">page on drivers</a> for more on this topic.</li>
+
+<li>Type <b><tt>rename refind.conf-sample refind.conf</tt></b> to rename rEFInd's configuration file.</li>
+
+<li>Type <b><tt>bcdedit /set "{bootmgr}" path \EFI\refind\refind_x64.efi</tt></b> to set rEFInd as the default EFI boot program. Note that <tt>"{bootmgr}"</tt> is entered as such, including both the quotes and braces (<tt>{}</tt>). Also, change <tt>refind_x64.efi</tt> to <tt>refind_ia32.efi</tt> on systems with 32-bit EFIs. Such computers are rare, and most of them are tablets. Check your Windows bit depth to determine which binary you should use.</li>
+
+<li>If you like, type <b><tt>bcdedit /set "{bootmgr}" description "<i>rEFInd description</i>"</tt></b> to set a description (change <tt><i>rEFInd description</i></tt> as you see fit).</li>
+
+</ol>
+
+<p>At this point, when you reboot, rEFInd should appear as your new default boot program. If it doesn't work for you, you have several other options, such as:</p>
+
+<ul>
+
+<li>You can rename files on the ESP. as described later, in <a href="#naming">Alternative Naming Options.</a></li>
+
+<li>You can boot from an optical disc into an emergency OS to do the job. <a href="https://ubuntu.com/#download">Ubuntu,</a> for instance, provides an EFI-bootable installer with a "try before installation" mode. You'll need to type <b><tt>sudo apt-get install efibootmgr</tt></b> to install <tt>efibootmgr</tt>, but you can then use that program as described <a href="#efibootmgr">earlier</a>. (If you're using Ubuntu, you'll need to precede the command with <b><tt>sudo</tt></b>. If you use an Ubuntu image, you can install rEFInd <a href="#ppa">via its PPA,</a> which is an easy way to do the job. (In fact, the rEFInd PPA depends on the <tt>efibootmgr</tt> package, so you shouldn't need to manually install it.) The PPA approach may even be easier than installing from Windows using its tools, at least if you're familiar with Linux and have an Ubuntu desktop image handy.</li>
+
+<li>You may be able to use rEFInd's bootable CD or USB flash drive image to use rEFInd to boot an OS that's been installed but rendered inoperable because of changes to your boot order. You can then use <tt>efibootmgr</tt>, <tt>bless</tt>, or some other tool to restore rEFInd as the default boot program.</li>
+
+</ul>
+
+<a name="efishell">
+<h3>Installing rEFInd Manually Using an EFI Shell</h3>
+</a>
+
+<p>If you can't currently boot any OS (say, because a firmware update has wiped your NVRAM entries), you may find it convenient to install rEFInd using an EFI version 2 shell. Unfortunately, the <tt>bcfg</tt> command described here is not available in the EFI version 1 shell, and the stock version 2 shell is unusable on many firmware implementations prior to 2.3.1. (At least one binary, referenced below, supposedly works around this limitation, but I can't promise it will work for you.) Thus, this procedure won't work for all systems.</p>
+
+<p>In addition to emergency situations, using <tt>bcfg</tt> can be desirable if <tt>efibootmgr</tt> or other OS-hosted tools don't do the job. This happens under VirtualBox, for instance. Two other options in such cases can be to use <a href="#naming">alternative names for rEFInd</a> and to <a href="bootcoup.html#fallback">use the <tt>fallback.efi</tt> program.</a></p>
+
+<p>To begin, you must have a way to launch your shell. Unfortunately, this can pose a dilemma, since without rEFInd or some other boot manager, many EFI implementations lack the means to launch a shell. Some will do so, though, if the shell is stored as <tt>shellx64.efi</tt> (for <i>x</i>86-64) or <tt>shellia32.efi</tt> (for <i>x</i>86) in the root directory of the ESP. Thus, you can try copying your shell file there. You can obtain EFI shells here:</p>
+
+<ul>
+
+<li><a href="https://github.com/tianocore/edk2/releases/latest/download/ShellBinPkg.zip">EFI version 2 shell binaries for multiple architectures</a> (from the official Tianocore EDK II build)</li>
+
+<li><a href="https://github.com/tianocore/edk2/tree/UDK2018/EdkShellBinPkg">EFI version 1 shell binaries for multiple architectures</a> (from the official Tianocore EDK II build)</li>
+
+<li><a href="https://drive.google.com/uc?export=download&id=1OBXYj6MEs7VAZbYnjD9FxOYcZYIQoq36">EFI version 2 shell binary for <i>x</i>86-64, modified to work on pre-2.3.1 EFIs</a> (from the Clover boot loader, hosted on Google Drive and of unknown provenance)</li>
+
+</ul>
+
+<p>Once you've booted the shell, you can proceed as follows:</p>
+
+<ol>
+
+<li>If you haven't installed rEFInd previously, unpack its zip file to a
+    FAT partition. This can be the ESP itself or another partition, such as
+    a USB flash drive. If you're simply repairing a lost NVRAM entry, you
+    needn't move your existing rEFInd files.</li>
+
+<li>Identify your filesystems, which are labelled with the form <tt>fs<tt
+    style="variable">n</tt>:</tt>, as in <tt>fs0:</tt> for the first
+    filesystem, <tt>fs1:</tt> for the second, and so on. Type the
+    filesystem number followed by the Enter key to begin using it. You can
+    then type <tt class="userinput">ls</tt> or <tt
+    class="userinput">dir</tt> to see the contents of the filesystem.
+    Chances are your ESP will be <tt>fs0:</tt>, but it could be something
+    else. (The following steps assume your ESP is <tt>fs0:</tt>; you'll
+    need to adjust them if it's not.) If rEFInd's source files are on
+    another device, you must identify it, too.</li>
+
+<p class="sidebar"><b>Note:</b> Skip ahead to step #12 if you're merely re-activating an already-installed rEFInd binary. If an entry exists but it's no longer the primary one, you can skip ahead to step #14.</p>
+
+<li>If necessary, create a directory for rEFInd by typing <tt
+    class="userinput">mkdir fs0:\EFI\refind</tt>. (If the <tt>fs0:\EFI</tt>
+    directory doesn't already exist, you must create it first,
+    though.)</li>
+
+<li>Change to the directory in which rEFInd's files exist.</li>
+
+<li>Type <tt class="userinput">cp refind_x64.efi fs0:\EFI\refind</tt> to copy
+    the rEFInd binary file. (Adjust the name if you're using an IA32 or AARCH64
+    computer.)</li>
+
+<li>Type <tt class="userinput">cp refind.conf-sample
+    fs0:\EFI\refind\refind.conf</tt> to copy and rename the sample rEFInd
+    configuration file.</li>
+
+<li>Type <tt class="userinput">cp -r icons fs0:\EFI\refind\</tt> to copy
+    rEFInd's icons.</li>
+
+<li>Optionally, type <tt class="userinput">cp -r drivers_x64
+    fs0:\EFI\refind\</tt> to copy rEFInd's X64 drivers. (You could instead
+    copy the IA32 or AARCH64 drivers.) Limiting yourself to just the drivers
+    you need is advisable, since unnecessary drivers can slow the system
+    boot and may even cause rEFInd to crash, if the filesystem driver is
+    buggy or if there's a problem with a filesystem.</li>
+
+<li>Type <tt class="userinput">fs0:</tt>, if necessary, to change to the
+    ESP.</li>
+
+<li>Type <tt class="userinput">cd \EFI\refind</tt> to change to rEFInd's
+    installation directory.</li>
+
+<li>If you want to edit rEFInd's options, type <tt class="userinput">edit
+    refind.conf</tt> and use the shell's built-in text editor to do so.
+    Press F2 followed by the Enter key to save your changes and F3 to
+    exit.</li>
+
+<li>Type <tt class="userinput">bcfg boot dump -b</tt> to see a list of
+    existing NVRAM entries. Pay attention to their numbers (labelled
+    <tt>Option:</tt> and <tt>Variable:</tt>, with the latter number
+    preceded by the string <tt>Boot</tt>, as in <tt>Boot0007</tt>). You'll
+    want to create a boot entry for rEFInd using a number that's not in
+    use.</li>
+
+<li>Type <tt class="userinput">bcfg boot add 3
+    fs0:\EFI\refind\refind_x64.efi "rEFInd"</tt>, adjusting the number
+    (<tt>3</tt> in this example), filesystem (<tt>fs0:</tt>), and filename
+    (<tt>\EFI\refind\refind_x64.efi</tt>) as necessary for your system. If
+    you're used to Linux, be sure to use backslashes (<tt>\</tt>), not
+    Linux-style forward slashes (<tt>/</tt>), as directory separators. Note
+    that some shells may ignore the number you entered and use another one,
+    so watch for this possibility.</li>
+
+<li>Type <tt class="userinput">bcfg boot mv <i>3</i> 0</tt>, substituting
+    the option number for the entry you created for <tt
+    class="variable">3</tt>. This moves rEFInd to the top of the boot
+    order.</li>
+
+<li>Type <tt class="userinput">reset</tt> to reboot the computer.</li>
+
+</ol>
+
+<p>With any luck, rEFInd will start up at this point. If not, you can check your settings using a shell or an emergency system for your OS of choice. In an EFI shell, you might type <tt class="userinput">bcfg boot dump -b</tt> to view your boot loader entries and verify that rEFInd appears at the top of the list. Be sure to check the pathname for typos. If you continue to have problems, you might look into giving rEFInd a <a href="#naming">fallback filename</a> that your firmware will recognize.</p>
+
+<a name="from_refind">
+<h2>Installing rEFInd from within rEFInd</h2>
+</a>
+
+<p>Beginning with version 0.12.0, rEFInd provides an option to self-install the program. There are several caveats to this approach, though:</p>
+
+<ul>
+
+<li>It doesn't work with Secure Boot (except possibly if you install your own keys, as described on my <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">Controlling Secure Boot</a> page).</li>
+
+<li>There are several limitations about where you can install rEFInd:
+
+    <ul>
+
+    <li>You can install only to an ESP other than the one from which rEFInd booted. You cannot use this feature to install rEFInd to another location on the ESP from which it booted. (See my <a href="https://www.rodsbooks.com/bootcoup.html">boot coup page</a> if a working rEFInd installation has been overridden and one OS has taken control of the boot process. Note that you <i>can</i> use this feature to recover from a boot coup, but only if you boot rEFInd from another disk, such as a USB flash drive or CD-R.)</li>
+
+    <li>You cannot install to an HFS+ or other non-FAT partition. This limitation exists mainly because the only read/write filesystem driver I know of for EFI is the standard FAT driver. Even Apple's HFS+ driver for its EFI is read-only.</li>
+
+    <li>The destination must be an ESP with the ESP's type code (C12A7328-F81F-11D2-BA4B-00A0C93EC93B; EF00 in GPT fdisk or various other identifiers in other programs), not simply a FAT partition.</li>
+
+    <li>rEFInd installs itself to its standard location, <tt>EFI/refind</tt>; you cannot install to another location.</li>
+
+    <li>rEFInd will install only to ESPs on internal disks, not to removable media such as USB flash drives.</li>
+
+    </ul></li>
+
+<li>rEFInd will install Linux filesystem <a href="drivers.html">drivers</a> for filesystems that it has detected, plus the HFS+ driver if it detects HFS+ on non-Apple hardware. rEFInd will not install non-Linux drivers or drivers for filesystem it has not detected. The practical upshot of this is that if you install rEFInd in this way before installing Linux, rEFInd may not be able to load your Linux kernel directly. It's better to install Linux before rEFInd.</li>
+
+</li>
+
+<li>The feature creates a new NVRAM entry for the new installation or <i>might</i> detect and use an existing entry instead. An entry for a previous installation using another method is unlikely to be used, so you might end up with duplicates; but repeated installations from rEFInd are unlikely to produce duplicate entries.</li>
+
+</ul>
+
+<p>The intent of this installation method is that you can boot rEFInd from a CD-R or USB flash drive and use that to install rEFInd to your hard disk or to recover from a damaged installation or from a <a href="bootcoup.html">boot coup.</a></p>
+
+    <img src="func_install.png" align="right" width="48" height="48"
+    alt="The installation icon launches the installation feature"
+    border=2 background="gray"/>
+
+<p>This feature is disabled by default, since it's not likely to be of much use on a working system. It is enabled in the USB flash drive and CD-R images <a href="https://www.rodsbooks.com/refind/getting.html">I distribute.</a> If you want to enable it yourself, you must edit the <tt>refind.conf</tt> file: Locate the <tt>showtools</tt> line, uncomment it if necessary, and add <tt>install</tt> to the list of options. When you reboot, a new installation icon should appear, as shown to the right. Select it and, if rEFInd can locate suitable ESPs on internal hard disks, you'll see a selection menu like this:</p>
+
+    <br /><center><img src="install.png" align="center" width="554"
+    height="201" alt="rEFInd's installation tool enables you to select the ESP to which you want to install." border=2> </center><br />
+
+<p>This example shows several possible target ESPs. Chances are you'll see just one. If you have no ESPs, or if rEFInd is booted from the one ESP on your computer, the program will inform you that no eligible ESPs were found. rEFInd identifies ESPs with their partition GUID values (which you can find with some disk partitioning tools) and with one or two names (the partition name and the filesystem name) or with a volume description if no name can be found. If you see several options and you're not sure which one to use, I recommend booting into an OS and using disk partitioning software or other tools to try to figure out which one is which. The <tt>blkid</tt> tool in Linux can be particularly handy for this.</p>
+
+<p class="sidebar"><b>Note:</b> Under some circumstances, installing in this way can result in redundant rEFInd NVRAM menu entries. This is most likely to happen if rEFInd was previously installed using another method or if you have deleted existing menu entries between your previous installation and the current one. In most cases, repeatedly installing rEFInd via this method will not produce an excessive number of rEFInd entries. You can manage boot entries using tools such as <tt>efibootmgr</tt> in Linux or the commercial <a href="https://www.easyuefi.com/">EasyUEFI</a> in Windows.</p>
+
+<p>Once you select a target partition, rEFInd will copy the currently-booted copy of itself to the new location, under the name <tt>EFI/refind/refind_x64.efi</tt> (or an architecture-appropriate variant of that name). It will also copy the <tt>drivers_x64</tt> (or variant) and <tt>icons</tt> subdirectories, as well as install a <tt>refind.conf</tt> file and a <tt>BOOT.CSV</tt> file. If a copy of rEFInd already exists at this location, the new rEFInd binary and drivers will overwrite the existing ones; but the <tt>refind.conf</tt> file will not be replaced; instead, the new file will be written to <tt>refind.conf-sample</tt> and the old file will be left in place. The old <tt>icons</tt> directory will be renamed to <tt>icons-old</tt>, if possible, and new icons will be installed. If <tt>icons-old</tt> already exists, then new icons will replace the ones in <tt>icons</tt>, but <tt>icons-old</tt> will not be touched. rEFInd will also add itself as the first boot option in the EFI's NVRAM-based boot options list. Thus, when you reboot, the new rEFInd installation should appear.</p>
+
+<p>Installations can end up with too many or too few filesystem drivers. Assuming you run the installation from a USB flash drive or CD-R image with the full set of rEFInd EFI filesystem drivers, rEFInd will install all the drivers for detected filesystems. If you have, say, a <tt>/boot</tt> partition that uses ext4fs and a root (<tt>/</tt>) partition that uses Btrfs, rEFInd will install both the ext4fs and Btrfs drivers, but it will need only the ext4fs driver to boot. On the other hand, if your system uses nothing but XFS, rEFInd won't install that driver, since rEFInd doesn't ship with an XFS driver (although one is available in <a href="http://efi.akeo.ie/">Pete Batard's EFI filesystem driver collection</a>). In most cases, an extra Linux filesystem driver won't cause problems; however, sometimes a bug or filesystem damage will cause rEFInd to hang. Thus, I recommend checking this detail and removing any unnecessary drivers (or adding uninstalled ones you need -- see the <a href="drivers.html">page on drivers</a> for details).</p>
+
+<a name="naming">
+<h2>Alternative Naming Options</h2>
+</a>
+
+<p>Some EFI implementations do a poor job of honoring the boot options set via Linux's <tt>efibootmgr</tt> or other tools. You may also lack access to such utilities, such as if you must install rEFInd in Windows. In such cases, you may need to change the boot loader's name so that the EFI will see it as the default boot loader. rEFInd should then boot when your NVRAM lacks information on specific boot loaders to use. Broadly speaking, there are two alternative names that are most useful:</p>
+
+<p class="sidebar"><b>Tip:</b> Instead of naming rEFInd using one of these alternative names, you might consider installing the <tt>fallback.efi</tt> (aka <tt>fbx64.efi</tt>) program using one of these names and setting up a <tt>BOOT.CSV</tt> file in rEFInd's directory. This approach is covered on <a href="bootcoup.html#fallback">this page</a> of the rEFInd documentation.</p>
+ 
+<ul>
+
+<li><tt class="userinput">EFI/BOOT/boot<i>arch</i>.efi</tt>&mdash;This name
+    is the official EFI fallback filename. It's most commonly used on
+    bootable removable disks, but it can be used on hard disks. It's
+    typically used only if no NVRAM entry points to a valid boot
+    loader.</li>
+
+<li><tt class="userinput">EFI/Microsoft/Boot/bootmgfw.efi</tt>&mdash;This
+    filename has no official special standing in the EFI specification, but
+    as a practical matter, many EFI implementations use it as a fallback
+    boot loader in addition to or instead of
+    <tt>EFI/BOOT/boot<i>arch</i>.efi</tt>. In fact, some give it such a
+    high precedence that you can't boot anything that's not given this
+    name!
+
+</ul>
+
+<p>If you need to use one of these names, or something more exotic, you can do so in either of two ways: You can <a href="#mvrefind">use the <tt>mvrefind</tt> script</a> to move your installation in one step, or you can <a href="#manual_renaming">move and rename your files manually.</a></p>
+
+<a name="mvrefind">
+<h3>Using <tt>mvrefind</tt></h3>
+</a>
+
+<p>The easiest way to move a rEFInd installation, at least in Linux, is to use the <tt>mvrefind</tt> script. If you installed from one of my RPM or Debian packages, this script should be installed in <tt>/usr/sbin</tt>, so you can use it like a regular Linux command; otherwise you'll need to install it to your path yourself or type its complete path. Either way, it works much like the Linux <tt>mv</tt> command, but you pass it the directory in which a rEFInd installation appears and a target location:</p>
+
+<pre class="listing">
+# <tt class="userinput">mvrefind /boot/efi/EFI/BOOT /boot/efi/EFI/refind</tt>
+</pre>
+
+<p>This example moves rEFInd from <tt>/boot/efi/EFI/BOOT</tt> to <tt>/boot/efi/EFI/refind</tt>. It differs from <tt>mv</tt> in several ways:
+
+<ul>
+
+<li>The script renames rEFInd in a way that's sensitive to its source and
+    destination directories&mdash;for instance, <tt>mvrefind</tt> knows
+    that rEFInd (or shim, for Secure Boot installations) must be called
+    <tt>bootx64.efi</tt> on a 64-bit installation in
+    <tt>/boot/efi/EFI/BOOT</tt>, so it looks for rEFInd under that name
+    when copying from this directory, or it renames rEFInd to that name
+    when copying to it.</li>
+
+<li>The script creates a new NVRAM entry for rEFInd when it copies to any
+    location but <tt>EFI/BOOT</tt> or <tt>EFI/Microsoft/Boot</tt>. It
+    refuses to copy to such locations if it's not run from an EFI-mode
+    boot.</li>
+
+<li>The script knows enough to back up existing boot loaders stored in
+    <tt>EFI/BOOT</tt> or <tt>EFI/Microsoft/Boot</tt> when copying to these
+    locations. For the former location, the script backs up
+    <tt>EFI/BOOT</tt> as <tt>EFI/BOOT-rEFIndBackup</tt>; for the latter, it
+    moves <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt> to
+    <tt>EFI/Microsoft/bootmgfw.efi</tt>.</li>
+
+</ul>
+
+<p>The <tt>mvrefind</tt> script is likely to be useful in resolving boot problems&mdash;if your system won't boot, you can try copying the installation to <tt>/boot/efi/EFI/BOOT</tt>, <tt>/boot/efi/EFI/Microsoft/Boot</tt>, and <tt>/boot/efi/EFI/refind</tt> in turn, testing the boot process after each attempt. (These filenames all assume your ESP is mounted at <tt>/boot/efi</tt>.) You could also copy a BIOS-mode install from <tt>/boot/efi/EFI/BOOT</tt> or <tt>/boot/efi/EFI/Microsoft/Boot</tt> to <tt>/boot/efi/EFI/refind</tt> to make it more robust against Windows repairs (assuming your firmware isn't broken).</p>
+
+<a name="manual_renaming">
+<h3>Renaming Files Manually</h3>
+</a>
+
+<p>You can move and rename rEFInd manually from any OS by following these steps:</p>
+ 
+<ol>
+
+<li>Access your ESP, as described in earlier sections.</li>
+
+<li>Look for an existing directory called <tt>EFI/BOOT</tt> or <tt>EFI/Microsoft/Boot</tt>. If neither of these directories exist, skip the next step. (Note that FAT is case-insensitive, so the name may vary in case.)</li>
+
+<li>Rename the existing directory or boot loader file to something else. For <tt>EFI/BOOT</tt>, try renaming it to <tt>EFI/Oldboot</tt>. For <tt>EFI/Microsoft/Boot</tt>, move or rename the <tt>bootmgfw.efi</tt> file it contains. For instance, you can move it to <tt>EFI/Microsoft</tt>. This will keep the boot loader accessible to rEFInd's menu, while preventing the firmware from launching it automatically.</li>
+
+<li>Rename/move your <tt>EFI/refind</tt> directory to <tt>EFI/BOOT</tt>. If you're working from <tt>EFI/Microsoft/Boot</tt>, you should move the contents of your rEFInd directory to <tt>EFI/Microsoft/Boot</tt>.</li>
+
+<li>Rename <tt>EFI/BOOT/refind_x64.efi</tt> to the name of the boot loader it's replacing&mdash;it should become <tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>.</li>
+
+</ol>
+
+<p>When you reboot, rEFInd should come up. With any luck, it will detect your old boot loader as an option, if one was installed before.</p>
+
+<a name="upgrading">
+<h2>Upgrading rEFInd</h2>
+</a>
+
+<p>If you've installed an earlier version of rEFInd, you can upgrade a bit more easily than you can install directly:</p>
+
+<ul>
+
+<li>On a UEFI-based PC, under any OS, you should be able to replace your
+    old rEFInd file with the new one. Make sure that the new rEFInd has the
+    same name as the old one, and that it's for the correct CPU type. Since
+    UEFI launches boot programs by filename, a simple file replacement will
+    suffice to launch the new version. If the new version includes new
+    icons, you may want to copy some or all of them.</li>
+
+<li>On a Mac, you can copy over the old rEFInd binary file <i>from
+    Linux</i> and it will usually work, provided you copy <i>directly</i>
+    over the old file (rather than rename or delete the old file and then
+    copy the new one in its place). The same caveats about icons as apply
+    to UEFI-based PCs apply in this case. This method requires an extra
+    step in macOS, though....</li>
+
+<li>In macOS, if you copy over the original file with the new one, you'll
+    probably have to re-bless it to make it work.</li>
+
+<li>Under Linux or macOS, you can re-run the <tt>refind-install</tt> script. In
+    most cases this works fine, but you'll end up with a duplicate of the
+    icons directory (<tt>icons-backup</tt>, which holds the original icons,
+    whereas <tt>icons</tt> holds the icons from the new package). Normally
+    this just wastes some disk space; but if you've customized your icons,
+    you'll need to copy your altered icons back. Under Linux, versions
+    0.6.2 and later of <tt>refind-install</tt> search for rEFInd in several
+    locations on the ESP, and will upgrade whatever is found. The same is
+    true with versions 0.8.5 and later under macOS when installing to the
+    ESP. If you install to a location other than the ESP under macOS, be
+    sure to include the same option to <tt>refind-install</tt>
+    (<tt>--notesp</tt> or <tt>--ownhfs</tt>) to replace the original rather
+    than create a new installation to the ESP.</li>
+
+<li>Under an RPM- or Debian-based Linux distribution, you can use your
+    package system to install a newer version of the RPM or Debian package
+    that I provide. This will upgrade the files in your Linux filesystem
+    and re-run the <tt>refind-install</tt> script, so as with the previous
+    options, you'll waste a little disk space on duplicated icons, but the
+    process should otherwise work quite well.</li>
+
+<li>If you installed using my Ubuntu PPA or a package provided by an OS
+    distribution (such as the packages that ship with Arch and ALT Linux),
+    performing a system update will probably update rEFInd, too. Depending
+    on how the package was created, though, this update might or might not
+    install the update to the ESP; you might need to manually re-run the
+    installation script. Consult your distribution's documentation for
+    details. My Ubuntu PPA will automatically run <tt>refind-install</tt> after
+    the package is installed <i>if</i> you selected the option to install
+    to the ESP; if you opted to skip this step, my PPA version will
+    continue to do so at every update, leaving you to manually update the
+    copy on the ESP. (You can change this behavior by typing <tt
+    class="userinput">sudo dpkg-reconfigure refind</tt>.)</li>
+
+</ul>
+
+<p>In all cases, if the new version includes new or altered configuration file options, you may need to manually update your configuration file. Alternatively, if you've used the default configuration file, you can replace your working <tt>refind.conf</tt> with <tt>refind.conf-sample</tt> from the rEFInd zip file. (When using <tt>refind-install</tt>, this file will be copied to rEFInd's installation directory under its original name, so you can rename it within that directory to replace the old file.)</p>
+
+<p>If you're upgrading to rEFInd from rEFIt, you can simply run the <tt>refind-install</tt> script as described earlier or perform a manual installation. Once installed, rEFInd will take over boot manager duties. You'll still be able to launch rEFIt from rEFInd; a rEFIt icon will appear in rEFInd's menu. You can eliminate this option by removing the rEFIt files, which normally reside in <tt>/EFI/refit</tt>.</p>
+
+<a name="addons">
+<h2>Installing Additional Components</h2>
+</a>
+
+<p>rEFInd includes the ability to launch any EFI program; however, rEFInd detects only certain programs. These include boot loaders in traditional locations and a handful of other programs. To launch most of these other programs, you must download and install them separately from rEFInd:</p>
+
+<ul>
+
+<li><b><a
+    href="https://github.com/tianocore/edk2/releases/latest/download/ShellBinPkg.zip"><tt>shell.efi</tt></a></b>&mdash;This
+    file, placed in the ESP's <tt>EFI/tools</tt> directory, adds the
+    ability to launch a text-mode EFI shell from rEFInd. Note that the
+    download link is to a zip file that contains binaries for multiple architectures. Additional shell download links appear on the <a
+    href="https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#UEFI_Shell_download_links">Arch
+    Linux wiki,</a> and on other sites; try a Web search if the shell you
+    find doesn't work to your satisfaction.</li>
+
+<li><b><a
+    href="http://www.memtest86.com/download.htm">Memtest86</a></b>&mdash;This
+    is a popular tool for performing basic hardware tests, and especially
+    memory tests. rEFInd recognizes this program when it is stored in the
+    <tt>EFI/tools</tt>, <tt>EFI/tools/memtest</tt>,
+    <tt>EFI/tools/memtest86</tt>, <tt>EFI/memtest</tt>, or
+    <tt>EFI/memtest86</tt> directory, with a program filename of
+    <tt>memtest86.efi</tt>, <tt>memtest86_x64.efi</tt>,
+    <tt>memtest86x64.efi</tt>, or <tt>bootx64.efi</tt>. (Change
+    <tt>x64</tt> to <tt>ia32</tt> on IA-32 systems.) Be sure to download
+    the EFI version of the program. If you get the USB flash drive version,
+    you should mount the flash drive's ESP (partition 2) and copy the
+    <tt>EFI/BOOT</tt> directory to your own ESP's
+    <tt>EFI/tools/memtest</tt> or other Memtest86 directory name, as just
+    specified. rEFInd should then recognize it, provided the
+    <tt>showtools</tt> line includes the <tt>memtest</tt> or
+    <tt>memtest86</tt> token.</li>
+
+<li><b><tt>gptsync.efi</tt> or <tt>gptsync_<tt
+    class="variable">arch</tt>.efi</tt></b>&mdash;This program creates a <a
+    href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR</a> from
+    your regular GPT disk. A hybrid MBR is a dangerous hack that enables
+    macOS to coexist with a BIOS-mode Windows installation on a Macintosh disk. If you're using a
+    UEFI-based PC, a hybrid MBR is likely to be useless at best, so you
+    shouldn't create one, and it's safest to not install
+    <tt>gptsync.efi</tt>. If you're using a hybrid MBR to enable
+    dual-booting macOS and BIOS-mode Windows on a Mac, though, placing this program
+    file in the ESP's or Mac boot partition's <tt>EFI/tools</tt> directory
+    will enable you to regenerate your hybrid MBR should some other tool
+    convert the MBR to a standard protective MBR. You can obtain the file
+    from the <a href="http://refit.sourceforge.net">original rEFIt
+    package,</a> or beginning with rEFInd 0.6.9, an updated version is
+    included in the rEFInd package. The rEFInd version of <tt>gptsync_<tt
+    class="variable">arch</tt>.efi</tt> uses a more sophisticated algorithm
+    for determining what GPT partitions to duplicate in the MBR and it
+    includes additional safeguards to minimize the risk of damage should
+    you run the program on a disk that might have been damaged. The
+    original rEFIt version of the program usually goes by the filename
+    <tt>gptsync.efi</tt>, whereas the updated rEFInd version ships with an
+    architecture code, as in <tt>gptsync_x64.efi</tt> or
+    <tt>gptsync_ia32.efi</tt>. The rEFInd <tt>refind-install</tt> script
+    installs <tt>gptsync_<tt class="variable">arch</tt>.efi</tt> when run
+    under macOS, but not when run on Linux. In addition to installing the
+    program, you must edit <tt>refind.conf</tt>, uncomment the
+    <tt>showtools</tt> line, and add <tt>gptsync</tt> to its list of
+    options.</li>
+
+<li><b><tt>gdisk_<tt class="variable">arch</tt>.efi</tt></b>&mdash;This is a
+    GPT build of my <a href="https://www.rodsbooks.com/gdisk/">GPT fdisk</a>
+    disk partitioning program. (See the <a
+    href="https://www.rodsbooks.com/gdisk/download.html">GPT fdisk downloads
+    page</a> for download links.) You can use it to partition a disk or to
+    create a fresh hybrid MBR, with more options and controls than
+    <tt>gptsync</tt> provides.</li>
+
+<li><b>Drivers</b>&mdash;You can install drivers to extend the capabilities
+    of the EFI. rEFInd ships with filesystem drivers for ext2fs, ext4fs,
+    ReiserFS, and Btrfs, which can enable you to boot a Linux kernel with
+    EFI stub support from a partition that uses one of these filesystems.
+    (rEFInd also provides ISO-9660 and HFS+ driver binaries, as well as
+    source code for an NTFS filesystem driver.) You can find additional
+    drivers from other sources, although they're still on the scarce side.
+    See the <a href="drivers.html">Using EFI Drivers</a> page for more on
+    this topic.</li>
+
+<li><b>Secure Boot files</b>&mdash;If you're running on a system that
+    supports Secure Boot, chances are you'll need extra support files, such
+    as <tt>shim.efi</tt> and <tt>MokManager.efi</tt>. I describe these in
+    detail on the <a href="secureboot.html">Managing Secure Boot</a>
+    page.</li>
+
+<li><b><a href="http://ipxe.org/">iPXE</a></b>&mdash;This tool provides the
+    ability to boot a computer from a network server. Consult the
+    <tt>BUILDING.txt</tt> file in the rEFInd source code package for
+    information on building and installing these tools. You must also
+    activate rEFInd's support by adding the <tt>netboot</tt> option to the
+    <tt>scanfor</tt> and/or <tt>showtools</tt> lines in
+    <tt>refind.conf</tt>. <i>Network-boot/iPXE support is currently
+    experimental;</i> I recommend that only developers or those who are
+    willing to use "bleeding-edge" software try it. Once activated, rEFInd
+    will present a new menu item for booting from the network server.
+    rEFInd itself will normally be installed locally. (You can deliver
+    rEFInd as a network-boot image, but that image will be able to boot
+    only OSes on the local disk.)</li>
+
+</ul>
+
+<p>I've seen links to other versions of these tools from time to time on the Web, so if you try one of these programs and it crashes or behaves strangely, try performing a Web search; you may turn up something that works better for you than the one to which I've linked.</p>
+
+<a name="sluggish">
+<h2>Fixing Macintosh Boot Problems</h2>
+</a>
+
+<p>I've received a few reports of a sluggish boot process (a delay of about 30 seconds before starting rEFInd) on some Macs after installing rEFInd, as well as some other Mac-specific peculiarities. I've been unable to replicate thess problems myself, and their true causes remains mysterious to me. I have found several possible solutions, though: <a href="#shortform">Using the <tt>--shortform</tt> option,</a> <a href="#fallback">using the fallback filename,</a> <a href="#moving">moving rEFInd to an HFS+ volume,</a> <a href="#clearing">clearing NVRAM entries,</a> <a href="#wakeprobs">fixing wake problems,</a> and <a href="#nolinux">fixing a failure to find Linux.</a> Fortunately, these problems are much less common in early 2020 than they were a few years ago.</p>
+
+<a name="shortform">
+<h3>Using the <tt>--shortform</tt> Option</h3>
+</a>
+
+<p>Prior to version 0.8.5, these instructions and the <tt>refind-install</tt> script omitted the <tt>--shortform</tt> option from the <tt>bless</tt> command when installing rEFInd to the ESP. A rEFInd user, however, discovered that using the option eliminated the 30-second delay, so it is now the default with 0.8.5's <tt>refind-install</tt>, and is specified in the instructions. If you installed rEFInd 0.8.4 or earlier, you may want to re-install or re-<tt>bless</tt> rEFInd using this option.</p>
+
+<p>There is one caveat, though: The <tt>man</tt> page for <tt>bless</tt> notes that <tt>--shortform</tt> notes that its use can come "at the expense of boot time performance." Thus, it's not clear to me that this option might not actually <i>create</i> problems on some computers. (It's eliminated the boot delay on my 2014 MacBook Air and has no detrimental effect on an old 32-bit Mac Mini that's never had a boot delay problem, though.) Thus, if you have problems with rEFInd 0.8.5 or later, you might try running <tt>bless</tt>, as described in <a href="#osx">Installing rEFInd Manually Using macOS's</a> step 9, but <i>omit</i> the <tt>--shortform</tt> option.</p>
+
+<a name="fallback">
+<h3>Using the Fallback Filename</h3>
+</a>
+
+<p>I've received a few reports that installing rEFInd to the ESP using the fallback filename (<tt>EFI/BOOT/bootx64.efi</tt> on most systems, or <tt>EFI/BOOT/bootia32.efi</tt> on very old Macs) can work around a sluggish boot problem. In fact, version 0.8.4's <tt>refind-install</tt> script copied the rEFInd binary to this name when run under macOS. (Version 0.8.5 switches to using <tt>--shortform</tt> with the more conventional <tt>EFI/refind/refind_x64.efi</tt> or <tt>EFI/refind/refind_ia32.efi</tt> name, as just noted.) If you installed to a name other than <tt>EFI/BOOT/boot<tt class="variable">{arch}</tt>.efi</tt>, either manually or by using the 0.8.5 or later <tt>refind-install</tt>, renaming (and re-<tt>bless</tt>ing) the installation is worth trying.</p>
+
+<a name="moving">
+<h3>Moving rEFInd to an HFS+ Volume</h3>
+</a>
+
+<p>Most of the reports of sluggish Macintosh boots I've seen note that the user installed rEFInd to the ESP rather than to the macOS root partition. Some users have reported that re-installing rEFInd to the macOS root partition clears up the problem. This is obviously a straightforward solution to the problem, if it works. (This location is not an option when using WDE or macOS logical volumes.) Note that rEFInd can launch boot loaders that are stored on any partition that the EFI can read no matter where it's installed; therefore, you'll still be able to launch boot loaders stored on the ESP (or elsewhere) if you install it in this way.</p>
+
+<p>A variant of this solution is to create a small (~100MiB) HFS+ volume to be used exclusively by rEFInd. You can then install rEFInd to that volume with the <tt>--ownhfs</tt> option to <tt>refind-install</tt>, as in <tt class="userinput">./refind-install --ownhfs /dev/disk0s6</tt> if the volume is <tt>/dev/disk0s6</tt>. This approach has the advantage that it can be managed via macOS's own Startup Disk tool in System Preferences.</p>
+
+<p>The biggest drawback to storing rEFInd on an HFS+ volume is that you won't be able to edit the rEFInd configuration file or move rEFInd-related binaries from an EFI shell if you install it in this way, since Apple's HFS+ driver for EFI is read-only. (The same is true of rEFInd's HFS+ driver, so it won't help you overcome this limitation.) You may also be limited in making changes to your rEFInd configuration from Linux or other OSes, too, since Linux's HFS+ drivers disable write support by default on volumes with an active journal. You can force write access in Linux by using the <tt>force</tt> option to <tt>mount</tt>; however, this procedure is noted as being risky in the Linux HFS+ documentation, so I don't recommend doing this on a regular basis on the macOS boot volume. This isn't as risky if you use a dedicated HFS+ rEFInd partition, though. You could even mount it as the Linux <tt>/boot</tt> partition, in which case it would also hold the Linux kernel and related files.</p>
+
+<p>A variant of this solution is suggested in <a href="http://www.sparxeng.com/blog/software/fixing-slow-boot-on-a-triple-boot-mountain-lion-mac">this blog post,</a> which recommends placing rEFInd on an HFS+ volume on the first SATA channel. (In the blogger's case, that channel used to hold an optical drive, but that drive was replaced by a hard disk.)</p>
+
+<a name="clearing">
+<h3>Clearing the NVRAM Entries</h3>
+</a>
+
+<p>Another possible solution is documented in <a href="http://ubuntuforums.org/showpost.php?p=12256273&postcount=200">a Web forum post.</a> If you care to try it, the procedure is:</p>
+
+<ol>
+
+<li>Boot into Linux.</li>
+
+<li>Type <tt class="userinput">efibootmgr</tt> as <tt>root</tt> to obtain a list of your boot loader entries. Each entry includes a boot number, as in <tt>Boot0003</tt> or <tt>Boot0027</tt>.</li>
+
+<li>Remove all of the boot loader entries <i>except</i> rEFInd's by using <tt>efibootmgr</tt>'s <tt>-b <tt class="variable">bootnum</tt></tt> option to specify the boot entry and <tt>-B</tt> to delete it. For instance, typing <tt class="userinput">efibootmgr -b 0027 -B</tt> as <tt>root</tt> deletes boot entry <tt>Boot0027</tt>. Issue a separate <tt>efibootmgr</tt> command for each boot entry.</li>
+
+<li>Re-install rEFInd using the install script. It's unclear from the original post if this meant installing from Linux or from macOS.</li>
+
+</ol>
+
+<a name="wakeprobs">
+<h3>Fixing Wake Problems</h3>
+</a>
+
+<p>Some people have reported that installing rEFInd causes problems with resuming from a suspended macOS session. I know of two workarounds to such problems:</p>
+
+<ul>
+
+<li>Install rEFInd to an HFS+ volume using the <tt>--ownhfs</tt> option to <tt>refind-install</tt>. Unfortunately, this solution requires either creating a small HFS+ volume for rEFInd or using an already-existing non-bootable HFS+ volume (if you've got one for data storage, for example).</li>
+
+<li>Type <tt class="userinput">sudo pmset -a autopoweroff 0</tt> in a Terminal window. This solution is likely to work if sleep operations work normally up to a point, but fail after about three hours.</li>
+
+</ul>
+
+<a name="nolinux">
+<h3>Fixing a Failure to Find Linux</h3>
+</a>
+
+<p>Some users report that rEFInd doesn't detect Linux, or won't boot it when it is found. Broadly speaking, there are two common causes of this problem:</p>
+
+<ul>
+
+<li><b>A malfunctioning BIOS/legacy boot</b>&mdash;If you installed Linux in BIOS/legacy mode, as most online documentation suggests, it could be that your <a href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR</a> is missing or damaged. The usual symptom of this problem is that rEFInd shows a generic Linux penguin icon and that selecting it produces a message to the effect that a bootable OS could not be found. As hybrid MBRs are ugly and dangerous, I recommend avoiding them if possible, so my preferred solution to this problem is to set up EFI filesystem drivers and boot that way; however, fixing the hybrid MBR may be an easier solution. This is especially true if you installed a 32-bit version of Linux on a 64-bit Mac (or a 64-bit version on a rare Mac with a 64-bit CPU but a 32-bit EFI).</li>
+
+<li><b>EFI filesystem driver problems</b>&mdash;Ideally, rEFInd should be able to load and run your Linux kernel directly, but this approach normally requires you to have a working EFI driver for the filesystem that holds your Linux kernel. This won't always be the case; and even if it is installed, there can be interference from other drivers, so you may need to <i>remove</i> the drivers that you don't use. If drivers are the root of your problem, you won't see any Linux options, or you'll see the one penguin icon (as above) with no others that point to your Linux kernel(s).</li>
+
+</ul>
+
+<p>If you suspect that your hybrid MBR is damaged, you can try re-creating it with my <a href="https://www.rodsbooks.com/gdisk/">GPT fdisk (<tt>gdisk</tt>)</a> program. The GPT fdisk <a href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR documentation</a> covers this procedure in detail. You can run <tt>gdisk</tt> from either macOS or Linux, although you may need to install it, particularly in macOS.</p>
+
+<p>If you suspect driver problems, you'll need to mount your ESP (as described in the <a href="#osx">manual macOS installation instructions</a>), locate the rEFInd <tt>drivers_x64</tt> directory, and adjust its contents. Make sure you have a driver for the filesystem that holds your Linux kernel. If you don't know what filesystem this is, it's probably ext4fs. rEFInd ships with several filesystem drivers, including one for ext4fs. You should also remove unnecessary filesystem drivers. I've seen several reports of one driver interfering with others' operation. The biggest culprit seems to be the HFS+ driver when used on Macs.</p>
+
+<p></p>
+
+<a name="winprob">
+<h2>Fixing Windows Boot Problems</h2>
+</a>
+
+<p>Most Windows boot problems are best addressed on Windows-specific sites, so I recommend you make the rounds of Windows forums to solve such problems. There is one that deserves mention here, though: If you accidentally erase the Windows boot loader file, <tt>EFI/Microsoft/Boot/bootmgfw.efi</tt>, you won't be able to boot Windows. The simplest solution is to restore this file from a backup you prepared ahead of time. If you don't have such a backup, though, you can restore it as follows:</p>
+
+<ol>
+
+<li>Boot from an emergency Windows recovery disk. If you don't have one, you can prepare one from a working Windows system as described <a href="http://windows.microsoft.com/en-us/windows7/create-a-system-repair-disc">here.</a></li>
+
+<li>Type <tt class="userinput">diskpart</tt> to enter the Windows disk-partitioning tool.</li>
+
+<li>In <tt>diskpart</tt>, type <tt class="userinput">sel disk 0</tt> followed by <tt class="userinput">list vol</tt>. You should see a set of partitions. This step is intended to help you identify your ESP, which will probably be the only FAT32 partition on the disk. (If you have multiple disks, you may need to try again with <tt class="userinput">sel disk 1</tt> or higher.) Note the volume number of your ESP.</li>
+
+<li>Type <tt class="userinput">sel vol 1</tt>, changing <tt>1</tt> to whatever the ESP's volume number is.</li>
+
+<li>Type <tt class="userinput">assign letter=S:</tt> to assign the ESP a Windows disk identifier of <tt>S:</tt>. (You can use another letter if you prefer.)</li>
+
+<li>Type <tt class="userinput">exit</tt> to exit from <tt>diskutil</tt>.</li>
+
+<li>Type <tt class="userinput">cd /d s:\EFI\Microsoft\Boot\</tt> to change into the Windows boot loader directory. (If this directory doesn't exist, you may need to create it first with <tt>mkdir</tt>. If rEFInd or some other boot loader occupies this directory, back it up first.</li>
+
+<li>Type <tt class="userinput">bootrec /fixboot</tt>.</li>
+
+<li>Type <tt class="userinput">bcdboot c:\Windows /s s: /f ALL</tt>. Note that this command should set the Windows boot loader as the default. Omit <tt>/f ALL</tt> if you don't want to adjust the EFI's default boot program.</li>
+
+<li>Reboot and hope it works! If the computer boots straight to Windows and you want to use rEFInd, use <tt>bcdedit</tt> in Windows, as described in step 9 of the <a href="#windows">Installing rEFInd Manually Using Windows</a> section of this page.</li>
+
+</ol>
+
+<p>For more information, see <a href="http://superuser.com/questions/460762/how-can-i-repair-the-windows-8-efi-bootloader">this SuperUser question and answer.</a></p>
+
+<a name="uninstalling">
+<h2>Uninstalling rEFInd</h2>
+</a>
+
+<p>If you decide you don't want to keep rEFInd, you can uninstall it. Doing so is a matter of removing the rEFInd files from your ESP (or from your macOS boot partition, if you installed the program there). The exact details of how to do this vary from one OS to another, though; and in some cases there are alternatives to completely uninstalling rEFInd that are easier to implement.</p>
+
+<a name="uinst_linux">
+<h3>Uninstalling rEFInd from Linux</h3>
+</a>
+
+<p>In Linux, a command like the following, typed as <tt>root</tt>, should remove rEFInd:</p>
+
+<pre class="listing">
+# <tt class="userinput">rm -r /boot/efi/EFI/refind</tt>
+</pre>
+
+<p>You must type this command as <tt>root</tt> (or use <tt>sudo</tt> in some environments, such as under Ubuntu). This example assumes that your ESP is mounted at <tt>/boot/efi</tt> and that rEFInd is installed in <tt>EFI/refind</tt> on that partition. If you've mounted your ESP elsewhere, or installed rEFInd elsewhere, you should adjust the command appropriately.</p>
+
+<p>If you installed via an RPM or Debian package in Linux, using your package manager will remove the package files, but not the files that the installer places on your ESP. Thus, you must uninstall those files manually, as just described.</p>
+
+<p>To completely scrub all traces of rEFInd from your computer, you'll also have to remove <tt>/boot/refind_linux.conf</tt>, and perhaps the <tt>/etc/refind.d</tt> directory.</p>
+
+<a name="uinst_osx">
+<h3>Uninstalling rEFInd from macOS</h3>
+</a>
+
+<p>The easiest way to restore the standard macOS boot loader on a Mac is not to uninstall rEFInd; it's to bypass it. This can be accomplished with the Startup Disk item in the System Preferences panel:</p>
+
+    <br /><center><img src="startup-disk.png" align="center" width="669"
+    height="402" alt="The macOS Startup Disk tool enables you to reset a Mac
+    to use the standard macOS boot loader." border=2> </center><br />
+
+<p>You may need to click the padlock icon in the lower-left corner of the window to begin. You can then select your startup disk (<i>Macintosh HD OS X, 10.11.3</i> in this example) and then click Restart. The computer should reboot into macOS, bypassing rEFInd.</p>
+
+<p>I recommend stopping here, because the procedure for completely removing rEFInd from a Mac depends on your installation method and tends to be challenging for many Mac users, who are unfamiliar with the necessary command-line tools. Basically, you must reverse the steps described earlier, in <a href="#osx">Installing rEFInd Manually Using macOS:</a></p>
+
+<ol>
+
+<li>You must first determine where rEFInd is installed. This can be any of
+    several locations:
+
+    <ul>
+
+    <li>If you installed rEFInd 0.8.3 or earlier with the default options,
+	or if you used the <tt>--notesp</tt> option with rEFInd 0.8.4 or
+	later, it will be <tt>/EFI/refind</tt> on your main partition</li>
+
+    <li>If you installed rEFInd 0.8.4 or later with the default options, or
+	if you used the <tt>--esp</tt> option with rEFInd 0.8.3 or earlier,
+	it will be in <tt>EFI/refind</tt> or <tt>EFI/BOOT</tt> on the
+	ESP.</li>
+
+    <li>If you used the <tt>--ownhfs</tt> option to <tt>refind-install</tt>,
+	rEFInd will be in the <tt>System/Library/CoreServices</tt>
+	directory on the volume you specified.</li>
+
+    <li>If you installed rEFInd manually, it will be wherever you put
+        it.</li>
+
+    <li>In all cases, there could be duplicate (inactive) rEFInd files in
+	unexpected places. This is particularly true if you tried
+	installing rEFInd multiple times, each with different options to
+	<tt>refind-install</tt>. Thus, if you delete rEFInd and it still comes
+	up, you may have deleted the wrong files. (Note that dragging files
+	to the Trash may have no effect, though&mdash;at least, not until
+	you empty the Trash.)</li>
+
+    </ul>
+
+<li>If necessary, mount the ESP or rEFInd-specific HFS+ volume, as
+    described in <a href="#osx">Installing rEFInd Manually Using Mac OS
+    X.</a> (The <tt>mountesp</tt> script that comes with rEFInd will handle
+    this task.)</li>
+
+<li>Verify that rEFInd is installed in the directory noted in step #1. If a
+    <tt>refind.conf</tt> file is present, rEFInd is almost certainly
+    installed in that directory. If not, it's not rEFInd there and you
+    should <i>not</i> proceed. <b><i>Be extra cautious about deleting the
+    <tt>System/Library/CoreServices</tt> directory,</i></b> since that's
+    the default location of the macOS boot loader! <i>Never</i> delete this
+    directory from your macOS root (<tt>/</tt>) partition, only from the
+    partition you specified to <tt>refind-install</tt> using the
+    <tt>--ownhfs</tt> option.</li>
+
+<li>Once you've identified the rEFInd directory, delete it, or at least the
+    rEFInd boot file. This file may be called <tt>refind_x64.efi</tt>,
+    <tt>bootx64.efi</tt>, <tt>boot.efi</tt>, or conceivably something else.
+    You may need to use <tt>sudo rm</tt> at the command line to accomplish
+    this task, as in <tt class="userinput">sudo rm -r
+    /Volumes/ESP/EFI/refind</tt>.</li>
+
+</ol>
+
+<a name="uinst_windows">
+<h3>Uninstalling rEFInd from Windows</h3>
+</a>
+
+<p>From Windows, you must reverse the directions for <a href="#windows">installing in Windows</a>&mdash;type <tt class="userinput">mountvol S: /S</tt> to mount your ESP as <tt>S:</tt>, then navigate to the <tt>S:\EFI</tt> directory and delete the <tt>refind</tt> subdirectory.</p>
+
+<a name="post_uninst">
+<h3>Post-Uninstallation Activity (UEFI-Based PCs)</h3>
+</a>
+
+<p>On a UEFI-based PC, when the computer boots and cannot find the rEFInd files, it should move on to the next boot loader in its list. In my experience, some EFI firmware implementations remove boot loaders they can't find from their NVRAM lists, so nothing else will be required, provided you have another working boot loader in your firmware's list. If your firmware doesn't automatically clean up its NVRAM entries, rEFInd's entry will do little harm; however, you can delete it with the <tt>efibootmgr</tt> utility in Linux:</p>
+
+<pre class="listing">
+# <tt class="userinput">efibootmgr --verbose</tt>
+Timeout: 10 seconds
+BootOrder: 0000,0007
+Boot0000* rEFInd	HD(2,1b8,64000,f1b7598e-baa8-16ea-4ef6-3ff3b606ac1e)File(\EFI\refind\refind_x64.efi)
+Boot0007* CD/DVD Drive	BIOS(3,0,00)PATA: HP DVD Writer 1040r     .
+# <tt class="userinput">efibootmgr --delete-bootnum --bootnum 0000</tt>
+Timeout: 10 seconds
+BootOrder: 0007
+Boot0007* CD/DVD Drive</pre>
+
+<p>This example shows use of <tt>efibootmgr</tt>'s <tt>--verbose</tt> (<tt>-v</tt>) option to display boot programs so as to identify which one is rEFInd, followed by <tt>--delete-bootnum</tt> (<tt>-B</tt>) to delete a boot program and <tt>--bootnum</tt> (<tt>-b</tt>) to identify which one to delete. Of course, in this example there's not much else left, so you'd presumably want to install another boot program at this point! If you already have another one installed, you may want to check the <tt>BootOrder</tt> line to determine which one will take precedence when you reboot. If you don't like what it shows, you can adjust it with the <tt>--bootorder</tt> (<tt>-o</tt>) option; consult <tt>efibootmgr</tt>'s <tt>man</tt> page for details.</p>
+
+<p>If you're not using Linux, you may be able to find a utility that serves
+a similar function. Under Windows, the <tt>bcdedit</tt> command, described
+in the <a href="#windows">section on installing rEFInd under Windows,</a>
+may work, although I've not attempted this. EasyUEFI, also described earlier, should do the trick, too.</p>
+
+<hr />
+
+<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+
+<p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
+
+<p>If you have problems with or comments about this Web page, please e-mail me at <a href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com.</a> Thanks.</p>
+
+<p><a href="index.html">Go to the main rEFInd page</a></p>
+
+<p><a href="bootcoup.html">Preventing and Repairing Boot Coups</a></p>
+
+  <p><a href="https://www.rodsbooks.com/">Return</a> to my main Web page.</p>
+</body>
+</html>

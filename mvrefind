@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+#
+# Linux script to move an existing rEFInd installation from one directory to
+# another
+#
+# copyright (c) 2013-2015 by Roderick W. Smith
+#
+# This program is licensed under the terms of the GNU GPL, version 3,
+# or (at your option) any later version.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+# Usage:
+#
+# ./mvrefind /path/to/source /path/to/destination
+#
+# Typically used to "hijack" or "unhijack" a Windows boot loader location or
+# to help convert a rEFInd installation made in BIOS mode to one that works
+# in EFI mode.
+#
+# Revision history:
+#
+# 0.11.0  -- Added creation of BOOT.CSV file to tasks
+# 0.10.2  -- Fixed bug in moving bootmgfw.efi in some situations
+# 0.10.1  -- Generalized to support ARM64 (aka AARCH64, aa64)
+# 0.10.0  -- Renamed from mvrefind.sh to mvrefind
+# 0.6.3   -- Initial release
+#
+# Note: mvrefind version numbers match those of the rEFInd package
+# with which they first appeared.
+
+RootDir="/"
+SourceShim="shim.efi"
+TargetShim=$SourceShim
+SourceDir=`readlink -m ${1}`
+TargetDir=`readlink -m ${2}`
+
+# Identifies the ESP's location (/boot or /boot/efi); aborts if the ESP isn't
+# mounted at either location. Also splits the ESP location from SourceDir and
+# TargetDir, leaving them intact but creating new EspSourceDir and EspTargetDir
+# variables containing only the ESP components thereof. These new variables
+# are also converted to all-lowercase and any trailing slash is stripped, to
+# assist in comparisons. (This is reasonable because FAT is case-insensitive.)
+# Sets InstallDir to the ESP mount point.
+FindLinuxESP() {
+   EspLine=`df $RootDir/boot/efi 2> /dev/null | grep boot/efi`
+   if [[ ! -n $EspLine ]] ; then
+      EspLine=`df $RootDir/boot | grep boot`
+   fi
+   InstallDir=`echo $EspLine | cut -d " " -f 6`
+   if [[ -n $InstallDir ]] ; then
+      EspFilesystem=`grep $InstallDir /etc/mtab | grep -v autofs | cut -d " " -f 3`
+   fi
+   if [[ $EspFilesystem != 'vfat' ]] ; then
+      echo "$RootDir/boot/efi doesn't seem to be on a VFAT filesystem. The ESP must be"
+      echo "mounted at $RootDir/boot or $RootDir/boot/efi and it must be VFAT! Aborting!"
+      exit 1
+   fi
+
+   # Sanity check on source & target....
+   EspPathLength=`expr length $InstallDir`
+   Temp=`echo $SourceDir | cut -c 1-$EspPathLength`
+   if [[ $Temp != $InstallDir ]] ; then
+      echo "$SourceDir isn't on the ESP ($InstallDir)! Aborting!"
+      exit 1
+   fi
+   Temp=`echo $TargetDir | cut -c 1-$EspPathLength`
+   if [[ $Temp != $InstallDir ]] ; then
+      echo "$TargetDir isn't on the ESP ($InstallDir)! Aborting!"
+      exit 1
+   fi
+
+   # Temporarily replace "/" in pathnames with ",", so as to enable sed to
+   # work on them
+   TempInstallDir=`echo $InstallDir | tr '/' ','`
+   Temp=`echo $SourceDir | tr '/' ',' | sed s/${TempInstallDir}//g | tr ',' '/' | tr '[A-Z]' '[a-z]'`
+   EspSourceDir=`dirname $Temp`/`basename $Temp`
+   Temp=`echo $TargetDir | tr '/' ',' | sed s/${TempInstallDir}//g | tr ',' '/' | tr '[A-Z]' '[a-z]'`
+   EspTargetDir=`dirname $Temp`/`basename $Temp`
+   if [[ $EspSourceDir == $EspTargetDir ]] ; then
+      echo "$SourceDir is the same as $TargetDir! Aborting!"
+      exit 1
+   fi
+} # FindLinuxESP
+
+DeterminePlatform() {
+    CpuType=`uname -m`
+    case "$CpuType" in
+    aarch64)
+        Platform="aa64"
+        ;;
+    x86_64)
+        Platform="x64"
+        ;;
+    i?86)
+        Platform="ia32"
+        ;;
+    *)
+        echo "Unsupported CPU type; aborting!"
+        exit 1
+    esac
+    Source="refind_$Platform.efi"
+    Target=$Source
+}
+
+# Adjust filename variables appropriately for their locations and detected
+# presence (or lack thereof) of shim installation
+AdjustFilenames() {
+   if [[ -f $SourceDir/grub$Platform.efi ]] ; then
+      Source="grub$Platform.efi"
+      Target=$Source
+      if [[ $EspSourceDir == "/efi/boot" ]] ; then
+         SourceShim="boot$Platform.efi"
+      elif [[ $EspSourceDir == "/efi/microsoft/boot" ]] ; then
+         SourceShim="bootmgfw.efi"
+      fi
+   else
+      SourceShim="none"
+      TargetShim="none"
+      if [[ $EspSourceDir == "/efi/boot" ]] ; then
+         Source="boot$Platform.efi"
+      elif [[ $EspSourceDir == "/efi/microsoft/boot" ]] ; then
+         Source="bootmgfw.efi"
+      fi
+   fi
+
+   if [[ $EspTargetDir == "/efi/boot" ]] ; then
+      if [[ $TargetShim == "none" ]] ; then
+         Target="boot$Platform.efi"
+      else
+         TargetShim="boot$Platform.efi"
+      fi
+   elif [[ $EspTargetDir == "/efi/microsoft/boot" ]] ; then
+      if [[ $TargetShim == "none" ]] ; then
+         Target="bootmgfw.efi"
+      else
+         TargetShim="bootmgfw.efi"
+      fi
+   fi
+} # AdjustFilenames()
+
+# Checks for the presence of necessary files, including both boot loaders
+# and support utilities (efibootmgr, etc.)
+CheckForFiles() {
+   if [[ (! -f $SourceDir/$Source) ||
+         ($SourceShim != "none" && ! -f $SourceDir/SourceShim) ||
+         ! -f $SourceDir/refind.conf ]] ; then
+      echo "There doesn't seem to be a rEFInd installation at $SourceDir!"
+      echo "Aborting!"
+      exit 1
+   fi
+   if [[ $EspTargetDir != "/efi/boot" && $EspTargetDir != "/efi/microsoft/boot" ]] ; then
+      Efibootmgr=`which efibootmgr 2> /dev/null`
+      if [[ ! -f $Efibootmgr ]] ; then
+         echo "Moving to a non-default directory requires a working efibootmgr utility, but"
+         echo "one can't be found! Aborting!"
+         exit 1
+      elif [[ ! -d "/sys/firmware/efi" ]] ; then
+         echo "Moving to a non-default directory requires a boot into EFI mode, but we seem"
+         echo "to be running in BIOS mode. (Perhaps typing 'modprobe efivars' will fix this."
+         echo "Aborting!"
+      fi
+   fi
+} # CheckForFiles()
+
+# Do final checks & then move the files!
+MoveFiles() {
+   ExistingFiles=`find $TargetDir -name "*.efi" 2> /dev/null`
+   if [[ -n $ExistingFiles && $EspTargetDir != "/efi/boot" && $EspTargetDir != "/efi/microsoft/boot" ]] ; then
+      echo "$TargetDir isn't empty! Aborting!"
+      exit 1
+   fi
+
+   if [[ $EspTargetDir == "/efi/boot" && -d $TargetDir ]] ; then
+      if [[ -d $InstallDir/EFI/BOOT-rEFIndBackup ]] ; then
+         echo ""
+         echo "Caution: An existing backup of a default boot loader exists! If the current"
+         echo "default boot loader and the backup are different boot loaders, the current"
+         echo "one will become inaccessible."
+         echo ""
+         echo -n "Do you want to proceed with moving (Y/N)? "
+         read YesNo
+         if [[ $YesNo == "Y" || $YesNo == "y" ]] ; then
+            echo "OK; continuing with the move..."
+         else
+            exit 0
+         fi
+      else
+         mv $TargetDir $InstallDir/EFI/BOOT-refindBackup &> /dev/null
+      fi
+   fi
+
+   if [[ $EspTargetDir == "/efi/microsoft/boot" && -d $TargetDir ]] ; then
+      mv -n $TargetDir/bootmgfw.efi $InstallDir/EFI/Microsoft/
+   fi
+
+   mkdir -p $TargetDir
+   mv $SourceDir/icons $TargetDir/ 2> /dev/null
+   mv $SourceDir/icons-backup $TargetDir/ 2> /dev/null
+   mv $SourceDir/drivers_* $TargetDir/ 2> /dev/null
+   mv $SourceDir/keys $TargetDir 2> /dev/null
+   mv $SourceDir/$Source $TargetDir/$Target 2> /dev/null
+   mv $SourceDir/$SourceShim $TargetDir/$TargetShim 2> /dev/null
+   mv $SourceDir/refind.conf* $TargetDir/ 2> /dev/null
+   rm $SourceDir/BOOT.CSV
+   rmdir $SourceDir 2> /dev/null
+} # MoveFiles()
+
+# Clean up after moving files -- mainly restoring old backed-up files, if present
+PostMoveCleanup() {
+   if [[ "$EspSourceDir" == "/efi/boot" && -d "$InstallDir/EFI/BOOT-rEFIndBackup" && ! -d $SourceDir ]] ; then
+      mv "$InstallDir/EFI/BOOT-rEFIndBackup" "$SourceDir" 2> /dev/null
+   fi
+   if [[ "$EspSourceDir" == "/efi/microsoft/boot" && -f "$InstallDir/EFI/Microsoft/bootmgfw.efi" ]] ; then
+      mv -n "$InstallDir/EFI/Microsoft/bootmgfw.efi" "$SourceDir/bootmgfw.efi"
+   fi
+} # PostMoveCleanup()
+
+# Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
+# should the system's boot entry list be lost
+CreateBootCsvFile() {
+   IConv=`which iconv 2> /dev/null`
+   if [[ -x "$IConv" && -d "$TargetDir" ]] ; then
+      echo "$Target,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+           $IConv -t UCS-2 > "$TargetDir/BOOT.CSV"
+   fi
+   exit
+} # CreateBootCsvFile()
+
+# If necessary, create a new NVRAM entry for the new location
+AddNvramEntry() {
+   InstallIt="0"
+   Efibootmgr=`which efibootmgr 2> /dev/null`
+   InstallDisk=`grep $InstallDir /etc/mtab | grep -v autofs | cut -d " " -f 1 | cut -c 1-8`
+   PartNum=`grep $InstallDir /etc/mtab | grep -v autofs | cut -d " " -f 1 | cut -c 9-10`
+
+   if [[ $TargetShim != "none" ]] ; then
+      EntryFilename=$EspTargetDir/$TargetShim
+   else
+      EntryFilename=$EspTargetDir/$Target
+   fi # if/else
+
+   EfiEntryFilename=`echo ${EntryFilename//\//\\\}`
+   EfiEntryFilename2=`echo ${EfiEntryFilename} | sed s/\\\\\\\\/\\\\\\\\\\\\\\\\/g`
+   ExistingEntry=`$Efibootmgr -v | grep -i $EfiEntryFilename2`
+
+   if [[ $ExistingEntry ]] ; then
+      ExistingEntryBootNum=`echo $ExistingEntry | cut -c 5-8`
+      FirstBoot=`$Efibootmgr | grep BootOrder | cut -c 12-15`
+      if [[ $ExistingEntryBootNum != $FirstBoot ]] ; then
+         $Efibootmgr -b $ExistingEntryBootNum -B &> /dev/null
+         InstallIt="1"
+      fi
+   else
+      InstallIt="1"
+   fi
+
+   if [[ $InstallIt == "1" ]] ; then
+      if [[ $EspTargetDir == "/efi/microsoft/boot" ]] ; then
+         # Name it the way some firmware expects -- see http://mjg59.dreamwidth.org/20187.html
+         $Efibootmgr -c -l $EfiEntryFilename -L "Windows Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+      else
+         $Efibootmgr -c -l $EfiEntryFilename -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+      fi
+      if [[ $? != 0 ]] ; then
+         EfibootmgrProblems=1
+      fi
+   fi
+
+   if [[ $EfibootmgrProblems ]] ; then
+      echo
+      echo "ALERT: There were problems running the efibootmgr program! Your moved rEFInd"
+      echo "might not run!"
+      echo
+   fi
+} # AddNvramEntry
+
+#
+# Main body of script
+#
+
+if [[ $# != 2 ]] ; then
+   echo "Usage: $0 {source-directory} {target-directory}"
+   exit 1
+fi
+if [[ `whoami` != "root" ]] ; then
+   echo "Not running as root! Aborting!"
+   exit 1
+fi
+
+FindLinuxESP
+DeterminePlatform
+AdjustFilenames
+CheckForFiles
+MoveFiles
+PostMoveCleanup
+CreateBootCsvFile
+AddNvramEntry
