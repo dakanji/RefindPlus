@@ -64,6 +64,9 @@
   libeg/nanojpeg_xtra.c
   libeg/screen.c
   libeg/text.c
+# Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
+  Platform/DataHubCpu.c
+  Platform/BootLog.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -81,9 +84,9 @@
   UefiApplicationEntryPoint
   UefiBootServicesTableLib
   UefiLib
-   MemoryAllocationLib
-   BaseMemoryLib
-   BaseLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
   DevicePathLib
   DebugLib
   DxeServicesLib
@@ -92,6 +95,8 @@
   MemoryAllocationLib
   IoLib
   PerformanceLib
+# Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
+  MemLogLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

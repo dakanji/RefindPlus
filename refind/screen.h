@@ -92,11 +92,6 @@ VOID FinishExternalScreen(VOID);
 VOID TerminateScreen(VOID);
 VOID DrawScreenHeader(IN CHAR16 *Title);
 
-#if REFIT_DEBUG > 0
-VOID DebugPause(VOID);
-#else
-#define DebugPause()
-#endif
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
 VOID PrintUglyText(IN CHAR16 *Text, UINTN PositionCode);

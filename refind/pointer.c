@@ -47,6 +47,10 @@ POINTER_STATE State;
 // Initialize all pointer devices
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
+        #if REFIT_DEBUG > 0
+        MsgLog("Init Pointer Devices...\n");
+        #endif
+
     pdCleanup(); // just in case
 
     if (!(GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) return;
@@ -65,10 +69,20 @@ VOID pdInitialize() {
                                                     (VOID **) &APointerProtocol[NumAPointerDevices],
                                                     SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (status == EFI_SUCCESS) {
-                NumAPointerDevices++; 
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Enable Touch\n");
+                #endif
+
+                NumAPointerDevices++;
             }
         }
     } else {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Disable Touch\n");
+        #endif
+
         GlobalConfig.EnableTouch = FALSE;
     }
 
@@ -84,10 +98,20 @@ VOID pdInitialize() {
             // Open the protocol on the handle
             EFI_STATUS status = refit_call6_wrapper(BS->OpenProtocol, SPointerHandles[Index], &SPointerGuid, (VOID **) &SPointerProtocol[NumSPointerDevices], SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (status == EFI_SUCCESS) {
-                NumSPointerDevices++; 
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Enable Mouse\n");
+                #endif
+
+                NumSPointerDevices++;
             }
         }
     } else {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Disable Mouse\n");
+        #endif
+
         GlobalConfig.EnableMouse = FALSE;
     }
 
@@ -103,6 +127,11 @@ VOID pdInitialize() {
 // Frees allocated memory and closes pointer protocols
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdCleanup() {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Close Existing Pointer Protocols\n");
+        #endif
+
     PointerAvailable = FALSE;
     pdClear();
 
@@ -237,7 +266,7 @@ EFI_STATUS pdUpdateState() {
                 State.Y = 0;
             } else if(TargetY >= UGAHeight) {
                 State.Y = UGAHeight - 1;
-            } else { 
+            } else {
                 State.Y = (UINTN)TargetY;
             }
 

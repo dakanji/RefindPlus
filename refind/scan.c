@@ -563,7 +563,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         Entry->OSType = 'N';
         ShortcutLetter = 'N';
         MergeStrings(&OSIconName, L"network", L',');
-    } 
+    }
 
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z'))
         ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
@@ -944,7 +944,7 @@ static VOID ScanNetboot() {
                 AddLoaderEntry(iPXEFileName, Location, NetVolume, TRUE);
                 MyFreePool(NetVolume);
             } // if support files exist and are valid
-    } 
+    }
 } // VOID ScanNetboot()
 
 // Adds *FullFileName as a macOS loader, if it exists.
@@ -1163,6 +1163,10 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Scan for Bootloaders...\n");
+    #endif
+
     if (ShowMessage)
         egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
 
@@ -1288,6 +1292,10 @@ VOID ScanForTools(VOID) {
     CHAR8 *b = 0;
     UINT32 CsrValue;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Scan for Tools...\n");
+    #endif
+
     MokLocations = StrDuplicate(MOK_LOCATIONS);
     if (MokLocations != NULL)
         MergeStrings(&MokLocations, SelfDirPath, L',');
@@ -1379,7 +1387,7 @@ VOID ScanForTools(VOID) {
                 } // while
                 FileName = NULL;
                 break;
-            
+
             case TAG_NETBOOT:
                 j = 0;
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {

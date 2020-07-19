@@ -213,6 +213,11 @@ VOID StoreLoaderName(IN CHAR16 *Name) {
 
 // Rescan for boot loaders
 VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Rescan All...\n");
+    #endif
+
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
@@ -232,6 +237,11 @@ VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 
 // Minimal initialization function
 static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Init System Lib...\n");
+    #endif
+
     gST            = SystemTable;
     //    gImageHandle   = ImageHandle;
     gBS            = SystemTable->BootServices;
@@ -288,6 +298,10 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     CHAR16 *Options, *FileName, *SubString;
     EFI_STATUS Status;
 
+        #if REFIT_DEBUG > 0
+        MsgLog("Set Config Filename...\n");
+        #endif
+
     Status = refit_call3_wrapper(BS->HandleProtocol, ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         Options = (CHAR16 *) Info->LoadOptions;
@@ -316,6 +330,10 @@ static VOID AdjustDefaultSelection() {
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
     EFI_STATUS Status;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Adjust Default Selection...\n");
+    #endif
+
     while ((Element = FindCommaDelimited(GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp(Element, L"+")) {
             Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8 **) &PreviousBoot, &j);
@@ -335,6 +353,7 @@ static VOID AdjustDefaultSelection() {
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
+extern VOID InitBooterLog(VOID);
 //
 // main entry point
 //
@@ -356,6 +375,21 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (EFI_ERROR(Status))
         return Status;
 
+    InitBooterLog();
+    EFI_TIME          Now;
+    SystemTable->RuntimeServices->GetTime(&Now, NULL);
+
+#if REFIT_DEBUG > 0
+    MsgLog("Start rEFInd on %s Firmware...\n", gST->FirmwareVendor);
+    if (Now.TimeZone < 0 || Now.TimeZone > 24) {
+        MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT)\n\n",
+        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
+    } else {
+        MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT+%d)\n\n",
+        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
+    }
+#endif
+
     // read configuration
     CopyMem(GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
@@ -369,19 +403,35 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // to register the new filesystem(s) accessed by the drivers.
     // Also, ScanVolumes() must be done before ReadConfig(), which needs
     // SelfVolume->VolName.
+    #if REFIT_DEBUG > 0
+    MsgLog("Scan for SelfVolume...\n");
+    #endif
     ScanVolumes();
-    if (LoadDrivers())
+
+    if (LoadDrivers()) {
+        #if REFIT_DEBUG > 0
+        MsgLog("ScanVolumes...\n");
+        #endif
         ScanVolumes();
+    }
+
     ReadConfig(GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
-    if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
+    if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
+        #if REFIT_DEBUG > 0
+        MsgLog("Spoof macOS Version...\n");
+        #endif
         SetAppleOSInfo();
+    }
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Init Screen...\n");
+    #endif
     InitScreen();
+
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
-
     // disable EFI watchdog timer
     refit_call4_wrapper(BS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
@@ -408,6 +458,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
     if (GlobalConfig.ShutdownAfterTimeout)
         MainMenu.TimeoutText = L"Shutdown";
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Done\n------------\n\n");
+    #endif
 
     while (MainLoopRunning) {
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);

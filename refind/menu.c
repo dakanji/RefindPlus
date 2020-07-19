@@ -370,9 +370,9 @@ static VOID IdentifyRows(IN SCROLL_STATE *State, IN REFIT_MENU_SCREEN *Screen) {
 // mode and dynamic images.
 static VOID SaveScreen(VOID) {
    EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
-   
+
    egClearScreen(&Black);
-   
+
    WaitForInput(0);
 
    if (AllowGraphicsMode)
@@ -1370,10 +1370,10 @@ VOID GenerateWaitList() {
 } // VOID GenerateWaitList()
 
 UINTN WaitForInput(UINTN Timeout) {
-    UINTN Index = INPUT_TIMEOUT;
-    UINTN Length = WaitListLength;
-    EFI_EVENT TimerEvent;
-    EFI_STATUS Status;
+    UINTN       Index = INPUT_TIMEOUT;
+    UINTN       Length = WaitListLength;
+    EFI_EVENT   TimerEvent = NULL;
+    EFI_STATUS  Status;
 
     if (Timeout == 0) {
         Length--;
@@ -1758,7 +1758,7 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
         MainStyle = MainMenuStyle;
-        
+
         PointerEnabled = PointerActive = pdAvailable();
         DrawSelection = !PointerEnabled;
     }

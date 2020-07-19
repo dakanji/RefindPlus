@@ -141,6 +141,10 @@ VOID SetupScreen(VOID)
 {
     UINTN NewWidth, NewHeight;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Setup Screen...\n");
+    #endif
+
     // Convert mode number to horizontal & vertical resolution values
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0))
        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -232,8 +236,8 @@ VOID BeginTextScreen(IN CHAR16 *Title)
 VOID FinishTextScreen(IN BOOLEAN WaitAlways)
 {
     if (haveError || WaitAlways) {
-       PauseForKey();
-       SwitchToText(FALSE);
+        SwitchToText(FALSE);
+        PauseForKey();
     }
 
     // reset error flag
@@ -538,12 +542,12 @@ VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL
 // {
 //     UINTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
 //     EG_IMAGE *CompImage;
-//     
+//
 //     // initialize buffer with base image
 //     CompImage = egCopyImage(BaseImage);
 //     TotalWidth  = BaseImage->Width;
 //     TotalHeight = BaseImage->Height;
-//     
+//
 //     // place the top image
 //     CompWidth = TopImage->Width;
 //     if (CompWidth > TotalWidth)

@@ -36,10 +36,10 @@
 
 /*
  * Modifications copyright (c) 2012-2020 Roderick W. Smith
- * 
+ *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3) or (at your option) any later version.
- * 
+ *
  */
 /*
  * This program is free software: you can redistribute it and/or modify
@@ -497,6 +497,10 @@ VOID ReadConfig(CHAR16 *FileName)
     CHAR16          *TempStr = NULL;
     UINTN           TokenCount, i;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Read Config...\n");
+    #endif
+
     // Set a few defaults only if we're loading the default file.
     if (MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
        MyFreePool(GlobalConfig.AlsoScan);
@@ -779,13 +783,13 @@ VOID ReadConfig(CHAR16 *FileName)
            if(GlobalConfig.EnableMouse) {
                GlobalConfig.EnableTouch = FALSE;
            }
-        
+
         } else if (MyStriCmp(TokenList[0], L"enable_touch")) {
            GlobalConfig.EnableTouch = HandleBoolean(TokenList, TokenCount);
            if(GlobalConfig.EnableTouch) {
                GlobalConfig.EnableMouse = FALSE;
            }
-           
+
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);
            if (i < 1)
@@ -1187,4 +1191,3 @@ CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume)
    } // if
    return Options;
 } // static CHAR16 * GetOptionsFile()
-

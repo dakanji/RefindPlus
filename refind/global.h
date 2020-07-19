@@ -57,6 +57,31 @@
 
 #define REFIT_DEBUG (0)
 
+
+VOID
+DebugLog (
+  IN        INTN  DebugMode,
+  IN  CONST CHAR8 *FormatString, ...);
+
+#if REFIT_DEBUG == 0
+  #define MsgLog(...)
+#else
+  #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
+#endif
+
+
+
+VOID
+DebugLog (
+  IN        INTN  DebugMode,
+  IN  CONST CHAR8 *FormatString, ...);
+
+#if REFIT_DEBUG == 0
+  #define MsgLog(...)
+#else
+  #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
+#endif
+
 // Tag classifications; used in various ways.
 #define TAG_ABOUT            (1)
 #define TAG_REBOOT           (2)

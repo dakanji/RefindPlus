@@ -228,6 +228,10 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
     EFI_STATUS  Status;
     CHAR16      *DevicePathAsString, *Temp = NULL;
 
+    #if REFIT_DEBUG > 0
+           MsgLog("Init Refit Lib...\n");
+    #endif
+
     SelfImageHandle = ImageHandle;
     Status = refit_call3_wrapper(BS->HandleProtocol, SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
     if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle"))
@@ -731,12 +735,6 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         // NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
         //  need to fix AddLegacyEntry in refind/legacy.c.
 
-#if REFIT_DEBUG > 0
-        Print(L"  Result of bootcode detection: %s %s (%s)\n",
-              Volume->HasBootCode ? L"bootable" : L"non-bootable",
-              Volume->OSName, Volume->OSIconName);
-#endif
-
         // dummy FAT boot sector (created by OS X's newfs_msdos)
         if (FindMem(Buffer, 512, "Non-system disk", 15) >= 0)
             Volume->HasBootCode = FALSE;
@@ -950,7 +948,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     Volume->DevicePath = DuplicateDevicePath(DevicePathFromHandle(Volume->DeviceHandle));
 #if REFIT_DEBUG > 0
     if (Volume->DevicePath != NULL) {
-        Print(L"* %s\n", DevicePathToStr(Volume->DevicePath));
+        MsgLog("* %s\n", DevicePathToStr(Volume->DevicePath));
 #if REFIT_DEBUG >= 2
         DumpHex(1, 0, DevicePathSize(Volume->DevicePath), Volume->DevicePath);
 #endif
@@ -963,7 +961,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     Status = refit_call3_wrapper(BS->HandleProtocol, Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
-        Print(L"Warning: Can't get BlockIO protocol.\n");
+#if REFIT_DEBUG > 0
+        MsgLog("Warning: Can't get BlockIO protocol.\n");
+#endif
     } else {
         if (Volume->BlockIO->Media->BlockSize == 2048)
             Volume->DiskKind = DISK_KIND_OPTICAL;
@@ -1041,9 +1041,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     } // while
 
    if (!Bootable) {
-#if REFIT_DEBUG > 0
       if (Volume->HasBootCode)
-         Print(L"  Volume considered non-bootable, but boot code is present\n");
+#if REFIT_DEBUG > 0
+         MsgLog("  Volume considered non-bootable, but boot code is present\n");
 #endif
       Volume->HasBootCode = FALSE;
    }
@@ -1172,14 +1172,26 @@ VOID ScanVolumes(VOID)
 
         AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
 
-        if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle)
+
+        if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) {
             SelfVolume = Volume;
+
+            #if REFIT_DEBUG > 0
+                MsgLog("Added %s as SelfVolume\n", Volume->VolName);
+            #endif
+        }
+
+            #if REFIT_DEBUG > 0
+                    MsgLog("Added %s to scanned list\n\n", Volume->VolName);
+            #endif
     }
     MyFreePool(UuidList);
     MyFreePool(Handles);
 
     if (SelfVolume == NULL)
-        Print(L"WARNING: SelfVolume not found");
+#if REFIT_DEBUG > 0
+        MsgLog("WARNING: SelfVolume not found!\n\n");
+#endif
 
     // second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -1259,6 +1271,10 @@ VOID SetVolumeIcons(VOID) {
     UINTN        VolumeIndex;
     REFIT_VOLUME *Volume;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Get Volume Icons...\n");
+    #endif
+
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
         // Set volume icon based on .VolumeBadge icon or disk kind
@@ -1314,11 +1330,13 @@ EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry,
             if (Status != EFI_BUFFER_TOO_SMALL || IterCount >= 4)
                 break;
             if (BufferSize <= LastBufferSize) {
-                Print(L"FS Driver requests bad buffer size %d (was %d), using %d instead\n", BufferSize, LastBufferSize, LastBufferSize * 2);
+#if REFIT_DEBUG > 0
+                MsgLog("FS Driver requests bad buffer size %d (was %d), using %d instead\n", BufferSize, LastBufferSize, LastBufferSize * 2);
+#endif
                 BufferSize = LastBufferSize * 2;
 #if REFIT_DEBUG > 0
             } else {
-                Print(L"Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
+                MsgLog("Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
 #endif
             }
             Buffer = EfiReallocatePool(Buffer, LastBufferSize, BufferSize);
