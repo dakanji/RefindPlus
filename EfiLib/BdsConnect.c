@@ -49,10 +49,11 @@ EFI_STATUS ScanDeviceHandles(EFI_HANDLE ControllerHandle,
     // Retrieve the list of all the protocols on each handle
     //
     Status = gBS->ProtocolsPerHandle (
-                  (*HandleBuffer)[k],
-                  &ProtocolGuidArray,
-                  &ArrayCount
-                  );
+        (*HandleBuffer)[k],
+        &ProtocolGuidArray,
+        &ArrayCount
+    );
+    
     if (!EFI_ERROR (Status)) {
       for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++)
       {
@@ -101,7 +102,7 @@ EFI_STATUS ScanDeviceHandles(EFI_HANDLE ControllerHandle,
             &OpenInfo,
             &OpenInfoCount
         );
-        
+
         if (!EFI_ERROR (Status)) {
 
           for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
@@ -192,6 +193,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
     if (!EFI_ERROR (Status)) {
         for (i = 0; i < AllHandleCount; i++) {
+            // Assume Success
+            XStatus = EFI_SUCCESS;
+
             XStatus = ScanDeviceHandles(
                 AllHandleBuffer[i],
                 &HandleCount,
@@ -244,49 +248,58 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         }
 
                         #if REFIT_DEBUG > 0
-                        if (i == AllHandleCountTrigger) {
-                            MsgLog("Connect DeviceHandle[%d] ... %r\n\n", i, XStatus);
+                        if (EFI_ERROR (XStatus)) {
+                            if (i == AllHandleCountTrigger) {
+                                MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n\n", i, XStatus);
+                            } else {
+                                MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n", i, XStatus);
+                            }
                         } else {
-                            MsgLog("Connect DeviceHandle[%d] ... %r\n", i, XStatus);
+                            if (i == AllHandleCountTrigger) {
+                                MsgLog("Connect DeviceHandle[%d] ...%r\n\n", i, XStatus);
+                            } else {
+                                MsgLog("Connect DeviceHandle[%d] ...%r\n", i, XStatus);
+                            }
                         }
-                        #endif
                     } else {
-                        #if REFIT_DEBUG > 0
                         if (i == AllHandleCountTrigger) {
-                            MsgLog("Connect DeviceHandle[%d] ... Skipped [Parent]\n\n", i);
+                            MsgLog("Connect DeviceHandle[%d] ...Skipped [Parent Device]\n\n", i);
                         } else {
-                            MsgLog("Connect DeviceHandle[%d] ... Skipped [Parent]\n", i);
+                            MsgLog("Connect DeviceHandle[%d] ...Skipped [Parent Device]\n", i);
                         }
                         #endif
-                        // Fake Success
-                        XStatus = EFI_SUCCESS;
                     }
-                } else {
+
                     #if REFIT_DEBUG > 0
+                } else {
                     if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%d] ... Skipped [Not Device]\n\n", i);
+                        MsgLog("Connect DeviceHandle[%d] ...Skipped [Not Device]\n\n", i);
                     } else {
-                        MsgLog("Connect DeviceHandle[%d] ... Skipped [Not Device]\n", i);
+                        MsgLog("Connect DeviceHandle[%d] ...Skipped [Not Device]\n", i);
                     }
                     #endif
-
-                    // Fake Success
-                    XStatus = EFI_SUCCESS;
                 }
-            } else {
+
                 #if REFIT_DEBUG > 0
-                if (i == AllHandleCountTrigger) {
-                    MsgLog("Connect DeviceHandle[%d] ... %r\n\n", i, XStatus);
+            } else {
+                if (EFI_ERROR (XStatus)) {
+                    if (i == AllHandleCountTrigger) {
+                        MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n\n", i, XStatus);
+                    } else {
+                        MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n", i, XStatus);
+                    }
                 } else {
-                    MsgLog("Connect DeviceHandle[%d] ... %r\n", i, XStatus);
+                    if (i == AllHandleCountTrigger) {
+                        MsgLog("Connect DeviceHandle[%d] ...%r\n\n", i, XStatus);
+                    } else {
+                        MsgLog("Connect DeviceHandle[%d] ...%r\n", i, XStatus);
+                    }
                 }
                 #endif
-
-                // Fake Success
-                XStatus = EFI_SUCCESS;
             }
 
             if (EFI_ERROR (XStatus)) {
+                // Change Overall Status on Error
                 Status = XStatus;
             }
         }  // for
