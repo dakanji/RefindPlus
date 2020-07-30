@@ -1197,35 +1197,80 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         switch(GlobalConfig.ScanFor[i]) {
             case 'c': case 'C':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Legacy Disc:\n");
+                #endif
+
                 ScanLegacyDisc();
                 break;
             case 'h': case 'H':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Legacy Internal:\n");
+                #endif
+
                 ScanLegacyInternal();
                 break;
             case 'b': case 'B':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Legacy External:\n");
+                #endif
+
                 ScanLegacyExternal();
                 break;
             case 'm': case 'M':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan User Configured:\n");
+                #endif
+
                 ScanUserConfigured(GlobalConfig.ConfigFilename);
                 break;
             case 'e': case 'E':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan External:\n");
+                #endif
+
                 ScanExternal();
                 break;
             case 'i': case 'I':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Internal:\n");
+                #endif
+
                 ScanInternal();
                 break;
             case 'o': case 'O':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Optical:\n");
+                #endif
+
                 ScanOptical();
                 break;
             case 'n': case 'N':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Net boot:\n");
+                #endif
+
                 ScanNetboot();
                 break;
         } // switch()
     } // for
 
     // assign shortcut keys
-    for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 9; i++)
+    #if REFIT_DEBUG > 0
+    MsgLog("Assign Shortcut Keys:\n");
+    #endif
+
+    for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 9; i++) {
+        #if REFIT_DEBUG > 0
+        if ((i + 1) < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && (i + 1) < 9) {
+            MsgLog("  - Shortcut Key[%d] Assigned\n", i + 1);
+        } else {
+            MsgLog("  - Shortcut Key[%d] Assigned\n\n", i + 1);
+        }
+        #endif
+
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
+    }
 
     // wait for user ACK when there were errors
     FinishTextScreen(FALSE);
@@ -1293,7 +1338,8 @@ VOID ScanForTools(VOID) {
     UINT32 CsrValue;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Scan for Tools...\n");
+    MsgLog("Scan for Builtin/External Tools...\n");
+    MsgLog("Tool Count = %d\n", NUM_TOOLS);
     #endif
 
     MokLocations = StrDuplicate(MOK_LOCATIONS);
@@ -1307,6 +1353,14 @@ VOID ScanForTools(VOID) {
     MyFreePool(HiddenTools);
 
     for (i = 0; i < NUM_TOOLS; i++) {
+        #if REFIT_DEBUG > 0
+        if ((i + 1) < NUM_TOOLS) {
+            MsgLog("Scanning Tool[%d]:\n", i + 1);
+        } else {
+            MsgLog("Scanning Tool[%d]:\n\n", i + 1);
+        }
+        #endif
+
         switch(GlobalConfig.ShowTools[i]) {
             // NOTE: Be sure that FileName is NULL at the end of each case.
             case TAG_SHUTDOWN:

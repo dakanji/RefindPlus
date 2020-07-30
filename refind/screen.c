@@ -146,25 +146,46 @@ VOID SetupScreen(VOID)
     #endif
 
     // Convert mode number to horizontal & vertical resolution values
-    if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0))
-       egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
+    if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0)) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Get Resolution From Mode:\n");
+        #endif
+
+        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
+    }
 
     // Set the believed-to-be current resolution to the LOWER of the current
     // believed-to-be resolution and the requested resolution. This is done to
     // enable setting a lower-than-default resolution.
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight > 0)) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Sync Resolution:\n");
+        #endif
+
        UGAWidth = (UGAWidth < GlobalConfig.RequestedScreenWidth) ? UGAWidth : GlobalConfig.RequestedScreenWidth;
        UGAHeight = (UGAHeight < GlobalConfig.RequestedScreenHeight) ? UGAHeight : GlobalConfig.RequestedScreenHeight;
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
     if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Set Text Mode:\n");
+        #endif
+
        egGetScreenSize(&NewWidth, &NewHeight);
        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
           UGAWidth = NewWidth;
           UGAHeight = NewHeight;
        }
        if ((UGAWidth > GlobalConfig.RequestedScreenWidth) || (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
+
+           #if REFIT_DEBUG > 0
+           MsgLog("  - Increase Graphic Mode\n");
+           #endif
+
            // Requested text mode forces us to use a bigger graphics mode
            GlobalConfig.RequestedScreenWidth = UGAWidth;
            GlobalConfig.RequestedScreenHeight = UGAHeight;
@@ -172,28 +193,63 @@ VOID SetupScreen(VOID)
     }
 
     if (GlobalConfig.RequestedScreenWidth > 0) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Set to User Requested Screen Size:\n");
+        #endif
+
        egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
        egGetScreenSize(&UGAWidth, &UGAHeight);
     } // if user requested a particular screen resolution
 
     if (GlobalConfig.TextOnly) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Switch to Text Mode:\n");
+        #endif
+
         // switch to text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
     } else if (AllowGraphicsMode) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Prepare for Graphics Mode:\n");
+        #endif
+
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
         if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+
+            #if REFIT_DEBUG > 0
+            MsgLog("  - HIDPI Detected ... Scale Icons Up\n");
+            #endif
+
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
             HaveResized = TRUE;
         } // if
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Switch to Graphics Mode:\n");
+        #endif
+
         SwitchToGraphics();
         if (GlobalConfig.ScreensaverTime != -1) {
+
+            #if REFIT_DEBUG > 0
+            MsgLog("Clear Screen and Show Banner:\n");
+            #endif
+
            BltClearScreen(TRUE);
         } else { // start with screen blanked
+
+            #if REFIT_DEBUG > 0
+            MsgLog("Clear Screen and Show Blank Screen:\n");
+            #endif
+
            GraphicsScreenDirty = TRUE;
         }
     }
@@ -411,9 +467,18 @@ BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
     StatusToString(ErrorName, Status);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("** FATAL ERROR: %s %s\n", ErrorName, where);
+    #endif
+
     Temp = PoolPrint(L"Fatal Error: %s %s", ErrorName, where);
 #else
     Temp = PoolPrint(L"Fatal Error: %s %s", Status, where);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("** FATAL ERROR: %r %s\n", Status, where);
+    #endif
 #endif
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
@@ -434,14 +499,30 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
     StatusToString(ErrorName, Status);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("** WARN: %s %s\n", ErrorName, where);
+    #endif
+
     Temp = PoolPrint(L"Error: %s %s", ErrorName, where);
 #else
     Temp = PoolPrint(L"Error: %r %s", Status, where);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("** WARN: %r %s\n", Status, where);
+    #endif
 #endif
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
+
+    // Defeat need to "Press a key to continue" in debug mode
+    if (StriSubCmp(L"While Reading Boot Sector", where)) {
+        haveError = FALSE;
+    } else {
+        haveError = TRUE;
+    }
+
     MyFreePool(Temp);
 
     return TRUE;
@@ -466,8 +547,15 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
+        #if REFIT_DEBUG > 0
+        MsgLog("Refresh Screen:\n");
+        #endif
         // load banner on first call
         if (Banner == NULL) {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Get Banner\n");
+            #endif
+
             if (GlobalConfig.BannerFileName)
                 Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
             if (Banner == NULL)
@@ -475,6 +563,10 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
         }
 
         if (Banner) {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Scale Banner\n");
+            #endif
+
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
               if ((Banner->Height != UGAHeight) || (Banner->Width != UGAWidth)) {
                  NewBanner = egScaleImage(Banner, UGAWidth, UGAHeight);
@@ -491,12 +583,20 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
         } // if Banner exists
 
         // clear and draw banner
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Clear Screen\n");
+        #endif
+
         if (GlobalConfig.ScreensaverTime != -1)
            egClearScreen(&MenuBackgroundPixel);
         else
            egClearScreen(&Black);
 
         if (Banner != NULL) {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Show Banner\n\n");
+            #endif
+
             BannerPosX = (Banner->Width < UGAWidth) ? ((UGAWidth - Banner->Width) / 2) : 0;
             BannerPosY = (INTN) (ComputeRow0PosY() / 2) - (INTN) Banner->Height;
             if (BannerPosY < 0)

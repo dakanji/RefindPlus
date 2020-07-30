@@ -460,7 +460,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         MainMenu.TimeoutText = L"Shutdown";
 
     #if REFIT_DEBUG > 0
-    MsgLog("Done\n------------\n\n");
+    MsgLog("Running rEFInd on %s Firmware...\n", gST->FirmwareVendor);
     #endif
 
     while (MainLoopRunning) {
@@ -469,6 +469,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
             MenuExit = 0;
+
+            #if REFIT_DEBUG > 0
+            MsgLog("Get User Input:\n");
+            MsgLog("  - Rescan All\n\n");
+            #endif
+
             RescanAll(TRUE, TRUE);
             continue;
         }
@@ -480,42 +486,96 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         switch (ChosenEntry->Tag) {
 
             case TAG_REBOOT:    // Reboot
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Reboot Computer\n------------\n\n");
+                #endif
+
                 TerminateScreen();
                 refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_SHUTDOWN: // Shut Down
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Shut Computer Down\n------------\n\n");
+                #endif
+
                 TerminateScreen();
                 refit_call4_wrapper(RT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_ABOUT:    // About rEFInd
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Show 'About rEFInd' Box\n\n");
+                #endif
+
                 AboutrEFInd();
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Boot OS via *.efi File\n------------\n\n");
+                #endif
+
                 StartLoader((LOADER_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Boot Legacy OS\n------------\n\n");
+                #endif
+
                 StartLegacy((LEGACY_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Boot Legacy UEFI\n------------\n\n");
+                #endif
+
                 StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Start EFI Tool\n------------\n\n");
+                #endif
+
                 StartTool((LOADER_ENTRY *)ChosenEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Manage Hidden Tag Entries\n\n");
+                #endif
+
                 ManageHiddenTags();
                 break;
 
             case TAG_EXIT:    // Terminate rEFInd
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Terminate rEFInd\n------------\n\n");
+                #endif
+
                 if ((MokProtocol) && !SecureBootUninstall()) {
                    MainLoopRunning = FALSE;   // just in case we get this far
                 } else {
@@ -525,18 +585,42 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_FIRMWARE: // Reboot into firmware's user interface
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Reboot into Firmware\n------------\n\n");
+                #endif
+
                 RebootIntoFirmware();
                 break;
 
             case TAG_CSR_ROTATE:
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Rotate CSR Values\n\n");
+                #endif
+
                 RotateCsrValue();
                 break;
 
             case TAG_INSTALL:
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Install Refind\n------------\n\n");
+                #endif
+
                 InstallRefind();
                 break;
 
             case TAG_BOOTORDER:
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Manage Boot Order\n\n");
+                #endif
+
                 ManageBootorder();
                 break;
 

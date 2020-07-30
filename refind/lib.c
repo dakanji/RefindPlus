@@ -761,11 +761,11 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                 CopyMem(Volume->MbrPartitionTable, MbrTable, 4 * 16);
             }
         }
-
+        
+        #if REFIT_DEBUG > 0
     } else {
-#if REFIT_DEBUG > 0
-        CheckError(Status, L"while reading boot sector");
-#endif
+        CheckError(Status, L"While Reading Boot Sector");
+        #endif
     }
 } /* VOID ScanVolumeBootcode() */
 
@@ -1177,12 +1177,12 @@ VOID ScanVolumes(VOID)
             SelfVolume = Volume;
 
             #if REFIT_DEBUG > 0
-                MsgLog("Added %s as SelfVolume\n", Volume->VolName);
+                MsgLog("Set %s as Self Volume\n", Volume->VolName);
             #endif
         }
 
             #if REFIT_DEBUG > 0
-                    MsgLog("Added %s to scanned list\n\n", Volume->VolName);
+                    MsgLog("Set %s as Scanned Volume\n\n", Volume->VolName);
             #endif
     }
     MyFreePool(UuidList);
@@ -1190,7 +1190,7 @@ VOID ScanVolumes(VOID)
 
     if (SelfVolume == NULL)
 #if REFIT_DEBUG > 0
-        MsgLog("WARNING: SelfVolume not found!\n\n");
+        MsgLog("WARNING: Self Volume not Found!\n\n");
 #endif
 
     // second pass: relate partitions and whole disk devices
@@ -1273,10 +1273,20 @@ VOID SetVolumeIcons(VOID) {
 
     #if REFIT_DEBUG > 0
     MsgLog("Get Volume Icons...\n");
+    MsgLog("Volume Count = %d\n", VolumesCount);
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        #if REFIT_DEBUG > 0
+        if ((VolumeIndex + 1) < VolumesCount) {
+            MsgLog("Checking Volume[%d]:\n", VolumeIndex + 1);
+        } else {
+            MsgLog("Checking Volume[%d]:\n\n", VolumeIndex + 1);
+        }
+        #endif
+
         Volume = Volumes[VolumeIndex];
+
         // Set volume icon based on .VolumeBadge icon or disk kind
         SetVolumeBadgeIcon(Volume);
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {

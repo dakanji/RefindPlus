@@ -775,6 +775,11 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) && MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
            if (!MyStriCmp(TokenList[1], FileName)) {
+
+               #if REFIT_DEBUG > 0
+               MsgLog("Detected Overrides - ");
+               #endif
+
               ReadConfig(TokenList[1]);
            }
 

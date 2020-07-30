@@ -53,8 +53,11 @@ VOID pdInitialize() {
 
     pdCleanup(); // just in case
 
-    if (!(GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) return;
-
+    if (!(GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Detected Touch Mode or 'No Mouse' Mode\n");
+        #endif
+    } else{
     // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
     UINTN NumPointerHandles = 0;
     EFI_STATUS handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &APointerGuid, NULL,
@@ -121,6 +124,11 @@ VOID pdInitialize() {
     if (PointerAvailable && GlobalConfig.EnableMouse) {
         MouseImage = BuiltinIcon(BUILTIN_ICON_MOUSE);
     }
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Pointer Devices Initialised\n\n");
+    #endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,7 +137,7 @@ VOID pdInitialize() {
 VOID pdCleanup() {
 
         #if REFIT_DEBUG > 0
-        MsgLog("  - Close Existing Pointer Protocols\n");
+        MsgLog("Close Existing Pointer Protocols:\n");
         #endif
 
     PointerAvailable = FALSE;
