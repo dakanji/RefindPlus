@@ -189,7 +189,13 @@ setConsoleResolution (
 
     if (ModeNumber < 0) {
         #if REFIT_DEBUG > 0
-        MsgLog ("No Compatible Mode for %ux%u@%u (Max: %u) Resolution\n", Width, Height, Bpp, SetMax);
+        MsgLog (
+            "No Compatible Mode for %ux%u@%u (Max: %u) Resolution\n",
+            Width,
+            Height,
+            Bpp,
+            SetMax
+        );
         #endif
 
         return EFI_NOT_FOUND;
@@ -702,7 +708,12 @@ egDumpGOPVideoModes(
 
     #if REFIT_DEBUG > 0
     MsgLog("Query GraphicsOutputProtocol Modes:\n");
-    MsgLog("Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n", ModeCount, GraphicsOutput->Mode->FrameBufferBase, GraphicsOutput->Mode->FrameBufferSize);
+    MsgLog(
+        "Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n",
+        ModeCount,
+        GraphicsOutput->Mode->FrameBufferBase,
+        GraphicsOutput->Mode->FrameBufferSize
+    );
     #endif
 
     for (Mode = 0; Mode < NumModes; Mode++) {
@@ -743,9 +754,21 @@ egDumpGOPVideoModes(
 
             #if REFIT_DEBUG > 0
             if (LoopCount < ModeCount) {
-                MsgLog("    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n", Info->HorizontalResolution, Info->VerticalResolution, Info->PixelsPerScanLine, PixelFormatDesc);
+                MsgLog(
+                    "    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n",
+                    Info->HorizontalResolution,
+                    Info->VerticalResolution,
+                    Info->PixelsPerScanLine,
+                    PixelFormatDesc
+                );
             } else {
-                MsgLog("    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n\n", Info->HorizontalResolution, Info->VerticalResolution, Info->PixelsPerScanLine, PixelFormatDesc);
+                MsgLog(
+                    "    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n\n",
+                    Info->HorizontalResolution,
+                    Info->VerticalResolution,
+                    Info->PixelsPerScanLine,
+                    PixelFormatDesc
+                );
             }
             #endif
 
@@ -893,20 +916,19 @@ egSetMaxResolution() {
     }
   }
 
-#if REFIT_DEBUG > 0
+  #if REFIT_DEBUG > 0
   MsgLog("  - Best Mode = GOP Mode[%d] @ %dx%d Resolution\n", BestMode, Width, Height);
-#endif
+  #endif
 
   // check if requested mode is equal to current mode
   if (BestMode == GraphicsOutput->Mode->Mode) {
 
-#if REFIT_DEBUG > 0
-    MsgLog("Screen Resolution Already Set\n\n");
-#endif
-
-    egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
-    egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-    Status = EFI_SUCCESS;
+      #if REFIT_DEBUG > 0
+      MsgLog("Screen Resolution Already Set\n\n");
+      #endif
+      egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+      egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+      Status = EFI_SUCCESS;
   } else {
     Status = GopSetModeAndReconnectTextOut(BestMode);
     if (Status == EFI_SUCCESS) {
@@ -920,13 +942,13 @@ egSetMaxResolution() {
     } else {
       // we can not set BestMode - search for first one that we can
       #if REFIT_DEBUG > 0
-            MsgLog("Could not set BestMode ... search for first useable mode\n", Status);
+      MsgLog("Could not set BestMode ... search for first useable mode\n", Status);
       #endif
 
-            Status = egSetGOPMode(1);
+      Status = egSetGOPMode(1);
 
       #if REFIT_DEBUG > 0
-            MsgLog("  - Mode search ...%r\n\n", Status);
+      MsgLog("  - Mode search ...%r\n\n", Status);
       #endif
     }
   }
@@ -961,7 +983,14 @@ egDetermineScreenSize(
         egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
         egHasGraphics = TRUE;
     } else if (UGADraw != NULL) {
-        Status = refit_call5_wrapper(UGADraw->GetMode, UGADraw, &UGAWidth, &UGAHeight, &UGADepth, &UGARefreshRate);
+        Status = refit_call5_wrapper(
+            UGADraw->GetMode,
+            UGADraw,
+            &UGAWidth,
+            &UGAHeight,
+            &UGADepth,
+            &UGARefreshRate
+        );
         if (EFI_ERROR(Status)) {
             UGADraw = NULL;   // graphics not available
         } else {
@@ -1009,15 +1038,15 @@ egInitScreen(
     if (EFI_ERROR(Status)) {
         ConsoleControl = NULL;
 
-#if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
         MsgLog("  - Check ConsoleControl ...NOT OK!\n");
-#endif
+        #endif
 
     } else {
 
-#if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
     	MsgLog("  - Check ConsoleControl ...ok\n");
-#endif
+        #endif
 
     }
 
@@ -1025,15 +1054,15 @@ egInitScreen(
     if (EFI_ERROR(Status)) {
         UGADraw = NULL;
 
-#if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...NOT OK!\n");
-#endif
+        #endif
 
     } else {
 
-#if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...ok\n");
-#endif
+        #endif
 
     }
 
@@ -1294,7 +1323,13 @@ egGetResFromMode(
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
    if ((ModeWidth != NULL) && (Height != NULL)) {
-      Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, *ModeWidth, &Size, &Info);
+      Status = refit_call4_wrapper(
+          GraphicsOutput->QueryMode,
+          GraphicsOutput,
+          *ModeWidth,
+          &Size,
+          &Info
+      );
       if ((Status == EFI_SUCCESS) && (Info != NULL)) {
          *ModeWidth = Info->HorizontalResolution;
          *Height = Info->VerticalResolution;
@@ -1354,7 +1389,13 @@ egSetScreenSize(
                 #endif
 
                 ModeSet = TRUE;
-            } else if (egGetResFromMode(ScreenWidth, ScreenHeight) && (refit_call2_wrapper(GraphicsOutput->SetMode, GraphicsOutput, ModeNum) == EFI_SUCCESS)) {
+            } else if (egGetResFromMode(ScreenWidth, ScreenHeight)
+                && (refit_call2_wrapper(
+                    GraphicsOutput->SetMode,
+                    GraphicsOutput,
+                    ModeNum
+                ) == EFI_SUCCESS)
+            ) {
 
                 #if REFIT_DEBUG > 0
                 MsgLog("ModeSet from egGetResFromMode\n");
@@ -1373,7 +1414,13 @@ egSetScreenSize(
             // Do a loop through the modes to see if the specified one is available;
             // and if so, switch to it....
             do {
-                Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, ModeNum, &Size, &Info);
+                Status = refit_call4_wrapper(
+                    GraphicsOutput->QueryMode,
+                    GraphicsOutput,
+                    ModeNum,
+                    &Size,
+                    &Info
+                );
                 if ((Status == EFI_SUCCESS)
                     && (Size >= sizeof(*Info)
                     && (Info != NULL))
@@ -1405,16 +1452,31 @@ egSetScreenSize(
             SwitchToText(FALSE);
 
             #if REFIT_DEBUG > 0
-            MsgLog("Error setting provided %dx%d resolution ... Trying default modes:\n", *ScreenWidth, *ScreenHeight);
+            MsgLog(
+                "Error setting provided %dx%d resolution ... Trying default modes:\n",
+                *ScreenWidth,
+                *ScreenHeight
+            );
             #endif
 
             ModeNum = 0;
             do {
-                Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, ModeNum, &Size, &Info);
+                Status = refit_call4_wrapper(
+                    GraphicsOutput->QueryMode,
+                    GraphicsOutput,
+                    ModeNum,
+                    &Size,
+                    &Info
+                );
                 if ((Status == EFI_SUCCESS) && (Info != NULL)) {
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - Available Mode: Mode[%d] (%dx%d)\n", ModeNum, Info->HorizontalResolution, Info->VerticalResolution);
+                    MsgLog(
+                        "  - Available Mode: Mode[%d] (%dx%d)\n",
+                        ModeNum,
+                        Info->HorizontalResolution,
+                        Info->VerticalResolution
+                    );
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
@@ -1424,7 +1486,11 @@ egSetScreenSize(
 
                     #if REFIT_DEBUG > 0
                 } else {
-                    MsgLog("  - Error ... Could not query GraphicsOutput Mode!\n", *ScreenWidth, *ScreenHeight);
+                    MsgLog(
+                        "  - Error ... Could not query GraphicsOutput Mode!\n",
+                        *ScreenWidth,
+                        *ScreenHeight
+                    );
                     #endif
 
                 } // if
@@ -1436,8 +1502,22 @@ egSetScreenSize(
     } else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
-        Status = refit_call5_wrapper(UGADraw->GetMode, UGADraw, &UGAWidth, &UGAHeight, &UGADepth, &UGARefreshRate);
-        Status = refit_call5_wrapper(UGADraw->SetMode, UGADraw, *ScreenWidth, *ScreenHeight, UGADepth, UGARefreshRate);
+        Status = refit_call5_wrapper(
+            UGADraw->GetMode,
+            UGADraw,
+            &UGAWidth,
+            &UGAHeight,
+            &UGADepth,
+            &UGARefreshRate
+        );
+        Status = refit_call5_wrapper(
+            UGADraw->SetMode,
+            UGADraw,
+            *ScreenWidth,
+            *ScreenHeight,
+            UGADepth,
+            UGARefreshRate
+        );
         if (Status == EFI_SUCCESS) {
             egScreenWidth = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
@@ -1572,8 +1652,9 @@ egSetGraphicsModeEnabled(
 
         NewMode = Enable ? EfiConsoleControlScreenGraphics
                          : EfiConsoleControlScreenText;
-        if (CurrentMode != NewMode)
-           refit_call2_wrapper(ConsoleControl->SetMode, ConsoleControl, NewMode);
+        if (CurrentMode != NewMode) {
+            refit_call2_wrapper(ConsoleControl->SetMode, ConsoleControl, NewMode);
+        }
     }
 }
 
@@ -1606,9 +1687,33 @@ egClearScreen(
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout, and the header from TianoCore actually defines them
         // to be the same type.
-        refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)&FillColor, EfiBltVideoFill, 0, 0, 0, 0, egScreenWidth, egScreenHeight, 0);
+        refit_call10_wrapper(
+            GraphicsOutput->Blt,
+            GraphicsOutput,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)&FillColor,
+             EfiBltVideoFill,
+             0,
+             0,
+             0,
+             0,
+             egScreenWidth,
+             egScreenHeight,
+             0
+         );
     } else if (UGADraw != NULL) {
-        refit_call10_wrapper(UGADraw->Blt, UGADraw, &FillColor, EfiUgaVideoFill, 0, 0, 0, 0, egScreenWidth, egScreenHeight, 0);
+        refit_call10_wrapper(
+            UGADraw->Blt,
+            UGADraw,
+            &FillColor,
+            EfiUgaVideoFill,
+            0,
+            0,
+            0,
+            0,
+            egScreenWidth,
+            egScreenHeight,
+            0
+        );
     }
 }
 
@@ -1627,12 +1732,20 @@ egDrawImage(
         (ScreenPosX > egScreenWidth) || (ScreenPosY > egScreenHeight))
         return;
 
-    if ((GlobalConfig.ScreenBackground == NULL) || ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))) {
+    if ((GlobalConfig.ScreenBackground == NULL)
+        || ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))
+    ) {
        CompImage = Image;
     } else if (GlobalConfig.ScreenBackground == Image) {
        CompImage = GlobalConfig.ScreenBackground;
     } else {
-       CompImage = egCropImage(GlobalConfig.ScreenBackground, ScreenPosX, ScreenPosY, Image->Width, Image->Height);
+       CompImage = egCropImage(
+           GlobalConfig.ScreenBackground,
+           ScreenPosX,
+           ScreenPosY,
+           Image->Width,
+           Image->Height
+       );
        if (CompImage == NULL) {
 
 #if REFIT_DEBUG > 0
@@ -1645,11 +1758,33 @@ egDrawImage(
     }
 
     if (GraphicsOutput != NULL) {
-       refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
-                            EfiBltBufferToVideo, 0, 0, ScreenPosX, ScreenPosY, CompImage->Width, CompImage->Height, 0);
+       refit_call10_wrapper(
+           GraphicsOutput->Blt,
+           GraphicsOutput,
+           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
+           EfiBltBufferToVideo,
+           0,
+           0,
+           ScreenPosX,
+           ScreenPosY,
+           CompImage->Width,
+           CompImage->Height,
+           0
+       );
     } else if (UGADraw != NULL) {
-       refit_call10_wrapper(UGADraw->Blt, UGADraw, (EFI_UGA_PIXEL *)CompImage->PixelData, EfiUgaBltBufferToVideo,
-                            0, 0, ScreenPosX, ScreenPosY, CompImage->Width, CompImage->Height, 0);
+       refit_call10_wrapper(
+           UGADraw->Blt,
+           UGADraw,
+           (EFI_UGA_PIXEL *)CompImage->PixelData,
+           EfiUgaBltBufferToVideo,
+           0,
+           0,
+           ScreenPosX,
+           ScreenPosY,
+           CompImage->Width,
+           CompImage->Height,
+           0
+       );
     }
     if ((CompImage != GlobalConfig.ScreenBackground) && (CompImage != Image))
        egFreeImage(CompImage);
