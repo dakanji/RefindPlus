@@ -518,8 +518,8 @@ timeout 20
 #   CSR_ALLOW_APPLE_INTERNAL        0x10
 #   CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
 #   CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
-#
-#csr_values 10,77
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT  0x800
+#csr_values 10,877
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
