@@ -15,8 +15,8 @@
 #ifndef OC_CONSOLE_LIB_INTERNAL_H
 #define OC_CONSOLE_LIB_INTERNAL_H
 
-#include <Library/OcConsoleLib.h>
-#include <Protocol/ConsoleControl.h>
+#include "../include/Library/OcConsoleLib.h"
+#include "../include/Protocol/ConsoleControl.h"
 #include <Protocol/GraphicsOutput.h>
 #include <Protocol/SimpleTextOut.h>
 #include <Protocol/UgaDraw.h>

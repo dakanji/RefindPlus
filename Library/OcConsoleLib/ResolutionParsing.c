@@ -14,8 +14,8 @@
 
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
-#include <Library/OcConsoleLib.h>
-#include <Library/OcGuardLib.h>
+#include "../include/Library/OcConsoleLib.h"
+#include "../include/Library/OcGuardLib.h"
 
 /**
   Parse resolution string.
