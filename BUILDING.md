@@ -90,6 +90,13 @@ $ git remote add upstream https://github.com/dakanji/Refind-UDK
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.   
 Your Refind-UDK folder (UDK2018) will be under `Documents/RefindGOPFix/edk2`   
 
+### Build BaseTools C Tool Binaries
+
+```
+$ cd ~/Documents/RefindGOPFix/edk2
+$ make -C BaseTools/Source/C
+```
+
 
 ## Prepare the Refind-GOPFix Environment
 ### Fork the Refind-GOPFix Repository
