@@ -31,6 +31,10 @@
 #define CSR_ALLOW_APPLE_INTERNAL        0x10
 #define CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
 #define CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
+#define CSR_ALLOW_DEVICE_CONFIGURATION  0x80
+#define CSR_ALLOW_ANY_RECOVERY_OS       0x100
+#define CSR_ALLOW_UNAPPROVED_KEXTS      0x200
+#define CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE     0x400
 #define CSR_ALLOW_UNAUTHENTICATED_ROOT  0x800
 #define CSR_END_OF_LIST                 0xFFFFFFFF
 // Some summaries....
@@ -49,6 +53,10 @@
                              CSR_ALLOW_APPLE_INTERNAL | \
                              CSR_ALLOW_UNRESTRICTED_DTRACE | \
                              CSR_ALLOW_UNRESTRICTED_NVRAM | \
+                             CSR_ALLOW_DEVICE_CONFIGURATION | \
+                             CSR_ALLOW_ANY_RECOVERY_OS | \
+                             CSR_ALLOW_UNAPPROVED_KEXTS | \
+                             CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE | \
                              CSR_ALLOW_UNAUTHENTICATED_ROOT)
 
 extern CHAR16 gCsrStatus[256];
