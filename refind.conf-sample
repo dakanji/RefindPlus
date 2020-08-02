@@ -510,7 +510,7 @@ timeout 20
 # define which specific security features are enabled. Below are the codes
 # for what the values mean. Add them up (in hexadecimal!) to set new values.
 # Apple's "csrutil enable" and "csrutil disable" commands set values of 10
-# and 77, respectively.
+# and 877, respectively.
 #   CSR_ALLOW_UNTRUSTED_KEXTS       0x01
 #   CSR_ALLOW_UNRESTRICTED_FS       0x02
 #   CSR_ALLOW_TASK_FOR_PID          0x04
@@ -518,6 +518,10 @@ timeout 20
 #   CSR_ALLOW_APPLE_INTERNAL        0x10
 #   CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
 #   CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
+#   CSR_ALLOW_DEVICE_CONFIGURATION  0x80
+#   CSR_ALLOW_ANY_RECOVERY_OS       0x100
+#   CSR_ALLOW_UNAPPROVED_KEXTS      0x200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE     0x400
 #   CSR_ALLOW_UNAUTHENTICATED_ROOT  0x800
 #csr_values 10,877
 
