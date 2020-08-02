@@ -31,6 +31,7 @@
 #define CSR_ALLOW_APPLE_INTERNAL        0x10
 #define CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
 #define CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
+#define CSR_ALLOW_UNAUTHENTICATED_ROOT  0x800
 #define CSR_END_OF_LIST                 0xFFFFFFFF
 // Some summaries....
 #define SIP_ENABLED  CSR_ALLOW_APPLE_INTERNAL
@@ -39,14 +40,16 @@
                       CSR_ALLOW_APPLE_INTERNAL | \
                       CSR_ALLOW_TASK_FOR_PID | \
                       CSR_ALLOW_UNRESTRICTED_FS | \
-                      CSR_ALLOW_UNTRUSTED_KEXTS)
+                      CSR_ALLOW_UNTRUSTED_KEXTS | \
+                      CSR_ALLOW_UNAUTHENTICATED_ROOT)
 #define CSR_MAX_LEGAL_VALUE (CSR_ALLOW_UNTRUSTED_KEXTS | \
                              CSR_ALLOW_UNRESTRICTED_FS | \
                              CSR_ALLOW_TASK_FOR_PID | \
                              CSR_ALLOW_KERNEL_DEBUGGER | \
                              CSR_ALLOW_APPLE_INTERNAL | \
                              CSR_ALLOW_UNRESTRICTED_DTRACE | \
-                             CSR_ALLOW_UNRESTRICTED_NVRAM)
+                             CSR_ALLOW_UNRESTRICTED_NVRAM | \
+                             CSR_ALLOW_UNAUTHENTICATED_ROOT)
 
 extern CHAR16 gCsrStatus[256];
 
