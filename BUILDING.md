@@ -104,15 +104,14 @@ $ cd ~/Documents/RefindGOPFix
 $ git clone https://github.com/YOUR_GITHUB_USERNAME/Refind-GOPFix.git WorkingFolder
 $ cd ~/Documents/RefindGOPFix/WorkingFolder
 $ git checkout GOPFix
+$ git remote add upstream https://github.com/dakanji/Refind-GOPFix
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.   
+Upstream will be `dakanji/Refind-GOPFix` as shown   
 Your woking repository will be under `Documents/RefindGOPFix/WorkingFolder`   
 
-Use this if you want to edit the `Refind-GOPFix` codebase and push to the forked version online at GitHub.com   
-If you do not wish to edit the codebase and only want to build `Refind-GOPFix` by yourself, just leave the folder in place.
-
-**NB:** The build script will build on the online version and unless you have pushed any changes made locally here, they will not be present in your build.
+**NB:** The build script will build on the online version and unless you have pushed any changes made locally here, they will not be present in your build. [CLICK HERE](https://github.com/dakanji/Refind-GOPFix/blob/GOPFix/BUILDING.md#updating-cloned-refind-gopfix-repository) for how to update your cloned repository.
 
 
 ### Prepare Your Forked Refind-GOPFix Working Repository for Your Edits (Optional)
@@ -144,3 +143,27 @@ $ git update-index --assume-unchanged 000-BuildScript/refindBuilder.sh
   - Enter a space and `MyEdits`, or any other branch name, to the end of the line if you want to build on that branch
   - If nothing is entered, the script will default to the `GOPFix` branch  
 - Press `Enter`
+
+
+
+## Updating Cloned Refind-GOPFix Repository
+
+In Terminal, run the following commands:
+
+```
+$ cd ~/Documents/RefindGOPFix/WorkingFolder
+$ git checkout GOPFix
+$ git pull upstream GOPFix
+$ git push
+```
+
+If you have your own edits, in a `MyEdits` branch for instance, run the following additiaonl commands:
+
+```
+$ cd ~/Documents/RefindGOPFix/WorkingFolder
+$ git checkout MyEdits
+$ git rebase GOPFix
+$ git push
+```
+
+You may need to resolve conflicts after the `git rebase GOPFix` command.
