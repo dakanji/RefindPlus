@@ -453,7 +453,7 @@ timeout 20
 # keyboard accelerators available within rEFInd.  You may select the
 # default loader using:
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
-#    will be the default. 
+#    will be the default.
 #  - A "+" symbol at the start of the string, which refers to the most
 #    recently booted loader.
 #  - Any substring that corresponds to a portion of the loader's title
@@ -510,16 +510,20 @@ timeout 20
 # define which specific security features are enabled. Below are the codes
 # for what the values mean. Add them up (in hexadecimal!) to set new values.
 # Apple's "csrutil enable" and "csrutil disable" commands set values of 10
-# and 77, respectively.
-#   CSR_ALLOW_UNTRUSTED_KEXTS       0x01
-#   CSR_ALLOW_UNRESTRICTED_FS       0x02
-#   CSR_ALLOW_TASK_FOR_PID          0x04
-#   CSR_ALLOW_KERNEL_DEBUGGER       0x08
-#   CSR_ALLOW_APPLE_INTERNAL        0x10
-#   CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
-#   CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
-#
-#csr_values 10,77
+# and 877, respectively.
+#   CSR_ALLOW_UNTRUSTED_KEXTS            0x01
+#   CSR_ALLOW_UNRESTRICTED_FS            0x02
+#   CSR_ALLOW_TASK_FOR_PID               0x04
+#   CSR_ALLOW_KERNEL_DEBUGGER            0x08
+#   CSR_ALLOW_APPLE_INTERNAL             0x10
+#   CSR_ALLOW_UNRESTRICTED_DTRACE        0x20
+#   CSR_ALLOW_UNRESTRICTED_NVRAM         0x40
+#   CSR_ALLOW_DEVICE_CONFIGURATION       0x80
+#   CSR_ALLOW_ANY_RECOVERY_OS            0x100
+#   CSR_ALLOW_UNAPPROVED_KEXTS           0x200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE 0x400
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT       0x800
+#csr_values 10,877
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
