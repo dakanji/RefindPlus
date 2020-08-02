@@ -26,6 +26,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Library/UefiRuntimeServicesTableLib.h>
 #include "../include/Protocol/ConsoleControl.h"
 #include <Protocol/GraphicsOutput.h>
+#include "../../refind/globalExtra.h"
 
 /*
  * ISO Latin-1 Font

@@ -24,6 +24,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/Library/OcMiscLib.h"
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
+#include "../../refind/globalExtra.h"
 
 EFI_CONSOLE_CONTROL_SCREEN_MODE
 OcConsoleControlSetMode (
@@ -130,7 +131,7 @@ OcConsoleControlInstallProtocol (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Install console control, new - %r\n", Status));
+    MsgLog ("Install console control, new - %r\n", Status);
     #endif
 
     return Status;

@@ -97,6 +97,8 @@
   PerformanceLib
 # Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
   MemLogLib
+# Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
+  OcConsoleLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

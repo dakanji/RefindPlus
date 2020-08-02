@@ -26,6 +26,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/Library/OcMiscLib.h"
 #include "../include/Library/OcGuardLib.h"
 #include <Library/UefiBootServicesTableLib.h>
+#include "../../refind/globalExtra.h"
 
 //
 // Current reported console mode.

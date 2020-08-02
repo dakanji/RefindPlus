@@ -27,6 +27,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/Library/OcGuardLib.h"
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
+#include "../../refind/globalExtra.h"
 
 EFI_STATUS
 OcSetConsoleResolutionForProtocol (

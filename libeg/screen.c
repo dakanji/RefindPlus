@@ -85,592 +85,9 @@ static BOOLEAN egHasGraphics = FALSE;
 static UINTN egScreenWidth   = 0;
 static UINTN egScreenHeight  = 0;
 
-
-#define DEFAULT_COLOUR_DEPTH 32
-#define DEFAULT_REFRESH_RATE 60
-
-typedef struct {
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *daGOP;
-    EFI_UGA_DRAW_PROTOCOL         daUGA;
-} DA_UGA_PROTOCOL;
-
-EFI_STATUS
-setConsoleResolution (
-    IN  EFI_GRAPHICS_OUTPUT_PROTOCOL    *daGOP,
-    IN  UINT32                          Width,
-    IN  UINT32                          Height,
-    IN  UINT32                          Bpp    OPTIONAL
-) {
-    EFI_STATUS                            Status;
-    UINT32                                MaxMode;
-    UINT32                                i;
-    INT64                                 ModeNumber;
-    UINTN                                 SizeOfInfo;
-    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
-    BOOLEAN                               SetMax;
-
-    SetMax = Width == 0 && Height == 0;
-
-    #if REFIT_DEBUG > 0
-    MsgLog (
-        "Requesting %ux%u@%u (Max: %d) Resolution, Curr %u, Total %u\n",
-        Width,
-        Height,
-        Bpp,
-        SetMax,
-        (UINT32) daGOP->Mode->Mode,
-        (UINT32) daGOP->Mode->MaxMode
-    );
-    #endif
-
-    //
-    // Find the resolution we need.
-    //
-    ModeNumber = -1;
-    MaxMode    = daGOP->Mode->MaxMode;
-
-    for (i = 0; i < MaxMode; ++i) {
-        Status = daGOP->QueryMode (
-            daGOP,
-            i,
-            &SizeOfInfo,
-            &Info
-        );
-
-        if (EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("Mode[%u] Failure - %r\n", i, Status);
-            #endif
-
-            continue;
-        }
-
-        #if REFIT_DEBUG > 0
-        MsgLog (
-            "Mode[%u] - %ux%u:%u\n",
-            i,
-            Info->HorizontalResolution,
-            Info->VerticalResolution,
-            Info->PixelFormat
-        );
-        #endif
-
-        if (!SetMax) {
-            //
-            // Custom resolution is requested.
-            //
-            if (Info->HorizontalResolution == Width
-                && Info->VerticalResolution == Height
-                && (Bpp == 0 || Bpp == 24 || Bpp == 32)
-                && (Info->PixelFormat == PixelRedGreenBlueReserved8BitPerColor
-                || Info->PixelFormat == PixelBlueGreenRedReserved8BitPerColor
-                || (Info->PixelFormat == PixelBitMask
-                && (Info->PixelInformation.RedMask  == 0xFF000000U
-                || Info->PixelInformation.RedMask == 0xFF0000U
-                || Info->PixelInformation.RedMask == 0xFF00U
-                || Info->PixelInformation.RedMask == 0xFFU))
-                || Info->PixelFormat == PixelBltOnly)
-            ) {
-                ModeNumber = i;
-
-                FreePool (Info);
-                break;
-            }
-        } else if (Info->HorizontalResolution > Width
-            || (Info->HorizontalResolution == Width
-            && Info->VerticalResolution > Height)
-        ) {
-            Width = Info->HorizontalResolution;
-            Height   = Info->VerticalResolution;
-            ModeNumber = i;
-        }
-        FreePool (Info);
-    }
-
-    if (ModeNumber < 0) {
-        #if REFIT_DEBUG > 0
-        MsgLog (
-            "No Compatible Mode for %ux%u@%u (Max: %u) Resolution\n",
-            Width,
-            Height,
-            Bpp,
-            SetMax
-        );
-        #endif
-
-        return EFI_NOT_FOUND;
-    }
-
-    egScreenWidth =  Width;
-    egScreenHeight = Height;
-
-    if (ModeNumber == daGOP->Mode->Mode) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Current Mode Matches Desired Mode[%u]\n", (UINT32) ModeNumber);
-        #endif
-
-        return EFI_ALREADY_STARTED;
-    }
-
-    //
-    // Current graphics mode is not set, or is not set to the mode found above.
-    // Set the new graphics mode.
-    //
-    #if REFIT_DEBUG > 0
-    MsgLog (
-        "Setting mode %u with %ux%u resolution\n",
-        (UINT32) ModeNumber,
-        Width,
-        Height
-    );
-    #endif
-
-    Status = daGOP->SetMode (daGOP, (UINT32) ModeNumber);
-    if (EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        MsgLog (
-            "Failed to Set Mode[%u] (Prev %u) with %ux%u Resolution\n",
-            (UINT32) ModeNumber,
-            (UINT32) daGOP->Mode->Mode,
-            Width,
-            Height
-        );
-        #endif
-
-        return Status;
-    }
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("Changed Resolution Mode to %u\n", (UINT32) daGOP->Mode->Mode);
-    #endif
-
-    return Status;
-}
-
-
-STATIC
-EFI_STATUS
-EFIAPI
-ugaDrawGetMode (
-    IN  EFI_UGA_DRAW_PROTOCOL *This,
-    OUT UINT32                *HorizontalResolution,
-    OUT UINT32                *VerticalResolution,
-    OUT UINT32                *ColorDepth,
-    OUT UINT32                *RefreshRate
-) {
-    DA_UGA_PROTOCOL                       *altUGA;
-    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("ugaDrawGetMode %p\n", This);
-    #endif
-
-    if (This == NULL
-        || HorizontalResolution == NULL
-        || VerticalResolution == NULL
-        || ColorDepth == NULL
-        || RefreshRate == NULL
-    ) {
-        return EFI_INVALID_PARAMETER;
-    }
-
-    altUGA = BASE_CR (This, DA_UGA_PROTOCOL, daUGA);
-    Info      = altUGA->daGOP->Mode->Info;
-
-    #if REFIT_DEBUG > 0
-    MsgLog (
-        "ugaDrawGetMode Info is %ux%u (%u)\n",
-        Info->HorizontalResolution,
-        Info->VerticalResolution,
-        Info->PixelFormat
-    );
-    #endif
-
-    if (Info->HorizontalResolution == 0 || Info->VerticalResolution == 0) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("  - Graphics Not Started]\n");
-        #endif
-
-        return EFI_NOT_STARTED;
-    }
-
-    *HorizontalResolution = Info->HorizontalResolution;
-    *VerticalResolution = Info->VerticalResolution;
-    *ColorDepth  = DEFAULT_COLOUR_DEPTH;
-    *RefreshRate = DEFAULT_REFRESH_RATE;
-
-    return EFI_SUCCESS;
-}
-
-STATIC
-EFI_STATUS
-EFIAPI
-ugaDrawSetMode (
-    IN  EFI_UGA_DRAW_PROTOCOL *This,
-    IN  UINT32                HorizontalResolution,
-    IN  UINT32                VerticalResolution,
-    IN  UINT32                ColorDepth,
-    IN  UINT32                RefreshRate
-) {
-    EFI_STATUS        Status;
-    DA_UGA_PROTOCOL   *altUGA;
-
-    altUGA = BASE_CR (This, DA_UGA_PROTOCOL, daUGA);
-
-    #if REFIT_DEBUG > 0
-    MsgLog (
-        "ugaDrawSetMode %p %ux%u@%u/%u\n",
-        This,
-        HorizontalResolution,
-        VerticalResolution,
-        ColorDepth,
-        RefreshRate
-    );
-    #endif
-
-    altUGA = BASE_CR (This, DA_UGA_PROTOCOL, daUGA);
-
-    Status = setConsoleResolution (
-        altUGA->daGOP,
-        HorizontalResolution,
-        VerticalResolution,
-        ColorDepth
-    );
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("Set UGA Console Resolution Attempt (Initial) ...%r\n", Status);
-    #endif
-
-    if (EFI_ERROR (Status)) {
-        Status = setConsoleResolution (
-            altUGA->daGOP,
-            0,
-            0,
-            0
-        );
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("Set UGA Console Resolution Attempt (Final) ...%r\n", Status);
-        #endif
-    }
-
-    if (!EFI_ERROR (Status)) {
-        UGADraw = &altUGA->daUGA;
-    }
-
-    return Status;
-}
-
-STATIC
-EFI_STATUS
-EFIAPI
-ugaDrawBlt (
-    IN  EFI_UGA_DRAW_PROTOCOL *This,
-    IN  EFI_UGA_PIXEL         *BltBuffer OPTIONAL,
-    IN  EFI_UGA_BLT_OPERATION BltOperation,
-    IN  UINTN                 SourceX,
-    IN  UINTN                 SourceY,
-    IN  UINTN                 DestinationX,
-    IN  UINTN                 DestinationY,
-    IN  UINTN                 Width,
-    IN  UINTN                 Height,
-    IN  UINTN                 Delta      OPTIONAL
-) {
-    DA_UGA_PROTOCOL   *altUGA;
-
-    altUGA = BASE_CR (This, DA_UGA_PROTOCOL, daUGA);
-
-    return altUGA->daGOP->Blt (
-        altUGA->daGOP,
-        (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) BltBuffer,
-        (EFI_GRAPHICS_OUTPUT_BLT_OPERATION) BltOperation,
-        SourceX,
-        SourceY,
-        DestinationX,
-        DestinationY,
-        Width,
-        Height,
-        Delta
-    );
-}
-
-EFI_STATUS
-daUgaPassThrough (
-    VOID
-) {
-    EFI_STATUS                     Status;
-    UINTN                          HandleCount;
-    EFI_HANDLE                     *HandleBuffer;
-    UINTN                          i;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL   *daGOP;
-    EFI_UGA_DRAW_PROTOCOL          *UgaDraw;
-    DA_UGA_PROTOCOL                *altUGA;
-
-    //
-    // MacPro5,1 has 2 GOP protocols:
-    // - for GPU
-    // - for ConsoleOutput
-    // and 1 UGA protocol:
-    // - for unknown handle
-    //
-    Status = gBS->LocateHandleBuffer (
-        ByProtocol,
-        &gEfiGraphicsOutputProtocolGuid,
-        NULL,
-        &HandleCount,
-        &HandleBuffer
-    );
-
-    if (!EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        if (HandleCount == 1) {
-            MsgLog ("  - Found %u GOP Handle for UGA check\n", (UINT32) HandleCount);
-        } else {
-            MsgLog ("  - Found %u GOP Handles for UGA check\n", (UINT32) HandleCount);
-        }
-        #endif
-
-        for (i = 0; i < HandleCount; ++i) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("    * Trying GOP Handle[%u] - %p\n", (UINT32) i, HandleBuffer[i]);
-            #endif
-
-            Status = gBS->HandleProtocol (
-                HandleBuffer[i],
-                &gEfiGraphicsOutputProtocolGuid,
-                (VOID **) &daGOP
-            );
-
-            if (EFI_ERROR (Status)) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("      Coud not Find GOP Protocol ...Skip\n\n");
-                #endif
-
-                continue;
-            }
-
-            Status = gBS->HandleProtocol (
-                HandleBuffer[i],
-                &gEfiUgaDrawProtocolGuid,
-                (VOID **) &UgaDraw
-            );
-
-            if (EFI_ERROR (Status)) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * GOP Handle Does Not Include UGA Protocol ...Proceed\n\n");
-                #endif
-
-                altUGA = AllocateZeroPool (sizeof (*altUGA));
-                if (altUGA == NULL) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("      WARN: Failed to Allocate Pool for UGA Protocol ...Skip\n\n");
-                    #endif
-
-                    continue;
-                }
-
-                altUGA->daGOP = daGOP;
-                altUGA->daUGA.GetMode = ugaDrawGetMode;
-                altUGA->daUGA.SetMode = ugaDrawSetMode;
-                altUGA->daUGA.Blt = ugaDrawBlt;
-
-                Status = gBS->InstallMultipleProtocolInterfaces (
-                    &HandleBuffer[i],
-                    &gEfiUgaDrawProtocolGuid,
-                    &altUGA->daUGA,
-                    NULL
-                );
-
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * Add UGA Protocol to GOP Handle ...%r\n\n", Status);
-                #endif
-
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * GOP Handle Already Includes UGA Protocol ...Skip\n\n");
-                #endif
-
-                continue;
-            }
-        }
-
-        FreePool (HandleBuffer);
-
-        #if REFIT_DEBUG > 0
-    } else {
-        MsgLog ("  - Failed to Find GOP Handles\n\n");
-        #endif
-    }
-
-    return Status;
-}
-
-// Added by dakanji from screenmodes efi by Finnbarr P. Murphy
-// Full version saved at https://gist.github.com/dakanji/60f7acf2e1956bb93435777401b9d138
-EFI_STATUS
-daPrintUGA(
-    EFI_UGA_DRAW_PROTOCOL *daUGA
-)  {
-    EFI_STATUS Status;
-    UINT32     HorzResolution = 0;
-    UINT32     VertResolution = 0;
-    UINT32     ColorDepth = 0;
-    UINT32     RefreshRate = 0;
-
-    Status = daUGA->GetMode(
-        daUGA,
-        &HorzResolution,
-        &VertResolution,
-        &ColorDepth,
-        &RefreshRate
-    );
-
-    if (!EFI_ERROR (Status)) {
-        if (HorzResolution > egScreenWidth) {
-            Status = EFI_SUCCESS;
-            egScreenWidth = HorzResolution;
-            egScreenHeight = VertResolution;
-        } else if (VertResolution > egScreenHeight) {
-            Status = EFI_SUCCESS;
-            egScreenWidth = HorzResolution;
-            egScreenHeight = VertResolution;
-        } else {
-            Status = EFI_UNSUPPORTED;
-        }
-
-        #if REFIT_DEBUG > 0
-        MsgLog("    * Screen Width: %d\n", HorzResolution);
-        MsgLog("    * Screen Height: %d\n", VertResolution);
-        MsgLog("    * Colour Depth: %d\n", ColorDepth);
-        MsgLog("    * Refresh Rate: %d\n", RefreshRate);
-    } else {
-        MsgLog("    * UGA Mode not Available\n");
-        #endif
-    }
-
-    return Status;
-}
-
-// Added by dakanji from screenmodes efi by Finnbarr P. Murphy
-// Full version saved at https://gist.github.com/dakanji/60f7acf2e1956bb93435777401b9d138
-EFI_STATUS
-daCheckUGA(
-    VOID
-) {
-    EFI_UGA_DRAW_PROTOCOL *daUGA;
-
-    EFI_HANDLE *HandleBuffer = NULL;
-    UINTN      HandleCount = 0;
-    EFI_STATUS Status = EFI_UNSUPPORTED;
-    EFI_STATUS XUGAStatus = EFI_UNSUPPORTED;
-    UINT32     UGAWidth;
-    UINT32     UGAHeight;
-    UINT32     UGADepth;
-    UINT32     UGARefreshRate;
-
-
-    // try locating by handle
-    Status = gBS->LocateHandleBuffer(
-        ByProtocol,
-        &UgaDrawProtocolGuid,
-        NULL,
-        &HandleCount,
-        &HandleBuffer
-    );
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("  - Locate UGA Handle Buffer ...%r\n", Status);
-    #endif
-
-    if (EFI_ERROR (Status)) {
-
-        // try locating directly
-        Status = gBS->LocateProtocol(
-            &UgaDrawProtocolGuid,
-            NULL,
-            (VOID **) &daUGA
-        );
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("  - Locate UGA Directly ...%r\n", Status);
-        #endif
-
-        if (!EFI_ERROR (Status)) {
-            Status = daPrintUGA(daUGA);
-
-            if (!EFI_ERROR (Status)) {
-                Status = refit_call5_wrapper(
-                    daUGA->GetMode,
-                    daUGA,
-                    &UGAWidth,
-                    &UGAHeight,
-                    &UGADepth,
-                    &UGARefreshRate
-                );
-
-                Status = refit_call5_wrapper(
-                    daUGA->SetMode,
-                    daUGA,
-                    UGAWidth,
-                    UGAHeight,
-                    UGADepth,
-                    UGARefreshRate
-                );
-
-                if (!EFI_ERROR (Status)) {
-                    UGADraw = daUGA;
-                }
-            }
-        }
-    } else {
-        #if REFIT_DEBUG > 0
-        MsgLog ("    * Handle Count = %d\n", HandleCount);
-        #endif
-
-        // Prime Status to error state
-        Status = EFI_UNSUPPORTED;
-
-        for (int i = 0; i < HandleCount; i++) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("  - Process UGA Handle[%d]\n", i);
-            #endif
-
-            XUGAStatus = gBS->HandleProtocol(
-                HandleBuffer[i],
-                &UgaDrawProtocolGuid,
-                (VOID*) &daUGA
-            );
-
-            if (!EFI_ERROR (XUGAStatus)) {
-                XUGAStatus = daPrintUGA(daUGA);
-
-                if (!EFI_ERROR (XUGAStatus)) {
-                    UGADraw = daUGA;
-
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("     UGADraw Set to UGA Handle[%d]\n\n", i);
-                    #endif
-                } else {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("     Lower Resolution than Current Status ...No Change\n\n", i);
-                    #endif
-                }
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("     Invalid UGA Handle\n\n");
-                #endif
-            }
-
-            // Set Status to XUGAStatus if Status is currently an error
-            if (EFI_ERROR (Status)) {
-                Status = XUGAStatus;
-            }
-        }
-    }
-    FreePool(HandleBuffer);
-
-    return Status;
-}
+// Forward Declaration for OpenCore Functions
+VOID OcProvideConsoleGop (IN BOOLEAN Route);
+EFI_STATUS OcProvideUgaPassThrough (VOID);
 
 VOID
 egDumpGOPVideoModes(
@@ -1020,51 +437,38 @@ egInitScreen(
     VOID
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *NewGOP = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *TmpGOP = NULL;
     EFI_STATUS                    Status = EFI_SUCCESS;
     EFI_STATUS                    XFlag;
-    EFI_STATUS                    XGop = EFI_NOT_FOUND;
+    UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
-    UINTN                         HandleCount = 0;
-    UINTN                         i = 0;
-    UINTN                         ModeLimit = 0;
+    UINTN                         i;
+
+
+
 
     #if REFIT_DEBUG > 0
             MsgLog("Check for Graphics:\n");
     #endif
     // get protocols
+    ConsoleControl = NULL;
     Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &ConsoleControl);
+    #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        ConsoleControl = NULL;
-
-        #if REFIT_DEBUG > 0
         MsgLog("  - Check ConsoleControl ...NOT OK!\n");
-        #endif
-
     } else {
-
-        #if REFIT_DEBUG > 0
-    	MsgLog("  - Check ConsoleControl ...ok\n");
-        #endif
-
+        MsgLog("  - Check ConsoleControl ...ok\n");
     }
+    #endif
 
+    UGADraw = NULL;
     Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &UGADraw);
+    #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        UGADraw = NULL;
-
-        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...NOT OK!\n");
-        #endif
-
     } else {
-
-        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...ok\n");
-        #endif
-
     }
+    #endif
 
     GraphicsOutput = NULL;
     Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &OldGOP);
@@ -1093,115 +497,30 @@ egInitScreen(
             MsgLog ("Implement GraphicsOutputProtocol:\n");
             #endif
 
-            Status = gBS->LocateHandleBuffer(
+            // Run OcProvideConsoleGop from OpenCorePkg
+            OcProvideConsoleGop(TRUE);
+
+            Status = gBS->LocateHandleBuffer (
                 ByProtocol,
-                &GraphicsOutputProtocolGuid,
+                &gEfiGraphicsOutputProtocolGuid,
                 NULL,
                 &HandleCount,
                 &HandleBuffer
             );
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("Locate GOP Handle Buffer ...%r\n", Status);
-            MsgLog ("  - Handle Count = %d\n", HandleCount);
-            #endif
-
             if (!EFI_ERROR (Status)) {
                 Status = EFI_NOT_FOUND;
-
                 for (i = 0; i < HandleCount; ++i) {
-
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("  - Process GOP Handle[%d]\n", i);
-                    #endif
-
-                    if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-                        Status = gBS->HandleProtocol(
+                    if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+                        Status = gBS->HandleProtocol (
                             HandleBuffer[i],
-                            &GraphicsOutputProtocolGuid,
-                            (VOID **) &NewGOP
+                            &gEfiGraphicsOutputProtocolGuid,
+                            (VOID **) &GraphicsOutput
                         );
 
-                        if (!EFI_ERROR (Status)) {
-                            #if REFIT_DEBUG > 0
-                            MsgLog ("    * Found FirmwareHandle GOP ...run check\n");
-                            #endif
-
-                            if (TmpGOP == NULL) {
-                                TmpGOP = NewGOP;
-                            }
-
-                            if (NewGOP->Mode->MaxMode > 0) {
-                                #if REFIT_DEBUG > 0
-                                MsgLog ("    * Check FirmwareHandle GOP ...ok\n");
-                                #endif
-
-                                if (NewGOP->Mode->MaxMode > ModeLimit || ModeLimit == 0) {
-                                    XGop = EFI_SUCCESS;
-
-                                    ModeLimit = NewGOP->Mode->MaxMode;
-                                    TmpGOP = NewGOP;
-
-                                    #if REFIT_DEBUG > 0
-                                    MsgLog ("    * NewGOP set to Instance @ GOP Handle[%d]\n", i);
-                                    #endif
-                                }
-                            } else {
-                                if (EFI_ERROR (XGop)) {
-                                    XGop = EFI_UNSUPPORTED;
-                                }
-
-                                #if REFIT_DEBUG > 0
-                                MsgLog ("    * FirmwareHandle GOP ...NOT OK!\n");
-                                #endif
-                            }
-
-                            NewGOP = TmpGOP;
-                        }
-
-                        #if REFIT_DEBUG > 0
-                    } else {
-                        MsgLog ("    * Found ConsoleOutHandle GOP ...Skip\n");
-                        #endif
-
+                        break;
                     }
                 }
-
-                #if REFIT_DEBUG > 0
-                MsgLog ("Seek FirmwareHandle GOP ...%r\n", XGop);
-                #endif
-
                 FreePool (HandleBuffer);
-
-                if (NewGOP != NULL) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("Disable OldGOP on ConsoleOutHandle\n");
-                    #endif
-
-                    Status = gBS->UninstallProtocolInterface(
-                        gST->ConsoleOutHandle,
-                        &GraphicsOutputProtocolGuid,
-                        OldGOP
-                    );
-
-                    #if REFIT_DEBUG > 0
-                    if (Status == EFI_SUCCESS) {
-                        MsgLog ("  - %r: Disabled OldGOP on ConsoleOutHandle\n", Status);
-                    } else if (Status == EFI_NOT_FOUND) {
-                        MsgLog ("  - %r: Could not Locate OldGOP on ConsoleOutHandle\n", Status);
-                    } else if (Status == EFI_ACCESS_DENIED) {
-                        MsgLog ("  - %r: OldGOP is in use by a driver on ConsoleOutHandle\n", Status);
-                    } else if (Status == EFI_NOT_FOUND) {
-                        if (gST->ConsoleOutHandle == NULL) {
-                            MsgLog ("  - %r: Null ConsoleOutHandle\n", Status);
-                        } else {
-                            MsgLog ("  - %r: Null GOPGuid\n", Status);
-                        }
-                    } else {
-                        MsgLog ("  - Unspecified Error!\n");
-                    }
-                    #endif
-                }
             }
         }
     }
@@ -1209,58 +528,10 @@ egInitScreen(
     #if REFIT_DEBUG > 0
     if (XFlag == EFI_NOT_FOUND) {
         MsgLog ("Cannot Implement GraphicsOutputProtocol\n\n");
+    } else if (XFlag == EFI_UNSUPPORTED) {
+        MsgLog ("Reset GOP on ConsoleOutHandle ...%r\n\n", Status);
     }
     #endif
-
-    if (XFlag == EFI_UNSUPPORTED) {
-        if (!EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("Enable NewGOP on ConsoleOutHandle\n");
-            #endif
-
-            Status = gBS->InstallMultipleProtocolInterfaces(
-                &gST->ConsoleOutHandle,
-                &GraphicsOutputProtocolGuid,
-                NewGOP,
-                NULL
-            );
-
-            #if REFIT_DEBUG > 0
-            if (Status == EFI_SUCCESS) {
-                MsgLog ("  - %r: Enabled NewGOP on ConsoleOutHandle\n", Status);
-            } else if (Status == EFI_ALREADY_STARTED) {
-                MsgLog ("  - %r: DevicePathProtocol Instance Already in Handle Database\n", Status);
-            } else if (Status == EFI_OUT_OF_RESOURCES) {
-                MsgLog ("  - %r: Could not Allocate Space for ConsoleOutHandle\n", Status);
-            } else if (Status == EFI_INVALID_PARAMETER) {
-                if (gST->ConsoleOutHandle == NULL) {
-                    MsgLog ("  - %r: ConsoleOutHandle is Null\n", Status);
-                } else {
-                    MsgLog ("  - %r: GOPGuid Already Installed on ConsoleOutHandle\n", Status);
-                }
-            } else {
-                MsgLog ("  - Unspecified Error!\n");
-            }
-
-            #endif
-
-            if (EFI_ERROR (Status)) {
-                Status = EFI_UNSUPPORTED;
-
-                #if REFIT_DEBUG > 0
-                MsgLog ("WARN: Could not Enable NewGOP on ConsoleOutHandle\n");
-                MsgLog ("Attempt to link to NewGOP on FirmwareHandle\n");
-                #endif
-            }
-
-            // Set GOP to NewGOP
-            GraphicsOutput = NewGOP;
-        }
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("Reset GOP on ConsoleOutHandle ...%r\n\n", Status);
-        #endif
-    }
 
     // get screen size
     egHasGraphics = FALSE;
@@ -1272,39 +543,24 @@ egInitScreen(
         egHasGraphics = TRUE;
 
         #if REFIT_DEBUG > 0
-        if (XFlag != EFI_UNSUPPORTED) { // Only log this if GOPFix attempted
+        if (XFlag == EFI_UNSUPPORTED) { // Only log this if GOPFix attempted
             MsgLog("Implemented GraphicsOutputProtocol\n\n");
         }
         #endif
-
-    } else if (UGADraw != NULL) {
+    }
+    if (UGADraw != NULL) {
         #if REFIT_DEBUG > 0
         MsgLog ("Implement UniversalGraphicsAdapterProtocol:\n");
         #endif
 
-        // Try to use current color depth & refresh rate for new mode.
-        Status = daCheckUGA();
-        if (EFI_ERROR(Status)) {
-            UGADraw = NULL;   // graphics not available
+        // Run OcProvideUgaPassThrough from OpenCorePkg
+        Status = OcProvideUgaPassThrough();
 
-            #if REFIT_DEBUG > 0
-            MsgLog("WARN: Could not Implement UGADraw\n\n");
-            #endif
-        } else {
-            Status = daUgaPassThrough();
-
-            if (EFI_ERROR(Status)) {
-                UGADraw = NULL;   // graphics not available
-            } else {
-                egHasGraphics = TRUE;
-
-            }
-        }
-
-        #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             Status = EFI_UNSUPPORTED;
         }
+
+        #if REFIT_DEBUG > 0
         MsgLog("Implement UniversalGraphicsAdapterProtocol ...%r\n\n", Status);
         #endif
     }

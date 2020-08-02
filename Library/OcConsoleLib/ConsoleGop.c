@@ -29,6 +29,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/Library/OcGuardLib.h"
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
+#include "../../refind/globalExtra.h"
 
 STATIC
 EFI_HANDLE_PROTOCOL
@@ -122,7 +123,7 @@ OcProvideConsoleGop (
     if (!EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         MsgLog (
-            "GOP exists on ConsoleOutHandle and has %u modes\n",
+            "  - GOP Found on ConsoleOutHandle with %u mode(s)\n",
             (UINT32) OriginalGop->Mode->MaxMode
         );
         #endif
@@ -133,10 +134,12 @@ OcProvideConsoleGop (
         //
         if (OriginalGop->Mode->MaxMode > 0) {
             mConsoleGraphicsOutput = OriginalGop;
+
+            return;
         }
 
         #if REFIT_DEBUG > 0
-        MsgLog ("Looking for GOP replacement due to invalid mode count\n");
+        MsgLog ("  - Invalid Mode Count ...Seek Alternative GOP\n");
         #endif
 
         Status = gBS->LocateHandleBuffer (
@@ -149,7 +152,7 @@ OcProvideConsoleGop (
 
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("No handles with GOP protocol - %r\n", Status);
+            MsgLog ("    * %r: No Handles with GOP Protocol\n", Status);
             #endif
         }
 
@@ -167,7 +170,7 @@ OcProvideConsoleGop (
         }
 
         #if REFIT_DEBUG > 0
-        MsgLog ("Alternative GOP status is - %r\n", Status);
+        MsgLog ("  - Seek Alternative GOP ...%r\n", Status);
         #endif
 
         FreePool (HandleBuffer);
@@ -180,10 +183,6 @@ OcProvideConsoleGop (
             );
         }
     } else {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Installing GOP (%r) on ConsoleOutHandle...\n", Status);
-        #endif
-
         Status = gBS->LocateProtocol (&gEfiGraphicsOutputProtocolGuid, NULL, (VOID **) &Gop);
     }
 
@@ -195,18 +194,18 @@ OcProvideConsoleGop (
             NULL
         );
 
-        if (EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("WARN: Failed to install GOP on ConsoleOutHandle - %r\n", Status);
-            #endif
-        }
+        #if REFIT_DEBUG > 0
+        MsgLog ("  - Install GOP on ConsoleOutHandle ...%r\n\n", Status);
+        #endif
 
         mConsoleGraphicsOutput = Gop;
     } else {
-        #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Missing compatible GOP - %r\n", Status);
-        #endif
+        Status = EFI_UNSUPPORTED;
     }
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Provide Console GOP ...%r\n\n", Status);
+    #endif
 }
 
 STATIC

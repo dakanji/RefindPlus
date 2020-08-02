@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include "../../refind/globalExtra.h"
 
 STATIC
 EFI_STATUS
@@ -32,10 +33,6 @@ OcUgaDrawGetMode (
     OC_UGA_PROTOCOL                      *OcUgaDraw;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    #if REFIT_DEBUG > 0
-    MsgLog ("OcUgaDrawGetMode %p\n", This);
-    #endif
-
     if (This == NULL
         || HorizontalResolution == NULL
         || VerticalResolution == NULL
@@ -47,16 +44,6 @@ OcUgaDrawGetMode (
 
     OcUgaDraw = BASE_CR (This, OC_UGA_PROTOCOL, Uga);
     Info      = OcUgaDraw->GraphicsOutput->Mode->Info;
-
-    #if REFIT_DEBUG > 0
-    MsgLog (
-        "OcUgaDrawGetMode Info is %ux%u (%u)\n",
-        Info->HorizontalResolution,
-        Info->VerticalResolution,
-        Info->PixelFormat
-    );
-    #endif
-
     if (Info->HorizontalResolution == 0 || Info->VerticalResolution == 0) {
         return EFI_NOT_STARTED;
     }
@@ -162,15 +149,19 @@ OcUgaDrawBlt (
 EFI_STATUS
 OcProvideUgaPassThrough (
     VOID
-    )
-{
+) {
     EFI_STATUS                   Status;
+    EFI_STATUS                   XStatus;
     UINTN                        HandleCount;
     EFI_HANDLE                   *HandleBuffer;
     UINTN                        Index;
     EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput;
     EFI_UGA_DRAW_PROTOCOL        *UgaDraw;
     OC_UGA_PROTOCOL              *OcUgaDraw;
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Check for UGADraw Handles - ");
+    #endif
 
     //
     // For now we do not need this but for launching 10.4, but as a side note:
@@ -186,101 +177,133 @@ OcProvideUgaPassThrough (
         NULL,
         &HandleCount,
         &HandleBuffer
-        );
-
-    if (!EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Found %u handles with UGA draw\n", (UINT32) HandleCount);
-        #endif
-
-        FreePool (HandleBuffer);
-    } else {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Found NO handles with UGA draw\n");
-        #endif
-    }
-
-    Status = gBS->LocateHandleBuffer (
-        ByProtocol,
-        &gEfiGraphicsOutputProtocolGuid,
-        NULL,
-        &HandleCount,
-        &HandleBuffer
     );
 
     if (!EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Found %u handles with GOP for UGA check\n", (UINT32) HandleCount);
-        #endif
-
-        for (Index = 0; Index < HandleCount; ++Index) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("Trying handle %u - %p\n", (UINT32) Index, HandleBuffer[Index]);
-            #endif
-
-            Status = gBS->HandleProtocol (
-                HandleBuffer[Index],
-                &gEfiGraphicsOutputProtocolGuid,
-                (VOID **) &GraphicsOutput
-            );
-
-            if (EFI_ERROR (Status)) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("No GOP protocol - %r\n", Status);
-                #endif
-
-                continue;
-            }
-
-            Status = gBS->HandleProtocol (
-                HandleBuffer[Index],
-                &gEfiUgaDrawProtocolGuid,
-                (VOID **) &UgaDraw
-            );
-
-            if (EFI_ERROR (Status)) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("No UGA protocol - %r\n", Status);
-                #endif
-
-                OcUgaDraw = AllocateZeroPool (sizeof (*OcUgaDraw));
-                if (OcUgaDraw == NULL) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("Failed to allocate UGA protocol\n");
-                    #endif
-
-                    continue;
-                }
-
-                OcUgaDraw->GraphicsOutput = GraphicsOutput;
-                OcUgaDraw->Uga.GetMode = OcUgaDrawGetMode;
-                OcUgaDraw->Uga.SetMode = OcUgaDrawSetMode;
-                OcUgaDraw->Uga.Blt = OcUgaDrawBlt;
-
-                Status = gBS->InstallMultipleProtocolInterfaces (
-                    &HandleBuffer[Index],
-                    &gEfiUgaDrawProtocolGuid,
-                    &OcUgaDraw->Uga,
-                    NULL
-                );
-
-                #if REFIT_DEBUG > 0
-                MsgLog ("Installed UGA protocol - %r\n", Status);
-                #endif
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("Has UGA protocol, skip\n");
-                #endif
-
-                continue;
-            }
+        if ((UINT32) HandleCount == 1) {
+            MsgLog ("Found %u Handle ...Proceed\n", (UINT32) HandleCount);
+        } else {
+            MsgLog ("Found %u Handles ...Proceed\n", (UINT32) HandleCount);
         }
+        #endif
 
         FreePool (HandleBuffer);
 
         #if REFIT_DEBUG > 0
+        MsgLog ("Check for GOP Handles - ");
+        #endif
+
+        Status = gBS->LocateHandleBuffer (
+            ByProtocol,
+            &gEfiGraphicsOutputProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+
+        if (!EFI_ERROR (Status)) {
+            XStatus = EFI_UNSUPPORTED;
+
+            #if REFIT_DEBUG > 0
+            if ((UINT32) HandleCount == 1) {
+                MsgLog ("Found %u Handle ...Proceed\n", (UINT32) HandleCount);
+            } else {
+                MsgLog ("Found %u Handles ...Proceed\n", (UINT32) HandleCount);
+            }
+            #endif
+
+            for (Index = 0; Index < HandleCount; ++Index) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("  - Trying Handle[%u] - %p\n", (UINT32) Index, HandleBuffer[Index]);
+                #endif
+
+                Status = gBS->HandleProtocol (
+                    HandleBuffer[Index],
+                    &gEfiGraphicsOutputProtocolGuid,
+                    (VOID **) &GraphicsOutput
+                );
+
+                if (EFI_ERROR (Status)) {
+                    XStatus = EFI_NOT_FOUND;
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("    * GOP Protocol Not Found on Handle ...Skip\n\n");
+                    #endif
+
+                    continue;
+
+                    #if REFIT_DEBUG > 0
+                } else {
+                    MsgLog ("    * GOP Protocol Found on Handle ...Check for UGA\n");
+                    #endif
+                }
+
+                Status = gBS->HandleProtocol (
+                    HandleBuffer[Index],
+                    &gEfiUgaDrawProtocolGuid,
+                    (VOID **) &UgaDraw
+                );
+
+                if (EFI_ERROR (Status)) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("    * UGA Protocol Absent on Handle ...Proceed\n");
+                    #endif
+
+                    OcUgaDraw = AllocateZeroPool (sizeof (*OcUgaDraw));
+                    if (OcUgaDraw == NULL) {
+                        XStatus = EFI_UNSUPPORTED;
+
+                        #if REFIT_DEBUG > 0
+                        MsgLog ("  ** Failed to Allocate Pool for UGA ...Skip\n\n");
+                        #endif
+
+                        continue;
+                    }
+
+                    OcUgaDraw->GraphicsOutput = GraphicsOutput;
+                    OcUgaDraw->Uga.GetMode = OcUgaDrawGetMode;
+                    OcUgaDraw->Uga.SetMode = OcUgaDrawSetMode;
+                    OcUgaDraw->Uga.Blt = OcUgaDrawBlt;
+
+                    Status = gBS->InstallMultipleProtocolInterfaces (
+                        &HandleBuffer[Index],
+                        &gEfiUgaDrawProtocolGuid,
+                        &OcUgaDraw->Uga,
+                        NULL
+                    );
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("    * Install UGA Protocol on Handle ...%r\n\n", Status);
+                    #endif
+
+                    if (EFI_ERROR (XStatus)) {
+                        XStatus = Status;
+                    }
+                } else {
+                    if (EFI_ERROR (XStatus)) {
+                        XStatus = EFI_ALREADY_STARTED;
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("    * UGA Protocol Exists on Handle ...Skip\n\n");
+                    #endif
+
+                    continue;
+                }
+            }
+
+            Status = XStatus;
+            FreePool (HandleBuffer);
+
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Could not Find GOP Handles ...Abort\n\n");
+            #endif
+        }
     } else {
-        MsgLog ("Failed to find handles with GOP\n");
+        #if REFIT_DEBUG > 0
+        MsgLog ("Found No UGADraw Handles ...Abort\n\n");
         #endif
     }
 

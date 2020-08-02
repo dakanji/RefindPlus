@@ -16,6 +16,7 @@
 #include <Library/DebugLib.h>
 #include "../include/Library/OcConsoleLib.h"
 #include "../include/Library/OcGuardLib.h"
+#include "../../refind/globalExtra.h"
 
 /**
   Parse resolution string.

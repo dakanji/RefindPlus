@@ -73,6 +73,12 @@
   BaseStackCheckLib|MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
 
   MemLogLib|RefindPkg/Library/MemLogLib/MemLogLib.inf
+  
+# Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
+  OcConsoleLib|RefindPkg/Library/OcConsoleLib/OcConsoleLib.inf
+  FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
+  MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
+  CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
 
 [LibraryClasses.AARCH64]
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
