@@ -122,7 +122,7 @@ Navigate to `https://github.com/YOUR_GITHUB_USERNAME/Refind-GOPFix` and create a
 Use this branch to save edits you make to the codebase that you want to build
 
 
-### Prepare the BuildScript
+### Prepare the Build Script
 
 - Navigate to your `/Documents/RefindGOPFix/edk2/000-BuildScript` folder in Finder
 - Open the `refindBuilder.sh` file
@@ -134,11 +134,12 @@ In Terminal, run the following commands:
 ```
 $ cd ~/Documents/RefindGOPFix/edk2
 $ git update-index --assume-unchanged 000-BuildScript/refindBuilder.sh
+$ git update-index --assume-unchanged 000-BuildScript/refindRepoUpdater.sh
 ```
 
 
 ## Build Refind-GOPFix
-- Navigate to your `/Documents/RefindGOPFix//edk2/000-BuildScript` folder in Finder
+- Navigate to your `/Documents/RefindGOPFix/edk2/000-BuildScript` folder in Finder
 - Drag the `refindBuilder.sh` file into Terminal
   - Enter a space and `MyEdits`, or any other branch name, to the end of the line if you want to build on that branch
   - If nothing is entered, the script will default to the `GOPFix` branch  
@@ -147,7 +148,7 @@ $ git update-index --assume-unchanged 000-BuildScript/refindBuilder.sh
 
 
 ## Updating Cloned Refind-GOPFix Repository
-
+### Update Manually
 In Terminal, run the following commands:
 
 ```
@@ -157,7 +158,7 @@ $ git pull upstream GOPFix
 $ git push
 ```
 
-If you have your own edits, in a `MyEdits` branch for instance, run the following additiaonl commands:
+If you have your own edits, in a `MyEdits` branch for instance, run the following additional commands:
 
 ```
 $ cd ~/Documents/RefindGOPFix/WorkingFolder
@@ -167,3 +168,13 @@ $ git push
 ```
 
 You may need to resolve conflicts after the `git rebase GOPFix` command.
+
+### Update with the RepoUpdater Script
+- Navigate to your `/Documents/RefindGOPFix/edk2/000-BuildScript` folder in Finder
+  - Open the `refindRepoUpdater.sh` file If you have an edit branch such as a `MyEdits` branch
+  - Under the `USER EDIT` Section, set `EDIT_BRANCH='BRANCH_WITH_YOUR_EDITS'` to your actual edit branch name (Only edit if there is an edit branch)
+  - Save and close the file
+- Drag the `refindRepoUpdater.sh` file into Terminal
+- Press `Enter`
+
+You may need to resolve conflicts on Edit Branch.
