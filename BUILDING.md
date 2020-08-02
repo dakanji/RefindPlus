@@ -84,6 +84,7 @@ $ cd ~/Documents/RefindGOPFix
 $ git clone https://github.com/YOUR_GITHUB_USERNAME/Refind-UDK.git edk2
 $ cd ~/Documents/RefindGOPFix/edk2
 $ git checkout rudk
+$ git remote add upstream https://github.com/dakanji/Refind-UDK
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.   
