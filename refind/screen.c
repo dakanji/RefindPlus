@@ -211,10 +211,14 @@ VOID SetupScreen(VOID)
         // switch to text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Switched to Text Mode\n\n");
+        #endif
     } else if (AllowGraphicsMode) {
 
         #if REFIT_DEBUG > 0
-        MsgLog("Prepare for Graphics Mode:\n");
+        MsgLog("Prepare for Graphics Mode Switch:\n");
         #endif
 
         // clear screen and show banner
@@ -252,18 +256,59 @@ VOID SetupScreen(VOID)
 
            GraphicsScreenDirty = TRUE;
         }
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Switched to Graphics Mode\n\n");
+    } else {
+        MsgLog("ERROR: Invalid Screen Mode\n\n");
+        #endif
     }
 } // VOID SetupScreen()
 
-VOID SwitchToText(IN BOOLEAN CursorEnabled)
-{
+VOID
+SwitchToText(
+    IN BOOLEAN CursorEnabled
+) {
+    EFI_STATUS    Status;
+
     egSetGraphicsModeEnabled(FALSE);
     refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, CursorEnabled);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("  - Get Text Console Size\n");
+    #endif
+
     // get size of text console
-    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, ST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
+    Status = refit_call4_wrapper(
+        ST->ConOut->QueryMode,
+        ST->ConOut,
+        ST->ConOut->Mode->Mode,
+        &ConWidth,
+        &ConHeight
+    );
+
+    if (EFI_ERROR (Status)) {
         // use default values on error
         ConWidth = 80;
         ConHeight = 25;
+
+        #if REFIT_DEBUG > 0
+        MsgLog(
+            "    * %r: Could not Get Text Console Size ...Use Default (%dx%d)\n",
+            Status,
+            ConHeight,
+            ConWidth
+        );
+        #endif
+    } else {
+        #if REFIT_DEBUG > 0
+        MsgLog(
+            "    * %r: Got Text Console Size (%dx%d)\n",
+            Status,
+            ConHeight,
+            ConWidth
+        );
+        #endif
     }
     PrepareBlankLine();
 }

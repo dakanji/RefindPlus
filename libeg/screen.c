@@ -559,11 +559,14 @@ egInitScreen(
 
         if (EFI_ERROR (Status)) {
             Status = EFI_UNSUPPORTED;
+            #if REFIT_DEBUG > 0
+            MsgLog("  - %r: Could not Activate UGA\n\n");
+            #endif
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - %r: Activated UGA\n\n");
+            #endif
         }
-
-        #if REFIT_DEBUG > 0
-        MsgLog("Implement UniversalGraphicsAdapterProtocol ...%r\n\n", Status);
-        #endif
     }
 
     // Implement Text Renderer
