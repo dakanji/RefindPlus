@@ -158,7 +158,7 @@ CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
 
     if (Options != NULL)
         NewOptions = StrDuplicate(Options);
-    
+
     if (InitrdPath != NULL) {
         if (StriSubCmp(L"%v", Options)) {
             CHAR16 *InitrdVersion = FindNumbers(InitrdPath);
@@ -204,7 +204,7 @@ static VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *
         return;
 
     if (FileExists(Volume->RootDir, FileName) &&
-        (ReadFile(Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
+        (RefitReadFile(Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
         do {
             TokenCount = ReadTokenLine(&File, &TokenList);
             if ((TokenCount > 1) && (MyStriCmp(TokenList[0], L"ID") ||

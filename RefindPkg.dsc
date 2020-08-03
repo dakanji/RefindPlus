@@ -73,12 +73,17 @@
   BaseStackCheckLib|MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
 
   MemLogLib|RefindPkg/Library/MemLogLib/MemLogLib.inf
-  
-# Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
-  OcConsoleLib|RefindPkg/Library/OcConsoleLib/OcConsoleLib.inf
-  FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
-  MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
-  CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
+
+  # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
+    OcConsoleLib|OpenCorePkg/Library/OcConsoleLib/OcConsoleLib.inf
+    FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
+    MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
+    CpuLib|MdePkg/Library/BaseCpuLib/BaseCpuLib.inf
+    OcMiscLib|OpenCorePkg/Library/OcMiscLib/OcMiscLib.inf
+    OcFileLib|OpenCorePkg/Library/OcFileLib/OcFileLib.inf
+    OcGuardLib|OpenCorePkg/Library/OcGuardLib/OcGuardLib.inf
+    OcStringLib|OpenCorePkg/Library/OcStringLib/OcStringLib.inf
+    OcDevicePathLib|OpenCorePkg/Library/OcDevicePathLib/OcDevicePathLib.inf
 
 [LibraryClasses.AARCH64]
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf

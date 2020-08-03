@@ -36,11 +36,11 @@
 
 /*
  * Modifications copyright (c) 2012-2020 Roderick W. Smith
- * 
+ *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
- * 
+ *
  */
 
 #ifndef __CONFIG_H_
@@ -82,7 +82,7 @@ typedef struct {
 #define DONT_SCAN_VOLUMES L"LRS_ESP"
 #define ALSO_SCAN_DIRS L"boot,@/boot"
 
-EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);
+EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);
 VOID ReadConfig(CHAR16 *FileName);
 VOID ScanUserConfigured(CHAR16 *FileName);
 UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList);

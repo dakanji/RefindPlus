@@ -99,6 +99,7 @@
   MemLogLib
 # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
   OcConsoleLib
+  OcMiscLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

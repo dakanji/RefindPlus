@@ -87,7 +87,7 @@
 // read a file into a buffer
 //
 
-EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFIT_FILE *File, OUT UINTN *size)
+EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFIT_FILE *File, OUT UINTN *size)
 {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
@@ -534,7 +534,7 @@ VOID ReadConfig(CHAR16 *FileName)
        return;
     }
 
-    Status = ReadFile(SelfDir, FileName, &File, &i);
+    Status = RefitReadFile(SelfDir, FileName, &File, &i);
     if (EFI_ERROR(Status))
         return;
 
@@ -994,7 +994,7 @@ VOID ScanUserConfigured(CHAR16 *FileName)
    LOADER_ENTRY      *Entry;
 
    if (FileExists(SelfDir, FileName)) {
-      Status = ReadFile(SelfDir, FileName, &File, &size);
+      Status = RefitReadFile(SelfDir, FileName, &File, &size);
       if (EFI_ERROR(Status))
          return;
 
@@ -1036,7 +1036,7 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
    if (FileExists(Volume->RootDir, L"\\etc\\fstab")) {
       Options = AllocateZeroPool(sizeof(REFIT_FILE));
       Fstab = AllocateZeroPool(sizeof(REFIT_FILE));
-      Status = ReadFile(Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
+      Status = RefitReadFile(Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
       if (CheckError(Status, L"while reading /etc/fstab")) {
          if (Options != NULL)
             FreePool(Options);
@@ -1152,7 +1152,7 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
          MergeStrings(&FullFilename, OptionsFilename, '\\');
          if (FileExists(Volume->RootDir, FullFilename)) {
             File = AllocateZeroPool(sizeof(REFIT_FILE));
-            Status = ReadFile(Volume->RootDir, FullFilename, File, &size);
+            Status = RefitReadFile(Volume->RootDir, FullFilename, File, &size);
             if (CheckError(Status, L"while loading the Linux options file")) {
                if (File != NULL)
                   FreePool(File);

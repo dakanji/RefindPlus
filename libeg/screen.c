@@ -88,6 +88,7 @@ static UINTN egScreenHeight  = 0;
 // Forward Declaration for OpenCore Functions
 VOID OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
+VOID OcUseBuiltinTextOutput (VOID);
 
 VOID
 egDumpGOPVideoModes(
@@ -564,6 +565,9 @@ egInitScreen(
         MsgLog("Implement UniversalGraphicsAdapterProtocol ...%r\n\n", Status);
         #endif
     }
+
+    // Implement Text Renderer
+    OcUseBuiltinTextOutput();
 }
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
