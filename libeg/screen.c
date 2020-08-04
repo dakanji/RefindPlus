@@ -61,7 +61,6 @@
 #include "../refind/screen.h"
 #include "../refind/lib.h"
 #include "../refind/mystrings.h"
-#include "../include/refit_call_wrapper.h"
 #include "libeg.h"
 #include "../include/Handle.h"
 
@@ -401,8 +400,7 @@ egDetermineScreenSize(
         egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
         egHasGraphics = TRUE;
     } else if (UGADraw != NULL) {
-        Status = refit_call5_wrapper(
-            UGADraw->GetMode,
+        Status = UGADraw->GetMode(
             UGADraw,
             &UGAWidth,
             &UGAHeight,
@@ -603,8 +601,7 @@ egGetResFromMode(
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
    if ((ModeWidth != NULL) && (Height != NULL)) {
-      Status = refit_call4_wrapper(
-          GraphicsOutput->QueryMode,
+      Status = GraphicsOutput->QueryMode(
           GraphicsOutput,
           *ModeWidth,
           &Size,
@@ -674,8 +671,7 @@ egSetScreenSize(
 
                 ModeSet = TRUE;
             } else if (egGetResFromMode(ScreenWidth, ScreenHeight)
-                && (refit_call2_wrapper(
-                    GraphicsOutput->SetMode,
+                && (GraphicsOutput->SetMode(
                     GraphicsOutput,
                     ModeNum
                 ) == EFI_SUCCESS)
@@ -698,8 +694,7 @@ egSetScreenSize(
             // Do a loop through the modes to see if the specified one is available;
             // and if so, switch to it....
             do {
-                Status = refit_call4_wrapper(
-                    GraphicsOutput->QueryMode,
+                Status = GraphicsOutput->QueryMode(
                     GraphicsOutput,
                     ModeNum,
                     &Size,
@@ -711,7 +706,7 @@ egSetScreenSize(
                     && (Info->HorizontalResolution == *ScreenWidth)
                     && (Info->VerticalResolution == *ScreenHeight)
                     && ((ModeNum == CurrentModeNum)
-                    || (refit_call2_wrapper(GraphicsOutput->SetMode, GraphicsOutput, ModeNum) == EFI_SUCCESS))
+                    || (GraphicsOutput->SetMode(GraphicsOutput, ModeNum) == EFI_SUCCESS))
                 ) {
 
                     #if REFIT_DEBUG > 0
@@ -745,8 +740,7 @@ egSetScreenSize(
 
             ModeNum = 0;
             do {
-                Status = refit_call4_wrapper(
-                    GraphicsOutput->QueryMode,
+                Status = GraphicsOutput->QueryMode(
                     GraphicsOutput,
                     ModeNum,
                     &Size,
@@ -786,16 +780,14 @@ egSetScreenSize(
     } else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
-        Status = refit_call5_wrapper(
-            UGADraw->GetMode,
+        Status = UGADraw->GetMode(
             UGADraw,
             &UGAWidth,
             &UGAHeight,
             &UGADepth,
             &UGARefreshRate
         );
-        Status = refit_call5_wrapper(
-            UGADraw->SetMode,
+        Status = UGADraw->SetMode(
             UGADraw,
             *ScreenWidth,
             *ScreenHeight,
@@ -920,7 +912,7 @@ egIsGraphicsModeEnabled(
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
 
     if (ConsoleControl != NULL) {
-        refit_call4_wrapper(ConsoleControl->GetMode, ConsoleControl, &CurrentMode, NULL, NULL);
+        ConsoleControl->GetMode(ConsoleControl, &CurrentMode, NULL, NULL);
 
         return (CurrentMode == EfiConsoleControlScreenGraphics) ? TRUE : FALSE;
     }
@@ -936,12 +928,12 @@ egSetGraphicsModeEnabled(
     EFI_CONSOLE_CONTROL_SCREEN_MODE NewMode;
 
     if (ConsoleControl != NULL) {
-        refit_call4_wrapper(ConsoleControl->GetMode, ConsoleControl, &CurrentMode, NULL, NULL);
+        ConsoleControl->GetMode(ConsoleControl, &CurrentMode, NULL, NULL);
 
         NewMode = Enable ? EfiConsoleControlScreenGraphics
                          : EfiConsoleControlScreenText;
         if (CurrentMode != NewMode) {
-            refit_call2_wrapper(ConsoleControl->SetMode, ConsoleControl, NewMode);
+            ConsoleControl->SetMode(ConsoleControl, NewMode);
         }
     }
 }
@@ -975,8 +967,7 @@ egClearScreen(
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout, and the header from TianoCore actually defines them
         // to be the same type.
-        refit_call10_wrapper(
-            GraphicsOutput->Blt,
+        GraphicsOutput->Blt(
             GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)&FillColor,
              EfiBltVideoFill,
@@ -989,8 +980,7 @@ egClearScreen(
              0
          );
     } else if (UGADraw != NULL) {
-        refit_call10_wrapper(
-            UGADraw->Blt,
+        UGADraw->Blt(
             UGADraw,
             &FillColor,
             EfiUgaVideoFill,
@@ -1045,8 +1035,7 @@ egDrawImage(
     }
 
     if (GraphicsOutput != NULL) {
-       refit_call10_wrapper(
-           GraphicsOutput->Blt,
+        GraphicsOutput->Blt(
            GraphicsOutput,
            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
            EfiBltBufferToVideo,
@@ -1059,8 +1048,7 @@ egDrawImage(
            0
        );
     } else if (UGADraw != NULL) {
-       refit_call10_wrapper(
-           UGADraw->Blt,
+        UGADraw->Blt(
            UGADraw,
            (EFI_UGA_PIXEL *)CompImage->PixelData,
            EfiUgaBltBufferToVideo,
@@ -1116,12 +1104,30 @@ egDrawImageArea(
         return;
 
     if (GraphicsOutput != NULL) {
-        refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
-                             EfiBltBufferToVideo, AreaPosX, AreaPosY, ScreenPosX, ScreenPosY, AreaWidth, AreaHeight,
-                             Image->Width * 4);
+        GraphicsOutput->Blt(
+            GraphicsOutput,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+            EfiBltBufferToVideo,
+            AreaPosX,
+            AreaPosY, 
+            ScreenPosX,
+            ScreenPosY,
+            AreaWidth,
+            AreaHeight,
+            Image->Width * 4
+        );
     } else if (UGADraw != NULL) {
-        refit_call10_wrapper(UGADraw->Blt, UGADraw, (EFI_UGA_PIXEL *)Image->PixelData, EfiUgaBltBufferToVideo,
-                             AreaPosX, AreaPosY, ScreenPosX, ScreenPosY, AreaWidth, AreaHeight, Image->Width * 4);
+        UGADraw->Blt(UGADraw,
+            (EFI_UGA_PIXEL *)Image->PixelData,
+            EfiUgaBltBufferToVideo,
+            AreaPosX,
+            AreaPosY,
+            ScreenPosX,
+            ScreenPosY,
+            AreaWidth,
+            AreaHeight,
+            Image->Width * 4
+        );
     }
 }
 
@@ -1188,11 +1194,31 @@ EG_IMAGE * egCopyScreenArea(UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
 
    // get full screen image
    if (GraphicsOutput != NULL) {
-      refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
-                           EfiBltVideoToBltBuffer, XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
+       GraphicsOutput->Blt(
+           GraphicsOutput,
+           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+           EfiBltVideoToBltBuffer,
+           XPos,
+           YPos,
+           0,
+           0,
+           Image->Width,
+           Image->Height,
+           0
+       );
    } else if (UGADraw != NULL) {
-      refit_call10_wrapper(UGADraw->Blt, UGADraw, (EFI_UGA_PIXEL *)Image->PixelData, EfiUgaVideoToBltBuffer,
-                           XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
+       UGADraw->Blt(
+           UGADraw,
+           (EFI_UGA_PIXEL *)Image->PixelData,
+           EfiUgaVideoToBltBuffer,
+           XPos,
+           YPos,
+           0,
+           0,
+           Image->Width,
+           Image->Height,
+           0
+       );
    }
    return Image;
 } // EG_IMAGE * egCopyScreenArea()
