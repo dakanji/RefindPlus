@@ -1,9 +1,9 @@
 /*
  * refind/apple.c
  * Functions specific to Apple computers
- * 
+ *
  * Copyright (c) 2015 Roderick W. Smith
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
 #include "global.h"
@@ -74,6 +74,12 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
             SPrint(gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
     } // switch
     if (DisplayMessage) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog(gCsrStatus);
+        MsgLog("\n");
+        #endif
+
         egDisplayMessage(gCsrStatus, &BGColor, CENTER);
         PauseSeconds(3);
     } // if

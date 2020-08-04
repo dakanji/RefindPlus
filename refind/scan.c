@@ -1167,8 +1167,13 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     MsgLog("Scan for Bootloaders...\n");
     #endif
 
-    if (ShowMessage)
+    if (ShowMessage){
+        #if REFIT_DEBUG > 0
+        MsgLog("Scanning for boot loaders:\n");
+        #endif
+
         egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
+    }
 
     // Determine up-front if we'll be scanning for legacy loaders....
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {

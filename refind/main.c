@@ -446,10 +446,16 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
-       if (GlobalConfig.ScanDelay > 1)
-          egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
-       for (i = 0; i < GlobalConfig.ScanDelay; i++)
-          refit_call1_wrapper(BS->Stall, 1000000);
+       if (GlobalConfig.ScanDelay > 1) {
+           #if REFIT_DEBUG > 0
+           MsgLog("Pausing before disk scan\n");
+           #endif
+
+           egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
+       }
+       for (i = 0; i < GlobalConfig.ScanDelay; i++) {
+           refit_call1_wrapper(BS->Stall, 1000000);
+       }
        RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
        BltClearScreen(TRUE);
     } // if

@@ -205,7 +205,7 @@ VOID SetupScreen(VOID)
     if (GlobalConfig.TextOnly) {
 
         #if REFIT_DEBUG > 0
-        MsgLog("Switch to Text Mode:\n");
+        MsgLog("User Requested Text Mode:\n");
         #endif
 
         // switch to text mode if requested
@@ -324,7 +324,6 @@ VOID SwitchToGraphics(VOID)
 //
 // Screen control for running tools
 //
-
 VOID BeginTextScreen(IN CHAR16 *Title)
 {
     DrawScreenHeader(Title);
@@ -347,8 +346,9 @@ VOID FinishTextScreen(IN BOOLEAN WaitAlways)
 
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
 {
-    if (!AllowGraphicsMode)
+    if (!AllowGraphicsMode) {
         UseGraphicsMode = FALSE;
+    }
 
     if (UseGraphicsMode) {
         SwitchToGraphics();
@@ -452,6 +452,12 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
             Print(Text);
             Print(L"\n");
         } // if/else
+
+        #if REFIT_DEBUG > 0
+        MsgLog(Text);
+        MsgLog("\n");
+        #endif
+
     } // if
 } // VOID PrintUglyText()
 

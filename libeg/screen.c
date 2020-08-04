@@ -560,17 +560,25 @@ egInitScreen(
         if (EFI_ERROR (Status)) {
             Status = EFI_UNSUPPORTED;
             #if REFIT_DEBUG > 0
-            MsgLog("  - %r: Could not Activate UGA\n\n");
+            MsgLog("  - %r: Could not Activate UGA\n\n", Status);
             #endif
         } else {
             #if REFIT_DEBUG > 0
-            MsgLog("  - %r: Activated UGA\n\n");
+            MsgLog("  - %r: Activated UGA\n\n", Status);
             #endif
         }
     }
 
     // Implement Text Renderer
+    #if REFIT_DEBUG > 0
+    MsgLog ("Implementing Text Renderer:\n");
+    #endif
+
     OcUseBuiltinTextOutput();
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Implemented Text Renderer\n\n");
+    #endif
 }
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
@@ -627,6 +635,10 @@ egSetScreenSize(
     UINT32     UGADepth;
     UINT32     UGARefreshRate;
 
+    #if REFIT_DEBUG > 0
+    MsgLog("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
+    #endif
+
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
 
         #if REFIT_DEBUG > 0
@@ -635,12 +647,12 @@ egSetScreenSize(
 
         return FALSE;
     }
-
+    
     if (GraphicsOutput != NULL) { // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
 
         #if REFIT_DEBUG > 0
-        MsgLog("GraphicsOutput Object Found ... Current Mode: %d\n", CurrentModeNum);
+        MsgLog("GraphicsOutput Object Found ...Current Mode = %d\n", CurrentModeNum);
         #endif
 
         if (*ScreenHeight == 0) { // User specified a mode number (stored in *ScreenWidth); use it directly
@@ -648,7 +660,7 @@ egSetScreenSize(
             if (ModeNum != CurrentModeNum) {
 
                 #if REFIT_DEBUG > 0
-                MsgLog("ModeSet from ScreenWidth\n");
+                MsgLog("Mode Set from ScreenWidth\n");
                 #endif
 
                 ModeSet = TRUE;
@@ -661,14 +673,14 @@ egSetScreenSize(
             ) {
 
                 #if REFIT_DEBUG > 0
-                MsgLog("ModeSet from egGetResFromMode\n");
+                MsgLog("Mode Set from egGetResFromMode\n");
                 #endif
 
                 ModeSet = TRUE;
 
                 #if REFIT_DEBUG > 0
             } else {
-                MsgLog("Could not set GraphicsOutput Mode!\n");
+                MsgLog("Could not Set GraphicsOutput Mode\n");
                 #endif
 
             }
@@ -694,14 +706,14 @@ egSetScreenSize(
                 ) {
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("ModeSet from GraphicsOutput Query\n");
+                    MsgLog("Mode Set from GraphicsOutput Query\n");
                     #endif
 
                     ModeSet = TRUE;
 
                     #if REFIT_DEBUG > 0
                 } else {
-                    MsgLog("Could not set GraphicsOutput mode!\n");
+                    MsgLog("Could not Set GraphicsOutput Mode\n");
                     #endif
 
                 }
@@ -716,7 +728,7 @@ egSetScreenSize(
 
             #if REFIT_DEBUG > 0
             MsgLog(
-                "Error setting provided %dx%d resolution ... Trying default modes:\n",
+                "Invalid %dx%d Resolution Setting Provided ...Trying Default Modes:\n",
                 *ScreenWidth,
                 *ScreenHeight
             );
@@ -750,7 +762,7 @@ egSetScreenSize(
                     #if REFIT_DEBUG > 0
                 } else {
                     MsgLog(
-                        "  - Error ... Could not query GraphicsOutput Mode!\n",
+                        "  - Error : Could not Query GraphicsOutput Mode!\n",
                         *ScreenWidth,
                         *ScreenHeight
                     );
@@ -822,7 +834,7 @@ egSetTextMode(
             SwitchToText(FALSE);
 
             #if REFIT_DEBUG > 0
-            MsgLog("\nError setting text Mode[%d]; available modes are:\n", RequestedMode);
+            MsgLog("Error Setting Text Mode[%d]. Available Modes Are:\n", RequestedMode);
             #endif
 
             do {
@@ -830,14 +842,14 @@ egSetTextMode(
 
                 #if REFIT_DEBUG > 0
                 if (Status == EFI_SUCCESS) {
-                    MsgLog("Mode[%d] (%dx%d)\n", i, Width, Height);
+                    MsgLog("  - Mode[%d] (%dx%d)\n", i, Width, Height);
                 }
                 #endif
 
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
-            MsgLog("Mode[%d]: Use default mode\n", DONT_CHANGE_TEXT_MODE);
+            MsgLog("Use Default Mode[%d]:\n", DONT_CHANGE_TEXT_MODE);
             #endif
 
             PauseForKey();
@@ -853,7 +865,11 @@ CHAR16 * egScreenDescription(VOID) {
 
     GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
     if (GraphicsInfo == NULL) {
-        return L"memory allocation error";
+        #if REFIT_DEBUG > 0
+        MsgLog("Memory Allocation Error\n\n");
+        #endif
+
+        return L"Memory Allocation Error";
     }
 
     if (egHasGraphics) {
@@ -1010,10 +1026,9 @@ egDrawImage(
            Image->Height
        );
        if (CompImage == NULL) {
-
-#if REFIT_DEBUG > 0
+           #if REFIT_DEBUG > 0
           MsgLog("Error! Cannot crop image in egDrawImage()!\n");
-#endif
+          #endif
 
           return;
        }

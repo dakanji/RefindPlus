@@ -462,6 +462,10 @@ static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
       Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
 
       if (Now > LAST_MINUTE) { // Shouldn't happen; just being paranoid
+        #if REFIT_DEBUG > 0
+        MsgLog("  - WARN: Impossible system time: %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+        #endif
+
          Print(L"Warning: Impossible system time: %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
          return;
       } // if impossible time
@@ -506,8 +510,9 @@ VOID ReadConfig(CHAR16 *FileName)
        MyFreePool(GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate(ALSO_SCAN_DIRS);
        MyFreePool(GlobalConfig.DontScanDirs);
-       if (SelfVolume)
-          TempStr = GuidAsString(&(SelfVolume->PartGuid));
+       if (SelfVolume) {
+           TempStr = GuidAsString(&(SelfVolume->PartGuid));
+       }
        MergeStrings(&TempStr, SelfDirPath, L':');
        MergeStrings(&TempStr, MEMTEST_LOCATIONS, L',');
        GlobalConfig.DontScanDirs = TempStr;
@@ -526,8 +531,16 @@ VOID ReadConfig(CHAR16 *FileName)
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
+        #if REFIT_DEBUG > 0
+        MsgLog("  - WARN: Cannot Find Specified Configuration File\n");
+        #endif
+
        Print(L"Configuration file '%s' missing!\n", FileName);
        if (!FileExists(SelfDir, L"icons")) {
+           #if REFIT_DEBUG > 0
+           MsgLog("  - WARN: Cannot Find Specified Icons Directory. Switching to Text Mode\n");
+           #endif
+
           Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
           GlobalConfig.TextOnly = TRUE;
        }
@@ -535,13 +548,15 @@ VOID ReadConfig(CHAR16 *FileName)
     }
 
     Status = RefitReadFile(SelfDir, FileName, &File, &i);
-    if (EFI_ERROR(Status))
+    if (EFI_ERROR(Status)) {
         return;
+    }
 
     for (;;) {
         TokenCount = ReadTokenLine(&File, &TokenList);
-        if (TokenCount == 0)
+        if (TokenCount == 0) {
             break;
+        }
 
         if (MyStriCmp(TokenList[0], L"timeout")) {
             HandleInt(TokenList, TokenCount, &(GlobalConfig.Timeout));
@@ -573,6 +588,10 @@ VOID ReadConfig(CHAR16 *FileName)
                 } else if (MyStriCmp(FlagName, L"all")) {
                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
                 } else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Invalid 'hideui flag' Flag: '%s'\n", FlagName);
+                    #endif
+
                     Print(L" unknown hideui flag: '%s'\n", FlagName);
                 }
             }
@@ -679,6 +698,10 @@ VOID ReadConfig(CHAR16 *FileName)
            } else if (MyStriCmp(TokenList[1], L"fillscreen") || MyStriCmp(TokenList[1], L"fullscreen")) {
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            } else {
+               #if REFIT_DEBUG > 0
+               MsgLog("  - WARN: Invalid 'banner_type' Flag: '%s'\n", TokenList[1]);
+               #endif
+
               Print(L" unknown banner_type flag: '%s'\n", TokenList[1]);
            } // if/else
 
@@ -811,6 +834,10 @@ VOID ReadConfig(CHAR16 *FileName)
     MyFreePool(File.Buffer);
 
     if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
+        #if REFIT_DEBUG > 0
+        MsgLog("  - WARN: Cannot Find Specified Icons Directory. Switching to Text Mode\n");
+        #endif
+
        Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
        GlobalConfig.TextOnly = TRUE;
     }
