@@ -437,6 +437,7 @@ egInitScreen(
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
     EFI_STATUS                    Status = EFI_SUCCESS;
+    EFI_STATUS                    UGAOnConsole = EFI_UNSUPPORTED;
     EFI_STATUS                    XFlag;
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
@@ -552,6 +553,8 @@ egInitScreen(
             }
             FreePool(HandleBuffer);
         }
+    } else {
+        UGAOnConsole = EFI_SUCCESS;
     }
 
     #if REFIT_DEBUG > 0
@@ -564,7 +567,6 @@ egInitScreen(
 
     // Get GraphicsOutput Protocol
     GraphicsOutput = NULL;
-    Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &OldGOP);
 
     #if REFIT_DEBUG > 0
     MsgLog("  - Check GraphicsOutput\n");
@@ -590,6 +592,11 @@ egInitScreen(
             &HandleCount,
             &HandleBuffer
         );
+
+        #if REFIT_DEBUG > 0
+        MsgLog("    * Locate GOP Handle Buffer ...%r\n", Status);
+        #endif
+
         if (!EFI_ERROR (Status)) {
             EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
             EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP = NULL;
@@ -608,7 +615,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek GraphicsOutput on HandleBuffer[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek GraphicsOutput on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -625,7 +632,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set GraphicsOutput to Handle[%d][%d] @ %dx%d Resolution\n",
+                                        "    ** Set GraphicsOutput to GOP Handle[%d][%d] @ %dx%d Resolution\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -688,7 +695,7 @@ egInitScreen(
 
                 Status = gBS->LocateHandleBuffer (
                     ByProtocol,
-                    &gEfiGraphicsOutputProtocolGuid,
+                    &GraphicsOutputProtocolGuid,
                     NULL,
                     &HandleCount,
                     &HandleBuffer
@@ -699,14 +706,14 @@ egInitScreen(
                         if (HandleBuffer[i] == gST->ConsoleOutHandle) {
                             Status = gBS->HandleProtocol (
                                 HandleBuffer[i],
-                                &gEfiGraphicsOutputProtocolGuid,
+                                &GraphicsOutputProtocolGuid,
                                 (VOID **) &GraphicsOutput
                             );
 
                             break;
                         }
                     }
-                    FreePool (HandleBuffer);
+                    FreePool(HandleBuffer);
                 }
             }
         }
@@ -735,10 +742,10 @@ egInitScreen(
         }
         #endif
     }
-    if (UGADraw != NULL) {
+    if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
         if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Implementing UniversalGraphicsAdapterProtocol:\n");
+            MsgLog ("Activating UniversalGraphicsAdapterProtocol on ConsoleOutHandle:\n");
             #endif
 
             // Run OcProvideUgaPassThrough from OpenCorePkg
@@ -748,18 +755,18 @@ egInitScreen(
                 Status = EFI_UNSUPPORTED;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGA\n", Status);
+                MsgLog("  - %r: Could not Activate UGA on ConsoleOutHandle\n", Status);
                 #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGA\n", Status);
+                MsgLog("  - %r: Activated UGA on ConsoleOutHandle\n", Status);
                 #endif
 
                 egHasGraphics = TRUE;
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Implement UniversalGraphicsAdapterProtocol ...%r\n\n", Status);
+            MsgLog ("Activate UniversalGraphicsAdapterProtocol on ConsoleOutHandle ...%r\n\n", Status);
             #endif
         }
     }
