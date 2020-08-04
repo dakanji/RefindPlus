@@ -569,16 +569,18 @@ egInitScreen(
         }
     }
 
-    // Implement Text Renderer
-    #if REFIT_DEBUG > 0
-    MsgLog ("Implementing Text Renderer:\n");
-    #endif
+    if (GlobalConfig.TextRenderer) {
+        // Implement Text Renderer
+        #if REFIT_DEBUG > 0
+        MsgLog ("Implementing Text Renderer:\n");
+        #endif
 
-    OcUseBuiltinTextOutput();
+        OcUseBuiltinTextOutput();
 
-    #if REFIT_DEBUG > 0
-    MsgLog ("Implemented Text Renderer\n\n");
-    #endif
+        #if REFIT_DEBUG > 0
+        MsgLog ("Implemented Text Renderer\n\n");
+        #endif
+    }
 }
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
@@ -647,7 +649,7 @@ egSetScreenSize(
 
         return FALSE;
     }
-    
+
     if (GraphicsOutput != NULL) { // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
 

@@ -818,6 +818,9 @@ VOID ReadConfig(CHAR16 *FileName)
                GlobalConfig.EnableMouse = FALSE;
            }
 
+        } else if (MyStriCmp(TokenList[0], L"text_renderer")) {
+           GlobalConfig.TextRenderer = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);
            if (i < 1)
