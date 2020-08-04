@@ -39,15 +39,22 @@ timeout 20
 #use_nvram false
 
 # Use a custom text renderer (1, true, or on) or not (0, false, or off).
-# To output text, one normally uses the SimpleText protocol on the console
-# handle. On Macs and some other firmware, this is complicated by the
-# ConsoleControl protocol which determines whether to output text, graphics,
-# or both, and this often results in an inability to display text or run
-# tools such as shell.efi that require text output. A text renderer
-# is added on top of GOP by this option as a workaround.
+# The SimpleText protocol on the console handle is normally used to
+# output text. On Macs and some other firmware, this is complicated by
+# the ConsoleControl protocol which determines whether to output text,
+# graphics, or both, and this often results in an inability to display
+# text or run tools such as shell.efi that require text output. A text
+# renderer is added on top of GOP by this option as a workaround.
 # Default is true
 #
 #text_renderer false
+
+# Add UGA Protocol to GOP (1, true, or on) or not (0, false, or off) when
+# absent. This primarily works to permit booting older Operating Systems
+# running EFIBoot Protocols.
+# Default is true
+#
+#uga_pass_through false
 
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses

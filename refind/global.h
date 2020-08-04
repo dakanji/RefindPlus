@@ -332,6 +332,7 @@ typedef struct {
    BOOLEAN          HiddenTags;
    BOOLEAN          UseNvram;
    BOOLEAN          TextRenderer;
+   BOOLEAN          UgaPassThrough;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

@@ -550,22 +550,24 @@ egInitScreen(
         #endif
     }
     if (UGADraw != NULL) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Implement UniversalGraphicsAdapterProtocol:\n");
-        #endif
-
-        // Run OcProvideUgaPassThrough from OpenCorePkg
-        Status = OcProvideUgaPassThrough();
-
-        if (EFI_ERROR (Status)) {
-            Status = EFI_UNSUPPORTED;
+        if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog("  - %r: Could not Activate UGA\n\n", Status);
+            MsgLog ("Implement UniversalGraphicsAdapterProtocol:\n");
             #endif
-        } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("  - %r: Activated UGA\n\n", Status);
-            #endif
+
+            // Run OcProvideUgaPassThrough from OpenCorePkg
+            Status = OcProvideUgaPassThrough();
+
+            if (EFI_ERROR (Status)) {
+                Status = EFI_UNSUPPORTED;
+                #if REFIT_DEBUG > 0
+                MsgLog("  - %r: Could not Activate UGA\n\n", Status);
+                #endif
+            } else {
+                #if REFIT_DEBUG > 0
+                MsgLog("  - %r: Activated UGA\n\n", Status);
+                #endif
+            }
         }
     }
 
