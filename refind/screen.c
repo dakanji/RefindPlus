@@ -275,7 +275,9 @@ SwitchToText(
     refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Get Text Console Size\n");
+    if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+        MsgLog("  - Get Text Console Size\n");
+    }
     #endif
 
     // get size of text console
@@ -293,21 +295,25 @@ SwitchToText(
         ConHeight = 25;
 
         #if REFIT_DEBUG > 0
-        MsgLog(
-            "    * %r: Could not Get Text Console Size ...Use Default (%dx%d)\n",
-            Status,
-            ConHeight,
-            ConWidth
-        );
+        if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+            MsgLog(
+                "    * %r: Could not Get Text Console Size ...Use Default (%dx%d)\n",
+                Status,
+                ConHeight,
+                ConWidth
+            );
+        }
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog(
-            "    * %r: Got Text Console Size (%dx%d)\n",
-            Status,
-            ConHeight,
-            ConWidth
-        );
+        if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+            MsgLog(
+                "    * %r: Got Text Console Size (%dx%d)\n",
+                Status,
+                ConHeight,
+                ConWidth
+            );
+        }
         #endif
     }
     PrepareBlankLine();
