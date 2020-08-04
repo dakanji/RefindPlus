@@ -543,8 +543,11 @@ timeout 20
 # Values are one-byte (two-character) hexadecimal numbers. These values
 # define which specific security features are enabled. Below are the codes
 # for what the values mean. Add them up (in hexadecimal!) to set new values.
-# Apple's "csrutil enable" and "csrutil disable" commands set values of 10
-# and 877, respectively.
+# Apple's "csrutil enable" and "csrutil disable" commands set values of 10 (ON)
+# and 877 (OFF), respectively. Note that 877 is just a default "OFF" value and
+# that you can go beyond this, to "977" or "FFF", to further open up SIP. This
+# may be useful in running Mac OS v11.0 (Big Sur) on unsupported Macs but should
+# be used with caution as it essentially completely removes all protection. 
 #   CSR_ALLOW_UNTRUSTED_KEXTS            0x01
 #   CSR_ALLOW_UNRESTRICTED_FS            0x02
 #   CSR_ALLOW_TASK_FOR_PID               0x04
