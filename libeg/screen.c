@@ -604,7 +604,7 @@ egInitScreen(
                 Status = gBS->HandleProtocol(
                     HandleBuffer[i],
                     &GraphicsOutputProtocolGuid,
-                    (VOID*) &TmpGOP
+                    (VOID*) &OldGOP
                 );
 
                 #if REFIT_DEBUG > 0
@@ -612,6 +612,7 @@ egInitScreen(
                 #endif
 
                 if (!EFI_ERROR (Status)) {
+                    TmpGOP = OldGOP;
                     MaxMode = TmpGOP->Mode->MaxMode;
                     for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
                         Status = TmpGOP->QueryMode(TmpGOP, GOPMode, &SizeOfInfo, &Info);
@@ -619,9 +620,17 @@ egInitScreen(
                             if (GOPWidth < Info->HorizontalResolution) {
                                 if (GOPHeight < Info->VerticalResolution) {
                                     OldGOP = TmpGOP;
+                                    GOPWidth = Info->HorizontalResolution;
+                                    GOPHeight = Info->VerticalResolution;
 
                                     #if REFIT_DEBUG > 0
-                                    MsgLog("    ** Set GraphicsOutput to HandleBuffer[%d]\n", i);
+                                    MsgLog(
+                                        "    ** Set GraphicsOutput to Handle[%d][%d] @ %dx%d Resolution\n",
+                                        i,
+                                        GOPMode,
+                                        GOPWidth,
+                                        GOPHeight
+                                    );
                                     #endif
                                 } else {
                                     #if REFIT_DEBUG > 0
