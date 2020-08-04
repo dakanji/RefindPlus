@@ -56,6 +56,22 @@ timeout 20
 #
 #uga_pass_through false
 
+# Add GOP to the console handle (1, true, or on) or not (0, false, or off).
+# On some Macs, such as the cMP 5,1, there can be multiple GOP instances:
+#     - One installed on the console handle
+#     - Others installed on GPU handles.
+# The Console Handle GOP is what everything (including macOS) uses and is
+# provided by the system firmware. The others are provided by GPU firmware.
+# Normally, the Mac EFI should transparently forward calls from he Console
+# Handle GOP to the others. On such models, it only works in this way
+# with Official GPUs (Those that provide native Mac Boot Screen). This
+# workaround replaces the Console Handle GOP with one from a GPU Handle when
+# running Custom GPUs (Those that do not provide native Mac Boot Screen) on
+# such models. 
+# Default is true
+#
+#provide_console_gop false
+
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
 # (unfortunately, not including modifier keys such as Shift, Control, Alt,

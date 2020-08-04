@@ -498,30 +498,32 @@ egInitScreen(
             MsgLog ("Implement GraphicsOutputProtocol:\n");
             #endif
 
-            // Run OcProvideConsoleGop from OpenCorePkg
-            OcProvideConsoleGop(TRUE);
+            if (GlobalConfig.ConsoleGop) {
+                // Run OcProvideConsoleGop from OpenCorePkg
+                OcProvideConsoleGop(TRUE);
 
-            Status = gBS->LocateHandleBuffer (
-                ByProtocol,
-                &gEfiGraphicsOutputProtocolGuid,
-                NULL,
-                &HandleCount,
-                &HandleBuffer
-            );
-            if (!EFI_ERROR (Status)) {
-                Status = EFI_NOT_FOUND;
-                for (i = 0; i < HandleCount; ++i) {
-                    if (HandleBuffer[i] == gST->ConsoleOutHandle) {
-                        Status = gBS->HandleProtocol (
-                            HandleBuffer[i],
-                            &gEfiGraphicsOutputProtocolGuid,
-                            (VOID **) &GraphicsOutput
-                        );
+                Status = gBS->LocateHandleBuffer (
+                    ByProtocol,
+                    &gEfiGraphicsOutputProtocolGuid,
+                    NULL,
+                    &HandleCount,
+                    &HandleBuffer
+                );
+                if (!EFI_ERROR (Status)) {
+                    Status = EFI_NOT_FOUND;
+                    for (i = 0; i < HandleCount; ++i) {
+                        if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+                            Status = gBS->HandleProtocol (
+                                HandleBuffer[i],
+                                &gEfiGraphicsOutputProtocolGuid,
+                                (VOID **) &GraphicsOutput
+                            );
 
-                        break;
+                            break;
+                        }
                     }
+                    FreePool (HandleBuffer);
                 }
-                FreePool (HandleBuffer);
             }
         }
     }
