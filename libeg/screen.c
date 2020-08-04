@@ -498,7 +498,7 @@ egInitScreen(
             MsgLog ("Implement GraphicsOutputProtocol:\n");
             #endif
 
-            if (GlobalConfig.ConsoleGop) {
+            if (GlobalConfig.ProvideConsoleGOP) {
                 // Run OcProvideConsoleGop from OpenCorePkg
                 OcProvideConsoleGop(TRUE);
 
