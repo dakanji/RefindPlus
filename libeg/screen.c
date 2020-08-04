@@ -554,7 +554,7 @@ egInitScreen(
     if (UGADraw != NULL) {
         if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Implement UniversalGraphicsAdapterProtocol:\n");
+            MsgLog ("Implementing UniversalGraphicsAdapterProtocol:\n");
             #endif
 
             // Run OcProvideUgaPassThrough from OpenCorePkg
@@ -562,27 +562,30 @@ egInitScreen(
 
             if (EFI_ERROR (Status)) {
                 Status = EFI_UNSUPPORTED;
+
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGA\n\n", Status);
-                #endif
+                MsgLog("  - %r: Could not Activate UGA\n", Status);
             } else {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGA\n\n", Status);
+                MsgLog("  - %r: Activated UGA\n", Status);
                 #endif
             }
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("Implement UniversalGraphicsAdapterProtocol ...%r\n", Status);
+            #endif
         }
     }
 
     if (GlobalConfig.TextRenderer) {
         // Implement Text Renderer
         #if REFIT_DEBUG > 0
-        MsgLog ("Implementing Text Renderer:\n");
+        MsgLog ("Implementing Builtin Text Renderer:\n");
         #endif
 
         OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("Implemented Text Renderer\n\n");
+        MsgLog ("Implemented Builtin Text Renderer\n\n");
         #endif
     }
 }
