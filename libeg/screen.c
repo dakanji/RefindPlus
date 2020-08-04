@@ -448,35 +448,212 @@ egInitScreen(
     #if REFIT_DEBUG > 0
             MsgLog("Check for Graphics:\n");
     #endif
-    // get protocols
+
+    // Get ConsoleControl Protocol
     ConsoleControl = NULL;
-    Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &ConsoleControl);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("  - Check ConsoleControl\n");
+    #endif
+
+    // Check ConsoleOutHandle
+    Status = gBS->HandleProtocol(
+        gST->ConsoleOutHandle,
+        &ConsoleControlProtocolGuid,
+        (VOID **) &ConsoleControl
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog("    * Seek ConsoleControl on ConsoleOutHandle ...%r\n", Status);
+    #endif
+
+    if (EFI_ERROR(Status) || ConsoleControl == NULL) {
+        // Try Locating by Handle
+        Status = gBS->LocateHandleBuffer(
+            ByProtocol,
+            &ConsoleControlProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+        if (!EFI_ERROR (Status)) {
+            i = 0;
+            for (i = 0; i < HandleCount; i++) {
+                Status = gBS->HandleProtocol(
+                    HandleBuffer[i],
+                    &ConsoleControlProtocolGuid,
+                    (VOID*) &ConsoleControl
+                );
+
+                #if REFIT_DEBUG > 0
+                MsgLog("    * Seek ConsoleControl on HandleBuffer[%d] ...%r\n", i, Status);
+                #endif
+
+                if (!EFI_ERROR (Status)) {
+                    break;
+                }
+            }
+            FreePool(HandleBuffer);
+        }
+    }
+
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        MsgLog("  - Check ConsoleControl ...NOT OK!\n");
+        MsgLog("  - Check ConsoleControl ...NOT OK!\n\n");
     } else {
-        MsgLog("  - Check ConsoleControl ...ok\n");
+        MsgLog("  - Check ConsoleControl ...ok\n\n");
     }
     #endif
 
+
+    // Get UGADraw Protocol
     UGADraw = NULL;
-    Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &UGADraw);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("  - Check UGADraw\n");
+    #endif
+
+    // Check ConsoleOutHandle
+    Status = gBS->HandleProtocol(
+        gST->ConsoleOutHandle,
+        &UgaDrawProtocolGuid,
+        (VOID **) &UGADraw
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog("    * Seek UGADraw on ConsoleOutHandle ...%r\n", Status);
+    #endif
+
+    if (EFI_ERROR(Status) || ConsoleControl == NULL) {
+        // Try Locating by Handle
+        Status = gBS->LocateHandleBuffer(
+            ByProtocol,
+            &UgaDrawProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+        if (!EFI_ERROR (Status)) {
+            i = 0;
+            for (i = 0; i < HandleCount; i++) {
+                Status = gBS->HandleProtocol(
+                    HandleBuffer[i],
+                    &UgaDrawProtocolGuid,
+                    (VOID*) &UGADraw
+                );
+
+                #if REFIT_DEBUG > 0
+                MsgLog("    * Seek UGADraw on HandleBuffer[%d] ...%r\n", i, Status);
+                #endif
+
+                if (!EFI_ERROR (Status)) {
+                    break;
+                }
+            }
+            FreePool(HandleBuffer);
+        }
+    }
+
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-    	MsgLog("  - Check UGADraw ...NOT OK!\n");
+    	MsgLog("  - Check UGADraw ...NOT OK!\n\n");
     } else {
-    	MsgLog("  - Check UGADraw ...ok\n");
+    	MsgLog("  - Check UGADraw ...ok\n\n");
     }
     #endif
 
+    // Get GraphicsOutput Protocol
     GraphicsOutput = NULL;
     Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &OldGOP);
-    if (EFI_ERROR(Status)) {
+
+    #if REFIT_DEBUG > 0
+    MsgLog("  - Check GraphicsOutput\n");
+    #endif
+
+    // Check ConsoleOutHandle
+    Status = gBS->HandleProtocol(
+        gST->ConsoleOutHandle,
+        &GraphicsOutputProtocolGuid,
+        (VOID **) &OldGOP
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog("    * Seek GraphicsOutput on ConsoleOutHandle ...%r\n", Status);
+    #endif
+
+    if (EFI_ERROR(Status) || ConsoleControl == NULL) {
+        // Try Locating by Handle
+        Status = gBS->LocateHandleBuffer(
+            ByProtocol,
+            &GraphicsOutputProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+        if (!EFI_ERROR (Status)) {
+            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
+            EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP = NULL;
+            UINT32 GOPWidth  = 0;
+            UINT32 GOPHeight = 0;
+            UINT32 MaxMode   = 0;
+            UINT32 GOPMode;
+            UINTN  SizeOfInfo;
+
+            i = 0;
+            for (i = 0; i < HandleCount; i++) {
+                Status = gBS->HandleProtocol(
+                    HandleBuffer[i],
+                    &GraphicsOutputProtocolGuid,
+                    (VOID*) &TmpGOP
+                );
+
+                #if REFIT_DEBUG > 0
+                MsgLog("    * Seek GraphicsOutput on HandleBuffer[%d] ...%r\n", i, Status);
+                #endif
+
+                if (!EFI_ERROR (Status)) {
+                    MaxMode = TmpGOP->Mode->MaxMode;
+                    for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
+                        Status = TmpGOP->QueryMode(TmpGOP, GOPMode, &SizeOfInfo, &Info);
+                        if (Status == EFI_SUCCESS) {
+                            if (GOPWidth < Info->HorizontalResolution) {
+                                if (GOPHeight < Info->VerticalResolution) {
+                                    OldGOP = TmpGOP;
+
+                                    #if REFIT_DEBUG > 0
+                                    MsgLog("    ** Set GraphicsOutput to HandleBuffer[%d]\n", i);
+                                    #endif
+                                } else {
+                                    #if REFIT_DEBUG > 0
+                                    MsgLog("      No Change to GraphicsOutput\n");
+                                    #endif
+                                }
+                            } else {
+                                #if REFIT_DEBUG > 0
+                                MsgLog("      No Change to GraphicsOutput\n");
+                                #endif
+                            }
+                        }
+                    }
+                }
+            }
+            FreePool(HandleBuffer);
+        }
+    }
+
+    if (Status == EFI_NOT_FOUND) {
         XFlag = EFI_NOT_FOUND;
 
         // Not Found
         #if REFIT_DEBUG > 0
     	MsgLog("  - Check GraphicsOutput ...NOT FOUND!\n\n");
+        #endif
+    } else if (EFI_ERROR(Status)) {
+        XFlag = EFI_NOT_FOUND;
+
+        // Not Found
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Check GraphicsOutput ...ERROR!\n\n");
         #endif
     } else {
         if (OldGOP->Mode->MaxMode > 0) {
@@ -563,13 +740,17 @@ egInitScreen(
 
                 #if REFIT_DEBUG > 0
                 MsgLog("  - %r: Could not Activate UGA\n", Status);
+                #endif
             } else {
+                #if REFIT_DEBUG > 0
                 MsgLog("  - %r: Activated UGA\n", Status);
                 #endif
+
+                egHasGraphics = TRUE;
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Implement UniversalGraphicsAdapterProtocol ...%r\n", Status);
+            MsgLog ("Implement UniversalGraphicsAdapterProtocol ...%r\n\n", Status);
             #endif
         }
     }
@@ -1109,7 +1290,7 @@ egDrawImageArea(
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
             EfiBltBufferToVideo,
             AreaPosX,
-            AreaPosY, 
+            AreaPosY,
             ScreenPosX,
             ScreenPosY,
             AreaWidth,
