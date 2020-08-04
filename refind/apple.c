@@ -74,12 +74,6 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
             SPrint(gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
     } // switch
     if (DisplayMessage) {
-
-        #if REFIT_DEBUG > 0
-        MsgLog(gCsrStatus);
-        MsgLog("\n");
-        #endif
-
         egDisplayMessage(gCsrStatus, &BGColor, CENTER);
         PauseSeconds(3);
     } // if

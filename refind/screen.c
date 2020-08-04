@@ -452,12 +452,6 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
             Print(Text);
             Print(L"\n");
         } // if/else
-
-        #if REFIT_DEBUG > 0
-        MsgLog(Text);
-        MsgLog("\n");
-        #endif
-
     } // if
 } // VOID PrintUglyText()
 
