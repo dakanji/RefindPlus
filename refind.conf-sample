@@ -45,9 +45,9 @@ timeout 20
 # graphics, or both, and this often results in an inability to display
 # text or run tools such as shell.efi that require text output. A text
 # renderer is added on top of GOP by this option as a workaround.
-# Default is true
+# Default is false
 #
-#text_renderer false
+#text_renderer true
 
 # Add UGA Protocol to GOP (1, true, or on) or not (0, false, or off) when
 # absent. This primarily works to permit booting older Operating Systems
