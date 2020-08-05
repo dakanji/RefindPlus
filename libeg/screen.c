@@ -454,7 +454,7 @@ egInitScreen(
     ConsoleControl = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Check ConsoleControl\n");
+    MsgLog("  - Seek ConsoleControl\n");
     #endif
 
     // Check ConsoleOutHandle
@@ -465,7 +465,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek ConsoleControl on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -487,7 +487,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek ConsoleControl on HandleBuffer[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -495,6 +495,10 @@ egInitScreen(
                 }
             }
             FreePool(HandleBuffer);
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Could not Locate Handle Buffer\n");
+            #endif
         }
     }
 
@@ -511,7 +515,7 @@ egInitScreen(
     UGADraw = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Check UGADraw\n");
+    MsgLog("  - Seek UGADraw\n");
     #endif
 
     // Check ConsoleOutHandle
@@ -522,7 +526,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek UGADraw on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -544,7 +548,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek UGADraw on HandleBuffer[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek on HandleBuffer[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -552,6 +556,10 @@ egInitScreen(
                 }
             }
             FreePool(HandleBuffer);
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Could not Locate Handle Buffer\n");
+            #endif
         }
     } else {
         UGAOnConsole = EFI_SUCCESS;
@@ -569,7 +577,7 @@ egInitScreen(
     GraphicsOutput = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Check GraphicsOutput\n");
+    MsgLog("  - Seek GraphicsOutput\n");
     #endif
 
     // Check ConsoleOutHandle
@@ -580,7 +588,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek GraphicsOutput on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -592,10 +600,6 @@ egInitScreen(
             &HandleCount,
             &HandleBuffer
         );
-
-        #if REFIT_DEBUG > 0
-        MsgLog("    * Locate GOP Handle Buffer ...%r\n", Status);
-        #endif
 
         if (!EFI_ERROR (Status)) {
             EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
@@ -615,7 +619,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek GraphicsOutput on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -632,7 +636,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set GraphicsOutput to GOP Handle[%d][%d] @ %dx%d Resolution\n",
+                                        "    ** Set GraphicsOutput to Handle[%d][%d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -641,12 +645,24 @@ egInitScreen(
                                     #endif
                                 } else {
                                     #if REFIT_DEBUG > 0
-                                    MsgLog("      No Change to GraphicsOutput\n");
+                                    MsgLog(
+                                        "       No Change on Handle[%d][%d] @ %dx%d\n",
+                                        i,
+                                        GOPMode,
+                                        GOPWidth,
+                                        GOPHeight
+                                    );
                                     #endif
                                 }
                             } else {
                                 #if REFIT_DEBUG > 0
-                                MsgLog("      No Change to GraphicsOutput\n");
+                                MsgLog(
+                                    "       No Change on Handle[%d][%d] @ %dx%d\n",
+                                    i,
+                                    GOPMode,
+                                    GOPWidth,
+                                    GOPHeight
+                                );
                                 #endif
                             }
                         }
@@ -654,6 +670,10 @@ egInitScreen(
                 }
             }
             FreePool(HandleBuffer);
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Could not Locate Handle Buffer\n");
+            #endif
         }
     }
 
@@ -686,7 +706,6 @@ egInitScreen(
 
             #if REFIT_DEBUG > 0
             MsgLog("  - Check GraphicsOutput ...NOT OK!\n\n");
-            MsgLog ("Implement GraphicsOutputProtocol:\n");
             #endif
 
             if (GlobalConfig.ProvideConsoleGOP) {
@@ -721,7 +740,7 @@ egInitScreen(
 
     #if REFIT_DEBUG > 0
     if (XFlag == EFI_NOT_FOUND) {
-        MsgLog ("Cannot Implement GraphicsOutputProtocol\n\n");
+        MsgLog ("Cannot Implement GOP\n\n");
     } else if (XFlag == EFI_UNSUPPORTED) {
         MsgLog ("Reset GOP on ConsoleOutHandle ...%r\n\n", Status);
     }
@@ -745,7 +764,7 @@ egInitScreen(
     if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
         if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Activating UniversalGraphicsAdapterProtocol on ConsoleOutHandle:\n");
+            MsgLog ("Activate UniversalGraphicsAdapterProtocol:\n");
             #endif
 
             // Run OcProvideUgaPassThrough from OpenCorePkg
@@ -766,17 +785,13 @@ egInitScreen(
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Activate UniversalGraphicsAdapterProtocol on ConsoleOutHandle ...%r\n\n", Status);
+            MsgLog ("Activate UGA on ConsoleOutHandle ...%r\n\n", Status);
             #endif
         }
     }
 
     if (GlobalConfig.TextRenderer) {
         // Implement Text Renderer
-        #if REFIT_DEBUG > 0
-        MsgLog ("Implementing Builtin Text Renderer:\n");
-        #endif
-
         OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
