@@ -237,7 +237,7 @@ VOID SetupScreen(VOID)
         } // if
 
         #if REFIT_DEBUG > 0
-        MsgLog("Switch to Graphics Mode:\n");
+        MsgLog("Run Graphics Mode Switch:\n");
         #endif
 
         SwitchToGraphics();
