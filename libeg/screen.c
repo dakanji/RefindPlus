@@ -334,7 +334,7 @@ egSetMaxResolution() {
   }
 
   #if REFIT_DEBUG > 0
-  MsgLog("  - Best Mode = GOP Mode[%d] @ %dx%d Resolution\n", BestMode, Width, Height);
+  MsgLog("  - BestMode: GOP Mode[%d] @ %dx%d Resolution\n", BestMode, Width, Height);
   #endif
 
   // check if requested mode is equal to current mode
@@ -636,7 +636,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set GraphicsOutput to Handle[%d][%d] @ %dx%d\n",
+                                        "    ** Set to Handle[%d][%d](%dx%d)\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -646,7 +646,7 @@ egInitScreen(
                                 } else {
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "       Disregard Handle[%d][%d] @ %dx%d\n",
+                                        "    Disregard Handle[%d][%d](%dx%d)\n",
                                         i,
                                         GOPMode,
                                         Info->HorizontalResolution,
@@ -657,7 +657,7 @@ egInitScreen(
                             } else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog(
-                                    "       Disregard Handle[%d][%d] @ %dx%d\n",
+                                    "    Disregard Handle[%d][%d](%dx%d)\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,

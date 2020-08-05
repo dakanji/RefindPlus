@@ -80,6 +80,7 @@ BOOLEAN AllowGraphicsMode;
 BOOLEAN HaveResized = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
+EG_PIXEL MacBackgroundPixel  = { 0xdc, 0xdc, 0xdc, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL DarkBackgroundPixel = { 0x0, 0x0, 0x0, 0 };
 
@@ -360,7 +361,8 @@ VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
         SwitchToGraphics();
         BltClearScreen(FALSE);
     } else {
-        egClearScreen(&DarkBackgroundPixel);
+        // clear to grey background
+        egClearScreen(&MacBackgroundPixel);
         DrawScreenHeader(Title);
         SwitchToText(TRUE);
     }
