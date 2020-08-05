@@ -55,7 +55,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- // July 2020: Extensively modiied by dakanji (sourceforge.net/u/dakanji/profile)
+// July 2020: Extensively modiied by dakanji (sourceforge.net/u/dakanji/profile)
+// Forward Declaration for OpenCore Integration
+VOID OcUseBuiltinTextOutput (VOID);
+VOID OcProvideConsoleGop (IN BOOLEAN Route);
+EFI_STATUS OcProvideUgaPassThrough (VOID);
+EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 
 #include "libegint.h"
 #include "../refind/screen.h"
@@ -83,12 +88,6 @@ static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 static BOOLEAN egHasGraphics = FALSE;
 static UINTN egScreenWidth   = 0;
 static UINTN egScreenHeight  = 0;
-
-// Forward Declaration for OpenCore Functions
-VOID OcProvideConsoleGop (IN BOOLEAN Route);
-EFI_STATUS OcProvideUgaPassThrough (VOID);
-VOID OcUseBuiltinTextOutput (VOID);
-EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 
 VOID
 egDumpGOPVideoModes(
@@ -647,22 +646,22 @@ egInitScreen(
                                 } else {
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "       No Change on Handle[%d][%d] @ %dx%d\n",
+                                        "       Disregard Handle[%d][%d] @ %dx%d\n",
                                         i,
                                         GOPMode,
-                                        GOPWidth,
-                                        GOPHeight
+                                        Info->HorizontalResolution,
+                                        Info->VerticalResolution
                                     );
                                     #endif
                                 }
                             } else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog(
-                                    "       No Change on Handle[%d][%d] @ %dx%d\n",
+                                    "       Disregard Handle[%d][%d] @ %dx%d\n",
                                     i,
                                     GOPMode,
-                                    GOPWidth,
-                                    GOPHeight
+                                    Info->HorizontalResolution,
+                                    Info->VerticalResolution
                                 );
                                 #endif
                             }

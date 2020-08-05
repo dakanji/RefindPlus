@@ -532,16 +532,16 @@ VOID ReadConfig(CHAR16 *FileName)
 
     if (!FileExists(SelfDir, FileName)) {
         #if REFIT_DEBUG > 0
-        MsgLog("  - WARN: Cannot Find Specified Configuration File\n");
+        MsgLog("  - WARN: Cannot Find Configuration File. Loading Defaults\n");
         #endif
 
        Print(L"Configuration file '%s' missing!\n", FileName);
        if (!FileExists(SelfDir, L"icons")) {
            #if REFIT_DEBUG > 0
-           MsgLog("  - WARN: Cannot Find Specified Icons Directory. Switching to Text Mode\n");
+           MsgLog("  - WARN: Cannot Find Icons Directory. Switching to Text Mode\n");
            #endif
 
-          Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
+          Print(L"Icons directory does not exist; setting textonly = TRUE!\n");
           GlobalConfig.TextOnly = TRUE;
        }
        return;
@@ -847,7 +847,7 @@ VOID ReadConfig(CHAR16 *FileName)
 
     if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0
-        MsgLog("  - WARN: Cannot Find Specified Icons Directory. Switching to Text Mode\n");
+        MsgLog("  - WARN: Cannot Find Icons Directory. Switching to Text Mode\n");
         #endif
 
        Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
