@@ -333,7 +333,8 @@ typedef struct {
    BOOLEAN          UseNvram;
    BOOLEAN          TextRenderer;
    BOOLEAN          UgaPassThrough;
-   BOOLEAN          ProvideConsoleGOP;   
+   BOOLEAN          ProvideConsoleGOP;
+   BOOLEAN          UseDirectGop;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

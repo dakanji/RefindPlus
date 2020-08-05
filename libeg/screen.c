@@ -88,6 +88,7 @@ static UINTN egScreenHeight  = 0;
 VOID OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
 VOID OcUseBuiltinTextOutput (VOID);
+EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 
 VOID
 egDumpGOPVideoModes(
@@ -677,6 +678,8 @@ egInitScreen(
         }
     }
 
+    XFlag = EFI_UNSUPPORTED;
+
     if (Status == EFI_NOT_FOUND) {
         XFlag = EFI_NOT_FOUND;
 
@@ -684,14 +687,35 @@ egInitScreen(
         #if REFIT_DEBUG > 0
     	MsgLog("  - Check GraphicsOutput ...NOT FOUND!\n\n");
         #endif
-    } else if (EFI_ERROR(Status)) {
+
+        if (GlobalConfig.UseDirectGop) {
+            Status = OcUseDirectGop (-1);
+
+            if (!EFI_ERROR(Status)) {
+                // Check ConsoleOutHandle
+                Status = gBS->HandleProtocol(
+                    gST->ConsoleOutHandle,
+                    &GraphicsOutputProtocolGuid,
+                    (VOID **) &GraphicsOutput
+                );
+
+                XFlag = EFI_ALREADY_STARTED;
+            }
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("Implement Direct GOP Renderer ...%r\n\n", Status);
+            #endif
+        }
+    }
+
+    if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
         XFlag = EFI_NOT_FOUND;
 
         // Not Found
         #if REFIT_DEBUG > 0
         MsgLog("  - Check GraphicsOutput ...ERROR!\n\n");
         #endif
-    } else {
+    } else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
         if (OldGOP->Mode->MaxMode > 0) {
             XFlag = EFI_SUCCESS;
 
@@ -742,7 +766,7 @@ egInitScreen(
     if (XFlag == EFI_NOT_FOUND) {
         MsgLog ("Cannot Implement GOP\n\n");
     } else if (XFlag == EFI_UNSUPPORTED) {
-        MsgLog ("Reset GOP on ConsoleOutHandle ...%r\n\n", Status);
+        MsgLog ("Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
     }
     #endif
 
@@ -764,7 +788,7 @@ egInitScreen(
     if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
         if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Activate UniversalGraphicsAdapterProtocol:\n");
+            MsgLog ("Activate UniversalGraphicsAdapterProtocol on ConsoleOutHandle:\n");
             #endif
 
             // Run OcProvideUgaPassThrough from OpenCorePkg
@@ -774,11 +798,11 @@ egInitScreen(
                 Status = EFI_UNSUPPORTED;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGA on ConsoleOutHandle\n", Status);
+                MsgLog("  - %r: Could not Activate UGA\n", Status);
                 #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGA on ConsoleOutHandle\n", Status);
+                MsgLog("  - %r: Activated UGA\n", Status);
                 #endif
 
                 egHasGraphics = TRUE;
@@ -795,7 +819,7 @@ egInitScreen(
         OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("Implemented Builtin Text Renderer\n\n");
+        MsgLog ("INFO: Inititated Builtin Text Renderer\n\n");
         #endif
     }
 }

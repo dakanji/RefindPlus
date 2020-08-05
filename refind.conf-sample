@@ -67,10 +67,18 @@ timeout 20
 # with Official GPUs (Those that provide native Mac Boot Screen). This
 # workaround replaces the Console Handle GOP with one from a GPU Handle when
 # running Custom GPUs (Those that do not provide native Mac Boot Screen) on
-# such models. 
+# such models.
 # Default is true
 #
 #provide_console_gop false
+
+# Attempt to use a builtin graphics output protocol renderer for console
+# (1, true, or on) or not (0, false, or off).
+# If switched on, this is only triggered whenever neither Console Handle GOP
+# nor GPU Handle GOP is found.
+# Default is true
+#
+#direct_gop_renderer false
 
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
@@ -547,7 +555,7 @@ timeout 20
 # and 877 (OFF), respectively. Note that 877 is just a default "OFF" value and
 # that you can go beyond this, to "977" or "FFF", to further open up SIP. This
 # may be useful in running Mac OS v11.0 (Big Sur) on unsupported Macs but should
-# be used with caution as it essentially completely removes all protection. 
+# be used with caution as it essentially completely removes all protection.
 #   CSR_ALLOW_UNTRUSTED_KEXTS            0x01
 #   CSR_ALLOW_UNRESTRICTED_FS            0x02
 #   CSR_ALLOW_TASK_FOR_PID               0x04
