@@ -636,7 +636,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set to Handle[%d][%d](%dx%d)\n",
+                                        "    ** Set to Handle[%d][%d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -646,7 +646,7 @@ egInitScreen(
                                 } else {
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    Disregard Handle[%d][%d](%dx%d)\n",
+                                        "       Ignore Handle[%d][%d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         Info->HorizontalResolution,
@@ -657,7 +657,7 @@ egInitScreen(
                             } else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog(
-                                    "    Disregard Handle[%d][%d](%dx%d)\n",
+                                    "       Ignore Handle[%d][%d] @ %dx%d\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,
@@ -813,7 +813,7 @@ egInitScreen(
         }
     }
 
-    if (GlobalConfig.TextRenderer) {
+    if (GlobalConfig.TextRenderer || GlobalConfig.TextOnly) {
         // Implement Text Renderer
         OcUseBuiltinTextOutput();
 

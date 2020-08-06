@@ -369,6 +369,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     BOOLEAN            MainLoopRunning = TRUE;
     BOOLEAN            MokProtocol;
     REFIT_MENU_ENTRY   *ChosenEntry;
+    LOADER_ENTRY       *TempEntry;
     UINTN              MenuExit, i;
     CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
@@ -414,7 +415,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     if (LoadDrivers()) {
         #if REFIT_DEBUG > 0
-        MsgLog("ScanVolumes...\n");
+        MsgLog("Scan Volumes...\n");
         #endif
         ScanVolumes();
     }
@@ -424,7 +425,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
         #if REFIT_DEBUG > 0
-        MsgLog("Spoof macOS Version...\n");
+        MsgLog("Spoof Mac OS Version...\n");
         #endif
         SetAppleOSInfo();
     }
@@ -452,10 +453,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.ScanDelay > 0) {
        if (GlobalConfig.ScanDelay > 1) {
            #if REFIT_DEBUG > 0
-           MsgLog("Pausing before disk scan\n");
+           MsgLog("Pausing Before Disc Scan\n");
            #endif
 
-           egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
+           egDisplayMessage(L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
        }
        for (i = 0; i < GlobalConfig.ScanDelay; i++) {
            refit_call1_wrapper(BS->Stall, 1000000);
@@ -533,10 +534,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Boot OS via *.efi File\n------------\n\n");
+                MsgLog("  - Boot OS via *.efi Loader\n------------\n\n");
                 #endif
 
-                StartLoader((LOADER_ENTRY *)ChosenEntry, SelectionName);
+                TempEntry = (LOADER_ENTRY *)ChosenEntry;
+                if (!GlobalConfig.TextOnly) {
+                    TempEntry->UseGraphicsMode = TRUE;
+                }
+                StartLoader(TempEntry, SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
@@ -563,7 +568,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Start EFI Tool\n------------\n\n");
+                MsgLog("  - Start EFI Tool\n\n");
                 #endif
 
                 StartTool((LOADER_ENTRY *)ChosenEntry);
@@ -618,7 +623,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Install Refind\n------------\n\n");
+                MsgLog("  - Install rEFInd\n------------\n\n");
                 #endif
 
                 InstallRefind();

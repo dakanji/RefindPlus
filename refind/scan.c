@@ -1295,7 +1295,8 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
             if (MyStriCmp(TestFileName, DontFileName) &&
                 ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
-                ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))) {
+                ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))
+            ) {
                 retval = FALSE;
             } // if
             MyFreePool(DontScanThis);
@@ -1310,9 +1311,19 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
-static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINTN Icon) {
-    UINTN j = 0, k, VolumeIndex;
-    CHAR16 *DirName, *FileName, *PathName, FullDescription[256];
+static VOID FindTool(
+    CHAR16 *Locations,
+    CHAR16 *Names,
+    CHAR16 *Description,
+    UINTN  Icon
+) {
+    UINTN  j = 0;
+    UINTN  k;
+    UINTN  VolumeIndex;
+    CHAR16 *DirName;
+    CHAR16 *FileName;
+    CHAR16 *PathName;
+    CHAR16 FullDescription[256];
 
     while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
         k = 0;
@@ -1321,8 +1332,27 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
             MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                 if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
-                    SPrint(FullDescription, 255, L"%s at %s on %s", Description, PathName, Volumes[VolumeIndex]->VolName);
-                    AddToolEntry(Volumes[VolumeIndex], PathName, FullDescription, BuiltinIcon(Icon), 'S', FALSE);
+                    SPrint(
+                        FullDescription,
+                        255,
+                        L"%s at %s on %s",
+                        Description,
+                        PathName,
+                        Volumes[VolumeIndex]->VolName
+                    );
+                    AddToolEntry(
+                        Volumes[VolumeIndex],
+                        PathName,
+                        FullDescription,
+                        BuiltinIcon(Icon),
+                        'S',
+                        FALSE
+                    );
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - Added %s\n", FileName);
+                    #endif
+
                 } // if
             } // for
             MyFreePool(PathName);
@@ -1335,21 +1365,30 @@ static VOID FindTool(CHAR16 *Locations, CHAR16 *Names, CHAR16 *Description, UINT
 // Add the second-row tags containing built-in and external tools (EFI shell,
 // reboot, etc.)
 VOID ScanForTools(VOID) {
-    CHAR16 *FileName = NULL, *VolName = NULL, *MokLocations, Description[256], *HiddenTools;
+    CHAR16           *FileName = NULL;
+    CHAR16           *VolName = NULL;
+    CHAR16           *MokLocations;
+    CHAR16           Description[256];
+    CHAR16           *HiddenTools;
     REFIT_MENU_ENTRY *TempMenuEntry;
-    UINTN i, j, VolumeIndex;
-    UINT64 osind;
-    CHAR8 *b = 0;
-    UINT32 CsrValue;
+    UINTN            i;
+    UINTN            j;
+    UINTN            VolumeIndex;
+    UINT64           osind;
+    CHAR8            *b = 0;
+    UINT32           CsrValue;
+    BOOLEAN          FoundTool;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *ToolName = NULL;
     MsgLog("Scan for Builtin/External Tools...\n");
-    MsgLog("Tool Count = %d\n", NUM_TOOLS);
+    MsgLog("Tool Type Count = %d\n", NUM_TOOLS);
     #endif
 
     MokLocations = StrDuplicate(MOK_LOCATIONS);
-    if (MokLocations != NULL)
+    if (MokLocations != NULL) {
         MergeStrings(&MokLocations, SelfDirPath, L',');
+    }
 
     HiddenTools = ReadHiddenTags(L"HiddenTools");
     if ((HiddenTools) && (StrLen(HiddenTools) > 0)) {
@@ -1358,105 +1397,301 @@ VOID ScanForTools(VOID) {
     MyFreePool(HiddenTools);
 
     for (i = 0; i < NUM_TOOLS; i++) {
-        #if REFIT_DEBUG > 0
-        if ((i + 1) < NUM_TOOLS) {
-            MsgLog("Scanning Tool[%d]:\n", i + 1);
-        } else {
-            MsgLog("Scanning Tool[%d]:\n\n", i + 1);
-        }
-        #endif
+        // Reset Vars
+        FileName = NULL;
+        VolName = NULL;
+        FoundTool = FALSE;
 
+        #if REFIT_DEBUG > 0
         switch(GlobalConfig.ShowTools[i]) {
             // NOTE: Be sure that FileName is NULL at the end of each case.
+            case TAG_SHUTDOWN:
+                ToolName = L"Shutdown Computer";
+                break;
+
+            case TAG_REBOOT:
+                ToolName = L"Reboot Computer";
+                break;
+
+            case TAG_ABOUT:
+                ToolName = L"About Refind";
+                break;
+
+            case TAG_EXIT:
+                ToolName = L"Exit Refind";
+                break;
+
+            case TAG_HIDDEN:
+                ToolName = L"Hidden Tags";
+                break;
+
+            case TAG_FIRMWARE:
+                ToolName = L"Firmware";
+                break;
+
+            case TAG_SHELL:
+                ToolName = L"EFI Shell";
+                break;
+
+            case TAG_GPTSYNC:
+                ToolName = L"GPT Sync";
+                break;
+
+            case TAG_GDISK:
+                ToolName = L"GDisk";
+                break;
+
+            case TAG_NETBOOT:
+                ToolName = L"Net Boot";
+                break;
+
+            case TAG_APPLE_RECOVERY:
+                ToolName = L"Apple Recovery";
+                break;
+
+            case TAG_WINDOWS_RECOVERY:
+                ToolName = L"Windows Recovery";
+                break;
+
+            case TAG_MOK_TOOL:
+                ToolName = L"MOK";
+                break;
+
+            case TAG_FWUPDATE_TOOL:
+                ToolName = L"Firmware Update";
+                break;
+
+            case TAG_CSR_ROTATE:
+                ToolName = L"CSR Rotate";
+                break;
+
+            case TAG_INSTALL:
+                ToolName = L"Install Refind";
+                break;
+
+            case TAG_BOOTORDER:
+                ToolName = L"Manage Boot Order";
+                break;
+
+            case TAG_MEMTEST:
+                ToolName = L"Memtest";
+                break;
+            default:
+                ToolName = L"Skipped";
+        }
+
+        if(!GlobalConfig.ShowTools[i]) {
+            ToolName = L"Skipped";
+        }
+        MsgLog("Scan for Tool Type %d - %s\n", i + 1, ToolName);
+        #endif
+
+
+        switch(GlobalConfig.ShowTools[i]) {
             case TAG_SHUTDOWN:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s Tool\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_REBOOT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryReset);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_RESET);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s Tool\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_ABOUT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryAbout);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s Tool\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_EXIT:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_EXIT);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s Tool\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_HIDDEN:
                 if (GlobalConfig.HiddenTags) {
+                    FoundTool = TRUE;
                     TempMenuEntry = CopyMenuEntry(&MenuEntryManageHidden);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
                     AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - Added %s Tool\n", ToolName);
+                    #endif
                 }
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_FIRMWARE:
                 if (EfivarGetRaw(&GlobalGuid, L"OsIndicationsSupported", &b, &j) == EFI_SUCCESS) {
                     osind = (UINT64)*b;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
+                        FoundTool = TRUE;
                         TempMenuEntry = CopyMenuEntry(&MenuEntryFirmware);
                         TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_FIRMWARE);
                         AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                        #if REFIT_DEBUG > 0
+                        MsgLog("  - Added %s Tool\n", ToolName);
+                        #endif
                     } // if
                     MyFreePool(b);
                 } // if
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_SHELL:
                 j = 0;
                 while ((FileName = FindCommaDelimited(SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfVolume, FileName, L"EFI Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
-                                     'S', FALSE);
-                    }
+                        FoundTool = TRUE;
+                        AddToolEntry(
+                            SelfVolume,
+                            FileName,
+                            L"EFI Shell",
+                            BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
+                            'S',
+                            FALSE
+                        );
+
+                        #if REFIT_DEBUG > 0
+                        MsgLog("  - Added %s - %s\n", ToolName, FileName);
+                        #endif
+                    } // if
                 MyFreePool(FileName);
                 } // while
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_GPTSYNC:
                 j = 0;
                 while ((FileName = FindCommaDelimited(GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfVolume, FileName, L"Hybrid MBR tool", BuiltinIcon(BUILTIN_ICON_TOOL_PART),
-                                     'P', FALSE);
+                        FoundTool = TRUE;
+                        AddToolEntry(
+                            SelfVolume,
+                            FileName,
+                            L"Hybrid MBR tool",
+                            BuiltinIcon(BUILTIN_ICON_TOOL_PART),
+                            'P',
+                            FALSE
+                        );
+
+                        #if REFIT_DEBUG > 0
+                        MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                        #endif
                     } // if
+
                     MyFreePool(FileName);
                 } // while
-                FileName = NULL;
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_GDISK:
                 j = 0;
                 while ((FileName = FindCommaDelimited(GDISK_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfVolume, FileName, L"disk partitioning tool",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_PART), 'G', FALSE);
-                    } // if
+                        FoundTool = TRUE;
+                        AddToolEntry(
+                            SelfVolume,
+                            FileName,
+                            L"disk partitioning tool",
+                            BuiltinIcon(BUILTIN_ICON_TOOL_PART),
+                            'G',
+                            FALSE
+                        );
+
+
+                     #if REFIT_DEBUG > 0
+                     MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                     #endif
+                  } // if
                     MyFreePool(FileName);
                 } // while
-                FileName = NULL;
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_NETBOOT:
                 j = 0;
                 while ((FileName = FindCommaDelimited(NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool(SelfVolume, FileName)) {
-                        AddToolEntry(SelfVolume, FileName, L"Netboot",
-                                     BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT), 'N', FALSE);
+                        FoundTool = TRUE;
+                        AddToolEntry(
+                            SelfVolume,
+                            FileName,
+                            L"Netboot",
+                            BuiltinIcon(BUILTIN_ICON_TOOL_NETBOOT),
+                            'N',
+                            FALSE
+                        );
+
+                     #if REFIT_DEBUG > 0
+                     MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                     #endif
                     } // if
                     MyFreePool(FileName);
                 } // while
-                FileName = NULL;
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_APPLE_RECOVERY:
@@ -1465,13 +1700,31 @@ VOID ScanForTools(VOID) {
                     while ((FileName = FindCommaDelimited(GlobalConfig.MacOSRecoveryFiles, j++)) != NULL) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool(Volumes[VolumeIndex], FileName))) {
+                                FoundTool = TRUE;
                                 SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
-                                AddToolEntry(Volumes[VolumeIndex], FileName, Description,
-                                                BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE), 'R', TRUE);
+                                AddToolEntry(
+                                    Volumes[VolumeIndex],
+                                    FileName,
+                                    Description,
+                                    BuiltinIcon(BUILTIN_ICON_TOOL_APPLE_RESCUE),
+                                    'R',
+                                    TRUE
+                                );
+
+                                #if REFIT_DEBUG > 0
+                                MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                                #endif
                             } // if
                         } // if
                     } // while
                 } // for
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_WINDOWS_RECOVERY:
@@ -1481,17 +1734,36 @@ VOID ScanForTools(VOID) {
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool(Volumes[VolumeIndex], FileName)) &&
-                            ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))) {
-                                SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
-                                AddToolEntry(Volumes[VolumeIndex], FileName, Description,
-                                             BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE), 'R', TRUE);
+                            ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))
+                        ) {
+                            FoundTool = TRUE;
+                            SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
+                                AddToolEntry(
+                                    Volumes[VolumeIndex],
+                                    FileName,
+                                    Description,
+                                    BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE),
+                                    'R',
+                                    TRUE
+                                );
+
+                             #if REFIT_DEBUG > 0
+                             MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                             #endif
                         } // if
                     } // for
                 } // while
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 MyFreePool(FileName);
-                FileName = NULL;
                 MyFreePool(VolName);
                 VolName = NULL;
+
                 break;
 
             case TAG_MOK_TOOL:
@@ -1504,28 +1776,54 @@ VOID ScanForTools(VOID) {
 
             case TAG_CSR_ROTATE:
                 if ((GetCsrStatus(&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
+                    FoundTool = TRUE;
                     TempMenuEntry = CopyMenuEntry(&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_CSR_ROTATE);
                     AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - Added %s Tool\n", ToolName);
+                    #endif
                 } // if
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    #endif
+                }
+
                 break;
 
             case TAG_INSTALL:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_INSTALL);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_BOOTORDER:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryBootorder);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_BOOTORDER);
                 AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s\n", ToolName);
+                #endif
+
                 break;
 
             case TAG_MEMTEST:
                 FindTool(MEMTEST_LOCATIONS, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
                 break;
-
         } // switch()
     } // for
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Scanned Tool Types\n\n");
+    #endif
+
 } // VOID ScanForTools
