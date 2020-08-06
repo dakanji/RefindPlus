@@ -54,6 +54,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+// Forward Declaration for OpenCore Integration
+VOID OcUseBuiltinTextOutput (VOID);
 
 #include "global.h"
 #include "screen.h"
@@ -74,10 +76,11 @@ CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
 
-UINTN UGAWidth;
-UINTN UGAHeight;
+UINTN   UGAWidth;
+UINTN   UGAHeight;
 BOOLEAN AllowGraphicsMode;
-BOOLEAN HaveResized = FALSE;
+BOOLEAN HaveResized   = FALSE;
+BOOLEAN HaveOverriden = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MacBackgroundPixel  = { 0xdc, 0xdc, 0xdc, 0 };
@@ -227,7 +230,7 @@ VOID SetupScreen(VOID)
         if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - HIDPI Detected ... Scale Icons Up\n");
+            MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
             #endif
 
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -235,13 +238,18 @@ VOID SetupScreen(VOID)
             GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
             HaveResized = TRUE;
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - HiDPI Not Detected ...Maintain Icon Scale\n\n");
+            #endif
         } // if
 
         #if REFIT_DEBUG > 0
-        MsgLog("Run Graphics Mode Switch:\n");
+        MsgLog("INFO: Running Graphics Mode Switch\n\n");
         #endif
 
         SwitchToGraphics();
+
         if (GlobalConfig.ScreensaverTime != -1) {
 
             #if REFIT_DEBUG > 0
@@ -260,9 +268,16 @@ VOID SetupScreen(VOID)
 
         #if REFIT_DEBUG > 0
         MsgLog("Switched to Graphics Mode\n\n");
-    } else {
-        MsgLog("ERROR: Invalid Screen Mode\n\n");
         #endif
+    } else {
+        #if REFIT_DEBUG > 0
+        MsgLog("ERROR: Invalid Screen Mode!\n\n");
+        MsgLog("Switch to Text Mode:\n");
+        #endif
+
+        AllowGraphicsMode = FALSE;
+        GlobalConfig.TextOnly = TRUE;
+        SwitchToText(FALSE);
     }
 } // VOID SetupScreen()
 
@@ -271,6 +286,17 @@ SwitchToText(
     IN BOOLEAN CursorEnabled
 ) {
     EFI_STATUS    Status;
+
+    if (!GlobalConfig.TextRenderer && HaveOverriden = FALSE) {
+        HaveOverriden = TRUE;
+        // Override Text Renderer Setting
+        OcUseBuiltinTextOutput();
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("  - INFO: 'text_renderer' Config Setting Overriden\n");
+        MsgLog ("    * Inititated Builtin Text Renderer\n");
+        #endif
+    }
 
     egSetGraphicsModeEnabled(FALSE);
     refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, CursorEnabled);
@@ -298,7 +324,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Could not Get Text Console Size ...Use Default (%dx%d)\n",
+                "    * %r: Could not Get Text Console Size ...Using Default: %dx%d\n",
                 Status,
                 ConHeight,
                 ConWidth
@@ -309,7 +335,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Got Text Console Size (%dx%d)\n",
+                "    * %r: Text Console Size = %dx%d\n",
                 Status,
                 ConHeight,
                 ConWidth
