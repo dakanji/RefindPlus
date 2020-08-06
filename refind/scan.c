@@ -79,11 +79,11 @@
 #define MACOSX_LOADER_DIR      L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #if defined (EFIX64)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_x64.efi,memtest86x64.efi,bootx64.efi"
+#define SHELL_NAMES             L"\\EFI\\BOOT\\tools_x64\\shell.efi,\\EFI\\BOOT\\tools_x64\\shellx64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
+#define GPTSYNC_NAMES           L"\\EFI\\BOOT\\tools_x64\\gptsync.efi,\\EFI\\BOOT\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
+#define GDISK_NAMES             L"\\EFI\\BOOT\\tools_x64\\gdisk.efi,\\EFI\\BOOT\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
+#define NETBOOT_NAMES           L"\\EFI\\BOOT\\tools_x64\\ipxe.efi,\\EFI\\BOOT\\tools_x64\\ipxex64.efi,\\EFI\\tools\\ipxe.efi"
+#define MEMTEST_NAMES           L"\\EFI\\BOOT\\tools_x64\\memtest.efi,\\EFI\\BOOT\\tools_x64\\memtestx64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtestx64.efi,\\memtest.efi,\\memtest_x64.efi,\\memtestx64.efi,\\EFI\\BOOT\\tools_x64\\memtest86.efi,\\EFI\\BOOT\\tools_x64\\memtest86x64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86x64.efi,\\memtest86.efi,\\memtest86_x64.efi,\\memtest86x64.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
@@ -1414,11 +1414,11 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_ABOUT:
-                ToolName = L"About Refind";
+                ToolName = L"About rEFInd";
                 break;
 
             case TAG_EXIT:
-                ToolName = L"Exit Refind";
+                ToolName = L"Exit rEFInd";
                 break;
 
             case TAG_HIDDEN:
@@ -1462,11 +1462,11 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_CSR_ROTATE:
-                ToolName = L"CSR Rotate";
+                ToolName = L"Change SIP Policy";
                 break;
 
             case TAG_INSTALL:
-                ToolName = L"Install Refind";
+                ToolName = L"Install rEFInd";
                 break;
 
             case TAG_BOOTORDER:
