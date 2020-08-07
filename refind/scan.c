@@ -77,29 +77,29 @@
 // constants
 
 #define MACOSX_LOADER_DIR      L"System\\Library\\CoreServices"
-#define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
+#define MACOSX_LOADER_PATH     ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #if defined (EFIX64)
-#define SHELL_NAMES             L"\\EFI\\BOOT\\tools_x64\\shell.efi,\\EFI\\BOOT\\tools_x64\\shellx64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellx64.efi,\\shell.efi,\\shellx64.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\BOOT\\tools_x64\\gptsync.efi,\\EFI\\BOOT\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi"
-#define GDISK_NAMES             L"\\EFI\\BOOT\\tools_x64\\gdisk.efi,\\EFI\\BOOT\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi"
-#define NETBOOT_NAMES           L"\\EFI\\BOOT\\tools_x64\\ipxe.efi,\\EFI\\BOOT\\tools_x64\\ipxex64.efi,\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"\\EFI\\BOOT\\tools_x64\\memtest.efi,\\EFI\\BOOT\\tools_x64\\memtestx64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtestx64.efi,\\memtest.efi,\\memtest_x64.efi,\\memtestx64.efi,\\EFI\\BOOT\\tools_x64\\memtest86.efi,\\EFI\\BOOT\\tools_x64\\memtest86x64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86x64.efi,\\memtest86.efi,\\memtest86_x64.efi,\\memtest86x64.efi"
+#define SHELL_NAMES L"\\EFI\\BOOT\\tools_x64\\shell.efi,\\EFI\\BOOT\\tools_x64\\shell_x64.efi,\\EFI\\tools_x64\\shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\shell.efi,\\EFI\\shell_x64.efi,\\shell.efi,\\shell_x64.efi"
+#define GPTSYNC_NAMES L"\\EFI\\BOOT\\tools_x64\\gptsync.efi,\\EFI\\BOOT\\tools_x64\\gptsync_x64.efi,\\EFI\\tools_x64\\gptsync.efi,\\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
+#define GDISK_NAMES L"\\EFI\\BOOT\\tools_x64\\gdisk.efi,\\EFI\\BOOT\\tools_x64\\gdisk_x64.efi,\\EFI\\tools_x64\\gdisk.efi,\\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
+#define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_x64\\ipxe.efi,\\EFI\\BOOT\\tools_x64\\ipxe_x64.efi,\\EFI\\tools_x64\\ipxe.efi,\\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
+#define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_x64\\memtest.efi,\\EFI\\BOOT\\tools_x64\\memtest_x64.efi,\\EFI\\tools_x64\\memtest.efi,\\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\\EFI\\BOOT\\tools_x64\\memtest86.efi,\\EFI\\BOOT\\tools_x64\\memtest86_x64.efi,\\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\\memtest86.efi,\\memtest86_x64.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellia32.efi,\\shell.efi,\\shellia32.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_ia32.efi,memtest86ia32.efi,bootia32.efi"
+#define SHELL_NAMES L"\\EFI\\BOOT\\tools_ia32\\shell.efi,\\EFI\\BOOT\\tools_ia32\\shell_ia32.efi,\\EFI\\tools_ia32\\shell.efi,\\EFI\\tools_ia32\\shell_ia32.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_ia32.efi,\\EFI\\shell.efi,\\EFI\\shell_ia32.efi,\\shell.efi,\\shell_ia32.efi"
+#define GPTSYNC_NAMES L"\\EFI\\BOOT\\tools_ia32\\gptsync.efi,\\EFI\\BOOT\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools_ia32\\gptsync.efi,\\EFI\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_ia32.efi,\\gptsync.efi,\\gptsync_ia32.efi"
+#define GDISK_NAMES L"\\EFI\\BOOT\\tools_ia32\\gdisk.efi,\\EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools_ia32\\gdisk.efi,\\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
+#define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_ia32\\ipxe.efi,\\EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools_ia32\\ipxe.efi,\\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
+#define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_ia32\\memtest.efi,\\EFI\\BOOT\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_ia32.efi,\\EFI\\memtest.efi,\\EFI\\memtest_ia32.efi,\\memtest.efi,\\memtest_ia32.efi,\\EFI\\BOOT\\tools_ia32\\memtest86.efi,\\EFI\\BOOT\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools_ia32\\memtest86.efi,\\EFI\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_ia32.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_ia32.efi,\\memtest86.efi,\\memtest86_ia32.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\EFI\\tools\\shellaa64.efi,\\shell.efi,\\shellaa64.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_aa64.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"memtest86.efi,memtest86_aa64.efi,memtest86aa64.efi,bootaa64.efi"
+#define SHELL_NAMES L"\\EFI\\BOOT\\tools_aa64\\shell.efi,\\EFI\\BOOT\\tools_aa64\\shell_aa64.efi,\\EFI\\tools_aa64\\shell.efi,\\EFI\\tools_aa64\\shell_aa64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_aa64.efi,\\EFI\\shell.efi,\\EFI\\shell_aa64.efi,\\shell.efi,\\shell_aa64.efi"
+#define GPTSYNC_NAMES L"\\EFI\\BOOT\\tools_aa64\\gptsync.efi,\\EFI\\BOOT\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools_aa64\\gptsync.efi,\\EFI\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_aa64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_aa64.efi,\\gptsync.efi,\\gptsync_aa64.efi"
+#define GDISK_NAMES L"\\EFI\\BOOT\\tools_aa64\\gdisk.efi,\\EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools_aa64\\gdisk.efi,\\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
+#define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_aa64\\ipxe.efi,\\EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools_aa64\\ipxe.efi,\\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
+#define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_aa64\\memtest.efi,\\EFI\\BOOT\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_aa64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_aa64.efi,\\memtest.efi,\\memtest_aa64.efi,\\EFI\\BOOT\\tools_aa64\\memtest86.efi,\\EFI\\BOOT\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools_aa64\\memtest86.efi,\\EFI\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\\memtest86.efi,\\memtest86_aa64.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
 #define FALLBACK_BASENAME       L"bootaa64.efi"
 #else
@@ -124,15 +124,15 @@
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
-static REFIT_MENU_ENTRY MenuEntryAbout    = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryReset    = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryShutdown = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryRotateCsr = { L"Change SIP Policy", TAG_CSR_ROTATE, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryFirmware = { L"Reboot to Computer Setup Utility", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryManageHidden = { L"Manage Hidden Tags Menu", TAG_HIDDEN, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryInstall = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryBootorder = { L"Manage EFI boot order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryExit     = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryAbout      = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryReset      = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryShutdown   = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryRotateCsr  = { L"Change SIP Policy", TAG_CSR_ROTATE, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryFirmware   = { L"Boot into Firmaware", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryHiddenTags = { L"Manage Hidden Tags Menu", TAG_HIDDEN, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryInstall    = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryBootorder  = { L"Manage EFI Boot Order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryExit       = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -1141,7 +1141,7 @@ static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume,IN CHAR16 *LoaderPath, I
 
     Entry = AllocateZeroPool(sizeof(LOADER_ENTRY));
 
-    TitleStr = PoolPrint(L"Start %s", LoaderTitle);
+    TitleStr = PoolPrint(L"Load %s", LoaderTitle);
     Entry->me.Title = TitleStr;
     Entry->me.Tag = TAG_TOOL;
     Entry->me.Row = 1;
@@ -1168,10 +1168,6 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     #endif
 
     if (ShowMessage){
-        #if REFIT_DEBUG > 0
-        MsgLog("Scanning for boot loaders:\n");
-        #endif
-
         egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
     }
 
@@ -1224,7 +1220,7 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
                 break;
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
-                MsgLog("Scan User Configured:\n");
+                MsgLog("Scan Manual Stanzas:\n");
                 #endif
 
                 ScanUserConfigured(GlobalConfig.ConfigFilename);
@@ -1311,19 +1307,22 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
-static VOID FindTool(
+static BOOLEAN FindTool(
     CHAR16 *Locations,
     CHAR16 *Names,
     CHAR16 *Description,
     UINTN  Icon
 ) {
-    UINTN  j = 0;
-    UINTN  k;
-    UINTN  VolumeIndex;
-    CHAR16 *DirName;
-    CHAR16 *FileName;
-    CHAR16 *PathName;
-    CHAR16 FullDescription[256];
+    UINTN   j = 0;
+    UINTN   k;
+    UINTN   VolumeIndex;
+    CHAR16  *DirName;
+    CHAR16  *FileName;
+    CHAR16  *PathName;
+    BOOLEAN FoundTool = FALSE;
+
+//DA-TAG: Commented Out
+//    CHAR16 FullDescription[256];
 
     while ((DirName = FindCommaDelimited(Locations, j++)) != NULL) {
         k = 0;
@@ -1331,26 +1330,37 @@ static VOID FindTool(
             PathName = StrDuplicate(DirName);
             MergeStrings(&PathName, FileName, MyStriCmp(PathName, L"\\") ? 0 : L'\\');
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if ((Volumes[VolumeIndex]->RootDir != NULL) && (IsValidTool(Volumes[VolumeIndex], PathName))) {
-                    SPrint(
-                        FullDescription,
-                        255,
-                        L"%s at %s on %s",
-                        Description,
-                        PathName,
-                        Volumes[VolumeIndex]->VolName
-                    );
+                if ((Volumes[VolumeIndex]->RootDir != NULL)
+                    && (IsValidTool(Volumes[VolumeIndex], PathName))
+                ) {
+                    FoundTool = TRUE;
+//DA-TAG: Commented Out
+//                    SPrint(
+//                        FullDescription,
+//                        255,
+//                        L"%s at %s on %s",
+//                        Description,
+//                        PathName,
+//                        Volumes[VolumeIndex]->VolName
+//                    );
+
+//DA-TAG: Changed "FullDescription" to "Description" below
                     AddToolEntry(
                         Volumes[VolumeIndex],
                         PathName,
-                        FullDescription,
+                        Description,
                         BuiltinIcon(Icon),
                         'S',
                         FALSE
                     );
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - Added %s\n", FileName);
+                    MsgLog(
+                        "  - Added %s Tool : %s%s\n",
+                        Description,
+                        StrDuplicate(DirName),
+                        StrDuplicate(FileName)
+                    );
                     #endif
 
                 } // if
@@ -1360,6 +1370,8 @@ static VOID FindTool(
         } // while Names
         MyFreePool(DirName);
     } // while Locations
+
+    return FoundTool;
 } // VOID FindTool()
 
 // Add the second-row tags containing built-in and external tools (EFI shell,
@@ -1535,7 +1547,7 @@ VOID ScanForTools(VOID) {
             case TAG_HIDDEN:
                 if (GlobalConfig.HiddenTags) {
                     FoundTool = TRUE;
-                    TempMenuEntry = CopyMenuEntry(&MenuEntryManageHidden);
+                    TempMenuEntry = CopyMenuEntry(&MenuEntryHiddenTags);
                     TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
@@ -1546,14 +1558,19 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
                 break;
 
             case TAG_FIRMWARE:
-                if (EfivarGetRaw(&GlobalGuid, L"OsIndicationsSupported", &b, &j) == EFI_SUCCESS) {
+                if (EfivarGetRaw(
+                    &GlobalGuid,
+                    L"OsIndicationsSupported",
+                    &b,
+                    &j
+                ) == EFI_SUCCESS) {
                     osind = (UINT64)*b;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
@@ -1570,7 +1587,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1591,7 +1608,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("  - Added %s - %s\n", ToolName, FileName);
+                        MsgLog("  - Added %s : %s\n", ToolName, FileName);
                         #endif
                     } // if
                 MyFreePool(FileName);
@@ -1599,7 +1616,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1629,7 +1646,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1659,7 +1676,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1688,7 +1705,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1697,11 +1714,18 @@ VOID ScanForTools(VOID) {
             case TAG_APPLE_RECOVERY:
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     j = 0;
-                    while ((FileName = FindCommaDelimited(GlobalConfig.MacOSRecoveryFiles, j++)) != NULL) {
+                    while (
+                        (FileName = FindCommaDelimited(GlobalConfig.MacOSRecoveryFiles, j++)) != NULL
+                    ) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool(Volumes[VolumeIndex], FileName))) {
                                 FoundTool = TRUE;
-                                SPrint(Description, 255, L"Apple Recovery on %s", Volumes[VolumeIndex]->VolName);
+                                SPrint(
+                                    Description,
+                                    255,
+                                    L"Apple Recovery on %s",
+                                    Volumes[VolumeIndex]->VolName
+                                );
                                 AddToolEntry(
                                     Volumes[VolumeIndex],
                                     FileName,
@@ -1721,7 +1745,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1729,7 +1753,9 @@ VOID ScanForTools(VOID) {
 
             case TAG_WINDOWS_RECOVERY:
                 j = 0;
-                while ((FileName = FindCommaDelimited(GlobalConfig.WindowsRecoveryFiles, j++)) != NULL) {
+                while (
+                    (FileName = FindCommaDelimited(GlobalConfig.WindowsRecoveryFiles, j++)) != NULL
+                ) {
                     SplitVolumeAndFilename(&FileName, &VolName);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
@@ -1737,15 +1763,20 @@ VOID ScanForTools(VOID) {
                             ((VolName == NULL) || MyStriCmp(VolName, Volumes[VolumeIndex]->VolName))
                         ) {
                             FoundTool = TRUE;
-                            SPrint(Description, 255, L"Microsoft Recovery on %s", Volumes[VolumeIndex]->VolName);
-                                AddToolEntry(
-                                    Volumes[VolumeIndex],
-                                    FileName,
-                                    Description,
-                                    BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE),
-                                    'R',
-                                    TRUE
-                                );
+                            SPrint(
+                                Description,
+                                255,
+                                L"Microsoft Recovery on %s",
+                                Volumes[VolumeIndex]->VolName
+                            );
+                            AddToolEntry(
+                                Volumes[VolumeIndex],
+                                FileName,
+                                Description,
+                                BuiltinIcon(BUILTIN_ICON_TOOL_WINDOWS_RESCUE),
+                                'R',
+                                TRUE
+                            );
 
                              #if REFIT_DEBUG > 0
                              MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
@@ -1756,7 +1787,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1767,11 +1798,33 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_MOK_TOOL:
-                FindTool(MokLocations, MOK_NAMES, L"MOK utility", BUILTIN_ICON_TOOL_MOK_TOOL);
+                FoundTool = FindTool(
+                    MokLocations,
+                    MOK_NAMES,
+                    L"MOK Utility",
+                    BUILTIN_ICON_TOOL_MOK_TOOL
+                );
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    #endif
+                }
                 break;
 
             case TAG_FWUPDATE_TOOL:
-                FindTool(MokLocations, FWUPDATE_NAMES, L"firmware update utility", BUILTIN_ICON_TOOL_FWUPDATE);
+                FoundTool = FindTool(
+                    MokLocations,
+                    FWUPDATE_NAMES,
+                    L"Firmware Update Utility",
+                    BUILTIN_ICON_TOOL_FWUPDATE
+                );
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    #endif
+                }
                 break;
 
             case TAG_CSR_ROTATE:
@@ -1788,7 +1841,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Add %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1817,7 +1870,18 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_MEMTEST:
-                FindTool(MEMTEST_LOCATIONS, MEMTEST_NAMES, L"Memory test utility", BUILTIN_ICON_TOOL_MEMTEST);
+                FoundTool = FindTool(
+                    MEMTEST_LOCATIONS,
+                    MEMTEST_NAMES,
+                    L"Memory Test Utility",
+                    BUILTIN_ICON_TOOL_MEMTEST
+                );
+
+                if (FoundTool == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    #endif
+                }
                 break;
         } // switch()
     } // for
