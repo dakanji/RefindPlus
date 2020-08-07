@@ -695,14 +695,18 @@ egInitScreen(
                 Status = gBS->HandleProtocol(
                     gST->ConsoleOutHandle,
                     &GraphicsOutputProtocolGuid,
-                    (VOID **) &GraphicsOutput
+                    (VOID **) &OldGOP
                 );
-
-                XFlag = EFI_ALREADY_STARTED;
+                if (!EFI_ERROR(Status)) {
+                    if (OldGOP->Mode->MaxMode > 0) {
+                        GraphicsOutput = OldGOP;
+                        XFlag = EFI_ALREADY_STARTED;
+                    }
+                }
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Implement Direct GOP Renderer ...%r\n\n", Status);
+            MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
             #endif
         }
     }
@@ -763,9 +767,9 @@ egInitScreen(
 
     #if REFIT_DEBUG > 0
     if (XFlag == EFI_NOT_FOUND) {
-        MsgLog ("Cannot Implement GOP\n\n");
+        MsgLog ("INFO: Cannot Implement GOP\n\n");
     } else if (XFlag == EFI_UNSUPPORTED) {
-        MsgLog ("Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
+        MsgLog ("INFO: Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
     }
     #endif
 
@@ -779,8 +783,9 @@ egInitScreen(
         egHasGraphics = TRUE;
 
         #if REFIT_DEBUG > 0
-        if (XFlag == EFI_UNSUPPORTED) { // Only log this if GOPFix attempted
-            MsgLog("Implemented GraphicsOutputProtocol\n\n");
+        // Only log this if GOPFix or Direct Renderer attempted
+        if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
+            MsgLog("INFO: Implemented GraphicsOutputProtocol\n\n");
         }
         #endif
     }
@@ -797,18 +802,18 @@ egInitScreen(
                 Status = EFI_UNSUPPORTED;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGA\n", Status);
+                MsgLog("  - %r: Could not Activate UGADraw\n", Status);
                 #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGA\n", Status);
+                MsgLog("  - %r: Activated UGADraw\n", Status);
                 #endif
 
                 egHasGraphics = TRUE;
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Activate UGA on ConsoleOutHandle ...%r\n\n", Status);
+            MsgLog ("Activate UGADraw on ConsoleOutHandle ...%r\n\n", Status);
             #endif
         }
     }
