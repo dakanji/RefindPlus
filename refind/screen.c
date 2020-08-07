@@ -271,8 +271,8 @@ VOID SetupScreen(VOID)
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog("ERROR: Invalid Screen Mode!\n\n");
-        MsgLog("Switch to Text Mode:\n");
+        MsgLog("ERROR: Invalid Screen Mode!\n");
+        MsgLog("Force Switch to Text Mode:\n");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -303,7 +303,7 @@ SwitchToText(
 
     #if REFIT_DEBUG > 0
     if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
-        MsgLog("  - Get Text Console Size\n");
+        MsgLog("  - Determine Text Console Size\n");
     }
     #endif
 
@@ -324,7 +324,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Could not Get Text Console Size ...Using Default: %dx%d\n",
+                "    * %r: Could not Get Text Console Size ...Using Default: %dx%d\n\n",
                 Status,
                 ConHeight,
                 ConWidth
@@ -335,7 +335,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Text Console Size = %dx%d\n",
+                "    * %r: Text Console Size = %dx%d\n\n",
                 Status,
                 ConHeight,
                 ConWidth
@@ -344,6 +344,8 @@ SwitchToText(
         #endif
     }
     PrepareBlankLine();
+
+    MsgLog("INFO: Switched to Text Mode\n\n");
 }
 
 VOID SwitchToGraphics(VOID)

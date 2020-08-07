@@ -767,7 +767,7 @@ egInitScreen(
 
     #if REFIT_DEBUG > 0
     if (XFlag == EFI_NOT_FOUND) {
-        MsgLog ("INFO: Cannot Implement GOP\n\n");
+        MsgLog ("INFO: Cannot Implement GraphicsOutputProtocol\n\n");
     } else if (XFlag == EFI_UNSUPPORTED) {
         MsgLog ("INFO: Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
     }
@@ -792,7 +792,7 @@ egInitScreen(
     if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
         if (GlobalConfig.UgaPassThrough) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Activate UniversalGraphicsAdapterProtocol on ConsoleOutHandle:\n");
+            MsgLog ("Implement UniversalGraphicsAdapterProtocol Pass Through:\n");
             #endif
 
             // Run OcProvideUgaPassThrough from OpenCorePkg
@@ -802,18 +802,18 @@ egInitScreen(
                 Status = EFI_UNSUPPORTED;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGADraw\n", Status);
+                MsgLog("  - %r: Could not Activate UGADraw on ConsoleOutHandle\n", Status);
                 #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGADraw\n", Status);
+                MsgLog("  - %r: Activated UGADraw on ConsoleOutHandle\n", Status);
                 #endif
 
                 egHasGraphics = TRUE;
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Activate UGADraw on ConsoleOutHandle ...%r\n\n", Status);
+            MsgLog ("Implement UGAPassThrough ...%r\n\n", Status);
             #endif
         }
     }
