@@ -497,7 +497,18 @@ egInitScreen(
             FreePool(HandleBuffer);
         } else {
             #if REFIT_DEBUG > 0
-            MsgLog("    * Could not Locate Handle Buffer\n");
+            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
+            #endif
+
+            // try locating directly
+            Status = gBS->LocateProtocol(
+                &ConsoleControlProtocolGuid,
+                NULL,
+                (VOID*) &ConsoleControl
+            );
+
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Seek Directly ...%r\n", Status);
             #endif
         }
     }
@@ -558,7 +569,18 @@ egInitScreen(
             FreePool(HandleBuffer);
         } else {
             #if REFIT_DEBUG > 0
-            MsgLog("    * Could not Locate Handle Buffer\n");
+            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
+            #endif
+
+            // try locating directly
+            Status = gBS->LocateProtocol(
+                &UgaDrawProtocolGuid,
+                NULL,
+                (VOID*) &UGADraw
+            );
+
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Seek Directly ...%r\n", Status);
             #endif
         }
     } else {
@@ -672,8 +694,24 @@ egInitScreen(
             FreePool(HandleBuffer);
         } else {
             #if REFIT_DEBUG > 0
-            MsgLog("    * Could not Locate Handle Buffer\n");
+            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
             #endif
+
+            // try locating directly
+            Status = gBS->LocateProtocol(
+                &GraphicsOutputProtocolGuid,
+                NULL,
+                (VOID*) &OldGOP
+            );
+
+            #if REFIT_DEBUG > 0
+            MsgLog("    * Seek Directly ...%r\n", Status);
+            #endif
+
+            if (EFI_ERROR (Status)) {
+                // Force to NOT FOUND on Error as subsequent code relies on this
+                Status = EFI_NOT_FOUND;
+            }
         }
     }
 
