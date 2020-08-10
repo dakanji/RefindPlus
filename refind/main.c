@@ -72,79 +72,297 @@
 #include "scan.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
+#include "../libeg/libeg.h"
 
 //
 // Some built-in menu definitions....
 
-REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
+REFIT_MENU_ENTRY MenuEntryReturn = {
+    L"Return to Main Menu",
+    TAG_RETURN,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
 
-REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"Automatic boot",
-                                     L"Use arrow keys to move cursor; Enter to boot;",
-                                     L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh" };
-static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
+REFIT_MENU_SCREEN MainMenu = {
+    L"Main Menu",
+    NULL,
+    0, NULL, 0,
+    NULL, 0, L"Automatic boot",
+    L"Use arrow keys to move cursor; Enter to boot;",
+    L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh"
+};
 
-REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
-                              /* ScanAllLinux = */ TRUE,
-                              /* DeepLegacyScan = */ FALSE,
-                              /* EnableAndLockVMX = */ FALSE,
-                              /* FoldLinuxKernels = */ TRUE,
-                              /* EnableMouse = */ FALSE,
-                              /* EnableTouch = */ FALSE,
-                              /* HiddenTags = */ TRUE,
-                              /* UseNvram = */ TRUE,
-                              /* TextRenderer = */ FALSE,
-                              /* UgaPassThrough = */ TRUE,
-                              /* ProvideConsoleGOP = */ TRUE,
-                              /* UseDirectGop = */ TRUE,
-                              /* ShutdownAfterTimeout = */ FALSE,
-                              /* Install = */ FALSE,
-                              /* RequestedScreenWidth = */ 0,
-                              /* RequestedScreenHeight = */ 0,
-                              /* BannerBottomEdge = */ 0,
-                              /* RequestedTextMode = */ DONT_CHANGE_TEXT_MODE,
-                              /* Timeout = */ 20,
-                              /* HideUIFlags = */ 0,
-                              /* MaxTags = */ 0,
-                              /* GraphicsFor = */ GRAPHICS_FOR_OSX,
-                              /* LegacyType = */ LEGACY_TYPE_MAC,
-                              /* ScanDelay = */ 0,
-                              /* ScreensaverTime = */ 0,
-                              /* MouseSpeed = */ 4,
-                              /* IconSizes = */ { DEFAULT_BIG_ICON_SIZE / 4,
-                                                  DEFAULT_SMALL_ICON_SIZE,
-                                                  DEFAULT_BIG_ICON_SIZE,
-                                                  DEFAULT_MOUSE_SIZE },
-                              /* BannerScale = */ BANNER_NOSCALE,
-                              /* *DiscoveredRoot = */ NULL,
-                              /* *SelfDevicePath = */ NULL,
-                              /* *BannerFileName = */ NULL,
-                              /* *ScreenBackground = */ NULL,
-                              /* *ConfigFilename = */ CONFIG_FILE_NAME,
-                              /* *SelectionSmallFileName = */ NULL,
-                              /* *SelectionBigFileName = */ NULL,
-                              /* *DefaultSelection = */ NULL,
-                              /* *AlsoScan = */ NULL,
-                              /* *DontScanVolumes = */ NULL,
-                              /* *DontScanDirs = */ NULL,
-                              /* *DontScanFiles = */ NULL,
-                              /* *DontScanTools = */ NULL,
-                              /* *WindowsRecoveryFiles = */ NULL,
-                              /* *MacOSRecoveryFiles = */ NULL,
-                              /* *DriverDirs = */ NULL,
-                              /* *IconsDir = */ NULL,
-                              /* *ExtraKernelVersionStrings = */ NULL,
-                              /* *SpoofOSXVersion = */ NULL,
-                              /* CsrValues = */ NULL,
-                              /* ShowTools = */ { TAG_SHELL, TAG_MEMTEST, TAG_GDISK, TAG_APPLE_RECOVERY, TAG_WINDOWS_RECOVERY,
-                                                  TAG_MOK_TOOL, TAG_ABOUT, TAG_HIDDEN, TAG_SHUTDOWN, TAG_REBOOT, TAG_FIRMWARE,
-                                                  TAG_FWUPDATE_TOOL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-                            };
+static REFIT_MENU_SCREEN AboutMenu = {
+    L"About",
+    NULL,
+    0, NULL, 0,
+    NULL, 0, NULL,
+    L"Press Enter to return to main menu",
+    L""
+};
+
+REFIT_MENU_ENTRY MenuEntryBootKicker = {
+    L"Load BootKicker",
+    TAG_SHOW_BOOTKICKER,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+
+REFIT_CONFIG GlobalConfig = {
+    /* TextOnly = */ FALSE,
+    /* ScanAllLinux = */ TRUE,
+    /* DeepLegacyScan = */ FALSE,
+    /* EnableAndLockVMX = */ FALSE,
+    /* FoldLinuxKernels = */ TRUE,
+    /* EnableMouse = */ FALSE,
+    /* EnableTouch = */ FALSE,
+    /* HiddenTags = */ TRUE,
+    /* UseNvram = */ TRUE,
+    /* TextRenderer = */ FALSE,
+    /* UgaPassThrough = */ TRUE,
+    /* ProvideConsoleGOP = */ TRUE,
+    /* UseDirectGop = */ TRUE,
+    /* ShutdownAfterTimeout = */ FALSE,
+    /* Install = */ FALSE,
+    /* RequestedScreenWidth = */ 0,
+    /* RequestedScreenHeight = */ 0,
+    /* BannerBottomEdge = */ 0,
+    /* RequestedTextMode = */ DONT_CHANGE_TEXT_MODE,
+    /* Timeout = */ 20,
+    /* HideUIFlags = */ 0,
+    /* MaxTags = */ 0,
+    /* GraphicsFor = */ GRAPHICS_FOR_OSX,
+    /* LegacyType = */ LEGACY_TYPE_MAC,
+    /* ScanDelay = */ 0,
+    /* ScreensaverTime = */ 0,
+    /* MouseSpeed = */ 4,
+    /* IconSizes = */ {
+        DEFAULT_BIG_ICON_SIZE / 4,
+        DEFAULT_SMALL_ICON_SIZE,
+        DEFAULT_BIG_ICON_SIZE,
+        DEFAULT_MOUSE_SIZE
+    },
+    /* BannerScale = */ BANNER_NOSCALE,
+    /* *DiscoveredRoot = */ NULL,
+    /* *SelfDevicePath = */ NULL,
+    /* *BannerFileName = */ NULL,
+    /* *ScreenBackground = */ NULL,
+    /* *ConfigFilename = */ CONFIG_FILE_NAME,
+    /* *SelectionSmallFileName = */ NULL,
+    /* *SelectionBigFileName = */ NULL,
+    /* *DefaultSelection = */ NULL,
+    /* *AlsoScan = */ NULL,
+    /* *DontScanVolumes = */ NULL,
+    /* *DontScanDirs = */ NULL,
+    /* *DontScanFiles = */ NULL,
+    /* *DontScanTools = */ NULL,
+    /* *WindowsRecoveryFiles = */ NULL,
+    /* *MacOSRecoveryFiles = */ NULL,
+    /* *DriverDirs = */ NULL,
+    /* *IconsDir = */ NULL,
+    /* *ExtraKernelVersionStrings = */ NULL,
+    /* *SpoofOSXVersion = */ NULL,
+    /* CsrValues = */ NULL,
+    /* ShowTools = */ {
+        TAG_SHELL,
+        TAG_MEMTEST,
+        TAG_GDISK,
+        TAG_APPLE_RECOVERY,
+        TAG_WINDOWS_RECOVERY,
+        TAG_MOK_TOOL,
+        TAG_ABOUT,
+        TAG_HIDDEN,
+        TAG_SHUTDOWN,
+        TAG_REBOOT,
+        TAG_FIRMWARE,
+        TAG_FWUPDATE_TOOL,
+        0, 0, 0, 0, 0, 0, 0, 0, 0
+    }
+};
 
 EFI_GUID RefindGuid = REFIND_GUID_VALUE;
+
+#define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
+
 
 //
 // misc functions
 //
+
+// Checks to see if a specified file seems to be a valid tool.
+// Returns TRUE if it passes all tests, FALSE otherwise
+static
+BOOLEAN
+IsValidTool(
+    IN REFIT_VOLUME *BaseVolume,
+    CHAR16          *PathName
+) {
+    CHAR16  *DontVolName  = NULL;
+    CHAR16  *DontPathName = NULL;
+    CHAR16  *DontFileName = NULL;
+    CHAR16  *DontScanThis;
+    CHAR16  *TestVolName  = NULL;
+    CHAR16  *TestPathName = NULL;
+    CHAR16  *TestFileName = NULL;
+    BOOLEAN retval        = TRUE;
+    UINTN   i = 0;
+
+    if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
+        SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
+        while (retval && (DontScanThis = FindCommaDelimited(GlobalConfig.DontScanTools, i++))) {
+            SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
+            if (MyStriCmp(TestFileName, DontFileName) &&
+                ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
+                ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))
+            ) {
+                retval = FALSE;
+            } // if
+
+            MyFreePool(DontScanThis);
+        } // while
+    } else {
+        retval = FALSE;
+    }
+
+    MyFreePool(TestVolName);
+    MyFreePool(TestPathName);
+    MyFreePool(TestFileName);
+
+    return retval;
+} // BOOLEAN IsValidTool()
+
+VOID
+preBootKicker(
+    VOID
+) {
+    UINTN               MenuExit;
+    INTN                DefaultEntry = 1;
+    MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
+    REFIT_MENU_ENTRY    *ChosenEntry;
+    REFIT_MENU_SCREEN BootKickerMenu = {
+        L"Apple BootKicker",
+        NULL,
+        0, NULL, 0,
+        NULL, 0, NULL,
+        L"Press 'ESC' or 'Spacebar' to Return to Main Menu",
+        L""
+    };
+
+    if (BootKickerMenu.EntryCount == 0) {
+        BootKickerMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
+        BootKickerMenu.Title = L"Apple BootKicker";
+        AddMenuInfoLine(&BootKickerMenu, L"A tool to load the Apple Boot Screen");
+        AddMenuInfoLine(&BootKickerMenu, L"(Requires GPU With Native Apple Boot Screen)");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the following files:");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\BootKicker_x64.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker_x64.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"The first file found in the order listed will be used");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr'");
+        AddMenuInfoLine(&BootKickerMenu, L"https://forums.macrumors.com/threads/thread.2231693");
+        AddMenuInfoLine(&BootKickerMenu, L"'MyBootMgr' is a preconfigured rEFInd/Opencore Chainloader");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuInfoLine(&BootKickerMenu, L"You can also get BootKicker.efi from the OpenCore Project:");
+        AddMenuInfoLine(&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuInfoLine(&BootKickerMenu, L"");
+        AddMenuEntry(&BootKickerMenu, &MenuEntryBootKicker);
+        AddMenuEntry(&BootKickerMenu, &MenuEntryReturn);
+    }
+
+    MenuExit = RunGenericMenu(&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
+
+    if (ChosenEntry) {
+        #if REFIT_DEBUG > 0
+        MsgLog("Get User Input:\n");
+        #endif
+
+        if (MyStriCmp(ChosenEntry->Title, L"Load BootKicker") && (MenuExit == MENU_EXIT_ENTER)) {
+            UINTN        i = 0;
+            UINTN        k = 0;
+            CHAR16       *Names       = BOOTKICKER_FILES;
+            CHAR16       *FilePath    = NULL;
+            CHAR16       *Description = ChosenEntry->Title;
+            BOOLEAN      FoundTool    = FALSE;
+            LOADER_ENTRY *TempEntry   = NULL;
+
+            #if REFIT_DEBUG > 0
+            // Log Load BootKicker
+            MsgLog("  - Seek BootKicker\n");
+            #endif
+
+            k = 0;
+                while ((FilePath = FindCommaDelimited(Names, k++)) != NULL) {
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("    * Seek %s:\n", FilePath);
+                    #endif
+
+                    i = 0;
+                    for (i = 0; i < VolumesCount; i++) {
+                        if ((Volumes[i]->RootDir != NULL) && (IsValidTool(Volumes[i], FilePath))) {
+                            TempEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+
+                            TempEntry->me.Title = Description;
+                            TempEntry->me.Tag = TAG_SHOW_BOOTKICKER;
+                            TempEntry->me.Row = 1;
+                            TempEntry->me.ShortcutLetter = 'S';
+                            TempEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
+                            TempEntry->LoaderPath = StrDuplicate(FilePath);
+                            TempEntry->Volume = Volumes[i];
+                            TempEntry->UseGraphicsMode = TRUE;
+
+                            FoundTool = TRUE;
+                            break;
+                        } // if
+                    } // for
+
+                    if (FoundTool == TRUE) {
+                        break;
+                    }
+                } // while Names
+                MyFreePool(FilePath);
+
+            if (FoundTool == TRUE) {
+                #if REFIT_DEBUG > 0
+                if (egHasGraphicsMode()) {
+                    MsgLog("    ** Success: Load %s\n------------\n\n", FilePath);
+                } else {
+                    MsgLog("    ** Success: Load %s\n\n", FilePath);
+                }
+                #endif
+
+                // Run BootKicker
+                StartTool(TempEntry);
+            } else {
+                #if REFIT_DEBUG > 0
+                MsgLog(
+                    "  - Could not Find BootKicker ...Return to Main Menu\n\n",
+                    ChosenEntry->Title
+                );
+                #endif
+            }
+        } else {
+            #if REFIT_DEBUG > 0
+            // Log Return to Main Screen
+            MsgLog("  - %s\n\n", ChosenEntry->Title);
+            #endif
+        } // if
+    } else {
+        #if REFIT_DEBUG > 0
+        MsgLog("Could not Get User Input  ...Return to Main Menu\n\n");
+        #endif
+    } // if
+} /* VOID preBootKicker() */
 
 VOID AboutrEFInd(VOID)
 {
@@ -161,34 +379,72 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Running on:");
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
-#if defined(EFI32)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
-#elif defined(EFIX64)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86_64 (64 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
-#elif defined(EFIAARCH64)
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: ARM (64 bit); Secure Boot %s",
-                                              secure_mode() ? L"active" : L"inactive"));
-#else
+        AddMenuInfoLine(
+            &AboutMenu,
+            PoolPrint(
+                L" EFI Revision %d.%02d",
+                ST->Hdr.Revision >> 16,
+                ST->Hdr.Revision & ((1 << 16) - 1)
+            )
+        );
+
+        #if defined(EFI32)
+        AddMenuInfoLine(
+            &AboutMenu,
+            PoolPrint(
+                L" Platform: x86 (32 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
+        );
+        #elif defined(EFIX64)
+        AddMenuInfoLine(
+            &AboutMenu,
+            PoolPrint(
+                L" Platform: x86_64 (64 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
+        );
+        #elif defined(EFIAARCH64)
+        AddMenuInfoLine(
+            &AboutMenu,
+            PoolPrint(
+                L" Platform: ARM (64 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
+        );
+        #else
         AddMenuInfoLine(&AboutMenu, L" Platform: unknown");
-#endif
+        #endif
+
         if (GetCsrStatus(&CsrStatus) == EFI_SUCCESS) {
             RecordgCsrStatus(CsrStatus, FALSE);
             AddMenuInfoLine(&AboutMenu, gCsrStatus);
         }
+
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
-        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
-                                              ST->FirmwareRevision & ((1 << 16) - 1)));
+
+        // More than ~65 causes empty info page on 800x600 display
+        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH);
+
+        AddMenuInfoLine(
+            &AboutMenu,
+            PoolPrint(
+                L" Firmware: %s %d.%02d",
+                FirmwareVendor,
+                ST->FirmwareRevision >> 16,
+                ST->FirmwareRevision & ((1 << 16) - 1)
+            )
+        );
+
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine(&AboutMenu, L"");
-#if defined(__MAKEWITH_GNUEFI)
+
+        #if defined(__MAKEWITH_GNUEFI)
         AddMenuInfoLine(&AboutMenu, L"Built with GNU-EFI");
-#else
+        #else
         AddMenuInfoLine(&AboutMenu, L"Built with TianoCore EDK2");
-#endif
+        #endif
+
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"For more information, see the rEFInd Web site:");
         AddMenuInfoLine(&AboutMenu, L"http://www.rodsbooks.com/refind/");
@@ -225,12 +481,14 @@ VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
+
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary....
     if (Reconnect) {
         ConnectAllDriversToAllControllers();
         ScanVolumes();
     }
+
     ReadConfig(GlobalConfig.ConfigFilename);
     SetVolumeIcons();
     ScanForBootloaders(DisplayMessage);
@@ -485,6 +743,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #endif
 
     while (MainLoopRunning) {
+        TempEntry = NULL;
+
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 
         // The Escape key triggers a re-scan operation....
@@ -506,11 +766,42 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
         switch (ChosenEntry->Tag) {
 
+            case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Load Apple Boot Screen\n------------\n\n");
+                } else {
+                    MsgLog("  - Load Apple Boot Screen\n\n");
+                }
+                #endif
+
+                TempEntry = (LOADER_ENTRY *)ChosenEntry;
+                TempEntry->UseGraphicsMode = TRUE;
+
+                StartTool(TempEntry);
+                break;
+
+            case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Show Apple BootKicker Info\n\n");
+                #endif
+
+                preBootKicker();
+                break;
+
             case TAG_REBOOT:    // Reboot
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Reboot Computer\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Reboot Computer\n------------\n\n");
+                } else {
+                    MsgLog("  - Reboot Computer\n\n");
+                }
                 #endif
 
                 TerminateScreen();
@@ -522,7 +813,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Shut Computer Down\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Shut Computer Down\n------------\n\n");
+                } else {
+                    MsgLog("  - Shut Computer Down\n\n");
+                }
                 #endif
 
                 TerminateScreen();
@@ -544,7 +839,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Boot OS via *.efi Loader\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Boot OS via *.efi Loader\n------------\n\n");
+                } else {
+                    MsgLog("  - Boot OS via *.efi Loader\n\n");
+                }
                 #endif
 
                 TempEntry = (LOADER_ENTRY *)ChosenEntry;
@@ -558,7 +857,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Boot Legacy OS\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Boot Legacy OS\n------------\n\n");
+                } else {
+                    MsgLog("  - Boot Legacy OS\n\n");
+                }
                 #endif
 
                 StartLegacy((LEGACY_ENTRY *)ChosenEntry, SelectionName);
@@ -568,7 +871,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Boot Legacy UEFI\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Boot Legacy UEFI\n------------\n\n");
+                } else {
+                    MsgLog("  - Boot Legacy UEFI\n\n");
+                }
                 #endif
 
                 StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
@@ -581,7 +888,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("  - Start EFI Tool\n\n");
                 #endif
 
-                StartTool((LOADER_ENTRY *)ChosenEntry);
+                TempEntry = (LOADER_ENTRY *)ChosenEntry;
+                if (MyStrStr(TempEntry->Title, L"Apple Boot Screen") != NULL) {
+                    TempEntry->UseGraphicsMode = TRUE;
+                }
+
+                StartTool(TempEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries
@@ -598,7 +910,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Terminate rEFInd\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Terminate rEFInd\n------------\n\n");
+                } else {
+                    MsgLog("  - Terminate rEFInd\n\n");
+                }
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
@@ -613,7 +929,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Reboot into Firmware\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Reboot into Firmware\n------------\n\n");
+                } else {
+                    MsgLog("  - Reboot into Firmware\n\n");
+                }
                 #endif
 
                 RebootIntoFirmware();
@@ -633,7 +953,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Install rEFInd\n------------\n\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Install rEFInd\n------------\n\n");
+                } else {
+                    MsgLog("  - Install rEFInd\n\n");
+                }
                 #endif
 
                 InstallRefind();

@@ -54,8 +54,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-// Forward Declaration for OpenCore Integration
-VOID OcUseBuiltinTextOutput (VOID);
 
 #include "global.h"
 #include "screen.h"
@@ -271,8 +269,7 @@ VOID SetupScreen(VOID)
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog("ERROR: Invalid Screen Mode!\n");
-        MsgLog("Force Switch to Text Mode:\n");
+        MsgLog("ERROR: Invalid Screen Mode!\n\n");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -293,8 +290,7 @@ SwitchToText(
         OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - INFO: 'text_renderer' Config Setting Overriden\n");
-        MsgLog ("    * Inititated Builtin Text Renderer\n");
+        MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
         #endif
     }
 
@@ -303,7 +299,7 @@ SwitchToText(
 
     #if REFIT_DEBUG > 0
     if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
-        MsgLog("  - Determine Text Console Size\n");
+        MsgLog("Determine Text Console Size:\n");
     }
     #endif
 
@@ -324,7 +320,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Could not Get Text Console Size ...Using Default: %dx%d\n\n",
+                "  - %r: Could not Get Text Console Size ...Using Default: %dx%d\n\n",
                 Status,
                 ConHeight,
                 ConWidth
@@ -335,7 +331,7 @@ SwitchToText(
         #if REFIT_DEBUG > 0
         if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
             MsgLog(
-                "    * %r: Text Console Size = %dx%d\n\n",
+                "  - %r: Text Console Size = %dx%d\n\n",
                 Status,
                 ConHeight,
                 ConWidth

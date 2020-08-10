@@ -56,12 +56,6 @@
  */
 
 // July 2020: Extensively modiied by dakanji (sourceforge.net/u/dakanji/profile)
-// Forward Declaration for OpenCore Integration
-VOID OcUseBuiltinTextOutput (VOID);
-VOID OcProvideConsoleGop (IN BOOLEAN Route);
-EFI_STATUS OcProvideUgaPassThrough (VOID);
-EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
-
 #include "libegint.h"
 #include "../refind/screen.h"
 #include "../refind/lib.h"

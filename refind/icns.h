@@ -35,11 +35,11 @@
  */
 /*
  * Modifications copyright (c) 2012-2015 Roderick W. Smith
- * 
+ *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
- * 
+ *
  */
 
 #ifndef __ICNS_H_
@@ -78,7 +78,8 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_VOL_OPTICAL           (20)
 #define BUILTIN_ICON_VOL_NET               (21)
 #define BUILTIN_ICON_MOUSE                 (22)
-#define BUILTIN_ICON_COUNT                 (23)
+#define BUILTIN_ICON_TOOL_BOOTKICKER       (23)
+#define BUILTIN_ICON_COUNT                 (24)
 
 #endif
 

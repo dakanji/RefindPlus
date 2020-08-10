@@ -166,8 +166,13 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             // when passing options to Apple's boot.efi...
         } // if
     } // if (LoadOptions != NULL)
-    if (Verbose)
-        Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
+    if (Verbose) {
+        Print(
+            L"Starting %s\nUsing load options '%s'\n",
+            ImageTitle,
+            FullLoadOptions ? FullLoadOptions : L""
+        );
+    }
 
     // load the image into memory
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
@@ -214,8 +219,12 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         goto bailout;
     }
 
-    ReturnStatus = Status = refit_call3_wrapper(BS->HandleProtocol, ChildImageHandle, &LoadedImageProtocol,
-                                                (VOID **) &ChildLoadedImage);
+    ReturnStatus = Status = refit_call3_wrapper(
+        BS->HandleProtocol,
+        ChildImageHandle,
+        &LoadedImageProtocol,
+        (VOID **) &ChildLoadedImage
+    );
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }

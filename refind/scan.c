@@ -84,6 +84,7 @@
 #define GDISK_NAMES L"\\EFI\\BOOT\\tools_x64\\gdisk.efi,\\EFI\\BOOT\\tools_x64\\gdisk_x64.efi,\\EFI\\tools_x64\\gdisk.efi,\\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
 #define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_x64\\ipxe.efi,\\EFI\\BOOT\\tools_x64\\ipxe_x64.efi,\\EFI\\tools_x64\\ipxe.efi,\\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
 #define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_x64\\memtest.efi,\\EFI\\BOOT\\tools_x64\\memtest_x64.efi,\\EFI\\tools_x64\\memtest.efi,\\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\\EFI\\BOOT\\tools_x64\\memtest86.efi,\\EFI\\BOOT\\tools_x64\\memtest86_x64.efi,\\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\\memtest86.efi,\\memtest86_x64.efi"
+#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
 #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
@@ -92,6 +93,7 @@
 #define GDISK_NAMES L"\\EFI\\BOOT\\tools_ia32\\gdisk.efi,\\EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools_ia32\\gdisk.efi,\\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
 #define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_ia32\\ipxe.efi,\\EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools_ia32\\ipxe.efi,\\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
 #define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_ia32\\memtest.efi,\\EFI\\BOOT\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_ia32.efi,\\EFI\\memtest.efi,\\EFI\\memtest_ia32.efi,\\memtest.efi,\\memtest_ia32.efi,\\EFI\\BOOT\\tools_ia32\\memtest86.efi,\\EFI\\BOOT\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools_ia32\\memtest86.efi,\\EFI\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_ia32.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_ia32.efi,\\memtest86.efi,\\memtest86_ia32.efi"
+#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\BOOT\\tools_ia32\\BootKicker.efi,\\EFI\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\tools_ia32\\BootKicker.efi,\\EFI\\tools\\BootKicker_ia32.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_ia32.efi,\\EFI\\BootKicker.efi,\\BootKicker_ia32.efi,\\BootKicker.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
 #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
@@ -100,6 +102,7 @@
 #define GDISK_NAMES L"\\EFI\\BOOT\\tools_aa64\\gdisk.efi,\\EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools_aa64\\gdisk.efi,\\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
 #define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_aa64\\ipxe.efi,\\EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools_aa64\\ipxe.efi,\\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
 #define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_aa64\\memtest.efi,\\EFI\\BOOT\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_aa64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_aa64.efi,\\memtest.efi,\\memtest_aa64.efi,\\EFI\\BOOT\\tools_aa64\\memtest86.efi,\\EFI\\BOOT\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools_aa64\\memtest86.efi,\\EFI\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\\memtest86.efi,\\memtest86_aa64.efi"
+#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\BOOT\\tools_aa64\\BootKicker.efi,\\EFI\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\tools_aa64\\BootKicker.efi,\\EFI\\tools\\BootKicker_aa64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_aa64.efi,\\EFI\\BootKicker.efi,\\BootKicker_aa64.efi,\\BootKicker.efi"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
 #define FALLBACK_BASENAME       L"bootaa64.efi"
 #else
@@ -108,6 +111,7 @@
 #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi"
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"memtest86.efi"
+#define BOOTKICKER_NAMES        L"BootKicker.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
@@ -124,15 +128,66 @@
 
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
-static REFIT_MENU_ENTRY MenuEntryAbout      = { L"About rEFInd", TAG_ABOUT, 1, 0, 'A', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryReset      = { L"Reboot Computer", TAG_REBOOT, 1, 0, 'R', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryShutdown   = { L"Shut Down Computer", TAG_SHUTDOWN, 1, 0, 'U', NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryRotateCsr  = { L"Change SIP Policy", TAG_CSR_ROTATE, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryFirmware   = { L"Boot into Firmaware", TAG_FIRMWARE, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryHiddenTags = { L"Manage Hidden Tags Menu", TAG_HIDDEN, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryInstall    = { L"Install rEFInd to Disk", TAG_INSTALL, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryBootorder  = { L"Manage EFI Boot Order", TAG_BOOTORDER, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY MenuEntryExit       = { L"Exit rEFInd", TAG_EXIT, 1, 0, 0, NULL, NULL, NULL };
+static REFIT_MENU_ENTRY MenuEntryAbout = {
+    L"About rEFInd",
+    TAG_ABOUT,
+    1, 0, 'A',
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryReset = {
+    L"Reboot Computer",
+    TAG_REBOOT,
+    1, 0, 'R',
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryShutdown = {
+    L"Shut Down Computer",
+    TAG_SHUTDOWN,
+    1, 0, 'U',
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
+    L"Change SIP Policy",
+    TAG_CSR_ROTATE,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryFirmware = {
+    L"Boot into Firmaware",
+    TAG_FIRMWARE,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryHiddenTags = {
+    L"Manage Hidden Tags Menu",
+    TAG_HIDDEN,
+    1, 0, 0, NULL,
+    NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryInstall = {
+    L"Install rEFInd to Disk",
+    TAG_INSTALL,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryBootorder = {
+    L"Manage EFI Boot Order",
+    TAG_BOOTORDER,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryExit = {
+    L"Exit rEFInd",
+    TAG_EXIT,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+static REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
+    L"Show Apple Boot Screen",
+    TAG_PRE_BOOTKICKER,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
@@ -1133,9 +1188,14 @@ EG_IMAGE * GetDiskBadge(IN UINTN DiskType) {
 // pre-boot tool functions
 //
 
-static LOADER_ENTRY * AddToolEntry(REFIT_VOLUME *Volume,IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle,
-                                   IN EG_IMAGE *Image, IN CHAR16 ShortcutLetter, IN BOOLEAN UseGraphicsMode)
-{
+static LOADER_ENTRY * AddToolEntry(
+    REFIT_VOLUME *Volume,
+    IN CHAR16 *LoaderPath,
+    IN CHAR16 *LoaderTitle,
+    IN EG_IMAGE *Image,
+    IN CHAR16 ShortcutLetter,
+    IN BOOLEAN UseGraphicsMode
+) {
     LOADER_ENTRY *Entry;
     CHAR16       *TitleStr = NULL;
 
@@ -1303,7 +1363,7 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     MyFreePool(TestPathName);
     MyFreePool(TestFileName);
     return retval;
-} // VOID IsValidTool()
+} // BOOLEAN IsValidTool()
 
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
@@ -1390,9 +1450,9 @@ VOID ScanForTools(VOID) {
     CHAR8            *b = 0;
     UINT32           CsrValue;
     BOOLEAN          FoundTool;
+    CHAR16           *ToolName = NULL;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *ToolName = NULL;
     MsgLog("Scan for Builtin/External Tools...\n");
     MsgLog("Tool Type Count = %d\n", NUM_TOOLS);
     #endif
@@ -1413,6 +1473,7 @@ VOID ScanForTools(VOID) {
         FileName = NULL;
         VolName = NULL;
         FoundTool = FALSE;
+        ToolName = NULL;
 
         #if REFIT_DEBUG > 0
         switch(GlobalConfig.ShowTools[i]) {
@@ -1485,9 +1546,14 @@ VOID ScanForTools(VOID) {
                 ToolName = L"Manage Boot Order";
                 break;
 
+            case TAG_PRE_BOOTKICKER:
+                ToolName = L"Apple BootKicker";
+                break;
+
             case TAG_MEMTEST:
                 ToolName = L"Memtest";
                 break;
+
             default:
                 ToolName = L"Skipped";
         }
@@ -1498,8 +1564,22 @@ VOID ScanForTools(VOID) {
         MsgLog("Scan for Tool Type %d - %s\n", i + 1, ToolName);
         #endif
 
+        if (MyStrStr(ToolName, L"Skipped") != NULL) {
+            continue;
+        }
 
         switch(GlobalConfig.ShowTools[i]) {
+            case TAG_PRE_BOOTKICKER:
+                TempMenuEntry = CopyMenuEntry(&MenuEntryPreBootKicker);
+                TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
+                AddMenuEntry(&MainMenu, TempMenuEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Added %s Tool\n", ToolName);
+                #endif
+
+                break;
+
             case TAG_SHUTDOWN:
                 TempMenuEntry = CopyMenuEntry(&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon(BUILTIN_ICON_FUNC_SHUTDOWN);

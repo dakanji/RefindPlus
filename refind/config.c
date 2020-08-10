@@ -682,8 +682,10 @@ VOID ReadConfig(CHAR16 *FileName)
                 } else if (MyStriCmp(FlagName, L"netboot")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
                 } else if (MyStriCmp(FlagName, L"hidden_tags")) {
-                    GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
-                    GlobalConfig.HiddenTags = TRUE;
+                   GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
+                   GlobalConfig.HiddenTags = TRUE;
+                } else if (MyStriCmp(FlagName, L"apple_bootscreen")) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_PRE_BOOTKICKER;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }

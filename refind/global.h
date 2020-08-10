@@ -46,15 +46,14 @@
 #define __GLOBAL_H_
 
 #ifdef __MAKEWITH_GNUEFI
-#include <efi.h>
-#include <efilib.h>
+    #include <efi.h>
+    #include <efilib.h>
 #else
-#include "../include/tiano_includes.h"
+    #include "../include/tiano_includes.h"
 #endif
+
 #include "../EfiLib/GenericBdsLib.h"
-
 #include "../libeg/libeg.h"
-
 #include "globalExtra.h"
 
 // Tag classifications; used in various ways.
@@ -80,7 +79,9 @@
 #define TAG_HIDDEN           (20)
 #define TAG_INSTALL          (21)
 #define TAG_BOOTORDER        (22)
-#define NUM_TOOLS            (23)
+#define TAG_PRE_BOOTKICKER   (23)
+#define TAG_SHOW_BOOTKICKER  (24)
+#define NUM_TOOLS            (25)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -165,29 +166,33 @@
 
 // Names of binaries that can manage MOKs....
 #if defined (EFIX64)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
 #elif defined(EFI32)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
 #else
-#define MOK_NAMES               L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
 #endif
+
 // Names of binaries that can update firmware....
 #if defined (EFIX64)
-#define FWUPDATE_NAMES          L"fwupx64.efi"
+    #define FWUPDATE_NAMES          L"fwupx64.efi"
 #elif defined(EFI32)
-#define FWUPDATE_NAMES          L"fwupia32.efi"
+    #define FWUPDATE_NAMES          L"fwupia32.efi"
 #elif defined(EFIAARCH64)
-#define FWUPDATE_NAMES          L"fwupaa64.efi"
+    #define FWUPDATE_NAMES          L"fwupaa64.efi"
 #else
-#define FWUPDATE_NAMES          L"fwup.efi"
+    #define FWUPDATE_NAMES          L"fwup.efi"
 #endif
+
 // Directories to search for these MOK-managing programs. Note that SelfDir is
 // searched in addition to these locations....
 #define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 // Directories to search for memtest86....
-#define MEMTEST_LOCATIONS       L"EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest,EFI\\BOOT\\tools_x64"
+#define MEMTEST_LOCATIONS       L"EFI\\BOOT\\tools_x64,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
+// Directories to search for BootKicker....
+#define BOOTKICKER_LOCATIONS       L"\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be macOS recovery files
@@ -224,6 +229,13 @@
 
 // Configuration file variables
 #define KERNEL_VERSION L"%v"
+
+//DA-TAG
+// Forward Declaration for OpenCore Integration
+VOID OcUseBuiltinTextOutput (VOID);
+VOID OcProvideConsoleGop (IN BOOLEAN Route);
+EFI_STATUS OcProvideUgaPassThrough (VOID);
+EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 
 //
 // global definitions
