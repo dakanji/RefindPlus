@@ -48,9 +48,9 @@ timeout 20
 # NB: This setting is forced to 'true' whenever text output is required,
 # such as when running EFI Shell or whenever rEFInd is changed to text
 # mode as part of its operations (Typically to handle errors).
-# Default is false
+# Default is true
 #
-#text_renderer true
+#text_renderer false
 
 # Add UGA Protocol to GOP (1, true, or on) or not (0, false, or off) when
 # absent. This primarily works to permit booting older Operating Systems
