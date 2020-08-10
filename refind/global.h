@@ -81,7 +81,9 @@
 #define TAG_BOOTORDER        (22)
 #define TAG_PRE_BOOTKICKER   (23)
 #define TAG_SHOW_BOOTKICKER  (24)
-#define NUM_TOOLS            (25)
+#define TAG_PRE_NVRAMCLEAN   (25)
+#define TAG_NVRAMCLEAN       (26)
+#define NUM_TOOLS            (27)
 
 #define NUM_SCAN_OPTIONS 10
 
@@ -193,6 +195,8 @@
 #define MEMTEST_LOCATIONS       L"EFI\\BOOT\\tools_x64,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Directories to search for BootKicker....
 #define BOOTKICKER_LOCATIONS       L"\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+// Directories to search for CleanNvram....
+#define NVRAMCLEAN_LOCATIONS       L"\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be macOS recovery files

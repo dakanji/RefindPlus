@@ -109,6 +109,13 @@ REFIT_MENU_ENTRY MenuEntryBootKicker = {
     NULL, NULL, NULL
 };
 
+REFIT_MENU_ENTRY MenuEntryCleanNvram = {
+    L"Load CleanNvram",
+    TAG_NVRAMCLEAN,
+    1, 0, 0,
+    NULL, NULL, NULL
+};
+
 REFIT_CONFIG GlobalConfig = {
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
@@ -185,6 +192,9 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 #define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
+#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
+
+static BOOLEAN ranCleanNvram = FALSE;
 
 //
 // misc functions
@@ -245,17 +255,18 @@ preBootKicker(
         NULL,
         0, NULL, 0,
         NULL, 0, NULL,
-        L"Press 'ESC' or 'Spacebar' to Return to Main Menu",
+        L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
         L""
     };
 
     if (BootKickerMenu.EntryCount == 0) {
         BootKickerMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
-        BootKickerMenu.Title = L"Apple BootKicker";
-        AddMenuInfoLine(&BootKickerMenu, L"A tool to load the Apple Boot Screen");
-        AddMenuInfoLine(&BootKickerMenu, L"(Requires GPU With Native Apple Boot Screen)");
+        BootKickerMenu.Title = L"BootKicker";
+        AddMenuInfoLine(&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
+        AddMenuInfoLine(&BootKickerMenu, L"Requires GPU With Native Apple Boot Screen");
         AddMenuInfoLine(&BootKickerMenu, L"");
-        AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the following files:");
+        AddMenuInfoLine(&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
+        AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the files below:");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
@@ -265,9 +276,10 @@ preBootKicker(
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"The first file found in the order listed will be used");
+        AddMenuInfoLine(&BootKickerMenu, L"You will be Returned to the Main Menu if None is Found");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"");
-        AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr'");
+        AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine(&BootKickerMenu, L"https://forums.macrumors.com/threads/thread.2231693");
         AddMenuInfoLine(&BootKickerMenu, L"'MyBootMgr' is a preconfigured rEFInd/Opencore Chainloader");
         AddMenuInfoLine(&BootKickerMenu, L"");
@@ -334,10 +346,11 @@ preBootKicker(
 
             if (FoundTool == TRUE) {
                 #if REFIT_DEBUG > 0
+                MsgLog("    ** Success: Found %s\n", FilePath);
                 if (egHasGraphicsMode()) {
-                    MsgLog("    ** Success: Load %s\n------------\n\n", FilePath);
+                    MsgLog("  - Load BootKicker\n------------\n\n");
                 } else {
-                    MsgLog("    ** Success: Load %s\n\n", FilePath);
+                    MsgLog("  - Load BootKicker\n\n");
                 }
                 #endif
 
@@ -363,6 +376,141 @@ preBootKicker(
         #endif
     } // if
 } /* VOID preBootKicker() */
+
+VOID
+preCleanNvram(
+    VOID
+) {
+    UINTN               MenuExit;
+    INTN                DefaultEntry = 1;
+    MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
+    REFIT_MENU_ENTRY    *ChosenEntry;
+    REFIT_MENU_SCREEN CleanNvramMenu = {
+        L"Clean Nvram",
+        NULL,
+        0, NULL, 0,
+        NULL, 0, NULL,
+        L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
+        L""
+    };
+
+    if (CleanNvramMenu.EntryCount == 0) {
+        CleanNvramMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
+        CleanNvramMenu.Title = L"CleanNvram";
+        AddMenuInfoLine(&CleanNvramMenu, L"A tool to clean/reset nvram");
+        AddMenuInfoLine(&CleanNvramMenu, L"Requires Apple Firmware");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
+        AddMenuInfoLine(&CleanNvramMenu, L"You must have at least one of the files below:");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram_x64.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram_x64.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram_x64.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"The first file found in the order listed will be used");
+        AddMenuInfoLine(&CleanNvramMenu, L"You will be Returned to the Main Menu if None is Found");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram_x64.efi is distributed with 'MyBootMgr':");
+        AddMenuInfoLine(&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
+        AddMenuInfoLine(&CleanNvramMenu, L"'MyBootMgr' is a preconfigured rEFInd/Opencore Chainloader");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuInfoLine(&CleanNvramMenu, L"You can also get CleanNvram.efi from the OpenCore Project:");
+        AddMenuInfoLine(&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
+        AddMenuEntry(&CleanNvramMenu, &MenuEntryCleanNvram);
+        AddMenuEntry(&CleanNvramMenu, &MenuEntryReturn);
+    }
+
+    MenuExit = RunGenericMenu(&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
+
+    if (ChosenEntry) {
+        #if REFIT_DEBUG > 0
+        MsgLog("Get User Input:\n");
+        #endif
+
+        if (MyStriCmp(ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
+            UINTN        i = 0;
+            UINTN        k = 0;
+            CHAR16       *Names       = NVRAMCLEAN_FILES;
+            CHAR16       *FilePath    = NULL;
+            CHAR16       *Description = ChosenEntry->Title;
+            BOOLEAN      FoundTool    = FALSE;
+            LOADER_ENTRY *TempEntry   = NULL;
+
+            #if REFIT_DEBUG > 0
+            // Log Load CleanNvram
+            MsgLog("  - Seek CleanNvram\n");
+            #endif
+
+            k = 0;
+                while ((FilePath = FindCommaDelimited(Names, k++)) != NULL) {
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("    * Seek %s:\n", FilePath);
+                    #endif
+
+                    i = 0;
+                    for (i = 0; i < VolumesCount; i++) {
+                        if ((Volumes[i]->RootDir != NULL) && (IsValidTool(Volumes[i], FilePath))) {
+                            TempEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+
+                            TempEntry->me.Title = Description;
+                            TempEntry->me.Tag = TAG_NVRAMCLEAN;
+                            TempEntry->me.Row = 1;
+                            TempEntry->me.ShortcutLetter = 'S';
+                            TempEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                            TempEntry->LoaderPath = StrDuplicate(FilePath);
+                            TempEntry->Volume = Volumes[i];
+                            TempEntry->UseGraphicsMode = TRUE;
+
+                            FoundTool = TRUE;
+                            break;
+                        } // if
+                    } // for
+
+                    if (FoundTool == TRUE) {
+                        break;
+                    }
+                } // while Names
+                MyFreePool(FilePath);
+
+            if (FoundTool == TRUE) {
+                #if REFIT_DEBUG > 0
+                MsgLog("    ** Success: Found %s\n", FilePath);
+                MsgLog("  - Load CleanNvram\n\n");
+                #endif
+
+                ranCleanNvram = TRUE;
+
+                // Run CleanNvram
+                StartTool(TempEntry);
+
+            } else {
+                #if REFIT_DEBUG > 0
+                MsgLog(
+                    "  - Could not Find CleanNvram ...Return to Main Menu\n\n",
+                    ChosenEntry->Title
+                );
+                #endif
+            }
+        } else {
+            #if REFIT_DEBUG > 0
+            // Log Return to Main Screen
+            MsgLog("  - %s\n\n", ChosenEntry->Title);
+            #endif
+        } // if
+    } else {
+        #if REFIT_DEBUG > 0
+        MsgLog("Could not Get User Input  ...Return to Main Menu\n\n");
+        #endif
+    } // if
+} /* VOID preCleanNvram() */
+
 
 VOID AboutrEFInd(VOID)
 {
@@ -766,6 +914,54 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
         switch (ChosenEntry->Tag) {
 
+            case TAG_NVRAMCLEAN:    // Clean Apple Nvram
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                if (egHasGraphicsMode()) {
+                    MsgLog("  - Clean Apple Nvram\n------------\n\n");
+                } else {
+                    MsgLog("  - Clean Apple Nvram\n\n");
+                }
+                #endif
+
+                StartTool((LOADER_ENTRY *)ChosenEntry);
+                break;
+
+            case TAG_PRE_NVRAMCLEAN:    // Clean Apple Nvram Info
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Get User Input:\n");
+                MsgLog("  - Show Clean Apple Nvram Info\n\n");
+                #endif
+
+                preCleanNvram();
+
+                // Reboot if CleanNvram was triggered
+                if(ranCleanNvram == FALSE) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("INFO: Returned to Main Menu\n\n");
+                    #endif
+                } else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("INFO: Cleaned Nvram\n\n");
+                    MsgLog("Reboot Computer...\n\n");
+                    MsgLog("INFO: Terminating Screen:\n\n");
+                    #endif
+                    TerminateScreen();
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("INFO: Reseting System:\n\n");
+                    #endif
+                    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog("INFO: Computer Reboot Failed ...Attempt Fallback:\n\n");
+                    #endif
+                    MainLoopRunning = FALSE;   // just in case we get this far
+                }
+                break;
+
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
 
                 #if REFIT_DEBUG > 0
@@ -787,7 +983,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Show Apple BootKicker Info\n\n");
+                MsgLog("  - Show BootKicker Info\n\n");
                 #endif
 
                 preBootKicker();
@@ -979,7 +1175,20 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
+    #if REFIT_DEBUG > 0
+    MsgLog("Reboot Computer...\n");
+    #endif
+    TerminateScreen();
+
+    #if REFIT_DEBUG > 0
+    MsgLog("Fallback Screen Termination:\n");
+    MsgLog("Fallback System Reset:\n\n");
+    #endif
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("INFO: Reboot Failed ...Entering Endless Idle Loop\n\n");
+    #endif
     EndlessIdleLoop();
 
     return EFI_SUCCESS;

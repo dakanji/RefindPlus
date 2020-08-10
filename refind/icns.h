@@ -79,7 +79,8 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_VOL_NET               (21)
 #define BUILTIN_ICON_MOUSE                 (22)
 #define BUILTIN_ICON_TOOL_BOOTKICKER       (23)
-#define BUILTIN_ICON_COUNT                 (24)
+#define BUILTIN_ICON_TOOL_NVRAMCLEAN       (24)
+#define BUILTIN_ICON_COUNT                 (25)
 
 #endif
 

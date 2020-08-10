@@ -686,6 +686,8 @@ VOID ReadConfig(CHAR16 *FileName)
                    GlobalConfig.HiddenTags = TRUE;
                 } else if (MyStriCmp(FlagName, L"apple_bootscreen")) {
                    GlobalConfig.ShowTools[i - 1] = TAG_PRE_BOOTKICKER;
+               } else if (MyStriCmp(FlagName, L"clean_nvram")) {
+                   GlobalConfig.ShowTools[i - 1] = TAG_PRE_NVRAMCLEAN;
                 } else {
                    Print(L" unknown showtools flag: '%s'\n", FlagName);
                 }
