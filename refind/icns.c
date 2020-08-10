@@ -75,7 +75,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"vol_optical", ICON_SIZE_BADGE },
    { NULL, L"vol_net", ICON_SIZE_BADGE },
    { NULL, L"mouse", ICON_SIZE_MOUSE },
-   { NULL, L"tool_apple_bootscreen", ICON_SIZE_SMALL },
+   { NULL, L"tool_bootscreen", ICON_SIZE_SMALL },
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }
 };
 

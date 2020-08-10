@@ -187,13 +187,13 @@ static REFIT_MENU_ENTRY MenuEntryExit = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
-    L"Show Apple Boot Screen",
+    L"Show Boot Screen",
     TAG_PRE_BOOTKICKER,
     1, 0, 0,
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
-    L"Clean Apple NVRAM",
+    L"Clean NVRAM",
     TAG_PRE_NVRAMCLEAN,
     1, 0, 0,
     NULL, NULL, NULL

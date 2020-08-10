@@ -272,10 +272,10 @@ timeout 20
 #  gptsync          - the (dangerous) gptsync.efi utility (requires external
 #                     program; see rEFInd documentation for details)
 #  gdisk            - the gdisk partitioning program
-#  apple_bootscreen - Load Apple Boot Screen if available. (External program)
-#                     Needs Official GPU on Apple Firmware.
+#  show_bootscreen  - Load Apple Boot Screen if available. (External program)
+#                     Needs GOP-Compatible Official GPU on Apple Firmware.
 #                     'Official GPUs' are those with native Apple Boot Screen
-#  clean_nvram      - Reset Apple Nvram from Refind. (External program)
+#  clean_nvram      - Reset NVRAM from Refind. (External program)
 #                     Requires Apple Firmware.
 #  apple_recovery   - boots the Apple Recovery HD partition, if present
 #  windows_recovery - boots an OEM Windows recovery tool, if present

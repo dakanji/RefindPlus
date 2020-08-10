@@ -251,7 +251,7 @@ preBootKicker(
     MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
     REFIT_MENU_ENTRY    *ChosenEntry;
     REFIT_MENU_SCREEN BootKickerMenu = {
-        L"Apple BootKicker",
+        L"BootKicker",
         NULL,
         0, NULL, 0,
         NULL, 0, NULL,
@@ -263,7 +263,9 @@ preBootKicker(
         BootKickerMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
         AddMenuInfoLine(&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
-        AddMenuInfoLine(&BootKickerMenu, L"Requires GPU With Native Apple Boot Screen");
+        AddMenuInfoLine(&BootKickerMenu, L"Needs GOP Compatible Official GPUs on Apple Firmware");
+        AddMenuInfoLine(&BootKickerMenu, L"Official GPUs are those With Native Apple Boot Screen");
+        AddMenuInfoLine(&BootKickerMenu, L"Hangs and requires physical reboot with Custom GPUs");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the files below:");
@@ -275,8 +277,9 @@ preBootKicker(
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine(&BootKickerMenu, L"You will be Returned to the Main Menu if None is Found");
+        AddMenuInfoLine(&BootKickerMenu, L"You will be returned to the main menu if none is Found");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr':");
@@ -386,7 +389,7 @@ preCleanNvram(
     MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
     REFIT_MENU_ENTRY    *ChosenEntry;
     REFIT_MENU_SCREEN CleanNvramMenu = {
-        L"Clean Nvram",
+        L"Clean NVRAM",
         NULL,
         0, NULL, 0,
         NULL, 0, NULL,
@@ -396,7 +399,7 @@ preCleanNvram(
 
     if (CleanNvramMenu.EntryCount == 0) {
         CleanNvramMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
-        CleanNvramMenu.Title = L"CleanNvram";
+        CleanNvramMenu.Title = L"Clean NVRAM";
         AddMenuInfoLine(&CleanNvramMenu, L"A tool to clean/reset nvram");
         AddMenuInfoLine(&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine(&CleanNvramMenu, L"");
@@ -410,8 +413,9 @@ preCleanNvram(
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram_x64.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine(&CleanNvramMenu, L"You will be Returned to the Main Menu if None is Found");
+        AddMenuInfoLine(&CleanNvramMenu, L"You will be returned to the main menu if none is Found");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram_x64.efi is distributed with 'MyBootMgr':");
@@ -864,7 +868,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        #if REFIT_DEBUG > 0
        MsgLog("Pause for Scan Delay:\n");
        #endif
-       
+
        for (i = 0; i < GlobalConfig.ScanDelay; i++) {
             if ((i + 1) == 1) {
                 #if REFIT_DEBUG > 0
@@ -914,25 +918,25 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
         switch (ChosenEntry->Tag) {
 
-            case TAG_NVRAMCLEAN:    // Clean Apple Nvram
+            case TAG_NVRAMCLEAN:    // Clean NVRAM
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Clean Apple Nvram\n------------\n\n");
+                    MsgLog("  - Clean NVRAM\n------------\n\n");
                 } else {
-                    MsgLog("  - Clean Apple Nvram\n\n");
+                    MsgLog("  - Clean NVRAM\n\n");
                 }
                 #endif
 
                 StartTool((LOADER_ENTRY *)ChosenEntry);
                 break;
 
-            case TAG_PRE_NVRAMCLEAN:    // Clean Apple Nvram Info
+            case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Show Clean Apple Nvram Info\n\n");
+                MsgLog("  - Show Clean NVRAM Info\n\n");
                 #endif
 
                 preCleanNvram();
@@ -967,9 +971,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Load Apple Boot Screen\n------------\n\n");
+                    MsgLog("  - Load Boot Screen\n------------\n\n");
                 } else {
-                    MsgLog("  - Load Apple Boot Screen\n\n");
+                    MsgLog("  - Load Boot Screen\n\n");
                 }
                 #endif
 
@@ -1085,7 +1089,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #endif
 
                 TempEntry = (LOADER_ENTRY *)ChosenEntry;
-                if (MyStrStr(TempEntry->Title, L"Apple Boot Screen") != NULL) {
+                if (MyStrStr(TempEntry->Title, L"Boot Screen") != NULL) {
                     TempEntry->UseGraphicsMode = TRUE;
                 }
 
