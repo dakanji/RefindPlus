@@ -583,17 +583,19 @@ egInitScreen(
             MsgLog("    * Seek Directly ...%r\n", Status);
             #endif
         }
-    } else {
-        UGAOnConsole = EFI_SUCCESS;
     }
 
-    #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...NOT OK!\n\n");
+        #endif
     } else {
+        UGAOnConsole = EFI_SUCCESS;
+
+        #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...ok\n\n");
+        #endif
     }
-    #endif
 
     // Get GraphicsOutput Protocol
     GraphicsOutput = NULL;
@@ -853,6 +855,31 @@ egInitScreen(
             #if REFIT_DEBUG > 0
             MsgLog ("Implement UGAPassThrough ...%r\n\n", Status);
             #endif
+        }
+    }
+
+    if (GraphicsOutput == NULL && UGADraw != NULL) {
+        UINT32 Width, Height, Depth, RefreshRate;
+        Status = UGADraw->GetMode(UGADraw, &Width, &Height, &Depth, &RefreshRate);
+        if (EFI_ERROR(Status)) {
+            // Graphics not available
+            UGADraw = NULL;
+            GlobalConfig.TextOnly = TRUE;
+
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: Graphics Not Available\n");
+            MsgLog("      Switched to Text Mode\n\n");
+            #endif
+
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: GraphicsOutputProtocol Not Available\n");
+            MsgLog("      Using UGADraw for Graphics\n\n");
+            #endif
+
+            egScreenWidth  = Width;
+            egScreenHeight = Height;
+            egHasGraphics = TRUE;
         }
     }
 
