@@ -797,7 +797,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     SystemTable->RuntimeServices->GetTime(&Now, NULL);
 
 #if REFIT_DEBUG > 0
-    MsgLog("Start rEFInd on %s Firmware...\n", gST->FirmwareVendor);
+    MsgLog("Start RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
     if (Now.TimeZone < 0 || Now.TimeZone > 24) {
         MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
@@ -893,7 +893,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         MainMenu.TimeoutText = L"Shutdown";
 
     #if REFIT_DEBUG > 0
-    MsgLog("Running rEFInd on %s Firmware...\n", gST->FirmwareVendor);
+    MsgLog("Running RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
     #endif
 
     while (MainLoopRunning) {

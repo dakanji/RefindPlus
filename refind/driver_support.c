@@ -602,7 +602,7 @@ BOOLEAN LoadDrivers(VOID) {
     } // while
 
     #if REFIT_DEBUG > 0
-    MsgLog("Refind EFI Driver Count = %d\n\n", NumFound);
+    MsgLog("RefindPlus EFI Driver Count = %d\n\n", NumFound);
     #endif
 
     // connect all devices
