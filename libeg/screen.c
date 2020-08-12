@@ -92,6 +92,7 @@ egDumpGOPVideoModes(
     EFI_STATUS Status;
     UINT32     MaxMode;
     UINT32     Mode;
+    UINT32     ModeLog;
     UINT32     NumModes;
     UINT32     ModeCount;
     UINT32     LoopCount;
@@ -136,18 +137,18 @@ egDumpGOPVideoModes(
         Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
 
         #if REFIT_DEBUG > 0
-        MsgLog("  - Query GOP Mode[%d] ...%r\n", Mode, Status);
+        MsgLog("  - Query GOP Mode[%02d] ...%r", Mode, Status);
         #endif
 
         if (Status == EFI_SUCCESS) {
 
             switch (Info->PixelFormat) {
                 case PixelRedGreenBlueReserved8BitPerColor:
-                    PixelFormatDesc = L"8bit RedGreenBlue";
+                    PixelFormatDesc = L"8bit RGB";
                     break;
 
                 case PixelBlueGreenRedReserved8BitPerColor:
-                    PixelFormatDesc = L"8bit BlueGreenRed";
+                    PixelFormatDesc = L"8bit BGR";
                     break;
 
                 case PixelBitMask:
@@ -166,7 +167,7 @@ egDumpGOPVideoModes(
             #if REFIT_DEBUG > 0
             if (LoopCount < ModeCount) {
                 MsgLog(
-                    "    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n",
+                    " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
                     Info->HorizontalResolution,
                     Info->VerticalResolution,
                     Info->PixelsPerScanLine,
@@ -174,7 +175,7 @@ egDumpGOPVideoModes(
                 );
             } else {
                 MsgLog(
-                    "    * Resolution = %dx%d, PixelsPerScannedLine = %d, PixelFormat = %s\n\n",
+                    " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
                     Info->HorizontalResolution,
                     Info->VerticalResolution,
                     Info->PixelsPerScanLine,
@@ -185,14 +186,29 @@ egDumpGOPVideoModes(
 
         } else {
 
-            #if REFIT_DEBUG > 0
-            if (LoopCount < ModeCount) {
-                MsgLog("  - Mode[%d]: %r\n", Mode, Status);
+            // Limit logged value to 99
+            if (Mode > 99) {
+                ModeLog = 99;
             } else {
-                MsgLog("  - Mode[%d]: %r\n\n", Mode, Status);
+                ModeLog = Mode;
+            }
+
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Mode[%d]: %r", ModeLog, Status);
+            if (LoopCount < ModeCount) {
+                if (Mode > 99) {
+                    MsgLog( ". NB: Real Mode = %d\n", Mode);
+                } else {
+                    MsgLog( "\n", Mode);
+                }
+            } else {
+                if (Mode > 99) {
+                    MsgLog( ". NB: Real Mode = %d\n\n", Mode);
+                } else {
+                    MsgLog( "\n\n", Mode);
+                }
             }
             #endif
-
         }
     }
 
@@ -269,7 +285,7 @@ egSetGOPMode(
             Status = GraphicsOutput->QueryMode(GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Query GOP Mode[%d] ...%r\n", Mode, Status);
+            MsgLog("  - Query GOP Mode[%02d] ...%r\n", Mode, Status);
             #endif
 
             if (Status == EFI_SUCCESS) {
@@ -328,7 +344,7 @@ egSetMaxResolution() {
   }
 
   #if REFIT_DEBUG > 0
-  MsgLog("  - BestMode: GOP Mode[%d] @ %dx%d Resolution\n", BestMode, Width, Height);
+  MsgLog("  - BestMode: GOP Mode[%d] @ %dx%d\n", BestMode, Width, Height);
   #endif
 
   // check if requested mode is equal to current mode
@@ -481,7 +497,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -637,7 +653,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    * Seek on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -654,7 +670,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set to Handle[%d][%d] @ %dx%d\n",
+                                        "    ** Set to Handle[%02d][%02d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -664,7 +680,7 @@ egInitScreen(
                                 } else {
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "       Ignore Handle[%d][%d] @ %dx%d\n",
+                                        "       Ignore Handle[%02d][%02d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         Info->HorizontalResolution,
@@ -675,7 +691,7 @@ egInitScreen(
                             } else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog(
-                                    "       Ignore Handle[%d][%d] @ %dx%d\n",
+                                    "       Ignore Handle[%02d][%02d] @ %dx%d\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,

@@ -204,6 +204,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 	EFI_HANDLE				*AllHandleBuffer;
 	UINTN                   i;
     UINTN                   k;
+    UINTN                   LogVal;
 	UINTN                   HandleCount;
 	EFI_HANDLE				*HandleBuffer;
 	UINT32                  *HandleType;
@@ -228,6 +229,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
     if (!EFI_ERROR (Status)) {
         for (i = 0; i < AllHandleCount; i++) {
+            if (i > 999) {
+                LogVal = 999;
+            } else {
+                LogVal = i;
+            }
             // Assume Success
             XStatus = EFI_SUCCESS;
 
@@ -285,22 +291,22 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         #if REFIT_DEBUG > 0
                         if (EFI_ERROR (XStatus)) {
                             if (i == AllHandleCountTrigger) {
-                                MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n\n", i, XStatus);
+                                MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n\n", LogVal, XStatus);
                             } else {
-                                MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n", i, XStatus);
+                                MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n", LogVal, XStatus);
                             }
                         } else {
                             if (i == AllHandleCountTrigger) {
-                                MsgLog("Connect DeviceHandle[%d] ...%r\n\n", i, XStatus);
+                                MsgLog("Connect DeviceHandle[%03d] ...%r\n\n", LogVal, XStatus);
                             } else {
-                                MsgLog("Connect DeviceHandle[%d] ...%r\n", i, XStatus);
+                                MsgLog("Connect DeviceHandle[%03d] ...%r\n", LogVal, XStatus);
                             }
                         }
                     } else {
                         if (i == AllHandleCountTrigger) {
-                            MsgLog("Connect DeviceHandle[%d] ...Skipped [Parent Device]\n\n", i);
+                            MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]\n\n", LogVal);
                         } else {
-                            MsgLog("Connect DeviceHandle[%d] ...Skipped [Parent Device]\n", i);
+                            MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]\n", LogVal);
                         }
                         #endif
                     }
@@ -308,9 +314,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     #if REFIT_DEBUG > 0
                 } else {
                     if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%d] ...Skipped [Not Device]\n\n", i);
+                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not Device]\n\n", LogVal);
                     } else {
-                        MsgLog("Connect DeviceHandle[%d] ...Skipped [Not Device]\n", i);
+                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not Device]\n", LogVal);
                     }
                     #endif
                 }
@@ -319,15 +325,15 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
             } else {
                 if (EFI_ERROR (XStatus)) {
                     if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n\n", i, XStatus);
+                        MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n\n", LogVal, XStatus);
                     } else {
-                        MsgLog("Connect DeviceHandle[%d] ...WARN: %r\n", i, XStatus);
+                        MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n", LogVal, XStatus);
                     }
                 } else {
                     if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%d] ...%r\n\n", i, XStatus);
+                        MsgLog("Connect DeviceHandle[%03d] ...%r\n\n", LogVal, XStatus);
                     } else {
-                        MsgLog("Connect DeviceHandle[%d] ...%r\n", i, XStatus);
+                        MsgLog("Connect DeviceHandle[%03d] ...%r\n", LogVal, XStatus);
                     }
                 }
                 #endif
@@ -342,7 +348,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
         FreePool (HandleBuffer);
         FreePool (HandleType);
     }
-    
+
 	FreePool (AllHandleBuffer);
 
 	return Status;

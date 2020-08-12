@@ -72,12 +72,33 @@ GetTiming(VOID)
 
 		dTStartMs = DivU64x64Remainder(MultU64x32(CurrentTsc - mMemLog->TscStart, 1000), mMemLog->TscFreqSec, NULL);
 		dTStartSec = DivU64x64Remainder(dTStartMs, 1000, &dTStartMs);
+        // Limit logged value to 999
+        UINT64 dTStartSecLog;
+        if (dTStartSec > 999) {
+            dTStartSecLog = 999;
+        } else {
+            dTStartSecLog = dTStartSec;
+        }
 
 		dTLastMs = DivU64x64Remainder(MultU64x32(CurrentTsc - mMemLog->TscLast, 1000), mMemLog->TscFreqSec, NULL);
 		dTLastSec = DivU64x64Remainder(dTLastMs, 1000, &dTLastMs);
+        // Limit logged value to 999
+        UINT64 dTLastSecLog;
+        if (dTLastSec > 999) {
+            dTLastSecLog = 999;
+        } else {
+            dTLastSecLog = dTLastSec;
+        }
 
-		AsciiSPrint(mTimingTxt, sizeof(mTimingTxt),
-                "%ld:%03ld  %ld:%03ld", dTStartSec, dTStartMs, dTLastSec, dTLastMs);
+		AsciiSPrint(
+            mTimingTxt,
+            sizeof(mTimingTxt),
+            "%3ld:%03ld %3ld:%03ld",
+            dTStartSecLog,
+            dTStartMs,
+            dTLastSecLog,
+            dTLastMs
+        );
 		mMemLog->TscLast = CurrentTsc;
 	}
 

@@ -351,7 +351,7 @@ preBootKicker(
                 #if REFIT_DEBUG > 0
                 MsgLog("    ** Success: Found %s\n", FilePath);
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Load BootKicker\n------------\n\n");
+                    MsgLog("  - Load BootKicker\n---------------\n\n");
                 } else {
                     MsgLog("  - Load BootKicker\n\n");
                 }
@@ -359,12 +359,12 @@ preBootKicker(
 
                 // Run BootKicker
                 StartTool(TempEntry);
+                #if REFIT_DEBUG > 0
+                MsgLog("WARN: BootKicker Error ...Return to Main Menu\n\n");
+                #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog(
-                    "  - Could not Find BootKicker ...Return to Main Menu\n\n",
-                    ChosenEntry->Title
-                );
+                MsgLog("  - WARN: Could not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
             }
         } else {
@@ -375,7 +375,7 @@ preBootKicker(
         } // if
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog("Could not Get User Input  ...Return to Main Menu\n\n");
+        MsgLog("WARN: Could not Get User Input  ...Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preBootKicker() */
@@ -496,10 +496,7 @@ preCleanNvram(
 
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog(
-                    "  - Could not Find CleanNvram ...Return to Main Menu\n\n",
-                    ChosenEntry->Title
-                );
+                MsgLog("  - WARN: Could not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
             }
         } else {
@@ -510,7 +507,7 @@ preCleanNvram(
         } // if
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog("Could not Get User Input  ...Return to Main Menu\n\n");
+        MsgLog("WARN: Could not Get User Input  ...Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preCleanNvram() */
@@ -925,7 +922,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Clean NVRAM\n------------\n\n");
+                    MsgLog("  - Clean NVRAM\n---------------\n\n");
                 } else {
                     MsgLog("  - Clean NVRAM\n\n");
                 }
@@ -944,14 +941,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 preCleanNvram();
 
                 // Reboot if CleanNvram was triggered
-                if(ranCleanNvram == FALSE) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog("INFO: Returned to Main Menu\n\n");
-                    #endif
-                } else {
+                if(ranCleanNvram == TRUE) {
                     #if REFIT_DEBUG > 0
                     MsgLog("INFO: Cleaned Nvram\n\n");
-                    MsgLog("Reboot Computer...\n\n");
+                    MsgLog("Reboot Computer...\n");
                     MsgLog("INFO: Terminating Screen:\n\n");
                     #endif
                     TerminateScreen();
@@ -973,7 +966,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Load Boot Screen\n------------\n\n");
+                    MsgLog("  - Load Boot Screen\n---------------\n\n");
                 } else {
                     MsgLog("  - Load Boot Screen\n\n");
                 }
@@ -1000,7 +993,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Reboot Computer\n------------\n\n");
+                    MsgLog("  - Reboot Computer\n---------------\n\n");
                 } else {
                     MsgLog("  - Reboot Computer\n\n");
                 }
@@ -1016,7 +1009,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Shut Computer Down\n------------\n\n");
+                    MsgLog("  - Shut Computer Down\n---------------\n\n");
                 } else {
                     MsgLog("  - Shut Computer Down\n\n");
                 }
@@ -1042,7 +1035,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Boot OS via *.efi Loader\n------------\n\n");
+                    MsgLog("  - Boot OS via *.efi Loader\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot OS via *.efi Loader\n\n");
                 }
@@ -1060,7 +1053,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Boot Legacy OS\n------------\n\n");
+                    MsgLog("  - Boot Legacy OS\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot Legacy OS\n\n");
                 }
@@ -1074,7 +1067,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Boot Legacy UEFI\n------------\n\n");
+                    MsgLog("  - Boot Legacy UEFI\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot Legacy UEFI\n\n");
                 }
@@ -1113,7 +1106,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Terminate rEFInd\n------------\n\n");
+                    MsgLog("  - Terminate rEFInd\n---------------\n\n");
                 } else {
                     MsgLog("  - Terminate rEFInd\n\n");
                 }
@@ -1132,7 +1125,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Reboot into Firmware\n------------\n\n");
+                    MsgLog("  - Reboot into Firmware\n---------------\n\n");
                 } else {
                     MsgLog("  - Reboot into Firmware\n\n");
                 }
@@ -1156,7 +1149,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egHasGraphicsMode()) {
-                    MsgLog("  - Install rEFInd\n------------\n\n");
+                    MsgLog("  - Install rEFInd\n---------------\n\n");
                 } else {
                     MsgLog("  - Install rEFInd\n\n");
                 }

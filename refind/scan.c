@@ -1575,7 +1575,7 @@ VOID ScanForTools(VOID) {
         if(!GlobalConfig.ShowTools[i]) {
             ToolName = L"Skipped";
         }
-        MsgLog("Scan for Tool Type %d - %s\n", i + 1, ToolName);
+        MsgLog("Tool Type %02d ...%s\n", i + 1, ToolName);
         #endif
 
         if (MyStrStr(ToolName, L"Skipped") != NULL) {

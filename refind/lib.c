@@ -761,7 +761,7 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                 CopyMem(Volume->MbrPartitionTable, MbrTable, 4 * 16);
             }
         }
-        
+
         #if REFIT_DEBUG > 0
     } else {
         CheckError(Status, L"While Reading Boot Sector");
@@ -1268,7 +1268,9 @@ VOID ScanVolumes(VOID)
 } /* VOID ScanVolumes() */
 
 VOID SetVolumeIcons(VOID) {
-    UINTN        VolumeIndex;
+    UINTN        i;
+    UINTN        k;
+    UINTN        LogVal;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -1276,20 +1278,31 @@ VOID SetVolumeIcons(VOID) {
     MsgLog("Volume Count = %d\n", VolumesCount);
     #endif
 
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        #if REFIT_DEBUG > 0
-        if ((VolumeIndex + 1) < VolumesCount) {
-            MsgLog("Checking Volume[%d]:\n", VolumeIndex + 1);
+    for (i = 0; i < VolumesCount; i++) {
+        k = i + 1;
+        // Limit logged value to 99
+        if (k > 999) {
+            LogVal = 999;
+            #if REFIT_DEBUG > 0
+            MsgLog("  - INFO: Next Volume Index = %d\n", k);
+            #endif
         } else {
-            MsgLog("Checking Volume[%d]:\n\n", VolumeIndex + 1);
+            LogVal = k;
+        }
+
+        #if REFIT_DEBUG > 0
+        if (k < VolumesCount) {
+            MsgLog("Checking Volume[%02d]:\n", LogVal);
+        } else {
+            MsgLog("Checking Volume[%02d]:\n\n", LogVal);
         }
         #endif
 
-        Volume = Volumes[VolumeIndex];
+        Volume = Volumes[i];
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         SetVolumeBadgeIcon(Volume);
-        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {
+        if (Volumes[i]->DiskKind == DISK_KIND_INTERNAL) {
             // get custom volume icons if present
             if (!Volume->VolIconImage) {
                 Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
