@@ -62,8 +62,6 @@
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"
-#include "../include/refit_call_wrapper.h"
-
 #include "../include/egemb_refind_banner.h"
 
 // Console defines and variables
@@ -81,7 +79,6 @@ BOOLEAN HaveResized   = FALSE;
 BOOLEAN HaveOverriden = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
-EG_PIXEL MacBackgroundPixel  = { 0xdc, 0xdc, 0xdc, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL DarkBackgroundPixel = { 0x0, 0x0, 0x0, 0 };
 
@@ -122,10 +119,10 @@ VOID InitScreen(VOID)
     GraphicsScreenDirty = TRUE;
 
     // disable cursor
-    refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, FALSE);
+    gST->ConOut->EnableCursor(gST->ConOut, FALSE);
 
     // get size of text console
-    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, ST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
+    if (gST->ConOut->QueryMode(gST->ConOut, gST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
         // use default values on error
         ConWidth = 80;
         ConHeight = 25;
@@ -269,7 +266,8 @@ VOID SetupScreen(VOID)
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog("ERROR: Invalid Screen Mode!\n\n");
+        MsgLog("WARN: Invalid Screen Mode\n");
+        MsgLog("   Switching to Text Mode\n\n");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -295,7 +293,7 @@ SwitchToText(
     }
 
     egSetGraphicsModeEnabled(FALSE);
-    refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, CursorEnabled);
+    gST->ConOut->EnableCursor(gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
     if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
@@ -304,10 +302,9 @@ SwitchToText(
     #endif
 
     // get size of text console
-    Status = refit_call4_wrapper(
-        ST->ConOut->QueryMode,
-        ST->ConOut,
-        ST->ConOut->Mode->Mode,
+    Status =gST->ConOut->QueryMode(
+        gST->ConOut,
+        gST->ConOut->Mode->Mode,
         &ConWidth,
         &ConHeight
     );
@@ -385,8 +382,8 @@ VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
         SwitchToGraphics();
         BltClearScreen(FALSE);
     } else {
-        // clear to grey background
-        egClearScreen(&MacBackgroundPixel);
+        // clear to dark background
+        egClearScreen(&DarkBackgroundPixel);
         DrawScreenHeader(Title);
         SwitchToText(TRUE);
     }
@@ -415,11 +412,11 @@ VOID FinishExternalScreen(VOID)
 VOID TerminateScreen(VOID)
 {
     // clear text screen
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    refit_call1_wrapper(ST->ConOut->ClearScreen, ST->ConOut);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    gST->ConOut->ClearScreen(gST->ConOut);
 
     // enable cursor
-    refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, TRUE);
+    gST->ConOut->EnableCursor(gST->ConOut, TRUE);
 }
 
 VOID DrawScreenHeader(IN CHAR16 *Title)
@@ -428,23 +425,23 @@ VOID DrawScreenHeader(IN CHAR16 *Title)
 
     // clear to black background
     egClearScreen(&DarkBackgroundPixel); // first clear in graphics mode
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    refit_call1_wrapper(ST->ConOut->ClearScreen, ST->ConOut); // then clear in text mode
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    gST->ConOut->ClearScreen(gST->ConOut); // then clear in text mode
 
     // paint header background
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BANNER);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BANNER);
     for (y = 0; y < 3; y++) {
-        refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, y);
+        gST->ConOut->SetCursorPosition(gST->ConOut, 0, y);
         Print(BlankLine);
     }
 
     // print header text
-    refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 3, 1);
+    gST->ConOut->SetCursorPosition(gST->ConOut, 3, 1);
     Print(L"rEFInd - %s", Title);
 
     // reposition cursor
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, 4);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    gST->ConOut->SetCursorPosition(gST->ConOut, 0, 4);
 }
 
 //
@@ -459,7 +456,7 @@ BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -477,7 +474,7 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
-        if (AllowGraphicsMode && MyStriCmp(L"Apple", ST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
+        if (AllowGraphicsMode && MyStriCmp(L"Apple", gST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
             egDisplayMessage(Text, &BGColor, PositionCode);
             GraphicsScreenDirty = TRUE;
         } else { // non-Mac or in text mode; a Print() statement will work
@@ -495,17 +492,17 @@ VOID PauseForKey(VOID)
     PrintUglyText(L"* Hit any key to continue *", BOTTOM);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        refit_call1_wrapper(BS->Stall, 5000000);     // 5 seconds delay
+        gBS->Stall(5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
+    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 }
 
 // Pause a specified number of seconds
 VOID PauseSeconds(UINTN Seconds) {
-     refit_call1_wrapper(BS->Stall, 1000000 * Seconds);
+     gBS->Stall(1000000 * Seconds);
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
@@ -526,7 +523,7 @@ VOID EndlessIdleLoop(VOID)
 
     for (;;) {
         ReadAllKeyStrokes();
-        refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
+        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
     }
 }
 
@@ -557,9 +554,9 @@ BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
     MsgLog("** FATAL ERROR: %r %s\n", Status, where);
     #endif
 #endif
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
     MyFreePool(Temp);
 
@@ -589,9 +586,9 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     MsgLog("** WARN: %r %s\n", Status, where);
     #endif
 #endif
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
     if (StriSubCmp(L"While Reading Boot Sector", where)) {
@@ -649,8 +646,11 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
                  NewBanner = egScaleImage(Banner, UGAWidth, UGAHeight);
               } // if
            } else if ((Banner->Width > UGAWidth) || (Banner->Height > UGAHeight)) {
-              NewBanner = egCropImage(Banner, 0, 0, (Banner->Width > UGAWidth) ? UGAWidth : Banner->Width,
-                                      (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height);
+              NewBanner = egCropImage(
+                  Banner, 0, 0,
+                  (Banner->Width > UGAWidth) ? UGAWidth : Banner->Width,
+                  (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height
+              );
            } // if/elseif
            if (NewBanner) {
               egFreeImage(Banner);
@@ -742,14 +742,20 @@ VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL
 //     GraphicsScreenDirty = TRUE;
 // }
 
-VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage,
-                            IN EG_IMAGE *TopImage,
-                            IN EG_IMAGE *BadgeImage,
-                            IN UINTN XPos,
-                            IN UINTN YPos)
-{
-     UINTN TotalWidth = 0, TotalHeight = 0, CompWidth = 0, CompHeight = 0, OffsetX = 0, OffsetY = 0;
-     EG_IMAGE *CompImage = NULL;
+VOID BltImageCompositeBadge(
+    IN EG_IMAGE *BaseImage,
+    IN EG_IMAGE *TopImage,
+    IN EG_IMAGE *BadgeImage,
+    IN UINTN    XPos,
+    IN UINTN    YPos
+) {
+     UINTN    TotalWidth  = 0;
+     UINTN    TotalHeight = 0;
+     UINTN    CompWidth   = 0;
+     UINTN    CompHeight  = 0,;
+     UINTN    OffsetX     = 0;
+     UINTN    OffsetY     = 0;
+     EG_IMAGE *CompImage  = NULL;
 
      // initialize buffer with base image
      if (BaseImage != NULL) {
@@ -761,18 +767,22 @@ VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage,
      // place the top image
      if ((TopImage != NULL) && (CompImage != NULL)) {
          CompWidth = TopImage->Width;
-         if (CompWidth > TotalWidth)
-               CompWidth = TotalWidth;
+         if (CompWidth > TotalWidth) {
+             CompWidth = TotalWidth;
+         }
          OffsetX = (TotalWidth - CompWidth) >> 1;
          CompHeight = TopImage->Height;
-         if (CompHeight > TotalHeight)
-               CompHeight = TotalHeight;
+         if (CompHeight > TotalHeight) {
+             CompHeight = TotalHeight;
+         }
          OffsetY = (TotalHeight - CompHeight) >> 1;
          egComposeImage(CompImage, TopImage, OffsetX, OffsetY);
      }
 
      // place the badge image
-     if (BadgeImage != NULL && CompImage != NULL && (BadgeImage->Width + 8) < CompWidth && (BadgeImage->Height + 8) < CompHeight) {
+     if (BadgeImage != NULL && CompImage != NULL && (BadgeImage->Width + 8) < CompWidth
+        && (BadgeImage->Height + 8) < CompHeight
+     ) {
          OffsetX += CompWidth  - 8 - BadgeImage->Width;
          OffsetY += CompHeight - 8 - BadgeImage->Height;
          egComposeImage(CompImage, BadgeImage, OffsetX, OffsetY);
@@ -780,10 +790,11 @@ VOID BltImageCompositeBadge(IN EG_IMAGE *BaseImage,
 
      // blit to screen and clean up
      if (CompImage != NULL) {
-         if (CompImage->HasAlpha)
+         if (CompImage->HasAlpha) {
              egDrawImageWithTransparency(CompImage, NULL, XPos, YPos, CompImage->Width, CompImage->Height);
-         else
+         } else {
              egDrawImage(CompImage, XPos, YPos);
+         }
          egFreeImage(CompImage);
          GraphicsScreenDirty = TRUE;
      }

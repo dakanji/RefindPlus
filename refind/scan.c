@@ -1742,7 +1742,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                        MsgLog("  - Added %s : %s\n", ToolName, FileName);
                         #endif
                     } // if
 
@@ -1751,7 +1751,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1773,7 +1773,7 @@ VOID ScanForTools(VOID) {
 
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                     MsgLog("  - Added %s : %s\n", ToolName, FileName);
                      #endif
                   } // if
                     MyFreePool(FileName);
@@ -1781,7 +1781,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1802,7 +1802,7 @@ VOID ScanForTools(VOID) {
                         );
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                     MsgLog("  - Added %s : %s\n", ToolName, FileName);
                      #endif
                     } // if
                     MyFreePool(FileName);
@@ -1810,7 +1810,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1841,7 +1841,7 @@ VOID ScanForTools(VOID) {
                                 );
 
                                 #if REFIT_DEBUG > 0
-                                MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                                MsgLog("  - Added %s : %s\n", ToolName, FileName);
                                 #endif
                             } // if
                         } // if
@@ -1850,7 +1850,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1884,7 +1884,7 @@ VOID ScanForTools(VOID) {
                             );
 
                              #if REFIT_DEBUG > 0
-                             MsgLog("  - Added %s Tool - %s\n", ToolName, FileName);
+                             MsgLog("  - Added %s : %s\n", ToolName, FileName);
                              #endif
                         } // if
                     } // for
@@ -1892,7 +1892,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("  - WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 

@@ -124,6 +124,8 @@ extern EFI_GUID RefindGuid;
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 #define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
 
+BOOLEAN egIsGraphicsModeEnabled(VOID);
+
 //
 // Pathname manipulations
 //
@@ -1274,8 +1276,10 @@ VOID SetVolumeIcons(VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Get Volume Icons...\n");
-    MsgLog("Volume Count = %d\n", VolumesCount);
+    if (egIsGraphicsModeEnabled()) {
+        MsgLog("Get Volume Icons...\n");
+        MsgLog("Volume Count = %d\n", VolumesCount);
+    }
     #endif
 
     for (i = 0; i < VolumesCount; i++) {
@@ -1283,18 +1287,18 @@ VOID SetVolumeIcons(VOID) {
         // Limit logged value to 99
         if (k > 999) {
             LogVal = 999;
-            #if REFIT_DEBUG > 0
-            MsgLog("  - INFO: Next Volume Index = %d\n", k);
-            #endif
         } else {
             LogVal = k;
         }
 
         #if REFIT_DEBUG > 0
-        if (k < VolumesCount) {
-            MsgLog("Checking Volume[%02d]:\n", LogVal);
-        } else {
-            MsgLog("Checking Volume[%02d]:\n\n", LogVal);
+        if (egIsGraphicsModeEnabled()) {
+            MsgLog("Checking Volume[%02d]", LogVal);
+            if (k < VolumesCount) {
+                MsgLog(". NB: Real Volume Index = %d\n", k);
+            } else {
+                MsgLog(". NB: Real Volume Index = %d\n\n", k);
+            }
         }
         #endif
 

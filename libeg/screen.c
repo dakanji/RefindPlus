@@ -152,11 +152,11 @@ egDumpGOPVideoModes(
                     break;
 
                 case PixelBitMask:
-                    PixelFormatDesc = L"BITMASK";
+                    PixelFormatDesc = L"BIT MASK";
                     break;
 
                 case PixelBltOnly:
-                    PixelFormatDesc = L"No Framebuffer!";
+                    PixelFormatDesc = L"!FBuffer";
                     break;
 
                 default:

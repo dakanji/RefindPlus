@@ -350,7 +350,7 @@ preBootKicker(
             if (FoundTool == TRUE) {
                 #if REFIT_DEBUG > 0
                 MsgLog("    ** Success: Found %s\n", FilePath);
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Load BootKicker\n---------------\n\n");
                 } else {
                     MsgLog("  - Load BootKicker\n\n");
@@ -921,7 +921,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Clean NVRAM\n---------------\n\n");
                 } else {
                     MsgLog("  - Clean NVRAM\n\n");
@@ -965,7 +965,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Load Boot Screen\n---------------\n\n");
                 } else {
                     MsgLog("  - Load Boot Screen\n\n");
@@ -992,7 +992,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Reboot Computer\n---------------\n\n");
                 } else {
                     MsgLog("  - Reboot Computer\n\n");
@@ -1008,7 +1008,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Shut Computer Down\n---------------\n\n");
                 } else {
                     MsgLog("  - Shut Computer Down\n\n");
@@ -1034,7 +1034,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Boot OS via *.efi Loader\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot OS via *.efi Loader\n\n");
@@ -1052,7 +1052,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Boot Legacy OS\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot Legacy OS\n\n");
@@ -1066,7 +1066,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Boot Legacy UEFI\n---------------\n\n");
                 } else {
                     MsgLog("  - Boot Legacy UEFI\n\n");
@@ -1105,7 +1105,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Terminate rEFInd\n---------------\n\n");
                 } else {
                     MsgLog("  - Terminate rEFInd\n\n");
@@ -1124,7 +1124,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Reboot into Firmware\n---------------\n\n");
                 } else {
                     MsgLog("  - Reboot into Firmware\n\n");
@@ -1148,7 +1148,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egHasGraphicsMode()) {
+                if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Install rEFInd\n---------------\n\n");
                 } else {
                     MsgLog("  - Install rEFInd\n\n");
