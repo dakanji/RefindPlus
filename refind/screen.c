@@ -752,7 +752,7 @@ VOID BltImageCompositeBadge(
      UINTN    TotalWidth  = 0;
      UINTN    TotalHeight = 0;
      UINTN    CompWidth   = 0;
-     UINTN    CompHeight  = 0,;
+     UINTN    CompHeight  = 0;
      UINTN    OffsetX     = 0;
      UINTN    OffsetY     = 0;
      EG_IMAGE *CompImage  = NULL;
