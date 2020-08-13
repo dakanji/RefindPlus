@@ -31,7 +31,7 @@ EFI_GUID gEfiLegacyBootProtocolGuid     = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 
     Update the BBS Table so that devices of DeviceType have their boot priority
     updated to a high/bootable value.
 
-    See "DeviceType values" in 
+    See "DeviceType values" in
     http://www.intel.com/content/dam/doc/reference-guide/efi-compatibility-support-module-specification-v097.pdf
 
     NOTE: This function should probably be refactored! Currently, all devices of
@@ -46,13 +46,13 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
    EFI_STATUS                Status;
    UINT16                       HddCount = 0;
-   HDD_INFO                     *HddInfo = NULL; 
-   UINT16                       BbsCount = 0; 
+   HDD_INFO                     *HddInfo = NULL;
+   UINT16                       BbsCount = 0;
    BBS_TABLE                 *LocalBbsTable = NULL;
    BBS_BBS_DEVICE_PATH       *OptionBBS;
    CHAR16                    Desc[100];
 
-   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (EFI_ERROR (Status) || (Option == NULL)) {
       return;
    }
@@ -127,7 +127,7 @@ BdsLibDoLegacyBoot (
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status)) {
       return EFI_UNSUPPORTED;
     }

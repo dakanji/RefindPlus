@@ -90,7 +90,7 @@ static BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &Key);
+        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &Key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -107,11 +107,11 @@ static VOID PauseForKey(VOID)
     Print(L"\n* Hit any key to continue *");
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        refit_call1_wrapper(BS->Stall, 5000000);     // 5 seconds delay
+        gBS->Stall(5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &Index);
+    gBS->WaitForEvent(1, &ST->ConIn->WaitForKey, &Index);
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 
     Print(L"\n");
@@ -127,8 +127,8 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
     ReadAllKeyStrokes(); // Remove buffered key strokes
     do {
-        refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &Index);
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &Key);
+        gBS->WaitForEvent(1, &ST->ConIn->WaitForKey, &Index);
+        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &Key);
         if (EFI_ERROR(Status) && Status != EFI_NOT_READY)
             return 1;
     } while (Status == EFI_NOT_READY);
@@ -220,7 +220,7 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
 
     InitializeLib(ImageHandle, SystemTable);
 
-    Status = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &HandleBuffer);
+    Status = gBS->LocateHandleBuffer(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &HandleBuffer);
     if (EFI_ERROR (Status)) {
         Status = EFI_NOT_FOUND;
         return Status;
@@ -253,7 +253,7 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
         if (!Usable)
             continue;
 
-        Status = refit_call3_wrapper(BS->HandleProtocol, DeviceHandle, &BlockIoProtocol, (VOID **) &BlockIO);
+        Status = gBS->HandleProtocol(DeviceHandle, &BlockIoProtocol, (VOID **) &BlockIO);
         if (EFI_ERROR(Status)) {
             // TODO: report error
             BlockIO = NULL;

@@ -1,7 +1,7 @@
 /*
  * EfiLib/legacy.c
  * CSM/legacy boot support functions
- * 
+ *
  * Taken from Tianocore source code (mostly IntelFrameworkModulePkg/Universal/BdsDxe/BootMaint/BBSsupport.c)
  *
  * Copyright (c) 2004 - 2011, Intel Corporation. All rights reserved.<BR>
@@ -9,7 +9,7 @@
  * are licensed and made available under the terms and conditions of the BSD License
  * which accompanies this distribution.  The full text of the license may be found at
  * http://opensource.org/licenses/bsd-license.php
- * 
+ *
  * THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
  *
@@ -461,16 +461,16 @@ BdsCreateLegacyBootOption (
   Ptr += sizeof (BBS_TABLE);
   *((UINT16 *) Ptr) = (UINT16) Index;
 
-  Status = refit_call5_wrapper(gRT->SetVariable,
-                  BootString,
-                  &EfiGlobalVariableGuid,
-                  VAR_FLAG,
-                  BufferSize,
-                  Buffer
-                  );
+  Status = gRT->SetVariable(
+      BootString,
+      &EfiGlobalVariableGuid,
+      VAR_FLAG,
+      BufferSize,
+      Buffer
+  );
 
   FreePool (Buffer);
-  
+
   Buffer = NULL;
 
   NewBootOrderList = AllocateZeroPool (*BootOrderListSize + sizeof (UINT16));
@@ -556,7 +556,7 @@ BdsCreateOneLegacyBootOption (
 /**
   Group the legacy boot options in the BootOption.
 
-  The routine assumes the boot options in the beginning that covers all the device 
+  The routine assumes the boot options in the beginning that covers all the device
   types are ordered properly and re-position the following boot options just after
   the corresponding boot options with the same device type.
   For example:
@@ -603,7 +603,7 @@ GroupMultipleLegacyBootOption4SameType (
       continue;
     }
 
-    ASSERT ((mBootOptionBbsMapping[MappingIndex].BbsType & 0xF) < 
+    ASSERT ((mBootOptionBbsMapping[MappingIndex].BbsType & 0xF) <
              sizeof (DeviceTypeIndex) / sizeof (DeviceTypeIndex[0]));
     NextIndex = &DeviceTypeIndex[mBootOptionBbsMapping[MappingIndex].BbsType & 0xF];
     if (*NextIndex == (UINTN) -1) {
@@ -684,7 +684,7 @@ EfiLibDeleteVariable (
     //
     // Delete variable from Storage
     //
-    Status = refit_call5_wrapper(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
+    Status = gRT->SetVariable(VarName, VarGuid, VAR_FLAG, 0, NULL);
     ASSERT (!EFI_ERROR (Status));
     FreePool (VarBuf);
   }
@@ -695,7 +695,7 @@ EfiLibDeleteVariable (
 /**
   Add the legacy boot options from BBS table if they do not exist.
 
-  @retval EFI_SUCCESS          The boot options are added successfully 
+  @retval EFI_SUCCESS          The boot options are added successfully
                                or they are already in boot options.
   @retval EFI_NOT_FOUND        No legacy boot options is found.
   @retval EFI_OUT_OF_RESOURCE  No enough memory.
@@ -816,13 +816,13 @@ BdsAddNonExistingLegacyBootOptions (
     );
 
   if (BootOrderSize > 0) {
-    Status = refit_call5_wrapper(gRT->SetVariable,
-                    L"BootOrder",
-                    &EfiGlobalVariableGuid,
-                    VAR_FLAG,
-                    BootOrderSize,
-                    BootOrder
-                    );
+    Status = gRT->SetVariable(
+        L"BootOrder",
+        &EfiGlobalVariableGuid,
+        VAR_FLAG,
+        BootOrderSize,
+        BootOrder
+    );
   } else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }
@@ -958,13 +958,13 @@ BdsDeleteAllInvalidLegacyBootOptions (
                       );
     if (NULL == BootOptionVar) {
       BootOptionSize = 0;
-      Status = refit_call5_wrapper(gRT->GetVariable,
-                      BootOption,
-                      &EfiGlobalVariableGuid,
-                      NULL,
-                      &BootOptionSize,
-                      BootOptionVar
-                      );
+      Status = gRT->GetVariable(
+          BootOption,
+          &EfiGlobalVariableGuid,
+          NULL,
+          &BootOptionSize,
+          BootOptionVar
+      );
       if (Status == EFI_NOT_FOUND) {
         //
         // Update BootOrder
@@ -1034,13 +1034,13 @@ BdsDeleteAllInvalidLegacyBootOptions (
   // Adjust the number of boot options.
   //
   if (BootOrderSize != 0) {
-    Status = refit_call5_wrapper(gRT->SetVariable,
-                    L"BootOrder",
-                    &EfiGlobalVariableGuid,
-                    VAR_FLAG,
-                    BootOrderSize,
-                    BootOrder
-                    );
+    Status = gRT->SetVariable(
+    L"BootOrder",
+    &EfiGlobalVariableGuid,
+    VAR_FLAG,
+    BootOrderSize,
+    BootOrder
+);
   } else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }

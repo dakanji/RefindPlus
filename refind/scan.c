@@ -447,7 +447,9 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             // earlier....
             if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
                 MyFreePool(SubScreen->Entries[0]->Title);
-                SubScreen->Entries[0]->Title = TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux");
+                SubScreen->Entries[0]->Title = TokenList[0]
+                    ? StrDuplicate(TokenList[0])
+                    : StrDuplicate(L"Boot Linux");
             } // if
             FreeTokenLine(&TokenList, &TokenCount);
             while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
@@ -551,7 +553,12 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         // locate a custom icon for the loader
         // Anything found here takes precedence over the "hints" in the OSIconName variable
         if (!Entry->me.Image) {
-            Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+            Entry->me.Image = egLoadIconAnyType(
+                Volume->RootDir,
+                PathOnly,
+                NoExtension,
+                GlobalConfig.IconSizes[ICON_SIZE_BIG]
+            );
         }
         if (!Entry->me.Image) {
             Entry->me.Image = egCopyImage(Volume->VolIconImage);
@@ -574,7 +581,10 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
     } // if/else network boot
 
     // detect specific loaders
-    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
+    if (StriSubCmp(L"bzImage", NameClues)
+        || StriSubCmp(L"vmlinuz", NameClues)
+        || StriSubCmp(L"kernel", NameClues)
+    ) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
@@ -599,7 +609,10 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
     } else if (MyStriCmp(NameClues, L"diags.efi")) {
         MergeStrings(&OSIconName, L"hwtest", L',');
-    } else if (MyStriCmp(NameClues, L"e.efi") || MyStriCmp(NameClues, L"elilo.efi") || StriSubCmp(L"elilo", NameClues)) {
+    } else if (MyStriCmp(NameClues, L"e.efi")
+        || MyStriCmp(NameClues, L"elilo.efi")
+        || StriSubCmp(L"elilo", NameClues)
+    ) {
         MergeStrings(&OSIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
         if (ShortcutLetter == 0)
@@ -642,7 +655,12 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
-static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume, IN BOOLEAN SubScreenReturn) {
+static LOADER_ENTRY * AddLoaderEntry(
+    IN CHAR16       *LoaderPath,
+    IN CHAR16       *LoaderTitle,
+    IN REFIT_VOLUME *Volume,
+    IN BOOLEAN      SubScreenReturn
+) {
     LOADER_ENTRY  *Entry;
 
     CleanUpPathNameSlashes(LoaderPath);
@@ -655,7 +673,13 @@ static LOADER_ENTRY * AddLoaderEntry(IN CHAR16 *LoaderPath, IN CHAR16 *LoaderTit
         // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
         // Note: Volume->VolName will be NULL for network boot programs.
         if ((Volume->VolName) && (!MyStriCmp(Volume->VolName, L"Recovery HD")))
-            SPrint(Entry->me.Title, 255, L"Boot %s from %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath, Volume->VolName);
+            SPrint(
+                Entry->me.Title,
+                255,
+                L"Boot %s from %s ",
+                (LoaderTitle != NULL) ? LoaderTitle : LoaderPath,
+                Volume->VolName
+            );
         else
             SPrint(Entry->me.Title, 255, L"Boot %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
         Entry->me.Row = 0;
@@ -684,14 +708,24 @@ static INTN TimeComp(IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
 
     // Following values are overestimates; I'm assuming 31 days in every month.
     // This is fine for the purpose of this function, which is limited
-    Time1InSeconds = Time1->Second + (Time1->Minute * 60) + (Time1->Hour * 3600) + (Time1->Day * 86400) +
-                        (Time1->Month * 2678400) + ((Time1->Year - 1998) * 32140800);
-    Time2InSeconds = Time2->Second + (Time2->Minute * 60) + (Time2->Hour * 3600) + (Time2->Day * 86400) +
-                        (Time2->Month * 2678400) + ((Time2->Year - 1998) * 32140800);
-    if (Time1InSeconds < Time2InSeconds)
+    Time1InSeconds = Time1->Second
+        + (Time1->Minute * 60)
+        + (Time1->Hour * 3600)
+        + (Time1->Day * 86400)
+        + (Time1->Month * 2678400)
+        + ((Time1->Year - 1998) * 32140800);
+    Time2InSeconds = Time2->Second
+        + (Time2->Minute * 60)
+        + (Time2->Hour * 3600)
+        + (Time2->Day * 86400)
+        + (Time2->Month * 2678400)
+        + ((Time2->Year - 1998) * 32140800);
+
+    if (Time1InSeconds < Time2InSeconds) {
         return (-1);
-    else if (Time1InSeconds > Time2InSeconds)
+    } else if (Time1InSeconds > Time2InSeconds) {
         return (1);
+    }
 
     return 0;
 } // INTN TimeComp()
@@ -701,7 +735,10 @@ static INTN TimeComp(IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
 // since that will make it the default if kernel folding is enabled, so float it to
 // the end.
 // Returns the new first element (the one with the most recent date).
-static struct LOADER_LIST * AddLoaderListEntry(struct LOADER_LIST *LoaderList, struct LOADER_LIST *NewEntry) {
+static struct LOADER_LIST * AddLoaderListEntry(
+    struct LOADER_LIST *LoaderList,
+    struct LOADER_LIST *NewEntry
+) {
     struct LOADER_LIST *LatestEntry, *CurrentEntry, *PrevEntry = NULL;
     BOOLEAN LinuxRescue = FALSE;
 
@@ -711,8 +748,10 @@ static struct LOADER_LIST * AddLoaderListEntry(struct LOADER_LIST *LoaderList, s
     } else {
         if (StriSubCmp(L"vmlinuz-0-rescue", NewEntry->FileName))
             LinuxRescue = TRUE;
-        while ((CurrentEntry != NULL) && !StriSubCmp(L"vmlinuz-0-rescue", CurrentEntry->FileName) &&
-               (LinuxRescue || (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))) {
+        while ((CurrentEntry != NULL)
+            && !StriSubCmp(L"vmlinuz-0-rescue", CurrentEntry->FileName)
+            && (LinuxRescue || (TimeComp(&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))
+        ) {
             PrevEntry = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
         } // while
@@ -813,7 +852,14 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
     if (MyStriCmp(FileName, FALLBACK_FULLNAME))
         return FALSE; // identical filenames, so not a duplicate....
 
-    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(
+        Volume->RootDir->Open,
+        Volume->RootDir,
+        &FileHandle,
+        FileName,
+        EFI_FILE_MODE_READ,
+        0
+    );
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo(FileHandle);
         FileSize = FileInfo->FileSize;
@@ -822,7 +868,14 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
     }
     MyFreePool(FileInfo);
 
-    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FallbackHandle, FALLBACK_FULLNAME, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(
+        Volume->RootDir->Open,
+        Volume->RootDir,
+        &FallbackHandle,
+        FALLBACK_FULLNAME,
+        EFI_FILE_MODE_READ,
+        0
+    );
     if (Status == EFI_SUCCESS) {
         FallbackInfo = LibFileInfo(FallbackHandle);
         FallbackSize = FallbackInfo->FileSize;
@@ -836,9 +889,19 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
         FileContents = AllocatePool(FileSize);
         FallbackContents = AllocatePool(FallbackSize);
         if (FileContents && FallbackContents) {
-            Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &FileSize, FileContents);
+            Status = refit_call3_wrapper(
+                FileHandle->Read,
+                FileHandle,
+                &FileSize,
+                FileContents
+            );
             if (Status == EFI_SUCCESS) {
-                Status = refit_call3_wrapper(FallbackHandle->Read, FallbackHandle, &FallbackSize, FallbackContents);
+                Status = refit_call3_wrapper
+                (FallbackHandle->Read,
+                    FallbackHandle,
+                    &FallbackSize,
+                    FallbackContents
+                );
             }
             if (Status == EFI_SUCCESS) {
                 AreIdentical = (CompareMem(FileContents, FallbackContents, FileSize) == 0);
@@ -864,13 +927,26 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
 // this function to exclude symbolic links from the list of boot loaders,
 // that would be fine, since such boot loaders wouldn't work.)
 // CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
-static BOOLEAN IsSymbolicLink(REFIT_VOLUME *Volume, CHAR16 *FullName, EFI_FILE_INFO *DirEntry) {
+static
+BOOLEAN
+IsSymbolicLink(
+    REFIT_VOLUME  *Volume,
+    CHAR16        *FullName,
+    EFI_FILE_INFO *DirEntry
+) {
     EFI_FILE_HANDLE FileHandle;
     EFI_FILE_INFO   *FileInfo = NULL;
     EFI_STATUS      Status;
     UINTN           FileSize2 = 0;
 
-    Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle, FullName, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(
+        Volume->RootDir->Open,
+        Volume->RootDir,
+        &FileHandle,
+        FullName,
+        EFI_FILE_MODE_READ,
+        0
+    );
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo(FileHandle);
         if (FileInfo != NULL)
@@ -939,7 +1015,12 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
            } else {
-               LatestEntry = AddLoaderEntry(NewLoader->FileName, NULL, Volume, !(IsLinux && GlobalConfig.FoldLinuxKernels));
+               LatestEntry = AddLoaderEntry(
+                   NewLoader->FileName,
+                   NULL,
+                   Volume,
+                   !(IsLinux && GlobalConfig.FoldLinuxKernels)
+               );
                if (IsLinux && (FirstKernel == NULL))
                    FirstKernel = LatestEntry;
            }
@@ -977,11 +1058,11 @@ static CHAR16* RuniPXEDiscover(EFI_HANDLE Volume)
     UINTN            boot_info_size = 0;
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
-    Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, FilePath, NULL, 0, &iPXEHandle);
+    Status = gBS->LoadImage(FALSE, SelfImageHandle, FilePath, NULL, 0, &iPXEHandle);
     if (Status != 0)
         return NULL;
 
-    Status = refit_call3_wrapper(BS->StartImage, iPXEHandle, &boot_info_size, &boot_info);
+    Status = gBS->StartImage(iPXEHandle, &boot_info_size, &boot_info);
 
     return boot_info;
 } // RuniPXEDiscover()
@@ -998,7 +1079,8 @@ static VOID ScanNetboot() {
     if (FileExists(SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         FileExists(SelfVolume->RootDir, IPXE_NAME) &&
         IsValidLoader(SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
-        IsValidLoader(SelfVolume->RootDir, IPXE_NAME)) {
+        IsValidLoader(SelfVolume->RootDir, IPXE_NAME)
+    ) {
             Location = RuniPXEDiscover(SelfVolume->DeviceHandle);
             if (Location != NULL && FileExists(SelfVolume->RootDir, iPXEFileName)) {
                 NetVolume = AllocatePool(sizeof(REFIT_VOLUME));
@@ -1063,7 +1145,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 
             // check for XOM
             StrCpy(FileName, L"System\\Library\\CoreServices\\xom.efi");
-            if (FileExists(Volume->RootDir, FileName) && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)) {
+            if (FileExists(Volume->RootDir, FileName)
+                && !FilenameIn(Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
+            ) {
                 AddLoaderEntry(FileName, L"Windows XP (XoM)", Volume, TRUE);
                 if (DuplicatesFallback(Volume, FileName))
                     ScanFallbackLoader = FALSE;

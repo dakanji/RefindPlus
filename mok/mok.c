@@ -46,7 +46,6 @@
 
 #include "global.h"
 #include "mok.h"
-#include "../include/refit_call_wrapper.h"
 #include "../refind/lib.h"
 #include "../refind/screen.h"
 
@@ -81,7 +80,7 @@ BOOLEAN ShimLoaded(void) {
    SHIM_LOCK   *shim_lock;
    EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
-   return (refit_call3_wrapper(BS->LocateProtocol, &ShimLockGuid, NULL, (VOID**) &shim_lock) == EFI_SUCCESS);
+   return (gBS->LocateProtocol(&ShimLockGuid, NULL, (VOID**) &shim_lock) == EFI_SUCCESS);
 } // ShimLoaded()
 
 // The following is based on the grub_linuxefi_secure_validate() function in Fedora's
@@ -92,7 +91,7 @@ BOOLEAN ShimValidate (VOID *data, UINT32 size)
    SHIM_LOCK   *shim_lock;
    EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
-   if ((data != NULL) && (refit_call3_wrapper(BS->LocateProtocol, &ShimLockGuid, NULL, (VOID**) &shim_lock) == EFI_SUCCESS)) {
+   if ((data != NULL) && (gBS->LocateProtocol(&ShimLockGuid, NULL, (VOID**) &shim_lock) == EFI_SUCCESS)) {
       if (!shim_lock)
          return FALSE;
 

@@ -30,7 +30,6 @@ extern EFI_GUID gMyEfiBlockIoProtocolGuid;
 #define gMyEfiBlockIoProtocolGuid gEfiBlockIoProtocolGuid
 #define gMyEfiDiskIoProtocolGuid gEfiDiskIoProtocolGuid
 #endif
-#include "../include/refit_call_wrapper.h"
 
 extern struct fsw_host_table   fsw_efi_host_table;
 static void dummy_volume_free(struct fsw_volume *vol) { }
@@ -102,16 +101,16 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     Print(L" ");
 #endif
     DPRINT(L"Scanning disks\n");
-    Status = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &gMyEfiDiskIoProtocolGuid, NULL, &HandleCount, &Handles);
+    Status = gBS->LocateHandleBuffer(ByProtocol, &gMyEfiDiskIoProtocolGuid, NULL, &HandleCount, &Handles);
     if (Status == EFI_NOT_FOUND)
         return -1;  // no filesystems. strange, but true...
     for (i = 0; i < HandleCount; i++) {
         EFI_DISK_IO *diskio;
         EFI_BLOCK_IO *blockio;
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio);
+        Status = gBS->HandleProtocol(Handles[i], &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio);
         if (Status != 0)
             continue;
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handles[i], &gMyEfiBlockIoProtocolGuid, (VOID **) &blockio);
+        Status = gBS->HandleProtocol(Handles[i], &gMyEfiBlockIoProtocolGuid, (VOID **) &blockio);
         if (Status != 0)
             continue;
         struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);
@@ -124,4 +123,3 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     }
     return scanned;
 }
-

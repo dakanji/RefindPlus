@@ -417,7 +417,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     }
 
     if (Screen->TimeoutSeconds == -1) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
         } else {
@@ -450,14 +450,14 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         pdDraw();
 
         if (WaitForRelease) {
-            Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+            Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
             if (Status == EFI_SUCCESS) {
                 // reset, because otherwise the buffer gets queued with keystrokes
-                refit_call2_wrapper(ST->ConIn->Reset, ST->ConIn, FALSE);
-                refit_call1_wrapper(BS->Stall, 100000);
+                gST->ConIn->Reset(ST->ConIn, FALSE);
+                gBS->Stall(100000);
             } else {
                 WaitForRelease = FALSE;
-                refit_call2_wrapper(ST->ConIn->Reset, ST->ConIn, TRUE);
+                gST->ConIn->Reset(ST->ConIn, TRUE);
             }
             continue;
         }
@@ -476,7 +476,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
 
         if (Status == EFI_SUCCESS) {
             PointerActive = FALSE;
@@ -670,10 +670,10 @@ static VOID ShowTextInfoLines(IN REFIT_MENU_SCREEN *Screen) {
 
    BeginTextScreen(Screen->Title);
    if (Screen->InfoLineCount > 0) {
-      refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+      gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
       for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-         refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 3, 4 + i);
-         refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, Screen->InfoLines[i]);
+         gST->ConOut->SetCursorPosition(ST->ConOut, 3, 4 + i);
+         gST->ConOut->OutputString(ST->ConOut, Screen->InfoLines[i]);
       }
    }
 } // VOID ShowTextInfoLines()
@@ -749,62 +749,62 @@ VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
             ShowTextInfoLines(Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
-                    refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
+                    gST->ConOut->SetCursorPosition(ST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
                     if (i == State->CurrentSelection)
-                       refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_CHOICE_CURRENT);
+                       gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_CURRENT);
                     else
-                       refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_CHOICE_BASIC);
-                    refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, DisplayStrings[i]);
+                       gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_BASIC);
+                    gST->ConOut->OutputString(ST->ConOut, DisplayStrings[i]);
                 }
             }
             // scrolling indicators
-            refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_SCROLLARROW);
-            refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, MenuPosY);
+            gST->ConOut->SetAttribute(ST->ConOut, ATTR_SCROLLARROW);
+            gST->ConOut->SetCursorPosition(ST->ConOut, 0, MenuPosY);
             if (State->FirstVisible > 0)
-                refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, ArrowUp);
+                gST->ConOut->OutputString(ST->ConOut, ArrowUp);
             else
-               refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, L" ");
-            refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, MenuPosY + State->MaxVisible);
+               gST->ConOut->OutputString(ST->ConOut, L" ");
+            gST->ConOut->SetCursorPosition(ST->ConOut, 0, MenuPosY + State->MaxVisible);
             if (State->LastVisible < State->MaxIndex)
-               refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, ArrowDown);
+               gST->ConOut->OutputString(ST->ConOut, ArrowDown);
             else
-               refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, L" ");
+               gST->ConOut->OutputString(ST->ConOut, L" ");
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
-                  refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, ConHeight - 2);
-                  refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, Screen->Hint1);
+                  gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 2);
+                  gST->ConOut->OutputString(ST->ConOut, Screen->Hint1);
                }
                if (Screen->Hint2 != NULL) {
-                  refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, ConHeight - 1);
-                  refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, Screen->Hint2);
+                  gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 1);
+                  gST->ConOut->OutputString(ST->ConOut, Screen->Hint2);
                }
             }
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
             // redraw selection cursor
-            refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 2,
+            gST->ConOut->SetCursorPosition(ST->ConOut, 2,
                                 MenuPosY + (State->PreviousSelection - State->FirstVisible));
-            refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_CHOICE_BASIC);
-            refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, DisplayStrings[State->PreviousSelection]);
-            refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 2,
+            gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_BASIC);
+            gST->ConOut->OutputString(ST->ConOut, DisplayStrings[State->PreviousSelection]);
+            gST->ConOut->SetCursorPosition(ST->ConOut, 2,
                                 MenuPosY + (State->CurrentSelection - State->FirstVisible));
-            refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_CHOICE_CURRENT);
-            refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, DisplayStrings[State->CurrentSelection]);
+            gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_CURRENT);
+            gST->ConOut->OutputString(ST->ConOut, DisplayStrings[State->CurrentSelection]);
             break;
 
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // clear message
-                refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-                refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 0, ConHeight - 3);
-                refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, BlankLine + 1);
+                gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
+                gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 3);
+                gST->ConOut->OutputString(ST->ConOut, BlankLine + 1);
             } else {
                 // paint or update message
-                refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
-                refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, 3, ConHeight - 3);
+                gST->ConOut->SetAttribute(ST->ConOut, ATTR_ERROR);
+                gST->ConOut->SetCursorPosition(ST->ConOut, 3, ConHeight - 3);
                 SPrint(TimeoutMessage, 255, L"%s  ", ParamText);
-                refit_call2_wrapper(ST->ConOut->OutputString, ST->ConOut, TimeoutMessage);
+                gST->ConOut->OutputString(ST->ConOut, TimeoutMessage);
             }
             break;
 
@@ -1378,21 +1378,21 @@ UINTN WaitForInput(UINTN Timeout) {
     if (Timeout == 0) {
         Length--;
     } else {
-        Status = refit_call5_wrapper(BS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+        Status = gBS->CreateEvent(EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if(EFI_ERROR(Status)) {
-            refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+            gBS->Stall(100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
         } else {
-            Status = refit_call3_wrapper(BS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
+            Status = gBS->SetTimer(TimerEvent, TimerRelative, Timeout * 10000);
             WaitList[Length - 1] = TimerEvent;
         }
     }
 
-    Status = refit_call3_wrapper(BS->WaitForEvent, Length, WaitList, &Index);
-    refit_call1_wrapper(BS->CloseEvent, TimerEvent);
+    Status = gBS->WaitForEvent(Length, WaitList, &Index);
+    gBS->CloseEvent(TimerEvent);
 
     if(EFI_ERROR(Status)) {
-        refit_call1_wrapper(BS->Stall, 100000); // Pause for 100 ms
+        gBS->Stall(100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     } else if(Index == 0) {
         return INPUT_KEY;
@@ -1414,7 +1414,7 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
       return FALSE;
    }
 
-   refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, ST->ConOut->Mode->Mode, &x_max, &y_max);
+   gST->ConOut->QueryMode(ST->ConOut, ST->ConOut->Mode->Mode, &x_max, &y_max);
 
    if (!GlobalConfig.TextOnly)
       SwitchToText(TRUE);
@@ -1471,8 +1471,14 @@ static BOOLEAN RemoveInvalidFilenames(CHAR16 *FilenameList, CHAR16 *VarName) {
         if (SplitVolumeAndFilename(&Filename, &VolName)) {
             DeleteIt = TRUE;
             if (FindVolume(&Volume, VolName) && Volume->RootDir) {
-                Status = refit_call5_wrapper(Volume->RootDir->Open, Volume->RootDir, &FileHandle,
-                                             Filename, EFI_FILE_MODE_READ, 0);
+                Status = refit_call5_wrapper(
+                    Volume->RootDir->Open,
+                    Volume->RootDir,
+                    &FileHandle,
+                    Filename,
+                    EFI_FILE_MODE_READ,
+                    0
+                );
                 if (Status == EFI_SUCCESS) {
                     DeleteIt = FALSE;
                     refit_call1_wrapper(FileHandle->Close, FileHandle);

@@ -89,9 +89,9 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     if (Name == NULL)
         Name = L"the loader";
 
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
+    gST->ConOut->SetAttribute(ST->ConOut, ATTR_ERROR);
     Print(L"Secure Boot validation failure loading %s!\n", Name);
-    refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
+    gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
     if (Verbose && secure_mode()) {
         Print(L"\nThis computer is configured with Secure Boot active, but\n%s has failed validation.\n", Name);
         Print(L"\nYou can:\n * Launch another boot loader\n");
@@ -186,9 +186,9 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
         // kernel returns a "Failed to handle fs_proto" error message.
         // TODO: Track down the cause of this error and fix it, if possible.
-        // ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+        // ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePath,
         //                                            ImageData, ImageSize, &ChildImageHandle);
-        ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+        ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePath,
                                                     NULL, 0, &ChildImageHandle);
         if (secure_mode() && ShimLoaded()) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
@@ -203,7 +203,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             // NOTE: This doesn't check the return status or handle errors. It could
             // conceivably do weird things if, say, rEFInd were on a USB drive that the
             // user pulls before launching a program.
-            refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
+            gBS->LoadImage(FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
                                 NULL, 0, &ChildImageHandle2);
         }
     } else {
@@ -219,8 +219,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         goto bailout;
     }
 
-    ReturnStatus = Status = refit_call3_wrapper(
-        BS->HandleProtocol,
+    ReturnStatus = Status = gBS->HandleProtocol(
         ChildImageHandle,
         &LoadedImageProtocol,
         (VOID **) &ChildLoadedImage
@@ -235,7 +234,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // close open file handles
     UninitRefitLib();
-    ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
+    ReturnStatus = Status = gBS->StartImage(ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
     SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
@@ -253,7 +252,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 bailout_unload:
     // unload the image, we don't care if it works or not...
     if (!IsDriver)
-        Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
+        Status = gBS->UnloadImage(ChildImageHandle);
 
 bailout:
     MyFreePool(FullLoadOptions);
@@ -281,7 +280,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     if (err != EFI_SUCCESS)
         return err;
 
-    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
     return err;

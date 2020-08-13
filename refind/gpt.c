@@ -125,7 +125,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
    // get block i/o
    if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
-      Status = refit_call3_wrapper(BS->HandleProtocol, Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
+      Status = gBS->HandleProtocol(Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
       if (EFI_ERROR(Status)) {
          Volume->BlockIO = NULL;
          Print(L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
@@ -145,14 +145,25 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
    // Read the MBR and store it in GptData->ProtectiveMBR.
    if (Status == EFI_SUCCESS) {
-      Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                   0, sizeof(MBR_RECORD), (VOID*) GptData->ProtectiveMBR);
+      Status = refit_call5_wrapper(
+          Volume->BlockIO->ReadBlocks,
+          Volume->BlockIO,
+          Volume->BlockIO->Media->MediaId,
+          0,
+          sizeof(MBR_RECORD),
+          (VOID*) GptData->ProtectiveMBR
+      );
    }
 
    // Read the GPT header and store it in GptData->Header.
    if (Status == EFI_SUCCESS) {
-      Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                   1, sizeof(GPT_HEADER), GptData->Header);
+      Status = refit_call5_wrapper(
+          Volume->BlockIO->ReadBlocks,
+          Volume->BlockIO,
+          Volume->BlockIO->Media->MediaId,
+          1,
+          sizeof(GPT_HEADER), GptData->Header
+      );
    }
 
    // If it looks like a valid protective MBR & GPT header, try to do more with it....
@@ -165,8 +176,14 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
             Status = EFI_OUT_OF_RESOURCES;
 
          if (Status == EFI_SUCCESS)
-            Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                         GptData->Header->entry_lba, BufferSize, GptData->Entries);
+            Status = refit_call5_wrapper(
+                Volume->BlockIO->ReadBlocks,
+                Volume->BlockIO,
+                Volume->BlockIO->Media->MediaId,
+                GptData->Header->entry_lba,
+                BufferSize,
+                GptData->Entries
+            );
 
          // Check CRC status of table
          if ((Status == EFI_SUCCESS) && (crc32(0x0, GptData->Entries, BufferSize) != GptData->Header->entry_crc32))
@@ -256,4 +273,3 @@ VOID AddPartitionTable(REFIT_VOLUME *Volume) {
       NumTables = 0;
    } // if/else
 } // VOID AddPartitionTable()
-

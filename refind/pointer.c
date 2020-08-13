@@ -60,7 +60,7 @@ VOID pdInitialize() {
     } else{
     // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
     UINTN NumPointerHandles = 0;
-    EFI_STATUS handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &APointerGuid, NULL,
+    EFI_STATUS handlestatus = gBS->LocateHandleBuffer(ByProtocol, &APointerGuid, NULL,
                                                   &NumPointerHandles, &APointerHandles);
 
     if (!EFI_ERROR(handlestatus)) {
@@ -68,7 +68,7 @@ VOID pdInitialize() {
         UINTN Index;
         for(Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = refit_call6_wrapper(BS->OpenProtocol, APointerHandles[Index], &APointerGuid,
+            EFI_STATUS status = gBS->OpenProtocol(APointerHandles[Index], &APointerGuid,
                                                     (VOID **) &APointerProtocol[NumAPointerDevices],
                                                     SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (status == EFI_SUCCESS) {
@@ -91,7 +91,7 @@ VOID pdInitialize() {
 
     // Get all handles that support simple pointer protocol (mice)
     NumPointerHandles = 0;
-    handlestatus = refit_call5_wrapper(BS->LocateHandleBuffer, ByProtocol, &SPointerGuid, NULL,
+    handlestatus = gBS->LocateHandleBuffer(ByProtocol, &SPointerGuid, NULL,
                                        &NumPointerHandles, &SPointerHandles);
 
     if(!EFI_ERROR(handlestatus)) {
@@ -99,7 +99,7 @@ VOID pdInitialize() {
         UINTN Index;
         for(Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = refit_call6_wrapper(BS->OpenProtocol, SPointerHandles[Index], &SPointerGuid, (VOID **) &SPointerProtocol[NumSPointerDevices], SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+            EFI_STATUS status = gBS->OpenProtocol(SPointerHandles[Index], &SPointerGuid, (VOID **) &SPointerProtocol[NumSPointerDevices], SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
             if (status == EFI_SUCCESS) {
 
                 #if REFIT_DEBUG > 0
@@ -146,7 +146,7 @@ VOID pdCleanup() {
     if(APointerHandles) {
         UINTN Index;
         for(Index = 0; Index < NumAPointerDevices; Index++) {
-            refit_call4_wrapper(BS->CloseProtocol, APointerHandles[Index], &APointerGuid, SelfImageHandle, NULL);
+            gBS->CloseProtocol(APointerHandles[Index], &APointerGuid, SelfImageHandle, NULL);
         }
         FreePool(APointerHandles);
         APointerHandles = NULL;
@@ -158,7 +158,7 @@ VOID pdCleanup() {
     if(SPointerHandles) {
         UINTN Index;
         for(Index = 0; Index < NumSPointerDevices; Index++) {
-            refit_call4_wrapper(BS->CloseProtocol, SPointerHandles[Index], &SPointerGuid, SelfImageHandle, NULL);
+            gBS->CloseProtocol(SPointerHandles[Index], &SPointerGuid, SelfImageHandle, NULL);
         }
         FreePool(SPointerHandles);
         SPointerHandles = NULL;
@@ -230,7 +230,11 @@ EFI_STATUS pdUpdateState() {
 
     UINTN Index;
     for(Index = 0; Index < NumAPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(APointerProtocol[Index]->GetState, APointerProtocol[Index], &APointerState);
+        EFI_STATUS PointerStatus = refit_call2_wrapper(
+            APointerProtocol[Index]->GetState,
+            APointerProtocol[Index],
+            &APointerState
+        );
         // if new state found and we haven't already found a new state
         if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
@@ -246,7 +250,11 @@ EFI_STATUS pdUpdateState() {
         }
     }
     for(Index = 0; Index < NumSPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(SPointerProtocol[Index]->GetState, SPointerProtocol[Index], &SPointerState);
+        EFI_STATUS PointerStatus = refit_call2_wrapper(
+            SPointerProtocol[Index]->GetState,
+            SPointerProtocol[Index],
+            &SPointerState
+        );
         // if new state found and we haven't already found a new state
         if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;

@@ -125,7 +125,14 @@ static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN Partit
     }
 
     // write MBR
-    Status = refit_call5_wrapper(BlockIO->WriteBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
+    Status = refit_call5_wrapper(
+        BlockIO->WriteBlocks,
+        BlockIO,
+        BlockIO->Media->MediaId,
+        0,
+        512,
+        SectorBuffer
+    );
     if (EFI_ERROR(Status))
         return Status;
 
@@ -135,7 +142,14 @@ static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN Partit
         // NOTE: ExtBase was set above while looking at the MBR table
         for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
             // read current EMBR
-            Status = refit_call5_wrapper(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, ExtCurrent, 512, SectorBuffer);
+            Status = refit_call5_wrapper(
+                BlockIO->ReadBlocks,
+                BlockIO,
+                BlockIO->Media->MediaId,
+                ExtCurrent,
+                512,
+                SectorBuffer
+            );
             if (EFI_ERROR(Status))
                 return Status;
             if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55)
@@ -162,7 +176,14 @@ static EFI_STATUS ActivateMbrPartition(IN EFI_BLOCK_IO *BlockIO, IN UINTN Partit
             }
 
             // write current EMBR
-            Status = refit_call5_wrapper(BlockIO->WriteBlocks, BlockIO, BlockIO->Media->MediaId, ExtCurrent, 512, SectorBuffer);
+            Status = refit_call5_wrapper(
+                BlockIO->WriteBlocks,
+                BlockIO,
+                BlockIO->Media->MediaId,
+                ExtCurrent,
+                512,
+                SectorBuffer
+            );
             if (EFI_ERROR(Status))
                 return Status;
 
@@ -181,7 +202,7 @@ static EFI_STATUS WriteBootDiskHint(IN EFI_DEVICE_PATH *WholeDiskDevicePath)
 {
    EFI_STATUS          Status;
 
-   Status = refit_call5_wrapper(RT->SetVariable, L"BootCampHD", &AppleVariableVendorID,
+   Status = gRT->SetVariable(L"BootCampHD", &AppleVariableVendorID,
                                 EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
                                 GetDevicePathSize(WholeDiskDevicePath), WholeDiskDevicePath);
    if (EFI_ERROR(Status))
@@ -229,11 +250,11 @@ static VOID ExtractLegacyLoaderPaths(EFI_DEVICE_PATH **PathList, UINTN MaxPaths,
     for (HandleIndex = 0; HandleIndex < HandleCount && PathCount < MaxPaths; HandleIndex++) {
         Handle = Handles[HandleIndex];
 
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handle, &LoadedImageProtocol, (VOID **) &LoadedImage);
+        Status = gBS->HandleProtocol(Handle, &LoadedImageProtocol, (VOID **) &LoadedImage);
         if (EFI_ERROR(Status))
             continue;  // This can only happen if the firmware scewed up, ignore it.
 
-        Status = refit_call3_wrapper(BS->HandleProtocol, LoadedImage->DeviceHandle, &DevicePathProtocol, (VOID **) &DevicePath);
+        Status = gBS->HandleProtocol(LoadedImage->DeviceHandle, &DevicePathProtocol, (VOID **) &DevicePath);
         if (EFI_ERROR(Status))
             continue;  // This happens, ignore it.
 
@@ -347,7 +368,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
     // load the image into memory
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
-        ReturnStatus = Status = refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
+        ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePaths[DevicePathIndex],
                                                     NULL, 0, &ChildImageHandle);
         if (ReturnStatus != EFI_NOT_FOUND) {
             break;
@@ -360,7 +381,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
         goto bailout;
     }
 
-    ReturnStatus = Status = refit_call3_wrapper(BS->HandleProtocol, ChildImageHandle, &LoadedImageProtocol,
+    ReturnStatus = Status = gBS->HandleProtocol(ChildImageHandle, &LoadedImageProtocol,
                                                 (VOID **) &ChildLoadedImage);
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         if (ErrorInStep != NULL)
@@ -374,7 +395,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
     // close open file handles
     UninitRefitLib();
-    ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
+    ReturnStatus = Status = gBS->StartImage(ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
     SPrint(ErrorInfo, 255, L"returned from legacy loader");
@@ -388,7 +409,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    Status = refit_call1_wrapper(BS->UnloadImage, ChildImageHandle);
+    Status = gBS->UnloadImage(ChildImageHandle);
 
 bailout:
     MyFreePool(FullLoadOptions);
@@ -565,7 +586,7 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
     SPrint(SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
     SubEntry->me.Tag          = TAG_LEGACY_UEFI;
-    Entry->BdsOption          = BdsOption; 
+    Entry->BdsOption          = BdsOption;
     AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
     AddMenuEntry(SubScreen, &MenuEntryReturn);
@@ -599,7 +620,7 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
 
     // If LegacyBios protocol is not implemented on this platform, then
     //we do not support this type of legacy boot on this machine.
-    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status))
        return;
 
@@ -748,7 +769,7 @@ VOID FindLegacyBootType(VOID) {
    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
    // UEFI-style legacy BIOS support is available only with some EFI implementations....
-   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (!EFI_ERROR (Status))
       GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
 
@@ -783,4 +804,3 @@ VOID WarnIfLegacyProblems(VOID) {
       } // if (found)
    } // if no legacy support
 } // VOID WarnIfLegacyProblems()
-

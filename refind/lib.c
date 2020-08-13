@@ -235,7 +235,7 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
     #endif
 
     SelfImageHandle = ImageHandle;
-    Status = refit_call3_wrapper(BS->HandleProtocol, SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
+    Status = gBS->HandleProtocol(SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
     if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle"))
         return EFI_LOAD_ERROR;
 
@@ -285,7 +285,7 @@ VOID ReinitVolumes(VOID)
         if (Volume->DevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->DevicePath;
-            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
+            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
 
             if (!EFI_ERROR(Status)) {
                 Volume->DeviceHandle = DeviceHandle;
@@ -300,12 +300,15 @@ VOID ReinitVolumes(VOID)
         if (Volume->WholeDiskDevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->WholeDiskDevicePath;
-            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
+            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
 
             if (!EFI_ERROR(Status)) {
                 // get the BlockIO protocol
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
-                                             (VOID **) &Volume->WholeDiskBlockIO);
+                Status = gBS->HandleProtocol(
+                    WholeDiskHandle,
+                    &BlockIoProtocol,
+                    (VOID **) &Volume->WholeDiskBlockIO
+                );
                 if (EFI_ERROR(Status)) {
                     Volume->WholeDiskBlockIO = NULL;
                     CheckError(Status, L"from HandleProtocol");
@@ -960,7 +963,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
     // get block i/o
-    Status = refit_call3_wrapper(BS->HandleProtocol, Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
+    Status = gBS->HandleProtocol(Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
 #if REFIT_DEBUG > 0
@@ -1010,20 +1013,20 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
             // get the handle for that path
             RemainingDevicePath = DiskDevicePath;
-            Status = refit_call3_wrapper(BS->LocateDevicePath, &BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
+            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
             MyFreePool(DiskDevicePath);
 
             if (!EFI_ERROR(Status)) {
                 //Print(L"  - original handle: %08x - disk handle: %08x\n", (UINT32)DeviceHandle, (UINT32)WholeDiskHandle);
 
                 // get the device path for later
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &DevicePathProtocol, (VOID **) &DiskDevicePath);
+                Status = gBS->HandleProtocol(WholeDiskHandle, &DevicePathProtocol, (VOID **) &DiskDevicePath);
                 if (!EFI_ERROR(Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath(DiskDevicePath);
                 }
 
                 // look at the BlockIO protocol
-                Status = refit_call3_wrapper(BS->HandleProtocol, WholeDiskHandle, &BlockIoProtocol,
+                Status = gBS->HandleProtocol(WholeDiskHandle, &BlockIoProtocol,
                                              (VOID **) &Volume->WholeDiskBlockIO);
                 if (!EFI_ERROR(Status)) {
 
@@ -1836,7 +1839,7 @@ BOOLEAN EjectMedia(VOID) {
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Handle = Handles[HandleIndex];
-        Status = refit_call3_wrapper(BS->HandleProtocol, Handle, &AppleRemovableMediaGuid, (VOID **) &Ejectable);
+        Status = gBS->HandleProtocol(Handle, &AppleRemovableMediaGuid, (VOID **) &Ejectable);
         if (EFI_ERROR(Status))
             continue;
         Status = refit_call1_wrapper(Ejectable->Eject, Ejectable);

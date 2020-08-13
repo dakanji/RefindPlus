@@ -70,7 +70,6 @@
 #include "driver_support.h"
 #include "launch_efi.h"
 #include "scan.h"
-#include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
 #include "../libeg/libeg.h"
 
@@ -699,7 +698,7 @@ static BOOLEAN SecureBootUninstall(VOID) {
             BeginTextScreen(L"Secure Boot Policy Failure");
             Print(L"Failed to uninstall MOK Secure Boot extensions; forcing a reboot.");
             PauseForKey();
-            refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+            gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
         }
     }
     return Success;
@@ -718,7 +717,7 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
         MsgLog("Set Config Filename...\n");
         #endif
 
-    Status = refit_call3_wrapper(BS->HandleProtocol, ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
+    Status = gBS->HandleProtocol(ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         Options = (CHAR16 *) Info->LoadOptions;
         SubString = MyStrStr(Options, L" -c ");
@@ -850,7 +849,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
     // disable EFI watchdog timer
-    refit_call4_wrapper(BS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
+    gBS->SetWatchdogTimer(0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
     SetupScreen();
@@ -881,7 +880,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("  - Waited %d Seconds\n", i + 1);
                 #endif
             }
-            refit_call1_wrapper(BS->Stall, 1000000);
+            gBS->Stall(1000000);
        }
        RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
        BltClearScreen(TRUE);
@@ -955,7 +954,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     #if REFIT_DEBUG > 0
                     MsgLog("INFO: Reseting System:\n\n");
                     #endif
-                    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
                     #if REFIT_DEBUG > 0
                     MsgLog("INFO: Computer Reboot Failed ...Attempt Fallback:\n\n");
@@ -1003,7 +1002,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1019,7 +1018,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper(RT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+                gRT->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1186,7 +1185,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     MsgLog("Fallback Screen Termination:\n");
     MsgLog("Fallback System Reset:\n\n");
     #endif
-    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     #if REFIT_DEBUG > 0
     MsgLog("INFO: Reboot Failed ...Entering Endless Idle Loop\n\n");
