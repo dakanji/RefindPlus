@@ -597,7 +597,10 @@ VOID AboutrEFInd(VOID)
         #endif
 
         AddMenuInfoLine(&AboutMenu, L"");
-        AddMenuInfoLine(&AboutMenu, L"For more information, see the rEFInd Web site:");
+        AddMenuInfoLine(&AboutMenu, L"Visit the RefindPlus repository for more information:");
+        AddMenuInfoLine(&AboutMenu, L"https://github.com/dakanji/RefindPlus/blob/GOPFix/README.md");
+        AddMenuInfoLine(&AboutMenu, L"");
+        AddMenuInfoLine(&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine(&AboutMenu, L"http://www.rodsbooks.com/refind/");
         AddMenuEntry(&AboutMenu, &MenuEntryReturn);
         MyFreePool(FirmwareVendor);
