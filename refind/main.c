@@ -518,7 +518,7 @@ VOID AboutRefindPlus(VOID)
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L"RefindPlus Version %s", REFIND_VERSION));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L"RefindPlus v%s", REFIND_VERSION));
         AddMenuInfoLine(&AboutMenu, L"");
 
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
@@ -595,7 +595,8 @@ VOID AboutRefindPlus(VOID)
         #endif
 
         AddMenuInfoLine(&AboutMenu, L"");
-        AddMenuInfoLine(&AboutMenu, L"Visit the RefindPlus repository for more information:");
+        AddMenuInfoLine(&AboutMenu, L"RefindPlus is a variant of rEFInd");
+        AddMenuInfoLine(&AboutMenu, L"Visit the project repository for more information:");
         AddMenuInfoLine(&AboutMenu, L"https://github.com/dakanji/RefindPlus/blob/GOPFix/README.md");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"For information on rEFInd, visit:");

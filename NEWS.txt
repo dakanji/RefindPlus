@@ -559,7 +559,7 @@
 
 - Modified SIP/CSR rotation code: If the csr-active-config EFI variable is
   missing AND the firmware is Apple (as identified by the string "Apple"
-  being present in the gST->FirmwareVendor string), rEFInd treats the
+  being present in the ST->FirmwareVendor string), rEFInd treats the
   computer as one on which SIP is available and set to the "enabled" state
   (0x10). The upshot is that the SIP/CSR tool will appear if the showtools
   and csr_values options are set appropriately in refind.conf, even if the
