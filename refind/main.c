@@ -471,7 +471,7 @@ preCleanNvram(
                             TempEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
                             TempEntry->LoaderPath = StrDuplicate(FilePath);
                             TempEntry->Volume = Volumes[i];
-                            TempEntry->UseGraphicsMode = TRUE;
+                            TempEntry->UseGraphicsMode = FALSE;
 
                             FoundTool = TRUE;
                             break;
@@ -949,12 +949,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     #if REFIT_DEBUG > 0
                     MsgLog("INFO: Cleaned Nvram\n\n");
                     MsgLog("Reboot Computer...\n");
-                    MsgLog("INFO: Terminating Screen:\n\n");
+                    MsgLog("Terminating Screen:\n");
                     #endif
                     TerminateScreen();
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("INFO: Reseting System:\n\n");
+                    MsgLog("Reseting System\n---------------\n\n");
                     #endif
                     gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
