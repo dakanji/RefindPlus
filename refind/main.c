@@ -222,7 +222,7 @@ IsValidTool(
 
         while (retval && (DontScanThis = FindCommaDelimited(GlobalConfig.DontScanTools, i++))) {
             SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
-            
+
             if (MyStriCmp(TestFileName, DontFileName) &&
                 ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
                 ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))
@@ -264,9 +264,9 @@ preBootKicker(
         BootKickerMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
         AddMenuInfoLine(&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
-        AddMenuInfoLine(&BootKickerMenu, L"Needs GOP Compatible Official GPUs on Apple Firmware");
-        AddMenuInfoLine(&BootKickerMenu, L"Official GPUs are those With Native Apple Boot Screen");
-        AddMenuInfoLine(&BootKickerMenu, L"Hangs and requires physical reboot with Custom GPUs");
+        AddMenuInfoLine(&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
+        AddMenuInfoLine(&BootKickerMenu, L"Fully Compatible GPUs provide native Mac Boot Screen");
+        AddMenuInfoLine(&BootKickerMenu, L"Hangs and needs physical reboot with other GPUs");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the files below:");

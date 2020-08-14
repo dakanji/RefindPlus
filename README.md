@@ -1,6 +1,6 @@
 # RefindPlus
 ## Overview
-rEFInd Boot Manager with focus on fixes to provide Pre-Boot Configuration Screens (Boot Screens) on units running Custom GPUs (GPUs without Mac EFI).
+rEFInd Boot Manager with focus on fixes to provide Pre-Boot Configuration Screens (Boot Screens) on units running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
 
 The development focus is on Classic MacPros (3,1 to 5,1) but the features should be useful for all.
 
