@@ -77,7 +77,7 @@
 #define ENCODING_UTF8       (1)
 #define ENCODING_UTF16_LE   (2)
 
-#define GetTime ST->RuntimeServices->GetTime
+#define GetTime gST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
 // extern REFIT_MENU_ENTRY MenuEntryReturn;

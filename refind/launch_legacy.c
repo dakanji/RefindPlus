@@ -778,7 +778,7 @@ VOID FindLegacyBootType(VOID) {
    // UEFI type, and might yield false positives if the vendor string
    // contains "Apple" as part of something bigger, so this isn't 100%
    // perfect.
-   if (StriSubCmp(L"Apple", ST->FirmwareVendor))
+   if (StriSubCmp(L"Apple", gST->FirmwareVendor))
       GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
 } // VOID FindLegacyBootType
 

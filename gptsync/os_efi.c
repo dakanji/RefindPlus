@@ -90,7 +90,7 @@ static BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &Key);
+        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -111,7 +111,7 @@ static VOID PauseForKey(VOID)
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    gBS->WaitForEvent(1, &ST->ConIn->WaitForKey, &Index);
+    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 
     Print(L"\n");
@@ -127,8 +127,8 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
     ReadAllKeyStrokes(); // Remove buffered key strokes
     do {
-        gBS->WaitForEvent(1, &ST->ConIn->WaitForKey, &Index);
-        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &Key);
+        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
+        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
         if (EFI_ERROR(Status) && Status != EFI_NOT_READY)
             return 1;
     } while (Status == EFI_NOT_READY);
@@ -189,8 +189,8 @@ static BOOLEAN VerifyGoOn(VOID) {
    BOOLEAN GoOn = TRUE;
    UINTN invalid;
 
-   if (!MyStriCmp(L"Apple", ST->FirmwareVendor)) {
-      Print(L"Your firmware is made by %s.\n", ST->FirmwareVendor);
+   if (!MyStriCmp(L"Apple", gST->FirmwareVendor)) {
+      Print(L"Your firmware is made by %s.\n", gST->FirmwareVendor);
       Print(L"Ordinarily, a hybrid MBR (which this program creates) should be used ONLY on\n");
       Print(L"Apple Macs that dual-boot with Windows or some other BIOS-mode OS. Are you\n");
       invalid = input_boolean(STR("SURE you want to continue? [y/N] "), &GoOn);

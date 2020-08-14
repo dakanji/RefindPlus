@@ -115,7 +115,7 @@ security_policy_authentication (
       DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
    }
 
-   Status = refit_call3_wrapper(BS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
+   Status = refit_call3_wrapper(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
    if (Status != EFI_SUCCESS)
       goto out;
 
@@ -159,9 +159,9 @@ security_policy_install(void)
    /* Don't bother with status here.  The call is allowed
     * to fail, since SECURITY2 was introduced in PI 1.2.1
     * If it fails, use security2_protocol == NULL as indicator */
-   uefi_call_wrapper(BS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
+   uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
 
-   status = uefi_call_wrapper(BS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
+   status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
    if (status != EFI_SUCCESS)
       /* This one is mandatory, so there's a serious problem */
       return status;
@@ -184,7 +184,7 @@ security_policy_uninstall(void)
    if (esfas) {
       EFI_SECURITY_PROTOCOL *security_protocol;
 
-      status = uefi_call_wrapper(BS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
+      status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
 
       if (status != EFI_SUCCESS)
          return status;
@@ -199,7 +199,7 @@ security_policy_uninstall(void)
    if (es2fa) {
       EFI_SECURITY2_PROTOCOL *security2_protocol;
 
-      status = uefi_call_wrapper(BS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
+      status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
 
       if (status != EFI_SUCCESS)
          return status;

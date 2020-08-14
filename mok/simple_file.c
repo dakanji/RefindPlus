@@ -21,7 +21,7 @@ simple_file_open_by_handle(EFI_HANDLE device, CHAR16 *name, EFI_FILE **file, UIN
    EFI_FILE_IO_INTERFACE *drive;
    EFI_FILE *root;
 
-   efi_status = uefi_call_wrapper(BS->HandleProtocol, 3, device,
+   efi_status = uefi_call_wrapper(gBS->HandleProtocol, 3, device,
                    &SIMPLE_FS_PROTOCOL, (VOID**) &drive);
 
    if (efi_status != EFI_SUCCESS) {
@@ -103,7 +103,7 @@ simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode)
    EFI_DEVICE_PATH *loadpath = NULL;
    CHAR16 *PathName = NULL;
 
-   efi_status = uefi_call_wrapper(BS->HandleProtocol, 3, image,
+   efi_status = uefi_call_wrapper(gBS->HandleProtocol, 3, image,
                    &IMAGE_PROTOCOL, (VOID**) &li);
 
    if (efi_status != EFI_SUCCESS)

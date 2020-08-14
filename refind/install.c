@@ -345,7 +345,7 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
                 break;
 
             case FS_TYPE_HFSPLUS:
-                if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) && (!MyStriCmp(L"Apple", ST->FirmwareVendor))) {
+                if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) && (!MyStriCmp(L"Apple", gST->FirmwareVendor))) {
                     DriverName = L"hfs";
                     DriverCopied[FS_TYPE_HFSPLUS] = TRUE;
                 }

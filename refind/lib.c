@@ -347,7 +347,7 @@ EFI_STATUS ReinitRefitLib(VOID)
 {
     ReinitVolumes();
 
-    if ((ST->Hdr.Revision >> 16) == 1) {
+    if ((gST->Hdr.Revision >> 16) == 1) {
        // Below two lines were in rEFIt, but seem to cause system crashes or
        // reboots when launching OSes after returning from programs on most
        // systems. OTOH, my Mac Mini produces errors about "(re)opening our

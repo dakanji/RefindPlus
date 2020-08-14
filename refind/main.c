@@ -532,8 +532,8 @@ VOID AboutRefindPlus(VOID)
             &AboutMenu,
             PoolPrint(
                 L" EFI Revision %d.%02d",
-                ST->Hdr.Revision >> 16,
-                ST->Hdr.Revision & ((1 << 16) - 1)
+                gST->Hdr.Revision >> 16,
+                gST->Hdr.Revision & ((1 << 16) - 1)
             )
         );
 
@@ -570,7 +570,7 @@ VOID AboutRefindPlus(VOID)
             AddMenuInfoLine(&AboutMenu, gCsrStatus);
         }
 
-        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
+        FirmwareVendor = StrDuplicate(gST->FirmwareVendor);
 
         // More than ~65 causes empty info page on 800x600 display
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH);
@@ -580,8 +580,8 @@ VOID AboutRefindPlus(VOID)
             PoolPrint(
                 L" Firmware: %s %d.%02d",
                 FirmwareVendor,
-                ST->FirmwareRevision >> 16,
-                ST->FirmwareRevision & ((1 << 16) - 1)
+                gST->FirmwareRevision >> 16,
+                gST->FirmwareRevision & ((1 << 16) - 1)
             )
         );
 

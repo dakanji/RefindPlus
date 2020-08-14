@@ -89,9 +89,9 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     if (Name == NULL)
         Name = L"the loader";
 
-    gST->ConOut->SetAttribute(ST->ConOut, ATTR_ERROR);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
     Print(L"Secure Boot validation failure loading %s!\n", Name);
-    gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
     if (Verbose && secure_mode()) {
         Print(L"\nThis computer is configured with Secure Boot active, but\n%s has failed validation.\n", Name);
         Print(L"\nYou can:\n * Launch another boot loader\n");
@@ -192,7 +192,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
                                                     NULL, 0, &ChildImageHandle);
         if (secure_mode() && ShimLoaded()) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
-            // which ties itself into the BS->LoadImage() and BS->StartImage() functions and
+            // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
             // then unregisters itself from the EFI system table when its replacement
             // StartImage() function is called *IF* the previous LoadImage() was for the same
             // program. The result is that rEFInd can validate only the first program it

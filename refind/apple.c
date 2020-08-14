@@ -49,7 +49,7 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
                 SPrint(gCsrStatus, 255, L" Unknown System Integrity Protection version");
             }
             MyFreePool(ReturnValue);
-        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp(L"Apple", ST->FirmwareVendor))) {
+        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp(L"Apple", gST->FirmwareVendor))) {
             *CsrStatus = SIP_ENABLED;
             Status = EFI_SUCCESS;
         } // if (Status == EFI_SUCCESS)

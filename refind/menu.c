@@ -417,7 +417,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     }
 
     if (Screen->TimeoutSeconds == -1) {
-        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
+        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
         } else {
@@ -450,14 +450,14 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         pdDraw();
 
         if (WaitForRelease) {
-            Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
+            Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
             if (Status == EFI_SUCCESS) {
                 // reset, because otherwise the buffer gets queued with keystrokes
-                gST->ConIn->Reset(ST->ConIn, FALSE);
+                gST->ConIn->Reset(gST->ConIn, FALSE);
                 gBS->Stall(100000);
             } else {
                 WaitForRelease = FALSE;
-                gST->ConIn->Reset(ST->ConIn, TRUE);
+                gST->ConIn->Reset(gST->ConIn, TRUE);
             }
             continue;
         }
@@ -476,7 +476,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = gST->ConIn->ReadKeyStroke(ST->ConIn, &key);
+        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
 
         if (Status == EFI_SUCCESS) {
             PointerActive = FALSE;
@@ -670,10 +670,10 @@ static VOID ShowTextInfoLines(IN REFIT_MENU_SCREEN *Screen) {
 
    BeginTextScreen(Screen->Title);
    if (Screen->InfoLineCount > 0) {
-      gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
+      gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
       for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-         gST->ConOut->SetCursorPosition(ST->ConOut, 3, 4 + i);
-         gST->ConOut->OutputString(ST->ConOut, Screen->InfoLines[i]);
+         gST->ConOut->SetCursorPosition(gST->ConOut, 3, 4 + i);
+         gST->ConOut->OutputString(gST->ConOut, Screen->InfoLines[i]);
       }
    }
 } // VOID ShowTextInfoLines()
@@ -749,62 +749,62 @@ VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
             ShowTextInfoLines(Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
-                    gST->ConOut->SetCursorPosition(ST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
+                    gST->ConOut->SetCursorPosition(gST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
                     if (i == State->CurrentSelection)
-                       gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_CURRENT);
+                       gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_CURRENT);
                     else
-                       gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_BASIC);
-                    gST->ConOut->OutputString(ST->ConOut, DisplayStrings[i]);
+                       gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_BASIC);
+                    gST->ConOut->OutputString(gST->ConOut, DisplayStrings[i]);
                 }
             }
             // scrolling indicators
-            gST->ConOut->SetAttribute(ST->ConOut, ATTR_SCROLLARROW);
-            gST->ConOut->SetCursorPosition(ST->ConOut, 0, MenuPosY);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_SCROLLARROW);
+            gST->ConOut->SetCursorPosition(gST->ConOut, 0, MenuPosY);
             if (State->FirstVisible > 0)
-                gST->ConOut->OutputString(ST->ConOut, ArrowUp);
+                gST->ConOut->OutputString(gST->ConOut, ArrowUp);
             else
-               gST->ConOut->OutputString(ST->ConOut, L" ");
-            gST->ConOut->SetCursorPosition(ST->ConOut, 0, MenuPosY + State->MaxVisible);
+               gST->ConOut->OutputString(gST->ConOut, L" ");
+            gST->ConOut->SetCursorPosition(gST->ConOut, 0, MenuPosY + State->MaxVisible);
             if (State->LastVisible < State->MaxIndex)
-               gST->ConOut->OutputString(ST->ConOut, ArrowDown);
+               gST->ConOut->OutputString(gST->ConOut, ArrowDown);
             else
-               gST->ConOut->OutputString(ST->ConOut, L" ");
+               gST->ConOut->OutputString(gST->ConOut, L" ");
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
-                  gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 2);
-                  gST->ConOut->OutputString(ST->ConOut, Screen->Hint1);
+                  gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 2);
+                  gST->ConOut->OutputString(gST->ConOut, Screen->Hint1);
                }
                if (Screen->Hint2 != NULL) {
-                  gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 1);
-                  gST->ConOut->OutputString(ST->ConOut, Screen->Hint2);
+                  gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 1);
+                  gST->ConOut->OutputString(gST->ConOut, Screen->Hint2);
                }
             }
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
             // redraw selection cursor
-            gST->ConOut->SetCursorPosition(ST->ConOut, 2,
+            gST->ConOut->SetCursorPosition(gST->ConOut, 2,
                                 MenuPosY + (State->PreviousSelection - State->FirstVisible));
-            gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_BASIC);
-            gST->ConOut->OutputString(ST->ConOut, DisplayStrings[State->PreviousSelection]);
-            gST->ConOut->SetCursorPosition(ST->ConOut, 2,
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_BASIC);
+            gST->ConOut->OutputString(gST->ConOut, DisplayStrings[State->PreviousSelection]);
+            gST->ConOut->SetCursorPosition(gST->ConOut, 2,
                                 MenuPosY + (State->CurrentSelection - State->FirstVisible));
-            gST->ConOut->SetAttribute(ST->ConOut, ATTR_CHOICE_CURRENT);
-            gST->ConOut->OutputString(ST->ConOut, DisplayStrings[State->CurrentSelection]);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_CURRENT);
+            gST->ConOut->OutputString(gST->ConOut, DisplayStrings[State->CurrentSelection]);
             break;
 
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // clear message
-                gST->ConOut->SetAttribute(ST->ConOut, ATTR_BASIC);
-                gST->ConOut->SetCursorPosition(ST->ConOut, 0, ConHeight - 3);
-                gST->ConOut->OutputString(ST->ConOut, BlankLine + 1);
+                gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+                gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 3);
+                gST->ConOut->OutputString(gST->ConOut, BlankLine + 1);
             } else {
                 // paint or update message
-                gST->ConOut->SetAttribute(ST->ConOut, ATTR_ERROR);
-                gST->ConOut->SetCursorPosition(ST->ConOut, 3, ConHeight - 3);
+                gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+                gST->ConOut->SetCursorPosition(gST->ConOut, 3, ConHeight - 3);
                 SPrint(TimeoutMessage, 255, L"%s  ", ParamText);
-                gST->ConOut->OutputString(ST->ConOut, TimeoutMessage);
+                gST->ConOut->OutputString(gST->ConOut, TimeoutMessage);
             }
             break;
 
@@ -1361,7 +1361,7 @@ VOID GenerateWaitList() {
 
     WaitList = AllocatePool(sizeof(EFI_EVENT) * WaitListLength);
 
-    WaitList[0] = ST->ConIn->WaitForKey;
+    WaitList[0] = gST->ConIn->WaitForKey;
 
     UINTN Index;
     for(Index = 0; Index < PointerCount; Index++) {
@@ -1414,7 +1414,7 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
       return FALSE;
    }
 
-   gST->ConOut->QueryMode(ST->ConOut, ST->ConOut->Mode->Mode, &x_max, &y_max);
+   gST->ConOut->QueryMode(gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
 
    if (!GlobalConfig.TextOnly)
       SwitchToText(TRUE);

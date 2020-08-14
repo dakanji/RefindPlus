@@ -74,7 +74,6 @@
 #include "mystrings.h"
 #include "screen.h"
 #include "launch_efi.h"
-#include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)
 #define DRIVER_DIRS             L"drivers,drivers_x64"
@@ -87,15 +86,60 @@
 #endif
 
 // Following "global" constants are from EDK2's AutoGen.c....
-EFI_GUID gMyEfiLoadedImageProtocolGuid = { 0x5B1B31A1, 0x9562, 0x11D2, { 0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gMyEfiDriverBindingProtocolGuid = { 0x18A031AB, 0xB443, 0x4D1A, { 0xA5, 0xC0, 0x0C, 0x09, 0x26, 0x1E, 0x9F, 0x71 }};
-EFI_GUID gMyEfiDriverConfigurationProtocolGuid = { 0x107A772B, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gMyEfiDriverDiagnosticsProtocolGuid = { 0x0784924F, 0xE296, 0x11D4, { 0x9A, 0x49, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gMyEfiComponentNameProtocolGuid = { 0x107A772C, 0xD5E1, 0x11D4, { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }};
-EFI_GUID gMyEfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gMyEfiDiskIoProtocolGuid = { 0xCE345171, 0xBA0B, 0x11D2, { 0x8E, 0x4F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gMyEfiBlockIoProtocolGuid = { 0x964E5B21, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
-EFI_GUID gMyEfiSimpleFileSystemProtocolGuid = { 0x964E5B22, 0x6459, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
+EFI_GUID gMyEfiLoadedImageProtocolGuid = {
+    0x5B1B31A1,
+    0x9562,
+    0x11D2,
+    { 0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
+};
+EFI_GUID gMyEfiDriverBindingProtocolGuid = {
+    0x18A031AB,
+    0xB443,
+    0x4D1A,
+    { 0xA5, 0xC0, 0x0C, 0x09, 0x26, 0x1E, 0x9F, 0x71 }
+};
+EFI_GUID gMyEfiDriverConfigurationProtocolGuid = {
+    0x107A772B,
+    0xD5E1,
+    0x11D4,
+    { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
+};
+EFI_GUID gMyEfiDriverDiagnosticsProtocolGuid = {
+    0x0784924F,
+    0xE296,
+    0x11D4,
+    { 0x9A, 0x49, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
+};
+EFI_GUID gMyEfiComponentNameProtocolGuid = {
+    0x107A772C,
+    0xD5E1,
+    0x11D4,
+    { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
+};
+EFI_GUID gMyEfiDevicePathProtocolGuid = {
+    0x09576E91,
+    0x6D3F,
+    0x11D2,
+    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
+};
+EFI_GUID gMyEfiDiskIoProtocolGuid = {
+    0xCE345171,
+    0xBA0B,
+    0x11D2,
+    { 0x8E, 0x4F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
+};
+EFI_GUID gMyEfiBlockIoProtocolGuid = {
+    0x964E5B21,
+    0x6459,
+    0x11D2,
+    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
+};
+EFI_GUID gMyEfiSimpleFileSystemProtocolGuid = {
+    0x964E5B22,
+    0x6459,
+    0x11D2,
+    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
+};
 
 #ifdef __MAKEWITH_GNUEFI
 struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
@@ -149,13 +193,15 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
  * modifications by Roderick Smith are GPLv3.
  */
 EFI_STATUS
-LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
-                       UINT32      *DriverBindingHandleIndex, OPTIONAL
-                       EFI_HANDLE  ControllerHandle, OPTIONAL
-                       UINT32      *ControllerHandleIndex, OPTIONAL
-                       UINTN       *HandleCount,
-                       EFI_HANDLE  **HandleBuffer,
-                       UINT32      **HandleType) {
+LibScanHandleDatabase (
+    EFI_HANDLE           DriverBindingHandle,
+    OPTIONAL UINT32      *DriverBindingHandleIndex,
+    OPTIONAL EFI_HANDLE  ControllerHandle,
+    OPTIONAL UINT32      *ControllerHandleIndex,
+    OPTIONAL UINTN       *HandleCount,
+    EFI_HANDLE           **HandleBuffer,
+    UINT32               **HandleType
+) {
   EFI_STATUS                          Status;
   UINTN                               HandleIndex;
   EFI_GUID                            **ProtocolGuidArray;
@@ -184,12 +230,12 @@ LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
   // Retrieve the list of all handles from the handle database
   //
 
-  Status = refit_call5_wrapper(BS->LocateHandleBuffer,
-     AllHandles,
-     NULL,
-     NULL,
-     HandleCount,
-     HandleBuffer
+  Status = gBS->LocateHandleBuffer(
+      AllHandles,
+      NULL,
+      NULL,
+      HandleCount,
+      HandleBuffer
   );
   if (EFI_ERROR (Status)) {
     goto Error;
@@ -214,8 +260,11 @@ LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
       DriverBindingHandleIndexValid = TRUE;
     }
 
-    if (ControllerHandle != NULL && ControllerHandleIndex != NULL && (*HandleBuffer)[HandleIndex] == ControllerHandle) {
-      *ControllerHandleIndex      = (UINT32) HandleIndex;
+    if (ControllerHandle != NULL &&
+        ControllerHandleIndex != NULL &&
+        (*HandleBuffer)[HandleIndex] == ControllerHandle
+    ) {
+      *ControllerHandleIndex = (UINT32) HandleIndex;
     }
 
   }
@@ -225,11 +274,11 @@ LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
     // Retrieve the list of all the protocols on each handle
     //
 
-    Status = refit_call3_wrapper(BS->ProtocolsPerHandle,
-                  (*HandleBuffer)[HandleIndex],
-                  &ProtocolGuidArray,
-                  &ArrayCount
-                  );
+    Status = gBS->ProtocolsPerHandle(
+        (*HandleBuffer)[HandleIndex],
+        &ProtocolGuidArray,
+        &ArrayCount
+    );
     if (!EFI_ERROR (Status)) {
 
       for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
@@ -261,12 +310,12 @@ LibScanHandleDatabase (EFI_HANDLE  DriverBindingHandle, OPTIONAL
         // Retrieve the list of agents that have opened each protocol
         //
 
-        Status = refit_call4_wrapper(BS->OpenProtocolInformation,
-                      (*HandleBuffer)[HandleIndex],
-                      ProtocolGuidArray[ProtocolIndex],
-                      &OpenInfo,
-                      &OpenInfoCount
-                      );
+        Status = gBS->OpenProtocolInformation(
+            (*HandleBuffer)[HandleIndex],
+            ProtocolGuidArray[ProtocolIndex],
+            &OpenInfo,
+            &OpenInfoCount
+        );
         if (!EFI_ERROR (Status)) {
 
           for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
@@ -407,11 +456,12 @@ EFI_STATUS ConnectAllDriversToAllControllers(VOID)
 
             if (!Parent) {
                 if (HandleType[Index] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                   Status = refit_call4_wrapper(BS->ConnectController,
-                                                AllHandleBuffer[Index],
-                                                NULL,
-                                                NULL,
-                                                TRUE);
+                   Status = gBS->ConnectController(
+                       AllHandleBuffer[Index],
+                       NULL,
+                       NULL,
+                       TRUE
+                   );
                 }
             }
         }
@@ -464,12 +514,13 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
     //
     // Get all DiskIo handles
     //
-    Status = refit_call5_wrapper(gBS->LocateHandleBuffer,
-                                 ByProtocol,
-                                 &gMyEfiDiskIoProtocolGuid,
-                                 NULL,
-                                 &HandleCount,
-                                 &Handles);
+    Status = gBS->LocateHandleBuffer(
+        ByProtocol,
+        &gMyEfiDiskIoProtocolGuid,
+        NULL,
+        &HandleCount,
+        &Handles
+    );
     if (EFI_ERROR(Status) || HandleCount == 0)
         return;
 
@@ -483,22 +534,26 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
         // should be opened here BY_DRIVER by Partition driver
         // to produce partition volumes.
         //
-        Status = refit_call3_wrapper(gBS->HandleProtocol,
-                                     Handles[Index],
-                                     &gMyEfiBlockIoProtocolGuid,
-                                     (VOID **) &BlockIo);
-        if (EFI_ERROR (Status))
+        Status = gBS->HandleProtocol(
+            Handles[Index],
+            &gMyEfiBlockIoProtocolGuid,
+            (VOID **) &BlockIo
+        );
+        if (EFI_ERROR (Status)) {
             continue;
-        if (BlockIo->Media == NULL || !BlockIo->Media->LogicalPartition)
+        }
+        if (BlockIo->Media == NULL || !BlockIo->Media->LogicalPartition) {
             continue;
+        }
 
         //
         // If SimpleFileSystem is already produced - skip it, this is ok
         //
-        Status = refit_call3_wrapper(gBS->HandleProtocol,
-                                     Handles[Index],
-                                     &gMyEfiSimpleFileSystemProtocolGuid,
-                                     (VOID **) &Fs);
+        Status = gBS->HandleProtocol (
+            Handles[Index],
+            &gMyEfiSimpleFileSystemProtocolGuid,
+            (VOID **) &Fs
+        );
         if (Status == EFI_SUCCESS)
             continue;
 
@@ -506,27 +561,30 @@ VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle) {
         // If no SimpleFileSystem on this handle but DiskIo is opened BY_DRIVER
         // then disconnect this connection and try to connect our driver to it
         //
-        Status = refit_call4_wrapper(gBS->OpenProtocolInformation,
-                                     Handles[Index],
-                                     &gMyEfiDiskIoProtocolGuid,
-                                     &OpenInfo,
-                                     &OpenInfoCount);
+        Status = gBS->OpenProtocolInformation(
+            Handles[Index],
+            &gMyEfiDiskIoProtocolGuid,
+            &OpenInfo,
+            &OpenInfoCount
+        );
         if (EFI_ERROR (Status))
             continue;
         DriverHandleList[1] = NULL;
         for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
             if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER) {
-                Status = refit_call3_wrapper(gBS->DisconnectController,
-                                             Handles[Index],
-                                             OpenInfo[OpenInfoIndex].AgentHandle,
-                                             NULL);
+                Status = gBS->DisconnectController(
+                    Handles[Index],
+                    OpenInfo[OpenInfoIndex].AgentHandle,
+                    NULL
+                );
                 if (!(EFI_ERROR(Status))) {
                     DriverHandleList[0] = DriverHandle;
-                    refit_call4_wrapper(gBS->ConnectController,
-                                        Handles[Index],
-                                        DriverHandleList,
-                                        NULL,
-                                        FALSE);
+                    gBS->ConnectController(
+                        Handles[Index],
+                        DriverHandleList,
+                        NULL,
+                        FALSE
+                    );
                 } // if
             } // if
         } // for
