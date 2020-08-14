@@ -1295,13 +1295,10 @@ VOID SetVolumeIcons(VOID) {
         }
 
         #if REFIT_DEBUG > 0
-        if (egIsGraphicsModeEnabled()) {
-            MsgLog("Checking Volume[%02d]", LogVal);
-            if (k < VolumesCount) {
-                MsgLog(". NB: Real Volume Index = %d\n", k);
-            } else {
-                MsgLog(". NB: Real Volume Index = %d\n\n", k);
-            }
+        if ((egIsGraphicsModeEnabled()) && (k < VolumesCount)) {
+            MsgLog("Checking Volume[%02d]:\n", LogVal);
+        } else {
+            MsgLog("Checking Volume[%02d]:\n\n", LogVal);
         }
         #endif
 
