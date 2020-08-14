@@ -1747,7 +1747,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1776,7 +1776,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1805,7 +1805,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1835,7 +1835,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1865,7 +1865,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1894,7 +1894,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1934,7 +1934,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1976,7 +1976,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s\n", ToolName);
                     #endif
                 }
 
@@ -1996,7 +1996,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2011,7 +2011,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2030,7 +2030,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -2068,7 +2068,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("                WARN: Could not Find %s Tool\n", ToolName);
                     #endif
                 }
                 break;
