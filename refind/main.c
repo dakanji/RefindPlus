@@ -93,11 +93,11 @@ REFIT_MENU_SCREEN MainMenu = {
 };
 
 static REFIT_MENU_SCREEN AboutMenu = {
-    L"About",
+    L"About RefindPlus",
     NULL,
     0, NULL, 0,
     NULL, 0, NULL,
-    L"Press Enter to return to main menu",
+    L"Press 'Enter' to return to main menu",
     L""
 };
 
@@ -219,8 +219,10 @@ IsValidTool(
 
     if (FileExists(BaseVolume->RootDir, PathName) && IsValidLoader(BaseVolume->RootDir, PathName)) {
         SplitPathName(PathName, &TestVolName, &TestPathName, &TestFileName);
+
         while (retval && (DontScanThis = FindCommaDelimited(GlobalConfig.DontScanTools, i++))) {
             SplitPathName(DontScanThis, &DontVolName, &DontPathName, &DontFileName);
+            
             if (MyStriCmp(TestFileName, DontFileName) &&
                 ((DontPathName == NULL) || (MyStriCmp(TestPathName, DontPathName))) &&
                 ((DontVolName == NULL) || (VolumeMatchesDescription(BaseVolume, DontVolName)))
