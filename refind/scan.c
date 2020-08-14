@@ -1510,7 +1510,7 @@ static BOOLEAN FindTool(
 
                     #if REFIT_DEBUG > 0
                     MsgLog(
-                        "                          Added %s Tool : %s%s\n",
+                        "                Added %s Tool : %s%s\n",
                         Description,
                         StrDuplicate(DirName),
                         StrDuplicate(FileName)
@@ -1673,7 +1673,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1684,7 +1684,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1695,7 +1695,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1706,7 +1706,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1717,7 +1717,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1728,7 +1728,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s Tool\n", ToolName);
+                MsgLog("                Added %s Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1741,7 +1741,7 @@ VOID ScanForTools(VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          Added %s Tool\n", ToolName);
+                    MsgLog("                Added %s Tool\n", ToolName);
                     #endif
                 }
 
@@ -1768,7 +1768,7 @@ VOID ScanForTools(VOID) {
                         AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("                          Added %s Tool\n", ToolName);
+                        MsgLog("                Added %s Tool\n", ToolName);
                         #endif
                     } // if
                     MyFreePool(b);
@@ -1797,7 +1797,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                        MsgLog("                Added %s : %s\n", ToolName, FileName);
                         #endif
                     } // if
                 MyFreePool(FileName);
@@ -1826,7 +1826,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                        MsgLog("                Added %s : %s\n", ToolName, FileName);
                         #endif
                     } // if
 
@@ -1857,7 +1857,7 @@ VOID ScanForTools(VOID) {
 
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                     MsgLog("                Added %s : %s\n", ToolName, FileName);
                      #endif
                   } // if
                     MyFreePool(FileName);
@@ -1886,7 +1886,7 @@ VOID ScanForTools(VOID) {
                         );
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                     MsgLog("                Added %s : %s\n", ToolName, FileName);
                      #endif
                     } // if
                     MyFreePool(FileName);
@@ -1925,7 +1925,7 @@ VOID ScanForTools(VOID) {
                                 );
 
                                 #if REFIT_DEBUG > 0
-                                MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                                MsgLog("                Added %s : %s\n", ToolName, FileName);
                                 #endif
                             } // if
                         } // if
@@ -1968,7 +1968,7 @@ VOID ScanForTools(VOID) {
                             );
 
                              #if REFIT_DEBUG > 0
-                             MsgLog("                          Added %s : %s\n", ToolName, FileName);
+                             MsgLog("                Added %s : %s\n", ToolName, FileName);
                              #endif
                         } // if
                     } // for
@@ -2024,7 +2024,7 @@ VOID ScanForTools(VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("                          Added %s Tool\n", ToolName);
+                    MsgLog("                Added %s Tool\n", ToolName);
                     #endif
                 } // if
 
@@ -2042,7 +2042,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s\n", ToolName);
+                MsgLog("                Added %s\n", ToolName);
                 #endif
 
                 break;
@@ -2053,7 +2053,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("                          Added %s\n", ToolName);
+                MsgLog("                Added %s\n", ToolName);
                 #endif
 
                 break;
