@@ -67,9 +67,9 @@ timeout 20
 # provided by the system firmware. The others are provided by GPU firmware.
 # Normally, the Mac EFI should transparently forward calls from he Console
 # Handle GOP to the others. On such models, it only works in this way
-# with Fully Compatible GPUs (Those that provide native Apple Boot Screen). This
+# with Fully Compatible GPUs (GPUs with native Mac Boot Screen). This
 # workaround replaces the Console Handle GOP with one from a GPU Handle when
-# running Semi Compatible GPUs (Those that do not provide native Apple Boot Screen)
+# running Semi Compatible GPUs (GPUs without provide native Mac Boot Screen)
 # on such models.
 # Default is true
 #

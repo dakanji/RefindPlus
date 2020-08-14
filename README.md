@@ -17,7 +17,7 @@ The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFI
 
 Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file with one from RefindPlus to configure the additonal options provided.
 
-Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured rEFInd-GOPFix/OpenCore chainloading package.
+Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chainloading package.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
