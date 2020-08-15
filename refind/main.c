@@ -351,11 +351,7 @@ preBootKicker(
             if (FoundTool == TRUE) {
                 #if REFIT_DEBUG > 0
                 MsgLog("    ** Success: Found %s\n", FilePath);
-                if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Load BootKicker\n---------------\n\n");
-                } else {
-                    MsgLog("  - Load BootKicker\n\n");
-                }
+                MsgLog("  - Load BootKicker\n\n");
                 #endif
 
                 // Run BootKicker

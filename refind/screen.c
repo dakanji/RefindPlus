@@ -82,11 +82,11 @@ EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL DarkBackgroundPixel = { 0x0, 0x0, 0x0, 0 };
 
-static BOOLEAN GraphicsScreenDirty;
-
 // general defines and variables
-
+static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
+static BOOLEAN haveSwitchedText = FALSE;
+
 
 static VOID PrepareBlankLine(VOID) {
     UINTN i;
@@ -168,102 +168,109 @@ VOID SetupScreen(VOID)
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
-    if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
-
-        #if REFIT_DEBUG > 0
-        MsgLog("Set Text Mode:\n");
-        #endif
-
-       egGetScreenSize(&NewWidth, &NewHeight);
-       if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
-          UGAWidth = NewWidth;
-          UGAHeight = NewHeight;
-       }
-       if ((UGAWidth > GlobalConfig.RequestedScreenWidth) || (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
-
-           #if REFIT_DEBUG > 0
-           MsgLog("  - Increase Graphic Mode\n");
-           #endif
-
-           // Requested text mode forces us to use a bigger graphics mode
-           GlobalConfig.RequestedScreenWidth = UGAWidth;
-           GlobalConfig.RequestedScreenHeight = UGAHeight;
-       } // if
-    }
-
-    if (GlobalConfig.RequestedScreenWidth > 0) {
-
-        #if REFIT_DEBUG > 0
-        MsgLog("Set to User Requested Screen Size:\n");
-        #endif
-
-       egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
-       egGetScreenSize(&UGAWidth, &UGAHeight);
-    } // if user requested a particular screen resolution
-
-    if (GlobalConfig.TextOnly) {
-
-        #if REFIT_DEBUG > 0
-        MsgLog("User Requested Text Mode:\n");
-        #endif
-
-        // switch to text mode if requested
-        AllowGraphicsMode = FALSE;
-        SwitchToText(FALSE);
-
-        #if REFIT_DEBUG > 0
-        MsgLog("Switched to Text Mode\n\n");
-        #endif
-    } else if (AllowGraphicsMode) {
-
-        #if REFIT_DEBUG > 0
-        MsgLog("Prepare for Graphics Mode Switch:\n");
-        #endif
-
-        // clear screen and show banner
-        // (now we know we'll stay in graphics mode)
-        if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+    if (haveSwitchedText == FALSE) {
+        if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
+            MsgLog("Set Text Mode:\n");
             #endif
 
-            GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
-            GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
-            HaveResized = TRUE;
-        } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("  - HiDPI Not Detected ...Maintain Icon Scale\n\n");
-            #endif
-        } // if
+            egGetScreenSize(&NewWidth, &NewHeight);
+            if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
+                UGAWidth = NewWidth;
+                UGAHeight = NewHeight;
+            }
 
-        #if REFIT_DEBUG > 0
-        MsgLog("INFO: Running Graphics Mode Switch\n\n");
-        #endif
+            if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
+                (UGAHeight > GlobalConfig.RequestedScreenHeight)
+            ) {
 
-        SwitchToGraphics();
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Increase Graphic Mode\n");
+                #endif
 
-        if (GlobalConfig.ScreensaverTime != -1) {
-
-            #if REFIT_DEBUG > 0
-            MsgLog("Clear Screen and Show Banner:\n");
-            #endif
-
-           BltClearScreen(TRUE);
-        } else { // start with screen blanked
-
-            #if REFIT_DEBUG > 0
-            MsgLog("Clear Screen and Show Blank Screen:\n");
-            #endif
-
-           GraphicsScreenDirty = TRUE;
+                // Requested text mode forces us to use a bigger graphics mode
+                GlobalConfig.RequestedScreenWidth = UGAWidth;
+                GlobalConfig.RequestedScreenHeight = UGAHeight;
+            } // if
         }
 
-        #if REFIT_DEBUG > 0
-        MsgLog("INFO: Switched to Graphics Mode\n\n");
-        #endif
+        if (GlobalConfig.RequestedScreenWidth > 0) {
+
+            #if REFIT_DEBUG > 0
+            MsgLog("Set to User Requested Screen Size:\n");
+            #endif
+
+            egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
+            egGetScreenSize(&UGAWidth, &UGAHeight);
+        } // if user requested a particular screen resolution
+    }
+
+    if (GlobalConfig.TextOnly) {
+        if (haveSwitchedText = FALSE) {
+            #if REFIT_DEBUG > 0
+            MsgLog("User Requested Text Mode:\n");
+            #endif
+
+            // switch to text mode if requested
+            AllowGraphicsMode = FALSE;
+            SwitchToText(FALSE);
+
+            #if REFIT_DEBUG > 0
+            MsgLog("Switched to Text Mode\n\n");
+            #endif
+        }
+    } else if (AllowGraphicsMode) {
+        if (!egIsGraphicsModeEnabled()) {
+            #if REFIT_DEBUG > 0
+            MsgLog("Prepare for Graphics Mode Switch:\n");
+            #endif
+
+            // clear screen and show banner
+            // (now we know we'll stay in graphics mode)
+            if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
+                #endif
+
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+                HaveResized = TRUE;
+            } else {
+                #if REFIT_DEBUG > 0
+                MsgLog("  - HiDPI Not Detected ...Maintain Icon Scale\n\n");
+                #endif
+            } // if
+
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: Running Graphics Mode Switch\n\n");
+            #endif
+
+            SwitchToGraphics();
+
+            if (GlobalConfig.ScreensaverTime != -1) {
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Clear Screen and Show Banner:\n");
+                #endif
+
+                BltClearScreen(TRUE);
+            } else { // start with screen blanked
+
+                #if REFIT_DEBUG > 0
+                MsgLog("Clear Screen and Show Blank Screen:\n");
+                #endif
+
+                GraphicsScreenDirty = TRUE;
+            }
+
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: Switched to Graphics Mode\n\n");
+            #endif
+        }
     } else {
         #if REFIT_DEBUG > 0
         MsgLog("WARN: Invalid Screen Mode\n");
@@ -280,7 +287,10 @@ VOID
 SwitchToText(
     IN BOOLEAN CursorEnabled
 ) {
-    EFI_STATUS    Status;
+    EFI_STATUS Status;
+    BOOLEAN    GraphicsModeOnEntry;
+
+    GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
     if (!GlobalConfig.TextRenderer && HaveOverriden == FALSE) {
         HaveOverriden = TRUE;
@@ -296,7 +306,7 @@ SwitchToText(
     gST->ConOut->EnableCursor(gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
-    if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+    if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
         MsgLog("Determine Text Console Size:\n");
     }
     #endif
@@ -315,7 +325,7 @@ SwitchToText(
         ConHeight = 25;
 
         #if REFIT_DEBUG > 0
-        if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+        if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
                 "  - %r: Could not Get Text Console Size ...Using Default: %dx%d\n\n",
                 Status,
@@ -326,7 +336,7 @@ SwitchToText(
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        if (!AllowGraphicsMode || GlobalConfig.TextOnly) {
+        if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
                 "  - %r: Text Console Size = %dx%d\n\n",
                 Status,
@@ -338,7 +348,9 @@ SwitchToText(
     }
     PrepareBlankLine();
 
-    MsgLog("INFO: Switched to Text Mode\n\n");
+    if (GraphicsModeOnEntry == TRUE) {
+        MsgLog("INFO: Switched to Text Mode\n\n");
+    }
 }
 
 VOID SwitchToGraphics(VOID)
