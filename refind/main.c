@@ -869,17 +869,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        MsgLog("Pause for Scan Delay:\n");
        #endif
 
-       for (i = 0; i < GlobalConfig.ScanDelay; i++) {
-            if ((i + 1) == 1) {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Waited %d Second\n", i + 1);
-                #endif
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Waited %d Seconds\n", i + 1);
-                #endif
-            }
+       for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
             gBS->Stall(1000000);
+       }
+       if (i == 1) {
+           #if REFIT_DEBUG > 0
+           MsgLog("  - Waited %d Second\n", i);
+           #endif
+       } else {
+           #if REFIT_DEBUG > 0
+           MsgLog("  - Waited %d Seconds\n", i);
+           #endif
        }
        RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
        BltClearScreen(TRUE);

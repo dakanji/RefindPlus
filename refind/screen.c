@@ -606,6 +606,7 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     MsgLog("** WARN: %r %s\n", Status, where);
     #endif
 #endif
+
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);

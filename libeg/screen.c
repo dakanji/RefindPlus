@@ -955,6 +955,7 @@ egSetScreenSize(
     UINT32     UGAHeight;
     UINT32     UGADepth;
     UINT32     UGARefreshRate;
+    CHAR16     *Temp = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
@@ -1046,11 +1047,15 @@ egSetScreenSize(
             SwitchToText(FALSE);
 
             #if REFIT_DEBUG > 0
-            MsgLog(
-                "Invalid %dx%d Resolution Setting Provided ...Trying Default Modes:\n",
+            Temp = PoolPrint(
+                "Invalid %dx%d Resolution Setting Provided ...Trying Default Modes:",
                 *ScreenWidth,
                 *ScreenHeight
             );
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText(Temp, NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            MsgLog("%s\n", Temp);
             #endif
 
             ModeNum = 0;
@@ -1062,14 +1067,17 @@ egSetScreenSize(
                     &Info
                 );
                 if ((Status == EFI_SUCCESS) && (Info != NULL)) {
-
                     #if REFIT_DEBUG > 0
-                    MsgLog(
-                        "  - Available Mode: Mode[%d] (%dx%d)\n",
+                    Temp = PoolPrint(
+                        "  - Available Mode: Mode[%d] (%dx%d)",
                         ModeNum,
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+                    PrintUglyText(Temp, NEXTLINE);
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+                    MsgLog("%s\n", Temp);
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
@@ -1077,13 +1085,17 @@ egSetScreenSize(
                         egScreenHeight = Info->VerticalResolution;
                     } // if
 
-                    #if REFIT_DEBUG > 0
                 } else {
-                    MsgLog(
-                        "  - Error : Could not Query GraphicsOutput Mode!\n",
+                    #if REFIT_DEBUG > 0
+                    Temp = PoolPrint(
+                        "  - Error : Could not Query GraphicsOutput Mode!",
                         *ScreenWidth,
                         *ScreenHeight
                     );
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+                    PrintUglyText(Temp, NEXTLINE);
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+                    MsgLog("%s\n", Temp);
                     #endif
 
                 } // if
@@ -1113,17 +1125,21 @@ egSetScreenSize(
             egScreenWidth = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
             ModeSet = TRUE;
-
-            #if REFIT_DEBUG > 0
         } else {
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            MsgLog("Error setting %dx%d resolution ... unsupported mode!\n", *ScreenWidth, *ScreenHeight);
+            #if REFIT_DEBUG > 0
+            Temp = PoolPrint("Error setting %dx%d resolution ... Unsupported Mode!", *ScreenWidth, *ScreenHeight);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText(Temp, NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            MsgLog("%s\n", Temp);
             #endif
 
         } // if/else
     } // if/else if (UGADraw != NULL)
+    MyFreePool(Temp);
 
     return (ModeSet);
 } // BOOLEAN egSetScreenSize()
@@ -1141,6 +1157,7 @@ egSetTextMode(
     UINTN      i = 0;
     UINTN      Width;
     UINTN      Height;
+    CHAR16     *Temp = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) && (RequestedMode != gST->ConOut->Mode->Mode)) {
         Status = gST->ConOut->SetMode(gST->ConOut, RequestedMode);
@@ -1150,7 +1167,11 @@ egSetTextMode(
             SwitchToText(FALSE);
 
             #if REFIT_DEBUG > 0
-            MsgLog("Error Setting Text Mode[%d]. Available Modes Are:\n", RequestedMode);
+            Temp = PoolPrint("Error setting %dx%d resolution ... Unsupported Mode!", *ScreenWidth, *ScreenHeight);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText(Temp, NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            MsgLog("%s\n", Temp);
             #endif
 
             do {
@@ -1158,16 +1179,26 @@ egSetTextMode(
 
                 #if REFIT_DEBUG > 0
                 if (Status == EFI_SUCCESS) {
-                    MsgLog("  - Mode[%d] (%dx%d)\n", i, Width, Height);
+                    Temp = PoolPrint("  - Mode[%d] (%dx%d)", i, Width, Height);
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+                    PrintUglyText(Temp, NEXTLINE);
+                    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+                    MsgLog("%s\n", Temp);
                 }
                 #endif
 
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
-            MsgLog("Use Default Mode[%d]:\n", DONT_CHANGE_TEXT_MODE);
+            Temp = PoolPrint("Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText(Temp, NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            MsgLog("%s\n", Temp);
             #endif
 
+            MyFreePool(Temp);
+            
             PauseForKey();
             SwitchToGraphics();
         } // if/else successful change
@@ -1182,7 +1213,13 @@ CHAR16 * egScreenDescription(VOID) {
     GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
     if (GraphicsInfo == NULL) {
         #if REFIT_DEBUG > 0
-        MsgLog("Memory Allocation Error\n\n");
+        SwitchToText(FALSE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText("Memory Allocation Error!", NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+        MsgLog("Memory Allocation Error!\n\n");
+        PauseForKey();
+        SwitchToGraphics();
         #endif
 
         return L"Memory Allocation Error";
@@ -1197,6 +1234,17 @@ CHAR16 * egScreenDescription(VOID) {
         } else {
             MyFreePool(GraphicsInfo);
             MyFreePool(TextInfo);
+
+            #if REFIT_DEBUG > 0
+            SwitchToText(FALSE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText("Internal Error!", NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            MsgLog("Internal Error!\n\n");
+            PauseForKey();
+            SwitchToGraphics();
+            #endif
+
             return L"Internal Error";
         }
 
@@ -1557,10 +1605,15 @@ egScreenShot(
 
     Image = egCopyScreen();
     if (Image == NULL) {
-
-#if REFIT_DEBUG > 0
-       MsgLog("Error: Unable to take screen shot\n");
-#endif
+        #if REFIT_DEBUG > 0
+        SwitchToText(FALSE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText("Error: Unable to Take Screen Shot", NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+        MsgLog("Error: Unable to Take Screen Shot\n");
+        PauseForKey();
+        SwitchToGraphics();
+        #endif
 
        goto bailout_wait;
     }
@@ -1569,10 +1622,15 @@ egScreenShot(
     egEncodeBMP(Image, &FileData, &FileDataLength);
     egFreeImage(Image);
     if (FileData == NULL) {
-
-#if REFIT_DEBUG > 0
-        MsgLog("Error egEncodeBMP returned NULL\n");
-#endif
+        #if REFIT_DEBUG > 0
+        SwitchToText(FALSE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText("Error: egEncodeBMP Returned NULL", NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+        MsgLog("Error: egEncodeBMP Returned NULL\n");
+        PauseForKey();
+        SwitchToGraphics();
+        #endif
 
         goto bailout_wait;
     }
