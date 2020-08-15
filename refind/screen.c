@@ -85,7 +85,6 @@ EG_PIXEL DarkBackgroundPixel = { 0x0, 0x0, 0x0, 0 };
 // general defines and variables
 static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
-static BOOLEAN haveSwitchedText = FALSE;
 
 
 static VOID PrepareBlankLine(VOID) {
@@ -168,32 +167,30 @@ VOID SetupScreen(VOID)
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
-    if (haveSwitchedText == FALSE) {
-        if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
+    if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
+
+        #if REFIT_DEBUG > 0
+        MsgLog("Set Text Mode:\n");
+        #endif
+
+        egGetScreenSize(&NewWidth, &NewHeight);
+        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
+            UGAWidth = NewWidth;
+            UGAHeight = NewHeight;
+        }
+
+        if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
+            (UGAHeight > GlobalConfig.RequestedScreenHeight)
+        ) {
 
             #if REFIT_DEBUG > 0
-            MsgLog("Set Text Mode:\n");
+            MsgLog("  - Increase Graphic Mode\n");
             #endif
 
-            egGetScreenSize(&NewWidth, &NewHeight);
-            if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
-                UGAWidth = NewWidth;
-                UGAHeight = NewHeight;
-            }
-
-            if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
-                (UGAHeight > GlobalConfig.RequestedScreenHeight)
-            ) {
-
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Increase Graphic Mode\n");
-                #endif
-
-                // Requested text mode forces us to use a bigger graphics mode
-                GlobalConfig.RequestedScreenWidth = UGAWidth;
-                GlobalConfig.RequestedScreenHeight = UGAHeight;
-            } // if
-        }
+            // Requested text mode forces us to use a bigger graphics mode
+            GlobalConfig.RequestedScreenWidth = UGAWidth;
+            GlobalConfig.RequestedScreenHeight = UGAHeight;
+        } // if
 
         if (GlobalConfig.RequestedScreenWidth > 0) {
 
@@ -207,19 +204,17 @@ VOID SetupScreen(VOID)
     }
 
     if (GlobalConfig.TextOnly) {
-        if (haveSwitchedText = FALSE) {
-            #if REFIT_DEBUG > 0
-            MsgLog("User Requested Text Mode:\n");
-            #endif
+        #if REFIT_DEBUG > 0
+        MsgLog("INFO: User Requested Text Mode in Config\n\n");
+        #endif
 
-            // switch to text mode if requested
-            AllowGraphicsMode = FALSE;
-            SwitchToText(FALSE);
+        // Set text mode if requested
+        AllowGraphicsMode = FALSE;
+        SwitchToText(FALSE);
 
-            #if REFIT_DEBUG > 0
-            MsgLog("Switched to Text Mode\n\n");
-            #endif
-        }
+        #if REFIT_DEBUG > 0
+        MsgLog("INFO: Set Screen to Text Mode\n\n");
+        #endif
     } else if (AllowGraphicsMode) {
         if (!egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
