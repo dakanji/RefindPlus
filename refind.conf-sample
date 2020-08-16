@@ -75,6 +75,14 @@ timeout 20
 #
 #provide_console_gop false
 
+# Proceed automatically when notices are shown on screen  (1, true, or on)
+# instead of having to press a key to continue (0, false, or off).
+# When this token is set to true, rEFInd will pause for three seconds and
+# then proceed as if a key had been pressed.
+# Default is false
+#
+#continue_on_warning true
+
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
 # (unfortunately, not including modifier keys such as Shift, Control, Alt,

@@ -496,14 +496,27 @@ VOID PauseForKey(VOID)
     UINTN index;
 
     Print(L"\n");
-    PrintUglyText(L"* Hit any key to continue *", BOTTOM);
 
-    if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        gBS->Stall(5000000);     // 5 seconds delay
-        ReadAllKeyStrokes();    // empty the buffer again
+    if (GlobalConfig.ContinueOnWarning) {
+        PrintUglyText(L"", NEXTLINE);
+        PrintUglyText(L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
+    } else {
+        PrintUglyText(L"", NEXTLINE);
+        PrintUglyText(L"* Hit Any Key to Continue *", NEXTLINE);
     }
 
-    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+    if (GlobalConfig.ContinueOnWarning) {
+        gBS->Stall(3000000);
+    } else {
+        if (ReadAllKeyStrokes()) {  // remove buffered key strokes
+            gBS->Stall(5000000);     // 5 seconds delay
+            ReadAllKeyStrokes();    // empty the buffer again
+        }
+
+        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+    }
+    
+    GraphicsScreenDirty = TRUE;
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 }
 

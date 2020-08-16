@@ -834,6 +834,9 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"direct_gop_renderer")) {
            GlobalConfig.UseDirectGop = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"continue_on_warning")) {
+           GlobalConfig.ContinueOnWarning = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);
            if (i < 1)

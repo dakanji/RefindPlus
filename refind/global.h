@@ -351,6 +351,7 @@ typedef struct {
    BOOLEAN          UgaPassThrough;
    BOOLEAN          ProvideConsoleGOP;
    BOOLEAN          UseDirectGop;
+   BOOLEAN          ContinueOnWarning;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

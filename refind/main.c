@@ -129,6 +129,7 @@ REFIT_CONFIG GlobalConfig = {
     /* UgaPassThrough = */ TRUE,
     /* ProvideConsoleGOP = */ TRUE,
     /* UseDirectGop = */ TRUE,
+    /* ContinueOnWarning = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
