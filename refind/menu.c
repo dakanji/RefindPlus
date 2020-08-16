@@ -1424,8 +1424,10 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
       MenuEntry->LoadOptions = EditedOptions;
       retval = TRUE;
    } // if
-   if (!GlobalConfig.TextOnly)
-      SwitchToGraphics();
+   if (!GlobalConfig.TextOnly) {
+       SwitchToGraphics();
+   }
+   
    return retval;
 } // VOID EditOptions()
 

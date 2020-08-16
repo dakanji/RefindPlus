@@ -112,9 +112,9 @@ EFI_FILE         *SelfRootDir;
 EFI_FILE         *SelfDir;
 CHAR16           *SelfDirPath;
 
-REFIT_VOLUME     *SelfVolume = NULL;
-REFIT_VOLUME     **Volumes = NULL;
-UINTN            VolumesCount = 0;
+REFIT_VOLUME     *SelfVolume    = NULL;
+REFIT_VOLUME     **Volumes      = NULL;
+UINTN            VolumesCount   = 0;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors
@@ -123,6 +123,8 @@ extern EFI_GUID RefindGuid;
 // Number of bytes to read from a partition to determine its filesystem type
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 #define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
+
+
 
 BOOLEAN egIsGraphicsModeEnabled(VOID);
 
@@ -966,9 +968,21 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     Status = gBS->HandleProtocol(Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
-#if REFIT_DEBUG > 0
-        MsgLog("Warning: Can't get BlockIO protocol.\n");
-#endif
+
+        SwitchToText(FALSE);
+
+        SPrint(ShowScreenStr, 160, (CHAR16 *) "ERROR: Cannot get BlockIO Protocol");
+
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+
+        #if REFIT_DEBUG > 0
+        MsgLog("%s\n\n", ShowScreenStr);
+        #endif
+
+        HaltForKey();
+        SwitchToGraphics();
     } else {
         if (Volume->BlockIO->Media->BlockSize == 2048)
             Volume->DiskKind = DISK_KIND_OPTICAL;
@@ -988,12 +1002,15 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
         }
         if (DevicePathType(DevicePath) == MESSAGING_DEVICE_PATH &&
             (DevicePathSubType(DevicePath) == MSG_USB_DP ||
-             DevicePathSubType(DevicePath) == MSG_USB_CLASS_DP ||
-             DevicePathSubType(DevicePath) == MSG_1394_DP ||
-             DevicePathSubType(DevicePath) == MSG_FIBRECHANNEL_DP))
+            DevicePathSubType(DevicePath) == MSG_USB_CLASS_DP ||
+            DevicePathSubType(DevicePath) == MSG_1394_DP ||
+            DevicePathSubType(DevicePath) == MSG_FIBRECHANNEL_DP)
+        ) {
             Volume->DiskKind = DISK_KIND_EXTERNAL;    // USB/FireWire/FC device -> external
+        }
         if (DevicePathType(DevicePath) == MEDIA_DEVICE_PATH &&
-            DevicePathSubType(DevicePath) == MEDIA_CDROM_DP) {
+            DevicePathSubType(DevicePath) == MEDIA_CDROM_DP
+        ) {
             Volume->DiskKind = DISK_KIND_OPTICAL;     // El Torito entry -> optical disk
             Bootable = TRUE;
         }
@@ -1193,10 +1210,22 @@ VOID ScanVolumes(VOID)
     MyFreePool(UuidList);
     MyFreePool(Handles);
 
-    if (SelfVolume == NULL)
-#if REFIT_DEBUG > 0
-        MsgLog("WARNING: Self Volume not Found!\n\n");
-#endif
+    if (SelfVolume == NULL) {
+        SwitchToText(FALSE);
+
+        SPrint(ShowScreenStr, 160, (CHAR16 *) "WARN: Self Volume not Found!");
+
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+
+        #if REFIT_DEBUG > 0
+        MsgLog("%s\n\n", ShowScreenStr);
+        #endif
+
+        PauseForKey();
+        SwitchToGraphics();
+    }
 
     // second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {

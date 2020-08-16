@@ -394,28 +394,30 @@ typedef struct {
 
 // Global variables
 
-extern EFI_HANDLE       SelfImageHandle;
-extern EFI_LOADED_IMAGE *SelfLoadedImage;
-extern EFI_FILE         *SelfRootDir;
-extern EFI_FILE         *SelfDir;
-extern CHAR16           *SelfDirPath;
+extern EFI_HANDLE        SelfImageHandle;
+extern EFI_LOADED_IMAGE  *SelfLoadedImage;
+extern EFI_FILE          *SelfRootDir;
+extern EFI_FILE          *SelfDir;
+extern CHAR16            *SelfDirPath;
 
-extern REFIT_VOLUME     *SelfVolume;
-extern REFIT_VOLUME     **Volumes;
-extern UINTN            VolumesCount;
+extern REFIT_VOLUME      *SelfVolume;
+extern REFIT_VOLUME      **Volumes;
+extern UINTN             VolumesCount;
 
-extern REFIT_CONFIG     GlobalConfig;
+extern REFIT_CONFIG      GlobalConfig;
 
-extern EFI_GUID gEfiLegacyBootProtocolGuid;
-extern EFI_GUID gEfiGlobalVariableGuid;
+extern EFI_GUID          gEfiLegacyBootProtocolGuid;
+extern EFI_GUID          gEfiGlobalVariableGuid;
 
-extern BOOLEAN HaveResized;
+extern BOOLEAN           HaveResized;
 
-extern EFI_GUID GlobalGuid;
-extern EFI_GUID RefindGuid;
+extern EFI_GUID          GlobalGuid;
+extern EFI_GUID          RefindGuid;
 
 extern REFIT_MENU_SCREEN MainMenu;
-extern REFIT_MENU_ENTRY MenuEntryReturn;
+extern REFIT_MENU_ENTRY  MenuEntryReturn;
+
+extern CHAR16            *ShowScreenStr;
 
 VOID AboutrEFInd(VOID);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);

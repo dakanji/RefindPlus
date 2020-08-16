@@ -531,19 +531,29 @@ VOID ReadConfig(CHAR16 *FileName)
     } // if
 
     if (!FileExists(SelfDir, FileName)) {
+        SwitchToText(FALSE);
+
+        SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Cannot Find Configuration File. Loading Defaults");
+        PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
         #if REFIT_DEBUG > 0
-        MsgLog("  - WARN: Cannot Find Configuration File. Loading Defaults\n");
+        MsgLog("%s\n", ShowScreenStr);
         #endif
 
-       Print(L"Configuration file '%s' missing!\n", FileName);
        if (!FileExists(SelfDir, L"icons")) {
+           SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Cannot Find Icons Directory. Switching to Text Mode");
+           PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
            #if REFIT_DEBUG > 0
-           MsgLog("  - WARN: Cannot Find Icons Directory. Switching to Text Mode\n");
+           MsgLog("%s\n", ShowScreenStr);
            #endif
 
-          Print(L"Icons directory does not exist; setting textonly = TRUE!\n");
           GlobalConfig.TextOnly = TRUE;
        }
+
+       PauseForKey();
+       SwitchToGraphics();
+
        return;
     }
 
@@ -588,11 +598,16 @@ VOID ReadConfig(CHAR16 *FileName)
                 } else if (MyStriCmp(FlagName, L"all")) {
                    GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
                 } else {
+                    SwitchToText(FALSE);
+
+                    SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Invalid 'hideui flag' Flag: '%s'", FlagName);
+                    PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - WARN: Invalid 'hideui flag' Flag: '%s'\n", FlagName);
+                    MsgLog("%s\n", ShowScreenStr);
                     #endif
 
-                    Print(L" unknown hideui flag: '%s'\n", FlagName);
+                   PauseForKey();
                 }
             }
 
@@ -702,11 +717,14 @@ VOID ReadConfig(CHAR16 *FileName)
            } else if (MyStriCmp(TokenList[1], L"fillscreen") || MyStriCmp(TokenList[1], L"fullscreen")) {
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            } else {
+               SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Invalid 'banner_type' Flag: '%s'", TokenList[1]);
+               PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
                #if REFIT_DEBUG > 0
-               MsgLog("  - WARN: Invalid 'banner_type' Flag: '%s'\n", TokenList[1]);
+               MsgLog("%s\n", ShowScreenStr);
                #endif
 
-              Print(L" unknown banner_type flag: '%s'\n", TokenList[1]);
+               PauseForKey();
            } // if/else
 
         } else if (MyStriCmp(TokenList[0], L"small_icon_size") && (TokenCount == 2)) {

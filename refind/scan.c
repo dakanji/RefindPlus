@@ -1421,11 +1421,11 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
             MsgLog("  - Shortcut Key[%d] Assigned\n", i + 1);
         } else {
             MsgLog("  - Shortcut Key[%d] Assigned\n\n", i + 1);
-        }
+        } // if
         #endif
 
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
-    }
+    }  // for
 
     // wait for user ACK when there were errors
     FinishTextScreen(FALSE);
@@ -1451,11 +1451,14 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             } // if
             MyFreePool(DontScanThis);
         } // while
-    } else
+    } else {
         retval = FALSE;
+    } // if
+
     MyFreePool(TestVolName);
     MyFreePool(TestPathName);
     MyFreePool(TestFileName);
+
     return retval;
 } // BOOLEAN IsValidTool()
 

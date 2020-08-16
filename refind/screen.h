@@ -95,6 +95,7 @@ VOID DrawScreenHeader(IN CHAR16 *Title);
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
 VOID PrintUglyText(IN CHAR16 *Text, UINTN PositionCode);
+VOID HaltForKey(VOID);
 VOID PauseForKey(VOID);
 VOID PauseSeconds(UINTN Seconds);
 

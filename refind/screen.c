@@ -491,6 +491,26 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
     } // if
 } // VOID PrintUglyText()
 
+VOID HaltForKey(VOID)
+{
+    UINTN index;
+
+    Print(L"\n");
+
+    PrintUglyText(L"", NEXTLINE);
+    PrintUglyText(L"* Hit Any Key to Continue *", NEXTLINE);
+
+    if (ReadAllKeyStrokes()) {  // remove buffered key strokes
+        gBS->Stall(5000000);     // 5 seconds delay
+        ReadAllKeyStrokes();    // empty the buffer again
+    }
+
+    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+
+    GraphicsScreenDirty = TRUE;
+    ReadAllKeyStrokes();        // empty the buffer to protect the menu
+}
+
 VOID PauseForKey(VOID)
 {
     UINTN index;
@@ -515,7 +535,7 @@ VOID PauseForKey(VOID)
 
         gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
     }
-    
+
     GraphicsScreenDirty = TRUE;
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 }
@@ -630,8 +650,9 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
 VOID SwitchToGraphicsAndClear(VOID)
 {
     SwitchToGraphics();
-    if (GraphicsScreenDirty)
+    if (GraphicsScreenDirty) {
         BltClearScreen(TRUE);
+    }
 }
 
 VOID BltClearScreen(BOOLEAN ShowBanner)
