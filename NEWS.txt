@@ -1,7 +1,7 @@
-0.12.0.H (DD MMM YYYY):
+0.12.0.H (Pre-Release):
 -------------------
 
-- Rebrands as 'RefindPlus' from 'Refind-GOPFix'
+- Rebrands 'Refind-GOPFix' as 'RefindPlus'
   * This is to reflect wider scope of interventions beyond fixing GOP Screens
 - Misc Optimisation
   * Removes more redundant wrapper calls
