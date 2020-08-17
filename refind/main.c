@@ -281,12 +281,12 @@ preBootKicker(
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine(&BootKickerMenu, L"You will be returned to the main menu if none is Found");
+        AddMenuInfoLine(&BootKickerMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine(&BootKickerMenu, L"https://forums.macrumors.com/threads/thread.2231693");
-        AddMenuInfoLine(&BootKickerMenu, L"'MyBootMgr' is a preconfigured rEFInd/Opencore Chainloader");
+        AddMenuInfoLine(&BootKickerMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"You can also get BootKicker.efi from the OpenCore Project:");
         AddMenuInfoLine(&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
@@ -413,12 +413,12 @@ preCleanNvram(
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine(&CleanNvramMenu, L"You will be returned to the main menu if none is Found");
+        AddMenuInfoLine(&CleanNvramMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram_x64.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine(&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
-        AddMenuInfoLine(&CleanNvramMenu, L"'MyBootMgr' is a preconfigured rEFInd/Opencore Chainloader");
+        AddMenuInfoLine(&CleanNvramMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"You can also get CleanNvram.efi from the OpenCore Project:");
         AddMenuInfoLine(&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
@@ -511,7 +511,7 @@ preCleanNvram(
 } /* VOID preCleanNvram() */
 
 
-VOID AboutrEFInd(VOID)
+VOID AboutRefindPlus(VOID)
 {
     CHAR16     *FirmwareVendor;
     UINT32     CsrStatus;
@@ -599,16 +599,16 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"https://github.com/dakanji/RefindPlus/blob/GOPFix/README.md");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"For information on rEFInd, visit:");
-        AddMenuInfoLine(&AboutMenu, L"http://www.rodsbooks.com/refind/");
+        AddMenuInfoLine(&AboutMenu, L"http://www.rodsbooks.com/refind");
         AddMenuEntry(&AboutMenu, &MenuEntryReturn);
         MyFreePool(FirmwareVendor);
     }
 
     RunMenu(&AboutMenu, NULL);
-} /* VOID AboutrEFInd() */
+} /* VOID AboutRefindPlus() */
 
-// Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable,
-// if it's different from what's already stored there.
+// Record the loader's name/description in the "PreviousBoot" EFI variable
+// if different from what is already stored there.
 VOID StoreLoaderName(IN CHAR16 *Name) {
     EFI_STATUS   Status;
     CHAR16       *OldName = NULL;
@@ -656,11 +656,10 @@ static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *System
     MsgLog("Init System Lib...\n");
     #endif
 
+    gImageHandle   = ImageHandle;
     gST            = SystemTable;
-    //    gImageHandle   = ImageHandle;
     gBS            = SystemTable->BootServices;
-    //    gRS            = SystemTable->RuntimeServices;
-    gRT = SystemTable->RuntimeServices; // Some BDS functions need gRT to be set
+    gRT            = SystemTable->RuntimeServices;
     EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
 }
 
@@ -695,8 +694,27 @@ static BOOLEAN SecureBootUninstall(VOID) {
         if (Status != EFI_SUCCESS) {
             Success = FALSE;
             BeginTextScreen(L"Secure Boot Policy Failure");
-            Print(L"Failed to uninstall MOK Secure Boot extensions; forcing a reboot.");
+
+            BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
+            GlobalConfig.ContinueOnWarning = TRUE;
+
+            SPrint(ShowScreenStr, 160,
+                (CHAR16 *) "Failed to uninstall MOK Secure Boot extensions ...Forcing Reboot"
+            );
+
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog("%s\n---------------\n\n", ShowScreenStr);
+            #endif
+
             PauseForKey();
+            GlobalConfig.ContinueOnWarning = OurTempBool;
+
+            MyFreePool(OurTempBool);
+
             gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
         }
     }
@@ -729,7 +747,22 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
             if (FileExists(SelfDir, FileName)) {
                 GlobalConfig.ConfigFilename = FileName;
             } else {
-                Print(L"Specified configuration file (%s) doesn't exist; using\n'refind.conf' default\n", FileName);
+                BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
+                GlobalConfig.ContinueOnWarning = TRUE;
+
+                SPrint(ShowScreenStr, 160,
+                    (CHAR16 *) "Specified configuration file does not exist ...Try default 'refind.conf'"
+                );
+                PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("%s\n\n", ShowScreenStr);
+                #endif
+
+                PauseForKey();
+                GlobalConfig.ContinueOnWarning = OurTempBool;
+
+                MyFreePool(OurTempBool);
                 MyFreePool(FileName);
             } // if/else
         } // if
@@ -737,8 +770,7 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
 } // VOID SetConfigFilename()
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
-// rEFInd PreviousBoot variable, if it's available. If it's not available, delete that
-// element.
+//  PreviousBoot variable, if it's available. If it's not available, delete that element.
 static VOID AdjustDefaultSelection() {
     UINTN i = 0, j;
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
@@ -955,9 +987,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     #endif
                     gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
+                    SPrint(ShowScreenStr, 160,
+                        (CHAR16 *) "INFO: Computer Reboot Failed ...Attempt Fallback:."
+                    );
+                    PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+
                     #if REFIT_DEBUG > 0
-                    MsgLog("INFO: Computer Reboot Failed ...Attempt Fallback:\n\n");
+                    MsgLog("%s\n\n", ShowScreenStr);
                     #endif
+
+                    PauseForKey();
+
                     MainLoopRunning = FALSE;   // just in case we get this far
                 }
                 break;
@@ -1021,14 +1061,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
-            case TAG_ABOUT:    // About rEFInd
+            case TAG_ABOUT:    // About RefindPlus
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Show 'About rEFInd' Box\n\n");
+                MsgLog("  - Show 'About RefindPlus' Box\n\n");
                 #endif
 
-                AboutrEFInd();
+                AboutRefindPlus();
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
@@ -1102,14 +1142,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 ManageHiddenTags();
                 break;
 
-            case TAG_EXIT:    // Terminate rEFInd
+            case TAG_EXIT:    // Terminate RefindPlus
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Terminate rEFInd\n---------------\n\n");
+                    MsgLog("  - Terminate RefindPlus\n---------------\n\n");
                 } else {
-                    MsgLog("  - Terminate rEFInd\n\n");
+                    MsgLog("  - Terminate RefindPlus\n\n");
                 }
                 #endif
 
@@ -1150,9 +1190,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Install rEFInd\n---------------\n\n");
+                    MsgLog("  - Install RefindPlus\n---------------\n\n");
                 } else {
-                    MsgLog("  - Install rEFInd\n\n");
+                    MsgLog("  - Install RefindPlus\n\n");
                 }
                 #endif
 
@@ -1176,19 +1216,29 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
     #if REFIT_DEBUG > 0
-    MsgLog("Reboot Computer...\n");
+    MsgLog("Fallback: Reboot Computer...\n");
+    MsgLog("Screen Termination:\n");
     #endif
     TerminateScreen();
 
     #if REFIT_DEBUG > 0
-    MsgLog("Fallback Screen Termination:\n");
-    MsgLog("Fallback System Reset:\n\n");
+    MsgLog("System Reset:\n\n");
     #endif
     gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
+    SwitchToText(FALSE);
+
+    SPrint(ShowScreenStr, 160, (CHAR16 *) "INFO: Reboot Failed ...Entering Endless Idle Loop");
+
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+    PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+
     #if REFIT_DEBUG > 0
-    MsgLog("INFO: Reboot Failed ...Entering Endless Idle Loop\n\n");
+    MsgLog("%s\n---------------\n\n", ShowScreenStr);
     #endif
+
+    PauseForKey();
     EndlessIdleLoop();
 
     return EFI_SUCCESS;
