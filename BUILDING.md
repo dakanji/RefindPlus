@@ -155,8 +155,19 @@ $ git update-index --assume-unchanged 000-BuildScript/refindRepoUpdater.sh
 
 
 
-## Updating Cloned RefindPlus Repository
+## Updating Cloned Repositories
 ### Update Manually
+#### Refind-UDK
+In Terminal, run the following commands:
+
+```
+$ cd ~/Documents/RefindPlus/edk2
+$ git checkout rudk
+$ git pull upstream rudk
+$ git push
+```
+
+#### RefindPlus
 In Terminal, run the following commands:
 
 ```
@@ -177,7 +188,8 @@ $ git push
 
 You may need to resolve conflicts after the `git rebase GOPFix` command.
 
-### Update with the RepoUpdater Script
+
+### Update with the RepoUpdater Script (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
   - Open the `refindRepoUpdater.sh` file If you have an edit branch such as a `MyEdits` branch
   - Under the `USER EDIT` Section, set `EDIT_BRANCH='BRANCH_WITH_YOUR_EDITS'` to your actual edit branch name (Only edit if there is an edit branch)
