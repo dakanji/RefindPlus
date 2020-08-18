@@ -119,7 +119,7 @@ $ git remote add upstream https://github.com/dakanji/RefindPlus
 Upstream will be `dakanji/RefindPlus` as shown
 Your woking repository will be under `Documents/RefindPlus/Working`
 
-**NB:** The build script will build on the online version and unless you have pushed any changes made locally here, they will not be present in your build. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md#updating-cloned-RefindPlus-repository) for how to update your cloned repository.
+**NB:** The build script will build on the online version and unless you have pushed any changes made locally here, they will not be present in your build. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md#updating-cloned-repositories) for how to update your cloned repository.
 
 
 ### Prepare Your Forked RefindPlus Working Repository for Your Edits (Optional)
