@@ -63,14 +63,13 @@ timeout 20
 # On some Macs, such as the cMP 5,1, there can be multiple GOP instances:
 #     - One installed on the console handle
 #     - Others installed on GPU handles.
-# The Console Handle GOP is what everything (including macOS) uses and is
-# provided by the system firmware. The others are provided by GPU firmware.
-# Normally, the Mac EFI should transparently forward calls from he Console
+# The Console Handle GOP is what everything (including macOS) uses and
+# is provided by the system firmware. Others are provided by GPU firmware.
+# Normally, the Mac EFI should transparently forward calls from the Console
 # Handle GOP to the others. On such models, it only works in this way
-# with Fully Compatible GPUs (GPUs with native Mac Boot Screen). This
-# workaround replaces the Console Handle GOP with one from a GPU Handle when
-# running Semi Compatible GPUs (GPUs without provide native Mac Boot Screen)
-# on such models.
+# with Fully Compatible GPUs (GPUs with native Mac EFI). This replaces
+# the Console Handle GOP with one from a GPU Handle on such models when
+# running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
 # Default is true
 #
 #provide_console_gop false
