@@ -84,7 +84,7 @@ $ cd ~/Documents/RefindPlus
 $ git clone https://github.com/YOUR_GITHUB_USERNAME/Refind-UDK.git edk2
 $ cd ~/Documents/RefindPlus/edk2
 $ git checkout rudk
-$ git remote add upstream https://github.com/dakanji/Refind-UDK
+$ git remote add upstream https://github.com/dakanji/Refind-UDK.git
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
@@ -112,7 +112,7 @@ $ cd ~/Documents/RefindPlus
 $ git clone https://github.com/YOUR_GITHUB_USERNAME/RefindPlus.git Working
 $ cd ~/Documents/RefindPlus/Working
 $ git checkout GOPFix
-$ git remote add upstream https://github.com/dakanji/RefindPlus
+$ git remote add upstream https://github.com/dakanji/RefindPlus.git
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
