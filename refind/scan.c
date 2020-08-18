@@ -1609,7 +1609,6 @@ VOID ScanForTools(VOID) {
 
     #if REFIT_DEBUG > 0
     MsgLog("Scan for Builtin/External Tools...\n");
-    MsgLog("Tool Type Count = %d\n", NUM_TOOLS);
     #endif
 
     MokLocations = StrDuplicate(MOK_LOCATIONS);
@@ -1625,14 +1624,13 @@ VOID ScanForTools(VOID) {
 
     for (i = 0; i < NUM_TOOLS; i++) {
         // Reset Vars
-        FileName = NULL;
-        VolName = NULL;
+        MyFreePool(FileName);
+        MyFreePool(VolName);
+        MyFreePool(ToolName);
         FoundTool = FALSE;
-        ToolName = NULL;
 
         #if REFIT_DEBUG > 0
         switch(GlobalConfig.ShowTools[i]) {
-            // NOTE: Be sure that FileName is NULL at the end of each case.
             case TAG_SHUTDOWN:
                 ToolName = L"Shutdown Computer";
                 break;
@@ -1720,12 +1718,13 @@ VOID ScanForTools(VOID) {
         if(!GlobalConfig.ShowTools[i]) {
             ToolName = L"Skipped";
         }
-        MsgLog("Tool Type %02d ...%s\n", i + 1, ToolName);
-        #endif
 
         if (MyStrStr(ToolName, L"Skipped") != NULL) {
             continue;
         }
+        MsgLog("Tool Type %02d ...%s:\n", i + 1, ToolName);
+        #endif
+
 
         switch(GlobalConfig.ShowTools[i]) {
             case TAG_PRE_NVRAMCLEAN:
