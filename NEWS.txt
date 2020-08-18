@@ -1,6 +1,5 @@
 0.12.0.H (Pre-Release):
--------------------
-
+-----------------------
 - Rebrands 'Refind-GOPFix' as 'RefindPlus'
   * This is to reflect wider scope of interventions beyond fixing GOP Screens
 - Misc Optimisation
@@ -13,8 +12,7 @@
 
 
 0.12.0.G (11 Aug 2020):
--------------------
-
+-----------------------
 - Fixes Bug that Removed UGA Support and Disabled the Boot Screen on Legacy Fully Compatible GPUs
   * This bug appeared in v0.12.0.B
 - Implements BootKicker Feature from OpenCore
@@ -28,8 +26,7 @@
 
 
 0.12.0.F (07 Aug 2020):
--------------------
-
+-----------------------
 - Misc Performance Optimisation
 - Expands Debug Logging Coverage
 - Implements Direct GOP Renderer from OpenCore
@@ -41,14 +38,12 @@
 
 
 0.12.0.E (04 Aug 2020):
--------------------
-
+------------------------
 - Fixes GOP Selection Bug Introduced in v0.12.0.D
 
 
 0.12.0.D (04 Aug 2020):
--------------------
-
+-----------------------
 - Fixes Debug Output Issues from v0.12.0.C
 - Expands Debug Log Coverage
 - Adds "text_renderer" as Configuration Option
@@ -68,8 +63,7 @@
 
 
 0.12.0.C (03 Aug 2020):
--------------------
-
+-----------------------
 - Implements ProvideConsoleGOP from OpenCore
   * This allows Pre-Boot Configuration Screens (Boot Screen) on units with broken
     GOP Implementation (such as Classic MacPro 4,1 and 5,1 Models) when running Semi Compatible GPUs.
@@ -88,8 +82,7 @@
 
 
 0.12.0.B (19 Jul 2020):
--------------------
-
+-----------------------
 - Adds debug version
 - Expands GOPFix to Classic MacPro 4,1 and 5,1 Models
 - Should also show the Refind boot screen on non-Mac units running modern AMD GPUs such as the RX580
@@ -97,8 +90,7 @@
 
 
 0.12.0.A (18 Jul 2020):
--------------------
-
+-----------------------
 - Shows boot screen on Classic MacPro 3,1 Models running Semi Compatible GPUs
   (Compatible GPUs without Mac EFI)
 - Does not yet apply to Classic MacPro 4,1 or 5,1 Models
