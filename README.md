@@ -1,16 +1,21 @@
 # RefindPlus
 ## Overview
-rEFInd Boot Manager with focus on fixes to provide Pre-Boot Configuration Screens (Boot Screens) on units running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
+Enhanced version of the amazing rEFInd Boot Manager that incoporates various fixes and additional features.
 
-The development focus is on Classic MacPros (3,1 to 5,1) but the features should be useful for all.
+The development focus is on Classic MacPros (3,1 to 5,1) but should be useful for all users of rEFInd.
 
-## Other Features
-- Fixes inability of rEFInd to print to screen on Macs which prevents receiving program messages as well as leveraging advanced features such as running EFI Shell.
+The aim is for most, if not all, of the fixes and features to be merged upsteam into rEFInd.
+
+## Headline Features
+- Provides Pre-Boot Configuration Screen on units running Semi Compatible GPUs (Compatible GPUs without Native EFI).
+- Fixes inability of rEFInd to print to screen on Macs
+  - This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
 - Adds a debug version that provides extensive logging.
 - Allows disabling SIP to a high level
   - The new default level is `877` compared to the previous `77`
   - Values such as `977`, or the maximum `FFF`, are possible to allow unsigned DMG packages needed to run Mac OS v11.x (Big Sur) in unsupported environments.
 - Provides UGADraw to permit booting legacy operating systems using EFIBoot.
+- Misc Code Optimisation.
 
 ## Installation
 The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](www.rodsbooks.com/refind/getting.html) and [install this](www.rodsbooks.com/refind/installing.html) as normal.
