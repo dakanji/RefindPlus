@@ -1,6 +1,6 @@
 # RefindPlus
 ## Overview
-Enhanced version of the amazing rEFInd Boot Manager that incoporates various fixes and additional features.
+Enhanced version of the amazing rEFInd Boot Manager that incorporates various fixes and additional features.
 
 The development focus is on Classic MacPros (3,1 to 5,1) but should be useful for all users of rEFInd.
 
