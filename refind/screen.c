@@ -87,14 +87,18 @@ static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
 
 
-static VOID PrepareBlankLine(VOID) {
+static VOID
+PrepareBlankLine (
+    VOID
+) {
     UINTN i;
 
     MyFreePool(BlankLine);
     // make a buffer for a whole text line
     BlankLine = AllocatePool((ConWidth + 1) * sizeof(CHAR16));
-    for (i = 0; i < ConWidth; i++)
+    for (i = 0; i < ConWidth; i++) {
         BlankLine[i] = ' ';
+    }
     BlankLine[i] = 0;
 }
 
@@ -102,8 +106,10 @@ static VOID PrepareBlankLine(VOID) {
 // Screen initialization and switching
 //
 
-VOID InitScreen(VOID)
-{
+VOID
+InitScreen (
+    VOID
+) {
     // initialize libeg
     egInitScreen();
 
@@ -130,13 +136,16 @@ VOID InitScreen(VOID)
     PrepareBlankLine();
 
     // show the banner if in text mode
-    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1))
-       DrawScreenHeader(L"Initializing...");
+    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1)) {
+        DrawScreenHeader(L"Initializing...");
+    }
 }
 
 // Set the screen resolution and mode (text vs. graphics).
-VOID SetupScreen(VOID)
-{
+VOID
+SetupScreen (
+    VOID
+) {
     UINTN NewWidth, NewHeight;
 
     #if REFIT_DEBUG > 0
@@ -279,7 +288,7 @@ VOID SetupScreen(VOID)
 } // VOID SetupScreen()
 
 VOID
-SwitchToText(
+SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
     EFI_STATUS Status;
@@ -348,8 +357,9 @@ SwitchToText(
     }
 }
 
-VOID SwitchToGraphics(VOID)
-{
+VOID SwitchToGraphics (
+    VOID
+) {
     if (AllowGraphicsMode && !egIsGraphicsModeEnabled()) {
         egSetGraphicsModeEnabled(TRUE);
         GraphicsScreenDirty = TRUE;
@@ -359,8 +369,10 @@ VOID SwitchToGraphics(VOID)
 //
 // Screen control for running tools
 //
-VOID BeginTextScreen(IN CHAR16 *Title)
-{
+VOID
+BeginTextScreen (
+    IN CHAR16 *Title
+) {
     DrawScreenHeader(Title);
     SwitchToText(FALSE);
 
@@ -368,8 +380,10 @@ VOID BeginTextScreen(IN CHAR16 *Title)
     haveError = FALSE;
 }
 
-VOID FinishTextScreen(IN BOOLEAN WaitAlways)
-{
+VOID
+FinishTextScreen (
+    IN BOOLEAN WaitAlways
+) {
     if (haveError || WaitAlways) {
         SwitchToText(FALSE);
         PauseForKey();
@@ -379,8 +393,11 @@ VOID FinishTextScreen(IN BOOLEAN WaitAlways)
     haveError = FALSE;
 }
 
-VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
-{
+VOID
+BeginExternalScreen (
+    IN BOOLEAN UseGraphicsMode,
+    IN CHAR16 *Title
+) {
     if (!AllowGraphicsMode) {
         UseGraphicsMode = FALSE;
     }
@@ -399,8 +416,10 @@ VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
     haveError = FALSE;
 }
 
-VOID FinishExternalScreen(VOID)
-{
+VOID
+FinishExternalScreen (
+    VOID
+) {
     // make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
@@ -416,8 +435,10 @@ VOID FinishExternalScreen(VOID)
     haveError = FALSE;
 }
 
-VOID TerminateScreen(VOID)
-{
+VOID
+TerminateScreen (
+    VOID
+) {
     // clear text screen
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
     gST->ConOut->ClearScreen(gST->ConOut);
@@ -426,8 +447,10 @@ VOID TerminateScreen(VOID)
     gST->ConOut->EnableCursor(gST->ConOut, TRUE);
 }
 
-VOID DrawScreenHeader(IN CHAR16 *Title)
-{
+VOID
+DrawScreenHeader (
+    IN CHAR16 *Title
+) {
     UINTN y;
 
     // clear to black background
@@ -455,8 +478,10 @@ VOID DrawScreenHeader(IN CHAR16 *Title)
 // Keyboard input
 //
 
-BOOLEAN ReadAllKeyStrokes(VOID)
-{
+BOOLEAN
+ReadAllKeyStrokes (
+    VOID
+) {
     BOOLEAN       GotKeyStrokes;
     EFI_STATUS    Status;
     EFI_INPUT_KEY key;
@@ -477,7 +502,11 @@ BOOLEAN ReadAllKeyStrokes(VOID)
 // and rare error messages.
 // Position code is used only in graphics mode.
 // TODO: Improve to handle multi-line text.
-VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
+VOID
+PrintUglyText (
+    IN CHAR16 *Text,
+    IN UINTN PositionCode
+) {
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
@@ -491,8 +520,10 @@ VOID PrintUglyText(IN CHAR16 *Text, IN UINTN PositionCode) {
     } // if
 } // VOID PrintUglyText()
 
-VOID HaltForKey(VOID)
-{
+VOID
+HaltForKey (
+    VOID
+) {
     UINTN index;
 
     Print(L"\n");
@@ -511,8 +542,10 @@ VOID HaltForKey(VOID)
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 }
 
-VOID PauseForKey(VOID)
-{
+VOID
+PauseForKey (
+    VOID
+) {
     UINTN index;
 
     Print(L"\n");
@@ -541,13 +574,18 @@ VOID PauseForKey(VOID)
 }
 
 // Pause a specified number of seconds
-VOID PauseSeconds(UINTN Seconds) {
+VOID
+PauseSeconds (
+    UINTN Seconds
+) {
      gBS->Stall(1000000 * Seconds);
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
-VOID DebugPause(VOID)
-{
+VOID
+DebugPause (
+    VOID
+) {
     // show console and wait for key
     SwitchToText(FALSE);
     PauseForKey();
@@ -557,8 +595,10 @@ VOID DebugPause(VOID)
 }
 #endif
 
-VOID EndlessIdleLoop(VOID)
-{
+VOID
+EndlessIdleLoop (
+    VOID
+) {
     UINTN index;
 
     for (;;) {
@@ -571,8 +611,11 @@ VOID EndlessIdleLoop(VOID)
 // Error handling
 //
 
-BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
-{
+BOOLEAN
+CheckFatalError (
+    IN EFI_STATUS Status,
+    IN CHAR16 *where
+) {
     CHAR16 *Temp = NULL;
 
     if (!EFI_ERROR(Status))
@@ -603,8 +646,11 @@ BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
     return TRUE;
 } // BOOLEAN CheckFatalError()
 
-BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
-{
+BOOLEAN
+CheckError (
+    IN EFI_STATUS Status,
+    IN CHAR16 *where
+) {
     CHAR16 *Temp = NULL;
 
     if (!EFI_ERROR(Status))
@@ -647,16 +693,20 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
 // Graphics functions
 //
 
-VOID SwitchToGraphicsAndClear(VOID)
-{
+VOID
+SwitchToGraphicsAndClear (
+    VOID
+) {
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen(TRUE);
     }
 }
 
-VOID BltClearScreen(BOOLEAN ShowBanner)
-{
+VOID
+BltClearScreen (
+    BOOLEAN ShowBanner
+) {
     static EG_IMAGE *Banner = NULL;
     EG_IMAGE *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
@@ -737,14 +787,23 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
 } // VOID BltClearScreen()
 
 
-VOID BltImage(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos)
-{
+VOID
+BltImage (
+    IN EG_IMAGE *Image,
+    IN UINTN XPos,
+    IN UINTN YPos
+) {
     egDrawImage(Image, XPos, YPos);
     GraphicsScreenDirty = TRUE;
 }
 
-VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel)
-{
+VOID
+BltImageAlpha (
+    IN EG_IMAGE *Image,
+    IN UINTN XPos,
+    IN UINTN YPos,
+    IN EG_PIXEL *BackgroundPixel
+) {
     EG_IMAGE *CompImage;
 
     // compose on background
@@ -757,34 +816,42 @@ VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL
     GraphicsScreenDirty = TRUE;
 }
 
-// VOID BltImageComposite(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN UINTN XPos, IN UINTN YPos)
-// {
-//     UINTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
-//     EG_IMAGE *CompImage;
+//VOID
+//BltImageComposite (
+//    IN EG_IMAGE *BaseImage,
+//    IN EG_IMAGE *TopImage,
+//    IN UINTN XPos,
+//    IN UINTN YPos
+//) {
+//    UINTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
+//    EG_IMAGE *CompImage;
 //
-//     // initialize buffer with base image
-//     CompImage = egCopyImage(BaseImage);
-//     TotalWidth  = BaseImage->Width;
-//     TotalHeight = BaseImage->Height;
+//    // initialize buffer with base image
+//    CompImage = egCopyImage(BaseImage);
+//    TotalWidth  = BaseImage->Width;
+//    TotalHeight = BaseImage->Height;
 //
-//     // place the top image
-//     CompWidth = TopImage->Width;
-//     if (CompWidth > TotalWidth)
-//         CompWidth = TotalWidth;
-//     OffsetX = (TotalWidth - CompWidth) >> 1;
-//     CompHeight = TopImage->Height;
-//     if (CompHeight > TotalHeight)
-//         CompHeight = TotalHeight;
-//     OffsetY = (TotalHeight - CompHeight) >> 1;
-//     egComposeImage(CompImage, TopImage, OffsetX, OffsetY);
+//    // Place the top image
+//    CompWidth = TopImage->Width;
+//    if (CompWidth > TotalWidth) {
+//        CompWidth = TotalWidth;
+//    }
+//    OffsetX = (TotalWidth - CompWidth) >> 1;
+//    CompHeight = TopImage->Height;
+//    if (CompHeight > TotalHeight) {
+//        CompHeight = TotalHeight;
+//    }
+//    OffsetY = (TotalHeight - CompHeight) >> 1;
+//    egComposeImage(CompImage, TopImage, OffsetX, OffsetY);
 //
-//     // blit to screen and clean up
-//     egDrawImage(CompImage, XPos, YPos);
-//     egFreeImage(CompImage);
-//     GraphicsScreenDirty = TRUE;
-// }
+//    // blit to screen and clean up
+//    egDrawImage(CompImage, XPos, YPos);
+//    egFreeImage(CompImage);
+//    GraphicsScreenDirty = TRUE;
+//}
 
-VOID BltImageCompositeBadge(
+VOID
+BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,
@@ -822,8 +889,9 @@ VOID BltImageCompositeBadge(
      }
 
      // place the badge image
-     if (BadgeImage != NULL && CompImage != NULL && (BadgeImage->Width + 8) < CompWidth
-        && (BadgeImage->Height + 8) < CompHeight
+     if (BadgeImage != NULL && CompImage != NULL &&
+         (BadgeImage->Width + 8) < CompWidth &&
+         (BadgeImage->Height + 8) < CompHeight
      ) {
          OffsetX += CompWidth  - 8 - BadgeImage->Width;
          OffsetY += CompHeight - 8 - BadgeImage->Height;
@@ -833,7 +901,14 @@ VOID BltImageCompositeBadge(
      // blit to screen and clean up
      if (CompImage != NULL) {
          if (CompImage->HasAlpha) {
-             egDrawImageWithTransparency(CompImage, NULL, XPos, YPos, CompImage->Width, CompImage->Height);
+             egDrawImageWithTransparency(
+                 CompImage,
+                 NULL,
+                 XPos,
+                 YPos,
+                 CompImage->Width,
+                 CompImage->Height
+             );
          } else {
              egDrawImage(CompImage, XPos, YPos);
          }
