@@ -576,7 +576,7 @@ BOOLEAN LoadDrivers(VOID) {
     UINTN         i = 0, Length, NumFound = 0;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Load Refind EFI Drivers...\n");
+    MsgLog("Load Drivers...\n");
     #endif
 
     // load drivers from the subdirectories of rEFInd's home directory specified
@@ -602,7 +602,7 @@ BOOLEAN LoadDrivers(VOID) {
     } // while
 
     #if REFIT_DEBUG > 0
-    MsgLog("RefindPlus EFI Driver Count = %d\n\n", NumFound);
+    MsgLog("Driver Count = %d\n\n", NumFound);
     #endif
 
     // connect all devices
