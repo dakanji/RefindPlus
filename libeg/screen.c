@@ -957,7 +957,7 @@ egInitScreen(
         OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Inititated Builtin Text Renderer\n\n");
+        MsgLog ("INFO: Initiated Builtin Text Renderer\n\n");
         #endif
     }
 }
