@@ -713,8 +713,6 @@ static BOOLEAN SecureBootUninstall(VOID) {
             PauseForKey();
             GlobalConfig.ContinueOnWarning = OurTempBool;
 
-            MyFreePool(OurTempBool);
-
             gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
         }
     }
@@ -762,7 +760,6 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
                 PauseForKey();
                 GlobalConfig.ContinueOnWarning = OurTempBool;
 
-                MyFreePool(OurTempBool);
                 MyFreePool(FileName);
             } // if/else
         } // if
