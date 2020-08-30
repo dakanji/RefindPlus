@@ -238,8 +238,10 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
 
     SelfImageHandle = ImageHandle;
     Status = gBS->HandleProtocol(SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
-    if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle"))
+
+    if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle")) {
         return EFI_LOAD_ERROR;
+    }
 
     // find the current directory
     DevicePathAsString = DevicePathToStr(SelfLoadedImage->FilePath);
@@ -295,8 +297,9 @@ VOID ReinitVolumes(VOID)
                 // get the root directory
                 Volume->RootDir = LibOpenRoot(Volume->DeviceHandle);
 
-            } else
+            } else {
                 CheckError(Status, L"from LocateDevicePath");
+            }
         }
 
         if (Volume->WholeDiskDevicePath != NULL) {
@@ -315,8 +318,9 @@ VOID ReinitVolumes(VOID)
                     Volume->WholeDiskBlockIO = NULL;
                     CheckError(Status, L"from HandleProtocol");
                 }
-            } else
+            } else {
                 CheckError(Status, L"from LocateDevicePath");
+            }
         }
     }
 } /* VOID ReinitVolumes(VOID) */
@@ -361,8 +365,9 @@ EFI_STATUS ReinitRefitLib(VOID)
        // wrong test, or there may be a better way to fix this problem.
        // TODO: Figure out cause of above weirdness and fix it more
        // reliably!
-       if (SelfVolume != NULL && SelfVolume->RootDir != NULL)
-          SelfRootDir = SelfVolume->RootDir;
+       if (SelfVolume != NULL && SelfVolume->RootDir != NULL) {
+           SelfRootDir = SelfVolume->RootDir;
+       }
     } // if
 
     return FinishInitRefitLib();
@@ -400,8 +405,9 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
-        if ((size) && ReadFromNvram)
+        if ((size) && ReadFromNvram) {
             *size = l;
+        }
     } else {
         MyFreePool(buf);
         *buffer = NULL;
@@ -426,8 +432,10 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
         MyFreePool(VarsDir);
     } else {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-        if (persistent)
+
+        if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
+        }
 
         Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
     }
@@ -444,10 +452,12 @@ VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID 
 
     if ((*ElementCount & 15) == 0) {
         AllocateCount = *ElementCount + 16;
-        if (*ElementCount == 0)
+
+        if (*ElementCount == 0) {
             *ListPtr = AllocatePool(sizeof(VOID *) * AllocateCount);
-        else
+        } else {
             *ListPtr = EfiReallocatePool(*ListPtr, sizeof(VOID *) * (*ElementCount), sizeof(VOID *) * AllocateCount);
+        }
     }
     (*ListPtr)[*ElementCount] = NewElement;
     (*ElementCount)++;
@@ -558,7 +568,8 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
          MagicString = (char*) (Buffer + 65536 + 52);
          if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
              (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
-             (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
+             (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
+         ) {
             Volume->FSType = FS_TYPE_REISERFS;
             CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
             return;
@@ -636,10 +647,12 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     Volume->OSName = NULL;
     *Bootable = FALSE;
 
-    if (Volume->BlockIO == NULL)
+    if (Volume->BlockIO == NULL) {
         return;
-    if (Volume->BlockIO->Media->BlockSize > SAMPLE_SIZE)
+    }
+    if (Volume->BlockIO->Media->BlockSize > SAMPLE_SIZE) {
         return;   // our buffer is too small...
+    }
 
     // look at the boot sector (this is used for both hard disks and El Torito images!)
     Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks,
@@ -779,11 +792,12 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume)
 {
-   if (Volume == NULL)
+   if (Volume == NULL) {
        return;
-
-   if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES)
-      return;
+   }
+   if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+       return;
+   }
 
    if (Volume->VolBadgeImage == NULL) {
       Volume->VolBadgeImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeBadge", GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
@@ -983,8 +997,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
         HaltForKey();
         SwitchToGraphics();
-    } else {
-        if (Volume->BlockIO->Media->BlockSize == 2048)
+    } else if (Volume->BlockIO->Media->BlockSize == 2048) {
             Volume->DiskKind = DISK_KIND_OPTICAL;
     }
 
@@ -1063,10 +1076,11 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     } // while
 
    if (!Bootable) {
-      if (Volume->HasBootCode)
-#if REFIT_DEBUG > 0
-         MsgLog("  Volume considered non-bootable, but boot code is present\n");
-#endif
+      if (Volume->HasBootCode) {
+          #if REFIT_DEBUG > 0
+           MsgLog("  Volume considered non-bootable, but boot code is present\n");
+           #endif
+      }
       Volume->HasBootCode = FALSE;
    }
 
@@ -1108,18 +1122,22 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
                                    WholeDiskVolume->BlockIO,
                                    WholeDiskVolume->BlockIO->Media->MediaId,
                                    ExtCurrent, 512, SectorBuffer);
-        if (EFI_ERROR(Status))
+        if (EFI_ERROR(Status)) {
             break;
-        if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55)
+        }
+        if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
             break;
+        }
         EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
 
         // scan logical partitions in this EMBR
         NextExtCurrent = 0;
         for (i = 0; i < 4; i++) {
             if ((EMbrTable[i].Flags != 0x00 && EMbrTable[i].Flags != 0x80) ||
-                EMbrTable[i].StartLBA == 0 || EMbrTable[i].Size == 0)
-                break;
+                EMbrTable[i].StartLBA == 0 || EMbrTable[i].Size == 0
+            ) {
+                    break;
+            }
             if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
                 // set next ExtCurrent
                 NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
@@ -1138,8 +1156,9 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
 
                 Bootable = FALSE;
                 ScanVolumeBootcode(Volume, &Bootable);
-                if (!Bootable)
+                if (!Bootable) {
                     Volume->HasBootCode = FALSE;
+                }
                 SetVolumeBadgeIcon(Volume);
                 AddListElement((VOID ***) &Volumes, &VolumesCount, Volume);
             } // if/else
@@ -1172,8 +1191,9 @@ VOID ScanVolumes(VOID)
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
-    if (CheckError(Status, L"while listing all file systems"))
+    if (CheckError(Status, L"while listing all file systems")) {
         return;
+    }
     UuidList = AllocateZeroPool(sizeof(EFI_GUID) * HandleCount);
 
     // first pass: collect information about all handles
@@ -1203,9 +1223,9 @@ VOID ScanVolumes(VOID)
             #endif
         }
 
-            #if REFIT_DEBUG > 0
-                    MsgLog("Set %s as Scanned Volume\n\n", Volume->VolName);
-            #endif
+        #if REFIT_DEBUG > 0
+        MsgLog("Set %s as Scanned Volume\n\n", Volume->VolName);
+        #endif
     }
     MyFreePool(UuidList);
     MyFreePool(Handles);
@@ -1261,27 +1281,33 @@ VOID ScanVolumes(VOID)
             SectorBuffer2 = AllocatePool(512);
             for (PartitionIndex = 0; PartitionIndex < 4; PartitionIndex++) {
                 // check size
-                if ((UINT64)(MbrTable[PartitionIndex].Size) != Volume->BlockIO->Media->LastBlock + 1)
+                if ((UINT64)(MbrTable[PartitionIndex].Size) != Volume->BlockIO->Media->LastBlock + 1) {
                     continue;
+                }
 
                 // compare boot sector read through offset vs. directly
                 Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks,
                                              Volume->BlockIO, Volume->BlockIO->Media->MediaId,
                                              Volume->BlockIOOffset, 512, SectorBuffer1);
-                if (EFI_ERROR(Status))
+                if (EFI_ERROR(Status)) {
                     break;
+                }
                 Status = refit_call5_wrapper(Volume->WholeDiskBlockIO->ReadBlocks,
                                              Volume->WholeDiskBlockIO, Volume->WholeDiskBlockIO->Media->MediaId,
                                              MbrTable[PartitionIndex].StartLBA, 512, SectorBuffer2);
-                if (EFI_ERROR(Status))
-                    break;
-                if (CompareMem(SectorBuffer1, SectorBuffer2, 512) != 0)
+                 if (EFI_ERROR(Status)) {
+                     break;
+                 }
+                if (CompareMem(SectorBuffer1, SectorBuffer2, 512) != 0) {
                     continue;
+                }
                 SectorSum = 0;
-                for (i = 0; i < 512; i++)
+                for (i = 0; i < 512; i++) {
                     SectorSum += SectorBuffer1[i];
-                if (SectorSum < 1000)
+                }
+                if (SectorSum < 1000) {
                     continue;
+                }
 
                 // TODO: mark entry as non-bootable if it is an extended partition
 
