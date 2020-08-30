@@ -516,6 +516,7 @@ egInitScreen(
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
     EFI_STATUS                    Status = EFI_SUCCESS;
     EFI_STATUS                    UGAOnConsole = EFI_UNSUPPORTED;
+    EFI_STATUS                    XStatus;
     EFI_STATUS                    XFlag;
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
@@ -891,16 +892,35 @@ egInitScreen(
     }
     #endif
 
-    // Get screen size
+    // Get Screen Size
     egHasGraphics = FALSE;
     if (GraphicsOutput != NULL) {
         Status = egDumpGOPVideoModes();
 
         if (EFI_ERROR (Status)) {
-            GraphicsOutput = NULL;
             #if REFIT_DEBUG > 0
             MsgLog("INFO: Invalid GOP Instance\n\n");
             #endif
+
+            // Revert Console GOP Provision if Invalid
+            if (XFlag == EFI_UNSUPPORTED && thisValidGOP == true && OldGOP != NULL) {
+                XStatus = gBS->UninstallProtocolInterface (
+                    gST->ConsoleOutHandle,
+                    &gEfiGraphicsOutputProtocolGuid,
+                    GraphicsOutput
+                );
+
+                if (!EFI_ERROR (XStatus)) {
+                    XStatus = gBS->InstallMultipleProtocolInterfaces (
+                        &gST->ConsoleOutHandle,
+                        &gEfiGraphicsOutputProtocolGuid,
+                        OldGOP,
+                        NULL
+                    );
+                }
+            }
+
+            GraphicsOutput = NULL;
         } else {
             egSetMaxResolution();
             egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
