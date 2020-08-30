@@ -84,7 +84,8 @@ static UINTN   egScreenWidth  = 0;
 static UINTN   egScreenHeight = 0;
 CHAR16 *ShowScreenStr = NULL;
 
-VOID
+
+EFI_STATUS
 egDumpGOPVideoModes(
     VOID
 ) {
@@ -99,6 +100,7 @@ egDumpGOPVideoModes(
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
     CHAR16     *PixelFormatDesc;
+    BOOLEAN    OurValidGOP = FALSE;
 
     if (GraphicsOutput == NULL) {
         SwitchToText(FALSE);
@@ -151,6 +153,7 @@ egDumpGOPVideoModes(
         #endif
 
         if (Status == EFI_SUCCESS) {
+            OurValidGOP = TRUE;
 
             switch (Info->PixelFormat) {
                 case PixelRedGreenBlueReserved8BitPerColor:
@@ -193,9 +196,7 @@ egDumpGOPVideoModes(
                 );
             }
             #endif
-
         } else {
-
             // Limit logged value to 99
             if (Mode > 99) {
                 ModeLog = 99;
@@ -222,7 +223,7 @@ egDumpGOPVideoModes(
         } // if
     } // for (Mode = 0; Mode < NumModes; Mode++)
 
-    if (OurValidGOP == false) {
+    if (OurValidGOP == FALSE) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Could not Find Valid GOP\n\n");
         #endif
@@ -521,8 +522,6 @@ egInitScreen(
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     UINTN                         i;
-
-
 
 
     #if REFIT_DEBUG > 0
@@ -903,7 +902,7 @@ egInitScreen(
             #endif
 
             // Revert Console GOP Provision if Invalid
-            if (XFlag == EFI_UNSUPPORTED && thisValidGOP == true && OldGOP != NULL) {
+            if (XFlag == EFI_UNSUPPORTED && OldGOP != NULL) {
                 XStatus = gBS->UninstallProtocolInterface (
                     gST->ConsoleOutHandle,
                     &gEfiGraphicsOutputProtocolGuid,
