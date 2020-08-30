@@ -114,7 +114,7 @@ egDumpGOPVideoModes(
         #endif
 
         HaltForKey();
-        return;
+        return EFI_UNSUPPORTED;
     }
 
     // get dump
@@ -219,9 +219,18 @@ egDumpGOPVideoModes(
                 }
             }
             #endif
-        }
+        } // if
+    } // for (Mode = 0; Mode < NumModes; Mode++)
+
+    if (OurValidGOP == false) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Could not Find Valid GOP\n\n");
+        #endif
+
+        return EFI_UNSUPPORTED;
     }
 
+    return EFI_SUCCESS;
 }
 
 //
@@ -882,21 +891,29 @@ egInitScreen(
     }
     #endif
 
-    // get screen size
+    // Get screen size
     egHasGraphics = FALSE;
     if (GraphicsOutput != NULL) {
-        egDumpGOPVideoModes();
-        egSetMaxResolution();
-        egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
-        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-        egHasGraphics = TRUE;
+        Status = egDumpGOPVideoModes();
 
-        #if REFIT_DEBUG > 0
-        // Only log this if GOPFix or Direct Renderer attempted
-        if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-            MsgLog("INFO: Implemented GraphicsOutputProtocol\n\n");
+        if (EFI_ERROR (Status)) {
+            GraphicsOutput = NULL;
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: Invalid GOP Instance\n\n");
+            #endif
+        } else {
+            egSetMaxResolution();
+            egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+            egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+            egHasGraphics = TRUE;
+
+            #if REFIT_DEBUG > 0
+            // Only log this if GOPFix or Direct Renderer attempted
+            if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
+                MsgLog("INFO: Implemented GraphicsOutputProtocol\n\n");
+            }
+            #endif
         }
-        #endif
     }
     if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
         if (GlobalConfig.UgaPassThrough) {
