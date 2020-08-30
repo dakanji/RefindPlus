@@ -652,6 +652,8 @@ egInitScreen(
             MsgLog("    * Seek Directly ...%r\n", Status);
             #endif
         }
+    } else {
+        UGAOnConsole = EFI_SUCCESS;
     }
 
     if (EFI_ERROR(Status)) {
@@ -659,8 +661,6 @@ egInitScreen(
     	MsgLog("  - Check UGADraw ...NOT OK!\n\n");
         #endif
     } else {
-        UGAOnConsole = EFI_SUCCESS;
-
         #if REFIT_DEBUG > 0
     	MsgLog("  - Check UGADraw ...ok\n\n");
         #endif
