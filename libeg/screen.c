@@ -312,107 +312,109 @@ egDumpGOPVideoModes(
 
     // get dump
     MaxMode = GraphicsOutput->Mode->MaxMode;
-    Mode = GraphicsOutput->Mode->Mode;
-    NumModes = (INT32)MaxMode + 1;
-    if (MaxMode == 0) {
-        ModeCount = NumModes;
-    } else {
-        ModeCount = MaxMode;
-    }
-    LoopCount = 0;
-
-    #if REFIT_DEBUG > 0
-    MsgLog("Query GraphicsOutputProtocol Modes:\n");
-    MsgLog(
-        "Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n",
-        ModeCount,
-        GraphicsOutput->Mode->FrameBufferBase,
-        GraphicsOutput->Mode->FrameBufferSize
-    );
-    #endif
-
-    for (Mode = 0; Mode < NumModes; Mode++) {
-        LoopCount++;
-        if (LoopCount == NumModes) {
-            break;
+    if (MaxMode > 0) {
+        Mode = GraphicsOutput->Mode->Mode;
+        NumModes = (INT32)MaxMode + 1;
+        if (MaxMode == 0) {
+            ModeCount = NumModes;
+        } else {
+            ModeCount = MaxMode;
         }
-
-        Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
+        LoopCount = 0;
 
         #if REFIT_DEBUG > 0
-        MsgLog("  - Query GOP Mode[%02d] ...%r", Mode, Status);
+        MsgLog("Query GraphicsOutputProtocol Modes:\n");
+        MsgLog(
+            "Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n",
+            ModeCount,
+            GraphicsOutput->Mode->FrameBufferBase,
+            GraphicsOutput->Mode->FrameBufferSize
+        );
         #endif
 
-        if (Status == EFI_SUCCESS) {
-            OurValidGOP = TRUE;
-
-            switch (Info->PixelFormat) {
-                case PixelRedGreenBlueReserved8BitPerColor:
-                    PixelFormatDesc = L"8bit RGB";
-                    break;
-
-                case PixelBlueGreenRedReserved8BitPerColor:
-                    PixelFormatDesc = L"8bit BGR";
-                    break;
-
-                case PixelBitMask:
-                    PixelFormatDesc = L"BIT MASK";
-                    break;
-
-                case PixelBltOnly:
-                    PixelFormatDesc = L"!FBuffer";
-                    break;
-
-                default:
-                    PixelFormatDesc = L"Invalid!";
-                    break;
+        for (Mode = 0; Mode < NumModes; Mode++) {
+            LoopCount++;
+            if (LoopCount == NumModes) {
+                break;
             }
+
+            Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
-            if (LoopCount < ModeCount) {
-                MsgLog(
-                    " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
-                    Info->HorizontalResolution,
-                    Info->VerticalResolution,
-                    Info->PixelsPerScanLine,
-                    PixelFormatDesc
-                );
-            } else {
-                MsgLog(
-                    " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
-                    Info->HorizontalResolution,
-                    Info->VerticalResolution,
-                    Info->PixelsPerScanLine,
-                    PixelFormatDesc
-                );
-            }
+            MsgLog("  - Query GOP Mode[%02d] ...%r", Mode, Status);
             #endif
-        } else {
-            // Limit logged value to 99
-            if (Mode > 99) {
-                ModeLog = 99;
-            } else {
-                ModeLog = Mode;
-            }
 
-            #if REFIT_DEBUG > 0
-            MsgLog("  - Mode[%d]: %r", ModeLog, Status);
-            if (LoopCount < ModeCount) {
-                if (Mode > 99) {
-                    MsgLog( ". NB: Real Mode = %d\n", Mode);
-                } else {
-                    MsgLog( "\n", Mode);
+            if (Status == EFI_SUCCESS) {
+                OurValidGOP = TRUE;
+
+                switch (Info->PixelFormat) {
+                    case PixelRedGreenBlueReserved8BitPerColor:
+                        PixelFormatDesc = L"8bit RGB";
+                        break;
+
+                    case PixelBlueGreenRedReserved8BitPerColor:
+                        PixelFormatDesc = L"8bit BGR";
+                        break;
+
+                    case PixelBitMask:
+                        PixelFormatDesc = L"BIT MASK";
+                        break;
+
+                    case PixelBltOnly:
+                        PixelFormatDesc = L"!FBuffer";
+                        break;
+
+                    default:
+                        PixelFormatDesc = L"Invalid!";
+                        break;
                 }
+
+                #if REFIT_DEBUG > 0
+                if (LoopCount < ModeCount) {
+                    MsgLog(
+                        " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
+                        Info->HorizontalResolution,
+                        Info->VerticalResolution,
+                        Info->PixelsPerScanLine,
+                        PixelFormatDesc
+                    );
+                } else {
+                    MsgLog(
+                        " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
+                        Info->HorizontalResolution,
+                        Info->VerticalResolution,
+                        Info->PixelsPerScanLine,
+                        PixelFormatDesc
+                    );
+                }
+                #endif
             } else {
+                // Limit logged value to 99
                 if (Mode > 99) {
-                    MsgLog( ". NB: Real Mode = %d\n\n", Mode);
+                    ModeLog = 99;
                 } else {
-                    MsgLog( "\n\n", Mode);
+                    ModeLog = Mode;
                 }
-            }
-            #endif
-        } // if
-    } // for (Mode = 0; Mode < NumModes; Mode++)
+
+                #if REFIT_DEBUG > 0
+                MsgLog("  - Mode[%d]: %r", ModeLog, Status);
+                if (LoopCount < ModeCount) {
+                    if (Mode > 99) {
+                        MsgLog( ". NB: Real Mode = %d\n", Mode);
+                    } else {
+                        MsgLog( "\n", Mode);
+                    }
+                } else {
+                    if (Mode > 99) {
+                        MsgLog( ". NB: Real Mode = %d\n\n", Mode);
+                    } else {
+                        MsgLog( "\n\n", Mode);
+                    }
+                }
+                #endif
+            } // if Status == EFI_SUCCESS
+        } // for (Mode = 0; Mode < NumModes; Mode++)
+    } // if MaxMode > 0
 
     if (OurValidGOP == FALSE) {
         #if REFIT_DEBUG > 0
