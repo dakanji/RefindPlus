@@ -79,11 +79,202 @@ static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 static EFI_UGA_DRAW_PROTOCOL        *UGADraw = NULL;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
+static EFI_HANDLE_PROTOCOL daOrigProtocol;
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 0;
 static UINTN   egScreenHeight = 0;
 CHAR16 *ShowScreenStr = NULL;
 
+STATIC
+EFI_STATUS
+EFIAPI
+daConsoleHandleProtocol (
+    IN  EFI_HANDLE        Handle,
+    IN  EFI_GUID          *Protocol,
+    OUT VOID              **Interface
+) {
+    EFI_STATUS  Status;
+
+    Status = daOrigProtocol (Handle, Protocol, Interface);
+
+    if (Status != EFI_UNSUPPORTED) {
+        return Status;
+    }
+
+    if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
+        if (GraphicsOutput != NULL) {
+            *Interface = GraphicsOutput;
+            return EFI_SUCCESS;
+        }
+    } else if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
+        //
+        // EfiBoot from 10.4 can only use UgaDraw protocol.
+        //
+        Status = gBS->LocateProtocol (
+            &gEfiUgaDrawProtocolGuid,
+            NULL,
+            Interface
+        );
+        if (!EFI_ERROR (Status)) {
+            return EFI_SUCCESS;
+        }
+    }
+
+    return EFI_UNSUPPORTED;
+}
+
+
+STATIC
+EFI_STATUS
+EFIAPI
+daCheckAltGop (
+    VOID
+) {
+    EFI_STATUS                    Status;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *Gop;
+    UINTN                         HandleCount;
+    EFI_HANDLE                    *HandleBuffer;
+    UINTN                         Index;
+
+    daOrigProtocol      = gBS->HandleProtocol;
+    gBS->HandleProtocol = daConsoleHandleProtocol;
+    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Provide GOP on ConsoleOutHandle:\n");
+    #endif
+
+    OrigGop = NULL;
+    Status = gBS->HandleProtocol (
+        gST->ConsoleOutHandle,
+        &gEfiGraphicsOutputProtocolGuid,
+        (VOID **) &OrigGop
+    );
+
+    if (EFI_ERROR (Status)) {
+        Status = gBS->LocateProtocol (
+            &gEfiGraphicsOutputProtocolGuid,
+            NULL,
+            (VOID **) &Gop
+        );
+    } else {
+        if (OrigGop->Mode->MaxMode > 0) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle ...Abort\n");
+            #endif
+
+            GraphicsOutput = OrigGop;
+
+            // Restore Protocol and Return
+            gBS->HandleProtocol = daOrigProtocol;
+            return EFI_ALREADY_STARTED;
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Invalid GOP on ConsoleOutHandle ...Seek Replacement\n");
+            #endif
+        }
+
+        Status = gBS->LocateHandleBuffer (
+            ByProtocol,
+            &gEfiGraphicsOutputProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("  - Seeking GOP Handles ...%r\n", Status);
+        #endif
+
+        if (EFI_ERROR (Status)) {
+            // Restore Protocol and Return
+            gBS->HandleProtocol = daOrigProtocol;
+            return EFI_NOT_FOUND;
+        }
+
+        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+
+        UINT32  Width = 0;
+        UINT32  Height = 0;
+        UINT32  MaxMode;
+        UINT32  Mode;
+        UINTN   SizeOfInfo;
+        BOOLEAN OurValidGOP;
+
+        Status = EFI_NOT_FOUND;
+        for (Index = 0; Index < HandleCount; ++Index) {
+            OurValidGOP = FALSE;
+            if (HandleBuffer[Index] != gST->ConsoleOutHandle) {
+                Status = gBS->HandleProtocol (
+                    HandleBuffer[Index],
+                    &gEfiGraphicsOutputProtocolGuid,
+                    (VOID **) &Gop
+                );
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%d]\n", Index);
+                #endif
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("    * Evaluating Candidate\n");
+                #endif
+
+                MaxMode = Gop->Mode->MaxMode;
+                Width   = 0;
+                Height  = 0;
+
+                for (Mode = 0; Mode < MaxMode; Mode++) {
+                    Status = Gop->QueryMode(Gop, Mode, &SizeOfInfo, &Info);
+                    if (Status == EFI_SUCCESS) {
+                        if (Width > Info->HorizontalResolution) {
+                            continue;
+                        }
+                        if (Height > Info->VerticalResolution) {
+                            continue;
+                        }
+                        Width = Info->HorizontalResolution;
+                        Height = Info->VerticalResolution;
+                    }
+                } // for
+
+                if (Width == 0 || Height == 0) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("    ** Invalid Candidate\n\n");
+                    #endif
+                } else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("    ** Valid Candidate\n\n");
+                    #endif
+
+                    OurValidGOP = TRUE;
+
+                    break;
+                } // if Width == 0 || Height == 0
+            } // if HandleBuffer[Index]
+        } // for
+
+        FreePool (HandleBuffer);
+
+        if (OurValidGOP == TRUE) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Found Valid Replacement GOP\n\n");
+            #endif
+        } else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Could not Find Valid Replacement GOP\n\n");
+            #endif
+
+            // Restore Protocol and Return
+            gBS->HandleProtocol = daOrigProtocol;
+            return EFI_UNSUPPORTED;
+        }
+    } // if !EFI_ERROR (Status)
+
+    // Restore Protocol and Return
+    gBS->HandleProtocol = daOrigProtocol;
+    return EFI_SUCCESS;
+}
 
 EFI_STATUS
 egDumpGOPVideoModes(
@@ -522,6 +713,7 @@ egInitScreen(
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     UINTN                         i;
+    BOOLEAN                       thisValidGOP;
 
 
     #if REFIT_DEBUG > 0
@@ -854,42 +1046,53 @@ egInitScreen(
             #endif
 
             if (GlobalConfig.ProvideConsoleGOP) {
-                // Run OcProvideConsoleGop from OpenCorePkg
-                OcProvideConsoleGop(TRUE);
+                Status = daCheckAltGop();
 
-                Status = gBS->LocateHandleBuffer (
-                    ByProtocol,
-                    &GraphicsOutputProtocolGuid,
-                    NULL,
-                    &HandleCount,
-                    &HandleBuffer
-                );
-                if (!EFI_ERROR (Status)) {
-                    Status = EFI_NOT_FOUND;
-                    for (i = 0; i < HandleCount; ++i) {
-                        if (HandleBuffer[i] == gST->ConsoleOutHandle) {
-                            Status = gBS->HandleProtocol (
-                                HandleBuffer[i],
-                                &GraphicsOutputProtocolGuid,
-                                (VOID **) &GraphicsOutput
-                            );
+                if (!EFI_ERROR(Status)) {
+                    OcProvideConsoleGop(TRUE);
 
-                            break;
+                    Status = gBS->LocateHandleBuffer (
+                        ByProtocol,
+                        &GraphicsOutputProtocolGuid,
+                        NULL,
+                        &HandleCount,
+                        &HandleBuffer
+                    );
+                    if (!EFI_ERROR (Status)) {
+                        Status = EFI_UNSUPPORTED;
+                        for (i = 0; i < HandleCount; ++i) {
+                            if (HandleBuffer[i] == gST->ConsoleOutHandle) {
+                                Status = gBS->HandleProtocol (
+                                    HandleBuffer[i],
+                                    &GraphicsOutputProtocolGuid,
+                                    (VOID **) &GraphicsOutput
+                                );
+
+                                break;
+                            }
                         }
+                        FreePool(HandleBuffer);
                     }
-                    FreePool(HandleBuffer);
                 }
             }
         }
     }
 
-    #if REFIT_DEBUG > 0
     if (XFlag == EFI_NOT_FOUND) {
+        #if REFIT_DEBUG > 0
         MsgLog ("INFO: Cannot Implement GraphicsOutputProtocol\n\n");
+        #endif
     } else if (XFlag == EFI_UNSUPPORTED) {
+        #if REFIT_DEBUG > 0
         MsgLog ("INFO: Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
+        #endif
+
+        if (EFI_ERROR (Status)) {
+            thisValidGOP = FALSE;
+        } else {
+            thisValidGOP = TRUE;
+        }
     }
-    #endif
 
     // Get Screen Size
     egHasGraphics = FALSE;
@@ -902,7 +1105,7 @@ egInitScreen(
             #endif
 
             // Revert Console GOP Provision if Invalid
-            if (XFlag == EFI_UNSUPPORTED && OldGOP != NULL) {
+            if (XFlag == EFI_UNSUPPORTED && thisValidGOP == TRUE && OldGOP != NULL) {
                 XStatus = gBS->UninstallProtocolInterface (
                     gST->ConsoleOutHandle,
                     &gEfiGraphicsOutputProtocolGuid,
