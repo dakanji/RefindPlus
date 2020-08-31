@@ -207,7 +207,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     EFI_PCI_IO_PROTOCOL* PciIo;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Connect DeviceHandles to Controllers...\n");
+    MsgLog("Connect Device Handles to Controllers...\n");
     #endif
     //
     // Only connect controllers with device paths.
@@ -240,7 +240,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog("Connect DeviceHandle[%03d]  - FATAL: %r", LogVal, XStatus);
+                MsgLog("Handle[%03d]  - FATAL: %r", LogVal, XStatus);
                 #endif
             } else {
                 // Assume Success
@@ -257,7 +257,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not a Device]", LogVal);
+                    MsgLog("Handle[%03d] ...Skipped [Not a Device]", LogVal);
                     #endif
                 } else {
                     Parent = FALSE;
@@ -269,7 +269,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                     if (Parent) {
                         #if REFIT_DEBUG > 0
-                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]", LogVal);
+                        MsgLog("Handle[%03d] ...Skipped [Parent Device]", LogVal);
                         #endif
                     } else {
                         if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
@@ -299,16 +299,16 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                         #if REFIT_DEBUG > 0
                         if (!EFI_ERROR (XStatus)) {
-                            MsgLog("Connect DeviceHandle[%03d]  * SUCCESS", LogVal);
+                            MsgLog("Handle[%03d]  * %r", LogVal, XStatus);
                         } else {
                             if (XStatus == EFI_NOT_STARTED) {
-                                MsgLog("Connect DeviceHandle[%03d] ...Declined [Empty Device]", LogVal);
+                                MsgLog("Handle[%03d] ...Declined [Empty Device]", LogVal);
                             } else if (XStatus == EFI_NOT_FOUND) {
-                                MsgLog("Connect DeviceHandle[%03d] ...Bypassed [Not Linkable]", LogVal);
+                                MsgLog("Handle[%03d] ...Bypassed [Not Linkable]", LogVal);
                             } else if (XStatus == EFI_INVALID_PARAMETER) {
-                                MsgLog("Connect DeviceHandle[%03d]  - ERROR: Invalid Param", LogVal);
+                                MsgLog("Handle[%03d]  - ERROR: Invalid Param", LogVal);
                             } else {
-                                MsgLog("Connect DeviceHandle[%03d]  - WARN: %r", LogVal, XStatus);
+                                MsgLog("Handle[%03d]  - WARN: %r", LogVal, XStatus);
                             }
                         } // if !EFI_ERROR (XStatus)
                         #endif
