@@ -232,10 +232,6 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
     EFI_STATUS  Status;
     CHAR16      *DevicePathAsString, *Temp = NULL;
 
-    #if REFIT_DEBUG > 0
-           MsgLog("Init Refit Lib...\n");
-    #endif
-
     SelfImageHandle = ImageHandle;
     Status = gBS->HandleProtocol(SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
 

@@ -651,11 +651,6 @@ VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 
 // Minimal initialization function
 static VOID InitializeLib(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
-
-    #if REFIT_DEBUG > 0
-    MsgLog("Init System Lib...\n");
-    #endif
-
     gImageHandle   = ImageHandle;
     gST            = SystemTable;
     gBS            = SystemTable->BootServices;
@@ -824,7 +819,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     SystemTable->RuntimeServices->GetTime(&Now, NULL);
 
 #if REFIT_DEBUG > 0
-    MsgLog("Start RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
+    MsgLog("Starting RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
     if (Now.TimeZone < 0 || Now.TimeZone > 24) {
         MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
