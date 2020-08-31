@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
 #include "Platform.h"
+#include "../refind/lib.h"
 
 STATIC
 EFI_STATUS
@@ -31,12 +32,7 @@ daConnectController (
     }
     //
     // Do not connect controllers without device paths.
-    //
     // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    //
-    // Doing this reduces the amount of needless work during device
-    // connection and resolves issues with firmwares that freeze
-    // when connecting handles without device paths.
     //
     Status = gBS->HandleProtocol (
         ControllerHandle,
@@ -45,7 +41,7 @@ daConnectController (
     );
 
     if (EFI_ERROR (Status)) {
-        return EFI_NOT_FOUND;
+        return EFI_NOT_STARTED;
     }
 
     Status = gBS->ConnectController (
@@ -78,11 +74,18 @@ ScanDeviceHandles(
     *HandleCount  = 0;
     *HandleBuffer = NULL;
     *HandleType   = NULL;
+    //
+    // Retrieve a list of handles with device paths
+    // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
+    //
+    Status = gBS->LocateHandleBuffer(
+        ByProtocol,
+        &gEfiDevicePathProtocolGuid,
+        NULL,
+        HandleCount,
+        HandleBuffer
+    );
 
-    //
-    // Retrieve the list of all handles from the handle database
-    //
-    Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, HandleCount, HandleBuffer);
 
     if (EFI_ERROR (Status)) {
         goto Error;
@@ -97,7 +100,7 @@ ScanDeviceHandles(
     for (k = 0; k < *HandleCount; k++) {
         (*HandleType)[k] = EFI_HANDLE_TYPE_UNKNOWN;
         //
-        // Retrieve the list of all the protocols on each handle
+        // Retrieve a list of all the protocols on each handle
         //
         Status = gBS->ProtocolsPerHandle (
             (*HandleBuffer)[k],
@@ -110,26 +113,21 @@ ScanDeviceHandles(
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
                 }
-
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
                 }
-
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
                 }
-
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
                 }
-
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid) ) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
-
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
                 }
@@ -169,24 +167,19 @@ ScanDeviceHandles(
                         }
                     }
 
-                    FreePool (OpenInfo);
+                    MyFreePool(OpenInfo);
                 }
             }
 
-            FreePool (ProtocolGuidArray);
+            MyFreePool(ProtocolGuidArray);
         }
     }
 
     return EFI_SUCCESS;
 
     Error:
-    if (*HandleType != NULL) {
-        FreePool (*HandleType);
-    }
-
-    if (*HandleBuffer != NULL) {
-        FreePool (*HandleBuffer);
-    }
+    MyFreePool(*HandleType);
+    MyFreePool(*HandleBuffer);
 
     *HandleCount  = 0;
     *HandleBuffer = NULL;
@@ -197,29 +190,32 @@ ScanDeviceHandles(
 
 EFI_STATUS BdsLibConnectMostlyAllEfi()
 {
-    EFI_STATUS				Status = EFI_SUCCESS;
-    EFI_STATUS				XStatus;
-	UINTN                   AllHandleCount;
-    UINTN                   AllHandleCountTrigger;
-	EFI_HANDLE				*AllHandleBuffer;
-	UINTN                   i;
-    UINTN                   k;
-    UINTN                   LogVal;
-	UINTN                   HandleCount;
-	EFI_HANDLE				*HandleBuffer;
-	UINT32                  *HandleType;
-	BOOLEAN                 Parent;
-	BOOLEAN                 Device;
-	EFI_PCI_IO_PROTOCOL*	PciIo;
-	PCI_TYPE00				Pci;
+    EFI_STATUS           Status = EFI_SUCCESS;
+    EFI_STATUS           XStatus;
+    EFI_HANDLE           *AllHandleBuffer = NULL;
+    EFI_HANDLE           *HandleBuffer = NULL;
+    UINTN                AllHandleCount;
+    UINTN                AllHandleCountTrigger;
+    UINTN                i;
+    UINTN                k;
+    UINTN                LogVal;
+    UINTN                HandleCount;
+    UINT32               *HandleType = NULL;
+    BOOLEAN              Parent;
+    BOOLEAN              Device;
+    PCI_TYPE00           Pci;
+    EFI_PCI_IO_PROTOCOL* PciIo;
 
     #if REFIT_DEBUG > 0
     MsgLog("Connect DeviceHandles to Controllers...\n");
     #endif
-
+    //
+    // Only connect controllers with device paths.
+    // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
+    //
     Status = gBS->LocateHandleBuffer(
-        AllHandles,
-        NULL,
+        ByProtocol,
+        &gEfiDevicePathProtocolGuid,
         NULL,
         &AllHandleCount,
         &AllHandleBuffer
@@ -234,8 +230,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
             } else {
                 LogVal = i;
             }
-            // Assume Success
-            XStatus = EFI_SUCCESS;
 
             XStatus = ScanDeviceHandles(
                 AllHandleBuffer[i],
@@ -244,7 +238,14 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                 &HandleType
             );
 
-            if (!EFI_ERROR (XStatus)) {
+            if (EFI_ERROR (XStatus)) {
+                #if REFIT_DEBUG > 0
+                MsgLog("Connect DeviceHandle[%03d]  - FATAL: %r", LogVal, XStatus);
+                #endif
+            } else {
+                // Assume Success
+                XStatus = EFI_SUCCESS;
+                // Assume Device
                 Device = TRUE;
 
                 if (HandleType[i] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE) {
@@ -254,7 +255,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     Device = FALSE;
                 }
 
-                if (Device) {
+                if (!Device) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not a Device]", LogVal);
+                    #endif
+                } else {
                     Parent = FALSE;
                     for (k = 0; k < HandleCount; k++) {
                         if (HandleType[k] & EFI_HANDLE_TYPE_PARENT_HANDLE) {
@@ -262,7 +267,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         }
                     } // for
 
-                    if (!Parent) {
+                    if (Parent) {
+                        #if REFIT_DEBUG > 0
+                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]", LogVal);
+                        #endif
+                    } else {
                         if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
                             XStatus = gBS->HandleProtocol (
                                 AllHandleBuffer[i],
@@ -284,72 +293,49 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                         gBS->DisconnectController(AllHandleBuffer[i], NULL, NULL);
                                     }
                                 }
-                            }
+                            } // if !EFI_ERROR (XStatus)
                             XStatus = daConnectController(AllHandleBuffer[i], NULL, NULL, TRUE);
-                        }
+                        } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
 
                         #if REFIT_DEBUG > 0
-                        if (EFI_ERROR (XStatus)) {
-                            if (i == AllHandleCountTrigger) {
-                                MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n\n", LogVal, XStatus);
-                            } else {
-                                MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n", LogVal, XStatus);
-                            }
+                        if (!EFI_ERROR (XStatus)) {
+                            MsgLog("Connect DeviceHandle[%03d]  * SUCCESS", LogVal);
                         } else {
-                            if (i == AllHandleCountTrigger) {
-                                MsgLog("Connect DeviceHandle[%03d] ...%r\n\n", LogVal, XStatus);
+                            if (XStatus == EFI_NOT_STARTED) {
+                                MsgLog("Connect DeviceHandle[%03d] ...Declined [Empty Device]", LogVal);
+                            } else if (XStatus == EFI_NOT_FOUND) {
+                                MsgLog("Connect DeviceHandle[%03d] ...Bypassed [Not Linkable]", LogVal);
+                            } else if (XStatus == EFI_INVALID_PARAMETER) {
+                                MsgLog("Connect DeviceHandle[%03d]  - ERROR: Invalid Param", LogVal);
                             } else {
-                                MsgLog("Connect DeviceHandle[%03d] ...%r\n", LogVal, XStatus);
+                                MsgLog("Connect DeviceHandle[%03d]  - WARN: %r", LogVal, XStatus);
                             }
-                        }
-                    } else {
-                        if (i == AllHandleCountTrigger) {
-                            MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]\n\n", LogVal);
-                        } else {
-                            MsgLog("Connect DeviceHandle[%03d] ...Skipped [Parent Device]\n", LogVal);
-                        }
+                        } // if !EFI_ERROR (XStatus)
                         #endif
-                    }
-
-                    #if REFIT_DEBUG > 0
-                } else {
-                    if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not Device]\n\n", LogVal);
-                    } else {
-                        MsgLog("Connect DeviceHandle[%03d] ...Skipped [Not Device]\n", LogVal);
-                    }
-                    #endif
-                }
-
-                #if REFIT_DEBUG > 0
-            } else {
-                if (EFI_ERROR (XStatus)) {
-                    if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n\n", LogVal, XStatus);
-                    } else {
-                        MsgLog("Connect DeviceHandle[%03d] ...WARN: %r\n", LogVal, XStatus);
-                    }
-                } else {
-                    if (i == AllHandleCountTrigger) {
-                        MsgLog("Connect DeviceHandle[%03d] ...%r\n\n", LogVal, XStatus);
-                    } else {
-                        MsgLog("Connect DeviceHandle[%03d] ...%r\n", LogVal, XStatus);
-                    }
-                }
-                #endif
-            }
+                    } // if Parent
+                } // if !Device
+            } // if EFI_ERROR (XStatus)
 
             if (EFI_ERROR (XStatus)) {
                 // Change Overall Status on Error
                 Status = XStatus;
             }
+
+            #if REFIT_DEBUG > 0
+            if (i == AllHandleCountTrigger) {
+                MsgLog("\n\n", LogVal, XStatus);
+            } else {
+                MsgLog("\n", LogVal, XStatus);
+            }
+            #endif
+
         }  // for
 
-        FreePool (HandleBuffer);
-        FreePool (HandleType);
-    }
+        MyFreePool(HandleBuffer);
+        MyFreePool(HandleType);
+    } // if !EFI_ERROR (Status)
 
-	FreePool (AllHandleBuffer);
+	MyFreePool(AllHandleBuffer);
 
 	return Status;
 }
