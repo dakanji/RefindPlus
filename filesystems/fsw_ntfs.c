@@ -314,8 +314,12 @@ static inline int attribute_compressed_future(fsw_u8 *ptr, int len)
     return (GETU8(ptr, 12) & 0xFF) > 1;
 }
 
-static inline int attribute_encrypted(fsw_u8 *ptr, int len)
-{
+//static inline int attribute_sparse(fsw_u8 *ptr, int len)
+//{
+//    return GETU8(ptr, 12) & 0x8000;
+//}
+
+static inline int attribute_encrypted(fsw_u8 *ptr, int len){
     return GETU8(ptr, 12) & 0x4000;
 }
 
@@ -336,6 +340,11 @@ static void attribute_get_rle(fsw_u8 *ptr, int len, fsw_u8 **outp, int *outlenp)
     *outp = ptr + off;
     *outlenp = olen;
 }
+
+//static inline int attribute_rle_offset(fsw_u8 *ptr, int len)
+//{
+//    return GETU16(ptr, 0x20);
+//}
 
 static inline fsw_u64 attribute_size(fsw_u8 *ptr, int len)
 {
