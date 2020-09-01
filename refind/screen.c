@@ -529,7 +529,7 @@ HaltForKey (
     Print(L"\n");
 
     PrintUglyText(L"", NEXTLINE);
-    PrintUglyText(L"* Hit Any Key to Continue *", NEXTLINE);
+    PrintUglyText(L"* Halted: Press Any Key to Continue *", NEXTLINE);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
         gBS->Stall(5000000);     // 5 seconds delay
@@ -555,7 +555,7 @@ PauseForKey (
         PrintUglyText(L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
     } else {
         PrintUglyText(L"", NEXTLINE);
-        PrintUglyText(L"* Hit Any Key to Continue *", NEXTLINE);
+        PrintUglyText(L"* Paused: Press Any Key to Continue *", NEXTLINE);
     }
 
     if (GlobalConfig.ContinueOnWarning) {
