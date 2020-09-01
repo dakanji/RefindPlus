@@ -87,8 +87,13 @@
 // read a file into a buffer
 //
 
-EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFIT_FILE *File, OUT UINTN *size)
-{
+EFI_STATUS
+RefitReadFile(
+    IN EFI_FILE_HANDLE BaseDir,
+    IN CHAR16 *FileName,
+    IN OUT REFIT_FILE *File,
+    OUT UINTN *size
+) {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     EFI_FILE_INFO   *FileInfo;
@@ -101,8 +106,9 @@ EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT
     // read the file, allocating a buffer on the way
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     SPrint(Message, 255, L"while loading the file '%s'", FileName);
-    if (CheckError(Status, Message))
+    if (CheckError(Status, Message)) {
         return Status;
+    }
 
     FileInfo = LibFileInfo(FileHandle);
     if (FileInfo == NULL) {
@@ -160,45 +166,56 @@ EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT
 // get a single line of text from a file
 //
 
-static CHAR16 *ReadLine(REFIT_FILE *File)
-{
+static
+CHAR16 *ReadLine(
+    REFIT_FILE *File
+) {
     CHAR16  *Line, *q;
     UINTN   LineLength;
 
-    if (File->Buffer == NULL)
+    if (File->Buffer == NULL) {
         return NULL;
+    }
 
     if (File->Encoding == ENCODING_ISO8859_1 || File->Encoding == ENCODING_UTF8) {
 
         CHAR8 *p, *LineStart, *LineEnd;
 
         p = File->Current8Ptr;
-        if (p >= File->End8Ptr)
+        if (p >= File->End8Ptr) {
             return NULL;
+        }
 
         LineStart = p;
-        for (; p < File->End8Ptr; p++)
-            if (*p == 13 || *p == 10)
+        for (; p < File->End8Ptr; p++) {
+            if (*p == 13 || *p == 10) {
                 break;
+            }
+        }
         LineEnd = p;
-        for (; p < File->End8Ptr; p++)
-            if (*p != 13 && *p != 10)
+        for (; p < File->End8Ptr; p++) {
+            if (*p != 13 && *p != 10) {
                 break;
+            }
+        }
         File->Current8Ptr = p;
 
         LineLength = (UINTN)(LineEnd - LineStart) + 1;
         Line = AllocatePool(LineLength * sizeof(CHAR16));
-        if (Line == NULL)
+        if (Line == NULL) {
             return NULL;
+        }
 
         q = Line;
         if (File->Encoding == ENCODING_ISO8859_1) {
-            for (p = LineStart; p < LineEnd; )
+            for (p = LineStart; p < LineEnd; ) {
                 *q++ = *p++;
+            }
         } else if (File->Encoding == ENCODING_UTF8) {
             // TODO: actually handle UTF-8
-            for (p = LineStart; p < LineEnd; )
+            for (p = LineStart; p < LineEnd; ) {
                 *q++ = *p++;
+            }
         }
         *q = 0;
 
@@ -207,30 +224,38 @@ static CHAR16 *ReadLine(REFIT_FILE *File)
         CHAR16 *p, *LineStart, *LineEnd;
 
         p = File->Current16Ptr;
-        if (p >= File->End16Ptr)
+        if (p >= File->End16Ptr) {
             return NULL;
+        }
 
         LineStart = p;
-        for (; p < File->End16Ptr; p++)
-            if (*p == 13 || *p == 10)
+        for (; p < File->End16Ptr; p++) {
+            if (*p == 13 || *p == 10) {
                 break;
+            }
+        }
         LineEnd = p;
-        for (; p < File->End16Ptr; p++)
-            if (*p != 13 && *p != 10)
+        for (; p < File->End16Ptr; p++) {
+            if (*p != 13 && *p != 10) {
                 break;
+            }
+        }
         File->Current16Ptr = p;
 
         LineLength = (UINTN)(LineEnd - LineStart) + 1;
         Line = AllocatePool(LineLength * sizeof(CHAR16));
-        if (Line == NULL)
+        if (Line == NULL) {
             return NULL;
+        }
 
-        for (p = LineStart, q = Line; p < LineEnd; )
+        for (p = LineStart, q = Line; p < LineEnd; ) {
             *q++ = *p++;
+        }
         *q = 0;
 
-    } else
+    } else {
         return NULL;   // unsupported encoding
+    }
 
     return Line;
 }
@@ -238,15 +263,22 @@ static CHAR16 *ReadLine(REFIT_FILE *File)
 // Returns FALSE if *p points to the end of a token, TRUE otherwise.
 // Also modifies *p **IF** the first and second characters are both
 // quotes ('"'); it deletes one of them.
-static BOOLEAN KeepReading(IN OUT CHAR16 *p, IN OUT BOOLEAN *IsQuoted) {
+static
+BOOLEAN
+KeepReading(
+    IN OUT CHAR16 *p,
+    IN OUT BOOLEAN *IsQuoted
+) {
    BOOLEAN MoreToRead = FALSE;
    CHAR16  *Temp = NULL;
 
-   if ((p == NULL) || (IsQuoted == NULL))
-      return FALSE;
+   if ((p == NULL) || (IsQuoted == NULL)) {
+       return FALSE;
+   }
 
-   if (*p == L'\0')
-      return FALSE;
+   if (*p == L'\0') {
+       return FALSE;
+   }
 
    if ((*p != ' ' && *p != '\t' && *p != '=' && *p != '#' && *p != ',') || *IsQuoted) {
       MoreToRead = TRUE;
@@ -271,8 +303,11 @@ static BOOLEAN KeepReading(IN OUT CHAR16 *p, IN OUT BOOLEAN *IsQuoted) {
 //
 // get a line of tokens from a file
 //
-UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
-{
+UINTN
+ReadTokenLine(
+    IN REFIT_FILE *File,
+    OUT CHAR16 ***TokenList
+) {
     BOOLEAN         LineFinished, IsQuoted = FALSE;
     CHAR16          *Line, *Token, *p;
     UINTN           TokenCount = 0;
@@ -281,17 +316,20 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
 
     while (TokenCount == 0) {
         Line = ReadLine(File);
-        if (Line == NULL)
+        if (Line == NULL) {
             return(0);
+        }
 
         p = Line;
         LineFinished = FALSE;
         while (!LineFinished) {
             // skip whitespace & find start of token
-            while ((*p == ' ' || *p == '\t' || *p == '=' || *p == ',') && !IsQuoted)
+            while ((*p == ' ' || *p == '\t' || *p == '=' || *p == ',') && !IsQuoted) {
                 p++;
-            if (*p == 0 || *p == '#')
+            }
+            if (*p == 0 || *p == '#') {
                 break;
+            }
 
             if (*p == '"') {
                IsQuoted = !IsQuoted;
@@ -301,12 +339,15 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
 
             // find end of token
             while (KeepReading(p, &IsQuoted)) {
-               if ((*p == L'/') && !IsQuoted) // Switch Unix-style to DOS-style directory separators
-                  *p = L'\\';
+               if ((*p == L'/') && !IsQuoted) {
+                   // Switch Unix-style to DOS-style directory separators
+                   *p = L'\\';
+               }
                p++;
             } // while
-            if (*p == L'\0' || *p == L'#')
+            if (*p == L'\0' || *p == L'#') {
                 LineFinished = TRUE;
+            }
             *p++ = 0;
 
             AddListElement((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate(Token));
@@ -317,25 +358,40 @@ UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList)
     return (TokenCount);
 } /* ReadTokenLine() */
 
-VOID FreeTokenLine(IN OUT CHAR16 ***TokenList, IN OUT UINTN *TokenCount)
-{
+VOID
+FreeTokenLine(
+    IN OUT CHAR16 ***TokenList,
+    IN OUT UINTN *TokenCount
+) {
     // TODO: also free the items
     FreeList((VOID ***)TokenList, TokenCount);
 }
 
 // handle a parameter with a single integer argument
-static VOID HandleInt(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT UINTN *Value)
-{
+static
+VOID
+HandleInt(
+    IN CHAR16 **TokenList,
+    IN UINTN TokenCount,
+    OUT UINTN *Value
+) {
     if (TokenCount == 2) {
-       if (StrCmp(TokenList[1], L"-1") == 0)
-          *Value = -1;
-       else
-          *Value = Atoi(TokenList[1]);
+       if (StrCmp(TokenList[1], L"-1") == 0) {
+           *Value = -1;
+       } else {
+           *Value = Atoi(TokenList[1]);
+       }
     }
 }
 
 // handle a parameter with a single string argument
-static VOID HandleString(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 **Target) {
+static
+VOID
+HandleString(
+    IN CHAR16 **TokenList,
+    IN UINTN TokenCount,
+    OUT CHAR16 **Target
+) {
     if ((TokenCount == 2) && Target) {
         MyFreePool(*Target);
         *Target = StrDuplicate(TokenList[1]);
@@ -347,7 +403,13 @@ static VOID HandleString(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 
 // to ensure consistency in subsequent comparisons of filenames. If the first
 // non-keyword token is "+", the list is added to the existing target string; otherwise,
 // the tokens replace the current string.
-static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16 **Target) {
+static
+VOID
+HandleStrings(
+    IN CHAR16 **TokenList,
+    IN UINTN TokenCount,
+    OUT CHAR16 **Target
+) {
    UINTN i;
    BOOLEAN AddMode = FALSE;
 
@@ -372,7 +434,14 @@ static VOID HandleStrings(IN CHAR16 **TokenList, IN UINTN TokenCount, OUT CHAR16
 // any value that exceeds MaxValue. If the first non-keyword token is "+", the new list is
 // added to the existing Target; otherwise, the interpreted tokens replace the current
 // Target.
-static VOID HandleHexes(IN CHAR16 **TokenList, IN UINTN TokenCount, IN UINTN MaxValue, OUT UINT32_LIST **Target) {
+static
+VOID
+HandleHexes(
+    IN CHAR16 **TokenList,
+    IN UINTN TokenCount,
+    IN UINTN MaxValue,
+    OUT UINT32_LIST **Target
+) {
     UINTN       InputIndex = 1, i;
     UINT32      Value;
     UINT32_LIST *EndOfList = NULL;
@@ -414,7 +483,11 @@ static VOID HandleHexes(IN CHAR16 **TokenList, IN UINTN TokenCount, IN UINTN Max
 // Any value outside that range denotes an error in the specification. Note that if
 // the input is a number that includes no colon, this function will return the original
 // number in UINTN form.
-static UINTN HandleTime(IN CHAR16 *TimeString) {
+static
+UINTN
+HandleTime(
+    IN CHAR16 *TimeString
+) {
    UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
 
    TimeLength = StrLen(TimeString);
@@ -432,7 +505,12 @@ static UINTN HandleTime(IN CHAR16 *TimeString) {
    return (Hour * 60 + Minute);
 } // BOOLEAN HandleTime()
 
-static BOOLEAN HandleBoolean(IN CHAR16 **TokenList, IN UINTN TokenCount) {
+static
+BOOLEAN H
+andleBoolean(
+    IN CHAR16 **TokenList,
+    IN UINTN TokenCount
+) {
    BOOLEAN TruthValue = TRUE;
 
    if ((TokenCount >= 2) && ((StrCmp(TokenList[1], L"0") == 0) ||
@@ -446,7 +524,12 @@ static BOOLEAN HandleBoolean(IN CHAR16 **TokenList, IN UINTN TokenCount) {
 
 // Sets the default boot loader IF the current time is within the bounds
 // defined by the third and fourth tokens in the TokenList.
-static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
+static
+VOID
+SetDefaultByTime(
+    IN CHAR16 **TokenList,
+    OUT CHAR16 **Default
+) {
    EFI_STATUS            Status;
    EFI_TIME              CurrentTime;
    UINTN                 StartTime, EndTime, Now;
@@ -457,8 +540,9 @@ static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
 
    if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
       Status = refit_call2_wrapper(GetTime, &CurrentTime, NULL);
-      if (Status != EFI_SUCCESS)
-         return;
+      if (Status != EFI_SUCCESS) {
+          return;
+      }
       Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
 
       if (Now > LAST_MINUTE) { // Shouldn't happen; just being paranoid
@@ -485,15 +569,20 @@ static VOID SetDefaultByTime(IN CHAR16 **TokenList, OUT CHAR16 **Default) {
    } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
 } // VOID SetDefaultByTime()
 
-static LOADER_ENTRY * AddPreparedLoaderEntry(LOADER_ENTRY *Entry) {
+static
+LOADER_ENTRY * AddPreparedLoaderEntry(
+    LOADER_ENTRY *Entry
+) {
     AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
     return(Entry);
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
 
 // read config file
-VOID ReadConfig(CHAR16 *FileName)
-{
+VOID
+ReadConfig(
+    CHAR16 *FileName
+) {
     EFI_STATUS      Status;
     REFIT_FILE      File;
     CHAR16          **TokenList;
@@ -616,10 +705,11 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"scanfor")) {
            for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
-              if (i < TokenCount)
-                 GlobalConfig.ScanFor[i] = TokenList[i][0];
-              else
-                 GlobalConfig.ScanFor[i] = ' ';
+              if (i < TokenCount) {
+                  GlobalConfig.ScanFor[i] = TokenList[i][0];
+              } else {
+                  GlobalConfig.ScanFor[i] = ' ';
+              }
            }
 
         } else if (MyStriCmp(TokenList[0], L"use_nvram")) {
@@ -769,17 +859,18 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
            GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
-           if (TokenCount == 3)
-              GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
-           else
-              GlobalConfig.RequestedScreenHeight = 0;
-
+           if (TokenCount == 3) {
+               GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
+           } else {
+               GlobalConfig.RequestedScreenHeight = 0;
+           }
         } else if (MyStriCmp(TokenList[0], L"screensaver")) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
 
         } else if (MyStriCmp(TokenList[0], L"use_graphics_for")) {
-           if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp(TokenList[1], L"+"))))
-              GlobalConfig.GraphicsFor = 0;
+           if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp(TokenList[1], L"+")))) {
+               GlobalConfig.GraphicsFor = 0;
+           }
            for (i = 1; i < TokenCount; i++) {
               if (MyStriCmp(TokenList[i], L"osx")) {
                  GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
@@ -857,10 +948,12 @@ VOID ReadConfig(CHAR16 *FileName)
 
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);
-           if (i < 1)
-              i = 1;
-           if (i > 32)
-              i = 32;
+           if (i < 1) {
+               i = 1;
+           }
+           if (i > 32) {
+               i = 32;
+           }
            GlobalConfig.MouseSpeed = i;
         }
 
@@ -880,7 +973,14 @@ VOID ReadConfig(CHAR16 *FileName)
     }
 } /* VOID ReadConfig() */
 
-static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volume, CHAR16 *Title) {
+static
+VOID
+AddSubmenu(
+    LOADER_ENTRY *Entry,
+    REFIT_FILE *File,
+    REFIT_VOLUME *Volume,
+    CHAR16 *Title
+) {
    REFIT_MENU_SCREEN  *SubScreen;
    LOADER_ENTRY       *SubEntry;
    UINTN              TokenCount;
@@ -891,9 +991,10 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
    // Set defaults for the new entry; will be modified based on lines read from the config. file....
    SubEntry = InitializeLoaderEntry(Entry);
 
-   if ((SubEntry == NULL) || (SubScreen == NULL))
-      return;
-   SubEntry->me.Title        = StrDuplicate(Title);
+   if ((SubEntry == NULL) || (SubScreen == NULL)) {
+       return;
+   }
+   SubEntry->me.Title = StrDuplicate(Title);
 
    while (((TokenCount = ReadTokenLine(File, &TokenList)) > 0) && (StrCmp(TokenList[0], L"}") != 0)) {
 
@@ -906,10 +1007,16 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
          if (FindVolume(&Volume, TokenList[1])) {
             if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                MyFreePool(SubEntry->me.Title);
-               SubEntry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-               SPrint(SubEntry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", Volume->VolName);
-               SubEntry->me.BadgeImage   = Volume->VolBadgeImage;
-               SubEntry->Volume          = Volume;
+               SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
+               SPrint(
+                   SubEntry->me.Title,
+                   255,
+                   L"Boot %s from %s",
+                   (Title != NULL) ? Title : L"Unknown",
+                   Volume->VolName
+               );
+               SubEntry->me.BadgeImage = Volume->VolBadgeImage;
+               SubEntry->Volume        = Volume;
             } // if volume is readable
          } // if match found
 
@@ -955,7 +1062,12 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
 // Adds the options from a SINGLE refind.conf stanza to a new loader entry and returns
 // that entry. The calling function is then responsible for adding the entry to the
 // list of entries.
-static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, CHAR16 *Title) {
+static
+LOADER_ENTRY * AddStanzaEntries(
+    REFIT_FILE *File,
+    REFIT_VOLUME *Volume,
+    CHAR16 *Title
+) {
    CHAR16       **TokenList;
    UINTN        TokenCount;
    LOADER_ENTRY *Entry;
@@ -964,8 +1076,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
 
    // prepare the menu entry
    Entry = InitializeLoaderEntry(NULL);
-   if (Entry == NULL)
-      return NULL;
+   if (Entry == NULL) {
+       return NULL;
+   }
 
    Entry->Title           = StrDuplicate(Title);
    Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
@@ -989,10 +1102,15 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
          if (FindVolume(&CurrentVolume, TokenList[1])) {
             if ((CurrentVolume != NULL) && (CurrentVolume->IsReadable) && (CurrentVolume->RootDir)) {
                MyFreePool(Entry->me.Title);
-               Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-               SPrint(Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
-               Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
-               Entry->Volume          = CurrentVolume;
+               Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
+               SPrint(
+                   Entry->me.Title,
+                   255,
+                   L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
+                   CurrentVolume->VolName
+               );
+               Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
+               Entry->Volume        = CurrentVolume;
             } // if volume is readable
          } // if match found
 
@@ -1030,8 +1148,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
       FreeTokenLine(&TokenList, &TokenCount);
    } // while()
 
-   if (AddedSubmenu)
+   if (AddedSubmenu) {
        AddMenuEntry(Entry->me.SubScreen, &MenuEntryReturn);
+   }
 
    if (Entry->InitrdPath) {
       MergeStrings(&Entry->LoadOptions, L"initrd=", L' ');
@@ -1040,16 +1159,20 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
       Entry->InitrdPath = NULL;
    } // if
 
-   if (!DefaultsSet)
-      SetLoaderDefaults(Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume); // user included no "loader" line; use bogus one
+   if (!DefaultsSet) {
+       // user included no "loader" line; use bogus one
+       SetLoaderDefaults(Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+   }
 
    return(Entry);
 } // static VOID AddStanzaEntries()
 
 // Read the user-configured menu entries from refind.conf and add or delete
 // entries based on the contents of that file....
-VOID ScanUserConfigured(CHAR16 *FileName)
-{
+VOID
+ScanUserConfigured(
+    CHAR16 *FileName
+) {
    EFI_STATUS        Status;
    REFIT_FILE        File;
    REFIT_VOLUME      *Volume;
@@ -1059,8 +1182,9 @@ VOID ScanUserConfigured(CHAR16 *FileName)
 
    if (FileExists(SelfDir, FileName)) {
       Status = RefitReadFile(SelfDir, FileName, &File, &size);
-      if (EFI_ERROR(Status))
-         return;
+      if (EFI_ERROR(Status)) {
+          return;
+      }
 
       Volume = SelfVolume;
 
@@ -1068,8 +1192,9 @@ VOID ScanUserConfigured(CHAR16 *FileName)
          if (MyStriCmp(TokenList[0], L"menuentry") && (TokenCount > 1)) {
             Entry = AddStanzaEntries(&File, Volume, TokenList[1]);
             if (Entry->Enabled) {
-               if (Entry->me.SubScreen == NULL)
-                  GenerateSubScreen(Entry, Volume, TRUE);
+               if (Entry->me.SubScreen == NULL) {
+                   GenerateSubScreen(Entry, Volume, TRUE);
+               }
                AddPreparedLoaderEntry(Entry);
             } else {
                MyFreePool(Entry);
@@ -1091,7 +1216,10 @@ VOID ScanUserConfigured(CHAR16 *FileName)
 // lines, one of which boots the system with "ro root={rootfs}" and the other of
 // which boots the system with "ro root={rootfs} single", where "{rootfs}" is the
 // filesystem identifier associated with the "/" line in /etc/fstab.
-static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
+static
+REFIT_FILE * GenerateOptionsFromEtcFstab(
+    REFIT_VOLUME *Volume
+) {
    UINTN        TokenCount, i;
    REFIT_FILE   *Options = NULL, *Fstab = NULL;
    EFI_STATUS   Status;
@@ -1160,7 +1288,10 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
 // Note that this function returns the LAST partition found with the
 // appropriate type code, so this will work poorly on dual-boot systems or
 // if the type code is set incorrectly.
-static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
+static
+REFIT_FILE * GenerateOptionsFromPartTypes(
+    VOID
+) {
     REFIT_FILE   *Options = NULL;
     CHAR16       *Line, *GuidString, *WriteStatus;
 
@@ -1172,16 +1303,23 @@ static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
             WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
             ToLower(GuidString);
             if (GuidString) {
-                Line = PoolPrint(L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n", WriteStatus, GuidString);
+                Line = PoolPrint(
+                    L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
+                    WriteStatus,
+                    GuidString
+                );
                 MergeStrings((CHAR16 **) &(Options->Buffer), Line, 0);
                 MyFreePool(Line);
-                Line = PoolPrint(L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n", WriteStatus, GuidString);
+                Line = PoolPrint(
+                    L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
+                    WriteStatus,
+                    GuidString
+                );
                 MergeStrings((CHAR16**) &(Options->Buffer), Line, 0);
                 MyFreePool(Line);
                 MyFreePool(GuidString);
             } // if (GuidString)
-            Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
-
+            Options->BufferSize   = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
             Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
             Options->Current16Ptr = (CHAR16 *)Options->Buffer;
@@ -1202,7 +1340,10 @@ static REFIT_FILE * GenerateOptionsFromPartTypes(VOID) {
 //
 // The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
 // it wasn't found.
-REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
+REFIT_FILE * ReadLinuxOptionsFile(
+    IN CHAR16 *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
    CHAR16       *OptionsFilename, *FullFilename;
    BOOLEAN      GoOn = TRUE, FileFound = FALSE;
    UINTN        i = 0, size;
@@ -1218,8 +1359,9 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
             File = AllocateZeroPool(sizeof(REFIT_FILE));
             Status = RefitReadFile(Volume->RootDir, FullFilename, File, &size);
             if (CheckError(Status, L"while loading the Linux options file")) {
-               if (File != NULL)
-                  FreePool(File);
+               if (File != NULL) {
+                   FreePool(File);
+               }
                File = NULL;
             } else {
                GoOn = FALSE;
@@ -1237,14 +1379,18 @@ REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume
       // No refind_linux.conf file; look for /etc/fstab and try to pull values from there....
       File = GenerateOptionsFromEtcFstab(Volume);
       // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec....
-      if (!File)
-         File = GenerateOptionsFromPartTypes();
+      if (!File) {
+          File = GenerateOptionsFromPartTypes();
+      }
    } // if
    return (File);
 } // static REFIT_FILE * ReadLinuxOptionsFile()
 
 // Retrieve a single line of options from a Linux kernel options file
-CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
+CHAR16 * GetFirstOptionsFromFile(
+    IN CHAR16 *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
    UINTN        TokenCount;
    CHAR16       *Options = NULL;
    CHAR16       **TokenList;
@@ -1253,8 +1399,9 @@ CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume)
    File = ReadLinuxOptionsFile(LoaderPath, Volume);
    if (File != NULL) {
       TokenCount = ReadTokenLine(File, &TokenList);
-      if (TokenCount > 1)
-         Options = StrDuplicate(TokenList[1]);
+      if (TokenCount > 1) {
+          Options = StrDuplicate(TokenList[1]);
+      }
       FreeTokenLine(&TokenList, &TokenCount);
       FreePool(File);
    } // if
