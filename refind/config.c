@@ -506,8 +506,8 @@ HandleTime(
 } // BOOLEAN HandleTime()
 
 static
-BOOLEAN H
-andleBoolean(
+BOOLEAN
+HandleBoolean(
     IN CHAR16 **TokenList,
     IN UINTN TokenCount
 ) {
