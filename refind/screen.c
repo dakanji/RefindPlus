@@ -256,18 +256,8 @@ SetupScreen (
             SwitchToGraphics();
 
             if (GlobalConfig.ScreensaverTime != -1) {
-
-                #if REFIT_DEBUG > 0
-                MsgLog("Clear Screen and Show Banner:\n");
-                #endif
-
                 BltClearScreen(TRUE);
             } else { // start with screen blanked
-
-                #if REFIT_DEBUG > 0
-                MsgLog("Clear Screen and Show Blank Screen:\n");
-                #endif
-
                 GraphicsScreenDirty = TRUE;
             }
 
