@@ -161,7 +161,7 @@ daCheckAltGop (
     } else {
         if (OrigGop->Mode->MaxMode > 0) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle ...Abort\n");
+            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle ...Abort\n\n");
             #endif
 
             GraphicsOutput = OrigGop;
@@ -169,10 +169,6 @@ daCheckAltGop (
             // Restore Protocol and Return
             gBS->HandleProtocol = daOrigProtocol;
             return EFI_ALREADY_STARTED;
-        } else {
-            #if REFIT_DEBUG > 0
-            MsgLog ("  - Invalid GOP on ConsoleOutHandle ...Seek Replacement\n");
-            #endif
         }
 
         Status = gBS->LocateHandleBuffer (
@@ -184,7 +180,7 @@ daCheckAltGop (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Seeking GOP Handles ...%r\n", Status);
+        MsgLog ("  - Seeking GOP Handles ...%r", Status);
         #endif
 
         if (EFI_ERROR (Status)) {
@@ -212,57 +208,61 @@ daCheckAltGop (
                     (VOID **) &Gop
                 );
 
-                #if REFIT_DEBUG > 0
-                MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%d]\n", Index);
-                #endif
-
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * Evaluating Candidate\n");
-                #endif
-
-                MaxMode = Gop->Mode->MaxMode;
-                Width   = 0;
-                Height  = 0;
-
-                for (Mode = 0; Mode < MaxMode; Mode++) {
-                    Status = Gop->QueryMode(Gop, Mode, &SizeOfInfo, &Info);
-                    if (Status == EFI_SUCCESS) {
-                        if (Width > Info->HorizontalResolution) {
-                            continue;
-                        }
-                        if (Height > Info->VerticalResolution) {
-                            continue;
-                        }
-                        Width = Info->HorizontalResolution;
-                        Height = Info->VerticalResolution;
-                    }
-                } // for
-
-                if (Width == 0 || Height == 0) {
+                if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("    ** Invalid Candidate\n\n");
-                    #endif
-                } else {
-                    #if REFIT_DEBUG > 0
-                    MsgLog("    ** Valid Candidate\n\n");
+                    MsgLog ("\n");
+                    MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%d]\n", Index);
                     #endif
 
-                    OurValidGOP = TRUE;
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("    * Evaluating Candidate\n");
+                    #endif
 
-                    break;
-                } // if Width == 0 || Height == 0
+                    MaxMode = Gop->Mode->MaxMode;
+                    Width   = 0;
+                    Height  = 0;
+
+                    for (Mode = 0; Mode < MaxMode; Mode++) {
+                        Status = Gop->QueryMode(Gop, Mode, &SizeOfInfo, &Info);
+                        if (Status == EFI_SUCCESS) {
+                            if (Width > Info->HorizontalResolution) {
+                                continue;
+                            }
+                            if (Height > Info->VerticalResolution) {
+                                continue;
+                            }
+                            Width = Info->HorizontalResolution;
+                            Height = Info->VerticalResolution;
+                        }
+                    } // for
+
+                    if (Width == 0 || Height == 0) {
+                        #if REFIT_DEBUG > 0
+                        MsgLog("    ** Invalid Candidate\n");
+                        #endif
+                    } else {
+                        #if REFIT_DEBUG > 0
+                        MsgLog("    ** Valid Candidate\n");
+                        #endif
+
+                        OurValidGOP = TRUE;
+
+                        break;
+                    } // if Width == 0 || Height == 0
+                } // if !EFI_ERROR (Status)
             } // if HandleBuffer[Index]
+
+            if (OurValidGOP = TRUE) {
+                break;
+            }
         } // for
 
         FreePool (HandleBuffer);
 
-        if (OurValidGOP == TRUE) {
+        if (OurValidGOP == FALSE || EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Found Valid Replacement GOP\n\n");
-            #endif
-        } else {
-            #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Could not Find Valid Replacement GOP\n\n");
+            MsgLog ("\n\n");
+            MsgLog ("    * Could not Find Valid Replacement GOP\n");
             #endif
 
             // Restore Protocol and Return

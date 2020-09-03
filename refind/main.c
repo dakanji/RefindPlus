@@ -1069,9 +1069,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Boot OS via *.efi Loader\n---------------\n\n");
+                    MsgLog("  - Boot OS via EFI Loader\n---------------\n\n");
                 } else {
-                    MsgLog("  - Boot OS via *.efi Loader\n\n");
+                    MsgLog("  - Boot OS via EFI Loader\n\n");
                 }
                 #endif
 
