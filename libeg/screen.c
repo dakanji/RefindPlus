@@ -1184,7 +1184,7 @@ egInitScreen(
         } else {
             #if REFIT_DEBUG > 0
             MsgLog("INFO: GraphicsOutputProtocol Not Available\n");
-            MsgLog("      Using UGADraw for Graphics\n\n");
+            MsgLog("      Falling back to UGADraw\n\n");
             #endif
 
             egScreenWidth  = Width;
