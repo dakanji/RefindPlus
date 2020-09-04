@@ -1424,7 +1424,7 @@ egSetScreenSize(
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
             SPrint(ShowScreenStr, 160,
-                (CHAR16 *) "Error setting %dx%d resolution ... Unsupported Mode!",
+                (CHAR16 *) "Error setting %dx%d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );

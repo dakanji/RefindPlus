@@ -822,10 +822,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 #if REFIT_DEBUG > 0
     MsgLog("Starting RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
     if (Now.TimeZone < 0 || Now.TimeZone > 24) {
-        MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT)\n\n",
+        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
     } else {
-        MsgLog("Date Time: %d-%d-%d  %d:%d:%d (GMT+%d)\n\n",
+        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT+%d)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
     }
 #endif
