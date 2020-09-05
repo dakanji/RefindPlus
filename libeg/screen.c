@@ -252,7 +252,7 @@ daCheckAltGop (
                 } // if !EFI_ERROR (Status)
             } // if HandleBuffer[Index]
 
-            if (OurValidGOP = TRUE) {
+            if (OurValidGOP == TRUE) {
                 break;
             }
         } // for
