@@ -236,8 +236,8 @@
 
 //DA-TAG
 // Forward Declaration for OpenCore Integration
-VOID OcUseBuiltinTextOutput (VOID);
-VOID OcProvideConsoleGop (IN BOOLEAN Route);
+EFI_STATUS OcUseBuiltinTextOutput (VOID);
+EFI_STATUS OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
 EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 

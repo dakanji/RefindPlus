@@ -142,7 +142,7 @@ daCheckAltGop (
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Provide GOP on ConsoleOutHandle:\n");
+    MsgLog ("Validate GOP for ConsoleOutHandle:\n");
     #endif
 
     OrigGop = NULL;
@@ -161,7 +161,7 @@ daCheckAltGop (
     } else {
         if (OrigGop->Mode->MaxMode > 0) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle ...Abort\n\n");
+            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle\n\n");
             #endif
 
             GraphicsOutput = OrigGop;
@@ -210,7 +210,9 @@ daCheckAltGop (
 
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("\n");
+                    if (Mode > 0) {
+                        MsgLog ("\n");
+                    }
                     MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%d]\n", Index);
                     #endif
 
@@ -238,11 +240,11 @@ daCheckAltGop (
 
                     if (Width == 0 || Height == 0) {
                         #if REFIT_DEBUG > 0
-                        MsgLog("    ** Invalid Candidate\n");
+                        MsgLog("    ** Invalid Candidate");
                         #endif
                     } else {
                         #if REFIT_DEBUG > 0
-                        MsgLog("    ** Valid Candidate\n");
+                        MsgLog("    ** Valid Candidate");
                         #endif
 
                         OurValidGOP = TRUE;
@@ -251,18 +253,17 @@ daCheckAltGop (
                     } // if Width == 0 || Height == 0
                 } // if !EFI_ERROR (Status)
             } // if HandleBuffer[Index]
-
-            if (OurValidGOP == TRUE) {
-                break;
-            }
         } // for
 
         FreePool (HandleBuffer);
 
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
+        #endif
+
         if (OurValidGOP == FALSE || EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("\n\n");
-            MsgLog ("    * Could not Find Valid Replacement GOP\n");
+            MsgLog ("INFO: Could not Find Valid Replacement GOP\n\n");
             #endif
 
             // Restore Protocol and Return
@@ -1051,29 +1052,14 @@ egInitScreen(
                 Status = daCheckAltGop();
 
                 if (!EFI_ERROR(Status)) {
-                    OcProvideConsoleGop(TRUE);
+                    Status = OcProvideConsoleGop(TRUE);
 
-                    Status = gBS->LocateHandleBuffer (
-                        ByProtocol,
-                        &GraphicsOutputProtocolGuid,
-                        NULL,
-                        &HandleCount,
-                        &HandleBuffer
-                    );
                     if (!EFI_ERROR (Status)) {
-                        Status = EFI_UNSUPPORTED;
-                        for (i = 0; i < HandleCount; ++i) {
-                            if (HandleBuffer[i] == gST->ConsoleOutHandle) {
-                                Status = gBS->HandleProtocol (
-                                    HandleBuffer[i],
-                                    &GraphicsOutputProtocolGuid,
-                                    (VOID **) &GraphicsOutput
-                                );
-
-                                break;
-                            }
-                        }
-                        FreePool(HandleBuffer);
+                        Status = gBS->HandleProtocol(
+                            gST->ConsoleOutHandle,
+                            &GraphicsOutputProtocolGuid,
+                            (VOID **) &GraphicsOutput
+                        );
                     }
                 }
             }
@@ -1195,10 +1181,10 @@ egInitScreen(
 
     if (GlobalConfig.TextRenderer || GlobalConfig.TextOnly) {
         // Implement Text Renderer
-        OcUseBuiltinTextOutput();
+        Status = OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Initiated Builtin Text Renderer\n\n");
+        MsgLog ("INFO: Initialise Builtin Text Renderer ...%r\n\n", Status);
         #endif
     }
 }
