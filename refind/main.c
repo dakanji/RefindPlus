@@ -812,23 +812,35 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // bootstrap
     InitializeLib(ImageHandle, SystemTable);
     Status = InitRefitLib(ImageHandle);
-    if (EFI_ERROR(Status))
+
+    if (EFI_ERROR(Status)) {
         return Status;
+    }
 
     InitBooterLog();
-    EFI_TIME          Now;
-    SystemTable->RuntimeServices->GetTime(&Now, NULL);
 
-#if REFIT_DEBUG > 0
+    #if REFIT_DEBUG > 0
     MsgLog("Starting RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
-    if (Now.TimeZone < 0 || Now.TimeZone > 24) {
+
+    EFI_TIME Now;
+    INT16 ourTimeZone;
+
+    SystemTable->RuntimeServices->GetTime(&Now, NULL);
+    ourTimeZone = (Now.TimeZone / 60);
+
+    if (ourTimeZone < -12 || ourTimeZone > 12 || (ourTimeZone > -1 && ourTimeZone < 1)) {
         MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
-    } else {
-        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT+%d)\n\n",
+    }
+    else if (ourTimeZone < 0) {
+        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT%02d)\n\n",
         Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
     }
-#endif
+    else {
+        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT+%02d)\n\n",
+        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
+    }
+    #endif
 
     // read configuration
     CopyMem(GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
