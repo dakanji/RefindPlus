@@ -306,11 +306,11 @@ preBootKicker(
         if (MyStriCmp(ChosenEntry->Title, L"Load BootKicker") && (MenuExit == MENU_EXIT_ENTER)) {
             UINTN        i = 0;
             UINTN        k = 0;
-            CHAR16       *Names       = BOOTKICKER_FILES;
-            CHAR16       *FilePath    = NULL;
-            CHAR16       *Description = ChosenEntry->Title;
-            BOOLEAN      FoundTool    = FALSE;
-            LOADER_ENTRY *TempEntry   = NULL;
+            CHAR16       *Names          = BOOTKICKER_FILES;
+            CHAR16       *FilePath       = NULL;
+            CHAR16       *Description    = ChosenEntry->Title;
+            BOOLEAN      FoundTool       = FALSE;
+            LOADER_ENTRY *ourLoaderEntry = NULL;
 
             #if REFIT_DEBUG > 0
             // Log Load BootKicker
@@ -327,16 +327,16 @@ preBootKicker(
                     i = 0;
                     for (i = 0; i < VolumesCount; i++) {
                         if ((Volumes[i]->RootDir != NULL) && (IsValidTool(Volumes[i], FilePath))) {
-                            TempEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+                            ourLoaderEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
 
-                            TempEntry->me.Title = Description;
-                            TempEntry->me.Tag = TAG_SHOW_BOOTKICKER;
-                            TempEntry->me.Row = 1;
-                            TempEntry->me.ShortcutLetter = 'S';
-                            TempEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
-                            TempEntry->LoaderPath = StrDuplicate(FilePath);
-                            TempEntry->Volume = Volumes[i];
-                            TempEntry->UseGraphicsMode = TRUE;
+                            ourLoaderEntry->me.Title = Description;
+                            ourLoaderEntry->me.Tag = TAG_SHOW_BOOTKICKER;
+                            ourLoaderEntry->me.Row = 1;
+                            ourLoaderEntry->me.ShortcutLetter = 'S';
+                            ourLoaderEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_BOOTKICKER);
+                            ourLoaderEntry->LoaderPath = StrDuplicate(FilePath);
+                            ourLoaderEntry->Volume = Volumes[i];
+                            ourLoaderEntry->UseGraphicsMode = TRUE;
 
                             FoundTool = TRUE;
                             break;
@@ -356,7 +356,7 @@ preBootKicker(
                 #endif
 
                 // Run BootKicker
-                StartTool(TempEntry);
+                StartTool(ourLoaderEntry);
                 #if REFIT_DEBUG > 0
                 MsgLog("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
@@ -442,7 +442,7 @@ preCleanNvram(
             CHAR16       *FilePath    = NULL;
             CHAR16       *Description = ChosenEntry->Title;
             BOOLEAN      FoundTool    = FALSE;
-            LOADER_ENTRY *TempEntry   = NULL;
+            LOADER_ENTRY *ourLoaderEntry   = NULL;
 
             #if REFIT_DEBUG > 0
             // Log Load CleanNvram
@@ -459,16 +459,16 @@ preCleanNvram(
                     i = 0;
                     for (i = 0; i < VolumesCount; i++) {
                         if ((Volumes[i]->RootDir != NULL) && (IsValidTool(Volumes[i], FilePath))) {
-                            TempEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+                            ourLoaderEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
 
-                            TempEntry->me.Title = Description;
-                            TempEntry->me.Tag = TAG_NVRAMCLEAN;
-                            TempEntry->me.Row = 1;
-                            TempEntry->me.ShortcutLetter = 'S';
-                            TempEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
-                            TempEntry->LoaderPath = StrDuplicate(FilePath);
-                            TempEntry->Volume = Volumes[i];
-                            TempEntry->UseGraphicsMode = FALSE;
+                            ourLoaderEntry->me.Title = Description;
+                            ourLoaderEntry->me.Tag = TAG_NVRAMCLEAN;
+                            ourLoaderEntry->me.Row = 1;
+                            ourLoaderEntry->me.ShortcutLetter = 'S';
+                            ourLoaderEntry->me.Image = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                            ourLoaderEntry->LoaderPath = StrDuplicate(FilePath);
+                            ourLoaderEntry->Volume = Volumes[i];
+                            ourLoaderEntry->UseGraphicsMode = FALSE;
 
                             FoundTool = TRUE;
                             break;
@@ -490,7 +490,7 @@ preCleanNvram(
                 ranCleanNvram = TRUE;
 
                 // Run CleanNvram
-                StartTool(TempEntry);
+                StartTool(ourLoaderEntry);
 
             } else {
                 #if REFIT_DEBUG > 0
@@ -804,7 +804,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     BOOLEAN            MainLoopRunning = TRUE;
     BOOLEAN            MokProtocol;
     REFIT_MENU_ENTRY   *ChosenEntry;
-    LOADER_ENTRY       *TempEntry;
+    LOADER_ENTRY       *ourLoaderEntry;
+    LEGACY_ENTRY       *ourLegacyEntry;
     UINTN              MenuExit, i;
     CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
@@ -932,7 +933,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #endif
 
     while (MainLoopRunning) {
-        TempEntry = NULL;
+        ourLoaderEntry = NULL;
 
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 
@@ -1018,10 +1019,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 }
                 #endif
 
-                TempEntry = (LOADER_ENTRY *)ChosenEntry;
-                TempEntry->UseGraphicsMode = TRUE;
+                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
+                ourLoaderEntry->UseGraphicsMode = TRUE;
 
-                StartTool(TempEntry);
+                StartTool(ourLoaderEntry);
                 break;
 
             case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
@@ -1077,64 +1078,73 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
+                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Boot OS via EFI Loader\n---------------\n\n");
+
+                if (MyStrStr(ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                    MsgLog("  - Load OpenCore Instance : '%s'", ourLoaderEntry->LoaderPath);
                 } else {
-                    MsgLog("  - Boot OS via EFI Loader\n\n");
+                    MsgLog("  - Boot OS via EFI Loader : '%s'", ourLoaderEntry->LoaderPath);
+                }
+
+                if (egIsGraphicsModeEnabled()) {
+                    MsgLog("\n---------------\n\n");
+                } else {
+                    MsgLog("\n\n");
                 }
                 #endif
 
-                TempEntry = (LOADER_ENTRY *)ChosenEntry;
-                if (!GlobalConfig.TextOnly) {
-                    TempEntry->UseGraphicsMode = TRUE;
+                if (!GlobalConfig.TextOnly || MyStrStr(ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                    ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
-                StartLoader(TempEntry, SelectionName);
+                StartLoader(ourLoaderEntry, SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
+                ourLegacyEntry = (LEGACY_ENTRY *)ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Boot Legacy OS\n---------------\n\n");
+                    MsgLog("  - Boot Legacy OS : '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
                 } else {
-                    MsgLog("  - Boot Legacy OS\n\n");
+                    MsgLog("  - Boot Legacy OS : '%s'\n\n", ourLegacyEntry->Volume->OSName);
                 }
                 #endif
 
-                StartLegacy((LEGACY_ENTRY *)ChosenEntry, SelectionName);
+                StartLegacy(ourLegacyEntry, SelectionName);
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
+                ourLegacyEntry = (LEGACY_ENTRY *)ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Boot Legacy UEFI\n---------------\n\n");
+                    MsgLog("  - Boot Legacy UEFI : '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
                 } else {
-                    MsgLog("  - Boot Legacy UEFI\n\n");
+                    MsgLog("  - Boot Legacy UEFI : '%s'\n\n", ourLegacyEntry->Volume->OSName);
                 }
                 #endif
 
-                StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
+                StartLegacyUEFI(ourLegacyEntry, SelectionName);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool
+                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Get User Input:\n");
-                MsgLog("  - Start EFI Tool\n\n");
+                MsgLog("  - Start EFI Tool : '%s'\n\n", ourLoaderEntry->LoaderPath);
                 #endif
 
-                TempEntry = (LOADER_ENTRY *)ChosenEntry;
-                if (MyStrStr(TempEntry->Title, L"Boot Screen") != NULL) {
-                    TempEntry->UseGraphicsMode = TRUE;
+                if (MyStrStr(ourLoaderEntry->Title, L"Boot Screen") != NULL) {
+                    ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
 
-                StartTool(TempEntry);
+                StartTool(ourLoaderEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries

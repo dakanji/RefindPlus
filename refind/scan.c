@@ -1857,7 +1857,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                        MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                         #endif
                     } // if
                 MyFreePool(FileName);
@@ -1886,7 +1886,7 @@ VOID ScanForTools(VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                        MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                         #endif
                     } // if
 
@@ -1917,7 +1917,7 @@ VOID ScanForTools(VOID) {
 
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                     MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                      #endif
                   } // if
                     MyFreePool(FileName);
@@ -1946,7 +1946,7 @@ VOID ScanForTools(VOID) {
                         );
 
                      #if REFIT_DEBUG > 0
-                     MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                     MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                      #endif
                     } // if
                     MyFreePool(FileName);
@@ -1986,7 +1986,7 @@ VOID ScanForTools(VOID) {
                                 );
 
                                 #if REFIT_DEBUG > 0
-                                MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                                MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                                 #endif
                             } // if
                         } // if
@@ -2030,7 +2030,7 @@ VOID ScanForTools(VOID) {
                             );
 
                              #if REFIT_DEBUG > 0
-                             MsgLog("              - Added %s : %s\n", ToolName, FileName);
+                             MsgLog("              - Added %s : '%s'\n", ToolName, FileName);
                              #endif
                         } // if
                     } // for
