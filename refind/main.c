@@ -682,8 +682,9 @@ static BOOLEAN SecureBootSetup(VOID) {
 // Remove our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
 static BOOLEAN SecureBootUninstall(VOID) {
-    EFI_STATUS Status;
-    BOOLEAN    Success = TRUE;
+    EFI_STATUS   Status;
+    BOOLEAN      Success = TRUE;
+    const CHAR16 *ShowScreenStr = NULL;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -694,9 +695,7 @@ static BOOLEAN SecureBootUninstall(VOID) {
             BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
             GlobalConfig.ContinueOnWarning = TRUE;
 
-            SPrint(ShowScreenStr, 160,
-                (CHAR16 *) "Failed to uninstall MOK Secure Boot extensions ...Forcing Reboot"
-            );
+            ShowScreenStr = L"Failed to uninstall MOK Secure Boot extensions ...Forcing Reboot";
 
             gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -721,8 +720,11 @@ static BOOLEAN SecureBootUninstall(VOID) {
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
 static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     EFI_LOADED_IMAGE *Info;
-    CHAR16 *Options, *FileName, *SubString;
-    EFI_STATUS Status;
+    EFI_STATUS       Status;
+    CHAR16           *Options;
+    CHAR16           *FileName;
+    CHAR16           *SubString;
+    const CHAR16     *ShowScreenStr = NULL;
 
         #if REFIT_DEBUG > 0
         MsgLog("Set Config Filename...\n");
@@ -744,9 +746,7 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
                 BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
                 GlobalConfig.ContinueOnWarning = TRUE;
 
-                SPrint(ShowScreenStr, 160,
-                    (CHAR16 *) "Specified configuration file does not exist ...Try default 'refind.conf'"
-                );
+                ShowScreenStr = L"Specified configuration file does not exist ...Try default 'refind.conf'";
                 PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
@@ -809,6 +809,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     UINTN              MenuExit, i;
     CHAR16             *SelectionName = NULL;
     EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
+    const CHAR16       *ShowScreenStr = NULL;
 
     // bootstrap
     InitializeLib(ImageHandle, SystemTable);
@@ -993,9 +994,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     #endif
                     gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
 
-                    SPrint(ShowScreenStr, 160,
-                        (CHAR16 *) "INFO: Computer Reboot Failed ...Attempt Fallback:."
-                    );
+                    ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1243,7 +1242,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     SwitchToText(FALSE);
 
-    SPrint(ShowScreenStr, 160, (CHAR16 *) "INFO: Reboot Failed ...Entering Endless Idle Loop");
+    ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
 
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);

@@ -954,12 +954,15 @@ static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
 
 VOID ScanVolume(REFIT_VOLUME *Volume)
 {
-    EFI_STATUS              Status;
-    EFI_DEVICE_PATH         *DevicePath, *NextDevicePath;
-    EFI_DEVICE_PATH         *DiskDevicePath, *RemainingDevicePath;
-    EFI_HANDLE              WholeDiskHandle;
-    UINTN                   PartialLength;
-    BOOLEAN                 Bootable;
+    EFI_STATUS       Status;
+    EFI_DEVICE_PATH  *DevicePath;
+    EFI_DEVICE_PATH  *NextDevicePath;
+    EFI_DEVICE_PATH  *DiskDevicePath;
+    EFI_DEVICE_PATH  *RemainingDevicePath;
+    EFI_HANDLE       WholeDiskHandle;
+    UINTN            PartialLength;
+    BOOLEAN          Bootable;
+    const CHAR16     *ShowScreenStr = NULL;
 
     // get device path
     Volume->DevicePath = DuplicateDevicePath(DevicePathFromHandle(Volume->DeviceHandle));
@@ -981,7 +984,7 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "ERROR: Cannot get BlockIO Protocol");
+        ShowScreenStr = L"ERROR: Cannot get BlockIO Protocol";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1176,6 +1179,7 @@ VOID ScanVolumes(VOID)
     UINT8                   *SectorBuffer1, *SectorBuffer2;
     EFI_GUID                *UuidList;
     EFI_GUID                NullUuid = NULL_GUID_VALUE;
+    const CHAR16            *ShowScreenStr = NULL;
 
     MyFreePool(Volumes);
     Volumes = NULL;
@@ -1229,7 +1233,7 @@ VOID ScanVolumes(VOID)
     if (SelfVolume == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "WARN: Self Volume not Found!");
+        ShowScreenStr = L"WARN: Self Volume not Found!";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);

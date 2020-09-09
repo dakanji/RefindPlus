@@ -83,7 +83,6 @@ static EFI_HANDLE_PROTOCOL daOrigProtocol;
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 0;
 static UINTN   egScreenHeight = 0;
-CHAR16 *ShowScreenStr = NULL;
 
 STATIC
 EFI_STATUS
@@ -284,20 +283,21 @@ egDumpGOPVideoModes(
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
     EFI_STATUS Status;
-    UINT32     MaxMode;
-    UINT32     Mode;
-    UINT32     ModeLog;
-    UINT32     NumModes;
-    UINT32     ModeCount;
-    UINT32     LoopCount;
-    UINTN      SizeOfInfo;
-    CHAR16     *PixelFormatDesc;
-    BOOLEAN    OurValidGOP = FALSE;
+    UINT32       MaxMode;
+    UINT32       Mode;
+    UINT32       ModeLog;
+    UINT32       NumModes;
+    UINT32       ModeCount;
+    UINT32       LoopCount;
+    UINTN        SizeOfInfo;
+    CHAR16       *PixelFormatDesc;
+    BOOLEAN      OurValidGOP = FALSE;
+    const CHAR16 *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Unsupported EFI");
+        ShowScreenStr = L"Unsupported EFI";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -308,6 +308,7 @@ egDumpGOPVideoModes(
         #endif
 
         HaltForKey();
+
         return EFI_UNSUPPORTED;
     }
 
@@ -436,12 +437,13 @@ EFI_STATUS
 GopSetModeAndReconnectTextOut(
     IN UINT32 ModeNumber
 ) {
-    EFI_STATUS  Status;
+    EFI_STATUS   Status;
+    const CHAR16 *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Unsupported EFI");
+        ShowScreenStr = L"Unsupported EFI";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -452,6 +454,7 @@ GopSetModeAndReconnectTextOut(
         #endif
 
         HaltForKey();
+
         return EFI_UNSUPPORTED;
     }
 
@@ -470,11 +473,12 @@ egSetGOPMode(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS Status = EFI_UNSUPPORTED;
-    UINT32     MaxMode;
-    UINTN      SizeOfInfo;
-    INT32      Mode;
-    UINT32     i = 0;
+    EFI_STATUS   Status = EFI_UNSUPPORTED;
+    UINT32       MaxMode;
+    UINTN        SizeOfInfo;
+    INT32        Mode;
+    UINT32       i = 0;
+    const CHAR16 *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog("Set GOP Mode:\n");
@@ -484,7 +488,7 @@ egSetGOPMode(
 
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Unsupported EFI");
+        ShowScreenStr = L"Unsupported EFI";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -509,7 +513,7 @@ egSetGOPMode(
 
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "  - Incompartible GPU");
+        ShowScreenStr = L"  - Incompartible GPU";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -553,18 +557,19 @@ egSetMaxResolution(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS Status = EFI_UNSUPPORTED;
-    UINT32     Width = 0;
-    UINT32     Height = 0;
-    UINT32     BestMode = 0;
-    UINT32     MaxMode;
-    UINT32     Mode;
-    UINTN      SizeOfInfo;
+    EFI_STATUS   Status = EFI_UNSUPPORTED;
+    UINT32       Width = 0;
+    UINT32       Height = 0;
+    UINT32       BestMode = 0;
+    UINT32       MaxMode;
+    UINT32       Mode;
+    UINTN        SizeOfInfo;
+    const CHAR16 *ShowScreenStr = NULL;
 
   if (GraphicsOutput == NULL) {
       SwitchToText(FALSE);
 
-      SPrint(ShowScreenStr, 160, (CHAR16 *) "Unsupported EFI");
+      ShowScreenStr = L"Unsupported EFI";
 
       gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
       PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -575,6 +580,7 @@ egSetMaxResolution(
       #endif
 
       HaltForKey();
+
       return EFI_UNSUPPORTED;
   }
 
@@ -625,7 +631,7 @@ egSetMaxResolution(
       // we can not set BestMode - search for first one that we can
       SwitchToText(FALSE);
 
-      SPrint(ShowScreenStr, 160, (CHAR16 *) "Could not Set BestMode ...Seek Useable Mode");
+      ShowScreenStr = L"Could not Set BestMode ...Seek Useable Mode";
 
       PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
@@ -1233,24 +1239,36 @@ egSetScreenSize(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    EFI_STATUS Status = EFI_SUCCESS;
-    BOOLEAN    ModeSet = FALSE;
-    UINTN      Size;
-    UINT32     ModeNum = 0, CurrentModeNum;
-    UINT32     UGAWidth;
-    UINT32     UGAHeight;
-    UINT32     UGADepth;
-    UINT32     UGARefreshRate;
+    EFI_STATUS   Status = EFI_SUCCESS;
+    BOOLEAN      ModeSet = FALSE;
+    UINTN        Size;
+    UINT32       ModeNum = 0, CurrentModeNum;
+    UINT32       UGAWidth;
+    UINT32       UGAHeight;
+    UINT32       UGADepth;
+    UINT32       UGARefreshRate;
+    CHAR16       TmpShowScreenStr[128];
+    const CHAR16 *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
     #endif
 
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
+        SwitchToText(FALSE);
+
+        ShowScreenStr = L"Invalid Input Resolution in Config File!";
+
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+
 
         #if REFIT_DEBUG > 0
-        MsgLog("Invalid Resolution Input!\n");
+        MsgLog("%s\n", ShowScreenStr);
         #endif
+
+        PauseForKey();
 
         return FALSE;
     }
@@ -1331,9 +1349,7 @@ egSetScreenSize(
         } else { // If unsuccessful, display an error message for the user....
             SwitchToText(FALSE);
 
-            SPrint(ShowScreenStr, 160,
-                (CHAR16 *) "Invalid Resolution Setting Provided ...Trying Default Modes:"
-            );
+            ShowScreenStr = L"Invalid Resolution Setting Provided ...Trying Default Modes:";
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1349,12 +1365,13 @@ egSetScreenSize(
                     &Info
                 );
                 if ((Status == EFI_SUCCESS) && (Info != NULL)) {
-                    SPrint(ShowScreenStr, 160,
-                        (CHAR16 *) "  - Available Mode: Mode[%d] (%dx%d)",
+                    SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                        L"  - Available Mode: Mode[%d] (%dx%d)",
                         ModeNum,
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
+                    ShowScreenStr = TmpShowScreenStr;
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1367,11 +1384,7 @@ egSetScreenSize(
                     } // if
 
                 } else {
-                    SPrint(ShowScreenStr, 160,
-                        (CHAR16 *) "  - Error : Could not Query GraphicsOutput Mode!",
-                        *ScreenWidth,
-                        *ScreenHeight
-                    );
+                    ShowScreenStr = L"  - Error : Could not Query GraphicsOutput Mode!";
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1409,11 +1422,12 @@ egSetScreenSize(
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            SPrint(ShowScreenStr, 160,
-                (CHAR16 *) "Error setting %dx%d resolution ...Unsupported Mode",
+            SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                L"Error setting %dx%d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );
+            ShowScreenStr = TmpShowScreenStr;
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1422,7 +1436,6 @@ egSetScreenSize(
 
         } // if/else
     } // if/else if (UGADraw != NULL)
-    MyFreePool(ShowScreenStr);
 
     return (ModeSet);
 } // BOOLEAN egSetScreenSize()
@@ -1435,11 +1448,13 @@ BOOLEAN
 egSetTextMode(
     UINT32 RequestedMode
 ) {
-    EFI_STATUS Status;
-    BOOLEAN    ChangedIt = FALSE;
-    UINTN      i = 0;
-    UINTN      Width;
-    UINTN      Height;
+    EFI_STATUS   Status;
+    BOOLEAN      ChangedIt = FALSE;
+    UINTN        i = 0;
+    UINTN        Width;
+    UINTN        Height;
+    CHAR16       TmpShowScreenStr[128];
+    const CHAR16 *ShowScreenStr = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) && (RequestedMode != gST->ConOut->Mode->Mode)) {
         Status = gST->ConOut->SetMode(gST->ConOut, RequestedMode);
@@ -1448,14 +1463,14 @@ egSetTextMode(
         } else {
             SwitchToText(FALSE);
 
-            SPrint(ShowScreenStr, 160, (CHAR16 *) "Error Setting Resolution ...Unsupported Mode");
+            ShowScreenStr = L"Error Setting Resolution ...Unsupported Mode";
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog("%s\n", ShowScreenStr);
             #endif
 
-            SPrint(ShowScreenStr, 160, (CHAR16 *) "Seek Available Modes:");
+            ShowScreenStr = L"Seek Available Modes:";
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1466,7 +1481,13 @@ egSetTextMode(
                 Status = gST->ConOut->QueryMode(gST->ConOut, i, &Width, &Height);
 
                 if (Status == EFI_SUCCESS) {
-                    SPrint(ShowScreenStr, 160, (CHAR16 *) "  - Mode[%d] (%dx%d)", i, Width, Height);
+                    SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                        L"  - Mode[%d] (%dx%d)",
+                        i,
+                        Width,
+                        Height
+                    );
+                    ShowScreenStr = TmpShowScreenStr;
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1476,14 +1497,16 @@ egSetTextMode(
 
             } while (++i < gST->ConOut->Mode->MaxMode);
 
-            SPrint(ShowScreenStr, 160, (CHAR16 *) "Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+            SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                L"Use Default Mode[%d]:",
+                DONT_CHANGE_TEXT_MODE
+            );
+            ShowScreenStr = TmpShowScreenStr;
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog("%s\n", ShowScreenStr);
             #endif
-
-            MyFreePool(ShowScreenStr);
 
             PauseForKey();
             SwitchToGraphicsAndClear();
@@ -1493,14 +1516,19 @@ egSetTextMode(
     return ChangedIt;
 } // BOOLEAN egSetTextMode()
 
-CHAR16 * egScreenDescription(VOID) {
-    CHAR16 *GraphicsInfo, *TextInfo = NULL;
+CHAR16 *
+egScreenDescription(
+    VOID
+) {
+    CHAR16       *GraphicsInfo;
+    CHAR16       *TextInfo = NULL;
+    const CHAR16 *ShowScreenStr = NULL;
 
     GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
     if (GraphicsInfo == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Memory Allocation Error!");
+        ShowScreenStr = L"Memory Allocation Error!";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1520,7 +1548,6 @@ CHAR16 * egScreenDescription(VOID) {
         if (GraphicsOutput != NULL) {
             SPrint(GraphicsInfo, 255, L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
         } else if (UGADraw != NULL) {
-            GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
             SPrint(GraphicsInfo, 255, L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
         } else {
             MyFreePool(GraphicsInfo);
@@ -1528,7 +1555,7 @@ CHAR16 * egScreenDescription(VOID) {
 
             SwitchToText(FALSE);
 
-            SPrint(ShowScreenStr, 160, (CHAR16 *) "Internal Error!");
+            ShowScreenStr = L"Internal Error!";
 
             gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1890,20 +1917,21 @@ VOID
 egScreenShot(
     VOID
 ) {
-    EFI_STATUS Status;
-    EFI_FILE   *BaseDir;
-    EG_IMAGE   *Image;
-    UINT8      *FileData;
-    UINTN      FileDataLength;
-    UINTN      i = 0;
-    UINTN      ssNum;
-    CHAR16     Filename[80];
+    EFI_STATUS   Status;
+    EFI_FILE     *BaseDir;
+    EG_IMAGE     *Image;
+    UINT8        *FileData;
+    UINTN        FileDataLength;
+    UINTN        i = 0;
+    UINTN        ssNum;
+    CHAR16       Filename[80];
+    const CHAR16 *ShowScreenStr = NULL;
 
     Image = egCopyScreen();
     if (Image == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Error: Unable to Take Screen Shot");
+        ShowScreenStr = L"Error: Unable to Take Screen Shot";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1925,7 +1953,7 @@ egScreenShot(
     if (FileData == NULL) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "Error: Could not encode BMP");
+        ShowScreenStr = L"Error: Could not encode BMP";
 
         gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);

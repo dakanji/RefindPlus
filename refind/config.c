@@ -589,6 +589,8 @@ ReadConfig(
     CHAR16          *FlagName;
     CHAR16          *TempStr = NULL;
     UINTN           TokenCount, i;
+    CHAR16          TmpShowScreenStr[128];
+    const CHAR16    *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog("Read Config...\n");
@@ -622,7 +624,7 @@ ReadConfig(
     if (!FileExists(SelfDir, FileName)) {
         SwitchToText(FALSE);
 
-        SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Cannot Find Configuration File. Loading Defaults");
+        ShowScreenStr = L"  - WARN: Cannot Find Configuration File. Loading Defaults";
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
         #if REFIT_DEBUG > 0
@@ -630,7 +632,7 @@ ReadConfig(
         #endif
 
        if (!FileExists(SelfDir, L"icons")) {
-           SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Cannot Find Icons Directory. Switching to Text Mode");
+           ShowScreenStr = L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode";
            PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
            #if REFIT_DEBUG > 0
@@ -689,7 +691,11 @@ ReadConfig(
                 } else {
                     SwitchToText(FALSE);
 
-                    SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Invalid 'hideui flag' Flag: '%s'", FlagName);
+                    SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                        L"  - WARN: Invalid 'hideui flag' Flag: '%s'",
+                        FlagName
+                    );
+                    ShowScreenStr = TmpShowScreenStr;
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -807,7 +813,11 @@ ReadConfig(
            } else if (MyStriCmp(TokenList[1], L"fillscreen") || MyStriCmp(TokenList[1], L"fullscreen")) {
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            } else {
-               SPrint(ShowScreenStr, 160, (CHAR16 *) "  - WARN: Invalid 'banner_type' Flag: '%s'", TokenList[1]);
+               SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                   L"  - WARN: Invalid 'banner_type' Flag: '%s'",
+                   TokenList[1]
+               );
+               ShowScreenStr = TmpShowScreenStr;
                PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                #if REFIT_DEBUG > 0
