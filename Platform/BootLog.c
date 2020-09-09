@@ -99,7 +99,6 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
                            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
   }
   RootDir->Close(RootDir);
-  RootDir = NULL;
 
   if (EFI_ERROR(Status)) {
     // try on first EFI partition
@@ -113,9 +112,10 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
                                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
       }
       RootDir->Close(RootDir);
-      RootDir = NULL;
     }
   }
+
+  RootDir = NULL;
 
   if (EFI_ERROR(Status)) {
     LogFile = NULL;
