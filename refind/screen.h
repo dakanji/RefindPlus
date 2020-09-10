@@ -76,8 +76,8 @@ extern UINTN ConWidth;
 extern UINTN ConHeight;
 extern CHAR16 *BlankLine;
 
-extern UINTN UGAWidth;
-extern UINTN UGAHeight;
+extern UINTN ScreenW;
+extern UINTN ScreenH;
 extern BOOLEAN AllowGraphicsMode;
 
 extern EG_PIXEL StdBackgroundPixel;

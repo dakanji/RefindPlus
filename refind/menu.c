@@ -169,7 +169,7 @@ static VOID InitScroll(OUT SCROLL_STATE *State, IN UINTN ItemCount, IN UINTN Vis
     State->MaxIndex = (INTN)ItemCount - 1;
     State->FirstVisible = 0;
     if (AllowGraphicsMode) {
-       State->MaxVisible = UGAWidth / (TileSizes[0] + TILE_XSPACING) - 1;
+       State->MaxVisible = ScreenW / (TileSizes[0] + TILE_XSPACING) - 1;
     } else
        State->MaxVisible = ConHeight - 4;
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible))
@@ -880,7 +880,7 @@ static VOID DrawTextWithTransparency(IN CHAR16 *Text, IN UINTN XPos, IN UINTN YP
 
     egMeasureText(Text, &TextWidth, NULL);
     if (TextWidth == 0) {
-       TextWidth = UGAWidth;
+       TextWidth = ScreenW;
        XPos = 0;
     }
 
@@ -931,12 +931,12 @@ static VOID ComputeSubScreenWindowSize(REFIT_MENU_SCREEN *Screen, IN SCROLL_STAT
 
    // Keep it within the bounds of the screen, or 2/3 of the screen's width
    // for screens over 800 pixels wide
-   if (*Width > UGAWidth)
-      *Width = UGAWidth;
+   if (*Width > ScreenW)
+      *Width = ScreenW;
 
-   *XPos = (UGAWidth - *Width) / 2;
+   *XPos = (ScreenW - *Width) / 2;
 
-   HintTop = UGAHeight - (FontCellHeight * 3); // top of hint text
+   HintTop = ScreenH - (FontCellHeight * 3); // top of hint text
    *Height *= TextLineHeight();
    if (Screen->TitleImage && (*Height < (Screen->TitleImage->Height + TextLineHeight() * 4)))
       *Height = Screen->TitleImage->Height + TextLineHeight() * 4;
@@ -954,7 +954,7 @@ static VOID ComputeSubScreenWindowSize(REFIT_MENU_SCREEN *Screen, IN SCROLL_STAT
       *Height = (HintTop - BannerBottomEdge - FontCellHeight * 2);
    }
 
-   *YPos = ((UGAHeight - *Height) / 2);
+   *YPos = ((ScreenH - *Height) / 2);
    if (*YPos < BannerBottomEdge)
       *YPos = BannerBottomEdge + FontCellHeight + (HintTop - BannerBottomEdge - *Height) / 2;
 } // VOID ComputeSubScreenWindowSize()
@@ -1027,11 +1027,11 @@ VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen,
            }
            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
               if ((Screen->Hint1 != NULL) && (StrLen(Screen->Hint1) > 0))
-                 DrawTextWithTransparency(Screen->Hint1, (UGAWidth - egComputeTextWidth(Screen->Hint1)) / 2,
-                                          UGAHeight - (egGetFontHeight() * 3));
+                 DrawTextWithTransparency(Screen->Hint1, (ScreenW - egComputeTextWidth(Screen->Hint1)) / 2,
+                                          ScreenH - (egGetFontHeight() * 3));
               if ((Screen->Hint2 != NULL) && (StrLen(Screen->Hint2) > 0))
-                 DrawTextWithTransparency(Screen->Hint2, (UGAWidth - egComputeTextWidth(Screen->Hint2)) / 2,
-                                           UGAHeight - (egGetFontHeight() * 2));
+                 DrawTextWithTransparency(Screen->Hint2, (ScreenW - egComputeTextWidth(Screen->Hint2)) / 2,
+                                           ScreenH - (egGetFontHeight() * 2));
            } // if
            break;
 
@@ -1092,17 +1092,17 @@ static VOID PaintAll(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, UINTN
    if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) && (!PointerActive || (PointerActive && DrawSelection))) {
       DrawTextWithTransparency(L"", 0, textPosY);
       DrawTextWithTransparency(Screen->Entries[State->CurrentSelection]->Title,
-                               (UGAWidth - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
+                               (ScreenW - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
                                textPosY);
    } else {
         DrawTextWithTransparency(L"", 0, textPosY);
    }
 
    if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
-      DrawTextWithTransparency(Screen->Hint1, (UGAWidth - egComputeTextWidth(Screen->Hint1)) / 2,
-                               UGAHeight - (egGetFontHeight() * 3));
-      DrawTextWithTransparency(Screen->Hint2, (UGAWidth - egComputeTextWidth(Screen->Hint2)) / 2,
-                               UGAHeight - (egGetFontHeight() * 2));
+      DrawTextWithTransparency(Screen->Hint1, (ScreenW - egComputeTextWidth(Screen->Hint1)) / 2,
+                               ScreenH - (egGetFontHeight() * 3));
+      DrawTextWithTransparency(Screen->Hint2, (ScreenW - egComputeTextWidth(Screen->Hint2)) / 2,
+                               ScreenH - (egGetFontHeight() * 2));
    } // if
 } // static VOID PaintAll()
 
@@ -1132,7 +1132,7 @@ static VOID PaintSelection(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State,
       if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) && (!PointerActive || (PointerActive && DrawSelection))) {
          DrawTextWithTransparency(L"", 0, textPosY);
          DrawTextWithTransparency(Screen->Entries[State->CurrentSelection]->Title,
-                                  (UGAWidth - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
+                                  (ScreenW - egComputeTextWidth(Screen->Entries[State->CurrentSelection]->Title)) >> 1,
                                   textPosY);
       } else {
           DrawTextWithTransparency(L"", 0, textPosY);
@@ -1163,7 +1163,7 @@ static VOID PaintIcon(IN EG_EMBEDDED_IMAGE *BuiltInIcon, IN CHAR16 *ExternalFile
 } // static VOID ()
 
 UINTN ComputeRow0PosY(VOID) {
-   return ((UGAHeight / 2) - TileSizes[0] / 2);
+   return ((ScreenH / 2) - TileSizes[0] / 2);
 } // UINTN ComputeRow0PosY()
 
 // Display (or erase) the arrow icons to the left and right of an icon's row,
@@ -1175,7 +1175,7 @@ static VOID PaintArrows(SCROLL_STATE *State, UINTN PosX, UINTN PosY, UINTN row0L
    // NOTE: Assume that left and right arrows are of the same size....
    Width = egemb_arrow_left.Width;
    Height = egemb_arrow_left.Height;
-   RightX = (UGAWidth + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+   RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
    AdjPosY = PosY - (Height / 2);
 
    // For PaintIcon() calls, the starting Y position is moved to the midpoint
@@ -1226,9 +1226,9 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
                      row0Count++;
                }
             }
-            row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
+            row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
             row0PosY = ComputeRow0PosY();
-            row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
+            row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
             row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
             if (row1Count > 0)
                 textPosY = row1PosY + TileSizes[1] + TILE_YSPACING;
@@ -1271,7 +1271,7 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
                DrawTextWithTransparency(L"", 0, textPosY + TextLineHeight());
-               DrawTextWithTransparency(ParamText, (UGAWidth - egComputeTextWidth(ParamText)) >> 1, textPosY + TextLineHeight());
+               DrawTextWithTransparency(ParamText, (ScreenW - egComputeTextWidth(ParamText)) >> 1, textPosY + TextLineHeight());
             }
             break;
 
@@ -1300,9 +1300,9 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
                         row0Count++;
         }
     }
-    row0PosX = (UGAWidth + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
+    row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
     row0PosY = ComputeRow0PosY();
-    row1PosX = (UGAWidth + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
+    row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
     row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
 
     if (PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
@@ -1310,7 +1310,7 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
         if(PosX <= row0PosX) {
             return POINTER_LEFT_ARROW;
         }
-        else if(PosX >= (UGAWidth - row0PosX)) {
+        else if(PosX >= (ScreenW - row0PosX)) {
             return POINTER_RIGHT_ARROW;
         }
     } else if (PosY >= row1PosY && PosY <= row1PosY + TileSizes[1]) {

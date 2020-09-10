@@ -667,8 +667,8 @@ egDetermineScreenSize(
     VOID
 ) {
     EFI_STATUS Status = EFI_SUCCESS;
-    UINT32     UGAWidth;
-    UINT32     UGAHeight;
+    UINT32     ScreenW;
+    UINT32     ScreenH;
     UINT32     UGADepth;
     UINT32     UGARefreshRate;
 
@@ -681,16 +681,16 @@ egDetermineScreenSize(
     } else if (UGADraw != NULL) {
         Status = UGADraw->GetMode(
             UGADraw,
-            &UGAWidth,
-            &UGAHeight,
+            &ScreenW,
+            &ScreenH,
             &UGADepth,
             &UGARefreshRate
         );
         if (EFI_ERROR(Status)) {
             UGADraw = NULL;   // graphics not available
         } else {
-            egScreenWidth  = UGAWidth;
-            egScreenHeight = UGAHeight;
+            egScreenWidth  = ScreenW;
+            egScreenHeight = ScreenH;
             egHasGraphics = TRUE;
         }
     }
@@ -1207,8 +1207,8 @@ egSetScreenSize(
     BOOLEAN      ModeSet = FALSE;
     UINTN        Size;
     UINT32       ModeNum = 0, CurrentModeNum;
-    UINT32       UGAWidth;
-    UINT32       UGAHeight;
+    UINT32       ScreenW;
+    UINT32       ScreenH;
     UINT32       UGADepth;
     UINT32       UGARefreshRate;
     CHAR16       TmpShowScreenStr[128];
@@ -1362,8 +1362,8 @@ egSetScreenSize(
         // in all cases, but I don't know how to probe for alternatives....
         Status = UGADraw->GetMode(
             UGADraw,
-            &UGAWidth,
-            &UGAHeight,
+            &ScreenW,
+            &ScreenH,
             &UGADepth,
             &UGARefreshRate
         );

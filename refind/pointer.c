@@ -174,11 +174,11 @@ VOID pdCleanup() {
     NumAPointerDevices = 0;
     NumSPointerDevices = 0;
 
-    LastXPos = UGAWidth / 2;
-    LastYPos = UGAHeight / 2;
+    LastXPos = ScreenW / 2;
+    LastYPos = ScreenH / 2;
 
-    State.X = UGAWidth / 2;
-    State.Y = UGAHeight / 2;
+    State.X = ScreenW / 2;
+    State.Y = ScreenH / 2;
     State.Press = FALSE;
     State.Holding = FALSE;
 }
@@ -240,11 +240,11 @@ EFI_STATUS pdUpdateState() {
             Status = EFI_SUCCESS;
 
 #ifdef EFI32
-            State.X = (UINTN)DivU64x64Remainder(APointerState.CurrentX * UGAWidth, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
-            State.Y = (UINTN)DivU64x64Remainder(APointerState.CurrentY * UGAHeight, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
+            State.X = (UINTN)DivU64x64Remainder(APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
+            State.Y = (UINTN)DivU64x64Remainder(APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
 #else
-            State.X = (APointerState.CurrentX * UGAWidth) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
-            State.Y = (APointerState.CurrentY * UGAHeight) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
+            State.X = (APointerState.CurrentX * ScreenW) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
+            State.Y = (APointerState.CurrentY * ScreenH) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
 #endif
             State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
         }
@@ -272,16 +272,16 @@ EFI_STATUS pdUpdateState() {
 
             if(TargetX < 0) {
                 State.X = 0;
-            } else if(TargetX >= UGAWidth) {
-                State.X = UGAWidth - 1;
+            } else if(TargetX >= ScreenW) {
+                State.X = ScreenW - 1;
             } else {
                 State.X = (UINTN)TargetX;
             }
 
             if(TargetY < 0) {
                 State.Y = 0;
-            } else if(TargetY >= UGAHeight) {
-                State.Y = UGAHeight - 1;
+            } else if(TargetY >= ScreenH) {
+                State.Y = ScreenH - 1;
             } else {
                 State.Y = (UINTN)TargetY;
             }
@@ -315,11 +315,11 @@ VOID pdDraw() {
         UINTN Width = MouseImage->Width;
         UINTN Height = MouseImage->Height;
 
-        if(State.X + Width > UGAWidth) {
-            Width = UGAWidth - State.X;
+        if(State.X + Width > ScreenW) {
+            Width = ScreenW - State.X;
         }
-        if(State.Y + Height > UGAHeight) {
-            Height = UGAHeight - State.Y;
+        if(State.Y + Height > ScreenH) {
+            Height = ScreenH - State.Y;
         }
 
         Background = egCopyScreenArea(State.X, State.Y, Width, Height);

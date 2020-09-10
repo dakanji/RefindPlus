@@ -428,8 +428,8 @@ VOID StartLegacy(IN LEGACY_ENTRY *Entry, IN CHAR16 *SelectionName)
     BootLogoImage = LoadOSIcon(Entry->Volume->OSIconName, L"legacy", TRUE);
     if (BootLogoImage != NULL)
         BltImageAlpha(BootLogoImage,
-                      (UGAWidth  - BootLogoImage->Width ) >> 1,
-                      (UGAHeight - BootLogoImage->Height) >> 1,
+                      (ScreenW  - BootLogoImage->Width ) >> 1,
+                      (ScreenH - BootLogoImage->Height) >> 1,
                       &StdBackgroundPixel);
 
     if (Entry->Volume->IsMbrPartition)
