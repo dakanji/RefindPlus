@@ -179,7 +179,7 @@ daCheckAltGop (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Seeking GOP Handles ...%r", Status);
+        MsgLog ("  - Seeking GOP Handles ...%r\n", Status);
         #endif
 
         if (EFI_ERROR (Status)) {
@@ -212,7 +212,7 @@ daCheckAltGop (
                     if (Mode > 0) {
                         MsgLog ("\n");
                     }
-                    MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%d]\n", Index);
+                    MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%02d]\n", Index);
                     #endif
 
                     #if REFIT_DEBUG > 0
@@ -239,11 +239,11 @@ daCheckAltGop (
 
                     if (Width == 0 || Height == 0) {
                         #if REFIT_DEBUG > 0
-                        MsgLog("    ** Invalid Candidate");
+                        MsgLog("    ** Invalid Candidate : Width = %d, Height = %d", Width, Height);
                         #endif
                     } else {
                         #if REFIT_DEBUG > 0
-                        MsgLog("    ** Valid Candidate");
+                        MsgLog("    ** Valid Candidate : Width = %d, Height = %d", Width, Height);
                         #endif
 
                         OurValidGOP = TRUE;
@@ -325,7 +325,7 @@ egDumpGOPVideoModes(
         LoopCount = 0;
 
         #if REFIT_DEBUG > 0
-        MsgLog("Query GraphicsOutputProtocol Modes:\n");
+        MsgLog("Query GOP Modes:\n");
         MsgLog(
             "Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n",
             ModeCount,
@@ -716,7 +716,6 @@ egInitScreen(
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
     EFI_STATUS                    Status = EFI_SUCCESS;
-    EFI_STATUS                    UGAOnConsole = EFI_UNSUPPORTED;
     EFI_STATUS                    XStatus;
     EFI_STATUS                    XFlag;
     UINTN                         HandleCount;
@@ -862,8 +861,6 @@ egInitScreen(
             MsgLog("    * Seek Directly ...%r\n", Status);
             #endif
         }
-    } else {
-        UGAOnConsole = EFI_SUCCESS;
     }
 
     if (EFI_ERROR(Status)) {
@@ -1005,29 +1002,6 @@ egInitScreen(
         #if REFIT_DEBUG > 0
     	MsgLog("  - Check GraphicsOutput ...NOT FOUND!\n\n");
         #endif
-
-        if (GlobalConfig.UseDirectGop) {
-            Status = OcUseDirectGop (-1);
-
-            if (!EFI_ERROR(Status)) {
-                // Check ConsoleOutHandle
-                Status = gBS->HandleProtocol(
-                    gST->ConsoleOutHandle,
-                    &GraphicsOutputProtocolGuid,
-                    (VOID **) &OldGOP
-                );
-                if (!EFI_ERROR(Status)) {
-                    if (OldGOP->Mode->MaxMode > 0) {
-                        GraphicsOutput = OldGOP;
-                        XFlag = EFI_ALREADY_STARTED;
-                    }
-                }
-            }
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
-            #endif
-        }
     }
 
     if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
@@ -1072,7 +1046,33 @@ egInitScreen(
         }
     }
 
-    if (XFlag == EFI_NOT_FOUND) {
+    if (GraphicsOutput == NULL && GlobalConfig.UseDirectGop) {
+        XFlag = EFI_LOAD_ERROR;
+        Status = OcUseDirectGop (-1);
+
+        if (!EFI_ERROR(Status)) {
+            // Check ConsoleOutHandle
+            Status = gBS->HandleProtocol(
+                gST->ConsoleOutHandle,
+                &GraphicsOutputProtocolGuid,
+                (VOID **) &OldGOP
+            );
+            if (!EFI_ERROR(Status)) {
+                if (OldGOP->Mode->MaxMode > 0) {
+                    GraphicsOutput = OldGOP;
+                    XFlag = EFI_ALREADY_STARTED;
+                }
+            } else {
+                OldGOP = NULL;
+            }
+        }
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
+        #endif
+    }
+
+    if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Cannot Implement GraphicsOutputProtocol\n\n");
         #endif
@@ -1098,24 +1098,6 @@ egInitScreen(
             MsgLog("INFO: Invalid GOP Instance\n\n");
             #endif
 
-            // Revert Console GOP Provision if Invalid
-            if (XFlag == EFI_UNSUPPORTED && thisValidGOP == TRUE && OldGOP != NULL) {
-                XStatus = gBS->UninstallProtocolInterface (
-                    gST->ConsoleOutHandle,
-                    &gEfiGraphicsOutputProtocolGuid,
-                    GraphicsOutput
-                );
-
-                if (!EFI_ERROR (XStatus)) {
-                    XStatus = gBS->InstallMultipleProtocolInterfaces (
-                        &gST->ConsoleOutHandle,
-                        &gEfiGraphicsOutputProtocolGuid,
-                        OldGOP,
-                        NULL
-                    );
-                }
-            }
-
             GraphicsOutput = NULL;
         } else {
             egSetMaxResolution();
@@ -1131,57 +1113,39 @@ egInitScreen(
             #endif
         }
     }
-    if (UGADraw != NULL && UGAOnConsole != EFI_SUCCESS) {
+    if (UGADraw != NULL) {
         if (GlobalConfig.UgaPassThrough) {
-            #if REFIT_DEBUG > 0
-            MsgLog ("Implement UniversalGraphicsAdapterProtocol Pass Through:\n");
-            #endif
-
             // Run OcProvideUgaPassThrough from OpenCorePkg
             Status = OcProvideUgaPassThrough();
 
-            if (EFI_ERROR (Status)) {
-                Status = EFI_UNSUPPORTED;
-
-                #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Could not Activate UGADraw on ConsoleOutHandle\n", Status);
-                #endif
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - %r: Activated UGADraw on ConsoleOutHandle\n", Status);
-                #endif
-
-                egHasGraphics = TRUE;
-            }
-
             #if REFIT_DEBUG > 0
-            MsgLog ("Implement UGAPassThrough ...%r\n\n", Status);
+            MsgLog ("INFO: Implement UGA Pass Through ...%r\n\n", Status);
             #endif
         }
-    }
 
-    if (GraphicsOutput == NULL && UGADraw != NULL) {
-        UINT32 Width, Height, Depth, RefreshRate;
-        Status = UGADraw->GetMode(UGADraw, &Width, &Height, &Depth, &RefreshRate);
-        if (EFI_ERROR(Status)) {
-            // Graphics not available
-            UGADraw = NULL;
-            GlobalConfig.TextOnly = TRUE;
+        if (GraphicsOutput == NULL) {
+            UINT32 Width, Height, Depth, RefreshRate;
+            Status = UGADraw->GetMode(UGADraw, &Width, &Height, &Depth, &RefreshRate);
+            if (EFI_ERROR(Status)) {
+                // Graphics not available
+                UGADraw = NULL;
+                GlobalConfig.TextOnly = TRUE;
 
-            #if REFIT_DEBUG > 0
-            MsgLog("INFO: Graphics Not Available\n");
-            MsgLog("      Switched to Text Mode\n\n");
-            #endif
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: Graphics Not Available\n");
+                MsgLog("      Switch to Text Mode\n\n");
+                #endif
 
-        } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("INFO: GraphicsOutputProtocol Not Available\n");
-            MsgLog("      Falling back to UGADraw\n\n");
-            #endif
+            } else {
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: GraphicsOutputProtocol Not Available\n");
+                MsgLog("      Fall Back on UGADraw\n\n");
+                #endif
 
-            egScreenWidth  = Width;
-            egScreenHeight = Height;
-            egHasGraphics = TRUE;
+                egScreenWidth  = Width;
+                egScreenHeight = Height;
+                egHasGraphics  = TRUE;
+            }
         }
     }
 
@@ -1283,30 +1247,26 @@ egSetScreenSize(
         if (*ScreenHeight == 0) { // User specified a mode number (stored in *ScreenWidth); use it directly
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
-
                 #if REFIT_DEBUG > 0
                 MsgLog("Mode Set from ScreenWidth\n");
                 #endif
 
                 ModeSet = TRUE;
-            } else if (egGetResFromMode(ScreenWidth, ScreenHeight)
-                && (GraphicsOutput->SetMode(
+            } else if (egGetResFromMode(ScreenWidth, ScreenHeight) &&
+                (GraphicsOutput->SetMode(
                     GraphicsOutput,
                     ModeNum
                 ) == EFI_SUCCESS)
             ) {
-
                 #if REFIT_DEBUG > 0
                 MsgLog("Mode Set from egGetResFromMode\n");
                 #endif
 
                 ModeSet = TRUE;
-
-                #if REFIT_DEBUG > 0
             } else {
+                #if REFIT_DEBUG > 0
                 MsgLog("Could not Set GraphicsOutput Mode\n");
                 #endif
-
             }
             // User specified width & height; must find mode...
         } else {
