@@ -716,7 +716,6 @@ egInitScreen(
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
     EFI_STATUS                    Status = EFI_SUCCESS;
-    EFI_STATUS                    XStatus;
     EFI_STATUS                    XFlag;
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
