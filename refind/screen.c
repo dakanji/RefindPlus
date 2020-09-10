@@ -72,8 +72,8 @@ CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
 
-UINTN   UGAWidth;
-UINTN   UGAHeight;
+UINTN   ScreenW;
+UINTN   ScreenH;
 BOOLEAN AllowGraphicsMode;
 BOOLEAN HaveResized   = FALSE;
 BOOLEAN HaveOverriden = FALSE;
@@ -114,7 +114,7 @@ InitScreen (
     egInitScreen();
 
     if (egHasGraphicsMode()) {
-        egGetScreenSize(&UGAWidth, &UGAHeight);
+        egGetScreenSize(&ScreenW, &ScreenH);
         AllowGraphicsMode = TRUE;
     } else {
         AllowGraphicsMode = FALSE;
@@ -171,8 +171,8 @@ SetupScreen (
         MsgLog("Sync Resolution:\n");
         #endif
 
-       UGAWidth = (UGAWidth < GlobalConfig.RequestedScreenWidth) ? UGAWidth : GlobalConfig.RequestedScreenWidth;
-       UGAHeight = (UGAHeight < GlobalConfig.RequestedScreenHeight) ? UGAHeight : GlobalConfig.RequestedScreenHeight;
+       ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth) ? ScreenW : GlobalConfig.RequestedScreenWidth;
+       ScreenH = (ScreenH < GlobalConfig.RequestedScreenHeight) ? ScreenH : GlobalConfig.RequestedScreenHeight;
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
@@ -183,13 +183,13 @@ SetupScreen (
         #endif
 
         egGetScreenSize(&NewWidth, &NewHeight);
-        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
-            UGAWidth = NewWidth;
-            UGAHeight = NewHeight;
+        if ((NewWidth > ScreenW) || (NewHeight > ScreenH)) {
+            ScreenW = NewWidth;
+            ScreenH = NewHeight;
         }
 
-        if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
-            (UGAHeight > GlobalConfig.RequestedScreenHeight)
+        if ((ScreenW > GlobalConfig.RequestedScreenWidth) ||
+            (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
 
             #if REFIT_DEBUG > 0
@@ -197,8 +197,8 @@ SetupScreen (
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
-            GlobalConfig.RequestedScreenWidth = UGAWidth;
-            GlobalConfig.RequestedScreenHeight = UGAHeight;
+            GlobalConfig.RequestedScreenWidth = ScreenW;
+            GlobalConfig.RequestedScreenHeight = ScreenH;
         } // if
 
         if (GlobalConfig.RequestedScreenWidth > 0) {
@@ -208,7 +208,7 @@ SetupScreen (
             #endif
 
             egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
-            egGetScreenSize(&UGAWidth, &UGAHeight);
+            egGetScreenSize(&ScreenW, &ScreenH);
         } // if user requested a particular screen resolution
     }
 
@@ -232,7 +232,7 @@ SetupScreen (
 
             // clear screen and show banner
             // (now we know we'll stay in graphics mode)
-            if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+            if ((ScreenW >= HIDPI_MIN) && !HaveResized) {
 
                 #if REFIT_DEBUG > 0
                 MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
@@ -724,14 +724,14 @@ BltClearScreen (
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-              if ((Banner->Height != UGAHeight) || (Banner->Width != UGAWidth)) {
-                 NewBanner = egScaleImage(Banner, UGAWidth, UGAHeight);
+              if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
+                 NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
               } // if
-           } else if ((Banner->Width > UGAWidth) || (Banner->Height > UGAHeight)) {
+           } else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
               NewBanner = egCropImage(
                   Banner, 0, 0,
-                  (Banner->Width > UGAWidth) ? UGAWidth : Banner->Width,
-                  (Banner->Height > UGAHeight) ? UGAHeight : Banner->Height
+                  (Banner->Width > ScreenW) ? ScreenW : Banner->Width,
+                  (Banner->Height > ScreenH) ? ScreenH : Banner->Height
               );
            } // if/elseif
            if (NewBanner) {
@@ -756,7 +756,7 @@ BltClearScreen (
             MsgLog("  - Show Banner\n\n");
             #endif
 
-            BannerPosX = (Banner->Width < UGAWidth) ? ((UGAWidth - Banner->Width) / 2) : 0;
+            BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
             BannerPosY = (INTN) (ComputeRow0PosY() / 2) - (INTN) Banner->Height;
             if (BannerPosY < 0)
                BannerPosY = 0;

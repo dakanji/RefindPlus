@@ -52,11 +52,11 @@ static UINTN FontCellWidth = 7;
 //
 
 static VOID egPrepareFont() {
-    UINTN UGAWidth, UGAHeight;
+    UINTN ScreenW, ScreenH;
 
-    egGetScreenSize(&UGAWidth, &UGAHeight);
+    egGetScreenSize(&ScreenW, &ScreenH);
     if (BaseFontImage == NULL) {
-        if (UGAWidth >= HIDPI_MIN)
+        if (ScreenW >= HIDPI_MIN)
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
         else
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
