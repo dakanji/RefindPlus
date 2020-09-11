@@ -15,7 +15,7 @@
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
 
-#define DEBUG_LOG    L"EFI\\refind.log"
+#define DEBUG_LOG    L"EFI\\RefindPlus-000-Debug.log"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
