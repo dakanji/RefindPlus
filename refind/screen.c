@@ -76,7 +76,6 @@ UINTN   ScreenW;
 UINTN   ScreenH;
 BOOLEAN AllowGraphicsMode;
 BOOLEAN HaveResized   = FALSE;
-BOOLEAN HaveOverriden = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -281,8 +280,9 @@ VOID
 SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
-    EFI_STATUS Status;
-    BOOLEAN    GraphicsModeOnEntry;
+    EFI_STATUS     Status;
+    BOOLEAN        GraphicsModeOnEntry;
+    static BOOLEAN HaveOverriden = FALSE;
 
     GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
