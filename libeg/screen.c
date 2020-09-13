@@ -141,7 +141,7 @@ daCheckAltGop (
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Validate GOP for ConsoleOutHandle:\n");
+    MsgLog ("Validate GOP for ConsoleOut Handle:\n");
     #endif
 
     OrigGop = NULL;
@@ -160,7 +160,7 @@ daCheckAltGop (
     } else {
         if (OrigGop->Mode->MaxMode > 0) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Valid GOP Exists on ConsoleOutHandle\n\n");
+            MsgLog ("  - Valid GOP Exists on ConsoleOut Handle\n\n");
             #endif
 
             GraphicsOutput = OrigGop;
@@ -734,7 +734,7 @@ egInitScreen(
     MsgLog("  - Seek ConsoleControl\n");
     #endif
 
-    // Check ConsoleOutHandle
+    // Check ConsoleOut Handle
     Status = gBS->HandleProtocol(
         gST->ConsoleOutHandle,
         &ConsoleControlProtocolGuid,
@@ -742,7 +742,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOut Handle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -754,6 +754,11 @@ egInitScreen(
             &HandleCount,
             &HandleBuffer
         );
+
+        #if REFIT_DEBUG > 0
+        MsgLog("    * Seek on Handle Buffer ...%r\n", Status);
+        #endif
+
         if (!EFI_ERROR (Status)) {
             i = 0;
             for (i = 0; i < HandleCount; i++) {
@@ -764,7 +769,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Confirm on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -773,10 +778,6 @@ egInitScreen(
             }
             FreePool(HandleBuffer);
         } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
-            #endif
-
             // try locating directly
             Status = gBS->LocateProtocol(
                 &ConsoleControlProtocolGuid,
@@ -792,9 +793,9 @@ egInitScreen(
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        MsgLog("  - Check ConsoleControl ...NOT OK!\n\n");
+        MsgLog("  - Check Console Control ...NOT OK!\n\n");
     } else {
-        MsgLog("  - Check ConsoleControl ...ok\n\n");
+        MsgLog("  - Check Console Control ...ok\n\n");
     }
     #endif
 
@@ -803,10 +804,10 @@ egInitScreen(
     UGADraw = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Seek UGADraw\n");
+    MsgLog("  - Seek Universal Graphics Adapter\n");
     #endif
 
-    // Check ConsoleOutHandle
+    // Check ConsoleOut Handle
     Status = gBS->HandleProtocol(
         gST->ConsoleOutHandle,
         &UgaDrawProtocolGuid,
@@ -814,7 +815,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOut Handle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -826,6 +827,11 @@ egInitScreen(
             &HandleCount,
             &HandleBuffer
         );
+
+        #if REFIT_DEBUG > 0
+        MsgLog("    * Seek on Handle Buffer ...%r\n", Status);
+        #endif
+
         if (!EFI_ERROR (Status)) {
             i = 0;
             for (i = 0; i < HandleCount; i++) {
@@ -836,7 +842,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek on HandleBuffer[%d] ...%r\n", i, Status);
+                MsgLog("    ** Confirm on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -845,10 +851,6 @@ egInitScreen(
             }
             FreePool(HandleBuffer);
         } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
-            #endif
-
             // try locating directly
             Status = gBS->LocateProtocol(
                 &UgaDrawProtocolGuid,
@@ -864,11 +866,11 @@ egInitScreen(
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check UGADraw ...NOT OK!\n\n");
+    	MsgLog("  - Check Universal Graphics Adapter ...NOT OK!\n\n");
         #endif
     } else {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check UGADraw ...ok\n\n");
+    	MsgLog("  - Check Universal Graphics Adapter ...ok\n\n");
         #endif
     }
 
@@ -876,10 +878,10 @@ egInitScreen(
     GraphicsOutput = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Seek GraphicsOutput\n");
+    MsgLog("  - Seek Graphics Output Protocol\n");
     #endif
 
-    // Check ConsoleOutHandle
+    // Check ConsoleOut Handle
     Status = gBS->HandleProtocol(
         gST->ConsoleOutHandle,
         &GraphicsOutputProtocolGuid,
@@ -887,7 +889,7 @@ egInitScreen(
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog("    * Seek on ConsoleOutHandle ...%r\n", Status);
+    MsgLog("    * Seek on ConsoleOut Handle ...%r\n", Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -899,6 +901,10 @@ egInitScreen(
             &HandleCount,
             &HandleBuffer
         );
+
+        #if REFIT_DEBUG > 0
+        MsgLog("    * Seek on Handle Buffer ...%r\n", Status);
+        #endif
 
         if (!EFI_ERROR (Status)) {
             EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
@@ -918,7 +924,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Seek on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Confirm on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -935,7 +941,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    ** Set to Handle[%02d][%02d] @ %dx%d\n",
+                                        "    *** Set to Handle[%02d][%02d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -945,7 +951,7 @@ egInitScreen(
                                 } else {
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "       Ignore Handle[%02d][%02d] @ %dx%d\n",
+                                        "        Ignore Handle[%02d][%02d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         Info->HorizontalResolution,
@@ -956,7 +962,7 @@ egInitScreen(
                             } else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog(
-                                    "       Ignore Handle[%02d][%02d] @ %dx%d\n",
+                                    "        Ignore Handle[%02d][%02d] @ %dx%d\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,
@@ -970,10 +976,6 @@ egInitScreen(
             }
             FreePool(HandleBuffer);
         } else {
-            #if REFIT_DEBUG > 0
-            MsgLog("    * Seek on HandleBuffer ...%r\n", Status);
-            #endif
-
             // try locating directly
             Status = gBS->LocateProtocol(
                 &GraphicsOutputProtocolGuid,
@@ -999,7 +1001,7 @@ egInitScreen(
 
         // Not Found
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check GraphicsOutput ...NOT FOUND!\n\n");
+    	MsgLog("  - Check Graphics Output Protocol ...NOT FOUND!\n\n");
         #endif
     }
 
@@ -1008,7 +1010,7 @@ egInitScreen(
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgLog("  - Check GraphicsOutput ...ERROR!\n\n");
+        MsgLog("  - Check Graphics Output Protocol ...ERROR!\n\n");
         #endif
     } else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
         if (OldGOP->Mode->MaxMode > 0) {
@@ -1018,13 +1020,13 @@ egInitScreen(
             GraphicsOutput = OldGOP;
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Check GraphicsOutput ...ok\n\n");
+            MsgLog("  - Check Graphics Output Protocol ...ok\n\n");
             #endif
         } else {
             XFlag = EFI_UNSUPPORTED;
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Check GraphicsOutput ...NOT OK!\n\n");
+            MsgLog("  - Check Graphics Output Protocol ...NOT OK!\n\n");
             #endif
 
             if (GlobalConfig.ProvideConsoleGOP) {
@@ -1050,7 +1052,7 @@ egInitScreen(
         Status = OcUseDirectGop (-1);
 
         if (!EFI_ERROR(Status)) {
-            // Check ConsoleOutHandle
+            // Check ConsoleOut Handle
             Status = gBS->HandleProtocol(
                 gST->ConsoleOutHandle,
                 &GraphicsOutputProtocolGuid,
@@ -1073,11 +1075,11 @@ egInitScreen(
 
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Cannot Implement GraphicsOutputProtocol\n\n");
+        MsgLog ("INFO: Cannot Implement Graphics Output Protocol\n\n");
         #endif
     } else if (XFlag == EFI_UNSUPPORTED) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Provide GOP on ConsoleOutHandle ...%r\n\n", Status);
+        MsgLog ("INFO: Provide GOP on ConsoleOut Handle ...%r\n\n", Status);
         #endif
 
         if (EFI_ERROR (Status)) {
@@ -1107,7 +1109,7 @@ egInitScreen(
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
             if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgLog("INFO: Implemented GraphicsOutputProtocol\n\n");
+                MsgLog("INFO: Implemented Graphics Output Protocol\n\n");
             }
             #endif
         }
@@ -1131,14 +1133,14 @@ egInitScreen(
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: Graphics Not Available\n");
-                MsgLog("      Switch to Text Mode\n\n");
+                MsgLog("INFO: Pre-Boot Graphics not Available\n");
+                MsgLog("      Attempting Text Mode\n\n");
                 #endif
 
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: GraphicsOutputProtocol Not Available\n");
-                MsgLog("      Fall Back on UGADraw\n\n");
+                MsgLog("INFO: GOP is not Available\n");
+                MsgLog("      Fall Back on UGA\n\n");
                 #endif
 
                 egScreenWidth  = Width;
