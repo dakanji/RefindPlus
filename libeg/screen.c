@@ -731,7 +731,7 @@ egInitScreen(
     ConsoleControl = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog("  - Seek ConsoleControl\n");
+    MsgLog("  - Seek Console Control\n");
     #endif
 
     // Check ConsoleOut Handle
@@ -769,7 +769,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Confirm on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Validate on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -842,7 +842,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Confirm on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    ** Validate on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -924,7 +924,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Confirm on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Validate on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
