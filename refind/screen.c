@@ -282,7 +282,7 @@ SwitchToText (
 ) {
     EFI_STATUS     Status;
     BOOLEAN        GraphicsModeOnEntry;
-    static BOOLEAN HaveOverriden = FALSE;
+    STATIC BOOLEAN HaveOverriden = FALSE;
 
     GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
