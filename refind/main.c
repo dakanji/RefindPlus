@@ -73,6 +73,14 @@
 #include "../include/version.h"
 #include "../libeg/libeg.h"
 
+INT16 NowZone   = 0;
+INT16 NowYear   = 0;
+INT16 NowMonth  = 0;
+INT16 NowDay    = 0;
+INT16 NowHour   = 0;
+INT16 NowMinute = 0;
+INT16 NowSecond = 0;
+
 //
 // Some built-in menu definitions....
 
@@ -819,28 +827,41 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         return Status;
     }
 
+    EFI_TIME Now;
+    SystemTable->RuntimeServices->GetTime(&Now, NULL);
+    NowYear   = Now.Year;
+    NowMonth  = Now.Month;
+    NowDay    = Now.Day;
+    NowHour   = Now.Hour;
+    NowMinute = Now.Minute;
+    NowSecond = Now.Second;
+    NowZone   = (Now.TimeZone / 60);
+
+    CHAR16  NowDateStr[40]; // sizeof(L"0000-00-00 00:00:00") = 40
+    SPrint(
+        NowDateStr,
+        40,
+        L"%d-%02d-%02d %02d:%02d:%02d",
+        NowYear,
+        NowMonth,
+        NowDay,
+        NowHour,
+        NowMinute,
+        NowSecond
+    );
+
     InitBooterLog();
 
     #if REFIT_DEBUG > 0
     MsgLog("Starting RefindPlus v%s on %s Firmware...\n", REFIND_VERSION, gST->FirmwareVendor);
-
-    EFI_TIME Now;
-    INT16 ourTimeZone;
-
-    SystemTable->RuntimeServices->GetTime(&Now, NULL);
-    ourTimeZone = (Now.TimeZone / 60);
-
-    if (ourTimeZone < -12 || ourTimeZone > 12 || (ourTimeZone > -1 && ourTimeZone < 1)) {
-        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT)\n\n",
-        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second);
+    if (NowZone < -12 || NowZone > 12 || (NowZone > -1 && NowZone < 1)) {
+        MsgLog("Date Time: %s (GMT)\n\n", NowDateStr);
     }
-    else if (ourTimeZone < 0) {
-        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT%02d)\n\n",
-        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
+    else if (NowZone < 0) {
+        MsgLog("Date Time: %s (GMT%02d)\n\n", NowDateStr);
     }
     else {
-        MsgLog("Date Time: %d-%02d-%02d %02d:%02d:%02d (GMT+%02d)\n\n",
-        Now.Year, Now.Month, Now.Day, Now.Hour, Now.Minute, Now.Second, Now.TimeZone);
+        MsgLog("Date Time: %s (GMT+%02d)\n\n", NowDateStr);
     }
     #endif
 

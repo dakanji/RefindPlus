@@ -15,10 +15,45 @@
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
 
-#define DEBUG_LOG    L"EFI\\RefindPlus-000-Debug.log"
-
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
+extern  INT16  NowZone;
+extern  INT16  NowYear;
+extern  INT16  NowMonth;
+extern  INT16  NowDay;
+extern  INT16  NowHour;
+extern  INT16  NowMinute;
+extern  INT16  NowSecond;
+
+
+CHAR16
+*GetDateString(
+    VOID
+) {
+    UINTN          Size = 26; // sizeof(L"000000000000") = 26
+    STATIC CHAR16  DateStr[26];
+    STATIC BOOLEAN PrevSet = FALSE;
+
+    if (PrevSet) {
+        return DateStr;
+    }
+
+    INT16 ShortNowYear = (NowYear % 100);
+    SPrint(
+        DateStr,
+        Size,
+        L"%02d%02d%02d%02d%02d%02d",
+        ShortNowYear,
+        NowMonth,
+        NowDay,
+        NowHour,
+        NowMinute,
+        NowSecond
+    );
+    PrevSet = TRUE;
+
+    return DateStr;
+}
 
 EFI_STATUS
 LogDataHub (
@@ -66,7 +101,11 @@ PrintBytes(IN VOID *Bytes, IN UINTN Number)
 	UINTN	Index;
 
 	for (Index = 0; Index < Number; Index += 16) {
-		PrintBytesRow((UINT8*)Bytes + Index, ((Index + 16 < Number) ? 16 : (Number - Index)), 16);
+		PrintBytesRow(
+            (UINT8*)Bytes + Index,
+            ((Index + 16 < Number) ? 16 : (Number - Index)),
+            16
+        );
 	}
 }
 
@@ -78,9 +117,15 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
   EFI_LOADED_IMAGE    *LoadedImage;
   EFI_FILE_PROTOCOL   *RootDir;
   EFI_FILE_PROTOCOL   *LogFile;
+  UINTN               Size = sizeof(L"EFI\\RefindPlus-000000000000.log");
+  CHAR16              ourDebugLog[Size];
 
   // get RootDir from device we are loaded from
-  Status = gBS->HandleProtocol(gImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **) &LoadedImage);
+  Status = gBS->HandleProtocol(
+      gImageHandle,
+      &gEfiLoadedImageProtocolGuid,
+      (VOID **) &LoadedImage
+  );
   if (EFI_ERROR(Status)) {
     return NULL;
   }
@@ -89,33 +134,62 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
     return NULL;
   }
 
+  CHAR16 *DateStr = GetDateString();
+
+  SPrint(
+      ourDebugLog,
+      Size,
+      L"EFI\\RefindPlus-%s.log",
+      DateStr
+  );
+
   // Open log file from current root
-  Status = RootDir->Open(RootDir, &LogFile, DEBUG_LOG,
-                         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
+  Status = RootDir->Open(
+      RootDir,
+      &LogFile,
+      ourDebugLog,
+      EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+      0
+  );
 
   // If the log file is not found try to create it
   if (Status == EFI_NOT_FOUND) {
-    Status = RootDir->Open(RootDir, &LogFile, DEBUG_LOG,
-                           EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+    Status = RootDir->Open(
+        RootDir,
+        &LogFile,
+        ourDebugLog,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+        0
+    );
   }
   RootDir->Close(RootDir);
+  RootDir = NULL;
 
   if (EFI_ERROR(Status)) {
     // try on first EFI partition
     Status = egFindESP(&RootDir);
     if (!EFI_ERROR(Status)) {
-      Status = RootDir->Open(RootDir, &LogFile, DEBUG_LOG,
-                             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
+      Status = RootDir->Open(
+          RootDir,
+          &LogFile,
+          ourDebugLog,
+          EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+          0
+      );
       // If the log file is not found try to create it
       if (Status == EFI_NOT_FOUND) {
-        Status = RootDir->Open(RootDir, &LogFile, DEBUG_LOG,
-                               EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+        Status = RootDir->Open(
+            RootDir,
+            &LogFile,
+            ourDebugLog,
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            0
+        );
       }
       RootDir->Close(RootDir);
+      RootDir = NULL;
     }
   }
-
-  RootDir = NULL;
 
   if (EFI_ERROR(Status)) {
     LogFile = NULL;
@@ -177,8 +251,8 @@ VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
 // Changed MsgLog(...) it now calls this function
 //  with DebugMode == 0. - apianti
 // DebugMode==0 Prints to msg log, only output to log on SaveBooterLog
-// DebugMode==1 Prints to msg log and DEBUG_LOG
-// DebugMode==2 Prints to msg log, DEBUG_LOG and display console
+// DebugMode==1 Prints to msg log and ourDebugLog
+// DebugMode==2 Prints to msg log, ourDebugLog and display console
 VOID EFIAPI DebugLog(IN INTN DebugMode, IN CONST CHAR8 *FormatString, ...)
 {
    VA_LIST Marker;
