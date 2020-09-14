@@ -1105,6 +1105,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 if (MyStrStr(ourLoaderEntry->Title, L"OpenCore") != NULL) {
                     MsgLog("  - Load OpenCore Instance : '%s'", ourLoaderEntry->LoaderPath);
+                } else if (MyStrStr(ourLoaderEntry->Title, L"Mac OS") != NULL) {
+                    MsgLog("  - Boot Mac OS on '%s'", ourLoaderEntry->Volume->VolName);
                 } else {
                     MsgLog("  - Boot OS via EFI Loader : '%s'", ourLoaderEntry->LoaderPath);
                 }
