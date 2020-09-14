@@ -116,10 +116,8 @@ $ git remote add upstream https://github.com/dakanji/RefindPlus.git
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
-Upstream will be `dakanji/RefindPlus` as shown
+Upstream will be `dakanji/RefindPlus` as shown.
 Your woking repository will be under `Documents/RefindPlus/Working`
-
-**NB:** The build script will build on the online version and unless you have pushed any changes made locally here, they will not be present in your build. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md#updating-cloned-repositories) for how to update your cloned repository.
 
 
 ### Prepare Your Forked RefindPlus Working Repository for Your Edits (Optional)
@@ -130,20 +128,16 @@ Navigate to `https://github.com/YOUR_GITHUB_USERNAME/RefindPlus` and create a ne
 Use this branch to save edits you make to the codebase that you want to build
 
 
-### Prepare the Build Script
-
-- Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-- Open the `refindBuilder.sh` file
-- Under the `USER EDIT` Section, set `GITHUB_USERNAME="YOUR_GITHUB_USERNAME"` to your actual GitHub User Name
-- Save and close the file
+### Prepare Script
 
 In Terminal, run the following commands:
 
 ```
 $ cd ~/Documents/RefindPlus/edk2
-$ git update-index --assume-unchanged 000-BuildScript/refindBuilder.sh
 $ git update-index --assume-unchanged 000-BuildScript/refindRepoUpdater.sh
 ```
+
+The commands will ensure that changes you make to the script remains local as changes should not be pushed to your repository.
 
 
 ## Build RefindPlus
