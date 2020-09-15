@@ -294,9 +294,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                     }
                                 }
                             } // if !EFI_ERROR (XStatus)
-                            XStatus = daConnectController(AllHandleBuffer[i], NULL, NULL, TRUE);
                         } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
 
+                        XStatus = daConnectController(AllHandleBuffer[i], NULL, NULL, TRUE);
+                        
                         #if REFIT_DEBUG > 0
                         if (!EFI_ERROR (XStatus)) {
                             MsgLog("Handle[%03d]  * %r", LogVal, XStatus);
