@@ -325,9 +325,8 @@ egDumpGOPVideoModes(
         LoopCount = 0;
 
         #if REFIT_DEBUG > 0
-        MsgLog("Query GOP Modes:\n");
         MsgLog(
-            "Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x\n",
+            "Query GOP Modes (Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x):\n",
             ModeCount,
             GraphicsOutput->Mode->FrameBufferBase,
             GraphicsOutput->Mode->FrameBufferSize
@@ -769,7 +768,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Validate on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Evaluate on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -793,9 +792,9 @@ egInitScreen(
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        MsgLog("  - Check Console Control ...NOT OK!\n\n");
+        MsgLog("  - Assess Console Control ...NOT OK!\n\n");
     } else {
-        MsgLog("  - Check Console Control ...ok\n\n");
+        MsgLog("  - Assess Console Control ...ok\n\n");
     }
     #endif
 
@@ -842,7 +841,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Validate on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    ** Evaluate on Handle[%d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -866,11 +865,11 @@ egInitScreen(
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check Universal Graphics Adapter ...NOT OK!\n\n");
+    	MsgLog("  - Assess Universal Graphics Adapter ...NOT OK!\n\n");
         #endif
     } else {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check Universal Graphics Adapter ...ok\n\n");
+    	MsgLog("  - Assess Universal Graphics Adapter ...ok\n\n");
         #endif
     }
 
@@ -924,7 +923,7 @@ egInitScreen(
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Validate on Handle[%02d] ...%r\n", i, Status);
+                MsgLog("    ** Evaluate on Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -941,7 +940,7 @@ egInitScreen(
 
                                     #if REFIT_DEBUG > 0
                                     MsgLog(
-                                        "    *** Set to Handle[%02d][%02d] @ %dx%d\n",
+                                        "    *** Select Handle[%02d][%02d] @ %dx%d\n",
                                         i,
                                         GOPMode,
                                         GOPWidth,
@@ -1001,7 +1000,7 @@ egInitScreen(
 
         // Not Found
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Check Graphics Output Protocol ...NOT FOUND!\n\n");
+    	MsgLog("  - Assess Graphics Output Protocol ...NOT FOUND!\n\n");
         #endif
     }
 
@@ -1010,7 +1009,7 @@ egInitScreen(
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgLog("  - Check Graphics Output Protocol ...ERROR!\n\n");
+        MsgLog("  - Assess Graphics Output Protocol ...ERROR!\n\n");
         #endif
     } else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
         if (OldGOP->Mode->MaxMode > 0) {
@@ -1020,13 +1019,13 @@ egInitScreen(
             GraphicsOutput = OldGOP;
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Check Graphics Output Protocol ...ok\n\n");
+            MsgLog("  - Assess Graphics Output Protocol ...ok\n\n");
             #endif
         } else {
             XFlag = EFI_UNSUPPORTED;
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Check Graphics Output Protocol ...NOT OK!\n\n");
+            MsgLog("  - Assess Graphics Output Protocol ...NOT OK!\n\n");
             #endif
 
             if (GlobalConfig.ProvideConsoleGOP) {
@@ -1155,7 +1154,7 @@ egInitScreen(
         Status = OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Initialise Builtin Text Renderer ...%r\n\n", Status);
+        MsgLog ("INFO: Implement Builtin Text Renderer ...%r\n\n", Status);
         #endif
     }
 }

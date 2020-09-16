@@ -48,7 +48,7 @@ POINTER_STATE State;
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
         #if REFIT_DEBUG > 0
-        MsgLog("Init Pointer Devices...\n");
+        MsgLog("Initialise Pointer Devices...\n");
         #endif
 
     pdCleanup(); // just in case

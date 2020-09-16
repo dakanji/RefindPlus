@@ -633,10 +633,6 @@ BOOLEAN LoadDrivers(VOID) {
     CHAR16        *Directory, *SelfDirectory;
     UINTN         i = 0, Length, NumFound = 0;
 
-    #if REFIT_DEBUG > 0
-    MsgLog("Load Drivers...\n");
-    #endif
-
     // load drivers from the subdirectories of rEFInd's home directory specified
     // in the DRIVER_DIRS constant.
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
@@ -660,7 +656,7 @@ BOOLEAN LoadDrivers(VOID) {
     } // while
 
     #if REFIT_DEBUG > 0
-    MsgLog("Driver Count = %d\n\n", NumFound);
+    MsgLog("INFO: EFI Driver Count = %d\n\n", NumFound);
     #endif
 
     // connect all devices

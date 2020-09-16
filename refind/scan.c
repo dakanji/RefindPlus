@@ -1376,11 +1376,11 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     CHAR16   *HiddenTags;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Scan for Bootloaders...\n");
+    MsgLog("Seek Bootloaders...\n");
     #endif
 
     if (ShowMessage){
-        egDisplayMessage(L"Scanning for boot loaders; please wait....", &BGColor, CENTER);
+        egDisplayMessage(L"Seeking Bootloaders. Please wait....", &BGColor, CENTER);
     }
 
     // Determine up-front if we'll be scanning for legacy loaders....
@@ -1571,7 +1571,7 @@ static BOOLEAN FindTool(
 
                     #if REFIT_DEBUG > 0
                     MsgLog(
-                        "              - Added %s Tool : %s%s\n",
+                        "              - Added '%s' Tool : %s%s\n",
                         Description,
                         StrDuplicate(DirName),
                         StrDuplicate(FileName)
@@ -1733,7 +1733,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1744,7 +1744,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1755,7 +1755,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1766,7 +1766,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1777,7 +1777,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1788,7 +1788,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s Tool\n", ToolName);
+                MsgLog("              - Added '%s' Tool\n", ToolName);
                 #endif
 
                 break;
@@ -1801,13 +1801,13 @@ VOID ScanForTools(VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - Added %s Tool\n", ToolName);
+                    MsgLog("              - Added '%s' Tool\n", ToolName);
                     #endif
                 }
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -1828,7 +1828,7 @@ VOID ScanForTools(VOID) {
                         AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
-                        MsgLog("              - Added %s Tool\n", ToolName);
+                        MsgLog("              - Added '%s' Tool\n", ToolName);
                         #endif
                     } // if
                     MyFreePool(b);
@@ -1836,7 +1836,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -1865,7 +1865,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -1895,7 +1895,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -1925,7 +1925,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -1954,7 +1954,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -1995,7 +1995,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2038,7 +2038,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2058,7 +2058,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2073,7 +2073,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2086,13 +2086,13 @@ VOID ScanForTools(VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - Added %s Tool\n", ToolName);
+                    MsgLog("              - Added '%s' Tool\n", ToolName);
                     #endif
                 } // if
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -2104,7 +2104,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s\n", ToolName);
+                MsgLog("              - Added '%s'\n", ToolName);
                 #endif
 
                 break;
@@ -2115,7 +2115,7 @@ VOID ScanForTools(VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog("              - Added %s\n", ToolName);
+                MsgLog("              - Added '%s'\n", ToolName);
                 #endif
 
                 break;
@@ -2130,7 +2130,7 @@ VOID ScanForTools(VOID) {
 
                 if (FoundTool == FALSE) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("              - WARN: Could not Find %s Tool\n", ToolName);
+                    MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;

@@ -1333,13 +1333,6 @@ VOID SetVolumeIcons(VOID) {
     UINTN        LogVal;
     REFIT_VOLUME *Volume;
 
-    #if REFIT_DEBUG > 0
-    if (egIsGraphicsModeEnabled()) {
-        MsgLog("Get Volume Icons...\n");
-        MsgLog("Volume Count = %d\n", VolumesCount);
-    }
-    #endif
-
     for (i = 0; i < VolumesCount; i++) {
         k = i + 1;
         // Limit logged value to 99
@@ -1348,16 +1341,6 @@ VOID SetVolumeIcons(VOID) {
         } else {
             LogVal = k;
         }
-
-        #if REFIT_DEBUG > 0
-        if (egIsGraphicsModeEnabled()) {
-            if (k < VolumesCount) {
-                MsgLog("Checking Volume[%02d]:\n", LogVal);
-            } else {
-                MsgLog("Checking Volume[%02d]:\n\n", LogVal);
-            }
-        }
-        #endif
 
         Volume = Volumes[i];
 
