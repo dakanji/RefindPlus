@@ -207,7 +207,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     EFI_PCI_IO_PROTOCOL* PciIo;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Connect Device Handles to Controllers...\n");
+    MsgLog("Link Device Handles to Controllers...\n");
     #endif
     //
     // Only connect controllers with device paths.
@@ -243,27 +243,32 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                 MsgLog("Handle[%03d]  - FATAL: %r", LogVal, XStatus);
                 #endif
             } else {
-                // Assume Success
-                XStatus = EFI_SUCCESS;
                 // Assume Device
                 Device = TRUE;
 
-                if (HandleType[i] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE) {
-                    Device = FALSE;
-                }
-                if (HandleType[i] & EFI_HANDLE_TYPE_IMAGE_HANDLE) {
-                    Device = FALSE;
-                }
+                for (k = 0; k < HandleCount; k++) {
+                    if (HandleType[k] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE) {
+                        Device = FALSE;
+                        break;
+                    }
+                    if (HandleType[k] & EFI_HANDLE_TYPE_IMAGE_HANDLE) {
+                        Device = FALSE;
+                        break;
+                    }
+                } // for
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog("Handle[%03d] ...Skipped [Not a Device]", LogVal);
+                    MsgLog("Handle[%03d] ...Discarded [Not Device]", LogVal);
                     #endif
                 } else {
+                    // Assume Not Parent
                     Parent = FALSE;
+
                     for (k = 0; k < HandleCount; k++) {
                         if (HandleType[k] & EFI_HANDLE_TYPE_PARENT_HANDLE) {
                             Parent = TRUE;
+                            break;
                         }
                     } // for
 
@@ -272,6 +277,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         MsgLog("Handle[%03d] ...Skipped [Parent Device]", LogVal);
                         #endif
                     } else {
+                        // Assume Success
+                        XStatus = EFI_SUCCESS;
+
                         if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
                             XStatus = gBS->HandleProtocol (
                                 AllHandleBuffer[i],
@@ -297,7 +305,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
 
                         XStatus = daConnectController(AllHandleBuffer[i], NULL, NULL, TRUE);
-                        
+
                         #if REFIT_DEBUG > 0
                         if (!EFI_ERROR (XStatus)) {
                             MsgLog("Handle[%03d]  * %r", LogVal, XStatus);
