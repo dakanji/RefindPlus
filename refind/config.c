@@ -1202,6 +1202,16 @@ ScanUserConfigured(
          if (MyStriCmp(TokenList[0], L"menuentry") && (TokenCount > 1)) {
             Entry = AddStanzaEntries(&File, Volume, TokenList[1]);
             if (Entry->Enabled) {
+
+                #if REFIT_DEBUG > 0
+                if (Volume->VolName) {
+                    MsgLog("  - Found '%s' on '%s'\n", Entry->Title, Volume->VolName);
+                }
+                else {
+                    MsgLog("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
+                }
+                #endif
+
                if (Entry->me.SubScreen == NULL) {
                    GenerateSubScreen(Entry, Volume, TRUE);
                }
@@ -1211,7 +1221,8 @@ ScanUserConfigured(
             } // if/else
 
          } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) &&
-                    MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
+            MyStriCmp(FileName, GlobalConfig.ConfigFilename)
+        ) {
             if (!MyStriCmp(TokenList[1], FileName)) {
                ScanUserConfigured(TokenList[1]);
             }

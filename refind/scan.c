@@ -710,6 +710,16 @@ static LOADER_ENTRY * AddLoaderEntry(
         SetLoaderDefaults(Entry, LoaderPath, Volume);
         GenerateSubScreen(Entry, Volume, SubScreenReturn);
         AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+
+        #if REFIT_DEBUG > 0
+        if (Volume->VolName) {
+            MsgLog("  - Found '%s' on '%s'\n", Entry->Title, Volume->VolName);
+        }
+        else {
+            MsgLog("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
+        }
+        #endif
+
     }
 
     return(Entry);
@@ -1286,7 +1296,10 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
 } // static VOID ScanEfiFiles()
 
 // Scan internal disks for valid EFI boot loaders....
-static VOID ScanInternal(VOID) {
+static VOID
+ScanInternal(
+    VOID
+) {
     UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -1297,8 +1310,11 @@ static VOID ScanInternal(VOID) {
 } // static VOID ScanInternal()
 
 // Scan external disks for valid EFI boot loaders....
-static VOID ScanExternal(VOID) {
-    UINTN                   VolumeIndex;
+static VOID
+ScanExternal(
+    VOID
+) {
+    UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_EXTERNAL) {
@@ -1308,8 +1324,11 @@ static VOID ScanExternal(VOID) {
 } // static VOID ScanExternal()
 
 // Scan internal disks for valid EFI boot loaders....
-static VOID ScanOptical(VOID) {
-    UINTN                   VolumeIndex;
+static VOID
+ScanOptical(
+    VOID
+) {
+    UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_OPTICAL) {
@@ -1589,8 +1608,7 @@ static BOOLEAN FindTool(
     return FoundTool;
 } // VOID FindTool()
 
-// Add the second-row tags containing built-in and external tools (EFI shell,
-// reboot, etc.)
+// Add the second-row tags containing built-in and external tools
 VOID ScanForTools(VOID) {
     CHAR16           *FileName = NULL;
     CHAR16           *VolName = NULL;
@@ -1656,7 +1674,7 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_SHELL:
-                ToolName = L"EFI Shell";
+                ToolName = L"UEFI Shell";
                 break;
 
             case TAG_GPTSYNC:
@@ -1850,7 +1868,7 @@ VOID ScanForTools(VOID) {
                         AddToolEntry(
                             SelfVolume,
                             FileName,
-                            L"EFI Shell",
+                            L"UEFI Shell",
                             BuiltinIcon(BUILTIN_ICON_TOOL_SHELL),
                             'S',
                             FALSE

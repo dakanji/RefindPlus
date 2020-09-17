@@ -892,7 +892,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // Also, ScanVolumes() must be done before ReadConfig(), which needs
     // SelfVolume->VolName.
     #if REFIT_DEBUG > 0
-    MsgLog("Scan for SelfVolume...\n");
+    MsgLog("Scan for Self Volume...\n");
     #endif
     ScanVolumes();
 
@@ -978,7 +978,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             #if REFIT_DEBUG > 0
             MsgLog("Received User Input:\n");
-            MsgLog("  - Rescan All\n\n");
+            MsgLog("  - Escape Key Pressed ...Rescan All\n\n");
             #endif
 
             RescanAll(TRUE, TRUE);
@@ -1104,7 +1104,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
-                MsgLog("  - Show 'About RefindPlus' Box\n\n");
+                MsgLog("  - Show 'About RefindPlus' Page\n\n");
                 #endif
 
                 AboutRefindPlus();
@@ -1117,11 +1117,25 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
 
                 if (MyStrStr(ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    MsgLog("  - Load OpenCore Instance : '%s'", ourLoaderEntry->LoaderPath);
-                } else if (MyStrStr(ourLoaderEntry->Title, L"Mac OS") != NULL) {
-                    MsgLog("  - Boot Mac OS on '%s'", ourLoaderEntry->Volume->VolName);
+                    MsgLog(
+                        "  - Load OpenCore Instance : '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
+                } else if (MyStrStr(ourLoaderEntry->Title, L"Mac OS") != NULL ||
+                    MyStrStr(ourLoaderEntry->Title, L"macOS") != NULL
+                ) {
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog("  - Boot Mac OS on '%s'", ourLoaderEntry->Volume->VolName);
+                    } else {
+                        MsgLog("  - Boot Mac OS : '%s'", ourLoaderEntry->LoaderPath);
+                    }
                 } else {
-                    MsgLog("  - Boot OS via EFI Loader : '%s'", ourLoaderEntry->LoaderPath);
+                    MsgLog(
+                        "  - Boot OS via EFI Loader : '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
                 }
 
                 if (egIsGraphicsModeEnabled()) {

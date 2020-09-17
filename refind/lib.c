@@ -1224,7 +1224,17 @@ VOID ScanVolumes(VOID)
         }
 
         #if REFIT_DEBUG > 0
-        MsgLog("Set %s as Scanned Volume\n\n", Volume->VolName);
+        CHAR16 *VolDesc = Volume->VolName;
+        if (MyStrStr(VolDesc, L"NTFS volume") != NULL) {
+            VolDesc = L"NTFS Volume";
+        }
+        else if (MyStrStr(VolDesc, L"whole disk volume") != NULL) {
+            VolDesc = L"Whole Disk Volume";
+        }
+        else if (MyStrStr(VolDesc, L"unknown volume") != NULL) {
+            VolDesc = L"Unknown Volume";
+        }
+        MsgLog("Set %s as Scanned Volume\n\n", VolDesc);
         #endif
     }
     MyFreePool(UuidList);

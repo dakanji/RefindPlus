@@ -326,7 +326,7 @@ egDumpGOPVideoModes(
 
         #if REFIT_DEBUG > 0
         MsgLog(
-            "Query GOP Modes (Modes = %d, Framebuffer Base = %lx, Framebuffer Size = 0x%x):\n",
+            "Query GOP Modes (Modes=%d, FrameBufferBase=%lx, FrameBufferSize=0x%x):\n",
             ModeCount,
             GraphicsOutput->Mode->FrameBufferBase,
             GraphicsOutput->Mode->FrameBufferSize
@@ -342,7 +342,7 @@ egDumpGOPVideoModes(
             Status = GraphicsOutput->QueryMode(GraphicsOutput, Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Query GOP Mode[%02d] ...%r", Mode, Status);
+            MsgLog("  - Mode[%02d] ...%r", Mode, Status);
             #endif
 
             if (Status == EFI_SUCCESS) {
@@ -531,7 +531,7 @@ egSetGOPMode(
             Status = GraphicsOutput->QueryMode(GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Query GOP Mode[%02d] ...%r\n", Mode, Status);
+            MsgLog("  - Mode[%02d] ...%r\n", Mode, Status);
             #endif
 
             if (Status == EFI_SUCCESS) {
@@ -1154,7 +1154,7 @@ egInitScreen(
         Status = OcUseBuiltinTextOutput();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Implement Builtin Text Renderer ...%r\n\n", Status);
+        MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
         #endif
     }
 }

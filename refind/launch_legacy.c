@@ -484,9 +484,16 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
             LoaderTitle = L"Legacy OS";
     }
     if (Volume->VolName != NULL)
+    {
         VolDesc = Volume->VolName;
-    else
+    }
+    else {
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
+    }
+
+    if (MyStrStr(VolDesc, L"NTFS volume") != NULL) {
+        VolDesc = L"NTFS Volume";
+    }
 
     LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
     if (LegacyTitle != NULL)
@@ -498,16 +505,22 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = LegacyTitle;
-    Entry->me.Tag          = TAG_LEGACY;
-    Entry->me.Row          = 0;
+    Entry->me.Title          = LegacyTitle;
+    Entry->me.Tag            = TAG_LEGACY;
+    Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
-    Entry->me.Image        = LoadOSIcon(Volume->OSIconName, L"legacy", FALSE);
-    Entry->me.BadgeImage   = Volume->VolBadgeImage;
-    Entry->Volume          = Volume;
-    Entry->LoadOptions     = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" :
-                              ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
-    Entry->Enabled         = TRUE;
+    Entry->me.Image          = LoadOSIcon(Volume->OSIconName, L"legacy", FALSE);
+    Entry->me.BadgeImage     = Volume->VolBadgeImage;
+    Entry->Volume            = Volume;
+    Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
+                               ? L"CD"
+                               : ((Volume->DiskKind == DISK_KIND_EXTERNAL)
+                                 ? L"USB" : L"HD");
+    Entry->Enabled           = TRUE;
+
+    #if REFIT_DEBUG > 0
+    MsgLog("  - Found '%s' on '%s'\n", LoaderTitle, VolDesc);
+    #endif
 
     // create the submenu
     SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
@@ -671,54 +684,67 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
     } // while
 } /* static VOID ScanLegacyUEFI() */
 
-static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
-   UINTN VolumeIndex2;
-   BOOLEAN ShowVolume, HideIfOthersFound;
+static VOID
+ScanLegacyVolume(
+    REFIT_VOLUME *Volume,
+    UINTN VolumeIndex
+) {
+    UINTN VolumeIndex2;
+    BOOLEAN ShowVolume, HideIfOthersFound;
 
-   ShowVolume = FALSE;
-   HideIfOthersFound = FALSE;
-//    if (Volume->IsAppleLegacy) {
-//       Print(L"  Volume is Apple legacy\n");
-//       ShowVolume = TRUE;
-//       HideIfOthersFound = TRUE;
-//    } else
-   if (Volume->HasBootCode) {
-      ShowVolume = TRUE;
-      if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
-         Volume->BlockIOOffset == 0 &&
-         Volume->OSName == NULL)
-         // this is a whole disk (MBR) entry; hide if we have entries for partitions
-         HideIfOthersFound = TRUE;
-   }
-   if (HideIfOthersFound) {
-      // check for other bootable entries on the same disk
-      for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
-         if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
-             Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO)
-            ShowVolume = FALSE;
-      }
-   }
+    ShowVolume = FALSE;
+    HideIfOthersFound = FALSE;
+    //if (Volume->IsAppleLegacy) {
+    //    Print(L"  Volume is Apple legacy\n");
+    //    ShowVolume = TRUE;
+    //    HideIfOthersFound = TRUE;
+    //} else
+    if (Volume->HasBootCode) {
+        ShowVolume = TRUE;
+        if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
+            Volume->BlockIOOffset == 0 &&
+            Volume->OSName == NULL
+        ) {
+            // this is a whole disk (MBR) entry; hide if we have entries for partitions
+            HideIfOthersFound = TRUE;
+        }
+    }
+    if (HideIfOthersFound) {
+        // check for other bootable entries on the same disk
+        for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
+            if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
+                Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
+            ) {
+                ShowVolume = FALSE;
+            }
+        }
+    }
 
-   if (ShowVolume)
-      AddLegacyEntry(NULL, Volume);
+    if (ShowVolume) {
+        AddLegacyEntry(NULL, Volume);
+    }
 } // static VOID ScanLegacyVolume()
+
 
 // Scan attached optical discs for legacy (BIOS) boot code
 // and add anything found to the list....
-VOID ScanLegacyDisc(VOID)
-{
-   UINTN                   VolumeIndex;
-   REFIT_VOLUME            *Volume;
+VOID
+ScanLegacyDisc(
+    VOID
+) {
+    UINTN                   VolumeIndex;
+    REFIT_VOLUME            *Volume;
 
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-         Volume = Volumes[VolumeIndex];
-         if (Volume->DiskKind == DISK_KIND_OPTICAL)
-            ScanLegacyVolume(Volume, VolumeIndex);
-      } // for
-   } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      ScanLegacyUEFI(BBS_CDROM);
-   }
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_OPTICAL) {
+                ScanLegacyVolume(Volume, VolumeIndex);
+            }
+        } // for
+    } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        ScanLegacyUEFI(BBS_CDROM);
+    }
 } /* VOID ScanLegacyDisc() */
 
 // Scan internal hard disks for legacy (BIOS) boot code
