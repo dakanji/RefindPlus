@@ -1,14 +1,33 @@
-0.12.0.H (Pre-Release):
+0.12.0.J (Pre-Release):
+-----------------------
+- Fixes on-screen notices
+- Debug log improvements
+  * Optimises Bootlog routines
+  * Provides different log files per login and no longer places all logs in one file
+  * Itemises found bootloaders
+  * Discarded superfluous log items
+- Optimises device connection routines
+
+
+0.12.0.H (07 Sep 2020):
 -----------------------
 - Rebrands 'Refind-GOPFix' as 'RefindPlus'
   * This is to reflect wider scope of interventions beyond fixing GOP Screens
+- Restores on-screen notices on Apple Firmware
+  * This fixes a long standing rEFInd bug that meant most on-screen notices could not be displayed on Macs
+- Implements "ContinueOnWarning" config option
+  * This allows users to set RefindPlus to automatically proceed after waiting for a while on screen notices
+- Fixes UGAPassThrough Feature
+  * The UGAPassThrough feature was sometimes not activated
+- Handles Invalid GOP Instances
+  * Validates GOP Instances before providing console GOP
+- Optimises Device Handle Connection
+  * Improve connection reliability as well as boot speed
 - Misc Optimisation
   * Removes more redundant wrapper calls
   * Improves logging scope and presentation
   * General look and feel improvements
   * Misc coding intervention
-- Implements 'ContinueOnWarning' feature which allows loading rEFInd without intervention on warnings
-- Restores display of key messages on screen
 
 
 0.12.0.G (11 Aug 2020):
