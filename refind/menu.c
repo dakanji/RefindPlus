@@ -1427,7 +1427,7 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
    if (!GlobalConfig.TextOnly) {
        SwitchToGraphics();
    }
-   
+
    return retval;
 } // VOID EditOptions()
 
@@ -1578,11 +1578,13 @@ CHAR16* ReadHiddenTags(CHAR16 *VarName) {
     EFI_STATUS  Status;
 
     Status = EfivarGetRaw(&RefindGuid, VarName, &Buffer, &Size);
-    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND))
-        CheckError(Status, L"in ReadHiddenTags()");
+    if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
+        CHAR16 *CheckErrMsg = PoolPrint(L"in ReadHiddenTags('%s')", VarName);
+        CheckError(Status, CheckErrMsg);
+        MyFreePool(Buffer);
+    }
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         MyFreePool(Buffer);
-        Buffer = NULL;
     }
     return (CHAR16 *) Buffer;
 } // CHAR16* ReadHiddenTags()

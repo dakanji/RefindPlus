@@ -643,8 +643,9 @@ CheckError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR(Status))
+    if (!EFI_ERROR(Status)) {
         return FALSE;
+    }
 
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
@@ -668,7 +669,9 @@ CheckError (
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
-    if (StriSubCmp(L"While Reading Boot Sector", where)) {
+    if (MyStrStr(where, L"While Reading Boot Sector") != NULL) ||
+        (MyStrStr(where, L"in ReadHiddenTags") != NULL)
+    ) {
         haveError = FALSE;
     } else {
         haveError = TRUE;
@@ -676,7 +679,7 @@ CheckError (
 
     MyFreePool(Temp);
 
-    return TRUE;
+    return haveError;
 } // BOOLEAN CheckError()
 
 //
