@@ -669,8 +669,8 @@ CheckError (
     gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
-    if (MyStrStr(where, L"While Reading Boot Sector") != NULL) ||
-        (MyStrStr(where, L"in ReadHiddenTags") != NULL)
+    if (MyStrStr(where, L"While Reading Boot Sector") != NULL ||
+        MyStrStr(where, L"in ReadHiddenTags") != NULL
     ) {
         haveError = FALSE;
     } else {
