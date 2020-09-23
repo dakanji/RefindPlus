@@ -14,6 +14,7 @@
 #include <Protocol/LoadedImage.h>
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include "../refind/lib.h"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
@@ -30,18 +31,14 @@ CHAR16
 *GetDateString(
     VOID
 ) {
-    UINTN          Size = 26; // sizeof(L"000000000000") = 26
-    STATIC CHAR16  DateStr[26];
-    STATIC BOOLEAN PrevSet = FALSE;
+    STATIC CHAR16  *DateStr = NULL;
 
-    if (PrevSet) {
+    if (DateStr != NULL) {
         return DateStr;
     }
 
     INT16 ShortNowYear = (NowYear % 100);
-    SPrint(
-        DateStr,
-        Size,
+    DateStr = PoolPrint(
         L"%02d%02d%02d%02d%02d%02d",
         ShortNowYear,
         NowMonth,
@@ -50,7 +47,6 @@ CHAR16
         NowMinute,
         NowSecond
     );
-    PrevSet = TRUE;
 
     return DateStr;
 }
@@ -117,8 +113,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
   EFI_LOADED_IMAGE    *LoadedImage;
   EFI_FILE_PROTOCOL   *RootDir;
   EFI_FILE_PROTOCOL   *LogFile;
-  UINTN               Size = sizeof(L"EFI\\RefindPlus-000000000000.log");
-  CHAR16              ourDebugLog[Size];
+  CHAR16              *ourDebugLog = NULL;
 
   // get RootDir from device we are loaded from
   Status = gBS->HandleProtocol(
@@ -136,9 +131,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
 
   CHAR16 *DateStr = GetDateString();
 
-  SPrint(
-      ourDebugLog,
-      Size,
+  ourDebugLog = PoolPrint(
       L"EFI\\RefindPlus-%s.log",
       DateStr
   );
@@ -194,6 +187,8 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
   if (EFI_ERROR(Status)) {
     LogFile = NULL;
   }
+
+  MyFreePool(ourDebugLog);
 
   return LogFile;
 }
