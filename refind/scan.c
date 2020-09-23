@@ -1387,7 +1387,10 @@ static LOADER_ENTRY * AddToolEntry(
 } /* static LOADER_ENTRY * AddToolEntry() */
 
 // Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
-VOID ScanForBootloaders(BOOLEAN ShowMessage) {
+VOID
+ScanForBootloaders(
+    BOOLEAN ShowMessage
+) {
     UINTN    i;
     CHAR8    s;
     BOOLEAN  ScanForLegacy = FALSE;
@@ -1405,8 +1408,9 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     // Determine up-front if we'll be scanning for legacy loaders....
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         s = GlobalConfig.ScanFor[i];
-        if ((s == 'c') || (s == 'C') || (s == 'h') || (s == 'H') || (s == 'b') || (s == 'B'))
+        if ((s == 'c') || (s == 'C') || (s == 'h') || (s == 'H') || (s == 'b') || (s == 'B')) {
             ScanForLegacy = TRUE;
+        }
     } // for
 
     // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
@@ -1428,40 +1432,12 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         switch(GlobalConfig.ScanFor[i]) {
-            case 'c': case 'C':
-                #if REFIT_DEBUG > 0
-                MsgLog("Scan Legacy Disc:\n");
-                #endif
-
-                ScanLegacyDisc();
-                break;
-            case 'h': case 'H':
-                #if REFIT_DEBUG > 0
-                MsgLog("Scan Legacy Internal:\n");
-                #endif
-
-                ScanLegacyInternal();
-                break;
-            case 'b': case 'B':
-                #if REFIT_DEBUG > 0
-                MsgLog("Scan Legacy External:\n");
-                #endif
-
-                ScanLegacyExternal();
-                break;
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
-                MsgLog("Scan Manual Stanzas:\n");
+                MsgLog("Scan Stanzas:\n");
                 #endif
 
                 ScanUserConfigured(GlobalConfig.ConfigFilename);
-                break;
-            case 'e': case 'E':
-                #if REFIT_DEBUG > 0
-                MsgLog("Scan External:\n");
-                #endif
-
-                ScanExternal();
                 break;
             case 'i': case 'I':
                 #if REFIT_DEBUG > 0
@@ -1470,6 +1446,27 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 
                 ScanInternal();
                 break;
+            case 'h': case 'H':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Internal (Legacy):\n");
+                #endif
+
+                ScanLegacyInternal();
+                break;
+            case 'e': case 'E':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan External:\n");
+                #endif
+
+                ScanExternal();
+                break;
+            case 'b': case 'B':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan External (Legacy):\n");
+                #endif
+
+                ScanLegacyExternal();
+                break;
             case 'o': case 'O':
                 #if REFIT_DEBUG > 0
                 MsgLog("Scan Optical:\n");
@@ -1477,9 +1474,16 @@ VOID ScanForBootloaders(BOOLEAN ShowMessage) {
 
                 ScanOptical();
                 break;
+            case 'c': case 'C':
+                #if REFIT_DEBUG > 0
+                MsgLog("Scan Disc (Legacy):\n");
+                #endif
+
+                ScanLegacyDisc();
+                break;
             case 'n': case 'N':
                 #if REFIT_DEBUG > 0
-                MsgLog("Scan Net boot:\n");
+                MsgLog("Scan Net Boot:\n");
                 #endif
 
                 ScanNetboot();
