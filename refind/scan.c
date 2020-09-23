@@ -1392,6 +1392,7 @@ ScanForBootloaders(
     BOOLEAN ShowMessage
 ) {
     UINTN    i;
+    UINTN    k;
     CHAR8    s;
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
@@ -1496,12 +1497,18 @@ ScanForBootloaders(
     MsgLog("Assign Keyboard Shortcut Keys:\n");
     #endif
 
-    for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 9; i++) {
-        MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
+    for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 10; i++) {
+        if (i == 9) {
+            k = 0;
+        }
+        else {
+            k = i + 1;
+        }
+        MainMenu.Entries[i]->ShortcutDigit = (CHAR16) k;
 
         #if REFIT_DEBUG > 0
-        MsgLog("  - Set Key '%d' to %s", i + 1, MainMenu.Entries[i]->Title);
-        if ((i + 1) < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && (i + 1) < 9) {
+        MsgLog("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
+        if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k < 10 && k != 0) {
             MsgLog("\n");
         } else {
             MsgLog("\n\n");
