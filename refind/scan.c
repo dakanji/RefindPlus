@@ -1434,7 +1434,7 @@ ScanForBootloaders(
         switch(GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
-                MsgLog("Scan Stanzas:\n");
+                MsgLog("Scan Manual:\n");
                 #endif
 
                 ScanUserConfigured(GlobalConfig.ConfigFilename);
@@ -1493,19 +1493,20 @@ ScanForBootloaders(
 
     // assign shortcut keys
     #if REFIT_DEBUG > 0
-    MsgLog("Assign Shortcut Keys:\n");
+    MsgLog("Assign Keyboard Shortcut Keys:\n");
     #endif
 
     for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 9; i++) {
-        #if REFIT_DEBUG > 0
-        if ((i + 1) < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && (i + 1) < 9) {
-            MsgLog("  - Shortcut Key[%d] Assigned\n", i + 1);
-        } else {
-            MsgLog("  - Shortcut Key[%d] Assigned\n\n", i + 1);
-        } // if
-        #endif
-
         MainMenu.Entries[i]->ShortcutDigit = (CHAR16)('1' + i);
+
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Set Key '%d' to %s", i + 1, MainMenu.Entries[i]->Title);
+        if ((i + 1) < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && (i + 1) < 9) {
+            MsgLog("\n");
+        } else {
+            MsgLog("\n\n");
+        }
+        #endif
     }  // for
 
     // wait for user ACK when there were errors
