@@ -28,6 +28,136 @@ extern  INT16  NowSecond;
 
 
 CHAR16
+*GetAltMonth(
+    VOID
+) {
+    CHAR16  *AltMonth = NULL;
+
+    if (NowMonth == 1) {
+        AltMonth = L"b";
+    }
+    else if (NowMonth == 2) {
+        AltMonth = L"d";
+    }
+    else if (NowMonth == 3) {
+        AltMonth = L"f";
+    }
+    else if (NowMonth == 4) {
+        AltMonth = L"h";
+    }
+    else if (NowMonth == 5) {
+        AltMonth = L"j";
+    }
+    else if (NowMonth == 6) {
+        AltMonth = L"l";
+    }
+    else if (NowMonth == 7) {
+        AltMonth = L"n";
+    }
+    else if (NowMonth == 8) {
+        AltMonth = L"p";
+    }
+    else if (NowMonth == 9) {
+        AltMonth = L"r";
+    }
+    else if (NowMonth == 10) {
+        AltMonth = L"t";
+    }
+    else if (NowMonth == 11) {
+        AltMonth = L"v";
+    }
+    else {
+        AltMonth = L"x";
+    }
+
+    return AltMonth;
+}
+
+
+CHAR16
+*GetAltHour(
+    VOID
+) {
+    CHAR16  *AltHour = NULL;
+
+    if (NowHour == 1) {
+        AltHour = L"a";
+    }
+    else if (NowHour == 2) {
+        AltHour = L"b";
+    }
+    else if (NowHour == 3) {
+        AltHour = L"c";
+    }
+    else if (NowHour == 4) {
+        AltHour = L"d";
+    }
+    else if (NowHour == 5) {
+        AltHour = L"e";
+    }
+    else if (NowHour == 6) {
+        AltHour = L"f";
+    }
+    else if (NowHour == 7) {
+        AltHour = L"g";
+    }
+    else if (NowHour == 8) {
+        AltHour = L"h";
+    }
+    else if (NowHour == 9) {
+        AltHour = L"i";
+    }
+    else if (NowHour == 10) {
+        AltHour = L"j";
+    }
+    else if (NowHour == 11) {
+        AltHour = L"k";
+    }
+    else if (NowHour == 12) {
+        AltHour = L"l";
+    }
+    else if (NowHour == 13) {
+        AltHour = L"m";
+    }
+    else if (NowHour == 14) {
+        AltHour = L"n";
+    }
+    else if (NowHour == 15) {
+        AltHour = L"o";
+    }
+    else if (NowHour == 16) {
+        AltHour = L"p";
+    }
+    else if (NowHour == 17) {
+        AltHour = L"q";
+    }
+    else if (NowHour == 18) {
+        AltHour = L"r";
+    }
+    else if (NowHour == 19) {
+        AltHour = L"s";
+    }
+    else if (NowHour == 20) {
+        AltHour = L"t";
+    }
+    else if (NowHour == 21) {
+        AltHour = L"u";
+    }
+    else if (NowHour == 22) {
+        AltHour = L"v";
+    }
+    else if (NowHour == 23) {
+        AltHour = L"w";
+    }
+    else {
+        AltHour = L"x";
+    }
+
+    return AltHour;
+}
+
+
+CHAR16
 *GetDateString(
     VOID
 ) {
@@ -37,19 +167,22 @@ CHAR16
         return DateStr;
     }
 
-    INT16 ShortNowYear = (NowYear % 100);
+    INT16   ourYear    = (NowYear % 100);
+    CHAR16  *ourMonth  = GetAltMonth();
+    CHAR16  *ourHour   = GetAltHour();
     DateStr = PoolPrint(
-        L"%02d%02d%02d%02d%02d%02d",
-        ShortNowYear,
-        NowMonth,
+        L"%02d%s%02d%s%02d%02d",
+        ourYear,
+        ourMonth,
         NowDay,
-        NowHour,
+        ourHour,
         NowMinute,
         NowSecond
     );
 
     return DateStr;
 }
+
 
 EFI_STATUS
 LogDataHub (
@@ -90,6 +223,7 @@ PrintBytesRow(IN UINT8 *Bytes, IN UINTN Number, IN UINTN MaxNumber)
 	DebugLog(1, "\n");
 }
 
+
 /** Prints series of bytes. */
 VOID
 PrintBytes(IN VOID *Bytes, IN UINTN Number)
@@ -104,7 +238,6 @@ PrintBytes(IN VOID *Bytes, IN UINTN Number)
         );
 	}
 }
-
 
 
 EFI_FILE_PROTOCOL* GetDebugLogFile()
@@ -132,7 +265,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
   CHAR16 *DateStr = GetDateString();
 
   ourDebugLog = PoolPrint(
-      L"EFI\\RefindPlus-%s.log",
+      L"EFI\\R%s.log",
       DateStr
   );
 
@@ -230,6 +363,7 @@ VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
   }
 }
 
+
 VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
 {
   // Print message to console
@@ -242,6 +376,7 @@ VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
     SaveMessageToDebugLogFile(LastMessage);
   }
 }
+
 
 // Changed MsgLog(...) it now calls this function
 //  with DebugMode == 0. - apianti
@@ -264,10 +399,12 @@ VOID EFIAPI DebugLog(IN INTN DebugMode, IN CONST CHAR8 *FormatString, ...)
    VA_END(Marker);
 }
 
+
 VOID InitBooterLog(VOID)
 {
   SetMemLogCallback(MemLogCallback);
 }
+
 
 EFI_STATUS SetupBooterLog(BOOLEAN AllowGrownSize)
 {
@@ -293,6 +430,7 @@ EFI_STATUS SetupBooterLog(BOOLEAN AllowGrownSize)
 
 	return Status;
 }
+
 
 // Made msgbuf and msgCursor private to this source
 // so we need a different way of saving the msg log - apianti
