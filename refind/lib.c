@@ -851,7 +851,10 @@ static CHAR16 *SizeInIEEEUnits(UINT64 SizeInBytes) {
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
-static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
+CHAR16
+*GetVolumeName(
+    IN REFIT_VOLUME *Volume
+) {
     EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
     CHAR16                  *FoundName = NULL;
     CHAR16                  *SISize, *TypeName;
@@ -876,7 +879,7 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
         FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
         if (FoundName != NULL) {
             SISize = SizeInIEEEUnits(FileSystemInfoPtr->VolumeSize);
-            SPrint(FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+            SPrint(FoundName, 255, L"%s[%s] Volume", FSTypeName(Volume->FSType), SISize);
             MyFreePool(SISize);
         } // if allocated memory OK
     } // if (FoundName == NULL)
@@ -887,10 +890,12 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
         FoundName = AllocateZeroPool(sizeof(CHAR16) * 256);
         if (FoundName != NULL) {
             TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
-            if (StrLen(TypeName) > 0)
-                SPrint(FoundName, 255, L"%s volume", TypeName);
-            else
-                SPrint(FoundName, 255, L"unknown volume");
+            if (StrLen(TypeName) > 0) {
+                SPrint(FoundName, 255, L"%s Volume", TypeName);
+            }
+            else {
+                SPrint(FoundName, 255, L"Unknown Volume");
+            }
         } // if allocated memory OK
     } // if
 
@@ -900,8 +905,9 @@ static CHAR16 *GetVolumeName(REFIT_VOLUME *Volume) {
 
     // Desperate fallback name....
     if (FoundName == NULL) {
-        FoundName = StrDuplicate(L"unknown volume");
+        FoundName = StrDuplicate(L"Unknown Volume");
     }
+
     return FoundName;
 } // static CHAR16 *GetVolumeName()
 
@@ -1564,7 +1570,7 @@ EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter)
 
 // Returns the filename portion (minus path name) of the
 // specified file
-CHAR16 * Basename(IN CHAR16 *Path)
+CHAR16 *Basename(IN CHAR16 *Path)
 {
     CHAR16  *FileName;
     UINTN   i;
@@ -1586,7 +1592,7 @@ CHAR16 * Basename(IN CHAR16 *Path)
 // Remove the .efi extension from FileName -- for instance, if FileName is
 // "fred.efi", returns "fred". If the filename contains no .efi extension,
 // returns a copy of the original input.
-CHAR16 * StripEfiExtension(IN CHAR16 *FileName) {
+CHAR16 *StripEfiExtension(IN CHAR16 *FileName) {
     UINTN  Length;
     CHAR16 *Copy = NULL;
 
@@ -1597,7 +1603,7 @@ CHAR16 * StripEfiExtension(IN CHAR16 *FileName) {
         } // if
     } // if
     return Copy;
-} // CHAR16 * StripExtension()
+} // CHAR16 *StripExtension()
 
 //
 // memory string search

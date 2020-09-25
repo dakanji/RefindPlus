@@ -964,7 +964,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         MainMenu.TimeoutText = L"Shutdown";
 
     #if REFIT_DEBUG > 0
-    MsgLog("INFO: Loaded RefindPlus v%s on %s Firmware\n\n", REFIND_VERSION, gST->FirmwareVendor);
+    MsgLog(
+        "INFO: Loaded RefindPlus v%s ...Awaiting User Input\n\n",
+        REFIND_VERSION
+    );
     #endif
 
     while (MainLoopRunning) {
@@ -997,12 +1000,13 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Clean NVRAM\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Clean NVRAM\n\n");
                 }
                 #endif
 
-                StartTool((LOADER_ENTRY *)ChosenEntry);
+                StartTool((LOADER_ENTRY *) ChosenEntry);
                 break;
 
             case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
@@ -1047,12 +1051,13 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Load Boot Screen\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Load Boot Screen\n\n");
                 }
                 #endif
 
-                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 ourLoaderEntry->UseGraphicsMode = TRUE;
 
                 StartTool(ourLoaderEntry);
@@ -1074,7 +1079,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Reboot Computer\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Reboot Computer\n\n");
                 }
                 #endif
@@ -1090,7 +1096,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Shut Computer Down\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Shut Computer Down\n\n");
                 }
                 #endif
@@ -1111,7 +1118,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
-                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
@@ -1122,15 +1129,26 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
-                } else if (MyStrStr(ourLoaderEntry->Title, L"Mac OS") != NULL ||
+                }
+                else if (MyStrStr(ourLoaderEntry->Title, L"Mac OS") != NULL ||
                     MyStrStr(ourLoaderEntry->Title, L"macOS") != NULL
                 ) {
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
-                    } else {
+                    }
+                    else {
                         MsgLog("  - Boot Mac OS : '%s'", ourLoaderEntry->LoaderPath);
                     }
-                } else {
+                }
+                else if (MyStrStr(ourLoaderEntry->Title, L"Windows") != NULL) {
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog("  - Boot Windows : '%s'", ourLoaderEntry->LoaderPath);
+                    }
+                }
+                else {
                     MsgLog(
                         "  - Boot OS via EFI Loader : '%s%s'",
                         ourLoaderEntry->Volume->VolName,
@@ -1140,7 +1158,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("\n\n");
                 }
                 #endif
@@ -1152,14 +1171,29 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
-                ourLegacyEntry = (LEGACY_ENTRY *)ChosenEntry;
+                ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
+                if (MyStrStr(ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
+                    MsgLog(
+                        "  - Boot %s from '%s'",
+                        ourLegacyEntry->Volume->OSName,
+                        ourLegacyEntry->Volume->VolName
+                    );
+                }
+                else {
+                    MsgLog(
+                        "  - Boot Legacy OS : '%s'",
+                        ourLegacyEntry->Volume->OSName
+                    );
+                }
+
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Boot Legacy OS : '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
-                } else {
-                    MsgLog("  - Boot Legacy OS : '%s'\n\n", ourLegacyEntry->Volume->OSName);
+                    MsgLog("\n---------------\n\n");
+                }
+                else {
+                    MsgLog("\n\n");
                 }
                 #endif
 
@@ -1167,13 +1201,14 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
-                ourLegacyEntry = (LEGACY_ENTRY *)ChosenEntry;
+                ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Boot Legacy UEFI : '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
-                } else {
+                }
+                else {
                     MsgLog("  - Boot Legacy UEFI : '%s'\n\n", ourLegacyEntry->Volume->OSName);
                 }
                 #endif
@@ -1182,7 +1217,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 break;
 
             case TAG_TOOL:     // Start a EFI tool
-                ourLoaderEntry = (LOADER_ENTRY *)ChosenEntry;
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
@@ -1212,14 +1247,16 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Terminate RefindPlus\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Terminate RefindPlus\n\n");
                 }
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
                    MainLoopRunning = FALSE;   // just in case we get this far
-                } else {
+                }
+                else {
                    BeginTextScreen(L" ");
                    return EFI_SUCCESS;
                 }
@@ -1231,7 +1268,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Reboot into Firmware\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Reboot into Firmware\n\n");
                 }
                 #endif
@@ -1255,7 +1293,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog("  - Install RefindPlus\n---------------\n\n");
-                } else {
+                }
+                else {
                     MsgLog("  - Install RefindPlus\n\n");
                 }
                 #endif

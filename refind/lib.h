@@ -89,52 +89,80 @@ typedef struct {
 
 extern EFI_GUID gFreedesktopRootGuid;
 
-EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
-VOID UninitRefitLib(VOID);
+INTN FindMem(
+    IN VOID *Buffer,
+    IN UINTN BufferLength,
+    IN VOID *SearchString,
+    IN UINTN SearchStringLength
+);
+
 EFI_STATUS ReinitRefitLib(VOID);
+EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
+EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
+EFI_STATUS EfivarGetRaw(
+    EFI_GUID *vendor,
+    CHAR16 *name,
+    CHAR8 **buffer,
+    UINTN *size
+);
+EFI_STATUS EfivarSetRaw(
+    EFI_GUID *vendor, CHAR16 *name,
+    CHAR8 *buf, UINTN size,
+    BOOLEAN persistent
+);
+EFI_STATUS DirNextEntry(
+    IN EFI_FILE *Directory,
+    IN OUT EFI_FILE_INFO **DirEntry,
+    IN UINTN FilterMode
+);
 
-EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size);
-EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent);
-
+VOID ScanVolumes(VOID);
+VOID ReinitVolumes(VOID);
+VOID UninitRefitLib(VOID);
+VOID SetVolumeIcons(VOID);
+VOID MyFreePool(IN OUT VOID *Pointer);
+VOID EraseUint32List(UINT32_LIST **TheList);
+VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName);
-CHAR16* SplitDeviceString(IN OUT CHAR16 *InString);
+VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
+VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
 VOID CreateList(OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount);
 VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement);
-VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
+VOID DirIterOpen(
+    IN EFI_FILE *BaseDir,
+    IN CHAR16 *RelativePath OPTIONAL,
+    OUT REFIT_DIR_ITER *DirIter
+);
+VOID FindVolumeAndFilename(
+    IN EFI_DEVICE_PATH *loadpath,
+    OUT REFIT_VOLUME **DeviceVolume,
+    OUT CHAR16 **loader
+);
 
-VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
-VOID ScanVolumes(VOID);
-VOID SetVolumeIcons(VOID);
-
-BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
-
-EFI_STATUS DirNextEntry(IN EFI_FILE *Directory, IN OUT EFI_FILE_INFO **DirEntry, IN UINTN FilterMode);
-
-VOID DirIterOpen(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath OPTIONAL, OUT REFIT_DIR_ITER *DirIter);
-BOOLEAN DirIterNext(IN OUT REFIT_DIR_ITER *DirIter, IN UINTN FilterMode, IN CHAR16 *FilePattern OPTIONAL, OUT EFI_FILE_INFO **DirEntry);
-EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
-
-CHAR16 * Basename(IN CHAR16 *Path);
-CHAR16 * StripEfiExtension(CHAR16 *FileName);
-
-INTN FindMem(IN VOID *Buffer, IN UINTN BufferLength, IN VOID *SearchString, IN UINTN SearchStringLength);
-VOID ReinitVolumes(VOID);
-
+CHAR16 *Basename(IN CHAR16 *Path);
+CHAR16 *FindPath(IN CHAR16* FullPath);
 CHAR16 *FindExtension(IN CHAR16 *Path);
 CHAR16 *FindLastDirName(IN CHAR16 *Path);
-CHAR16 *FindPath(IN CHAR16* FullPath);
-VOID FindVolumeAndFilename(IN EFI_DEVICE_PATH *loadpath, OUT REFIT_VOLUME **DeviceVolume, OUT CHAR16 **loader);
-BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
-VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
-BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier);
-BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description);
-BOOLEAN FilenameIn(IN REFIT_VOLUME *Volume, IN CHAR16 *Directory, IN CHAR16 *Filename, IN CHAR16 *List);
-VOID MyFreePool(IN OUT VOID *Pointer);
+CHAR16 *StripEfiExtension(CHAR16 *FileName);
+CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume);
+CHAR16 *SplitDeviceString(IN OUT CHAR16 *InString);
 
 BOOLEAN EjectMedia(VOID);
-
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2);
-
-VOID EraseUint32List(UINT32_LIST **TheList);
-
+BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier);
+BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
+BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
+BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description);
+BOOLEAN FilenameIn(
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16 *Directory,
+    IN CHAR16 *Filename,
+    IN CHAR16 *List
+);
+BOOLEAN DirIterNext(
+    IN OUT REFIT_DIR_ITER *DirIter,
+    IN UINTN FilterMode,
+    IN CHAR16 *FilePattern OPTIONAL,
+    OUT EFI_FILE_INFO **DirEntry
+);
 #endif

@@ -468,23 +468,29 @@ VOID StartLegacyUEFI(LEGACY_ENTRY *Entry, CHAR16 *SelectionName)
     FinishExternalScreen();
 } // static VOID StartLegacyUEFI()
 
-static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Volume)
-{
-    LEGACY_ENTRY            *Entry, *SubEntry;
-    REFIT_MENU_SCREEN       *SubScreen;
-    CHAR16                  *VolDesc, *LegacyTitle;
-    CHAR16                  ShortcutLetter = 0;
+static LEGACY_ENTRY
+*AddLegacyEntry(
+    IN CHAR16 *LoaderTitle,
+    IN REFIT_VOLUME *Volume
+) {
+    LEGACY_ENTRY      *Entry;
+    LEGACY_ENTRY      *SubEntry;
+    REFIT_MENU_SCREEN *SubScreen;
+    CHAR16            *VolDesc;
+    CHAR16            *LegacyTitle;
+    CHAR16            ShortcutLetter = 0;
 
     if (LoaderTitle == NULL) {
         if (Volume->OSName != NULL) {
             LoaderTitle = Volume->OSName;
-            if (LoaderTitle[0] == 'W' || LoaderTitle[0] == 'L')
+            if (LoaderTitle[0] == 'W' || LoaderTitle[0] == 'L') {
                 ShortcutLetter = LoaderTitle[0];
-        } else
+            }
+        } else {
             LoaderTitle = L"Legacy OS";
+        }
     }
-    if (Volume->VolName != NULL)
-    {
+    if (Volume->VolName != NULL) {
         VolDesc = Volume->VolName;
     }
     else {
@@ -496,15 +502,18 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     }
 
     LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
-    if (LegacyTitle != NULL)
-       SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    if (LegacyTitle != NULL) {
+        SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    }
     if (IsInSubstring(LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool(LegacyTitle);
+
        return NULL;
     } // if
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    Entry->Enabled           = TRUE;
     Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
     Entry->me.Row            = 0;
@@ -514,20 +523,21 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     Entry->Volume            = Volume;
     Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
                                ? L"CD"
-                               : ((Volume->DiskKind == DISK_KIND_EXTERNAL)
-                                 ? L"USB" : L"HD");
-    Entry->Enabled           = TRUE;
+                               : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
 
     #if REFIT_DEBUG > 0
     MsgLog("  - Found '%s' on '%s'\n", LoaderTitle, VolDesc);
     #endif
 
     // create the submenu
-    SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
+    SubScreen        = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
     SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
+
     SPrint(SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
+
     SubScreen->TitleImage = Entry->me.Image;
-    SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
+    SubScreen->Hint1      = StrDuplicate(SUBSCREEN_HINT1);
+
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
        SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
     } else {
@@ -535,17 +545,21 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     } // if/else
 
     // default entry
-    SubEntry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    SubEntry           = AllocateZeroPool(sizeof(LEGACY_ENTRY));
     SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
-    SubEntry->me.Tag          = TAG_LEGACY;
-    SubEntry->Volume          = Entry->Volume;
-    SubEntry->LoadOptions     = Entry->LoadOptions;
-    AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
+    SPrint(SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
+
+    SubEntry->me.Tag      = TAG_LEGACY;
+    SubEntry->Volume      = Entry->Volume;
+    SubEntry->LoadOptions = Entry->LoadOptions;
+
+    AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
     AddMenuEntry(SubScreen, &MenuEntryReturn);
+
     Entry->me.SubScreen = SubScreen;
-    AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+    AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
     return Entry;
 } /* static LEGACY_ENTRY * AddLegacyEntry() */
 
@@ -721,6 +735,7 @@ ScanLegacyVolume(
     }
 
     if (ShowVolume) {
+        Volume->VolName = GetVolumeName(Volume);
         AddLegacyEntry(NULL, Volume);
     }
 } // static VOID ScanLegacyVolume()
@@ -749,16 +764,19 @@ ScanLegacyDisc(
 
 // Scan internal hard disks for legacy (BIOS) boot code
 // and add anything found to the list....
-VOID ScanLegacyInternal(VOID)
-{
-    UINTN                   VolumeIndex;
-    REFIT_VOLUME            *Volume;
+VOID
+ScanLegacyInternal(
+    VOID
+) {
+    UINTN        VolumeIndex;
+    REFIT_VOLUME *Volume;
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
            Volume = Volumes[VolumeIndex];
-           if (Volume->DiskKind == DISK_KIND_INTERNAL)
+           if (Volume->DiskKind == DISK_KIND_INTERNAL) {
                ScanLegacyVolume(Volume, VolumeIndex);
+           }
        } // for
     } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
        // TODO: This actually picks up USB flash drives, too; try to find
