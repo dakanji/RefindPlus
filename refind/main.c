@@ -1126,7 +1126,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     MyStrStr(ourLoaderEntry->Title, L"macOS") != NULL
                 ) {
                     if (ourLoaderEntry->Volume->VolName) {
-                        MsgLog("  - Boot Mac OS on '%s'", ourLoaderEntry->Volume->VolName);
+                        MsgLog("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
                     } else {
                         MsgLog("  - Boot Mac OS : '%s'", ourLoaderEntry->LoaderPath);
                     }

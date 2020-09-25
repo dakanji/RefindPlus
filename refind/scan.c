@@ -678,45 +678,58 @@ static LOADER_ENTRY * AddLoaderEntry(
     IN BOOLEAN      SubScreenReturn
 ) {
     LOADER_ENTRY  *Entry;
+    CHAR16        *TitleEntry = NULL;
 
     CleanUpPathNameSlashes(LoaderPath);
     Entry = InitializeLoaderEntry(NULL);
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
-        Entry->Title = StrDuplicate((LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
+        if (MyStrStr(LoaderTitle, L"macOS") != NULL) {
+            TitleEntry = L"Mac OS";
+        } else {
+            TitleEntry = LoaderTitle;
+        }
+
+        Entry->Title = StrDuplicate((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
         Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
+
         // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
         // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
         // Note: Volume->VolName will be NULL for network boot programs.
-        if ((Volume->VolName) && (!MyStriCmp(Volume->VolName, L"Recovery HD")))
+        if ((Volume->VolName) && (!MyStriCmp(Volume->VolName, L"Recovery HD"))) {
             SPrint(
                 Entry->me.Title,
                 255,
                 L"Boot %s from %s ",
-                (LoaderTitle != NULL) ? LoaderTitle : LoaderPath,
+                (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
                 Volume->VolName
             );
-        else
-            SPrint(Entry->me.Title, 255, L"Boot %s ", (LoaderTitle != NULL) ? LoaderTitle : LoaderPath);
+        }
+        else {
+            SPrint(Entry->me.Title, 255, L"Boot %s ", (LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+        }
+
         Entry->me.Row = 0;
         Entry->me.BadgeImage = Volume->VolBadgeImage;
+
         if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
             Entry->LoaderPath = StrDuplicate(L"\\");
         } else {
             Entry->LoaderPath = NULL;
         }
+
         MergeStrings(&(Entry->LoaderPath), LoaderPath, 0);
         Entry->Volume = Volume;
         SetLoaderDefaults(Entry, LoaderPath, Volume);
         GenerateSubScreen(Entry, Volume, SubScreenReturn);
-        AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+        AddMenuEntry(&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
         #if REFIT_DEBUG > 0
         if (Volume->VolName) {
-            MsgLog("  - Found '%s' on '%s'\n", Entry->Title, Volume->VolName);
+            MsgLog("  - Found '%s' on '%s'\n", TitleEntry, Volume->VolName);
         }
         else {
-            MsgLog("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
+            MsgLog("  - Found %s : '%s'\n", TitleEntry, Entry->LoaderPath);
         }
         #endif
 
@@ -1397,6 +1410,7 @@ ScanForBootloaders(
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags;
+    CHAR16   ShortCutKey;
 
     #if REFIT_DEBUG > 0
     MsgLog("Seek Bootloaders...\n");
@@ -1492,29 +1506,64 @@ ScanForBootloaders(
         } // switch()
     } // for
 
-    // assign shortcut keys
-    #if REFIT_DEBUG > 0
-    MsgLog("Assign Keyboard Shortcut Keys:\n");
-    #endif
+    if (MainMenu.EntryCount < 1) {
+        MsgLog("* WARN: Could not find Bootloaders\n\n");
+    }
+    else {
+        // assign shortcut keys
+        #if REFIT_DEBUG > 0
+        MsgLog("Assign Keyboard Shortcut Keys:\n");
+        #endif
 
-    for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && i < 10; i++) {
-        if (i == 9) {
-            k = 0;
-        }
-        else {
-            k = i + 1;
-        }
-        MainMenu.Entries[i]->ShortcutDigit = (CHAR16) k;
+        for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
+            if (i < 9) {
+                k = i + 1;
+                ShortCutKey = (CHAR16)('1' + i);
+            }
+            else if (i == 9) {
+                k = 0;
+                ShortCutKey = (CHAR16)('9' - i);
+            }
+            else {
+                break;
+            }
+            MainMenu.Entries[i]->ShortcutDigit = ShortCutKey;
+
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
+            if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
+                MsgLog("\n");
+            } else {
+                MsgLog("\n\n");
+            }
+            #endif
+        }  // for
 
         #if REFIT_DEBUG > 0
-        MsgLog("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
-        if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k < 10 && k != 0) {
-            MsgLog("\n");
-        } else {
-            MsgLog("\n\n");
+        CHAR16   *keyStr;
+        CHAR16   *LoaderStr;
+
+        if (i == 1) {
+            keyStr = L"Key";
         }
+        else {
+            keyStr = L"Keys";
+        }
+        if (MainMenu.EntryCount == 1) {
+            LoaderStr = L"Bootloader";
+        }
+        else {
+            LoaderStr = L"Bootloaders";
+        }
+        MsgLog(
+            "INFO: Assigned Keyboard Shortcut %s to %d of %d %s\n\n",
+            keyStr,
+            i,
+            MainMenu.EntryCount,
+            LoaderStr
+        );
         #endif
-    }  // for
+    }
 
     // wait for user ACK when there were errors
     FinishTextScreen(FALSE);

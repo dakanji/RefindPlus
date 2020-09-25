@@ -995,6 +995,8 @@ AddSubmenu(
    LOADER_ENTRY       *SubEntry;
    UINTN              TokenCount;
    CHAR16             **TokenList;
+   CHAR16             *TitleMenu = NULL;
+
 
    SubScreen = InitializeSubScreen(Entry);
 
@@ -1016,13 +1018,18 @@ AddSubmenu(
       } else if (MyStriCmp(TokenList[0], L"volume") && (TokenCount > 1)) {
          if (FindVolume(&Volume, TokenList[1])) {
             if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
+                if (MyStrStr(Title, L"macOS") != NULL) {
+                    TitleMenu = L"Mac OS";
+                } else {
+                    TitleMenu = Title;
+                }
                MyFreePool(SubEntry->me.Title);
                SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
                SPrint(
                    SubEntry->me.Title,
                    255,
                    L"Boot %s from %s",
-                   (Title != NULL) ? Title : L"Unknown",
+                   (TitleMenu != NULL) ? TitleMenu : L"Unknown",
                    Volume->VolName
                );
                SubEntry->me.BadgeImage = Volume->VolBadgeImage;
