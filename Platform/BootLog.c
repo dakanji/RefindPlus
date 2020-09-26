@@ -265,7 +265,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
   CHAR16 *DateStr = GetDateString();
 
   ourDebugLog = PoolPrint(
-      L"EFI\\R%s.log",
+      L"EFI\\%s.log",
       DateStr
   );
 
