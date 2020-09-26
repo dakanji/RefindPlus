@@ -495,6 +495,10 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         } else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: Initiated Screensaver\n\n");
+                #endif
+
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
@@ -512,8 +516,8 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
                 if (HaveTimeout) {
                     TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
                 } else if (GlobalConfig.ScreensaverTime > 0 &&
-                    TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10))
-                {
+                    TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10)
+                ) {
                     SaveScreen();
                     State.PaintAll = TRUE;
                     TimeSinceKeystroke = 0;
@@ -530,9 +534,14 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
             HaveTimeout = FALSE;
             if (GlobalConfig.ScreensaverTime == -1) { // cancel start-with-blank-screen coding
                GlobalConfig.ScreensaverTime = 0;
-               if (!GlobalConfig.TextOnly)
-                 BltClearScreen(TRUE);
+               if (!GlobalConfig.TextOnly) {
+                   BltClearScreen(TRUE);
+               }
             }
+
+            #if REFIT_DEBUG > 0
+            MsgLog("INFO: Exited Screensaver\n\n");
+            #endif
         }
 
         if (!PointerActive) { // react to key press
