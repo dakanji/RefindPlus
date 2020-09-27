@@ -1231,15 +1231,43 @@ VOID ScanVolumes(VOID)
 
         #if REFIT_DEBUG > 0
         CHAR16 *VolDesc = Volume->VolName;
-        if (MyStrStr(VolDesc, L"NTFS volume") != NULL) {
-            VolDesc = L"NTFS Volume";
-        }
-        else if (MyStrStr(VolDesc, L"whole disk volume") != NULL) {
+        if (MyStrStr(VolDesc, L"whole disk Volume") != NULL) {
             VolDesc = L"Whole Disk Volume";
         }
-        else if (MyStrStr(VolDesc, L"unknown volume") != NULL) {
+        else if (MyStrStr(VolDesc, L"Unknown Volume") != NULL) {
             VolDesc = L"Unknown Volume";
         }
+        else if (MyStrStr(VolDesc, L"HFS+ Volume") != NULL) {
+            VolDesc = L"HFS+ Volume";
+        }
+        else if (MyStrStr(VolDesc, L"NTFS Volume") != NULL) {
+            VolDesc = L"NTFS Volume";
+        }
+        else if (MyStrStr(VolDesc, L"FAT Volume") != NULL) {
+            VolDesc = L"FAT Volume";
+        }
+        else if (MyStrStr(VolDesc, L"ext2 Volume") != NULL) {
+            VolDesc = L"Ext2 Volume";
+        }
+        else if (MyStrStr(VolDesc, L"ext3 Volume") != NULL) {
+            VolDesc = L"Ext3 Volume";
+        }
+        else if (MyStrStr(VolDesc, L"ext4 Volume") != NULL) {
+            VolDesc = L"Ext4 Volume";
+        }
+        else if (MyStrStr(VolDesc, L"ReiserFS Volume") != NULL) {
+            VolDesc = L"ReiserFS Volume";
+        }
+        else if (MyStrStr(VolDesc, L"Btrfs Volume") != NULL) {
+            VolDesc = L"BTRFS Volume";
+        }
+        else if (MyStrStr(VolDesc, L"XFS Volume") != NULL) {
+            VolDesc = L"XFS Volume";
+        }
+        else if (MyStrStr(VolDesc, L"ISO-9660 Volume") != NULL) {
+            VolDesc = L"ISO-9660 Volume";
+        }
+
         MsgLog("Set %s as Scanned Volume\n\n", VolDesc);
         #endif
     }

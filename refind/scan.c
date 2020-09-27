@@ -133,7 +133,7 @@
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 static REFIT_MENU_ENTRY MenuEntryAbout = {
-    L"About rEFInd",
+    L"About RefindPlus",
     TAG_ABOUT,
     1, 0, 'A',
     NULL, NULL, NULL
@@ -145,13 +145,13 @@ static REFIT_MENU_ENTRY MenuEntryReset = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryShutdown = {
-    L"Shut Down Computer",
+    L"Shut Computer Down",
     TAG_SHUTDOWN,
     1, 0, 'U',
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
-    L"Change SIP Policy",
+    L"Toggle Mac SIP Policy",
     TAG_CSR_ROTATE,
     1, 0, 0,
     NULL, NULL, NULL
@@ -169,7 +169,7 @@ static REFIT_MENU_ENTRY MenuEntryHiddenTags = {
     NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryInstall = {
-    L"Install rEFInd to Disk",
+    L"Install RefindPlus to Disk",
     TAG_INSTALL,
     1, 0, 0,
     NULL, NULL, NULL
@@ -181,19 +181,19 @@ static REFIT_MENU_ENTRY MenuEntryBootorder = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryExit = {
-    L"Exit rEFInd",
+    L"Exit RefindPlus",
     TAG_EXIT,
     1, 0, 0,
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
-    L"Show Boot Screen",
+    L"Show Mac Bootscreen",
     TAG_PRE_BOOTKICKER,
     1, 0, 0,
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
-    L"Clean NVRAM",
+    L"Clean Mac NVRAM",
     TAG_PRE_NVRAMCLEAN,
     1, 0, 0,
     NULL, NULL, NULL
@@ -1711,7 +1711,7 @@ VOID ScanForTools(VOID) {
         #if REFIT_DEBUG > 0
         switch(GlobalConfig.ShowTools[i]) {
             case TAG_SHUTDOWN:
-                ToolName = L"Shutdown Computer";
+                ToolName = L"Shut Computer Down";
                 break;
 
             case TAG_REBOOT:
@@ -1723,7 +1723,7 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_EXIT:
-                ToolName = L"Exit rEFInd";
+                ToolName = L"Exit RefindPlus";
                 break;
 
             case TAG_HIDDEN:
@@ -1767,11 +1767,11 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_CSR_ROTATE:
-                ToolName = L"Change SIP Policy";
+                ToolName = L"Toggle Mac SIP";
                 break;
 
             case TAG_INSTALL:
-                ToolName = L"Install rEFInd";
+                ToolName = L"Install RefindPlus";
                 break;
 
             case TAG_BOOTORDER:
@@ -1779,11 +1779,11 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_PRE_BOOTKICKER:
-                ToolName = L"BootKicker";
+                ToolName = L"Mac BootKicker";
                 break;
 
             case TAG_PRE_NVRAMCLEAN:
-                ToolName = L"CleanNvram";
+                ToolName = L"Clean Mac Nvram";
                 break;
 
             case TAG_MEMTEST:

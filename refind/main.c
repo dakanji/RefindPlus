@@ -395,7 +395,7 @@ preCleanNvram(
     MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
     REFIT_MENU_ENTRY    *ChosenEntry;
     REFIT_MENU_SCREEN CleanNvramMenu = {
-        L"Clean NVRAM",
+        L"Clean Mac NVRAM",
         NULL,
         0, NULL, 0,
         NULL, 0, NULL,
@@ -405,8 +405,8 @@ preCleanNvram(
 
     if (CleanNvramMenu.EntryCount == 0) {
         CleanNvramMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_TOOL_NVRAMCLEAN);
-        CleanNvramMenu.Title = L"Clean NVRAM";
-        AddMenuInfoLine(&CleanNvramMenu, L"A tool to clean/reset nvram");
+        CleanNvramMenu.Title = L"Clean Mac NVRAM";
+        AddMenuInfoLine(&CleanNvramMenu, L"A Tool to Clean/Reset Nvram on Macs");
         AddMenuInfoLine(&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
