@@ -1646,9 +1646,11 @@ CHAR16* ReadHiddenTags(CHAR16 *VarName) {
 
     Status = EfivarGetRaw(&RefindGuid, VarName, &Buffer, &Size);
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
+        #if REFIT_DEBUG > 0
         CHAR16 *CheckErrMsg = PoolPrint(L"in ReadHiddenTags('%s')", VarName);
         CheckError(Status, CheckErrMsg);
         MyFreePool(CheckErrMsg);
+        #endif
         MyFreePool(Buffer);
     }
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
