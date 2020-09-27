@@ -417,14 +417,26 @@ IdentifyRows(
 // TODO: Support more sophisticated screen savers, such as power-saving
 // mode and dynamic images.
 static VOID SaveScreen(VOID) {
+   #if REFIT_DEBUG > 0
+   MsgLog("INFO: Timeout Elapsed ...Initiating Screensaver\n\n");
+   #endif
+
    EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
    egClearScreen(&Black);
    WaitForInput(0);
+
+   #if REFIT_DEBUG > 0
+   MsgLog("INFO: Detected Keypress ...Exiting Screensaver\n\n");
+   #endif
 
    if (AllowGraphicsMode) {
        SwitchToGraphicsAndClear();
    }
    ReadAllKeyStrokes();
+
+  #if REFIT_DEBUG > 0
+  MsgLog("INFO: Exited Screensaver\n\n");
+  #endif
 } // VOID SaveScreen()
 
 //
@@ -548,10 +560,6 @@ RunGenericMenu(
         } else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
-                #if REFIT_DEBUG > 0
-                MsgLog("INFO: Initiated Screensaver\n\n");
-                #endif
-
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             } else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
@@ -591,10 +599,6 @@ RunGenericMenu(
                    BltClearScreen(TRUE);
                }
             }
-
-            #if REFIT_DEBUG > 0
-            MsgLog("INFO: Exited Screensaver\n\n");
-            #endif
         }
 
         if (!PointerActive) { // react to key press
