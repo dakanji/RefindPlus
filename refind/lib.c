@@ -115,6 +115,7 @@ CHAR16           *SelfDirPath;
 REFIT_VOLUME     *SelfVolume    = NULL;
 REFIT_VOLUME     **Volumes      = NULL;
 UINTN            VolumesCount   = 0;
+BOOLEAN          MediaCheck     = FALSE;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors
@@ -639,9 +640,10 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     BOOLEAN                 MbrTableFound = FALSE;
 
     Volume->HasBootCode = FALSE;
-    Volume->OSIconName = NULL;
-    Volume->OSName = NULL;
-    *Bootable = FALSE;
+    Volume->OSIconName  = NULL;
+    Volume->OSName      = NULL;
+    *Bootable           = FALSE;
+    MediaCheck          = FALSE;
 
     if (Volume->BlockIO == NULL) {
         return;
@@ -651,9 +653,14 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
     }
 
     // look at the boot sector (this is used for both hard disks and El Torito images!)
-    Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks,
-                                 Volume->BlockIO, Volume->BlockIO->Media->MediaId,
-                                 Volume->BlockIOOffset, SAMPLE_SIZE, Buffer);
+    Status = refit_call5_wrapper(
+        Volume->BlockIO->ReadBlocks,
+        Volume->BlockIO,
+        Volume->BlockIO->Media->MediaId,
+        Volume->BlockIOOffset,
+        SAMPLE_SIZE,
+        Buffer
+    );
     if (!EFI_ERROR(Status)) {
         SetFilesystemData(Buffer, SAMPLE_SIZE, Volume);
     }
@@ -710,9 +717,9 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         } else if (FindMem(Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win";
-            Volume->OSName = L"Windows (Legacy)";
+            Volume->OSName = L"Windows (NT/XP)";
 
-        // Windows Vista/7/8
+        // Windows Vista/7/8/10
         } else if (FindMem(Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win8,win";
@@ -777,9 +784,11 @@ static VOID ScanVolumeBootcode(REFIT_VOLUME *Volume, BOOLEAN *Bootable)
                 CopyMem(Volume->MbrPartitionTable, MbrTable, 4 * 16);
             }
         }
-
-        #if REFIT_DEBUG > 0
     } else {
+        #if REFIT_DEBUG > 0
+        if (Status == EFI_NO_MEDIA) {
+            MediaCheck = TRUE;
+        }
         CheckError(Status, L"While Reading Boot Sector");
         #endif
     }
@@ -892,6 +901,12 @@ CHAR16
             TypeName = FSTypeName(Volume->FSType); // NOTE: Don't free TypeName; function returns constant
             if (StrLen(TypeName) > 0) {
                 SPrint(FoundName, 255, L"%s Volume", TypeName);
+            }
+            else if (MediaCheck == TRUE) {
+                SPrint(FoundName, 255, L"Assumed Disc/Network Volume");
+            }
+            else if (MyStriCmp(L"Apple", gST->FirmwareVendor)) {
+                SPrint(FoundName, 255, L"Assumed APFS Volume");
             }
             else {
                 SPrint(FoundName, 255, L"Unknown Volume");
@@ -1173,19 +1188,21 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
 
 VOID ScanVolumes(VOID)
 {
-    EFI_STATUS              Status;
-    EFI_HANDLE              *Handles;
-    REFIT_VOLUME            *Volume, *WholeDiskVolume;
-    MBR_PARTITION_INFO      *MbrTable;
-    UINTN                   HandleCount = 0;
-    UINTN                   HandleIndex;
-    UINTN                   VolumeIndex, VolumeIndex2;
-    UINTN                   PartitionIndex;
-    UINTN                   SectorSum, i;
-    UINT8                   *SectorBuffer1, *SectorBuffer2;
-    EFI_GUID                *UuidList;
-    EFI_GUID                NullUuid = NULL_GUID_VALUE;
-    const CHAR16            *ShowScreenStr = NULL;
+    EFI_STATUS         Status;
+    EFI_HANDLE         *Handles;
+    REFIT_VOLUME       *Volume, *WholeDiskVolume;
+    MBR_PARTITION_INFO *MbrTable;
+    UINTN              HandleCount = 0;
+    UINTN              HandleIndex;
+    UINTN              VolumeIndex, VolumeIndex2;
+    UINTN              PartitionIndex;
+    UINTN              SectorSum, i;
+    UINT8              *SectorBuffer1, *SectorBuffer2;
+    EFI_GUID           *UuidList;
+    EFI_GUID           NullUuid = NULL_GUID_VALUE;
+    const CHAR16       *ShowScreenStr = NULL;
+    BOOLEAN            SelfVolSet = FALSE;
+    STATIC BOOLEAN     SelfVolRun = FALSE;
 
     MyFreePool(Volumes);
     Volumes = NULL;
@@ -1222,59 +1239,58 @@ VOID ScanVolumes(VOID)
 
 
         if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) {
+            SelfVolSet = TRUE;
             SelfVolume = Volume;
-
-            #if REFIT_DEBUG > 0
-                MsgLog("Set %s as Self Volume\n", Volume->VolName);
-            #endif
         }
 
         #if REFIT_DEBUG > 0
-        CHAR16 *VolDesc = Volume->VolName;
-        if (MyStrStr(VolDesc, L"whole disk Volume") != NULL) {
-            VolDesc = L"Whole Disk Volume";
-        }
-        else if (MyStrStr(VolDesc, L"Unknown Volume") != NULL) {
-            VolDesc = L"Unknown Volume";
-        }
-        else if (MyStrStr(VolDesc, L"HFS+ Volume") != NULL) {
-            VolDesc = L"HFS+ Volume";
-        }
-        else if (MyStrStr(VolDesc, L"NTFS Volume") != NULL) {
-            VolDesc = L"NTFS Volume";
-        }
-        else if (MyStrStr(VolDesc, L"FAT Volume") != NULL) {
-            VolDesc = L"FAT Volume";
-        }
-        else if (MyStrStr(VolDesc, L"ext2 Volume") != NULL) {
-            VolDesc = L"Ext2 Volume";
-        }
-        else if (MyStrStr(VolDesc, L"ext3 Volume") != NULL) {
-            VolDesc = L"Ext3 Volume";
-        }
-        else if (MyStrStr(VolDesc, L"ext4 Volume") != NULL) {
-            VolDesc = L"Ext4 Volume";
-        }
-        else if (MyStrStr(VolDesc, L"ReiserFS Volume") != NULL) {
-            VolDesc = L"ReiserFS Volume";
-        }
-        else if (MyStrStr(VolDesc, L"Btrfs Volume") != NULL) {
-            VolDesc = L"BTRFS Volume";
-        }
-        else if (MyStrStr(VolDesc, L"XFS Volume") != NULL) {
-            VolDesc = L"XFS Volume";
-        }
-        else if (MyStrStr(VolDesc, L"ISO-9660 Volume") != NULL) {
-            VolDesc = L"ISO-9660 Volume";
-        }
+        if (SelfVolRun == TRUE) {
+            CHAR16 *VolDesc = Volume->VolName;
+            if (MyStrStr(VolDesc, L"whole disk Volume") != NULL) {
+                VolDesc = L"Whole Disk Volume";
+            }
+            else if (MyStrStr(VolDesc, L"Unknown Volume") != NULL) {
+                VolDesc = L"Unknown Volume";
+            }
+            else if (MyStrStr(VolDesc, L"HFS+ Volume") != NULL) {
+                VolDesc = L"HFS+ Volume";
+            }
+            else if (MyStrStr(VolDesc, L"NTFS Volume") != NULL) {
+                VolDesc = L"NTFS Volume";
+            }
+            else if (MyStrStr(VolDesc, L"FAT Volume") != NULL) {
+                VolDesc = L"FAT Volume";
+            }
+            else if (MyStrStr(VolDesc, L"ext2 Volume") != NULL) {
+                VolDesc = L"Ext2 Volume";
+            }
+            else if (MyStrStr(VolDesc, L"ext3 Volume") != NULL) {
+                VolDesc = L"Ext3 Volume";
+            }
+            else if (MyStrStr(VolDesc, L"ext4 Volume") != NULL) {
+                VolDesc = L"Ext4 Volume";
+            }
+            else if (MyStrStr(VolDesc, L"ReiserFS Volume") != NULL) {
+                VolDesc = L"ReiserFS Volume";
+            }
+            else if (MyStrStr(VolDesc, L"Btrfs Volume") != NULL) {
+                VolDesc = L"BTRFS Volume";
+            }
+            else if (MyStrStr(VolDesc, L"XFS Volume") != NULL) {
+                VolDesc = L"XFS Volume";
+            }
+            else if (MyStrStr(VolDesc, L"ISO-9660 Volume") != NULL) {
+                VolDesc = L"ISO-9660 Volume";
+            }
 
-        MsgLog("Set %s as Scanned Volume\n\n", VolDesc);
+            MsgLog("Added '%s' to Scanned List\n\n", VolDesc);
+        }
         #endif
-    }
+    } // for: first pass
     MyFreePool(UuidList);
     MyFreePool(Handles);
 
-    if (SelfVolume == NULL) {
+    if (SelfVolSet == FALSE) {
         SwitchToText(FALSE);
 
         ShowScreenStr = L"WARN: Self Volume not Found!";
@@ -1290,6 +1306,12 @@ VOID ScanVolumes(VOID)
         PauseForKey();
         SwitchToGraphics();
     }
+    else if (SelfVolRun == FALSE) {
+        #if REFIT_DEBUG > 0
+        MsgLog("Set '%s' as Self Volume\n\n", SelfVolume->VolName);
+        #endif
+    }
+    SelfVolRun = TRUE;
 
     // second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
