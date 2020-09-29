@@ -82,11 +82,11 @@ timeout 20
 #
 #continue_on_warning true
 
-# Screen saver timeout; the screen blanks after the specified number of
-# seconds with no keyboard input. The screen returns after most keypresses
-# (unfortunately, not including modifier keys such as Shift, Control, Alt,
-# or Option). Setting a value of "-1" causes rEFInd to start up with its
-# screen saver active. The default is 0, which disables the screen saver.
+# Blank screen and show different solid colours after the specified
+# number of seconds without input. Screen returns after most keypresses
+# (Excluding modifier keys such as Shift, Control, Alt, and Option).
+# "-1" causes RefindPlus to start up with the screensaver active.
+# The default is 0, which disables the screensaver.
 #
 #screensaver 300
 

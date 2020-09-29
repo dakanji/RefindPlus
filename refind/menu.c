@@ -417,26 +417,111 @@ IdentifyRows(
 // TODO: Support more sophisticated screen savers, such as power-saving
 // mode and dynamic images.
 static VOID SaveScreen(VOID) {
+    UINTN retval;
+
+    #if REFIT_DEBUG > 0
+    MsgLog("INFO: Threshold Exceeded ...Start Screensaver\n\n");
+    #endif
+
+    EG_PIXEL OUR_COLOUR;
+    EG_PIXEL COLOUR_01 = { 0, 0, 0, 0 };
+    EG_PIXEL COLOUR_02 = { 0, 51, 51, 0 };
+    EG_PIXEL COLOUR_03 = { 0, 102, 102, 0 };
+    EG_PIXEL COLOUR_04 = { 0, 153, 153, 0 };
+    EG_PIXEL COLOUR_05 = { 0, 204, 204, 0 };
+    EG_PIXEL COLOUR_06 = { 0, 255, 255, 0 };
+    EG_PIXEL COLOUR_07 = { 51, 0, 204, 0 };
+    EG_PIXEL COLOUR_08 = { 51, 51, 153, 0 };
+    EG_PIXEL COLOUR_09 = { 51, 102, 102, 0 };
+    EG_PIXEL COLOUR_10 = { 51, 153, 51, 0 };
+    EG_PIXEL COLOUR_11 = { 51, 204, 0, 0 };
+    EG_PIXEL COLOUR_12 = { 51, 255, 51, 0 };
+    EG_PIXEL COLOUR_13 = { 102, 0, 102, 0 };
+    EG_PIXEL COLOUR_14 = { 102, 51, 153, 0 };
+    EG_PIXEL COLOUR_15 = { 102, 102, 204, 0 };
+    EG_PIXEL COLOUR_16 = { 102, 153, 255, 0 };
+    EG_PIXEL COLOUR_17 = { 102, 204, 204, 0 };
+    EG_PIXEL COLOUR_18 = { 102, 255, 153, 0 };
+    EG_PIXEL COLOUR_19 = { 153, 0, 102, 0 };
+    EG_PIXEL COLOUR_20 = { 153, 51, 51, 0 };
+    EG_PIXEL COLOUR_21 = { 153, 102, 0, 0 };
+    EG_PIXEL COLOUR_22 = { 153, 153, 51, 0 };
+    EG_PIXEL COLOUR_23 = { 153, 204, 102, 0 };
+    EG_PIXEL COLOUR_24 = { 153, 255, 153, 0 };
+    EG_PIXEL COLOUR_25 = { 204, 0, 204, 0 };
+    EG_PIXEL COLOUR_26 = { 204, 51, 255, 0 };
+    EG_PIXEL COLOUR_27 = { 204, 102, 204, 0 };
+    EG_PIXEL COLOUR_28 = { 204, 153, 153, 0 };
+    EG_PIXEL COLOUR_29 = { 204, 204, 102, 0 };
+    EG_PIXEL COLOUR_30 = { 204, 255, 51, 0 };
+    EG_PIXEL COLOUR_31 = { 255, 0, 0, 0 };
+    EG_PIXEL COLOUR_32 = { 255, 51, 51, 0 };
+    EG_PIXEL COLOUR_33 = { 255, 102, 102, 0 };
+    EG_PIXEL COLOUR_34 = { 255, 153, 153, 0 };
+    EG_PIXEL COLOUR_35 = { 255, 204, 204, 0 };
+    EG_PIXEL COLOUR_36 = { 255, 255, 255, 0 };
+
+    UINTN ColourIndex = 1; // Start from COLOUR_02
+    for (;;) {
+        ColourIndex = ColourIndex + 1;
+        if (ColourIndex < 1 || ColourIndex > 36) {
+            ColourIndex = 1;
+        }
+
+        switch(ColourIndex) {
+            case 1:  OUR_COLOUR = COLOUR_01; break;
+            case 2:  OUR_COLOUR = COLOUR_02; break;
+            case 3:  OUR_COLOUR = COLOUR_03; break;
+            case 4:  OUR_COLOUR = COLOUR_04; break;
+            case 5:  OUR_COLOUR = COLOUR_05; break;
+            case 6:  OUR_COLOUR = COLOUR_06; break;
+            case 7:  OUR_COLOUR = COLOUR_07; break;
+            case 8:  OUR_COLOUR = COLOUR_08; break;
+            case 9:  OUR_COLOUR = COLOUR_09; break;
+            case 10: OUR_COLOUR = COLOUR_10; break;
+            case 11: OUR_COLOUR = COLOUR_11; break;
+            case 12: OUR_COLOUR = COLOUR_12; break;
+            case 13: OUR_COLOUR = COLOUR_13; break;
+            case 14: OUR_COLOUR = COLOUR_14; break;
+            case 15: OUR_COLOUR = COLOUR_15; break;
+            case 16: OUR_COLOUR = COLOUR_16; break;
+            case 17: OUR_COLOUR = COLOUR_17; break;
+            case 18: OUR_COLOUR = COLOUR_18; break;
+            case 19: OUR_COLOUR = COLOUR_19; break;
+            case 20: OUR_COLOUR = COLOUR_20; break;
+            case 21: OUR_COLOUR = COLOUR_21; break;
+            case 22: OUR_COLOUR = COLOUR_22; break;
+            case 23: OUR_COLOUR = COLOUR_23; break;
+            case 24: OUR_COLOUR = COLOUR_24; break;
+            case 25: OUR_COLOUR = COLOUR_25; break;
+            case 26: OUR_COLOUR = COLOUR_26; break;
+            case 27: OUR_COLOUR = COLOUR_27; break;
+            case 28: OUR_COLOUR = COLOUR_28; break;
+            case 29: OUR_COLOUR = COLOUR_29; break;
+            case 30: OUR_COLOUR = COLOUR_30; break;
+            case 31: OUR_COLOUR = COLOUR_31; break;
+            case 32: OUR_COLOUR = COLOUR_32; break;
+            case 33: OUR_COLOUR = COLOUR_33; break;
+            case 34: OUR_COLOUR = COLOUR_34; break;
+            case 35: OUR_COLOUR = COLOUR_35; break;
+            default: OUR_COLOUR = COLOUR_36; break;
+        }
+
+        egClearScreen(&OUR_COLOUR);
+        retval = WaitForInput(10000); // 10 Seconds
+        if (retval == INPUT_KEY || retval == INPUT_TIMER_ERROR) {
+            break;
+        }
+    }
+
    #if REFIT_DEBUG > 0
-   MsgLog("INFO: Timeout Elapsed ...Initiating Screensaver\n\n");
+   MsgLog("INFO: Detected Keypress ...Exit Screensaver\n\n");
    #endif
 
-   EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
-   egClearScreen(&Black);
-   WaitForInput(0);
-
-   #if REFIT_DEBUG > 0
-   MsgLog("INFO: Detected Keypress ...Exiting Screensaver\n\n");
-   #endif
-
-   if (AllowGraphicsMode) {
-       SwitchToGraphicsAndClear();
-   }
-   ReadAllKeyStrokes();
-
-  #if REFIT_DEBUG > 0
-  MsgLog("INFO: Exited Screensaver\n\n");
-  #endif
+    if (AllowGraphicsMode) {
+        SwitchToGraphicsAndClear();
+    }
+    ReadAllKeyStrokes();
 } // VOID SaveScreen()
 
 //
