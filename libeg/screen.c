@@ -1046,7 +1046,7 @@ egInitScreen(
         }
     }
 
-    if (GraphicsOutput == NULL && GlobalConfig.UseDirectGop) {
+    if (GlobalConfig.UseDirectGop) {
         XFlag = EFI_LOAD_ERROR;
         Status = OcUseDirectGop (-1);
 

@@ -74,6 +74,15 @@ timeout 20
 #
 #provide_console_gop false
 
+# Use builtin GOP renderer (1, true, or on) or not (0, false, or off).
+# This may provide better performance and fix rendering issues on some
+# firmware and GPU combinations such as the Radeon VII and some versions
+# of the Radeon 5700 XT on Classic MacPros. This should only be used when
+# there is an obvious benefit as it may result in scrolling glitches.
+# Default is false
+#
+#direct_gop_renderer true
+
 # Proceed automatically when notices are shown on screen  (1, true, or on)
 # instead of having to press a key to continue (0, false, or off).
 # When this token is set to true, rEFInd will pause for three seconds and
