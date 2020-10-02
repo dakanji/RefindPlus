@@ -198,9 +198,9 @@ REFIT_CONFIG GlobalConfig = {
 
 EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
-#define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
+#define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi,\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
-#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
+#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
 static BOOLEAN ranCleanNvram = FALSE;
 
@@ -279,12 +279,16 @@ preBootKicker(
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine(&BootKickerMenu, L"You must have at least one of the files below:");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\x64_BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\x64_BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\tools\\BootKicker.efi");
+        AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\x64_BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker_x64.efi");
         AddMenuInfoLine(&BootKickerMenu, L"\\EFI\\BootKicker.efi");
         AddMenuInfoLine(&BootKickerMenu, L"");
@@ -292,7 +296,7 @@ preBootKicker(
         AddMenuInfoLine(&BootKickerMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine(&BootKickerMenu, L"");
         AddMenuInfoLine(&BootKickerMenu, L"");
-        AddMenuInfoLine(&BootKickerMenu, L"BootKicker_x64.efi is distributed with 'MyBootMgr':");
+        AddMenuInfoLine(&BootKickerMenu, L"x64_BootKicker.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine(&BootKickerMenu, L"https://forums.macrumors.com/threads/thread.2231693");
         AddMenuInfoLine(&BootKickerMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine(&BootKickerMenu, L"");
@@ -411,12 +415,16 @@ preCleanNvram(
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine(&CleanNvramMenu, L"You must have at least one of the files below:");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools_x64\\x64_CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram_x64.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\x64_CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram_x64.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram.efi");
+        AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\x64_CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram_x64.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"\\EFI\\CleanNvram.efi");
         AddMenuInfoLine(&CleanNvramMenu, L"");
@@ -424,7 +432,7 @@ preCleanNvram(
         AddMenuInfoLine(&CleanNvramMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine(&CleanNvramMenu, L"");
         AddMenuInfoLine(&CleanNvramMenu, L"");
-        AddMenuInfoLine(&CleanNvramMenu, L"CleanNvram_x64.efi is distributed with 'MyBootMgr':");
+        AddMenuInfoLine(&CleanNvramMenu, L"x64_CleanNvram.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine(&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
         AddMenuInfoLine(&CleanNvramMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine(&CleanNvramMenu, L"");

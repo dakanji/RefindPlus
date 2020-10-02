@@ -420,7 +420,7 @@ static VOID SaveScreen(VOID) {
     UINTN retval;
 
     #if REFIT_DEBUG > 0
-    MsgLog("INFO: Threshold Exceeded ...Start Screensaver\n\n");
+    MsgLog("INFO: Threshold Exceeded ...Start Screensaver\n");
     #endif
 
     EG_PIXEL OUR_COLOUR;
@@ -515,7 +515,7 @@ static VOID SaveScreen(VOID) {
     }
 
    #if REFIT_DEBUG > 0
-   MsgLog("INFO: Detected Keypress ...Exit Screensaver\n\n");
+   MsgLog("INFO: Detected Keypress ...Ending Screensaver\n\n");
    #endif
 
     if (AllowGraphicsMode) {
