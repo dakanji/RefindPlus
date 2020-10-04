@@ -686,6 +686,8 @@ static LOADER_ENTRY * AddLoaderEntry(
     if (Entry != NULL) {
         if (MyStrStr(LoaderTitle, L"macOS") != NULL) {
             TitleEntry = L"Mac OS";
+        } else if (LoaderTitle == NULL) {
+            TitleEntry = LoaderPath;
         } else {
             TitleEntry = LoaderTitle;
         }
