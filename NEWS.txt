@@ -1,4 +1,4 @@
-0.12.0.J (Pre-Release):
+0.12.0.J (05 Oct 2020):
 -----------------------
 - Fixes on-screen notices
 - Debug log improvements
@@ -6,7 +6,13 @@
   * Provides different log files per login and no longer places all logs in one file
   * Itemises found bootloaders
   * Discarded superfluous log items
+  * Logs screensaver
+  * Logs details of found Bootloaders
 - Optimises device connection routines
+- Increase Keyboard Shortcut Keys to cover 10 Bootloaders
+- Enhances screensaver function
+- Improves Direct GOP Renderer Implementation
+- General Stability Fixes
 
 
 0.12.0.H (07 Sep 2020):
