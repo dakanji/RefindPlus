@@ -76,11 +76,11 @@
 #include "launch_efi.h"
 
 #if defined (EFIX64)
-#define DRIVER_DIRS             L"drivers,drivers_x64"
+#define DRIVER_DIRS             L"drivers,x64_drivers,drivers_x64"
 #elif defined (EFI32)
-#define DRIVER_DIRS             L"drivers,drivers_ia32"
+#define DRIVER_DIRS             L"drivers,ia32_drivers,drivers_ia32"
 #elif defined (EFIAARCH64)
-#define DRIVER_DIRS             L"drivers,drivers_aa64"
+#define DRIVER_DIRS             L"drivers,aa64_drivers,drivers_aa64"
 #else
 #define DRIVER_DIRS             L"drivers"
 #endif

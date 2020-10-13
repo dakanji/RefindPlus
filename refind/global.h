@@ -192,11 +192,11 @@
 // searched in addition to these locations....
 #define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 // Directories to search for memtest86....
-#define MEMTEST_LOCATIONS       L"EFI\\BOOT\\tools_x64,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
+#define MEMTEST_LOCATIONS       L"EFI\\BOOT\\x64_tools,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Directories to search for BootKicker....
-#define BOOTKICKER_LOCATIONS       L"\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+#define BOOTKICKER_LOCATIONS       L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Directories to search for CleanNvram....
-#define NVRAMCLEAN_LOCATIONS       L"\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+#define NVRAMCLEAN_LOCATIONS       L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be macOS recovery files
