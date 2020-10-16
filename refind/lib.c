@@ -144,8 +144,9 @@ BOOLEAN egIsGraphicsModeEnabled(VOID);
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
     UINTN Source = 0, Dest = 0;
 
-    if ((PathName == NULL) || (PathName[0] == '\0'))
+    if ((PathName == NULL) || (PathName[0] == '\0')) {
         return;
+    }
 
     while (PathName[Source] != '\0') {
         if ((PathName[Source] == L'/') || (PathName[Source] == L'\\')) {
@@ -164,8 +165,9 @@ VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName) {
             Dest++;
         } // if/else
     } // while()
-    if ((Dest > 0) && (PathName[Dest - 1] == L'\\'))
+    if ((Dest > 0) && (PathName[Dest - 1] == L'\\')) {
         Dest--;
+    }
     PathName[Dest] = L'\0';
     if (PathName[0] == L'\0') {
         PathName[0] = L'\\';
@@ -222,8 +224,9 @@ static EFI_STATUS FinishInitRefitLib(VOID)
     }
 
     Status = refit_call5_wrapper(SelfRootDir->Open, SelfRootDir, &SelfDir, SelfDirPath, EFI_FILE_MODE_READ, 0);
-    if (CheckFatalError(Status, L"while opening our installation directory"))
+    if (CheckFatalError(Status, L"while opening our installation directory")) {
         return EFI_LOAD_ERROR;
+    }
 
     return EFI_SUCCESS;
 }
@@ -385,8 +388,13 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     BOOLEAN ReadFromNvram = TRUE;
 
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
+        Status = refit_call5_wrapper(
+            SelfDir->Open,
+            SelfDir,
+            &VarsDir,
+            L"vars",
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY
+        );
         if (Status == EFI_SUCCESS)
             Status = egLoadFile(VarsDir, name, &buf, size);
         ReadFromNvram = FALSE;
@@ -421,8 +429,13 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
     EFI_STATUS Status;
 
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+        Status = refit_call5_wrapper(
+            SelfDir->Open,
+            SelfDir,
+            &VarsDir,
+            L"vars",
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+        );
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
         }

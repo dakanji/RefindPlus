@@ -99,10 +99,11 @@ VOID RotateCsrValue(VOID) {
             TargetCsr = ListItem->Next->Value;
         }
         Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
-        if (Status == EFI_SUCCESS)
+        if (Status == EFI_SUCCESS) {
             RecordgCsrStatus(TargetCsr, TRUE);
-        else
+        } else {
             SPrint(gCsrStatus, 255, L" Error setting System Integrity Protection code.");
+        }
     } // if
 } // VOID RotateCsrValue()
 
