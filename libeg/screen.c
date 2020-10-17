@@ -1047,7 +1047,10 @@ egInitScreen(
     }
 
     if (GlobalConfig.UseDirectGop) {
-        XFlag = EFI_LOAD_ERROR;
+        if (XFlag != EFI_SUCCESS) {
+            XFlag = EFI_LOAD_ERROR;
+        }
+
         Status = OcUseDirectGop (-1);
 
         if (!EFI_ERROR(Status)) {
@@ -1071,7 +1074,7 @@ egInitScreen(
         MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
         #endif
     }
-
+    
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Cannot Implement Graphics Output Protocol\n\n");

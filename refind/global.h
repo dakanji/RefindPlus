@@ -223,9 +223,9 @@
 #define HIDEUI_FLAG_ALL       ((0xffff))
 
 // Default hint text for program-launch submenus
-#define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; Enter to boot;"
-#define SUBSCREEN_HINT2            L"Insert or F2 to edit options; Esc to return to main menu"
-#define SUBSCREEN_HINT2_NO_EDITOR  L"Esc to return to main menu"
+#define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; 'Enter' to boot;"
+#define SUBSCREEN_HINT2            L"'Insert' or 'F2' to edit options; 'Esc' to return to main menu"
+#define SUBSCREEN_HINT2_NO_EDITOR  L"'Esc' to return to main menu"
 
 #define NULL_GUID_VALUE { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
 #define REFIND_GUID_VALUE { 0x36D08FA7, 0xCF0B, 0x42F5, {0x8F, 0x14, 0x68, 0xDF, 0x73, 0xED, 0x37, 0x40} };
