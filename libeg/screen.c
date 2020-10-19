@@ -1032,9 +1032,9 @@ egInitScreen(
                 Status = daCheckAltGop();
 
                 if (!EFI_ERROR(Status)) {
-                    Status = OcProvideConsoleGop(TRUE);
+                    XFlag = OcProvideConsoleGop(TRUE);
 
-                    if (!EFI_ERROR (Status)) {
+                    if (!EFI_ERROR (XFlag)) {
                         Status = gBS->HandleProtocol(
                             gST->ConsoleOutHandle,
                             &GraphicsOutputProtocolGuid,
@@ -1046,35 +1046,47 @@ egInitScreen(
         }
     }
 
-    if (GlobalConfig.UseDirectGop) {
+    if (XFlag != EFI_NOT_FOUND && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
         if (XFlag != EFI_SUCCESS) {
             XFlag = EFI_LOAD_ERROR;
         }
 
-        Status = OcUseDirectGop (-1);
-
-        if (!EFI_ERROR(Status)) {
-            // Check ConsoleOut Handle
-            Status = gBS->HandleProtocol(
-                gST->ConsoleOutHandle,
-                &GraphicsOutputProtocolGuid,
-                (VOID **) &OldGOP
-            );
-            if (!EFI_ERROR(Status)) {
-                if (OldGOP->Mode->MaxMode > 0) {
-                    GraphicsOutput = OldGOP;
-                    XFlag = EFI_ALREADY_STARTED;
-                }
-            } else {
-                OldGOP = NULL;
-            }
+        if (GraphicsOutput == NULL) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Cannot Implement Direct GOP Renderer\n\n");
+            #endif
         }
+        else {
+            if (GraphicsOutput->Mode->Info->PixelFormat == PixelBltOnly) {
+                Status = EFI_UNSUPPORTED;
+            }
+            else {
+                Status = OcUseDirectGop(-1);
+            }
 
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
-        #endif
+            if (!EFI_ERROR(Status)) {
+                // Check ConsoleOut Handle
+                Status = gBS->HandleProtocol(
+                    gST->ConsoleOutHandle,
+                    &GraphicsOutputProtocolGuid,
+                    (VOID **) &OldGOP
+                );
+                if (!EFI_ERROR(Status)) {
+                    if (OldGOP->Mode->MaxMode > 0) {
+                        GraphicsOutput = OldGOP;
+                        XFlag = EFI_ALREADY_STARTED;
+                    }
+                } else {
+                    OldGOP = NULL;
+                }
+            }
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
+            #endif
+        }
     }
-    
+
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Cannot Implement Graphics Output Protocol\n\n");
