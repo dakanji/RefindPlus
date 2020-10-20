@@ -220,7 +220,7 @@
 #define HIDEUI_FLAG_EDITOR     (0x0040)
 #define HIDEUI_FLAG_SAFEMODE   (0x0080)
 #define HIDEUI_FLAG_BADGES     (0x0100)
-#define HIDEUI_FLAG_ALL       ((0xffff))
+#define HIDEUI_FLAG_ALL        (0x01ff)
 
 // Default hint text for program-launch submenus
 #define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; 'Enter' to boot;"
