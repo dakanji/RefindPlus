@@ -287,13 +287,15 @@ SwitchToText (
     GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
     if (!GlobalConfig.TextRenderer && HaveOverriden == FALSE) {
-        HaveOverriden = TRUE;
         // Override Text Renderer Setting
-        OcUseBuiltinTextOutput();
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
-        #endif
+        Status = OcUseBuiltinTextOutput();
+        HaveOverriden = TRUE;
+        
+        if (!EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
+            #endif
+        }
     }
 
     egSetGraphicsModeEnabled(FALSE);
