@@ -212,10 +212,6 @@ SetupScreen (
     }
 
     if (GlobalConfig.TextOnly) {
-        #if REFIT_DEBUG > 0
-        MsgLog("INFO: User Requested Text Mode in Config\n\n");
-        #endif
-
         // Set text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
@@ -290,7 +286,7 @@ SwitchToText (
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput();
         HaveOverriden = TRUE;
-        
+
         if (!EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
