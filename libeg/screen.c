@@ -142,7 +142,7 @@ daCheckAltGop (
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Validate GOP for ConsoleOut Handle:\n");
+    MsgLog ("Validate Replacement GOP for ConsoleOut Handle:\n");
     #endif
 
     OrigGop = NULL;
@@ -162,7 +162,7 @@ daCheckAltGop (
     else {
         if (OrigGop->Mode->MaxMode > 0) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Valid GOP Exists on ConsoleOut Handle\n\n");
+            MsgLog ("  - Valid GOP Already Exists on ConsoleOut Handle\n\n");
             #endif
 
             GraphicsOutput = OrigGop;
@@ -181,7 +181,7 @@ daCheckAltGop (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Seeking GOP Handles ...%r", Status);
+        MsgLog ("  - Seeking Firmware GOP Handles ...%r\n", Status);
         #endif
 
         if (EFI_ERROR (Status)) {
@@ -198,6 +198,7 @@ daCheckAltGop (
         UINT32  Mode;
         UINTN   SizeOfInfo;
         BOOLEAN OurValidGOP;
+        BOOLEAN DoneLoop = FALSE;
 
         Status = EFI_NOT_FOUND;
         for (Index = 0; Index < HandleCount; ++Index) {
@@ -211,19 +212,20 @@ daCheckAltGop (
 
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
-                    if (Mode > 0) {
+                    if (DoneLoop == TRUE) {
                         MsgLog ("\n");
                     }
-                    MsgLog ("  - Found Candidate Replacement GOP on GPU Handle[%02d]\n", Index);
+                    MsgLog ("  - Found Candidate Replacement GOP on Firmware Handle[%02d]\n", Index);
                     #endif
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("    * Evaluating Candidate\n");
                     #endif
 
-                    MaxMode = Gop->Mode->MaxMode;
-                    Width   = 0;
-                    Height  = 0;
+                    MaxMode  = Gop->Mode->MaxMode;
+                    Width    = 0;
+                    Height   = 0;
+                    DoneLoop = TRUE;
 
                     for (Mode = 0; Mode < MaxMode; Mode++) {
                         Status = Gop->QueryMode(Gop, Mode, &SizeOfInfo, &Info);
@@ -1494,7 +1496,10 @@ egSetScreenSize(
 
                     #if REFIT_DEBUG > 0
                     MsgLog("\n");
-                    MsgLog("    * Resolution: %dx%d\n\n", egScreenWidth, egScreenHeight);
+                    MsgLog("    * Screen Width: %d\n", egScreenWidth);
+                    MsgLog("    * Screen Height: %d\n", egScreenHeight);
+                    MsgLog("    * Colour Depth: %d\n", UGADepth);
+                    MsgLog("    * Refresh Rate: %d\n\n", UGARefreshRate);
                     #endif
                 }
             }
