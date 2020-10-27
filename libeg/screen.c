@@ -740,7 +740,7 @@ egInitScreen(
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     UINTN                         i;
-    BOOLEAN                       thisValidGOP;
+    BOOLEAN                       thisValidGOP = FALSE;
 
 
     #if REFIT_DEBUG > 0
@@ -1017,7 +1017,6 @@ egInitScreen(
             if (EFI_ERROR (Status)) {
                 // Force to NOT FOUND on Error as subsequent code relies on this
                 Status = EFI_NOT_FOUND;
-                thisValidGOP = FALSE;
             }
         }
     }
@@ -1026,7 +1025,6 @@ egInitScreen(
 
     if (Status == EFI_NOT_FOUND) {
         XFlag = EFI_NOT_FOUND;
-        thisValidGOP = FALSE;
 
         // Not Found
         #if REFIT_DEBUG > 0
@@ -1036,7 +1034,6 @@ egInitScreen(
 
     if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
         XFlag = EFI_NOT_FOUND;
-        thisValidGOP = FALSE;
 
         // Not Found
         #if REFIT_DEBUG > 0
@@ -1057,7 +1054,6 @@ egInitScreen(
         }
         else {
             XFlag = EFI_UNSUPPORTED;
-            thisValidGOP = FALSE;
 
             #if REFIT_DEBUG > 0
             MsgLog("  - Assess Graphics Output Protocol ...NOT OK!\n\n");
@@ -1067,9 +1063,9 @@ egInitScreen(
                 Status = daCheckAltGop();
 
                 if (!EFI_ERROR(Status)) {
-                    XFlag = OcProvideConsoleGop(TRUE);
+                    Status = OcProvideConsoleGop(TRUE);
 
-                    if (!EFI_ERROR (XFlag)) {
+                    if (!EFI_ERROR (Status)) {
                         Status = gBS->HandleProtocol(
                             gST->ConsoleOutHandle,
                             &GraphicsOutputProtocolGuid,
@@ -1087,8 +1083,6 @@ egInitScreen(
         }
 
         if (GraphicsOutput == NULL) {
-            thisValidGOP = FALSE;
-
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Cannot Implement Direct GOP Renderer\n\n");
             #endif
@@ -1096,14 +1090,12 @@ egInitScreen(
         else {
             if (GraphicsOutput->Mode->Info->PixelFormat == PixelBltOnly) {
                 Status = EFI_UNSUPPORTED;
-                thisValidGOP = FALSE;
             }
             else {
                 Status = OcUseDirectGop(-1);
             }
 
             if (!EFI_ERROR(Status)) {
-                thisValidGOP = TRUE;
                 // Check ConsoleOut Handle
                 Status = gBS->HandleProtocol(
                     gST->ConsoleOutHandle,
@@ -1111,7 +1103,6 @@ egInitScreen(
                     (VOID **) &OldGOP
                 );
                 if (EFI_ERROR(Status)) {
-                    thisValidGOP = FALSE;
                     OldGOP = NULL;
                 }
                 else {
@@ -1129,8 +1120,6 @@ egInitScreen(
     }
 
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
-        thisValidGOP = FALSE;
-
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Cannot Implement Graphics Output Protocol\n\n");
         #endif
@@ -1140,10 +1129,7 @@ egInitScreen(
         MsgLog ("INFO: Provide GOP on ConsoleOut Handle ...%r\n\n", Status);
         #endif
 
-        if (EFI_ERROR (Status)) {
-            thisValidGOP = FALSE;
-        }
-        else {
+        if (!EFI_ERROR (Status)) {
             thisValidGOP = TRUE;
         }
     }
@@ -1159,14 +1145,12 @@ egInitScreen(
             #endif
 
             GraphicsOutput = NULL;
-            thisValidGOP = FALSE;
         }
         else {
             egSetMaxResolution();
             egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
             egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
             egHasGraphics = TRUE;
-            thisValidGOP = TRUE;
 
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
