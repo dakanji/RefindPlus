@@ -304,7 +304,7 @@ SwitchToText (
     #endif
 
     // get size of text console
-    Status =gST->ConOut->QueryMode(
+    Status = gST->ConOut->QueryMode(
         gST->ConOut,
         gST->ConOut->Mode->Mode,
         &ConWidth,
@@ -313,8 +313,8 @@ SwitchToText (
 
     if (EFI_ERROR (Status)) {
         // use default values on error
-        ConWidth = 80;
-        ConHeight = 25;
+        ConWidth = 800;
+        ConHeight = 600;
 
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
