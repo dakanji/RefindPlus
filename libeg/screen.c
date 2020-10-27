@@ -182,10 +182,14 @@ daCheckAltGop (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Seeking Firmware GOP Handles ...%r\n", Status);
+        MsgLog ("  - Seeking Firmware GOP Handles ...%r", Status);
         #endif
 
         if (EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("\n");
+            #endif
+
             // Restore Protocol and Return
             gBS->HandleProtocol = daOrigProtocol;
             return EFI_NOT_FOUND;
@@ -199,7 +203,6 @@ daCheckAltGop (
         UINT32  Mode;
         UINTN   SizeOfInfo;
         BOOLEAN OurValidGOP;
-        BOOLEAN DoneLoop = FALSE;
 
         Status = EFI_NOT_FOUND;
         for (Index = 0; Index < HandleCount; ++Index) {
@@ -213,9 +216,7 @@ daCheckAltGop (
 
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
-                    if (DoneLoop == TRUE) {
-                        MsgLog ("\n");
-                    }
+                    MsgLog ("\n");
                     MsgLog ("  - Found Candidate Replacement GOP on Firmware Handle[%02d]\n", Index);
                     #endif
 
@@ -226,7 +227,6 @@ daCheckAltGop (
                     MaxMode  = Gop->Mode->MaxMode;
                     Width    = 0;
                     Height   = 0;
-                    DoneLoop = TRUE;
 
                     for (Mode = 0; Mode < MaxMode; Mode++) {
                         Status = Gop->QueryMode(Gop, Mode, &SizeOfInfo, &Info);
