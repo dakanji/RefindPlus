@@ -139,7 +139,7 @@ static REFIT_MENU_ENTRY MenuEntryAbout = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryReset = {
-    L"Reboot Computer",
+    L"Restart Computer",
     TAG_REBOOT,
     1, 0, 'R',
     NULL, NULL, NULL
@@ -1717,7 +1717,7 @@ VOID ScanForTools(VOID) {
                 break;
 
             case TAG_REBOOT:
-                ToolName = L"Reboot Computer";
+                ToolName = L"Restart Computer";
                 break;
 
             case TAG_ABOUT:

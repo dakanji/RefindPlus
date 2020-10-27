@@ -1030,7 +1030,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 if(ranCleanNvram == TRUE) {
                     #if REFIT_DEBUG > 0
                     MsgLog("INFO: Cleaned Nvram\n\n");
-                    MsgLog("Reboot Computer...\n");
+                    MsgLog("Restart Computer...\n");
                     MsgLog("Terminating Screen:\n");
                     #endif
                     TerminateScreen();
@@ -1086,10 +1086,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog("  - Reboot Computer\n---------------\n\n");
+                    MsgLog("  - Restart Computer\n---------------\n\n");
                 }
                 else {
-                    MsgLog("  - Reboot Computer\n\n");
+                    MsgLog("  - Restart Computer\n\n");
                 }
                 #endif
 
@@ -1327,7 +1327,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
     #if REFIT_DEBUG > 0
-    MsgLog("Fallback: Reboot Computer...\n");
+    MsgLog("Fallback: Restart Computer...\n");
     MsgLog("Screen Termination:\n");
     #endif
     TerminateScreen();
