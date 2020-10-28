@@ -313,14 +313,13 @@ SwitchToText (
 
     if (EFI_ERROR (Status)) {
         // use default values on error
-        ConWidth = 800;
-        ConHeight = 600;
+        ConWidth = 80;
+        ConHeight = 25;
 
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
-                "  - %r: Could not Get Text Console Size ...Using Default: %dx%d\n\n",
-                Status,
+                "  Could not Get Text Console Size ...Using Default: %dx%d\n\n",
                 ConHeight,
                 ConWidth
             );
@@ -330,10 +329,9 @@ SwitchToText (
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
-                "  - %r: Text Console Size = %dx%d\n\n",
-                Status,
-                ConHeight,
-                ConWidth
+                "  Text Console Size = %dx%d\n\n",
+                ConWidth,
+                ConHeight
             );
         }
         #endif
