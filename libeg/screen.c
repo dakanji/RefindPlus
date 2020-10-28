@@ -1486,10 +1486,10 @@ egSetScreenSize(
 
                     #if REFIT_DEBUG > 0
                     MsgLog("\n");
-                    MsgLog("    * Screen Width: %d\n", egScreenWidth);
-                    MsgLog("    * Screen Height: %d\n", egScreenHeight);
-                    MsgLog("    * Colour Depth: %d\n", UGADepth);
-                    MsgLog("    * Refresh Rate: %d\n\n", UGARefreshRate);
+                    MsgLog("    * Screen Width: %6d\n", egScreenWidth);
+                    MsgLog("    * Screen Height: %5d\n", egScreenHeight);
+                    MsgLog("    * Colour Depth: %6d\n", UGADepth);
+                    MsgLog("    * Refresh Rate: %6d\n\n", UGARefreshRate);
                     #endif
                 }
             }
