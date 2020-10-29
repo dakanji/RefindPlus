@@ -62,6 +62,7 @@
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"
+#include "../include/refit_call_wrapper.h"
 #include "../include/egemb_refind_banner.h"
 
 // Console defines and variables
@@ -123,10 +124,16 @@ InitScreen (
     GraphicsScreenDirty = TRUE;
 
     // disable cursor
-    gST->ConOut->EnableCursor(gST->ConOut, FALSE);
+    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, FALSE);
 
     // get size of text console
-    if (gST->ConOut->QueryMode(gST->ConOut, gST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
+    if (refit_call4_wrapper(
+        gST->ConOut->QueryMode,
+        gST->ConOut,
+        gST->ConOut->Mode->Mode,
+        &ConWidth,
+        &ConHeight) != EFI_SUCCESS
+    ) {
         // use default values on error
         ConWidth = 80;
         ConHeight = 25;
@@ -295,7 +302,7 @@ SwitchToText (
     }
 
     egSetGraphicsModeEnabled(FALSE);
-    gST->ConOut->EnableCursor(gST->ConOut, CursorEnabled);
+    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
     if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
@@ -304,7 +311,8 @@ SwitchToText (
     #endif
 
     // get size of text console
-    Status = gST->ConOut->QueryMode(
+    Status = refit_call4_wrapper(
+        gST->ConOut->QueryMode,
         gST->ConOut,
         gST->ConOut->Mode->Mode,
         &ConWidth,
@@ -426,11 +434,11 @@ TerminateScreen (
     VOID
 ) {
     // clear text screen
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
-    gST->ConOut->ClearScreen(gST->ConOut);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    refit_call1_wrapper(gST->ConOut->ClearScreen, gST->ConOut);
 
     // enable cursor
-    gST->ConOut->EnableCursor(gST->ConOut, TRUE);
+    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
 }
 
 VOID
@@ -441,23 +449,23 @@ DrawScreenHeader (
 
     // clear to black background
     egClearScreen(&DarkBackgroundPixel); // first clear in graphics mode
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
-    gST->ConOut->ClearScreen(gST->ConOut); // then clear in text mode
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    refit_call1_wrapper(gST->ConOut->ClearScreen, gST->ConOut); // then clear in text mode
 
     // paint header background
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BANNER);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (y = 0; y < 3; y++) {
-        gST->ConOut->SetCursorPosition(gST->ConOut, 0, y);
+        refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, y);
         Print(BlankLine);
     }
 
     // print header text
-    gST->ConOut->SetCursorPosition(gST->ConOut, 3, 1);
+    refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
     Print(L"rEFInd - %s", Title);
 
     // reposition cursor
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
-    gST->ConOut->SetCursorPosition(gST->ConOut, 0, 4);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
 }
 
 //
@@ -474,7 +482,7 @@ ReadAllKeyStrokes (
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
+        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -518,11 +526,11 @@ HaltForKey (
     PrintUglyText(L"* Halted: Press Any Key to Continue *", NEXTLINE);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        gBS->Stall(5000000);     // 5 seconds delay
+        refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+    refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
 
     GraphicsScreenDirty = TRUE;
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
@@ -545,14 +553,14 @@ PauseForKey (
     }
 
     if (GlobalConfig.ContinueOnWarning) {
-        gBS->Stall(3000000);
+        refit_call1_wrapper(gBS->Stall, 3000000);
     } else {
         if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-            gBS->Stall(5000000);     // 5 seconds delay
+            refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
             ReadAllKeyStrokes();    // empty the buffer again
         }
 
-        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+        refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
 
     GraphicsScreenDirty = TRUE;
@@ -564,7 +572,7 @@ VOID
 PauseSeconds (
     UINTN Seconds
 ) {
-     gBS->Stall(1000000 * Seconds);
+    refit_call1_wrapper(gBS->Stall, 1000000 * Seconds);
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
@@ -589,7 +597,7 @@ EndlessIdleLoop (
 
     for (;;) {
         ReadAllKeyStrokes();
-        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &index);
+        refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
 }
 
@@ -604,8 +612,9 @@ CheckFatalError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR(Status))
+    if (!EFI_ERROR(Status)) {
         return FALSE;
+    }
 
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
@@ -623,9 +632,9 @@ CheckFatalError (
     MsgLog("** FATAL ERROR: %r %s\n", Status, where);
     #endif
 #endif
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
     MyFreePool(Temp);
 
@@ -660,9 +669,9 @@ CheckError (
     #endif
 #endif
 
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
     if (MyStrStr(where, L"While Reading Boot Sector") != NULL ||

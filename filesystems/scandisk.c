@@ -30,6 +30,7 @@ extern EFI_GUID gMyEfiBlockIoProtocolGuid;
 #define gMyEfiBlockIoProtocolGuid gEfiBlockIoProtocolGuid
 #define gMyEfiDiskIoProtocolGuid gEfiDiskIoProtocolGuid
 #endif
+#include "../include/refit_call_wrapper.h"
 
 extern struct fsw_host_table   fsw_efi_host_table;
 static void dummy_volume_free(struct fsw_volume *vol) { }
@@ -101,23 +102,45 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     Print(L" ");
 #endif
     DPRINT(L"Scanning disks\n");
-    Status = gBS->LocateHandleBuffer(ByProtocol, &gMyEfiDiskIoProtocolGuid, NULL, &HandleCount, &Handles);
-    if (Status == EFI_NOT_FOUND)
+    Status = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
+        ByProtocol,
+        &gMyEfiDiskIoProtocolGuid,
+        NULL,
+        &HandleCount,
+        &Handles
+    );
+    if (Status == EFI_NOT_FOUND) {
         return -1;  // no filesystems. strange, but true...
+    }
+
     for (i = 0; i < HandleCount; i++) {
         EFI_DISK_IO *diskio;
         EFI_BLOCK_IO *blockio;
-        Status = gBS->HandleProtocol(Handles[i], &gMyEfiDiskIoProtocolGuid, (VOID **) &diskio);
-        if (Status != 0)
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            Handles[i],
+            &gMyEfiDiskIoProtocolGuid,
+            (VOID **) &diskio
+        );
+        if (Status != 0) {
             continue;
-        Status = gBS->HandleProtocol(Handles[i], &gMyEfiBlockIoProtocolGuid, (VOID **) &blockio);
-        if (Status != 0)
+        }
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            Handles[i],
+            &gMyEfiBlockIoProtocolGuid,
+            (VOID **) &blockio
+        );
+        if (Status != 0) {
             continue;
+        }
         struct fsw_volume *vol = create_dummy_volume(diskio, blockio->Media->MediaId);
         if(vol) {
             DPRINT(L"Checking disk %d\n", i);
-            if(hook(master, vol) == FSW_SUCCESS)
+            if(hook(master, vol) == FSW_SUCCESS) {
                 scanned++;
+            }
             free_dummy_volume(vol);
         }
     }

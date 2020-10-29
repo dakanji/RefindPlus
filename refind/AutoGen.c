@@ -201,22 +201,22 @@ HobLibConstructor (
 //   )
 // {
 //   EFI_STATUS  Status;
-// 
+//
 //   Status = UefiBootServicesTableLibConstructor (ImageHandle, SystemTable);
 //   ASSERT_EFI_ERROR (Status);
-// 
+//
 //   Status = UefiRuntimeServicesTableLibConstructor (ImageHandle, SystemTable);
 //   ASSERT_EFI_ERROR (Status);
-// 
+//
 //   Status = UefiLibConstructor (ImageHandle, SystemTable);
 //   ASSERT_EFI_ERROR (Status);
-// 
+//
 //   Status = DxeServicesTableLibConstructor (ImageHandle, SystemTable);
 //   ASSERT_EFI_ERROR (Status);
-// 
+//
 //   Status = HobLibConstructor (ImageHandle, SystemTable);
 //   ASSERT_EFI_ERROR (Status);
-// 
+//
 // }
 
 
@@ -240,7 +240,7 @@ const UINT32 _gUefiDriverRevision = 0x00010000U;
 //   IN EFI_HANDLE        ImageHandle,
 //   IN EFI_SYSTEM_TABLE  *SystemTable
 //   )
-// 
+//
 // {
 //   return efi_main (ImageHandle, SystemTable);
 // }
@@ -254,7 +254,7 @@ ExitDriver (
   if (EFI_ERROR (Status)) {
     ProcessLibraryDestructorList (gImageHandle, gST);
   }
-  gBS->Exit (gImageHandle, Status, 0, NULL);
+  refit_call2_wrapper(gBS->Exit, gImageHandle, Status, 0, NULL);
 }
 
 //GLOBAL_REMOVE_IF_UNREFERENCED const UINT8 _gDriverUnloadImageCount = 0U;
@@ -290,4 +290,3 @@ GLOBAL_REMOVE_IF_UNREFERENCED const UINT32 _gPcd_FixedAtBuild_PcdDebugPrintError
 extern const  UINT32  _gPcd_FixedAtBuild_PcdDebugPrintErrorLevel;
 #define _PCD_GET_MODE_32_PcdDebugPrintErrorLevel  _gPcd_FixedAtBuild_PcdDebugPrintErrorLevel
 //#define _PCD_SET_MODE_32_PcdDebugPrintErrorLevel  ASSERT(FALSE)  // It is not allowed to set value for a FIXED_AT_BUILD PCD
-

@@ -104,7 +104,14 @@ RefitReadFile(
     File->BufferSize = 0;
 
     // read the file, allocating a buffer on the way
-    Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(
+        BaseDir->Open,
+        BaseDir,
+        &FileHandle,
+        FileName,
+        EFI_FILE_MODE_READ,
+        0
+    );
     SPrint(Message, 255, L"while loading the file '%s'", FileName);
     if (CheckError(Status, Message)) {
         return Status;

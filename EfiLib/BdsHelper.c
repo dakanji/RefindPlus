@@ -52,7 +52,7 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
    BBS_BBS_DEVICE_PATH       *OptionBBS;
    CHAR16                    Desc[100];
 
-   Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
    if (EFI_ERROR (Status) || (Option == NULL)) {
       return;
    }
@@ -127,7 +127,7 @@ BdsLibDoLegacyBoot (
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status)) {
       return EFI_UNSUPPORTED;
     }

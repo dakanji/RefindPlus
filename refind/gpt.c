@@ -125,7 +125,12 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
    // get block i/o
    if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
-      Status = gBS->HandleProtocol(Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
+      Status = refit_call3_wrapper(
+          gBS->HandleProtocol,
+          Volume->DeviceHandle,
+          &BlockIoProtocol,
+          (VOID **) &(Volume->BlockIO)
+      );
       if (EFI_ERROR(Status)) {
          Volume->BlockIO = NULL;
          Print(L"Warning: Can't get BlockIO protocol in ReadGptData().\n");

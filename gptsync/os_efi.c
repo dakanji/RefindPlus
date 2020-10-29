@@ -58,7 +58,14 @@ UINTN read_sector(UINT64 lba, UINT8 *buffer)
 {
     EFI_STATUS          Status;
 
-    Status = refit_call5_wrapper(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, lba, 512, buffer);
+    Status = refit_call5_wrapper(
+        BlockIO->ReadBlocks,
+        BlockIO,
+        BlockIO->Media->MediaId,
+        lba,
+        512,
+        buffer
+    );
     if (EFI_ERROR(Status)) {
         // TODO: report error
         return 1;
@@ -70,7 +77,14 @@ UINTN write_sector(UINT64 lba, UINT8 *buffer)
 {
     EFI_STATUS          Status;
 
-    Status = refit_call5_wrapper(BlockIO->WriteBlocks, BlockIO, BlockIO->Media->MediaId, lba, 512, buffer);
+    Status = refit_call5_wrapper(
+        BlockIO->WriteBlocks,
+        BlockIO,
+        BlockIO->Media->MediaId,
+        lba,
+        512,
+        buffer
+    );
     if (EFI_ERROR(Status)) {
         // TODO: report error
         return 1;
@@ -90,7 +104,11 @@ static BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
+        Status = refit_call2_wrapper(
+            gST->ConIn->ReadKeyStroke,
+            gST->ConIn,
+            &Key
+        );
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -107,11 +125,16 @@ static VOID PauseForKey(VOID)
     Print(L"\n* Hit any key to continue *");
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        gBS->Stall(5000000);     // 5 seconds delay
+        refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
+    refit_call3_wrapper(
+        gBS->WaitForEvent,
+        1,
+        &gST->ConIn->WaitForKey,
+        &Index
+    );
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 
     Print(L"\n");
@@ -127,10 +150,20 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
     ReadAllKeyStrokes(); // Remove buffered key strokes
     do {
-        gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
-        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
-        if (EFI_ERROR(Status) && Status != EFI_NOT_READY)
+        refit_call3_wrapper(
+            gBS->WaitForEvent,
+            1,
+            &gST->ConIn->WaitForKey,
+            &Index
+        );
+        Status = refit_call2_wrapper(
+            gST->ConIn->ReadKeyStroke,
+            gST->ConIn,
+            &Key
+        );
+        if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
             return 1;
+        }
     } while (Status == EFI_NOT_READY);
 
     if (Key.UnicodeChar == 'y' || Key.UnicodeChar == 'Y') {
@@ -220,7 +253,14 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
 
     InitializeLib(ImageHandle, SystemTable);
 
-    Status = gBS->LocateHandleBuffer(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &HandleBuffer);
+    Status = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
+        ByProtocol,
+        &BlockIoProtocol,
+        NULL,
+        &HandleCount,
+        &HandleBuffer
+    );
     if (EFI_ERROR (Status)) {
         Status = EFI_NOT_FOUND;
         return Status;
@@ -253,7 +293,12 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
         if (!Usable)
             continue;
 
-        Status = gBS->HandleProtocol(DeviceHandle, &BlockIoProtocol, (VOID **) &BlockIO);
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            DeviceHandle,
+            &BlockIoProtocol,
+            (VOID **) &BlockIO
+        );
         if (EFI_ERROR(Status)) {
             // TODO: report error
             BlockIO = NULL;
@@ -275,11 +320,14 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
 
     SyncStatus = gptsync();
 
-    if (SyncStatus == 0)
+    if (SyncStatus == 0) {
         PauseForKey();
+    }
 
 
-    if (SyncStatus)
+    if (SyncStatus) {
         return EFI_NOT_FOUND;
+    }
+
     return EFI_SUCCESS;
 }

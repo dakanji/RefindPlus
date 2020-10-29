@@ -60,19 +60,30 @@ VOID pdInitialize() {
     } else{
     // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
     UINTN NumPointerHandles = 0;
-    EFI_STATUS handlestatus = gBS->LocateHandleBuffer(ByProtocol, &APointerGuid, NULL,
-                                                  &NumPointerHandles, &APointerHandles);
+    EFI_STATUS handlestatus = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
+        ByProtocol,
+        &APointerGuid,
+        NULL,
+        &NumPointerHandles,
+        &APointerHandles
+    );
 
     if (!EFI_ERROR(handlestatus)) {
         APointerProtocol = AllocatePool(sizeof(EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
         UINTN Index;
         for(Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = gBS->OpenProtocol(APointerHandles[Index], &APointerGuid,
-                                                    (VOID **) &APointerProtocol[NumAPointerDevices],
-                                                    SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+            EFI_STATUS status = refit_call6_wrapper(
+                gBS->OpenProtocol,
+                APointerHandles[Index],
+                &APointerGuid,
+                (VOID **) &APointerProtocol[NumAPointerDevices],
+                SelfImageHandle,
+                NULL,
+                EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+            );
             if (status == EFI_SUCCESS) {
-
                 #if REFIT_DEBUG > 0
                 MsgLog("  - Enable Touch\n");
                 #endif
@@ -81,7 +92,6 @@ VOID pdInitialize() {
             }
         }
     } else {
-
         #if REFIT_DEBUG > 0
         MsgLog("  - Disable Touch\n");
         #endif
@@ -91,17 +101,30 @@ VOID pdInitialize() {
 
     // Get all handles that support simple pointer protocol (mice)
     NumPointerHandles = 0;
-    handlestatus = gBS->LocateHandleBuffer(ByProtocol, &SPointerGuid, NULL,
-                                       &NumPointerHandles, &SPointerHandles);
+    handlestatus = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
+        ByProtocol,
+        &SPointerGuid,
+        NULL,
+        &NumPointerHandles,
+        &SPointerHandles
+    );
 
     if(!EFI_ERROR(handlestatus)) {
         SPointerProtocol = AllocatePool(sizeof(EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
         UINTN Index;
         for(Index = 0; Index < NumPointerHandles; Index++) {
             // Open the protocol on the handle
-            EFI_STATUS status = gBS->OpenProtocol(SPointerHandles[Index], &SPointerGuid, (VOID **) &SPointerProtocol[NumSPointerDevices], SelfImageHandle, NULL, EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+            EFI_STATUS status = refit_call6_wrapper(
+                gBS->OpenProtocol,
+                SPointerHandles[Index],
+                &SPointerGuid,
+                (VOID **) &SPointerProtocol[NumSPointerDevices],
+                SelfImageHandle,
+                NULL,
+                EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+            );
             if (status == EFI_SUCCESS) {
-
                 #if REFIT_DEBUG > 0
                 MsgLog("  - Enable Mouse\n");
                 #endif
@@ -135,7 +158,6 @@ VOID pdInitialize() {
 // Frees allocated memory and closes pointer protocols
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdCleanup() {
-
         #if REFIT_DEBUG > 0
         MsgLog("Close Existing Pointer Protocols:\n");
         #endif
@@ -146,7 +168,13 @@ VOID pdCleanup() {
     if(APointerHandles) {
         UINTN Index;
         for(Index = 0; Index < NumAPointerDevices; Index++) {
-            gBS->CloseProtocol(APointerHandles[Index], &APointerGuid, SelfImageHandle, NULL);
+            refit_call4_wrapper(
+                gBS->CloseProtocol,
+                APointerHandles[Index],
+                &APointerGuid,
+                SelfImageHandle,
+                NULL
+            );
         }
         FreePool(APointerHandles);
         APointerHandles = NULL;
@@ -158,7 +186,13 @@ VOID pdCleanup() {
     if(SPointerHandles) {
         UINTN Index;
         for(Index = 0; Index < NumSPointerDevices; Index++) {
-            gBS->CloseProtocol(SPointerHandles[Index], &SPointerGuid, SelfImageHandle, NULL);
+            refit_call4_wrapper(
+                gBS->CloseProtocol,
+                SPointerHandles[Index],
+                &SPointerGuid,
+                SelfImageHandle,
+                NULL
+            );
         }
         FreePool(SPointerHandles);
         SPointerHandles = NULL;
@@ -235,7 +269,7 @@ EFI_STATUS pdUpdateState() {
             APointerProtocol[Index],
             &APointerState
         );
-        // if new state found and we haven't already found a new state
+        // if new state found and we have not already found a new state
         if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 
@@ -255,7 +289,7 @@ EFI_STATUS pdUpdateState() {
             SPointerProtocol[Index],
             &SPointerState
         );
-        // if new state found and we haven't already found a new state
+        // if new state found and we have not already found a new state
         if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 

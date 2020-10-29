@@ -70,6 +70,7 @@
 #include "driver_support.h"
 #include "launch_efi.h"
 #include "scan.h"
+#include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
 #include "../libeg/libeg.h"
 
@@ -713,9 +714,9 @@ static BOOLEAN SecureBootUninstall(VOID) {
 
             ShowScreenStr = L"Failed to uninstall MOK Secure Boot extensions ...Forcing Reboot";
 
-            gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
-            gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog("%s\n---------------\n\n", ShowScreenStr);
@@ -724,7 +725,7 @@ static BOOLEAN SecureBootUninstall(VOID) {
             PauseForKey();
             GlobalConfig.ContinueOnWarning = OurTempBool;
 
-            gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+            refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
         }
     }
     return Success;
@@ -742,7 +743,12 @@ static VOID SetConfigFilename(EFI_HANDLE ImageHandle) {
     CHAR16           *SubString;
     const CHAR16     *ShowScreenStr = NULL;
 
-    Status = gBS->HandleProtocol(ImageHandle, &LoadedImageProtocol, (VOID **) &Info);
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        ImageHandle,
+        &LoadedImageProtocol,
+        (VOID **) &Info
+    );
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         #if REFIT_DEBUG > 0
         MsgLog("Setting Config Filename:\n");
@@ -889,8 +895,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // read configuration
     CopyMem(GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
-       CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+    }
     SetConfigFilename(ImageHandle);
     MokProtocol = SecureBootSetup();
 
@@ -929,7 +936,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
     // disable EFI watchdog timer
-    gBS->SetWatchdogTimer(0x0000, 0x0000, 0x0000, NULL);
+    refit_call4_wrapper(gBS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
     SetupScreen();
@@ -951,7 +958,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        #endif
 
        for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
-            gBS->Stall(1000000);
+            refit_call1_wrapper(gBS->Stall, 1000000);
        }
        if (i == 1) {
            #if REFIT_DEBUG > 0
@@ -966,10 +973,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        BltClearScreen(TRUE);
     } // if
 
-    if (GlobalConfig.DefaultSelection)
-       SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
-    if (GlobalConfig.ShutdownAfterTimeout)
+    if (GlobalConfig.DefaultSelection) {
+        SelectionName = StrDuplicate(GlobalConfig.DefaultSelection);
+    }
+    if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
+    }
 
     #if REFIT_DEBUG > 0
     MsgLog(
@@ -1038,7 +1047,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     #if REFIT_DEBUG > 0
                     MsgLog("Reseting System\n---------------\n\n");
                     #endif
-                    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+                    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
                     ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
                     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1094,7 +1103,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #endif
 
                 TerminateScreen();
-                gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1111,7 +1120,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #endif
 
                 TerminateScreen();
-                gRT->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(gRT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1335,15 +1344,15 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #if REFIT_DEBUG > 0
     MsgLog("System Reset:\n\n");
     #endif
-    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     SwitchToText(FALSE);
 
     ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
 
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
     MsgLog("%s\n---------------\n\n", ShowScreenStr);

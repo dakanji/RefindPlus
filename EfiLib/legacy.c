@@ -461,7 +461,8 @@ BdsCreateLegacyBootOption (
   Ptr += sizeof (BBS_TABLE);
   *((UINT16 *) Ptr) = (UINT16) Index;
 
-  Status = gRT->SetVariable(
+  Status = refit_call5_wrapper(
+      gRT->SetVariable,
       BootString,
       &EfiGlobalVariableGuid,
       VAR_FLAG,
@@ -684,7 +685,7 @@ EfiLibDeleteVariable (
     //
     // Delete variable from Storage
     //
-    Status = gRT->SetVariable(VarName, VarGuid, VAR_FLAG, 0, NULL);
+    Status = refit_call5_wrapper(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
     ASSERT (!EFI_ERROR (Status));
     FreePool (VarBuf);
   }
@@ -738,13 +739,14 @@ BdsAddNonExistingLegacyBootOptions (
     mBootOptionBbsMappingCount = 0;
   }
 
-  refit_call5_wrapper(LegacyBios->GetBbsInfo,
-                LegacyBios,
-                &HddCount,
-                &LocalHddInfo,
-                &BbsCount,
-                &LocalBbsTable
-                );
+  refit_call5_wrapper(
+      LegacyBios->GetBbsInfo,
+      LegacyBios,
+      &HddCount,
+      &LocalHddInfo,
+      &BbsCount,
+      &LocalBbsTable
+  );
 
   BootOrder = BdsLibGetVariableAndSize (
                 L"BootOrder",
@@ -816,7 +818,8 @@ BdsAddNonExistingLegacyBootOptions (
     );
 
   if (BootOrderSize > 0) {
-    Status = gRT->SetVariable(
+    Status = refit_call5_wrapper(
+        gRT->SetVariable,
         L"BootOrder",
         &EfiGlobalVariableGuid,
         VAR_FLAG,
@@ -931,13 +934,14 @@ BdsDeleteAllInvalidLegacyBootOptions (
     return Status;
   }
 
-  refit_call5_wrapper(LegacyBios->GetBbsInfo,
-                LegacyBios,
-                &HddCount,
-                &LocalHddInfo,
-                &BbsCount,
-                &LocalBbsTable
-                );
+  refit_call5_wrapper(
+      LegacyBios->GetBbsInfo,
+      LegacyBios,
+      &HddCount,
+      &LocalHddInfo,
+      &BbsCount,
+      &LocalBbsTable
+  );
 
   BootOrder = BdsLibGetVariableAndSize (
                 L"BootOrder",
@@ -958,7 +962,8 @@ BdsDeleteAllInvalidLegacyBootOptions (
                       );
     if (NULL == BootOptionVar) {
       BootOptionSize = 0;
-      Status = gRT->GetVariable(
+      Status = refit_call5_wrapper(
+          gRT->GetVariable,
           BootOption,
           &EfiGlobalVariableGuid,
           NULL,
@@ -1034,13 +1039,14 @@ BdsDeleteAllInvalidLegacyBootOptions (
   // Adjust the number of boot options.
   //
   if (BootOrderSize != 0) {
-    Status = gRT->SetVariable(
-    L"BootOrder",
-    &EfiGlobalVariableGuid,
-    VAR_FLAG,
-    BootOrderSize,
-    BootOrder
-);
+      Status = refit_call5_wrapper(
+          gRT->SetVariable,
+          L"BootOrder",
+          &EfiGlobalVariableGuid,
+          VAR_FLAG,
+          BootOrderSize,
+          BootOrder
+      );
   } else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }

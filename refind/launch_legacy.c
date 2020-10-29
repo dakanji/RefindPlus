@@ -217,7 +217,8 @@ WriteBootDiskHint(
 ){
    EFI_STATUS Status;
 
-   Status = gRT->SetVariable(
+   Status = refit_call5_wrapper(
+       gRT->SetVariable,
        L"BootCampHD",
        &AppleVariableVendorID,
        EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
@@ -276,12 +277,22 @@ ExtractLegacyLoaderPaths(
     for (HandleIndex = 0; HandleIndex < HandleCount && PathCount < MaxPaths; HandleIndex++) {
         Handle = Handles[HandleIndex];
 
-        Status = gBS->HandleProtocol(Handle, &LoadedImageProtocol, (VOID **) &LoadedImage);
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            Handle,
+            &LoadedImageProtocol,
+            (VOID **) &LoadedImage
+        );
         if (EFI_ERROR(Status)) {
             continue;  // This can only happen if the firmware scewed up, ignore it.
         }
 
-        Status = gBS->HandleProtocol(LoadedImage->DeviceHandle, &DevicePathProtocol, (VOID **) &DevicePath);
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            LoadedImage->DeviceHandle,
+            &DevicePathProtocol,
+            (VOID **) &DevicePath
+        );
         if (EFI_ERROR(Status)) {
             continue;  // This happens, ignore it.
         }
@@ -403,7 +414,8 @@ StartLegacyImageList(
     // load the image into memory
     ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
-        ReturnStatus = Status = gBS->LoadImage(
+        Status = refit_call6_wrapper(
+            gBS->LoadImage,
             FALSE,
             SelfImageHandle,
             DevicePaths[DevicePathIndex],
@@ -411,6 +423,7 @@ StartLegacyImageList(
             0,
             &ChildImageHandle
         );
+        ReturnStatus = Status;
         if (ReturnStatus != EFI_NOT_FOUND) {
             break;
         }
@@ -423,11 +436,13 @@ StartLegacyImageList(
         goto bailout;
     }
 
-    ReturnStatus = Status = gBS->HandleProtocol(
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
         ChildImageHandle,
         &LoadedImageProtocol,
         (VOID **) &ChildLoadedImage
     );
+    ReturnStatus = Status;
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 2;
@@ -443,7 +458,8 @@ StartLegacyImageList(
 
     // close open file handles
     UninitRefitLib();
-    ReturnStatus = Status = gBS->StartImage(ChildImageHandle, NULL, NULL);
+    Status = refit_call3_wrapper(gBS->StartImage, ChildImageHandle, NULL, NULL);
+    ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
     SPrint(ErrorInfo, 255, L"returned from legacy loader");
@@ -458,7 +474,7 @@ StartLegacyImageList(
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    Status = gBS->UnloadImage(ChildImageHandle);
+    Status = refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MyFreePool(FullLoadOptions);
@@ -727,7 +743,12 @@ ScanLegacyUEFI(
 
     // If LegacyBios protocol is not implemented on this platform, then
     //we do not support this type of legacy boot on this machine.
-    Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = refit_call3_wrapper(
+        gBS->LocateProtocol,
+        &gEfiLegacyBootProtocolGuid,
+        NULL,
+        (VOID **) &LegacyBios
+    );
     if (EFI_ERROR (Status)) {
         return;
     }
@@ -906,7 +927,12 @@ VOID FindLegacyBootType(VOID) {
    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
    // UEFI-style legacy BIOS support is available only with some EFI implementations....
-   Status = gBS->LocateProtocol(&gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+   Status = refit_call3_wrapper(
+       gBS->LocateProtocol,
+       &gEfiLegacyBootProtocolGuid,
+       NULL,
+       (VOID **) &LegacyBios
+   );
    if (!EFI_ERROR (Status)) {
        GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
    }

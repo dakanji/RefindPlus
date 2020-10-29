@@ -1113,12 +1113,25 @@ static CHAR16* RuniPXEDiscover(EFI_HANDLE Volume)
     UINTN            boot_info_size = 0;
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
-    Status = gBS->LoadImage(FALSE, SelfImageHandle, FilePath, NULL, 0, &iPXEHandle);
+    Status = refit_call6_wrapper(
+        gBS->LoadImage,
+        FALSE,
+        SelfImageHandle,
+        FilePath,
+        NULL,
+        0,
+        &iPXEHandle
+    );
     if (Status != 0) {
         return NULL;
     }
 
-    Status = gBS->StartImage(iPXEHandle, &boot_info_size, &boot_info);
+    Status = refit_call3_wrapper(
+        gBS->StartImage,
+        iPXEHandle,
+        &boot_info_size,
+        &boot_info
+    );
 
     return boot_info;
 } // RuniPXEDiscover()

@@ -228,19 +228,27 @@ EFI_STATUS EFIAPI fsw_efi_main(IN EFI_HANDLE         ImageHandle,
     fsw_efi_DriverBinding_table.ImageHandle          = ImageHandle;
     fsw_efi_DriverBinding_table.DriverBindingHandle  = ImageHandle;
     // install Driver Binding protocol
-    Status = gBS->InstallProtocolInterface(&fsw_efi_DriverBinding_table.DriverBindingHandle,
-                                          &gMyEfiDriverBindingProtocolGuid,
-                                          EFI_NATIVE_INTERFACE,
-                                          &fsw_efi_DriverBinding_table);
+    Status = refit_call4_wrapper(
+        gBS->InstallProtocolInterface,
+        &fsw_efi_DriverBinding_table.DriverBindingHandle,
+        &gMyEfiDriverBindingProtocolGuid,
+        EFI_NATIVE_INTERFACE,
+        &fsw_efi_DriverBinding_table
+    );
+
     if (EFI_ERROR (Status)) {
         return Status;
     }
 
     // install Component Name protocol
-    Status = gBS->InstallProtocolInterface(&fsw_efi_DriverBinding_table.DriverBindingHandle,
-                                          &gMyEfiComponentNameProtocolGuid,
-                                          EFI_NATIVE_INTERFACE,
-                                          &fsw_efi_ComponentName_table);
+    Status = refit_call4_wrapper(
+        gBS->InstallProtocolInterface,
+        &fsw_efi_DriverBinding_table.DriverBindingHandle,
+        &gMyEfiComponentNameProtocolGuid,
+        EFI_NATIVE_INTERFACE,
+        &fsw_efi_ComponentName_table
+    );
+
     if (EFI_ERROR (Status)) {
         return Status;
     }
@@ -278,28 +286,39 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFIND_EFI_DRIVER_BINDING_P
     // we check for both DiskIO and BlockIO protocols
 
     // first, open DiskIO
-    Status = gBS->OpenProtocol(ControllerHandle,
-                              &gMyEfiDiskIoProtocolGuid,
-                              (VOID **) &DiskIo,
-                              This->DriverBindingHandle,
-                              ControllerHandle,
-                              EFI_OPEN_PROTOCOL_BY_DRIVER);
-    if (EFI_ERROR(Status))
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
+        ControllerHandle,
+        &gMyEfiDiskIoProtocolGuid,
+        (VOID **) &DiskIo,
+        This->DriverBindingHandle,
+        ControllerHandle,
+        EFI_OPEN_PROTOCOL_BY_DRIVER
+    );
+    if (EFI_ERROR(Status)) {
         return Status;
+    }
 
     // we were just checking, close it again
-    gBS->CloseProtocol(ControllerHandle,
-                      &gMyEfiDiskIoProtocolGuid,
-                      This->DriverBindingHandle,
-                      ControllerHandle);
+    refit_call4_wrapper(
+        gBS->CloseProtocol,
+        ControllerHandle,
+        &gMyEfiDiskIoProtocolGuid,
+        This->DriverBindingHandle,
+        ControllerHandle
+    );
 
     // next, check BlockIO without actually opening it
-    Status = gBS->OpenProtocol(ControllerHandle,
-                              &gMyEfiBlockIoProtocolGuid,
-                              NULL,
-                              This->DriverBindingHandle,
-                              ControllerHandle,
-                              EFI_OPEN_PROTOCOL_TEST_PROTOCOL);
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
+        ControllerHandle,
+        &gMyEfiBlockIoProtocolGuid,
+        NULL,
+        This->DriverBindingHandle,
+        ControllerHandle,
+        EFI_OPEN_PROTOCOL_TEST_PROTOCOL
+    );
+
     return Status;
 }
 
@@ -330,23 +349,29 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTO
 #endif
 
     // open consumed protocols
-    Status = gBS->OpenProtocol(ControllerHandle,
-                              &gMyEfiBlockIoProtocolGuid,
-                              (VOID **) &BlockIo,
-                              This->DriverBindingHandle,
-                              ControllerHandle,
-                              EFI_OPEN_PROTOCOL_GET_PROTOCOL);   // NOTE: we only want to look at the MediaId
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
+        ControllerHandle,
+        &gMyEfiBlockIoProtocolGuid,
+        (VOID **) &BlockIo,
+        This->DriverBindingHandle,
+         ControllerHandle,
+         EFI_OPEN_PROTOCOL_GET_PROTOCOL
+     );   // NOTE: we only want to look at the MediaId
     if (EFI_ERROR(Status)) {
 //        Print(L"Fsw ERROR: OpenProtocol(BlockIo) returned %x\n", Status);
         return Status;
     }
 
-    Status = gBS->OpenProtocol(ControllerHandle,
-                              &gMyEfiDiskIoProtocolGuid,
-                              (VOID **) &DiskIo,
-                              This->DriverBindingHandle,
-                              ControllerHandle,
-                              EFI_OPEN_PROTOCOL_BY_DRIVER);
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
+        ControllerHandle,
+        &gMyEfiDiskIoProtocolGuid,
+        (VOID **) &DiskIo,
+        This->DriverBindingHandle,
+        ControllerHandle,
+        EFI_OPEN_PROTOCOL_BY_DRIVER
+    );
     if (EFI_ERROR(Status)) {
         Print(L"Fsw ERROR: OpenProtocol(DiskIo) returned %x\n", Status);
         return Status;
@@ -361,17 +386,27 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTO
     Volume->LastIOStatus    = EFI_SUCCESS;
 
     // mount the filesystem
-    Status = fsw_efi_map_status(fsw_mount(Volume, &fsw_efi_host_table,
-                                          &FSW_FSTYPE_TABLE_NAME(FSTYPE), &Volume->vol),
-                                Volume);
+    Status = fsw_efi_map_status(
+        fsw_mount(
+            Volume,
+            &fsw_efi_host_table,
+            &FSW_FSTYPE_TABLE_NAME(FSTYPE),
+            &Volume->vol
+        ),
+        Volume
+    );
     if (!EFI_ERROR(Status)) {
         // register the SimpleFileSystem protocol
         Volume->FileSystem.Revision     = EFI_FILE_IO_INTERFACE_REVISION;
         Volume->FileSystem.OpenVolume   = fsw_efi_FileSystem_OpenVolume;
-        Status = gBS->InstallMultipleProtocolInterfaces(&ControllerHandle,
-                                                       &gMyEfiSimpleFileSystemProtocolGuid,
-                                                       &Volume->FileSystem,
-                                                       NULL);
+
+        Status = refit_call4_wrapper(
+            gBS->InstallMultipleProtocolInterfaces,
+            &ControllerHandle,
+            &gMyEfiSimpleFileSystemProtocolGuid,
+            &Volume->FileSystem,
+            NULL
+        );
         if (EFI_ERROR(Status)) {
 //            Print(L"Fsw ERROR: InstallMultipleProtocolInterfaces returned %x\n", Status);
         }
@@ -379,14 +414,18 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTO
 
     // on errors, close the opened protocols
     if (EFI_ERROR(Status)) {
-        if (Volume->vol != NULL)
+        if (Volume->vol != NULL) {
             fsw_unmount(Volume->vol);
+        }
         FreePool(Volume);
 
-        gBS->CloseProtocol(ControllerHandle,
-                          &gMyEfiDiskIoProtocolGuid,
-                          This->DriverBindingHandle,
-                          ControllerHandle);
+        refit_call4_wrapper(
+            gBS->CloseProtocol,
+            ControllerHandle,
+            &gMyEfiDiskIoProtocolGuid,
+            This->DriverBindingHandle,
+            ControllerHandle
+        );
     }
     return Status;
 }
@@ -415,40 +454,52 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFIND_EFI_DRIVER_BINDING_PROTO
 #endif
 
     // get the installed SimpleFileSystem interface
-    Status = gBS->OpenProtocol(ControllerHandle,
-                              &gMyEfiSimpleFileSystemProtocolGuid,
-                              (VOID **) &FileSystem,
-                              This->DriverBindingHandle,
-                              ControllerHandle,
-                              EFI_OPEN_PROTOCOL_GET_PROTOCOL);
-    if (EFI_ERROR(Status))
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
+        ControllerHandle,
+        &gMyEfiSimpleFileSystemProtocolGuid,
+        (VOID **) &FileSystem,
+        This->DriverBindingHandle,
+        ControllerHandle,
+        EFI_OPEN_PROTOCOL_GET_PROTOCOL
+    );
+    if (EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
+    }
 
     // get private data structure
     Volume = FSW_VOLUME_FROM_FILE_SYSTEM(FileSystem);
 
     // uninstall Simple File System protocol
-    Status = gBS->UninstallMultipleProtocolInterfaces(ControllerHandle,
-                                                     &gMyEfiSimpleFileSystemProtocolGuid, &Volume->FileSystem,
-                                                     NULL);
+    Status = refit_call4_wrapper(
+        gBS->UninstallMultipleProtocolInterfaces,
+        ControllerHandle,
+        &gMyEfiSimpleFileSystemProtocolGuid,
+        &Volume->FileSystem,
+        NULL
+    );
     if (EFI_ERROR(Status)) {
  //       Print(L"Fsw ERROR: UninstallMultipleProtocolInterfaces returned %x\n", Status);
         return Status;
     }
-#if DEBUG_LEVEL
+    #if DEBUG_LEVEL
     Print(L"fsw_efi_DriverBinding_Stop: protocol uninstalled successfully\n");
-#endif
+    #endif
 
     // release private data structure
-    if (Volume->vol != NULL)
+    if (Volume->vol != NULL) {
         fsw_unmount(Volume->vol);
+    }
     FreePool(Volume);
 
     // close the consumed protocols
-    Status = gBS->CloseProtocol(ControllerHandle,
-                               &gMyEfiDiskIoProtocolGuid,
-                               This->DriverBindingHandle,
-                               ControllerHandle);
+    Status = refit_call4_wrapper(
+        gBS->CloseProtocol,
+        ControllerHandle,
+        &gMyEfiDiskIoProtocolGuid,
+        This->DriverBindingHandle,
+        ControllerHandle
+    );
 
     // clear the cache
     fsw_efi_clear_cache();
@@ -559,8 +610,14 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
          // ReadDisk() call, suggests that when it fails, the program is executing
          // code starting mid-function, so there seems to be something messed up in
          // the way the function is being called. FIGURE THIS OUT!
-         Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
-                                      StartRead, (UINTN) CACHE_SIZE, (VOID*) Caches[ReadCache].Cache);
+         Status = refit_call5_wrapper(
+             Volume->DiskIo->ReadDisk,
+             Volume->DiskIo,
+             Volume->MediaId,
+             StartRead,
+             (UINTN) CACHE_SIZE,
+             (VOID*) Caches[ReadCache].Cache
+         );
          if (!EFI_ERROR(Status)) {
             Caches[ReadCache].CacheStart = StartRead;
             Caches[ReadCache].CacheValid = TRUE;
@@ -581,10 +638,14 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
    }
 
    if (ReadOneBlock) { // Something's failed, so try a simple disk read of one block....
-      Status = refit_call5_wrapper(Volume->DiskIo->ReadDisk, Volume->DiskIo, Volume->MediaId,
-                                   phys_bno * vol->phys_blocksize,
-                                   (UINTN) vol->phys_blocksize,
-                                   (VOID*) buffer);
+      Status = refit_call5_wrapper(
+          Volume->DiskIo->ReadDisk,
+          Volume->DiskIo,
+          Volume->MediaId,
+          phys_bno * vol->phys_blocksize,
+          (UINTN) vol->phys_blocksize,
+          (VOID*) buffer
+      );
    }
    Volume->LastIOStatus = Status;
 

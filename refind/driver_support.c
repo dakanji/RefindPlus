@@ -74,6 +74,7 @@
 #include "mystrings.h"
 #include "screen.h"
 #include "launch_efi.h"
+#include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)
 #define DRIVER_DIRS             L"drivers,x64_drivers,drivers_x64"
@@ -230,7 +231,8 @@ LibScanHandleDatabase (
     // Retrieve the list of all handles from the handle database
     //
 
-    Status = gBS->LocateHandleBuffer(
+    Status = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
         AllHandles,
         NULL,
         NULL,
@@ -272,7 +274,8 @@ LibScanHandleDatabase (
         //
         // Retrieve the list of all the protocols on each handle
         //
-        Status = gBS->ProtocolsPerHandle(
+        Status = refit_call3_wrapper(
+            gBS->ProtocolsPerHandle,
             (*HandleBuffer)[HandleIndex],
             &ProtocolGuidArray,
             &ArrayCount
@@ -302,7 +305,8 @@ LibScanHandleDatabase (
                 //
                 // Retrieve the list of agents that have opened each protocol
                 //
-                Status = gBS->OpenProtocolInformation(
+                Status = refit_call4_wrapper(
+                    gBS->OpenProtocolInformation,
                     (*HandleBuffer)[HandleIndex],
                     ProtocolGuidArray[ProtocolIndex],
                     &OpenInfo,
@@ -472,7 +476,8 @@ ConnectAllDriversToAllControllers(
 
             if (!Parent) {
                 if (HandleType[Index] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                   Status = gBS->ConnectController(
+                   Status = refit_call4_wrapper(
+                       gBS->ConnectController,
                        AllHandleBuffer[Index],
                        NULL,
                        NULL,
@@ -533,7 +538,8 @@ ConnectFilesystemDriver(
     //
     // Get all DiskIo handles
     //
-    Status = gBS->LocateHandleBuffer(
+    Status = refit_call5_wrapper(
+        gBS->LocateHandleBuffer,
         ByProtocol,
         &gMyEfiDiskIoProtocolGuid,
         NULL,
@@ -554,7 +560,8 @@ ConnectFilesystemDriver(
         // should be opened here BY_DRIVER by Partition driver
         // to produce partition volumes.
         //
-        Status = gBS->HandleProtocol(
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
             Handles[Index],
             &gMyEfiBlockIoProtocolGuid,
             (VOID **) &BlockIo
@@ -569,7 +576,8 @@ ConnectFilesystemDriver(
         //
         // If SimpleFileSystem is already produced - skip it, this is ok
         //
-        Status = gBS->HandleProtocol (
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
             Handles[Index],
             &gMyEfiSimpleFileSystemProtocolGuid,
             (VOID **) &Fs
@@ -582,7 +590,8 @@ ConnectFilesystemDriver(
         // If no SimpleFileSystem on this handle but DiskIo is opened BY_DRIVER
         // then disconnect this connection and try to connect our driver to it
         //
-        Status = gBS->OpenProtocolInformation(
+        Status = refit_call4_wrapper(
+            gBS->OpenProtocolInformation,
             Handles[Index],
             &gMyEfiDiskIoProtocolGuid,
             &OpenInfo,
@@ -595,14 +604,16 @@ ConnectFilesystemDriver(
         DriverHandleList[1] = NULL;
         for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
             if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER) {
-                Status = gBS->DisconnectController(
+                Status = refit_call3_wrapper(
+                    gBS->DisconnectController,
                     Handles[Index],
                     OpenInfo[OpenInfoIndex].AgentHandle,
                     NULL
                 );
                 if (!(EFI_ERROR(Status))) {
                     DriverHandleList[0] = DriverHandle;
-                    gBS->ConnectController(
+                    refit_call4_wrapper(
+                        gBS->ConnectController,
                         Handles[Index],
                         DriverHandleList,
                         NULL,

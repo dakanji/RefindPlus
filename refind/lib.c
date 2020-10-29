@@ -242,7 +242,12 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle)
     CHAR16      *DevicePathAsString, *Temp = NULL;
 
     SelfImageHandle = ImageHandle;
-    Status = gBS->HandleProtocol(SelfImageHandle, &LoadedImageProtocol, (VOID **) &SelfLoadedImage);
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        SelfImageHandle,
+        &LoadedImageProtocol,
+        (VOID **) &SelfLoadedImage
+    );
 
     if (CheckFatalError(Status, L"while getting a LoadedImageProtocol handle")) {
         return EFI_LOAD_ERROR;
@@ -294,7 +299,12 @@ VOID ReinitVolumes(VOID)
         if (Volume->DevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->DevicePath;
-            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &DeviceHandle);
+            Status = refit_call3_wrapper(
+                gBS->LocateDevicePath,
+                &BlockIoProtocol,
+                &RemainingDevicePath,
+                &DeviceHandle
+            );
 
             if (!EFI_ERROR(Status)) {
                 Volume->DeviceHandle = DeviceHandle;
@@ -311,11 +321,17 @@ VOID ReinitVolumes(VOID)
         if (Volume->WholeDiskDevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->WholeDiskDevicePath;
-            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
+            Status = refit_call3_wrapper(
+                gBS->LocateDevicePath,
+                &BlockIoProtocol,
+                &RemainingDevicePath,
+                &WholeDiskHandle
+            );
 
             if (!EFI_ERROR(Status)) {
                 // get the BlockIO protocol
-                Status = gBS->HandleProtocol(
+                Status = refit_call3_wrapper(
+                    gBS->HandleProtocol,
                     WholeDiskHandle,
                     &BlockIoProtocol,
                     (VOID **) &Volume->WholeDiskBlockIO
@@ -414,7 +430,7 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
             *buffer = NULL;
             return EFI_OUT_OF_RESOURCES;
         }
-        Status = refit_call5_wrapper(RT->GetVariable, name, vendor, NULL, &l, buf);
+        Status = refit_call5_wrapper(gRT->GetVariable, name, vendor, NULL, &l, buf);
     }
     if (EFI_ERROR(Status) == EFI_SUCCESS) {
         *buffer = (CHAR8*) buf;
@@ -457,7 +473,7 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
             flags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
-        Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+        Status = refit_call5_wrapper(gRT->SetVariable, name, vendor, flags, size, buf);
     }
     return Status;
 } // EFI_STATUS EfivarSetRaw()
@@ -1047,7 +1063,12 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
     // get block i/o
-    Status = gBS->HandleProtocol(Volume->DeviceHandle, &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        Volume->DeviceHandle,
+        &BlockIoProtocol,
+        (VOID **) &(Volume->BlockIO)
+    );
     if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
 
@@ -1055,9 +1076,9 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
         ShowScreenStr = L"ERROR: Cannot get BlockIO Protocol";
 
-        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
-        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog("%s\n\n", ShowScreenStr);
@@ -1112,21 +1133,35 @@ VOID ScanVolume(REFIT_VOLUME *Volume)
 
             // get the handle for that path
             RemainingDevicePath = DiskDevicePath;
-            Status = gBS->LocateDevicePath(&BlockIoProtocol, &RemainingDevicePath, &WholeDiskHandle);
+            Status = refit_call3_wrapper(
+                gBS->LocateDevicePath,
+                &BlockIoProtocol,
+                &RemainingDevicePath,
+                &WholeDiskHandle
+            );
             MyFreePool(DiskDevicePath);
 
             if (!EFI_ERROR(Status)) {
                 //Print(L"  - original handle: %08x - disk handle: %08x\n", (UINT32)DeviceHandle, (UINT32)WholeDiskHandle);
 
                 // get the device path for later
-                Status = gBS->HandleProtocol(WholeDiskHandle, &DevicePathProtocol, (VOID **) &DiskDevicePath);
+                Status = refit_call3_wrapper(
+                    gBS->HandleProtocol,
+                    WholeDiskHandle,
+                    &DevicePathProtocol,
+                    (VOID **) &DiskDevicePath
+                );
                 if (!EFI_ERROR(Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath(DiskDevicePath);
                 }
 
                 // look at the BlockIO protocol
-                Status = gBS->HandleProtocol(WholeDiskHandle, &BlockIoProtocol,
-                                             (VOID **) &Volume->WholeDiskBlockIO);
+                Status = refit_call3_wrapper(
+                    gBS->HandleProtocol,
+                    WholeDiskHandle,
+                    &BlockIoProtocol,
+                    (VOID **) &Volume->WholeDiskBlockIO
+                );
                 if (!EFI_ERROR(Status)) {
 
                     // check the media block size
@@ -1349,9 +1384,9 @@ VOID ScanVolumes(VOID)
 
         ShowScreenStr = L"WARN: Self Volume not Found!";
 
-        gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
-        gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog("%s\n\n", ShowScreenStr);
@@ -1619,17 +1654,19 @@ InitializeUnicodeCollationProtocol (VOID)
    // instances first and then select one which support English language.
    // Current implementation just pick the first instance.
    //
-   Status = gBS->LocateProtocol (
-                          &gEfiUnicodeCollation2ProtocolGuid,
-                          NULL,
-                          (VOID **) &mUnicodeCollation
-                          );
+   Status = refit_call3_wrapper(
+       gBS->LocateProtocol,
+       &gEfiUnicodeCollation2ProtocolGuid,
+       NULL,
+       (VOID **) &mUnicodeCollation
+   );
   if (EFI_ERROR(Status)) {
-    Status = gBS->LocateProtocol (
-                  &gEfiUnicodeCollationProtocolGuid,
-                  NULL,
-                  (VOID **) &mUnicodeCollation
-                  );
+    Status = refit_call3_wrapper(
+        gBS->LocateProtocol,
+        &gEfiUnicodeCollationProtocolGuid,
+        NULL,
+        (VOID **) &mUnicodeCollation
+    );
 
   }
    return Status;
@@ -2030,7 +2067,12 @@ BOOLEAN EjectMedia(VOID) {
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Handle = Handles[HandleIndex];
-        Status = gBS->HandleProtocol(Handle, &AppleRemovableMediaGuid, (VOID **) &Ejectable);
+        Status = refit_call3_wrapper(
+            gBS->HandleProtocol,
+            Handle,
+            &AppleRemovableMediaGuid,
+            (VOID **) &Ejectable
+        );
         if (EFI_ERROR(Status))
             continue;
         Status = refit_call1_wrapper(Ejectable->Eject, Ejectable);

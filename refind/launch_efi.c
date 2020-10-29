@@ -89,9 +89,9 @@ static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
     if (Name == NULL)
         Name = L"the loader";
 
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     Print(L"Secure Boot validation failure loading %s!\n", Name);
-    gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     if (Verbose && secure_mode()) {
         Print(L"\nThis computer is configured with Secure Boot active, but\n%s has failed validation.\n", Name);
         Print(L"\nYou can:\n * Launch another boot loader\n");
@@ -122,9 +122,17 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         return TRUE;
     } // if
 
-    Status = refit_call5_wrapper(RootDir->Open, RootDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
-    if (EFI_ERROR(Status))
+    Status = refit_call5_wrapper(
+        RootDir->Open,
+        RootDir,
+        &FileHandle,
+        FileName,
+        EFI_FILE_MODE_READ,
+        0
+    );
+    if (EFI_ERROR(Status)) {
         return FALSE;
+    }
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
@@ -181,15 +189,24 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     // an exception. (TODO: Handle this special condition better.)
     if (IsValidLoader(Volume->RootDir, Filename)) {
         DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
-        // NOTE: Below commented-out line could be more efficient if file were read ahead of
+        // NOTE: Commented-out line below could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
         // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
         // kernel returns a "Failed to handle fs_proto" error message.
         // TODO: Track down the cause of this error and fix it, if possible.
-        // ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePath,
-        //                                            ImageData, ImageSize, &ChildImageHandle);
-        ReturnStatus = Status = gBS->LoadImage(FALSE, SelfImageHandle, DevicePath,
-                                                    NULL, 0, &ChildImageHandle);
+        // Status = refit_call6_wrapper(gBS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+        //                              ImageData, ImageSize, &ChildImageHandle);
+        // ReturnStatus = Status;
+        Status = refit_call6_wrapper(
+            gBS->LoadImage,
+            FALSE,
+            SelfImageHandle,
+            DevicePath,
+            NULL,
+            0,
+            &ChildImageHandle
+        );
+        ReturnStatus = Status;
         if (secure_mode() && ShimLoaded()) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
             // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
@@ -203,8 +220,15 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             // NOTE: This doesn't check the return status or handle errors. It could
             // conceivably do weird things if, say, rEFInd were on a USB drive that the
             // user pulls before launching a program.
-            gBS->LoadImage(FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
-                                NULL, 0, &ChildImageHandle2);
+            refit_call6_wrapper(
+                gBS->LoadImage,
+                FALSE,
+                SelfImageHandle,
+                GlobalConfig.SelfDevicePath,
+                NULL,
+                0,
+                &ChildImageHandle2
+            );
         }
     } else {
         Print(L"Invalid loader file!\n");
@@ -219,11 +243,13 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         goto bailout;
     }
 
-    ReturnStatus = Status = gBS->HandleProtocol(
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
         ChildImageHandle,
         &LoadedImageProtocol,
         (VOID **) &ChildLoadedImage
     );
+    ReturnStatus = Status;
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }
@@ -234,7 +260,8 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // close open file handles
     UninitRefitLib();
-    ReturnStatus = Status = gBS->StartImage(ChildImageHandle, NULL, NULL);
+    Status = refit_call3_wrapper(gBS->StartImage, ChildImageHandle, NULL, NULL);
+    ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
     SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
@@ -252,12 +279,13 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 bailout_unload:
     // unload the image, we don't care if it works or not...
     if (!IsDriver)
-        Status = gBS->UnloadImage(ChildImageHandle);
+        Status = refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MyFreePool(FullLoadOptions);
-    if (!IsDriver)
+    if (!IsDriver) {
         FinishExternalScreen();
+    }
 
     return ReturnStatus;
 } /* EFI_STATUS StartEFIImage() */
@@ -272,15 +300,23 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
     err = EfivarGetRaw(&GlobalGuid, L"OsIndications", &b, &size);
-    if (err == EFI_SUCCESS)
+    if (err == EFI_SUCCESS) {
         osind |= (UINT64)*b;
+    }
     MyFreePool(b);
 
     err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof(UINT64), TRUE);
-    if (err != EFI_SUCCESS)
+    if (err != EFI_SUCCESS) {
         return err;
+    }
 
-    gRT->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+    refit_call4_wrapper(
+        gRT->ResetSystem,
+        EfiResetCold,
+        EFI_SUCCESS,
+        0,
+        NULL
+    );
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
     return err;

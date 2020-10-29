@@ -148,8 +148,14 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
     EFI_FILE_INFO *NewInfo, *Buffer = NULL;
     UINTN         NewInfoSize;
 
-    Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FilePtr, OldName,
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
+    Status = refit_call5_wrapper(
+        BaseDir->Open,
+        BaseDir,
+        &FilePtr,
+        OldName,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+        0
+    );
     if (Status == EFI_SUCCESS) {
         Buffer = LibFileInfo(FilePtr);
         if (Buffer == NULL) {
@@ -164,11 +170,13 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
             CopyMem(NewInfo, Buffer, sizeof(EFI_FILE_INFO));
             NewInfo->FileName[0] = 0;
             StrCat(NewInfo->FileName, NewName);
-            Status = refit_call4_wrapper(BaseDir->SetInfo,
-                                         FilePtr,
-                                         &gEfiFileInfoGuid,
-                                         NewInfoSize,
-                                         (VOID *) NewInfo);
+            Status = refit_call4_wrapper(
+                BaseDir->SetInfo,
+                FilePtr,
+                &gEfiFileInfoGuid,
+                NewInfoSize,
+                (VOID *) NewInfo
+            );
             MyFreePool(NewInfo);
             MyFreePool(FilePtr);
             MyFreePool(Buffer);
@@ -206,8 +214,14 @@ static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
     EFI_FILE *TheDir = NULL;
 
     while ((FileName = FindCommaDelimited(INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
-        Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TheDir, FileName,
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+        Status = refit_call5_wrapper(
+            BaseDir->Open,
+            BaseDir,
+            &TheDir,
+            FileName,
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            EFI_FILE_DIRECTORY
+        );
         Status = refit_call1_wrapper(TheDir->Close, TheDir);
         MyFreePool(FileName);
         MyFreePool(TheDir);
@@ -225,8 +239,14 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
     UINTN              *Buffer = NULL;
 
     // Read the original file....
-    Status = refit_call5_wrapper(SourceDir->Open, SourceDir, &SourceFile, SourceName,
-                                 EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(
+        SourceDir->Open,
+        SourceDir,
+        &SourceFile,
+        SourceName,
+        EFI_FILE_MODE_READ,
+        0
+    );
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo(SourceFile);
         if (FileInfo == NULL) {
@@ -238,18 +258,31 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
     } // if
     if (Status == EFI_SUCCESS) {
         Buffer = AllocateZeroPool(FileSize);
-        if (Buffer == NULL)
+        if (Buffer == NULL) {
             Status = EFI_OUT_OF_RESOURCES;
+        }
     } // if
     if (Status == EFI_SUCCESS)
-        Status = refit_call3_wrapper(SourceFile->Read, SourceFile, &FileSize, Buffer);
-    if (Status == EFI_SUCCESS)
+        Status = refit_call3_wrapper(
+            SourceFile->Read,
+            SourceFile,
+            &FileSize,
+            Buffer
+        );
+    if (Status == EFI_SUCCESS) {
         refit_call1_wrapper(SourceFile->Close, SourceFile);
+    }
 
     // Write the file to a new location....
     if (Status == EFI_SUCCESS) {
-        Status = refit_call5_wrapper(DestDir->Open, DestDir, &DestFile, DestName,
-                                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+        Status = refit_call5_wrapper(
+            DestDir->Open,
+            DestDir,
+            &DestFile,
+            DestName,
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            0
+        );
     }
     if (Status == EFI_SUCCESS)
         Status = refit_call3_wrapper(DestFile->Write, DestFile, &FileSize, Buffer);
@@ -427,16 +460,25 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
     UINTN    FileSize, Status;
     EFI_FILE *FilePtr;
 
-    Status = refit_call5_wrapper(TargetDir->Open, TargetDir, &FilePtr, L"\\EFI\\refind\\BOOT.CSV",
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+    Status = refit_call5_wrapper(
+        TargetDir->Open,
+        TargetDir,
+        &FilePtr,
+        L"\\EFI\\refind\\BOOT.CSV",
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+        0
+    );
     if (Status == EFI_SUCCESS) {
-        Contents = PoolPrint(L"%s,rEFInd Boot Manager,,This is the boot entry for rEFInd\n",
-                             INST_REFIND_NAME);
+        Contents = PoolPrint(
+            L"%s,rEFInd Boot Manager,,This is the boot entry for rEFInd\n",
+            INST_REFIND_NAME
+        );
         if (Contents) {
             FileSize = StrSize(Contents);
             Status = refit_call3_wrapper(FilePtr->Write, FilePtr, &FileSize, Contents);
-            if (Status == EFI_SUCCESS)
+            if (Status == EFI_SUCCESS) {
                 refit_call1_wrapper(FilePtr->Close, FilePtr);
+            }
             MyFreePool(FilePtr);
         } // if
         MyFreePool(Contents);
@@ -446,14 +488,18 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
 static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
     EFI_STATUS Status = EFI_SUCCESS;
 
-    if (FileExists(TargetDir, L"\\EFI\\refind\\icons"))
+    if (FileExists(TargetDir, L"\\EFI\\refind\\icons")) {
         Status = BackupOldFile(TargetDir, L"\\EFI\\refind\\icons");
-    if (Status == EFI_SUCCESS)
+    }
+    if (Status == EFI_SUCCESS) {
         Status = CreateDirectories(TargetDir);
-    if (Status == EFI_SUCCESS)
+    }
+    if (Status == EFI_SUCCESS) {
         Status = CopyFiles(TargetDir);
-    if (Status == EFI_SUCCESS)
+    }
+    if (Status == EFI_SUCCESS) {
         CreateFallbackCSV(TargetDir);
+    }
 
     return Status;
 } // BOOLEAN CopyRefindFiles()

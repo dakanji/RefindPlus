@@ -136,7 +136,12 @@ EFI_STATUS SetAppleOSInfo() {
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     EfiAppleSetOsInterface *SetOs = NULL;
 
-    Status = gBS->LocateProtocol(&apple_set_os_guid, NULL, (VOID**) &SetOs);
+    Status = refit_call3_wrapper(
+        gBS->LocateProtocol,
+        &apple_set_os_guid,
+        NULL,
+        (VOID**) &SetOs
+    );
 
     // If not a Mac, ignore the call....
     if ((Status != EFI_SUCCESS) || (!SetOs))

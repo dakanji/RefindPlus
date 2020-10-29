@@ -565,7 +565,7 @@ RunGenericMenu(
     }
 
     if (Screen->TimeoutSeconds == -1) {
-        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
+        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
         } else {
@@ -599,14 +599,14 @@ RunGenericMenu(
         pdDraw();
 
         if (WaitForRelease) {
-            Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
+            Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
             if (Status == EFI_SUCCESS) {
                 // reset, because otherwise the buffer gets queued with keystrokes
-                gST->ConIn->Reset(gST->ConIn, FALSE);
-                gBS->Stall(100000);
+                refit_call2_wrapper(gST->ConIn->Reset, gST->ConIn, FALSE);
+                refit_call1_wrapper(gBS->Stall, 100000);
             } else {
                 WaitForRelease = FALSE;
-                gST->ConIn->Reset(gST->ConIn, TRUE);
+                refit_call2_wrapper(gST->ConIn->Reset, gST->ConIn, TRUE);
             }
             continue;
         }
@@ -626,7 +626,7 @@ RunGenericMenu(
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &key);
+        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
 
         if (Status == EFI_SUCCESS) {
             PointerActive = FALSE;
@@ -822,10 +822,10 @@ static VOID ShowTextInfoLines(IN REFIT_MENU_SCREEN *Screen) {
 
    BeginTextScreen(Screen->Title);
    if (Screen->InfoLineCount > 0) {
-      gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
+      refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
       for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-         gST->ConOut->SetCursorPosition(gST->ConOut, 3, 4 + i);
-         gST->ConOut->OutputString(gST->ConOut, Screen->InfoLines[i]);
+          refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
+          refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, Screen->InfoLines[i]);
       }
    }
 } // VOID ShowTextInfoLines()
@@ -901,62 +901,95 @@ VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
             ShowTextInfoLines(Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
-                    gST->ConOut->SetCursorPosition(gST->ConOut, 2, MenuPosY + (i - State->FirstVisible));
-                    if (i == State->CurrentSelection)
-                       gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_CURRENT);
-                    else
-                       gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_BASIC);
-                    gST->ConOut->OutputString(gST->ConOut, DisplayStrings[i]);
+                    refit_call3_wrapper(
+                        gST->ConOut->SetCursorPosition,
+                        gST->ConOut,
+                        2,
+                        MenuPosY + (i - State->FirstVisible)
+                    );
+                    if (i == State->CurrentSelection) {
+                        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
+                    }
+                    else {
+                        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_BASIC);
+                        refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, DisplayStrings[i]);
+                    }
                 }
             }
             // scrolling indicators
-            gST->ConOut->SetAttribute(gST->ConOut, ATTR_SCROLLARROW);
-            gST->ConOut->SetCursorPosition(gST->ConOut, 0, MenuPosY);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_SCROLLARROW);
+            refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, MenuPosY);
             if (State->FirstVisible > 0)
                 gST->ConOut->OutputString(gST->ConOut, ArrowUp);
             else
                gST->ConOut->OutputString(gST->ConOut, L" ");
             gST->ConOut->SetCursorPosition(gST->ConOut, 0, MenuPosY + State->MaxVisible);
-            if (State->LastVisible < State->MaxIndex)
-               gST->ConOut->OutputString(gST->ConOut, ArrowDown);
-            else
-               gST->ConOut->OutputString(gST->ConOut, L" ");
+            if (State->LastVisible < State->MaxIndex) {
+                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, ArrowDown);
+            }
+            else {
+                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, L" ");
+            }
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
-                  gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 2);
-                  gST->ConOut->OutputString(gST->ConOut, Screen->Hint1);
+                   refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 2);
+                   refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, Screen->Hint1);
                }
                if (Screen->Hint2 != NULL) {
-                  gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 1);
-                  gST->ConOut->OutputString(gST->ConOut, Screen->Hint2);
+                   refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 1);
+                   refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, Screen->Hint2);
                }
             }
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
             // redraw selection cursor
-            gST->ConOut->SetCursorPosition(gST->ConOut, 2,
-                                MenuPosY + (State->PreviousSelection - State->FirstVisible));
-            gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_BASIC);
-            gST->ConOut->OutputString(gST->ConOut, DisplayStrings[State->PreviousSelection]);
-            gST->ConOut->SetCursorPosition(gST->ConOut, 2,
-                                MenuPosY + (State->CurrentSelection - State->FirstVisible));
-            gST->ConOut->SetAttribute(gST->ConOut, ATTR_CHOICE_CURRENT);
-            gST->ConOut->OutputString(gST->ConOut, DisplayStrings[State->CurrentSelection]);
+            refit_call3_wrapper(
+                gST->ConOut->SetCursorPosition,
+                gST->ConOut,
+                2,
+                MenuPosY + (State->PreviousSelection - State->FirstVisible)
+            );
+            refit_call2_wrapper(
+                gST->ConOut->SetAttribute,
+                gST->ConOut,
+                ATTR_CHOICE_BASIC
+            );
+            refit_call2_wrapper(
+                gST->ConOut->OutputString,
+                gST->ConOut,
+                DisplayStrings[State->PreviousSelection]
+            );
+            refit_call3_wrapper(
+                gST->ConOut->SetCursorPosition,
+                gST->ConOut,
+                2,
+                MenuPosY + (State->CurrentSelection - State->FirstVisible)
+            );
+            refit_call2_wrapper(
+                gST->ConOut->SetAttribute,
+                gST->ConOut,
+                ATTR_CHOICE_CURRENT
+            );
+            refit_call2_wrapper(
+                gST->ConOut->OutputString,
+                gST->ConOut,
+                DisplayStrings[State->CurrentSelection]
+            );
             break;
 
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // clear message
-                gST->ConOut->SetAttribute(gST->ConOut, ATTR_BASIC);
-                gST->ConOut->SetCursorPosition(gST->ConOut, 0, ConHeight - 3);
-                gST->ConOut->OutputString(gST->ConOut, BlankLine + 1);
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 3);
+                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, BlankLine + 1);
             } else {
                 // paint or update message
-                gST->ConOut->SetAttribute(gST->ConOut, ATTR_ERROR);
-                gST->ConOut->SetCursorPosition(gST->ConOut, 3, ConHeight - 3);
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
                 SPrint(TimeoutMessage, 255, L"%s  ", ParamText);
-                gST->ConOut->OutputString(gST->ConOut, TimeoutMessage);
+                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, TimeoutMessage);
             }
             break;
 
@@ -1530,21 +1563,21 @@ UINTN WaitForInput(UINTN Timeout) {
     if (Timeout == 0) {
         Length--;
     } else {
-        Status = gBS->CreateEvent(EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+        Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if(EFI_ERROR(Status)) {
-            gBS->Stall(100000); // Pause for 100 ms
+            refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
         } else {
-            Status = gBS->SetTimer(TimerEvent, TimerRelative, Timeout * 10000);
+            Status = refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
             WaitList[Length - 1] = TimerEvent;
         }
     }
 
-    Status = gBS->WaitForEvent(Length, WaitList, &Index);
-    gBS->CloseEvent(TimerEvent);
+    Status = refit_call3_wrapper(gBS->WaitForEvent, Length, WaitList, &Index);
+    refit_call1_wrapper(gBS->CloseEvent, TimerEvent);
 
-    if(EFI_ERROR(Status)) {
-        gBS->Stall(100000); // Pause for 100 ms
+    if (EFI_ERROR(Status)) {
+        refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     } else if(Index == 0) {
         return INPUT_KEY;
@@ -1566,7 +1599,7 @@ static BOOLEAN EditOptions(LOADER_ENTRY *MenuEntry) {
       return FALSE;
    }
 
-   gST->ConOut->QueryMode(gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
+   refit_call4_wrapper(gST->ConOut->QueryMode, gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
 
    if (!GlobalConfig.TextOnly)
       SwitchToText(TRUE);

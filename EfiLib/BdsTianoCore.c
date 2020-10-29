@@ -18,6 +18,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "BdsHelper.h"
 #include "gnuefi-helper.h"
 #endif
+#include "../include/refit_call_wrapper.h"
 
 EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
 
@@ -93,7 +94,13 @@ BdsLibConnectDevicePath (
       // RemainingDevicePath.
       //
       RemainingDevicePath = Instance;
-      Status              = gBS->LocateDevicePath(&EfiDevicePathProtocolGuid, &RemainingDevicePath, &Handle);
+
+      Status = refit_call3_wrapper(
+          gBS->LocateDevicePath,
+          &EfiDevicePathProtocolGuid,
+          &RemainingDevicePath,
+          &Handle
+      );
 
       if (!EFI_ERROR (Status)) {
 #ifdef __MAKEWITH_TIANO
@@ -126,7 +133,7 @@ BdsLibConnectDevicePath (
           //    change, then avoid the dispatch, we have chance to continue the
           //    next connection
           //
-          gBS->ConnectController(Handle, NULL, RemainingDevicePath, FALSE);
+          refit_call4_wrapper(gBS->ConnectController, Handle, NULL, RemainingDevicePath, FALSE);
         }
       }
       //
@@ -306,7 +313,7 @@ BdsLibGetVariableAndSize (
   // Pass in a zero size buffer to find the required buffer size.
   //
   BufferSize  = 0;
-  Status      = gRT->GetVariable(Name, VendorGuid, NULL, &BufferSize, Buffer);
+  Status      = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
   if (Status == EFI_BUFFER_TOO_SMALL) {
     //
     // Allocate the buffer to return
@@ -318,7 +325,7 @@ BdsLibGetVariableAndSize (
     //
     // Read variable into the allocated buffer.
     //
-    Status = gRT->GetVariable(Name, VendorGuid, NULL, &BufferSize, Buffer);
+    Status = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
     if (EFI_ERROR (Status)) {
       BufferSize = 0;
     }
