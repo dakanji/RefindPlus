@@ -1214,7 +1214,7 @@ egInitScreen(
             ScreenMode = EfiConsoleControlScreenText;
         }
 
-        Status = OcUseBuiltinTextOutput (ScreenMode, TRUE);
+        Status = OcUseBuiltinTextOutput (ScreenMode);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
