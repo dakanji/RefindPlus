@@ -284,7 +284,7 @@ SwitchToText (
 
     if (!GlobalConfig.TextRenderer && HaveOverriden == FALSE) {
         // Override Text Renderer Setting
-        Status = OcUseBuiltinTextOutput();
+        Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText, TRUE);
         HaveOverriden = TRUE;
 
         if (!EFI_ERROR (Status)) {

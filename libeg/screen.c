@@ -1205,7 +1205,16 @@ egInitScreen(
 
     if (GlobalConfig.TextRenderer || GlobalConfig.TextOnly) {
         // Implement Text Renderer
-        Status = OcUseBuiltinTextOutput();
+        EFI_CONSOLE_CONTROL_SCREEN_MODE  ScreenMode;
+
+        if (egHasGraphics) {
+            ScreenMode = EfiConsoleControlScreenGraphics;
+        }
+        else {
+            ScreenMode = EfiConsoleControlScreenText;
+        }
+
+        Status = OcUseBuiltinTextOutput (ScreenMode, TRUE);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
