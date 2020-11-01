@@ -73,17 +73,17 @@
 
 // Console defines and variables
 static EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
-static EFI_GUID UgaDrawProtocolGuid = EFI_UGA_DRAW_PROTOCOL_GUID;
+static EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
 static EFI_GUID GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 
 static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
-static EFI_UGA_DRAW_PROTOCOL        *UGADraw = NULL;
+static EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
 static EFI_HANDLE_PROTOCOL daOrigProtocol;
 static BOOLEAN egHasGraphics  = FALSE;
-static UINTN   egScreenWidth  = 0;
-static UINTN   egScreenHeight = 0;
+static UINTN   egScreenWidth  = 800;
+static UINTN   egScreenHeight = 600;
 
 STATIC
 EFI_STATUS
@@ -148,7 +148,7 @@ daCheckAltGop (
     #endif
 
     OrigGop = NULL;
-    Status = refit_call3_wrapper(
+    Status  = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid,
@@ -201,7 +201,7 @@ daCheckAltGop (
 
         EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-        UINT32  Width = 0;
+        UINT32  Width  = 0;
         UINT32  Height = 0;
         UINT32  MaxMode;
         UINT32  Mode;
@@ -302,7 +302,7 @@ egDumpGOPVideoModes(
     UINT32       LoopCount;
     UINTN        SizeOfInfo;
     CHAR16       *PixelFormatDesc;
-    BOOLEAN      OurValidGOP = FALSE;
+    BOOLEAN      OurValidGOP    = FALSE;
     const CHAR16 *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
@@ -579,9 +579,9 @@ egSetMaxResolution(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status = EFI_UNSUPPORTED;
-    UINT32       Width = 0;
-    UINT32       Height = 0;
+    EFI_STATUS   Status   = EFI_UNSUPPORTED;
+    UINT32       Width    = 0;
+    UINT32       Height   = 0;
     UINT32       BestMode = 0;
     UINT32       MaxMode;
     UINT32       Mode;
@@ -699,9 +699,9 @@ egDetermineScreenSize(
     // get screen size
     egHasGraphics = FALSE;
     if (GraphicsOutput != NULL) {
-        egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
-        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-        egHasGraphics = TRUE;
+        egScreenWidth   = GraphicsOutput->Mode->Info->HorizontalResolution;
+        egScreenHeight  = GraphicsOutput->Mode->Info->VerticalResolution;
+        egHasGraphics   = TRUE;
     }
     else if (UGADraw != NULL) {
         Status = refit_call5_wrapper (
@@ -718,7 +718,7 @@ egDetermineScreenSize(
         else {
             egScreenWidth  = ScreenW;
             egScreenHeight = ScreenH;
-            egHasGraphics = TRUE;
+            egHasGraphics  = TRUE;
         }
     }
 } // static VOID egDetermineScreenSize()
@@ -744,7 +744,7 @@ egInitScreen(
     VOID
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
-    EFI_STATUS                    Status = EFI_SUCCESS;
+    EFI_STATUS                    Status  = EFI_SUCCESS;
     EFI_STATUS                    XFlag;
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
@@ -870,21 +870,74 @@ egInitScreen(
         #endif
 
         if (!EFI_ERROR (Status)) {
+            EFI_UGA_DRAW_PROTOCOL *TmpUGA   = NULL;
+            UINT32                UGAWidth  = 0;
+            UINT32                UGAHeight = 0;
+            UINT32                Width;
+            UINT32                Height;
+            UINT32                Depth;
+            UINT32                RefreshRate;
+
             i = 0;
             for (i = 0; i < HandleCount; i++) {
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
                     &UgaDrawProtocolGuid,
-                    (VOID*) &UGADraw
+                    (VOID*) &TmpUGA
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog("    ** Evaluate on Handle[%d] ...%r\n", i, Status);
+                MsgLog("    ** Examine Handle[%02d] ...%r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
-                    break;
+                    Status = refit_call5_wrapper(
+                        TmpUGA->GetMode,
+                        TmpUGA,
+                        &Width,
+                        &Height,
+                        &Depth,
+                        &RefreshRate
+                    );
+                    if (!EFI_ERROR (Status)) {
+                        if (UGAWidth < Width) {
+                            if (UGAHeight < Height) {
+                                UGADraw = TmpUGA;
+                                UGAWidth = Width;
+                                UGAHeight = Height;
+
+                                #if REFIT_DEBUG > 0
+                                MsgLog(
+                                    "    *** Select Handle[%02d] @ %dx%d\n",
+                                    i,
+                                    UGAWidth,
+                                    UGAHeight
+                                );
+                                #endif
+                            }
+                            else {
+                                #if REFIT_DEBUG > 0
+                                MsgLog(
+                                    "    *** Ignore Handle[%02d] @ %dx%d\n",
+                                    i,
+                                    Width,
+                                    Height
+                                );
+                                #endif
+                            }
+                        }
+                        else {
+                            #if REFIT_DEBUG > 0
+                            MsgLog(
+                                "    *** Ignore Handle[%02d] @ %dx%d\n",
+                                i,
+                                Width,
+                                Height
+                            );
+                            #endif
+                        }
+                    }
                 }
             }
             FreePool(HandleBuffer);
@@ -1092,7 +1145,7 @@ egInitScreen(
 
     if (XFlag != EFI_NOT_FOUND && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
         if (XFlag != EFI_SUCCESS) {
-            XFlag = EFI_LOAD_ERROR;
+            XFlag  = EFI_LOAD_ERROR;
         }
 
         if (GraphicsOutput == NULL) {
@@ -1281,7 +1334,7 @@ egSetScreenSize(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
 
-    EFI_STATUS   Status = EFI_SUCCESS;
+    EFI_STATUS   Status  = EFI_SUCCESS;
     BOOLEAN      ModeSet = FALSE;
     UINTN        Size;
     UINT32       ModeNum = 0;
@@ -1367,7 +1420,7 @@ egSetScreenSize(
                     && (Size >= sizeof(*Info)
                     && (Info != NULL))
                     && (Info->HorizontalResolution == *ScreenWidth)
-                    && (Info->VerticalResolution == *ScreenHeight)
+                    && (Info->VerticalResolution   == *ScreenHeight)
                     && ((ModeNum == CurrentModeNum)
                     || (refit_call2_wrapper(
                         GraphicsOutput->SetMode,
@@ -1432,7 +1485,7 @@ egSetScreenSize(
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
-                        egScreenWidth = Info->HorizontalResolution;
+                        egScreenWidth  = Info->HorizontalResolution;
                         egScreenHeight = Info->VerticalResolution;
                     } // if
 
@@ -1600,7 +1653,7 @@ egScreenDescription(
     VOID
 ) {
     CHAR16       *GraphicsInfo;
-    CHAR16       *TextInfo = NULL;
+    CHAR16       *TextInfo      = NULL;
     const CHAR16 *ShowScreenStr = NULL;
 
     GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
