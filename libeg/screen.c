@@ -906,12 +906,12 @@ egInitScreen(
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Assess Universal Graphics Adapter ...NOT OK!\n\n");
+        MsgLog("  - Assess Universal Graphics Adapter ...NOT OK!\n\n");
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Assess Universal Graphics Adapter ...ok\n\n");
+        MsgLog("  - Assess Universal Graphics Adapter ...ok\n\n");
         #endif
     }
 
@@ -1049,7 +1049,7 @@ egInitScreen(
 
         // Not Found
         #if REFIT_DEBUG > 0
-    	MsgLog("  - Assess Graphics Output Protocol ...NOT FOUND!\n\n");
+        MsgLog("  - Assess Graphics Output Protocol ...NOT FOUND!\n\n");
         #endif
     }
 
@@ -1085,15 +1085,6 @@ egInitScreen(
 
                 if (!EFI_ERROR(Status)) {
                     Status = OcProvideConsoleGop(TRUE);
-
-                    if (!EFI_ERROR (XFlag)) {
-                        Status = refit_call3_wrapper(
-                            gBS->HandleProtocol,
-                            gST->ConsoleOutHandle,
-                            &GraphicsOutputProtocolGuid,
-                            (VOID **) &GraphicsOutput
-                        );
-                    }
                 }
             }
         }
@@ -1209,26 +1200,19 @@ egInitScreen(
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: Pre-Boot Graphics not Available\n");
-                MsgLog("      Attempting Text Mode\n\n");
+                MsgLog("INFO: Graphics not Available\n");
+                MsgLog("      Fall Back on Text Mode\n\n");
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
                 MsgLog("INFO: GOP not Available\n");
-                MsgLog("      Fallback on UGADraw\n\n");
+                MsgLog("      Fall Back on UGA\n\n");
                 #endif
 
-                //egScreenWidth  = Width;
-                //egScreenHeight = Height;
-                // To trigeer UGADraw, set Width to 0 and Height to a value
-                UINTN   TmpWidth  = 0;
-                UINTN   TmpHeight = Height;
-
-                Status = egSetScreenSize((UINTN *) TmpWidth, (UINTN *) TmpHeight);
-                if (!EFI_ERROR (Status)) {
-                    egHasGraphics = TRUE;
-                }
+                egScreenWidth  = Width;
+                egScreenHeight = Height;
+                egHasGraphics  = TRUE;
             }
         }
     }
@@ -1309,38 +1293,30 @@ egSetScreenSize(
     CHAR16       TmpShowScreenStr[128];
     const CHAR16 *ShowScreenStr = NULL;
 
-    if (*ScreenWidth == 0 && ScreenHeight > 0) {
-        #if REFIT_DEBUG > 0
-        MsgLog("Activate UGADraw:\n");
-        #endif
-    }
-    else {
-        if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
-            SwitchToText(FALSE);
+    #if REFIT_DEBUG > 0
+    MsgLog("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
+    #endif
 
-            ShowScreenStr = L"INFO: Invalid Input Resolution";
+    if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
+        SwitchToText(FALSE);
 
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        ShowScreenStr = L"Invalid Input Resolution in Config File!";
 
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            #if REFIT_DEBUG > 0
-            MsgLog("%s\n\n", ShowScreenStr);
-            #endif
-
-            PauseForKey();
-
-            return FALSE;
-        }
 
         #if REFIT_DEBUG > 0
-        MsgLog("Set Screen Size to %dx%d:\n", ScreenWidth, ScreenHeight);
+        MsgLog("%s\n", ShowScreenStr);
         #endif
+
+        PauseForKey();
+
+        return FALSE;
     }
 
-
-    if (GraphicsOutput != NULL && *ScreenWidth != 0) { // GOP mode (UEFI)
+    if (GraphicsOutput != NULL) { // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
 
         #if REFIT_DEBUG > 0
@@ -1480,77 +1456,52 @@ egSetScreenSize(
             SwitchToGraphicsAndClear();
         } // if GOP mode (UEFI)
     }
-    else {
-        if (UGADraw == NULL) {
-            #if REFIT_DEBUG > 0
-            MsgLog("  - UGADraw not available\n\n");
-            #endif
+    else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
+        // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
+        // in all cases, but I don't know how to probe for alternatives....
+        Status = refit_call5_wrapper(
+            UGADraw->GetMode,
+            UGADraw,
+            &ScreenW,
+            &ScreenH,
+            &UGADepth,
+            &UGARefreshRate
+        );
+        Status = refit_call5_wrapper(
+            UGADraw->SetMode,
+            UGADraw,
+            ScreenW,
+            ScreenH,
+            UGADepth,
+            UGARefreshRate
+        );
+
+        *ScreenWidth = (UINTN) ScreenW;
+        *ScreenHeight = (UINTN) ScreenH;
+
+        if (!EFI_ERROR (Status)) {
+            egScreenWidth = *ScreenWidth;
+            egScreenHeight = *ScreenHeight;
+            ModeSet = TRUE;
         }
         else {
-            // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
-            // in all cases, but I don't know how to probe for alternatives....
-            Status = refit_call5_wrapper(
-                UGADraw->GetMode,
-                UGADraw,
-                &ScreenW,
-                &ScreenH,
-                &UGADepth,
-                &UGARefreshRate
+            // TODO: Find a list of supported modes and display it.
+            // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
+            // This is just a placeholder until something better can be done....
+            SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
+                L"Error setting %dx%d resolution ...Unsupported Mode",
+                *ScreenWidth,
+                *ScreenHeight
             );
+            ShowScreenStr = TmpShowScreenStr;
+            PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Get UGADraw ...%r\n", Status);
+            MsgLog("%s\n", ShowScreenStr);
             #endif
 
-            if (!EFI_ERROR (Status)) {
-                Status = refit_call5_wrapper(
-                    UGADraw->SetMode,
-                    UGADraw,
-                    ScreenW,
-                    ScreenH,
-                    UGADepth,
-                    UGARefreshRate
-                );
-
-                *ScreenWidth = (UINTN) ScreenW;
-                *ScreenHeight = (UINTN) ScreenH;
-                egScreenWidth = *ScreenWidth;
-                egScreenHeight = *ScreenHeight;
-
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Set UGADraw ...%r", Status);
-                #endif
-
-                if (EFI_ERROR (Status)) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog("\n\n");
-                    #endif
-                }
-                else {
-                    ModeSet = TRUE;
-
-                    #if REFIT_DEBUG > 0
-                    MsgLog("\n");
-                    MsgLog("    * Screen Width: %6d\n", egScreenWidth);
-                    MsgLog("    * Screen Height: %5d\n", egScreenHeight);
-                    MsgLog("    * Colour Depth: %6d\n", UGADepth);
-                    MsgLog("    * Refresh Rate: %6d\n\n", UGARefreshRate);
-                    #endif
-                }
-            }
-            else {
-                // TODO: Find a list of supported modes and display it.
-                // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
-                // This is just a placeholder until something better can be done....
-                SPrint(TmpShowScreenStr, sizeof(TmpShowScreenStr),
-                    L"Error Setting %dx%d Resolution ...Unsupported Mode",
-                    *ScreenWidth,
-                    *ScreenHeight
-                );
-                ShowScreenStr = TmpShowScreenStr;
-            } // if/else
-        } // if (UGADraw == NULL)
-    } // if (GraphicsOutput != NULL && *ScreenWidth != 0)
+        } // if/else
+    } // if/else if (UGADraw != NULL)
 
     return (ModeSet);
 } // BOOLEAN egSetScreenSize()
