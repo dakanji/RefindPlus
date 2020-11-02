@@ -1,7 +1,14 @@
-0.12.0.K (Pre-Release):
+0.12.0.K (02 Nov 2020):
 -----------------------
+- Fixes 'Write Protected' error (USB Mode)
+- Uses Largest UGA Resolution found on GPU Handles
+- Fixes UGA Fallback when GOP is not found
+- Finetunes Direct GOP Renderer Handling
+- Switches Direct GOP Renderer off by default
+- Customises Tool and Driver Paths
 - Misc Optimisation
   * Misc coding intervention
+
 
 
 0.12.0.J (05 Oct 2020):
