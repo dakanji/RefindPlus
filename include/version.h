@@ -10,4 +10,4 @@
  *
  */
 
-#define REFIND_VERSION L"0.12.0.K (Pre-Release)"
+#define REFIND_VERSION L"0.12.0.K"
