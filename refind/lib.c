@@ -416,14 +416,26 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
             SelfDir,
             &VarsDir,
             L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+            EFI_FILE_DIRECTORY
         );
-        if (Status == EFI_SUCCESS)
+        if (Status == EFI_SUCCESS) {
             Status = egLoadFile(VarsDir, name, &buf, size);
-        ReadFromNvram = FALSE;
+            ReadFromNvram = FALSE;
+        }
+        else if (Status == EFI_WRITE_PROTECTED) {
+            // Override use_nvram
+            GlobalConfig.UseNvram = TRUE;
+
+            #if REFIT_DEBUG > 0
+            MsgLog("WARN: Could not read '%s' from Emulated NVRAM\n", name);
+            MsgLog("      Set 'use_nvram' to 'true' to silence this warning\n\n");
+            #endif
+        }
         MyFreePool(VarsDir);
     }
-    else {
+
+    if ((GlobalConfig.UseNvram == TRUE) || ! GuidsAreEqual(vendor, &RefindGuid)) {
         l = sizeof(CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool(l);
         if (!buf) {
@@ -459,16 +471,26 @@ EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, 
             SelfDir,
             &VarsDir,
             L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            EFI_FILE_DIRECTORY
         );
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
         }
+        else if (Status == EFI_WRITE_PROTECTED) {
+            // Override use_nvram
+            GlobalConfig.UseNvram = TRUE;
+
+            #if REFIT_DEBUG > 0
+            MsgLog("WARN: Could not write '%s' to Emulated NVRAM\n", name);
+            MsgLog("      Set 'use_nvram' to 'true' to silence this warning\n\n");
+            #endif
+        }
         MyFreePool(VarsDir);
     }
-    else {
-        flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
 
+    if ((GlobalConfig.UseNvram == TRUE) || ! GuidsAreEqual(vendor, &RefindGuid)) {
+        flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
         }
