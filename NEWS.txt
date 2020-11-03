@@ -1,3 +1,8 @@
+0.12.0.L (03 Nov 2020):
+-----------------------
+- Fixes Regression on Console GOP Provision on MacPro5,1
+
+
 0.12.0.K (02 Nov 2020):
 -----------------------
 - Fixes 'Write Protected' error (USB Mode)
@@ -8,7 +13,6 @@
 - Customises Tool and Driver Paths
 - Misc Optimisation
   * Misc coding intervention
-
 
 
 0.12.0.J (05 Oct 2020):
