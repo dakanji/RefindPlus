@@ -1138,7 +1138,14 @@ egInitScreen(
 
                 if (!EFI_ERROR(Status)) {
                     Status = OcProvideConsoleGop(TRUE);
-                }
+                    
+                    if (!EFI_ERROR (Status)) {
+                        Status = gBS->HandleProtocol(
+                            gST->ConsoleOutHandle,
+                            &GraphicsOutputProtocolGuid,
+                            (VOID **) &GraphicsOutput
+                        );
+                    }                }
             }
         }
     }
