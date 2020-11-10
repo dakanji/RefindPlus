@@ -143,10 +143,6 @@ daCheckAltGop (
     gBS->HandleProtocol = daConsoleHandleProtocol;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
-    #if REFIT_DEBUG > 0
-    MsgLog ("Validate Replacement GOP for ConsoleOut Handle:\n");
-    #endif
-
     OrigGop = NULL;
     Status  = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -166,7 +162,7 @@ daCheckAltGop (
     else {
         if (OrigGop->Mode->MaxMode > 0) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Valid GOP Already Exists on ConsoleOut Handle\n\n");
+            MsgLog ("INFO: Usable GOP Exists on ConsoleOut Handle\n\n");
             #endif
 
             GraphicsOutput = OrigGop;
@@ -186,7 +182,7 @@ daCheckAltGop (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Seeking Firmware GOP Handles ...%r", Status);
+        MsgLog ("Seek Replacement GOP Candidates:");
         #endif
 
         if (EFI_ERROR (Status)) {
@@ -222,11 +218,11 @@ daCheckAltGop (
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("\n");
-                    MsgLog ("  - Found Candidate Replacement GOP on Firmware Handle[%02d]\n", Index);
+                    MsgLog ("  - Found Replacement Candidate on Firmware Handle[%02d]\n", Index);
                     #endif
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("    * Evaluating Candidate\n");
+                    MsgLog ("    * Evaluate Candidate\n");
                     #endif
 
                     MaxMode  = Gop->Mode->MaxMode;
@@ -273,7 +269,7 @@ daCheckAltGop (
 
         if (OurValidGOP == FALSE || EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Could not Find Valid Replacement GOP\n\n");
+            MsgLog ("INFO: Could not Find Usable Replacement GOP\n\n");
             #endif
 
             // Restore Protocol and Return
@@ -437,7 +433,7 @@ egDumpGOPVideoModes(
 
     if (OurValidGOP == FALSE) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Could not Find Valid GOP\n\n");
+        MsgLog ("INFO: Could not Find Usable GOP\n\n");
         #endif
 
         return EFI_UNSUPPORTED;
@@ -1138,14 +1134,15 @@ egInitScreen(
 
                 if (!EFI_ERROR(Status)) {
                     Status = OcProvideConsoleGop(TRUE);
-                    
+
                     if (!EFI_ERROR (Status)) {
                         Status = gBS->HandleProtocol(
                             gST->ConsoleOutHandle,
                             &GraphicsOutputProtocolGuid,
                             (VOID **) &GraphicsOutput
                         );
-                    }                }
+                    }
+                }
             }
         }
     }
