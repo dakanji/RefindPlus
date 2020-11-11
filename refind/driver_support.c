@@ -659,7 +659,7 @@ ScanDriverDir(
 
         #if REFIT_DEBUG > 0
         MsgLog("\n");
-        MsgLog("  - Load '%s' ...%r", DirEntry->FileName, Status);
+        MsgLog("  - Load '%s\%s' ...%r", Path, DirEntry->FileName, Status);
         #endif
 
         MyFreePool(DirEntry);
@@ -717,6 +717,9 @@ LoadDrivers(
                 SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
                 CleanUpPathNameSlashes(SelfDirectory);
                 MergeStrings(&SelfDirectory, Directory, L'\\');
+                if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
+                    ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
+                }
                 NumFound += ScanDriverDir(SelfDirectory);
                 MyFreePool(SelfDirectory);
             } // if
