@@ -205,6 +205,8 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 static BOOLEAN ranCleanNvram = FALSE;
 
+extern VOID InitBooterLog(VOID);
+
 //
 // misc functions
 //
@@ -805,7 +807,7 @@ static VOID AdjustDefaultSelection() {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Adjust Default Selection...\n");
+    MsgLog("Adjust Default Selection...\n\n");
     #endif
 
     while ((Element = FindCommaDelimited(GlobalConfig.DefaultSelection, i++)) != NULL) {
@@ -827,7 +829,6 @@ static VOID AdjustDefaultSelection() {
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
-extern VOID InitBooterLog(VOID);
 //
 // main entry point
 //
@@ -919,6 +920,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // Read Config first to get tokens that may be required by LoadDrivers();
     ReadConfig(GlobalConfig.ConfigFilename);
+    AdjustDefaultSelection();
 
     DriversLoaded = LoadDrivers();
     if (DriversLoaded) {
@@ -927,8 +929,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         #endif
         ScanVolumes();
     }
-
-    AdjustDefaultSelection();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
         #if REFIT_DEBUG > 0

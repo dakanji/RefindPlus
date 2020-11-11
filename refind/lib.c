@@ -988,10 +988,10 @@ CHAR16
                 SPrint(FoundName, 255, L"%s Volume", TypeName);
             }
             else if (MediaCheck == TRUE) {
-                SPrint(FoundName, 255, L"Assumed Disc/Network Volume");
+                SPrint(FoundName, 255, L"Disc/Network Volume (Assumed)");
             }
             else if (MyStriCmp(L"Apple", gST->FirmwareVendor)) {
-                SPrint(FoundName, 255, L"Assumed APFS Volume");
+                SPrint(FoundName, 255, L"APFS Container (Assumed)");
             }
             else {
                 SPrint(FoundName, 255, L"Unknown Volume");

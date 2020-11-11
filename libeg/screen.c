@@ -334,10 +334,10 @@ egDumpGOPVideoModes(
 
         #if REFIT_DEBUG > 0
         MsgLog(
-            "Query GOP Modes (Modes=%d, FrameBufferBase=%lx, FrameBufferSize=0x%x):\n",
+            "Query GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx):\n",
             ModeCount,
             GraphicsOutput->Mode->FrameBufferBase,
-            GraphicsOutput->Mode->FrameBufferSize
+            GraphicsOutput->Mode->FrameBufferBase + GraphicsOutput->Mode->FrameBufferSize
         );
         #endif
 

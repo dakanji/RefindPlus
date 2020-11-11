@@ -49,7 +49,7 @@ CHAR16
         AltMonth = L"j";
     }
     else if (NowMonth == 6) {
-        AltMonth = L"l";
+        AltMonth = L"k";
     }
     else if (NowMonth == 7) {
         AltMonth = L"n";
@@ -114,43 +114,43 @@ CHAR16
         AltHour = L"k";
     }
     else if (NowHour == 12) {
-        AltHour = L"l";
-    }
-    else if (NowHour == 13) {
         AltHour = L"m";
     }
-    else if (NowHour == 14) {
+    else if (NowHour == 13) {
         AltHour = L"n";
     }
-    else if (NowHour == 15) {
-        AltHour = L"o";
-    }
-    else if (NowHour == 16) {
+    else if (NowHour == 14) {
         AltHour = L"p";
     }
-    else if (NowHour == 17) {
+    else if (NowHour == 15) {
         AltHour = L"q";
     }
-    else if (NowHour == 18) {
+    else if (NowHour == 16) {
         AltHour = L"r";
     }
-    else if (NowHour == 19) {
+    else if (NowHour == 17) {
         AltHour = L"s";
     }
-    else if (NowHour == 20) {
+    else if (NowHour == 18) {
         AltHour = L"t";
     }
-    else if (NowHour == 21) {
+    else if (NowHour == 19) {
         AltHour = L"u";
     }
-    else if (NowHour == 22) {
+    else if (NowHour == 20) {
         AltHour = L"v";
     }
-    else if (NowHour == 23) {
+    else if (NowHour == 21) {
         AltHour = L"w";
     }
-    else {
+    else if (NowHour == 22) {
         AltHour = L"x";
+    }
+    else if (NowHour == 23) {
+        AltHour = L"y";
+    }
+    else {
+        AltHour = L"z";
     }
 
     return AltHour;

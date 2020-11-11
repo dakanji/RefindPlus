@@ -659,7 +659,7 @@ ScanDriverDir(
 
         #if REFIT_DEBUG > 0
         MsgLog("\n");
-        MsgLog("  - Load '%s\%s' ...%r", Path, DirEntry->FileName, Status);
+        MsgLog("  - Load '%s' ...%r", FileName, Status);
         #endif
 
         MyFreePool(DirEntry);
@@ -683,24 +683,29 @@ BOOLEAN
 LoadDrivers(
     VOID
 ) {
-    CHAR16 *Directory;
-    CHAR16 *SelfDirectory;
-    UINTN  Length;
-    UINTN  i = 0;
-    UINTN  NumFound = 0;
+    CHAR16  *Directory;
+    CHAR16  *SelfDirectory;
+    UINTN   Length;
+    UINTN   i = 0;
+    UINTN   NumFound = 0;
+    UINTN   CurFound = 0;
 
     // load drivers from the subdirectories of rEFInd's home directory specified
     // in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    MsgLog("Load EFI Drivers from Default Folders...");
+    MsgLog("Load EFI Drivers from Default Folder...");
     #endif
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
         CleanUpPathNameSlashes(SelfDirectory);
         MergeStrings(&SelfDirectory, Directory, L'\\');
-        NumFound += ScanDriverDir(SelfDirectory);
+        CurFound = ScanDriverDir(SelfDirectory);
         MyFreePool(Directory);
         MyFreePool(SelfDirectory);
+        if (CurFound > 0) {
+            NumFound = NumFound + CurFound;
+            break;
+        }
     }
 
     // Scan additional user-specified driver directories....
@@ -720,8 +725,11 @@ LoadDrivers(
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
                     ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
                 }
-                NumFound += ScanDriverDir(SelfDirectory);
+                CurFound = ScanDriverDir(SelfDirectory);
                 MyFreePool(SelfDirectory);
+                if (CurFound > 0) {
+                    NumFound = NumFound + CurFound;
+                }
             } // if
             MyFreePool(Directory);
         } // while
