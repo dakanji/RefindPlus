@@ -836,16 +836,20 @@ EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
     EFI_STATUS         Status;
+
     BOOLEAN            DriversLoaded   = FALSE;
     BOOLEAN            MainLoopRunning = TRUE;
-    BOOLEAN            MokProtocol;
-    REFIT_MENU_ENTRY   *ChosenEntry;
-    LOADER_ENTRY       *ourLoaderEntry;
-    LEGACY_ENTRY       *ourLegacyEntry;
-    UINTN              MenuExit;
-    UINTN              i;
-    CHAR16             *SelectionName = NULL;
+    BOOLEAN            MokProtocol     = FALSE;
+
+    REFIT_MENU_ENTRY   *ChosenEntry    = NULL;
+    LOADER_ENTRY       *ourLoaderEntry = NULL;
+    LEGACY_ENTRY       *ourLegacyEntry = NULL;
+
+    UINTN              MenuExit = 0;
+    UINTN              i        = 0;
+
     EG_PIXEL           BGColor        = COLOR_LIGHTBLUE;
+    CHAR16             *SelectionName = NULL;
     const CHAR16       *ShowScreenStr = NULL;
 
     // bootstrap
@@ -993,7 +997,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #endif
 
     while (MainLoopRunning) {
+        // Get a Clean Slate
+        ReadAllKeyStrokes();
+        MenuExit       = 0;
         ourLoaderEntry = NULL;
+        ChosenEntry    = NULL;
 
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 

@@ -1945,6 +1945,9 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
     INTN DefaultEntryIndex = -1;
     INTN DefaultSubmenuIndex = -1;
 
+    // remove any buffered key strokes
+    ReadAllKeyStrokes();
+
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
@@ -1973,28 +1976,35 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
                MenuExit = RunGenericMenu(TempChosenEntry->SubScreen, Style, &DefaultSubmenuIndex, &TempChosenEntry);
-               if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN)
+               if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                    MenuExit = 0;
+               }
                if (MenuExit == MENU_EXIT_DETAILS) {
-                  if (!EditOptions((LOADER_ENTRY *) TempChosenEntry))
-                     MenuExit = 0;
+                  if (!EditOptions((LOADER_ENTRY *) TempChosenEntry)) {
+                      MenuExit = 0;
+                  }
                } // if
-            } else { // no sub-screen; ignore keypress
+            }
+            else {
+                // no sub-screen; ignore keypress
                MenuExit = 0;
             }
         } // Enter sub-screen
         if (MenuExit == MENU_EXIT_HIDE) {
-            if (GlobalConfig.HiddenTags)
+            if (GlobalConfig.HiddenTags) {
                 HideTag(TempChosenEntry);
+            }
             MenuExit = 0;
         } // Hide launcher
     }
 
-    if (ChosenEntry)
+    if (ChosenEntry) {
         *ChosenEntry = TempChosenEntry;
+    }
     if (DefaultSelection) {
        MyFreePool(*DefaultSelection);
        *DefaultSelection = MenuTitle;
     } // if
+    
     return MenuExit;
 } /* UINTN RunMainMenu() */
