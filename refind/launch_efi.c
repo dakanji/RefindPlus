@@ -278,8 +278,9 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    if (!IsDriver)
+    if (!IsDriver) {
         Status = refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
+    }
 
 bailout:
     MyFreePool(FullLoadOptions);

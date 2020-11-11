@@ -836,14 +836,16 @@ EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
     EFI_STATUS         Status;
+    BOOLEAN            DriversLoaded   = FALSE;
     BOOLEAN            MainLoopRunning = TRUE;
     BOOLEAN            MokProtocol;
     REFIT_MENU_ENTRY   *ChosenEntry;
     LOADER_ENTRY       *ourLoaderEntry;
     LEGACY_ENTRY       *ourLegacyEntry;
-    UINTN              MenuExit, i;
+    UINTN              MenuExit;
+    UINTN              i;
     CHAR16             *SelectionName = NULL;
-    EG_PIXEL           BGColor = COLOR_LIGHTBLUE;
+    EG_PIXEL           BGColor        = COLOR_LIGHTBLUE;
     const CHAR16       *ShowScreenStr = NULL;
 
     // bootstrap
@@ -882,13 +884,13 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #if REFIT_DEBUG > 0
     MsgLog("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
     if (NowZone < -12 || NowZone > 12 || (NowZone > -1 && NowZone < 1)) {
-        MsgLog("Date Time: %s (GMT)\n\n", NowDateStr);
+        MsgLog("Timestamp: %s (GMT)\n\n", NowDateStr);
     }
     else if (NowZone < 0) {
-        MsgLog("Date Time: %s (GMT%02d)\n\n", NowDateStr);
+        MsgLog("Timestamp: %s (GMT%02d)\n\n", NowDateStr);
     }
     else {
-        MsgLog("Date Time: %s (GMT+%02d)\n\n", NowDateStr);
+        MsgLog("Timestamp: %s (GMT+%02d)\n\n", NowDateStr);
     }
     #endif
 
@@ -901,7 +903,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     SetConfigFilename(ImageHandle);
     MokProtocol = SecureBootSetup();
 
-    // Scan volumes first to find SelfVolume, which is required by LoadDrivers();
+    // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
     // however, if drivers are loaded, a second call to ScanVolumes() is needed
     // to register the new filesystem(s) accessed by the drivers.
     // Also, ScanVolumes() must be done before ReadConfig(), which needs
@@ -911,14 +913,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #endif
     ScanVolumes();
 
-    if (LoadDrivers()) {
+    // Read Config first to get tokens that may be required by LoadDrivers();
+    ReadConfig(GlobalConfig.ConfigFilename);
+
+    DriversLoaded = LoadDrivers();
+    if (DriversLoaded) {
         #if REFIT_DEBUG > 0
         MsgLog("Scan Volumes...\n");
         #endif
         ScanVolumes();
     }
 
-    ReadConfig(GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {

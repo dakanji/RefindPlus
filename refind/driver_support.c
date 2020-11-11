@@ -77,11 +77,11 @@
 #include "../include/refit_call_wrapper.h"
 
 #if defined (EFIX64)
-#define DRIVER_DIRS             L"drivers,x64_drivers,drivers_x64"
+#define DRIVER_DIRS             L"x64_drivers,drivers,drivers_x64"
 #elif defined (EFI32)
-#define DRIVER_DIRS             L"drivers,ia32_drivers,drivers_ia32"
+#define DRIVER_DIRS             L"ia32_drivers,drivers,drivers_ia32"
 #elif defined (EFIAARCH64)
-#define DRIVER_DIRS             L"drivers,aa64_drivers,drivers_aa64"
+#define DRIVER_DIRS             L"aa64_drivers,drivers,drivers_aa64"
 #else
 #define DRIVER_DIRS             L"drivers"
 #endif
@@ -529,8 +529,8 @@ ConnectFilesystemDriver(
     UINTN                                 Index;
     UINTN                                 OpenInfoIndex;
     EFI_HANDLE                            *Handles = NULL;
-    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL       *Fs;
-    MY_EFI_BLOCK_IO_PROTOCOL                 *BlockIo;
+    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *Fs;
+    MY_EFI_BLOCK_IO_PROTOCOL              *BlockIo;
     EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
     UINTN                                 OpenInfoCount;
     EFI_HANDLE                            DriverHandleList[2];
@@ -640,6 +640,12 @@ ScanDriverDir(
     CHAR16                  FileName[256];
 
     CleanUpPathNameSlashes(Path);
+
+    #if REFIT_DEBUG > 0
+    MsgLog("\n");
+    MsgLog("Scan '%s' Folder:", Path);
+    #endif
+
     // look through contents of the directory
     DirIterOpen(SelfRootDir, Path, &DirIter);
     while (DirIterNext(&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
@@ -650,6 +656,12 @@ ScanDriverDir(
         SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
         Status = StartEFIImage(SelfVolume, FileName, L"", DirEntry->FileName, 0, FALSE, TRUE);
+
+        #if REFIT_DEBUG > 0
+        MsgLog("\n");
+        MsgLog("  - Load '%s' ...%r", DirEntry->FileName, Status);
+        #endif
+
         MyFreePool(DirEntry);
     } // while
     Status = DirIterClose(&DirIter);
@@ -679,6 +691,9 @@ LoadDrivers(
 
     // load drivers from the subdirectories of rEFInd's home directory specified
     // in the DRIVER_DIRS constant.
+    #if REFIT_DEBUG > 0
+    MsgLog("Load EFI Drivers from Default Folders...");
+    #endif
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
         CleanUpPathNameSlashes(SelfDirectory);
@@ -689,18 +704,28 @@ LoadDrivers(
     }
 
     // Scan additional user-specified driver directories....
-    i = 0;
-    while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
-        CleanUpPathNameSlashes(Directory);
-        Length = StrLen(Directory);
-        if (Length > 0) {
-            NumFound += ScanDriverDir(Directory);
-        } // if
-        MyFreePool(Directory);
-    } // while
+    if (GlobalConfig.DriverDirs != NULL) {
+        #if REFIT_DEBUG > 0
+        MsgLog("\n\n");
+        MsgLog("Load EFI Drivers from User Defined Folders...");
+        #endif
+        i = 0;
+        while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
+            CleanUpPathNameSlashes(Directory);
+            Length = StrLen(Directory);
+            if (Length > 0) {
+                SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
+                CleanUpPathNameSlashes(SelfDirectory);
+                MergeStrings(&SelfDirectory, Directory, L'\\');
+                NumFound += ScanDriverDir(SelfDirectory);
+                MyFreePool(SelfDirectory);
+            } // if
+            MyFreePool(Directory);
+        } // while
+    }
 
     #if REFIT_DEBUG > 0
-    MsgLog("INFO: EFI Driver Count = %d\n\n", NumFound);
+    MsgLog("\n\n");
     #endif
 
     // connect all devices
