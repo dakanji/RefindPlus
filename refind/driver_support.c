@@ -643,27 +643,42 @@ ScanDriverDir(
 
     #if REFIT_DEBUG > 0
     MsgLog("\n");
-    MsgLog("Scan '%s' Folder:", Path);
+    MsgLog("Scan '%s' Folder:\n", Path);
     #endif
 
     // look through contents of the directory
     DirIterOpen(SelfRootDir, Path, &DirIter);
+
+    #if REFIT_DEBUG > 0
+    BOOLEAN RunOnce = FALSE;
+    #endif
+
     while (DirIterNext(&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
             continue;   // skip this
         }
+
+        // needed here in case next block returns error message
+        #if REFIT_DEBUG > 0
+        if (RunOnce) {
+            MsgLog("\n");
+        }
+        #endif
 
         SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
         Status = StartEFIImage(SelfVolume, FileName, L"", DirEntry->FileName, 0, FALSE, TRUE);
 
         #if REFIT_DEBUG > 0
-        MsgLog("\n");
         MsgLog("  - Load '%s' ...%r", FileName, Status);
         #endif
 
         MyFreePool(DirEntry);
+        #if REFIT_DEBUG > 0
+        RunOnce = TRUE;
+        #endif
     } // while
+
     Status = DirIterClose(&DirIter);
     if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
         SPrint(FileName, 255, L"while scanning the %s directory", Path);
@@ -706,6 +721,12 @@ LoadDrivers(
             NumFound = NumFound + CurFound;
             break;
         }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog("\n");
+            MsgLog("  - '%s' not found or empty", SelfDirectory);
+            #endif
+        }
     }
 
     // Scan additional user-specified driver directories....
@@ -724,11 +745,18 @@ LoadDrivers(
                 MergeStrings(&SelfDirectory, Directory, L'\\');
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
                     ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
+                    ReplaceSubstring(&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
                 CurFound = ScanDriverDir(SelfDirectory);
                 MyFreePool(SelfDirectory);
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog("\n");
+                    MsgLog("  - '%s' not found or empty", SelfDirectory);
+                    #endif
                 }
             } // if
             MyFreePool(Directory);
