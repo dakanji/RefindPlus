@@ -97,3 +97,4 @@
   RefindPkg/filesystems/hfs.inf
   RefindPkg/filesystems/iso9660.inf
   RefindPkg/filesystems/ntfs.inf
+  RefindPkg/GenericGOP/GenericGOP.inf
