@@ -723,7 +723,6 @@ LoadDrivers(
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog("\n");
             MsgLog("  - '%s' not found or empty", SelfDirectory);
             #endif
         }
@@ -754,8 +753,7 @@ LoadDrivers(
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog("\n");
-                    MsgLog("  - '%s' not found or empty", SelfDirectory);
+                    MsgLog("  - Not Found or Empty", SelfDirectory);
                     #endif
                 }
             } // if

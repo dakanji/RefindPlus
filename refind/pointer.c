@@ -48,109 +48,112 @@ POINTER_STATE State;
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
         #if REFIT_DEBUG > 0
-        MsgLog("Initialise Pointer Devices...\n");
+        MsgLog ("Initialise Pointer Devices...\n");
         #endif
 
     pdCleanup(); // just in case
 
-    if (!(GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
+    if (! (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
         #if REFIT_DEBUG > 0
-        MsgLog("  - Detected Touch Mode or 'No Mouse' Mode\n");
+        MsgLog ("  - Detected Touch Mode or 'No Mouse' Mode\n");
         #endif
-    } else{
-    // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
-    UINTN NumPointerHandles = 0;
-    EFI_STATUS handlestatus = refit_call5_wrapper(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &APointerGuid,
-        NULL,
-        &NumPointerHandles,
-        &APointerHandles
-    );
+    }
+    else {
+        // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
+        UINTN NumPointerHandles = 0;
+        EFI_STATUS handlestatus = refit_call5_wrapper (
+            gBS->LocateHandleBuffer,
+            ByProtocol,
+            &APointerGuid,
+            NULL,
+            &NumPointerHandles,
+            &APointerHandles
+        );
 
-    if (!EFI_ERROR(handlestatus)) {
-        APointerProtocol = AllocatePool(sizeof(EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
-        UINTN Index;
-        for(Index = 0; Index < NumPointerHandles; Index++) {
-            // Open the protocol on the handle
-            EFI_STATUS status = refit_call6_wrapper(
-                gBS->OpenProtocol,
-                APointerHandles[Index],
-                &APointerGuid,
-                (VOID **) &APointerProtocol[NumAPointerDevices],
-                SelfImageHandle,
-                NULL,
-                EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
-            );
-            if (status == EFI_SUCCESS) {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Enable Touch\n");
-                #endif
+        if (!EFI_ERROR (handlestatus)) {
+            APointerProtocol = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
+            UINTN Index;
+            for (Index = 0; Index < NumPointerHandles; Index++) {
+                // Open the protocol on the handle
+                EFI_STATUS status = refit_call6_wrapper (
+                    gBS->OpenProtocol,
+                    APointerHandles[Index],
+                    &APointerGuid,
+                    (VOID **) &APointerProtocol[NumAPointerDevices],
+                    SelfImageHandle,
+                    NULL,
+                    EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+                );
+                if (status == EFI_SUCCESS) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("  - Enable Touch\n");
+                    #endif
 
-                NumAPointerDevices++;
+                    NumAPointerDevices++;
+                }
             }
         }
-    } else {
-        #if REFIT_DEBUG > 0
-        MsgLog("  - Disable Touch\n");
-        #endif
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Disable Touch\n");
+            #endif
 
-        GlobalConfig.EnableTouch = FALSE;
-    }
+            GlobalConfig.EnableTouch = FALSE;
+        }
 
-    // Get all handles that support simple pointer protocol (mice)
-    NumPointerHandles = 0;
-    handlestatus = refit_call5_wrapper(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &SPointerGuid,
-        NULL,
-        &NumPointerHandles,
-        &SPointerHandles
-    );
+        // Get all handles that support simple pointer protocol (mice)
+        NumPointerHandles = 0;
+        handlestatus = refit_call5_wrapper (
+            gBS->LocateHandleBuffer,
+            ByProtocol,
+            &SPointerGuid,
+            NULL,
+            &NumPointerHandles,
+            &SPointerHandles
+        );
 
-    if(!EFI_ERROR(handlestatus)) {
-        SPointerProtocol = AllocatePool(sizeof(EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
-        UINTN Index;
-        for(Index = 0; Index < NumPointerHandles; Index++) {
-            // Open the protocol on the handle
-            EFI_STATUS status = refit_call6_wrapper(
-                gBS->OpenProtocol,
-                SPointerHandles[Index],
-                &SPointerGuid,
-                (VOID **) &SPointerProtocol[NumSPointerDevices],
-                SelfImageHandle,
-                NULL,
-                EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
-            );
-            if (status == EFI_SUCCESS) {
-                #if REFIT_DEBUG > 0
-                MsgLog("  - Enable Mouse\n");
-                #endif
+        if (!EFI_ERROR (handlestatus)) {
+            SPointerProtocol = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
+            UINTN Index;
+            for (Index = 0; Index < NumPointerHandles; Index++) {
+                // Open the protocol on the handle
+                EFI_STATUS status = refit_call6_wrapper (
+                    gBS->OpenProtocol,
+                    SPointerHandles[Index],
+                    &SPointerGuid,
+                    (VOID **) &SPointerProtocol[NumSPointerDevices],
+                    SelfImageHandle,
+                    NULL,
+                    EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+                );
+                if (status == EFI_SUCCESS) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("  - Enable Mouse\n");
+                    #endif
 
-                NumSPointerDevices++;
+                    NumSPointerDevices++;
+                }
             }
         }
-    } else {
+        else {
 
-        #if REFIT_DEBUG > 0
-        MsgLog("  - Disable Mouse\n");
-        #endif
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Disable Mouse\n");
+            #endif
 
-        GlobalConfig.EnableMouse = FALSE;
-    }
+            GlobalConfig.EnableMouse = FALSE;
+        }
 
-    PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
+        PointerAvailable = (NumAPointerDevices + NumSPointerDevices > 0);
 
-    // load mouse icon
-    if (PointerAvailable && GlobalConfig.EnableMouse) {
-        MouseImage = BuiltinIcon(BUILTIN_ICON_MOUSE);
-    }
+        // load mouse icon
+        if (PointerAvailable && GlobalConfig.EnableMouse) {
+            MouseImage = BuiltinIcon (BUILTIN_ICON_MOUSE);
+        }
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog("Pointer Devices Initialised\n\n");
+    MsgLog ("Pointer Devices Initialised\n\n");
     #endif
 }
 
@@ -159,16 +162,16 @@ VOID pdInitialize() {
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdCleanup() {
         #if REFIT_DEBUG > 0
-        MsgLog("Close Existing Pointer Protocols:\n");
+        MsgLog ("Close Existing Pointer Protocols:\n");
         #endif
 
     PointerAvailable = FALSE;
     pdClear();
 
-    if(APointerHandles) {
+    if (APointerHandles) {
         UINTN Index;
-        for(Index = 0; Index < NumAPointerDevices; Index++) {
-            refit_call4_wrapper(
+        for (Index = 0; Index < NumAPointerDevices; Index++) {
+            refit_call4_wrapper (
                 gBS->CloseProtocol,
                 APointerHandles[Index],
                 &APointerGuid,
@@ -176,17 +179,17 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        FreePool(APointerHandles);
+        FreePool (APointerHandles);
         APointerHandles = NULL;
     }
-    if(APointerProtocol) {
-        FreePool(APointerProtocol);
+    if (APointerProtocol) {
+        FreePool (APointerProtocol);
         APointerProtocol = NULL;
     }
-    if(SPointerHandles) {
+    if (SPointerHandles) {
         UINTN Index;
-        for(Index = 0; Index < NumSPointerDevices; Index++) {
-            refit_call4_wrapper(
+        for (Index = 0; Index < NumSPointerDevices; Index++) {
+            refit_call4_wrapper (
                 gBS->CloseProtocol,
                 SPointerHandles[Index],
                 &SPointerGuid,
@@ -194,15 +197,15 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        FreePool(SPointerHandles);
+        FreePool (SPointerHandles);
         SPointerHandles = NULL;
     }
-    if(SPointerProtocol) {
-        FreePool(SPointerProtocol);
+    if (SPointerProtocol) {
+        FreePool (SPointerProtocol);
         SPointerProtocol = NULL;
     }
-    if(MouseImage) {
-        egFreeImage(MouseImage);
+    if (MouseImage) {
+        egFreeImage (MouseImage);
         Background = NULL;
     }
     NumAPointerDevices = 0;
@@ -234,12 +237,12 @@ UINTN pdCount() {
 ////////////////////////////////////////////////////////////////////////////////
 // Returns a pointer device's WaitForInput event
 ////////////////////////////////////////////////////////////////////////////////
-EFI_EVENT pdWaitEvent(UINTN Index) {
-    if(!PointerAvailable || Index >= NumAPointerDevices + NumSPointerDevices) {
+EFI_EVENT pdWaitEvent (UINTN Index) {
+    if (!PointerAvailable || Index >= NumAPointerDevices + NumSPointerDevices) {
         return NULL;
     }
 
-    if(Index >= NumAPointerDevices) {
+    if (Index >= NumAPointerDevices) {
         return SPointerProtocol[Index - NumAPointerDevices]->WaitForInput;
     }
     return APointerProtocol[Index]->WaitForInput;
@@ -250,10 +253,10 @@ EFI_EVENT pdWaitEvent(UINTN Index) {
 // the first available device's state
 ////////////////////////////////////////////////////////////////////////////////
 EFI_STATUS pdUpdateState() {
-#if defined(EFI32) && defined(__MAKEWITH_GNUEFI)
+#if defined (EFI32) && defined (__MAKEWITH_GNUEFI)
     return EFI_NOT_READY;
 #else
-    if(!PointerAvailable) {
+    if (!PointerAvailable) {
         return EFI_NOT_READY;
     }
 
@@ -263,19 +266,19 @@ EFI_STATUS pdUpdateState() {
     BOOLEAN LastHolding = State.Holding;
 
     UINTN Index;
-    for(Index = 0; Index < NumAPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(
+    for (Index = 0; Index < NumAPointerDevices; Index++) {
+        EFI_STATUS PointerStatus = refit_call2_wrapper (
             APointerProtocol[Index]->GetState,
             APointerProtocol[Index],
             &APointerState
         );
         // if new state found and we have not already found a new state
-        if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
+        if (!EFI_ERROR (PointerStatus) && EFI_ERROR (Status)) {
             Status = EFI_SUCCESS;
 
 #ifdef EFI32
-            State.X = (UINTN)DivU64x64Remainder(APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
-            State.Y = (UINTN)DivU64x64Remainder(APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
+            State.X = (UINTN)DivU64x64Remainder (APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
+            State.Y = (UINTN)DivU64x64Remainder (APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
 #else
             State.X = (APointerState.CurrentX * ScreenW) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
             State.Y = (APointerState.CurrentY * ScreenH) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
@@ -283,38 +286,38 @@ EFI_STATUS pdUpdateState() {
             State.Holding = (APointerState.ActiveButtons & EFI_ABSP_TouchActive);
         }
     }
-    for(Index = 0; Index < NumSPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(
+    for (Index = 0; Index < NumSPointerDevices; Index++) {
+        EFI_STATUS PointerStatus = refit_call2_wrapper (
             SPointerProtocol[Index]->GetState,
             SPointerProtocol[Index],
             &SPointerState
         );
         // if new state found and we have not already found a new state
-        if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
+        if (!EFI_ERROR (PointerStatus) && EFI_ERROR (Status)) {
             Status = EFI_SUCCESS;
 
             INTN TargetX = 0;
             INTN TargetY = 0;
 
 #ifdef EFI32
-	    TargetX = State.X + (INTN)DivS64x64Remainder(SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionX, NULL);
-            TargetY = State.Y + (INTN)DivS64x64Remainder(SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionY, NULL);
+	    TargetX = State.X + (INTN)DivS64x64Remainder (SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionX, NULL);
+            TargetY = State.Y + (INTN)DivS64x64Remainder (SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionY, NULL);
 #else
             TargetX = State.X + SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionX;
             TargetY = State.Y + SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionY;
 #endif
 
-            if(TargetX < 0) {
+            if (TargetX < 0) {
                 State.X = 0;
-            } else if(TargetX >= ScreenW) {
+            } else if (TargetX >= ScreenW) {
                 State.X = ScreenW - 1;
             } else {
                 State.X = (UINTN)TargetX;
             }
 
-            if(TargetY < 0) {
+            if (TargetY < 0) {
                 State.Y = 0;
-            } else if(TargetY >= ScreenH) {
+            } else if (TargetY >= ScreenH) {
                 State.Y = ScreenH - 1;
             } else {
                 State.Y = (UINTN)TargetY;
@@ -341,24 +344,24 @@ POINTER_STATE pdGetState() {
 // Draw the mouse at the current coordinates
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdDraw() {
-    if(Background) {
-        egFreeImage(Background);
+    if (Background) {
+        egFreeImage (Background);
         Background = NULL;
     }
-    if(MouseImage) {
+    if (MouseImage) {
         UINTN Width = MouseImage->Width;
         UINTN Height = MouseImage->Height;
 
-        if(State.X + Width > ScreenW) {
+        if (State.X + Width > ScreenW) {
             Width = ScreenW - State.X;
         }
-        if(State.Y + Height > ScreenH) {
+        if (State.Y + Height > ScreenH) {
             Height = ScreenH - State.Y;
         }
 
-        Background = egCopyScreenArea(State.X, State.Y, Width, Height);
-        if(Background) {
-            BltImageCompositeBadge(Background, MouseImage, NULL, State.X, State.Y);
+        Background = egCopyScreenArea (State.X, State.Y, Width, Height);
+        if (Background) {
+            BltImageCompositeBadge (Background, MouseImage, NULL, State.X, State.Y);
         }
     }
     LastXPos = State.X;
@@ -370,8 +373,8 @@ VOID pdDraw() {
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdClear() {
     if (Background) {
-        egDrawImage(Background, LastXPos, LastYPos);
-        egFreeImage(Background);
+        egDrawImage (Background, LastXPos, LastYPos);
+        egFreeImage (Background);
         Background = NULL;
     }
 }
