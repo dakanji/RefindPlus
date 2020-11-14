@@ -14,6 +14,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include "Platform.h"
 #include "../refind/lib.h"
+#include "../refind/mystrings.h"
+#include "../refind/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 #include "../Library/GpuLib/OneLinerMacros.h"
 #include "../Library/GpuLib/ati.h"
@@ -614,7 +616,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                         #if REFIT_DEBUG > 0
                         if (DeviceData == NULL) {
-                            DeviceData == L"";
+                            DeviceData = L"";
                         }
 
                         if (Parent) {
@@ -787,8 +789,6 @@ LoadDriversGOP(
 ) {
     CHAR16     *Directory;
     CHAR16     *SelfDirectory;
-    UINTN      Length;
-    UINTN      i = 0;
     UINTN      NumFound = 0;
     UINTN      CurFound = 0;
     EFI_STATUS Status = EFI_NOT_READY;
