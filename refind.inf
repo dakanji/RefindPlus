@@ -26,12 +26,14 @@
 #
 
 [Sources]
-  EfiLib/GenericBdsLib.h
+  EfiLib/AcquireGOP.c
+  EfiLib/AmendSysTable.c
   EfiLib/BmLib.c
-  EfiLib/DevicePath.c #included into GenericBdsLib
-  EfiLib/BdsConnect.c #included into GenericBdsLib
   EfiLib/BdsHelper.c
   EfiLib/BdsTianoCore.c
+  EfiLib/DevicePath.c #included into GenericBdsLib
+  EfiLib/BdsConnect.c #included into GenericBdsLib
+  EfiLib/GenericBdsLib.h
   EfiLib/legacy.c
   mok/mok.c
   mok/guid.c
@@ -100,6 +102,8 @@
 # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
   OcConsoleLib
   OcMiscLib
+# Added by dakanji (https://sourceforge.net/u/dakanji/profile) for AcquireGOP
+  HandleParsingLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

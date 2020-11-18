@@ -411,6 +411,7 @@ extern EFI_GUID          gEfiLegacyBootProtocolGuid;
 extern EFI_GUID          gEfiGlobalVariableGuid;
 
 extern BOOLEAN           HaveResized;
+extern BOOLEAN           TweakSysTable;
 
 extern EFI_GUID          GlobalGuid;
 extern EFI_GUID          RefindGuid;

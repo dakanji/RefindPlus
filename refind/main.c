@@ -203,7 +203,8 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-static BOOLEAN ranCleanNvram = FALSE;
+static BOOLEAN    ranCleanNvram  = FALSE;
+BOOLEAN           TweakSysTable  = FALSE;
 
 extern VOID InitBooterLog(VOID);
 
@@ -889,13 +890,13 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #if REFIT_DEBUG > 0
     MsgLog("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
     if (NowZone < -12 || NowZone > 12 || (NowZone > -1 && NowZone < 1)) {
-        MsgLog("Timestamp: %s (GMT)\n\n", NowDateStr);
+        MsgLog("Timestamp - %s (GMT)\n\n", NowDateStr);
     }
     else if (NowZone < 0) {
-        MsgLog("Timestamp: %s (GMT%02d)\n\n", NowDateStr);
+        MsgLog("Timestamp - %s (GMT%02d)\n\n", NowDateStr);
     }
     else {
-        MsgLog("Timestamp: %s (GMT+%02d)\n\n", NowDateStr);
+        MsgLog("Timestamp - %s (GMT+%02d)\n\n", NowDateStr);
     }
     #endif
 
@@ -934,7 +935,18 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         #if REFIT_DEBUG > 0
         MsgLog("Spoof Mac OS Version...\n");
         #endif
+
         SetAppleOSInfo();
+    }
+
+    // Reset SystemTable if amended in LoadDrivers
+    if (TweakSysTable) {
+        gST = SystemTable;
+        gBS = SystemTable->BootServices;
+
+        #if REFIT_DEBUG > 0
+        MsgLog("INFO: Restored System Table\n\n");
+        #endif
     }
 
     #if REFIT_DEBUG > 0

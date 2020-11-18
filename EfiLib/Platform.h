@@ -48,6 +48,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Protocol/Cpu.h>
 #include <Protocol/CpuIo.h>
 #include <Protocol/DataHub.h>
+#include <Protocol/Decompress.h>
 #include <Protocol/DevicePathToText.h>
 #include <Protocol/FrameworkHii.h>
 #include <Protocol/Smbios.h>

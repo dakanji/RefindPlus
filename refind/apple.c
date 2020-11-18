@@ -33,23 +33,23 @@ CHAR16 gCsrStatus[256];
 // information. If the variable is not present and the firmware is Apple, fake
 // it and claim it's enabled, since that's how OS X 10.11 treats a system with
 // the variable absent.
-EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
+EFI_STATUS GetCsrStatus (UINT32 *CsrStatus) {
     UINT32     *ReturnValue = NULL;
     UINTN      CsrLength;
     EFI_GUID   CsrGuid = CSR_GUID;
     EFI_STATUS Status = EFI_INVALID_PARAMETER;
 
     if (CsrStatus) {
-        Status = EfivarGetRaw(&CsrGuid, L"csr-active-config", (CHAR8**) &ReturnValue, &CsrLength);
+        Status = EfivarGetRaw (&CsrGuid, L"csr-active-config", (CHAR8**) &ReturnValue, &CsrLength);
         if (Status == EFI_SUCCESS) {
             if (CsrLength == 4) {
                 *CsrStatus = *ReturnValue;
             } else {
                 Status = EFI_BAD_BUFFER_SIZE;
-                SPrint(gCsrStatus, 255, L" Unknown System Integrity Protection version");
+                SPrint (gCsrStatus, 255, L" Unknown System Integrity Protection version");
             }
-            MyFreePool(ReturnValue);
-        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp(L"Apple", gST->FirmwareVendor))) {
+            MyFreePool (ReturnValue);
+        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp (L"Apple", gST->FirmwareVendor))) {
             *CsrStatus = SIP_ENABLED;
             Status = EFI_SUCCESS;
         } // if (Status == EFI_SUCCESS)
@@ -60,35 +60,35 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
 // Store string describing CSR status value in gCsrStatus variable, which appears
 // on the Info page. If DisplayMessage is TRUE, displays the new value of
 // gCsrStatus on the screen for three seconds.
-VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
+VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage) {
     EG_PIXEL    BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
         case SIP_ENABLED:
-            SPrint(gCsrStatus, 255, L" System Integrity Protection is enabled (0x%02x)", CsrStatus);
+            SPrint (gCsrStatus, 255, L" System Integrity Protection is enabled (0x%02x)", CsrStatus);
             break;
         case SIP_DISABLED:
-            SPrint(gCsrStatus, 255, L" System Integrity Protection is disabled (0x%02x)", CsrStatus);
+            SPrint (gCsrStatus, 255, L" System Integrity Protection is disabled (0x%02x)", CsrStatus);
             break;
         default:
-            SPrint(gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
+            SPrint (gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
     } // switch
     if (DisplayMessage) {
-        egDisplayMessage(gCsrStatus, &BGColor, CENTER);
-        PauseSeconds(3);
+        egDisplayMessage (gCsrStatus, &BGColor, CENTER);
+        PauseSeconds (3);
     } // if
 } // VOID RecordgCsrStatus()
 
 // Find the current CSR status and reset it to the next one in the
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
-VOID RotateCsrValue(VOID) {
+VOID RotateCsrValue (VOID) {
     UINT32       CurrentValue, TargetCsr;
     UINT32_LIST  *ListItem;
     EFI_GUID     CsrGuid = CSR_GUID;
     EFI_STATUS   Status;
 
-    Status = GetCsrStatus(&CurrentValue);
+    Status = GetCsrStatus (&CurrentValue);
     if ((Status == EFI_SUCCESS) && GlobalConfig.CsrValues) {
         ListItem = GlobalConfig.CsrValues;
         while ((ListItem != NULL) && (ListItem->Value != CurrentValue))
@@ -98,11 +98,11 @@ VOID RotateCsrValue(VOID) {
         } else {
             TargetCsr = ListItem->Next->Value;
         }
-        Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
+        Status = EfivarSetRaw (&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
         if (Status == EFI_SUCCESS) {
-            RecordgCsrStatus(TargetCsr, TRUE);
+            RecordgCsrStatus (TargetCsr, TRUE);
         } else {
-            SPrint(gCsrStatus, 255, L" Error setting System Integrity Protection code.");
+            SPrint (gCsrStatus, 255, L" Error setting System Integrity Protection code.");
         }
     } // if
 } // VOID RotateCsrValue()
@@ -136,7 +136,7 @@ EFI_STATUS SetAppleOSInfo() {
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     EfiAppleSetOsInterface *SetOs = NULL;
 
-    Status = refit_call3_wrapper(
+    Status = refit_call3_wrapper (
         gBS->LocateProtocol,
         &apple_set_os_guid,
         NULL,
@@ -144,31 +144,40 @@ EFI_STATUS SetAppleOSInfo() {
     );
 
     // If not a Mac, ignore the call....
-    if ((Status != EFI_SUCCESS) || (!SetOs))
+    if ((Status != EFI_SUCCESS) || (!SetOs)) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("Spoof Mac OS Version ..Ignored\n\n");
+        #endif
+
         return EFI_SUCCESS;
+    }
 
     if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
-        AppleOSVersion = StrDuplicate(L"Mac OS X");
-        MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
+        AppleOSVersion = StrDuplicate (L"Mac OS X");
+        MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
         if (AppleOSVersion) {
-            AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
-            UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
+            AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
+            UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
             if (AppleOSVersion8) {
                 Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
-                if (!EFI_ERROR(Status))
+                if (!EFI_ERROR (Status)) {
                     Status = EFI_SUCCESS;
-                MyFreePool(AppleOSVersion8);
+                }
+                MyFreePool (AppleOSVersion8);
             } else {
                 Status = EFI_OUT_OF_RESOURCES;
-                Print(L"Out of resources in SetAppleOSInfo!\n");
             }
-            if ((Status == EFI_SUCCESS) && (SetOs->Version >= 2))
+
+            if ((Status == EFI_SUCCESS) && (SetOs->Version >= 2)) {
                 Status = refit_call1_wrapper (SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
-            MyFreePool(AppleOSVersion);
+            }
+            MyFreePool (AppleOSVersion);
         } // if (AppleOSVersion)
     } // if
-    if (Status != EFI_SUCCESS)
-        Print(L"Unable to set firmware boot type!\n");
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Spoof Mac OS Version ...%r\n\n", Status);
+    #endif
 
     return (Status);
 } // EFI_STATUS SetAppleOSInfo()

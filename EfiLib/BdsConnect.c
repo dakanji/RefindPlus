@@ -23,10 +23,13 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../Library/GpuLib/intel.h"
 
 #define PCI_CLASS_DISPLAY_GFX 0x80
-#define IS_PCI_GFX(_p)        IS_CLASS3 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_GFX, 0)
+#define IS_PCI_GFX(_p)  IS_CLASS3 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_GFX, 0)
 
 BOOLEAN FoundGOP = FALSE;
 BOOLEAN ReLoaded = FALSE;
+
+extern EFI_STATUS AmendSysTable (VOID);
+extern EFI_STATUS AcquireGOP (VOID);
 
 typedef enum {
   Unknown,
@@ -387,75 +390,64 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                     for (k = 0; k < HandleCount; k++) {
                         if (HandleType[k] & EFI_HANDLE_TYPE_PARENT_HANDLE) {
+                            MakeConnection = FALSE;
                             Parent = TRUE;
                             break;
                         }
                     } // for
 
-                    //if (Parent) {
-                    //    #if REFIT_DEBUG > 0
-                    //    MsgLog ("Handle[%03d] ...Skipped [Parent Device]", LogVal);
-                    //    #endif
-                    //}
-                    //else {
-                        // Assume Success
-                        XStatus = EFI_SUCCESS;
+                    // Assume Success
+                    XStatus = EFI_SUCCESS;
 
-                        if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                            XStatus = gBS->HandleProtocol (
-                                AllHandleBuffer[i],
-                                &gEfiPciIoProtocolGuid,
-                                (VOID*)&PciIo
+                    if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
+                        XStatus = gBS->HandleProtocol (
+                            AllHandleBuffer[i],
+                            &gEfiPciIoProtocolGuid,
+                            (VOID*)&PciIo
+                        );
+
+                        if (EFI_ERROR (XStatus)) {
+                            DeviceData = L" - Not PCIe Device";
+                        }
+                        else {
+                            // Read PCI BUS
+                            PciIo->GetLocation (PciIo, &SegmentPCI, &BusPCI, &DevicePCI, &FunctionPCI);
+                            XStatus = PciIo->Pci.Read (
+                                PciIo,
+                                EfiPciIoWidthUint32,
+                                0,
+                                sizeof (Pci) / sizeof (UINT32),
+                                &Pci
                             );
 
                             if (EFI_ERROR (XStatus)) {
-                                DeviceData = L" - Not PCIe Device";
+                                MakeConnection = FALSE;
+                                DeviceData = L" - Could not Read PCIe Device Details";
                             }
                             else {
-                                // Read PCI BUS
-                                PciIo->GetLocation (PciIo, &SegmentPCI, &BusPCI, &DevicePCI, &FunctionPCI);
-                                XStatus = PciIo->Pci.Read (
-                                    PciIo,
-                                    EfiPciIoWidthUint32,
-                                    0,
-                                    sizeof (Pci) / sizeof (UINT32),
-                                    &Pci
-                                );
-
-                                if (EFI_ERROR (XStatus)) {
+                                BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
+                                if (VGADevice) {
+                                    // DA-TAG: Unable to reconnect after disconnecting here
+                                    // Comment out and set MakeConnection to FALSE
+                                    // gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
                                     MakeConnection = FALSE;
-                                    DeviceData = L" - Could not Read PCIe Device Details";
+                                    DeviceData = L" - Display Device ";
                                 }
-                                //else if (IS_PCI_VGA(&Pci)==TRUE) {
-                                //    MakeConnection = FALSE;
-                                //    //gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
-                                //    DeviceData = L" - Display Device  ";
-                                //}
                                 else {
-                                    if (IS_PCI_VGA(&Pci)==TRUE) {
-                                        MakeConnection = FALSE;
-                                        //gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
-                                        DeviceData = L" - Display Device ";
-                                    }
-                                    else {
-                                        DeviceData = PoolPrint (
-                                            L" - PCI(%02llX|%02llX:%02llX.%llX)",
-                                            SegmentPCI,
-                                            BusPCI,
-                                            DevicePCI,
-                                            FunctionPCI
-                                        );
-                                    }
-                                    //BOOLEAN GPUDevice = ((Pci.Hdr.ClassCode[2] == PCI_CLASS_DISPLAY) &&
-                                    //    ((Pci.Hdr.ClassCode[1] == PCI_CLASS_DISPLAY_VGA) ||
-                                    //    (Pci.Hdr.ClassCode[1] == PCI_CLASS_DISPLAY_OTHER) ) );
+                                    DeviceData = PoolPrint (
+                                        L" - PCI(%02llX|%02llX:%02llX.%llX)",
+                                        SegmentPCI,
+                                        BusPCI,
+                                        DevicePCI,
+                                        FunctionPCI
+                                    );
 
                                     BOOLEAN GPUDevice = IS_PCI_GFX(&Pci);
                                     if (GPUDevice) {
                                         switch (Pci.Hdr.VendorId) {
                                             case 0x1002:
-                                                info      = NULL;
-                                                GfxVendor = AMD;
+                                                info       = NULL;
+                                                GfxVendor  = AMD;
 
                                                 x = 0;
                                                 do {
@@ -465,8 +457,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                                     }
                                                 } while (radeon_cards[x++].device_id != 0);
 
-                                                GfxModel = PoolPrint (L"%s", info->model_name);
-                                                DeviceData = PoolPrint (
+                                                GfxModel    = PoolPrint (L"%s", info->model_name);
+                                                DeviceData  = PoolPrint (
                                                     L" - GPU Device      : %s by AMD",
                                                     GfxModel
                                                 );
@@ -474,9 +466,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                                 break;
 
                                             case 0x8086:
-                                                GfxVendor = Intel;
-
-                                                GfxModel = PoolPrint (
+                                                GfxVendor  = Intel;
+                                                GfxModel   = PoolPrint (
                                                     L"%s",
                                                     get_gma_model (Pci.Hdr.DeviceId)
                                                 );
@@ -488,13 +479,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                                 break;
 
                                             case 0x10de:
-                                                GfxVendor = Nvidia;
-                                                Bar0        = Pci.Device.Bar[0];
-                                                GfxMmio   = (UINT8*) (UINTN) (Bar0 & ~0x0f);
+                                                GfxVendor  = Nvidia;
+                                                Bar0       = Pci.Device.Bar[0];
+                                                GfxMmio    = (UINT8*) (UINTN) (Bar0 & ~0x0f);
 
                                                 // get card type
-                                                GfxFamily = (REG32 (GfxMmio, 0) >> 20) & 0x1ff;
-                                                UFamily = GfxFamily & 0x1F0;
+                                                GfxFamily  = (REG32 (GfxMmio, 0) >> 20) & 0x1ff;
+                                                UFamily    = GfxFamily & 0x1F0;
                                                 if ((UFamily == NV_ARCH_KEPLER1) ||
                                                     (UFamily == NV_ARCH_KEPLER2) ||
                                                     (UFamily == NV_ARCH_KEPLER3)
@@ -546,7 +537,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                                             default:
                                             GfxVendor = Unknown;
-                                            GfxModel = PoolPrint (
+                                            GfxModel  = PoolPrint (
                                                 L"pci%hx[%hx]",
                                                 Pci.Hdr.VendorId,
                                                 Pci.Hdr.DeviceId
@@ -558,89 +549,89 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                                             break;
                                         }
-                                    } // IS_PCI_GFX
-
-                                }
-                            } // if !EFI_ERROR (XStatus)
-                        } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
-
-                        // Temp from Clover START
-                        if (!FoundGOP) {
-                            XStatus = refit_call5_wrapper (
-                                gBS->LocateHandleBuffer,
-                                ByProtocol,
-                                &gEfiGraphicsOutputProtocolGuid,
-                                NULL,
-                                &GOPCount,
-                                &GOPArray
-                            );
-
-                            if (!EFI_ERROR (XStatus)) {
-                                UINTN m;
-                                for (m = 0; m < GOPCount; m++) {
-                                    if (GOPArray[m] != gST->ConsoleOutHandle) {
-                                        GopDevicePathStr = ConvertDevicePathToText (
-                                            DevicePathFromHandle (GOPArray[m]),
-                                            FALSE,
-                                            FALSE
-                                        );
-
-                                        FoundGOP = TRUE;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (FoundGOP) {
-                            DevicePathStr = ConvertDevicePathToText (
-                                DevicePathFromHandle (AllHandleBuffer[i]),
-                                FALSE,
-                                FALSE
-                            );
-
-                            #if REFIT_DEBUG > 0
-                            if (StrStr (GopDevicePathStr, DevicePathStr)) {
-                                DeviceData = PoolPrint (
-                                    L"%s : Leverages GOP",
-                                    DeviceData
-                                );
-                            }
-                            #endif
-                        }
-                        // Temp from Clover END
-
-                        if (MakeConnection) {
-                            XStatus = daConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
-                        }
-
-                        #if REFIT_DEBUG > 0
-                        if (DeviceData == NULL) {
-                            DeviceData = L"";
-                        }
-
-                        if (Parent) {
-                            MsgLog ("Handle[%03d] ...Skipped [Parent Device]%s", LogVal, DeviceData);
-                        }
-                        else if (!EFI_ERROR (XStatus)) {
-                            MsgLog ("Handle[%03d]  * %r                %s", LogVal, XStatus, DeviceData);
-                        }
-                        else {
-                            if (XStatus == EFI_NOT_STARTED) {
-                                MsgLog ("Handle[%03d] ...Declined [Empty Device]%s", LogVal, DeviceData);
-                            }
-                            else if (XStatus == EFI_NOT_FOUND) {
-                                MsgLog ("Handle[%03d] ...Bypassed [Not Linkable]%s", LogVal, DeviceData);
-                            }
-                            else if (XStatus == EFI_INVALID_PARAMETER) {
-                                MsgLog ("Handle[%03d] - ERROR: Invalid Param%s", LogVal, DeviceData);
-                            }
-                            else {
-                                MsgLog ("Handle[%03d] - WARN: %r%s", LogVal, XStatus, DeviceData);
+                                    } // GPUDevice
+                                } // VGADevice
                             }
                         } // if !EFI_ERROR (XStatus)
+                    } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
+
+                    // Temp from Clover START
+                    if (!FoundGOP) {
+                        XStatus = refit_call5_wrapper (
+                            gBS->LocateHandleBuffer,
+                            ByProtocol,
+                            &gEfiGraphicsOutputProtocolGuid,
+                            NULL,
+                            &GOPCount,
+                            &GOPArray
+                        );
+
+                        if (!EFI_ERROR (XStatus)) {
+                            UINTN m;
+                            for (m = 0; m < GOPCount; m++) {
+                                if (GOPArray[m] != gST->ConsoleOutHandle) {
+                                    GopDevicePathStr = ConvertDevicePathToText (
+                                        DevicePathFromHandle (GOPArray[m]),
+                                        FALSE,
+                                        FALSE
+                                    );
+
+                                    FoundGOP = TRUE;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (FoundGOP) {
+                        DevicePathStr = ConvertDevicePathToText (
+                            DevicePathFromHandle (AllHandleBuffer[i]),
+                            FALSE,
+                            FALSE
+                        );
+
+                        #if REFIT_DEBUG > 0
+                        if (StrStr (GopDevicePathStr, DevicePathStr)) {
+                            DeviceData = PoolPrint (
+                                L"%s : Leverages GOP",
+                                DeviceData
+                            );
+                        }
                         #endif
-                    //} // if Parent
+                    }
+                    // Temp from Clover END
+
+                    if (MakeConnection) {
+                        XStatus = daConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    if (DeviceData == NULL) {
+                        DeviceData = L"";
+                    }
+
+                    if (Parent) {
+                        MsgLog ("Handle[%03d] ...Skipped [Parent Device]%s", LogVal, DeviceData);
+                    }
+                    else if (!EFI_ERROR (XStatus)) {
+                        MsgLog ("Handle[%03d]  * %r                %s", LogVal, XStatus, DeviceData);
+                    }
+                    else {
+                        if (XStatus == EFI_NOT_STARTED) {
+                            MsgLog ("Handle[%03d] ...Declined [Empty Device]%s", LogVal, DeviceData);
+                        }
+                        else if (XStatus == EFI_NOT_FOUND) {
+                            MsgLog ("Handle[%03d] ...Bypassed [Not Linkable]%s", LogVal, DeviceData);
+                        }
+                        else if (XStatus == EFI_INVALID_PARAMETER) {
+                            MsgLog ("Handle[%03d] - ERROR: Invalid Param%s", LogVal, DeviceData);
+                        }
+                        else {
+                            MsgLog ("Handle[%03d] - WARN: %r%s", LogVal, XStatus, DeviceData);
+                        }
+                    } // if !EFI_ERROR (XStatus)
+                    #endif
+
                 } // if !Device
             } // if EFI_ERROR (XStatus)
 
@@ -661,15 +652,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
             MyFreePool (DeviceData);
         }  // for
 
-        #if REFIT_DEBUG > 0
-        if (FoundGOP) {
-            MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
-        }
-        else {
-            MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
-        }
-        #endif
-
         MyFreePool (HandleBuffer);
         MyFreePool (HandleType);
     } // if !EFI_ERROR (Status)
@@ -687,25 +669,36 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 **/
 STATIC
 EFI_STATUS
-BdsLibConnectAllDriversToAllControllersEx (VOID)
-{
+BdsLibConnectAllDriversToAllControllersEx (
+    VOID
+) {
     EFI_STATUS  Status;
     EFI_STATUS  XStatus;
 
     do {
-        //
-        // Connect All EFI 1.10 drivers following EFI 1.10 algorithm
-        //
-        //BdsLibConnectAllEfi();
+        FoundGOP = FALSE;
+
+        // Connect All drivers
         XStatus = BdsLibConnectMostlyAllEfi();
 
-        //
-        // Check to see if it's possible to dispatch an more DXE drivers.
-        // The BdsLibConnectAllEfi() may have made new DXE drivers show up.
-        // If anything is Dispatched Status == EFI_SUCCESS and we will try
-        // the connect again.
-        //
+        // Check if possible to dispatch additional DXE drivers as
+        // BdsLibConnectAllEfi() may have revealed new DXE drivers.
+        // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
         Status = gDS->Dispatch();
+
+        #if REFIT_DEBUG > 0
+        if (EFI_ERROR (Status)) {
+            if (FoundGOP) {
+                MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
+            }
+            else {
+                MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+            }
+        }
+        else {
+            MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
+        }
+        #endif
     } while (!EFI_ERROR (Status));
 
     if (FoundGOP) {
@@ -716,115 +709,36 @@ BdsLibConnectAllDriversToAllControllersEx (VOID)
     }
 }
 
-// Scan a directory for drivers.
-// Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
-static UINTN
-ScanDriverDirGOP(
-    IN CHAR16 *Path
-) {
-    EFI_STATUS              Status;
-    REFIT_DIR_ITER          DirIter;
-    UINTN                   NumFound = 0;
-    EFI_FILE_INFO           *DirEntry;
-    CHAR16                  *FileName;
-
-    CleanUpPathNameSlashes(Path);
-
-    #if REFIT_DEBUG > 0
-    MsgLog("\n");
-    MsgLog("Scan '%s' Folder:\n", Path);
-    #endif
-
-    // look through contents of the directory
-    DirIterOpen(SelfRootDir, Path, &DirIter);
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN RunOnce = FALSE;
-    #endif
-
-    while (DirIterNext(&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
-        if (DirEntry->FileName[0] == '.') {
-            continue;   // skip this
-        }
-
-        // needed here in case next block returns error message
-        #if REFIT_DEBUG > 0
-        if (RunOnce) {
-            MsgLog("\n");
-        }
-        #endif
-
-        FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
-        NumFound++;
-        Status = StartEFIImage(SelfVolume, FileName, L"", DirEntry->FileName, 0, FALSE, TRUE);
-
-        #if REFIT_DEBUG > 0
-        MsgLog("  - Load '%s' ...%r", FileName, Status);
-        #endif
-
-        MyFreePool(DirEntry);
-        #if REFIT_DEBUG > 0
-        RunOnce = TRUE;
-        #endif
-    } // while
-
-    Status = DirIterClose(&DirIter);
-    if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-        SPrint(FileName, 255, L"while scanning the %s directory", Path);
-        CheckError(Status, FileName);
-    }
-
-    return (NumFound);
-} // static UINTN ScanDriverDirGOP()
-
-
-// Load all EFI drivers from rEFInd's "drivers" subdirectory and from the
-// directories specified by the user in the "scan_driver_dirs" configuration
-// file line.
-// Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
-// Returns TRUE if any drivers are loaded, FALSE otherwise.
+// Many cases of of GPUs not working on EFI 1.x Units such as Classic MacPros are due
+// to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
+// amends SystemTable Revision information, provides the missing CreateEventEx capability
+// then reloads the GPU's ROM from RAM (If Present) which will install GOP (If Available).
 BOOLEAN
-LoadDriversGOP(
+ApplyGOPFix (
     VOID
 ) {
-    CHAR16     *Directory;
-    CHAR16     *SelfDirectory;
-    UINTN      NumFound = 0;
-    UINTN      CurFound = 0;
-    EFI_STATUS Status = EFI_NOT_READY;
+    EFI_STATUS Status;
 
-    // load drivers from the subdirectories of rEFInd's home directory specified
+    // Update Boot Services to permit reloading GPU ROM
+    Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    MsgLog("Load Drivers for GOPFix...");
+    MsgLog ("INFO: Amend System Table Details ...%r\n\n", Status);
     #endif
 
-    Directory = L"x64_GOPFix";
-    SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-    CleanUpPathNameSlashes(SelfDirectory);
-    MergeStrings(&SelfDirectory, Directory, L'\\');
-    CurFound = ScanDriverDirGOP(SelfDirectory);
-    MyFreePool(Directory);
-    MyFreePool(SelfDirectory);
-    if (CurFound > 0) {
-        NumFound = NumFound + CurFound;
-    }
-    else {
+    if (Status == EFI_SUCCESS || Status == EFI_ALREADY_STARTED) {
+        Status = AcquireGOP();
         #if REFIT_DEBUG > 0
-        MsgLog("  - Not Found or Empty", SelfDirectory);
+        MsgLog ("INFO: Acquire GOP on Volatile Memory ...%r\n\n", Status);
         #endif
-    }
 
-    #if REFIT_DEBUG > 0
-    MsgLog("\n\n");
-    #endif
-
-    // connect all devices
-    if (NumFound > 0) {
-        Status = BdsLibConnectAllDriversToAllControllersEx();
+        // connect all devices
+        if (!EFI_ERROR (Status)) {
+            Status = BdsLibConnectAllDriversToAllControllersEx();
+        }
     }
 
     return Status;
-} /* BOOLEAN LoadDriversGOP() */
+} /* BOOLEAN ApplyGOPFix() */
 
 
 /**
@@ -841,15 +755,11 @@ BdsLibConnectAllDriversToAllControllers (VOID)
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (EFI_ERROR (Status) && !ReLoaded) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Attempt GOP Fix\n\n");
-        #endif
-
         ReLoaded = TRUE;
-        Status = LoadDriversGOP();
+        Status = ApplyGOPFix();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Install GOP from Graphics Device ...%r\n\n", Status);
+        MsgLog ("INFO: Provide GOP from Volatile Memory ...%r\n\n", Status);
         #endif
     }
 }

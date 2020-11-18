@@ -85,6 +85,11 @@
     OcStringLib|OpenCorePkg/Library/OcStringLib/OcStringLib.inf
     OcDevicePathLib|OpenCorePkg/Library/OcDevicePathLib/OcDevicePathLib.inf
 
+# Added by dakanji (https://sourceforge.net/u/dakanji/profile) for AcquireGOP
+    HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
+    FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
+    SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+
 [LibraryClasses.AARCH64]
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
