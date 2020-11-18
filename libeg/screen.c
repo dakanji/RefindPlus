@@ -55,9 +55,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// July 2020: Extensively modiied by dakanji (sourceforge.net/u/dakanji/profile)
+// July 2020: Extensively modiied by dakanji (dakanji@users.sourceforge.net)
 #include "libegint.h"
 #include "../refind/screen.h"
+#include "../refind/global.h"
 #include "../refind/lib.h"
 #include "../refind/mystrings.h"
 #include "../include/refit_call_wrapper.h"
@@ -69,6 +70,7 @@
 
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateProtocol EfiLibLocateProtocol
+#define LibOpenRoot EfiLibOpenRoot
 #endif
 
 // Console defines and variables
@@ -218,7 +220,7 @@ daCheckAltGop (
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("\n");
-                    MsgLog ("  - Found Replacement Candidate on Firmware Handle[%02d]\n", Index);
+                    MsgLog ("  - Found Replacement Candidate on GPU Handle[%02d]\n", Index);
                     #endif
 
                     #if REFIT_DEBUG > 0
@@ -289,7 +291,7 @@ egDumpGOPVideoModes(
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS Status;
+    EFI_STATUS   Status;
     UINT32       MaxMode;
     UINT32       Mode;
     UINT32       ModeLog;
@@ -2126,7 +2128,7 @@ egScreenShot(
     if (FileData == NULL) {
         SwitchToText(FALSE);
 
-        ShowScreenStr = L"Error: Could not encode BMP";
+        ShowScreenStr = L"Error: Could not Encode BMP";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2139,12 +2141,39 @@ egScreenShot(
         HaltForKey();
         SwitchToGraphics();
 
-        goto bailout_wait;
+        return;
     }
 
-    Status = egFindESP(&BaseDir);
-    if (EFI_ERROR(Status))
-        return;
+    if (SelfRootDir != NULL) {
+        BaseDir = SelfRootDir;
+    }
+    else {
+        SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
+        if (SelfRootDir != NULL) {
+            BaseDir = SelfRootDir;
+        }
+        else {
+            Status = egFindESP(&BaseDir);
+            if (EFI_ERROR(Status)) {
+                SwitchToText(FALSE);
+
+                ShowScreenStr = L"Error: Could not Find ESP for Screenshot";
+
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                PrintUglyText((CHAR16 *) ShowScreenStr, NEXTLINE);
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+                #if REFIT_DEBUG > 0
+                MsgLog("%s\n\n", ShowScreenStr);
+                #endif
+
+                HaltForKey();
+                SwitchToGraphics();
+
+                return;
+            }
+        }
+    }
 
     // Search for existing screen shot files; increment number to an unused value...
     ssNum = 001;
