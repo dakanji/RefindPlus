@@ -45,7 +45,7 @@ $ brew upgrade mtoc
 
 ### Install the Netwide Assembler (NASM) with HomeBrew
 
-The assembler used for EDK II builds is Netwide Assembler (NASM).
+The assembler used for EDK II builds is the Netwide Assembler (NASM).
 
 ```
 $ brew install nasm
@@ -120,26 +120,6 @@ Upstream will be `dakanji/RefindPlus` as shown.
 Your woking repository will be under `Documents/RefindPlus/Working`
 
 
-### Prepare Your Forked RefindPlus Working Repository for Your Edits (Optional)
-
-Navigate to `https://github.com/YOUR_GITHUB_USERNAME/RefindPlus` and create a new branch called `MyEdits`
-
-**NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
-Use this branch to save edits you make to the codebase that you want to build
-
-
-### Prepare Script
-
-In Terminal, run the following commands:
-
-```
-$ cd ~/Documents/RefindPlus/edk2
-$ git update-index --assume-unchanged 000-BuildScript/refindRepoUpdater.sh
-```
-
-The commands will ensure that changes you make to the script remains local as changes should not be pushed to your repository.
-
-
 ## Build RefindPlus
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
 - Drag the `refindBuilder.sh` file into Terminal
@@ -148,17 +128,11 @@ The commands will ensure that changes you make to the script remains local as ch
 - Press `Enter`
 
 
-
 ## Updating Cloned Repositories
 ### Update with the RepoUpdater Script (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-  - Open the `refindRepoUpdater.sh` file If you have an edit branch such as a `MyEdits` branch
-  - Under the `USER EDIT` Section, set `EDIT_BRANCH='BRANCH_WITH_YOUR_EDITS'` to your actual edit branch name (Only edit if there is an edit branch)
-  - Save and close the file
 - Drag the `refindRepoUpdater.sh` file into Terminal
 - Press `Enter`
-
-You may need to resolve conflicts on Edit Branch.
 
 ### Update Manually
 #### Refind-UDK
@@ -180,14 +154,3 @@ $ git checkout GOPFix
 $ git pull upstream GOPFix
 $ git push
 ```
-
-If you have your own edits, in a `MyEdits` branch for instance, run the following additional commands:
-
-```
-$ cd ~/Documents/RefindPlus/Working
-$ git checkout MyEdits
-$ git rebase GOPFix
-$ git push
-```
-
-You may need to resolve conflicts after the `git rebase GOPFix` command.
