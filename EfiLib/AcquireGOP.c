@@ -28,7 +28,7 @@
   @retval Other value             Unknown error.
 **/
 EFI_STATUS
-LoadGopDriver (
+ReloadPCIROM (
     VOID          *RomBar,
     UINTN         RomSize,
     CONST CHAR16  *FileName
@@ -229,7 +229,7 @@ AcquireGOP (
                         HandleIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, HandleArray[Index]);
                         RomFileName = PoolPrint (L"Handle%X", HandleIndex);
 
-                        Status = LoadGopDriver (
+                        Status = ReloadPCIROM (
                             PciIo->RomImage,
                             PciIo->RomSize,
                             RomFileName
@@ -242,5 +242,5 @@ AcquireGOP (
         } // for
     } // if !EFI_ERROR LocateHandleBuffer
 
-    return EFI_SUCCESS;
+    return Status;
 }
