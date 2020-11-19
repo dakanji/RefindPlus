@@ -23,15 +23,10 @@ EFI_SMM_BASE2_PROTOCOL  *gSmmBase2  = NULL;
 EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
     INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.ImageHead),
     INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.EventHead),
-    sizeof (EFI_MEMORY_DESCRIPTOR) + sizeof (UINT64) - (
-        sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)
-    ),
-    EFI_MEMORY_DESCRIPTOR_VERSION,
-    0,
-    NULL,
-    NULL,
-    FALSE,
-    FALSE
+    sizeof (EFI_MEMORY_DESCRIPTOR) + sizeof (UINT64) - (sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)),
+    EFI_MEMORY_DESCRIPTOR_VERSION, 0,
+    NULL, NULL,
+    FALSE, FALSE
 };
 
 UINTN                      gEventPending      = 0;
@@ -43,13 +38,10 @@ LIST_ENTRY                 gEventQueue[TPL_HIGH_LEVEL + 1];
 
 UINT32 mEventTable[] = {
     EVT_TIMER | EVT_NOTIFY_SIGNAL,
-    EVT_TIMER,
-    EVT_NOTIFY_WAIT,
-    EVT_NOTIFY_SIGNAL,
+    EVT_TIMER, EVT_NOTIFY_WAIT, EVT_NOTIFY_SIGNAL,
     EVT_SIGNAL_EXIT_BOOT_SERVICES,
-    EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE,
-    0x00000000,
-    EVT_TIMER | EVT_NOTIFY_WAIT,
+    EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE, 0x00000000,
+    EVT_TIMER | EVT_NOTIFY_WAIT
 };
 
 EFI_TPL EFIAPI FakeRaiseTpl (IN EFI_TPL  NewTpl);
@@ -195,8 +187,7 @@ FakeRestoreTpl (
     }
     ASSERT (VALID_TPL (NewTpl));
 
-    // If lowering below HIGH_LEVEL, make sure
-    // interrupts are enabled
+    // Ensure interrupts are enabled if lowering below HIGH_LEVEL
     if (OldTpl >= TPL_HIGH_LEVEL  &&  NewTpl < TPL_HIGH_LEVEL) {
         gEfiCurrentTpl = TPL_HIGH_LEVEL;
     }
@@ -218,8 +209,7 @@ FakeRestoreTpl (
     // Set new value
     gEfiCurrentTpl = NewTpl;
 
-    // If lowering below HIGH_LEVEL, make sure
-    // interrupts are enabled
+    // Ensure interrupts are enabled if lowering below HIGH_LEVEL
     if (gEfiCurrentTpl < TPL_HIGH_LEVEL) {
         FakeSetInterruptState (TRUE);
     }
@@ -277,8 +267,7 @@ FakeCreateEventEx (
     IEVENT          *IEvent;
     INTN            Index;
 
-
-    // check for invalid NotifyTpl if a notify event type
+    // Check for invalid NotifyTpl if a notify event type
     if ((Type & (EVT_NOTIFY_WAIT | EVT_NOTIFY_SIGNAL)) != 0) {
         if (NotifyTpl != TPL_APPLICATION &&
             NotifyTpl != TPL_CALLBACK &&
@@ -407,10 +396,10 @@ AmendSysTable (
     if (gST->Hdr.Revision <= 0x1FFFF ||
         gBS->Hdr.HeaderSize <= EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)
     ) {
-		uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (*gBS) * 2, gBS);
-		if (uBS) {
-			uBS->CreateEventEx  = FakeCreateEventEx;
-			uBS->Hdr.HeaderSize = sizeof (*gBS);
+        uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (*gBS) * 2, gBS);
+        if (uBS) {
+            uBS->CreateEventEx  = FakeCreateEventEx;
+            uBS->Hdr.HeaderSize = sizeof (*gBS);
 
             gBS               = uBS;
             gST->BootServices = gBS;
@@ -418,11 +407,11 @@ AmendSysTable (
 
             TweakSysTable  = TRUE;
             Status         = EFI_SUCCESS;
-		}
-		else {
+        }
+        else {
             Status = EFI_LOAD_ERROR;
-		}
-	}
+        }
+    }
     else {
         Status = EFI_ALREADY_STARTED;
     }

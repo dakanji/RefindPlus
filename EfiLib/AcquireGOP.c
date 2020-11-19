@@ -58,7 +58,7 @@ LoadGopDriver (
     RomBarOffset  = (UINTN) RomBar;
 
     do {
-        LoadROM     = FALSE;
+        LoadROM      = FALSE;
         EfiRomHeader = (EFI_PCI_EXPANSION_ROM_HEADER *) (UINTN) RomBarOffset;
 
         if (EfiRomHeader->Signature != PCI_EXPANSION_ROM_HEADER_SIGNATURE) {
