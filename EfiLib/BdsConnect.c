@@ -17,7 +17,6 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../refind/mystrings.h"
 #include "../refind/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
-#include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 #include "../Library/GpuLib/OneLinerMacros.h"
 #include "../Library/GpuLib/nvidia.h"
 #include "../Library/GpuLib/intel.h"
@@ -281,7 +280,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     UINTN                i;
     UINTN                k;
     UINTN                x;
-    UINTN                LogVal;
     UINTN                HandleCount;
     UINT32               *HandleType = NULL;
     BOOLEAN              Parent;
@@ -312,7 +310,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     UINTN               DevicePCI;
     UINTN               FunctionPCI;
 
-    UINTN               HandleIndex = 0;
+    UINTN               HexIndex = 0;
 
     #if REFIT_DEBUG > 0
     if (ReLoaded) {
@@ -345,15 +343,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
         AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
-            HandleIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, AllHandleBuffer[i]);
+            HexIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, AllHandleBuffer[i]);
             MakeConnection = TRUE;
             DeviceData = NULL;
-            if (i > 999) {
-                LogVal = 999;
-            }
-            else {
-                LogVal = i;
-            }
 
             XStatus = ScanDeviceHandles (
                 AllHandleBuffer[i],
@@ -364,7 +356,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle[0x%03X] - FATAL: %r", LogVal, XStatus);
+                MsgLog ("Handle[0x%03X] - FATAL: %r", HexIndex, XStatus);
                 #endif
             }
             else {
@@ -384,7 +376,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle[0x%03X] ...Discarded [Not Device]", LogVal);
+                    MsgLog ("Handle[0x%03X] ...Discarded [Not Device]", HexIndex);
                     #endif
                 }
                 else {
@@ -614,23 +606,23 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     }
 
                     if (Parent) {
-                        MsgLog ("Handle[0x%03X] ...Skipped [Parent Device]%s", HandleIndex, DeviceData);
+                        MsgLog ("Handle[0x%03X] ...Skipped [Parent Device]%s", HexIndex, DeviceData);
                     }
                     else if (!EFI_ERROR (XStatus)) {
-                        MsgLog ("Handle[0x%03X]  * %r                %s", HandleIndex, XStatus, DeviceData);
+                        MsgLog ("Handle[0x%03X]  * %r                %s", HexIndex, XStatus, DeviceData);
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
-                            MsgLog ("Handle[0x%03X] ...Declined [Empty Device]%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] ...Declined [Empty Device]%s", HexIndex, DeviceData);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
-                            MsgLog ("Handle[0x%03X] ...Bypassed [Not Linkable]%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
-                            MsgLog ("Handle[0x%03X] - ERROR: Invalid Param%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] - ERROR: Invalid Param%s", HexIndex, DeviceData);
                         }
                         else {
-                            MsgLog ("Handle[0x%03X] - WARN: %r%s", HandleIndex, XStatus, DeviceData);
+                            MsgLog ("Handle[0x%03X] - WARN: %r%s", HexIndex, XStatus, DeviceData);
                         }
                     } // if !EFI_ERROR (XStatus)
                     #endif
