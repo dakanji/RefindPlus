@@ -364,7 +364,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle[%03X] - FATAL: %r", LogVal, XStatus);
+                MsgLog ("Handle[0x%03X] - FATAL: %r", LogVal, XStatus);
                 #endif
             }
             else {
@@ -384,7 +384,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle[%03X] ...Discarded [Not Device]", LogVal);
+                    MsgLog ("Handle[0x%03X] ...Discarded [Not Device]", LogVal);
                     #endif
                 }
                 else {
@@ -614,23 +614,23 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     }
 
                     if (Parent) {
-                        MsgLog ("Handle[%03X] ...Skipped [Parent Device]%s", HandleIndex, DeviceData);
+                        MsgLog ("Handle[0x%03X] ...Skipped [Parent Device]%s", HandleIndex, DeviceData);
                     }
                     else if (!EFI_ERROR (XStatus)) {
-                        MsgLog ("Handle[%03X]  * %r                %s", HandleIndex, XStatus, DeviceData);
+                        MsgLog ("Handle[0x%03X]  * %r                %s", HandleIndex, XStatus, DeviceData);
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
-                            MsgLog ("Handle[%03X] ...Declined [Empty Device]%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] ...Declined [Empty Device]%s", HandleIndex, DeviceData);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
-                            MsgLog ("Handle[%03X] ...Bypassed [Not Linkable]%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] ...Bypassed [Not Linkable]%s", HandleIndex, DeviceData);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
-                            MsgLog ("Handle[%03X] - ERROR: Invalid Param%s", HandleIndex, DeviceData);
+                            MsgLog ("Handle[0x%03X] - ERROR: Invalid Param%s", HandleIndex, DeviceData);
                         }
                         else {
-                            MsgLog ("Handle[%03X] - WARN: %r%s", HandleIndex, XStatus, DeviceData);
+                            MsgLog ("Handle[0x%03X] - WARN: %r%s", HandleIndex, XStatus, DeviceData);
                         }
                     } // if !EFI_ERROR (XStatus)
                     #endif
