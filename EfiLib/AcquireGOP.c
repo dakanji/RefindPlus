@@ -142,45 +142,45 @@ ReloadPCIROM (
                                         ImageLength = DestinationSize;
                                     }
 
-                                     MyFreePool (Scratch);
-                                 }
-                             }
-                         }
-                     }
-                 }
+                                    MyFreePool (Scratch);
+                                }
+                            }
+                        }
+                    }
+                }
 
-                 if (LoadROM) {
-                     RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
-                     FilePath    = refit_call2_wrapper (FileDevicePath, NULL, RomFileName);
-                     Status      = refit_call6_wrapper (
-                         gBS->LoadImage,
-                         TRUE,
-                         gImageHandle,
-                         FilePath,
-                         ImageBuffer,
-                         ImageLength,
-                         &ImageHandle
-                     );
+                if (LoadROM) {
+                    RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
+                    FilePath    = refit_call2_wrapper (FileDevicePath, NULL, RomFileName);
+                    Status      = refit_call6_wrapper (
+                        gBS->LoadImage,
+                        TRUE,
+                        gImageHandle,
+                        FilePath,
+                        ImageBuffer,
+                        ImageLength,
+                        &ImageHandle
+                    );
 
-                     if (EFI_ERROR (Status)) {
-                         if (Status == EFI_SECURITY_VIOLATION) {
-                             refit_call1_wrapper (gBS->UnloadImage, ImageHandle);
-                         }
-                     }
-                     else {
+                    if (EFI_ERROR (Status)) {
+                        if (Status == EFI_SECURITY_VIOLATION) {
+                            refit_call1_wrapper (gBS->UnloadImage, ImageHandle);
+                        }
+                    }
+                    else {
                         Status = refit_call3_wrapper (gBS->StartImage, ImageHandle, NULL, NULL);
-                      }
-                  }
+                    }
+                }
 
-                  MyFreePool (DecompressedImageBuffer);
-              }
-          }
+                MyFreePool (DecompressedImageBuffer);
+            }
+        }
 
-          RomBarOffset = RomBarOffset + ImageSize;
-          ImageIndex++;
-      } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN) RomBar) < RomSize));
+        RomBarOffset = RomBarOffset + ImageSize;
+        ImageIndex++;
+    } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN) RomBar) < RomSize));
 
-      return Status;
+    return Status;
 }
 
 /**
