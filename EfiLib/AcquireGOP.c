@@ -18,13 +18,13 @@
 /**
   @param[in] RomBar       The Rom Base address.
   @param[in] RomSize      The Rom size.
-  @param[in] FileName     The file name.
+  @param[in] FileName      The file name.
 
   @retval EFI_SUCCESS             The command completed successfully.
   @retval EFI_INVALID_PARAMETER   Command usage error.
   @retval EFI_UNSUPPORTED         Protocols unsupported.
   @retval EFI_OUT_OF_RESOURCES    Out of memory.
-  @retval EFI_VOLUME_CORRUPTED    Inconsistent signatures
+  @retval EFI_VOLUME_CORRUPTED    Inconsistent signatures.
   @retval Other value             Unknown error.
 **/
 EFI_STATUS
@@ -183,17 +183,28 @@ ReloadPCIROM (
       return Status;
 }
 
+/**
+  @retval EFI_SUCCESS             The command completed successfully.
+  @retval EFI_INVALID_PARAMETER   Command usage error.
+  @retval EFI_UNSUPPORTED         Protocols unsupported.
+  @retval EFI_OUT_OF_RESOURCES    Out of memory.
+  @retval EFI_VOLUME_CORRUPTED    Inconsistent signatures.
+  @retval EFI_PROTOCOL_ERROR      PciIoProtocolGuid not found.
+  @retval EFI_LOAD_ERROR          Failed to get PciIoProtocolGuid handle.
+  @retval Other value             Unknown error.
+**/
 EFI_STATUS
 AcquireGOP (
     VOID
 ) {
-    UINTN                Index               = 0;
-    UINTN                HandleIndex         = 0;
-    UINTN                HandleArrayCount    = 0;
-    UINTN                BindingHandleCount  = 0;
-    CHAR16               *RomFileName        = NULL;
-    EFI_HANDLE           *HandleArray        = NULL;
-    EFI_HANDLE           *BindingHandleBuffer;
+    UINTN                Index                = 0;
+    UINTN                HandleIndex          = 0;
+    UINTN                HandleArrayCount     = 0;
+    UINTN                BindingHandleCount   = 0;
+    CHAR16               *RomFileName         = NULL;
+    EFI_HANDLE           *HandleArray         = NULL;
+    EFI_HANDLE           *BindingHandleBuffer = NULL;
+    EFI_STATUS           ReturnStatus         = EFI_LOAD_ERROR;
     EFI_STATUS           Status;
     EFI_PCI_IO_PROTOCOL  *PciIo;
 
@@ -206,7 +217,10 @@ AcquireGOP (
         &HandleArray
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (EFI_ERROR (Status)) {
+        ReturnStatus = EFI_PROTOCOL_ERROR;
+    }
+    else {
         for (Index = 0; Index < HandleArrayCount; Index++) {
             Status = refit_call3_wrapper (
                 gBS->HandleProtocol,
@@ -234,13 +248,17 @@ AcquireGOP (
                             PciIo->RomSize,
                             RomFileName
                         );
+
+                        if (EFI_ERROR (ReturnStatus)) {
+                            ReturnStatus = Status;
+                        }
                     } // if BindingHandleCount
 
                     MyFreePool (BindingHandleBuffer);
                 } // if PciIo->RomImage && PciIo->RomSize
             } // if !EFI_ERROR HandleProtocol
         } // for
-    } // if !EFI_ERROR LocateHandleBuffer
+    } // if/else EFI_ERROR LocateHandleBuffer
 
-    return Status;
+    return ReturnStatus;
 }
