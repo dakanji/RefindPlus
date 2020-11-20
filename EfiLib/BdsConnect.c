@@ -17,10 +17,12 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../refind/mystrings.h"
 #include "../refind/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
+#include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 #include "../Library/GpuLib/OneLinerMacros.h"
-#include "../Library/GpuLib/ati.h"
 #include "../Library/GpuLib/nvidia.h"
 #include "../Library/GpuLib/intel.h"
+#include "../Library/GpuLib/ati.h"
+
 
 #define PCI_CLASS_DISPLAY_GFX 0x80
 #define IS_PCI_GFX(_p)  IS_CLASS3 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_GFX, 0)
@@ -310,7 +312,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     UINTN               DevicePCI;
     UINTN               FunctionPCI;
 
-
+    UINTN               HandleIndex = 0;
 
     #if REFIT_DEBUG > 0
     if (ReLoaded) {
@@ -343,6 +345,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
         AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
+            HandleIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, AllHandleBuffer[i]);
             MakeConnection = TRUE;
             DeviceData = NULL;
             if (i > 999) {
@@ -361,7 +364,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle[%03d] - FATAL: %r", LogVal, XStatus);
+                MsgLog ("Handle[%03X] - FATAL: %r", LogVal, XStatus);
                 #endif
             }
             else {
@@ -381,7 +384,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle[%03d] ...Discarded [Not Device]", LogVal);
+                    MsgLog ("Handle[%03X] ...Discarded [Not Device]", LogVal);
                     #endif
                 }
                 else {
@@ -611,23 +614,23 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     }
 
                     if (Parent) {
-                        MsgLog ("Handle[%03d] ...Skipped [Parent Device]%s", LogVal, DeviceData);
+                        MsgLog ("Handle[%03X] ...Skipped [Parent Device]%s", HandleIndex, DeviceData);
                     }
                     else if (!EFI_ERROR (XStatus)) {
-                        MsgLog ("Handle[%03d]  * %r                %s", LogVal, XStatus, DeviceData);
+                        MsgLog ("Handle[%03X]  * %r                %s", HandleIndex, XStatus, DeviceData);
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
-                            MsgLog ("Handle[%03d] ...Declined [Empty Device]%s", LogVal, DeviceData);
+                            MsgLog ("Handle[%03X] ...Declined [Empty Device]%s", HandleIndex, DeviceData);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
-                            MsgLog ("Handle[%03d] ...Bypassed [Not Linkable]%s", LogVal, DeviceData);
+                            MsgLog ("Handle[%03X] ...Bypassed [Not Linkable]%s", HandleIndex, DeviceData);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
-                            MsgLog ("Handle[%03d] - ERROR: Invalid Param%s", LogVal, DeviceData);
+                            MsgLog ("Handle[%03X] - ERROR: Invalid Param%s", HandleIndex, DeviceData);
                         }
                         else {
-                            MsgLog ("Handle[%03d] - WARN: %r%s", LogVal, XStatus, DeviceData);
+                            MsgLog ("Handle[%03X] - WARN: %r%s", HandleIndex, XStatus, DeviceData);
                         }
                     } // if !EFI_ERROR (XStatus)
                     #endif

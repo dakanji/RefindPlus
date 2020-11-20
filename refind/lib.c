@@ -1397,7 +1397,7 @@ VOID ScanVolumes (VOID)
                 VolDesc = L"ISO-9660 Volume";
             }
 
-            MsgLog ("Added to Volume List:- '%s'", VolDesc);
+            MsgLog ("Add to Collection:- '%s'", VolDesc);
             ScannedOnce = TRUE;
         }
         #endif
