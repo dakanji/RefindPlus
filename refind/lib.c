@@ -116,6 +116,7 @@ REFIT_VOLUME     *SelfVolume    = NULL;
 REFIT_VOLUME     **Volumes      = NULL;
 UINTN            VolumesCount   = 0;
 BOOLEAN          MediaCheck     = FALSE;
+BOOLEAN          ScannedOnce    = FALSE;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors
@@ -873,6 +874,8 @@ static VOID ScanVolumeBootcode (REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         if (Status == EFI_NO_MEDIA) {
             MediaCheck = TRUE;
         }
+        ScannedOnce = FALSE;
+        MsgLog("\n");
         CheckError (Status, L"While Reading Boot Sector");
         #endif
     }
@@ -1073,14 +1076,11 @@ VOID ScanVolume (REFIT_VOLUME *Volume)
 
     // get device path
     Volume->DevicePath = DuplicateDevicePath (DevicePathFromHandle (Volume->DeviceHandle));
-#if REFIT_DEBUG > 0
     if (Volume->DevicePath != NULL) {
-        MsgLog ("* %s\n", DevicePathToStr (Volume->DevicePath));
-#if REFIT_DEBUG >= 2
+        #if REFIT_DEBUG >= 2
         DumpHex (1, 0, DevicePathSize (Volume->DevicePath), Volume->DevicePath);
-#endif
+        #endif
     }
-#endif
 
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
@@ -1355,7 +1355,10 @@ VOID ScanVolumes (VOID)
         }
 
         #if REFIT_DEBUG > 0
-        if (SelfVolRun == TRUE) {
+        if (SelfVolRun) {
+            if (ScannedOnce) {
+                MsgLog ("\n");
+            }
             CHAR16 *VolDesc = Volume->VolName;
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 VolDesc = L"Whole Disk Volume";
@@ -1394,7 +1397,8 @@ VOID ScanVolumes (VOID)
                 VolDesc = L"ISO-9660 Volume";
             }
 
-            MsgLog ("Added '%s' to Scanned List\n\n", VolDesc);
+            MsgLog ("Added to Volume List:- '%s'", VolDesc);
+            ScannedOnce = TRUE;
         }
         #endif
     } // for: first pass
@@ -1404,7 +1408,7 @@ VOID ScanVolumes (VOID)
     if (SelfVolSet == FALSE) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"WARN: Self Volume not Found!";
+        ShowScreenStr = L"** WARN: Could not Set Volume";
 
         refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1419,7 +1423,12 @@ VOID ScanVolumes (VOID)
     }
     else if (SelfVolRun == FALSE) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Set '%s' as Self Volume\n\n", SelfVolume->VolName);
+        MsgLog ("INFO: Self Volume:- '%s'\n\n", SelfVolume->VolName);
+        #endif
+    }
+    else {
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
         #endif
     }
     SelfVolRun = TRUE;

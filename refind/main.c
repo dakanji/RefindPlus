@@ -891,13 +891,13 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     #if REFIT_DEBUG > 0
     MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
     if (NowZone < -12 || NowZone > 12 || (NowZone > -1 && NowZone < 1)) {
-        MsgLog ("Timestamp - %s (GMT)\n\n", NowDateStr);
+        MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
     }
     else if (NowZone < 0) {
-        MsgLog ("Timestamp - %s (GMT%02d)\n\n", NowDateStr);
+        MsgLog ("Timestamp:- '%s (GMT%02d)'\n\n", NowDateStr);
     }
     else {
-        MsgLog ("Timestamp - %s (GMT+%02d)\n\n", NowDateStr);
+        MsgLog ("Timestamp:- '%s (GMT+%02d)'\n\n", NowDateStr);
     }
     #endif
 
@@ -915,9 +915,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     // to register the new filesystem (s) accessed by the drivers.
     // Also, ScanVolumes() must be done before ReadConfig(), which needs
     // SelfVolume->VolName.
-    #if REFIT_DEBUG > 0
-    MsgLog ("Scan for Self Volume...\n");
-    #endif
     ScanVolumes();
 
     // Read Config first to get tokens that may be required by LoadDrivers();
@@ -1168,7 +1165,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
                     MsgLog (
-                        "  - Load OpenCore Instance : '%s%s'",
+                        "  - Load OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
@@ -1180,7 +1177,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                         MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
                     }
                     else {
-                        MsgLog ("  - Boot Mac OS : '%s'", ourLoaderEntry->LoaderPath);
+                        MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
                     }
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
@@ -1188,12 +1185,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                         MsgLog ("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
                     }
                     else {
-                        MsgLog ("  - Boot Windows : '%s'", ourLoaderEntry->LoaderPath);
+                        MsgLog ("  - Boot Windows:- '%s'", ourLoaderEntry->LoaderPath);
                     }
                 }
                 else {
                     MsgLog (
-                        "  - Boot OS via EFI Loader : '%s%s'",
+                        "  - Boot OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
@@ -1227,7 +1224,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 }
                 else {
                     MsgLog (
-                        "  - Boot Legacy OS : '%s'",
+                        "  - Boot Legacy OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
                     );
                 }
@@ -1249,10 +1246,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 #if REFIT_DEBUG > 0
                 MsgLog ("Received User Input:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Boot Legacy UEFI : '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
+                    MsgLog ("  - Boot Legacy UEFI:- '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
                 }
                 else {
-                    MsgLog ("  - Boot Legacy UEFI : '%s'\n\n", ourLegacyEntry->Volume->OSName);
+                    MsgLog ("  - Boot Legacy UEFI:- '%s'\n\n", ourLegacyEntry->Volume->OSName);
                 }
                 #endif
 
@@ -1264,7 +1261,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("Received User Input:\n");
-                MsgLog ("  - Start EFI Tool : '%s'\n\n", ourLoaderEntry->LoaderPath);
+                MsgLog ("  - Start EFI Tool:- '%s'\n\n", ourLoaderEntry->LoaderPath);
                 #endif
 
                 if (MyStrStr (ourLoaderEntry->Title, L"Boot Screen") != NULL) {
