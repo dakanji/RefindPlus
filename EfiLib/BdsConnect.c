@@ -309,6 +309,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     UINTN               BusPCI;
     UINTN               DevicePCI;
     UINTN               FunctionPCI;
+    BOOLEAN             GPUDevice;
 
     UINTN               HexIndex = 0;
 
@@ -395,10 +396,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     XStatus = EFI_SUCCESS;
 
                     if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                        XStatus = gBS->HandleProtocol (
+                        XStatus = refit_call3_wrapper (
+                            gBS->HandleProtocol,
                             AllHandleBuffer[i],
                             &gEfiPciIoProtocolGuid,
-                            (VOID*)&PciIo
+                            (void **) &PciIo
                         );
 
                         if (EFI_ERROR (XStatus)) {
@@ -437,7 +439,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                                         FunctionPCI
                                     );
 
-                                    BOOLEAN GPUDevice = IS_PCI_GFX(&Pci);
+                                    GPUDevice = IS_PCI_GFX(&Pci);
                                     if (GPUDevice) {
                                         switch (Pci.Hdr.VendorId) {
                                             case 0x1002:
