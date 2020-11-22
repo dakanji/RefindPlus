@@ -357,7 +357,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle[0x%03X] - FATAL: %r", HexIndex, XStatus);
+                MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
                 #endif
             }
             else {
@@ -377,7 +377,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle[0x%03X] ...Discarded [Not Device]", HexIndex);
+                    MsgLog ("Handle 0x%03X ...Discarded [Not Device]", HexIndex);
                     #endif
                 }
                 else {
@@ -608,23 +608,23 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                     }
 
                     if (Parent) {
-                        MsgLog ("Handle[0x%03X] ...Skipped [Parent Device]%s", HexIndex, DeviceData);
+                        MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
                     }
                     else if (!EFI_ERROR (XStatus)) {
-                        MsgLog ("Handle[0x%03X]  * %r                %s", HexIndex, XStatus, DeviceData);
+                        MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
-                            MsgLog ("Handle[0x%03X] ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                            MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
-                            MsgLog ("Handle[0x%03X] ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                            MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
-                            MsgLog ("Handle[0x%03X] - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                            MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
                         }
                         else {
-                            MsgLog ("Handle[0x%03X] - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                            MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
                         }
                     } // if !EFI_ERROR (XStatus)
                     #endif
