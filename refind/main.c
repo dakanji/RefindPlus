@@ -139,6 +139,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ProvideConsoleGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
+    /* ForceHiDPI = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -926,6 +927,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         #if REFIT_DEBUG > 0
         MsgLog ("Scan Volumes...\n");
         #endif
+
         ScanVolumes();
     }
 

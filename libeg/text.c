@@ -56,7 +56,7 @@ static VOID egPrepareFont() {
 
     egGetScreenSize(&ScreenW, &ScreenH);
     if (BaseFontImage == NULL) {
-        if (ScreenW >= HIDPI_MIN)
+        if (GlobalConfig.ForceHiDPI || (ScreenW >= HIDPI_MIN))
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
         else
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);

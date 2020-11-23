@@ -234,7 +234,7 @@ SetupScreen (
 
             // clear screen and show banner
             // (now we know we'll stay in graphics mode)
-            if ((ScreenW >= HIDPI_MIN) && !HaveResized) {
+            if ((GlobalConfig.ForceHiDPI || (ScreenW >= HIDPI_MIN)) && !HaveResized) {
 
                 #if REFIT_DEBUG > 0
                 MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");

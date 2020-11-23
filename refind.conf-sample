@@ -92,6 +92,14 @@ timeout 20
 #
 #continue_on_warning true
 
+# Force icon and text display enlargement (1, true, or on) or not (0, false, or off).
+# RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
+# The detection is basic and based on detecting a minimum 1921px horizontal resolution.
+# Setting this toekn will always enlarge the items regardless
+# Default is false
+#
+#force_hidpi true
+
 # Blank screen and show different solid colours after the specified
 # number of seconds without input. Screen returns after most keypresses
 # (Excluding modifier keys such as Shift, Control, Alt, and Option).
