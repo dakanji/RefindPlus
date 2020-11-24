@@ -60,7 +60,6 @@
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c
-  libeg/lodepng.c
   libeg/lodepng_xtra.c
   libeg/nanojpeg.c
   libeg/nanojpeg_xtra.c
@@ -102,6 +101,7 @@
 # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
   OcConsoleLib
   OcMiscLib
+  OcPngLib
 # Added by dakanji (https://sourceforge.net/u/dakanji/profile) for AcquireGOP
   HandleParsingLib
 
