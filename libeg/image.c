@@ -297,23 +297,36 @@ EFI_STATUS egFindESP (OUT EFI_FILE_HANDLE *RootDir)
     return Status;
 }
 
-EFI_STATUS egSaveFile (IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
-                      IN UINT8 *FileData, IN UINTN FileDataLength)
-{
-    EFI_STATUS          Status;
-    EFI_FILE_HANDLE     FileHandle;
-    UINTN               BufferSize;
+EFI_STATUS
+egSaveFile (
+    IN EFI_FILE  *BaseDir OPTIONAL,
+    IN CHAR16    *FileName,
+    IN UINT8     *FileData,
+    IN UINTN     FileDataLength
+) {
+    EFI_STATUS       Status;
+    EFI_FILE_HANDLE  FileHandle;
+    UINTN            BufferSize;
 
     if (BaseDir == NULL) {
         Status = egFindESP (&BaseDir);
-        if (EFI_ERROR (Status))
+        if (EFI_ERROR (Status)) {
             return Status;
+        }
     }
 
-    Status = refit_call5_wrapper (BaseDir->Open, BaseDir, &FileHandle, FileName,
-                                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
-    if (EFI_ERROR (Status))
+    Status = refit_call5_wrapper (
+        BaseDir->Open,
+        BaseDir,
+        &FileHandle,
+        FileName,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+        0
+    );
+
+    if (EFI_ERROR (Status)) {
         return Status;
+    }
 
     if (FileDataLength > 0) {
         BufferSize = FileDataLength;
@@ -322,6 +335,7 @@ EFI_STATUS egSaveFile (IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
     } else {
         Status = refit_call1_wrapper (FileHandle->Delete, FileHandle);
     } // if/else (FileDataLength > 0)
+
     return Status;
 }
 

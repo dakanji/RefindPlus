@@ -63,6 +63,7 @@
 #include "../refind/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "libeg.h"
+#include "lodepng.h"
 #include "../include/Handle.h"
 
 #include <efiUgaDraw.h>
@@ -82,22 +83,44 @@ static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 static EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
-static EFI_HANDLE_PROTOCOL daOrigProtocol;
+static EFI_HANDLE_PROTOCOL OrigHandleProtocol;
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
 STATIC
 EFI_STATUS
+EncodeAsPNG (
+  IN  VOID    *RawData,
+  IN  UINT32  Width,
+  IN  UINT32  Height,
+  OUT VOID    **Buffer,
+  OUT UINTN   *BufferSize
+  )
+{
+  unsigned ErrorCode;
+
+  // Should return 0 on success
+  ErrorCode = lodepng_encode32 ((unsigned char **) Buffer, BufferSize, RawData, Width, Height);
+
+  if (ErrorCode != 0) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  return EFI_SUCCESS;
+}
+
+STATIC
+EFI_STATUS
 EFIAPI
-daConsoleHandleProtocol (
+AltHandleProtocol (
     IN  EFI_HANDLE        Handle,
     IN  EFI_GUID          *Protocol,
     OUT VOID              **Interface
 ) {
     EFI_STATUS  Status;
 
-    Status = daOrigProtocol (Handle, Protocol, Interface);
+    Status = OrigHandleProtocol (Handle, Protocol, Interface);
 
     if (Status != EFI_UNSUPPORTED) {
         return Status;
@@ -141,8 +164,8 @@ daCheckAltGop (
     EFI_HANDLE                    *HandleBuffer;
     UINTN                         Index;
 
-    daOrigProtocol      = gBS->HandleProtocol;
-    gBS->HandleProtocol = daConsoleHandleProtocol;
+    OrigHandleProtocol   = gBS->HandleProtocol;
+    gBS->HandleProtocol  = AltHandleProtocol;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     OrigGop = NULL;
@@ -170,7 +193,8 @@ daCheckAltGop (
             GraphicsOutput = OrigGop;
 
             // Restore Protocol and Return
-            gBS->HandleProtocol = daOrigProtocol;
+            gBS->HandleProtocol = OrigHandleProtocol;
+
             return EFI_ALREADY_STARTED;
         }
 
@@ -193,7 +217,8 @@ daCheckAltGop (
             #endif
 
             // Restore Protocol and Return
-            gBS->HandleProtocol = daOrigProtocol;
+            gBS->HandleProtocol = OrigHandleProtocol;
+
             return EFI_NOT_FOUND;
         }
 
@@ -275,13 +300,15 @@ daCheckAltGop (
             #endif
 
             // Restore Protocol and Return
-            gBS->HandleProtocol = daOrigProtocol;
+            gBS->HandleProtocol = OrigHandleProtocol;
+
             return EFI_UNSUPPORTED;
         }
     } // if !EFI_ERROR (Status)
 
     // Restore Protocol and Return
-    gBS->HandleProtocol = daOrigProtocol;
+    gBS->HandleProtocol = OrigHandleProtocol;
+
     return EFI_SUCCESS;
 }
 
@@ -301,7 +328,7 @@ egDumpGOPVideoModes (
     UINTN        SizeOfInfo;
     CHAR16       *PixelFormatDesc;
     BOOLEAN      OurValidGOP    = FALSE;
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
@@ -453,7 +480,7 @@ GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
     EFI_STATUS   Status;
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
@@ -497,7 +524,7 @@ egSetGOPMode (
     UINTN        SizeOfInfo;
     INT32        Mode;
     UINT32       i = 0;
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Set GOP Mode:\n");
@@ -584,7 +611,7 @@ egSetMaxResolution (
     UINT32       MaxMode;
     UINT32       Mode;
     UINTN        SizeOfInfo;
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
   if (GraphicsOutput == NULL) {
       SwitchToText (FALSE);
@@ -1087,7 +1114,7 @@ egInitScreen (
             #endif
 
             if (EFI_ERROR (Status)) {
-                // Force to NOT FOUND on Error as subsequent code relies on this
+                // Force to NOT FOUND on error as subsequent code relies on this
                 Status = EFI_NOT_FOUND;
             }
         }
@@ -1349,8 +1376,8 @@ egSetScreenSize (
     UINT32       ScreenH;
     UINT32       UGADepth;
     UINT32       UGARefreshRate;
-    CHAR16       TmpShowScreenStr[128];
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *TmpShowScreenStr  = NULL;
+    CHAR16       *ShowScreenStr     = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
@@ -1477,7 +1504,8 @@ egSetScreenSize (
                     &Info
                 );
                 if (!EFI_ERROR (Status) && (Info != NULL)) {
-                    SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
+
+                    TmpShowScreenStr = PoolPrint (
                         L"Available Mode: Mode[%02d][%dx%d]",
                         ModeNum,
                         Info->HorizontalResolution,
@@ -1547,7 +1575,7 @@ egSetScreenSize (
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
+            TmpShowScreenStr = PoolPrint (
                 L"Error setting %dx%d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
@@ -1578,8 +1606,8 @@ egSetTextMode (
     UINTN        i = 0;
     UINTN        Width;
     UINTN        Height;
-    CHAR16       TmpShowScreenStr[128];
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *TmpShowScreenStr  = NULL;
+    CHAR16       *ShowScreenStr     = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
@@ -1619,13 +1647,8 @@ egSetTextMode (
                 );
 
                 if (!EFI_ERROR (Status)) {
-                    SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
-                        L"  - Mode[%d] (%dx%d)",
-                        i,
-                        Width,
-                        Height
-                    );
-                    ShowScreenStr = TmpShowScreenStr;
+                    TmpShowScreenStr = PoolPrint (L"  - Mode[%d] (%dx%d)", i, Width, Height);
+                    ShowScreenStr    = TmpShowScreenStr;
                     PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1635,11 +1658,8 @@ egSetTextMode (
 
             } while (++i < gST->ConOut->Mode->MaxMode);
 
-            SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
-                L"Use Default Mode[%d]:",
-                DONT_CHANGE_TEXT_MODE
-            );
-            ShowScreenStr = TmpShowScreenStr;
+            TmpShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+            ShowScreenStr    = TmpShowScreenStr;
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1660,13 +1680,13 @@ egScreenDescription (
 ) {
     CHAR16       *GraphicsInfo;
     CHAR16       *TextInfo      = NULL;
-    const CHAR16 *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
     GraphicsInfo = AllocateZeroPool (256 * sizeof (CHAR16));
     if (GraphicsInfo == NULL) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Memory Allocation Error!";
+        ShowScreenStr = L"Memory Allocation Error";
 
         refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -1679,7 +1699,7 @@ egScreenDescription (
         PauseForKey();
         SwitchToGraphics();
 
-        return L"Memory Allocation Error";
+        return ShowScreenStr;
     }
 
     if (egHasGraphics) {
@@ -1708,7 +1728,7 @@ egScreenDescription (
             PauseForKey();
             SwitchToGraphics();
 
-            return L"Internal Error";
+            return ShowScreenStr;
         }
 
         if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
@@ -1720,6 +1740,7 @@ egScreenDescription (
     else {
         SPrint (GraphicsInfo, 255, L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
     }
+
     MyFreePool (TextInfo);
 
     return GraphicsInfo;
@@ -1814,7 +1835,7 @@ egClearScreen (
         refit_call10_wrapper (
             GraphicsOutput->Blt,
             GraphicsOutput,
-            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)&FillColor,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) &FillColor,
              EfiBltVideoFill,
              0,
              0,
@@ -1887,7 +1908,7 @@ egDrawImage (
         refit_call10_wrapper (
             GraphicsOutput->Blt,
             GraphicsOutput,
-            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) CompImage->PixelData,
             EfiBltBufferToVideo,
             0,
             0,
@@ -1902,7 +1923,7 @@ egDrawImage (
         refit_call10_wrapper (
             UGADraw->Blt,
             UGADraw,
-            (EFI_UGA_PIXEL *)CompImage->PixelData,
+            (EFI_UGA_PIXEL *) CompImage->PixelData,
             EfiUgaBltBufferToVideo,
             0,
             0,
@@ -2096,17 +2117,23 @@ egScreenShot (
     EFI_FILE     *BaseDir;
     EG_IMAGE     *Image;
     UINT8        *FileData;
-    UINTN        FileDataLength;
+    UINT8        Temp;
     UINTN        i = 0;
-    UINTN        ssNum;
-    CHAR16       Filename[80];
-    const CHAR16 *ShowScreenStr = NULL;
+    UINTN        FileDataSize;         ///< Size in bytes
+    UINTN        FilePixelSize;        ///< Size in pixels
+    CHAR16       *FileName       = NULL;
+    CHAR16       *ShowScreenStr  = NULL;
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("Received User Input:\n");
+    MsgLog ("  - Take Screenshot\n");
+    #endif
 
     Image = egCopyScreen();
     if (Image == NULL) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Error: Unable to Take Screen Shot";
+        ShowScreenStr = L"    * Error: Unable to Take Screen Shot";
 
         refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2122,13 +2149,29 @@ egScreenShot (
        goto bailout_wait;
     }
 
-    // encode as BMP
-    egEncodeBMP (Image, &FileData, &FileDataLength);
+    // fix pixels
+    FilePixelSize = Image->Width * Image->Height;
+    for (i = 0; i < FilePixelSize; ++i) {
+        Temp                   = Image->PixelData[i].b;
+        Image->PixelData[i].b  = Image->PixelData[i].r;
+        Image->PixelData[i].r  = Temp;
+        Image->PixelData[i].a  = 0xFF;
+    }
+
+    // encode as PNG
+    Status = EncodeAsPNG (
+        (VOID *)  Image->PixelData,
+        (UINT32)  Image->Width,
+        (UINT32)  Image->Height,
+        (VOID **) &FileData,
+        &FileDataSize
+    );
+
     egFreeImage (Image);
-    if (FileData == NULL) {
+    if (EFI_ERROR (Status)) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Error: Could not Encode BMP";
+        ShowScreenStr = L"    * Error: Could not Encode PNG";
 
         refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2157,7 +2200,7 @@ egScreenShot (
             if (EFI_ERROR (Status)) {
                 SwitchToText (FALSE);
 
-                ShowScreenStr = L"Error: Could not Find ESP for Screenshot";
+                ShowScreenStr = L"    * Error: Could not Find ESP for Screenshot";
 
                 refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2176,22 +2219,28 @@ egScreenShot (
     }
 
     // Search for existing screen shot files; increment number to an unused value...
-    ssNum = 001;
+    i = 0;
     do {
-       SPrint (Filename, 80, L"screenshot_%03d.bmp", ssNum++);
-    } while (FileExists (BaseDir, Filename));
+        MyFreePool (FileName);
+        FileName = PoolPrint (L"ScreenShot_%03X.png", i++);
+    } while (FileExists (BaseDir, FileName));
 
     // save to file on the ESP
-    Status = egSaveFile (BaseDir, Filename, FileData, FileDataLength);
+    Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
     FreePool (FileData);
     if (CheckError (Status, L"in egSaveFile()")) {
         goto bailout_wait;
     }
 
+    #if REFIT_DEBUG > 0
+    MsgLog ("    * Screenshot Taken and Saved:- '%s'\n\n", FileName);
+    #endif
+
     return;
 
     // DEBUG: switch to text mode
 bailout_wait:
+    i = 0;
     egSetGraphicsModeEnabled (FALSE);
     refit_call3_wrapper (gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &i);
 }
