@@ -1,5 +1,5 @@
 /** @file
-    Forward Declaration for Refind Integration.
+    Forward Declaration for OpenCore Integration.
 **/
 
 #ifndef __OCREFIT_LIB_H__
