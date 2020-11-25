@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../refind/mystrings.h"
 #include "../refind/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
+#include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 
 BOOLEAN FoundGOP = FALSE;
 BOOLEAN ReLoaded = FALSE;
@@ -72,14 +73,14 @@ ScanDeviceHandles (
     UINT32     **HandleType
 ) {
     EFI_STATUS                          Status;
-    UINTN                               k;
     EFI_GUID                            **ProtocolGuidArray;
+    UINTN                               k;
     UINTN                               ArrayCount;
     UINTN                               ProtocolIndex;
-    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY *OpenInfo;
     UINTN                               OpenInfoCount;
     UINTN                               OpenInfoIndex;
     UINTN                               ChildIndex;
+    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY *OpenInfo;
 
     *HandleCount  = 0;
     *HandleBuffer = NULL;
@@ -200,8 +201,8 @@ ScanDeviceHandles (
 
 EFI_STATUS BdsLibConnectMostlyAllEfi()
 {
-    EFI_STATUS           Status = EFI_SUCCESS;
     EFI_STATUS           XStatus;
+    EFI_STATUS           Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
     EFI_HANDLE           *HandleBuffer    = NULL;
     UINTN                AllHandleCount;
@@ -209,19 +210,18 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
     UINTN                i;
     UINTN                k;
     UINTN                HandleCount;
-    UINT32               *HandleType = NULL;
-    BOOLEAN              Parent;
+    UINT32               *HandleType    = NULL;
     BOOLEAN              MakeConnection = TRUE;
+    BOOLEAN              Parent;
     BOOLEAN              Device;
     PCI_TYPE00           Pci;
     EFI_PCI_IO_PROTOCOL* PciIo;
 
-    CHAR16               *DeviceData = NULL;
-
     UINTN      GOPCount;
-    EFI_HANDLE *GOPArray         = NULL;
     CHAR16     *GopDevicePathStr = NULL;
     CHAR16     *DevicePathStr    = NULL;
+    CHAR16     *DeviceData       = NULL;
+    EFI_HANDLE *GOPArray         = NULL;
 
     UINTN  SegmentPCI;
     UINTN  BusPCI;
@@ -261,7 +261,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
         AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
-            HexIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, AllHandleBuffer[i]);
+            HexIndex = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
             MakeConnection = TRUE;
             DeviceData = NULL;
 

@@ -240,7 +240,7 @@ AcquireGOP (
                     );
 
                     if (BindingHandleCount == 0) {
-                        HandleIndex = refit_call1_wrapper (ConvertHandleToHandleIndex, HandleArray[Index]);
+                        HandleIndex = ConvertHandleToHandleIndex (HandleArray[Index]);
                         RomFileName = PoolPrint (L"Handle%X", HandleIndex);
 
                         Status = ReloadPCIROM (
