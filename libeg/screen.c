@@ -2187,8 +2187,29 @@ egScreenShot (
         return;
     }
 
-    if (SelfRootDir != NULL) {
-        BaseDir = SelfRootDir;
+    // Save to first available ESP if not running from ESP
+    if (MyStrStr (SelfVolume->VolName, L"EFI") == NULL &&
+        MyStrStr (SelfVolume->VolName, L"ESP") == NULL
+    ) {
+        Status = egFindESP (&BaseDir);
+        if (EFI_ERROR (Status)) {
+            SwitchToText (FALSE);
+
+            ShowScreenStr = L"    * Error: Could not Save Screenshot";
+
+            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("%s\n\n", ShowScreenStr);
+            #endif
+
+            HaltForKey();
+            SwitchToGraphics();
+
+            return;
+        }
     }
     else {
         SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
@@ -2196,6 +2217,7 @@ egScreenShot (
             BaseDir = SelfRootDir;
         }
         else {
+            // Try to save to first available ESP
             Status = egFindESP (&BaseDir);
             if (EFI_ERROR (Status)) {
                 SwitchToText (FALSE);
