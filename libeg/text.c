@@ -56,13 +56,16 @@ static VOID egPrepareFont() {
 
     egGetScreenSize(&ScreenW, &ScreenH);
     if (BaseFontImage == NULL) {
-        if (GlobalConfig.ForceHiDPI || (ScreenW >= HIDPI_MIN))
+        if (GlobalConfig.ForceHiDPI || (ScreenW >= HIDPI_MIN)) {
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
-        else
+        }
+        else {
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
+        }
     }
-    if (BaseFontImage != NULL)
+    if (BaseFontImage != NULL) {
         FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
+    }
 } // VOID egPrepareFont();
 
 UINTN egGetFontHeight(VOID) {
