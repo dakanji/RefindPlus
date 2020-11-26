@@ -411,7 +411,7 @@ EFI_STATUS EfivarGetRaw (EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *
     EFI_FILE *VarsDir = NULL;
     BOOLEAN ReadFromNvram = TRUE;
 
-    if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual (vendor, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
         Status = refit_call5_wrapper (
             SelfDir->Open,
             SelfDir,
@@ -436,7 +436,7 @@ EFI_STATUS EfivarGetRaw (EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *
         MyFreePool (VarsDir);
     }
 
-    if ((GlobalConfig.UseNvram == TRUE) || ! GuidsAreEqual (vendor, &RefindGuid)) {
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindGuid)) {
         l = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool (l);
         if (!buf) {
@@ -466,7 +466,7 @@ EFI_STATUS EfivarSetRaw (EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size,
     EFI_FILE *VarsDir = NULL;
     EFI_STATUS Status;
 
-    if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual (vendor, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
         Status = refit_call5_wrapper (
             SelfDir->Open,
             SelfDir,
@@ -490,7 +490,7 @@ EFI_STATUS EfivarSetRaw (EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size,
         MyFreePool (VarsDir);
     }
 
-    if ((GlobalConfig.UseNvram == TRUE) || ! GuidsAreEqual (vendor, &RefindGuid)) {
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
@@ -990,7 +990,7 @@ CHAR16
             if (StrLen (TypeName) > 0) {
                 SPrint (FoundName, 255, L"%s Volume", TypeName);
             }
-            else if (MediaCheck == TRUE) {
+            else if (MediaCheck) {
                 SPrint (FoundName, 255, L"Disc/Network Volume (Assumed)");
             }
             else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
@@ -1405,7 +1405,7 @@ VOID ScanVolumes (VOID)
     MyFreePool (UuidList);
     MyFreePool (Handles);
 
-    if (SelfVolSet == FALSE) {
+    if (!SelfVolSet) {
         SwitchToText (FALSE);
 
         ShowScreenStr = L"** WARN: Could not Set Volume";
@@ -1421,7 +1421,7 @@ VOID ScanVolumes (VOID)
         PauseForKey();
         SwitchToGraphics();
     }
-    else if (SelfVolRun == FALSE) {
+    else if (!SelfVolRun) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Self Volume:- '%s'\n\n", SelfVolume->VolName);
         #endif

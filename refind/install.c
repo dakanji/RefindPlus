@@ -341,14 +341,14 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
         switch (Volumes[i]->FSType) {
 
             case FS_TYPE_BTRFS:
-                if (DriverCopied[FS_TYPE_BTRFS] == FALSE) {
+                if (!DriverCopied[FS_TYPE_BTRFS]) {
                     DriverName = L"btrfs";
                     DriverCopied[FS_TYPE_BTRFS] = TRUE;
                 }
                 break;
 
             case FS_TYPE_EXT2:
-                if (DriverCopied[FS_TYPE_EXT2] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT2]) {
                     DriverName = L"ext2";
                     DriverCopied[FS_TYPE_EXT2] = TRUE;
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
@@ -356,7 +356,7 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
                 break;
 
             case FS_TYPE_EXT3:
-                if (DriverCopied[FS_TYPE_EXT3] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT3]) {
                     DriverName = L"ext2";
                     DriverCopied[FS_TYPE_EXT2] = TRUE;
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
@@ -364,21 +364,21 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
                 break;
 
             case FS_TYPE_EXT4:
-                if (DriverCopied[FS_TYPE_EXT4] == FALSE) {
+                if (!DriverCopied[FS_TYPE_EXT4]) {
                     DriverName = L"ext4";
                     DriverCopied[FS_TYPE_EXT4] = TRUE;
                 }
                 break;
 
             case FS_TYPE_REISERFS:
-                if (DriverCopied[FS_TYPE_REISERFS] == FALSE) {
+                if (!DriverCopied[FS_TYPE_REISERFS]) {
                     DriverName = L"reiserfs";
                     DriverCopied[FS_TYPE_REISERFS] = TRUE;
                 }
                 break;
 
             case FS_TYPE_HFSPLUS:
-                if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) && (!MyStriCmp(L"Apple", gST->FirmwareVendor))) {
+                if (!DriverCopied[FS_TYPE_HFSPLUS] && (!MyStriCmp(L"Apple", gST->FirmwareVendor))) {
                     DriverName = L"hfs";
                     DriverCopied[FS_TYPE_HFSPLUS] = TRUE;
                 }
@@ -544,6 +544,7 @@ static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
 static UINTN FindBootNum(EFI_DEVICE_PATH *Entry, UINTN Size, BOOLEAN *AlreadyExists) {
     UINTN   i = 0, VarSize, Status;
     CHAR16  *VarName, *Contents = NULL;
+    BOOLEAN CheckExists = FALSE;
 
     *AlreadyExists = FALSE;
     do {
@@ -552,8 +553,9 @@ static UINTN FindBootNum(EFI_DEVICE_PATH *Entry, UINTN Size, BOOLEAN *AlreadyExi
         if ((Status == EFI_SUCCESS) && (VarSize == Size) && (CompareMem(Contents, Entry, VarSize) == 0)) {
             *AlreadyExists = TRUE;
         }
+        CheckExists = *AlreadyExists;
         MyFreePool(VarName);
-    } while ((Status == EFI_SUCCESS) && (*AlreadyExists == FALSE));
+    } while ((Status == EFI_SUCCESS) && !CheckExists);
     if (i > 0x10000) // Somehow ALL boot entries are occupied! VERY unlikely!
         i = 0x10000; // In desperation, the program will overwrite the last one.
     return (i - 1);
@@ -652,7 +654,7 @@ static EFI_STATUS CreateNvramEntry(EFI_HANDLE DeviceHandle) {
     if (Status == EFI_SUCCESS)
         BootNum = FindBootNum(Entry, Size, &AlreadyExists);
 
-    if ((Status == EFI_SUCCESS) && (AlreadyExists == FALSE)) {
+    if ((Status == EFI_SUCCESS) && !AlreadyExists) {
         VarName = PoolPrint(L"Boot%04x", BootNum);
         Status = EfivarSetRaw(&GlobalGuid, VarName, (CHAR8*) Entry, Size, TRUE);
         MyFreePool(VarName);

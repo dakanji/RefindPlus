@@ -361,13 +361,13 @@ preBootKicker (
                         } // if
                     } // for
 
-                    if (FoundTool == TRUE) {
+                    if (FoundTool) {
                         break;
                     }
                 } // while Names
                 MyFreePool (FilePath);
 
-            if (FoundTool == TRUE) {
+            if (FoundTool) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load BootKicker\n\n");
@@ -497,13 +497,13 @@ preCleanNvram (
                         } // if
                     } // for
 
-                    if (FoundTool == TRUE) {
+                    if (FoundTool) {
                         break;
                     }
                 } // while Names
                 MyFreePool (FilePath);
 
-            if (FoundTool == TRUE) {
+            if (FoundTool) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load CleanNvram\n\n");
@@ -1061,7 +1061,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 preCleanNvram();
 
                 // Reboot if CleanNvram was triggered
-                if (ranCleanNvram == TRUE) {
+                if (ranCleanNvram) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("INFO: Cleaned Nvram\n\n");
                     MsgLog ("Restart Computer...\n");

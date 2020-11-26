@@ -1899,7 +1899,7 @@ VOID ScanForTools(VOID) {
                     #endif
                 }
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
@@ -1928,7 +1928,7 @@ VOID ScanForTools(VOID) {
                     MyFreePool(b);
                 } // if
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
@@ -1957,7 +1957,7 @@ VOID ScanForTools(VOID) {
                 MyFreePool(FileName);
                 } // while
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -1987,7 +1987,7 @@ VOID ScanForTools(VOID) {
                     MyFreePool(FileName);
                 } // while
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -2017,7 +2017,7 @@ VOID ScanForTools(VOID) {
                     MyFreePool(FileName);
                 } // while
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -2046,7 +2046,7 @@ VOID ScanForTools(VOID) {
                     MyFreePool(FileName);
                 } // while
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -2087,7 +2087,7 @@ VOID ScanForTools(VOID) {
                     } // while
                 } // for
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -2130,7 +2130,7 @@ VOID ScanForTools(VOID) {
                     } // for
                 } // while
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s'\n", ToolName);
                     #endif
@@ -2150,7 +2150,7 @@ VOID ScanForTools(VOID) {
                     BUILTIN_ICON_TOOL_MOK_TOOL
                 );
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
@@ -2165,7 +2165,7 @@ VOID ScanForTools(VOID) {
                     BUILTIN_ICON_TOOL_FWUPDATE
                 );
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
@@ -2184,7 +2184,7 @@ VOID ScanForTools(VOID) {
                     #endif
                 } // if
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif
@@ -2222,7 +2222,7 @@ VOID ScanForTools(VOID) {
                     BUILTIN_ICON_TOOL_MEMTEST
                 );
 
-                if (FoundTool == FALSE) {
+                if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     MsgLog("              - WARN: Could not Find '%s' Tool\n", ToolName);
                     #endif

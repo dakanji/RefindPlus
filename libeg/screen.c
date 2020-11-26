@@ -294,7 +294,7 @@ daCheckAltGop (
         MsgLog ("\n\n");
         #endif
 
-        if (OurValidGOP == FALSE || EFI_ERROR (Status)) {
+        if (!OurValidGOP || EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Could not Find Usable Replacement GOP\n\n");
             #endif
@@ -460,7 +460,7 @@ egDumpGOPVideoModes (
         } // for (Mode = 0; Mode < NumModes; Mode++)
     } // if MaxMode > 0
 
-    if (OurValidGOP == FALSE) {
+    if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Could not Find Usable GOP\n\n");
         #endif
@@ -1261,7 +1261,7 @@ egInitScreen (
         }
     }
     if (UGADraw != NULL) {
-        if (GlobalConfig.UgaPassThrough && thisValidGOP == TRUE) {
+        if (GlobalConfig.UgaPassThrough && thisValidGOP) {
             // Run OcProvideUgaPassThrough from OpenCorePkg
             Status = OcProvideUgaPassThrough();
 

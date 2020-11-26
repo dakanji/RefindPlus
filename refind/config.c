@@ -1078,7 +1078,7 @@ AddSubmenu(
       MyFreePool(SubEntry->InitrdPath);
       SubEntry->InitrdPath = NULL;
    } // if
-   if (SubEntry->Enabled == TRUE) {
+   if (SubEntry->Enabled) {
       AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
    }
    Entry->me.SubScreen = SubScreen;

@@ -287,7 +287,7 @@ SwitchToText (
 
     GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
-    if (!GlobalConfig.TextRenderer && HaveOverriden == FALSE) {
+    if (!GlobalConfig.TextRenderer && !HaveOverriden) {
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
         HaveOverriden = TRUE;
@@ -303,7 +303,7 @@ SwitchToText (
     refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
-    if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
+    if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
         MsgLog("Determine Text Console Size:\n");
     }
     #endif
@@ -323,7 +323,7 @@ SwitchToText (
         ConHeight = 25;
 
         #if REFIT_DEBUG > 0
-        if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
+        if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
                 "  Could not Get Text Console Size ...Using Default: %dx%d\n\n",
                 ConHeight,
@@ -333,7 +333,7 @@ SwitchToText (
         #endif
     } else {
         #if REFIT_DEBUG > 0
-        if ((GraphicsModeOnEntry == TRUE) && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
+        if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
                 "  Text Console Size = %dx%d\n\n",
                 ConWidth,
@@ -344,7 +344,7 @@ SwitchToText (
     }
     PrepareBlankLine();
 
-    if (GraphicsModeOnEntry == TRUE) {
+    if (GraphicsModeOnEntry) {
         MsgLog("INFO: Switched to Text Mode\n\n");
     }
 }

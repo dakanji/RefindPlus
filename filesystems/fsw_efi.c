@@ -583,7 +583,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
    i = 0;
    do {
       if ((Caches[i].Volume == Volume) &&
-          (Caches[i].CacheValid == TRUE) &&
+          Caches[i].CacheValid &&
           (StartRead >= Caches[i].CacheStart) &&
           ((StartRead + vol->phys_blocksize) <= (Caches[i].CacheStart + CACHE_SIZE))) {
          ReadCache = i;
@@ -631,7 +631,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
       } // if cache memory allocated
    } // if (ReadCache < 0)
 
-   if (Caches[ReadCache].Cache != NULL && Caches[ReadCache].CacheValid == TRUE && vol->phys_blocksize > 0) {
+   if (Caches[ReadCache].Cache != NULL && Caches[ReadCache].CacheValid && vol->phys_blocksize > 0) {
       CopyMem(buffer, &Caches[ReadCache].Cache[StartRead - Caches[ReadCache].CacheStart], vol->phys_blocksize);
    } else {
       ReadOneBlock = TRUE;
