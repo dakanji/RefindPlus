@@ -76,7 +76,6 @@ CHAR16 *BlankLine = NULL;
 UINTN   ScreenW;
 UINTN   ScreenH;
 BOOLEAN AllowGraphicsMode;
-BOOLEAN HaveResized   = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -234,7 +233,7 @@ SetupScreen (
 
             // clear screen and show banner
             // (now we know we'll stay in graphics mode)
-            if ((GlobalConfig.ForceHiDPI || (ScreenW >= HIDPI_MIN)) && !HaveResized) {
+            if (GlobalConfig.ForceHiDPI || ScreenW >= HIDPI_MIN) {
 
                 #if REFIT_DEBUG > 0
                 MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
@@ -244,7 +243,6 @@ SetupScreen (
                 GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
-                HaveResized = TRUE;
             } else {
                 #if REFIT_DEBUG > 0
                 MsgLog("  - HiDPI Not Detected ...Maintain Icon Scale\n\n");

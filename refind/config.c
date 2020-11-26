@@ -838,7 +838,6 @@ ReadConfig(
            HandleInt(TokenList, TokenCount, &i);
            if (i >= 32) {
               GlobalConfig.IconSizes[ICON_SIZE_SMALL] = i;
-              HaveResized = TRUE;
            }
 
         } else if (MyStriCmp(TokenList[0], L"big_icon_size") && (TokenCount == 2)) {
@@ -846,7 +845,6 @@ ReadConfig(
            if (i >= 32) {
               GlobalConfig.IconSizes[ICON_SIZE_BIG] = i;
               GlobalConfig.IconSizes[ICON_SIZE_BADGE] = i / 4;
-              HaveResized = TRUE;
            }
 
         } else if (MyStriCmp(TokenList[0], L"mouse_size") && (TokenCount == 2)) {
