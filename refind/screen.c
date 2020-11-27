@@ -115,7 +115,8 @@ InitScreen (
     if (egHasGraphicsMode()) {
         egGetScreenSize(&ScreenW, &ScreenH);
         AllowGraphicsMode = TRUE;
-    } else {
+    }
+    else {
         AllowGraphicsMode = FALSE;
         egSetTextMode(GlobalConfig.RequestedTextMode);
         egSetGraphicsModeEnabled(FALSE);   // just to be sure we are in text mode
@@ -231,33 +232,42 @@ SetupScreen (
             MsgLog("Prepare for Graphics Mode Switch:\n");
             #endif
 
-            // clear screen and show banner
-            // (now we know we'll stay in graphics mode)
+            // scale icons up for HiDPI Monitors if required
             if (GlobalConfig.ForceHiDPI || ScreenW >= HIDPI_MIN) {
-
                 #if REFIT_DEBUG > 0
-                MsgLog("  - HiDPI Detected ...Scale Icons Up\n\n");
+                if (GlobalConfig.ForceHiDPI) {
+                    MsgLog("  - HiDPI Monitor Flagged");
+                }
+                else {
+                    MsgLog("  - HiDPI Monitor Detected");
+                }
+                MsgLog(" ...Scale Icons Up\n");
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
-            } else {
+            }
+            else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - HiDPI Not Detected ...Maintain Icon Scale\n\n");
+                MsgLog("  - HiDPI Monitor Not Detected ...Maintain Icon Scale\n");
                 #endif
             } // if
-
             #if REFIT_DEBUG > 0
+            MsgLog("    * %dpx Horizontal Resolution\n\n", ScreenW);
             MsgLog("INFO: Running Graphics Mode Switch\n\n");
             #endif
 
+            // clear screen and show banner
+            // (now we know we will stay in graphics mode)
             SwitchToGraphics();
 
             if (GlobalConfig.ScreensaverTime != -1) {
                 BltClearScreen(TRUE);
-            } else { // start with screen blanked
+            }
+            else {
+                // start with screen blanked
                 GraphicsScreenDirty = TRUE;
             }
 
@@ -265,7 +275,8 @@ SetupScreen (
             MsgLog("INFO: Switched to Graphics Mode\n\n");
             #endif
         }
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgLog("WARN: Invalid Screen Mode\n");
         MsgLog("   Switching to Text Mode\n\n");
@@ -331,7 +342,8 @@ SwitchToText (
             );
         }
         #endif
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
             MsgLog(
@@ -397,7 +409,8 @@ BeginExternalScreen (
     if (UseGraphicsMode) {
         SwitchToGraphics();
         BltClearScreen(FALSE);
-    } else {
+    }
+    else {
         // clear to dark background
         egClearScreen(&DarkBackgroundPixel);
         DrawScreenHeader(Title);
@@ -505,7 +518,8 @@ PrintUglyText (
         if (AllowGraphicsMode && MyStriCmp(L"Apple", gST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
             egDisplayMessage(Text, &BGColor, PositionCode);
             GraphicsScreenDirty = TRUE;
-        } else { // non-Mac or in text mode; a Print() statement will work
+        }
+        else { // non-Mac or in text mode; a Print() statement will work
             Print(Text);
             Print(L"\n");
         } // if/else
@@ -545,14 +559,16 @@ PauseForKey (
     if (GlobalConfig.ContinueOnWarning) {
         PrintUglyText(L"", NEXTLINE);
         PrintUglyText(L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
-    } else {
+    }
+    else {
         PrintUglyText(L"", NEXTLINE);
         PrintUglyText(L"* Paused: Press Any Key to Continue *", NEXTLINE);
     }
 
     if (GlobalConfig.ContinueOnWarning) {
         refit_call1_wrapper(gBS->Stall, 3000000);
-    } else {
+    }
+    else {
         if (ReadAllKeyStrokes()) {  // remove buffered key strokes
             refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
             ReadAllKeyStrokes();    // empty the buffer again
@@ -676,7 +692,8 @@ CheckError (
         MyStrStr(where, L"in ReadHiddenTags") != NULL
     ) {
         haveError = FALSE;
-    } else {
+    }
+    else {
         haveError = TRUE;
     }
 
@@ -733,7 +750,8 @@ BltClearScreen (
               if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
                  NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
               } // if
-           } else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
+           }
+           else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
               NewBanner = egCropImage(
                   Banner, 0, 0,
                   (Banner->Width > ScreenW) ? ScreenW : Banner->Width,
@@ -752,10 +770,12 @@ BltClearScreen (
         MsgLog("  - Clear Screen\n");
         #endif
 
-        if (GlobalConfig.ScreensaverTime != -1)
-           egClearScreen(&MenuBackgroundPixel);
-        else
-           egClearScreen(&Black);
+        if (GlobalConfig.ScreensaverTime != -1) {
+            egClearScreen(&MenuBackgroundPixel);
+        }
+        else {
+            egClearScreen(&Black);
+        }
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
@@ -764,15 +784,18 @@ BltClearScreen (
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
             BannerPosY = (INTN) (ComputeRow0PosY() / 2) - (INTN) Banner->Height;
-            if (BannerPosY < 0)
-               BannerPosY = 0;
+            if (BannerPosY < 0) {
+                BannerPosY = 0;
+            }
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
-            if (GlobalConfig.ScreensaverTime != -1)
-               BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
+            if (GlobalConfig.ScreensaverTime != -1) {
+                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
+            }
             egFreeImage(Banner);
         }
 
-    } else { // not showing banner
+    }
+    else { // not showing banner
         // clear to menu background color
         egClearScreen(&MenuBackgroundPixel);
     }
@@ -905,7 +928,8 @@ BltImageCompositeBadge (
                  CompImage->Width,
                  CompImage->Height
              );
-         } else {
+         }
+         else {
              egDrawImage(CompImage, XPos, YPos);
          }
          egFreeImage(CompImage);
