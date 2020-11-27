@@ -353,7 +353,7 @@ typedef struct {
    BOOLEAN          ProvideConsoleGOP;
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
-   BOOLEAN          ForceHiDPI;
+   BOOLEAN          ForceUIScale;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

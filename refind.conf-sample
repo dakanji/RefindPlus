@@ -98,7 +98,7 @@ timeout 20
 # Setting this token to true will enlarge the items without considering the resolution.
 # Default is false
 #
-#force_hidpi true
+#force_ui_scale true
 
 # Blank screen and show different solid colours after the specified
 # number of seconds without input. Screen returns after most keypresses

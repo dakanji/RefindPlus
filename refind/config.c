@@ -961,8 +961,8 @@ ReadConfig(
         } else if (MyStriCmp(TokenList[0], L"continue_on_warning")) {
            GlobalConfig.ContinueOnWarning = HandleBoolean(TokenList, TokenCount);
 
-        } else if (MyStriCmp(TokenList[0], L"force_hidpi")) {
-           GlobalConfig.ForceHiDPI = HandleBoolean(TokenList, TokenCount);
+        } else if (MyStriCmp(TokenList[0], L"force_ui_scale")) {
+           GlobalConfig.ForceUIScale = HandleBoolean(TokenList, TokenCount);
 
         } else if (MyStriCmp(TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt(TokenList, TokenCount, &i);

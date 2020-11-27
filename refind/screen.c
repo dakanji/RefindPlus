@@ -233,9 +233,9 @@ SetupScreen (
             #endif
 
             // scale icons up for HiDPI Monitors if required
-            if (GlobalConfig.ForceHiDPI || ScreenH >= HIDPI_MIN) {
+            if (GlobalConfig.ForceUIScale || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
-                if (GlobalConfig.ForceHiDPI) {
+                if (GlobalConfig.ForceUIScale) {
                     MsgLog("  - HiDPI Monitor Flagged\n");
                 }
                 else {
