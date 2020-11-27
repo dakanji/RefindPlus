@@ -655,7 +655,7 @@ menuentry Linux {
 # does not include version numbers in its kernel and initrd filenames, you
 # may need to use manual boot stanzas when using fallback initrds or
 # multiple kernels with Arch. This example is modified from one in the Arch
-# wiki page on RefindPlus (https://wiki.archlinux.org/index.php/RefindPlus).
+# wiki page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
 menuentry "Arch Linux" {
     icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"
