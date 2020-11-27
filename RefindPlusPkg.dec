@@ -1,7 +1,7 @@
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = RefindPkg
-  PACKAGE_GUID                   = 0eae8e1b-55be-4c3c-852a-f0273e22ca3c
+  PACKAGE_NAME                   = RefindPlusPkg
+  PACKAGE_GUID                   = 8d815383-bd60-419e-a7F9-d41a5657f85c
   PACKAGE_VERSION                = 4.5.0
 
 [Includes]

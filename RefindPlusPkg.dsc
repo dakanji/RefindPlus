@@ -1,6 +1,6 @@
 [Defines]
-  PLATFORM_NAME                  = Refind
-  PLATFORM_GUID                  = d6365e1c-b895-426d-a012-46769b2d02a3
+  PLATFORM_NAME                  = RefindPlus
+  PLATFORM_GUID                  = cf424b08-2e9d-4e77-a6dd-71e0c8de60f3
   PLATFORM_VERSION               = 4.5.0
   DSC_SPECIFICATION              = 0x00010006
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
@@ -72,7 +72,7 @@
   HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
   BaseStackCheckLib|MdePkg/Library/BaseStackCheckLib/BaseStackCheckLib.inf
 
-  MemLogLib|RefindPkg/Library/MemLogLib/MemLogLib.inf
+  MemLogLib|RefindPlusPkg/Library/MemLogLib/MemLogLib.inf
 
   # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
     OcConsoleLib|OpenCorePkg/Library/OcConsoleLib/OcConsoleLib.inf
@@ -94,11 +94,11 @@
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
 [Components]
-  RefindPkg/refind.inf
-  RefindPkg/gptsync.inf
-  RefindPkg/filesystems/ext2.inf
-  RefindPkg/filesystems/ext4.inf
-  RefindPkg/filesystems/reiserfs.inf
-  RefindPkg/filesystems/hfs.inf
-  RefindPkg/filesystems/iso9660.inf
-  RefindPkg/filesystems/ntfs.inf
+  RefindPlusPkg/RefindPlus.inf
+  RefindPlusPkg/gptsync.inf
+  RefindPlusPkg/filesystems/ext2.inf
+  RefindPlusPkg/filesystems/ext4.inf
+  RefindPlusPkg/filesystems/reiserfs.inf
+  RefindPlusPkg/filesystems/hfs.inf
+  RefindPlusPkg/filesystems/iso9660.inf
+  RefindPlusPkg/filesystems/ntfs.inf

@@ -122,7 +122,7 @@ Your woking repository will be under `Documents/RefindPlus/Working`
 
 ## Build RefindPlus
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-- Drag the `refindBuilder.sh` file into Terminal
+- Drag the `RefindPlusBuilder.sh` file into Terminal
   - Enter a space and `MyEdits`, or any other branch name, to the end of the line if you want to build on that branch
   - If nothing is entered, the script will default to the `GOPFix` branch
 - Press `Enter`
@@ -131,7 +131,7 @@ Your woking repository will be under `Documents/RefindPlus/Working`
 ## Updating Cloned Repositories
 ### Update with the RepoUpdater Script (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
-- Drag the `refindRepoUpdater.sh` file into Terminal
+- Drag the `RepoUpdater.sh` file into Terminal
 - Press `Enter`
 
 ### Update Manually

@@ -15,7 +15,7 @@
 
 [Packages]
   MdePkg/MdePkg.dec
-  RefindPkg/RefindPkg.dec
+  RefindPlusPkg/RefindPlusPkg.dec
 
 [LibraryClasses]
   BaseLib

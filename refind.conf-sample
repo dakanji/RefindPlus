@@ -1,38 +1,38 @@
 #
 # refind.conf
-# Configuration file for the rEFInd boot menu
+# Configuration file for the RefindPlus boot menu
 #
 
 # Timeout in seconds for the main menu screen. Setting the timeout to 0
 # disables automatic booting (i.e., no timeout). Setting it to -1 causes
 # an immediate boot to the default OS *UNLESS* a keypress is in the buffer
-# when rEFInd launches, in which case that keypress is interpreted as a
-# shortcut key. If no matching shortcut is found, rEFInd displays its
+# when RefindPlus launches, in which case that keypress is interpreted as a
+# shortcut key. If no matching shortcut is found, RefindPlus displays its
 # menu with no timeout.
 #
 timeout 20
 
-# Normally, when the timeout period has passed, rEFInd boots the
+# Normally, when the timeout period has passed, RefindPlus boots the
 # default_selection. If the following option is uncommented, though,
-# rEFInd will instead attempt to shut down the computer.
+# RefindPlus will instead attempt to shut down the computer.
 # CAUTION: MANY COMPUTERS WILL INSTEAD HANG OR REBOOT! Macs and more
 # recent UEFI-based PCs are most likely to work with this feature.
 # Default value is true
 #
 #shutdown_after_timeout
 
-# Whether to store rEFInd's rEFInd-specific variables in NVRAM (1, true,
-# or on) or in files in the "vars" subdirectory of rEFInd's directory on
+# Whether to store RefindPlus-specific variables in NVRAM (1, true, or on)
+# or in files in the "vars" subdirectory of RefindPlus' directory on
 # disk (0, false, or off). Using NVRAM works well with most computers;
 # however, it increases wear on the motherboard's NVRAM, and if the EFI
 # is buggy or the NVRAM is old and worn out, it may not work at all.
 # Storing variables on disk is a viable alternative in such cases, or
 # if you want to minimize wear and tear on the NVRAM; however, it won't
-# work if rEFInd is stored on a filesystem that's read-only to the EFI
+# work if RefindPlus is stored on a filesystem that's read-only to the EFI
 # (such as an HFS+ volume), and it increases the risk of filesystem
-# damage. Note that this option affects ONLY rEFInd's own variables,
+# damage. Note that this option affects ONLY RefindPlus' own variables,
 # such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
-# variables. It does NOT affect Secure Boot or other non-rEFInd
+# variables. It does NOT affect Secure Boot or other non-RefindPlus
 # variables.
 # Default is true
 #
@@ -46,7 +46,7 @@ timeout 20
 # text or run tools such as shell.efi that require text output. A text
 # renderer is added on top of GOP by this option as a workaround.
 # NB: This setting is forced to 'true' whenever text output is required,
-# such as when running EFI Shell or whenever rEFInd is changed to text
+# such as when running EFI Shell or whenever RefindPlus is changed to text
 # mode as part of its operations (Typically to handle errors).
 # Default is true
 #
@@ -86,7 +86,7 @@ timeout 20
 
 # Proceed automatically when notices are shown on screen  (1, true, or on)
 # instead of having to press a key to continue (0, false, or off).
-# When this token is set to true, rEFInd will pause for three seconds and
+# When this token is set to true, RefindPlus will pause for three seconds and
 # then proceed as if a key had been pressed.
 # Default is false
 #
@@ -110,7 +110,7 @@ timeout 20
 
 # Hide user interface elements for personal preference or to increase
 # security:
-#  banner      - the rEFInd title banner (built-in or loaded via "banner")
+#  banner      - the RefindPlus title banner (built-in or loaded via "banner")
 #  label       - boot option text label in the menu
 #  singleuser  - remove the submenu options to boot macOS in single-user
 #                or verbose modes; affects ONLY macOS
@@ -128,12 +128,12 @@ timeout 20
 
 # Set the name of a subdirectory in which icons are stored. Icons must
 # have the same names they have in the standard directory. The directory
-# name is specified relative to the main rEFInd binary's directory. If
+# name is specified relative to the main RefindPlus binary's directory. If
 # an icon can't be found in the specified directory, an attempt is made
 # to load it from the default directory; thus, you can replace just some
 # icons in your own directory and rely on the default for others.
 # Icon files may be in any supported format -- ICNS (*.icns), BMP (*.bmp),
-# PNG (*.png), or JPEG (*.jpg or *.jpeg); however, rEFInd's BMP and JPEG
+# PNG (*.png), or JPEG (*.jpg or *.jpeg); however, RefindPlus' BMP and JPEG
 # implementations do not support transparency, which is highly desirable
 # in icons.
 # Default is "icons".
@@ -141,7 +141,7 @@ timeout 20
 #icons_dir myicons
 #icons_dir icons/snowy
 
-# Use a custom title banner instead of the rEFInd icon and name. The file
+# Use a custom title banner instead of the RefindPlus icon and name. The file
 # path is relative to the directory where refind.efi is located. The color
 # in the top left corner of the image is used as the background color
 # for the menu screens. Currently uncompressed BMP images with color
@@ -197,11 +197,11 @@ timeout 20
 # outside of this range, for a total of 96 glyphs. Only monospaced fonts
 # are supported. Fonts may be of any size, although large fonts can
 # produce display irregularities.
-# The default is rEFInd's built-in font, Luxi Mono Regular 12 point.
+# The default is RefindPlus' built-in font, Luxi Mono Regular 12 point.
 #
 #font myfont.png
 
-# Use text mode only. When enabled, this option forces rEFInd into text mode.
+# Use text mode only. When enabled, this option forces RefindPlus into text mode.
 # Passing this option a "0" value causes graphics mode to be used. Pasing
 # it no value or any non-0 value causes text mode to be used.
 # Default is to use graphics mode.
@@ -211,9 +211,9 @@ timeout 20
 # Set the EFI text mode to be used for textual displays. This option
 # takes a single digit that refers to a mode number. Mode 0 is normally
 # 80x25, 1 is sometimes 80x50, and higher numbers are system-specific
-# modes. Mode 1024 is a special code that tells rEFInd to not set the
+# modes. Mode 1024 is a special code that tells RefindPlus to not set the
 # text mode; it uses whatever was in use when the program was launched.
-# If you specify an invalid mode, rEFInd pauses during boot to inform
+# If you specify an invalid mode, RefindPlus pauses during boot to inform
 # you of valid modes.
 # CAUTION: On VirtualBox, and perhaps on some real computers, specifying
 # a text mode and uncommenting the "textonly" option while NOT specifying
@@ -272,7 +272,7 @@ timeout 20
 #
 #mouse_speed 4
 
-# Launch specified OSes in graphics mode. By default, rEFInd switches
+# Launch specified OSes in graphics mode. By default, RefindPlus switches
 # to text mode and displays basic pre-launch information when launching
 # all OSes except macOS. Using graphics mode can produce a more seamless
 # transition, but displays no information, which can make matters
@@ -295,7 +295,7 @@ timeout 20
 #  shell            - UEFI/EFI Shell. (External program; see documentation)
 #  memtest          - Memory Testing Utility. (External program; memtest86)
 #  gptsync          - the (dangerous) gptsync.efi utility (requires external
-#                     program; see rEFInd documentation for details)
+#                     program; see RefindPlus documentation for details)
 #  gdisk            - the gdisk partitioning program
 #  show_bootscreen  - Load Apple Boot Screen if available. (External program)
 #                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
@@ -309,12 +309,12 @@ timeout 20
 #                     tool, MokManager.efi, used on Secure Boot systems
 #  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
 #                     policy. Requires "csr_values" to be set.
-#  install          - an option to install rEFInd from the current location
+#  install          - an option to install RefindPlus from the current location
 #                     to another ESP
-#  bootorder        - adjust the EFI's (NOT rEFInd's) boot order
+#  bootorder        - adjust the EFI's (NOT RefindPlus') boot order
 #  about            - an "about this program" option
 #  hidden_tags      - manage hidden tags
-#  exit             - a tag to exit from rEFInd
+#  exit             - a tag to exit from RefindPlus
 #  shutdown         - shuts down the computer (a bug causes this to reboot
 #                     many UEFI systems)
 #  reboot           - a tag to reboot the computer
@@ -347,8 +347,8 @@ timeout 20
 # Directories in which to search for EFI drivers. These drivers can
 # provide filesystem support, give access to hard disks on plug-in
 # controllers, etc. In most cases none are needed, but if you add
-# EFI drivers and you want rEFInd to automatically load them, you
-# should specify one or more paths here. rEFInd always scans the
+# EFI drivers and you want RefindPlus to automatically load them, you
+# should specify one or more paths here. RefindPlus always scans the
 # "drivers" and "drivers_{arch}" subdirectories of its own installation
 # directory (where "{arch}" is your architecture code); this option
 # specifies ADDITIONAL directories to scan.
@@ -374,7 +374,7 @@ timeout 20
 #
 #scanfor internal,external,optical,manual
 
-# By default, rEFInd relies on the UEFI firmware to detect BIOS-mode boot
+# By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
 # devices. This sometimes doesn't detect all the available devices, though.
 # For these cases, uefi_deep_legacy_scan results in a forced scan and
 # modification of NVRAM variables on each boot. Adding "0", "off", or
@@ -392,13 +392,13 @@ timeout 20
 #
 #scan_delay 5
 
-# When scanning volumes for EFI boot loaders, rEFInd always looks for
+# When scanning volumes for EFI boot loaders, RefindPlus always looks for
 # macOS's and Microsoft Windows' boot loaders in their normal locations,
 # and scans the root directory and every subdirectory of the /EFI directory
 # for additional boot loaders, but it doesn't recurse into these directories.
 # The also_scan_dirs token adds more directories to the scan list.
 # Directories are specified relative to the volume's root directory. This
-# option applies to ALL the volumes that rEFInd scans UNLESS you include
+# option applies to ALL the volumes that RefindPlus scans UNLESS you include
 # a volume name and colon before the directory name, as in "myvol:/somedir"
 # to scan the somedir directory only on the filesystem named myvol. If a
 # specified directory doesn't exist, it's ignored (no error condition
@@ -416,13 +416,13 @@ timeout 20
 # NOT the partition TYPE CODE GUID.) This identifier can be obtained via
 # "blkid" in Linux or "diskutil info {partition-id}" in macOS.
 # For legacy-mode scans, you can specify any subset of the boot loader
-# description shown when you highlight the option in rEFInd.
+# description shown when you highlight the option in RefindPlus.
 # The default is "LRS_ESP".
 #
 #dont_scan_volumes "Recovery HD"
 
 # Directories that should NOT be scanned for boot loaders. By default,
-# rEFInd doesn't scan its own directory, the EFI/tools directory, the
+# RefindPlus doesn't scan its own directory, the EFI/tools directory, the
 # EFI/memtest directory, the EFI/memtest86 directory, or the
 # com.apple.recovery.boot directory. Using the dont_scan_dirs option
 # enables you to "blacklist" other directories; but be sure to use "+"
@@ -432,7 +432,7 @@ timeout 20
 # a directory that holds drivers or non-bootloader utilities provided by
 # a hardware manufacturer. If a directory is listed both here and in
 # also_scan_dirs, dont_scan_dirs takes precedence. Note that this
-# blacklist applies to ALL the filesystems that rEFInd scans, not just
+# blacklist applies to ALL the filesystems that RefindPlus scans, not just
 # the ESP, unless you precede the directory name by a filesystem name or
 # partition unique GUID, as in "myvol:EFI/somedir" to exclude EFI/somedir
 # from the scan on the myvol volume but not on other volumes.
@@ -452,7 +452,7 @@ timeout 20
 # a complete pathname (e.g., "/EFI/somedir/notme.efi"), or as a
 # complete pathname with volume (e.g., "SOMEDISK:/EFI/somedir/notme.efi"
 # or 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi").
-# OS tags hidden via the Delete or '-' key in the rEFInd menu are
+# OS tags hidden via the Delete or '-' key in the RefindPlus menu are
 # added to this list, but stored in NVRAM.
 # The default is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
@@ -506,7 +506,7 @@ timeout 20
 #extra_kernel_version_strings linux-lts,linux
 
 # Set the maximum number of tags that can be displayed on the screen at
-# any time. If more loaders are discovered than this value, rEFInd shows
+# any time. If more loaders are discovered than this value, RefindPlus shows
 # a subset in a scrolling list. If this value is set too high for the
 # screen to handle, it's reduced to the value that the screen can manage.
 # If this value is set to 0 (the default), it's adjusted to the number
@@ -515,7 +515,7 @@ timeout 20
 #max_tags 0
 
 # Set the default menu selection.  The available arguments match the
-# keyboard accelerators available within rEFInd.  You may select the
+# keyboard accelerators available within RefindPlus.  You may select the
 # default loader using:
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
 #    will be the default.
@@ -616,12 +616,12 @@ timeout 20
 #  options   - sets options to be passed to the boot loader; use
 #              quotes if more than one option should be passed or
 #              if any options use characters that might be changed
-#              by rEFInd parsing procedures (=, /, #, or tab).
+#              by RefindPlus parsing procedures (=, /, #, or tab).
 #  disabled  - use alone or set to "yes" to disable this entry.
 #
 # Note that you can use either DOS/Windows/EFI-style backslashes (\)
 # or Unix-style forward slashes (/) as directory separators. Either
-# way, all file references are on the ESP from which rEFInd was
+# way, all file references are on the ESP from which RefindPlus was
 # launched.
 # Use of quotes around parameters causes them to be interpreted as
 # one keyword, and for parsing of special characters (spaces, =, /,
@@ -655,7 +655,7 @@ menuentry Linux {
 # does not include version numbers in its kernel and initrd filenames, you
 # may need to use manual boot stanzas when using fallback initrds or
 # multiple kernels with Arch. This example is modified from one in the Arch
-# wiki page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
+# wiki page on RefindPlus (https://wiki.archlinux.org/index.php/RefindPlus).
 menuentry "Arch Linux" {
     icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"

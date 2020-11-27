@@ -1,9 +1,10 @@
 ## @file
 #
-# refind.inf file to build rEFInd using the EDK2/UDK201# development
+# RefindPlus.inf file to build RefindPlus using the EDK2/UDK201# development
 # kit.
 #
-# Copyright (c) 2012-2020 by Roderick W. Smith
+# Copyright (c) 2020 by Dayo Akanji
+# Portions Copyright (c) 2012-2020 by Roderick W. Smith
 # Released under the terms of the GPLv3 (or, at your discretion, any later
 # version), a copy of which should come with this file.
 #
@@ -11,7 +12,7 @@
 
 [Defines]
   INF_VERSION                   = 0x00010005
-  BASE_NAME                     = refind
+  BASE_NAME                     = RefindPlus
   FILE_GUID                     = B8448DD1-B146-41B7-9D66-98B3A0A404D3
   MODULE_TYPE                   = UEFI_APPLICATION
   EDK_RELEASE_VERSION		= 0x00020000
@@ -75,7 +76,7 @@
   MdeModulePkg/MdeModulePkg.dec
   IntelFrameworkPkg/IntelFrameworkPkg.dec
   IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
-  RefindPkg/RefindPkg.dec
+  RefindPlusPkg/RefindPlusPkg.dec
 # Uncomment the below when compiling with OS X
   StdLib/StdLib.dec
 
