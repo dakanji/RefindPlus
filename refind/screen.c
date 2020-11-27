@@ -63,7 +63,7 @@
 #include "menu.h"
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
-#include "../include/egemb_refind_banner.h"
+#include "../include/egemb_refindplus_banner.h"
 
 // Console defines and variables
 
@@ -735,10 +735,20 @@ BltClearScreen (
             MsgLog("  - Get Banner\n");
             #endif
 
-            if (GlobalConfig.BannerFileName)
+            if (GlobalConfig.BannerFileName) {
                 Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
-            if (Banner == NULL)
-                Banner = egPrepareEmbeddedImage(&egemb_refind_banner, FALSE);
+            }
+            if (Banner == NULL) {
+                #if REFIT_DEBUG > 0
+                MsgLog("    * Using Embedded Banner\n");
+                #endif
+                Banner = egPrepareEmbeddedImage(&egemb_refindplus_banner, FALSE);
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                MsgLog("    * Using Custom Banner\n");
+                #endif
+            }
         }
 
         if (Banner) {
