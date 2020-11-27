@@ -159,8 +159,8 @@
 #define ICON_SIZE_BIG   2
 #define ICON_SIZE_MOUSE 3
 
-// Minimum horizontal resolution for a screen to be considered High-DPI
-#define HIDPI_MIN 2561
+// Minimum vertical resolution for a screen to be considered High-DPI
+#define HIDPI_MIN 1601
 
 #ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
