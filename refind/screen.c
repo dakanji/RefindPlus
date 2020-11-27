@@ -236,12 +236,12 @@ SetupScreen (
             if (GlobalConfig.ForceHiDPI || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (GlobalConfig.ForceHiDPI) {
-                    MsgLog("  - HiDPI Monitor Flagged");
+                    MsgLog("  - HiDPI Monitor Flagged\n");
                 }
                 else {
-                    MsgLog("  - HiDPI Monitor Detected");
+                    MsgLog("  - HiDPI Monitor Detected\n");
                 }
-                MsgLog(" ...Scale Icons Up\n");
+                MsgLog("    * Scale Icons Up\n", ScreenH);
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -251,11 +251,12 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - HiDPI Monitor Not Detected ...Maintain Icon Scale\n");
+                MsgLog("  - HiDPI Monitor Not Detected\n");
+                MsgLog("    * Maintain Icon Scale\n", ScreenH);
                 #endif
             } // if
             #if REFIT_DEBUG > 0
-            MsgLog("    * %dpx Horizontal Resolution\n\n", ScreenW);
+            MsgLog("    * %dpx Vertical Resolution\n\n", ScreenH);
             MsgLog("INFO: Running Graphics Mode Switch\n\n");
             #endif
 
