@@ -302,11 +302,7 @@ preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"x64_BootKicker.efi is distributed with 'MyBootMgr':");
-        AddMenuInfoLine (&BootKickerMenu, L"https://forums.macrumors.com/threads/thread.2231693");
-        AddMenuInfoLine (&BootKickerMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"You can also get BootKicker.efi from the OpenCore Project:");
+        AddMenuInfoLine (&BootKickerMenu, L"You can get BootKicker from the OpenCore Project:");
         AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"");
@@ -442,7 +438,7 @@ preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
         AddMenuInfoLine (&CleanNvramMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"You can also get CleanNvram.efi from the OpenCore Project:");
+        AddMenuInfoLine (&CleanNvramMenu, L"You can also get CleanNvram from the OpenCore Project:");
         AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
