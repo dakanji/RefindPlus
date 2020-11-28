@@ -40,6 +40,9 @@
 #include "config.h"
 #include "mystrings.h"
 #include "../refind/screen.h"
+#include "../include/egemb_tool_bootscreen.h"
+#include "../include/egemb_tool_clean_nvram.h"
+
 
 //
 // well-known icons
@@ -81,13 +84,26 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
 
 EG_IMAGE * BuiltinIcon(IN UINTN Id)
 {
-    if (Id >= BUILTIN_ICON_COUNT)
+    if (Id >= BUILTIN_ICON_COUNT) {
         return NULL;
+    }
 
     if (BuiltinIconTable[Id].Image == NULL) {
-       BuiltinIconTable[Id].Image = egFindIcon(BuiltinIconTable[Id].FileName, GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
-       if (BuiltinIconTable[Id].Image == NULL)
-          BuiltinIconTable[Id].Image = DummyImage(GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+       BuiltinIconTable[Id].Image = egFindIcon(
+           BuiltinIconTable[Id].FileName,
+           GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
+       );
+       if (BuiltinIconTable[Id].Image == NULL) {
+           if (Id == BUILTIN_ICON_TOOL_BOOTKICKER) {
+               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage(&egemb_tool_bootscreen, FALSE);
+           }
+           else if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
+               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage(&egemb_tool_clean_nvram, FALSE);
+           }
+           if (BuiltinIconTable[Id].Image == NULL) {
+               BuiltinIconTable[Id].Image = DummyImage(GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+           }
+       }
     } // if
 
     return BuiltinIconTable[Id].Image;
