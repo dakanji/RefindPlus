@@ -490,19 +490,43 @@ BdsLibConnectAllDriversToAllControllersEx (
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
         Status = gDS->Dispatch();
 
-        #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             if (FoundGOP) {
+                #if REFIT_DEBUG > 0
                 MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
+                #endif
             }
             else {
-                MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+                // Check ConsoleOut Handle
+                EFI_GRAPHICS_OUTPUT_PROTOCOL  *TestGOP = NULL;
+                EFI_GUID GraphicsOutputProtocolGuid    = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+                XStatus = refit_call3_wrapper (
+                    gBS->HandleProtocol,
+                    gST->ConsoleOutHandle,
+                    &GraphicsOutputProtocolGuid,
+                    (VOID **) &TestGOP
+                );
+
+                if (!EFI_ERROR (XStatus)) {
+                    TestGOP  = NULL;
+                    FoundGOP = TRUE;
+
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("INFO: Located GOP instance on ConsoleOut Handle\n\n");
+                    #endif
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+                    #endif
+                }
             }
         }
         else {
+            #if REFIT_DEBUG > 0
             MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
+            #endif
         }
-        #endif
     } while (!EFI_ERROR (Status));
 
     if (FoundGOP) {
@@ -517,7 +541,7 @@ BdsLibConnectAllDriversToAllControllersEx (
 // to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
 // amends SystemTable Revision information, provides the missing CreateEventEx capability
 // then reloads the GPU's ROM from RAM (If Present) which will install GOP (If Available).
-BOOLEAN
+EFI_STATUS
 ApplyGOPFix (
     VOID
 ) {
@@ -529,7 +553,7 @@ ApplyGOPFix (
     MsgLog ("INFO: Amend System Table Details ...%r\n\n", Status);
     #endif
 
-    if (Status == EFI_SUCCESS || Status == EFI_ALREADY_STARTED) {
+    if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Acquire GOP on Random Access Memory ...%r\n\n", Status);
@@ -553,8 +577,9 @@ ApplyGOPFix (
 **/
 VOID
 EFIAPI
-BdsLibConnectAllDriversToAllControllers (VOID)
-{
+BdsLibConnectAllDriversToAllControllers (
+    VOID
+) {
     EFI_STATUS Status;
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
