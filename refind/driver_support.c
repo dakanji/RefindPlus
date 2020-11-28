@@ -681,7 +681,7 @@ ScanDriverDir(
 
     Status = DirIterClose(&DirIter);
     if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-        SPrint(FileName, 255, L"while scanning the %s directory", Path);
+        SPrint(FileName, 255, L"While Scanning the '%s' Directory", Path);
         CheckError(Status, FileName);
     }
 

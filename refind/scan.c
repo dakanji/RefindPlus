@@ -1090,9 +1090,9 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        // it down to buggy EFI implementations and ignoring that particular error....
        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
           if (Path) {
-              SPrint(Message, 255, L"while scanning the %s directory on %s", Path, Volume->VolName);
+              SPrint(Message, 255, L"While Scanning the '%s' Directory on '%s'", Path, Volume->VolName);
           } else {
-              SPrint(Message, 255, L"while scanning the root directory on %s", Path, Volume->VolName);
+              SPrint(Message, 255, L"While Scanning the Root Directory on '%s'", Volume->VolName);
           }
 
           CheckError(Status, Message);
@@ -1237,7 +1237,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)
             ) {
-                AddLoaderEntry(FileName, L"Microsoft EFI boot (Boot Repair backup)", Volume, TRUE);
+                AddLoaderEntry(FileName, L"Microsoft EFI Boot (Boot Repair backup)", Volume, TRUE);
                 FoundBRBackup = TRUE;
                 if (DuplicatesFallback(Volume, FileName)) {
                     ScanFallbackLoader = FALSE;
@@ -1247,9 +1247,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
                     if (FoundBRBackup) {
-                        AddLoaderEntry(FileName, L"Supposed Microsoft EFI boot (probably GRUB)", Volume, TRUE);
+                        AddLoaderEntry(FileName, L"Supposed Microsoft EFI Boot (probably GRUB)", Volume, TRUE);
                     } else {
-                        AddLoaderEntry(FileName, L"Microsoft EFI boot", Volume, TRUE);
+                        AddLoaderEntry(FileName, L"Microsoft EFI Boot", Volume, TRUE);
                     }
                     if (DuplicatesFallback(Volume, FileName)) {
                         ScanFallbackLoader = FALSE;
@@ -1277,7 +1277,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
         } // while()
         Status = DirIterClose(&EfiDirIter);
         if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-            Temp = PoolPrint(L"while scanning the EFI directory on %s", Volume->VolName);
+            Temp = PoolPrint(L"While Scanning the EFI System Partition on '%s'", Volume->VolName);
             CheckError(Status, Temp);
             MyFreePool(Temp);
         } // if
