@@ -353,7 +353,6 @@ typedef struct {
    BOOLEAN          ProvideConsoleGOP;
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
-   BOOLEAN          ForceUIScale;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;
@@ -370,6 +369,7 @@ typedef struct {
    UINTN            MouseSpeed;
    UINTN            IconSizes[4];
    UINTN            BannerScale;
+   UINTN            ScaleUI;
    REFIT_VOLUME     *DiscoveredRoot;
    EFI_DEVICE_PATH  *SelfDevicePath;
    CHAR16           *BannerFileName;
