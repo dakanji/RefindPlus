@@ -1323,7 +1323,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("Received User Input:\n");
-                MsgLog ("  - Rotate CSR Values\n\n");
+                MsgLog ("  - Toggle Mac SIP\n\n");
                 #endif
 
                 RotateCsrValue();

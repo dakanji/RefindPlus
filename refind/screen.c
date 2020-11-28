@@ -235,13 +235,13 @@ SetupScreen (
             // scale icons up for HiDPI Monitors if required
             if (GlobalConfig.ForceUIScale || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
-                if (GlobalConfig.ForceUIScale) {
-                    MsgLog("  - HiDPI Monitor Flagged\n");
-                }
-                else {
+                if (ScreenH >= HIDPI_MIN) {
                     MsgLog("  - HiDPI Monitor Detected\n");
                 }
-                MsgLog("    * Scale Icons Up\n", ScreenH);
+                else {
+                    MsgLog("  - HiDPI Monitor Flagged\n");
+                }
+                MsgLog("    * Scale Icons Up\n");
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -252,7 +252,7 @@ SetupScreen (
             else {
                 #if REFIT_DEBUG > 0
                 MsgLog("  - HiDPI Monitor Not Detected\n");
-                MsgLog("    * Maintain Icon Scale\n", ScreenH);
+                MsgLog("    * Maintain Icon Scale\n");
                 #endif
             } // if
             #if REFIT_DEBUG > 0
