@@ -230,18 +230,19 @@ SetupScreen (
         if (!egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog("Prepare for Graphics Mode Switch:\n");
+            MsgLog("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
             #endif
 
             // scale icons up for HiDPI Monitors if required
             if (GlobalConfig.ForceUIScale || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
-                    MsgLog("  - HiDPI Monitor Detected\n");
+                    MsgLog("    * HiDPI Monitor Detected\n");
                 }
                 else {
-                    MsgLog("  - HiDPI Monitor Flagged\n");
+                    MsgLog("    * HiDPI Monitor Flagged\n");
                 }
-                MsgLog("    * Scale Icons Up\n");
+                MsgLog("    ** Scale Icons Up\n\n");
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -251,12 +252,11 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("  - HiDPI Monitor Not Detected\n");
-                MsgLog("    * Maintain Icon Scale\n");
+                MsgLog("    * HiDPI Monitor Not Detected\n");
+                MsgLog("    ** Maintain Icon Scale\n\n");
                 #endif
             } // if
             #if REFIT_DEBUG > 0
-            MsgLog("    * %dpx Vertical Resolution\n\n", ScreenH);
             MsgLog("INFO: Running Graphics Mode Switch\n\n");
             #endif
 
