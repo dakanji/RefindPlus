@@ -139,7 +139,6 @@ REFIT_CONFIG GlobalConfig = {
     /* ProvideConsoleGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
-    /* ScaleUI = */ 0,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -161,6 +160,7 @@ REFIT_CONFIG GlobalConfig = {
         DEFAULT_MOUSE_SIZE
     },
     /* BannerScale = */ BANNER_NOSCALE,
+    /* ScaleUI = */ 0,
     /* *DiscoveredRoot = */ NULL,
     /* *SelfDevicePath = */ NULL,
     /* *BannerFileName = */ NULL,
