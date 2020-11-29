@@ -703,13 +703,17 @@ static VOID SetFilesystemData (IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REF
    } // if ((Buffer != NULL) && (Volume != NULL))
 } // UINT32 SetFilesystemData()
 
-static VOID ScanVolumeBootcode (REFIT_VOLUME *Volume, BOOLEAN *Bootable)
-{
-    EFI_STATUS              Status;
-    UINT8                   Buffer[SAMPLE_SIZE];
-    UINTN                   i;
-    MBR_PARTITION_INFO      *MbrTable;
-    BOOLEAN                 MbrTableFound = FALSE;
+static
+VOID
+ScanVolumeBootcode (
+    REFIT_VOLUME  *Volume,
+    BOOLEAN       *Bootable
+) {
+    EFI_STATUS          Status;
+    UINT8               Buffer[SAMPLE_SIZE];
+    UINTN               i;
+    MBR_PARTITION_INFO  *MbrTable;
+    BOOLEAN             MbrTableFound = FALSE;
 
     Volume->HasBootCode = FALSE;
     Volume->OSIconName  = NULL;
@@ -746,123 +750,126 @@ static VOID ScanVolumeBootcode (REFIT_VOLUME *Volume, BOOLEAN *Bootable)
         if (CompareMem (Buffer + 2, "LILO", 4) == 0 ||
             CompareMem (Buffer + 6, "LILO", 4) == 0 ||
             CompareMem (Buffer + 3, "SYSLINUX", 8) == 0 ||
-            FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0) {
+            FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"linux";
             Volume->OSName = L"Linux (Legacy)";
-
         }
-        else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {   // GRUB
+        // GRUB
+        else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"grub,linux";
             Volume->OSName = L"Linux (Legacy)";
-
         }
         else if ((*((UINT32 *)(Buffer + 502)) == 0 &&
-                    *((UINT32 *)(Buffer + 506)) == 50000 &&
-                    *((UINT16 *)(Buffer + 510)) == 0xaa55) ||
-                    FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0) {
+            *((UINT32 *)(Buffer + 506)) == 50000 &&
+            *((UINT16 *)(Buffer + 510)) == 0xaa55) ||
+            FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freebsd";
             Volume->OSName = L"FreeBSD (Legacy)";
-
+        }
         // If more differentiation needed, also search for
         // "Invalid partition table" &/or "Missing boot loader".
-        }
         else if ((*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
-                   (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large", 21) >= 0) &&
-                   (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0))  {
+            (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large", 21) >= 0) &&
+            (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0)
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freebsd";
             Volume->OSName = L"FreeBSD (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "!Loading", 8) >= 0 ||
-                   FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0) {
+            FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"openbsd";
             Volume->OSName = L"OpenBSD (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
-                   *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1) {
+            *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"netbsd";
             Volume->OSName = L"NetBSD (Legacy)";
-
-        // Windows NT/200x/XP
         }
+        // Windows NT/200x/XP
         else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win";
             Volume->OSName = L"Windows (NT/XP)";
-
-        // Windows Vista/7/8/10
         }
+        // Windows Vista/7/8/10
         else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win8,win";
             Volume->OSName = L"Windows (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
-                   FindMem (Buffer, 512, "KERNEL  SYS", 11) >= 0) {
+            FindMem (Buffer, 512, "KERNEL  SYS", 11) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"freedos";
             Volume->OSName = L"FreeDOS (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "OS2LDR", 6) >= 0 ||
-                   FindMem (Buffer, 512, "OS2BOOT", 7) >= 0) {
+            FindMem (Buffer, 512, "OS2BOOT", 7) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"ecomstation";
             Volume->OSName = L"eComStation (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"beos";
             Volume->OSName = L"BeOS (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"zeta,beos";
             Volume->OSName = L"ZETA (Legacy)";
-
         }
         else if (FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
-                   FindMem (Buffer, 512, "\x06" "system\x0c" "haiku_loader", 20) >= 0) {
+            FindMem (Buffer, 512, "\x06" "system\x0c" "haiku_loader", 20) >= 0
+        ) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"haiku,beos";
             Volume->OSName = L"Haiku (Legacy)";
-
         }
 
         // NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
         //  need to fix AddLegacyEntry in refind/legacy.c.
 
         // dummy FAT boot sector (created by OS X's newfs_msdos)
-        if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0)
+        if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
             Volume->HasBootCode = FALSE;
+        }
 
         // dummy FAT boot sector (created by Linux's mkdosfs)
-        if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0)
+        if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0) {
             Volume->HasBootCode = FALSE;
+        }
 
         // dummy FAT boot sector (created by Windows)
-        if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0)
+        if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0) {
             Volume->HasBootCode = FALSE;
+        }
 
         // check for MBR partition table
         if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
             MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
-            for (i = 0; i < 4; i++)
-                if (MbrTable[i].StartLBA && MbrTable[i].Size)
+            for (i = 0; i < 4; i++) {
+                if (MbrTable[i].StartLBA && MbrTable[i].Size) {
                     MbrTableFound = TRUE;
-            for (i = 0; i < 4; i++)
-                if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80)
+                }
+            }
+            for (i = 0; i < 4; i++) {
+                if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80) {
                     MbrTableFound = FALSE;
+                }
+            }
             if (MbrTableFound) {
                 Volume->MbrPartitionTable = AllocatePool (4 * 16);
                 CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
@@ -875,8 +882,9 @@ static VOID ScanVolumeBootcode (REFIT_VOLUME *Volume, BOOLEAN *Bootable)
             MediaCheck = TRUE;
         }
         ScannedOnce = FALSE;
+
         MsgLog("\n");
-        CheckError (Status, L"While Reading Boot Sector");
+        CheckError (Status, L"While Reading Boot Sector on Volume Below");
         #endif
     }
 } /* VOID ScanVolumeBootcode() */
@@ -986,7 +994,9 @@ CHAR16
     if (FoundName == NULL) {
         FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
         if (FoundName != NULL) {
-            TypeName = FSTypeName (Volume->FSType); // NOTE: Don't free TypeName; function returns constant
+            // NOTE: Don't free TypeName; function returns constant
+            TypeName = FSTypeName (Volume->FSType);
+
             if (StrLen (TypeName) > 0) {
                 SPrint (FoundName, 255, L"%s Volume", TypeName);
             }
@@ -1030,10 +1040,13 @@ static VOID SetPartGuidAndName (REFIT_VOLUME *Volume, EFI_DEVICE_PATH_PROTOCOL *
             if (PartInfo) {
                 Volume->PartName = StrDuplicate (PartInfo->name);
                 CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
+
                 if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
-                        ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)) {
+                    ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)
+                ) {
                     GlobalConfig.DiscoveredRoot = Volume;
                 } // if (GUIDs match && automounting OK)
+
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
                 MyFreePool (PartInfo);
             } // if (PartInfo exists)
@@ -1062,8 +1075,10 @@ static BOOLEAN HasWindowsBiosBootFiles (REFIT_VOLUME *Volume) {
     return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 
-VOID ScanVolume (REFIT_VOLUME *Volume)
-{
+VOID
+ScanVolume (
+    REFIT_VOLUME *Volume
+) {
     EFI_STATUS       Status;
     EFI_DEVICE_PATH  *DevicePath;
     EFI_DEVICE_PATH  *NextDevicePath;
@@ -1164,7 +1179,11 @@ VOID ScanVolume (REFIT_VOLUME *Volume)
             MyFreePool (DiskDevicePath);
 
             if (!EFI_ERROR (Status)) {
-                //Print (L"  - original handle: %08x - disk handle: %08x\n", (UINT32)DeviceHandle, (UINT32)WholeDiskHandle);
+                //Print (
+                //    L"  - original handle: %08x - disk handle: %08x\n",
+                //    (UINT32)DeviceHandle,
+                //    (UINT32)WholeDiskHandle
+                //);
 
                 // get the device path for later
                 Status = refit_call3_wrapper (
@@ -1185,54 +1204,58 @@ VOID ScanVolume (REFIT_VOLUME *Volume)
                     (VOID **) &Volume->WholeDiskBlockIO
                 );
                 if (!EFI_ERROR (Status)) {
-
                     // check the media block size
-                    if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048)
+                    if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
                         Volume->DiskKind = DISK_KIND_OPTICAL;
-
+                    }
                 }
                 else {
                     Volume->WholeDiskBlockIO = NULL;
                     //CheckError (Status, L"from HandleProtocol");
                 }
             } //else
-              //  CheckError (Status, L"from LocateDevicePath");
+            //CheckError (Status, L"from LocateDevicePath");
         }
 
         DevicePath = NextDevicePath;
     } // while
 
-   if (!Bootable) {
-      if (Volume->HasBootCode) {
-          #if REFIT_DEBUG > 0
-           MsgLog ("  Volume considered non-bootable, but boot code is present\n");
-           #endif
-      }
-      Volume->HasBootCode = FALSE;
-   }
+    if (!Bootable) {
+        if (Volume->HasBootCode) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  Volume considered non-bootable, but boot code is present\n");
+            #endif
+        }
+        Volume->HasBootCode = FALSE;
+    }
 
-   // open the root directory of the volume
-   Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
+    // open the root directory of the volume
+    Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
 
-   Volume->VolName = GetVolumeName (Volume);
+    Volume->VolName = GetVolumeName (Volume);
 
-   if (Volume->RootDir == NULL) {
-      Volume->IsReadable = FALSE;
-      return;
-   }
-   else {
-      Volume->IsReadable = TRUE;
-      if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && (Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode) {
-         // VBR boot code found on NTFS, but volume is not actually bootable
-         // unless there are actual boot file, so check for them....
-         Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
-      }
-   } // if/else
-
+    if (Volume->RootDir == NULL) {
+        Volume->IsReadable = FALSE;
+        return;
+    }
+    else {
+        Volume->IsReadable = TRUE;
+        if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) &&
+            (Volume->FSType == FS_TYPE_NTFS) && Volume->HasBootCode
+        ) {
+            // VBR boot code found on NTFS, but volume is not actually bootable
+            // unless there are actual boot file, so check for them....
+            Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
+        }
+    } // if/else
 } // ScanVolume()
 
-static VOID ScanExtendedPartition (REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_INFO *MbrEntry)
-{
+static
+VOID
+ScanExtendedPartition (
+    REFIT_VOLUME *WholeDiskVolume,
+    MBR_PARTITION_INFO *MbrEntry
+) {
     EFI_STATUS              Status;
     REFIT_VOLUME            *Volume;
     UINT32                  ExtBase, ExtCurrent, NextExtCurrent;
@@ -1246,17 +1269,21 @@ static VOID ScanExtendedPartition (REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_
 
     for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
         // read current EMBR
-      Status = refit_call5_wrapper (WholeDiskVolume->BlockIO->ReadBlocks,
-                                   WholeDiskVolume->BlockIO,
-                                   WholeDiskVolume->BlockIO->Media->MediaId,
-                                   ExtCurrent, 512, SectorBuffer);
+        Status = refit_call5_wrapper (
+            WholeDiskVolume->BlockIO->ReadBlocks,
+            WholeDiskVolume->BlockIO,
+            WholeDiskVolume->BlockIO->Media->MediaId,
+            ExtCurrent,
+            512,
+            SectorBuffer
+        );
         if (EFI_ERROR (Status)) {
             break;
         }
-        if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
+        if (*((UINT16 *) (SectorBuffer + 510)) != 0xaa55) {
             break;
         }
-        EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
+        EMbrTable = (MBR_PARTITION_INFO *) (SectorBuffer + 446);
 
         // scan logical partitions in this EMBR
         NextExtCurrent = 0;
@@ -1264,7 +1291,7 @@ static VOID ScanExtendedPartition (REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_
             if ((EMbrTable[i].Flags != 0x00 && EMbrTable[i].Flags != 0x80) ||
                 EMbrTable[i].StartLBA == 0 || EMbrTable[i].Size == 0
             ) {
-                    break;
+                break;
             }
             if (IS_EXTENDED_PART_TYPE (EMbrTable[i].Type)) {
                 // set next ExtCurrent
@@ -1347,7 +1374,6 @@ VOID ScanVolumes (VOID)
         } // if
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
-
 
         if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) {
             SelfVolSet = TRUE;

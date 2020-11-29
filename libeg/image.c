@@ -85,14 +85,19 @@
 // Basic image handling
 //
 
-EG_IMAGE * egCreateImage (IN UINTN Width, IN UINTN Height, IN BOOLEAN HasAlpha)
-{
+EG_IMAGE * egCreateImage (
+    IN UINTN    Width,
+    IN UINTN    Height,
+    IN BOOLEAN  HasAlpha
+) {
     EG_IMAGE        *NewImage;
 
     NewImage = (EG_IMAGE *) AllocatePool (sizeof (EG_IMAGE));
-    if (NewImage == NULL)
+    if (NewImage == NULL) {
         return NULL;
+    }
     NewImage->PixelData = (EG_PIXEL *) AllocatePool (Width * Height * sizeof (EG_PIXEL));
+
     if (NewImage->PixelData == NULL) {
         egFreeImage (NewImage);
         return NULL;
@@ -104,50 +109,68 @@ EG_IMAGE * egCreateImage (IN UINTN Width, IN UINTN Height, IN BOOLEAN HasAlpha)
     return NewImage;
 }
 
-EG_IMAGE * egCreateFilledImage (IN UINTN Width, IN UINTN Height, IN BOOLEAN HasAlpha, IN EG_PIXEL *Color)
-{
-    EG_IMAGE        *NewImage;
+EG_IMAGE * egCreateFilledImage (
+    IN UINTN     Width,
+    IN UINTN     Height,
+    IN BOOLEAN   HasAlpha,
+    IN EG_PIXEL  *Color
+) {
+    EG_IMAGE  *NewImage;
 
     NewImage = egCreateImage (Width, Height, HasAlpha);
-    if (NewImage == NULL)
+    if (NewImage == NULL) {
         return NULL;
+    }
 
     egFillImage (NewImage, Color);
+
     return NewImage;
 }
 
-EG_IMAGE * egCopyImage (IN EG_IMAGE *Image)
-{
-    EG_IMAGE        *NewImage = NULL;
+EG_IMAGE * egCopyImage (
+    IN EG_IMAGE *Image
+) {
+    EG_IMAGE  *NewImage = NULL;
 
-    if (Image != NULL)
-       NewImage = egCreateImage (Image->Width, Image->Height, Image->HasAlpha);
-    if (NewImage == NULL)
+    if (Image != NULL) {
+        NewImage = egCreateImage (Image->Width, Image->Height, Image->HasAlpha);
+    }
+    if (NewImage == NULL) {
         return NULL;
+    }
 
     CopyMem (NewImage->PixelData, Image->PixelData, Image->Width * Image->Height * sizeof (EG_PIXEL));
+
     return NewImage;
 }
 
 // Returns a smaller image composed of the specified crop area from the larger area.
 // If the specified area is larger than is in the original, returns NULL.
-EG_IMAGE * egCropImage (IN EG_IMAGE *Image, IN UINTN StartX, IN UINTN StartY, IN UINTN Width, IN UINTN Height) {
-   EG_IMAGE *NewImage = NULL;
-   UINTN x, y;
+EG_IMAGE * egCropImage (
+    IN EG_IMAGE  *Image,
+    IN UINTN     StartX,
+    IN UINTN     StartY,
+    IN UINTN     Width,
+    IN UINTN     Height
+) {
+    EG_IMAGE *NewImage = NULL;
+    UINTN x, y;
 
-   if (((StartX + Width) > Image->Width) || ((StartY + Height) > Image->Height))
-      return NULL;
+    if (((StartX + Width) > Image->Width) || ((StartY + Height) > Image->Height)) {
+        return NULL;
+    }
 
-   NewImage = egCreateImage (Width, Height, Image->HasAlpha);
-   if (NewImage == NULL)
-      return NULL;
+    NewImage = egCreateImage (Width, Height, Image->HasAlpha);
+    if (NewImage == NULL) {
+        return NULL;
+    }
 
-   for (y = 0; y < Height; y++) {
-      for (x = 0; x < Width; x++) {
-         NewImage->PixelData[y * NewImage->Width + x] = Image->PixelData[(y + StartY) * Image->Width + x + StartX];
-      }
-   }
-   return NewImage;
+    for (y = 0; y < Height; y++) {
+        for (x = 0; x < Width; x++) {
+            NewImage->PixelData[y * NewImage->Width + x] = Image->PixelData[(y + StartY) * Image->Width + x + StartX];
+        }
+    }
+    return NewImage;
 } // EG_IMAGE * egCropImage()
 
 // The following function implements a bilinear image scaling algorithm, based on
@@ -160,82 +183,93 @@ EG_IMAGE * egCropImage (IN EG_IMAGE *Image, IN UINTN StartX, IN UINTN StartY, IN
 // float values. Therefore, this function uses integer arithmetic but multiplies
 // all values by FP_MULTIPLIER to achieve something resembling the sort of precision
 // needed for good results.
-EG_IMAGE * egScaleImage (IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeight) {
-   EG_IMAGE *NewImage = NULL;
-   EG_PIXEL a, b, c, d;
-   UINTN x, y, Index ;
-   UINTN i, j;
-   UINTN Offset = 0;
-   UINTN x_ratio, y_ratio, x_diff, y_diff;
+EG_IMAGE * egScaleImage (
+    IN EG_IMAGE  *Image,
+    IN UINTN     NewWidth,
+    IN UINTN     NewHeight
+) {
+    EG_IMAGE  *NewImage = NULL;
+    EG_PIXEL  a, b, c, d;
+    UINTN     x, y, Index;
+    UINTN     i, j;
+    UINTN     Offset = 0;
+    UINTN     x_ratio, y_ratio, x_diff, y_diff;
 
-   if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0))
-      return NULL;
+    if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
+        return NULL;
+    }
 
-   if ((Image->Width == NewWidth) && (Image->Height == NewHeight))
-      return (egCopyImage (Image));
+    if ((Image->Width == NewWidth) && (Image->Height == NewHeight)) {
+        return (egCopyImage (Image));
+    }
 
-   NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
-   if (NewImage == NULL)
-      return NULL;
+    NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
+    if (NewImage == NULL) {
+        return NULL;
+    }
 
-   x_ratio = ((Image->Width - 1) * FP_MULTIPLIER) / NewWidth;
-   y_ratio = ((Image->Height - 1) * FP_MULTIPLIER) / NewHeight;
+    x_ratio = ((Image->Width - 1) * FP_MULTIPLIER) / NewWidth;
+    y_ratio = ((Image->Height - 1) * FP_MULTIPLIER) / NewHeight;
 
-   for (i = 0; i < NewHeight; i++) {
-      for (j = 0; j < NewWidth; j++) {
-         x = (j * (Image->Width - 1)) / NewWidth;
-         y = (i * (Image->Height - 1)) / NewHeight;
-         x_diff = (x_ratio * j) - x * FP_MULTIPLIER;
-         y_diff = (y_ratio * i) - y * FP_MULTIPLIER;
-         Index = ((y * Image->Width) + x);
-         a = Image->PixelData[Index];
-         b = Image->PixelData[Index + 1];
-         c = Image->PixelData[Index + Image->Width];
-         d = Image->PixelData[Index + Image->Width + 1];
+    for (i = 0; i < NewHeight; i++) {
+        for (j = 0; j < NewWidth; j++) {
+            x = (j * (Image->Width - 1)) / NewWidth;
+            y = (i * (Image->Height - 1)) / NewHeight;
+            x_diff = (x_ratio * j) - x * FP_MULTIPLIER;
+            y_diff = (y_ratio * i) - y * FP_MULTIPLIER;
+            Index = ((y * Image->Width) + x);
+            a = Image->PixelData[Index];
+            b = Image->PixelData[Index + 1];
+            c = Image->PixelData[Index + Image->Width];
+            d = Image->PixelData[Index + Image->Width + 1];
 
-         // blue element
-         NewImage->PixelData[Offset].b = ((a.b) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (b.b) * (x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (c.b) * (y_diff) * (FP_MULTIPLIER - x_diff) +
-                                          (d.b) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
+            // blue element
+            NewImage->PixelData[Offset].b = ((a.b) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                (b.b) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                (c.b) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                (d.b) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
-         // green element
-         NewImage->PixelData[Offset].g = ((a.g) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (b.g) * (x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (c.g) * (y_diff) * (FP_MULTIPLIER - x_diff) +
-                                          (d.g) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
+            // green element
+            NewImage->PixelData[Offset].g = ((a.g) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                (b.g) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                (c.g) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                (d.g) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
-         // red element
-         NewImage->PixelData[Offset].r = ((a.r) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (b.r) * (x_diff) * (FP_MULTIPLIER - y_diff) +
-                                          (c.r) * (y_diff) * (FP_MULTIPLIER - x_diff) +
-                                          (d.r) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
+            // red element
+            NewImage->PixelData[Offset].r = ((a.r) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                (b.r) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                (c.r) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                (d.r) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
 
-         // alpha element
-         NewImage->PixelData[Offset++].a = ((a.a) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
-                                            (b.a) * (x_diff) * (FP_MULTIPLIER - y_diff) +
-                                            (c.a) * (y_diff) * (FP_MULTIPLIER - x_diff) +
-                                            (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
-      } // for (j...)
-   } // for (i...)
-   return NewImage;
+            // alpha element
+            NewImage->PixelData[Offset++].a = ((a.a) * (FP_MULTIPLIER - x_diff) * (FP_MULTIPLIER - y_diff) +
+                (b.a) * (x_diff) * (FP_MULTIPLIER - y_diff) +
+                (c.a) * (y_diff) * (FP_MULTIPLIER - x_diff) +
+                (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
+        } // for (j...)
+    } // for (i...)
+    return NewImage;
 } // EG_IMAGE * egScaleImage()
 
-VOID egFreeImage (IN EG_IMAGE *Image)
-{
-    if (Image != NULL) {
-        if (Image->PixelData != NULL)
-            FreePool (Image->PixelData);
-        FreePool (Image);
-    }
+VOID
+egFreeImage (
+    IN EG_IMAGE *Image
+) {
+    MyFreePool (Image->PixelData);
+    MyFreePool (Image);
 }
 
 //
 // Basic file operations
 //
 
-EFI_STATUS egLoadFile (IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **FileData, OUT UINTN *FileDataLength)
-{
+EFI_STATUS
+egLoadFile (
+    IN EFI_FILE  *BaseDir,
+    IN CHAR16    *FileName,
+    OUT UINT8    **FileData,
+    OUT UINTN    *FileDataLength
+) {
     EFI_STATUS          Status;
     EFI_FILE_HANDLE     FileHandle;
     EFI_FILE_INFO       *FileInfo;
@@ -243,8 +277,9 @@ EFI_STATUS egLoadFile (IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fi
     UINTN               BufferSize;
     UINT8               *Buffer;
 
-    if ((BaseDir == NULL) || (FileName == NULL))
-       return EFI_NOT_FOUND;
+    if ((BaseDir == NULL) || (FileName == NULL)) {
+        return EFI_NOT_FOUND;
+    }
 
     Status = refit_call5_wrapper (BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
@@ -256,10 +291,14 @@ EFI_STATUS egLoadFile (IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fi
         refit_call1_wrapper (FileHandle->Close, FileHandle);
         return EFI_NOT_FOUND;
     }
+
     ReadSize = FileInfo->FileSize;
-    if (ReadSize > MAX_FILE_SIZE)
+
+    if (ReadSize > MAX_FILE_SIZE) {
         ReadSize = MAX_FILE_SIZE;
-    FreePool (FileInfo);
+    }
+
+    MyFreePool (FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
@@ -275,25 +314,30 @@ EFI_STATUS egLoadFile (IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fi
         return Status;
     }
 
-    *FileData = Buffer;
+    *FileData       = Buffer;
     *FileDataLength = BufferSize;
+
     return EFI_SUCCESS;
 }
 
-EFI_STATUS egFindESP (OUT EFI_FILE_HANDLE *RootDir)
-{
-    EFI_STATUS          Status;
-    UINTN               HandleCount = 0;
-    EFI_HANDLE          *Handles;
-    EFI_GUID            ESPGuid = ESP_GUID_VALUE;
+EFI_STATUS egFindESP (
+    OUT EFI_FILE_HANDLE *RootDir
+) {
+    EFI_STATUS  Status;
+    UINTN       HandleCount = 0;
+    EFI_HANDLE  *Handles;
+    EFI_GUID    ESPGuid = ESP_GUID_VALUE;
 
     Status = LibLocateHandle (ByProtocol, &ESPGuid, NULL, &HandleCount, &Handles);
     if (!EFI_ERROR (Status) && HandleCount > 0) {
         *RootDir = LibOpenRoot (Handles[0]);
-        if (*RootDir == NULL)
+
+        if (*RootDir == NULL) {
             Status = EFI_NOT_FOUND;
-        FreePool (Handles);
+        }
+        MyFreePool (Handles);
     }
+
     return Status;
 }
 
@@ -346,59 +390,77 @@ egSaveFile (
 // Decode the specified image data. The IconSize parameter is relevant only
 // for ICNS, for which it selects which ICNS sub-image is decoded.
 // Returns a pointer to the resulting EG_IMAGE or NULL if decoding failed.
-static EG_IMAGE * egDecodeAny (IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN IconSize, IN BOOLEAN WantAlpha)
-{
-   EG_IMAGE        *NewImage = NULL;
+static EG_IMAGE * egDecodeAny (
+    IN UINT8    *FileData,
+    IN UINTN    FileDataLength,
+    IN UINTN    IconSize,
+    IN BOOLEAN  WantAlpha
+) {
+   EG_IMAGE *NewImage = NULL;
 
    NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL)
-      NewImage = egDecodePNG (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL)
-      NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL)
-      NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL) {
+       NewImage = egDecodePNG (FileData, FileDataLength, IconSize, WantAlpha);
+   }
+   if (NewImage == NULL) {
+       NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
+   }
+   if (NewImage == NULL) {
+       NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
+   }
 
    return NewImage;
 }
 
-EG_IMAGE * egLoadImage (IN EFI_FILE* BaseDir, IN CHAR16 *FileName, IN BOOLEAN WantAlpha)
-{
+EG_IMAGE * egLoadImage (
+    IN EFI_FILE *BaseDir,
+    IN CHAR16   *FileName,
+    IN BOOLEAN  WantAlpha
+) {
     EFI_STATUS      Status;
     UINT8           *FileData;
     UINTN           FileDataLength;
     EG_IMAGE        *NewImage;
 
-    if (BaseDir == NULL || FileName == NULL)
+    if (BaseDir == NULL || FileName == NULL) {
         return NULL;
+    }
 
     // load file
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR (Status)) {
         return NULL;
+    }
 
     // decode it
-    NewImage = egDecodeAny (FileData, FileDataLength, 128 /* arbitrary value */, WantAlpha);
-    FreePool (FileData);
+    // '128' can be any arbitrary value
+    NewImage = egDecodeAny (FileData, FileDataLength, 128, WantAlpha);
+    MyFreePool (FileData);
 
     return NewImage;
 }
 
 // Load an icon from (BaseDir)/Path, extracting the icon of size IconSize x IconSize.
 // Returns a pointer to the image data, or NULL if the icon could not be loaded.
-EG_IMAGE * egLoadIcon (IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
-{
+EG_IMAGE * egLoadIcon (
+    IN EFI_FILE *BaseDir,
+    IN CHAR16   *Path,
+    IN UINTN    IconSize
+) {
     EFI_STATUS      Status;
     UINT8           *FileData;
     UINTN           FileDataLength;
     EG_IMAGE        *Image, *NewImage;
 
-    if (BaseDir == NULL || Path == NULL)
+    if (BaseDir == NULL || Path == NULL) {
         return NULL;
+    }
 
     // load file
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
-    if (EFI_ERROR (Status))
-       return NULL;
+    if (EFI_ERROR (Status)) {
+        return NULL;
+    }
 
     // decode it
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
@@ -421,19 +483,24 @@ EG_IMAGE * egLoadIcon (IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // SubdirName is "myicons" and BaseName is "os_linux", this function will return
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
-EG_IMAGE * egLoadIconAnyType (IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
-   EG_IMAGE *Image = NULL;
-   CHAR16 *Extension;
-   CHAR16 FileName[256];
-   UINTN i = 0;
+EG_IMAGE * egLoadIconAnyType (
+    IN EFI_FILE  *BaseDir,
+    IN CHAR16    *SubdirName,
+    IN CHAR16    *BaseName,
+    IN UINTN     IconSize
+) {
+    EG_IMAGE  *Image = NULL;
+    CHAR16    *Extension;
+    CHAR16    FileName[256];
+    UINTN     i = 0;
 
-   while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
-      SPrint (FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
-      Image = egLoadIcon (BaseDir, FileName, IconSize);
-      MyFreePool (Extension);
-   } // while()
+    while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
+        SPrint (FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
+        Image = egLoadIcon (BaseDir, FileName, IconSize);
+        MyFreePool (Extension);
+    } // while()
 
-   return Image;
+    return Image;
 } // EG_IMAGE *egLoadIconAnyType()
 
 // Returns an icon with any extension in ICON_EXTENSIONS from either the directory
@@ -444,65 +511,77 @@ EG_IMAGE * egLoadIconAnyType (IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CH
 // myicons/os_linux.png, icons/os_linux.icns, or icons/os_linux.png, in that
 // order of preference. Returns NULL if no such icon can be found. All file
 // references are relative to SelfDir.
-EG_IMAGE * egFindIcon (IN CHAR16 *BaseName, IN UINTN IconSize) {
-   EG_IMAGE *Image = NULL;
+EG_IMAGE * egFindIcon (
+    IN CHAR16 *BaseName,
+    IN UINTN  IconSize
+) {
+    EG_IMAGE *Image = NULL;
 
-   if (GlobalConfig.IconsDir != NULL) {
-      Image = egLoadIconAnyType (SelfDir, GlobalConfig.IconsDir, BaseName, IconSize);
-   }
+    if (GlobalConfig.IconsDir != NULL) {
+        Image = egLoadIconAnyType (SelfDir, GlobalConfig.IconsDir, BaseName, IconSize);
+    }
 
-   if (Image == NULL) {
-      Image = egLoadIconAnyType (SelfDir, DEFAULT_ICONS_DIR, BaseName, IconSize);
-   }
+    if (Image == NULL) {
+        Image = egLoadIconAnyType (SelfDir, DEFAULT_ICONS_DIR, BaseName, IconSize);
+    }
 
-   return Image;
+    return Image;
 } // EG_IMAGE * egFindIcon()
 
-EG_IMAGE * egPrepareEmbeddedImage (IN EG_EMBEDDED_IMAGE *EmbeddedImage, IN BOOLEAN WantAlpha)
-{
-    EG_IMAGE            *NewImage;
-    UINT8               *CompData;
-    UINTN               CompLen;
-    UINTN               PixelCount;
+EG_IMAGE * egPrepareEmbeddedImage (
+    IN EG_EMBEDDED_IMAGE  *EmbeddedImage,
+    IN BOOLEAN            WantAlpha
+) {
+    EG_IMAGE  *NewImage;
+    UINT8     *CompData;
+    UINTN     CompLen;
+    UINTN     PixelCount;
 
     // sanity check
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
-        (EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE && EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE))
+        (EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE &&
+        EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE)
+    ) {
         return NULL;
+    }
 
     // allocate image structure and pixel buffer
     NewImage = egCreateImage (EmbeddedImage->Width, EmbeddedImage->Height, WantAlpha);
-    if (NewImage == NULL)
+    if (NewImage == NULL) {
         return NULL;
+    }
 
-    CompData = (UINT8 *)EmbeddedImage->Data;   // drop const
-    CompLen  = EmbeddedImage->DataLength;
+    CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
+    CompLen    = EmbeddedImage->DataLength;
     PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
     // FUTURE: for EG_EICOMPMODE_EFICOMPRESS, decompress whole data block here
 
     if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA) {
-
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA
+    ) {
         // copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, r), PixelCount);
-        } else {
+        }
+        else {
             egInsertPlane (CompData, PLPTR (NewImage, r), PixelCount);
             CompData += PixelCount;
         }
         egCopyPlane (PLPTR (NewImage, r), PLPTR (NewImage, g), PixelCount);
         egCopyPlane (PLPTR (NewImage, r), PLPTR (NewImage, b), PixelCount);
 
-    } else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
-               EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA) {
-
+    }
+    else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA
+    ) {
         // copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, r), PixelCount);
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, g), PixelCount);
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, b), PixelCount);
-        } else {
+        }
+        else {
             egInsertPlane (CompData, PLPTR (NewImage, r), PixelCount);
             CompData += PixelCount;
             egInsertPlane (CompData, PLPTR (NewImage, g), PixelCount);
@@ -510,29 +589,29 @@ EG_IMAGE * egPrepareEmbeddedImage (IN EG_EMBEDDED_IMAGE *EmbeddedImage, IN BOOLE
             egInsertPlane (CompData, PLPTR (NewImage, b), PixelCount);
             CompData += PixelCount;
         }
-
-    } else {
-
+    }
+    else {
         // set color planes to black
         egSetPlane (PLPTR (NewImage, r), 0, PixelCount);
         egSetPlane (PLPTR (NewImage, g), 0, PixelCount);
         egSetPlane (PLPTR (NewImage, b), 0, PixelCount);
-
     }
 
-    if (WantAlpha && (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-                      EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-                      EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)) {
-
+    if (WantAlpha &&
+        (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
+    ) {
         // copy alpha plane
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
-        } else {
+        }
+        else {
             egInsertPlane (CompData, PLPTR (NewImage, a), PixelCount);
             CompData += PixelCount;
         }
-
-    } else {
+    }
+    else {
         egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
     }
 
@@ -543,15 +622,20 @@ EG_IMAGE * egPrepareEmbeddedImage (IN EG_EMBEDDED_IMAGE *EmbeddedImage, IN BOOLE
 // Compositing
 //
 
-VOID egRestrictImageArea (IN EG_IMAGE *Image,
-                         IN UINTN AreaPosX, IN UINTN AreaPosY,
-                         IN OUT UINTN *AreaWidth, IN OUT UINTN *AreaHeight)
-{
+VOID
+egRestrictImageArea (
+    IN EG_IMAGE   *Image,
+    IN UINTN      AreaPosX,
+    IN UINTN      AreaPosY,
+    IN OUT UINTN  *AreaWidth,
+    IN OUT UINTN  *AreaHeight
+) {
     if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
         // out of bounds, operation has no effect
         *AreaWidth  = 0;
         *AreaHeight = 0;
-    } else {
+    }
+    else {
         // calculate affected area
         if (*AreaWidth > Image->Width - AreaPosX)
             *AreaWidth = Image->Width - AreaPosX;
@@ -560,26 +644,35 @@ VOID egRestrictImageArea (IN EG_IMAGE *Image,
     }
 }
 
-VOID egFillImage (IN OUT EG_IMAGE *CompImage, IN EG_PIXEL *Color)
-{
+VOID
+egFillImage (
+    IN OUT EG_IMAGE  *CompImage,
+    IN EG_PIXEL      *Color
+) {
     UINTN       i;
     EG_PIXEL    FillColor;
     EG_PIXEL    *PixelPtr;
 
     FillColor = *Color;
-    if (!CompImage->HasAlpha)
+    if (!CompImage->HasAlpha) {
         FillColor.a = 0;
+    }
 
     PixelPtr = CompImage->PixelData;
-    for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++)
+    for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++) {
         *PixelPtr = FillColor;
+    }
 }
 
-VOID egFillImageArea (IN OUT EG_IMAGE *CompImage,
-                     IN UINTN AreaPosX, IN UINTN AreaPosY,
-                     IN UINTN AreaWidth, IN UINTN AreaHeight,
-                     IN EG_PIXEL *Color)
-{
+VOID
+egFillImageArea (
+    IN OUT EG_IMAGE  *CompImage,
+    IN UINTN         AreaPosX,
+    IN UINTN         AreaPosY,
+    IN UINTN         AreaWidth,
+    IN UINTN         AreaHeight,
+    IN EG_PIXEL      *Color
+) {
     UINTN       x, y;
     EG_PIXEL    FillColor;
     EG_PIXEL    *PixelPtr;
@@ -589,23 +682,30 @@ VOID egFillImageArea (IN OUT EG_IMAGE *CompImage,
 
     if (AreaWidth > 0) {
         FillColor = *Color;
-        if (!CompImage->HasAlpha)
+        if (!CompImage->HasAlpha) {
             FillColor.a = 0;
+        }
 
         PixelBasePtr = CompImage->PixelData + AreaPosY * CompImage->Width + AreaPosX;
         for (y = 0; y < AreaHeight; y++) {
             PixelPtr = PixelBasePtr;
-            for (x = 0; x < AreaWidth; x++, PixelPtr++)
+            for (x = 0; x < AreaWidth; x++, PixelPtr++) {
                 *PixelPtr = FillColor;
+            }
             PixelBasePtr += CompImage->Width;
         }
     }
 }
 
-VOID egRawCopy (IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
-               IN UINTN Width, IN UINTN Height,
-               IN UINTN CompLineOffset, IN UINTN TopLineOffset)
-{
+VOID
+egRawCopy (
+    IN OUT EG_PIXEL  *CompBasePtr,
+    IN EG_PIXEL      *TopBasePtr,
+    IN UINTN         Width,
+    IN UINTN         Height,
+    IN UINTN         CompLineOffset,
+    IN UINTN         TopLineOffset
+) {
     UINTN       x, y;
     EG_PIXEL    *TopPtr, *CompPtr;
 
@@ -621,10 +721,15 @@ VOID egRawCopy (IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
     }
 }
 
-VOID egRawCompose (IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
-                  IN UINTN Width, IN UINTN Height,
-                  IN UINTN CompLineOffset, IN UINTN TopLineOffset)
-{
+VOID
+egRawCompose (
+    IN OUT EG_PIXEL  *CompBasePtr,
+    IN EG_PIXEL      *TopBasePtr,
+    IN UINTN         Width,
+    IN UINTN         Height,
+    IN UINTN         CompLineOffset,
+    IN UINTN         TopLineOffset
+) {
     UINTN       x, y;
     EG_PIXEL    *TopPtr, *CompPtr;
     UINTN       Alpha;
@@ -650,14 +755,20 @@ VOID egRawCompose (IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
             */
             TopPtr++, CompPtr++;
         }
-        TopBasePtr += TopLineOffset;
+        TopBasePtr  += TopLineOffset;
         CompBasePtr += CompLineOffset;
     }
 }
 
-VOID egComposeImage (IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN PosX, IN UINTN PosY)
-{
-    UINTN       CompWidth, CompHeight;
+VOID
+egComposeImage (
+    IN OUT EG_IMAGE  *CompImage,
+    IN EG_IMAGE      *TopImage,
+    IN UINTN         PosX,
+    IN UINTN         PosY
+) {
+    UINTN CompWidth;
+    UINTN CompHeight;
 
     CompWidth  = TopImage->Width;
     CompHeight = TopImage->Height;
@@ -666,11 +777,24 @@ VOID egComposeImage (IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN
     // compose
     if (CompWidth > 0) {
         if (TopImage->HasAlpha) {
-            egRawCompose (CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
-                         CompWidth, CompHeight, CompImage->Width, TopImage->Width);
-        } else {
-            egRawCopy (CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
-                      CompWidth, CompHeight, CompImage->Width, TopImage->Width);
+            egRawCompose (
+                CompImage->PixelData + PosY * CompImage->Width + PosX,
+                TopImage->PixelData,
+                CompWidth,
+                CompHeight,
+                CompImage->Width,
+                TopImage->Width
+            );
+        }
+        else {
+            egRawCopy (
+                CompImage->PixelData + PosY * CompImage->Width + PosX,
+                TopImage->PixelData,
+                CompWidth,
+                CompHeight,
+                CompImage->Width,
+                TopImage->Width
+            );
         }
     }
 } /* VOID egComposeImage() */
@@ -679,8 +803,12 @@ VOID egComposeImage (IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN
 // misc internal functions
 //
 
-VOID egInsertPlane (IN UINT8 *SrcDataPtr, IN UINT8 *DestPlanePtr, IN UINTN PixelCount)
-{
+VOID
+egInsertPlane (
+    IN UINT8 *SrcDataPtr,
+    IN UINT8 *DestPlanePtr,
+    IN UINTN PixelCount
+) {
     UINTN i;
 
     for (i = 0; i < PixelCount; i++) {
@@ -689,8 +817,12 @@ VOID egInsertPlane (IN UINT8 *SrcDataPtr, IN UINT8 *DestPlanePtr, IN UINTN Pixel
     }
 }
 
-VOID egSetPlane (IN UINT8 *DestPlanePtr, IN UINT8 Value, IN UINTN PixelCount)
-{
+VOID
+egSetPlane (
+    IN UINT8 *DestPlanePtr,
+    IN UINT8 Value,
+    IN UINTN PixelCount
+) {
     UINTN i;
 
     for (i = 0; i < PixelCount; i++) {
@@ -699,8 +831,12 @@ VOID egSetPlane (IN UINT8 *DestPlanePtr, IN UINT8 Value, IN UINTN PixelCount)
     }
 }
 
-VOID egCopyPlane (IN UINT8 *SrcPlanePtr, IN UINT8 *DestPlanePtr, IN UINTN PixelCount)
-{
+VOID
+egCopyPlane (
+    IN UINT8 *SrcPlanePtr,
+    IN UINT8 *DestPlanePtr,
+    IN UINTN PixelCount
+) {
     UINTN i;
 
     for (i = 0; i < PixelCount; i++) {
