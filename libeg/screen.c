@@ -887,7 +887,7 @@ egInitScreen (
     MsgLog ("    * Seek on ConsoleOut Handle ...%r\n", Status);
     #endif
 
-    if (EFI_ERROR (Status) || ConsoleControl == NULL) {
+    if (EFI_ERROR (Status)) {
         // Try Locating by Handle
         Status = refit_call5_wrapper (
             gBS->LocateHandleBuffer,
@@ -1010,7 +1010,7 @@ egInitScreen (
     MsgLog ("    * Seek on ConsoleOut Handle ...%r\n", Status);
     #endif
 
-    if (EFI_ERROR (Status) || ConsoleControl == NULL) {
+    if (EFI_ERROR (Status)) {
         // Try Locating by Handle
         Status = refit_call5_wrapper (
             gBS->LocateHandleBuffer,
