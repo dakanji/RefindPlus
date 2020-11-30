@@ -549,37 +549,37 @@ static CHAR16 *FSTypeName (IN UINT32 TypeCode) {
 
    switch (TypeCode) {
       case FS_TYPE_WHOLEDISK:
-         retval = L" whole disk";
+         retval = L"whole disk";
          break;
       case FS_TYPE_FAT:
-         retval = L" FAT";
+         retval = L"FAT";
          break;
       case FS_TYPE_HFSPLUS:
-         retval = L" HFS+";
+         retval = L"HFS+";
          break;
       case FS_TYPE_EXT2:
-         retval = L" ext2";
+         retval = L"ext2";
          break;
       case FS_TYPE_EXT3:
-         retval = L" ext3";
+         retval = L"ext3";
          break;
       case FS_TYPE_EXT4:
-         retval = L" ext4";
+         retval = L"ext4";
          break;
       case FS_TYPE_REISERFS:
-         retval = L" ReiserFS";
+         retval = L"ReiserFS";
          break;
       case FS_TYPE_BTRFS:
-         retval = L" Btrfs";
+         retval = L"Btrfs";
          break;
       case FS_TYPE_XFS:
-         retval = L" XFS";
+         retval = L"XFS";
          break;
       case FS_TYPE_ISO9660:
-         retval = L" ISO-9660";
+         retval = L"ISO-9660";
          break;
       case FS_TYPE_NTFS:
-         retval = L" NTFS";
+         retval = L"NTFS";
          break;
       default:
          retval = L"";
@@ -982,12 +982,15 @@ CHAR16
         FoundName = StrDuplicate (Volume->PartName);
     } // if use partition name
 
+    // NOTE: Don't free TypeName; function returns constant
+    TypeName = FSTypeName (Volume->FSType);
+
     // No filesystem or acceptable partition name, so use fs type and size
     if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
         FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
         if (FoundName != NULL) {
             SISize = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
-            SPrint (FoundName, 255, L"%s[%s] Volume", FSTypeName (Volume->FSType), SISize);
+            SPrint (FoundName, 255, L"%s[%s] Volume", TypeName, SISize);
             MyFreePool (SISize);
         } // if allocated memory OK
     } // if (FoundName == NULL)
@@ -997,9 +1000,6 @@ CHAR16
     if (FoundName == NULL) {
         FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
         if (FoundName != NULL) {
-            // NOTE: Don't free TypeName; function returns constant
-            TypeName = FSTypeName (Volume->FSType);
-
             if (StrLen (TypeName) > 0) {
                 SPrint (FoundName, 255, L"%s Volume", TypeName);
             }
@@ -1352,12 +1352,13 @@ VOID ScanVolumes (VOID)
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
-    if (CheckError (Status, L"while listing all file systems")) {
+    if (CheckError (Status, L"While Listing All File Systems")) {
         return;
     }
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
 
     // first pass: collect information about all handles
+    ScannedOnce = FALSE;
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];

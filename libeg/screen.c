@@ -934,31 +934,21 @@ egInitScreen (
                         &RefreshRate
                     );
                     if (!EFI_ERROR (Status)) {
-                        if (UGAWidth < Width) {
-                            if (UGAHeight < Height) {
-                                UGADraw = TmpUGA;
-                                UGAWidth = Width;
-                                UGAHeight = Height;
+                        if (UGAWidth < Width ||
+                            UGAHeight < Height
+                        ) {
+                            UGADraw   = TmpUGA;
+                            UGAWidth  = Width;
+                            UGAHeight = Height;
 
-                                #if REFIT_DEBUG > 0
-                                MsgLog (
-                                    "    *** Select Handle[%02d] @ %dx%d\n",
-                                    i,
-                                    UGAWidth,
-                                    UGAHeight
-                                );
-                                #endif
-                            }
-                            else {
-                                #if REFIT_DEBUG > 0
-                                MsgLog (
-                                    "    *** Ignore Handle[%02d] @ %dx%d\n",
-                                    i,
-                                    Width,
-                                    Height
-                                );
-                                #endif
-                            }
+                            #if REFIT_DEBUG > 0
+                            MsgLog (
+                                "    *** Select Handle[%02d] @ %dx%d\n",
+                                i,
+                                UGAWidth,
+                                UGAHeight
+                            );
+                            #endif
                         }
                         else {
                             #if REFIT_DEBUG > 0
@@ -1063,33 +1053,22 @@ egInitScreen (
                     for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
                         Status = TmpGOP->QueryMode (TmpGOP, GOPMode, &SizeOfInfo, &Info);
                         if (!EFI_ERROR (Status)) {
-                            if (GOPWidth < Info->HorizontalResolution) {
-                                if (GOPHeight < Info->VerticalResolution) {
-                                    OldGOP = TmpGOP;
-                                    GOPWidth = Info->HorizontalResolution;
-                                    GOPHeight = Info->VerticalResolution;
+                            if (GOPWidth < Info->HorizontalResolution ||
+                                GOPHeight < Info->VerticalResolution
+                            ) {
+                                OldGOP    = TmpGOP;
+                                GOPWidth  = Info->HorizontalResolution;
+                                GOPHeight = Info->VerticalResolution;
 
-                                    #if REFIT_DEBUG > 0
-                                    MsgLog (
-                                        "    *** Select Handle[%02d][%02d] @ %dx%d\n",
-                                        i,
-                                        GOPMode,
-                                        GOPWidth,
-                                        GOPHeight
-                                    );
-                                    #endif
-                                }
-                                else {
-                                    #if REFIT_DEBUG > 0
-                                    MsgLog (
-                                        "        Ignore Handle[%02d][%02d] @ %dx%d\n",
-                                        i,
-                                        GOPMode,
-                                        Info->HorizontalResolution,
-                                        Info->VerticalResolution
-                                    );
-                                    #endif
-                                }
+                                #if REFIT_DEBUG > 0
+                                MsgLog (
+                                    "    *** Select Handle[%02d][%02d] @ %dx%d\n",
+                                    i,
+                                    GOPMode,
+                                    GOPWidth,
+                                    GOPHeight
+                                );
+                                #endif
                             }
                             else {
                                 #if REFIT_DEBUG > 0
