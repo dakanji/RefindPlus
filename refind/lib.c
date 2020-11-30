@@ -117,6 +117,7 @@ REFIT_VOLUME     **Volumes      = NULL;
 UINTN            VolumesCount   = 0;
 BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
+BOOLEAN          SelfVolSet     = FALSE;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors
@@ -878,13 +879,15 @@ ScanVolumeBootcode (
     }
     else {
         #if REFIT_DEBUG > 0
-        if (Status == EFI_NO_MEDIA) {
-            MediaCheck = TRUE;
-        }
-        ScannedOnce = FALSE;
+        if (SelfVolSet) {
+            if (Status == EFI_NO_MEDIA) {
+                MediaCheck = TRUE;
+            }
+            ScannedOnce = FALSE;
 
-        MsgLog("\n");
-        CheckError (Status, L"While Reading Boot Sector on Volume Below");
+            MsgLog("\n");
+            CheckError (Status, L"While Reading Boot Sector on Volume Below");
+        }
         #endif
     }
 } /* VOID ScanVolumeBootcode() */
@@ -1337,7 +1340,6 @@ VOID ScanVolumes (VOID)
     EFI_GUID           *UuidList;
     EFI_GUID           NullUuid = NULL_GUID_VALUE;
     const CHAR16       *ShowScreenStr = NULL;
-    BOOLEAN            SelfVolSet = FALSE;
     STATIC BOOLEAN     SelfVolRun = FALSE;
 
     MyFreePool (Volumes);
