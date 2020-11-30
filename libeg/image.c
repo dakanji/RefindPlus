@@ -255,7 +255,9 @@ VOID
 egFreeImage (
     IN EG_IMAGE *Image
 ) {
-    MyFreePool (Image->PixelData);
+    if (egHasConsoleControl) {
+        MyFreePool (Image->PixelData);
+    }
     MyFreePool (Image);
 }
 

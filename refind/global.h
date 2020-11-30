@@ -397,29 +397,35 @@ typedef struct {
 // Global variables
 
 extern EFI_HANDLE        SelfImageHandle;
+
 extern EFI_LOADED_IMAGE  *SelfLoadedImage;
+
 extern EFI_FILE          *SelfRootDir;
 extern EFI_FILE          *SelfDir;
+
 extern CHAR16            *SelfDirPath;
+extern CHAR16            *ShowScreenStr;
 
 extern REFIT_VOLUME      *SelfVolume;
 extern REFIT_VOLUME      **Volumes;
-extern UINTN             VolumesCount;
 
 extern REFIT_CONFIG      GlobalConfig;
 
+extern UINTN             VolumesCount;
+
 extern EFI_GUID          gEfiLegacyBootProtocolGuid;
 extern EFI_GUID          gEfiGlobalVariableGuid;
-
-extern BOOLEAN           TweakSysTable;
-
 extern EFI_GUID          GlobalGuid;
 extern EFI_GUID          RefindGuid;
 
+extern BOOLEAN           TweakSysTable;
+extern BOOLEAN           egHasConsoleControl;
+
 extern REFIT_MENU_SCREEN MainMenu;
+
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
-extern CHAR16            *ShowScreenStr;
+
 
 VOID AboutrEFInd(VOID);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);

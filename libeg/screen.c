@@ -88,6 +88,8 @@ static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
+BOOLEAN egHasConsoleControl  = FALSE;
+
 STATIC
 EFI_STATUS
 EncodeAsPNG (
@@ -850,14 +852,20 @@ egInitScreen (
         }
     }
 
-    #if REFIT_DEBUG > 0
     if (EFI_ERROR (Status)) {
+        egHasConsoleControl  = FALSE;
+
+        #if REFIT_DEBUG > 0
         MsgLog ("  - Assess Console Control ...NOT OK!\n\n");
+        #endif
     }
     else {
+        egHasConsoleControl  = FALSE;
+
+        #if REFIT_DEBUG > 0
         MsgLog ("  - Assess Console Control ...ok\n\n");
+        #endif
     }
-    #endif
 
 
     // Get UGADraw Protocol
