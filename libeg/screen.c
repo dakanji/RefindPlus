@@ -2231,7 +2231,7 @@ egScreenShot (
     i = 0;
     do {
         MyFreePool (FileName);
-        FileName = PoolPrint (L"ScreenShot_%03X.png", i++);
+        FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
     } while (FileExists (BaseDir, FileName));
 
     // save to file on the ESP
