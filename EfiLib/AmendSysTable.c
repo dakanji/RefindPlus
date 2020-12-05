@@ -23,7 +23,9 @@ EFI_SMM_BASE2_PROTOCOL  *gSmmBase2  = NULL;
 EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
     INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.ImageHead),
     INITIALIZE_LIST_HEAD_VARIABLE (gRuntimeTemplate.EventHead),
-    sizeof (EFI_MEMORY_DESCRIPTOR) + sizeof (UINT64) - (sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)),
+    sizeof (EFI_MEMORY_DESCRIPTOR) +
+        sizeof (UINT64) -
+        (sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)),
     EFI_MEMORY_DESCRIPTOR_VERSION, 0,
     NULL, NULL,
     FALSE, FALSE
@@ -106,7 +108,13 @@ FakeDispatchEventNotifies (
 
     // Dispatch pending notifications
     while (!IsListEmpty (Head)) {
-        Event = refit_call4_wrapper (CR, Head->ForwardLink, IEVENT, NotifyLink, EVENT_SIGNATURE);
+        Event = refit_call4_wrapper (
+            CR,
+            Head->ForwardLink,
+            IEVENT,
+            NotifyLink,
+            EVENT_SIGNATURE
+        );
         refit_call1_wrapper (RemoveEntryList, &Event->NotifyLink);
         Event->NotifyLink.ForwardLink = NULL;
 
@@ -120,7 +128,11 @@ FakeDispatchEventNotifies (
 
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
-        refit_call2_wrapper (Event->NotifyFunction, Event, Event->NotifyContext);
+        refit_call2_wrapper (
+            Event->NotifyFunction,
+            Event,
+            Event->NotifyContext
+        );
 
         // Check for next pending event
         FakeAcquireLock (&gEventQueueLock);
@@ -146,7 +158,11 @@ FakeRaiseTpl (
     OldTpl = gEfiCurrentTpl;
     if (OldTpl > NewTpl) {
         #if REFIT_DEBUG > 0
-        MsgLog ("FATAL ERROR: RaiseTpl with OldTpl (0x%x) > NewTpl (0x%x)\n\n", OldTpl, NewTpl);
+        MsgLog (
+            "FATAL ERROR: RaiseTpl with OldTpl (0x%x) > NewTpl (0x%x)\n\n",
+            OldTpl,
+            NewTpl
+        );
         #endif
 
         ASSERT (FALSE);
@@ -180,7 +196,11 @@ FakeRestoreTpl (
     OldTpl = gEfiCurrentTpl;
     if (NewTpl > OldTpl) {
         #if REFIT_DEBUG > 0
-        MsgLog ("FATAL ERROR: RestoreTpl with NewTpl (0x%x) > OldTpl (0x%x)\n", NewTpl, OldTpl);
+        MsgLog (
+            "FATAL ERROR: RestoreTpl with NewTpl (0x%x) > OldTpl (0x%x)\n",
+            NewTpl,
+            OldTpl
+        );
         #endif
 
         ASSERT (FALSE);
@@ -247,7 +267,7 @@ FakeReleaseLock (
     ASSERT (Lock != NULL);
     ASSERT (Lock->Lock == EfiLockAcquired);
 
-    Tpl = Lock->OwnerTpl;
+    Tpl        = Lock->OwnerTpl;
     Lock->Lock = EfiLockReleased;
 
     FakeRestoreTpl (Tpl);
@@ -332,9 +352,9 @@ FakeCreateEventEx (
     }
     else {
         // No notification needed. Zero out ignored values
-        NotifyTpl = 0;
+        NotifyTpl      = 0;
         NotifyFunction = NULL;
-        NotifyContext = NULL;
+        NotifyContext  = NULL;
     }
 
     // Allocate and initialize a new event structure.
