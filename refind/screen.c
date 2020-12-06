@@ -759,6 +759,10 @@ BltClearScreen (
         }
 
         if (Banner) {
+            #if REFIT_DEBUG > 0
+            MsgLog("  - Scale Banner\n");
+            #endif
+
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
               if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
                  NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
@@ -772,9 +776,6 @@ BltClearScreen (
               );
            } // if/elseif
            if (NewBanner) {
-               #if REFIT_DEBUG > 0
-               MsgLog("  - Scaled Banner\n");
-               #endif
               egFreeImage(Banner);
               Banner = NewBanner;
            }
@@ -782,22 +783,20 @@ BltClearScreen (
         } // if Banner exists
 
         // clear and draw banner
+        #if REFIT_DEBUG > 0
+        MsgLog("  - Clear Screen\n");
+        #endif
+
         if (GlobalConfig.ScreensaverTime != -1) {
             egClearScreen(&MenuBackgroundPixel);
         }
         else {
             egClearScreen(&Black);
         }
-        #if REFIT_DEBUG > 0
-        // Add Line Ending Later
-        MsgLog("  - Cleared Screen");
-        #endif
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog("\n");
-            // Add Line Ending Later
-            MsgLog("  - Show Banner");
+            MsgLog("  - Show Banner\n\n");
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
@@ -811,18 +810,11 @@ BltClearScreen (
             }
             egFreeImage(Banner);
         }
-        #if REFIT_DEBUG > 0
-        MsgLog("\n\n");
-        #endif
+
     }
     else { // not showing banner
         // clear to menu background color
         egClearScreen(&MenuBackgroundPixel);
-
-        #if REFIT_DEBUG > 0
-        MsgLog("  - Cleared Screen\n");
-        MsgLog("    * Not Showing Banner\n\n");
-        #endif
     }
 
     GraphicsScreenDirty = FALSE;
