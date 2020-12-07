@@ -258,7 +258,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("    * HiDPI Monitor Not Detected\n");
+                MsgLog("    * LoDPI Monitor Detected\n");
                 MsgLog("    ** Maintain Icon Scale\n\n");
                 #endif
             } // if
