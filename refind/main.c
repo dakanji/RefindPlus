@@ -941,7 +941,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         gBS = SystemTable->BootServices;
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Restored System Table\n\n");
+        Status = EFI_SUCCESS;
+        MsgLog ("INFO: Restore System Table ...%r\n\n", Status);
         #endif
     }
 

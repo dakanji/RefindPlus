@@ -504,14 +504,8 @@ BdsLibConnectAllDriversToAllControllersEx (
         Status = gDS->Dispatch();
 
         if (EFI_ERROR (Status)) {
-            if (FoundGOP) {
+            if (!FoundGOP) {
                 #if REFIT_DEBUG > 0
-                if (GetLog) {
-                    MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
-                }
-                #endif
-            }
-            else {
                 // Check ConsoleOut Handle
                 EFI_GRAPHICS_OUTPUT_PROTOCOL  *TestGOP = NULL;
                 EFI_GUID GraphicsOutputProtocolGuid    = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
@@ -522,23 +516,14 @@ BdsLibConnectAllDriversToAllControllersEx (
                     (VOID **) &TestGOP
                 );
 
-                if (!EFI_ERROR (XStatus)) {
-                    TestGOP  = NULL;
-                    FoundGOP = TRUE;
-
-                    #if REFIT_DEBUG > 0
-                    if (GetLog) {
-                        MsgLog ("INFO: Located GOP instance on ConsoleOut Handle\n\n");
-                    }
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
+                if (EFI_ERROR (XStatus)) {
                     if (GetLog) {
                         MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
                     }
-                    #endif
                 }
+                
+                MyFreePool(TestGOP);
+                #endif
             }
         }
         else {
@@ -571,13 +556,13 @@ ApplyGOPFix (
     // Update Boot Services to permit reloading GPU ROM
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Amend System Table Details ...%r\n\n", Status);
+    MsgLog ("INFO: Amend System Table ...%r\n\n", Status);
     #endif
 
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Acquire GOP on Random Access Memory ...%r\n\n", Status);
+        MsgLog ("INFO: Acquire GOP on RAM ...%r\n\n", Status);
         #endif
 
         // connect all devices
@@ -610,7 +595,7 @@ BdsLibConnectAllDriversToAllControllers (
 
         #if REFIT_DEBUG > 0
         if (GetLog) {
-            MsgLog ("INFO: Provide GOP from Random Access Memory ...%r\n\n", Status);
+            MsgLog ("INFO: Provide GOP from RAM ...%r\n\n", Status);
         }
         #endif
     }
