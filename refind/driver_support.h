@@ -52,8 +52,8 @@ LibScanHandleDatabase (
   EFI_HANDLE  **HandleBuffer,
   UINT32      **HandleType
   );
-EFI_STATUS ConnectAllDriversToAllControllers(VOID);
+EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN GetLog);
 VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle);
+VOID LoadAptioFix(VOID);
 BOOLEAN LoadDrivers(VOID);
-
 #endif

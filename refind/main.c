@@ -656,7 +656,7 @@ VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary....
     if (Reconnect) {
-        ConnectAllDriversToAllControllers();
+        ConnectAllDriversToAllControllers(TRUE);
         ScanVolumes();
     }
 
@@ -1158,10 +1158,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_LOADER:   // Boot OS via .EFI loader
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
-                #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                // Use multiple instaces of "Received User Input:"
 
+                #if REFIT_DEBUG > 0
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                    MsgLog ("Received User Input:\n");
                     MsgLog (
                         "  - Load OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
@@ -1171,6 +1172,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL ||
                     MyStrStr (ourLoaderEntry->Title, L"macOS") != NULL
                 ) {
+                    // Load AptioMemoryFix if present and System Table not tweaked
+                    if (!TweakSysTable) {
+                        LoadAptioFix();
+                    }
+
+                    MsgLog ("Received User Input:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
                     }
@@ -1179,6 +1186,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     }
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
+                    MsgLog ("Received User Input:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
                     }
@@ -1187,6 +1195,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     }
                 }
                 else {
+                    MsgLog ("Received User Input:\n");
                     MsgLog (
                         "  - Boot OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,

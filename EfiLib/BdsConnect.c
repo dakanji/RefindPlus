@@ -136,7 +136,7 @@ ScanDeviceHandles (
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid) ) {
+                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
@@ -199,8 +199,9 @@ ScanDeviceHandles (
     return Status;
 }
 
-EFI_STATUS BdsLibConnectMostlyAllEfi()
-{
+EFI_STATUS BdsLibConnectMostlyAllEfi (
+    IN BOOLEAN GetLog
+) {
     EFI_STATUS           XStatus;
     EFI_STATUS           Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
@@ -231,11 +232,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
 
     #if REFIT_DEBUG > 0
-    if (ReLoaded) {
-        MsgLog ("Reconnect Device Handles to Controllers...\n");
-    }
-    else {
-        MsgLog ("Link Device Handles to Controllers...\n");
+    if (GetLog) {
+        if (ReLoaded) {
+            MsgLog ("Reconnect Device Handles to Controllers...\n");
+        }
+        else {
+            MsgLog ("Link Device Handles to Controllers...\n");
+        }
     }
     #endif
     // DISABLE scan all handles
@@ -254,7 +257,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("** ERROR: Could not Locate Device Handles\n\n");
+        if (GetLog) {
+            MsgLog ("** ERROR: Could not Locate Device Handles\n\n");
+        }
         #endif
     }
     else {
@@ -274,7 +279,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
+                if (GetLog) {
+                    MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
+                }
                 #endif
             }
             else {
@@ -294,7 +301,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle 0x%03X ...Discarded [Not Device]", HexIndex);
+                    if (GetLog) {
+                        MsgLog ("Handle 0x%03X ...Discarded [Not Device]", HexIndex);
+                    }
                     #endif
                 }
                 else {
@@ -409,31 +418,33 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
                         XStatus = daConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
                     }
 
-                    #if REFIT_DEBUG > 0
                     if (DeviceData == NULL) {
                         DeviceData = L"";
                     }
 
-                    if (Parent) {
-                        MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
-                    }
-                    else if (!EFI_ERROR (XStatus)) {
-                        MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
-                    }
-                    else {
-                        if (XStatus == EFI_NOT_STARTED) {
-                            MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                    #if REFIT_DEBUG > 0
+                    if (GetLog) {
+                        if (Parent) {
+                            MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
                         }
-                        else if (XStatus == EFI_NOT_FOUND) {
-                            MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
-                        }
-                        else if (XStatus == EFI_INVALID_PARAMETER) {
-                            MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                        else if (!EFI_ERROR (XStatus)) {
+                            MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
                         }
                         else {
-                            MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
-                        }
-                    } // if !EFI_ERROR (XStatus)
+                            if (XStatus == EFI_NOT_STARTED) {
+                                MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                            }
+                            else if (XStatus == EFI_NOT_FOUND) {
+                                MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                            }
+                            else if (XStatus == EFI_INVALID_PARAMETER) {
+                                MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                            }
+                            else {
+                                MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                            }
+                        } // if Parent
+                    }
                     #endif
 
                 } // if !Device
@@ -445,11 +456,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
             }
 
             #if REFIT_DEBUG > 0
-            if (i == AllHandleCountTrigger) {
-                MsgLog ("\n\n");
-            }
-            else {
-                MsgLog ("\n");
+            if (GetLog) {
+                if (i == AllHandleCountTrigger) {
+                    MsgLog ("\n\n");
+                }
+                else {
+                    MsgLog ("\n");
+                }
             }
             #endif
 
@@ -474,7 +487,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi()
 STATIC
 EFI_STATUS
 BdsLibConnectAllDriversToAllControllersEx (
-    VOID
+    IN BOOLEAN GetLog
 ) {
     EFI_STATUS  Status;
     EFI_STATUS  XStatus;
@@ -483,7 +496,7 @@ BdsLibConnectAllDriversToAllControllersEx (
         FoundGOP = FALSE;
 
         // Connect All drivers
-        XStatus = BdsLibConnectMostlyAllEfi();
+        XStatus = BdsLibConnectMostlyAllEfi(GetLog);
 
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.
@@ -493,7 +506,9 @@ BdsLibConnectAllDriversToAllControllersEx (
         if (EFI_ERROR (Status)) {
             if (FoundGOP) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
+                if (GetLog) {
+                    MsgLog ("INFO: Found Path to GOP on One or More Device Handles\n\n");
+                }
                 #endif
             }
             else {
@@ -512,19 +527,25 @@ BdsLibConnectAllDriversToAllControllersEx (
                     FoundGOP = TRUE;
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("INFO: Located GOP instance on ConsoleOut Handle\n\n");
+                    if (GetLog) {
+                        MsgLog ("INFO: Located GOP instance on ConsoleOut Handle\n\n");
+                    }
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+                    if (GetLog) {
+                        MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+                    }
                     #endif
                 }
             }
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
+            if (GetLog) {
+                MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
+            }
             #endif
         }
     } while (!EFI_ERROR (Status));
@@ -561,7 +582,7 @@ ApplyGOPFix (
 
         // connect all devices
         if (!EFI_ERROR (Status)) {
-            Status = BdsLibConnectAllDriversToAllControllersEx();
+            Status = BdsLibConnectAllDriversToAllControllersEx(TRUE);
         }
     }
 
@@ -578,17 +599,19 @@ ApplyGOPFix (
 VOID
 EFIAPI
 BdsLibConnectAllDriversToAllControllers (
-    VOID
+    IN BOOLEAN GetLog
 ) {
     EFI_STATUS Status;
 
-    Status = BdsLibConnectAllDriversToAllControllersEx();
+    Status = BdsLibConnectAllDriversToAllControllersEx(GetLog);
     if (EFI_ERROR (Status) && !ReLoaded) {
         ReLoaded = TRUE;
         Status = ApplyGOPFix();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Provide GOP from Random Access Memory ...%r\n\n", Status);
+        if (GetLog) {
+            MsgLog ("INFO: Provide GOP from Random Access Memory ...%r\n\n", Status);
+        }
         #endif
     }
 }
