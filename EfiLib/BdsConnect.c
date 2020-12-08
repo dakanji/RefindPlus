@@ -503,36 +503,21 @@ BdsLibConnectAllDriversToAllControllersEx (
         // If Dispatched Status == EFI_SUCCESS, attempt to reconnect.
         Status = gDS->Dispatch();
 
+        #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             if (!FoundGOP) {
-                #if REFIT_DEBUG > 0
-                // Check ConsoleOut Handle
-                EFI_GRAPHICS_OUTPUT_PROTOCOL  *TestGOP = NULL;
-                EFI_GUID GraphicsOutputProtocolGuid    = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
-                XStatus = refit_call3_wrapper (
-                    gBS->HandleProtocol,
-                    gST->ConsoleOutHandle,
-                    &GraphicsOutputProtocolGuid,
-                    (VOID **) &TestGOP
-                );
-
-                if (EFI_ERROR (XStatus)) {
-                    if (GetLog) {
-                        MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
-                    }
+                if (GetLog) {
+                    MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
                 }
-                
-                MyFreePool(TestGOP);
-                #endif
             }
         }
         else {
-            #if REFIT_DEBUG > 0
             if (GetLog) {
                 MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
             }
-            #endif
         }
+        #endif
+
     } while (!EFI_ERROR (Status));
 
     if (FoundGOP) {

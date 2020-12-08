@@ -118,6 +118,7 @@ UINTN            VolumesCount   = 0;
 BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
+BOOLEAN          SelfVolRun     = FALSE;
 extern EFI_GUID RefindGuid;
 
 // Maximum size for disk sectors
@@ -957,7 +958,7 @@ ScanVolumeBootcode (
     }
     else {
         #if REFIT_DEBUG > 0
-        if (SelfVolSet) {
+        if (SelfVolRun) {
             if (Status == EFI_NO_MEDIA) {
                 MediaCheck = TRUE;
             }
@@ -1462,7 +1463,6 @@ ScanVolumes (
     EFI_GUID           *UuidList;
     EFI_GUID           NullUuid = NULL_GUID_VALUE;
     const CHAR16       *ShowScreenStr = NULL;
-    STATIC BOOLEAN     SelfVolRun = FALSE;
 
     MyFreePool (Volumes);
     Volumes = NULL;
