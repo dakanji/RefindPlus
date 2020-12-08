@@ -1,3 +1,27 @@
+0.12.0.M (07 Dec 2020):
+-----------------------
+- Optimises search for graphics capabilities and overall boot speed
+- Adds workaround for broken QEMU support in the upstream v0.12.0 release
+- Reinstalls GOP from Random Access Memory to provide bootscreen on EFI 1.x devices such as Classic MacPros when running GPUs with strict UEFI 2.x Implementation (Mainly Nvidia)
+  * Hence RefindPlus can now provide bootscreen when running any GPU with GOP
+  * The bootscreen will also be available to other tools, such as OpenCore, when chain-loaded from RefindPlus.
+- Clears buffered key strokes on main menu
+  * This prevents immediately booting into a selected option on return from tools such as the UEFI Shell
+- Encodes screenshots as PNG files instead of the previous large BMP files
+- Save screenshots to the RefindPlus ESP when RefindPlus is run from an ESP
+  * Previously saved to the first ESP found which could be a different ESP
+  * This ensures screeshots are saved to the same ESP RefindPlus is located in
+  * Still saves to the first ESP found when run from HFS+ or other "Non-FAT" directories
+- Changes logged device handle indices to hex
+  * Displays actual hex indices to permit consistency with shell tools
+- Changes HiDPI monitor detection threshold to QHD vertical dimension (1601px)
+  * Previous threshold of 1921px on the horizontal mistook WQHD for HiDPI
+- Adds ScaleUI config token to allow flexibility in HiDPI detection
+  * HiDPI monitor detection can be switched on/off or automatically detected by using this token
+- Embeds Bootscreen and Nvram icons
+  * Specfic icons will be displayed instead of a generic icon when activated and actual icons are not found
+
+
 0.12.0.L (03 Nov 2020):
 -----------------------
 - Fixes Regression on Console GOP Provision on MacPro5,1
