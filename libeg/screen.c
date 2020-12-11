@@ -115,7 +115,7 @@ EncodeAsPNG (
 STATIC
 EFI_STATUS
 EFIAPI
-AltHandleProtocol (
+HandleProtocolEx (
     IN  EFI_HANDLE        Handle,
     IN  EFI_GUID          *Protocol,
     OUT VOID              **Interface
@@ -167,7 +167,7 @@ daCheckAltGop (
     UINTN                         Index;
 
     OrigHandleProtocol   = gBS->HandleProtocol;
-    gBS->HandleProtocol  = AltHandleProtocol;
+    gBS->HandleProtocol  = HandleProtocolEx;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     OrigGop = NULL;

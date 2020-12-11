@@ -213,6 +213,28 @@ extern VOID InitBooterLog (VOID);
 // misc functions
 //
 
+STATIC
+EFI_STATUS
+FixedHandleProtocol (
+    IN EFI_HANDLE  Handle,
+    IN EFI_GUID    *Protocol,
+    OUT VOID       **Interface
+) {
+    EFI_STATUS Status;
+
+    Status = gBS->OpenProtocol (
+        Handle,
+        Protocol,
+        Interface,
+        gImageHandle,
+        NULL,
+        EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
+    );
+
+    return Status;
+}
+
+
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
 static
@@ -669,12 +691,22 @@ VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 #ifdef __MAKEWITH_TIANO
 
 // Minimal initialization function
-static VOID InitializeLib (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
-    gImageHandle   = ImageHandle;
-    gST            = SystemTable;
-    gBS            = SystemTable->BootServices;
-    gRT            = SystemTable->RuntimeServices;
-    EfiGetSystemConfigurationTable (&gEfiDxeServicesTableGuid, (VOID **) &gDS);
+static VOID InitializeLib (
+    IN EFI_HANDLE       ImageHandle,
+    IN EFI_SYSTEM_TABLE *SystemTable
+) {
+    gImageHandle  = ImageHandle;
+    gST           = SystemTable;
+    gBS           = SystemTable->BootServices;
+    gRT           = SystemTable->RuntimeServices;
+
+    EfiGetSystemConfigurationTable (
+        &gEfiDxeServicesTableGuid,
+        (VOID **) &gDS
+    );
+
+    // Upgrade EFI_BOOT_SERVICES.HandleProtocol
+    gBS->HandleProtocol = FixedHandleProtocol;
 }
 
 #endif
