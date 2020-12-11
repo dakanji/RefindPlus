@@ -336,7 +336,7 @@ preBootKicker (
 
     if (ChosenEntry) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Received User Input:\n");
+        MsgLog ("User Input Received:\n");
         #endif
 
         if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") && (MenuExit == MENU_EXIT_ENTER)) {
@@ -472,7 +472,7 @@ preCleanNvram (
 
     if (ChosenEntry) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Received User Input:\n");
+        MsgLog ("User Input Received:\n");
         #endif
 
         if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
@@ -1032,7 +1032,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     #if REFIT_DEBUG > 0
     MsgLog (
-        "INFO: Loaded RefindPlus v%s ...Awaiting User Input\n\n",
+        "INFO: Loaded RefindPlus v%s ...User Input Pending\n\n",
         REFIND_VERSION
     );
     #endif
@@ -1051,7 +1051,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             MenuExit = 0;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Received User Input:\n");
+            MsgLog ("User Input Received:\n");
             MsgLog ("  - Escape Key Pressed ...Rescan All\n\n");
             #endif
 
@@ -1068,7 +1068,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_NVRAMCLEAN:    // Clean NVRAM
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Clean NVRAM\n---------------\n\n");
                 }
@@ -1083,7 +1083,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show Clean NVRAM Info\n\n");
                 #endif
 
@@ -1119,7 +1119,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Load Boot Screen\n---------------\n\n");
                 }
@@ -1137,7 +1137,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show BootKicker Info\n\n");
                 #endif
 
@@ -1147,7 +1147,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_REBOOT:    // Reboot
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Restart Computer\n---------------\n\n");
                 }
@@ -1164,7 +1164,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_SHUTDOWN: // Shut Down
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Shut Computer Down\n---------------\n\n");
                 }
@@ -1181,7 +1181,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_ABOUT:    // About RefindPlus
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show 'About RefindPlus' Page\n\n");
                 #endif
 
@@ -1191,11 +1191,16 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_LOADER:   // Boot OS via .EFI loader
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
-                // Use multiple instaces of "Received User Input:"
+                // Use multiple instaces of "User Input Received:"
 
                 #if REFIT_DEBUG > 0
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    MsgLog ("Received User Input:\n");
+                    // Load AptioMemoryFix if present and System Table not tweaked
+                    if (!TweakSysTable) {
+                        LoadAptioFix();
+                    }
+
+                    MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Load OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
@@ -1210,7 +1215,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                         LoadAptioFix();
                     }
 
-                    MsgLog ("Received User Input:\n");
+                    MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
                     }
@@ -1219,7 +1224,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     }
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
-                    MsgLog ("Received User Input:\n");
+                    MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
                     }
@@ -1228,7 +1233,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     }
                 }
                 else {
-                    MsgLog ("Received User Input:\n");
+                    MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Boot OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
@@ -1254,7 +1259,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
                     MsgLog (
                         "  - Boot %s from '%s'",
@@ -1284,7 +1289,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Boot Legacy UEFI:- '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
                 }
@@ -1300,7 +1305,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Start EFI Tool:- '%s'\n\n", ourLoaderEntry->LoaderPath);
                 #endif
 
@@ -1314,7 +1319,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_HIDDEN:  // Manage hidden tag entries
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Manage Hidden Tag Entries\n\n");
                 #endif
 
@@ -1324,7 +1329,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_EXIT:    // Terminate RefindPlus
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Terminate RefindPlus\n---------------\n\n");
                 }
@@ -1345,7 +1350,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_FIRMWARE: // Reboot into firmware's user interface
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Reboot into Firmware\n---------------\n\n");
                 }
@@ -1360,7 +1365,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_CSR_ROTATE:
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Toggle Mac SIP\n\n");
                 #endif
 
@@ -1370,7 +1375,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_INSTALL:
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Install RefindPlus\n---------------\n\n");
                 }
@@ -1385,7 +1390,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
             case TAG_BOOTORDER:
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("Received User Input:\n");
+                MsgLog ("User Input Received:\n");
                 MsgLog ("  - Manage Boot Order\n\n");
                 #endif
 
