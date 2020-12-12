@@ -2175,8 +2175,8 @@ egScreenShot (
     }
 
     // Save to first available ESP if not running from ESP
-    if (MyStrStr (SelfVolume->VolName, L"EFI") == NULL &&
-        MyStrStr (SelfVolume->VolName, L"ESP") == NULL
+    if (!MyStriCmp (SelfVolume->VolName, L"EFI") &&
+        !MyStriCmp (SelfVolume->VolName, L"ESP")
     ) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR (Status)) {
