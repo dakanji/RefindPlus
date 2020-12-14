@@ -100,7 +100,7 @@ REFIT_MENU_SCREEN MainMenu = {
     L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh"
 };
 
-static REFIT_MENU_SCREEN AboutMenu = {
+STATIC REFIT_MENU_SCREEN AboutMenu = {
     L"About RefindPlus",
     NULL,
     0, NULL, 0,
@@ -203,7 +203,7 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-static BOOLEAN    ranCleanNvram  = FALSE;
+STATIC BOOLEAN    ranCleanNvram  = FALSE;
 BOOLEAN           TweakSysTable  = FALSE;
 
 extern VOID InitBooterLog (VOID);
@@ -236,7 +236,7 @@ FixedHandleProtocol (
 
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
-static
+STATIC
 BOOLEAN
 IsValidTool (
     IN REFIT_VOLUME *BaseVolume,
@@ -566,11 +566,11 @@ VOID AboutRefindPlus (VOID)
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) Intel Corporation and others");
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, L"Running on:");
+        AddMenuInfoLine (&AboutMenu, L"Running on: ");
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
-                L" EFI Revision %d.%02d",
+                L"EFI Revision %d.%02d",
                 gST->Hdr.Revision >> 16,
                 gST->Hdr.Revision & ((1 << 16) - 1)
             )
@@ -580,7 +580,7 @@ VOID AboutRefindPlus (VOID)
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
-                L" Platform: x86 (32 bit); Secure Boot %s",
+                L"Platform: x86 (32 bit); Secure Boot %s",
                 secure_mode() ? L"active" : L"inactive"
             )
         );
@@ -588,7 +588,7 @@ VOID AboutRefindPlus (VOID)
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
-                L" Platform: x86_64 (64 bit); Secure Boot %s",
+                L"Platform: x86_64 (64 bit); Secure Boot %s",
                 secure_mode() ? L"active" : L"inactive"
             )
         );
@@ -596,12 +596,12 @@ VOID AboutRefindPlus (VOID)
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
-                L" Platform: ARM (64 bit); Secure Boot %s",
+                L"Platform: ARM (64 bit); Secure Boot %s",
                 secure_mode() ? L"active" : L"inactive"
             )
         );
         #else
-        AddMenuInfoLine (&AboutMenu, L" Platform: unknown");
+        AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
 
         if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
@@ -630,7 +630,7 @@ VOID AboutRefindPlus (VOID)
         #if defined (__MAKEWITH_GNUEFI)
         AddMenuInfoLine (&AboutMenu, L"Built with GNU-EFI");
         #else
-        AddMenuInfoLine (&AboutMenu, L"Built with TianoCore EDK2");
+        AddMenuInfoLine (&AboutMenu, L"Built with TianoCore EDK II");
         #endif
 
         AddMenuInfoLine (&AboutMenu, L"");
@@ -690,7 +690,7 @@ VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 #ifdef __MAKEWITH_TIANO
 
 // Minimal initialization function
-static VOID InitializeLib (
+STATIC VOID InitializeLib (
     IN EFI_HANDLE       ImageHandle,
     IN EFI_SYSTEM_TABLE *SystemTable
 ) {
@@ -712,7 +712,7 @@ static VOID InitializeLib (
 
 // Set up our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
-static BOOLEAN SecureBootSetup (VOID) {
+STATIC BOOLEAN SecureBootSetup (VOID) {
     EFI_STATUS Status;
     BOOLEAN    Success = FALSE;
 
@@ -721,7 +721,7 @@ static BOOLEAN SecureBootSetup (VOID) {
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
         } else {
-            Print (L"Failed to install MOK Secure Boot extensions");
+            Print (L"Failed to Install MOK Secure Boot Extensions");
             PauseForKey();
         }
     }
@@ -730,10 +730,10 @@ static BOOLEAN SecureBootSetup (VOID) {
 
 // Remove our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
-static BOOLEAN SecureBootUninstall (VOID) {
-    EFI_STATUS   Status;
-    BOOLEAN      Success = TRUE;
-    const CHAR16 *ShowScreenStr = NULL;
+STATIC BOOLEAN SecureBootUninstall (VOID) {
+    EFI_STATUS  Status;
+    BOOLEAN     Success         = TRUE;
+    CHAR16      *ShowScreenStr  = NULL;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -744,10 +744,10 @@ static BOOLEAN SecureBootUninstall (VOID) {
             BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
             GlobalConfig.ContinueOnWarning = TRUE;
 
-            ShowScreenStr = L"Failed to uninstall MOK Secure Boot extensions ...Forcing Reboot";
+            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Reboot";
 
             refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
@@ -767,13 +767,13 @@ static BOOLEAN SecureBootUninstall (VOID) {
 // "-c" command-line option is set, in which case that takes precedence.
 // If an error is encountered, leaves the value alone (it should be set to
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
-static VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
-    EFI_LOADED_IMAGE *Info;
-    EFI_STATUS       Status;
-    CHAR16           *Options;
-    CHAR16           *FileName;
-    CHAR16           *SubString;
-    const CHAR16     *ShowScreenStr = NULL;
+STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
+    EFI_LOADED_IMAGE  *Info;
+    EFI_STATUS        Status;
+    CHAR16            *Options;
+    CHAR16            *FileName;
+    CHAR16            *SubString;
+    CHAR16            *ShowScreenStr = NULL;
 
     Status = refit_call3_wrapper (
         gBS->HandleProtocol,
@@ -807,10 +807,10 @@ static VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
                 MsgLog ("    * Try Default 'refind.conf'\n\n");
                 #endif
 
-                ShowScreenStr = L"Specified configuration file not found";
-                PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                ShowScreenStr = L"Specified Configuration File Not Found";
+                PrintUglyText (ShowScreenStr, NEXTLINE);
                 ShowScreenStr = L"Try default 'refind.conf'";
-                PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                PrintUglyText (ShowScreenStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("%s\n\n", ShowScreenStr);
@@ -831,7 +831,7 @@ static VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
-static VOID AdjustDefaultSelection() {
+STATIC VOID AdjustDefaultSelection() {
     UINTN i = 0, j;
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
     EFI_STATUS Status;
@@ -864,24 +864,26 @@ static VOID AdjustDefaultSelection() {
 //
 EFI_STATUS
 EFIAPI
-efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
-{
-    EFI_STATUS         Status;
+efi_main (
+    EFI_HANDLE        ImageHandle,
+    EFI_SYSTEM_TABLE  *SystemTable
+) {
+    EFI_STATUS  Status;
 
-    BOOLEAN            DriversLoaded   = FALSE;
-    BOOLEAN            MainLoopRunning = TRUE;
-    BOOLEAN            MokProtocol     = FALSE;
+    BOOLEAN  DriversLoaded   = FALSE;
+    BOOLEAN  MainLoopRunning = TRUE;
+    BOOLEAN  MokProtocol     = FALSE;
 
-    REFIT_MENU_ENTRY   *ChosenEntry    = NULL;
-    LOADER_ENTRY       *ourLoaderEntry = NULL;
-    LEGACY_ENTRY       *ourLegacyEntry = NULL;
+    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
+    LOADER_ENTRY      *ourLoaderEntry = NULL;
+    LEGACY_ENTRY      *ourLegacyEntry = NULL;
 
-    UINTN              MenuExit = 0;
-    UINTN              i        = 0;
+    UINTN  MenuExit = 0;
+    UINTN  i        = 0;
 
-    EG_PIXEL           BGColor        = COLOR_LIGHTBLUE;
-    CHAR16             *SelectionName = NULL;
-    const CHAR16       *ShowScreenStr = NULL;
+    EG_PIXEL  BGColor        = COLOR_LIGHTBLUE;
+    CHAR16    *SelectionName = NULL;
+    CHAR16    *ShowScreenStr = NULL;
 
     // bootstrap
     InitializeLib (ImageHandle, SystemTable);
@@ -900,10 +902,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     NowMinute = Now.Minute;
     NowSecond = Now.Second;
 
-    CHAR16  NowDateStr[40]; // sizeof (L"0000-00-00 00:00:00") = 40
-    SPrint (
-        NowDateStr,
-        40,
+    InitBooterLog();
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *NowDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear,
         NowMonth,
@@ -912,12 +914,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         NowMinute,
         NowSecond
     );
-
-    InitBooterLog();
-
-    #if REFIT_DEBUG > 0
     MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
+    MyFreePool(NowDateStr);
     #endif
 
     // read configuration
@@ -1022,8 +1021,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     #if REFIT_DEBUG > 0
     MsgLog (
-        "INFO: Loaded RefindPlus v%s ...User Input Pending\n\n",
-        REFIND_VERSION
+        "INFO: Loaded RefindPlus v%s on %s Firmware ...User Input Pending\n\n",
+        REFIND_VERSION,
+        gST->FirmwareVendor
     );
     #endif
 
@@ -1094,7 +1094,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     refit_call4_wrapper (gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
                     ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
-                    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                    PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("%s\n\n", ShowScreenStr);
@@ -1409,7 +1409,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
 
     refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+    PrintUglyText (ShowScreenStr, NEXTLINE);
     refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
