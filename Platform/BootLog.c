@@ -18,7 +18,6 @@
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
-extern  INT16  NowZone;
 extern  INT16  NowYear;
 extern  INT16  NowMonth;
 extern  INT16  NowDay;

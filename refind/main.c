@@ -74,7 +74,6 @@
 #include "../include/version.h"
 #include "../libeg/libeg.h"
 
-INT16 NowZone   = 0;
 INT16 NowYear   = 0;
 INT16 NowMonth  = 0;
 INT16 NowDay    = 0;
@@ -900,7 +899,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     NowHour   = Now.Hour;
     NowMinute = Now.Minute;
     NowSecond = Now.Second;
-    NowZone   = (Now.TimeZone / 60);
 
     CHAR16  NowDateStr[40]; // sizeof (L"0000-00-00 00:00:00") = 40
     SPrint (
@@ -919,15 +917,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     #if REFIT_DEBUG > 0
     MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
-    if (NowZone < -12 || NowZone > 12 || (NowZone > -1 && NowZone < 1)) {
-        MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
-    }
-    else if (NowZone < 0) {
-        MsgLog ("Timestamp:- '%s (GMT%02d)'\n\n", NowDateStr);
-    }
-    else {
-        MsgLog ("Timestamp:- '%s (GMT+%02d)'\n\n", NowDateStr);
-    }
+    MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
     #endif
 
     // read configuration
