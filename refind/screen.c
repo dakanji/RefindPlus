@@ -152,7 +152,10 @@ VOID
 SetupScreen (
     VOID
 ) {
-    UINTN NewWidth, NewHeight;
+    UINTN          NewWidth;
+    UINTN          NewHeight;
+    BOOLEAN        gotGraphics;
+    STATIC BOOLEAN BannerLoaded = FALSE;
 
     #if REFIT_DEBUG > 0
     MsgLog("Setup Screen...\n");
@@ -227,13 +230,19 @@ SetupScreen (
         MsgLog("INFO: Set Screen to Text Mode\n\n");
         #endif
     } else if (AllowGraphicsMode) {
-        if (!egIsGraphicsModeEnabled()) {
+        gotGraphics = egIsGraphicsModeEnabled();
+        if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
-            MsgLog("Prepare for Graphics Mode Switch:\n");
+            if (!gotGraphics) {
+                MsgLog("Prepare Graphics Mode Switch:\n");
+            }
+            else {
+                MsgLog("Prepare Placeholder Display:\n");
+            }
             MsgLog("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
             #endif
 
-            // scale icons up for HiDPI Monitors if required
+            // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
                 MsgLog("    * UI Scaling Disabled\n");
@@ -262,31 +271,50 @@ SetupScreen (
                 MsgLog("    ** Maintain Icon Scale\n\n");
                 #endif
             } // if
-            #if REFIT_DEBUG > 0
-            MsgLog("INFO: Running Graphics Mode Switch\n\n");
-            #endif
 
-            // clear screen and show banner
-            // (now we know we will stay in graphics mode)
-            SwitchToGraphics();
+            if (!gotGraphics) {
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: Running Graphics Mode Switch\n\n");
+                #endif
+
+                // clear screen and show banner
+                // (now we know we will stay in graphics mode)
+                SwitchToGraphics();
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: Loading Placeholder Display\n\n");
+                #endif
+            }
 
             if (GlobalConfig.ScreensaverTime != -1) {
                 BltClearScreen(TRUE);
+
+                #if REFIT_DEBUG > 0
+                if (!gotGraphics) {
+                    MsgLog("INFO: Switched to Graphics Mode\n\n");
+                }
+                else {
+                    MsgLog("INFO: Displayed Placeholder\n\n");
+                }
+                #endif
             }
             else {
+                #if REFIT_DEBUG > 0
+                MsgLog("INFO: Changing to Screensaver Display\n");
+                MsgLog("      Configured to Start with Screensaver\n\n");
+                #endif
+
                 // start with screen blanked
                 GraphicsScreenDirty = TRUE;
             }
-
-            #if REFIT_DEBUG > 0
-            MsgLog("INFO: Switched to Graphics Mode\n\n");
-            #endif
+            BannerLoaded = TRUE;
         }
     }
     else {
         #if REFIT_DEBUG > 0
         MsgLog("WARN: Invalid Screen Mode\n");
-        MsgLog("   Switching to Text Mode\n\n");
+        MsgLog("      Switching to Text Mode\n\n");
         #endif
 
         AllowGraphicsMode = FALSE;

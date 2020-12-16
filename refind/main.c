@@ -665,11 +665,6 @@ VOID StoreLoaderName (IN CHAR16 *Name) {
 
 // Rescan for boot loaders
 VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("Rescan All...\n");
-    #endif
-
     FreeList ((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;

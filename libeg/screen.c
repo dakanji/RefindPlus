@@ -1235,9 +1235,9 @@ egInitScreen (
         }
         else {
             egSetMaxResolution();
-            egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+            egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
             egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-            egHasGraphics = TRUE;
+            egHasGraphics  = TRUE;
 
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
@@ -2112,7 +2112,7 @@ egScreenShot (
     CHAR16       *ShowScreenStr  = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Received User Input:\n");
+    MsgLog ("User Input Received:\n");
     MsgLog ("  - Take Screenshot\n");
     #endif
 

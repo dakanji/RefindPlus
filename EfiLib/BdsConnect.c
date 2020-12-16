@@ -583,5 +583,7 @@ BdsLibConnectAllDriversToAllControllers (
             MsgLog ("INFO: Provide GOP from RAM ...%r\n\n", Status);
         }
         #endif
+
+        ReLoaded = FALSE;
     }
 }

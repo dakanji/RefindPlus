@@ -470,8 +470,12 @@ EfivarGetRaw (
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Read '%s' NVRAM Variable\n", name);
+            if (Status != EFI_NOT_FOUND) {
+                MsgLog ("** WARN: Could Not Read '%s' NVRAM Variable\n", name);
+            }
             #endif
+
+            MyFreePool (VarsDir);
 
             return Status;
         }

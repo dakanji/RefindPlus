@@ -640,7 +640,7 @@ ScanDriverDir (
     EFI_FILE_INFO   *DirEntry;
     CHAR16          *FileName;
     UINTN           NumFound  = 0;
-    BOOLEAN         KeepGoing = TRUE;
+    BOOLEAN         KeepGoing;
 
     CleanUpPathNameSlashes(Path);
 
@@ -652,71 +652,77 @@ ScanDriverDir (
     #endif
 
     // look through contents of the directory
-    DirIterOpen(SelfRootDir, Path, &DirIter);
+    DirIterOpen (SelfRootDir, Path, &DirIter);
 
     #if REFIT_DEBUG > 0
     BOOLEAN RunOnce = FALSE;
     #endif
 
-    while (DirIterNext(&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry) && KeepGoing) {
-        if (DirEntry->FileName[0] == '.') {
-            continue;   // skip this
-        }
-
-        FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
-
-        if (SkipReloaded) {
-            if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") != NULL) {
-                #if REFIT_DEBUG > 0
-                if (RunOnce) {
-                    MsgLog("\n");
-                }
-                MsgLog("  - Load '%s' ...Deferred", FileName);
-                RunOnce = TRUE;
-                #endif
-
-                continue;   // skip this
-            }
+    KeepGoing = TRUE;
+    while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
+        if (!KeepGoing) {
+            break;
         }
         else {
-            if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") == NULL) {
+            if (DirEntry->FileName[0] == '.') {
                 continue;   // skip this
+            }
+
+            FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
+
+            if (SkipReloaded) {
+                if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") != NULL) {
+                    #if REFIT_DEBUG > 0
+                    if (RunOnce) {
+                        MsgLog("\n");
+                    }
+                    MsgLog("  - Load '%s' ...Deferred", FileName);
+                    RunOnce = TRUE;
+                    #endif
+
+                    continue;   // skip this
+                }
             }
             else {
-                KeepGoing = FALSE;
+                if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") == NULL) {
+                    continue;   // skip this
+                }
+                else {
+                    KeepGoing = FALSE;
+                }
             }
-        }
 
-        #if REFIT_DEBUG > 0
-        if (RunOnce) {
-            MsgLog("\n");
-        }
-        #endif
+            #if REFIT_DEBUG > 0
+            if (RunOnce) {
+                MsgLog("\n");
+            }
+            #endif
 
-        NumFound++;
-        Status = StartEFIImage(
-            SelfVolume,
-            FileName,
-            L"",
-            DirEntry->FileName,
-            0,
-            FALSE,
-            TRUE
-        );
+            NumFound++;
+            Status = StartEFIImage(
+                SelfVolume,
+                FileName,
+                L"",
+                DirEntry->FileName,
+                0,
+                FALSE,
+                TRUE
+            );
 
-        #if REFIT_DEBUG > 0
-        if (!SkipReloaded) {
-            MsgLog("INFO: Load '%s' ...%r", FileName, Status);
-        }
-        else {
-            MsgLog("  - Load '%s' ...%r", FileName, Status);
-        }
-        #endif
+            #if REFIT_DEBUG > 0
+            if (!SkipReloaded) {
+                MsgLog("INFO: Load '%s' ...%r", FileName, Status);
+            }
+            else {
+                MsgLog("  - Load '%s' ...%r", FileName, Status);
+            }
+            #endif
 
-        MyFreePool(DirEntry);
-        #if REFIT_DEBUG > 0
-        RunOnce = TRUE;
-        #endif
+            MyFreePool(DirEntry);
+            #if REFIT_DEBUG > 0
+            RunOnce = TRUE;
+            #endif
+        } // if/else KeepGoing
     } // while
 
     Status = DirIterClose(&DirIter);
@@ -839,6 +845,8 @@ LoadAptioFix(
     } // while
 
     #if REFIT_DEBUG > 0
-    MsgLog("\n\n");
+    if (NumFound > 0) {
+        MsgLog("\n\n");
+    }
     #endif
 } /* BOOLEAN LoadDrivers() */
