@@ -1178,19 +1178,20 @@ efi_main (
 
                 // Use multiple instaces of "User Input Received:"
 
-                #if REFIT_DEBUG > 0
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
                     // Load AptioMemoryFix if present and System Table not tweaked
                     if (!TweakSysTable) {
                         LoadAptioFix();
                     }
 
+                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Load OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
+                    #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL ||
                     MyStrStr (ourLoaderEntry->Title, L"macOS") != NULL
@@ -1200,6 +1201,7 @@ efi_main (
                         LoadAptioFix();
                     }
 
+                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
@@ -1207,8 +1209,10 @@ efi_main (
                     else {
                         MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
                     }
+                    #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
+                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgLog ("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
@@ -1216,16 +1220,20 @@ efi_main (
                     else {
                         MsgLog ("  - Boot Windows:- '%s'", ourLoaderEntry->LoaderPath);
                     }
+                    #endif
                 }
                 else {
+                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Boot OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
+                    #endif
                 }
 
+                #if REFIT_DEBUG > 0
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("\n---------------\n\n");
                 }
