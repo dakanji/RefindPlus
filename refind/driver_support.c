@@ -780,6 +780,7 @@ LoadDrivers(
         MsgLog("\n\n");
         MsgLog("Load EFI Drivers from User Defined Folders...");
         #endif
+        
         i = 0;
         while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes(Directory);

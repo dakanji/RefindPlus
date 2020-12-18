@@ -296,15 +296,25 @@ EFI_STATUS pdUpdateState() {
         if (!EFI_ERROR (PointerStatus) && EFI_ERROR (Status)) {
             Status = EFI_SUCCESS;
 
-            INTN TargetX = 0;
-            INTN TargetY = 0;
+            INT32 TargetX = 0;
+            INT32 TargetY = 0;
 
 #ifdef EFI32
-	    TargetX = State.X + (INTN)DivS64x64Remainder (SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionX, NULL);
-            TargetY = State.Y + (INTN)DivS64x64Remainder (SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionY, NULL);
+	    TargetX = State.X + (INTN)DivS64x64Remainder (
+            SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
+            SPointerProtocol[Index]->Mode->ResolutionX,
+            NULL
+        );
+            TargetY = State.Y + (INTN)DivS64x64Remainder (
+                SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
+                SPointerProtocol[Index]->Mode->ResolutionY,
+                NULL
+            );
 #else
-            TargetX = State.X + SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionX;
-            TargetY = State.Y + SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionY;
+            TargetX = State.X + SPointerState.RelativeMovementX *
+                GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionX;
+            TargetY = State.Y + SPointerState.RelativeMovementY *
+                GlobalConfig.MouseSpeed / SPointerProtocol[Index]->Mode->ResolutionY;
 #endif
 
             if (TargetX < 0) {
@@ -312,7 +322,7 @@ EFI_STATUS pdUpdateState() {
             } else if (TargetX >= ScreenW) {
                 State.X = ScreenW - 1;
             } else {
-                State.X = (UINTN)TargetX;
+                State.X = TargetX;
             }
 
             if (TargetY < 0) {
@@ -320,7 +330,7 @@ EFI_STATUS pdUpdateState() {
             } else if (TargetY >= ScreenH) {
                 State.Y = ScreenH - 1;
             } else {
-                State.Y = (UINTN)TargetY;
+                State.Y = TargetY;
             }
 
             State.Holding = SPointerState.LeftButton;
