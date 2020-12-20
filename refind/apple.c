@@ -36,7 +36,7 @@ CHAR16 gCsrStatus[256];
 EFI_STATUS GetCsrStatus (UINT32 *CsrStatus) {
     UINT32     *ReturnValue = NULL;
     UINTN      CsrLength;
-    EFI_GUID   CsrGuid = CSR_GUID;
+    EFI_GUID   CsrGuid = APPLE_GUID;
     EFI_STATUS Status = EFI_INVALID_PARAMETER;
 
     if (CsrStatus) {
@@ -85,7 +85,7 @@ VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage) {
 VOID RotateCsrValue (VOID) {
     UINT32       CurrentValue, TargetCsr;
     UINT32_LIST  *ListItem;
-    EFI_GUID     CsrGuid = CSR_GUID;
+    EFI_GUID     CsrGuid = APPLE_GUID;
     EFI_STATUS   Status;
 
     Status = GetCsrStatus (&CurrentValue);
