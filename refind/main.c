@@ -266,44 +266,46 @@ VOID
 DisableAMFI (
     VOID
 ) {
-    EFI_STATUS Status;
-    EFI_GUID   AppleGUID   = APPLE_GUID;
-    UINT32     AppleFLAGS  = APPLE_FLAGS;
-    CHAR16     *NameNVRAM  = L"boot-args";
-    CHAR16     *BootArg;
+    EFI_STATUS  Status;
+    EFI_GUID    AppleGUID   = APPLE_GUID;
+    UINT32      AppleFLAGS  = APPLE_FLAGS;
+    CHAR16      *NameNVRAM  = L"boot-args";
+    CHAR16      *BootArg;
 
     if (GlobalConfig.DisableCompatCheck) {
-        // Combine with DisableCompatCheck if required
-        BootArg = L"amfi_get_out_of_my_way=1 -no_compat_check";
-        char FlagAMFI[] = "amfi_get_out_of_my_way=1 -no_compat_check";
+        // Combine with DisableCompatCheck
+        BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check";
+        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check";
+
         Status = refit_call5_wrapper (
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
             AppleFLAGS,
-            sizeof(FlagAMFI),
-            FlagAMFI
+            sizeof(DataNVRAM),
+            DataNVRAM
         );
     }
     else {
-        BootArg = L"amfi_get_out_of_my_way=1";
-        char FlagAMFI[] = "amfi_get_out_of_my_way=1";
+        BootArg           = L"amfi_get_out_of_my_way=1";
+        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1";
+
         Status = refit_call5_wrapper (
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
             AppleFLAGS,
-            sizeof(FlagAMFI),
-            FlagAMFI
+            sizeof (DataNVRAM),
+            DataNVRAM
         );
     }
 
     #if REFIT_DEBUG > 0
-    if (EFI_ERROR(Status)) {
-        MsgLog ("** WARN: Could not Set Boot Argument:- '%s'\n\n", BootArg);
-    }
-    else {
-        MsgLog ("INFO: Set Boot Argument:- '%s'\n\n", BootArg);
+    MsgLog ("\n");
+    MsgLog ("    * Disable AMFI ...%r", Status);
+    if (GlobalConfig.DisableCompatCheck) {
+        MsgLog ("\n");
+        MsgLog ("    * Disable Compat Check ...%r", Status);
     }
     #endif
 }
@@ -313,23 +315,24 @@ VOID
 DisableCompatCheck (
     VOID
 ) {
-    EFI_STATUS Status;
-    EFI_GUID   AppleGUID     = APPLE_GUID;
-    UINT32     AppleFLAGS    = APPLE_FLAGS;
-    CHAR16     *NameNVRAM    = L"boot-args";
-    char       CompatFlag[]  = "-no_compat_check";
+    EFI_STATUS  Status;
+    EFI_GUID    AppleGUID    = APPLE_GUID;
+    UINT32      AppleFLAGS   = APPLE_FLAGS;
+    CHAR16      *NameNVRAM   = L"boot-args";
+    char        DataNVRAM[]  = "-no_compat_check";
 
     Status = refit_call5_wrapper (
         gRT->SetVariable,
         NameNVRAM,
         &AppleGUID,
         AppleFLAGS,
-        sizeof(CompatFlag),
-        CompatFlag
+        sizeof (DataNVRAM),
+        DataNVRAM
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Set Boot Argument:- '-no_compat_check' ...%r\n\n", Status);
+    MsgLog ("\n");
+    MsgLog ("    * Disable Compat Check ...%r", Status);
     #endif
 }
 
@@ -339,22 +342,27 @@ ForceTrim (
     VOID
 ) {
     EFI_STATUS  Status;
-    EFI_GUID    AppleGUID      = APPLE_GUID;
-    UINT32      AppleFLAGS     = APPLE_FLAGS;
-    CHAR16      *NameNVRAM     = L"EnableTRIM";
-    char        TrimSetting[1] = {0x01};
+    EFI_GUID    AppleGUID     = APPLE_GUID;
+    UINT32      AppleFLAGS    = APPLE_FLAGS;
+    CHAR16      *NameNVRAM    = L"EnableTRIM";
+    char        DataNVRAM[1]  = {0x01};
 
-    Status = refit_call5_wrapper (
-        gRT->SetVariable,
-        NameNVRAM,
-        &AppleGUID,
-        AppleFLAGS,
-        1,
-        TrimSetting
-    );
+    Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
+
+    if (!EFI_ERROR (Status)) {
+        Status = refit_call5_wrapper (
+            gRT->SetVariable,
+            NameNVRAM,
+            &AppleGUID,
+            AppleFLAGS,
+            sizeof (DataNVRAM),
+            DataNVRAM
+        );
+    }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Enable 'TRIM' ...%r\n\n", Status);
+    MsgLog ("\n");
+    MsgLog ("    * Enable TRIM ...%r", Status);
     #endif
 }
 
@@ -362,9 +370,9 @@ ForceTrim (
 STATIC
 EFI_STATUS
 FixedHandleProtocol (
-    IN EFI_HANDLE  Handle,
-    IN EFI_GUID    *Protocol,
-    OUT VOID       **Interface
+    IN   EFI_HANDLE  Handle,
+    IN   EFI_GUID    *Protocol,
+    OUT  VOID        **Interface
 ) {
     EFI_STATUS Status;
 
@@ -386,8 +394,8 @@ FixedHandleProtocol (
 STATIC
 BOOLEAN
 IsValidTool (
-    IN REFIT_VOLUME *BaseVolume,
-    CHAR16          *PathName
+    IN  REFIT_VOLUME  *BaseVolume,
+    IN  CHAR16        *PathName
 ) {
     CHAR16  *DontVolName  = NULL;
     CHAR16  *DontPathName = NULL;
@@ -429,10 +437,11 @@ VOID
 preBootKicker (
     VOID
 ) {
-    UINTN               MenuExit;
-    INTN                DefaultEntry = 1;
-    MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenEntry;
+    UINTN             MenuExit;
+    INTN              DefaultEntry  = 1;
+    MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
+    REFIT_MENU_ENTRY  *ChosenEntry;
+
     REFIT_MENU_SCREEN BootKickerMenu = {
         L"BootKicker",
         NULL,
@@ -564,10 +573,11 @@ VOID
 preCleanNvram (
     VOID
 ) {
-    UINTN               MenuExit;
-    INTN                DefaultEntry = 1;
-    MENU_STYLE_FUNC     Style = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenEntry;
+    UINTN             MenuExit;
+    INTN              DefaultEntry  = 1;
+    MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
+    REFIT_MENU_ENTRY  *ChosenEntry;
+
     REFIT_MENU_SCREEN CleanNvramMenu = {
         L"Clean Mac NVRAM",
         NULL,
@@ -624,11 +634,12 @@ preCleanNvram (
         if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
             UINTN        i = 0;
             UINTN        k = 0;
-            CHAR16       *Names       = NVRAMCLEAN_FILES;
-            CHAR16       *FilePath    = NULL;
-            CHAR16       *Description = ChosenEntry->Title;
-            BOOLEAN      FoundTool    = FALSE;
-            LOADER_ENTRY *ourLoaderEntry   = NULL;
+
+            CHAR16        *Names           = NVRAMCLEAN_FILES;
+            CHAR16        *FilePath        = NULL;
+            CHAR16        *Description     = ChosenEntry->Title;
+            BOOLEAN       FoundTool        = FALSE;
+            LOADER_ENTRY  *ourLoaderEntry  = NULL;
 
             #if REFIT_DEBUG > 0
             // Log Load CleanNvram
@@ -697,10 +708,11 @@ preCleanNvram (
 } /* VOID preCleanNvram() */
 
 
-VOID AboutRefindPlus (VOID)
-{
-    CHAR16     *FirmwareVendor;
-    UINT32     CsrStatus;
+VOID AboutRefindPlus (
+    VOID
+) {
+    CHAR16  *FirmwareVendor;
+    UINT32  CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
@@ -796,25 +808,46 @@ VOID AboutRefindPlus (VOID)
 
 // Record the loader's name/description in the "PreviousBoot" EFI variable
 // if different from what is already stored there.
-VOID StoreLoaderName (IN CHAR16 *Name) {
-    EFI_STATUS   Status;
-    CHAR16       *OldName = NULL;
-    UINTN        Length;
+VOID StoreLoaderName (
+    IN CHAR16 *Name
+) {
+    EFI_STATUS  Status;
+    CHAR16      *OldName = NULL;
+    UINTN       Length;
 
     if (Name) {
-        Status = EfivarGetRaw (&RefindGuid, L"PreviousBoot", (CHAR8**) &OldName, &Length);
-        if ((Status != EFI_SUCCESS) || (StrCmp (OldName, Name) != 0)) {
-            EfivarSetRaw (&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen (Name) * 2 + 2, TRUE);
+        Status = EfivarGetRaw (
+            &RefindGuid,
+            L"PreviousBoot",
+            (CHAR8**) &OldName,
+            &Length
+        );
+        if ((Status != EFI_SUCCESS) ||
+            (StrCmp (OldName, Name) != 0)
+        ) {
+            EfivarSetRaw (
+                &RefindGuid,
+                L"PreviousBoot",
+                (CHAR8*) Name,
+                StrLen (Name) * 2 + 2,
+                TRUE
+            );
         } // if
         MyFreePool (OldName);
     } // if
 } // VOID StoreLoaderName()
 
 // Rescan for boot loaders
-VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
-    FreeList ((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
-    MainMenu.Entries = NULL;
-    MainMenu.EntryCount = 0;
+VOID RescanAll (
+    BOOLEAN DisplayMessage,
+    BOOLEAN Reconnect
+) {
+    FreeList (
+        (VOID ***) &(MainMenu.Entries),
+        &MainMenu.EntryCount
+    );
+    MainMenu.Entries     = NULL;
+    MainMenu.EntryCount  = 0;
 
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary....
@@ -833,8 +866,8 @@ VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
 
 // Minimal initialization function
 STATIC VOID InitializeLib (
-    IN EFI_HANDLE       ImageHandle,
-    IN EFI_SYSTEM_TABLE *SystemTable
+    IN EFI_HANDLE        ImageHandle,
+    IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
     gImageHandle  = ImageHandle;
     gST           = SystemTable;
@@ -854,9 +887,11 @@ STATIC VOID InitializeLib (
 
 // Set up our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
-STATIC BOOLEAN SecureBootSetup (VOID) {
-    EFI_STATUS Status;
-    BOOLEAN    Success = FALSE;
+STATIC BOOLEAN SecureBootSetup (
+    VOID
+) {
+    EFI_STATUS  Status;
+    BOOLEAN     Success = FALSE;
 
     if (secure_mode() && ShimLoaded()) {
         Status = security_policy_install();
@@ -867,6 +902,7 @@ STATIC BOOLEAN SecureBootSetup (VOID) {
             PauseForKey();
         }
     }
+
     return Success;
 } // VOID SecureBootSetup()
 
@@ -1348,6 +1384,16 @@ efi_main (
                         LoadAptioFix();
                     }
 
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("User Input Received:\n");
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
+                    }
+                    #endif
+
                     // Enable TRIM on non-Apple SSDs if configured to
                     if (GlobalConfig.ForceTrim) {
                         ForceTrim();
@@ -1362,16 +1408,6 @@ efi_main (
                     if (GlobalConfig.DisableAMFI) {
                         DisableAMFI();
                     }
-
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("User Input Received:\n");
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
-                    }
-                    else {
-                        MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
-                    }
-                    #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectMacNVRAM &&

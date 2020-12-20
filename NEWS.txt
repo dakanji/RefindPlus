@@ -7,19 +7,19 @@
   * Enables the Stage 1 Loading Screen on some Classic Macs
 - Fixes ESP detection for saving screenshots
   * ESP detection may have sometimes returned 'true' on other locations
-- Implements "ProtectMacNVRAM" config option
-  * Prevents UEFI Windows from saving certificates to the NVRAM on Macs
-  * These certificates damage Apple NVRAM and result in an inability to start Macs up
-- Implements "DisableAMFI" config option
+- Implements "force_trim" config option
+  * Enables 'TRIM' on non-Apple SSDs when booting into Mac OS
+- Implements "disable_compat_check" config option
+  * Disables Mac OS compatibility checks to allow booting new Mac OS Versions on unsupported Macs
+- Implements "disable_amfi" config option
   * Disables the Apple Mobile File Integrity (AMFI) checks in Mac OS
   * Disabling AMFI may further facilitate booting new Mac OS Versions on unsupported Macs
-- Implements "DisableCompatCheck" config option
-  * Disables Mac OS compatibility checks to allow booting new Mac OS Versions on unsupported Macs
-- Implements "ForceTrim" config option
-  * Enables TRIM on non-Apple SSDs when booting into Mac OS
+- Implements "protect_mac_nvram" config option
+  * Prevents UEFI Windows from saving certificates to the NVRAM on Macs
+  * These certificates damage Apple NVRAM and result in an inability to start Macs up
 
 
-  0.12.0.M (07 Dec 2020):
+0.12.0.M (07 Dec 2020):
 -----------------------
 - Optimises search for graphics capabilities and overall boot speed
 - Adds workaround for broken QEMU support in the upstream v0.12.0 release
