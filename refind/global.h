@@ -355,6 +355,7 @@ typedef struct {
    BOOLEAN          ContinueOnWarning;
    BOOLEAN          ForceTrim;
    BOOLEAN          DisableCompatCheck;
+   BOOLEAN          DisableAMFI;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

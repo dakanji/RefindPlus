@@ -140,6 +140,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ContinueOnWarning = */ FALSE,
     /* ForceTrim = */ FALSE,
     /* DisableCompatCheck = */ FALSE,
+    /* DisableAMFI = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -215,17 +216,65 @@ extern VOID InitBooterLog (VOID);
 //
 
 VOID
+DisableAMFI (
+    VOID
+) {
+    EFI_STATUS Status;
+    EFI_GUID   AppleGUID   = APPLE_GUID;
+    UINT32     AppleFLAGS  = APPLE_FLAGS;
+    CHAR16     *NameNVRAM  = L"boot-args";
+    CHAR16     *BootArg;
+
+    if (GlobalConfig.DisableCompatCheck) {
+        // Combine with DisableCompatCheck if required
+        BootArg = L"amfi_get_out_of_my_way=1 -no_compat_check";
+        char FlagAMFI[] = "amfi_get_out_of_my_way=1 -no_compat_check";
+        Status = refit_call5_wrapper (
+            gRT->SetVariable,
+            NameNVRAM,
+            &AppleGUID,
+            AppleFLAGS,
+            sizeof(FlagAMFI),
+            FlagAMFI
+        );
+    }
+    else {
+        BootArg = L"amfi_get_out_of_my_way=1";
+        char FlagAMFI[] = "amfi_get_out_of_my_way=1";
+        Status = refit_call5_wrapper (
+            gRT->SetVariable,
+            NameNVRAM,
+            &AppleGUID,
+            AppleFLAGS,
+            sizeof(FlagAMFI),
+            FlagAMFI
+        );
+    }
+
+    #if REFIT_DEBUG > 0
+    if (EFI_ERROR(Status)) {
+        MsgLog ("** WARN: Could not Set Boot Argument:- '%s'\n\n", BootArg);
+    }
+    else {
+        MsgLog ("INFO: Set Boot Argument:- '%s'\n\n", BootArg);
+    }
+    #endif
+}
+
+
+VOID
 DisableCompatCheck (
     VOID
 ) {
     EFI_STATUS Status;
     EFI_GUID   AppleGUID     = APPLE_GUID;
     UINT32     AppleFLAGS    = APPLE_FLAGS;
+    CHAR16     *NameNVRAM    = L"boot-args";
     char       CompatFlag[]  = "-no_compat_check";
 
     Status = refit_call5_wrapper (
         gRT->SetVariable,
-        L"boot-args",
+        NameNVRAM,
         &AppleGUID,
         AppleFLAGS,
         sizeof(CompatFlag),
@@ -245,11 +294,12 @@ ForceTrim (
     EFI_STATUS  Status;
     EFI_GUID    AppleGUID      = APPLE_GUID;
     UINT32      AppleFLAGS     = APPLE_FLAGS;
+    CHAR16      *NameNVRAM     = L"EnableTRIM";
     char        TrimSetting[1] = {0x01};
 
     Status = refit_call5_wrapper (
         gRT->SetVariable,
-        L"EnableTRIM",
+        NameNVRAM,
         &AppleGUID,
         AppleFLAGS,
         1,
@@ -1251,14 +1301,19 @@ efi_main (
                         LoadAptioFix();
                     }
 
-                    // Enable TRIM on non-Apple SSDs if set
+                    // Enable TRIM on non-Apple SSDs if configured to
                     if (GlobalConfig.ForceTrim) {
                         ForceTrim();
                     }
 
-                    // Disable Mac OS compatibility check if set
-                    if (GlobalConfig.DisableCompatCheck) {
+                    // Disable Mac OS compatibility check if configured to
+                    if (GlobalConfig.DisableCompatCheck && !GlobalConfig.DisableAMFI) {
                         DisableCompatCheck();
+                    }
+
+                    // Disable AMFI if configured to
+                    if (GlobalConfig.DisableAMFI) {
+                        DisableAMFI();
                     }
 
                     #if REFIT_DEBUG > 0

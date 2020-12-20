@@ -71,5 +71,6 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
 VOID ForceTrim(VOID);
 VOID DisableCompatCheck(VOID);
+VOID DisableAMFI(VOID);
 
 #endif

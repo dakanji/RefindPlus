@@ -967,6 +967,9 @@ ReadConfig(
         } else if (MyStriCmp(TokenList[0], L"disable_compat_check")) {
           GlobalConfig.DisableCompatCheck = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"disable_amfi")) {
+          GlobalConfig.DisableAMFI = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"scale_ui")) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScaleUI));
 

@@ -111,6 +111,15 @@ timeout 20
 #
 #disable_compat_check true
 
+# Disable Apple Mobile File Integrity (AMFI) checks in Mac OS (1, true, or on) or not (0, false, or off).
+# When this token is set to true, RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument
+# which along with SIP, restircts the availability of entitlements to applications. This setting
+# is only applied when booting Mac OS and does not change the "amfi_get_out_of_my_way=1" boot argument
+# when set to 'false' and the boot argument is already present.
+# Default is false
+#
+#disable_amfi true
+
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
 # This setting allows overriding the detection as follows:
