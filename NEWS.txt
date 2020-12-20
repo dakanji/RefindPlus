@@ -1,4 +1,17 @@
-0.12.0.M (07 Dec 2020):
+0.12.0.N (Pre-Release):
+-----------------------
+- Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
+- Drops ineffective attempt to detect timezones
+- Fixs issue with disappearing Mouse on x64 Arch
+- Loads MemFix on OpenCore Boots if required
+  * Enables the Stage 1 Loading Screen on some Classic Macs
+- Fixes ESP detection for saving screenshots
+  * ESP detection may have sometimes returned 'true' on other locations
+- Implements "ForceTrim" config option
+  * Enables TRIM on non-Apple SSDs when booting into Mac OS
+
+
+  0.12.0.M (07 Dec 2020):
 -----------------------
 - Optimises search for graphics capabilities and overall boot speed
 - Adds workaround for broken QEMU support in the upstream v0.12.0 release

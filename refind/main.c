@@ -138,6 +138,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ProvideConsoleGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
+    /* ForceTrim = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -211,6 +212,30 @@ extern VOID InitBooterLog (VOID);
 //
 // misc functions
 //
+
+VOID
+ForceTrim (
+    VOID
+) {
+    EFI_STATUS  Status;
+    EFI_GUID    AppleGUID      = APPLE_GUID;
+    UINT32      AppleFLAGS     = APPLE_FLAGS;
+    char        TrimSetting[1] = {0x01};
+
+    Status = refit_call5_wrapper (
+        gRT->SetVariable,
+        L"EnableTRIM",
+        &AppleGUID,
+        AppleFLAGS,
+        1,
+        TrimSetting
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Enable 'TRIM' ...%r\n\n", Status);
+    #endif
+}
+
 
 STATIC
 EFI_STATUS
@@ -1199,6 +1224,11 @@ efi_main (
                     // Load AptioMemoryFix if present and System Table not tweaked
                     if (!TweakSysTable) {
                         LoadAptioFix();
+                    }
+
+                    // Enable TRIM on non-Apple SSDs if set
+                    if (GlobalConfig.ForceTrim) {
+                        ForceTrim();
                     }
 
                     #if REFIT_DEBUG > 0

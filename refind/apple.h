@@ -65,9 +65,10 @@
 
 extern CHAR16 gCsrStatus[256];
 
+EFI_STATUS SetAppleOSInfo();
 EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
-EFI_STATUS SetAppleOSInfo();
+VOID ForceTrim(VOID);
 
 #endif

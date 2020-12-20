@@ -92,6 +92,15 @@ timeout 20
 #
 #continue_on_warning true
 
+# Force enable 'TRIM' on non-Apple SSDs (1, true, or on) or not (0, false, or off).
+# 'TRIM', which can improve SSD health, is not enabled by default on non-Apple SSDs
+# in Mac OS. When this token is set to true, RefindPlus will enable 'TRIM' in Mac OS
+# for all SSDs including non-Apple SSDs. This is only applied when booting Mac OS and
+# does not switch 'TRIM' off when set to 'false' and 'TRIM' has already been set.
+# Default is false
+#
+#force_trim true
+
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
 # This setting allows overriding the detection as follows:
