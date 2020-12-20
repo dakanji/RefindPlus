@@ -970,6 +970,9 @@ ReadConfig(
         } else if (MyStriCmp(TokenList[0], L"disable_amfi")) {
           GlobalConfig.DisableAMFI = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"protect_mac_nvram")) {
+          GlobalConfig.ProtectMacNVRAM = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"scale_ui")) {
            HandleInt(TokenList, TokenCount, &(GlobalConfig.ScaleUI));
 

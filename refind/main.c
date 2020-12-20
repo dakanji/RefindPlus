@@ -141,6 +141,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ForceTrim = */ FALSE,
     /* DisableCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
+    /* ProtectMacNVRAM = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -206,14 +207,60 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-STATIC BOOLEAN    ranCleanNvram  = FALSE;
-BOOLEAN           TweakSysTable  = FALSE;
+STATIC BOOLEAN          ranCleanNvram  = FALSE;
+BOOLEAN                 TweakSysTable  = FALSE;
+STATIC EFI_SET_VARIABLE AltSetVariable;
 
 extern VOID InitBooterLog (VOID);
 
 //
 // misc functions
 //
+
+STATIC
+EFI_STATUS
+EFIAPI
+gRTSetVariableEx (
+    IN  CHAR16    *VariableName,
+    IN  EFI_GUID  *VendorGuid,
+    IN  UINT32    Attributes,
+    IN  UINTN     DataSize,
+    IN  VOID      *Data
+) {
+    EFI_STATUS  Status;
+    EFI_GUID    MicrosoftGuid  = MICROSOFT_GUID;
+    BOOLEAN     WindowsBlock   = FALSE;
+
+    if (GuidsAreEqual (VendorGuid, &MicrosoftGuid) &&
+        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+    ) {
+        WindowsBlock = TRUE;
+        // Abort if Windows is detected trying to write to Mac NVRAM
+        Status = EFI_SECURITY_VIOLATION;
+    }
+    else {
+        Status = AltSetVariable (
+            VariableName,
+            VendorGuid,
+            Attributes,
+            DataSize,
+            Data
+        );
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Write '%s' to NVRAM ...%r", VariableName, Status);
+    if (WindowsBlock) {
+        MsgLog ("\n");
+        MsgLog ("      ** WARN: Prevented NVRAM Write Attempt by UEFI Windows\n");
+        MsgLog ("               Sucessful NVRAM Write will damage Apple NVRAM");
+    }
+    MsgLog ("\n\n");
+    #endif
+
+    return Status;
+}
+
 
 VOID
 DisableAMFI (
@@ -1327,6 +1374,15 @@ efi_main (
                     #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
+                    if (GlobalConfig.ProtectMacNVRAM &&
+                        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+                    ) {
+                        // Protect Mac NVRAM from UEFI Windows
+                        AltSetVariable                             = gRT->SetVariable;
+                        gRT->SetVariable                           = gRTSetVariableEx;
+                        SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
+                    }
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
