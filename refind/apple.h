@@ -70,5 +70,6 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
 VOID ForceTrim(VOID);
+VOID DisableCompatCheck(VOID);
 
 #endif

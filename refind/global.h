@@ -354,6 +354,7 @@ typedef struct {
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
    BOOLEAN          ForceTrim;
+   BOOLEAN          DisableCompatCheck;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

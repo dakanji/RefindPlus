@@ -139,6 +139,7 @@ REFIT_CONFIG GlobalConfig = {
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
     /* ForceTrim = */ FALSE,
+    /* DisableCompatCheck = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -212,6 +213,30 @@ extern VOID InitBooterLog (VOID);
 //
 // misc functions
 //
+
+VOID
+DisableCompatCheck (
+    VOID
+) {
+    EFI_STATUS Status;
+    EFI_GUID   AppleGUID     = APPLE_GUID;
+    UINT32     AppleFLAGS    = APPLE_FLAGS;
+    char       CompatFlag[]  = "-no_compat_check";
+
+    Status = refit_call5_wrapper (
+        gRT->SetVariable,
+        L"boot-args",
+        &AppleGUID,
+        AppleFLAGS,
+        sizeof(CompatFlag),
+        CompatFlag
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Set Boot Argument:- '-no_compat_check' ...%r\n\n", Status);
+    #endif
+}
+
 
 VOID
 ForceTrim (
@@ -1229,6 +1254,11 @@ efi_main (
                     // Enable TRIM on non-Apple SSDs if set
                     if (GlobalConfig.ForceTrim) {
                         ForceTrim();
+                    }
+
+                    // Disable Mac OS compatibility check if set
+                    if (GlobalConfig.DisableCompatCheck) {
+                        DisableCompatCheck();
                     }
 
                     #if REFIT_DEBUG > 0

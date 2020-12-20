@@ -7,6 +7,8 @@
   * Enables the Stage 1 Loading Screen on some Classic Macs
 - Fixes ESP detection for saving screenshots
   * ESP detection may have sometimes returned 'true' on other locations
+- Implements "DisableCompatCheck" config option
+  * Disables Mac OS compatibility checks to allow booting new Mac OS Versions on unsupported Macs
 - Implements "ForceTrim" config option
   * Enables TRIM on non-Apple SSDs when booting into Mac OS
 

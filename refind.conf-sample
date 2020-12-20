@@ -92,14 +92,24 @@ timeout 20
 #
 #continue_on_warning true
 
-# Force enable 'TRIM' on non-Apple SSDs (1, true, or on) or not (0, false, or off).
+# Force enable TRIM on non-Apple SSDs (1, true, or on) or not (0, false, or off).
 # 'TRIM', which can improve SSD health, is not enabled by default on non-Apple SSDs
-# in Mac OS. When this token is set to true, RefindPlus will enable 'TRIM' in Mac OS
+# in Mac OS. When this token is set to true, RefindPlus will switch TRIM on in Mac OS
 # for all SSDs including non-Apple SSDs. This is only applied when booting Mac OS and
-# does not switch 'TRIM' off when set to 'false' and 'TRIM' has already been set.
+# does not switch TRIM off when set to 'false' and TRIM has already been set.
 # Default is false
 #
 #force_trim true
+
+# Disable Mac OS compatibility check when booting (1, true, or on) or not (0, false, or off).
+# Macs check whether the current Mac OS version is supported on the machine when booting and halts
+# if not. When this token is set to true, RefindPlus will set the "-no_compat_check" boot argument
+# which disables this check and allows boot to proceed on otherwise unsupported Macs. This setting
+# is only applied when booting Mac OS and does not remove the "-no_compat_check" boot argument
+# when set to 'false' and the boot argument is already present.
+# Default is false
+#
+#disable_compat_check true
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
