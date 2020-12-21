@@ -355,7 +355,7 @@ typedef struct {
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
    BOOLEAN          ForceTrim;
-   BOOLEAN          DisableCompatCheck;
+   BOOLEAN          DisableMacCompatCheck;
    BOOLEAN          DisableAMFI;
    BOOLEAN          ProtectMacNVRAM;
    BOOLEAN          ShutdownAfterTimeout;

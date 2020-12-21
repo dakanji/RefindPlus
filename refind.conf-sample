@@ -109,7 +109,7 @@ timeout 20
 # to 'false' and the boot argument is already present.
 # Default is false
 #
-#disable_compat_check true
+#disable_mac_compat_check true
 
 # Disable Apple Mobile File Integrity (AMFI) checks (1, true, or on) or not (0, false, or off).
 # When this token is activated, RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument

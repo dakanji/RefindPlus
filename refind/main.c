@@ -139,7 +139,7 @@ REFIT_CONFIG GlobalConfig = {
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
     /* ForceTrim = */ FALSE,
-    /* DisableCompatCheck = */ FALSE,
+    /* DisableMacCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
@@ -272,8 +272,8 @@ DisableAMFI (
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *BootArg;
 
-    if (GlobalConfig.DisableCompatCheck) {
-        // Combine with DisableCompatCheck
+    if (GlobalConfig.DisableMacCompatCheck) {
+        // Combine with DisableMacCompatCheck
         BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check";
         char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check";
 
@@ -303,16 +303,16 @@ DisableAMFI (
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
     MsgLog ("    * Disable AMFI ...%r", Status);
-    if (GlobalConfig.DisableCompatCheck) {
+    if (GlobalConfig.DisableMacCompatCheck) {
         MsgLog ("\n");
-        MsgLog ("    * Disable Compat Check ...%r", Status);
+        MsgLog ("    * Disable Mac Compat Check ...%r", Status);
     }
     #endif
 }
 
 
 VOID
-DisableCompatCheck (
+DisableMacCompatCheck (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -332,7 +332,7 @@ DisableCompatCheck (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("    * Disable Compat Check ...%r", Status);
+    MsgLog ("    * Disable Mac Compat Check ...%r", Status);
     #endif
 }
 
@@ -1400,8 +1400,8 @@ efi_main (
                     }
 
                     // Disable Mac OS compatibility check if configured to
-                    if (GlobalConfig.DisableCompatCheck && !GlobalConfig.DisableAMFI) {
-                        DisableCompatCheck();
+                    if (GlobalConfig.DisableMacCompatCheck && !GlobalConfig.DisableAMFI) {
+                        DisableMacCompatCheck();
                     }
 
                     // Disable AMFI if configured to

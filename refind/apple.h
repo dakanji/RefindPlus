@@ -75,7 +75,7 @@ EFI_STATUS CheckAppleNvramEntry (
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
 VOID ForceTrim(VOID);
-VOID DisableCompatCheck(VOID);
+VOID DisableMacCompatCheck(VOID);
 VOID DisableAMFI(VOID);
 VOID *GetAppleNvramEntry (
     IN      CHAR16        *VariableName,

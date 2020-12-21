@@ -9,7 +9,7 @@
   * ESP detection may have sometimes returned 'true' on other locations
 - Implements "force_trim" config option
   * Enables 'TRIM' on non-Apple SSDs when booting into Mac OS
-- Implements "disable_compat_check" config option
+- Implements "disable_mac_compat_check" config option
   * Disables Mac OS compatibility checks to allow booting new Mac OS Versions on unsupported Macs
 - Implements "disable_amfi" config option
   * Disables the Apple Mobile File Integrity (AMFI) checks in Mac OS
