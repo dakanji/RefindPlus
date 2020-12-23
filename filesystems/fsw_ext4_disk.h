@@ -142,7 +142,7 @@ struct ext4_group_desc
 #define EXT4_COMPRBLK_FL                0x00000200 /* One or more compressed clusters */
 #define EXT4_NOCOMP_FL                  0x00000400 /* Don't compress */
 #define EXT4_ECOMPR_FL                  0x00000800 /* Compression error */
-/* End compression flags --- maybe not all used */      
+/* End compression flags --- maybe not all used */
 #define EXT4_INDEX_FL                   0x00001000 /* hash-indexed directory */
 #define EXT4_IMAGIC_FL                  0x00002000 /* AFS directory */
 #define EXT4_JOURNAL_DATA_FL            0x00004000 /* Reserved for ext3 */
@@ -400,6 +400,7 @@ struct ext4_super_block {
 #define EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM	0x2000 /* use crc32c for bg */
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINEDATA	0x8000 /* data in inode */
+#define EXT4_FEATURE_INCOMPAT_ENCRYPT		0x10000 /* BK ext4 fscrypt encryption */
 
 #define EXT4_FEATURE_INCOMPAT_SUPP	(EXT4_FEATURE_INCOMPAT_FILETYPE| \
 					 EXT4_FEATURE_INCOMPAT_RECOVER| \

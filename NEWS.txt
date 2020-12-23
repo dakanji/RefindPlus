@@ -1,5 +1,6 @@
 0.12.0.N (Pre-Release):
 -----------------------
+- Adds 'EXT4_FEATURE_INCOMPAT_ENCRYPT' Support to Ext4 Driver
 - Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
 - Drops ineffective attempt to detect timezones
 - Fixs issue with disappearing Mouse on x64 Arch
