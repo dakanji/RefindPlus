@@ -234,9 +234,9 @@ gRTSetVariableEx (
     if (GuidsAreEqual (VendorGuid, &MicrosoftGuid) &&
         MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
     ) {
-        WindowsBlock = TRUE;
         // Abort if Windows is detected trying to write to Mac NVRAM
-        Status = EFI_SECURITY_VIOLATION;
+        WindowsBlock = TRUE;
+        Status       = EFI_SECURITY_VIOLATION;
     }
     else {
         Status = AltSetVariable (
@@ -252,7 +252,8 @@ gRTSetVariableEx (
     MsgLog ("INFO: Write '%s' to NVRAM ...%r", VariableName, Status);
     if (WindowsBlock) {
         MsgLog ("\n");
-        MsgLog ("      ** WARN: Prevented NVRAM Write Attempt by UEFI Windows\n");
+        MsgLog ("      ** WARN: Prevented NVRAM Write Attempt by UEFI Windows");
+        MsgLog ("\n");
         MsgLog ("               Sucessful NVRAM Write will damage Apple NVRAM");
     }
     MsgLog ("\n\n");
