@@ -103,7 +103,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
         InitrdVersion = FindNumbers(DirEntry->FileName);
         if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))) {
-                CurrentInitrdName = AllocateZeroPool(sizeof(STRING_LIST));
+                CurrentInitrdName = AllocateZeroPool(sizeof (STRING_LIST));
                 if (InitrdNames == NULL)
                     InitrdNames = FinalInitrdName = CurrentInitrdName;
                 if (CurrentInitrdName) {

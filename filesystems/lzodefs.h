@@ -1575,9 +1575,9 @@ extern "C" {
 #  elif (LZO_CC_MSC && (_MSC_VER < 900))
 #    define LZO_UNUSED(var)         if (&var) ; else
 #  elif (LZO_CC_KEILC)
-#    define LZO_UNUSED(var)         {extern int __lzo_unused[1-2*!(sizeof(var)>0)];}
+#    define LZO_UNUSED(var)         {extern int __lzo_unused[1-2*!(sizeof (var)>0)];}
 #  elif (LZO_CC_PACIFICC)
-#    define LZO_UNUSED(var)         ((void) sizeof(var))
+#    define LZO_UNUSED(var)         ((void) sizeof (var))
 #  elif (LZO_CC_WATCOMC) && defined(__cplusplus)
 #    define LZO_UNUSED(var)         ((void) var)
 #  else
@@ -1596,7 +1596,7 @@ extern "C" {
 #  elif (LZO_CC_MSC)
 #    define LZO_UNUSED_FUNC(func)   ((void) &func)
 #  elif (LZO_CC_KEILC || LZO_CC_PELLESC)
-#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof((int)func)>0)];}
+#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int)func)>0)];}
 #  else
 #    define LZO_UNUSED_FUNC(func)   ((void) func)
 #  endif

@@ -78,8 +78,8 @@ static fsw_status_t fsw_hfs_readlink(struct fsw_hfs_volume *vol, struct fsw_hfs_
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(hfs) = {
     { FSW_STRING_TYPE_ISO88591, 4, 4, "hfs" },
-    sizeof(struct fsw_hfs_volume),
-    sizeof(struct fsw_hfs_dnode),
+    sizeof (struct fsw_hfs_volume),
+    sizeof (struct fsw_hfs_dnode),
 
     fsw_hfs_volume_mount, // volume open
     fsw_hfs_volume_free,  // volume close
@@ -314,7 +314,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         }
 
         status = fsw_memdup((void **)&vol->primary_voldesc, voldesc,
-                            sizeof(*voldesc));
+                            sizeof (*voldesc));
         CHECK(status);
 
 
@@ -385,7 +385,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
            HFSPlusCatalogKey* ck;
 
            btnd = (BTNodeDescriptor*) cbuff;
-           ck = (HFSPlusCatalogKey*) (cbuff + sizeof(BTNodeDescriptor));
+           ck = (HFSPlusCatalogKey*) (cbuff + sizeof (BTNodeDescriptor));
            if (btnd->kind == kBTLeafNode && be32_to_cpu (ck->parentID) == kHFSRootParentID)
            {
               struct fsw_string vn;
@@ -626,7 +626,7 @@ fsw_hfs_btree_search (struct fsw_hfs_btree * btree,
             break;
         }
 
-        if (be16_to_cpu(*(fsw_u16*)(buffer + btree->node_size - 2)) != sizeof(BTNodeDescriptor))
+        if (be16_to_cpu(*(fsw_u16*)(buffer + btree->node_size - 2)) != sizeof (BTNodeDescriptor))
             BP("corrupted node\n");
 
         count = be16_to_cpu (node->numRecords);
@@ -1319,7 +1319,7 @@ static fsw_status_t fsw_hfs_dir_read(struct fsw_hfs_volume *vol,
     catkey.parentID = dno->g.dnode_id;
     catkey.nodeName.length = 0;
 
-    fsw_memzero(&param, sizeof(param));
+    fsw_memzero(&param, sizeof (param));
 
     rec_name.type = FSW_STRING_TYPE_EMPTY;
     param.file_info.name = &rec_name;

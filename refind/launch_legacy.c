@@ -451,7 +451,7 @@ StartLegacyImageList(
     }
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16)
+        ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
@@ -579,7 +579,7 @@ static LEGACY_ENTRY
         VolDesc = L"NTFS Volume";
     }
 
-    LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
+    LegacyTitle = AllocateZeroPool(256 * sizeof (CHAR16));
     if (LegacyTitle != NULL) {
         SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
     }
@@ -590,7 +590,7 @@ static LEGACY_ENTRY
     } // if
 
     // prepare the menu entry
-    Entry                    = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    Entry                    = AllocateZeroPool(sizeof (LEGACY_ENTRY));
     Entry->Enabled           = TRUE;
     Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
@@ -608,8 +608,8 @@ static LEGACY_ENTRY
     #endif
 
     // create the submenu
-    SubScreen        = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
+    SubScreen        = AllocateZeroPool(sizeof (REFIT_MENU_SCREEN));
+    SubScreen->Title = AllocateZeroPool(256 * sizeof (CHAR16));
 
     SPrint(SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
 
@@ -623,8 +623,8 @@ static LEGACY_ENTRY
     } // if/else
 
     // default entry
-    SubEntry           = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
+    SubEntry           = AllocateZeroPool(sizeof (LEGACY_ENTRY));
+    SubEntry->me.Title = AllocateZeroPool(256 * sizeof (CHAR16));
 
     SPrint(SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
 
@@ -666,8 +666,8 @@ static LEGACY_ENTRY
     LimitStringLength(LegacyDescription, 100);
 
     // prepare the menu entry
-    Entry           = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
+    Entry           = AllocateZeroPool(sizeof (LEGACY_ENTRY));
+    Entry->me.Title = AllocateZeroPool(256 * sizeof (CHAR16));
 
     SPrint(Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
 
@@ -684,8 +684,8 @@ static LEGACY_ENTRY
     Entry->Enabled           = TRUE;
 
     // create the submenu
-    SubScreen        = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
+    SubScreen        = AllocateZeroPool(sizeof (REFIT_MENU_SCREEN));
+    SubScreen->Title = AllocateZeroPool(256 * sizeof (CHAR16));
 
     SPrint(SubScreen->Title, 255, L"No boot options for legacy target");
 
@@ -699,8 +699,8 @@ static LEGACY_ENTRY
     } // if/else
 
     // default entry
-    SubEntry           = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
+    SubEntry           = AllocateZeroPool(sizeof (LEGACY_ENTRY));
+    SubEntry->me.Title = AllocateZeroPool(256 * sizeof (CHAR16));
 
     SPrint(SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
 

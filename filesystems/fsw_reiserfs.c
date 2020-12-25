@@ -59,8 +59,8 @@ static void fsw_reiserfs_item_release(struct fsw_reiserfs_volume *vol,
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(reiserfs) = {
     { FSW_STRING_TYPE_ISO88591, 8, 8, "reiserfs" },
-    sizeof(struct fsw_reiserfs_volume),
-    sizeof(struct fsw_reiserfs_dnode),
+    sizeof (struct fsw_reiserfs_volume),
+    sizeof (struct fsw_reiserfs_dnode),
 
     fsw_reiserfs_volume_mount,
     fsw_reiserfs_volume_free,
@@ -96,7 +96,7 @@ static fsw_status_t fsw_reiserfs_volume_mount(struct fsw_reiserfs_volume *vol)
     struct fsw_string s;
 
     // allocate memory to keep the superblock around
-    status = fsw_alloc(sizeof(struct reiserfs_super_block), &vol->sb);
+    status = fsw_alloc(sizeof (struct reiserfs_super_block), &vol->sb);
     if (status)
         return status;
 
@@ -106,7 +106,7 @@ static fsw_status_t fsw_reiserfs_volume_mount(struct fsw_reiserfs_volume *vol)
         status = fsw_block_get(vol, superblock_offsets[i], 0, &buffer);
         if (status)
             return status;
-        fsw_memcpy(vol->sb, buffer, sizeof(struct reiserfs_super_block));
+        fsw_memcpy(vol->sb, buffer, sizeof (struct reiserfs_super_block));
         fsw_block_release(vol, superblock_offsets[i], buffer);
 
         // check for one of the magic strings
@@ -365,7 +365,7 @@ static fsw_status_t fsw_reiserfs_get_extent(struct fsw_reiserfs_volume *vol, str
             goto bail;
         }
         intra_bno = (fsw_u32)FSW_U64_DIV(intra_offset, vol->g.log_blocksize);
-        nr_item = item.ih.ih_item_len / sizeof(fsw_u32);
+        nr_item = item.ih.ih_item_len / sizeof (fsw_u32);
         if (intra_bno >= nr_item) {
             FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_get_extent: indirect block too small\n")));
             goto bail;
@@ -718,7 +718,7 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
     }
 
     // return results
-    fsw_memcpy(&item->ih, ihead, sizeof(struct item_head));
+    fsw_memcpy(&item->ih, ihead, sizeof (struct item_head));
     item->item_type = (fsw_u32)FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
     if (item->item_type != TYPE_DIRECT &&
         item->item_type != TYPE_INDIRECT &&
@@ -825,7 +825,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
         }
 
         // return results
-        fsw_memcpy(&item->ih, ihead, sizeof(struct item_head));
+        fsw_memcpy(&item->ih, ihead, sizeof (struct item_head));
         item->item_type = (fsw_u32)FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
         if (item->item_type != TYPE_DIRECT &&
             item->item_type != TYPE_INDIRECT &&

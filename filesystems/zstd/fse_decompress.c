@@ -92,7 +92,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 	U32 highThreshold = tableSize - 1;
 
 	/* Sanity Checks */
-	if (workspaceSize < sizeof(U16) * (FSE_MAX_SYMBOL_VALUE + 1))
+	if (workspaceSize < sizeof (U16) * (FSE_MAX_SYMBOL_VALUE + 1))
 		return ERROR(tableLog_tooLarge);
 	if (maxSymbolValue > FSE_MAX_SYMBOL_VALUE)
 		return ERROR(maxSymbolValue_tooLarge);
@@ -118,7 +118,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 				}
 			}
 		}
-		memcpy(dt, &DTableH, sizeof(DTableH));
+		memcpy(dt, &DTableH, sizeof (DTableH));
 	}
 
 	/* Spread symbols */
@@ -197,12 +197,12 @@ FORCE_INLINE size_t FSE_decompress_usingDTable_generic(void *dst, size_t maxDstS
 	for (; (BIT_reloadDStream(&bitD) == BIT_DStream_unfinished) & (op < olimit); op += 4) {
 		op[0] = FSE_GETSYMBOL(&state1);
 
-		if (FSE_MAX_TABLELOG * 2 + 7 > sizeof(bitD.bitContainer) * 8) /* This test must be static */
+		if (FSE_MAX_TABLELOG * 2 + 7 > sizeof (bitD.bitContainer) * 8) /* This test must be static */
 			BIT_reloadDStream(&bitD);
 
 		op[1] = FSE_GETSYMBOL(&state2);
 
-		if (FSE_MAX_TABLELOG * 4 + 7 > sizeof(bitD.bitContainer) * 8) /* This test must be static */
+		if (FSE_MAX_TABLELOG * 4 + 7 > sizeof (bitD.bitContainer) * 8) /* This test must be static */
 		{
 			if (BIT_reloadDStream(&bitD) > BIT_DStream_unfinished) {
 				op += 2;
@@ -212,7 +212,7 @@ FORCE_INLINE size_t FSE_decompress_usingDTable_generic(void *dst, size_t maxDstS
 
 		op[2] = FSE_GETSYMBOL(&state1);
 
-		if (FSE_MAX_TABLELOG * 2 + 7 > sizeof(bitD.bitContainer) * 8) /* This test must be static */
+		if (FSE_MAX_TABLELOG * 2 + 7 > sizeof (bitD.bitContainer) * 8) /* This test must be static */
 			BIT_reloadDStream(&bitD);
 
 		op[3] = FSE_GETSYMBOL(&state2);
@@ -265,12 +265,12 @@ size_t FSE_decompress_wksp(void *dst, size_t dstCapacity, const void *cSrc, size
 	short *counting;
 	size_t spaceUsed32 = 0;
 
-	FSE_STATIC_ASSERT(sizeof(FSE_DTable) == sizeof(U32));
+	FSE_STATIC_ASSERT(sizeof (FSE_DTable) == sizeof (U32));
 
 	dt = (FSE_DTable *)((U32 *)workspace + spaceUsed32);
 	spaceUsed32 += FSE_DTABLE_SIZE_U32(maxLog);
 	counting = (short *)((U32 *)workspace + spaceUsed32);
-	spaceUsed32 += UP_U32(sizeof(short) * (FSE_MAX_SYMBOL_VALUE + 1));
+	spaceUsed32 += UP_U32(sizeof (short) * (FSE_MAX_SYMBOL_VALUE + 1));
 
 	if ((spaceUsed32 << 2) > workspaceSize)
 		return ERROR(tableLog_tooLarge);

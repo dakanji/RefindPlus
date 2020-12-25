@@ -322,7 +322,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                     XStatus = EFI_SUCCESS;
 
                     if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                        XStatus = refit_call3_wrapper (
+                        XStatus = refit_call3_wrapper(
                             gBS->HandleProtocol,
                             AllHandleBuffer[i],
                             &gEfiPciIoProtocolGuid,
@@ -370,7 +370,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                     } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
 
                     if (!FoundGOP) {
-                        XStatus = refit_call5_wrapper (
+                        XStatus = refit_call5_wrapper(
                             gBS->LocateHandleBuffer,
                             ByProtocol,
                             &gEfiGraphicsOutputProtocolGuid,

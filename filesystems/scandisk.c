@@ -36,8 +36,8 @@ extern struct fsw_host_table   fsw_efi_host_table;
 static void dummy_volume_free(struct fsw_volume *vol) { }
 static struct fsw_fstype_table   dummy_fstype = {
     { FSW_STRING_TYPE_UTF8, 4, 4, "dummy" },
-    sizeof(struct fsw_volume),
-    sizeof(struct fsw_dnode),
+    sizeof (struct fsw_volume),
+    sizeof (struct fsw_dnode),
 
     NULL, //volume_mount,
     dummy_volume_free, //volume_free,
@@ -57,10 +57,10 @@ static struct fsw_volume *create_dummy_volume(EFI_DISK_IO *diskio, UINT32 mediai
     struct fsw_volume *vol;
     FSW_VOLUME_DATA *Volume;
 
-    err = fsw_alloc_zero(sizeof(struct fsw_volume), (void **)&vol);
+    err = fsw_alloc_zero(sizeof (struct fsw_volume), (void **)&vol);
     if(err)
         return NULL;
-    err = fsw_alloc_zero(sizeof(FSW_VOLUME_DATA), (void **)&Volume);
+    err = fsw_alloc_zero(sizeof (FSW_VOLUME_DATA), (void **)&Volume);
     if(err) {
         fsw_free(vol);
         return NULL;

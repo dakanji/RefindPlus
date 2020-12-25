@@ -519,7 +519,7 @@ static fsw_status_t read_mft(struct fsw_ntfs_volume *vol, fsw_u8 *mft, fsw_u64 m
 
 static void init_attr(struct fsw_ntfs_volume *vol, struct ntfs_attr *attr, int type)
 {
-    fsw_memzero(attr, sizeof(*attr));
+    fsw_memzero(attr, sizeof (*attr));
     attr->type = type;
     attr->emftno = BADMFT;
 }
@@ -600,10 +600,10 @@ static void add_single_mft_map(struct fsw_ntfs_volume *vol, fsw_u8 *mft)
 	    if(u >= vol->extmap.total) {
 		vol->extmap.total = vol->extmap.extent ? u*2 : 16;
 		struct extent_slot *e;
-		if(fsw_alloc(vol->extmap.total * sizeof(struct extent_slot), &e)!=FSW_SUCCESS)
+		if(fsw_alloc(vol->extmap.total * sizeof (struct extent_slot), &e)!=FSW_SUCCESS)
 		    break;
 		if(vol->extmap.extent) {
-		    fsw_memcpy(e, vol->extmap.extent, u*sizeof(struct extent_slot));
+		    fsw_memcpy(e, vol->extmap.extent, u*sizeof (struct extent_slot));
 		    fsw_free(vol->extmap.extent);
 		}
 		vol->extmap.extent = e;
@@ -1572,8 +1572,8 @@ static fsw_status_t fsw_ntfs_readlink(struct fsw_volume *volg, struct fsw_dnode 
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(ntfs) = {
     { FSW_STRING_TYPE_UTF8, 4, 4, "ntfs" },
-    sizeof(struct fsw_ntfs_volume),
-    sizeof(struct fsw_ntfs_dnode),
+    sizeof (struct fsw_ntfs_volume),
+    sizeof (struct fsw_ntfs_dnode),
 
     fsw_ntfs_volume_mount,
     fsw_ntfs_volume_free,

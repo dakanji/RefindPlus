@@ -92,7 +92,7 @@ static int catfile(struct fsw_posix_volume *vol, char *path)
         return 1;
     }
 
-    while ((r=fsw_posix_read(file, buf, sizeof(buf))) > 0)
+    while ((r=fsw_posix_read(file, buf, sizeof (buf))) > 0)
     {
         int i;
         for (i=0; i<r; i++)

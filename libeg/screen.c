@@ -138,7 +138,7 @@ HandleProtocolEx (
         //
         // EfiBoot from 10.4 can only use UgaDraw protocol.
         //
-        Status = refit_call3_wrapper (
+        Status = refit_call3_wrapper(
             gBS->LocateProtocol,
             &gEfiUgaDrawProtocolGuid,
             NULL,
@@ -171,7 +171,7 @@ daCheckAltGop (
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     OrigGop = NULL;
-    Status  = refit_call3_wrapper (
+    Status  = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid,
@@ -179,7 +179,7 @@ daCheckAltGop (
     );
 
     if (EFI_ERROR (Status)) {
-        Status = refit_call3_wrapper (
+        Status = refit_call3_wrapper(
             gBS->LocateProtocol,
             &gEfiGraphicsOutputProtocolGuid,
             NULL,
@@ -200,7 +200,7 @@ daCheckAltGop (
             return EFI_ALREADY_STARTED;
         }
 
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &gEfiGraphicsOutputProtocolGuid,
@@ -237,7 +237,7 @@ daCheckAltGop (
         for (Index = 0; Index < HandleCount; ++Index) {
             OurValidGOP = FALSE;
             if (HandleBuffer[Index] != gST->ConsoleOutHandle) {
-                Status = refit_call3_wrapper (
+                Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[Index],
                     &gEfiGraphicsOutputProtocolGuid,
@@ -337,9 +337,9 @@ egDumpGOPVideoModes (
 
         ShowScreenStr = L"Unsupported EFI";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -378,7 +378,7 @@ egDumpGOPVideoModes (
                 break;
             }
 
-            Status = refit_call4_wrapper (GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
+            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r", Mode, Status);
@@ -489,9 +489,9 @@ GopSetModeAndReconnectTextOut (
 
         ShowScreenStr = L"Unsupported EFI";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -502,7 +502,7 @@ GopSetModeAndReconnectTextOut (
         return EFI_UNSUPPORTED;
     }
 
-    Status = refit_call2_wrapper (
+    Status = refit_call2_wrapper(
         GraphicsOutput->SetMode,
         GraphicsOutput,
         ModeNumber
@@ -538,9 +538,9 @@ egSetGOPMode (
 
         ShowScreenStr = L"Unsupported EFI";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -563,9 +563,9 @@ egSetGOPMode (
 
         ShowScreenStr = L"  - Incompatible GPU";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -578,7 +578,7 @@ egSetGOPMode (
             Mode = Mode + Next;
             Mode = (Mode >= (INT32)MaxMode)?0:Mode;
             Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
-            Status = refit_call4_wrapper (GraphicsOutput->QueryMode, GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
+            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
@@ -620,9 +620,9 @@ egSetMaxResolution (
 
       ShowScreenStr = L"Unsupported EFI";
 
-      refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+      refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
       PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-      refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+      refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
       #if REFIT_DEBUG > 0
       MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -639,7 +639,7 @@ egSetMaxResolution (
 
   MaxMode = GraphicsOutput->Mode->MaxMode;
   for (Mode = 0; Mode < MaxMode; Mode++) {
-    Status = refit_call4_wrapper (GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
+    Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
     if (!EFI_ERROR (Status)) {
       if (Width > Info->HorizontalResolution) {
         continue;
@@ -731,7 +731,7 @@ egDetermineScreenSize (
         egHasGraphics   = TRUE;
     }
     else if (UGADraw != NULL) {
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             UGADraw->GetMode,
             UGADraw,
             &ScreenW,
@@ -791,7 +791,7 @@ egInitScreen (
     #endif
 
     // Check ConsoleOut Handle
-    Status = refit_call3_wrapper (
+    Status = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &ConsoleControlProtocolGuid,
@@ -804,7 +804,7 @@ egInitScreen (
 
     if (EFI_ERROR (Status) || ConsoleControl == NULL) {
         // Try Locating by Handle
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &ConsoleControlProtocolGuid,
@@ -820,7 +820,7 @@ egInitScreen (
         if (!EFI_ERROR (Status)) {
             i = 0;
             for (i = 0; i < HandleCount; i++) {
-                Status = refit_call3_wrapper (
+                Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
                     &ConsoleControlProtocolGuid,
@@ -839,7 +839,7 @@ egInitScreen (
         }
         else {
             // try locating directly
-            Status = refit_call3_wrapper (
+            Status = refit_call3_wrapper(
                 gBS->LocateProtocol,
                 &ConsoleControlProtocolGuid,
                 NULL,
@@ -876,7 +876,7 @@ egInitScreen (
     #endif
 
     // Check ConsoleOut Handle
-    Status = refit_call3_wrapper (
+    Status = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &UgaDrawProtocolGuid,
@@ -889,7 +889,7 @@ egInitScreen (
 
     if (EFI_ERROR (Status)) {
         // Try Locating by Handle
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &UgaDrawProtocolGuid,
@@ -913,7 +913,7 @@ egInitScreen (
 
             i = 0;
             for (i = 0; i < HandleCount; i++) {
-                Status = refit_call3_wrapper (
+                Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
                     &UgaDrawProtocolGuid,
@@ -925,7 +925,7 @@ egInitScreen (
                 #endif
 
                 if (!EFI_ERROR (Status)) {
-                    Status = refit_call5_wrapper (
+                    Status = refit_call5_wrapper(
                         TmpUGA->GetMode,
                         TmpUGA,
                         &Width,
@@ -967,7 +967,7 @@ egInitScreen (
         }
         else {
             // try locating directly
-            Status = refit_call3_wrapper (
+            Status = refit_call3_wrapper(
                 gBS->LocateProtocol,
                 &UgaDrawProtocolGuid,
                 NULL,
@@ -999,7 +999,7 @@ egInitScreen (
     #endif
 
     // Check ConsoleOut Handle
-    Status = refit_call3_wrapper (
+    Status = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &GraphicsOutputProtocolGuid,
@@ -1012,7 +1012,7 @@ egInitScreen (
 
     if (EFI_ERROR (Status)) {
         // Try Locating by Handle
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &GraphicsOutputProtocolGuid,
@@ -1036,7 +1036,7 @@ egInitScreen (
 
             i = 0;
             for (i = 0; i < HandleCount; i++) {
-                Status = refit_call3_wrapper (
+                Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
                     &GraphicsOutputProtocolGuid,
@@ -1089,7 +1089,7 @@ egInitScreen (
         }
         else {
             // try locating directly
-            Status = refit_call3_wrapper (
+            Status = refit_call3_wrapper(
                 gBS->LocateProtocol,
                 &GraphicsOutputProtocolGuid,
                 NULL,
@@ -1183,7 +1183,7 @@ egInitScreen (
 
             if (!EFI_ERROR (Status)) {
                 // Check ConsoleOut Handle
-                Status = refit_call3_wrapper (
+                Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     gST->ConsoleOutHandle,
                     &GraphicsOutputProtocolGuid,
@@ -1259,7 +1259,7 @@ egInitScreen (
 
         if (GraphicsOutput == NULL) {
             UINT32 Width, Height, Depth, RefreshRate;
-            Status = refit_call5_wrapper (
+            Status = refit_call5_wrapper(
                 UGADraw->GetMode,
                 UGADraw,
                 &Width,
@@ -1322,7 +1322,7 @@ egGetResFromMode (
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
    if ((ModeWidth != NULL) && (Height != NULL)) {
-      Status = refit_call4_wrapper (
+      Status = refit_call4_wrapper(
           GraphicsOutput->QueryMode,
           GraphicsOutput,
           *ModeWidth,
@@ -1375,9 +1375,9 @@ egSetScreenSize (
 
         ShowScreenStr = L"Invalid Input Resolution in Config File!";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
 
         #if REFIT_DEBUG > 0
@@ -1406,7 +1406,7 @@ egSetScreenSize (
                 ModeSet = TRUE;
             }
             else if (egGetResFromMode (ScreenWidth, ScreenHeight) &&
-                (refit_call2_wrapper (
+                (refit_call2_wrapper(
                     GraphicsOutput->SetMode,
                     GraphicsOutput,
                     ModeNum
@@ -1429,7 +1429,7 @@ egSetScreenSize (
             // Do a loop through the modes to see if the specified one is available;
             // and if so, switch to it....
             do {
-                Status = refit_call4_wrapper (
+                Status = refit_call4_wrapper(
                     GraphicsOutput->QueryMode,
                     GraphicsOutput,
                     ModeNum,
@@ -1442,7 +1442,7 @@ egSetScreenSize (
                     && (Info->HorizontalResolution == *ScreenWidth)
                     && (Info->VerticalResolution   == *ScreenHeight)
                     && ((ModeNum == CurrentModeNum)
-                    || (refit_call2_wrapper (
+                    || (refit_call2_wrapper(
                         GraphicsOutput->SetMode,
                         GraphicsOutput,
                         ModeNum
@@ -1483,7 +1483,7 @@ egSetScreenSize (
                 MsgLog ("\n");
                 #endif
 
-                Status = refit_call4_wrapper (
+                Status = refit_call4_wrapper(
                     GraphicsOutput->QueryMode,
                     GraphicsOutput,
                     ModeNum,
@@ -1533,7 +1533,7 @@ egSetScreenSize (
     else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             UGADraw->GetMode,
             UGADraw,
             &ScreenW,
@@ -1541,7 +1541,7 @@ egSetScreenSize (
             &UGADepth,
             &UGARefreshRate
         );
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             UGADraw->SetMode,
             UGADraw,
             ScreenW,
@@ -1599,7 +1599,7 @@ egSetTextMode (
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
     ) {
-        Status = refit_call2_wrapper (
+        Status = refit_call2_wrapper(
             gST->ConOut->SetMode,
             gST->ConOut,
             RequestedMode
@@ -1625,7 +1625,7 @@ egSetTextMode (
             #endif
 
             do {
-                Status = refit_call4_wrapper (
+                Status = refit_call4_wrapper(
                     gST->ConOut->QueryMode,
                     gST->ConOut,
                     i,
@@ -1675,9 +1675,9 @@ egScreenDescription (
 
         ShowScreenStr = L"Memory Allocation Error";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n\n", ShowScreenStr);
@@ -1704,9 +1704,9 @@ egScreenDescription (
 
             ShowScreenStr = L"Internal Error!";
 
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", ShowScreenStr);
@@ -1747,7 +1747,7 @@ egIsGraphicsModeEnabled (
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
 
     if (ConsoleControl != NULL) {
-        refit_call4_wrapper (
+        refit_call4_wrapper(
             ConsoleControl->GetMode,
             ConsoleControl,
             &CurrentMode,
@@ -1769,7 +1769,7 @@ egSetGraphicsModeEnabled (
     EFI_CONSOLE_CONTROL_SCREEN_MODE NewMode;
 
     if (ConsoleControl != NULL) {
-        refit_call4_wrapper (
+        refit_call4_wrapper(
             ConsoleControl->GetMode,
             ConsoleControl,
             &CurrentMode,
@@ -1780,7 +1780,7 @@ egSetGraphicsModeEnabled (
         NewMode = Enable ? EfiConsoleControlScreenGraphics
                          : EfiConsoleControlScreenText;
         if (CurrentMode != NewMode) {
-            refit_call2_wrapper (
+            refit_call2_wrapper(
                 ConsoleControl->SetMode,
                 ConsoleControl,
                 NewMode
@@ -1819,7 +1819,7 @@ egClearScreen (
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout, and the header from TianoCore actually defines them
         // to be the same type.
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             GraphicsOutput->Blt,
             GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) &FillColor,
@@ -1834,7 +1834,7 @@ egClearScreen (
          );
     }
     else if (UGADraw != NULL) {
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             UGADraw->Blt,
             UGADraw,
             &FillColor,
@@ -1892,7 +1892,7 @@ egDrawImage (
     }
 
     if (GraphicsOutput != NULL) {
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             GraphicsOutput->Blt,
             GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) CompImage->PixelData,
@@ -1907,7 +1907,7 @@ egDrawImage (
         );
     }
     else if (UGADraw != NULL) {
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             UGADraw->Blt,
             UGADraw,
             (EFI_UGA_PIXEL *) CompImage->PixelData,
@@ -1965,7 +1965,7 @@ egDrawImageArea (
         return;
 
     if (GraphicsOutput != NULL) {
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             GraphicsOutput->Blt,
             GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
@@ -1980,7 +1980,7 @@ egDrawImageArea (
         );
     }
     else if (UGADraw != NULL) {
-        refit_call10_wrapper (
+        refit_call10_wrapper(
             UGADraw->Blt,
             UGADraw,
             (EFI_UGA_PIXEL *)Image->PixelData,
@@ -2059,7 +2059,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
 
    // get full screen image
    if (GraphicsOutput != NULL) {
-       refit_call10_wrapper (
+       refit_call10_wrapper(
            GraphicsOutput->Blt,
            GraphicsOutput,
            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
@@ -2074,7 +2074,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
        );
    }
    else if (UGADraw != NULL) {
-       refit_call10_wrapper (
+       refit_call10_wrapper(
            UGADraw->Blt,
            UGADraw,
            (EFI_UGA_PIXEL *)Image->PixelData,
@@ -2122,9 +2122,9 @@ egScreenShot (
 
         ShowScreenStr = L"    * Error: Unable to Take Screen Shot";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n\n", ShowScreenStr);
@@ -2160,9 +2160,9 @@ egScreenShot (
 
         ShowScreenStr = L"    * Error: Could not Encode PNG";
 
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n\n", ShowScreenStr);
@@ -2184,9 +2184,9 @@ egScreenShot (
 
             ShowScreenStr = L"    * Error: Could not Save Screenshot";
 
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", ShowScreenStr);
@@ -2211,9 +2211,9 @@ egScreenShot (
 
                 ShowScreenStr = L"    * Error: Could not Find ESP for Screenshot";
 
-                refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
-                refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("%s\n\n", ShowScreenStr);
@@ -2251,7 +2251,7 @@ egScreenShot (
 bailout_wait:
     i = 0;
     egSetGraphicsModeEnabled (FALSE);
-    refit_call3_wrapper (gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &i);
+    refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &i);
 }
 
 /* EOF */

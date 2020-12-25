@@ -57,8 +57,8 @@ static fsw_status_t fsw_ext4_readlink(struct fsw_ext4_volume *vol, struct fsw_ex
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(ext4) = {
     { FSW_STRING_TYPE_ISO88591, 4, 4, "ext4" },
-    sizeof(struct fsw_ext4_volume),
-    sizeof(struct fsw_ext4_dnode),
+    sizeof (struct fsw_ext4_volume),
+    sizeof (struct fsw_ext4_dnode),
 
     fsw_ext4_volume_mount,
     fsw_ext4_volume_free,
@@ -117,7 +117,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     struct fsw_string s;
 
     // allocate memory to keep the superblock around
-    status = fsw_alloc(sizeof(struct ext4_super_block), &vol->sb);
+    status = fsw_alloc(sizeof (struct ext4_super_block), &vol->sb);
     if (status)
         return status;
 
@@ -126,7 +126,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     status = fsw_block_get(vol, EXT4_SUPERBLOCK_BLOCKNO, 0, &buffer);
     if (status)
         return status;
-    fsw_memcpy(vol->sb, buffer, sizeof(struct ext4_super_block));
+    fsw_memcpy(vol->sb, buffer, sizeof (struct ext4_super_block));
     fsw_block_release(vol, EXT4_SUPERBLOCK_BLOCKNO, buffer);
 
     // check the superblock
@@ -189,7 +189,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     gdesc_per_block = EXT4_DESC_PER_BLOCK(vol->sb);
 
     // Read the group descriptors to get inode table offsets
-    status = fsw_alloc(sizeof(fsw_u64) * groupcnt, &vol->inotab_bno);
+    status = fsw_alloc(sizeof (fsw_u64) * groupcnt, &vol->inotab_bno);
     if (status)
         return status;
 
@@ -415,7 +415,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
     buf_offset = 0;
     while(1) {
         ext4_extent_header = (struct ext4_extent_header *)((char *)buffer + buf_offset);
-        buf_offset += sizeof(struct ext4_extent_header);
+        buf_offset += sizeof (struct ext4_extent_header);
         FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent header with %d entries\n"),
                       ext4_extent_header->eh_entries));
         if(ext4_extent_header->eh_magic != EXT4_EXT_MAGIC)
@@ -427,7 +427,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
             {
                 // Leaf node, the header follows actual extents
                 ext4_extent = (struct ext4_extent *)((char *)buffer + buf_offset);
-                buf_offset += sizeof(struct ext4_extent);
+                buf_offset += sizeof (struct ext4_extent);
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent node cover %d...\n"), ext4_extent->ee_block));
 
                 // Is the requested block in this extent?
@@ -444,7 +444,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index extents, depth %d\n"),
                           ext4_extent_header->eh_depth));
                 ext4_extent_idx = (struct ext4_extent_idx *)((char *)buffer + buf_offset);
-                buf_offset += sizeof(struct ext4_extent_idx);
+                buf_offset += sizeof (struct ext4_extent_idx);
 
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index node covers block %d...\n"),
                           ext4_extent_idx->ei_block));

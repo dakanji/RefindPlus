@@ -74,7 +74,7 @@ VOID fsw_efi_decode_time(OUT EFI_TIME *EfiTime, IN UINT32 UnixTime)
     int         y, newy, yleap;
     const int   *ip;
 
-    ZeroMem(EfiTime, sizeof(EFI_TIME));
+    ZeroMem(EfiTime, sizeof (EFI_TIME));
 
     days = UnixTime / SECSPERDAY;
     rem = UnixTime % SECSPERDAY;
@@ -109,8 +109,8 @@ VOID fsw_efi_decode_time(OUT EFI_TIME *EfiTime, IN UINT32 UnixTime)
 UINTN fsw_efi_strsize(struct fsw_string *s)
 {
     if (s->type == FSW_STRING_TYPE_EMPTY)
-        return sizeof(CHAR16);
-    return (s->len + 1) * sizeof(CHAR16);
+        return sizeof (CHAR16);
+    return (s->len + 1) * sizeof (CHAR16);
 }
 
 VOID fsw_efi_strcpy(CHAR16 *Dest, struct fsw_string *src)

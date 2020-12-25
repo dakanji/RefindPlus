@@ -79,7 +79,7 @@ struct iso9660_dirrec {
     fsw_u8      file_identifier_length;
     char        file_identifier[1];
 };
-//#if sizeof(struct fsw_iso9660_dirrec) != 34
+//#if sizeof (struct fsw_iso9660_dirrec) != 34
 //#fail Structure fsw_iso9660_dirrec has wrong size
 //#endif
 
@@ -126,7 +126,7 @@ struct iso9660_primary_volume_descriptor {
     fsw_u8      application_use[512];
     fsw_u8      reserved2[653];
 };
-//#if sizeof(struct fsw_iso9660_volume_descriptor) != 2048
+//#if sizeof (struct fsw_iso9660_volume_descriptor) != 2048
 //#fail Structure fsw_iso9660_volume_descriptor has wrong size
 //#endif
 

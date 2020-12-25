@@ -223,11 +223,11 @@ fsw_status_t fsw_block_get(struct VOLSTRUCTNAME *vol, fsw_u64 phys_bno, fsw_u32 
             new_bcache_size = 16;
         else
             new_bcache_size = vol->bcache_size << 1;
-        status = fsw_alloc(new_bcache_size * sizeof(struct fsw_blockcache), &new_bcache);
+        status = fsw_alloc(new_bcache_size * sizeof (struct fsw_blockcache), &new_bcache);
         if (status)
             return status;
         if (vol->bcache_size > 0)
-            fsw_memcpy(new_bcache, vol->bcache, vol->bcache_size * sizeof(struct fsw_blockcache));
+            fsw_memcpy(new_bcache, vol->bcache, vol->bcache_size * sizeof (struct fsw_blockcache));
         for (i = vol->bcache_size; i < new_bcache_size; i++) {
             new_bcache[i].refcount = 0;
             new_bcache[i].cache_level = 0;

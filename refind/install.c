@@ -58,7 +58,7 @@ static ESP_LIST * FindAllESPs(VOID) {
             GuidsAreEqual(&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
             (Volumes[VolumeIndex]->FSType == FS_TYPE_FAT) &&
             ! GuidsAreEqual(&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)) {
-            NewESP = AllocateZeroPool(sizeof(ESP_LIST));
+            NewESP = AllocateZeroPool(sizeof (ESP_LIST));
             if (NewESP != NULL) {
                 NewESP->Volume = Volumes[VolumeIndex];
                 NewESP->NextESP = AllESPs;
@@ -99,7 +99,7 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
         CurrentESP = AllESPs;
         AddMenuInfoLine(&InstallMenu, L"Select a partition and press Enter to install rEFInd");
         while (CurrentESP != NULL) {
-            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+            MenuEntryItem = AllocateZeroPool(sizeof (REFIT_MENU_ENTRY));
             GuidStr = GuidAsString(&(CurrentESP->Volume->PartGuid));
             PartName = CurrentESP->Volume->PartName;
             VolName = CurrentESP->Volume->VolName;
@@ -164,10 +164,10 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
         }
     } // if
     if (Status == EFI_SUCCESS) {
-        NewInfoSize = sizeof(EFI_FILE_INFO) + StrSize(NewName);
+        NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize(NewName);
         NewInfo = (EFI_FILE_INFO *) AllocateZeroPool(NewInfoSize);
         if (NewInfo != NULL) {
-            CopyMem(NewInfo, Buffer, sizeof(EFI_FILE_INFO));
+            CopyMem(NewInfo, Buffer, sizeof (EFI_FILE_INFO));
             NewInfo->FileName[0] = 0;
             StrCat(NewInfo->FileName, NewName);
             Status = refit_call4_wrapper(
@@ -580,7 +580,7 @@ static EFI_STATUS ConstructBootEntry(EFI_HANDLE *TargetVolume,
 
     DevicePath = FileDevicePath(TargetVolume, Loader);
     DevPathSize = DevicePathSize(DevicePath);
-    *Size = sizeof(UINT32) + sizeof (UINT16) + StrSize(Label) + DevPathSize + 2;
+    *Size = sizeof (UINT32) + sizeof (UINT16) + StrSize(Label) + DevPathSize + 2;
     *Entry = Working = AllocateZeroPool(*Size);
     if (DevicePath && *Entry) {
         *(UINT32 *)Working = LOAD_OPTION_ACTIVE;
@@ -611,7 +611,7 @@ static EFI_STATUS SetBootDefault(UINTN BootNum) {
 
     Status = EfivarGetRaw(&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
     if (Status == EFI_SUCCESS) {
-        ListSize = VarSize / sizeof(UINT16);
+        ListSize = VarSize / sizeof (UINT16);
         for (i = 0; i < ListSize; i++) {
             if (BootOrder[i] == BootNum) {
                 if (i == 0)
@@ -619,7 +619,7 @@ static EFI_STATUS SetBootDefault(UINTN BootNum) {
             }
         } // for
         if (!IsAlreadyFirst) {
-            NewBootOrder = AllocateZeroPool((ListSize + 1) * sizeof(UINT16));
+            NewBootOrder = AllocateZeroPool((ListSize + 1) * sizeof (UINT16));
             NewBootOrder[0] = BootNum;
             j = 1;
             for (i = 0; i < ListSize; i++) {
@@ -628,7 +628,7 @@ static EFI_STATUS SetBootDefault(UINTN BootNum) {
                 } // if
             } // for
             Status = EfivarSetRaw(&GlobalGuid, L"BootOrder", (CHAR8*) NewBootOrder,
-                                  j * sizeof(UINT16), TRUE);
+                                  j * sizeof (UINT16), TRUE);
             MyFreePool(NewBootOrder);
         } // if
         MyFreePool(BootOrder);
@@ -721,12 +721,12 @@ static BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
     if (Status != EFI_SUCCESS)
         return NULL;
 
-    ListSize = VarSize / sizeof(UINT16);
+    ListSize = VarSize / sizeof (UINT16);
     for (i = 0; i < ListSize; i++) {
         VarName = PoolPrint(L"Boot%04x", BootOrder[i]);
         Status = EfivarGetRaw(&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
         if (Status == EFI_SUCCESS) {
-            L = AllocateZeroPool(sizeof(BOOT_ENTRY_LIST));
+            L = AllocateZeroPool(sizeof (BOOT_ENTRY_LIST));
             if (L) {
                 L->BootEntry.BootNum = BootOrder[i];
                 L->BootEntry.Options = (UINT32) Contents[0];
@@ -793,7 +793,7 @@ static UINTN PickOneBootOption(IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOr
     if (Entries) {
         AddMenuInfoLine(&Menu, L"Select an option and press Enter to make it the default or '-' to delete it");
         while (Entries != NULL) {
-            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+            MenuEntryItem = AllocateZeroPool(sizeof (REFIT_MENU_ENTRY));
             FindVolumeAndFilename(Entries->BootEntry.DevPath, &Volume, &Filename);
             if ((Filename != NULL) && (StrLen(Filename) > 0)) {
                 if ((Volume != NULL) && (Volume->VolName != NULL)) {
@@ -846,7 +846,7 @@ static EFI_STATUS DeleteInvalidBootEntries(VOID) {
 
     Status = EfivarGetRaw(&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
     if (Status == EFI_SUCCESS) {
-        ListSize = VarSize / sizeof(UINT16);
+        ListSize = VarSize / sizeof (UINT16);
         NewBootOrder = AllocateZeroPool(VarSize);
         for (i = 0; i < ListSize; i++) {
             VarName = PoolPrint(L"Boot%04x", BootOrder[i]);
@@ -858,7 +858,7 @@ static EFI_STATUS DeleteInvalidBootEntries(VOID) {
             } // if
         } // for
         Status = EfivarSetRaw(&GlobalGuid, L"BootOrder", (CHAR8*) NewBootOrder,
-                              j * sizeof(UINT16), TRUE);
+                              j * sizeof (UINT16), TRUE);
         MyFreePool(NewBootOrder);
         MyFreePool(BootOrder);
     } // if

@@ -1091,7 +1091,7 @@ grub_zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
   gzio = AllocatePool (sizeof (*gzio));
   if (! gzio)
     return -1;
-  fsw_memzero(gzio, sizeof(*gzio));
+  fsw_memzero(gzio, sizeof (*gzio));
   gzio->mem_input = (uint8_t *) inbuf;
   gzio->mem_input_size = insize;
   gzio->mem_input_off = 0;

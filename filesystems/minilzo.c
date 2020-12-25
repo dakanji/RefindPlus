@@ -1595,9 +1595,9 @@ extern "C" {
 #  elif (LZO_CC_MSC && (_MSC_VER < 900))
 #    define LZO_UNUSED(var)         if (&var) ; else
 #  elif (LZO_CC_KEILC)
-#    define LZO_UNUSED(var)         {extern int __lzo_unused[1-2*!(sizeof(var)>0)];}
+#    define LZO_UNUSED(var)         {extern int __lzo_unused[1-2*!(sizeof (var)>0)];}
 #  elif (LZO_CC_PACIFICC)
-#    define LZO_UNUSED(var)         ((void) sizeof(var))
+#    define LZO_UNUSED(var)         ((void) sizeof (var))
 #  elif (LZO_CC_WATCOMC) && defined(__cplusplus)
 #    define LZO_UNUSED(var)         ((void) var)
 #  else
@@ -1616,7 +1616,7 @@ extern "C" {
 #  elif (LZO_CC_MSC)
 #    define LZO_UNUSED_FUNC(func)   ((void) &func)
 #  elif (LZO_CC_KEILC || LZO_CC_PELLESC)
-#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof((int)func)>0)];}
+#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int)func)>0)];}
 #  else
 #    define LZO_UNUSED_FUNC(func)   ((void) func)
 #  endif
@@ -1983,7 +1983,7 @@ extern "C" {
 #    define lzo_uintptr_t       size_t
 #  endif
 #endif
-LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
+LZO_COMPILE_TIME_ASSERT_HEADER(sizeof (lzo_uintptr_t) >= sizeof (lzo_voidp))
 
 #if 1 && !defined(LZO_CFG_FREESTANDING)
 #if 1 && !defined(HAVE_STRING_H)
@@ -2095,9 +2095,9 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
 #define LZO_MAX3(a,b,c)     ((a) >= (b) ? LZO_MAX(a,c) : LZO_MAX(b,c))
 #define LZO_MIN3(a,b,c)     ((a) <= (b) ? LZO_MIN(a,c) : LZO_MIN(b,c))
 
-#define lzo_sizeof(type)    ((lzo_uint) (sizeof(type)))
+#define lzo_sizeof (type)    ((lzo_uint) (sizeof (type)))
 
-#define LZO_HIGH(array)     ((lzo_uint) (sizeof(array)/sizeof(*(array))))
+#define LZO_HIGH(array)     ((lzo_uint) (sizeof (array)/sizeof (*(array))))
 
 #define LZO_SIZE(bits)      (1u << (bits))
 #define LZO_MASK(bits)      (LZO_SIZE(bits) - 1)
@@ -2146,7 +2146,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
 #undef UA_SET64
 #undef UA_COPY64
 #if defined(LZO_UNALIGNED_OK_2)
-   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(unsigned short) == 2)
+   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof (unsigned short) == 2)
 #  if 1 && defined(ACC_UA_COPY16)
 #    define UA_GET16        ACC_UA_GET16
 #    define UA_SET16        ACC_UA_SET16
@@ -2158,7 +2158,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
 #  endif
 #endif
 #if defined(LZO_UNALIGNED_OK_4) || defined(LZO_ALIGNED_OK_4)
-   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint32) == 4)
+   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof (lzo_uint32) == 4)
 #  if 1 && defined(ACC_UA_COPY32)
 #    define UA_GET32        ACC_UA_GET32
 #    define UA_SET32        ACC_UA_SET32
@@ -2170,7 +2170,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
 #  endif
 #endif
 #if defined(LZO_UNALIGNED_OK_8)
-   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof(lzo_uint64) == 8)
+   LZO_COMPILE_TIME_ASSERT_HEADER(sizeof (lzo_uint64) == 8)
 #  if 1 && defined(ACC_UA_COPY64)
 #    define UA_GET64        ACC_UA_GET64
 #    define UA_SET64        ACC_UA_SET64
@@ -2545,10 +2545,10 @@ LZOLIB_PUBLIC(lzo_hvoid_p, lzo_hmemset) (lzo_hvoid_p s, int c, lzo_hsize_t len)
 
     ACCCHK_ASSERT_IS_SIGNED_T(lzo_int32)
     ACCCHK_ASSERT_IS_UNSIGNED_T(lzo_uint32)
-    ACCCHK_ASSERT((LZO_UINT32_C(1) << (int)(8*sizeof(LZO_UINT32_C(1))-1)) > 0)
-    ACCCHK_ASSERT(sizeof(lzo_uint32) >= 4)
+    ACCCHK_ASSERT((LZO_UINT32_C(1) << (int)(8*sizeof (LZO_UINT32_C(1))-1)) > 0)
+    ACCCHK_ASSERT(sizeof (lzo_uint32) >= 4)
 #if defined(LZO_UINT64_MAX)
-    ACCCHK_ASSERT(sizeof(lzo_uint64) == 8)
+    ACCCHK_ASSERT(sizeof (lzo_uint64) == 8)
     ACCCHK_ASSERT_IS_SIGNED_T(lzo_int64)
     ACCCHK_ASSERT_IS_UNSIGNED_T(lzo_uint64)
 #endif
@@ -2556,12 +2556,12 @@ LZOLIB_PUBLIC(lzo_hvoid_p, lzo_hmemset) (lzo_hvoid_p s, int c, lzo_hsize_t len)
 #if !defined(__LZO_UINTPTR_T_IS_POINTER)
     ACCCHK_ASSERT_IS_UNSIGNED_T(lzo_uintptr_t)
 #endif
-    ACCCHK_ASSERT(sizeof(lzo_uintptr_t) >= sizeof(lzo_voidp))
+    ACCCHK_ASSERT(sizeof (lzo_uintptr_t) >= sizeof (lzo_voidp))
 
     ACCCHK_ASSERT_IS_UNSIGNED_T(lzo_xint)
-    ACCCHK_ASSERT(sizeof(lzo_xint) >= sizeof(lzo_uint32))
-    ACCCHK_ASSERT(sizeof(lzo_xint) >= sizeof(lzo_uint))
-    ACCCHK_ASSERT(sizeof(lzo_xint) == sizeof(lzo_uint32) || sizeof(lzo_xint) == sizeof(lzo_uint))
+    ACCCHK_ASSERT(sizeof (lzo_xint) >= sizeof (lzo_uint32))
+    ACCCHK_ASSERT(sizeof (lzo_xint) >= sizeof (lzo_uint))
+    ACCCHK_ASSERT(sizeof (lzo_xint) == sizeof (lzo_uint32) || sizeof (lzo_xint) == sizeof (lzo_uint))
 
 #endif
 #undef ACCCHK_ASSERT
@@ -2651,7 +2651,7 @@ _lzo_config_check(void)
 {
     lzo_bool r = 1;
     union {
-        lzo_xint a[2]; unsigned char b[2*LZO_MAX(8,sizeof(lzo_xint))];
+        lzo_xint a[2]; unsigned char b[2*LZO_MAX(8,sizeof (lzo_xint))];
 #if defined(LZO_UNALIGNED_OK_8)
         lzo_uint64 c[2];
 #endif
@@ -2664,7 +2664,7 @@ _lzo_config_check(void)
     r &= ((* (lzo_bytep) p) == 0);
 #if !defined(LZO_CFG_NO_CONFIG_CHECK)
 #if defined(LZO_ABI_BIG_ENDIAN)
-    u.a[0] = u.a[1] = 0; u.b[sizeof(lzo_uint) - 1] = 128;
+    u.a[0] = u.a[1] = 0; u.b[sizeof (lzo_uint) - 1] = 128;
     p = u2p(&u, 0);
     r &= ((* (lzo_uintp) p) == 128);
 #endif
@@ -2675,19 +2675,19 @@ _lzo_config_check(void)
 #endif
 #if defined(LZO_UNALIGNED_OK_2)
     u.a[0] = u.a[1] = 0;
-    u.b[0] = 1; u.b[sizeof(unsigned short) + 1] = 2;
+    u.b[0] = 1; u.b[sizeof (unsigned short) + 1] = 2;
     p = u2p(&u, 1);
     r &= ((* (lzo_ushortp) p) == 0);
 #endif
 #if defined(LZO_UNALIGNED_OK_4)
     u.a[0] = u.a[1] = 0;
-    u.b[0] = 3; u.b[sizeof(lzo_uint32) + 1] = 4;
+    u.b[0] = 3; u.b[sizeof (lzo_uint32) + 1] = 4;
     p = u2p(&u, 1);
     r &= ((* (lzo_uint32p) p) == 0);
 #endif
 #if defined(LZO_UNALIGNED_OK_8)
     u.c[0] = u.c[1] = 0;
-    u.b[0] = 5; u.b[sizeof(lzo_uint64) + 1] = 6;
+    u.b[0] = 5; u.b[sizeof (lzo_uint64) + 1] = 6;
     p = u2p(&u, 1);
     r &= ((* (lzo_uint64p) p) == 0);
 #endif
@@ -2738,15 +2738,15 @@ __lzo_init_v2(unsigned v, int s1, int s2, int s3, int s4, int s5,
     if (v == 0)
         return LZO_E_ERROR;
 
-    r = (s1 == -1 || s1 == (int) sizeof(short)) &&
-        (s2 == -1 || s2 == (int) sizeof(int)) &&
-        (s3 == -1 || s3 == (int) sizeof(long)) &&
-        (s4 == -1 || s4 == (int) sizeof(lzo_uint32)) &&
-        (s5 == -1 || s5 == (int) sizeof(lzo_uint)) &&
+    r = (s1 == -1 || s1 == (int) sizeof (short)) &&
+        (s2 == -1 || s2 == (int) sizeof (int)) &&
+        (s3 == -1 || s3 == (int) sizeof (long)) &&
+        (s4 == -1 || s4 == (int) sizeof (lzo_uint32)) &&
+        (s5 == -1 || s5 == (int) sizeof (lzo_uint)) &&
         (s6 == -1 || s6 == (int) lzo_sizeof_dict_t) &&
-        (s7 == -1 || s7 == (int) sizeof(char *)) &&
-        (s8 == -1 || s8 == (int) sizeof(lzo_voidp)) &&
-        (s9 == -1 || s9 == (int) sizeof(lzo_callback_t));
+        (s7 == -1 || s7 == (int) sizeof (char *)) &&
+        (s8 == -1 || s8 == (int) sizeof (lzo_voidp)) &&
+        (s9 == -1 || s9 == (int) sizeof (lzo_callback_t));
     if (!r)
         return LZO_E_ERROR;
 
@@ -3457,7 +3457,7 @@ DO_COMPRESS      ( const lzo_bytep in , lzo_uint  in_len,
         if ((ll_end + ((t + ll) >> 5)) <= ll_end || (const lzo_bytep)(ll_end + ((t + ll) >> 5)) <= ip + ll)
             break;
 #if (LZO_DETERMINISTIC)
-        lzo_memset(wrkmem, 0, ((lzo_uint)1 << D_BITS) * sizeof(lzo_dict_t));
+        lzo_memset(wrkmem, 0, ((lzo_uint)1 << D_BITS) * sizeof (lzo_dict_t));
 #endif
         t = do_compress(ip,ll,op,out_len,t,wrkmem);
         ip += ll;

@@ -78,7 +78,7 @@ struct fsw_posix_volume * fsw_posix_mount(const char *path, struct fsw_fstype_ta
     struct fsw_posix_volume *pvol;
 
     // allocate volume structure
-    status = fsw_alloc_zero(sizeof(struct fsw_posix_volume), (void **)&pvol);
+    status = fsw_alloc_zero(sizeof (struct fsw_posix_volume), (void **)&pvol);
     if (status)
         return NULL;
     pvol->fd = -1;
@@ -128,7 +128,7 @@ struct fsw_posix_file * fsw_posix_open(struct fsw_posix_volume *pvol, const char
     // TODO: check flags for unwanted values
 
     // allocate file structure
-    status = fsw_alloc(sizeof(struct fsw_posix_file), &file);
+    status = fsw_alloc(sizeof (struct fsw_posix_file), &file);
     if (status)
         return NULL;
     file->pvol = pvol;
@@ -205,7 +205,7 @@ struct fsw_posix_dir * fsw_posix_opendir(struct fsw_posix_volume *pvol, const ch
     struct fsw_posix_dir *dir;
 
     // allocate file structure
-    status = fsw_alloc(sizeof(struct fsw_posix_dir), &dir);
+    status = fsw_alloc(sizeof (struct fsw_posix_dir), &dir);
     if (status)
         return NULL;
     dir->pvol = pvol;
@@ -461,7 +461,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
     fsw_posix_strcpy(FileInfo->FileName, &dno->name);
 
     // get the missing info from the fs driver
-    ZeroMem(&sb, sizeof(struct fsw_dnode_stat));
+    ZeroMem(&sb, sizeof (struct fsw_dnode_stat));
     sb.store_time_posix = fsw_posix_store_time_posix;
     sb.store_attr_posix = fsw_posix_store_attr_posix;
     sb.host_data = FileInfo;

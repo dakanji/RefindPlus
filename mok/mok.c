@@ -60,7 +60,7 @@ secure_mode (
 ) {
     EFI_STATUS status;
     EFI_GUID global_var = EFI_GLOBAL_VARIABLE;
-    UINTN charsize = sizeof(char);
+    UINTN charsize = sizeof (char);
     UINT8 *sb = NULL, *setupmode = NULL;
 
     status = EfivarGetRaw(
@@ -71,12 +71,12 @@ secure_mode (
     );
 
     /* FIXME - more paranoia here? */
-    if (status != EFI_SUCCESS || charsize != sizeof(CHAR8) || *sb != 1) {
+    if (status != EFI_SUCCESS || charsize != sizeof (CHAR8) || *sb != 1) {
         return FALSE;
     }
 
     status = EfivarGetRaw(&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
-    if (status == EFI_SUCCESS && charsize == sizeof(CHAR8) && *setupmode == 1) {
+    if (status == EFI_SUCCESS && charsize == sizeof (CHAR8) && *setupmode == 1) {
         return FALSE;
     }
 

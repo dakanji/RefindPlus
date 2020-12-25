@@ -72,7 +72,7 @@ generate_path(CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16
         if (name[0] != '\\')
                 pathlen++;
 
-        *PathName = AllocatePool((pathlen + 1 + StrLen(name))*sizeof(CHAR16));
+        *PathName = AllocatePool((pathlen + 1 + StrLen(name))*sizeof (CHAR16));
 
         if (!*PathName) {
                 Print(L"Failed to allocate path buffer\n");
@@ -133,7 +133,7 @@ simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
    EFI_FILE_INFO *fi;
    char buf[1024];
 
-   *size = sizeof(buf);
+   *size = sizeof (buf);
    fi = (void *)buf;
 
 

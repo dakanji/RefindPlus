@@ -89,7 +89,7 @@ ZSTD_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t *bitD);
 *  Local register size is 64-bits on 64-bits systems, 32-bits on 32-bits systems (size_t).
 *  You can then retrieve bitFields stored into the local register, **in reverse order**.
 *  Local register is explicitly reloaded from memory by the BIT_reloadDStream() method.
-*  A reload guarantee a minimum of ((8*sizeof(bitD->bitContainer))-7) bits when its result is BIT_DStream_unfinished.
+*  A reload guarantee a minimum of ((8*sizeof (bitD->bitContainer))-7) bits when its result is BIT_DStream_unfinished.
 *  Otherwise, it can be less than that, so proceed accordingly.
 *  Checking if DStream has reached its end can be performed with BIT_endOfDStream().
 */
@@ -122,13 +122,13 @@ static const unsigned BIT_mask[] = {0,       1,       3,       7,	0xF,      0x1F
 ZSTD_STATIC size_t BIT_initDStream(BIT_DStream_t *bitD, const void *srcBuffer, size_t srcSize)
 {
 	if (srcSize < 1) {
-		memset(bitD, 0, sizeof(*bitD));
+		memset(bitD, 0, sizeof (*bitD));
 		return ERROR(srcSize_wrong);
 	}
 
-	if (srcSize >= sizeof(bitD->bitContainer)) { /* normal case */
+	if (srcSize >= sizeof (bitD->bitContainer)) { /* normal case */
 		bitD->start = (const char *)srcBuffer;
-		bitD->ptr = (const char *)srcBuffer + srcSize - sizeof(bitD->bitContainer);
+		bitD->ptr = (const char *)srcBuffer + srcSize - sizeof (bitD->bitContainer);
 		bitD->bitContainer = ZSTD_readLEST(bitD->ptr);
 		{
 			BYTE const lastByte = ((const BYTE *)srcBuffer)[srcSize - 1];
@@ -141,9 +141,9 @@ ZSTD_STATIC size_t BIT_initDStream(BIT_DStream_t *bitD, const void *srcBuffer, s
 		bitD->ptr = bitD->start;
 		bitD->bitContainer = *(const BYTE *)(bitD->start);
 		switch (srcSize) {
-		case 7: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[6]) << (sizeof(bitD->bitContainer) * 8 - 16);
-		case 6: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[5]) << (sizeof(bitD->bitContainer) * 8 - 24);
-		case 5: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[4]) << (sizeof(bitD->bitContainer) * 8 - 32);
+		case 7: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[6]) << (sizeof (bitD->bitContainer) * 8 - 16);
+		case 6: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[5]) << (sizeof (bitD->bitContainer) * 8 - 24);
+		case 5: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[4]) << (sizeof (bitD->bitContainer) * 8 - 32);
 		case 4: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[3]) << 24;
 		case 3: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[2]) << 16;
 		case 2: bitD->bitContainer += (size_t)(((const BYTE *)(srcBuffer))[1]) << 8;
@@ -155,7 +155,7 @@ ZSTD_STATIC size_t BIT_initDStream(BIT_DStream_t *bitD, const void *srcBuffer, s
 			if (lastByte == 0)
 				return ERROR(GENERIC); /* endMark not present */
 		}
-		bitD->bitsConsumed += (U32)(sizeof(bitD->bitContainer) - srcSize) * 8;
+		bitD->bitsConsumed += (U32)(sizeof (bitD->bitContainer) - srcSize) * 8;
 	}
 
 	return srcSize;
@@ -176,7 +176,7 @@ ZSTD_STATIC size_t BIT_getLowerBits(size_t bitContainer, U32 const nbBits) { ret
  */
 ZSTD_STATIC size_t BIT_lookBits(const BIT_DStream_t *bitD, U32 nbBits)
 {
-	U32 const bitMask = sizeof(bitD->bitContainer) * 8 - 1;
+	U32 const bitMask = sizeof (bitD->bitContainer) * 8 - 1;
 	return ((bitD->bitContainer << (bitD->bitsConsumed & bitMask)) >> 1) >> ((bitMask - nbBits) & bitMask);
 }
 
@@ -184,7 +184,7 @@ ZSTD_STATIC size_t BIT_lookBits(const BIT_DStream_t *bitD, U32 nbBits)
 *   unsafe version; only works only if nbBits >= 1 */
 ZSTD_STATIC size_t BIT_lookBitsFast(const BIT_DStream_t *bitD, U32 nbBits)
 {
-	U32 const bitMask = sizeof(bitD->bitContainer) * 8 - 1;
+	U32 const bitMask = sizeof (bitD->bitContainer) * 8 - 1;
 	return (bitD->bitContainer << (bitD->bitsConsumed & bitMask)) >> (((bitMask + 1) - nbBits) & bitMask);
 }
 
@@ -215,20 +215,20 @@ ZSTD_STATIC size_t BIT_readBitsFast(BIT_DStream_t *bitD, U32 nbBits)
 *   Refill `bitD` from buffer previously set in BIT_initDStream() .
 *   This function is safe, it guarantees it will not read beyond src buffer.
 *   @return : status of `BIT_DStream_t` internal register.
-			  if status == BIT_DStream_unfinished, internal register is filled with >= (sizeof(bitD->bitContainer)*8 - 7) bits */
+			  if status == BIT_DStream_unfinished, internal register is filled with >= (sizeof (bitD->bitContainer)*8 - 7) bits */
 ZSTD_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t *bitD)
 {
-	if (bitD->bitsConsumed > (sizeof(bitD->bitContainer) * 8)) /* should not happen => corruption detected */
+	if (bitD->bitsConsumed > (sizeof (bitD->bitContainer) * 8)) /* should not happen => corruption detected */
 		return BIT_DStream_overflow;
 
-	if (bitD->ptr >= bitD->start + sizeof(bitD->bitContainer)) {
+	if (bitD->ptr >= bitD->start + sizeof (bitD->bitContainer)) {
 		bitD->ptr -= bitD->bitsConsumed >> 3;
 		bitD->bitsConsumed &= 7;
 		bitD->bitContainer = ZSTD_readLEST(bitD->ptr);
 		return BIT_DStream_unfinished;
 	}
 	if (bitD->ptr == bitD->start) {
-		if (bitD->bitsConsumed < sizeof(bitD->bitContainer) * 8)
+		if (bitD->bitsConsumed < sizeof (bitD->bitContainer) * 8)
 			return BIT_DStream_endOfBuffer;
 		return BIT_DStream_completed;
 	}
@@ -241,7 +241,7 @@ ZSTD_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t *bitD)
 		}
 		bitD->ptr -= nbBytes;
 		bitD->bitsConsumed -= nbBytes * 8;
-		bitD->bitContainer = ZSTD_readLEST(bitD->ptr); /* reminder : srcSize > sizeof(bitD) */
+		bitD->bitContainer = ZSTD_readLEST(bitD->ptr); /* reminder : srcSize > sizeof (bitD) */
 		return result;
 	}
 }
@@ -251,7 +251,7 @@ ZSTD_STATIC BIT_DStream_status BIT_reloadDStream(BIT_DStream_t *bitD)
 */
 ZSTD_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t *DStream)
 {
-	return ((DStream->ptr == DStream->start) && (DStream->bitsConsumed == sizeof(DStream->bitContainer) * 8));
+	return ((DStream->ptr == DStream->start) && (DStream->bitsConsumed == sizeof (DStream->bitContainer) * 8));
 }
 
 #endif /* BITSTREAM_H_MODULE */

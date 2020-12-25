@@ -378,7 +378,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTO
     }
 
     // allocate volume structure
-    Volume = AllocateZeroPool(sizeof(FSW_VOLUME_DATA));
+    Volume = AllocateZeroPool(sizeof (FSW_VOLUME_DATA));
     Volume->Signature       = FSW_VOLUME_DATA_SIGNATURE;
     Volume->Handle          = ControllerHandle;
     Volume->DiskIo          = DiskIo;
@@ -883,7 +883,7 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
         return EFI_UNSUPPORTED;
 
     // allocate file structure
-    File = AllocateZeroPool(sizeof(FSW_FILE_DATA));
+    File = AllocateZeroPool(sizeof (FSW_FILE_DATA));
     File->Signature = FSW_FILE_DATA_SIGNATURE;
     if (dno->type == FSW_DNODE_TYPE_FILE)
         File->Type = FSW_EFI_FILE_TYPE_FILE;
@@ -992,7 +992,7 @@ EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
 
     lookup_path.type = FSW_STRING_TYPE_UTF16;
     lookup_path.len  = (int)StrLen(FileName);
-    lookup_path.size = lookup_path.len * sizeof(fsw_u16);
+    lookup_path.size = lookup_path.len * sizeof (fsw_u16);
     lookup_path.data = FileName;
 
     // resolve the path (symlinks along the way are automatically resolved)
@@ -1111,7 +1111,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
         fsw_efi_strcpy(FSInfo->VolumeLabel, &Volume->vol->label);
 
         // get the missing info from the fs driver
-        ZeroMem(&vsb, sizeof(struct fsw_volume_stat));
+        ZeroMem(&vsb, sizeof (struct fsw_volume_stat));
         Status = fsw_efi_map_status(fsw_volume_stat(Volume->vol, &vsb), Volume);
         if (EFI_ERROR(Status))
             return Status;
@@ -1231,7 +1231,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
     fsw_efi_strcpy(FileInfo->FileName, &dno->name);
 
     // get the missing info from the fs driver
-    ZeroMem(&sb, sizeof(struct fsw_dnode_stat));
+    ZeroMem(&sb, sizeof (struct fsw_dnode_stat));
     sb.host_data = FileInfo;
     Status = fsw_efi_map_status(fsw_dnode_stat(dno, &sb), Volume);
     if (EFI_ERROR(Status))

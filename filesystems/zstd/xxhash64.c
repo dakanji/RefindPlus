@@ -89,12 +89,12 @@ void xxh64_reset(struct xxh64_state *statePtr, const uint64_t seed)
 	/* use a local state for memcpy() to avoid strict-aliasing warnings */
 	struct xxh64_state state;
 
-	memset(&state, 0, sizeof(state));
+	memset(&state, 0, sizeof (state));
 	state.v1 = seed + PRIME64_1 + PRIME64_2;
 	state.v2 = seed + PRIME64_2;
 	state.v3 = seed + 0;
 	state.v4 = seed - PRIME64_1;
-	memcpy(statePtr, &state, sizeof(state));
+	memcpy(statePtr, &state, sizeof (state));
 }
 
 int xxh64_update(struct xxh64_state *state, const void *input, const size_t len)

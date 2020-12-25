@@ -113,7 +113,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
-    UINTN           Size = sizeof(Header);
+    UINTN           Size = sizeof (Header);
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
@@ -138,7 +138,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     refit_call1_wrapper(FileHandle->Close, FileHandle);
 
     IsValid = !EFI_ERROR(Status) &&
-              Size == sizeof(Header) &&
+              Size == sizeof (Header) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
                (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
                Header[Size] == 'P' && Header[Size+1] == 'E' &&
@@ -256,7 +256,7 @@ StartEFIImage (
         goto bailout_unload;
     }
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof(CHAR16) : 0;
+    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
@@ -308,7 +308,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     }
     MyFreePool(b);
 
-    err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof(UINT64), TRUE);
+    err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof (UINT64), TRUE);
     if (err != EFI_SUCCESS) {
         return err;
     }

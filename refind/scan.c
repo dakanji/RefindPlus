@@ -217,19 +217,19 @@ static REFIT_MENU_SCREEN* CopyMenuScreen(REFIT_MENU_SCREEN *Entry) {
     REFIT_MENU_SCREEN *NewEntry;
     UINTN i;
 
-    NewEntry = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
+    NewEntry = AllocateZeroPool(sizeof (REFIT_MENU_SCREEN));
     if ((Entry != NULL) && (NewEntry != NULL)) {
-        CopyMem(NewEntry, Entry, sizeof(REFIT_MENU_SCREEN));
+        CopyMem(NewEntry, Entry, sizeof (REFIT_MENU_SCREEN));
         NewEntry->Title = (Entry->Title) ? StrDuplicate(Entry->Title) : NULL;
         NewEntry->TimeoutText = (Entry->TimeoutText) ? StrDuplicate(Entry->TimeoutText) : NULL;
 
         if (Entry->TitleImage != NULL) {
-            NewEntry->TitleImage = AllocatePool(sizeof(EG_IMAGE));
+            NewEntry->TitleImage = AllocatePool(sizeof (EG_IMAGE));
             if (NewEntry->TitleImage != NULL)
-                CopyMem(NewEntry->TitleImage, Entry->TitleImage, sizeof(EG_IMAGE));
+                CopyMem(NewEntry->TitleImage, Entry->TitleImage, sizeof (EG_IMAGE));
         } // if
 
-        NewEntry->InfoLines = (CHAR16**) AllocateZeroPool(Entry->InfoLineCount * (sizeof(CHAR16*)));
+        NewEntry->InfoLines = (CHAR16**) AllocateZeroPool(Entry->InfoLineCount * (sizeof (CHAR16*)));
         for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
             NewEntry->InfoLines[i] = (Entry->InfoLines[i]) ? StrDuplicate(Entry->InfoLines[i]) : NULL;
         } // for
@@ -252,20 +252,20 @@ static REFIT_MENU_SCREEN* CopyMenuScreen(REFIT_MENU_SCREEN *Entry) {
 static REFIT_MENU_ENTRY* CopyMenuEntry(REFIT_MENU_ENTRY *Entry) {
     REFIT_MENU_ENTRY *NewEntry;
 
-    NewEntry = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+    NewEntry = AllocateZeroPool(sizeof (REFIT_MENU_ENTRY));
     if ((Entry != NULL) && (NewEntry != NULL)) {
-        CopyMem(NewEntry, Entry, sizeof(REFIT_MENU_ENTRY));
+        CopyMem(NewEntry, Entry, sizeof (REFIT_MENU_ENTRY));
         NewEntry->Title = (Entry->Title) ? StrDuplicate(Entry->Title) : NULL;
         if (Entry->BadgeImage != NULL) {
-            NewEntry->BadgeImage = AllocatePool(sizeof(EG_IMAGE));
+            NewEntry->BadgeImage = AllocatePool(sizeof (EG_IMAGE));
             if (NewEntry->BadgeImage != NULL) {
-                CopyMem(NewEntry->BadgeImage, Entry->BadgeImage, sizeof(EG_IMAGE));
+                CopyMem(NewEntry->BadgeImage, Entry->BadgeImage, sizeof (EG_IMAGE));
             }
         }
         if (Entry->Image != NULL) {
-            NewEntry->Image = AllocatePool(sizeof(EG_IMAGE));
+            NewEntry->Image = AllocatePool(sizeof (EG_IMAGE));
             if (NewEntry->Image != NULL) {
-                CopyMem(NewEntry->Image, Entry->Image, sizeof(EG_IMAGE));
+                CopyMem(NewEntry->Image, Entry->Image, sizeof (EG_IMAGE));
             }
         }
         if (Entry->SubScreen != NULL) {
@@ -283,7 +283,7 @@ static REFIT_MENU_ENTRY* CopyMenuEntry(REFIT_MENU_ENTRY *Entry) {
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry) {
     LOADER_ENTRY *NewEntry = NULL;
 
-    NewEntry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+    NewEntry = AllocateZeroPool(sizeof (LOADER_ENTRY));
     if (NewEntry != NULL) {
         NewEntry->me.Title        = NULL;
         NewEntry->me.Tag          = TAG_LOADER;
@@ -315,9 +315,9 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
 
     FileName = Basename(Entry->LoaderPath);
     if (Entry->me.SubScreen == NULL) { // No subscreen yet; initialize default entry....
-        SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
+        SubScreen = AllocateZeroPool(sizeof (REFIT_MENU_SCREEN));
         if (SubScreen != NULL) {
-            SubScreen->Title = AllocateZeroPool(sizeof(CHAR16) * 256);
+            SubScreen->Title = AllocateZeroPool(sizeof (CHAR16) * 256);
             SPrint(SubScreen->Title,
                 255,
                 L"Boot Options for %s on %s",
@@ -693,7 +693,7 @@ static LOADER_ENTRY * AddLoaderEntry(
         }
 
         Entry->Title = StrDuplicate((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
-        Entry->me.Title = AllocateZeroPool(sizeof(CHAR16) * 256);
+        Entry->me.Title = AllocateZeroPool(sizeof (CHAR16) * 256);
 
         // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
         // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
@@ -1045,7 +1045,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
               continue;   // skip this
           }
 
-          NewLoader = AllocateZeroPool(sizeof(struct LOADER_LIST));
+          NewLoader = AllocateZeroPool(sizeof (struct LOADER_LIST));
           if (NewLoader != NULL) {
              NewLoader->FileName = StrDuplicate(FullName);
              NewLoader->TimeStamp = DirEntry->ModificationTime;
@@ -1152,8 +1152,8 @@ static VOID ScanNetboot() {
     ) {
             Location = RuniPXEDiscover(SelfVolume->DeviceHandle);
             if (Location != NULL && FileExists(SelfVolume->RootDir, iPXEFileName)) {
-                NetVolume = AllocatePool(sizeof(REFIT_VOLUME));
-                CopyMem(NetVolume, SelfVolume, sizeof(REFIT_VOLUME));
+                NetVolume = AllocatePool(sizeof (REFIT_VOLUME));
+                CopyMem(NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
                 NetVolume->DiskKind = DISK_KIND_NET;
                 NetVolume->VolBadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_NET);
                 NetVolume->PartName = NetVolume->VolName = NULL;
@@ -1398,7 +1398,7 @@ static LOADER_ENTRY * AddToolEntry(
     LOADER_ENTRY *Entry;
     CHAR16       *TitleStr = NULL;
 
-    Entry = AllocateZeroPool(sizeof(LOADER_ENTRY));
+    Entry = AllocateZeroPool(sizeof (LOADER_ENTRY));
 
     TitleStr = PoolPrint(L"Load %s", LoaderTitle);
     Entry->me.Title = TitleStr;

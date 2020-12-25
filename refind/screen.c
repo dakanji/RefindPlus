@@ -94,7 +94,7 @@ PrepareBlankLine (
 
     MyFreePool(BlankLine);
     // make a buffer for a whole text line
-    BlankLine = AllocatePool((ConWidth + 1) * sizeof(CHAR16));
+    BlankLine = AllocatePool((ConWidth + 1) * sizeof (CHAR16));
     for (i = 0; i < ConWidth; i++) {
         BlankLine[i] = ' ';
     }

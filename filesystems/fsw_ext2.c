@@ -52,8 +52,8 @@ static fsw_status_t fsw_ext2_readlink(struct fsw_ext2_volume *vol, struct fsw_ex
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(ext2) = {
     { FSW_STRING_TYPE_ISO88591, 4, 4, "ext2" },
-    sizeof(struct fsw_ext2_volume),
-    sizeof(struct fsw_ext2_dnode),
+    sizeof (struct fsw_ext2_volume),
+    sizeof (struct fsw_ext2_dnode),
 
     fsw_ext2_volume_mount,
     fsw_ext2_volume_free,
@@ -83,7 +83,7 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
     struct fsw_string s;
 
     // allocate memory to keep the superblock around
-    status = fsw_alloc(sizeof(struct ext2_super_block), &vol->sb);
+    status = fsw_alloc(sizeof (struct ext2_super_block), &vol->sb);
     if (status)
         return status;
 
@@ -92,7 +92,7 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
     status = fsw_block_get(vol, EXT2_SUPERBLOCK_BLOCKNO, 0, &buffer);
     if (status)
         return status;
-    fsw_memcpy(vol->sb, buffer, sizeof(struct ext2_super_block));
+    fsw_memcpy(vol->sb, buffer, sizeof (struct ext2_super_block));
     fsw_block_release(vol, EXT2_SUPERBLOCK_BLOCKNO, buffer);
 
     // check the superblock
@@ -132,9 +132,9 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
 
     // read the group descriptors to get inode table offsets
     groupcnt = ((vol->sb->s_inodes_count - 2) / vol->sb->s_inodes_per_group) + 1;
-    gdesc_per_block = (vol->g.phys_blocksize / sizeof(struct ext2_group_desc));
+    gdesc_per_block = (vol->g.phys_blocksize / sizeof (struct ext2_group_desc));
 
-    status = fsw_alloc(sizeof(fsw_u32) * groupcnt, &vol->inotab_bno);
+    status = fsw_alloc(sizeof (fsw_u32) * groupcnt, &vol->inotab_bno);
     if (status)
         return status;
     for (groupno = 0; groupno < groupcnt; groupno++) {

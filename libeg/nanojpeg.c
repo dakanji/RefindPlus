@@ -669,7 +669,7 @@ static int njGetVLC(nj_vlc_code_t* vlc, unsigned char* code) {
 NJ_INLINE void njDecodeBlock(nj_component_t* c, unsigned char* out) {
     unsigned char code = 0;
     int value, coef = 0;
-    njFillMem(nj.block, 0, sizeof(nj.block));
+    njFillMem(nj.block, 0, sizeof (nj.block));
     c->dcpred += njGetVLC(&nj.vlctab[c->dctabsel][0], NULL);
     nj.block[0] = (c->dcpred) * nj.qtab[c->qtsel][0];
     do {
@@ -883,11 +883,11 @@ NJ_INLINE void njConvert(void) {
 // njInit() FAILS!
 int njInit(void) {
     int i, retval = 1;
-    njFillMem(&nj, 0, sizeof(nj_context_t));
+    njFillMem(&nj, 0, sizeof (nj_context_t));
     for (i = 0; i < 4; i++) {
-        nj.vlctab[i] = njAllocMem(sizeof(nj_vlc_code_t) * 65536);
+        nj.vlctab[i] = njAllocMem(sizeof (nj_vlc_code_t) * 65536);
         if (nj.vlctab[i])
-            njFillMem(nj.vlctab[i], 0, sizeof(nj_vlc_code_t) * 65536);
+            njFillMem(nj.vlctab[i], 0, sizeof (nj_vlc_code_t) * 65536);
         else
             retval = 0;
     } // for

@@ -67,10 +67,10 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
    if (!line_in)
       line_in = L"";
    size = StrLen(line_in) + 1024;
-   line = AllocatePool(size * sizeof(CHAR16));
+   line = AllocatePool(size * sizeof (CHAR16));
    StrCpy(line, line_in);
    len = StrLen(line);
-   print = AllocatePool(x_max * sizeof(CHAR16));
+   print = AllocatePool(x_max * sizeof (CHAR16));
 
    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
 
@@ -87,7 +87,7 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
       i = len - first;
       if (i >= x_max-2)
          i = x_max-2;
-      CopyMem(print, line + first, i * sizeof(CHAR16));
+      CopyMem(print, line + first, i * sizeof (CHAR16));
       print[i++] = ' ';
       print[i] = '\0';
 

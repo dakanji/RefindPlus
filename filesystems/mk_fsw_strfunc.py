@@ -121,7 +121,7 @@ static fsw_status_t fsw_strcoerce_%(enc1)s_%(enc2)s(void *srcdata, int srclen, s
     
     dest->type = FSW_STRING_TYPE_%(enc2)s;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(%(type2)s);
+    dest->size = srclen * sizeof (%(type2)s);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;

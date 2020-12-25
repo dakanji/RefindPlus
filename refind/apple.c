@@ -136,7 +136,7 @@ EFI_STATUS SetAppleOSInfo() {
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     EfiAppleSetOsInterface *SetOs = NULL;
 
-    Status = refit_call3_wrapper (
+    Status = refit_call3_wrapper(
         gBS->LocateProtocol,
         &apple_set_os_guid,
         NULL,
@@ -159,7 +159,7 @@ EFI_STATUS SetAppleOSInfo() {
             AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
             UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
             if (AppleOSVersion8) {
-                Status = refit_call1_wrapper (SetOs->SetOsVersion, AppleOSVersion8);
+                Status = refit_call1_wrapper(SetOs->SetOsVersion, AppleOSVersion8);
                 if (!EFI_ERROR (Status)) {
                     Status = EFI_SUCCESS;
                 }
@@ -169,7 +169,7 @@ EFI_STATUS SetAppleOSInfo() {
             }
 
             if ((Status == EFI_SUCCESS) && (SetOs->Version >= 2)) {
-                Status = refit_call1_wrapper (SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
+                Status = refit_call1_wrapper(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
             }
             MyFreePool (AppleOSVersion);
         } // if (AppleOSVersion)

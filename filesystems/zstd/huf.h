@@ -91,11 +91,11 @@ typedef U32 HUF_DTable;
 
 /* The workspace must have alignment at least 4 and be at least this large */
 #define HUF_COMPRESS_WORKSPACE_SIZE (6 << 10)
-#define HUF_COMPRESS_WORKSPACE_SIZE_U32 (HUF_COMPRESS_WORKSPACE_SIZE / sizeof(U32))
+#define HUF_COMPRESS_WORKSPACE_SIZE_U32 (HUF_COMPRESS_WORKSPACE_SIZE / sizeof (U32))
 
 /* The workspace must have alignment at least 4 and be at least this large */
 #define HUF_DECOMPRESS_WORKSPACE_SIZE (3 << 10)
-#define HUF_DECOMPRESS_WORKSPACE_SIZE_U32 (HUF_DECOMPRESS_WORKSPACE_SIZE / sizeof(U32))
+#define HUF_DECOMPRESS_WORKSPACE_SIZE_U32 (HUF_DECOMPRESS_WORKSPACE_SIZE / sizeof (U32))
 
 /* ****************************************
 *  Advanced decompression functions

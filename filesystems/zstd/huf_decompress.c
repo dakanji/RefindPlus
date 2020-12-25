@@ -71,7 +71,7 @@ typedef struct {
 static DTableDesc HUF_getDTableDesc(const HUF_DTable *table)
 {
 	DTableDesc dtd;
-	memcpy(&dtd, table, sizeof(dtd));
+	memcpy(&dtd, table, sizeof (dtd));
 	return dtd;
 }
 
@@ -106,8 +106,8 @@ size_t HUF_readDTableX2_wksp(HUF_DTable *DTable, const void *src, size_t srcSize
 	workspace = (U32 *)workspace + spaceUsed32;
 	workspaceSize -= (spaceUsed32 << 2);
 
-	HUF_STATIC_ASSERT(sizeof(DTableDesc) == sizeof(HUF_DTable));
-	/* memset(huffWeight, 0, sizeof(huffWeight)); */ /* is not necessary, even though some analyzer complain ... */
+	HUF_STATIC_ASSERT(sizeof (DTableDesc) == sizeof (HUF_DTable));
+	/* memset(huffWeight, 0, sizeof (huffWeight)); */ /* is not necessary, even though some analyzer complain ... */
 
 	iSize = HUF_readStats_wksp(huffWeight, HUF_SYMBOLVALUE_MAX + 1, rankVal, &nbSymbols, &tableLog, src, srcSize, workspace, workspaceSize);
 	if (HUF_isError(iSize))
@@ -120,7 +120,7 @@ size_t HUF_readDTableX2_wksp(HUF_DTable *DTable, const void *src, size_t srcSize
 			return ERROR(tableLog_tooLarge); /* DTable too small, Huffman tree cannot fit in */
 		dtd.tableType = 0;
 		dtd.tableLog = (BYTE)tableLog;
-		memcpy(DTable, &dtd, sizeof(dtd));
+		memcpy(DTable, &dtd, sizeof (dtd));
 	}
 
 	/* Calculate starting value for each rank */
@@ -380,7 +380,7 @@ static void HUF_fillDTableX4Level2(HUF_DEltX4 *DTable, U32 sizeLog, const U32 co
 	U32 rankVal[HUF_TABLELOG_MAX + 1];
 
 	/* get pre-calculated rankVal */
-	memcpy(rankVal, rankValOrigin, sizeof(rankVal));
+	memcpy(rankVal, rankValOrigin, sizeof (rankVal));
 
 	/* fill skipped values */
 	if (minWeight > 1) {
@@ -427,7 +427,7 @@ static void HUF_fillDTableX4(HUF_DEltX4 *DTable, const U32 targetLog, const sort
 	const U32 minBits = nbBitsBaseline - maxWeight;
 	U32 s;
 
-	memcpy(rankVal, rankValOrigin, sizeof(rankVal));
+	memcpy(rankVal, rankValOrigin, sizeof (rankVal));
 
 	/* fill DTable */
 	for (s = 0; s < sortedListSize; s++) {
@@ -478,16 +478,16 @@ size_t HUF_readDTableX4_wksp(HUF_DTable *DTable, const void *src, size_t srcSize
 	BYTE *weightList;
 	size_t spaceUsed32 = 0;
 
-	HUF_STATIC_ASSERT((sizeof(rankValCol_t) & 3) == 0);
+	HUF_STATIC_ASSERT((sizeof (rankValCol_t) & 3) == 0);
 
 	rankVal = (rankValCol_t *)((U32 *)workspace + spaceUsed32);
-	spaceUsed32 += (sizeof(rankValCol_t) * HUF_TABLELOG_MAX) >> 2;
+	spaceUsed32 += (sizeof (rankValCol_t) * HUF_TABLELOG_MAX) >> 2;
 	rankStats = (U32 *)workspace + spaceUsed32;
 	spaceUsed32 += HUF_TABLELOG_MAX + 1;
 	rankStart0 = (U32 *)workspace + spaceUsed32;
 	spaceUsed32 += HUF_TABLELOG_MAX + 2;
 	sortedSymbol = (sortedSymbol_t *)((U32 *)workspace + spaceUsed32);
-	spaceUsed32 += UP_U32(sizeof(sortedSymbol_t) * (HUF_SYMBOLVALUE_MAX + 1));
+	spaceUsed32 += UP_U32(sizeof (sortedSymbol_t) * (HUF_SYMBOLVALUE_MAX + 1));
 	weightList = (BYTE *)((U32 *)workspace + spaceUsed32);
 	spaceUsed32 += UP_U32(HUF_SYMBOLVALUE_MAX + 1);
 
@@ -497,12 +497,12 @@ size_t HUF_readDTableX4_wksp(HUF_DTable *DTable, const void *src, size_t srcSize
 	workspaceSize -= (spaceUsed32 << 2);
 
 	rankStart = rankStart0 + 1;
-	memset(rankStats, 0, sizeof(U32) * (2 * HUF_TABLELOG_MAX + 2 + 1));
+	memset(rankStats, 0, sizeof (U32) * (2 * HUF_TABLELOG_MAX + 2 + 1));
 
-	HUF_STATIC_ASSERT(sizeof(HUF_DEltX4) == sizeof(HUF_DTable)); /* if compiler fails here, assertion is wrong */
+	HUF_STATIC_ASSERT(sizeof (HUF_DEltX4) == sizeof (HUF_DTable)); /* if compiler fails here, assertion is wrong */
 	if (maxTableLog > HUF_TABLELOG_MAX)
 		return ERROR(tableLog_tooLarge);
-	/* memset(weightList, 0, sizeof(weightList)); */ /* is not necessary, even though some analyzer complain ... */
+	/* memset(weightList, 0, sizeof (weightList)); */ /* is not necessary, even though some analyzer complain ... */
 
 	iSize = HUF_readStats_wksp(weightList, HUF_SYMBOLVALUE_MAX + 1, rankStats, &nbSymbols, &tableLog, src, srcSize, workspace, workspaceSize);
 	if (HUF_isError(iSize))
@@ -570,7 +570,7 @@ size_t HUF_readDTableX4_wksp(HUF_DTable *DTable, const void *src, size_t srcSize
 
 	dtd.tableLog = (BYTE)maxTableLog;
 	dtd.tableType = 1;
-	memcpy(DTable, &dtd, sizeof(dtd));
+	memcpy(DTable, &dtd, sizeof (dtd));
 	return iSize;
 }
 
@@ -589,11 +589,11 @@ static U32 HUF_decodeLastSymbolX4(void *op, BIT_DStream_t *DStream, const HUF_DE
 	if (dt[val].length == 1)
 		BIT_skipBits(DStream, dt[val].nbBits);
 	else {
-		if (DStream->bitsConsumed < (sizeof(DStream->bitContainer) * 8)) {
+		if (DStream->bitsConsumed < (sizeof (DStream->bitContainer) * 8)) {
 			BIT_skipBits(DStream, dt[val].nbBits);
-			if (DStream->bitsConsumed > (sizeof(DStream->bitContainer) * 8))
+			if (DStream->bitsConsumed > (sizeof (DStream->bitContainer) * 8))
 				/* ugly hack; works only because it's the last symbol. Note : can't easily extract nbBits from just this symbol */
-				DStream->bitsConsumed = (sizeof(DStream->bitContainer) * 8);
+				DStream->bitsConsumed = (sizeof (DStream->bitContainer) * 8);
 		}
 	}
 	return 1;
@@ -614,7 +614,7 @@ FORCE_INLINE size_t HUF_decodeStreamX4(BYTE *p, BIT_DStream_t *bitDPtr, BYTE *co
 	BYTE *const pStart = p;
 
 	/* up to 8 symbols at a time */
-	while ((BIT_reloadDStream(bitDPtr) == BIT_DStream_unfinished) & (p < pEnd - (sizeof(bitDPtr->bitContainer) - 1))) {
+	while ((BIT_reloadDStream(bitDPtr) == BIT_DStream_unfinished) & (p < pEnd - (sizeof (bitDPtr->bitContainer) - 1))) {
 		HUF_DECODE_SYMBOLX4_2(p, bitDPtr);
 		HUF_DECODE_SYMBOLX4_1(p, bitDPtr);
 		HUF_DECODE_SYMBOLX4_2(p, bitDPtr);
@@ -725,7 +725,7 @@ static size_t HUF_decompress4X4_usingDTable_internal(void *dst, size_t dstSize, 
 
 		/* 16-32 symbols per loop (4-8 symbols per stream) */
 		endSignal = BIT_reloadDStream(&bitD1) | BIT_reloadDStream(&bitD2) | BIT_reloadDStream(&bitD3) | BIT_reloadDStream(&bitD4);
-		for (; (endSignal == BIT_DStream_unfinished) & (op4 < (oend - (sizeof(bitD4.bitContainer) - 1)));) {
+		for (; (endSignal == BIT_DStream_unfinished) & (op4 < (oend - (sizeof (bitD4.bitContainer) - 1)));) {
 			HUF_DECODE_SYMBOLX4_2(op1, &bitD1);
 			HUF_DECODE_SYMBOLX4_2(op2, &bitD2);
 			HUF_DECODE_SYMBOLX4_2(op3, &bitD3);
@@ -905,7 +905,7 @@ size_t HUF_readStats_wksp(BYTE *huffWeight, size_t hwSize, U32 *rankStats, U32 *
 	}
 
 	/* collect weight stats */
-	memset(rankStats, 0, (HUF_TABLELOG_MAX + 1) * sizeof(U32));
+	memset(rankStats, 0, (HUF_TABLELOG_MAX + 1) * sizeof (U32));
 	weightTotal = 0;
 	{
 		U32 n;

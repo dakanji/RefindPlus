@@ -113,8 +113,8 @@ size_t ZSTD_decompressBegin(ZSTD_DCtx *dctx)
 	dctx->entropy.hufTable[0] = (HUF_DTable)((HufLog)*0x1000001); /* cover both little and big endian */
 	dctx->litEntropy = dctx->fseEntropy = 0;
 	dctx->dictID = 0;
-	ZSTD_STATIC_ASSERT(sizeof(dctx->entropy.rep) == sizeof(repStartValue));
-	memcpy(dctx->entropy.rep, repStartValue, sizeof(repStartValue)); /* initial repcodes */
+	ZSTD_STATIC_ASSERT(sizeof (dctx->entropy.rep) == sizeof (repStartValue));
+	memcpy(dctx->entropy.rep, repStartValue, sizeof (repStartValue)); /* initial repcodes */
 	dctx->LLTptr = dctx->entropy.LLTable;
 	dctx->MLTptr = dctx->entropy.MLTable;
 	dctx->OFTptr = dctx->entropy.OFTable;
@@ -157,7 +157,7 @@ size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src, size_t
 		if ((ZSTD_readLE32(src) & 0xFFFFFFF0U) == ZSTD_MAGIC_SKIPPABLE_START) {
 			if (srcSize < ZSTD_skippableHeaderSize)
 				return ZSTD_skippableHeaderSize; /* magic number + skippable frame length */
-			memset(fparamsPtr, 0, sizeof(*fparamsPtr));
+			memset(fparamsPtr, 0, sizeof (*fparamsPtr));
 			fparamsPtr->frameContentSize = ZSTD_readLE32((const char *)src + 4);
 			fparamsPtr->windowSize = 0; /* windowSize==0 means a frame is skippable */
 			return 0;
@@ -351,9 +351,9 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx *dctx, const void *src, size_t srcSize
 							    : HUF_decompress4X_usingDTable(dctx->litBuffer, litSize, istart + lhSize, litCSize, dctx->HUFptr))
 					    : (singleStream
 						   ? HUF_decompress1X2_DCtx_wksp(dctx->entropy.hufTable, dctx->litBuffer, litSize, istart + lhSize, litCSize,
-										 dctx->entropy.workspace, sizeof(dctx->entropy.workspace))
+										 dctx->entropy.workspace, sizeof (dctx->entropy.workspace))
 						   : HUF_decompress4X_hufOnly_wksp(dctx->entropy.hufTable, dctx->litBuffer, litSize, istart + lhSize, litCSize,
-										   dctx->entropy.workspace, sizeof(dctx->entropy.workspace)))))
+										   dctx->entropy.workspace, sizeof (dctx->entropy.workspace)))))
 					return ERROR(corruption_detected);
 
 				dctx->litPtr = dctx->litBuffer;
@@ -637,7 +637,7 @@ static size_t ZSTD_buildSeqTable(FSE_DTable *DTableSpace, const FSE_DTable **DTa
 	case set_compressed: {
 		U32 tableLog;
 		S16 *norm = (S16 *)workspace;
-		size_t const spaceUsed32 = UP_U32(sizeof(S16) * (MaxSeq + 1));
+		size_t const spaceUsed32 = UP_U32(sizeof (S16) * (MaxSeq + 1));
 
 		if ((spaceUsed32 << 2) > workspaceSize)
 			return ERROR(GENERIC);
@@ -700,21 +700,21 @@ size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx *dctx, int *nbSeqPtr, const void *src, si
 		/* Build DTables */
 		{
 			size_t const llhSize = ZSTD_buildSeqTable(dctx->entropy.LLTable, &dctx->LLTptr, LLtype, MaxLL, LLFSELog, ip, iend - ip,
-								  LL_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof(dctx->entropy.workspace));
+								  LL_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof (dctx->entropy.workspace));
 			if (ZSTD_isError(llhSize))
 				return ERROR(corruption_detected);
 			ip += llhSize;
 		}
 		{
 			size_t const ofhSize = ZSTD_buildSeqTable(dctx->entropy.OFTable, &dctx->OFTptr, OFtype, MaxOff, OffFSELog, ip, iend - ip,
-								  OF_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof(dctx->entropy.workspace));
+								  OF_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof (dctx->entropy.workspace));
 			if (ZSTD_isError(ofhSize))
 				return ERROR(corruption_detected);
 			ip += ofhSize;
 		}
 		{
 			size_t const mlhSize = ZSTD_buildSeqTable(dctx->entropy.MLTable, &dctx->MLTptr, MLtype, MaxML, MLFSELog, ip, iend - ip,
-								  ML_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof(dctx->entropy.workspace));
+								  ML_defaultDTable, dctx->fseEntropy, dctx->entropy.workspace, sizeof (dctx->entropy.workspace));
 			if (ZSTD_isError(mlhSize))
 				return ERROR(corruption_detected);
 			ip += mlhSize;
@@ -1243,7 +1243,7 @@ static size_t ZSTD_decompressSequencesLong(ZSTD_DCtx *dctx, void *dst, size_t ma
 		int const seqAdvance = MIN(nbSeq, ADVANCED_SEQS);
 		seqState_t seqState;
 		int seqNb;
-		ZSTD_STATIC_ASSERT(sizeof(dctx->entropy.workspace) >= sizeof(seq_t) * STORED_SEQS);
+		ZSTD_STATIC_ASSERT(sizeof (dctx->entropy.workspace) >= sizeof (seq_t) * STORED_SEQS);
 		dctx->fseEntropy = 1;
 		{
 			U32 i;
@@ -1323,7 +1323,7 @@ static size_t ZSTD_decompressBlock_internal(ZSTD_DCtx *dctx, void *dst, size_t d
 		ip += litCSize;
 		srcSize -= litCSize;
 	}
-	if (sizeof(size_t) > 4) /* do not enable prefetching on 32-bits x86, as it's performance detrimental */
+	if (sizeof (size_t) > 4) /* do not enable prefetching on 32-bits x86, as it's performance detrimental */
 				/* likely because of register pressure */
 				/* if that's the correct cause, then 32-bits ARM should be affected differently */
 				/* it would be good to test this on ARM real hardware, to see if prefetch version improves speed */
@@ -1708,7 +1708,7 @@ static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const 
 	dictPtr += 8; /* skip header = magic + dictID */
 
 	{
-		size_t const hSize = HUF_readDTableX4_wksp(entropy->hufTable, dictPtr, dictEnd - dictPtr, entropy->workspace, sizeof(entropy->workspace));
+		size_t const hSize = HUF_readDTableX4_wksp(entropy->hufTable, dictPtr, dictEnd - dictPtr, entropy->workspace, sizeof (entropy->workspace));
 		if (HUF_isError(hSize))
 			return ERROR(dictionary_corrupted);
 		dictPtr += hSize;
@@ -1722,7 +1722,7 @@ static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const 
 			return ERROR(dictionary_corrupted);
 		if (offcodeLog > OffFSELog)
 			return ERROR(dictionary_corrupted);
-		CHECK_E(FSE_buildDTable_wksp(entropy->OFTable, offcodeNCount, offcodeMaxValue, offcodeLog, entropy->workspace, sizeof(entropy->workspace)), dictionary_corrupted);
+		CHECK_E(FSE_buildDTable_wksp(entropy->OFTable, offcodeNCount, offcodeMaxValue, offcodeLog, entropy->workspace, sizeof (entropy->workspace)), dictionary_corrupted);
 		dictPtr += offcodeHeaderSize;
 	}
 
@@ -1734,7 +1734,7 @@ static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const 
 			return ERROR(dictionary_corrupted);
 		if (matchlengthLog > MLFSELog)
 			return ERROR(dictionary_corrupted);
-		CHECK_E(FSE_buildDTable_wksp(entropy->MLTable, matchlengthNCount, matchlengthMaxValue, matchlengthLog, entropy->workspace, sizeof(entropy->workspace)), dictionary_corrupted);
+		CHECK_E(FSE_buildDTable_wksp(entropy->MLTable, matchlengthNCount, matchlengthMaxValue, matchlengthLog, entropy->workspace, sizeof (entropy->workspace)), dictionary_corrupted);
 		dictPtr += matchlengthHeaderSize;
 	}
 
@@ -1746,7 +1746,7 @@ static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const 
 			return ERROR(dictionary_corrupted);
 		if (litlengthLog > LLFSELog)
 			return ERROR(dictionary_corrupted);
-		CHECK_E(FSE_buildDTable_wksp(entropy->LLTable, litlengthNCount, litlengthMaxValue, litlengthLog, entropy->workspace, sizeof(entropy->workspace)), dictionary_corrupted);
+		CHECK_E(FSE_buildDTable_wksp(entropy->LLTable, litlengthNCount, litlengthMaxValue, litlengthLog, entropy->workspace, sizeof (entropy->workspace)), dictionary_corrupted);
 		dictPtr += litlengthHeaderSize;
 	}
 
@@ -1837,14 +1837,14 @@ size_t ZSTD_DStreamWorkspaceBound(size_t maxWindowSize)
 	size_t const blockSize = MIN(maxWindowSize, ZSTD_BLOCKSIZE_ABSOLUTEMAX);
 	size_t const inBuffSize = blockSize;
 	size_t const outBuffSize = maxWindowSize + blockSize + WILDCOPY_OVERLENGTH * 2;
-	return sizeof(ZSTD_DStreamWorkspace) + inBuffSize + outBuffSize;
+	return sizeof (ZSTD_DStreamWorkspace) + inBuffSize + outBuffSize;
 }
 
 ZSTD_DStream *ZSTD_initDStream(size_t maxWindowSize, void *workspace, size_t workspaceSize)
 {
 	ZSTD_DStreamWorkspace *ws = (ZSTD_DStreamWorkspace *)workspace;
 	ZSTD_DStream *zds = &ws->DStream;
-	memset(zds, 0, sizeof(ZSTD_DStream));
+	memset(zds, 0, sizeof (ZSTD_DStream));
 	zds->dctx = &ws->DCtx;
 	ZSTD_decompressBegin(zds->dctx);
 	zds->maxWindowSize = maxWindowSize;

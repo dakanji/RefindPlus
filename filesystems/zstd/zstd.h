@@ -332,7 +332,7 @@ size_t ZSTD_DStreamOutSize(void);
 #define ZSTD_WINDOWLOG_MAX_32  27
 #define ZSTD_WINDOWLOG_MAX_64  27
 #define ZSTD_WINDOWLOG_MAX \
-	((unsigned int)(sizeof(size_t) == 4 \
+	((unsigned int)(sizeof (size_t) == 4 \
 		? ZSTD_WINDOWLOG_MAX_32 \
 		: ZSTD_WINDOWLOG_MAX_64))
 #define ZSTD_WINDOWLOG_MIN 10

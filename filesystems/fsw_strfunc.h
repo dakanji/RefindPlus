@@ -168,7 +168,7 @@ static fsw_status_t fsw_strcoerce_UTF8_ISO88591(void *srcdata, int srclen, struc
     
     dest->type = FSW_STRING_TYPE_ISO88591;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u8);
+    dest->size = srclen * sizeof (fsw_u8);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
@@ -202,7 +202,7 @@ static fsw_status_t fsw_strcoerce_UTF16_ISO88591(void *srcdata, int srclen, stru
     
     dest->type = FSW_STRING_TYPE_ISO88591;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u8);
+    dest->size = srclen * sizeof (fsw_u8);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
@@ -226,7 +226,7 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_ISO88591(void *srcdata, int srcl
     
     dest->type = FSW_STRING_TYPE_ISO88591;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u8);
+    dest->size = srclen * sizeof (fsw_u8);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
@@ -250,7 +250,7 @@ static fsw_status_t fsw_strcoerce_ISO88591_UTF16(void *srcdata, int srclen, stru
     
     dest->type = FSW_STRING_TYPE_UTF16;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u16);
+    dest->size = srclen * sizeof (fsw_u16);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
@@ -274,7 +274,7 @@ static fsw_status_t fsw_strcoerce_UTF8_UTF16(void *srcdata, int srclen, struct f
     
     dest->type = FSW_STRING_TYPE_UTF16;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u16);
+    dest->size = srclen * sizeof (fsw_u16);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
@@ -308,7 +308,7 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_UTF16(void *srcdata, int srclen,
     
     dest->type = FSW_STRING_TYPE_UTF16;
     dest->len  = srclen;
-    dest->size = srclen * sizeof(fsw_u16);
+    dest->size = srclen * sizeof (fsw_u16);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;

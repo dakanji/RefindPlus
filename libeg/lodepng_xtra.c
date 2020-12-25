@@ -39,7 +39,7 @@
 void* lodepng_malloc(size_t size) {
    void *ptr;
 
-   ptr = AllocateZeroPool(size + sizeof(size_t));
+   ptr = AllocateZeroPool(size + sizeof (size_t));
    if (ptr) {
       *(size_t *) ptr = size;
       return ((size_t *) ptr) + 1;

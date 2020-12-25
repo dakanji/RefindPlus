@@ -278,12 +278,12 @@ DisableAMFI (
         BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check";
         char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check";
 
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
             AppleFLAGS,
-            sizeof(DataNVRAM),
+            sizeof (DataNVRAM),
             DataNVRAM
         );
     }
@@ -291,7 +291,7 @@ DisableAMFI (
         BootArg           = L"amfi_get_out_of_my_way=1";
         char DataNVRAM[]  =  "amfi_get_out_of_my_way=1";
 
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
@@ -322,7 +322,7 @@ DisableMacCompatCheck (
     CHAR16      *NameNVRAM   = L"boot-args";
     char        DataNVRAM[]  = "-no_compat_check";
 
-    Status = refit_call5_wrapper (
+    Status = refit_call5_wrapper(
         gRT->SetVariable,
         NameNVRAM,
         &AppleGUID,
@@ -351,7 +351,7 @@ ForceTrim (
     Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
 
     if (!EFI_ERROR (Status)) {
-        Status = refit_call5_wrapper (
+        Status = refit_call5_wrapper(
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
@@ -925,9 +925,9 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
 
             ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Reboot";
 
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);
-            refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n---------------\n\n", ShowScreenStr);
@@ -936,7 +936,7 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
             PauseForKey();
             GlobalConfig.ContinueOnWarning = OurTempBool;
 
-            refit_call4_wrapper (gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+            refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
         }
     }
     return Success;
@@ -954,7 +954,7 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
     CHAR16            *SubString;
     CHAR16            *ShowScreenStr = NULL;
 
-    Status = refit_call3_wrapper (
+    Status = refit_call3_wrapper(
         gBS->HandleProtocol,
         ImageHandle,
         &LoadedImageProtocol,
@@ -1154,7 +1154,7 @@ efi_main (
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
     // disable EFI watchdog timer
-    refit_call4_wrapper (gBS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
+    refit_call4_wrapper(gBS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
     SetupScreen();
@@ -1176,7 +1176,7 @@ efi_main (
        #endif
 
        for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
-            refit_call1_wrapper (gBS->Stall, 1000000);
+            refit_call1_wrapper(gBS->Stall, 1000000);
        }
        if (i == 1) {
            #if REFIT_DEBUG > 0
@@ -1270,7 +1270,7 @@ efi_main (
                     #if REFIT_DEBUG > 0
                     MsgLog ("Reseting System\n---------------\n\n");
                     #endif
-                    refit_call4_wrapper (gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
                     ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1326,7 +1326,7 @@ efi_main (
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper (gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1343,7 +1343,7 @@ efi_main (
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper (gRT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(gRT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1613,15 +1613,15 @@ efi_main (
     #if REFIT_DEBUG > 0
     MsgLog ("System Reset:\n\n");
     #endif
-    refit_call4_wrapper (gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     SwitchToText (FALSE);
 
     ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
 
-    refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (ShowScreenStr, NEXTLINE);
-    refit_call2_wrapper (gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
     MsgLog ("%s\n---------------\n\n", ShowScreenStr);

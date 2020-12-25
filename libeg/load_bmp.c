@@ -88,7 +88,7 @@ EG_IMAGE * egDecodeBMP(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ico
     UINTN               Index, BitIndex;
 
     // read and check header
-    if (FileDataLength < sizeof(BMP_IMAGE_HEADER) || FileData == NULL)
+    if (FileDataLength < sizeof (BMP_IMAGE_HEADER) || FileData == NULL)
         return NULL;
     BmpHeader = (BMP_IMAGE_HEADER *) FileData;
     if (BmpHeader->CharB != 'B' || BmpHeader->CharM != 'M')
@@ -120,7 +120,7 @@ EG_IMAGE * egDecodeBMP(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ico
     AlphaValue = WantAlpha ? 255 : 0;
 
     // convert image
-    BmpColorMap = (BMP_COLOR_MAP *)(FileData + sizeof(BMP_IMAGE_HEADER));
+    BmpColorMap = (BMP_COLOR_MAP *)(FileData + sizeof (BMP_IMAGE_HEADER));
     ImagePtrBase = FileData + BmpHeader->ImageOffset;
     for (y = 0; y < BmpHeader->PixelHeight; y++) {
         ImagePtr = ImagePtrBase;
@@ -221,7 +221,7 @@ VOID egEncodeBMP(IN EG_IMAGE *Image, OUT UINT8 **FileDataReturn, OUT UINTN *File
         ImageLineOffset = ImageLineOffset + (4 - (ImageLineOffset % 4));
     
     // allocate buffer for file data
-    FileDataLength = sizeof(BMP_IMAGE_HEADER) + Image->Height * ImageLineOffset;
+    FileDataLength = sizeof (BMP_IMAGE_HEADER) + Image->Height * ImageLineOffset;
     FileData = AllocateZeroPool(FileDataLength);
     if (FileData == NULL) {
         Print(L"Error allocate %d bytes\n", FileDataLength);
@@ -235,7 +235,7 @@ VOID egEncodeBMP(IN EG_IMAGE *Image, OUT UINT8 **FileDataReturn, OUT UINTN *File
     BmpHeader->CharB = 'B';
     BmpHeader->CharM = 'M';
     BmpHeader->Size = FileDataLength;
-    BmpHeader->ImageOffset = sizeof(BMP_IMAGE_HEADER);
+    BmpHeader->ImageOffset = sizeof (BMP_IMAGE_HEADER);
     BmpHeader->HeaderSize = 40;
     BmpHeader->PixelWidth = Image->Width;
     BmpHeader->PixelHeight = Image->Height;

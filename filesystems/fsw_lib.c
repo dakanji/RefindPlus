@@ -269,8 +269,8 @@ void fsw_strsplit(struct fsw_string *element, struct fsw_string *buffer, char se
             buffer->len -= i;
         }
 
-        element->size = element->len * sizeof(fsw_u16);
-        buffer->size  = buffer->len  * sizeof(fsw_u16);
+        element->size = element->len * sizeof (fsw_u16);
+        buffer->size  = buffer->len  * sizeof (fsw_u16);
 
     } else {
         // fallback

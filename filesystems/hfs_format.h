@@ -132,7 +132,7 @@ enum {
  * exported in the getxattr/listxattr POSIX APIs).
  */
 #define FIRST_LINK_XATTR_NAME	"com.apple.system.hfs.firstlink"
-#define FIRST_LINK_XATTR_REC_SIZE (sizeof(HFSPlusAttrData) - 2 + 12)
+#define FIRST_LINK_XATTR_REC_SIZE (sizeof (HFSPlusAttrData) - 2 + 12)
 
 #endif /* __APPLE_API_PRIVATE */
 
@@ -563,20 +563,20 @@ struct HFSPlusAttrKey {
 } HFS_ALIGNMENT;
 typedef struct HFSPlusAttrKey HFSPlusAttrKey;
 
-#define kHFSPlusAttrKeyMaximumLength   (sizeof(HFSPlusAttrKey) - sizeof(u_int16_t))
-#define kHFSPlusAttrKeyMinimumLength   (kHFSPlusAttrKeyMaximumLength - kHFSMaxAttrNameLen*sizeof(u_int16_t))
+#define kHFSPlusAttrKeyMaximumLength   (sizeof (HFSPlusAttrKey) - sizeof (u_int16_t))
+#define kHFSPlusAttrKeyMinimumLength   (kHFSPlusAttrKeyMaximumLength - kHFSMaxAttrNameLen*sizeof (u_int16_t))
 
 #endif /* __APPLE_API_UNSTABLE */
 
 
 /* Key and node lengths */
 enum {
-	kHFSPlusExtentKeyMaximumLength = sizeof(HFSPlusExtentKey) - sizeof(u_int16_t),
-	kHFSExtentKeyMaximumLength	= sizeof(HFSExtentKey) - sizeof(u_int8_t),
-	kHFSPlusCatalogKeyMaximumLength = sizeof(HFSPlusCatalogKey) - sizeof(u_int16_t),
-	kHFSPlusCatalogKeyMinimumLength = kHFSPlusCatalogKeyMaximumLength - sizeof(HFSUniStr255) + sizeof(u_int16_t),
-	kHFSCatalogKeyMaximumLength	= sizeof(HFSCatalogKey) - sizeof(u_int8_t),
-	kHFSCatalogKeyMinimumLength	= kHFSCatalogKeyMaximumLength - (kHFSMaxFileNameChars + 1) + sizeof(u_int8_t),
+	kHFSPlusExtentKeyMaximumLength = sizeof (HFSPlusExtentKey) - sizeof (u_int16_t),
+	kHFSExtentKeyMaximumLength	= sizeof (HFSExtentKey) - sizeof (u_int8_t),
+	kHFSPlusCatalogKeyMaximumLength = sizeof (HFSPlusCatalogKey) - sizeof (u_int16_t),
+	kHFSPlusCatalogKeyMinimumLength = kHFSPlusCatalogKeyMaximumLength - sizeof (HFSUniStr255) + sizeof (u_int16_t),
+	kHFSCatalogKeyMaximumLength	= sizeof (HFSCatalogKey) - sizeof (u_int8_t),
+	kHFSCatalogKeyMinimumLength	= kHFSCatalogKeyMaximumLength - (kHFSMaxFileNameChars + 1) + sizeof (u_int8_t),
 	kHFSPlusCatalogMinNodeSize	= 4096,
 	kHFSPlusExtentMinNodeSize	= 512,
 	kHFSPlusAttrMinNodeSize		= 4096

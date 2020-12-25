@@ -347,7 +347,7 @@ static int master_uuid_add(struct fsw_btrfs_volume *vol, struct fsw_btrfs_volume
             return 0;
         }
 
-    l = AllocatePool(sizeof(struct fsw_btrfs_uuid_list));
+    l = AllocatePool(sizeof (struct fsw_btrfs_uuid_list));
     l->master = vol;
     l->next = master_uuid_list;
     master_uuid_list = l;
@@ -390,7 +390,7 @@ static fsw_status_t btrfs_set_superblock_info(struct fsw_btrfs_volume *vol, stru
         vol->num_devices = BTRFS_MAX_NUM_DEVICES;
     else
         vol->num_devices = fsw_u64_le_swap(sb->num_devices);
-    fsw_memcpy(vol->bootstrap_mapping, sb->bootstrap_mapping, sizeof(vol->bootstrap_mapping));
+    fsw_memcpy(vol->bootstrap_mapping, sb->bootstrap_mapping, sizeof (vol->bootstrap_mapping));
     return FSW_SUCCESS;
 }
 
@@ -522,7 +522,7 @@ static int next (struct fsw_btrfs_volume *vol,
     {
         struct btrfs_internal_node node;
         struct btrfs_header head;
-        fsw_memzero(&node, sizeof(node));
+        fsw_memzero(&node, sizeof (node));
 
         err = fsw_btrfs_read_logical (vol, desc->data[desc->depth - 1].iter
                 * sizeof (node)
@@ -587,7 +587,7 @@ static fsw_status_t lower_bound (struct fsw_btrfs_volume *vol,
     {
         fsw_status_t err;
         struct btrfs_header head;
-        fsw_memzero(&head, sizeof(head));
+        fsw_memzero(&head, sizeof (head));
 
 reiter:
         depth++;
@@ -768,7 +768,7 @@ static void block_xor(char *dst, const char *src, uint32_t blocksize)
 {
     UINTN *d = (UINTN *)dst;
     const UINTN *s = (const UINTN *)src;
-    blocksize /= sizeof(UINTN);
+    blocksize /= sizeof (UINTN);
     uint32_t i;
     for( i = 0; i < blocksize; i++)
 	d[i] ^= s[i];
@@ -778,7 +778,7 @@ static void stripe_xor(char *dst, struct stripe_table *stripe, int data_stripes,
 {
     unsigned i, j;
     UINTN c;
-    for(j = 0; j < blocksize; j += sizeof(UINTN)) {
+    for(j = 0; j < blocksize; j += sizeof (UINTN)) {
 	/* data + P stripes */
 	for(c=0, i=0; i <= data_stripes; i++)
 	    if(stripe[i].ptr)
@@ -845,7 +845,7 @@ static void raid6_init_table (void)
 static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume *vol, uint64_t device_id, uint64_t offset)
 {
     if(vol->rcache == NULL) {
-	if(fsw_alloc_zero(sizeof(struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **)&vol->rcache) != FSW_SUCCESS)
+	if(fsw_alloc_zero(sizeof (struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **)&vol->rcache) != FSW_SUCCESS)
 	    return NULL;
     }
 #ifdef __MAKEWITH_TIANO
@@ -1167,7 +1167,7 @@ begin_direct_read:
 			// need recover data
 			if(!stripe_table) {
 			    // build&rotate(raid6) stripe table
-			    err = fsw_alloc_zero(sizeof(struct stripe_table) * nstripes, (void **)&stripe_table);
+			    err = fsw_alloc_zero(sizeof (struct stripe_table) * nstripes, (void **)&stripe_table);
 			    if(err)
 				goto io_error;
 			    unsigned dev_count = 0;
@@ -1314,7 +1314,7 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
     if(vol->is_master == 0) {
 #define FAKE_LABEL "btrfs.multi.device"
         s.type = FSW_STRING_TYPE_UTF8;
-        s.size = s.len = sizeof(FAKE_LABEL)-1;
+        s.size = s.len = sizeof (FAKE_LABEL)-1;
         s.data = FAKE_LABEL;
         err = fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
         if (err)
@@ -1327,7 +1327,7 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
     fsw_set_blocksize(volg, vol->sectorsize, vol->sectorsize);
     vol->n_devices_allocated = vol->num_devices;
     vol->rescan_once = vol->num_devices > 1;
-    err = fsw_alloc(sizeof(struct fsw_btrfs_device_desc) * vol->n_devices_allocated,
+    err = fsw_alloc(sizeof (struct fsw_btrfs_device_desc) * vol->n_devices_allocated,
 	(void **)&vol->devices_attached);
     if (err)
         return err;
@@ -1438,7 +1438,7 @@ static fsw_status_t fsw_btrfs_dnode_fill(struct fsw_volume *volg, struct fsw_dno
     if (dno->raw)
         return FSW_SUCCESS;
 
-    dno->raw = AllocatePool(sizeof(struct btrfs_inode));
+    dno->raw = AllocatePool(sizeof (struct btrfs_inode));
     if(dno->raw == NULL)
         return FSW_OUT_OF_MEMORY;
 
@@ -2175,8 +2175,8 @@ out:
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(btrfs) = {
     { FSW_STRING_TYPE_UTF8, 5, 5, "btrfs" },
-    sizeof(struct fsw_btrfs_volume),
-    sizeof(struct fsw_btrfs_dnode),
+    sizeof (struct fsw_btrfs_volume),
+    sizeof (struct fsw_btrfs_dnode),
 
     fsw_btrfs_volume_mount,
     fsw_btrfs_volume_free,

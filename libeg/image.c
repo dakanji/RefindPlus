@@ -283,14 +283,14 @@ egLoadFile (
         return EFI_NOT_FOUND;
     }
 
-    Status = refit_call5_wrapper (BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
+    Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
         return Status;
     }
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
-        refit_call1_wrapper (FileHandle->Close, FileHandle);
+        refit_call1_wrapper(FileHandle->Close, FileHandle);
         return EFI_NOT_FOUND;
     }
 
@@ -305,12 +305,12 @@ egLoadFile (
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
-        refit_call1_wrapper (FileHandle->Close, FileHandle);
+        refit_call1_wrapper(FileHandle->Close, FileHandle);
         return EFI_OUT_OF_RESOURCES;
     }
 
-    Status = refit_call3_wrapper (FileHandle->Read, FileHandle, &BufferSize, Buffer);
-    refit_call1_wrapper (FileHandle->Close, FileHandle);
+    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
+    refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR (Status)) {
         FreePool (Buffer);
         return Status;
@@ -361,7 +361,7 @@ egSaveFile (
         }
     }
 
-    Status = refit_call5_wrapper (
+    Status = refit_call5_wrapper(
         BaseDir->Open,
         BaseDir,
         &FileHandle,
@@ -376,10 +376,10 @@ egSaveFile (
 
     if (FileDataLength > 0) {
         BufferSize = FileDataLength;
-        Status = refit_call3_wrapper (FileHandle->Write, FileHandle, &BufferSize, FileData);
-        refit_call1_wrapper (FileHandle->Close, FileHandle);
+        Status = refit_call3_wrapper(FileHandle->Write, FileHandle, &BufferSize, FileData);
+        refit_call1_wrapper(FileHandle->Close, FileHandle);
     } else {
-        Status = refit_call1_wrapper (FileHandle->Delete, FileHandle);
+        Status = refit_call1_wrapper(FileHandle->Delete, FileHandle);
     } // if/else (FileDataLength > 0)
 
     return Status;

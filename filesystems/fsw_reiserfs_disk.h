@@ -125,7 +125,7 @@ struct reiserfs_super_block_v1 {
 					 * making fs with non-standard journal */
 } ATTR_PACKED;
 
-#define SB_SIZE_V1 (sizeof(struct reiserfs_super_block_v1))
+#define SB_SIZE_V1 (sizeof (struct reiserfs_super_block_v1))
 
 /* this is the on disk super block */
 struct reiserfs_super_block {
@@ -140,7 +140,7 @@ struct reiserfs_super_block {
 				 * there as well. */
 } ATTR_PACKED;
 
-#define SB_SIZE (sizeof(struct reiserfs_super_block))
+#define SB_SIZE (sizeof (struct reiserfs_super_block))
 
 #define REISERFS_VERSION_1 0
 #define REISERFS_VERSION_2 2
@@ -369,7 +369,7 @@ struct cpu_key {
 #define KEY_FOUND 1
 #define KEY_NOT_FOUND 0
 
-#define KEY_SIZE (sizeof(struct reiserfs_key))
+#define KEY_SIZE (sizeof (struct reiserfs_key))
 #define SHORT_KEY_SIZE (sizeof (__u32) + sizeof (__u32))
 
 /* return values for search_by_key and clones */
@@ -423,7 +423,7 @@ struct item_head {
 				   done */
 } ATTR_PACKED;
 /* size of item header     */
-#define IH_SIZE (sizeof(struct item_head))
+#define IH_SIZE (sizeof (struct item_head))
 
 #define ih_free_space(ih)            le16_to_cpu((ih)->u.ih_free_space_reserved)
 #define ih_version(ih)               le16_to_cpu((ih)->ih_version)
@@ -602,7 +602,7 @@ struct block_head {
 	struct reiserfs_key blk_right_delim_key;	/* kept only for compatibility */
 };
 
-#define BLKH_SIZE                     (sizeof(struct block_head))
+#define BLKH_SIZE                     (sizeof (struct block_head))
 #define blkh_level(p_blkh)            (le16_to_cpu((p_blkh)->blk_level))
 #define blkh_nr_item(p_blkh)          (le16_to_cpu((p_blkh)->blk_nr_item))
 #define blkh_free_space(p_blkh)       (le16_to_cpu((p_blkh)->blk_free_space))
@@ -669,7 +669,7 @@ struct stat_data_v1 {
 					   policy.  Someday.  -Hans */
 } ATTR_PACKED;
 
-#define SD_V1_SIZE              (sizeof(struct stat_data_v1))
+#define SD_V1_SIZE              (sizeof (struct stat_data_v1))
 #define stat_data_v1(ih)        (ih_version (ih) == KEY_FORMAT_3_5)
 #define sd_v1_mode(sdp)         (le16_to_cpu((sdp)->sd_mode))
 #define set_sd_v1_mode(sdp,v)   ((sdp)->sd_mode = cpu_to_le16(v))
@@ -753,7 +753,7 @@ struct stat_data {
 //
 // this is 44 bytes long
 //
-#define SD_SIZE (sizeof(struct stat_data))
+#define SD_SIZE (sizeof (struct stat_data))
 #define SD_V2_SIZE              SD_SIZE
 #define stat_data_v2(ih)        (ih_version (ih) == KEY_FORMAT_3_6)
 #define sd_v2_mode(sdp)         (le16_to_cpu((sdp)->sd_mode))
@@ -826,7 +826,7 @@ struct reiserfs_de_head {
 	__le16 deh_state;	/* whether 1) entry contains stat data (for future), and 2) whether
 				   entry is hidden (unlinked) */
 } ATTR_PACKED;
-#define DEH_SIZE                  sizeof(struct reiserfs_de_head)
+#define DEH_SIZE                  sizeof (struct reiserfs_de_head)
 #define deh_offset(p_deh)         (le32_to_cpu((p_deh)->deh_offset))
 #define deh_dir_id(p_deh)         (le32_to_cpu((p_deh)->deh_dir_id))
 #define deh_objectid(p_deh)       (le32_to_cpu((p_deh)->deh_objectid))
@@ -986,7 +986,7 @@ struct disk_child {
 	__le16 dc_reserved;
 };
 
-#define DC_SIZE (sizeof(struct disk_child))
+#define DC_SIZE (sizeof (struct disk_child))
 #define dc_block_number(dc_p)	(le32_to_cpu((dc_p)->dc_block_number))
 #define dc_size(dc_p)		(le16_to_cpu((dc_p)->dc_size))
 
@@ -1107,7 +1107,7 @@ struct path var = {.path_length = ILLEGAL_PATH_ELEMENT_OFFSET, .reada = 0,}
 /***************************************************************************/
 
 /* Size of pointer to the unformatted node. */
-#define UNFM_P_SIZE (sizeof(unp_t))
+#define UNFM_P_SIZE (sizeof (unp_t))
 #define UNFM_P_SHIFT 2
 
 // in in-core inode key is stored on le form

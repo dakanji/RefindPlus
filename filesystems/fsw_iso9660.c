@@ -110,8 +110,8 @@ static fsw_status_t rr_read_ce(struct fsw_iso9660_volume *vol, union fsw_rock_ri
 
 struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(iso9660) = {
     { FSW_STRING_TYPE_ISO88591, 4, 4, "iso9660" },
-    sizeof(struct fsw_iso9660_volume),
-    sizeof(struct fsw_iso9660_dnode),
+    sizeof (struct fsw_iso9660_volume),
+    sizeof (struct fsw_iso9660_dnode),
 
     fsw_iso9660_volume_mount,
     fsw_iso9660_volume_free,
@@ -130,7 +130,7 @@ static fsw_status_t rr_find_sp(struct iso9660_dirrec *dirrec, struct fsw_rock_ri
     fsw_u8 *r;
     int off = 0;
     struct fsw_rock_ridge_susp_sp *sp;
-    r = (fsw_u8 *)((fsw_u8 *)dirrec + sizeof(*dirrec) + dirrec->file_identifier_length);
+    r = (fsw_u8 *)((fsw_u8 *)dirrec + sizeof (*dirrec) + dirrec->file_identifier_length);
     off = (int)(r - (fsw_u8 *)dirrec);
     while(off < dirrec->dirrec_length)
     {
@@ -208,7 +208,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
                      str->len = 2;
                      goto done;
                 }
-                len = nm->e.len - sizeof(struct fsw_rock_ridge_susp_nm) + 1;
+                len = nm->e.len - sizeof (struct fsw_rock_ridge_susp_nm) + 1;
                 fsw_alloc_zero(str->len + len, (void **)&tmp);
                 if (str->data != NULL)
                 {
@@ -340,7 +340,7 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
     status = fsw_dnode_create_root(vol, ISO9660_SUPERBLOCK_BLOCKNO << ISO9660_BLOCKSIZE_BITS, &vol->g.root);
     if (status)
         return status;
-    fsw_memcpy(&vol->g.root->dirrec, &pvoldesc->root_directory, sizeof(struct iso9660_dirrec));
+    fsw_memcpy(&vol->g.root->dirrec, &pvoldesc->root_directory, sizeof (struct iso9660_dirrec));
 
     if (   pvoldesc->escape[0] == 0x25
         && pvoldesc->escape[1] == 0x2f
@@ -355,7 +355,7 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
 
 
     rootdir = pvoldesc->root_directory;
-    sua_pos = (sizeof(struct iso9660_dirrec)) + rootdir.file_identifier_length + (rootdir.file_identifier_length % 2) - 2;
+    sua_pos = (sizeof (struct iso9660_dirrec)) + rootdir.file_identifier_length + (rootdir.file_identifier_length % 2) - 2;
     //int sua_size = rootdir.dirrec_length - rootdir.file_identifier_length;
     //FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: success (SUA(pos:%x, sz:%d)!!!)\n"), sua_pos, sua_size));
 
@@ -530,7 +530,7 @@ static fsw_status_t fsw_iso9660_dir_lookup(struct fsw_iso9660_volume *vol, struc
     // setup a dnode for the child item
     status = fsw_dnode_create(dno, dirrec_buffer.ino, FSW_DNODE_TYPE_UNKNOWN, &dirrec_buffer.name, child_dno_out);
     if (status == FSW_SUCCESS)
-        fsw_memcpy(&(*child_dno_out)->dirrec, dirrec, sizeof(struct iso9660_dirrec));
+        fsw_memcpy(&(*child_dno_out)->dirrec, dirrec, sizeof (struct iso9660_dirrec));
 
 errorexit:
     fsw_shandle_close(&shand);
@@ -583,7 +583,7 @@ static fsw_status_t fsw_iso9660_dir_read(struct fsw_iso9660_volume *vol, struct 
     // setup a dnode for the child item
     status = fsw_dnode_create(dno, dirrec_buffer.ino, FSW_DNODE_TYPE_UNKNOWN, &dirrec_buffer.name, child_dno_out);
     if (status == FSW_SUCCESS)
-        fsw_memcpy(&(*child_dno_out)->dirrec, dirrec, sizeof(struct iso9660_dirrec));
+        fsw_memcpy(&(*child_dno_out)->dirrec, dirrec, sizeof (struct iso9660_dirrec));
 
     return status;
 }
@@ -645,7 +645,7 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
 //     dump_dirrec(dirrec);
      if (vol->fRockRidge)
      {
-         sp_off = sizeof(*dirrec) + dirrec->file_identifier_length;
+         sp_off = sizeof (*dirrec) + dirrec->file_identifier_length;
          rc = rr_find_sp(dirrec, &sp);
          if (   rc == FSW_SUCCESS
              && sp != NULL)

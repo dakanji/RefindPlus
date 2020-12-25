@@ -141,7 +141,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
         Length1 = StrLen(*First);
     if (Second != NULL)
         Length2 = StrLen(Second);
-    NewString = AllocatePool(sizeof(CHAR16) * (Length1 + Length2 + 2));
+    NewString = AllocatePool(sizeof (CHAR16) * (Length1 + Length2 + 2));
     if (NewString != NULL) {
         if ((*First != NULL) && (Length1 == 0)) {
             MyFreePool(*First);
@@ -400,7 +400,7 @@ BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN
 
     FoundSearchString = MyStrStr(*MainString, SearchString);
     if (FoundSearchString) {
-        NewString = AllocateZeroPool(sizeof(CHAR16) * StrLen(*MainString));
+        NewString = AllocateZeroPool(sizeof (CHAR16) * StrLen(*MainString));
         if (NewString) {
             EndString = &(FoundSearchString[StrLen(SearchString)]);
             FoundSearchString[0] = L'\0';
@@ -508,7 +508,7 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
 CHAR16 * GuidAsString(EFI_GUID *GuidData) {
    CHAR16 *TheString;
 
-   TheString = AllocateZeroPool(42 * sizeof(CHAR16));
+   TheString = AllocateZeroPool(42 * sizeof (CHAR16));
    if (GuidData && (TheString != 0)) {
       SPrint (TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
               (UINTN)GuidData->Data1, (UINTN)GuidData->Data2, (UINTN)GuidData->Data3,

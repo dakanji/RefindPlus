@@ -42,8 +42,8 @@ typedef uintptr_t uPtrDiff;
 /*-**************************************************************
 *  Memory I/O
 *****************************************************************/
-ZSTD_STATIC unsigned ZSTD_32bits(void) { return sizeof(size_t) == 4; }
-ZSTD_STATIC unsigned ZSTD_64bits(void) { return sizeof(size_t) == 8; }
+ZSTD_STATIC unsigned ZSTD_32bits(void) { return sizeof (size_t) == 4; }
+ZSTD_STATIC unsigned ZSTD_64bits(void) { return sizeof (size_t) == 8; }
 
 
 /*=== Little endian r/w ===*/

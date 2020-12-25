@@ -867,7 +867,7 @@ VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
                 MenuWidth = ConWidth - 3;
 
             // prepare strings for display
-            DisplayStrings = AllocatePool(sizeof(CHAR16 *) * Screen->EntryCount);
+            DisplayStrings = AllocatePool(sizeof (CHAR16 *) * Screen->EntryCount);
             for (i = 0; i <= State->MaxIndex; i++) {
                 // Note: Theoretically, SPrint() is a cleaner way to do this; but the
                 // description of the StrSize parameter to SPrint implies it's measured
@@ -877,7 +877,7 @@ VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
                 // case a future library change starts treating this as characters, so
                 // I'm doing it the hard way in this instance.
                 // TODO: Review the above and possibly change other uses of SPrint()
-                DisplayStrings[i] = AllocateZeroPool(2 * sizeof(CHAR16));
+                DisplayStrings[i] = AllocateZeroPool(2 * sizeof (CHAR16));
                 DisplayStrings[i][0] = L' ';
                 MergeStrings(&DisplayStrings[i], Screen->Entries[i]->Title, 0);
                 if (StrLen(DisplayStrings[i]) > MenuWidth)
@@ -1420,7 +1420,7 @@ VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINT
             else
                 textPosY = row1PosY;
 
-            itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
+            itemPosX = AllocatePool(sizeof (UINTN) * Screen->EntryCount);
             row0PosXRunning = row0PosX;
             row1PosXRunning = row1PosX;
             for (i = 0; i <= State->MaxIndex; i++) {
@@ -1506,7 +1506,7 @@ UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN 
 
     UINTN ItemIndex = POINTER_NO_ITEM;
 
-    itemPosX = AllocatePool(sizeof(UINTN) * Screen->EntryCount);
+    itemPosX = AllocatePool(sizeof (UINTN) * Screen->EntryCount);
     row0PosXRunning = row0PosX;
     row1PosXRunning = row1PosX;
     for (i = 0; i <= State->MaxIndex; i++) {
@@ -1544,7 +1544,7 @@ VOID GenerateWaitList() {
     UINTN PointerCount = pdCount();
     WaitListLength = 2 + PointerCount;
 
-    WaitList = AllocatePool(sizeof(EFI_EVENT) * WaitListLength);
+    WaitList = AllocatePool(sizeof (EFI_EVENT) * WaitListLength);
 
     WaitList[0] = gST->ConIn->WaitForKey;
 
@@ -1717,7 +1717,7 @@ VOID ManageHiddenTags(VOID) {
     if ((AllTags) && (StrLen(AllTags) > 0)) {
         AddMenuInfoLine(&HideItemMenu, L"Select a tag and press Enter to restore it");
         while ((OneElement = FindCommaDelimited(AllTags, i++)) != NULL) {
-            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+            MenuEntryItem = AllocateZeroPool(sizeof (REFIT_MENU_ENTRY));
             MenuEntryItem->Title = StrDuplicate(OneElement);
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = 1;

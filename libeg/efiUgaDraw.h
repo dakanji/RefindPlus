@@ -152,7 +152,7 @@ The BltBuffer and Delta  are not used in this mode.
 Arguments:
 This          - Protocol instance pointer.
 BltBuffer     - Buffer containing data to blit into video buffer. This 
-buffer has a size of Width*Height*sizeof(EFI_UGA_PIXEL)
+buffer has a size of Width*Height*sizeof (EFI_UGA_PIXEL)
 BltOperation  - Operation to perform on BlitBuffer and video memory
 SourceX       - X coordinate of source for the BltBuffer.
 SourceY       - Y coordinate of source for the BltBuffer.

@@ -38,10 +38,10 @@ GPT_DATA *gPartitions = NULL;
 GPT_DATA * AllocateGptData(VOID) {
    GPT_DATA *GptData;
 
-   GptData = AllocateZeroPool(sizeof(GPT_DATA));
+   GptData = AllocateZeroPool(sizeof (GPT_DATA));
    if (GptData != NULL) {
-      GptData->ProtectiveMBR = AllocateZeroPool(sizeof(MBR_RECORD));
-      GptData->Header = AllocateZeroPool(sizeof(GPT_HEADER));
+      GptData->ProtectiveMBR = AllocateZeroPool(sizeof (MBR_RECORD));
+      GptData->Header = AllocateZeroPool(sizeof (GPT_HEADER));
       if ((GptData->ProtectiveMBR == NULL) || (GptData->Header == NULL)) {
          MyFreePool(GptData->ProtectiveMBR);
          MyFreePool(GptData->Header);
@@ -73,7 +73,7 @@ VOID ClearGptData(GPT_DATA *Data) {
 static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
    BOOLEAN IsValid;
    UINT32 CrcValue, StoredCrcValue;
-   UINTN HeaderSize = sizeof(GPT_HEADER);
+   UINTN HeaderSize = sizeof (GPT_HEADER);
 
    if ((GptData == NULL) || (GptData->ProtectiveMBR == NULL) || (GptData->Header == NULL))
       return FALSE;
@@ -155,7 +155,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
           Volume->BlockIO,
           Volume->BlockIO->Media->MediaId,
           0,
-          sizeof(MBR_RECORD),
+          sizeof (MBR_RECORD),
           (VOID*) GptData->ProtectiveMBR
       );
    }
@@ -167,7 +167,7 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
           Volume->BlockIO,
           Volume->BlockIO->Media->MediaId,
           1,
-          sizeof(GPT_HEADER), GptData->Header
+          sizeof (GPT_HEADER), GptData->Header
       );
    }
 
@@ -231,8 +231,8 @@ GPT_ENTRY * FindPartWithGuid(EFI_GUID *Guid) {
       i = 0;
       while ((i < GptData->Header->entry_count) && (!Found)) {
          if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
-            Found = AllocateZeroPool(sizeof(GPT_ENTRY));
-            CopyMem(Found, &GptData->Entries[i], sizeof(GPT_ENTRY));
+            Found = AllocateZeroPool(sizeof (GPT_ENTRY));
+            CopyMem(Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
          } else {
             i++;
          } // if/else

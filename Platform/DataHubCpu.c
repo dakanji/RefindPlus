@@ -50,7 +50,7 @@ EFI_DATA_HUB_PROTOCOL     *gDataHub;
 
 EFI_SUBCLASS_TYPE1_HEADER mCpuDataRecordHeader = {
   EFI_PROCESSOR_SUBCLASS_VERSION,       // Version
-  sizeof(EFI_SUBCLASS_TYPE1_HEADER),    // Header Size
+  sizeof (EFI_SUBCLASS_TYPE1_HEADER),    // Header Size
   0,                                    // Instance (initialize later)
   EFI_SUBCLASS_INSTANCE_NON_APPLICABLE, // SubInstance
   0                                     // RecordType (initialize later)
@@ -95,13 +95,13 @@ CopyRecord(IN        PLATFORM_DATA *Rec,
            IN        VOID          *Val,
            IN        UINT32        ValLen)
 {
-  CopyMem(&Rec->Hdr, &mCpuDataRecordHeader, sizeof(EFI_SUBCLASS_TYPE1_HEADER));
-  Rec->NameLen = (UINT32)StrLen(Name) * sizeof(CHAR16);
+  CopyMem(&Rec->Hdr, &mCpuDataRecordHeader, sizeof (EFI_SUBCLASS_TYPE1_HEADER));
+  Rec->NameLen = (UINT32)StrLen(Name) * sizeof (CHAR16);
   Rec->ValLen  = ValLen;
   CopyMem(Rec->Data,                Name, Rec->NameLen);
   CopyMem(Rec->Data + Rec->NameLen, Val,  ValLen);
 
-  return (sizeof(EFI_SUBCLASS_TYPE1_HEADER) + 8 + Rec->NameLen + Rec->ValLen);
+  return (sizeof (EFI_SUBCLASS_TYPE1_HEADER) + 8 + Rec->NameLen + Rec->ValLen);
 }
 
 // LogDataHub
@@ -116,7 +116,7 @@ LogDataHub(IN  EFI_GUID *TypeGuid,
   EFI_STATUS    Status;
   PLATFORM_DATA *PlatformData;
   
-  PlatformData = (PLATFORM_DATA*)AllocatePool(sizeof(PLATFORM_DATA) + DataSize + EFI_CPU_DATA_MAXIMUM_LENGTH);
+  PlatformData = (PLATFORM_DATA*)AllocatePool(sizeof (PLATFORM_DATA) + DataSize + EFI_CPU_DATA_MAXIMUM_LENGTH);
   if (PlatformData == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }

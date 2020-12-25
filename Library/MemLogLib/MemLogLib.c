@@ -92,7 +92,7 @@ GetTiming(VOID)
 
 		AsciiSPrint(
             mTimingTxt,
-            sizeof(mTimingTxt),
+            sizeof (mTimingTxt),
             "%3ld:%03ld %3ld:%03ld",
             dTStartSecLog,
             dTStartMs,
@@ -164,15 +164,15 @@ MemLogInit (
 
   // Check if we can use the timer - we need to be on Intel ICH, get ACPI PM Timer Address from PCI, and check that it's sane
   if ((PciRead16 (PCI_ICH_LPC_ADDRESS (0))) != 0x8086) { // Intel ICH device was not found
-    AsciiSPrint(InitError, sizeof(InitError), "Intel ICH device was not found.");
+    AsciiSPrint(InitError, sizeof (InitError), "Intel ICH device was not found.");
   } else if ((PciRead8 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) { // Check for TSC at LPC (default location)
  /*   if ((PciRead8 (PCI_ICH_SMBUS_ADDRESS (R_ICH_SMBUS_ACPI_CNT)) & B_ICH_SMBUS_ACPI_CNT_ACPI_EN) != 0) { // Check for TSC at SMBUS (Skylake specific)
       TimerAddr = (PciRead16 (PCI_ICH_SMBUS_ADDRESS (R_ICH_SMBUS_ACPI_BASE)) & B_ICH_SMBUS_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
     } else { */
-      AsciiSPrint(InitError, sizeof(InitError), "ACPI I/O space is not enabled.");
+      AsciiSPrint(InitError, sizeof (InitError), "ACPI I/O space is not enabled.");
    // }
   } else if ((TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR) == 0) { // Timer address can't be obtained
-    AsciiSPrint(InitError, sizeof(InitError), "Timer address can't be obtained.");
+    AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
   } else {
     // Check that Timer is advancing
     AcpiTick0 = IoRead32 (TimerAddr);
@@ -180,7 +180,7 @@ MemLogInit (
     AcpiTick1 = IoRead32(TimerAddr);
     if (AcpiTick0 == AcpiTick1) { // Timer is not advancing
       TimerAddr = 0; // Flag it as not working
-      AsciiSPrint(InitError, sizeof(InitError), "Timer is not advancing.");
+      AsciiSPrint(InitError, sizeof (InitError), "Timer is not advancing.");
     }
   }
 
