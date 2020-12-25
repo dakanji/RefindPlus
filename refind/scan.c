@@ -1237,7 +1237,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)
             ) {
-                AddLoaderEntry(FileName, L"Microsoft EFI Boot (Boot Repair backup)", Volume, TRUE);
+                AddLoaderEntry(FileName, L"Microsoft EFI Boot (Boot Repair Backup)", Volume, TRUE);
                 FoundBRBackup = TRUE;
                 if (DuplicatesFallback(Volume, FileName)) {
                     ScanFallbackLoader = FALSE;
@@ -1247,7 +1247,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
                     if (FoundBRBackup) {
-                        AddLoaderEntry(FileName, L"Supposed Microsoft EFI Boot (probably GRUB)", Volume, TRUE);
+                        AddLoaderEntry(FileName, L"Supposed Microsoft EFI Boot (Probably GRUB)", Volume, TRUE);
                     } else {
                         AddLoaderEntry(FileName, L"Microsoft EFI Boot", Volume, TRUE);
                     }

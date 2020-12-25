@@ -86,7 +86,7 @@ secure_mode (
 // Returns TRUE if the shim program is available to verify binaries,
 // FALSE if not
 BOOLEAN
-ShimLoaded(
+ShimLoaded (
     VOID
 ) {
     SHIM_LOCK   *shim_lock;

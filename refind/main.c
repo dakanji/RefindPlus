@@ -213,6 +213,12 @@ STATIC EFI_SET_VARIABLE AltSetVariable;
 
 extern VOID InitBooterLog (VOID);
 
+// Link to Cert GUIDs in mok/guid.c
+extern EFI_GUID X509_GUID;
+extern EFI_GUID RSA2048_GUID;
+extern EFI_GUID PKCS7_GUID;
+extern EFI_GUID EFI_CERT_SHA256_GUID;
+
 //
 // misc functions
 //
@@ -228,15 +234,38 @@ gRTSetVariableEx (
     IN  VOID      *Data
 ) {
     EFI_STATUS  Status;
-    EFI_GUID    MicrosoftGuid  = MICROSOFT_GUID;
-    BOOLEAN     WindowsBlock   = FALSE;
+    EFI_GUID    MicrosoftGuid          = MICROSOFT_GUID;
+    EFI_GUID    X509Guid               = X509_GUID;
+    EFI_GUID    PKCS7Guid              = PKCS7_GUID;
+    EFI_GUID    Sha1Guid               = EFI_CERT_SHA1_GUID;
+    EFI_GUID    Sha224Guid             = EFI_CERT_SHA224_GUID;
+    EFI_GUID    Sha256Guid             = EFI_CERT_SHA256_GUID;
+    EFI_GUID    Sha384Guid             = EFI_CERT_SHA384_GUID;
+    EFI_GUID    Sha512Guid             = EFI_CERT_SHA512_GUID;
+    EFI_GUID    RSA2048Guid            = RSA2048_GUID;
+    EFI_GUID    RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
+    EFI_GUID    RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
+    EFI_GUID    TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
+    BOOLEAN     CertBlock              = FALSE;
 
-    if (GuidsAreEqual (VendorGuid, &MicrosoftGuid) &&
+    if ((GuidsAreEqual (VendorGuid, &MicrosoftGuid) ||
+        GuidsAreEqual (VendorGuid, &X509Guid) ||
+        GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha1Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha224Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha256Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha384Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha512Guid) ||
+        GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
+        GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
+        GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
+        GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)) &&
         MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
     ) {
-        // Abort if Windows is detected trying to write to Mac NVRAM
-        WindowsBlock = TRUE;
-        Status       = EFI_SECURITY_VIOLATION;
+        // Abort if Windows is trying to write to Mac NVRAM or
+        // payload to be saved to Mac NVRAM is a certificate
+        CertBlock  = TRUE;
+        Status     = EFI_SECURITY_VIOLATION;
     }
     else {
         Status = AltSetVariable (
@@ -250,17 +279,17 @@ gRTSetVariableEx (
 
     #if REFIT_DEBUG > 0
     MsgLog ("INFO: Write '%s' to NVRAM ...%r", VariableName, Status);
-    if (WindowsBlock) {
+    if (CertBlock) {
         MsgLog ("\n");
-        MsgLog ("      ** WARN: Prevented NVRAM Write Attempt by UEFI Windows");
+        MsgLog ("      ** WARN: Prevented Certificate Write to NVRAM Attempt");
         MsgLog ("\n");
-        MsgLog ("               Sucessful NVRAM Write will damage Apple NVRAM");
+        MsgLog ("               Sucessful Certificate Write May Damage NVRAM");
     }
     MsgLog ("\n\n");
     #endif
 
     return Status;
-}
+} // VOID gRTSetVariableEx()
 
 
 VOID
@@ -309,7 +338,7 @@ DisableAMFI (
         MsgLog ("    * Disable Mac Compat Check ...%r", Status);
     }
     #endif
-}
+} // VOID DisableAMFI()
 
 
 VOID
@@ -335,7 +364,7 @@ DisableMacCompatCheck (
     MsgLog ("\n");
     MsgLog ("    * Disable Mac Compat Check ...%r", Status);
     #endif
-}
+} // VOID DisableMacCompatCheck()
 
 
 VOID
@@ -365,7 +394,7 @@ ForceTrim (
     MsgLog ("\n");
     MsgLog ("    * Enable TRIM ...%r", Status);
     #endif
-}
+} // VOID ForceTrim()
 
 
 STATIC
@@ -408,7 +437,9 @@ IsValidTool (
     BOOLEAN retval        = TRUE;
     UINTN   i = 0;
 
-    if (FileExists (BaseVolume->RootDir, PathName) && IsValidLoader (BaseVolume->RootDir, PathName)) {
+    if (FileExists (BaseVolume->RootDir, PathName) &&
+        IsValidLoader (BaseVolume->RootDir, PathName)
+    ) {
         SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
         while (retval && (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))) {
@@ -495,7 +526,9 @@ preBootKicker (
         MsgLog ("User Input Received:\n");
         #endif
 
-        if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") && (MenuExit == MENU_EXIT_ENTER)) {
+        if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") &&
+            MenuExit == MENU_EXIT_ENTER
+        ) {
             UINTN        i = 0;
             UINTN        k = 0;
             CHAR16       *Names          = BOOTKICKER_FILES;
@@ -518,7 +551,9 @@ preBootKicker (
 
                     i = 0;
                     for (i = 0; i < VolumesCount; i++) {
-                        if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
+                        if ((Volumes[i]->RootDir != NULL) &&
+                            IsValidTool (Volumes[i], FilePath)
+                        ) {
                             ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
 
                             ourLoaderEntry->me.Title = Description;
@@ -1021,7 +1056,13 @@ STATIC VOID AdjustDefaultSelection() {
 
     while ((Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp (Element, L"+")) {
-            Status = EfivarGetRaw (&RefindGuid, L"PreviousBoot", (CHAR8 **) &PreviousBoot, &j);
+            Status = EfivarGetRaw (
+                &RefindGuid,
+                L"PreviousBoot",
+                (CHAR8 **) &PreviousBoot,
+                &j
+            );
+
             if (Status == EFI_SUCCESS) {
                 MyFreePool (Element);
                 Element = PreviousBoot;
@@ -1154,7 +1195,11 @@ efi_main (
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
     // disable EFI watchdog timer
-    refit_call4_wrapper(gBS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
+    refit_call4_wrapper(
+        gBS->SetWatchdogTimer,
+        0x0000, 0x0000, 0x0000,
+        NULL
+    );
 
     // further bootstrap (now with config available)
     SetupScreen();
@@ -1270,7 +1315,12 @@ efi_main (
                     #if REFIT_DEBUG > 0
                     MsgLog ("Reseting System\n---------------\n\n");
                     #endif
-                    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                    refit_call4_wrapper(
+                        gRT->ResetSystem,
+                        EfiResetCold,
+                        EFI_SUCCESS,
+                        0, NULL
+                    );
 
                     ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1326,7 +1376,12 @@ efi_main (
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(
+                    gRT->ResetSystem,
+                    EfiResetCold,
+                    EFI_SUCCESS,
+                    0, NULL
+                );
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1343,7 +1398,12 @@ efi_main (
                 #endif
 
                 TerminateScreen();
-                refit_call4_wrapper(gRT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+                refit_call4_wrapper(
+                    gRT->ResetSystem,
+                    EfiResetShutdown,
+                    EFI_SUCCESS,
+                    0, NULL
+                );
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -1401,7 +1461,9 @@ efi_main (
                     }
 
                     // Disable Mac OS compatibility check if configured to
-                    if (GlobalConfig.DisableMacCompatCheck && !GlobalConfig.DisableAMFI) {
+                    if (GlobalConfig.DisableMacCompatCheck &&
+                        !GlobalConfig.DisableAMFI
+                    ) {
                         DisableMacCompatCheck();
                     }
 
@@ -1416,6 +1478,7 @@ efi_main (
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
                         AltSetVariable                             = gRT->SetVariable;
+                        RT->SetVariable                            = gRTSetVariableEx;
                         gRT->SetVariable                           = gRTSetVariableEx;
                         SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
                     }
@@ -1450,7 +1513,9 @@ efi_main (
                 }
                 #endif
 
-                if (!GlobalConfig.TextOnly || MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                if (!GlobalConfig.TextOnly ||
+                    MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL
+                ) {
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
                 StartLoader (ourLoaderEntry, SelectionName);
@@ -1492,10 +1557,16 @@ efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Boot Legacy UEFI:- '%s'\n---------------\n\n", ourLegacyEntry->Volume->OSName);
+                    MsgLog (
+                        "  - Boot Legacy UEFI:- '%s'\n---------------\n\n",
+                        ourLegacyEntry->Volume->OSName
+                    );
                 }
                 else {
-                    MsgLog ("  - Boot Legacy UEFI:- '%s'\n\n", ourLegacyEntry->Volume->OSName);
+                    MsgLog (
+                        "  - Boot Legacy UEFI:- '%s'\n\n",
+                        ourLegacyEntry->Volume->OSName
+                    );
                 }
                 #endif
 
@@ -1613,15 +1684,28 @@ efi_main (
     #if REFIT_DEBUG > 0
     MsgLog ("System Reset:\n\n");
     #endif
-    refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    refit_call4_wrapper(
+        gRT->ResetSystem,
+        EfiResetCold,
+        EFI_SUCCESS,
+        0, NULL
+    );
 
     SwitchToText (FALSE);
 
     ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
 
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    refit_call2_wrapper(
+        gST->ConOut->SetAttribute,
+        gST->ConOut,
+        ATTR_ERROR
+    );
     PrintUglyText (ShowScreenStr, NEXTLINE);
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    refit_call2_wrapper(
+        gST->ConOut->SetAttribute,
+        gST->ConOut,
+        ATTR_BASIC
+    );
 
     #if REFIT_DEBUG > 0
     MsgLog ("%s\n---------------\n\n", ShowScreenStr);
