@@ -150,14 +150,16 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 } // BOOLEAN IsValidLoader()
 
 // Launch an EFI binary.
-EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
-                         IN CHAR16 *Filename,
-                         IN CHAR16 *LoadOptions,
-                         IN CHAR16 *ImageTitle,
-                         IN CHAR8 OSType,
-                         IN BOOLEAN Verbose,
-                         IN BOOLEAN IsDriver)
-{
+EFI_STATUS
+StartEFIImage (
+    IN REFIT_VOLUME  *Volume,
+    IN CHAR16        *Filename,
+    IN CHAR16        *LoadOptions,
+    IN CHAR16        *ImageTitle,
+    IN CHAR8         OSType,
+    IN BOOLEAN       Verbose,
+    IN BOOLEAN       IsDriver
+) {
     EFI_STATUS              Status, ReturnStatus;
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
@@ -354,13 +356,27 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
 
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
-    StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
-                  Basename(Entry->LoaderPath), Entry->OSType, !Entry->UseGraphicsMode, FALSE);
+    StartEFIImage(
+        Entry->Volume,
+        Entry->LoaderPath,
+        Entry->LoadOptions,
+        Basename(Entry->LoaderPath),
+        Entry->OSType,
+        !Entry->UseGraphicsMode,
+        FALSE
+    );
 } // VOID StartLoader()
 
 VOID StartTool(IN LOADER_ENTRY *Entry) {
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);
-    StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
-                  Basename(Entry->LoaderPath), Entry->OSType, TRUE, FALSE);
+    StartEFIImage(
+        Entry->Volume,
+        Entry->LoaderPath,
+        Entry->LoadOptions,
+        Basename(Entry->LoaderPath),
+        Entry->OSType,
+        TRUE,
+        FALSE
+    );
 } /* VOID StartTool() */

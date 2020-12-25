@@ -122,8 +122,8 @@ timeout 20
 
 # Attempt to prevent UEFI Windows writing to Apple NVRAM (1, true, or on) or not (0, false, or off).
 # When this token is activated, RefindPlus will *attempt* to prevent UEFI Windows from creating
-# certificates in the NVRAM on Apple Frimware as this can lead to firmware damage resulting
-# in an inability to boot. Legacy Windows does not have this issue and is recommended
+# certificates in the NVRAM on Apple Firmware as this can lead to damage resulting in an 
+# inability to boot. Legacy Windows does not have this issue and is recommended
 # when running Windows directly from RefindPlus on Apple Firmware.
 # Default is false
 #
