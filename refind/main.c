@@ -1484,12 +1484,19 @@ efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
+                    CHAR16 *WinType;
                     MsgLog ("User Input Received:\n");
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgLog ("  - Boot Windows from '%s'", ourLoaderEntry->Volume->VolName);
+                    if (MyStrStr (ourLoaderEntry->Title, L"UEFI") != NULL) {
+                        WinType = L"UEFI";
                     }
                     else {
-                        MsgLog ("  - Boot Windows:- '%s'", ourLoaderEntry->LoaderPath);
+                        WinType = L"Legacy";
+                    }
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog ("  - Boot %s Windows from '%s'", WinType, ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog ("  - Boot %s Windows:- '%s'", WinType, ourLoaderEntry->LoaderPath);
                     }
                     #endif
                 }

@@ -336,11 +336,13 @@ REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry) {
             SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
             if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
                 SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
-            } else {
+            }
+            else {
                 SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2);
             } // if/else
         } // if (SubScreen != NULL)
-    } else { // existing subscreen; less initialization, and just add new entry later....
+    }
+    else { // existing subscreen; less initialization, and just add new entry later....
         SubScreen = Entry->me.SubScreen;
     } // if/else
     MyFreePool(FileName);
@@ -443,7 +445,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             } // if
         } // if diagnostics entry found
 
-    } else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
+    }
+    else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
         File = ReadLinuxOptionsFile(Entry->LoaderPath, Volume);
         if (File != NULL) {
             InitrdName =  FindInitrd(Entry->LoaderPath, Volume);
@@ -478,7 +481,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
             MyFreePool(File);
         } // if
 
-    } else if (Entry->OSType == 'E') {   // entries for ELILO
+    }
+    else if (Entry->OSType == 'E') {   // entries for ELILO
         SubEntry = InitializeLoaderEntry(Entry);
         if (SubEntry != NULL) {
             SubEntry->me.Title        = L"Run ELILO in interactive mode";
@@ -514,7 +518,8 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         AddMenuInfoLine(SubScreen, L"NOTE: This is an example. Entries");
         AddMenuInfoLine(SubScreen, L"marked with (*) may not work.");
 
-    } else if (Entry->OSType == 'X') {   // entries for xom.efi
+    }
+    else if (Entry->OSType == 'X') {   // entries for xom.efi
         // by default, skip the built-in selection and boot from hard disk only
         Entry->LoadOptions = L"-s -h";
 
@@ -561,7 +566,8 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
 
     if (Volume->DiskKind == DISK_KIND_NET) {
         MergeStrings(&NameClues, Entry->me.Title, L' ');
-    } else {
+    }
+    else {
         // locate a custom icon for the loader
         // Anything found here takes precedence over the "hints" in the OSIconName variable
         if (!Entry->me.Image) {
@@ -607,22 +613,27 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
             ShortcutLetter = 'L';
         }
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-    } else if (StriSubCmp(L"refit", LoaderPath)) {
+    }
+    else if (StriSubCmp(L"refit", LoaderPath)) {
         MergeStrings(&OSIconName, L"refit", L',');
         Entry->OSType = 'R';
         ShortcutLetter = 'R';
-    } else if (StriSubCmp(L"refind", LoaderPath)) {
+    }
+    else if (StriSubCmp(L"refind", LoaderPath)) {
         MergeStrings(&OSIconName, L"refind", L',');
         Entry->OSType = 'R';
         ShortcutLetter = 'R';
-    } else if (StriSubCmp(MACOSX_LOADER_PATH, LoaderPath)) {
+    }
+    else if (StriSubCmp(MACOSX_LOADER_PATH, LoaderPath)) {
         MergeStrings(&OSIconName, L"mac", L',');
         Entry->OSType = 'M';
         ShortcutLetter = 'M';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-    } else if (MyStriCmp(NameClues, L"diags.efi")) {
+    }
+    else if (MyStriCmp(NameClues, L"diags.efi")) {
         MergeStrings(&OSIconName, L"hwtest", L',');
-    } else if (MyStriCmp(NameClues, L"e.efi")
+    }
+    else if (MyStriCmp(NameClues, L"e.efi")
         || MyStriCmp(NameClues, L"elilo.efi")
         || StriSubCmp(L"elilo", NameClues)
     ) {
@@ -631,12 +642,14 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         if (ShortcutLetter == 0)
             ShortcutLetter = 'L';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-    } else if (StriSubCmp(L"grub", NameClues)) {
+    }
+    else if (StriSubCmp(L"grub", NameClues)) {
         MergeStrings(&OSIconName, L"grub,linux", L',');
         Entry->OSType = 'G';
         ShortcutLetter = 'G';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
-    } else if (MyStriCmp(NameClues, L"cdboot.efi") ||
+    }
+    else if (MyStriCmp(NameClues, L"cdboot.efi") ||
                MyStriCmp(NameClues, L"bootmgr.efi") ||
                MyStriCmp(NameClues, L"bootmgfw.efi") ||
                MyStriCmp(NameClues, L"bkpbootmgfw.efi")) {
@@ -644,12 +657,14 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         Entry->OSType = 'W';
         ShortcutLetter = 'W';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    } else if (MyStriCmp(NameClues, L"xom.efi")) {
+    }
+    else if (MyStriCmp(NameClues, L"xom.efi")) {
         MergeStrings(&OSIconName, L"xom,win,win8", L',');
         Entry->OSType = 'X';
         ShortcutLetter = 'W';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    } else if (StriSubCmp(L"ipxe", NameClues)) {
+    }
+    else if (StriSubCmp(L"ipxe", NameClues)) {
         Entry->OSType = 'N';
         ShortcutLetter = 'N';
         MergeStrings(&OSIconName, L"network", L',');
@@ -686,9 +701,11 @@ static LOADER_ENTRY * AddLoaderEntry(
     if (Entry != NULL) {
         if (MyStrStr(LoaderTitle, L"macOS") != NULL) {
             TitleEntry = L"Mac OS";
-        } else if (LoaderTitle == NULL) {
+        }
+        else if (LoaderTitle == NULL) {
             TitleEntry = LoaderPath;
-        } else {
+        }
+        else {
             TitleEntry = LoaderTitle;
         }
 
@@ -716,7 +733,8 @@ static LOADER_ENTRY * AddLoaderEntry(
 
         if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
             Entry->LoaderPath = StrDuplicate(L"\\");
-        } else {
+        }
+        else {
             Entry->LoaderPath = NULL;
         }
 
@@ -764,7 +782,8 @@ static INTN TimeComp(IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
 
     if (Time1InSeconds < Time2InSeconds) {
         return (-1);
-    } else if (Time1InSeconds > Time2InSeconds) {
+    }
+    else if (Time1InSeconds > Time2InSeconds) {
         return (1);
     }
 
@@ -786,7 +805,8 @@ static struct LOADER_LIST * AddLoaderListEntry(
     LatestEntry = CurrentEntry = LoaderList;
     if (LoaderList == NULL) {
         LatestEntry = NewEntry;
-    } else {
+    }
+    else {
         if (StriSubCmp(L"vmlinuz-0-rescue", NewEntry->FileName)) {
             LinuxRescue = TRUE;
         }
@@ -800,7 +820,8 @@ static struct LOADER_LIST * AddLoaderListEntry(
         NewEntry->NextEntry = CurrentEntry;
         if (PrevEntry == NULL) {
             LatestEntry = NewEntry;
-        } else {
+        }
+        else {
             PrevEntry->NextEntry = NewEntry;
         } // if/else
     } // if/else
@@ -837,7 +858,8 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
         MyFreePool(VolGuid);
 
         return FALSE;
-    } else {
+    }
+    else {
         MyFreePool(VolGuid);
     } // if/else
 
@@ -864,7 +886,8 @@ static BOOLEAN ShouldScan(REFIT_VOLUME *Volume, CHAR16 *Path) {
             if (VolumeMatchesDescription(Volume, VolName) && MyStriCmp(DontScanDir, Path)) {
                 ScanIt = FALSE;
             }
-        } else {
+        }
+        else {
             if (MyStriCmp(DontScanDir, Path)) {
                 ScanIt = FALSE;
             }
@@ -911,7 +934,8 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo(FileHandle);
         FileSize = FileInfo->FileSize;
-    } else {
+    }
+    else {
         return FALSE;
     }
     MyFreePool(FileInfo);
@@ -927,7 +951,8 @@ static BOOLEAN DuplicatesFallback(IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) 
     if (Status == EFI_SUCCESS) {
         FallbackInfo = LibFileInfo(FallbackHandle);
         FallbackSize = FallbackInfo->FileSize;
-    } else {
+    }
+    else {
         refit_call1_wrapper(FileHandle->Close, FileHandle);
         return FALSE;
     }
@@ -1017,7 +1042,7 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
     EFI_STATUS              Status;
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
-    CHAR16                  Message[256], *Extension, *FullName;
+    CHAR16                  *Message, *Extension, *FullName;
     struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
@@ -1065,7 +1090,8 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
                       StriSubCmp(L"kernel", NewLoader->FileName));
            if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                AddKernelToSubmenu(FirstKernel, NewLoader->FileName, Volume);
-           } else {
+           }
+           else {
                LatestEntry = AddLoaderEntry(
                    NewLoader->FileName,
                    NULL,
@@ -1090,9 +1116,10 @@ static BOOLEAN ScanLoaderDir(IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16
        // it down to buggy EFI implementations and ignoring that particular error....
        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
           if (Path) {
-              SPrint(Message, 255, L"While Scanning the '%s' Directory on '%s'", Path, Volume->VolName);
-          } else {
-              SPrint(Message, 255, L"While Scanning the Root Directory on '%s'", Volume->VolName);
+              Message = PoolPrint(L"While Scanning the '%s' Directory on '%s'", Path, Volume->VolName);
+          }
+          else {
+               Message = PoolPrint(L"While Scanning the Root Directory on '%s'", Volume->VolName);
           }
 
           CheckError(Status, Message);
@@ -1237,7 +1264,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bkpbootmgfw.efi", GlobalConfig.DontScanFiles)
             ) {
-                AddLoaderEntry(FileName, L"Microsoft EFI Boot (Boot Repair Backup)", Volume, TRUE);
+                AddLoaderEntry(FileName, L"UEFI Windows (Boot Repair Backup)", Volume, TRUE);
                 FoundBRBackup = TRUE;
                 if (DuplicatesFallback(Volume, FileName)) {
                     ScanFallbackLoader = FALSE;
@@ -1247,9 +1274,9 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             if (FileExists(Volume->RootDir, FileName) &&
                 !FilenameIn(Volume, L"EFI\\Microsoft\\Boot", L"bootmgfw.efi", GlobalConfig.DontScanFiles)) {
                     if (FoundBRBackup) {
-                        AddLoaderEntry(FileName, L"Supposed Microsoft EFI Boot (Probably GRUB)", Volume, TRUE);
+                        AddLoaderEntry(FileName, L"Assumed UEFI Windows (Probably GRUB)", Volume, TRUE);
                     } else {
-                        AddLoaderEntry(FileName, L"Microsoft EFI Boot", Volume, TRUE);
+                        AddLoaderEntry(FileName, L"UEFI Windows", Volume, TRUE);
                     }
                     if (DuplicatesFallback(Volume, FileName)) {
                         ScanFallbackLoader = FALSE;
@@ -1548,7 +1575,8 @@ ScanForBootloaders(
             MsgLog("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
             if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
                 MsgLog("\n");
-            } else {
+            }
+            else {
                 MsgLog("\n\n");
             }
             #endif
@@ -1604,7 +1632,8 @@ static BOOLEAN IsValidTool(IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             } // if
             MyFreePool(DontScanThis);
         } // while
-    } else {
+    }
+    else {
         retval = FALSE;
     } // if
 
