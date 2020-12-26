@@ -130,8 +130,7 @@ timeout 20
 #protect_mac_nvram true
 
 # Add debug=0x144 boot argument when booting (1, true, or on) or not (0, false, or off).
-# Macs check whether the current Mac OS version is supported on the machine when booting and halts
-# if not. When this token is activated, RefindPlus will set the "debug=0x144" boot argument
+# When this token is activated, RefindPlus will set the "debug=0x144" boot argument
 # This setting
 # is only applied when booting Mac OS and does not remove the boot argument when the token is set
 # to 'false' and the boot argument is already present.
