@@ -77,6 +77,7 @@ VOID RotateCsrValue(VOID);
 VOID ForceTrim(VOID);
 VOID DisableMacCompatCheck(VOID);
 VOID DisableAMFI(VOID);
+VOID debug0x144(VOID);
 VOID *GetAppleNvramEntry (
     IN      CHAR16        *VariableName,
     OUT     UINT32        *Attributes    OPTIONAL,
