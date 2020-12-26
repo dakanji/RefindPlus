@@ -142,6 +142,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableMacCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
+    /* debug0x144 = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,
@@ -304,8 +305,8 @@ DisableAMFI (
 
     if (GlobalConfig.DisableMacCompatCheck) {
         // Combine with DisableMacCompatCheck
-        BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check";
-        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check";
+        BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check debug=0x144";
+        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check debug=0x144";
 
         Status = refit_call5_wrapper(
             gRT->SetVariable,
@@ -365,6 +366,31 @@ DisableMacCompatCheck (
     MsgLog ("    * Disable Mac Compat Check ...%r", Status);
     #endif
 } // VOID DisableMacCompatCheck()
+
+VOID
+debug0x144 (
+    VOID
+) {
+    EFI_STATUS  Status;
+    EFI_GUID    AppleGUID    = APPLE_GUID;
+    UINT32      AppleFLAGS   = APPLE_FLAGS;
+    CHAR16      *NameNVRAM   = L"boot-args";
+    char        DataNVRAM[]  = "debug=0x144";
+
+    Status = refit_call5_wrapper(
+        gRT->SetVariable,
+        NameNVRAM,
+        &AppleGUID,
+        AppleFLAGS,
+        sizeof (DataNVRAM),
+        DataNVRAM
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("\n");
+    MsgLog ("    * debug=0x144 ...%r", Status);
+    #endif
+} // VOID debug0x144()
 
 
 VOID
@@ -1470,6 +1496,11 @@ efi_main (
                     // Disable AMFI if configured to
                     if (GlobalConfig.DisableAMFI) {
                         DisableAMFI();
+                    }
+                    
+                    // Sets debug=0x144 if configured to
+                    if (GlobalConfig.debug0x144) {
+                        debug0x144();
                     }
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
