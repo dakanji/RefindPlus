@@ -388,7 +388,7 @@ debug0x144 (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("    * debug=0x144 ...%r", Status);
+    MsgLog ("    * Set debug=0x144 ...%r", Status);
     #endif
 } // VOID debug0x144()
 
