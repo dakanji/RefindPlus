@@ -504,7 +504,7 @@ EfivarGetRaw (
     return Status;
 } // EFI_STATUS EfivarGetRaw()
 
-// Set an EFI variable, either to NVRAM or to a disk file under rEFInd's
+// Set an EFI variable, either to NVRAM or to a disk file under RefindPlus'
 // "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
 EFI_STATUS
@@ -536,7 +536,7 @@ EfivarSetRaw (
             GlobalConfig.UseNvram = TRUE;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
+            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
             MsgLog ("         Set 'use_nvram' to 'true' to Silence this Warning\n\n");
             #endif
         }
