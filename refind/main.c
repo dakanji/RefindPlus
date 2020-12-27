@@ -316,6 +316,15 @@ gRTSetVariableEx (
     EFI_GUID    TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
     BOOLEAN     CertBlock              = FALSE;
 
+    #if REFIT_DEBUG > 0
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindGuid)) {
+        MsgLog ("INFO: Using Emulated NVRAM\n");
+    }
+    else {
+        MsgLog ("INFO: Using Hardware NVRAM\n");
+    }
+    #endif
+    
     if ((GuidsAreEqual (VendorGuid, &MicrosoftGuid) ||
         GuidsAreEqual (VendorGuid, &X509Guid) ||
         GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
@@ -334,15 +343,6 @@ gRTSetVariableEx (
         // payload to be saved to Mac NVRAM is a certificate
         CertBlock  = TRUE;
         Status     = EFI_SECURITY_VIOLATION;
-
-        #if REFIT_DEBUG > 0
-        if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindGuid)) {
-            MsgLog ("INFO: Using Emulated NVRAM\n");
-        }
-        else {
-            MsgLog ("INFO: Using Hardware NVRAM\n");
-        }
-        #endif
     }
     else {
         Status = EfivarSetRawEx (
