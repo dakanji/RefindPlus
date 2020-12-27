@@ -345,8 +345,9 @@ gRTSetVariableEx (
         // payload to be saved to Mac NVRAM is a certificate
         BlockCert = TRUE;
     }
-    else if (MyStriCmp (VariableName, L"UnlockID") ||
-        MyStriCmp (VariableName, L"UnlockIDCopy")
+    else if ((MyStriCmp (VariableName, L"UnlockID") ||
+        MyStriCmp (VariableName, L"UnlockIDCopy")) &&
+        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
     ) {
         // Abort if Windows is trying to write UEFI PRNG hash to Mac NVRAM
         // DA_TAG: Slight paranoia ... Review later
@@ -366,15 +367,15 @@ gRTSetVariableEx (
     MsgLog ("      Write '%s' to NVRAM ...%r", VariableName, Status);
     if (BlockCert) {
         MsgLog ("\n");
-        MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt");
+        MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt on Apple Firmware");
         MsgLog ("\n");
-        MsgLog ("      Successful Write Attempt May Damage Boot ROM");
+        MsgLog ("      Successful Write Attempt May Damage Boot ROM on Apple Firmware");
     }
     else if (BlockPRNG) {
         MsgLog ("\n");
-        MsgLog ("WARN: Prevented Secure Boot Write to NVRAM Attempt");
+        MsgLog ("WARN: Prevented Secure Boot Write to NVRAM Attempt on Apple Firmware");
         MsgLog ("\n");
-        MsgLog ("      Successful Write Attempt May Damage Boot ROM");
+        MsgLog ("      Successful Write Attempt May Damage Boot ROM on Apple Firmware");
     }
     MsgLog ("\n\n");
     #endif
