@@ -886,7 +886,7 @@ ScanVolumeBootcode (
             Volume->OSName = L"Windows (NT/XP)";
         }
         // Windows Vista/7/8/10
-        else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
+        else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) && ((*((UINT16 *)(Buffer + 450)) != 0xeefe) >= 0) {
             Volume->HasBootCode = TRUE;
             Volume->OSIconName = L"win8,win";
             Volume->OSName = L"Windows (Legacy)";
