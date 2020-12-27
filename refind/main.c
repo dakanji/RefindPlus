@@ -377,12 +377,10 @@ DisableAMFI (
     EFI_GUID    AppleGUID   = APPLE_GUID;
     UINT32      AppleFLAGS  = APPLE_FLAGS;
     CHAR16      *NameNVRAM  = L"boot-args";
-    CHAR16      *BootArg;
 
     if (GlobalConfig.DisableMacCompatCheck) {
         // Combine with DisableMacCompatCheck
-        BootArg           = L"amfi_get_out_of_my_way=1 -no_compat_check";
-        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1 -no_compat_check";
+        char DataNVRAM[] = "amfi_get_out_of_my_way=1 -no_compat_check";
 
         Status = refit_call5_wrapper(
             gRT->SetVariable,
@@ -394,8 +392,7 @@ DisableAMFI (
         );
     }
     else {
-        BootArg           = L"amfi_get_out_of_my_way=1";
-        char DataNVRAM[]  =  "amfi_get_out_of_my_way=1";
+        char DataNVRAM[] = "amfi_get_out_of_my_way=1";
 
         Status = refit_call5_wrapper(
             gRT->SetVariable,
@@ -1537,17 +1534,16 @@ efi_main (
                         ForceTrim();
                     }
 
-                    // Disable Mac OS compatibility check if configured to
-                    if (GlobalConfig.DisableMacCompatCheck &&
-                        !GlobalConfig.DisableAMFI
-                    ) {
+                    if (GlobalConfig.DisableAMFI) {
+                        // Disable AMFI if configured to
+                        // Also disables Mac OS compatibility check if configured
+                        DisableAMFI();
+                    }
+                    else if (GlobalConfig.DisableMacCompatCheck) {
+                        // Disable Mac OS compatibility check if configured to
                         DisableMacCompatCheck();
                     }
 
-                    // Disable AMFI if configured to
-                    if (GlobalConfig.DisableAMFI) {
-                        DisableAMFI();
-                    }
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectMacNVRAM &&
