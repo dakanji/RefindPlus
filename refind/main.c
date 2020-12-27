@@ -345,8 +345,11 @@ gRTSetVariableEx (
         // payload to be saved to Mac NVRAM is a certificate
         BlockCert = TRUE;
     }
-    else if (MyStrStr (VariableName, L"UnlockID") != NULL) {
-        // Abort if Windows is trying to write UEFI PRNG output to Mac NVRAM
+    else if (MyStriCmp (VariableName, L"UnlockID") ||
+        MyStriCmp (VariableName, L"UnlockIDCopy")
+    ) {
+        // Abort if Windows is trying to write UEFI PRNG hash to Mac NVRAM
+        // DA_TAG: Slight paranoia ... Review later
         BlockPRNG = TRUE;
     }
     else {
