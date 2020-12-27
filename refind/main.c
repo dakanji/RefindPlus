@@ -238,28 +238,23 @@ EfivarSetRawEx (
     EFI_STATUS  Status;
 
     if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Using Emulated NVRAM\n");
-        #endif
-
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
             &VarsDir,
             L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
         }
         else if (Status == EFI_WRITE_PROTECTED) {
-            // Override use_nvram
             GlobalConfig.UseNvram = TRUE;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("         Set 'use_nvram' to 'true' to Silence this Warning\n\n");
+            MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
+            MsgLog ("      Set 'use_nvram' to 'true' to Silence this Warning\n");
             #endif
         }
         else {
@@ -268,23 +263,13 @@ EfivarSetRawEx (
         MyFreePool (VarsDir);
     }
 
-    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindGuid)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Using Hardware NVRAM\n");
-        #endif
-
+    if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
-        Status = AltSetVariable (
-            name,
-            vendor,
-            flags,
-            size,
-            buf
-        );
+        Status = AltSetVariable (name, vendor, flags, size, buf);
     }
 
     return Status;
@@ -301,19 +286,19 @@ gRTSetVariableEx (
     IN  UINTN     DataSize,
     IN  VOID      *Data
 ) {
-    EFI_STATUS  Status                 = EFI_SECURITY_VIOLATION;
-    EFI_GUID    WinGuid                = WINDOWS_GUID;
-    EFI_GUID    X509Guid               = X509_GUID;
-    EFI_GUID    PKCS7Guid              = PKCS7_GUID;
-    EFI_GUID    Sha1Guid               = EFI_CERT_SHA1_GUID;
-    EFI_GUID    Sha224Guid             = EFI_CERT_SHA224_GUID;
-    EFI_GUID    Sha256Guid             = EFI_CERT_SHA256_GUID;
-    EFI_GUID    Sha384Guid             = EFI_CERT_SHA384_GUID;
-    EFI_GUID    Sha512Guid             = EFI_CERT_SHA512_GUID;
-    EFI_GUID    RSA2048Guid            = RSA2048_GUID;
-    EFI_GUID    RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
-    EFI_GUID    RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
-    EFI_GUID    TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
+    EFI_STATUS   Status                 = EFI_SECURITY_VIOLATION;
+    EFI_GUID     WinGuid                = WINDOWS_GUID;
+    EFI_GUID     X509Guid               = X509_GUID;
+    EFI_GUID     PKCS7Guid              = PKCS7_GUID;
+    EFI_GUID     Sha001Guid             = EFI_CERT_SHA1_GUID;
+    EFI_GUID     Sha224Guid             = EFI_CERT_SHA224_GUID;
+    EFI_GUID     Sha256Guid             = EFI_CERT_SHA256_GUID;
+    EFI_GUID     Sha384Guid             = EFI_CERT_SHA384_GUID;
+    EFI_GUID     Sha512Guid             = EFI_CERT_SHA512_GUID;
+    EFI_GUID     RSA2048Guid            = RSA2048_GUID;
+    EFI_GUID     RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
+    EFI_GUID     RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
+    EFI_GUID     TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockPRNG = FALSE;
@@ -330,7 +315,7 @@ gRTSetVariableEx (
     if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
         GuidsAreEqual (VendorGuid, &X509Guid) ||
         GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha1Guid) ||
+        GuidsAreEqual (VendorGuid, &Sha001Guid) ||
         GuidsAreEqual (VendorGuid, &Sha224Guid) ||
         GuidsAreEqual (VendorGuid, &Sha256Guid) ||
         GuidsAreEqual (VendorGuid, &Sha384Guid) ||
