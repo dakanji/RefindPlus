@@ -360,7 +360,7 @@ gRTSetVariableEx (
         MsgLog ("\n");
         MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt");
         MsgLog ("\n");
-        MsgLog ("      Sucessful Certificate Write May Damage NVRAM");
+        MsgLog ("      Successful Write Attempt Will Damage BootROM");
     }
     MsgLog ("\n\n");
     #endif
