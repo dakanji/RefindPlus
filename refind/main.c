@@ -334,6 +334,15 @@ gRTSetVariableEx (
         // payload to be saved to Mac NVRAM is a certificate
         CertBlock  = TRUE;
         Status     = EFI_SECURITY_VIOLATION;
+
+        #if REFIT_DEBUG > 0
+        if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindGuid)) {
+            MsgLog ("INFO: Using Emulated NVRAM\n");
+        }
+        else {
+            MsgLog ("INFO: Using Hardware NVRAM\n");
+        }
+        #endif
     }
     else {
         Status = EfivarSetRawEx (
@@ -349,9 +358,9 @@ gRTSetVariableEx (
     MsgLog ("      Write '%s' to NVRAM ...%r", VariableName, Status);
     if (CertBlock) {
         MsgLog ("\n");
-        MsgLog ("** WARN: Prevented Certificate Write to NVRAM Attempt");
+        MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt");
         MsgLog ("\n");
-        MsgLog ("         Sucessful Certificate Write May Damage NVRAM");
+        MsgLog ("      Sucessful Certificate Write May Damage NVRAM");
     }
     MsgLog ("\n\n");
     #endif
