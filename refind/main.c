@@ -301,8 +301,8 @@ gRTSetVariableEx (
     IN  UINTN     DataSize,
     IN  VOID      *Data
 ) {
-    EFI_STATUS  Status;
-    EFI_GUID    MicrosoftGuid          = MICROSOFT_GUID;
+    EFI_STATUS  Status                 = EFI_SECURITY_VIOLATION;
+    EFI_GUID    WinGuid                = WINDOWS_GUID;
     EFI_GUID    X509Guid               = X509_GUID;
     EFI_GUID    PKCS7Guid              = PKCS7_GUID;
     EFI_GUID    Sha1Guid               = EFI_CERT_SHA1_GUID;
@@ -314,7 +314,9 @@ gRTSetVariableEx (
     EFI_GUID    RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
     EFI_GUID    RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID    TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
-    BOOLEAN     CertBlock              = FALSE;
+
+    BOOLEAN BlockCert = FALSE;
+    BOOLEAN BlockPRNG = FALSE;
 
     #if REFIT_DEBUG > 0
     if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindGuid)) {
@@ -324,8 +326,8 @@ gRTSetVariableEx (
         MsgLog ("INFO: Using Hardware NVRAM\n");
     }
     #endif
-    
-    if ((GuidsAreEqual (VendorGuid, &MicrosoftGuid) ||
+
+    if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
         GuidsAreEqual (VendorGuid, &X509Guid) ||
         GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
         GuidsAreEqual (VendorGuid, &Sha1Guid) ||
@@ -341,8 +343,11 @@ gRTSetVariableEx (
     ) {
         // Abort if Windows is trying to write to Mac NVRAM or
         // payload to be saved to Mac NVRAM is a certificate
-        CertBlock  = TRUE;
-        Status     = EFI_SECURITY_VIOLATION;
+        BlockCert = TRUE;
+    }
+    else if (MyStrStr (VariableName, L"UnlockID") != NULL) {
+        // Abort if Windows is trying to write UEFI PRNG output to Mac NVRAM
+        BlockPRNG = TRUE;
     }
     else {
         Status = EfivarSetRawEx (
@@ -356,11 +361,17 @@ gRTSetVariableEx (
 
     #if REFIT_DEBUG > 0
     MsgLog ("      Write '%s' to NVRAM ...%r", VariableName, Status);
-    if (CertBlock) {
+    if (BlockCert) {
         MsgLog ("\n");
         MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt");
         MsgLog ("\n");
-        MsgLog ("      Successful Write Attempt Will Damage BootROM");
+        MsgLog ("      Successful Write Attempt May Damage Boot ROM");
+    }
+    else if (BlockPRNG) {
+        MsgLog ("\n");
+        MsgLog ("WARN: Prevented Secure Boot Write to NVRAM Attempt");
+        MsgLog ("\n");
+        MsgLog ("      Successful Write Attempt May Damage Boot ROM");
     }
     MsgLog ("\n\n");
     #endif
