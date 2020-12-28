@@ -110,7 +110,7 @@ BOOLEAN PointerEnabled = FALSE;
 BOOLEAN PointerActive  = FALSE;
 BOOLEAN DrawSelection  = TRUE;
 
-extern EFI_GUID          RefindGuid;
+extern EFI_GUID          RefindPlusGuid;
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
 static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
@@ -2094,7 +2094,7 @@ VOID ManageHiddenTags (VOID) {
             if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
                 i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
                 Status = EfivarSetRaw (
-                    &RefindGuid,
+                    &RefindPlusGuid,
                     L"HiddenLegacy",
                     (CHAR8 *) HiddenLegacy,
                     i * 2 + 2 * (i > 0),
@@ -2107,7 +2107,7 @@ VOID ManageHiddenTags (VOID) {
         if (SaveTags) {
             i = HiddenTags ? StrLen (HiddenTags) : 0;
             Status = EfivarSetRaw (
-                &RefindGuid,
+                &RefindPlusGuid,
                 L"HiddenTags",
                 (CHAR8 *) HiddenTags,
                 i * 2 + 2 * (i > 0),
@@ -2118,7 +2118,7 @@ VOID ManageHiddenTags (VOID) {
         if (SaveTools) {
             i = HiddenTools ? StrLen (HiddenTools) : 0;
             Status = EfivarSetRaw (
-                &RefindGuid,
+                &RefindPlusGuid,
                 L"HiddenTools",
                 (CHAR8 *) HiddenTools,
                 i * 2 + 2 * (i > 0),
@@ -2144,7 +2144,7 @@ CHAR16* ReadHiddenTags (CHAR16 *VarName) {
     UINTN       Size;
     EFI_STATUS  Status;
 
-    Status = EfivarGetRaw (&RefindGuid, VarName, &Buffer, &Size);
+    Status = EfivarGetRaw (&RefindPlusGuid, VarName, &Buffer, &Size);
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
         #if REFIT_DEBUG > 0
         CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags ('%s')", VarName);
@@ -2168,7 +2168,7 @@ static VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
         HiddenTags = ReadHiddenTags (VarName);
         MergeStrings (&HiddenTags, Pathname, L',');
         Status = EfivarSetRaw (
-            &RefindGuid,
+            &RefindPlusGuid,
             VarName,
             (CHAR8 *) HiddenTags,
             StrLen (HiddenTags) * 2 + 2,

@@ -119,7 +119,7 @@ BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
 BOOLEAN          SelfVolRun     = FALSE;
-extern EFI_GUID RefindGuid;
+extern EFI_GUID RefindPlusGuid;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -446,7 +446,7 @@ EfivarGetRaw (
     BOOLEAN     ReadFromNvram = TRUE;
     EFI_STATUS  Status;
 
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
@@ -482,7 +482,7 @@ EfivarGetRaw (
         MyFreePool (VarsDir);
     }
 
-    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindGuid)) {
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
         l = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool (l);
         if (!buf) {
@@ -519,7 +519,7 @@ EfivarSetRaw (
     EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status;
 
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
@@ -550,7 +550,7 @@ EfivarSetRaw (
         MyFreePool (VarsDir);
     }
 
-    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindGuid)) {
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
