@@ -109,15 +109,12 @@ VOID RotateCsrValue (VOID) {
 
 
 /*
- * The below definitions and SetAppleOSInfo() function are based on a GRUB patch
- * by Andreas Heider:
+ * The definitions below and the SetAppleOSInfo() function are based on a GRUB patch by Andreas Heider:
  * https://lists.gnu.org/archive/html/grub-devel/2013-12/msg00442.html
  */
 
 #define EFI_APPLE_SET_OS_PROTOCOL_GUID  \
-  { 0xc5c5da95, 0x7d5c, 0x45e6, \
-    { 0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77 } \
-  }
+{ 0xc5c5da95, 0x7d5c, 0x45e6, { 0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77 } }
 
 typedef struct EfiAppleSetOsInterface {
     UINT64 Version;
@@ -129,12 +126,15 @@ typedef struct EfiAppleSetOsInterface {
 // required to work around problems on some Macs that don't fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
-EFI_STATUS SetAppleOSInfo() {
-    CHAR16 *AppleOSVersion = NULL;
-    CHAR8 *AppleOSVersion8 = NULL;
-    EFI_STATUS Status;
-    EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
-    EfiAppleSetOsInterface *SetOs = NULL;
+EFI_STATUS
+SetAppleOSInfo (
+    VOID
+) {
+    EFI_STATUS              Status;
+    EFI_GUID                apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
+    CHAR16                  *AppleOSVersion    = NULL;
+    CHAR8                   *AppleOSVersion8   = NULL;
+    EfiAppleSetOsInterface  *SetOs             = NULL;
 
     Status = refit_call3_wrapper(
         gBS->LocateProtocol,
@@ -145,41 +145,37 @@ EFI_STATUS SetAppleOSInfo() {
 
     // If not a Mac, ignore the call....
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Spoof Mac OS Version ..Ignored\n\n");
-        #endif
+        Status = EFI_INVALID_PARAMETER;
+    }
+    else {
+        if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
+            AppleOSVersion = StrDuplicate (L"Mac OS");
+            MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
 
-        return EFI_SUCCESS;
+            if (AppleOSVersion) {
+                AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
+                UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
+
+                if (AppleOSVersion8) {
+                    Status = refit_call1_wrapper(SetOs->SetOsVersion, AppleOSVersion8);
+                    if (!EFI_ERROR (Status)) {
+                        Status = EFI_SUCCESS;
+                    }
+                    MyFreePool (AppleOSVersion8);
+                }
+                else {
+                    Status = EFI_OUT_OF_RESOURCES;
+                }
+
+                if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
+                    Status = refit_call1_wrapper(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
+                }
+                MyFreePool (AppleOSVersion);
+            } // if (AppleOSVersion)
+        } // if
     }
 
-    if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
-        AppleOSVersion = StrDuplicate (L"Mac OS");
-        MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
-        if (AppleOSVersion) {
-            AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
-            UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
-            if (AppleOSVersion8) {
-                Status = refit_call1_wrapper(SetOs->SetOsVersion, AppleOSVersion8);
-                if (!EFI_ERROR (Status)) {
-                    Status = EFI_SUCCESS;
-                }
-                MyFreePool (AppleOSVersion8);
-            } else {
-                Status = EFI_OUT_OF_RESOURCES;
-            }
-
-            if ((Status == EFI_SUCCESS) && (SetOs->Version >= 2)) {
-                Status = refit_call1_wrapper(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
-            }
-            MyFreePool (AppleOSVersion);
-        } // if (AppleOSVersion)
-    } // if
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("Spoof Mac OS Version ...%r\n\n", Status);
-    #endif
-
-    return (Status);
+    return Status;
 } // EFI_STATUS SetAppleOSInfo()
 
 // Reads and returns values of Apple NVRAM entries.
@@ -242,7 +238,7 @@ EFI_STATUS CheckAppleNvramEntry (
             Status = EFI_ALREADY_STARTED;
         }
     }
-    MyFreePool(OldData);
+    MyFreePool (OldData);
 
     return Status;
 }

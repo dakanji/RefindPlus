@@ -952,8 +952,10 @@ VOID
 WarnIfLegacyProblems (
     VOID
 ) {
-    BOOLEAN found = FALSE;
-    UINTN   i = 0;
+    UINTN    i               = 0;
+    CHAR16   *ShowScreenStr  = NULL;
+    BOOLEAN  found           = FALSE;
+
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
         do {
@@ -970,10 +972,18 @@ WarnIfLegacyProblems (
         } while ((i < NUM_SCAN_OPTIONS) && (!found));
 
         if (found) {
-            Print (L"NOTE: refind.conf's 'scanfor' line specifies scanning for one or more legacy\n");
-            Print (L"(BIOS) boot options; however, this is not possible because your computer lacks\n");
-            Print (L"the necessary Compatibility Support Module (CSM) support or that support is\n");
-            Print (L"disabled in your firmware.\n");
+            SwitchToText (FALSE);
+
+            ShowScreenStr = L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n         (BIOS) boot options; however, this is not possible because your computer lacks\n         the necessary Compatibility Support Module (CSM) support or that support is\n         disabled in your firmware.";
+
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("%s\n\n", ShowScreenStr);
+            #endif
+
             PauseForKey();
         } // if (found)
     } // if no legacy support

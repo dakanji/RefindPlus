@@ -1243,11 +1243,12 @@ efi_main (
     }
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
+        Status = SetAppleOSInfo();
+
         #if REFIT_DEBUG > 0
-        MsgLog ("Spoof Mac OS Version...\n");
+        MsgLog ("INFO: Spoof Mac OS Version ...%r\n\n", Status);
         #endif
 
-        SetAppleOSInfo();
     }
 
     // Reset SystemTable if amended in LoadDrivers
