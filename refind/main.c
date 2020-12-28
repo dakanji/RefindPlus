@@ -453,7 +453,7 @@ ForceTrim (
 
     Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
 
-    if (!EFI_ERROR (Status)) {
+    if (Status != EFI_ALREADY_STARTED) {
         Status = refit_call5_wrapper(
             gRT->SetVariable,
             NameNVRAM,

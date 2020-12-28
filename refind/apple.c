@@ -193,36 +193,23 @@ VOID *GetAppleNvramEntry (
     UINTN       IntDataSize  = 0;
     EFI_GUID    AppleGUID    = APPLE_GUID;
 
-    Status = gRT->GetVariable (
-        VariableName,
-        &AppleGUID,
-        Attributes,
-        &IntDataSize,
-        NULL
-    );
+    do {
+        Status = gRT->GetVariable (
+            VariableName,
+            &AppleGUID,
+            Attributes,
+            &IntDataSize,
+            Data
+        );
 
-    if (IntDataSize == 0) {
-        return NULL;
-    }
-
-    if (Status == EFI_BUFFER_TOO_SMALL) {
-        Data = (VOID *) AllocateZeroPool (IntDataSize + 1);
-        if (Data != NULL) {
-            Status = gRT->GetVariable (
-                VariableName,
-                &AppleGUID,
-                Attributes,
-                &IntDataSize,
-                Data
-            );
-
-            if (EFI_ERROR (Status)) {
-                MyFreePool(Data);
-                IntDataSize = 0;
-                Data = NULL;
+        if (Status == EFI_BUFFER_TOO_SMALL) {
+            IntDataSize = IntDataSize + 1;
+            Data = (VOID *) AllocateZeroPool (IntDataSize);
+            if (Data == NULL) {
+                break;
             }
         }
-    }
+    } while (Status == EFI_BUFFER_TOO_SMALL);
 
     if (DataSize != NULL) {
         *DataSize = IntDataSize;
@@ -232,8 +219,6 @@ VOID *GetAppleNvramEntry (
 }
 
 // Checks NVRAM entries.
-// Does nothing if entry is null or has the same data.
-// Clears entry if it has different data.
 EFI_STATUS CheckAppleNvramEntry (
     IN  CHAR16      *NameNVRAM,
     IN  CONST VOID  *DataNVRAM
@@ -252,14 +237,12 @@ EFI_STATUS CheckAppleNvramEntry (
 
     if (OldData != NULL) {
         if ((OldDataSize == NewDataSize) &&
-            (CompareMem (OldData, DataNVRAM, NewDataSize) == 0)
+            (CompareMem (DataNVRAM, OldData, OldDataSize) == 0)
         ) {
-            MyFreePool(OldData);
-
             Status = EFI_ALREADY_STARTED;
         }
-        MyFreePool(OldData);
     }
-
+    MyFreePool(OldData);
+    
     return Status;
 }
