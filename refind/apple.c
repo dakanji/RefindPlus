@@ -31,7 +31,7 @@ CHAR16 gCsrStatus[256];
 
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
 // information. If the variable is not present and the firmware is Apple, fake
-// it and claim it's enabled, since that's how OS X 10.11 treats a system with
+// it and claim it's enabled, since that's how Mac OS X 10.11 treats a system with
 // the variable absent.
 EFI_STATUS GetCsrStatus (UINT32 *CsrStatus) {
     UINT32     *ReturnValue = NULL;
@@ -125,7 +125,7 @@ typedef struct EfiAppleSetOsInterface {
     EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
 } EfiAppleSetOsInterface;
 
-// Function to tell the firmware that OS X is being launched. This is
+// Function to tell the firmware that Mac OS X is being launched. This is
 // required to work around problems on some Macs that don't fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
@@ -153,7 +153,7 @@ EFI_STATUS SetAppleOSInfo() {
     }
 
     if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
-        AppleOSVersion = StrDuplicate (L"Mac OS X");
+        AppleOSVersion = StrDuplicate (L"Mac OS");
         MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
         if (AppleOSVersion) {
             AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
@@ -243,6 +243,6 @@ EFI_STATUS CheckAppleNvramEntry (
         }
     }
     MyFreePool(OldData);
-    
+
     return Status;
 }

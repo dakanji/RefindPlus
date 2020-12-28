@@ -199,7 +199,7 @@
 #define NVRAMCLEAN_LOCATIONS       L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
-// Files that may be macOS recovery files
+// Files that may be Mac OS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or

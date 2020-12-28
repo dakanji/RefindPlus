@@ -23,7 +23,7 @@
 # 0.10.1  -- Improve extraction of kernel options from /proc/cmdline
 # 0.10.0  -- Renamed from mkrlconf.sh to mkrlconf; changed to get $DefaultOptions
 #            from /proc/cmdline rather than from GRUB
-# 0.9.0   -- Added check for OS type, to keep from running pointlessly on OS X
+# 0.9.0   -- Added check for OS type, to keep from running pointlessly on Mac OS X
 # 0.7.7   -- Fixed bug that caused stray PARTUUID= and line breaks in generated file
 # 0.5.1   -- Initial release
 #

@@ -29,7 +29,7 @@ To be useful, the rEFInd boot manager must be installed to the computer's
 EFI System Partition (ESP) or other EFI-accessible location. In most cases,
 an NVRAM entry describing rEFInd's location must also be created. These
 steps can be performed manually; however, the <B>refind-install</B> command
-provides an automated way to perform these tasks under both Linux and OS X.
+provides an automated way to perform these tasks under both Linux and Mac OS X.
 The exact behavior and options vary depending on the OS, however.
 <P>
 Some details that can affect how the script runs include the following:
@@ -39,8 +39,8 @@ Some details that can affect how the script runs include the following:
 
 <DD>
 If you run the script as an ordinary user, it attempts to acquire
-<B>root</B> privileges by using the <B>sudo</B> command. This works on Mac OS
-X and some Linux installations (such as under Ubuntu or if you've added
+<B>root</B> privileges by using the <B>sudo</B> command. This works on
+Mac OS and some Linux installations (such as under Ubuntu or if you've added
 yourself to the <B>sudo</B> users list), but on some Linux installations
 this will fail. On such systems, you should run <B>refind-install</B> as
 root.
@@ -48,7 +48,7 @@ root.
 <DT><B>*</B>
 
 <DD>
-Under OS X, you can run the script with a mouse by opening a Terminal
+Under Mac OS X, you can run the script with a mouse by opening a Terminal
 session and then dragging-and-dropping the <B>refind-install</B> file to
 the Terminal window. You'll need to press the Return or Enter key to run
 the script.
@@ -56,8 +56,8 @@ the script.
 <DT><B>*</B>
 
 <DD>
-If you're using OS X 10.7's Whole Disk Encryption (WDE) feature, or the
-loogical volumes feature in OS X 10.10, you must install rEFInd to the ESP
+If you're using Mac OS X 10.7's Whole Disk Encryption (WDE) feature, or the
+loogical volumes feature in Mac OS X 10.10, you must install rEFInd to the ESP
 or to a separate HFS+ partition. The default in rEFInd 0.8.4 and later is
 to install to the ESP. If you prefer to use a separate HFS+ volume, the
 <B>--ownhfs </B><I>device-file</I> option to <B>refind-install</B> is required.
@@ -66,7 +66,7 @@ to install to the ESP. If you prefer to use a separate HFS+ volume, the
 
 <DD>
 If you're not using WDE or logical volumes, you can install rEFInd to the
-OS X root (/) partition by using the --notesp option to
+Mac OS X root (/) partition by using the --notesp option to
 <B>refind-install</B>. Using this option is recommended when upgrading from
 a working rEFInd installation in this location.
 <P>
@@ -109,7 +109,7 @@ at <B>/boot</B> in your emergency system, and the ESP at <B>/boot/efi</B>.
 <DT><B>*</B>
 
 <DD>
-On OS X, <B>refind-install</B> checks your partition tables for signs of a
+On Mac OS X, <B>refind-install</B> checks your partition tables for signs of a
 Linux installation. If such a sign is found, the script installs the EFI
 filesystem driver for the Linux ext4 filesystem. This will enable rEFInd to
 read your Linux kernel if it's on an ext2, ext3, or ext4 filesystem. Note
@@ -166,8 +166,8 @@ which partition to use for installation.
 <DT><B>--notesp</B>
 
 <DD>
-This option, which is valid only under OS X, tells <B>refind-install</B> to
-install rEFInd to the OS X root partition rather than to the ESP. This
+This option, which is valid only under Mac OS X, tells <B>refind-install</B> to
+install rEFInd to the Mac OS X root partition rather than to the ESP. This
 behavior was the default in rEFInd 0.8.3 and earlier, so you may want to
 use it when upgrading installations of that version, unless you used
 --esp (which is now the default behavior, although the --esp option no
@@ -192,11 +192,11 @@ NVRAM settings with this option. This option is mutually exclusive with
 <DT><B>--ownhfs </B><I>device-file</I>
 
 <DD>
-This option should be used only under OS X. It's used to install rEFInd to
+This option should be used only under Mac OS X. It's used to install rEFInd to
 an HFS+ volume other than a standard Mac boot volume. The result should be
 that rEFInd will show up in the Mac's own boot manager. More importantly,
 suspend-to-RAM operations may work correctly. Note that this option
-requires an HFS+ volume that is not currently an OS X boot volume. This can
+requires an HFS+ volume that is not currently an Mac OS X boot volume. This can
 be a data volume or a dedicated rEFInd partition. The ESP might also work,
 if it's converted to use HFS+; however, HFS+ is a non-standard filesystem
 for an ESP, and so is not recommended.
@@ -212,12 +212,12 @@ emergency system. To use it, you should mount your regular installation at
 installs rEFInd to the appropriate location -- on Linux,
 <I>/mount-point</I>/boot/EFI/refind or
 <I>/mount-point</I>/boot/efi/EFI/refind, depending on where you've mounted
-your ESP. Under OS X, this option is useful only in conjunction with
+your ESP. Under Mac OS X, this option is useful only in conjunction with
 --notesp, in which case rEFInd will install to
 <I>/mount-point</I>/EFI/refind. The script also adds an entry to your NVRAM
 for rEFInd at this location. You cannot use this option with
 --usedefault. Note that this option is not needed when doing a dual-boot
-Linux/OS X installation; just install normally in OS X.
+Linux/Mac OS X installation; just install normally in Mac OS X.
 <P>
 <DT><B>--nodrivers</B>
 
@@ -296,7 +296,7 @@ name. versions of shim prior to 0.7 do not properly support this feature.
 (Version 0.4 supports it but with a buggy interpretation of the follow-on
 loader specification.) If your NVRAM variables become corrupted or are
 forgotten, this feature may make rEFInd harder to launch. This option is
-incompatible with --usedefault and is unavailable when run under OS X or
+incompatible with --usedefault and is unavailable when run under Mac OS X or
 without the --shim option. If the script discovers an existing rEFInd
 installation under EFI/BOOT or EFI/Microsoft/Boot and no other rEFInd
 installation when this option is used, it will abort.

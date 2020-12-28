@@ -1095,12 +1095,7 @@ AddSubmenu (
         else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
             if (FindVolume (&Volume, TokenList[1])) {
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
-                    if (MyStrStr (Title, L"macOS") != NULL) {
-                        TitleMenu = L"Mac OS";
-                    }
-                    else {
-                        TitleMenu = Title;
-                    }
+                    TitleMenu = Title;
                     MyFreePool (SubEntry->me.Title);
                     SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
                     SPrint (

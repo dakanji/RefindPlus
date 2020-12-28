@@ -1,24 +1,24 @@
 #!/bin/bash
 #
-# Linux/MacOS X script to install rEFInd
+# Linux/MacMac OS X script to install rEFInd
 #
 # Usage:
 #
 # ./refind-install [options]
 #
 # options include:
-#    "--notesp" to install to the OS X root filesystem rather than to the ESP.
-#           This option is valid only under OS X.
+#    "--notesp" to install to the Mac OS X root filesystem rather than to the ESP.
+#           This option is valid only under Mac OS X.
 #    "--usedefault {devicefile}" to install as default
 #           (/EFI/BOOT/BOOTX64.EFI and similar) to the specified device
 #           (/dev/sdd1 or whatever) without registering with the NVRAM.
 #    "--ownhfs {devicefile}" to install to an HFS+ volume that's NOT currently
-#           an OS X boot volume. Valid only in OS X.
+#           an Mac OS X boot volume. Valid only in Mac OS X.
 #    "--root {dir}" to specify installation using the specified directory
 #           as the system's root
 #    "--alldrivers" to install all drivers along with regular files
 #    "--nodrivers" to suppress driver installation (default in Linux is
-#           driver used on /boot; --nodrivers is OS X default).
+#           driver used on /boot; --nodrivers is Mac OS X default).
 #    "--shim {shimfile}" to install a shim.efi file for Secure Boot. Valid
 #           only under Linux.
 #    "--preloader" is synonymous with "--shim". Valid only under Linux.
@@ -48,16 +48,16 @@
 # 0.11.0  -- Create BOOT.CSV file and option to encrypt SB private key
 # 0.10.8  -- Enabled use of shimx64.efi.signed as Shim source file
 # 0.10.7  -- Added mm{arch}.efi as equivalent of MokManager.efi
-# 0.10.6  -- Improved identification of the root device under macOS.
+# 0.10.6  -- Improved identification of the root device under Mac OS.
 # 0.10.5  -- More improvement to handling of disks (other than /dev/[sh]d? disks).
 # 0.10.4  -- Improved handling of disks (other than /dev/[sh]d? disks).
-# 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in OS X,
+# 0.10.2  -- Improved Secure Boot detection in Linux, fixed --usedefault in Mac OS X,
 #            and fixed bug that could cause mountesp to be installed as a FILE
-#            called /usr/local/bin in OS X.
+#            called /usr/local/bin in Mac OS X.
 # 0.10.1  -- Improve extraction of default kernel options from /proc/cmdline.
 #            Add support for AMD64 (aka AARCH64, aa64) platform. Added
 #            warning when --alldrivers used without --usedefault.
-# 0.10.0  -- Enable running under OS X's recovery system & add warning about
+# 0.10.0  -- Enable running under Mac OS X's recovery system & add warning about
 #            SIP & brief instructions on how to deal with it if SIP is
 #            detected to be enabled. Also change way refind_linux.conf default
 #            options are found; use /proc/cmdline as base.
@@ -66,15 +66,15 @@
 #            Shim & MokManager files over themselves; fixed bug that caused
 #            inappropriate installation to EFI/BOOT/bootx64.efi
 # 0.8.6   -- Fixed bugs that caused misidentification of ESP on disks with
-#            partition numbers over 10 on OS X and misidentification of mount
+#            partition numbers over 10 on Mac OS X and misidentification of mount
 #            point if already-mounted ESP had space in path.
-# 0.8.5   -- Refinement/cleanup of new OS X ESP-as-default policy
-# 0.8.4   -- OS X default changed to install to ESP under /EFI/BOOT
+# 0.8.5   -- Refinement/cleanup of new Mac OS X ESP-as-default policy
+# 0.8.4   -- Mac OS X default changed to install to ESP under /EFI/BOOT
 # 0.7.9   -- Fixed bug that caused errors if dmraid utility not installed
 # 0.7.7   -- Fixed bug that created mangled refind_linux.conf file; added ability
 #            to locate and mount ESP on Linux, if it's not mounted
 # 0.7.6   -- Added --ownhfs {device-filename} option
-# 0.7.5   -- Fixed bug when installing to ESP on recent versions of OS X
+# 0.7.5   -- Fixed bug when installing to ESP on recent versions of Mac OS X
 # 0.7.2   -- Fixed code that could be confused by use of autofs to mount the ESP
 # 0.7.0   -- Added support for the new Btrfs driver
 # 0.6.12  -- Added support for PreLoader as well as for shim
@@ -93,14 +93,14 @@
 #            changed default driver installation behavior in Linux to install
 #            the driver needed to read /boot (if available)
 # 0.5.1.2 -- Fixed bug that caused failure to generate refind_linux.conf file
-# 0.5.1.1 -- Fixed bug that caused script failure under OS X
+# 0.5.1.1 -- Fixed bug that caused script failure under Mac OS X
 # 0.5.1   -- Added --shim & --localkeys options & create sample refind_linux.conf
 #            in /boot
 # 0.5.0   -- Added --usedefault & --drivers options & changed "esp" option to "--esp"
-# 0.4.5   -- Fixed check for rEFItBlesser in OS X
+# 0.4.5   -- Fixed check for rEFItBlesser in Mac OS X
 # 0.4.2   -- Added notice about BIOS-based OSes & made NVRAM changes in Linux smarter
-# 0.4.1   -- Added check for rEFItBlesser in OS X
-# 0.3.3.1 -- Fixed OS X 10.7 bug; also works as make target
+# 0.4.1   -- Added check for rEFItBlesser in Mac OS X
+# 0.3.3.1 -- Fixed Mac OS X 10.7 bug; also works as make target
 # 0.3.2.1 -- Check for presence of source files; aborts if not present
 # 0.3.2   -- Initial version
 #
@@ -123,13 +123,13 @@ AlwaysYes=0
 EspGuid="C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
 
 #
-# Functions used by both OS X and Linux....
+# Functions used by both Mac OS X and Linux....
 #
 
 GetParams() {
    InstallToEspOnMac=1
    # Install the driver required to read Linux /boot, if it's available
-   # Note: Under OS X, this will be installed only if a Linux partition
+   # Note: Under Mac OS X, this will be installed only if a Linux partition
    # is detected, in which case the ext4fs driver will be installed.
    InstallDrivers="boot"
    while [[ $# -gt 0 ]]; do
@@ -332,9 +332,9 @@ DeterminePlatform() {
 # and $RefindDir to point to where the rEFInd binaries live
 CheckForFiles() {
    # Note: $ThisDir points to real (not symlinked) script home on Linux,
-   # enabling creating a symlink in /usr/sbin (or wherever); but on OS X,
+   # enabling creating a symlink in /usr/sbin (or wherever); but on Mac OS X,
    # "readlink" doesn't do the same thing as under Linux, so the script
-   # must not be a symlink under OS X.
+   # must not be a symlink under Mac OS X.
    case "$OSTYPE" in
       darwin*)
            ThisDir="$( cd -P "${BASH_SOURCE%/*}" && pwd )"
@@ -634,7 +634,7 @@ CopyTools() {
    fi
 } # CopyTools()
 
-# Copy the rEFInd files to the ESP or OS X root partition.
+# Copy the rEFInd files to the ESP or Mac OS X root partition.
 # Sets Problems=1 if any critical commands fail.
 CopyRefindFiles() {
    mkdir -p "$InstallDir/$TargetDir"
@@ -806,7 +806,7 @@ CreateBootCsvFile() {
 } # CreateBootCsvFile()
 
 #
-# A series of OS X support functions....
+# A series of Mac OS X support functions....
 #
 
 # Mount the ESP at /Volumes/ESP or determine its current mount
@@ -935,10 +935,10 @@ CheckForSIP() {
    fi # csrutil exists
 } # CheckForSIP()
 
-# Control the OS X installation.
+# Control the Mac OS X installation.
 # Sets Problems=1 if problems found during the installation.
 InstallOnOSX() {
-   echo "Installing rEFInd on macOS...."
+   echo "Installing rEFInd on Mac OS...."
    if [[ "$InstallToEspOnMac" == "1" && -z "$TargetPart" ]] ; then
       MountOSXESP
    elif [[ "$TargetDir" == "/EFI/BOOT" || "$OwnHfs" == '1' ]] ; then
@@ -1405,7 +1405,7 @@ InstallOnLinux() {
 #
 # The main part of the script. Sets a few environment variables,
 # performs a few startup checks, and then calls functions to
-# install under OS X or Linux, depending on the detected platform.
+# install under Mac OS X or Linux, depending on the detected platform.
 #
 GetParams "$@"
 if [[ $UID != 0 ]] ; then
@@ -1423,11 +1423,11 @@ CheckForFiles
 case "$OSTYPE" in
    darwin*)
         if [[ "$ShimSource" != "none" ]] ; then
-           echo "The --shim option is not supported on macOS! Exiting!"
+           echo "The --shim option is not supported on Mac OS! Exiting!"
            exit 1
         fi
         if [[ "$LocalKeys" != 0 ]] ; then
-           echo "The --localkeys option is not supported on macOS! Exiting!"
+           echo "The --localkeys option is not supported on Mac OS! Exiting!"
            exit 1
         fi
         InstallOnOSX $1

@@ -141,7 +141,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>Provide the <tt>gptsync</tt> utility for creating hybrid MBRs. Note that rEFInd's version of <tt>gptsync</tt> is significantly updated compared to rEFIt's. Also, this tool should be used only on Macs that dual-boot with a BIOS-based OS, such as Windows; or <i>very</i> rarely on other computers.</li>
 
-<li>Set OS-specific boot options, such as to launch macOS with verbose text-mode debug messages.</li>
+<li>Set OS-specific boot options, such as to launch Mac OS with verbose text-mode debug messages.</li>
 
 <li>Load EFI drivers for filesystems or hardware devices not supported natively by your firmware. (This feature is absent in some builds of rEFIt and in rEFInd prior to version 0.2.7.)</li>
 
@@ -240,9 +240,9 @@ such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
 
 <li>The ability to set the VMX bit on certain Intel CPUs. This feature is necessary for certain virtualization tools, such as Hyper-V, and not all EFIs enable users to set it.</li>
 
-<li>Beginning with version 0.10.0, the ability to spoof the booting of macOS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
+<li>Beginning with version 0.10.0, the ability to spoof the booting of Mac OS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
 
-<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in macOS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
+<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in Mac OS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
 
 <li>Beginning with version 0.10.1, support for ARM64 (aka AARCH64 or AA64) CPUs. Such systems that boot using UEFI are quite rare, at least in December of 2015.</li>
 

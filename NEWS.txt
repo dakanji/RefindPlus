@@ -227,7 +227,7 @@
   way, and unless you explicitly add the program filename to the options
   list, so does launching a file directly via an EFI boot manager entry
   created via efibootmgr.) Note that rEFInd continues adding a space to the
-  end of options lists passed to the macOS boot loader, since it ignores the
+  end of options lists passed to the Mac OS boot loader, since it ignores the
   commands if this is not done. (No space is added to commands passed to
   other programs, though.)
 
@@ -314,7 +314,7 @@
   broken URL in that file.
 
 - Reverted a change to refind-install and mountesp scripts, introduced in
-  0.11.3, that caused them to fail when run in macOS's Recovery environment.
+  0.11.3, that caused them to fail when run in Mac OS' Recovery environment.
 
 - Fixed bug, introduced in 0.11.3, that caused the default of booting
   to the previously-launched loader to be lost in favor of launching the
@@ -385,13 +385,13 @@
   entries don't point to the same location that rEFInd will use.
 
 - Modified the way rEFInd tracks boot loader files. This was made necessary
-  by macOS 10.13/APFS, which was confusing rEFInd's old tracking code when
+  by Mac OS 10.13/APFS, which was confusing rEFInd's old tracking code when
   it was compiled with GNU-EFI. Ideally, this will have no noticeable effect
   to end users; however, it's possible that some loaders will appear or
   disappear from the menu, or "file not found" errors when launching loaders
   will go away, after upgrading to this version of rEFInd.
 
-- Added support for new macOS boot loader locations used in macOS 10.13
+- Added support for new Mac OS boot loader locations used in Mac OS 10.13
   ("High Sierra").
 
 - Fixed bug that could cause hidden-tag maintenance tool to hang.
@@ -520,9 +520,9 @@
 - Added ability to specify volumes by partition unique GUIDs in
   dont_scan_volumes.
 
-- Renamed "Mac OS X" to "macOS" in assorted messages, per Apple's
+- Renamed "Mac OS X" to "Mac OS" in assorted messages, per Apple's
   re-branding with version 10.12 (Sierra). Unfortunately, I don't know of an
-  easy way to tell which macOS version a given macOS boot loader will load,
+  easy way to tell which Mac OS version a given Mac OS boot loader will load,
   so it's one name or the other for everything.
 
 0.10.7 (4/17/2017): UPSTREAM RELEASE
@@ -532,7 +532,7 @@
   name for MokManager.
 
 - Hide volume name "Recovery HD," if that's what it is, from loader
-  description. This is done because some OS X users are getting confused and
+  description. This is done because some Mac OS X users are getting confused and
   even upset over this detail, even though it's accurate, at least from an
   EFI/rEFInd point of view.
 
@@ -652,11 +652,11 @@
   (0x10). The upshot is that the SIP/CSR tool will appear if the showtools
   and csr_values options are set appropriately in refind.conf, even if the
   csr-active-config variable is missing from the NVRAM. The point of this
-  change is that I've received reports of some Macs that run OS X 10.11 but
-  that lack this variable. OS X acts as if SIP were enabled, but rEFInd is
+  change is that I've received reports of some Macs that run Mac OS X 10.11 but
+  that lack this variable. Mac OS X acts as if SIP were enabled, but rEFInd is
   then unable to disable SIP. This change gives rEFInd the ability to
   disable SIP on such systems. The drawback is that the variable might be
-  set on some systems that don't run OS X 10.11. This should be harmless
+  set on some systems that don't run Mac OS X 10.11. This should be harmless
   from a technical point of view, but the presence of SIP indicators in
   rEFInd could be confusing.
 
@@ -669,7 +669,7 @@
 -------------------
 
 - Fixed bug in refind-install that caused mountesp to be installed as a FILE
-  called /usr/local/bin on OS X if the /usr/local/bin directory did not
+  called /usr/local/bin on Mac OS X if the /usr/local/bin directory did not
   already exist.
 
 - Fixed bug in mvrefind that caused it to fail to move bootmgfw.efi in
@@ -766,14 +766,14 @@
 - The refind-install script can now be run as a symbolic link in Linux.
   This enables creating a /usr/sbin/refind-install link in Linux packages,
   with the binaries stashed wherever the package system likes them. This
-  feature does NOT work in OS X, but there's relatively little need for it
+  feature does NOT work in Mac OS X, but there's relatively little need for it
   there.
 
 0.10.0 (11/8/2015): UPSTREAM RELEASE
 -------------------
 
 - Fixed bug that caused refind-install to not unmount the ESP when it
-  should under OS X.
+  should under Mac OS X.
 
 - Modified refind-install and mkrlconf scripts to use /proc/cmdline as
   source for default boot options EXCEPT when refind-install receives the
@@ -790,7 +790,7 @@
   the Btrfs driver is loaded.
 
 - Added new System Integrity Protection (SIP) rotation feature for Macs
-  running OS X 10.11 or later. This feature is disabled by default, except
+  running Mac OS X 10.11 or later. This feature is disabled by default, except
   on CD-R and USB flash drive images, on which it's enabled. To enable it,
   you must make TWO changes to refind.conf: Uncomment the new "csr_values"
   item and add "csr_rotate" to the "showtools" line (uncommenting it, too,
@@ -803,7 +803,7 @@
 - Added display of current System Integrity Protection (SIP) mode to
   "About" display.
 
-- Added mountesp script for OS X to (you guessed it!) mount the ESP.
+- Added mountesp script for Mac OS X to (you guessed it!) mount the ESP.
 
 - Renamed support scripts: install.sh to refind-install, mvrefind.sh to
   mvrefind, and mkrlconf.sh to mkrlconf.
@@ -826,7 +826,7 @@
   .deb, and .rpm files as the formats for binary packages.
 
 - Added detection of System Integrity Protection (SIP; aka "rootless") mode
-  to OS X portion of install.sh script. When detected, and if no existing
+  to Mac OS X portion of install.sh script. When detected, and if no existing
   rEFInd installation is found, the script now prints a warning and brief
   instructions of how to enter the Recovery mode to install rEFInd and
   suggests aborting the installation. (The user can override and attempt
@@ -835,9 +835,9 @@
   update of a working rEFInd will probably succeed, but that re-installing
   to fix a broken rEFInd will probably fail.
 
-- Added new "spoof_osx_version" token, which takes an OS X version number
+- Added new "spoof_osx_version" token, which takes an Mac OS X version number
   (such as "10.9") as an option. This feature, when enabled, causes rEFInd
-  to tell a Mac's firmware that the specified version of OS X is being
+  to tell a Mac's firmware that the specified version of Mac OS X is being
   launched. This option is usually unnecessary, but it can help properly
   initialize some hardware -- particularly secondary video devices. OTOH,
   on some Macs it can cause hardware (notably keyboards and mice) to become
@@ -855,8 +855,8 @@
   integers, which enable greater precision in my floating-point
   workaround.)
 
-- Under OS X, install.sh can now be run from the recovery system. This may
-  help work around OS X 10.11's problems with System Integrity Protection,
+- Under Mac OS X, install.sh can now be run from the recovery system. This may
+  help work around Mac OS X 10.11's problems with System Integrity Protection,
   since it should be possible to reboot into the recovery system to install
   rEFInd without disabling SIP for the main installation, even for just one
   boot.
@@ -961,7 +961,7 @@
 
 - The mkrlconf.sh script now checks the OS on which it's running, which
   should help avoid confusion or problems by users who mistakenly run it
-  under OS X.
+  under Mac OS X.
 
 - rEFInd now skips checking for various BIOS-mode boot sector signatures
   when running on a UEFI-based PC; these checks are run only on Macs. This
@@ -1055,7 +1055,7 @@
   selection images to fail to load.
 
 - Fixed install.sh bug that caused misidentification of installation
-  directory under OS X if an already-mounted ESP has spaces in its path.
+  directory under Mac OS X if an already-mounted ESP has spaces in its path.
 
 - Fixed Mac-specific install.sh bug that could cause misidentification of
   the ESP on disks with partition numbers of 10 or above.
@@ -1097,7 +1097,7 @@
 ------------------
 
 - Tweaked default for dont_scan_volumes: Removed "Recovery HD". This change
-  better suits the needs of OS X 10.10 ("Yosemite") installations, but may
+  better suits the needs of Mac OS X 10.10 ("Yosemite") installations, but may
   result in some stray Recovery HD entries on some Macs.
 
 - Updated icons for Fedora and Ubuntu and added an icon for Xubuntu.
@@ -1117,7 +1117,7 @@
   a generic loader icon for GRUB.)
 
 - Fixed bug that caused dont_scan_files to not work with special-case
-  boot loaders (for OS X and Windows) when specifying the complete path to
+  boot loaders (for Mac OS X and Windows) when specifying the complete path to
   the loader (e.g., EFI/Microsoft/Boot/bootmgfw.efi).
 
 - Added support for the iPXE network boot tool (see BUILDING.txt for
@@ -1221,7 +1221,7 @@
 - Changed icons from ICNS to PNG form. There are several reasons to do
   this, all of them minor; but together they're enough to warrant a change.
   PNG is more common, and therefore more accessible to most users --
-  particularly those who don't use OS X. The PNG files are smaller than
+  particularly those who don't use Mac OS X. The PNG files are smaller than
   their ICNS equivalents. PNG supports a wider range of sizes (although I'm
   not now using anything that ICNS doesn't support, I might in the future).
   The icon-scaling support added a few versions ago makes ICNS's support
@@ -1231,10 +1231,10 @@
   for PNG files before ICNS files, rather than the other way around. This
   makes it possible to override a volume icon for rEFInd by giving it the
   name .VolumeIcon.png, even when a .VolumeIcon.icns file exists on the
-  volume and is used by OS X.
+  volume and is used by Mac OS X.
 
 - Fixed bug that caused .VolumeIcon.icns to take higher-than-intended
-  precedence in icon setting for OS X.
+  precedence in icon setting for Mac OS X.
 
 - Chainloading to BIOS-mode boot loaders now works on UEFI-based PCs when
   rEFInd is built with GNU-EFI, not just when built with Tianocore.
@@ -1405,7 +1405,7 @@
   to install to an HFS+ partition in a way that's more consistent with the
   way the Mac's native boot loader is installed. Note that you should NOT
   install to an already-bootable partition with this option, since it will
-  overwrite the existing boot loader, which would render OS X unbootable.
+  overwrite the existing boot loader, which would render Mac OS X unbootable.
 
 0.7.5 (11/10/2013): UPSTREAM RELEASE
 -------------------
@@ -1414,7 +1414,7 @@
   bootable on Macs with BIOS/CSM/legacy boot options enabled.
 
 - Fixed bug in install.sh that caused installs to the ESP on recent
-  versions of OS X to fail.
+  versions of Mac OS X to fail.
 
 - Fixed bug that caused rEFInd to hang on some Macs when multiple EFI
   drivers were present.
@@ -1422,7 +1422,7 @@
 - Fixed bug that caused clear to default gray screen when launching OSes
   with 'use_graphics_for' enabled, even when the rEFInd background is not
   gray. Now rEFInd clears to the same background color used in its menu.
-  When launching OS X, though, the OS X boot loader will itself clear to
+  When launching Mac OS X, though, the Mac OS X boot loader will itself clear to
   gray a second or so later; and when launching Linux, it will clear to
   black a second or so later.
 
@@ -1664,7 +1664,7 @@
 - Fixed bug that caused dont_scan_volumes option to be added to
   also_scan_dirs list.
 
-- Fixed dont_scan_volumes so that it works with OS X boot loaders.
+- Fixed dont_scan_volumes so that it works with Mac OS X boot loaders.
 
 - Fixed broken mixing of PNG and ICNS icons when using a user-specified
   icons directory -- previously, an ICNS file in the default directory
@@ -1715,7 +1715,7 @@
 - Added icon for ALT Linux.
 
 - Added "safemode" option to "hideui" token, to hide option to boot into
-  safe mode for OS X ("-v -x" option to boot.efi).
+  safe mode for Mac OS X ("-v -x" option to boot.efi).
 
 - Added icon for Haiku (os_haiku.icns).
 
@@ -1903,7 +1903,7 @@
 0.5.1.1 (12/12/2012): UPSTREAM RELEASE
 ---------------------
 
-- Fixed bug in install.sh that prevented it from working on OS X.
+- Fixed bug in install.sh that prevented it from working on Mac OS X.
 
 0.5.1 (12/11/2012): UPSTREAM RELEASE
 -------------------
@@ -2058,10 +2058,10 @@
   on 32-bit systems.
 
 - Fixed bug in use_graphics_for option parsing that caused most options
-  to set graphics mode for OS X and/or Linux but not other boot
+  to set graphics mode for Mac OS X and/or Linux but not other boot
   loaders/OSes.
 
-- Tweaked install script to better isolate the ESP under OS X.
+- Tweaked install script to better isolate the ESP under Mac OS X.
 
 0.4.3 (6/21/2012): UPSTREAM RELEASE
 ------------------
@@ -2076,7 +2076,7 @@
 
 - Graphics-mode booting now clears the screen to the current rEFInd
   background color (rather than black) and does NOT display boot messages.
-  The intent is for a smoother transition when booting OS X, or perhaps
+  The intent is for a smoother transition when booting Mac OS X, or perhaps
   other OSes that don't display boot loader messages. In practice, this
   effect will be tiny for many OSes, since the boot loader generally clears
   the screen within a fraction of a second of being launched; but the
@@ -2181,7 +2181,7 @@
   program can be named anything you like on the disk. (The generic name
   refind.efi is used on unknown architectures.)
 
-- Improved install.sh script: Fixed bug on OS X 10.7 and enable it to be
+- Improved install.sh script: Fixed bug on Mac OS X 10.7 and enable it to be
   used after building from source code (or via new "make install" Makefile
   target).
 
@@ -2210,7 +2210,7 @@
   systems. This script must be run as root (or via sudo). It requires
   no options, but on Mac OS X, passing it the "esp" option causes it
   to install rEFInd on the computer's ESP rather than the default of the
-  currently OS X boot partition. (Under Linux, the default is to install to
+  currently Mac OS X boot partition. (Under Linux, the default is to install to
   the ESP.) Note that there may be some unusual cases in which this script
   will fail to work.
 

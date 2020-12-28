@@ -366,11 +366,11 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
     SubScreen = InitializeSubScreen(Entry);
 
     // loader-specific submenu entries
-    if (Entry->OSType == 'M') {          // entries for macOS
+    if (Entry->OSType == 'M') {          // entries for Mac OS
 #if defined(EFIX64)
         SubEntry = InitializeLoaderEntry(Entry);
         if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot macOS with a 64-bit kernel";
+            SubEntry->me.Title        = L"Boot Mac OS with a 64-bit kernel";
             SubEntry->LoadOptions     = L"arch=x86_64";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
             AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -378,7 +378,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
 
         SubEntry = InitializeLoaderEntry(Entry);
         if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot macOS with a 32-bit kernel";
+            SubEntry->me.Title        = L"Boot Mac OS with a 32-bit kernel";
             SubEntry->LoadOptions     = L"arch=i386";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
             AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -388,7 +388,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot macOS in verbose mode";
+                SubEntry->me.Title        = L"Boot Mac OS in verbose mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v";
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -397,7 +397,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
 #if defined(EFIX64)
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot macOS in verbose mode (64-bit)";
+                SubEntry->me.Title        = L"Boot Mac OS in verbose mode (64-bit)";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v arch=x86_64";
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -405,7 +405,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
 
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot macOS in verbose mode (32-bit)";
+                SubEntry->me.Title        = L"Boot Mac OS in verbose mode (32-bit)";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v arch=i386";
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -414,7 +414,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
 
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot macOS in single user mode";
+                SubEntry->me.Title        = L"Boot Mac OS in single user mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v -s";
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -424,7 +424,7 @@ VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN 
         if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
             SubEntry = InitializeLoaderEntry(Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot macOS in safe mode";
+                SubEntry->me.Title        = L"Boot Mac OS in safe mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v -x";
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -699,10 +699,7 @@ static LOADER_ENTRY * AddLoaderEntry(
     Entry = InitializeLoaderEntry(NULL);
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
-        if (MyStrStr(LoaderTitle, L"macOS") != NULL) {
-            TitleEntry = L"Mac OS";
-        }
-        else if (LoaderTitle == NULL) {
+        if (LoaderTitle == NULL) {
             TitleEntry = LoaderPath;
         }
         else {
@@ -1190,7 +1187,7 @@ static VOID ScanNetboot() {
     }
 } // VOID ScanNetboot()
 
-// Adds *FullFileName as a macOS loader, if it exists.
+// Adds *FullFileName as a Mac OS loader, if it exists.
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
 static BOOLEAN ScanMacOsLoader(REFIT_VOLUME *Volume, CHAR16* FullFileName) {
@@ -1201,7 +1198,7 @@ static BOOLEAN ScanMacOsLoader(REFIT_VOLUME *Volume, CHAR16* FullFileName) {
     if (FileExists(Volume->RootDir, FullFileName) &&
         !FilenameIn(Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)
     ) {
-        AddLoaderEntry(FullFileName, L"macOS", Volume, TRUE);
+        AddLoaderEntry(FullFileName, L"Mac OS", Volume, TRUE);
         if (DuplicatesFallback(Volume, FullFileName)) {
             ScanFallbackLoader = FALSE;
         }
@@ -1227,7 +1224,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             MergeStrings(&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
         }
 
-        // check for macOS boot loader
+        // check for Mac OS boot loader
         if (ShouldScan(Volume, MACOSX_LOADER_DIR)) {
             StrCpy(FileName, MACOSX_LOADER_PATH);
             ScanFallbackLoader &= ScanMacOsLoader(Volume, FileName);

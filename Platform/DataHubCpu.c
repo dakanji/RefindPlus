@@ -3,7 +3,7 @@
 ///
 /// VirtualBox CPU descriptors
 ///
-/// VirtualBox CPU descriptors also used to set OS X-used NVRAM variables and DataHub data
+/// VirtualBox CPU descriptors also used to set Mac OS X-used NVRAM variables and DataHub data
 ///
 
 // Copyright(C) 2009-2010 Oracle Corporation

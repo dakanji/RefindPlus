@@ -150,9 +150,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<p>Windows and macOS both provide relatively simple EFI boot loader programs. Launch them, and they'll boot their respective OSes. This makes rEFInd's job easy; it just locates the boot loader program files and runs them.</p>
+<p>Windows and Mac OS both provide relatively simple EFI boot loader programs. Launch them, and they'll boot their respective OSes. This makes rEFInd's job easy; it just locates the boot loader program files and runs them.</p>
 
-<p>Under Linux, by contrast, things can get complicated. As detailed on my <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page, several different EFI boot loaders for Linux exist, and all of them require configuration. If you're lucky, your distribution will have set up a Linux boot loader in a sensible way, in which case rEFInd should detect it and it will work as easily as a Windows or macOS boot loader. If you're not lucky, though, you may need to configure it further. rEFInd offers options to help out with this task. Naturally, rEFInd supports <a href="#traditional">traditional Linux boot loaders.</a> It works even better with the Linux EFI stub loader, so I provide <a href="#quickstart">instructions on starting with it.</a> For those interested in manual configuration, I also provide <a href="#efistub">detailed instructions</a> on how the EFI stub support works and how to configure it.</p>
+<p>Under Linux, by contrast, things can get complicated. As detailed on my <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page, several different EFI boot loaders for Linux exist, and all of them require configuration. If you're lucky, your distribution will have set up a Linux boot loader in a sensible way, in which case rEFInd should detect it and it will work as easily as a Windows or Mac OS boot loader. If you're not lucky, though, you may need to configure it further. rEFInd offers options to help out with this task. Naturally, rEFInd supports <a href="#traditional">traditional Linux boot loaders.</a> It works even better with the Linux EFI stub loader, so I provide <a href="#quickstart">instructions on starting with it.</a> For those interested in manual configuration, I also provide <a href="#efistub">detailed instructions</a> on how the EFI stub support works and how to configure it.</p>
 
 <a name="traditional">
 <h2>Using a Traditional Linux Boot Loader</h2>
@@ -176,7 +176,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>This method requires that your <tt>/boot</tt> directory, whether it's on a separate partition or is a regular directory in your root (<tt>/</tt>) filesystem, be readable by the EFI. At the moment, all EFI implementations can read FAT and Macs can read HFS+. By using <a href="drivers.html">drivers,</a> you can make any EFI read HFS+, ISO-9660, ReiserFS, ext2fs, ext3fs, ext4fs, Btrfs, or other filesystems. Thus, if you use any of these filesystems on a regular partition (not an LVM or RAID configuration) that holds your kernels in <tt>/boot</tt>, you qualify for this easy method. The default partition layouts used by Ubuntu, Fedora, and many other distributions qualify, because they use one of these filesystems (usually ext4fs) in a normal partition or on a separate <tt>/boot</tt> partition. You must also have a 3.3.0 or later Linux kernel with EFI stub support, of course.</p>
 
-<p>If you installed rEFInd 0.6.0 or later with its <tt>refind-install</tt> (formerly <tt>install.sh</tt>) script from your regular Linux installation, chances are everything's set up; you should be able to reboot and see your Linux kernels as boot options. If you installed manually, from macOS, or from an emergency system, though, you may need to do a couple of things manually:
+<p>If you installed rEFInd 0.6.0 or later with its <tt>refind-install</tt> (formerly <tt>install.sh</tt>) script from your regular Linux installation, chances are everything's set up; you should be able to reboot and see your Linux kernels as boot options. If you installed manually, from Mac OS, or from an emergency system, though, you may need to do a couple of things manually:
 
 <ul>
 
@@ -442,7 +442,7 @@ extends it as follows:</p>
     configuration files, aside from <tt>refind.conf</tt> in rEFInd's own
     directory, but only if <tt>/boot</tt> is not a separate partition. The
     intent is to facilitate the use of rEFInd as an emergency boot manager
-    or to help users who must install rEFInd from macOS or Windows. Note
+    or to help users who must install rEFInd from Mac OS or Windows. Note
     that rEFInd uses <tt>/etc/fstab</tt> only if <tt>refind_linux.conf</tt>
     is <i>not</i> found.</li>
 
@@ -505,7 +505,7 @@ total 17943
 
 <p>If you want to create a new file, you can use the <tt>mkrlconf</tt> script that comes with rEFInd. If you pass it the <tt>--force</tt> option, it will overwrite the existing <tt>/boot/refind_linux.conf</tt> file; otherwise it will create the file only if one doesn't already exist.</p>
 
-<p>From a user's perspective, the submenus defined in this way work just like submenus defined via the <tt>submenuentry</tt> options in <tt>refind.conf</tt>, or like the submenus that rEFInd creates automatically for macOS or ELILO. There are, however, limitations in what you can accomplish with this method:</p>
+<p>From a user's perspective, the submenus defined in this way work just like submenus defined via the <tt>submenuentry</tt> options in <tt>refind.conf</tt>, or like the submenus that rEFInd creates automatically for Mac OS or ELILO. There are, however, limitations in what you can accomplish with this method:</p>
 
 <ul>
 
@@ -532,7 +532,7 @@ total 17943
 
 <p>Ordinarily, a kernel booted in this way must reside on the ESP, or at least on another FAT partition. On a Macintosh, though, you can use HFS+ to house your kernel files. In fact, that may be necessary; my Mac Mini hangs when I try to boot a Linux kernel via an EFI stub loader from the computer's ESP, but it works fine when booting from an HFS+ partition. If you use <a href="drivers.html">EFI drivers,</a> though, you can place your kernel on any filesystem for which an EFI driver exists. This list is currently good (ext2fs/ext3fs, ext4fs, ReiserFS, Btrfs, ISO-9660, and HFS+ in rEFInd, plus more from other sources), so chances are you'll be able to use this method to boot your kernel from your root (<tt>/</tt>) partition or from a <tt>/boot</tt> partition.</p>
 
-<p>rEFInd sorts boot loader entries <i>within each directory</i> by time stamp, so that the most recent entry comes first. Thus, if you specify a directory name (or a volume label, for loaders stored in a volume's root directory) as the <tt>default_selection</tt>, rEFInd will make the most recent loader in the directory the default. This can obviate the need to adjust this configuration parameter when you add a new kernel; chances are you want the most recently-added kernel to be the default, and rEFInd makes it so when you set the <tt>default_selection</tt> in this way. If you <i>don't</i> want the latest kernel to become the default, you can use <tt>touch</tt> to give the desired kernel (or other boot loader) in the directory a more recent time stamp, or you can set <tt>default_selection</tt> to a value that uniquely identifies your desired default loader. One caveat you should keep in mind is that the EFI and Windows interpret the hardware clock as local time, whereas macOS uses <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal Time (UTC)</a>. Linux can work either way. Thus, time stamps for boot loaders can be skewed by several hours depending on the environment in which they were created or last modified.</p>
+<p>rEFInd sorts boot loader entries <i>within each directory</i> by time stamp, so that the most recent entry comes first. Thus, if you specify a directory name (or a volume label, for loaders stored in a volume's root directory) as the <tt>default_selection</tt>, rEFInd will make the most recent loader in the directory the default. This can obviate the need to adjust this configuration parameter when you add a new kernel; chances are you want the most recently-added kernel to be the default, and rEFInd makes it so when you set the <tt>default_selection</tt> in this way. If you <i>don't</i> want the latest kernel to become the default, you can use <tt>touch</tt> to give the desired kernel (or other boot loader) in the directory a more recent time stamp, or you can set <tt>default_selection</tt> to a value that uniquely identifies your desired default loader. One caveat you should keep in mind is that the EFI and Windows interpret the hardware clock as local time, whereas Mac OS uses <a href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal Time (UTC)</a>. Linux can work either way. Thus, time stamps for boot loaders can be skewed by several hours depending on the environment in which they were created or last modified.</p>
 
 <p class="sidebar"><b>Tip for distribution maintainers:</b> If you maintain an <tt>EFI/<tt class="variable">distname</tt></tt> directory for your kernels, you can place your version of rEFInd in a directory called <tt>EFI/<tt class="variable">distname</tt>/refind</tt>. This will avoid collisions with duplicate rEFInd installations from other distributions.</p>
 

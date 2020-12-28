@@ -134,7 +134,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>I decided to fork the earlier rEFIt project because, although rEFIt is a useful program, it suffers from several important limitations, such as poor control over the boot loader detection process and an ability to display at most a handful of boot loader entries on its main screen. Christoph Pfisterer, rEFIt's author, stopped updating rEFIt with version 0.14, which was released in March of 2010. Since I forked rEFIt to rEFInd, Christoph has begun pointing rEFIt users to rEFInd as a successor project.</p>
 
-<p>As already noted, rEFInd is a boot manager for EFI and UEFI computers. (I use "EFI" to refer to either version unless the distinction is important.) You're likely to benefit from it on computers that boot multiple OSes, such as two or more of Linux, macOS, and Windows. You will <i>not</i> find rEFInd useful on older BIOS-based computers or on systems with other types of firmware, such as older PowerPC-based Macs. Prior to mid-2011, few computers outside of Intel-based Macs used EFI; but starting in 2011, computer manufacturers began adopting UEFI in droves, so most computers bought since then use EFI. Even so, many modern PCs support both EFI-style booting and BIOS-style booting, the latter via a BIOS compatibility mode that's known as the <i>Compatibility Support Module (CSM).</i> Thus, you may be using BIOS-style booting on an EFI-based computer. <a href="https://www.rodsbooks.com/efi-bootloaders/csm-good-bad-ugly.html">My page on the CSM</a> describes how it works and why it can create problems in more detail. If you're unsure which boot method your computer uses, check the first of the subsections, <a href="bootmode.html">What's Your Boot Mode</a>.</p>
+<p>As already noted, rEFInd is a boot manager for EFI and UEFI computers. (I use "EFI" to refer to either version unless the distinction is important.) You're likely to benefit from it on computers that boot multiple OSes, such as two or more of Linux, Mac OS, and Windows. You will <i>not</i> find rEFInd useful on older BIOS-based computers or on systems with other types of firmware, such as older PowerPC-based Macs. Prior to mid-2011, few computers outside of Intel-based Macs used EFI; but starting in 2011, computer manufacturers began adopting UEFI in droves, so most computers bought since then use EFI. Even so, many modern PCs support both EFI-style booting and BIOS-style booting, the latter via a BIOS compatibility mode that's known as the <i>Compatibility Support Module (CSM).</i> Thus, you may be using BIOS-style booting on an EFI-based computer. <a href="https://www.rodsbooks.com/efi-bootloaders/csm-good-bad-ugly.html">My page on the CSM</a> describes how it works and why it can create problems in more detail. If you're unsure which boot method your computer uses, check the first of the subsections, <a href="bootmode.html">What's Your Boot Mode</a>.</p>
 
 <p>Subsequent sections of this document are on separate pages. Be aware that you probably don't need to read them all; just skip to the sections that interest you:</p>
 
@@ -154,13 +154,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li class="tight"><a href="getting.html">Getting rEFInd</a>&mdash;Links to download rEFInd</li>
 
-<li class="tight"><a href="installing.html">Installing and Uninstalling rEFInd</a>&mdash;Instructions for installing rEFInd, using Linux, OS X, and Windows</li>
+<li class="tight"><a href="installing.html">Installing and Uninstalling rEFInd</a>&mdash;Instructions for installing rEFInd, using Linux, Mac OS X, and Windows</li>
 
 <li class="tight"><a href="bootcoup.html">Keeping rEFInd Booting</a>&mdash;Instructions for keeping rEFInd in charge of the boot process or recovering when another OS takes control</li>
 
-<li class="tight"><a href="yosemite.html">rEFInd and OS X 10.10 (Yosemite)</a>&mdash;Apple's OS X 10.10 makes some changes that require your attention (this subpage is rendered obsolete by rEFInd 0.8.4 and later)</li>
+<li class="tight"><a href="yosemite.html">rEFInd and Mac OS X 10.10 (Yosemite)</a>&mdash;Apple's Mac OS X 10.10 makes some changes that require your attention (this subpage is rendered obsolete by rEFInd 0.8.4 and later)</li>
 
-<li class="tight"><a href="sip.html">rEFInd and System Integrity Protection</a>&mdash;How to install rEFInd on Macs running OS X 10.11 (El Capitan)</a>
+<li class="tight"><a href="sip.html">rEFInd and System Integrity Protection</a>&mdash;How to install rEFInd on Macs running Mac OS X 10.11 (El Capitan)</a>
 
 <li class="tight"><a href="using.html">Using rEFInd</a>&mdash;Basic usage instructions for the boot loader</li>
 
@@ -188,7 +188,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
   <li><a href="mvrefind.html"><tt>mvrefind</tt></a>&mdash;This Linux-only script moves a rEFInd installation from one location to another on the EFI System Partition (ESP).</li>
 
-  <li><a href="refind-install.html"><tt>refind-install</tt></a>&mdash;This Linux and OS X script installs rEFInd with minimal fuss.</li>
+  <li><a href="refind-install.html"><tt>refind-install</tt></a>&mdash;This Linux and Mac OS X script installs rEFInd with minimal fuss.</li>
 
   <li><a href="refind-mkdefault.html"><tt>refind-mkdefault</tt></a>&mdash;This Linux script makes rEFInd the default boot program with minimal fuss.</li>
 
@@ -228,7 +228,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>J. A. Watson has a <a href="http://www.zdnet.com/the-refind-boot-loader-for-uefi-systems-7000010275/">review of rEFInd on an HP laptop</a> on ZDNet. He had serious problems because of the HP's UEFI bugs, but finally got it to work.</li>
 
-<li>James Jesudason has a tutorial on installing Ubuntu 13.04 beta on a Macbook Retina Pro on <a href="http://randomtutor.blogspot.com/2013_02_01_archive.html">this blog page.</a> I'd recommend using a Linux filesystem driver to read the kernel directly from a Linux filesystem rather than copy the kernel to the OS X partition as in the tutorial, but either method will work.</li>
+<li>James Jesudason has a tutorial on installing Ubuntu 13.04 beta on a Macbook Retina Pro on <a href="http://randomtutor.blogspot.com/2013_02_01_archive.html">this blog page.</a> I'd recommend using a Linux filesystem driver to read the kernel directly from a Linux filesystem rather than copy the kernel to the Mac OS X partition as in the tutorial, but either method will work.</li>
 
 <li>The Windows <a href="https://docs.microsoft.com/en-us/windows/deployment/mbr-to-gpt">MBR2GPT utility,</a> part of Windows 10 Creator's Update, can convert a Windows computer that boots in BIOS mode from an MBR disk to one that boots in EFI mode from a GPT disk. Note that I've never used this tool, and I have no idea how it would cope with a multi-boot configuration.</li>
 

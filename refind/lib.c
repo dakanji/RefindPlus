@@ -926,7 +926,7 @@ ScanVolumeBootcode (
         // NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
         //  need to fix AddLegacyEntry in refind/legacy.c.
 
-        // dummy FAT boot sector (created by OS X's newfs_msdos)
+        // dummy FAT boot sector (created by Mac OS X's newfs_msdos)
         if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
             Volume->HasBootCode = FALSE;
         }

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Mac OS X script to locate and mount an EFI System Partition (ESP)
+# Mac OS script to locate and mount an EFI System Partition (ESP)
 #
 # Usage:
 #
@@ -76,7 +76,7 @@ case "$OSTYPE" in
             MountOSXESP
             ;;
     *)
-            echo "This script is meant to be run under OS X *ONLY*! Exiting!"
+            echo "This script is meant to be run under Mac OS X *ONLY*! Exiting!"
             exit
             ;;
 esac

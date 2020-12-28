@@ -1496,7 +1496,6 @@ efi_main (
 
                 // Fix undetected Mac OS
                 if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") == NULL &&
-                    MyStrStr (ourLoaderEntry->Title, L"macOS") == NULL &&
                     MyStrStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
                 ) {
                     if (MyStrStr (ourLoaderEntry->Volume->VolName, L"Preboot") != NULL) {
@@ -1531,9 +1530,7 @@ efi_main (
                     );
                     #endif
                 }
-                else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL ||
-                    MyStrStr (ourLoaderEntry->Title, L"macOS") != NULL
-                ) {
+                else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL) {
                     // Load AptioMemoryFix if present and System Table not tweaked
                     if (!TweakSysTable) {
                         LoadAptioFix();

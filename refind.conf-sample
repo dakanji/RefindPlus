@@ -63,7 +63,7 @@ timeout 20
 # On some Macs, such as the cMP 5,1, there can be multiple GOP instances:
 #     - One installed on the console handle
 #     - Others installed on GPU handles.
-# The Console Handle GOP is what everything (including macOS) uses and
+# The Console Handle GOP is what everything (including Mac OS) uses and
 # is provided by the system firmware. Others are provided by GPU firmware.
 # Normally, the Mac EFI should transparently forward calls from the Console
 # Handle GOP to the others. On such models, it only works in this way
@@ -122,7 +122,7 @@ timeout 20
 
 # Attempt to prevent UEFI Windows writing to Apple NVRAM (1, true, or on) or not (0, false, or off).
 # When this token is activated, RefindPlus will *attempt* to prevent UEFI Windows from creating
-# certificates in the NVRAM on Apple Firmware as this can lead to damage resulting in an 
+# certificates in the NVRAM on Apple Firmware as this can lead to damage resulting in an
 # inability to boot. Legacy Windows does not have this issue and is recommended
 # when running Windows directly from RefindPlus on Apple Firmware.
 # Default is false
@@ -151,9 +151,9 @@ timeout 20
 # security:
 #  banner      - the RefindPlus title banner (built-in or loaded via "banner")
 #  label       - boot option text label in the menu
-#  singleuser  - remove the submenu options to boot macOS in single-user
-#                or verbose modes; affects ONLY macOS
-#  safemode    - remove the submenu option to boot macOS in "safe mode"
+#  singleuser  - remove the submenu options to boot Mac OS in single-user
+#                or verbose modes; affects ONLY Mac OS
+#  safemode    - remove the submenu option to boot Mac OS in "safe mode"
 #  hwtest      - the submenu option to run Apple's hardware test
 #  arrows      - scroll arrows on the OS selection tag line
 #  hints       - brief command summary in the menu
@@ -313,14 +313,14 @@ timeout 20
 
 # Launch specified OSes in graphics mode. By default, RefindPlus switches
 # to text mode and displays basic pre-launch information when launching
-# all OSes except macOS. Using graphics mode can produce a more seamless
+# all OSes except Mac OS. Using graphics mode can produce a more seamless
 # transition, but displays no information, which can make matters
 # difficult if you must debug a problem. Also, on at least one known
 # computer, using graphics mode prevents a crash when using the Linux
 # kernel's EFI stub loader. You can specify an empty list to boot all
 # OSes in text mode.
 # Valid options:
-#   osx     - macOS
+#   osx     - Mac OS
 #   linux   - A Linux kernel with EFI stub loader
 #   elilo   - The ELILO boot loader
 #   grub    - The GRUB (Legacy or 2) boot loader
@@ -432,7 +432,7 @@ timeout 20
 #scan_delay 5
 
 # When scanning volumes for EFI boot loaders, RefindPlus always looks for
-# macOS's and Microsoft Windows' boot loaders in their normal locations,
+# Mac OS' and Microsoft Windows' boot loaders in their normal locations,
 # and scans the root directory and every subdirectory of the /EFI directory
 # for additional boot loaders, but it doesn't recurse into these directories.
 # The also_scan_dirs token adds more directories to the scan list.
@@ -453,7 +453,7 @@ timeout 20
 # OSes' file browsers. It's also possible to identify a partition by its
 # unique GUID (aka its "PARTUUID" in Linux parlance). (Note that this is
 # NOT the partition TYPE CODE GUID.) This identifier can be obtained via
-# "blkid" in Linux or "diskutil info {partition-id}" in macOS.
+# "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in RefindPlus.
 # The default is "LRS_ESP".
@@ -581,7 +581,7 @@ timeout 20
 #default_selection Microsoft
 #default_selection "+,bzImage,vmlinuz"
 #default_selection Maintenance 23:30 2:00
-#default_selection "Maintenance,macOS" 1:00 2:30
+#default_selection "Maintenance,Mac OS" 1:00 2:30
 
 # Enable VMX bit and lock the CPU MSR if unlocked.
 # On some Intel Apple computers, the firmware does not lock the MSR 0x3A.
@@ -594,7 +594,7 @@ timeout 20
 #
 #enable_and_lock_vmx false
 
-# Tell a Mac's EFI that macOS is about to be launched, even when it's not.
+# Tell a Mac's EFI that Mac OS is about to be launched, even when it's not.
 # This option causes some Macs to initialize their hardware differently than
 # when a third-party OS is launched normally. In some cases (particularly on
 # Macs with multiple video cards), using this option can cause hardware to
@@ -605,7 +605,7 @@ timeout 20
 # some hardware devices. When needed, a value of "10.9" usually works, but
 # you can experiment with other values. This feature has no effect on
 # non-Apple computers.
-# The default is inactive (no macOS spoofing is done).
+# The default is inactive (no Mac OS spoofing is done).
 #
 #spoof_osx_version 10.9
 
@@ -751,9 +751,9 @@ menuentry "Windows via shell script" {
 # it may serve as a starting point. Note that you'll almost
 # certainly need to change the "volume" line for this example
 # to work.
-menuentry "My macOS" {
+menuentry "My Mac OS" {
     icon \EFI\refind\icons\os_mac.png
-    volume "macOS boot"
+    volume "Mac OS boot"
     loader \System\Library\CoreServices\boot.efi
     disabled
 }
