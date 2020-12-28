@@ -1494,6 +1494,26 @@ efi_main (
             case TAG_LOADER:   // Boot OS via .EFI loader
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
+                // Fix undetected Mac OS
+                if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") == NULL &&
+                    MyStrStr (ourLoaderEntry->Title, L"macOS") == NULL &&
+                    MyStrStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
+                ) {
+                    if (MyStrStr (ourLoaderEntry->Volume->VolName, L"Preboot") != NULL) {
+                        ourLoaderEntry->Title = L"Mac OS";
+                    }
+                    else {
+                        ourLoaderEntry->Title = L"RefindPlus";
+                    }
+                }
+
+                // Fix undetected Windows
+                if (MyStrStr (ourLoaderEntry->Title, L"Windows") == NULL &&
+                    MyStrStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot") != NULL
+                ) {
+                    ourLoaderEntry->Title = L"UEFI Windows";
+                }
+
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
