@@ -1,6 +1,6 @@
 /*
  * libeg/nanojpeg_xtra.c
- * JPEG image handling functions -- rEFInd interface for NanoJPEG
+ * JPEG image handling functions -- RefindPlus interface for NanoJPEG
  *
  * copyright (c) 2018 by by Roderick W. Smith, and distributed
  * under the terms of the GNU GPL v3, or (at your option) any

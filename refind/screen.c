@@ -507,7 +507,7 @@ DrawScreenHeader (
 
     // print header text
     refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
-    Print(L"rEFInd - %s", Title);
+    Print(L"RefindPlus - %s", Title);
 
     // reposition cursor
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);

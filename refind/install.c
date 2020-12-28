@@ -1,6 +1,6 @@
 /*
  * refind/install.c
- * Functions related to installation of rEFInd and management of EFI boot order
+ * Functions related to installation of RefindPlus and management of EFI boot order
  *
  * Copyright (c) 2020 by Roderick W. Smith
  *
@@ -89,7 +89,7 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
     INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
-    REFIT_MENU_SCREEN   InstallMenu = { L"Install rEFInd", NULL, 0, NULL, 0, NULL, 0, NULL,
+    REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, NULL, 0, NULL, 0, NULL,
                                         L"Select a destination and press Enter or",
                                         L"press Esc to return to main menu without changes" };
     if (AllowGraphicsMode)
@@ -97,7 +97,7 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
 
     if (AllESPs) {
         CurrentESP = AllESPs;
-        AddMenuInfoLine(&InstallMenu, L"Select a partition and press Enter to install rEFInd");
+        AddMenuInfoLine(&InstallMenu, L"Select a partition and press Enter to install RefindPlus");
         while (CurrentESP != NULL) {
             MenuEntryItem = AllocateZeroPool(sizeof (REFIT_MENU_ENTRY));
             GuidStr = GuidAsString(&(CurrentESP->Volume->PartGuid));
@@ -207,7 +207,7 @@ static EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
     return (Status);
 } // EFI_STATUS BackupOldFile()
 
-// Create directories in which rEFInd will reside....
+// Create directories in which RefindPlus will reside....
 static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
     CHAR16   *FileName = NULL;
     UINTN    i = 0, Status = EFI_SUCCESS;
@@ -407,8 +407,8 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
     FindVolumeAndFilename(GlobalConfig.SelfDevicePath, &SourceVolume, &SourceFile);
     SourceDir = FindPath(SourceFile);
 
-    // Begin by copying rEFInd itself....
-    RefindName = PoolPrint(L"EFI\\refind\\%s", INST_REFIND_NAME);
+    // Begin by copying RefindPlus itself....
+    RefindName = PoolPrint(L"EFI\\refind\\%s", INST_REFINDPLUS_NAME);
     Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, RefindName);
     MyFreePool(SourceFile);
     MyFreePool(RefindName);
@@ -470,8 +470,8 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
     );
     if (Status == EFI_SUCCESS) {
         Contents = PoolPrint(
-            L"%s,rEFInd Boot Manager,,This is the boot entry for rEFInd\n",
-            INST_REFIND_NAME
+            L"%s,RefindPlus Boot Manager,,This is the boot entry for RefindPlus\n",
+            INST_REFINDPLUS_NAME
         );
         if (Contents) {
             FileSize = StrSize(Contents);
@@ -510,7 +510,7 @@ static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
  *
  ***********************/
 
-// Find a Boot#### number that will boot the new rEFInd installation. This
+// Find a Boot#### number that will boot the new RefindPlus installation. This
 // function must be passed:
 // - *Entry -- A new entry that's been constructed, but not yet stored in NVRAM
 // - Size -- The size of the new entry
@@ -530,7 +530,7 @@ static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
 // an exact duplicate, then this function will return 5, resulting in two
 // identical entries (Boot0005 and Boot0006). This is done because scanning
 // all possible entries (0 through 0xffff) takes a few seconds, and because
-// a single duplicate isn't a big deal. (If rEFInd is re-installed via this
+// a single duplicate isn't a big deal. (If RefindPlus is re-installed via this
 // feature again, this function will return "5," so no additional duplicate
 // entry will be created. A third duplicate might be created if some other
 // process were to delete an entry between Boot0000 and Boot0004, though.)
@@ -637,7 +637,7 @@ static EFI_STATUS SetBootDefault(UINTN BootNum) {
     return Status;
 } // EFI_STATUS SetBootDefault()
 
-// Create an NVRAM entry for the newly-installed rEFInd and make it the default.
+// Create an NVRAM entry for the newly-installed RefindPlus and make it the default.
 // (If an entry that's identical to the one this function would create already
 // exists, it may be used instead; see the comments before the FindBootNum()
 // function for details and caveats.)
@@ -647,9 +647,14 @@ static EFI_STATUS CreateNvramEntry(EFI_HANDLE DeviceHandle) {
     EFI_DEVICE_PATH  *Entry;
     BOOLEAN          AlreadyExists = FALSE;
 
-    ProgName = PoolPrint(L"\\EFI\\refind\\%s", INST_REFIND_NAME);
-    Status = ConstructBootEntry(DeviceHandle, ProgName,
-                                L"rEFInd Boot Manager", (CHAR8**) &Entry, &Size);
+    ProgName = PoolPrint(L"\\EFI\\refind\\%s", INST_REFINDPLUS_NAME);
+    Status = ConstructBootEntry(
+        DeviceHandle,
+        ProgName,
+        L"RefindPlus Boot Manager",
+        (CHAR8**) &Entry,
+        &Size
+    );
     MyFreePool(ProgName);
     if (Status == EFI_SUCCESS)
         BootNum = FindBootNum(Entry, Size, &AlreadyExists);
@@ -669,11 +674,11 @@ static EFI_STATUS CreateNvramEntry(EFI_HANDLE DeviceHandle) {
 
 /***********************
  *
- * The main rEFInd-installation function....
+ * The main RefindPlus installation function....
  *
  ***********************/
 
-// Install rEFInd to an ESP that the user specifies, create an NVRAM entry for
+// Install RefindPlus to an ESP that the user specifies, create an NVRAM entry for
 // that installation, and set it as the default boot option.
 VOID InstallRefind(VOID) {
     ESP_LIST      *AllESPs;
@@ -688,7 +693,7 @@ VOID InstallRefind(VOID) {
             Status = CreateNvramEntry(SelectedESP->DeviceHandle);
         DeleteESPList(AllESPs);
         if (Status == EFI_SUCCESS) {
-            DisplaySimpleMessage(L"Information", L"rEFInd successfully installed");
+            DisplaySimpleMessage(L"Information", L"RefindPlus successfully installed");
         } else {
             DisplaySimpleMessage(L"Warning", L"Problems encountered during installation");
         } // if/else

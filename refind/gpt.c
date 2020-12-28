@@ -111,7 +111,7 @@ static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
 // on the input data, but does NOT resort to using the backup data if the
 // primary data structures are damaged. The intent is that the function
 // be very conservative about reading GPT data. Currently (version 0.7.10),
-// rEFInd uses the data only to provide access to partition names. This is
+// RefindPlus uses the data only to provide access to partition names. This is
 // non-critical data, so it's OK to return nothing, but having the program
 // hang on reading garbage or return nonsense could be very bad.
 EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {

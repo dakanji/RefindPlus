@@ -1,5 +1,5 @@
 /*
- * Additional functions to support LodePNG for use in rEFInd
+ * Additional functions to support LodePNG for use in RefindPlus
  *
  * copyright (c) 2013 by by Roderick W. Smith, and distributed
  * under the terms of the GNU GPL v3, or (at your option) any

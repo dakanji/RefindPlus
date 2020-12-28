@@ -431,7 +431,7 @@ ReinitRefitLib (
 //
 
 // Retrieve a raw EFI variable, either from NVRAM or from a disk file under
-// rEFInd's "vars" subdirectory, depending on GlobalConfig.UseNvram.
+// RefindPlus' "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
 EFI_STATUS
 EfivarGetRaw (
@@ -465,7 +465,7 @@ EfivarGetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
-            MsgLog ("         Set 'use_nvram' to 'true' to Silence this Warning\n\n");
+            MsgLog ("         Set 'use_nvram' to 'true' to silence this warning\n\n");
             #endif
         }
         else {
@@ -537,7 +537,7 @@ EfivarSetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("         Set 'use_nvram' to 'true' to Silence this Warning\n\n");
+            MsgLog ("         Set 'use_nvram' to 'true' to silence this warning\n\n");
             #endif
         }
         else {

@@ -44,12 +44,12 @@
 #define CompareGuid(a, b) CompareGuid(a, b)==0
 #endif
 
-#define REFIND_EFI_DISK_IO_PROTOCOL_GUID \
+#define REFINDPLUS_EFI_DISK_IO_PROTOCOL_GUID \
   { \
     0xce345171, 0xba0b, 0x11d2, {0x8e, 0x4f, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
   }
 
-#define REFIND_EFI_BLOCK_IO_PROTOCOL_GUID \
+#define REFINDPLUS_EFI_BLOCK_IO_PROTOCOL_GUID \
   { \
     0x964e5b21, 0x6459, 0x11d2, {0x8e, 0x39, 0x0, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
   }

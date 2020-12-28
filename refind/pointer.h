@@ -19,8 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __REFIND_POINTERDEVICE_H_
-#define __REFIND_POINTERDEVICE_H_
+#ifndef __REFINDPLUS_POINTERDEVICE_H_
+#define __REFINDPLUS_POINTERDEVICE_H_
 
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"

@@ -643,7 +643,7 @@ static LEGACY_ENTRY
 
 
 /**
-    Create a rEFInd boot option from a Legacy BIOS protocol option.
+    Create a RefindPlus boot option from a Legacy BIOS protocol option.
 */
 static LEGACY_ENTRY
 * AddLegacyEntryUEFI (

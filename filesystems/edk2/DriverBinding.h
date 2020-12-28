@@ -1,18 +1,18 @@
 /*++
 
 Copyright (c) 2004, Intel Corporation. All rights reserved.<BR>
-This program and the accompanying materials                          
-are licensed and made available under the terms and conditions of the BSD License         
-which accompanies this distribution.  The full text of the license may be found at        
-http://opensource.org/licenses/bsd-license.php                                            
-                                                                                          
-THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+This program and the accompanying materials
+are licensed and made available under the terms and conditions of the BSD License
+which accompanies this distribution.  The full text of the license may be found at
+http://opensource.org/licenses/bsd-license.php
+
+THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 Module Name:
 
     DriverBinding.h
-    
+
 Abstract:
 
     EFI ControllerHandle Driver Protocol
@@ -22,14 +22,14 @@ Revision History
 --*/
 
 /*
- * rEFInd NOTE: This file is included only when compiling with GNU-EFI,
+ * RefindPlus NOTE: This file is included only when compiling with GNU-EFI,
  * which has not traditionally provided the definitions supplied here.
  * Unfortunately, recent (ca. 3.0.5) versions of GNU-EFI have added
  * SOME of these functions to an existing header file, creating problems
  * when trying to maintain compatibility with multiple GNU-EFI versions.
  * I've therefore renamed the relevant defines, types, and functions,
  * both here and in fsw_efi.c; and included a define to match the only
- * used name (REFIND_EFI_DRIVER_BINDING_PROTOCOL) to the traditional
+ * used name (REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL) to the traditional
  * name (EFI_DRIVER_BINDING_PROTOCOL) in fsw_efi.c for compiling with
  * TianoCore.
  */
@@ -39,14 +39,14 @@ Revision History
 
 #include <efidevp.h>
 
-#define REFIND_EFI_DRIVER_BINDING_PROTOCOL_GUID \
+#define REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL_GUID \
   { \
     0x18a031ab, 0xb443, 0x4d1a, {0xa5, 0xc0, 0xc, 0x9, 0x26, 0x1e, 0x9f, 0x71} \
   }
 
 #define EFI_FORWARD_DECLARATION(x) typedef struct _##x x
 
-EFI_FORWARD_DECLARATION (REFIND_EFI_DRIVER_BINDING_PROTOCOL);
+EFI_FORWARD_DECLARATION (REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL);
 
 // Begin included from DevicePath.h....
 
@@ -81,7 +81,7 @@ typedef struct {
   UINT8 Length[2];  ///< Specific Device Path data. Type and Sub-Type define
                     ///< type of data. Size of data is included in Length.
 
-} REFIND_EFI_DEVICE_PATH_PROTOCOL;
+} REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL;
 
 #pragma pack()
 
@@ -91,19 +91,19 @@ typedef struct {
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_SUPPORTED) (
-  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN EFI_HANDLE                             ControllerHandle,
-  IN REFIND_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
+  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
   )
 /*++
 
   Routine Description:
-    Test to see if this driver supports ControllerHandle. 
+    Test to see if this driver supports ControllerHandle.
 
   Arguments:
     This                - Protocol instance pointer.
     ControllerHandle    - Handle of device to test
-    RemainingDevicePath - Optional parameter use to pick a specific child 
+    RemainingDevicePath - Optional parameter use to pick a specific child
                           device to start.
 
   Returns:
@@ -117,9 +117,9 @@ EFI_STATUS
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_START) (
-  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN EFI_HANDLE                             ControllerHandle,
-  IN REFIND_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
+  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL               * RemainingDevicePath OPTIONAL
   )
 /*++
 
@@ -129,7 +129,7 @@ EFI_STATUS
   Arguments:
     This                - Protocol instance pointer.
     ControllerHandle    - Handle of device to bind driver to
-    RemainingDevicePath - Optional parameter use to pick a specific child 
+    RemainingDevicePath - Optional parameter use to pick a specific child
                           device to start.
 
   Returns:
@@ -143,7 +143,7 @@ EFI_STATUS
 typedef
 EFI_STATUS
 (EFI_FUNCTION EFIAPI *EFI_DRIVER_BINDING_STOP) (
-  IN REFIND_EFI_DRIVER_BINDING_PROTOCOL            * This,
+  IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL            * This,
   IN  EFI_HANDLE                            ControllerHandle,
   IN  UINTN                                 NumberOfChildren,
   IN  EFI_HANDLE                            * ChildHandleBuffer
@@ -155,8 +155,8 @@ EFI_STATUS
 
   Arguments:
     This              - Protocol instance pointer.
-    ControllerHandle  - Handle of device to stop driver on 
-    NumberOfChildren  - Number of Handles in ChildHandleBuffer. If number of 
+    ControllerHandle  - Handle of device to stop driver on
+    NumberOfChildren  - Number of Handles in ChildHandleBuffer. If number of
                         children is zero stop the entire bus driver.
     ChildHandleBuffer - List of Child Handles to Stop.
 
@@ -170,7 +170,7 @@ EFI_STATUS
 //
 // Interface structure for the ControllerHandle Driver Protocol
 //
-struct _REFIND_EFI_DRIVER_BINDING_PROTOCOL {
+struct _REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL {
   EFI_DRIVER_BINDING_SUPPORTED  Supported;
   EFI_DRIVER_BINDING_START      Start;
   EFI_DRIVER_BINDING_STOP       Stop;

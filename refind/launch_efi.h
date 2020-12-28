@@ -55,8 +55,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __REFIND_LAUNCH_EFI_H_
-#define __REFIND_LAUNCH_EFI_H_
+#ifndef __REFINDPLUS_LAUNCH_EFI_H_
+#define __REFINDPLUS_LAUNCH_EFI_H_
 
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"

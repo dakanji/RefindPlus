@@ -1,8 +1,8 @@
 // A boatload of #includes needed to build the software with TianoCore's EDK2/UDK2010
 // toolkit. Placed here to maintain my own sanity.
 
-#ifndef _REFIND_TIANO_INCLUDES_
-#define _REFIND_TIANO_INCLUDES_
+#ifndef _REFINDPLUS_TIANO_INCLUDES_
+#define _REFINDPLUS_TIANO_INCLUDES_
 
 #define ST gST
 #define BS gBS

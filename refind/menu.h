@@ -42,8 +42,8 @@
  * 
  */
 
-#ifndef __REFIND_MENU_H_
-#define __REFIND_MENU_H_
+#ifndef __REFINDPLUS_MENU_H_
+#define __REFINDPLUS_MENU_H_
 
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"

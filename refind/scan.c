@@ -1165,7 +1165,7 @@ static CHAR16* RuniPXEDiscover(EFI_HANDLE Volume)
 
 // Scan for network (PXE) boot servers. This function relies on the presence
 // of the IPXE_DISCOVER_NAME and IPXE_NAME program files on the volume from
-// which rEFInd launched. As of December 6, 2014, these tools aren't entirely
+// which RefindPlus launched. As of December 6, 2014, these tools aren't entirely
 // reliable. See BUILDING.txt for information on building them.
 static VOID ScanNetboot() {
     CHAR16        *iPXEFileName = IPXE_NAME;
@@ -1327,7 +1327,7 @@ static VOID ScanEfiFiles(REFIT_VOLUME *Volume) {
             MyFreePool(Directory);
         } // while
 
-        // Don't scan the fallback loader if it's on the same volume and a duplicate of rEFInd itself....
+        // Don't scan the fallback loader if it's on the same volume and a duplicate of RefindPlus itself....
         SelfPath = DevicePathToStr(SelfLoadedImage->FilePath);
         CleanUpPathNameSlashes(SelfPath);
         if ((Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) &&

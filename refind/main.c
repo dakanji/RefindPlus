@@ -201,7 +201,7 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-EFI_GUID RefindGuid = REFIND_GUID_VALUE;
+EFI_GUID RefindPlusGuid = REFINDPLUS_GUID;
 
 #define BOOTKICKER_FILES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
@@ -237,7 +237,7 @@ EfivarSetRawEx (
     EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status;
 
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
@@ -254,7 +254,7 @@ EfivarSetRawEx (
 
             #if REFIT_DEBUG > 0
             MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("      Set 'use_nvram' to 'true' to Silence this Warning\n");
+            MsgLog ("      Set 'use_nvram' to 'true' to silence this warning\n");
             #endif
         }
         else {
@@ -263,7 +263,7 @@ EfivarSetRawEx (
         MyFreePool (VarsDir);
     }
 
-    if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindGuid)) {
+    if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindPlusGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
@@ -304,7 +304,7 @@ gRTSetVariableEx (
     BOOLEAN BlockPRNG = FALSE;
 
     #if REFIT_DEBUG > 0
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindGuid)) {
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindPlusGuid)) {
         MsgLog ("INFO: Using Emulated NVRAM\n");
     }
     else {
@@ -826,7 +826,7 @@ VOID AboutRefindPlus (
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFIND_VERSION));
+        AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
         AddMenuInfoLine (&AboutMenu, L"");
 
         AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
@@ -927,7 +927,7 @@ VOID StoreLoaderName (
 
     if (Name) {
         Status = EfivarGetRaw (
-            &RefindGuid,
+            &RefindPlusGuid,
             L"PreviousBoot",
             (CHAR8**) &OldName,
             &Length
@@ -936,7 +936,7 @@ VOID StoreLoaderName (
             (StrCmp (OldName, Name) != 0)
         ) {
             EfivarSetRaw (
-                &RefindGuid,
+                &RefindPlusGuid,
                 L"PreviousBoot",
                 (CHAR8*) Name,
                 StrLen (Name) * 2 + 2,
@@ -1131,7 +1131,7 @@ STATIC VOID AdjustDefaultSelection() {
     while ((Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp (Element, L"+")) {
             Status = EfivarGetRaw (
-                &RefindGuid,
+                &RefindPlusGuid,
                 L"PreviousBoot",
                 (CHAR8 **) &PreviousBoot,
                 &j
@@ -1208,7 +1208,7 @@ efi_main (
         NowMinute,
         NowSecond
     );
-    MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFIND_VERSION, gST->FirmwareVendor);
+    MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFINDPLUS_VERSION, gST->FirmwareVendor);
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
     MyFreePool(NowDateStr);
     #endif
@@ -1320,7 +1320,7 @@ efi_main (
     #if REFIT_DEBUG > 0
     MsgLog (
         "INFO: Loaded RefindPlus v%s on %s Firmware ...User Input Pending\n\n",
-        REFIND_VERSION,
+        REFINDPLUS_VERSION,
         gST->FirmwareVendor
     );
     #endif

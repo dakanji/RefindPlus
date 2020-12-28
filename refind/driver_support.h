@@ -1,5 +1,5 @@
 /*
- * File to implement LibScanHandleDatabase(), which is used by rEFInd's
+ * File to implement LibScanHandleDatabase(), which is used by RefindPlus'
  * driver-loading code (inherited from rEFIt), but which has not been
  * implemented in GNU-EFI and seems to have been dropped from current
  * versions of the Tianocore library. This function was taken from a git

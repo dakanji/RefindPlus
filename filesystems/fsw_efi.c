@@ -45,11 +45,11 @@
 #include "edk2/ComponentName.h"
 #define gMyEfiSimpleFileSystemProtocolGuid FileSystemProtocol
 #else
-#define REFIND_EFI_DRIVER_BINDING_PROTOCOL EFI_DRIVER_BINDING_PROTOCOL
-#define REFIND_EFI_COMPONENT_NAME_PROTOCOL EFI_COMPONENT_NAME_PROTOCOL
-#define REFIND_EFI_COMPONENT_NAME_PROTOCOL_GUID EFI_COMPONENT_NAME_PROTOCOL_GUID
-#define REFIND_EFI_DRIVER_BINDING_PROTOCOL_GUID EFI_DRIVER_BINDING_PROTOCOL_GUID
-#define REFIND_EFI_DEVICE_PATH_PROTOCOL EFI_DEVICE_PATH_PROTOCOL
+#define REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL EFI_DRIVER_BINDING_PROTOCOL
+#define REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL EFI_COMPONENT_NAME_PROTOCOL
+#define REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL_GUID EFI_COMPONENT_NAME_PROTOCOL_GUID
+#define REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL_GUID EFI_DRIVER_BINDING_PROTOCOL_GUID
+#define REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL EFI_DEVICE_PATH_PROTOCOL
 #define EFI_FILE_SYSTEM_VOLUME_LABEL_INFO_ID    \
     { 0xDB47D7D3,0xFE81, 0x11d3, {0x9A, 0x35, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D} }
 #define gMyEfiSimpleFileSystemProtocolGuid gEfiSimpleFileSystemProtocolGuid
@@ -65,36 +65,36 @@
 #define FSTYPE ext2
 #endif
 
-EFI_GUID gMyEfiDriverBindingProtocolGuid = REFIND_EFI_DRIVER_BINDING_PROTOCOL_GUID;
-EFI_GUID gMyEfiComponentNameProtocolGuid = REFIND_EFI_COMPONENT_NAME_PROTOCOL_GUID;
-EFI_GUID gMyEfiDiskIoProtocolGuid = REFIND_EFI_DISK_IO_PROTOCOL_GUID;
-EFI_GUID gMyEfiBlockIoProtocolGuid = REFIND_EFI_BLOCK_IO_PROTOCOL_GUID;
-EFI_GUID gMyEfiFileInfoGuid = EFI_FILE_INFO_ID;
-EFI_GUID gMyEfiFileSystemInfoGuid = EFI_FILE_SYSTEM_INFO_ID;
+EFI_GUID gMyEfiDriverBindingProtocolGuid       = REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL_GUID;
+EFI_GUID gMyEfiComponentNameProtocolGuid       = REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL_GUID;
+EFI_GUID gMyEfiDiskIoProtocolGuid              = REFINDPLUS_EFI_DISK_IO_PROTOCOL_GUID;
+EFI_GUID gMyEfiBlockIoProtocolGuid             = REFINDPLUS_EFI_BLOCK_IO_PROTOCOL_GUID;
+EFI_GUID gMyEfiFileInfoGuid                    = EFI_FILE_INFO_ID;
+EFI_GUID gMyEfiFileSystemInfoGuid              = EFI_FILE_SYSTEM_INFO_ID;
 EFI_GUID gMyEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_INFO_ID;
 
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the EFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"rEFInd 0.12.0 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"RefindPlus 0.12.0 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                                   IN EFI_HANDLE                          ControllerHandle,
-                                                  IN REFIND_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+                                                  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                               IN EFI_HANDLE                          ControllerHandle,
-                                              IN REFIND_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+                                              IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                              IN EFI_HANDLE                          ControllerHandle,
                                              IN UINTN                               NumberOfChildren,
                                              IN EFI_HANDLE                          *ChildHandleBuffer);
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
                                                       IN  CHAR8                               *Language,
                                                       OUT CHAR16                              **DriverName);
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
                                                           IN  EFI_HANDLE                          ControllerHandle,
                                                           IN  EFI_HANDLE                          ChildHandle  OPTIONAL,
                                                           IN  CHAR8                               *Language,
@@ -160,7 +160,7 @@ static int LastRead = -1;
  * Interface structure for the EFI Driver Binding protocol.
  */
 
-REFIND_EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
+REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
     fsw_efi_DriverBinding_Supported,
     fsw_efi_DriverBinding_Start,
     fsw_efi_DriverBinding_Stop,
@@ -173,7 +173,7 @@ REFIND_EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
  * Interface structure for the EFI Component Name protocol.
  */
 
-REFIND_EFI_COMPONENT_NAME_PROTOCOL fsw_efi_ComponentName_table = {
+REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL fsw_efi_ComponentName_table = {
     fsw_efi_ComponentName_GetDriverName,
     fsw_efi_ComponentName_GetControllerName,
     (CHAR8*) "eng"
@@ -276,9 +276,9 @@ EFI_DRIVER_ENTRY_POINT(fsw_efi_main)
  * and implicitly checks if the disk is already in use by another driver.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                                   IN EFI_HANDLE                   ControllerHandle,
-                                                  IN REFIND_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
+                                                  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
 {
     EFI_STATUS          Status;
     EFI_DISK_IO         *DiskIo;
@@ -335,9 +335,9 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFIND_EFI_DRIVER_BINDING_P
  * device handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                               IN EFI_HANDLE                   ControllerHandle,
-                                              IN REFIND_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
+                                              IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
 {
     EFI_STATUS          Status;
     EFI_BLOCK_IO        *BlockIo;
@@ -440,7 +440,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFIND_EFI_DRIVER_BINDING_PROTO
  * case; it closes all file handles between commands.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFIND_EFI_DRIVER_BINDING_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
                                              IN  EFI_HANDLE                   ControllerHandle,
                                              IN  UINTN                        NumberOfChildren,
                                              IN  EFI_HANDLE                   *ChildHandleBuffer)
@@ -513,7 +513,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFIND_EFI_DRIVER_BINDING_PROTO
  * based on the file system type actually used in compilation.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL  *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
                                                       IN  CHAR8                        *Language,
                                                       OUT CHAR16                       **DriverName)
 {
@@ -532,7 +532,7 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFIND_EFI_COMPONENT_N
  * because this is not a "bus" driver in the sense of the EFI Driver Model.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFIND_EFI_COMPONENT_NAME_PROTOCOL    *This,
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL    *This,
                                                           IN  EFI_HANDLE                     ControllerHandle,
                                                           IN  EFI_HANDLE                     ChildHandle  OPTIONAL,
                                                           IN  CHAR8                          *Language,

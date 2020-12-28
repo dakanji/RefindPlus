@@ -1461,7 +1461,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
 // you pass this function the filename of the Linux kernel, initial RAM disk, or other
 // file in the target directory, and this function finds the file with a name in the
 // comma-delimited list of names specified by LINUX_OPTIONS_FILENAMES within that
-// directory and loads it. If a rEFInd options file can't be found, try to generate
+// directory and loads it. If a RefindPlus options file can't be found, try to generate
 // minimal options from /etc/fstab on the same volume as the kernel. This typically
 // works only if the kernel is being read from the Linux root filesystem.
 //

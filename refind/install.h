@@ -1,6 +1,6 @@
 /*
  * refind/install.h
- * Headers related to installation of rEFInd
+ * Headers related to installation of RefindPlus
  *
  * Copyright (c) 2020 by Roderick W. Smith
  *
@@ -16,22 +16,22 @@
 #if defined (EFIX64)
 #define INST_DIRECTORIES L"\\EFI,\\EFI\\refind,\\EFI\\refind\\icons,\\EFI\\refind\\drivers_x64"
 #define INST_DRIVERS_SUBDIR L"drivers_x64"
-#define INST_REFIND_NAME L"refind_x64.efi"
+#define INST_REFINDPLUS_NAME L"refind_x64.efi"
 #define INST_PLATFORM_EXTENSION L"_x64.efi"
 #elif defined(EFI32)
 #define INST_DIRECTORIES L"\\EFI,\\EFI\\refind,\\EFI\\refind\\icons,\\EFI\\refind\\drivers_ia32"
 #define INST_DRIVERS_SUBDIR L"drivers_ia32"
-#define INST_REFIND_NAME L"refind_ia32.efi"
+#define INST_REFINDPLUS_NAME L"refind_ia32.efi"
 #define INST_PLATFORM_EXTENSION L"_ia32.efi"
 #elif defined(EFIAARCH64)
 #define INST_DIRECTORIES L"\\EFI,\\EFI\\refind,\\EFI\\refind\\icons,\\EFI\\refind\\drivers_aa64"
 #define INST_DRIVERS_SUBDIR L"drivers_aa64"
-#define INST_REFIND_NAME L"refind_aa64.efi"
+#define INST_REFINDPLUS_NAME L"refind_aa64.efi"
 #define INST_PLATFORM_EXTENSION L"_aa64.efi"
 #else
 #define INST_DIRECTORIES L"\\EFI,\\EFI\\refind,\\EFI\\refind\\icons,\\EFI\\refind\\drivers"
 #define INST_DRIVERS_SUBDIR L"drivers"
-#define INST_REFIND_NAME L"refind.efi"
+#define INST_REFINDPLUS_NAME L"refind.efi"
 #define INST_PLATFORM_EXTENSION L".efi"
 #endif
 

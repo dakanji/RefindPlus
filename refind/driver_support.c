@@ -186,10 +186,10 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
 #define MY_EFI_BLOCK_IO_PROTOCOL EFI_BLOCK_IO_PROTOCOL
 #endif
 
-/* LibScanHandleDatabase() is used by rEFInd's driver-loading code (inherited
+/* LibScanHandleDatabase() is used by RefindPlus' driver-loading code (inherited
  * from rEFIt), but has not been implemented in GNU-EFI and seems to have been
- * dropped from current versions of the Tianocore library. This function was
- * taken from http://git.etherboot.org/?p=mirror/efi/shell/.git;a=commitdiff;h=b1b0c63423cac54dc964c2930e04aebb46a946ec,
+ * dropped from current versions of the Tianocore library. This function was taken from
+ * http://git.etherboot.org/?p=mirror/efi/shell/.git;a=commitdiff;h=b1b0c63423cac54dc964c2930e04aebb46a946ec,
  * The original files are copyright 2006-2011 Intel and BSD-licensed. Minor
  * modifications by Roderick Smith are GPLv3.
  */
@@ -735,7 +735,7 @@ ScanDriverDir (
 } // static UINTN ScanDriverDir()
 
 
-// Load all EFI drivers from rEFInd's "drivers" subdirectory and from the
+// Load all EFI drivers from RefindPlus' "drivers" subdirectory and from the
 // directories specified by the user in the "scan_driver_dirs" configuration
 // file line.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
@@ -751,8 +751,8 @@ LoadDrivers(
     UINTN   NumFound = 0;
     UINTN   CurFound = 0;
 
-    // load drivers from the subdirectories of rEFInd's home directory specified
-    // in the DRIVER_DIRS constant.
+    // load drivers from the subdirectories of RefindPlus' home directory
+    // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
     MsgLog("Load EFI Drivers from Default Folder...");
     #endif
@@ -780,7 +780,7 @@ LoadDrivers(
         MsgLog("\n\n");
         MsgLog("Load EFI Drivers from User Defined Folders...");
         #endif
-        
+
         i = 0;
         while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes(Directory);
@@ -830,8 +830,8 @@ LoadAptioFix(
     UINTN   NumFound = 0;
     UINTN   CurFound = 0;
 
-    // load drivers from the subdirectories of rEFInd's home directory specified
-    // in the DRIVER_DIRS constant.
+    // load drivers from the subdirectories of RefindPlus' home directory
+    // specified in the DRIVER_DIRS constant.
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
         CleanUpPathNameSlashes(SelfDirectory);

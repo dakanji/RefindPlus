@@ -55,8 +55,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __REFIND_LINUX_H_
-#define __REFIND_LINUX_H_
+#ifndef __REFINDPLUS_LINUX_H_
+#define __REFINDPLUS_LINUX_H_
 
 CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath);

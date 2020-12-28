@@ -214,13 +214,13 @@ StartEFIImage (
             // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
             // then unregisters itself from the EFI system table when its replacement
             // StartImage() function is called *IF* the previous LoadImage() was for the same
-            // program. The result is that rEFInd can validate only the first program it
-            // launches (often a filesystem driver). Loading a second program (rEFInd itself,
+            // program. The result is that RefindPlus can validate only the first program it
+            // launches (often a filesystem driver). Loading a second program (RefindPlus itself,
             // here, to keep it smaller than a kernel) works around this problem. See the
             // replacements.c file in Shim, and especially its start_image() function, for
             // the source of the problem.
             // NOTE: This doesn't check the return status or handle errors. It could
-            // conceivably do weird things if, say, rEFInd were on a USB drive that the
+            // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
             refit_call6_wrapper(
                 gBS->LoadImage,
