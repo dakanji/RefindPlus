@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report to help us improve
+about: Report a problem with RefindPlus
 title: ''
 labels: ''
 assignees: ''
@@ -20,13 +20,16 @@ Steps to reproduce the behaviour:
 **Expected behaviour**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
 **Environment (please complete the following information):**
  - RefindPlus Version [e.g. v0.12.0.M]
  - Hardware: [e.g. MacPro 3,1]
  - OS: [e.g. Mac OS Catalina]
+
+**Log and Config Files**
+Add debug log files and your config file to help with understanding your issue.
+
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.
