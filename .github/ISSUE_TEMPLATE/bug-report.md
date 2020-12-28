@@ -1,9 +1,9 @@
 ---
 name: Bug Report
 about: Create a report to help us improve
-title: "[BUG] "
-labels: bug
-assignees: dakanji
+title: ''
+labels: ''
+assignees: ''
 
 ---
 
@@ -25,7 +25,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - RefindPlus Version [e.g. v0.12.0.M]
- - OS: [e.g. Mac OS]
+ - Hardware: [e.g. MacPro 3,1]
+ - OS: [e.g. Mac OS Catalina]
 
 **Additional context**
 Add any other context about the problem here.
