@@ -935,12 +935,27 @@ ScanVolumeBootcode (
         if (FindMem (Buffer, 512, "This is Not a Bootable Disk", 27) >= 0) {
             Volume->HasBootCode = FALSE;
         }
-
+             
         // dummy FAT boot sector (created by Windows)
         if (FindMem (Buffer, 512, "Press Any Key to Restart", 24) >= 0) {
             Volume->HasBootCode = FALSE;
         }
-
+        
+        // dummy FAT boot sector (created by Windows)
+        if (FindMem (Buffer, 512, "Press Ctrl+Alt+Del to restart", 30) >= 0) {
+            Volume->HasBootCode = FALSE;
+        }
+        
+        // dummy FAT boot sector (created by Windows)
+        if (FindMem (Buffer, 512, "Missing operating system", 24) >= 0) {
+            Volume->HasBootCode = FALSE;
+        }
+        
+        // dummy FAT boot sector (created by Windows)
+        if (FindMem (Buffer, 512, "Press any key to reboot", 23) >= 0) {
+            Volume->HasBootCode = FALSE;
+        }
+        
         // check for MBR partition table
         if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
             MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
