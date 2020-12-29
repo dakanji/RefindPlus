@@ -923,22 +923,33 @@ ScanVolumeBootcode (
             Volume->OSName = L"Haiku (Legacy)";
         }
 
-        // NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
-        //  need to fix AddLegacyEntry in refind/legacy.c.
 
-        // dummy FAT boot sector (created by Mac OS X's newfs_msdos)
-        if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
-            Volume->HasBootCode = FALSE;
-        }
+        /**
+         * NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
+         *       need to fix AddLegacyEntry in refind/legacy.c.
+         *       DA_TAGGED
+        **/
 
-        // dummy FAT boot sector (created by Linux's mkdosfs)
-        if (FindMem (Buffer, 512, "This is Not a Bootable Disk", 27) >= 0) {
-            Volume->HasBootCode = FALSE;
-        }
 
-        // dummy FAT boot sector (created by Windows)
-        if (FindMem (Buffer, 512, "Press Any Key to Restart", 24) >= 0) {
-            Volume->HasBootCode = FALSE;
+        if (Volume->HasBootCode) {
+            // verify Windows boot sector on Macs
+            if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC &&
+                Volume->FSType == FS_TYPE_NTFS
+            ) {
+                Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
+            }
+            // dummy FAT boot sector (created by OS X's newfs_msdos)
+            else if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
+                Volume->HasBootCode = FALSE;
+            }
+            // dummy FAT boot sector (created by Linux's mkdosfs)
+            else if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0) {
+                Volume->HasBootCode = FALSE;
+            }
+            // dummy FAT boot sector (created by Windows)
+            else if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0) {
+                Volume->HasBootCode = FALSE;
+            }
         }
 
         // check for MBR partition table

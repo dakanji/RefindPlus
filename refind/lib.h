@@ -148,6 +148,7 @@ CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume);
 CHAR16 *SplitDeviceString(IN OUT CHAR16 *InString);
 
 BOOLEAN EjectMedia(VOID);
+BOOLEAN HasWindowsBiosBootFiles (REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2);
 BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier);
 BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
