@@ -952,6 +952,11 @@ ScanVolumeBootcode (
             }
         }
 
+        if (Volume->FSType == FS_TYPE_NTFS && !Volume->HasBootCode) {
+            Volume->OSIconName  = L"win8,win";
+            Volume->OSName      = L"UEFI Windows";
+        }
+
         // check for MBR partition table
         if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
             MbrTable = (MBR_PARTITION_INFO *)(Buffer + 446);
