@@ -690,20 +690,22 @@ SetFilesystemData (
 
       if (BufferSize >= (1024 + 100)) {
          Magic16 = (UINT16*) (Buffer + 1024 + 56);
+
          if (*Magic16 == EXT2_SUPER_MAGIC) {
              // ext2/3/4
             Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
             Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
+
+            // check for extents or flex_bg
             if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) {
-                // check for extents or flex_bg
                Volume->FSType = FS_TYPE_EXT4;
             }
+            // check for journal
             else if (*Ext2Compat & 0x0004) {
-                // check for journal
                Volume->FSType = FS_TYPE_EXT3;
             }
+            // none of these features; presume it's ext2...
             else {
-                // none of these features; presume it's ext2...
                Volume->FSType = FS_TYPE_EXT2;
             }
             CopyMem (&(Volume->VolUuid), Buffer + 1024 + 120, sizeof (EFI_GUID));
@@ -713,9 +715,9 @@ SetFilesystemData (
 
       if (BufferSize >= (65536 + 100)) {
          MagicString = (char*) (Buffer + 65536 + 52);
-         if ((CompareMem (MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
-             (CompareMem (MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
-             (CompareMem (MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
+         if (CompareMem (MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0 ||
+             CompareMem (MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0 ||
+             CompareMem (MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0
          ) {
             Volume->FSType = FS_TYPE_REISERFS;
             CopyMem (&(Volume->VolUuid), Buffer + 65536 + 84, sizeof (EFI_GUID));
@@ -760,7 +762,8 @@ SetFilesystemData (
                CopyMem (&(Volume->VolUuid), Buffer + 0x48, sizeof (UINT64));
             }
             else if ((CompareMem (MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
-                       (CompareMem (MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
+                (CompareMem (MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)
+            ) {
                 Volume->FSType = FS_TYPE_FAT;
                 CopyMem (&(Volume->VolUuid), Buffer + 0x27, sizeof (UINT32));
             }
@@ -836,24 +839,24 @@ ScanVolumeBootcode (
             CompareMem (Buffer + 3, "SYSLINUX", 8) == 0 ||
             FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"linux";
-            Volume->OSName = L"Linux (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"linux";
+            Volume->OSName       = L"Linux (Legacy)";
         }
         // GRUB
         else if (FindMem (Buffer, 512, "Geom\0Hard Disk\0Read\0 Error", 26) >= 0) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"grub,linux";
-            Volume->OSName = L"Linux (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"grub,linux";
+            Volume->OSName       = L"Linux (Legacy)";
         }
         else if ((*((UINT32 *)(Buffer + 502)) == 0 &&
             *((UINT32 *)(Buffer + 506)) == 50000 &&
             *((UINT16 *)(Buffer + 510)) == 0xaa55) ||
             FindMem (Buffer, SECTOR_SIZE, "Starting the BTX loader", 23) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"freebsd";
-            Volume->OSName = L"FreeBSD (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"freebsd";
+            Volume->OSName       = L"FreeBSD (Legacy)";
         }
         // If more differentiation needed, also search for
         // "Invalid partition table" &/or "Missing boot loader".
@@ -861,66 +864,66 @@ ScanVolumeBootcode (
             (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large", 21) >= 0) &&
             (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0)
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"freebsd";
-            Volume->OSName = L"FreeBSD (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"freebsd";
+            Volume->OSName       = L"FreeBSD (Legacy)";
         }
         else if (FindMem (Buffer, 512, "!Loading", 8) >= 0 ||
             FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"openbsd";
-            Volume->OSName = L"OpenBSD (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"openbsd";
+            Volume->OSName       = L"OpenBSD (Legacy)";
         }
         else if (FindMem (Buffer, 512, "Not a bootxx image", 18) >= 0 ||
             *((UINT32 *)(Buffer + 1028)) == 0x7886b6d1
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"netbsd";
-            Volume->OSName = L"NetBSD (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"netbsd";
+            Volume->OSName       = L"NetBSD (Legacy)";
         }
         // Windows NT/200x/XP
         else if (FindMem (Buffer, SECTOR_SIZE, "NTLDR", 5) >= 0) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"win";
-            Volume->OSName = L"Windows (NT/XP)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"win";
+            Volume->OSName       = L"Windows (NT/XP)";
         }
         // Windows Vista/7/8/10
         else if (FindMem (Buffer, SECTOR_SIZE, "BOOTMGR", 7) >= 0) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"win8,win";
-            Volume->OSName = L"Windows (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"win8,win";
+            Volume->OSName       = L"Windows (Legacy)";
         }
         else if (FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
             FindMem (Buffer, 512, "KERNEL  SYS", 11) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"freedos";
-            Volume->OSName = L"FreeDOS (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"freedos";
+            Volume->OSName       = L"FreeDOS (Legacy)";
         }
         else if (FindMem (Buffer, 512, "OS2LDR", 6) >= 0 ||
             FindMem (Buffer, 512, "OS2BOOT", 7) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"ecomstation";
-            Volume->OSName = L"eComStation (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"ecomstation";
+            Volume->OSName       = L"eComStation (Legacy)";
         }
         else if (FindMem (Buffer, 512, "Be Boot Loader", 14) >= 0) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"beos";
-            Volume->OSName = L"BeOS (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"beos";
+            Volume->OSName       = L"BeOS (Legacy)";
         }
         else if (FindMem (Buffer, 512, "yT Boot Loader", 14) >= 0) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"zeta,beos";
-            Volume->OSName = L"ZETA (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"zeta,beos";
+            Volume->OSName       = L"ZETA (Legacy)";
         }
         else if (FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
             FindMem (Buffer, 512, "\x06" "system\x0c" "haiku_loader", 20) >= 0
         ) {
-            Volume->HasBootCode = TRUE;
-            Volume->OSIconName = L"haiku,beos";
-            Volume->OSName = L"Haiku (Legacy)";
+            Volume->HasBootCode  = TRUE;
+            Volume->OSIconName   = L"haiku,beos";
+            Volume->OSName       = L"Haiku (Legacy)";
         }
 
 
@@ -2128,6 +2131,7 @@ FindLastDirName (
             EndOfElement   = i;
         } // if
     } // for
+
     // Extract the target element
     if (EndOfElement > 0) {
         while ((StartOfElement < PathLength) && (Path[StartOfElement] == '\\')) {
@@ -2138,8 +2142,9 @@ FindLastDirName (
         if (EndOfElement >= StartOfElement) {
             CopyLength = EndOfElement - StartOfElement + 1;
             Found = StrDuplicate (&Path[StartOfElement]);
-            if (Found != NULL)
+            if (Found != NULL) {
                 Found[CopyLength] = 0;
+            }
         } // if (EndOfElement >= StartOfElement)
     } // if (EndOfElement > 0)
 
@@ -2243,6 +2248,7 @@ SplitVolumeAndFilename (
         (*Path)[i] = 0;
         *VolName = *Path;
         *Path = Filename;
+
         return TRUE;
     }
     else {
@@ -2276,10 +2282,12 @@ SplitPathName (
     *Path = FindPath (Temp); // *Path has path (may be 0-length); Temp unchanged.
     *Filename = StrDuplicate (Temp + StrLen (*Path));
     CleanUpPathNameSlashes (*Filename);
+
     if (StrLen (*Path) == 0) {
         FreePool (*Path);
         *Path = NULL;
     }
+
     if (StrLen (*Filename) == 0) {
         FreePool (*Filename);
         *Filename = NULL;
@@ -2355,10 +2363,9 @@ FilenameIn (
         while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
             Found = TRUE;
             SplitPathName (OneElement, &TargetVolName, &TargetPath, &TargetFilename);
-            if (((TargetVolName != NULL) &&
-                (!VolumeMatchesDescription (Volume, TargetVolName))) ||
-                ((TargetPath != NULL) && (!MyStriCmp (TargetPath, Directory))) ||
-                ((TargetFilename != NULL) && (!MyStriCmp (TargetFilename, Filename)))
+            if ((TargetVolName != NULL && !VolumeMatchesDescription (Volume, TargetVolName)) ||
+                (TargetPath != NULL && !MyStriCmp (TargetPath, Directory)) ||
+                (TargetFilename != NULL && !MyStriCmp (TargetFilename, Filename))
             ) {
                 Found = FALSE;
             } // if
