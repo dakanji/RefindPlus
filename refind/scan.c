@@ -625,10 +625,18 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Vo
         ShortcutLetter = 'R';
     }
     else if (StriSubCmp(MACOSX_LOADER_PATH, LoaderPath)) {
-        MergeStrings(&OSIconName, L"mac", L',');
-        Entry->OSType = 'M';
-        ShortcutLetter = 'M';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+        if (FileExists (Volume-BaseDir, L"\\EFI\\refind\\config.conf") ||
+            FileExists (Volume-BaseDir, L"\\EFI\\refind\\refind.conf")
+        ) {
+            MergeStrings(&OSIconName, L"refind", L',');
+            Entry->OSType = 'R';
+            ShortcutLetter = 'R';
+        } else {
+            MergeStrings(&OSIconName, L"mac", L',');
+            Entry->OSType = 'M';
+            ShortcutLetter = 'M';
+            Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+        }
     }
     else if (MyStriCmp(NameClues, L"diags.efi")) {
         MergeStrings(&OSIconName, L"hwtest", L',');
@@ -1198,7 +1206,14 @@ static BOOLEAN ScanMacOsLoader(REFIT_VOLUME *Volume, CHAR16* FullFileName) {
     if (FileExists(Volume->RootDir, FullFileName) &&
         !FilenameIn(Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)
     ) {
-        AddLoaderEntry(FullFileName, L"Mac OS", Volume, TRUE);
+        if (FileExists (Volume-BaseDir, L"\\EFI\\refind\\config.conf") ||
+            FileExists (Volume-BaseDir, L"\\EFI\\refind\\refind.conf")
+        ) {
+            AddLoaderEntry(FullFileName, L"RefindPlus", Volume, TRUE);
+        } else {
+            AddLoaderEntry(FullFileName, L"Mac OS", Volume, TRUE);
+        }
+
         if (DuplicatesFallback(Volume, FullFileName)) {
             ScanFallbackLoader = FALSE;
         }
