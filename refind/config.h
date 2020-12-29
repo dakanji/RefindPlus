@@ -68,7 +68,7 @@ typedef struct {
     CHAR16  *End16Ptr;
 } REFIT_FILE;
 
-#define CONFIG_FILE_NAME         L"refind.conf"
+#define CONFIG_FILE_NAME         L"config.conf"
 // Note: Below is combined with MOK_NAMES and FWUPDATE_NAMES to make default
 #if defined (EFIX64)
 #define DONT_SCAN_FILES L"shim.efi,shim-fedora.efi,shim-centos.efi,shimx64.efi,PreLoader.efi,TextMode.efi,ebounce.efi,GraphicsConsole.efi,bootmgr.efi,fbx64.efi"

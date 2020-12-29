@@ -2312,7 +2312,7 @@ HideTag (
             } else {
                 DisplaySimpleMessage (
                     L"Cannot Hide Entry for Manual Boot Stanza",
-                    L"You must edit refind.conf to remove this entry."
+                    L"You must edit config.conf to remove this entry."
                 );
             }
             break;
@@ -2333,7 +2333,7 @@ HideTag (
         case TAG_HIDDEN:
             DisplaySimpleMessage (
                 L"Unable to Comply",
-                L"To hide an internal tool, edit the 'showtools' line in refind.conf"
+                L"To hide an internal tool, edit the 'showtools' line in config.conf"
             );
             break;
         case TAG_TOOL:

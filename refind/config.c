@@ -1149,7 +1149,7 @@ AddSubmenu (
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
 
-// Adds the options from a SINGLE refind.conf stanza to a new loader entry and returns
+// Adds the options from a single config.conf stanza to a new loader entry and returns
 // that entry. The calling function is then responsible for adding the entry to the
 // list of entries.
 static
@@ -1265,7 +1265,7 @@ LOADER_ENTRY * AddStanzaEntries (
    return (Entry);
 } // static VOID AddStanzaEntries()
 
-// Read the user-configured menu entries from refind.conf and add or delete
+// Read the user-configured menu entries from config.conf and add or delete
 // entries based on the contents of that file....
 VOID
 ScanUserConfigured (

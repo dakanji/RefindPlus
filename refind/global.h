@@ -209,7 +209,7 @@
 // completeness, but that's ridiculous....
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
-// Definitions for the "hideui" option in refind.conf
+// Definitions for the "hideui" option in config.conf
 #define HIDEUI_FLAG_NONE       (0x0000)
 #define HIDEUI_FLAG_BANNER     (0x0001)
 #define HIDEUI_FLAG_LABEL      (0x0002)

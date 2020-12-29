@@ -1088,16 +1088,11 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - Config File = %s\n\n", FileName);
                 #endif
-
-            } else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("  - WARN: Config File '%s' Not Found in '%s'\n", FileName, SelfDir);
-                MsgLog ("    * Try Default 'refind.conf'\n\n");
-                #endif
-
+            }
+            else {
                 ShowScreenStr = L"Specified Configuration File Not Found";
                 PrintUglyText (ShowScreenStr, NEXTLINE);
-                ShowScreenStr = L"Try default 'refind.conf'";
+                ShowScreenStr = L"Try Default:- 'config.conf / refind.conf'";
                 PrintUglyText (ShowScreenStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
@@ -1140,7 +1135,8 @@ STATIC VOID AdjustDefaultSelection() {
             if (Status == EFI_SUCCESS) {
                 MyFreePool (Element);
                 Element = PreviousBoot;
-            } else {
+            }
+            else {
                 Element = NULL;
             }
         } // if
@@ -1230,6 +1226,14 @@ efi_main (
     ScanVolumes();
 
     // Read Config first to get tokens that may be required by LoadDrivers();
+    if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("** WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'\n");
+        MsgLog ("         Trying rEFInd Configuration File:- 'refind.conf'\n\n");
+        #endif
+
+        GlobalConfig.ConfigFilename = L"refind.conf";
+    }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
