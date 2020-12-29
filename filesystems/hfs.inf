@@ -1,9 +1,10 @@
 ## @file
 #
-# hfs.inf file to build rEFInd's HFS+ driver using the EDK2/UDK201#
+# hfs.inf file to build RefindPlus' HFS+ driver using the EDK2/UDK201#
 # development kit.
 #
 # Copyright (c) 2012-2017 by Roderick W. Smith
+# Modified 2020 for RefindPlus by Dayo Akanji
 # Released under the terms of the GPLv3 (or, at your discretion, any later
 # version), a copy of which should come with this file.
 #

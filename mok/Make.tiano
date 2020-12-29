@@ -1,6 +1,6 @@
 #
 # mok/Make.tiano
-# Build control file for Secure Boot components of rEFInd, using TianoCore EDK2
+# Build control file for Secure Boot components of RefindPlus, using TianoCore EDK2
 #
 # This program is licensed under the terms of the GNU GPL, version 3,
 # or (at your option) any later version.

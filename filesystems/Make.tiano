@@ -1,6 +1,6 @@
 #
 # filesystems/Make.tiano
-# Build control file for rEFInd's EFI filesystem drivers
+# Build control file for RefindPlus' EFI filesystem drivers
 #
 
 # This program is licensed under the terms of the GNU GPL, version 3,
@@ -66,4 +66,3 @@ $(BUILDME): $(DLL_TARGET)
 	cp $(BUILDME) ../drivers_$(FILENAME_CODE)
 
 endif
-

@@ -1,6 +1,6 @@
 #
 # EfiLib/Make.tiano
-# Build control file for EfiLib components of rEFInd, using TianoCore EDK2
+# Build control file for EfiLib components of RefindPlus, using TianoCore EDK2
 #
 
 # This program is licensed under the terms of the GNU GPL, version 3,

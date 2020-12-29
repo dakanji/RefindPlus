@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Set rEFInd as the default boot loader, using Linux's efibootmgr tool.
+Set RefindPlus as the default boot loader, using Linux's efibootmgr tool.
 
 Copyright (c) 2016 Roderick W. Smith
 
@@ -69,10 +69,10 @@ def discover_data():
 
 
 def add_unordered_entry(boot_entries, boot_order, label):
-    """Find a rEFInd boot_entry and add it to the boot_order list.
+    """Find a RefindPlus boot_entry and add it to the boot_order list.
 
-    Run if the boot_order list includes no rEFInd entry, in the
-    hopes of finding an existing rEFInd boot_entry that can be
+    Run if the boot_order list includes no RefindPlus entry, in the
+    hopes of finding an existing RefindPlus boot_entry that can be
     used.
     :param boot_entries:
         Dictionary of boot entries, with string (hex-encoded number) as
@@ -80,7 +80,7 @@ def add_unordered_entry(boot_entries, boot_order, label):
     :param boot_order:
         List of boot numbers as strings, in boot order
     :param label:
-        String used to identify rEFInd entry in efibootmgr output
+        String used to identify RefindPlus entry in efibootmgr output
     :returns:
         True if an entry was added, False otherwise
     """
@@ -94,7 +94,7 @@ def add_unordered_entry(boot_entries, boot_order, label):
 
 
 def set_refind_first(boot_entries, boot_order, label):
-    """Adjust boot_order so that rEFInd is first.
+    """Adjust boot_order so that RefindPlus is first.
 
     :param boot_entries:
         Dictionary of boot entries, with string (hex-encoded number) as
@@ -102,7 +102,7 @@ def set_refind_first(boot_entries, boot_order, label):
     :param boot_order:
         List of boot numbers as strings, in boot order
     :param label:
-        String used to identify rEFInd entry in efibootmgr output
+        String used to identify RefindPlus entry in efibootmgr output
     :returns:
         * -1 if order already OK
         * 0 if order adjusted
@@ -162,12 +162,12 @@ def save_changes(boot_order):
 
 
 def main():
-    """Set rEFInd as the default boot option."""
-    description = "Sets rEFInd as the default EFI boot option"
+    """Set RefindPlus as the default boot option."""
+    description = "Sets RefindPlus as the default EFI boot option"
     parser = ArgumentParser(description=description)
     parser.add_argument("-L", "--label",
-                        default="rEFInd",
-                        help=("The label used to identify rEFInd (default=rEFInd)"))
+                        default="RefindPlus",
+                        help=("The label used to identify RefindPlus (default=RefindPlus)"))
     args = parser.parse_args()
 
     if sys.platform != "linux":

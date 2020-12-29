@@ -414,22 +414,22 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
     MyFreePool(RefindName);
 
     // Now copy the config file -- but:
-    //  - Copy config.conf-sample, not refind.conf, if it's available, to
+    //  - Copy config.conf-sample, not config.conf, if it's available, to
     //    avoid picking up live-disk-specific customizations.
-    //  - Do not overwrite an existing refind.conf at the target; instead,
-    //    copy to config.conf-sample if refind.conf is present.
+    //  - Do not overwrite an existing config.conf at the target; instead,
+    //    copy to config.conf-sample if config.conf is present.
     if (Status == EFI_SUCCESS) {
         ConfFile = PoolPrint(L"%s\\config.conf-sample", SourceDir);
         if (FileExists(SourceVolume->RootDir, ConfFile)) {
             StrCpy(SourceFile, ConfFile);
         } else {
-            SourceFile = PoolPrint(L"%s\\refind.conf", SourceDir);
+            SourceFile = PoolPrint(L"%s\\config.conf", SourceDir);
         }
         MyFreePool(ConfFile);
-        if (FileExists(TargetDir, L"\\EFI\\refind\\refind.conf")) {
+        if (FileExists(TargetDir, L"\\EFI\\refind\\config.conf")) {
             Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\config.conf-sample");
         } else {
-            Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\refind.conf");
+            Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\config.conf");
         }
         MyFreePool(SourceFile);
     }

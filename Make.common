@@ -9,12 +9,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # This file contains make definitions common to several (or all) of the make
-# files in the rEFInd code subdirectories. Some options are specific to
+# files in the RefindPlus code subdirectories. Some options are specific to
 # particular architectures or build systems and others are more universal.
 
 #
 # Environment definitions -- where stuff is and what sort of system is being
-# used to compile rEFInd....
+# used to compile RefindPlus....
 #
 
 EFIINC          = /usr/include/efi
@@ -124,7 +124,7 @@ ifeq ($(ARCH),ia32)
   GNUEFI_LDFLAGS += -znocombreloc -zdefs
 
   # In practice, cross-compiling filesystem drivers works, but not the main
-  # rEFInd binary....
+  # RefindPlus binary....
   ifeq ($(HOSTARCH),x86_64)
     GNUEFILIB := $(GNUEFILIB)32
     EFILIB    := $(EFILIB)32

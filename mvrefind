@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Linux script to move an existing rEFInd installation from one directory to
+# Linux script to move an existing RefindPlus installation from one directory to
 # another
 #
 # copyright (c) 2013-2015 by Roderick W. Smith
@@ -15,7 +15,7 @@
 # ./mvrefind /path/to/source /path/to/destination
 #
 # Typically used to "hijack" or "unhijack" a Windows boot loader location or
-# to help convert a rEFInd installation made in BIOS mode to one that works
+# to help convert a RefindPlus installation made in BIOS mode to one that works
 # in EFI mode.
 #
 # Revision history:
@@ -26,7 +26,7 @@
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
 #
-# Note: mvrefind version numbers match those of the rEFInd package
+# Note: mvrefind version numbers match those of the RefindPlus package
 # with which they first appeared.
 
 RootDir="/"
@@ -144,8 +144,8 @@ AdjustFilenames() {
 CheckForFiles() {
    if [[ (! -f $SourceDir/$Source) ||
          ($SourceShim != "none" && ! -f $SourceDir/SourceShim) ||
-         ! -f $SourceDir/refind.conf ]] ; then
-      echo "There doesn't seem to be a rEFInd installation at $SourceDir!"
+         ! -f $SourceDir/config.conf ]] ; then
+      echo "There doesn't seem to be a RefindPlus installation at $SourceDir!"
       echo "Aborting!"
       exit 1
    fi
@@ -172,7 +172,7 @@ MoveFiles() {
    fi
 
    if [[ $EspTargetDir == "/efi/boot" && -d $TargetDir ]] ; then
-      if [[ -d $InstallDir/EFI/BOOT-rEFIndBackup ]] ; then
+      if [[ -d $InstallDir/EFI/BOOT-RefindPlusBackup ]] ; then
          echo ""
          echo "Caution: An existing backup of a default boot loader exists! If the current"
          echo "default boot loader and the backup are different boot loaders, the current"
@@ -201,27 +201,27 @@ MoveFiles() {
    mv $SourceDir/keys $TargetDir 2> /dev/null
    mv $SourceDir/$Source $TargetDir/$Target 2> /dev/null
    mv $SourceDir/$SourceShim $TargetDir/$TargetShim 2> /dev/null
-   mv $SourceDir/refind.conf* $TargetDir/ 2> /dev/null
+   mv $SourceDir/config.conf* $TargetDir/ 2> /dev/null
    rm $SourceDir/BOOT.CSV
    rmdir $SourceDir 2> /dev/null
 } # MoveFiles()
 
 # Clean up after moving files -- mainly restoring old backed-up files, if present
 PostMoveCleanup() {
-   if [[ "$EspSourceDir" == "/efi/boot" && -d "$InstallDir/EFI/BOOT-rEFIndBackup" && ! -d $SourceDir ]] ; then
-      mv "$InstallDir/EFI/BOOT-rEFIndBackup" "$SourceDir" 2> /dev/null
+   if [[ "$EspSourceDir" == "/efi/boot" && -d "$InstallDir/EFI/BOOT-RefindPlusBackup" && ! -d $SourceDir ]] ; then
+      mv "$InstallDir/EFI/BOOT-RefindPlusBackup" "$SourceDir" 2> /dev/null
    fi
    if [[ "$EspSourceDir" == "/efi/microsoft/boot" && -f "$InstallDir/EFI/Microsoft/bootmgfw.efi" ]] ; then
       mv -n "$InstallDir/EFI/Microsoft/bootmgfw.efi" "$SourceDir/bootmgfw.efi"
    fi
 } # PostMoveCleanup()
 
-# Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
+# Create a BOOT.CSV file in the same directory as RefindPlus, to help in recovery
 # should the system's boot entry list be lost
 CreateBootCsvFile() {
    IConv=`which iconv 2> /dev/null`
    if [[ -x "$IConv" && -d "$TargetDir" ]] ; then
-      echo "$Target,rEFInd boot manager,,This is the boot entry for rEFInd" | \
+      echo "$Target,RefindPlus boot manager,,This is the boot entry for RefindPlus" | \
            $IConv -t UCS-2 > "$TargetDir/BOOT.CSV"
    fi
    exit
@@ -260,7 +260,7 @@ AddNvramEntry() {
          # Name it the way some firmware expects -- see http://mjg59.dreamwidth.org/20187.html
          $Efibootmgr -c -l $EfiEntryFilename -L "Windows Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
       else
-         $Efibootmgr -c -l $EfiEntryFilename -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+         $Efibootmgr -c -l $EfiEntryFilename -L "RefindPlus Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
       fi
       if [[ $? != 0 ]] ; then
          EfibootmgrProblems=1
@@ -269,7 +269,7 @@ AddNvramEntry() {
 
    if [[ $EfibootmgrProblems ]] ; then
       echo
-      echo "ALERT: There were problems running the efibootmgr program! Your moved rEFInd"
+      echo "ALERT: There were problems running the efibootmgr program! Your moved RefindPlus"
       echo "might not run!"
       echo
    fi
