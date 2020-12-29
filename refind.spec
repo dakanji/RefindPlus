@@ -78,7 +78,7 @@ else
 fi
 
 # Copy configuration and support files to /usr/share/refind-%{version}
-install -Dp -m0644 refind.conf-sample $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
+install -Dp -m0644 config.conf-sample $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 cp -a icons $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/
 rm -rf $RPM_BUILD_ROOT/usr/share/refind-%{version}/refind/icons/svg
 install -Dp -m0755 refind-install $RPM_BUILD_ROOT/usr/share/refind-%{version}/

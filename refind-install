@@ -350,10 +350,10 @@ CheckForFiles() {
       exit 1
    fi
 
-   if [[ -f "$RefindDir/refind.conf-sample" ]] ; then
-      ConfFile="$RefindDir/refind.conf-sample"
-   elif [[ -f "$ThisDir/refind.conf-sample" ]] ; then
-      ConfFile="$ThisDir/refind.conf-sample"
+   if [[ -f "$RefindDir/config.conf-sample" ]] ; then
+      ConfFile="$RefindDir/config.conf-sample"
+   elif [[ -f "$ThisDir/config.conf-sample" ]] ; then
+      ConfFile="$ThisDir/config.conf-sample"
    else
       echo "The sample configuration file is missing! Aborting installation!"
       exit 1
@@ -726,7 +726,7 @@ CopyRefindFiles() {
    cp -rf "$ThisDir"/keys/*.[cd]er "$InstallDir/$TargetDir/keys/" 2> /dev/null
    cp -rf "$EtcKeysDir"/*.[cd]er "$InstallDir/$TargetDir/keys/" 2> /dev/null
    if [[ -f "$InstallDir/$TargetDir/refind.conf" ]] ; then
-      echo "Existing refind.conf file found; copying sample file as refind.conf-sample"
+      echo "Existing refind.conf file found; copying sample file as config.conf-sample"
       echo "to avoid overwriting your customizations."
       echo ""
       cp -f "$ConfFile" "$InstallDir/$TargetDir"
@@ -747,7 +747,7 @@ CopyRefindFiles() {
    # options, so that the system can be used to install rEFInd if it's on a USB
    # flash drive or CD-R....
    if [[ "$TargetDir" == '/EFI/BOOT' ]] ; then
-      cp -f "$ConfFile" "$InstallDir/$TargetDir/refind.conf-sample"
+      cp -f "$ConfFile" "$InstallDir/$TargetDir/config.conf-sample"
       sed -i 's/#showtools shell/showtools install, shell/g' "$InstallDir/$TargetDir/refind.conf"
    fi
    if [[ $DeleteRefindDir == 1 ]] ; then
@@ -1132,8 +1132,8 @@ ReSignBinaries() {
    fi
    GenerateKeys
    mkdir -p "$TempDir/drivers_$Platform"
-   cp "$RefindDir/refind.conf-sample $TempDir" 2> /dev/null
-   cp "$ThisDir/refind.conf-sample $TempDir" 2> /dev/null
+   cp "$RefindDir/config.conf-sample $TempDir" 2> /dev/null
+   cp "$ThisDir/config.conf-sample $TempDir" 2> /dev/null
    cp "$RefindDir/refind_ia32.efi $TempDir" 2> /dev/null
    cp -a "$RefindDir/drivers_ia32 $TempDir" 2> /dev/null
    cp -a "$ThisDir/drivers_ia32 $TempDir" 2> /dev/null
