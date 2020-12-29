@@ -940,6 +940,11 @@ ScanVolumeBootcode (
                 Volume->FSType == FS_TYPE_NTFS
             ) {
                 Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
+
+                if (!Volume->HasBootCode) {
+                    Volume->OSIconName  = L"win8,win";
+                    Volume->OSName      = L"UEFI Windows";
+                }
             }
             // dummy FAT boot sector (created by OS X's newfs_msdos)
             else if (FindMem (Buffer, SECTOR_SIZE, "Non-system disk", 15) >= 0) {
@@ -953,11 +958,6 @@ ScanVolumeBootcode (
             else if (FindMem (Buffer, SECTOR_SIZE, "Press any key to restart", 24) >= 0) {
                 Volume->HasBootCode = FALSE;
             }
-        }
-
-        if (Volume->FSType == FS_TYPE_NTFS && !Volume->HasBootCode) {
-            Volume->OSIconName  = L"win8,win";
-            Volume->OSName      = L"UEFI Windows";
         }
 
         // check for MBR partition table
