@@ -404,9 +404,9 @@ struct HFSPlusCatalogFolder {
 	u_int32_t		createDate;		/* date and time of creation */
 	u_int32_t		contentModDate;		/* date and time of last content modification */
 	u_int32_t		attributeModDate;	/* date and time of last attribute modification */
-	u_int32_t		accessDate;		/* date and time of last access (MacMac OS X only) */
+	u_int32_t		accessDate;		/* date and time of last access (Mac OS only) */
 	u_int32_t		backupDate;		/* date and time of last backup */
-	HFSPlusBSDInfo		bsdInfo;		/* permissions (for MacMac OS X) */
+	HFSPlusBSDInfo		bsdInfo;		/* permissions (for Mac OS) */
 	FndrDirInfo		userInfo;		/* Finder information */
 	FndrOpaqueInfo		finderInfo;		/* additional Finder information */
 	u_int32_t		textEncoding;		/* hint for name conversions */
@@ -447,9 +447,9 @@ struct HFSPlusCatalogFile {
 	u_int32_t		createDate;		/* date and time of creation */
 	u_int32_t		contentModDate;		/* date and time of last content modification */
 	u_int32_t		attributeModDate;	/* date and time of last attribute modification */
-	u_int32_t		accessDate;		/* date and time of last access (MacMac OS X only) */
+	u_int32_t		accessDate;		/* date and time of last access (Mac OS only) */
 	u_int32_t		backupDate;		/* date and time of last backup */
-	HFSPlusBSDInfo		bsdInfo;		/* permissions (for MacMac OS X) */
+	HFSPlusBSDInfo		bsdInfo;		/* permissions (for Mac OS) */
 	FndrFileInfo		userInfo;		/* Finder information */
 	FndrOpaqueInfo		finderInfo;		/* additional Finder information */
 	u_int32_t		textEncoding;		/* hint for name conversions */
