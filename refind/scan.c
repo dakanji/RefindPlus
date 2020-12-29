@@ -625,8 +625,8 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         ShortcutLetter = 'R';
     }
     else if (StriSubCmp (MACOSX_LOADER_PATH, LoaderPath)) {
-        if (FileExists (Volume->RootDir, L"\\EFI\\refind\\config.conf") ||
-            FileExists (Volume->RootDir, L"\\EFI\\refind\\refind.conf")
+        if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
             MergeStrings (&OSIconName, L"refind", L',');
             Entry->OSType = 'R';
@@ -1220,8 +1220,8 @@ static BOOLEAN ScanMacOsLoader (REFIT_VOLUME *Volume, CHAR16* FullFileName) {
     if (FileExists (Volume->RootDir, FullFileName) &&
         !FilenameIn (Volume, PathName, L"boot.efi", GlobalConfig.DontScanFiles)
     ) {
-        if (FileExists (Volume->RootDir, L"\\EFI\\refind\\config.conf") ||
-            FileExists (Volume->RootDir, L"\\EFI\\refind\\refind.conf")
+        if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
+            FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
