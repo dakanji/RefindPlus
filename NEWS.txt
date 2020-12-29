@@ -4,6 +4,7 @@
 - Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
 - Drops ineffective attempt to detect timezones
 - Fixs issue with disappearing Mouse on x64 Arch
+- Fixs Bogus Bootable Windows BIOS Instances
 - Loads MemFix on OpenCore Boots if required
   * Enables the Stage 1 Loading Screen on some Classic Macs
 - Fixes ESP detection for saving screenshots
