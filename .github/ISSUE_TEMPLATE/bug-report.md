@@ -20,8 +20,8 @@ Steps to reproduce the behaviour:
 **Expected behaviour**
 A clear and concise description of what you expected to happen.
 
-**Environment (please complete the following information):**
- - RefindPlus Version [e.g. v0.12.0.M]
+**Environment:**
+ - RefindPlus Version: [e.g. v0.12.0.M]
  - Hardware: [e.g. MacPro 3,1]
  - OS: [e.g. Mac OS Catalina]
 
