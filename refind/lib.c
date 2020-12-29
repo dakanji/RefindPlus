@@ -926,7 +926,7 @@ ScanVolumeBootcode (
 
         /**
          * NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
-         *       need to fix AddLegacyEntry in refind/legacy.c.
+         *       need to fix AddLegacyEntry in refind/launch_legacy.c.
          *       DA_TAGGED
         **/
 

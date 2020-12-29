@@ -617,38 +617,37 @@ preBootKicker (
             #endif
 
             k = 0;
-                while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
+            while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("    * Seek %s:\n", FilePath);
+                #endif
 
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("    * Seek %s:\n", FilePath);
-                    #endif
+                i = 0;
+                for (i = 0; i < VolumesCount; i++) {
+                    if ((Volumes[i]->RootDir != NULL) &&
+                        IsValidTool (Volumes[i], FilePath)
+                    ) {
+                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
 
-                    i = 0;
-                    for (i = 0; i < VolumesCount; i++) {
-                        if ((Volumes[i]->RootDir != NULL) &&
-                            IsValidTool (Volumes[i], FilePath)
-                        ) {
-                            ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        ourLoaderEntry->me.Title = Description;
+                        ourLoaderEntry->me.Tag = TAG_SHOW_BOOTKICKER;
+                        ourLoaderEntry->me.Row = 1;
+                        ourLoaderEntry->me.ShortcutLetter = 'S';
+                        ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+                        ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume = Volumes[i];
+                        ourLoaderEntry->UseGraphicsMode = TRUE;
 
-                            ourLoaderEntry->me.Title = Description;
-                            ourLoaderEntry->me.Tag = TAG_SHOW_BOOTKICKER;
-                            ourLoaderEntry->me.Row = 1;
-                            ourLoaderEntry->me.ShortcutLetter = 'S';
-                            ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-                            ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
-                            ourLoaderEntry->Volume = Volumes[i];
-                            ourLoaderEntry->UseGraphicsMode = TRUE;
-
-                            FoundTool = TRUE;
-                            break;
-                        } // if
-                    } // for
-
-                    if (FoundTool) {
+                        FoundTool = TRUE;
                         break;
-                    }
-                } // while Names
-                MyFreePool (FilePath);
+                    } // if
+                } // for
+
+                if (FoundTool) {
+                    break;
+                }
+            } // while Names
+            MyFreePool (FilePath);
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0
