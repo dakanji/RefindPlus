@@ -1208,7 +1208,7 @@ egInitScreen (
 
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Cannot Implement Graphics Output Protocol\n\n");
+        MsgLog ("INFO: Implement Graphics Output Protocol ...%r\n\n", XFlag);
         #endif
     }
     else if (XFlag == EFI_UNSUPPORTED) {
@@ -1242,7 +1242,7 @@ egInitScreen (
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
             if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgLog ("INFO: Implemented Graphics Output Protocol\n\n");
+                MsgLog ("INFO: Implement Graphics Output Protocol ...Success\n\n");
             }
             #endif
         }
