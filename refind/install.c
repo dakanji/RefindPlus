@@ -401,17 +401,17 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
 static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
-    CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindName;
+    CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindPlusName;
     UINTN           Status;
 
     FindVolumeAndFilename(GlobalConfig.SelfDevicePath, &SourceVolume, &SourceFile);
     SourceDir = FindPath(SourceFile);
 
     // Begin by copying RefindPlus itself....
-    RefindName = PoolPrint(L"EFI\\refind\\%s", INST_REFINDPLUS_NAME);
-    Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, RefindName);
+    RefindPlusName = PoolPrint(L"EFI\\refind\\%s", INST_REFINDPLUS_NAME);
+    Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, RefindPlusName);
     MyFreePool(SourceFile);
-    MyFreePool(RefindName);
+    MyFreePool(RefindPlusName);
 
     // Now copy the config file -- but:
     //  - Copy config.conf-sample, not config.conf, if it's available, to

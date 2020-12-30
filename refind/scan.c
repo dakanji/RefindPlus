@@ -1296,7 +1296,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     GlobalConfig.DontScanFiles
                 )
             ) {
-                AddLoaderEntry (FileName, L"UEFI Windows (Boot Repair Backup)", Volume, TRUE);
+                AddLoaderEntry (FileName, L"Windows (UEFI - Boot Repair Backup)", Volume, TRUE);
                 FoundBRBackup = TRUE;
                 if (DuplicatesFallback (Volume, FileName)) {
                     ScanFallbackLoader = FALSE;
@@ -1314,7 +1314,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 if (FoundBRBackup) {
                     AddLoaderEntry (
                         FileName,
-                        L"Assumed UEFI Windows (Probably GRUB)",
+                        L"Assumed Windows (UEFI - Probably GRUB)",
                         Volume,
                         TRUE
                     );
@@ -1322,7 +1322,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 else {
                     AddLoaderEntry (
                         FileName,
-                        L"UEFI Windows",
+                        L"Windows (UEFI)",
                         Volume,
                         TRUE
                     );

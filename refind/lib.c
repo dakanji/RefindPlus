@@ -943,7 +943,7 @@ ScanVolumeBootcode (
 
                 if (!Volume->HasBootCode) {
                     Volume->OSIconName  = L"win8,win";
-                    Volume->OSName      = L"UEFI Windows";
+                    Volume->OSName      = L"Windows (UEFI)";
                 }
             }
             // dummy FAT boot sector (created by OS X's newfs_msdos)

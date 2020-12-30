@@ -1514,7 +1514,7 @@ efi_main (
                 if (MyStrStr (ourLoaderEntry->Title, L"Windows") == NULL &&
                     MyStrStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot") != NULL
                 ) {
-                    ourLoaderEntry->Title = L"UEFI Windows";
+                    ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
                 // Use multiple instaces of "User Input Received:"
