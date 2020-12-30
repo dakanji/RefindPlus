@@ -1344,7 +1344,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
 
             if (MyStriCmp (EfiDirEntry->FileName, L"tools") ||
-                EfiDirEntry->FileName[0] == '.''
+                EfiDirEntry->FileName[0] == '.'
             ) {
                 // skip this, doesn't contain boot loaders or is scanned later
                 continue;
