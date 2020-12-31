@@ -292,7 +292,7 @@ SetupScreen (
 
                 #if REFIT_DEBUG > 0
                 if (!gotGraphics) {
-                    MsgLog("INFO: Switched to Graphics Mode\n\n");
+                    MsgLog("INFO: Switch to Graphics Mode ...Success\n\n");
                 }
                 else {
                     MsgLog("INFO: Displayed Placeholder\n\n");
