@@ -947,15 +947,15 @@ ScanVolumeBootcode (
                 }
             }
             // dummy FAT boot sector (created by OS X's newfs_msdos)
-            else if (FindMem (Buffer, SECTOR_SIZE, "Non-system disk", 15) >= 0) {
+            else if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
                 Volume->HasBootCode = FALSE;
             }
             // dummy FAT boot sector (created by Linux's mkdosfs)
-            else if (FindMem (Buffer, SECTOR_SIZE, "This is not a bootable disk", 27) >= 0) {
+            else if (FindMem (Buffer, 512, "This is not a bootable disk", 27) >= 0) {
                 Volume->HasBootCode = FALSE;
             }
             // dummy FAT boot sector (created by Windows)
-            else if (FindMem (Buffer, SECTOR_SIZE, "Press any key to restart", 24) >= 0) {
+            else if (FindMem (Buffer, 512, "Press any key to restart", 24) >= 0) {
                 Volume->HasBootCode = FALSE;
             }
         }
