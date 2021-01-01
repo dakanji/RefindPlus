@@ -1,5 +1,5 @@
 ===================================================================
-  RefindPlus is a minor modification of Roderick Smith's rEFInd.
+     RefindPlus is a modification of Roderick Smith's rEFInd
           You can get rEFInd at http://refind.sf.net
     Roderick Smith's credits for rEFInd are reproduced below:
 ===================================================================
@@ -62,6 +62,8 @@ Program (C source code and script) files:
 * Emerson Barcelos (emerson_freitas@yahoo.com.br) wrote the code for
   enabling Intel VMX support (the enable_and_lock_vmx token in
   refind.conf).
+  NB: refind.conf is named 'config.conf' in RefindPlus
+
 
 * Rohan Sehgal (rohan.sehgal.su@gmail.com) wrote code to help rEFInd
   detect network boot options and launch them, with the help of the
@@ -89,6 +91,8 @@ Program (C source code and script) files:
 * The RefindPkg.dec and RefindPkg.dsc files, used to enable compiling
   rEFInd in the traditional TianoCore way, come from
   https://github.com/snarez/refind-edk2.
+  NB: RefindPlPkg.dec and RefindPkg.dsc are named 'RefindPlusPkg.dec' and
+  'RefindPlusPkg.dsc' respectively in RefindPlus
 
 Icons and graphics:
 -------------------
