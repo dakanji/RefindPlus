@@ -211,7 +211,6 @@ EFI_GUID RefindPlusGuid = REFINDPLUS_GUID;
 STATIC     BOOLEAN          ranCleanNvram  = FALSE;
 BOOLEAN                     TweakSysTable  = FALSE;
 STATIC     EFI_SET_VARIABLE AltSetVariable;
-STATIC     char             StrCharArray[256];
 
 extern VOID InitBooterLog (VOID);
 
@@ -371,41 +370,34 @@ gRTSetVariableEx (
 } // VOID gRTSetVariableEx()
 
 
-// DA_TAG: Make easily callable everywhere
+// Convert CHAR16 to char array
 STATIC
 VOID
-CHAR16toCharArray (
-    IN CHAR16 *StrCHAR16
+CHAR16charConv (
+    IN  CHAR16  *StrCHAR16,
+    OUT char    StrCharArray[256]
 ) {
-    UINTN  k = 0;
-    UINTN  i = 0;
-    char   ThisChar;
+    // Get the number of characters (plus null terminator) in StrCHAR16
+    UINTN k = -1;
+    do {
+        k = k + 1;
+    } while (StrCHAR16[k] != '\0');
 
-    // Get the number of characters in StrCHAR16.
-    ThisChar = StrCHAR16[0];
-    while (ThisChar != '\0') {
-        k++;
-        ThisChar = StrCHAR16[k];
-    }
-    k = k + 1;
+    // Move StrCHAR16 characters to StrCharArray
+    UINTN i = -1;
+    do {
+        i = i + 1;
 
-    // Move StrCHAR16 characters to StrCharArray.
-    for (i = 0; i < k; i++) {
-        // convert to char (1 byte)
-        char character = StrCHAR16[i];
-
-        StrCharArray[i] = character;
+        // convert to single byte char and assign to array
+        char character   = StrCHAR16[i];
+        StrCharArray[i]  = character;
 
         // prevent overflow.
-        if (i == 255) {
+        if (i > 255) {
             break;
         }
-    }
-
-    // add null terminator.
-    StrCharArray[i] = '\0';
-
-} // VOID CHAR16toCharArray
+    } while (i < k);
+} // VOID CHAR16charConv
 
 
 STATIC
@@ -420,6 +412,7 @@ SetMacBootArgs (
     UINT32      AppleFLAGS                 = APPLE_FLAGS;
     CHAR16      *NameNVRAM                 = L"boot-args";
     CHAR16      *BootArg;
+    char        DataNVRAM[256];
 
     if (!GlobalConfig.SetMacBootArgs || GlobalConfig.SetMacBootArgs[0] == L'\0') {
         Status = EFI_INVALID_PARAMETER;
@@ -476,15 +469,15 @@ SetMacBootArgs (
         }
 
         // Convert BootArg to char array in 'StrCharArray'
-        CHAR16toCharArray (BootArg);
+        CHAR16charConv (BootArg, DataNVRAM);
 
         Status = refit_call5_wrapper(
             gRT->SetVariable,
             NameNVRAM,
             &AppleGUID,
             AppleFLAGS,
-            sizeof (StrCharArray),
-            StrCharArray
+            sizeof (DataNVRAM),
+            DataNVRAM
         );
     }
 
@@ -502,6 +495,8 @@ SetMacBootArgs (
         MsgLog ("    * Disable Compat Check ...%r", Status);
     }
     #endif
+
+    MyFreePool (DataNVRAM);
 } // VOID SetBootArgs()
 
 
@@ -526,6 +521,8 @@ DisableAMFI (
             sizeof (DataNVRAM),
             DataNVRAM
         );
+
+        MyFreePool (DataNVRAM);
     }
     else {
         char DataNVRAM[] = "amfi_get_out_of_my_way=1";
@@ -538,6 +535,8 @@ DisableAMFI (
             sizeof (DataNVRAM),
             DataNVRAM
         );
+
+        MyFreePool (DataNVRAM);
     }
 
     #if REFIT_DEBUG > 0
@@ -569,6 +568,8 @@ DisableMacCompatCheck (
         sizeof (DataNVRAM),
         DataNVRAM
     );
+
+    MyFreePool (DataNVRAM);
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
