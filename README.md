@@ -18,7 +18,14 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
 - Provides UGADraw to permit booting legacy operating systems using EFIBoot.
 - Misc Code Optimisation.
 
-## Additional Configurable Functionality Provided
+## Installation
+The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
+
+Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file with one from RefindPlus to configure the additonal options provided.
+
+Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chain-loading package. **(Recommended)**
+
+## Additional Configurable Functionality
 - text_renderer
 - uga_pass_through
 - provide_console_gop
@@ -30,13 +37,6 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
 - protect_mac_nvram
 - set_mac_boot_args
 - scale_ui
-
-## Installation
-The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
-
-Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file with one from RefindPlus to configure the additonal options provided.
-
-Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chainloading package.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
