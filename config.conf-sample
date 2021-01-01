@@ -188,14 +188,13 @@ timeout 20
 #icons_dir icons/snowy
 
 # Use a custom title banner instead of the RefindPlus icon and name. The file
-# path is relative to the directory where refind.efi is located. The color
-# in the top left corner of the image is used as the background color
-# for the menu screens. Currently uncompressed BMP images with color
-# depths of 24, 8, 4 or 1 bits are supported, as well as PNG and JPEG
-# images. (ICNS images can also be used, but ICNS has limitations that
-# make it a poor choice for this purpose.) PNG and JPEG support is
-# limited by the underlying libraries; some files, like progressive JPEGs,
-# will not work.
+# path is relative to the directory where the RefindPlus efi file is located.
+# The colour in the top left corner of the image is used as the background
+# colour for the menu screens. Currently uncompressed BMP images with colour
+# depths of 24, 8, 4 or 1 bits are supported, as well as PNG and JPG images.
+# (ICNS images can also be used, but ICNS has limitations that make it a poor
+# choice for this purpose.) PNG and JPG support is limited by the underlying
+# libraries; some files, such as progressive JPGs, will not work.
 #
 #banner hostname.bmp
 #banner mybanner.jpg
