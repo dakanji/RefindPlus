@@ -7,7 +7,8 @@ The development focus is on Classic MacPros (3,1 to 5,1) but should be useful fo
 The aim is for most, if not all, of the fixes and features to be merged upsteam into rEFInd.
 
 ## Headline Features
-- Provides Pre-Boot Configuration Screen on units running Semi Compatible GPUs (Compatible GPUs without Native EFI).
+- Protects against damage to Mac NVRAM when booting UEFI Windows.
+- Provides Pre-Boot Configuration Screen on units running GPUs without Native EFI on Macs.
 - Fixes inability of rEFInd to print to screen on Macs
   - This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
 - Adds a debug version that provides extensive logging.
@@ -16,6 +17,19 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
   - Values such as `977`, or the maximum `FFF`, are possible to allow unsigned DMG packages needed to run Mac OS v11.x (Big Sur) in unsupported environments.
 - Provides UGADraw to permit booting legacy operating systems using EFIBoot.
 - Misc Code Optimisation.
+
+## Additional Configurable Functionality Provided
+- text_renderer
+- uga_pass_through
+- provide_console_gop
+- direct_gop_renderer
+- continue_on_warning
+- force_trim
+- disable_mac_compat_check
+- disable_amfi
+- protect_mac_nvram
+- set_mac_boot_args
+- scale_ui
 
 ## Installation
 The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
