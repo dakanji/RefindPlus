@@ -3,8 +3,8 @@
 - Adds 'EXT4_FEATURE_INCOMPAT_ENCRYPT' Support to Ext4 Driver
 - Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
 - Drops ineffective attempt to detect timezones
-- Fixs issue with disappearing Mouse on x64 Arch
-- Fixs Bogus Bootable Windows BIOS Instances
+- Fixes issue with disappearing Mouse on x64 Arch
+- Fixes Bogus Bootable Windows BIOS Instances
 - Changes default config filename to config.conf
   * Retains support for refind.conf
 - Loads MemFix on OpenCore Boots if required
