@@ -1,3 +1,9 @@
+===================================================================
+  RefindPlus is a minor modification of Roderick Smith's rEFInd.
+          You can get rEFInd at http://refind.sf.net
+    Roderick Smith's credits for rEFInd are reproduced below:
+===================================================================
+
 Although I (Roderick W. Smith) am releasing rEFInd in its current form, the
 program is not the work of a single person. Others have contributed to the
 program, both in its original version (rEFIt) and by providing features
