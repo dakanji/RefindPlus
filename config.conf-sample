@@ -142,6 +142,7 @@ timeout 20
 # Set arbitrary boot arguments on Mac OS. When this token is activated, RefindPlus will change
 # the boot arguments in Mac OS to the specified string. This setting is only applied when booting
 # Mac OS and does not remove boot arguments when it is disabled and boot arguments are already present.
+# Default is inactive (No change to boot arguments)
 #
 #set_mac_boot_args "-v"
 
@@ -149,7 +150,7 @@ timeout 20
 # number of seconds without input. Screen returns after most keypresses
 # (Excluding modifier keys such as Shift, Control, Alt, and Option).
 # "-1" causes RefindPlus to start up with the screensaver active.
-# The default is 0, which disables the screensaver.
+# Default is 0 (Screensaver is disabled)
 #
 #screensaver 300
 
@@ -181,7 +182,7 @@ timeout 20
 # PNG (*.png), or JPEG (*.jpg or *.jpeg); however, RefindPlus' BMP and JPEG
 # implementations do not support transparency, which is highly desirable
 # in icons.
-# Default is "icons".
+# Default is icons
 #
 #icons_dir myicons
 #icons_dir icons/snowy
@@ -242,14 +243,14 @@ timeout 20
 # outside of this range, for a total of 96 glyphs. Only monospaced fonts
 # are supported. Fonts may be of any size, although large fonts can
 # produce display irregularities.
-# The default is RefindPlus' built-in font, Luxi Mono Regular 12 point.
+# Default is RefindPlus' built-in font (Luxi Mono Regular 12 point)
 #
 #font myfont.png
 
 # Use text mode only. When enabled, this option forces RefindPlus into text mode.
 # Passing this option a "0" value causes graphics mode to be used. Pasing
 # it no value or any non-0 value causes text mode to be used.
-# Default is to use graphics mode.
+# Default is to use graphics mode
 #
 #textonly
 
@@ -312,8 +313,8 @@ timeout 20
 
 # Speed of mouse tracking. Higher numbers equate to faster
 # mouse movement. This option requires that enable_mouse be
-# uncommented.
-# Legal values are between 1 and 32. Default is 4.
+# uncommented. Legal values are between 1 and 32.
+# Default is 4
 #
 #mouse_speed 4
 
@@ -397,7 +398,7 @@ timeout 20
 # "drivers" and "drivers_{arch}" subdirectories of its own installation
 # directory (where "{arch}" is your architecture code); this option
 # specifies ADDITIONAL directories to scan.
-# Default is to scan no additional directories for EFI drivers
+# Default is not to scan additional directories for EFI drivers
 #
 #scan_driver_dirs EFI/tools/drivers,drivers
 
@@ -433,7 +434,7 @@ timeout 20
 # This can help some users who find that some of their disks
 # (usually external or optical discs) aren't detected initially,
 # but are detected after pressing Esc.
-# The default is 0.
+# Default is 0
 #
 #scan_delay 5
 
@@ -446,9 +447,9 @@ timeout 20
 # option applies to ALL the volumes that RefindPlus scans UNLESS you include
 # a volume name and colon before the directory name, as in "myvol:/somedir"
 # to scan the somedir directory only on the filesystem named myvol. If a
-# specified directory doesn't exist, it's ignored (no error condition
-# results). The default is to scan the "boot" directory in addition to
-# various hard-coded directories.
+# specified directory doesn't exist, it is ignored (no error condition
+# results).
+# Default is to scan the "boot" directory and hardcoded directories
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 
@@ -462,7 +463,7 @@ timeout 20
 # "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in RefindPlus.
-# The default is "LRS_ESP".
+# Default is LRS_ESP
 #
 #dont_scan_volumes "Recovery HD"
 
@@ -499,10 +500,11 @@ timeout 20
 # or 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi").
 # OS tags hidden via the Delete or '-' key in the RefindPlus menu are
 # added to this list, but stored in NVRAM.
-# The default is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
+# Default is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
 # HashTool-signed.efi,bootmgr.efi,fb{arch}.efi
 # (where "{arch}" is the architecture code, like "x64").
+#
 # If you want to keep these defaults but add to them, be sure to
 # specify "+" as the first item in the new list; if you don't, then
 # items from the default list are likely to appear.
@@ -518,7 +520,7 @@ timeout 20
 # "vmlinuz", "bzImage", or "kernel" to be included as loaders, even if they
 # lack ".efi" extensions. Passing this option a "0", "false", or "off" value
 # causes kernels without ".efi" extensions to NOT be scanned.
-# Default is "true" -- to scan for kernels without ".efi" extensions.
+# Default is true (Scan for kernels without ".efi" extensions)
 #
 #scan_all_linux_kernels false
 
@@ -527,7 +529,7 @@ timeout 20
 # by default, and its filename will appear in the entry's description.
 # To launch other kernels, the user must press F2 or Insert; alternate
 # kernels then appear as options on the sub-menu.
-# Default is "true" -- kernels are "folded" into a single menu entry.
+# Default is true (kernels are "folded" into a single menu entry)
 #
 #fold_linux_kernels false
 
@@ -596,7 +598,7 @@ timeout 20
 # DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
 # http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 # for more on this subject.
-# The default is false: Don't try to enable and lock the MSR.
+# Default is false (Does not try to enable and lock the MSR)
 #
 #enable_and_lock_vmx false
 
@@ -611,7 +613,7 @@ timeout 20
 # some hardware devices. When needed, a value of "10.9" usually works, but
 # you can experiment with other values. This feature has no effect on
 # non-Apple computers.
-# The default is inactive (no Mac OS spoofing is done).
+# Default is inactive (no Mac OS spoofing is done)
 #
 #spoof_osx_version 10.9
 
