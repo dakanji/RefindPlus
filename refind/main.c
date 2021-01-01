@@ -544,7 +544,7 @@ DisableAMFI (
     MsgLog ("    * Disable AMFI ...%r", Status);
     if (GlobalConfig.DisableMacCompatCheck) {
         MsgLog ("\n");
-        MsgLog ("    * Disable Mac Compat Check ...%r", Status);
+        MsgLog ("    * Disable Compat Check ...%r", Status);
     }
     #endif
 } // VOID DisableAMFI()
@@ -573,7 +573,7 @@ DisableMacCompatCheck (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("    * Disable Mac Compat Check ...%r", Status);
+    MsgLog ("    * Disable Compat Check ...%r", Status);
     #endif
 } // VOID DisableMacCompatCheck()
 
