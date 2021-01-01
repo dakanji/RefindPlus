@@ -426,22 +426,22 @@ SetMacBootArgs (
     }
     else {
         if (MyStrStr (GlobalConfig.SetMacBootArgs, L"amfi_get_out_of_my_way=1") != NULL) {
-            // Do not duplicate 'amfi_get_out_of_my_way=1'
-            GlobalConfig.DisableAMFI  = FALSE;
-
             if (GlobalConfig.DisableAMFI) {
-                // Log dummy action
+                // Ensure Logging
                 LogDisableAMFI = TRUE;
             }
+
+            // Do not duplicate 'amfi_get_out_of_my_way=1'
+            GlobalConfig.DisableAMFI = FALSE;
         }
         if (MyStrStr (GlobalConfig.SetMacBootArgs, L"-no_compat_check") != NULL) {
-            // Do not duplicate '-no_compat_check'
-            GlobalConfig.DisableMacCompatCheck  = FALSE;
-
             if (GlobalConfig.DisableMacCompatCheck) {
-                // Log dummy action
+                // Ensure Logging
                 LogDisableMacCompatCheck = TRUE;
             }
+
+            // Do not duplicate '-no_compat_check'
+            GlobalConfig.DisableMacCompatCheck = FALSE;
         }
 
         if (GlobalConfig.DisableAMFI &&
