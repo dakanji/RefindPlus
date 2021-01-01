@@ -181,6 +181,7 @@ REFIT_CONFIG GlobalConfig = {
     /* *MacOSRecoveryFiles = */ NULL,
     /* *DriverDirs = */ NULL,
     /* *IconsDir = */ NULL,
+    /* *SetMacBootArgs = */ NULL,
     /* *ExtraKernelVersionStrings = */ NULL,
     /* *SpoofOSXVersion = */ NULL,
     /* CsrValues = */ NULL,
@@ -207,9 +208,10 @@ EFI_GUID RefindPlusGuid = REFINDPLUS_GUID;
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-STATIC BOOLEAN          ranCleanNvram  = FALSE;
-BOOLEAN                 TweakSysTable  = FALSE;
-STATIC EFI_SET_VARIABLE AltSetVariable;
+STATIC     BOOLEAN          ranCleanNvram  = FALSE;
+BOOLEAN                     TweakSysTable  = FALSE;
+STATIC     EFI_SET_VARIABLE AltSetVariable;
+STATIC     char             StrCharArray[256];
 
 extern VOID InitBooterLog (VOID);
 
@@ -367,6 +369,140 @@ gRTSetVariableEx (
 
     return Status;
 } // VOID gRTSetVariableEx()
+
+
+// DA_TAG: Make easily callable everywhere
+STATIC
+VOID
+CHAR16toCharArray (
+    IN CHAR16 *StrCHAR16
+) {
+    UINTN  k = 0;
+    UINTN  i = 0;
+    char   ThisChar;
+
+    // Get the number of characters in StrCHAR16.
+    ThisChar = StrCHAR16[0];
+    while (ThisChar != '\0') {
+        k++;
+        ThisChar = StrCHAR16[k];
+    }
+    k = k + 1;
+
+    // Move StrCHAR16 characters to StrCharArray.
+    for (i = 0; i < k; i++) {
+        // convert to char (1 byte)
+        char character = StrCHAR16[i];
+
+        StrCharArray[i] = character;
+
+        // prevent overflow.
+        if (i == 255) {
+            break;
+        }
+    }
+
+    // add null terminator.
+    StrCharArray[i] = '\0';
+
+} // VOID CHAR16toCharArray
+
+
+STATIC
+VOID
+SetMacBootArgs (
+    VOID
+) {
+    EFI_STATUS  Status;
+    EFI_GUID    AppleGUID                  = APPLE_GUID;
+    BOOLEAN     LogDisableAMFI             = FALSE;
+    BOOLEAN     LogDisableMacCompatCheck   = FALSE;
+    UINT32      AppleFLAGS                 = APPLE_FLAGS;
+    CHAR16      *NameNVRAM                 = L"boot-args";
+    CHAR16      *BootArg;
+
+    if (!GlobalConfig.SetMacBootArgs || GlobalConfig.SetMacBootArgs[0] == L'\0') {
+        Status = EFI_INVALID_PARAMETER;
+    }
+    else {
+        if (MyStrStr (GlobalConfig.SetMacBootArgs, L"amfi_get_out_of_my_way=1") != NULL) {
+            // Do not duplicate 'amfi_get_out_of_my_way=1'
+            GlobalConfig.DisableAMFI  = FALSE;
+
+            if (GlobalConfig.DisableAMFI) {
+                // Log dummy action
+                LogDisableAMFI = TRUE;
+            }
+        }
+        if (MyStrStr (GlobalConfig.SetMacBootArgs, L"-no_compat_check") != NULL) {
+            // Do not duplicate '-no_compat_check'
+            GlobalConfig.DisableMacCompatCheck  = FALSE;
+
+            if (GlobalConfig.DisableMacCompatCheck) {
+                // Log dummy action
+                LogDisableMacCompatCheck = TRUE;
+            }
+        }
+
+        if (GlobalConfig.DisableAMFI &&
+            GlobalConfig.DisableMacCompatCheck
+        ) {
+            // Combine Args with DisableAMFI and DisableAMFI
+            BootArg = PoolPrint (
+                L"%s amfi_get_out_of_my_way=1 -no_compat_check",
+                GlobalConfig.SetMacBootArgs
+            );
+        }
+        else if (GlobalConfig.DisableAMFI) {
+            // Combine Args with DisableAMFI
+            BootArg = PoolPrint (
+                L"%s amfi_get_out_of_my_way=1",
+                GlobalConfig.SetMacBootArgs
+            );
+        }
+        else if (GlobalConfig.DisableMacCompatCheck) {
+            // Combine Args with DisableMacCompatCheck
+            BootArg = PoolPrint (
+                L"%s -no_compat_check",
+                GlobalConfig.SetMacBootArgs
+            );
+        }
+        else {
+            // Use Args Alone
+            BootArg = PoolPrint (
+                L"%s",
+                GlobalConfig.SetMacBootArgs
+            );
+        }
+
+        // Convert BootArg to char array in 'StrCharArray'
+        CHAR16toCharArray (BootArg);
+
+        Status = refit_call5_wrapper(
+            gRT->SetVariable,
+            NameNVRAM,
+            &AppleGUID,
+            AppleFLAGS,
+            sizeof (StrCharArray),
+            StrCharArray
+        );
+    }
+
+    #if REFIT_DEBUG > 0
+    if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
+        MsgLog ("\n");
+        MsgLog ("    * Disable AMFI ...%r", Status);
+    }
+
+    MsgLog ("\n");
+    MsgLog ("    * Reset Boot Args ...%r", Status);
+
+    if (LogDisableMacCompatCheck || GlobalConfig.DisableMacCompatCheck) {
+        MsgLog ("\n");
+        MsgLog ("    * Disable Compat Check ...%r", Status);
+    }
+    #endif
+} // VOID SetBootArgs()
 
 
 VOID
@@ -1555,16 +1691,21 @@ efi_main (
                         ForceTrim();
                     }
 
-                    if (GlobalConfig.DisableAMFI) {
-                        // Disable AMFI if configured to
-                        // Also disables Mac OS compatibility check if configured
-                        DisableAMFI();
+                    // Set Mac boot args if configured to
+                    if (GlobalConfig.SetMacBootArgs && GlobalConfig.SetMacBootArgs[0] != L'\0') {
+                        SetMacBootArgs();
                     }
-                    else if (GlobalConfig.DisableMacCompatCheck) {
-                        // Disable Mac OS compatibility check if configured to
-                        DisableMacCompatCheck();
+                    else {
+                        if (GlobalConfig.DisableAMFI) {
+                            // Disable AMFI if configured to
+                            // Also disables Mac OS compatibility check if configured
+                            DisableAMFI();
+                        }
+                        else if (GlobalConfig.DisableMacCompatCheck) {
+                            // Disable Mac OS compatibility check if configured to
+                            DisableMacCompatCheck();
+                        }
                     }
-
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectMacNVRAM &&

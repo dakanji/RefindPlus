@@ -740,6 +740,9 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"icons_dir")) {
            HandleString (TokenList, TokenCount, &(GlobalConfig.IconsDir));
         }
+        else if (MyStriCmp (TokenList[0], L"set_mac_boot_args")) {
+           HandleString (TokenList, TokenCount, &(GlobalConfig.SetMacBootArgs));
+        }
         else if (MyStriCmp (TokenList[0], L"scanfor")) {
            for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
               if (i < TokenCount) {

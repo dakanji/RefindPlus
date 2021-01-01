@@ -21,6 +21,8 @@
 - Implements "protect_mac_nvram" config option
   * Attempts to prevent UEFI Windows from saving certificates to the NVRAM on Macs
   * These certificates damage Apple NVRAM and result in an inability to start Macs up
+- Implements "set_mac_boot_args" config option
+  * Allows setting arbitrary boot arguments on Mac OS
 
 
 0.12.0.M (07 Dec 2020):
