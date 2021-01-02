@@ -288,7 +288,7 @@ gRTSetVariableEx (
     IN  VOID      *Data
 ) {
     EFI_STATUS   Status                 = EFI_SECURITY_VIOLATION;
-    EFI_GUID     WinGuid                = WINDOWS_GUID;
+    EFI_GUID     WinGuid                = MICROSOFT_VENDOR_GUID;
     EFI_GUID     X509Guid               = X509_GUID;
     EFI_GUID     PKCS7Guid              = PKCS7_GUID;
     EFI_GUID     Sha001Guid             = EFI_CERT_SHA1_GUID;
