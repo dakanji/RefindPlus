@@ -380,24 +380,25 @@ CHAR16charConv (
     // Get the number of characters (plus null terminator) in StrCHAR16
     UINTN k = -1;
     do {
+        // increment index
         k = k + 1;
     } while (StrCHAR16[k] != L'\0');
 
     // Move StrCHAR16 characters to StrCharArray
     UINTN i = -1;
     do {
+        // increment index
         i = i + 1;
 
-        // convert to single byte char and assign to array
-        char character   = StrCHAR16[i];
-        StrCharArray[i]  = character;
-
-        // prevent overflow.
         if (i > 255) {
-            if (StrCharArray[i] != L'\0') {
-                StrCharArray[i]  = L'\0';
-            }
+            // prevent overflow
+            StrCharArray[i]  = L'\0';
             break;
+        }
+        else {
+            // convert to single byte char and assign to array
+            char character   = StrCHAR16[i];
+            StrCharArray[i]  = character;
         }
     } while (i < k);
 } // VOID CHAR16charConv
