@@ -860,7 +860,7 @@ preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"x64_CleanNvram.efi is distributed with 'MyBootMgr':");
         AddMenuInfoLine (&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
-        AddMenuInfoLine (&CleanNvramMenu, L"'MyBootMgr' is a preconfigured MainRP/Opencore Chainloader");
+        AddMenuInfoLine (&CleanNvramMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"You can also get CleanNvram from the OpenCore Project:");
         AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
@@ -1041,7 +1041,7 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
         AddMenuInfoLine (&AboutMenu, L"Visit the project repository for more information:");
-        AddMenuInfoLine (&AboutMenu, L"https://github.com/dakanji/MainRP/blob/GOPFix/README.md");
+        AddMenuInfoLine (&AboutMenu, L"https://github.com/dakanji/RefindPlus/blob/GOPFix/README.md");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
