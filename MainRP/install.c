@@ -1,5 +1,5 @@
 /*
- * refind/install.c
+ * MainRP/install.c
  * Functions related to installation of RefindPlus and management of EFI boot order
  *
  * Copyright (c) 2020 by Roderick W. Smith

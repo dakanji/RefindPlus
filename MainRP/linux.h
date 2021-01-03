@@ -1,6 +1,6 @@
 /*
- * refind/launch_efi.h
- * Function definitions related to launching EFI programs
+ * MainRP/linux.h
+ * Definitions related specifically to Linux loaders
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer
  * All rights reserved.
@@ -55,32 +55,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __REFINDPLUS_LAUNCH_EFI_H_
-#define __REFINDPLUS_LAUNCH_EFI_H_
+#ifndef __REFINDPLUS_LINUX_H_
+#define __REFINDPLUS_LINUX_H_
 
-#ifdef __MAKEWITH_GNUEFI
-#include "efi.h"
-#include "efilib.h"
-#else
-#include "../include/tiano_includes.h"
-#endif
-#include "global.h"
-
-#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
-#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
-#endif
-
-EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
-                         IN CHAR16 *Filename,
-                         IN CHAR16 *LoadOptions,
-                         IN CHAR16 *ImageTitle,
-                         IN CHAR8 OSType,
-                         IN BOOLEAN Verbose,
-                         IN BOOLEAN IsDriver);
-BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
-EFI_STATUS RebootIntoFirmware(VOID);
-VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
-VOID StartTool(IN LOADER_ENTRY *Entry);
+CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
+CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath);
+CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume);
+VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath);
+VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume);
+BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName);
 
 #endif
 

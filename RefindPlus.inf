@@ -40,24 +40,24 @@
   mok/guid.c
   mok/security_policy.c
   mok/simple_file.c
-  refind/apple.c
-  refind/config.c
-  refind/crc32.c
-  refind/driver_support.c
-  refind/gpt.c
-  refind/icns.c
-  refind/install.c
-  refind/launch_efi.c
-  refind/launch_legacy.c
-  refind/lib.c
-  refind/line_edit.c
-  refind/linux.c
-  refind/main.c
-  refind/menu.c
-  refind/mystrings.c
-  refind/pointer.c
-  refind/scan.c
-  refind/screen.c
+  MainRP/apple.c
+  MainRP/config.c
+  MainRP/crc32.c
+  MainRP/driver_support.c
+  MainRP/gpt.c
+  MainRP/icns.c
+  MainRP/install.c
+  MainRP/launch_efi.c
+  MainRP/launch_legacy.c
+  MainRP/lib.c
+  MainRP/line_edit.c
+  MainRP/linux.c
+  MainRP/main.c
+  MainRP/menu.c
+  MainRP/mystrings.c
+  MainRP/pointer.c
+  MainRP/scan.c
+  MainRP/screen.c
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c

@@ -1,5 +1,5 @@
 /*
- * refind/gpt.c
+ * MainRP/gpt.c
  * Functions related to GPT data structures
  *
  * Copyright (c) 2014-2015 Roderick W. Smith

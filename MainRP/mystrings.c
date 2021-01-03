@@ -1,5 +1,5 @@
 /*
- * refind/mystrings.c
+ * MainRP/mystrings.c
  * String-manipulation functions
  *
  * Copyright (c) 2012-2020 Roderick W. Smith

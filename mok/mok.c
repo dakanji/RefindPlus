@@ -47,8 +47,8 @@
 #include "global.h"
 #include "mok.h"
 #include "../include/refit_call_wrapper.h"
-#include "../refind/lib.h"
-#include "../refind/screen.h"
+#include "../MainRP/lib.h"
+#include "../MainRP/screen.h"
 
 
 /*

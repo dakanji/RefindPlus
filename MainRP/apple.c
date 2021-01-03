@@ -1,5 +1,5 @@
 /*
- * refind/apple.c
+ * MainRP/apple.c
  * Functions specific to Apple computers
  *
  * Copyright (c) 2015 Roderick W. Smith

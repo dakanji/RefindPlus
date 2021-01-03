@@ -1,5 +1,5 @@
 /*
- * refind/pointer.h
+ * MainRP/pointer.h
  * pointer device functions header file
  *
  * Copyright (c) 2018 CJ Vaughter

@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
 #include "Platform.h"
-#include "../refind/lib.h"
-#include "../refind/mystrings.h"
-#include "../refind/launch_efi.h"
+#include "../MainRP/lib.h"
+#include "../MainRP/mystrings.h"
+#include "../MainRP/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 

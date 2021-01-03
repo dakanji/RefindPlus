@@ -1,6 +1,6 @@
 /*
- * refind/scan.h
- * Headers related to scanning for boot loaders
+ * MainRP/launch_efi.h
+ * Function definitions related to launching EFI programs
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer
  * All rights reserved.
@@ -55,15 +55,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SCAN_H_
-#define __SCAN_H_
+#ifndef __REFINDPLUS_LAUNCH_EFI_H_
+#define __REFINDPLUS_LAUNCH_EFI_H_
 
-LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
-REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
-VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
-VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
-VOID ScanForBootloaders(BOOLEAN ShowMessage);
-VOID ScanForTools(VOID);
+#ifdef __MAKEWITH_GNUEFI
+#include "efi.h"
+#include "efilib.h"
+#else
+#include "../include/tiano_includes.h"
+#endif
+#include "global.h"
+
+#ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
+#define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
+#endif
+
+EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
+                         IN CHAR16 *Filename,
+                         IN CHAR16 *LoadOptions,
+                         IN CHAR16 *ImageTitle,
+                         IN CHAR8 OSType,
+                         IN BOOLEAN Verbose,
+                         IN BOOLEAN IsDriver);
+BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
+EFI_STATUS RebootIntoFirmware(VOID);
+VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
+VOID StartTool(IN LOADER_ENTRY *Entry);
 
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * refind/config.c
+ * MainRP/config.c
  * Configuration file functions
  *
  * Copyright (c) 2006 Christoph Pfisterer

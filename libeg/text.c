@@ -35,7 +35,7 @@
  */
 
 #include "libegint.h"
-#include "../refind/global.h"
+#include "../MainRP/global.h"
 
 #include "egemb_font.h"
 #include "egemb_font_large.h"

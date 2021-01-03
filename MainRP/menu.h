@@ -1,5 +1,5 @@
 /*
- * refind/menu.h
+ * MainRP/menu.h
  * menu functions header file
  *
  * Copyright (c) 2006-2009 Christoph Pfisterer

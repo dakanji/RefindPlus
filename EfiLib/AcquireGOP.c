@@ -11,7 +11,7 @@
 **/
 
 #include "Platform.h"
-#include "../refind/lib.h"
+#include "../MainRP/lib.h"
 #include "../include/refit_call_wrapper.h"
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 

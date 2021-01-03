@@ -26,7 +26,7 @@
 # 0.10.0  -- Renamed from mvrefind.sh to mvrefind
 # 0.6.3   -- Initial release
 #
-# Note: mvrefind version numbers match those of the RefindPlus package
+# Note: mvrefind version numbers match those of the rEFInd package
 # with which they first appeared.
 
 RootDir="/"

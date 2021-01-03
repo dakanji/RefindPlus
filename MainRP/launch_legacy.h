@@ -1,5 +1,5 @@
 /*
- * refind/launch_legacy.h
+ * MainRP/launch_legacy.h
  * Functions related to BIOS/CSM/legacy booting
  *
  * Copyright (c) 2006 Christoph Pfisterer

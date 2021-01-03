@@ -39,7 +39,7 @@
 #include "icns.h"
 #include "config.h"
 #include "mystrings.h"
-#include "../refind/screen.h"
+#include "../MainRP/screen.h"
 #include "../include/egemb_tool_bootscreen.h"
 #include "../include/egemb_tool_clean_nvram.h"
 
