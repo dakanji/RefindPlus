@@ -381,7 +381,7 @@ CHAR16charConv (
     UINTN k = -1;
     do {
         k = k + 1;
-    } while (StrCHAR16[k] != '\0');
+    } while (StrCHAR16[k] != L'\0');
 
     // Move StrCHAR16 characters to StrCharArray
     UINTN i = -1;
@@ -394,6 +394,9 @@ CHAR16charConv (
 
         // prevent overflow.
         if (i > 255) {
+            if (StrCharArray[i] != L'\0') {
+                StrCharArray[i]  = L'\0';
+            }
             break;
         }
     } while (i < k);
