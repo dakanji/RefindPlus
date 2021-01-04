@@ -125,7 +125,7 @@ timeout 20
 
 # Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM (1, true, or on)
 # or not (0, false, or off). When this token is activated, RefindPlus will prevent
-# UEFI Windows Secure Boot from creating certificates in the NVRAM on Apple Firmware
+# UEFI Windows Secure Boot from creating certificates to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does
 # not have this issue and is recommended when running Windows directly from
 # RefindPlus on Apple Firmware.
@@ -322,14 +322,14 @@ timeout 20
 #
 #mouse_speed 4
 
-# Launch specified OSes in graphics mode. By default, RefindPlus switches
+# Launch specified operating system in graphics mode. RefindPlus defaults
 # to text mode and displays basic pre-launch information when launching
-# all OSes except Mac OS. Using graphics mode can produce a more seamless
-# transition, but displays no information, which can make matters
-# difficult if you must debug a problem. Also, on at least one known
+# any operating systems except Mac OS. Using graphics mode can provide
+# a more seamless transition, but displays no information, which can
+# make it difficult to debug problems. Also, on at least one known
 # computer, using graphics mode prevents a crash when using the Linux
 # kernel's EFI stub loader. You can specify an empty list to boot all
-# OSes in text mode.
+# operating systems in text mode.
 # Valid options:
 #   osx     - Mac OS
 #   linux   - A Linux kernel with EFI stub loader
@@ -461,9 +461,9 @@ timeout 20
 # For EFI-mode scans, you normally specify a volume by its label, which you
 # can obtain in an EFI shell by typing "vol", from Linux by typing
 # "blkid /dev/{devicename}", or by examining the disk's label in various
-# OSes' file browsers. It's also possible to identify a partition by its
-# unique GUID (aka its "PARTUUID" in Linux parlance). (Note that this is
-# NOT the partition TYPE CODE GUID.) This identifier can be obtained via
+# operating systems' file browsers. It is also possible to identify partitions
+# by their unique GUIDs (aka its "PARTUUID" in Linux parlance). (Note that this
+# is NOT the partition TYPE CODE GUID.) This identifier can be obtained via
 # "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in RefindPlus.
@@ -613,8 +613,8 @@ timeout 20
 # work that would not otherwise work. On the other hand, using this option
 # when it is not necessary can cause hardware (such as keyboards and mice) to
 # become inaccessible. Therefore, you should not enable this option if your
-# non-Apple OSes work correctly; enable it only if you have problems with
-# some hardware devices. When needed, a value of "10.9" usually works, but
+# non-Apple operating systems work correctly; enable it only if you have problems
+# with some hardware devices. When needed, a value of "10.9" usually works, but
 # you can experiment with other values. This feature has no effect on
 # non-Apple computers.
 # Default is inactive (no Mac OS spoofing is done)
