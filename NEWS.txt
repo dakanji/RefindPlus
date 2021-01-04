@@ -1,4 +1,4 @@
-0.12.0.AN (Pre-Release):
+0.12.0.AN (04 Jan 2021):
 -----------------------
 - Adds 'EXT4_FEATURE_INCOMPAT_ENCRYPT' Support to Ext4 Driver
 - Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
@@ -7,7 +7,7 @@
 - Fixes Bogus Bootable Windows BIOS Instances
 - Changes default config filename to config.conf
   * Retains support for refind.conf
-- Loads MemFix on OpenCore Boots if required
+- Loads 'MemoryFix' driver on OpenCore Boots if required and available
   * Enables the Stage 1 Loading Screen on some Classic Macs
 - Fixes ESP detection for saving screenshots
   * ESP detection may have sometimes returned 'true' on other locations
@@ -19,7 +19,7 @@
   * Disables the Apple Mobile File Integrity (AMFI) checks in Mac OS
   * Disabling AMFI may further facilitate booting new Mac OS Versions on unsupported Macs
 - Implements "protect_mac_nvram" config option
-  * Attempts to prevent UEFI Windows from saving certificates to the NVRAM on Macs
+  * Prevents UEFI Windows from saving certificates to the NVRAM on Macs
   * These certificates damage Apple NVRAM and result in an inability to start Macs up
 - Implements "set_mac_boot_args" config option
   * Allows setting arbitrary boot arguments on Mac OS
