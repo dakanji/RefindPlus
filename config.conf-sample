@@ -93,38 +93,42 @@ timeout 20
 #continue_on_warning true
 
 # Force enable TRIM on non-Apple SSDs (1, true, or on) or not (0, false, or off).
-# 'TRIM', which can improve SSD health, is not enabled by default on non-Apple SSDs
-# in Mac OS. When this token is activated, RefindPlus will switch TRIM on in Mac OS
-# for all SSDs including non-Apple SSDs. This is only applied when booting Mac OS and
-# does not switch TRIM off when set to 'false' and TRIM has already been set.
+# 'TRIM', which can improve SSD health, is not enabled by default on
+# non-Apple SSDs in Mac OS. When this token is activated, RefindPlus will switch
+# 'TRIM' on in Mac OS for all SSDs including non-Apple SSDs. This is only applied
+# when booting Mac OS and does not switch 'TRIM' off when set to 'false' and
+# 'TRIM' has already been set.
 # Default is false
 #
 #force_trim true
 
-# Disable Mac OS compatibility check when booting (1, true, or on) or not (0, false, or off).
-# Macs check whether the current Mac OS version is supported on the machine when booting and halts
-# if not. When this token is activated, RefindPlus will set the "-no_compat_check" boot argument
-# which disables this check and allows boot to proceed on otherwise unsupported Macs. This setting
-# is only applied when booting Mac OS and does not remove the boot argument when the token is set
-# to 'false' and the boot argument is already present.
+# Disable Mac OS compatibility check when booting (1, true, or on)
+# or not (0, false, or off). Macs check whether the current Mac OS version is
+# supported on the machine when booting and halts if not. When this token is
+# activated, RefindPlus will set the "-no_compat_check" boot argument which disables
+# this check and allows boot to proceed on otherwise unsupported Macs. This setting
+# is only applied when booting into Mac OS and does not remove the boot argument
+# when the token is set to 'false' and the boot argument is already present.
 # Default is false
 #
 #disable_mac_compat_check true
 
-# Disable Apple Mobile File Integrity (AMFI) checks (1, true, or on) or not (0, false, or off).
-# When this token is activated, RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument
-# which along with SIP, restircts the availability of entitlements to applications. This setting
-# is only applied when booting Mac OS and does not remove the boot argument when the token is set
+# Disable Apple Mobile File Integrity (AMFI) checks (1, true, or on)
+# or not (0, false, or off). When this token is activated, RefindPlus will set the
+# "amfi_get_out_of_my_way=1" argument which along with System Integrity Protection (SIP),
+# restricts access to entitlements by applications. This setting is only applied when
+# booting Mac OS and does not remove the boot argument when the token is set
 # to 'false' and the boot argument is already present.
 # Default is false
 #
 #disable_amfi true
 
-# Attempt to prevent UEFI Windows writing to Apple NVRAM (1, true, or on) or not (0, false, or off).
-# When this token is activated, RefindPlus will *attempt* to prevent UEFI Windows from creating
-# certificates in the NVRAM on Apple Firmware as this can lead to damage resulting in an
-# inability to boot. Legacy Windows does not have this issue and is recommended
-# when running Windows directly from RefindPlus on Apple Firmware.
+# Attempt to prevent UEFI Windows writing to Apple NVRAM (1, true, or on)
+# or not (0, false, or off). When this token is activated, RefindPlus will prevent
+# UEFI Windows Swcure Boot from creating certificates in the NVRAM on Apple Firmware
+# as this can lead to damage resulting in an inability to boot. Note that Legacy Windows
+# does not have this issue and is recommended when running Windows directly from
+# RefindPlus on Apple Firmware.
 # Default is false
 #
 #protect_mac_nvram true
@@ -139,9 +143,10 @@ timeout 20
 #
 #scale_ui 1
 
-# Set arbitrary boot arguments on Mac OS. When this token is activated, RefindPlus will change
-# the boot arguments in Mac OS to the specified string. This setting is only applied when booting
-# Mac OS and does not remove boot arguments when it is disabled and boot arguments are already present.
+# Set arbitrary boot arguments on Mac OS. When this token is activated,
+# RefindPlus will change the boot arguments in Mac OS to the specified string.
+# This setting is only applied when booting into Mac OS and does not remove arguments
+# when it is disabled and the arguments are already present.
 # Default is inactive (No change to boot arguments)
 #
 #set_mac_boot_args "-v"
@@ -154,8 +159,7 @@ timeout 20
 #
 #screensaver 300
 
-# Hide user interface elements for personal preference or to increase
-# security:
+# Hide user interface elements for personal preference or for security:
 #  banner      - the RefindPlus title banner (built-in or loaded via "banner")
 #  label       - boot option text label in the menu
 #  singleuser  - remove the submenu options to boot Mac OS in single-user
