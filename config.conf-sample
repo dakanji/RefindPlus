@@ -123,11 +123,11 @@ timeout 20
 #
 #disable_amfi true
 
-# Attempt to prevent UEFI Windows writing to Apple NVRAM (1, true, or on)
+# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM (1, true, or on)
 # or not (0, false, or off). When this token is activated, RefindPlus will prevent
 # UEFI Windows Swcure Boot from creating certificates in the NVRAM on Apple Firmware
-# as this can lead to damage resulting in an inability to boot. Note that Legacy Windows
-# does not have this issue and is recommended when running Windows directly from
+# as this can lead to damage resulting in an inability to boot. Legacy Windows does
+# not have this issue and is recommended when running Windows directly from
 # RefindPlus on Apple Firmware.
 # Default is false
 #
@@ -146,7 +146,8 @@ timeout 20
 # Set arbitrary boot arguments on Mac OS. When this token is activated,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
 # This setting is only applied when booting into Mac OS and does not remove arguments
-# when it is disabled and the arguments are already present.
+# when it is disabled and the arguments are already present. This token accounts for
+# arguments injected by 'disable_amfi' and 'disable_mac_compat_check' as required.
 # Default is inactive (No change to boot arguments)
 #
 #set_mac_boot_args "-v"
