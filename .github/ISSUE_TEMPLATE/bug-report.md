@@ -21,7 +21,7 @@ Steps to reproduce the behaviour:
 A clear and concise description of what you expected to happen.
 
 **Environment:**
- - RefindPlus Version: [e.g. v0.12.0.M]
+ - RefindPlus Version: [e.g. v0.12.0.AN]
  - Hardware: [e.g. MacPro 3,1]
  - OS: [e.g. Mac OS Catalina]
 

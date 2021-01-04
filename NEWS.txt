@@ -1,4 +1,4 @@
-0.12.0.N (Pre-Release):
+0.12.0.AN (Pre-Release):
 -----------------------
 - Adds 'EXT4_FEATURE_INCOMPAT_ENCRYPT' Support to Ext4 Driver
 - Maps deprecated 'HandleProtocol' calls to 'OpenProtocol'
@@ -25,7 +25,7 @@
   * Allows setting arbitrary boot arguments on Mac OS
 
 
-0.12.0.M (07 Dec 2020):
+0.12.0.AM (07 Dec 2020):
 -----------------------
 - Optimises search for graphics capabilities and overall boot speed
 - Adds workaround for broken QEMU support in the upstream v0.12.0 release
@@ -49,12 +49,12 @@
   * Specfic icons will be displayed instead of a generic icon when activated and actual icons are not found
 
 
-0.12.0.L (03 Nov 2020):
+0.12.0.AL (03 Nov 2020):
 -----------------------
 - Fixes Regression on Console GOP Provision on MacPro5,1
 
 
-0.12.0.K (02 Nov 2020):
+0.12.0.AK (02 Nov 2020):
 -----------------------
 - Fixes 'Write Protected' error (USB Mode)
 - Uses Largest UGA Resolution found on GPU Handles
@@ -66,7 +66,7 @@
   * Misc coding intervention
 
 
-0.12.0.J (05 Oct 2020):
+0.12.0.AJ (05 Oct 2020):
 -----------------------
 - Fixes on-screen notices
 - Debug log improvements
@@ -83,7 +83,7 @@
 - General Stability Fixes
 
 
-0.12.0.H (07 Sep 2020):
+0.12.0.AH (07 Sep 2020):
 -----------------------
 - Rebrands 'Refind-GOPFix' as 'RefindPlus'
   * This is to reflect wider scope of interventions beyond fixing GOP Screens
@@ -104,7 +104,7 @@
   * Misc coding intervention
 
 
-0.12.0.G (11 Aug 2020):
+0.12.0.AG (11 Aug 2020):
 -----------------------
 - Fixes Bug that Removed UGA Support and Disabled the Boot Screen on Legacy Fully Compatible GPUs
   * This bug appeared in v0.12.0.B
@@ -118,7 +118,7 @@
 - Expands and Improves Debug Logging
 
 
-0.12.0.F (07 Aug 2020):
+0.12.0.AF (07 Aug 2020):
 -----------------------
 - Misc Performance Optimisation
 - Expands Debug Logging Coverage
@@ -130,12 +130,12 @@
 - Permits using 'Memtest.efi' filename in addition to existing 'Memtest86.efi'
 
 
-0.12.0.E (04 Aug 2020):
+0.12.0.AE (04 Aug 2020):
 ------------------------
 - Fixes GOP Selection Bug Introduced in v0.12.0.D
 
 
-0.12.0.D (04 Aug 2020):
+0.12.0.AD (04 Aug 2020):
 -----------------------
 - Fixes Debug Output Issues from v0.12.0.C
 - Expands Debug Log Coverage
@@ -155,7 +155,7 @@
   * This reduces false negatives when locating GOP, UGA and ConsoleControl.
 
 
-0.12.0.C (03 Aug 2020):
+0.12.0.AC (03 Aug 2020):
 -----------------------
 - Implements ProvideConsoleGOP from OpenCore
   * This allows Pre-Boot Configuration Screens (Boot Screen) on units with broken
@@ -174,7 +174,7 @@
 - Improves Boot Speed
 
 
-0.12.0.B (19 Jul 2020):
+0.12.0.AB (19 Jul 2020):
 -----------------------
 - Adds debug version
 - Expands GOPFix to Classic MacPro 4,1 and 5,1 Models
@@ -182,7 +182,7 @@
 - Enables UGA if GOP is not found in case supported
 
 
-0.12.0.A (18 Jul 2020):
+0.12.0.AA (18 Jul 2020):
 -----------------------
 - Shows boot screen on Classic MacPro 3,1 Models running Semi Compatible GPUs
   (Compatible GPUs without Mac EFI)
