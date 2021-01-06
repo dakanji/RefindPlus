@@ -21,7 +21,7 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
 ## Installation
 The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
 
-Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file with one from RefindPlus to configure the additonal options provided.
+Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file, refind.conf, with one from RefindPlus, config.conf, to configure the additonal options provided.
 
 Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chain-loading package. **(Recommended)**
 
