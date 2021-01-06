@@ -3,41 +3,12 @@
 # Configuration file for the RefindPlus boot menu
 #
 
-# Timeout in seconds for the main menu screen. Setting the timeout to 0
-# disables automatic booting (i.e., no timeout). Setting it to -1 causes
-# an immediate boot to the default OS *UNLESS* a keypress is in the buffer
-# when RefindPlus launches, in which case that keypress is interpreted as a
-# shortcut key. If no matching shortcut is found, RefindPlus displays its
-# menu with no timeout.
+##--------------------------------------------------------------##
+##               ADDITIONAL CONFIGURATION ITEMS                 ##
+##             New Featues Provided by RefindPlus               ##
+##--------------------------------------------------------------##
 #
-timeout 20
-
-# Normally, when the timeout period has passed, RefindPlus boots the
-# default_selection. If the following option is uncommented, though,
-# RefindPlus will instead attempt to shut down the computer.
-# CAUTION: MANY COMPUTERS WILL INSTEAD HANG OR REBOOT! Macs and more
-# recent UEFI-based PCs are most likely to work with this feature.
-# Default value is true
 #
-#shutdown_after_timeout
-
-# Whether to store RefindPlus-specific variables in NVRAM (1, true, or on)
-# or in files in the "vars" subdirectory of RefindPlus' directory on
-# disk (0, false, or off). Using NVRAM works well with most computers;
-# however, it increases wear on the motherboard's NVRAM, and if the EFI
-# is buggy or the NVRAM is old and worn out, it may not work at all.
-# Storing variables on disk is a viable alternative in such cases, or
-# if you want to minimize wear and tear on the NVRAM; however, it won't
-# work if RefindPlus is stored on a filesystem that's read-only to the EFI
-# (such as an HFS+ volume), and it increases the risk of filesystem
-# damage. Note that this option affects ONLY RefindPlus' own variables,
-# such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
-# variables. It does NOT affect Secure Boot or other non-RefindPlus
-# variables.
-# Default is true
-#
-#use_nvram false
-
 # Use a custom text renderer (1, true, or on) or not (0, false, or off).
 # The SimpleText protocol on the console handle is normally used to
 # output text. On Macs and some other firmware, this is complicated by
@@ -151,6 +122,48 @@ timeout 20
 # Default is inactive (No change to boot arguments)
 #
 #set_mac_boot_args "-v"
+
+
+##--------------------------------------------------------------##
+##                STANDARD CONFIGURATION ITEMS                  ##
+##                Standard Featues from rEFInd                  ##
+##--------------------------------------------------------------##
+#
+#
+# Timeout in seconds for the main menu screen. Setting the timeout to 0
+# disables automatic booting (i.e., no timeout). Setting it to -1 causes
+# an immediate boot to the default OS *UNLESS* a keypress is in the buffer
+# when RefindPlus launches, in which case that keypress is interpreted as a
+# shortcut key. If no matching shortcut is found, RefindPlus displays its
+# menu with no timeout.
+#
+timeout 20
+
+# Normally, when the timeout period has passed, RefindPlus boots the
+# default_selection. If the following option is uncommented, though,
+# RefindPlus will instead attempt to shut down the computer.
+# CAUTION: MANY COMPUTERS WILL INSTEAD HANG OR REBOOT! Macs and more
+# recent UEFI-based PCs are most likely to work with this feature.
+# Default value is true
+#
+#shutdown_after_timeout
+
+# Whether to store RefindPlus-specific variables in NVRAM (1, true, or on)
+# or in files in the "vars" subdirectory of RefindPlus' directory on
+# disk (0, false, or off). Using NVRAM works well with most computers;
+# however, it increases wear on the motherboard's NVRAM, and if the EFI
+# is buggy or the NVRAM is old and worn out, it may not work at all.
+# Storing variables on disk is a viable alternative in such cases, or
+# if you want to minimize wear and tear on the NVRAM; however, it won't
+# work if RefindPlus is stored on a filesystem that's read-only to the EFI
+# (such as an HFS+ volume), and it increases the risk of filesystem
+# damage. Note that this option affects ONLY RefindPlus' own variables,
+# such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
+# variables. It does NOT affect Secure Boot or other non-RefindPlus
+# variables.
+# Default is true
+#
+#use_nvram false
 
 # Blank screen and show different solid colours after the specified
 # number of seconds without input. Screen returns after most keypresses
