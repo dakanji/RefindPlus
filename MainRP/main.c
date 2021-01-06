@@ -208,9 +208,10 @@ EFI_GUID RefindPlusGuid = REFINDPLUS_GUID;
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-STATIC     BOOLEAN          ranCleanNvram  = FALSE;
-BOOLEAN                     TweakSysTable  = FALSE;
-STATIC     EFI_SET_VARIABLE AltSetVariable;
+STATIC               BOOLEAN                ranCleanNvram  = FALSE;
+BOOLEAN                                     TweakSysTable  = FALSE;
+STATIC               EFI_SET_VARIABLE       AltSetVariable;
+EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
 
 extern VOID InitBooterLog (VOID);
 
@@ -612,9 +613,91 @@ ForceTrim (
 } // VOID ForceTrim()
 
 
+// Extended 'OpenProtocol'
+// Ensures GOP Interface for Boot Loading Screen
 STATIC
 EFI_STATUS
-FixedHandleProtocol (
+OpenProtocolEx (
+    IN   EFI_HANDLE  Handle,
+    IN   EFI_GUID    *Protocol,
+    OUT  VOID        **Interface OPTIONAL,
+    IN   EFI_HANDLE  AgentHandle,
+    IN   EFI_HANDLE  ControllerHandle,
+    IN   UINT32      Attributes
+) {
+    EFI_STATUS Status;
+
+    Status = OrigOpenProtocol (
+        Handle,
+        Protocol,
+        Interface,
+        AgentHandle,
+        ControllerHandle,
+        Attributes
+    );
+
+    if (Status == EFI_UNSUPPORTED) {
+        if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
+            UINTN                        i = 0;
+            UINTN                        HandleCount;
+            EFI_HANDLE                   *HandleBuffer;
+            EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP = NULL;
+
+            Status = refit_call5_wrapper(
+                gBS->LocateHandleBuffer,
+                ByProtocol,
+                &gEfiGraphicsOutputProtocolGuid,
+                NULL,
+                &HandleCount,
+                &HandleBuffer
+            );
+
+            if (!EFI_ERROR (Status)) {
+                for (i = 0; i < HandleCount; i++) {
+                    if (HandleBuffer[i] != gST->ConsoleOutHandle) {
+                        Status = refit_call3_wrapper(
+                            gBS->HandleProtocol,
+                            HandleBuffer[i],
+                            &gEfiGraphicsOutputProtocolGuid,
+                            (VOID*) &TmpGOP
+                        );
+
+                        if (!EFI_ERROR (Status)) {
+                            break;
+                        }
+                    }
+                }
+            }
+            MyFreePool (HandleBuffer);
+
+            if (EFI_ERROR (Status) || TmpGOP == NULL) {
+                Status = EFI_UNSUPPORTED;
+            }
+            else {
+                *Interface = TmpGOP;
+                Status     = EFI_SUCCESS;
+            }
+        }
+        // EfiBoot from Mac OS 10.4 can only use UgaDraw protocol.
+        else if (GuidsAreEqual (&gEfiUgaDrawProtocolGuid, Protocol)) {
+            Status = refit_call3_wrapper(
+                gBS->LocateProtocol,
+                &gEfiUgaDrawProtocolGuid,
+                NULL,
+                Interface
+            );
+        }
+    }
+
+    return Status;
+} // EFI_STATUS OpenProtocolEx
+
+
+// Extended 'HandleProtocol'
+// Routes 'HandleProtocol' to 'OpenProtocol'
+STATIC
+EFI_STATUS
+HandleProtocolEx (
     IN   EFI_HANDLE  Handle,
     IN   EFI_GUID    *Protocol,
     OUT  VOID        **Interface
@@ -631,7 +714,7 @@ FixedHandleProtocol (
     );
 
     return Status;
-}
+} // EFI_STATUS HandleProtocolEx
 
 
 // Checks to see if a specified file seems to be a valid tool.
@@ -1130,7 +1213,13 @@ STATIC VOID InitializeLib (
     );
 
     // Upgrade EFI_BOOT_SERVICES.HandleProtocol
-    gBS->HandleProtocol = FixedHandleProtocol;
+    gBS->HandleProtocol = HandleProtocolEx;
+
+    // Amend EFI_BOOT_SERVICES.OpenProtocol
+    OrigOpenProtocol   = gBS->OpenProtocol;
+    gBS->OpenProtocol  = OpenProtocolEx;
+
+    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 }
 
 #endif
@@ -1661,11 +1750,6 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    // Load AptioMemoryFix if present and System Table not tweaked
-                    if (!TweakSysTable) {
-                        LoadAptioFix();
-                    }
-
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -1676,11 +1760,6 @@ efi_main (
                     #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL) {
-                    // Load AptioMemoryFix if present and System Table not tweaked
-                    if (!TweakSysTable) {
-                        LoadAptioFix();
-                    }
-
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {

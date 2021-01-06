@@ -83,7 +83,6 @@ static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 static EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
 static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
-static EFI_HANDLE_PROTOCOL OrigHandleProtocol;
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
@@ -114,48 +113,6 @@ EncodeAsPNG (
 
 STATIC
 EFI_STATUS
-EFIAPI
-HandleProtocolEx (
-    IN  EFI_HANDLE        Handle,
-    IN  EFI_GUID          *Protocol,
-    OUT VOID              **Interface
-) {
-    EFI_STATUS  Status;
-
-    Status = OrigHandleProtocol (Handle, Protocol, Interface);
-
-    if (Status != EFI_UNSUPPORTED) {
-        return Status;
-    }
-
-    if (CompareGuid (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-        if (GraphicsOutput != NULL) {
-            *Interface = GraphicsOutput;
-            return EFI_SUCCESS;
-        }
-    }
-    else if (CompareGuid (&gEfiUgaDrawProtocolGuid, Protocol)) {
-        //
-        // EfiBoot from 10.4 can only use UgaDraw protocol.
-        //
-        Status = refit_call3_wrapper(
-            gBS->LocateProtocol,
-            &gEfiUgaDrawProtocolGuid,
-            NULL,
-            Interface
-        );
-        if (!EFI_ERROR (Status)) {
-            return EFI_SUCCESS;
-        }
-    }
-
-    return EFI_UNSUPPORTED;
-}
-
-
-STATIC
-EFI_STATUS
-EFIAPI
 daCheckAltGop (
     VOID
 ) {
@@ -165,10 +122,6 @@ daCheckAltGop (
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     UINTN                         Index;
-
-    OrigHandleProtocol   = gBS->HandleProtocol;
-    gBS->HandleProtocol  = HandleProtocolEx;
-    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
 
     OrigGop = NULL;
     Status  = refit_call3_wrapper(
@@ -194,9 +147,6 @@ daCheckAltGop (
 
             GraphicsOutput = OrigGop;
 
-            // Restore Protocol and Return
-            gBS->HandleProtocol = OrigHandleProtocol;
-
             return EFI_ALREADY_STARTED;
         }
 
@@ -217,9 +167,6 @@ daCheckAltGop (
             #if REFIT_DEBUG > 0
             MsgLog ("\n");
             #endif
-
-            // Restore Protocol and Return
-            gBS->HandleProtocol = OrigHandleProtocol;
 
             return EFI_NOT_FOUND;
         }
@@ -301,15 +248,9 @@ daCheckAltGop (
             MsgLog ("INFO: Could not Find Usable Replacement GOP\n\n");
             #endif
 
-            // Restore Protocol and Return
-            gBS->HandleProtocol = OrigHandleProtocol;
-
             return EFI_UNSUPPORTED;
         }
     } // if !EFI_ERROR (Status)
-
-    // Restore Protocol and Return
-    gBS->HandleProtocol = OrigHandleProtocol;
 
     return EFI_SUCCESS;
 }

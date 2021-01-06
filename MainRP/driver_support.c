@@ -632,23 +632,19 @@ ConnectFilesystemDriver(
 STATIC
 UINTN
 ScanDriverDir (
-    IN CHAR16 *Path,
-    IN BOOLEAN SkipReloaded
+    IN CHAR16 *Path
 ) {
     EFI_STATUS      Status;
     REFIT_DIR_ITER  DirIter;
     EFI_FILE_INFO   *DirEntry;
     CHAR16          *FileName;
     UINTN           NumFound  = 0;
-    BOOLEAN         KeepGoing;
 
     CleanUpPathNameSlashes(Path);
 
     #if REFIT_DEBUG > 0
-    if (SkipReloaded) {
-        MsgLog("\n");
-        MsgLog("Scan '%s' Folder:\n", Path);
-    }
+    MsgLog("\n");
+    MsgLog("Scan '%s' Folder:\n", Path);
     #endif
 
     // look through contents of the directory
@@ -658,47 +654,21 @@ ScanDriverDir (
     BOOLEAN RunOnce = FALSE;
     #endif
 
-    KeepGoing = TRUE;
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
-        if (!KeepGoing) {
-            break;
+        if (DirEntry->FileName[0] == '.') {
+            // skip this
+            continue;
+        }
+
+        NumFound++;
+        FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
+
+        if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
+            MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+        ) {
+            Status = EFI_UNSUPPORTED;
         }
         else {
-            if (DirEntry->FileName[0] == '.') {
-                continue;   // skip this
-            }
-
-            FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
-
-            if (SkipReloaded) {
-                if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") != NULL) {
-                    #if REFIT_DEBUG > 0
-                    if (RunOnce) {
-                        MsgLog("\n");
-                    }
-                    MsgLog("  - Load '%s' ...Deferred", FileName);
-                    RunOnce = TRUE;
-                    #endif
-
-                    continue;   // skip this
-                }
-            }
-            else {
-                if (MyStrStr (DirEntry->FileName, L"OsxAptioFix") == NULL) {
-                    continue;   // skip this
-                }
-                else {
-                    KeepGoing = FALSE;
-                }
-            }
-
-            #if REFIT_DEBUG > 0
-            if (RunOnce) {
-                MsgLog("\n");
-            }
-            #endif
-
-            NumFound++;
             Status = StartEFIImage(
                 SelfVolume,
                 FileName,
@@ -708,31 +678,40 @@ ScanDriverDir (
                 FALSE,
                 TRUE
             );
+        }
 
-            #if REFIT_DEBUG > 0
-            if (!SkipReloaded) {
-                MsgLog("INFO: Load '%s' ...%r", FileName, Status);
-            }
-            else {
-                MsgLog("  - Load '%s' ...%r", FileName, Status);
-            }
-            #endif
+        MyFreePool(DirEntry);
 
-            MyFreePool(DirEntry);
-            #if REFIT_DEBUG > 0
-            RunOnce = TRUE;
-            #endif
-        } // if/else KeepGoing
+        #if REFIT_DEBUG > 0
+        if (RunOnce) {
+            MsgLog("\n");
+        }
+        RunOnce = TRUE;
+
+        MsgLog("  - Load '%s' ...%r", FileName, Status);
+
+        if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
+            MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+        ) {
+            MsgLog("\n\n");
+            MsgLog("** WARN: Incompatible with Apple Firmware:- '%s'\n", FileName);
+            MsgLog("         Remove the driver to silence this warning\n\n");
+            RunOnce = FALSE;
+        }
+        #endif
+
+        MyFreePool(FileName);
     } // while
 
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
         FileName = PoolPrint(L"While Scanning the '%s' Directory", Path);
         CheckError(Status, FileName);
+        MyFreePool(FileName);
     }
 
     return (NumFound);
-} // static UINTN ScanDriverDir()
+} // STATIC UINTN ScanDriverDir()
 
 
 // Load all EFI drivers from RefindPlus' "drivers" subdirectory and from the
@@ -760,7 +739,7 @@ LoadDrivers(
         SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
         CleanUpPathNameSlashes(SelfDirectory);
         MergeStrings(&SelfDirectory, Directory, L'\\');
-        CurFound = ScanDriverDir(SelfDirectory, TRUE);
+        CurFound = ScanDriverDir(SelfDirectory);
         MyFreePool(Directory);
         MyFreePool(SelfDirectory);
         if (CurFound > 0) {
@@ -793,7 +772,7 @@ LoadDrivers(
                     ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
                     ReplaceSubstring(&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
-                CurFound = ScanDriverDir(SelfDirectory, TRUE);
+                CurFound = ScanDriverDir(SelfDirectory);
                 MyFreePool(SelfDirectory);
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
@@ -818,36 +797,4 @@ LoadDrivers(
     }
 
     return (NumFound > 0);
-} /* BOOLEAN LoadDrivers() */
-
-VOID
-LoadAptioFix(
-    VOID
-) {
-    CHAR16  *Directory;
-    CHAR16  *SelfDirectory;
-    UINTN   i        = 0;
-    UINTN   NumFound = 0;
-    UINTN   CurFound = 0;
-
-    // load drivers from the subdirectories of RefindPlus' home directory
-    // specified in the DRIVER_DIRS constant.
-    while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
-        SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-        CleanUpPathNameSlashes(SelfDirectory);
-        MergeStrings(&SelfDirectory, Directory, L'\\');
-        CurFound = ScanDriverDir(SelfDirectory, FALSE);
-        MyFreePool(Directory);
-        MyFreePool(SelfDirectory);
-        if (CurFound > 0) {
-            NumFound = NumFound + CurFound;
-            break;
-        }
-    } // while
-
-    #if REFIT_DEBUG > 0
-    if (NumFound > 0) {
-        MsgLog("\n\n");
-    }
-    #endif
 } /* BOOLEAN LoadDrivers() */
