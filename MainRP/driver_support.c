@@ -645,8 +645,8 @@ ScanDriverDir (
     CleanUpPathNameSlashes(Path);
 
     #if REFIT_DEBUG > 0
-    MsgLog("\n");
-    MsgLog("Scan '%s' Folder:\n", Path);
+    MsgLog ("\n");
+    MsgLog ("Scan '%s' Folder:\n", Path);
     #endif
 
     // look through contents of the directory
@@ -686,11 +686,11 @@ ScanDriverDir (
 
         #if REFIT_DEBUG > 0
         if (RunOnce) {
-            MsgLog("\n");
+            MsgLog ("\n");
         }
         RunOnce = TRUE;
 
-        MsgLog("  - Load '%s' ...%r", FileName, Status);
+        MsgLog ("  - Load '%s' ...%r", FileName, Status);
         #endif
 
         if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
@@ -701,9 +701,9 @@ ScanDriverDir (
             #if REFIT_DEBUG > 0
             RunOnce = FALSE;
 
-            MsgLog("\n\n");
-            MsgLog("** WARN: Incompatible with Apple Firmware:- '%s'\n", FileName);
-            MsgLog("         Remove the driver to silence this warning\n\n");
+            MsgLog ("\n\n");
+            MsgLog ("** WARN: Incompatible with Apple Firmware:- '%s'\n", FileName);
+            MsgLog ("         Remove the driver to silence this warning\n\n");
             #endif
         }
 
@@ -740,7 +740,7 @@ LoadDrivers(
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    MsgLog("Load EFI Drivers from Default Folder...");
+    MsgLog ("Load EFI Drivers from Default Folder...");
     #endif
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
@@ -755,7 +755,7 @@ LoadDrivers(
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog("  - Not Found or Empty", SelfDirectory);
+            MsgLog ("  - Not Found or Empty", SelfDirectory);
             #endif
         }
     }
@@ -763,8 +763,8 @@ LoadDrivers(
     // Scan additional user-specified driver directories....
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
-        MsgLog("\n\n");
-        MsgLog("Load EFI Drivers from User Defined Folders...");
+        MsgLog ("\n\n");
+        MsgLog ("Load EFI Drivers from User Defined Folders...");
         #endif
 
         i = 0;
@@ -786,7 +786,7 @@ LoadDrivers(
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog("  - Not Found or Empty", SelfDirectory);
+                    MsgLog ("  - Not Found or Empty", SelfDirectory);
                     #endif
                 }
             } // if
@@ -795,7 +795,7 @@ LoadDrivers(
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog("\n\n");
+    MsgLog ("\n\n");
     #endif
 
     // connect all devices

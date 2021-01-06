@@ -619,7 +619,7 @@ FileInfo (
 
   @retval EFI_SUCCESS             The information was set.
   @retval EFI_INVALID_PARAMETER   One of the parameters has an invalid value.
-  @retval EFI_UNSUPPORTED         Could not open the file path.
+  @retval EFI_UNSUPPORTED         Could Not open the file path.
   @retval EFI_NOT_FOUND           The specified file could not be found on the
                                   device or the file system could not be found
                                   on the device.

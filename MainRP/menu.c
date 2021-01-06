@@ -540,7 +540,7 @@ SaveScreen (
     #endif
 
     if (AllowGraphicsMode) {
-        SwitchToGraphicsAndClear(TRUE);
+        SwitchToGraphicsAndClear (TRUE);
     }
     ReadAllKeyStrokes();
 } // VOID SaveScreen()
@@ -1328,7 +1328,7 @@ GraphicsMenuStyle (
             TimeoutPosY = EntriesPosY + (Screen->EntryCount + 1) * TextLineHeight();
 
             // initial painting
-            SwitchToGraphicsAndClear(TRUE);
+            SwitchToGraphicsAndClear (TRUE);
 
             Window = egCreateFilledImage (MenuWidth, MenuHeight, FALSE, BackgroundPixel);
             if (Window) {
@@ -1785,7 +1785,7 @@ MainMenuStyle (
             }
             // initial painting
             InitSelection();
-            SwitchToGraphicsAndClear(TRUE);
+            SwitchToGraphicsAndClear (TRUE);
             break;
 
         case MENU_FUNCTION_CLEANUP:

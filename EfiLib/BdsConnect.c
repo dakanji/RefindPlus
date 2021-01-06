@@ -258,7 +258,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         if (GetLog) {
-            MsgLog ("** ERROR: Could not Locate Device Handles\n\n");
+            MsgLog ("** ERROR: Could Not Locate Device Handles\n\n");
         }
         #endif
     }
@@ -345,7 +345,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
 
                             if (EFI_ERROR (XStatus)) {
                                 MakeConnection = FALSE;
-                                DeviceData = L" - Could not Read PCIe Device Details";
+                                DeviceData = L" - Could Not Read PCIe Device Details";
                             }
                             else {
                                 BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
@@ -580,7 +580,7 @@ BdsLibConnectAllDriversToAllControllers (
 
         #if REFIT_DEBUG > 0
         if (GetLog) {
-            MsgLog ("INFO: Provide GOP from RAM ...%r\n\n", Status);
+            MsgLog ("INFO: Provide GOP from Random Access Memory ...%r\n\n", Status);
         }
         #endif
 

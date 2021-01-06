@@ -987,7 +987,7 @@ ScanVolumeBootcode (
             }
             ScannedOnce = FALSE;
 
-            MsgLog("\n");
+            MsgLog ("\n");
             CheckError (Status, L"Found While Reading Boot Sector on Volume Below");
         }
         #endif
@@ -1587,7 +1587,7 @@ ScanVolumes (
     if (!SelfVolSet) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"** WARN: Could not Set Volume";
+        ShowScreenStr = L"** WARN: Could Not Set Volume";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);

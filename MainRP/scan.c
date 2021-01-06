@@ -1435,7 +1435,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
             ShouldScan (Volume, L"EFI\\BOOT") &&
             !FilenameIn (Volume, L"EFI\\BOOT", FALLBACK_BASENAME, GlobalConfig.DontScanFiles)
         ) {
-            AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Bootloader", Volume, TRUE);
+            AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Boot Loader", Volume, TRUE);
         }
         MyFreePool (MatchPatterns);
     } // if
@@ -1546,11 +1546,11 @@ ScanForBootloaders (
     CHAR16   ShortCutKey;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Seek Bootloaders...\n");
+    MsgLog ("Seek Boot Loaders...\n");
     #endif
 
     if (ShowMessage){
-        egDisplayMessage (L"Seeking Bootloaders. Please wait....", &BGColor, CENTER);
+        egDisplayMessage (L"Seeking Boot Loaders. Please Wait....", &BGColor, CENTER);
     }
 
     // Determine up-front if we'll be scanning for legacy loaders....
@@ -1640,7 +1640,7 @@ ScanForBootloaders (
     } // for
 
     if (MainMenu.EntryCount < 1) {
-        MsgLog ("* WARN: Could not find Bootloaders\n\n");
+        MsgLog ("* WARN: Could Not Find Boot Loaders\n\n");
     }
     else {
         // assign shortcut keys
@@ -1684,10 +1684,10 @@ ScanForBootloaders (
             keyStr = L"Keys";
         }
         if (MainMenu.EntryCount == 1) {
-            LoaderStr = L"Bootloader";
+            LoaderStr = L"Boot Loader";
         }
         else {
-            LoaderStr = L"Bootloaders";
+            LoaderStr = L"Boot Loaders";
         }
         MsgLog (
             "INFO: Assigned Keyboard Shortcut %s to %d of %d %s\n\n",
@@ -2021,7 +2021,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -2050,7 +2050,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -2079,7 +2079,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2109,7 +2109,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2139,7 +2139,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2168,7 +2168,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2209,7 +2209,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2252,7 +2252,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s'\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
 
@@ -2272,7 +2272,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2287,7 +2287,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;
@@ -2306,7 +2306,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
 
@@ -2344,7 +2344,7 @@ VOID ScanForTools (VOID) {
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - WARN: Could not Find '%s' Tool\n", ToolName);
+                    MsgLog ("              - WARN: Could Not Find '%s' Tool\n", ToolName);
                     #endif
                 }
                 break;

@@ -105,7 +105,7 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where);
 VOID SwitchToText(IN BOOLEAN CursorEnabled);
 VOID SwitchToGraphics(VOID);
 
-VOID SwitchToGraphicsAndClear(IN BOOLEAN ShowBanner);
+VOID SwitchToGraphicsAndClear (IN BOOLEAN ShowBanner);
 VOID BltClearScreen(IN BOOLEAN ShowBanner);
 VOID BltImage(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos);
 VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel);

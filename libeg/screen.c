@@ -245,7 +245,7 @@ daCheckAltGop (
 
         if (!OurValidGOP || EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Could not Find Usable Replacement GOP\n\n");
+            MsgLog ("INFO: Could Not Find Usable Replacement GOP\n\n");
             #endif
 
             return EFI_UNSUPPORTED;
@@ -405,7 +405,7 @@ egDumpGOPVideoModes (
 
     if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Could not Find Usable GOP\n\n");
+        MsgLog ("INFO: Could Not Find Usable GOP\n\n");
         #endif
 
         return EFI_UNSUPPORTED;
@@ -623,7 +623,7 @@ egSetMaxResolution (
       // we can not set BestMode - search for first one that we can
       SwitchToText (FALSE);
 
-      ShowScreenStr = L"Could not Set BestMode ...Seek Useable Mode";
+      ShowScreenStr = L"Could Not Set BestMode ...Seek Useable Mode";
 
       PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
@@ -1361,7 +1361,7 @@ egSetScreenSize (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - Could not Set GraphicsOutput Mode\n\n");
+                MsgLog ("  - Could Not Set GraphicsOutput Mode\n\n");
                 #endif
             }
             // User specified width & height; must find mode...
@@ -1397,7 +1397,7 @@ egSetScreenSize (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Could not Set GraphicsOutput Mode\n\n");
+                    MsgLog ("  - Could Not Set GraphicsOutput Mode\n\n");
                     #endif
                 }
             } while ((++ModeNum < GraphicsOutput->Mode->MaxMode) && !ModeSet);
@@ -1453,7 +1453,7 @@ egSetScreenSize (
 
                 }
                 else {
-                    ShowScreenStr = L"Error : Could not Query GraphicsOutput Mode";
+                    ShowScreenStr = L"Error : Could Not Query GraphicsOutput Mode";
                     PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1468,7 +1468,7 @@ egSetScreenSize (
             #endif
 
             PauseForKey();
-            SwitchToGraphicsAndClear(TRUE);
+            SwitchToGraphicsAndClear (TRUE);
         } // if GOP mode (UEFI)
     }
     else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
@@ -1595,7 +1595,7 @@ egSetTextMode (
             #endif
 
             PauseForKey();
-            SwitchToGraphicsAndClear(TRUE);
+            SwitchToGraphicsAndClear (TRUE);
         } // if/else successful change
     } // if need to change mode
 
@@ -2099,7 +2099,7 @@ egScreenShot (
     if (EFI_ERROR (Status)) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"    * Error: Could not Encode PNG";
+        ShowScreenStr = L"    * Error: Could Not Encode PNG";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2123,7 +2123,7 @@ egScreenShot (
         if (EFI_ERROR (Status)) {
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"    * Error: Could not Save Screenshot";
+            ShowScreenStr = L"    * Error: Could Not Save Screenshot";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -2150,7 +2150,7 @@ egScreenShot (
             if (EFI_ERROR (Status)) {
                 SwitchToText (FALSE);
 
-                ShowScreenStr = L"    * Error: Could not Find ESP for Screenshot";
+                ShowScreenStr = L"    * Error: Could Not Find ESP for Screenshot";
 
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);

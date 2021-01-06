@@ -158,14 +158,14 @@ SetupScreen (
     STATIC BOOLEAN BannerLoaded = FALSE;
 
     #if REFIT_DEBUG > 0
-    MsgLog("Setup Screen...\n");
+    MsgLog ("Setup Screen...\n");
     #endif
 
     // Convert mode number to horizontal & vertical resolution values
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0)) {
 
         #if REFIT_DEBUG > 0
-        MsgLog("Get Resolution From Mode:\n");
+        MsgLog ("Get Resolution From Mode:\n");
         #endif
 
         egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -177,7 +177,7 @@ SetupScreen (
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight > 0)) {
 
         #if REFIT_DEBUG > 0
-        MsgLog("Sync Resolution:\n");
+        MsgLog ("Sync Resolution:\n");
         #endif
 
        ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth) ? ScreenW : GlobalConfig.RequestedScreenWidth;
@@ -188,7 +188,7 @@ SetupScreen (
     if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
 
         #if REFIT_DEBUG > 0
-        MsgLog("Set Text Mode:\n");
+        MsgLog ("Set Text Mode:\n");
         #endif
 
         egGetScreenSize(&NewWidth, &NewHeight);
@@ -202,7 +202,7 @@ SetupScreen (
         ) {
 
             #if REFIT_DEBUG > 0
-            MsgLog("  - Increase Graphic Mode\n");
+            MsgLog ("  - Increase Graphic Mode\n");
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
@@ -213,7 +213,7 @@ SetupScreen (
         if (GlobalConfig.RequestedScreenWidth > 0) {
 
             #if REFIT_DEBUG > 0
-            MsgLog("Set to User Requested Screen Size:\n");
+            MsgLog ("Set to User Requested Screen Size:\n");
             #endif
 
             egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -227,37 +227,37 @@ SetupScreen (
         SwitchToText(FALSE);
 
         #if REFIT_DEBUG > 0
-        MsgLog("INFO: Set Screen to Text Mode\n\n");
+        MsgLog ("INFO: Set Screen to Text Mode\n\n");
         #endif
     } else if (AllowGraphicsMode) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
             if (!gotGraphics) {
-                MsgLog("Prepare Graphics Mode Switch:\n");
+                MsgLog ("Prepare Graphics Mode Switch:\n");
             }
             else {
-                MsgLog("Prepare Placeholder Display:\n");
+                MsgLog ("Prepare Placeholder Display:\n");
             }
-            MsgLog("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
+            MsgLog ("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
             #endif
 
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                MsgLog("    * UI Scaling Disabled\n");
-                MsgLog("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * UI Scaling Disabled\n");
+                MsgLog ("    ** Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
-                    MsgLog("    * HiDPI Monitor Detected\n");
+                    MsgLog ("    * HiDPI Monitor Detected\n");
                 }
                 else {
-                    MsgLog("    * HiDPI Monitor Flagged\n");
+                    MsgLog ("    * HiDPI Monitor Flagged\n");
                 }
-                MsgLog("    ** Scale Icons Up\n\n");
+                MsgLog ("    ** Scale Icons Up\n\n");
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -267,14 +267,14 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("    * LoDPI Monitor Detected\n");
-                MsgLog("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * LoDPI Monitor Detected\n");
+                MsgLog ("    ** Maintain Icon Scale\n\n");
                 #endif
             } // if
 
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: Running Graphics Mode Switch\n\n");
+                MsgLog ("INFO: Running Graphics Mode Switch\n\n");
                 #endif
 
                 // clear screen and show banner
@@ -283,7 +283,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: Loading Placeholder Display\n\n");
+                MsgLog ("INFO: Loading Placeholder Display\n\n");
                 #endif
             }
 
@@ -292,7 +292,7 @@ SetupScreen (
 
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
-                    MsgLog("INFO: Displayed Placeholder\n\n");
+                    MsgLog ("INFO: Displayed Placeholder\n\n");
                 }
                 else {
                     MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
@@ -301,8 +301,8 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("INFO: Changing to Screensaver Display\n");
-                MsgLog("      Configured to Start with Screensaver\n\n");
+                MsgLog ("INFO: Changing to Screensaver Display\n");
+                MsgLog ("      Configured to Start with Screensaver\n\n");
                 #endif
 
                 // start with screen blanked
@@ -313,8 +313,8 @@ SetupScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog("WARN: Invalid Screen Mode\n");
-        MsgLog("      Switching to Text Mode\n\n");
+        MsgLog ("WARN: Invalid Screen Mode\n");
+        MsgLog ("      Switching to Text Mode\n\n");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -350,7 +350,7 @@ SwitchToText (
 
     #if REFIT_DEBUG > 0
     if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
-        MsgLog("Determine Text Console Size:\n");
+        MsgLog ("Determine Text Console Size:\n");
     }
     #endif
 
@@ -370,8 +370,8 @@ SwitchToText (
 
         #if REFIT_DEBUG > 0
         if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
-            MsgLog(
-                "  Could not Get Text Console Size ...Using Default: %dx%d\n\n",
+            MsgLog (
+                "  Could Not Get Text Console Size ...Using Default: %dx%d\n\n",
                 ConHeight,
                 ConWidth
             );
@@ -381,7 +381,7 @@ SwitchToText (
     else {
         #if REFIT_DEBUG > 0
         if (GraphicsModeOnEntry && (!AllowGraphicsMode || GlobalConfig.TextOnly)) {
-            MsgLog(
+            MsgLog (
                 "  Text Console Size = %dx%d\n\n",
                 ConWidth,
                 ConHeight
@@ -444,7 +444,7 @@ BeginExternalScreen (
     }
 
     if (UseGraphicsMode) {
-        SwitchToGraphicsAndClear(FALSE);
+        SwitchToGraphicsAndClear (FALSE);
     }
     else {
         // clear to dark background
@@ -671,7 +671,7 @@ CheckFatalError (
     StatusToString(ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog("** FATAL ERROR: %s %s\n", ErrorName, where);
+    MsgLog ("** FATAL ERROR: %s %s\n", ErrorName, where);
     #endif
 
     Temp = PoolPrint(L"Fatal Error: %s %s", ErrorName, where);
@@ -679,7 +679,7 @@ CheckFatalError (
     Temp = PoolPrint(L"Fatal Error: %s %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog("** FATAL ERROR: %r %s\n", Status, where);
+    MsgLog ("** FATAL ERROR: %r %s\n", Status, where);
     #endif
 #endif
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -707,7 +707,7 @@ CheckError (
     StatusToString(ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog("** WARN: %s %s\n", ErrorName, where);
+    MsgLog ("** WARN: %s %s\n", ErrorName, where);
     #endif
 
     Temp = PoolPrint(L"Error: %s %s", ErrorName, where);
@@ -715,7 +715,7 @@ CheckError (
     Temp = PoolPrint(L"Error: %r %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog("** WARN: %r %s\n", Status, where);
+    MsgLog ("** WARN: %r %s\n", Status, where);
     #endif
 #endif
 
@@ -749,13 +749,13 @@ SwitchToGraphicsAndClear (
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen(ShowBanner);
+        
+        #if REFIT_DEBUG > 0
+        if (ShowBanner) {
+            MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
+        }
+        #endif
     }
-
-    #if REFIT_DEBUG > 0
-    if (ShowBanner) {
-        MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
-    }
-    #endif
 }
 
 VOID
@@ -769,12 +769,12 @@ BltClearScreen (
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         #if REFIT_DEBUG > 0
-        MsgLog("Refresh Screen:\n");
+        MsgLog ("Refresh Screen:\n");
         #endif
         // load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog("  - Get Banner\n");
+            MsgLog ("  - Get Banner\n");
             #endif
 
             if (GlobalConfig.BannerFileName) {
@@ -782,20 +782,20 @@ BltClearScreen (
             }
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Embedded Banner\n");
+                MsgLog ("    * Embedded Banner\n");
                 #endif
                 Banner = egPrepareEmbeddedImage(&egemb_refindplus_banner, FALSE);
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog("    * Custom Banner\n");
+                MsgLog ("    * Custom Banner\n");
                 #endif
             }
         }
 
         if (Banner) {
             #if REFIT_DEBUG > 0
-            MsgLog("  - Scale Banner\n");
+            MsgLog ("  - Scale Banner\n");
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
@@ -819,7 +819,7 @@ BltClearScreen (
 
         // clear and draw banner
         #if REFIT_DEBUG > 0
-        MsgLog("  - Clear Screen\n");
+        MsgLog ("  - Clear Screen\n");
         #endif
 
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -831,7 +831,7 @@ BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog("  - Show Banner\n\n");
+            MsgLog ("  - Show Banner\n\n");
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;

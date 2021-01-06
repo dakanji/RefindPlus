@@ -888,7 +888,7 @@ preBootKicker (
                 #endif
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - WARN: Could not Find BootKicker ...Return to Main Menu\n\n");
+                MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
             }
         } else {
@@ -899,7 +899,7 @@ preBootKicker (
         } // if
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could not Get User Input  ...Reload Main Menu\n\n");
+        MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preBootKicker() */
@@ -1026,7 +1026,7 @@ preCleanNvram (
 
             } else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - WARN: Could not Find CleanNvram ...Return to Main Menu\n\n");
+                MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
             }
         } else {
@@ -1037,7 +1037,7 @@ preCleanNvram (
         } // if
     } else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could not Get User Input  ...Reload Main Menu\n\n");
+        MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preCleanNvram() */
@@ -1555,6 +1555,59 @@ efi_main (
         MainMenu.TimeoutText = L"Shutdown";
     }
 
+    // show misc warnings
+    if (AptioWarn || ConfigWarn) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Running User Warning Display\n\n");
+        #endif
+
+        BOOLEAN GraphicsModeActive = egIsGraphicsModeEnabled();
+
+        if (GraphicsModeActive) {
+            SwitchToText (FALSE);
+        }
+
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+
+        if (AptioWarn) {
+            AptioWarn = FALSE;
+            PrintUglyText (L"WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware.", NEXTLINE);
+            PrintUglyText (L"      Remove any such drivers to silence this warning.", NEXTLINE);
+        }
+        if (ConfigWarn) {
+            ConfigWarn = FALSE;
+            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'.", NEXTLINE);
+            PrintUglyText (L"      Trying rEFInd Configuration File:- 'refind.conf'.", NEXTLINE);
+            PrintUglyText (L"      Provide 'config.conf' to silence this warning.", NEXTLINE);
+            PrintUglyText (L"      You can rename 'refind.conf' as 'config.conf'.", NEXTLINE);
+        }
+
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Displayed User Warning ...Acknowledgement Pending\n\n");
+        #endif
+
+        PauseForKey();
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Acknowledged or Timed Out ...");
+        #endif
+
+        if (GraphicsModeActive) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Restore Graphics Mode\n\n");
+            #endif
+
+            SwitchToGraphicsAndClear(TRUE);
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Proceeding\n\n");
+            #endif
+        }
+    }
+
     #if REFIT_DEBUG > 0
     MsgLog (
         "INFO: Loaded RefindPlus v%s on %s Firmware ...User Input Pending\n\n",
@@ -1562,38 +1615,6 @@ efi_main (
         gST->FirmwareVendor
     );
     #endif
-
-    // show misc warnings
-    if (AptioWarn || ConfigWarn) {
-        SwitchToText (FALSE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-
-        if (AptioWarn) {
-            AptioWarn = FALSE;
-            PrintUglyText (L"WARN: AptioFix drivers are not compatible with Apple Firmware", NEXTLINE);
-            PrintUglyText (L"      Remove any such drivers to silence this warning", NEXTLINE);
-        }
-        if (ConfigWarn) {
-            ConfigWarn = FALSE;
-            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'", NEXTLINE);
-            PrintUglyText (L"      Trying rEFInd Configuration File:- 'refind.conf'", NEXTLINE);
-            PrintUglyText (L"      Provide 'config.conf' to silence this warning", NEXTLINE);
-        }
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Display User Warning ...Success\n\n");
-        #endif
-
-        PauseForKey();
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Received User Acknowledgement ...Proceed\n\n");
-        #endif
-
-        SwitchToGraphics();
-    }
 
     while (MainLoopRunning) {
         // Get a Clean Slate

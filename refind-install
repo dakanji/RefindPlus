@@ -831,7 +831,7 @@ MountOSXESP() {
          }' )
 
       if [ -z $Temp ]; then
-         echo "Could not find an EFI System Partition. Aborting!"
+         echo "Could Not find an EFI System Partition. Aborting!"
          exit 1
       fi
    fi
@@ -1280,7 +1280,7 @@ AddBootEntry() {
          fi
       done
       if [[ -z $InstallDisk || -z $PartNum ]] ; then
-         echo "Could not identify ESP in AddBootEntry()!"
+         echo "Could Not identify ESP in AddBootEntry()!"
          Problems=1
          return 1
       fi

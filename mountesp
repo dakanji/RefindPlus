@@ -37,7 +37,7 @@ MountOSXESP() {
             }' )
 
         if [ -z $Temp ]; then
-            echo "Could not find an EFI partition. Aborting!"
+            echo "Could Not find an EFI partition. Aborting!"
             exit 1
         fi
     fi
