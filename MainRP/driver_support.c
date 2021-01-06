@@ -186,6 +186,8 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
 #define MY_EFI_BLOCK_IO_PROTOCOL EFI_BLOCK_IO_PROTOCOL
 #endif
 
+extern BOOLEAN AptioWarn;
+
 /* LibScanHandleDatabase() is used by RefindPlus' driver-loading code (inherited
  * from rEFIt), but has not been implemented in GNU-EFI and seems to have been
  * dropped from current versions of the Tianocore library. This function was taken from
@@ -689,16 +691,21 @@ ScanDriverDir (
         RunOnce = TRUE;
 
         MsgLog("  - Load '%s' ...%r", FileName, Status);
+        #endif
 
         if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
             MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
         ) {
+            AptioWarn = TRUE;
+
+            #if REFIT_DEBUG > 0
+            RunOnce = FALSE;
+
             MsgLog("\n\n");
             MsgLog("** WARN: Incompatible with Apple Firmware:- '%s'\n", FileName);
             MsgLog("         Remove the driver to silence this warning\n\n");
-            RunOnce = FALSE;
+            #endif
         }
-        #endif
 
         MyFreePool(FileName);
     } // while

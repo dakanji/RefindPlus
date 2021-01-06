@@ -210,6 +210,8 @@ EFI_GUID RefindPlusGuid = REFINDPLUS_GUID;
 
 STATIC               BOOLEAN                ranCleanNvram  = FALSE;
 BOOLEAN                                     TweakSysTable  = FALSE;
+BOOLEAN                                     AptioWarn      = FALSE;
+BOOLEAN                                     ConfigWarn     = FALSE;
 STATIC               EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
 
@@ -1456,6 +1458,8 @@ efi_main (
 
     // Read Config first to get tokens that may be required by LoadDrivers();
     if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
+        ConfigWarn = TRUE;
+
         #if REFIT_DEBUG > 0
         MsgLog ("** WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'\n");
         MsgLog ("         Trying rEFInd Configuration File:- 'refind.conf'\n\n");
@@ -1558,6 +1562,38 @@ efi_main (
         gST->FirmwareVendor
     );
     #endif
+
+    // show misc warnings
+    if (AptioWarn || ConfigWarn) {
+        SwitchToText (FALSE);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+
+        if (AptioWarn) {
+            AptioWarn = FALSE;
+            PrintUglyText (L"WARN: AptioFix drivers are not compatible with Apple Firmware", NEXTLINE);
+            PrintUglyText (L"      Remove any such drivers to silence this warning", NEXTLINE);
+        }
+        if (ConfigWarn) {
+            ConfigWarn = FALSE;
+            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'", NEXTLINE);
+            PrintUglyText (L"      Trying rEFInd Configuration File:- 'refind.conf'", NEXTLINE);
+            PrintUglyText (L"      Provide 'config.conf' to silence this warning", NEXTLINE);
+        }
+
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Display User Warning ...Success\n\n");
+        #endif
+
+        PauseForKey();
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Received User Acknowledgement ...Proceed\n\n");
+        #endif
+
+        SwitchToGraphics();
+    }
 
     while (MainLoopRunning) {
         // Get a Clean Slate

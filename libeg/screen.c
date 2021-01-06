@@ -1468,7 +1468,7 @@ egSetScreenSize (
             #endif
 
             PauseForKey();
-            SwitchToGraphicsAndClear();
+            SwitchToGraphicsAndClear(TRUE);
         } // if GOP mode (UEFI)
     }
     else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
@@ -1595,7 +1595,7 @@ egSetTextMode (
             #endif
 
             PauseForKey();
-            SwitchToGraphicsAndClear();
+            SwitchToGraphicsAndClear(TRUE);
         } // if/else successful change
     } // if need to change mode
 

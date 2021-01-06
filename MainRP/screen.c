@@ -291,11 +291,11 @@ SetupScreen (
                 BltClearScreen(TRUE);
 
                 #if REFIT_DEBUG > 0
-                if (!gotGraphics) {
-                    MsgLog("INFO: Switch to Graphics Mode ...Success\n\n");
+                if (gotGraphics) {
+                    MsgLog("INFO: Displayed Placeholder\n\n");
                 }
                 else {
-                    MsgLog("INFO: Displayed Placeholder\n\n");
+                    MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
                 }
                 #endif
             }
@@ -391,9 +391,11 @@ SwitchToText (
     }
     PrepareBlankLine();
 
+    #if REFIT_DEBUG > 0
     if (GraphicsModeOnEntry) {
-        MsgLog("INFO: Switched to Text Mode\n\n");
+        MsgLog ("INFO: Switch to Text Mode ...Success\n\n");
     }
+    #endif
 }
 
 VOID SwitchToGraphics (
@@ -442,8 +444,7 @@ BeginExternalScreen (
     }
 
     if (UseGraphicsMode) {
-        SwitchToGraphics();
-        BltClearScreen(FALSE);
+        SwitchToGraphicsAndClear(FALSE);
     }
     else {
         // clear to dark background
@@ -743,12 +744,18 @@ CheckError (
 
 VOID
 SwitchToGraphicsAndClear (
-    VOID
+    IN BOOLEAN ShowBanner
 ) {
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
-        BltClearScreen(TRUE);
+        BltClearScreen(ShowBanner);
     }
+
+    #if REFIT_DEBUG > 0
+    if (ShowBanner) {
+        MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
+    }
+    #endif
 }
 
 VOID
@@ -838,7 +845,6 @@ BltClearScreen (
             }
             egFreeImage(Banner);
         }
-
     }
     else { // not showing banner
         // clear to menu background color
