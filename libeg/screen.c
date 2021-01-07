@@ -1231,7 +1231,9 @@ egInitScreen (
         }
     }
 
-    if (GlobalConfig.TextRenderer || GlobalConfig.TextOnly) {
+    if (GraphicsOutput != NULL &&
+        (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
+    ) {
         // Implement Text Renderer
         EFI_CONSOLE_CONTROL_SCREEN_MODE  ScreenMode;
 

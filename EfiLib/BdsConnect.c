@@ -547,7 +547,7 @@ ApplyGOPFix (
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Acquire GOP on RAM ...%r\n\n", Status);
+        MsgLog ("INFO: Acquire GOP on Random Access Memory  ...%r\n\n", Status);
         #endif
 
         // connect all devices

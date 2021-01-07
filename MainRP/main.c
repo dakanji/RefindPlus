@@ -627,7 +627,11 @@ OpenProtocolEx (
     IN   EFI_HANDLE  ControllerHandle,
     IN   UINT32      Attributes
 ) {
-    EFI_STATUS Status;
+    EFI_STATUS                   Status;
+    UINTN                        i              = 0;
+    UINTN                        HandleCount    = 0;
+    EFI_HANDLE                   *HandleBuffer  = NULL;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP        = NULL;
 
     Status = OrigOpenProtocol (
         Handle,
@@ -640,11 +644,6 @@ OpenProtocolEx (
 
     if (Status == EFI_UNSUPPORTED) {
         if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-            UINTN                        i = 0;
-            UINTN                        HandleCount;
-            EFI_HANDLE                   *HandleBuffer;
-            EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP = NULL;
-
             Status = refit_call5_wrapper(
                 gBS->LocateHandleBuffer,
                 ByProtocol,
@@ -670,7 +669,6 @@ OpenProtocolEx (
                     }
                 }
             }
-            MyFreePool (HandleBuffer);
 
             if (EFI_ERROR (Status) || TmpGOP == NULL) {
                 Status = EFI_UNSUPPORTED;
@@ -680,15 +678,7 @@ OpenProtocolEx (
                 Status     = EFI_SUCCESS;
             }
         }
-        // EfiBoot from Mac OS 10.4 can only use UgaDraw protocol.
-        else if (GuidsAreEqual (&gEfiUgaDrawProtocolGuid, Protocol)) {
-            Status = refit_call3_wrapper(
-                gBS->LocateProtocol,
-                &gEfiUgaDrawProtocolGuid,
-                NULL,
-                Interface
-            );
-        }
+        MyFreePool (HandleBuffer);
     }
 
     return Status;
@@ -1560,30 +1550,43 @@ efi_main (
 
     // show misc warnings
     if (AptioWarn || ConfigWarn) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Displaying User Warning\n\n");
+        #endif
+
         BOOLEAN GraphicsModeActive = egIsGraphicsModeEnabled();
 
         SwitchToText (FALSE);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         if (ConfigWarn) {
-            ConfigWarn = FALSE;
-            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf' ", NEXTLINE);
-            PrintUglyText (L"      Trying rEFInd's Configuration File:- 'refind.conf' ", NEXTLINE);
-            PrintUglyText (L"      Provide 'config.conf' file to silence this warning ", NEXTLINE);
-            PrintUglyText (L"      You can rename 'refind.conf' file as 'config.conf' ", NEXTLINE);
-            PrintUglyText (L"      NB: Will not contain all RefindPlus config tokens ", NEXTLINE);
+            PrintUglyText (L"                                                                          ", NEXTLINE);
+            PrintUglyText (L" WARN: Could Not Find RefindPlus Configuration File                       ", NEXTLINE);
+            PrintUglyText (L"       Trying rEFInd's Configuration File:- 'refind.conf'                 ", NEXTLINE);
+            PrintUglyText (L"       Provide 'config.conf' file to silence this warning                 ", NEXTLINE);
+            PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'                 ", NEXTLINE);
+            PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens                  ", NEXTLINE);
+            PrintUglyText (L"                                                                          ", NEXTLINE);
         }
         if (AptioWarn) {
-            AptioWarn = FALSE;
-            PrintUglyText (L"WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware ", NEXTLINE);
-            PrintUglyText (L"      Remove any such drivers to silence this warning on Apple Firmware ", NEXTLINE);
+            PrintUglyText (L"                                                                          ", NEXTLINE);
+            PrintUglyText (L" WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware  ", NEXTLINE);
+            PrintUglyText (L"       Remove any such drivers to silence this warning on Apple Firmware  ", NEXTLINE);
+            PrintUglyText (L"                                                                          ", NEXTLINE);
         }
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         PauseForKey();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: User Warning Acknowledged or Timed Out ...");
+        MsgLog ("INFO: User Warning");
+
+        if (GlobalConfig.ContinueOnWarning) {
+            MsgLog (" Acknowledged or Timed Out ...");
+        }
+        else {
+            MsgLog (" Acknowledged ...");
+        }
         #endif
 
         if (GraphicsModeActive) {
