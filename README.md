@@ -19,11 +19,13 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
 - Misc Code Optimisation.
 
 ## Installation
-The RefindPlus efi file is a drop-in replacement (x64 Only) for the default rEFInd efi file. Hence, to install, get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
+The RefindPlus efi file can work as a drop-in replacement for the default rEFInd efi file. Hence, to install, you can get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
 
-Once done, replace the rEFInd efi file with one from RefindPlus. Ensure that you rename to match. Also replace the default rEFInd configuration file, refind.conf, with one from RefindPlus, config.conf, to configure the additonal options provided.
+Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name).
 
-Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chain-loading package. **(Recommended)**
+Consider replacing the rEFInd configuration file, refind.conf, with the RefindPlus configuration file, config.conf ... see config.conf-sample file, to configure the additonal options provided by RefindPlus.
+
+Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a preconfigured RefindPlus/OpenCore chain-loading package. **(Recommended for MacPro3,1, MacPro4,1 and MacPro5,1)**
 
 ## Additional Configurable Functionality
 - text_renderer

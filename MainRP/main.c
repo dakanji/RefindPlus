@@ -1462,7 +1462,10 @@ efi_main (
 
         #if REFIT_DEBUG > 0
         MsgLog ("** WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'\n");
-        MsgLog ("         Trying rEFInd Configuration File:- 'refind.conf'\n\n");
+        MsgLog ("         Trying rEFInd's Configuration File:- 'refind.conf'\n");
+        MsgLog ("         Provide 'config.conf' file to silence this warning\n");
+        MsgLog ("         You can rename 'refind.conf' file as 'config.conf'\n");
+        MsgLog ("         NB: Will not contain all RefindPlus config tokens\n\n");
         #endif
 
         GlobalConfig.ConfigFilename = L"refind.conf";
@@ -1557,41 +1560,30 @@ efi_main (
 
     // show misc warnings
     if (AptioWarn || ConfigWarn) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Running User Warning Display\n\n");
-        #endif
-
         BOOLEAN GraphicsModeActive = egIsGraphicsModeEnabled();
 
-        if (GraphicsModeActive) {
-            SwitchToText (FALSE);
-        }
+        SwitchToText (FALSE);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-
-        if (AptioWarn) {
-            AptioWarn = FALSE;
-            PrintUglyText (L"WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware.", NEXTLINE);
-            PrintUglyText (L"      Remove any such drivers to silence this warning.", NEXTLINE);
-        }
         if (ConfigWarn) {
             ConfigWarn = FALSE;
-            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'.", NEXTLINE);
-            PrintUglyText (L"      Trying rEFInd Configuration File:- 'refind.conf'.", NEXTLINE);
-            PrintUglyText (L"      Provide 'config.conf' to silence this warning.", NEXTLINE);
-            PrintUglyText (L"      You can rename 'refind.conf' as 'config.conf'.", NEXTLINE);
+            PrintUglyText (L"WARN: Could Not Find RefindPlus Configuration File:- 'config.conf' ", NEXTLINE);
+            PrintUglyText (L"      Trying rEFInd's Configuration File:- 'refind.conf' ", NEXTLINE);
+            PrintUglyText (L"      Provide 'config.conf' file to silence this warning ", NEXTLINE);
+            PrintUglyText (L"      You can rename 'refind.conf' file as 'config.conf' ", NEXTLINE);
+            PrintUglyText (L"      NB: Will not contain all RefindPlus config tokens ", NEXTLINE);
         }
-
+        if (AptioWarn) {
+            AptioWarn = FALSE;
+            PrintUglyText (L"WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware ", NEXTLINE);
+            PrintUglyText (L"      Remove any such drivers to silence this warning on Apple Firmware ", NEXTLINE);
+        }
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Displayed User Warning ...Acknowledgement Pending\n\n");
-        #endif
 
         PauseForKey();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Acknowledged or Timed Out ...");
+        MsgLog ("INFO: User Warning Acknowledged or Timed Out ...");
         #endif
 
         if (GraphicsModeActive) {
