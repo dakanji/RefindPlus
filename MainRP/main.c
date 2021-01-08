@@ -631,7 +631,7 @@ OpenProtocolEx (
     UINTN                        i              = 0;
     UINTN                        HandleCount    = 0;
     EFI_HANDLE                   *HandleBuffer  = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP        = NULL;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *OurGOP        = NULL;
 
     Status = OrigOpenProtocol (
         Handle,
@@ -660,26 +660,27 @@ OpenProtocolEx (
                             gBS->HandleProtocol,
                             HandleBuffer[i],
                             &gEfiGraphicsOutputProtocolGuid,
-                            (VOID*) &TmpGOP
+                            (VOID*) &OurGOP
                         );
 
                         if (!EFI_ERROR (Status)) {
                             break;
                         }
-                    }
-                }
-            }
+                    } // if HandleBuffer[i]
+                } // for
+            } // if !EFI_ERROR Status
 
-            if (EFI_ERROR (Status) || TmpGOP == NULL) {
+            if (EFI_ERROR (Status) || OurGOP == NULL) {
                 Status = EFI_UNSUPPORTED;
             }
             else {
-                *Interface = TmpGOP;
+                *Interface = OurGOP;
                 Status     = EFI_SUCCESS;
             }
-        }
+        } // if GuidsAreEqual
+
         MyFreePool (HandleBuffer);
-    }
+    } // if Status == EFI_UNSUPPORTED
 
     return Status;
 } // EFI_STATUS OpenProtocolEx
@@ -707,6 +708,18 @@ HandleProtocolEx (
 
     return Status;
 } // EFI_STATUS HandleProtocolEx
+
+STATIC
+VOID
+ReMapOpenProtocol (
+    VOID
+) {
+    // Amend EFI_BOOT_SERVICES.OpenProtocol
+    OrigOpenProtocol    = gBS->OpenProtocol;
+    gBS->OpenProtocol   = OpenProtocolEx;
+    gBS->Hdr.CRC32      = 0;
+    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
+} // ReMapOpenProtocol()
 
 
 // Checks to see if a specified file seems to be a valid tool.
@@ -1205,13 +1218,9 @@ STATIC VOID InitializeLib (
     );
 
     // Upgrade EFI_BOOT_SERVICES.HandleProtocol
-    gBS->HandleProtocol = HandleProtocolEx;
-
-    // Amend EFI_BOOT_SERVICES.OpenProtocol
-    OrigOpenProtocol   = gBS->OpenProtocol;
-    gBS->OpenProtocol  = OpenProtocolEx;
-
-    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, 0);
+    gBS->HandleProtocol  = HandleProtocolEx;
+    gBS->Hdr.CRC32       = 0;
+    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
 }
 
 #endif
@@ -1802,6 +1811,9 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                    // Re-Map OpenProtocol
+                    ReMapOpenProtocol();
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -1842,6 +1854,9 @@ efi_main (
                             DisableMacCompatCheck();
                         }
                     }
+
+                    // Re-Map OpenProtocol
+                    ReMapOpenProtocol();
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectMacNVRAM &&
