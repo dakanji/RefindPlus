@@ -421,12 +421,26 @@ AmendSysTable (
             uBS->CreateEventEx  = FakeCreateEventEx;
             uBS->Hdr.HeaderSize = sizeof (*gBS);
 
-            gBS               = uBS;
-            gST->BootServices = gBS;
-            gST->Hdr.Revision = 0x0002001E;
+            gBS                 = uBS;
+            gBS->Hdr.CRC32      = 0;
+            gBS->CalculateCrc32 (
+                gBS,
+                gBS->Hdr.HeaderSize,
+                &gBS->Hdr.CRC32
+            );
 
-            TweakSysTable  = TRUE;
-            Status         = EFI_SUCCESS;
+            gST->BootServices   = gBS;
+            gST->Hdr.Revision   = 0x0002001E;
+            gST->Hdr.CRC32      = 0;
+            gBS->CalculateCrc32 (
+                (VOID *) gST,
+                sizeof (EFI_SYSTEM_TABLE),
+                &gST->Hdr.CRC32
+            );
+
+
+            TweakSysTable       = TRUE;
+            Status              = EFI_SUCCESS;
         }
         else {
             Status = EFI_LOAD_ERROR;

@@ -1494,8 +1494,21 @@ efi_main (
 
     // Reset SystemTable if amended in LoadDrivers
     if (TweakSysTable) {
+        gST->Hdr.CRC32 = 0;
         gST = SystemTable;
-        gBS = SystemTable->BootServices;
+        gBS->CalculateCrc32 (
+            (VOID *) gST,
+            sizeof (EFI_SYSTEM_TABLE),
+            &gST->Hdr.CRC32
+        );
+
+        gBS->Hdr.CRC32 = 0;
+        gBS = gST->BootServices;
+        gBS->CalculateCrc32 (
+            gBS,
+            gBS->Hdr.HeaderSize,
+            &gBS->Hdr.CRC32
+        );
 
         #if REFIT_DEBUG > 0
         Status = EFI_SUCCESS;
