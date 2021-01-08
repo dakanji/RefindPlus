@@ -619,6 +619,7 @@ ForceTrim (
 // Ensures GOP Interface for Boot Loading Screen
 STATIC
 EFI_STATUS
+EFIAPI
 OpenProtocolEx (
     IN   EFI_HANDLE  Handle,
     IN   EFI_GUID    *Protocol,
@@ -690,6 +691,7 @@ OpenProtocolEx (
 // Routes 'HandleProtocol' to 'OpenProtocol'
 STATIC
 EFI_STATUS
+EFIAPI
 HandleProtocolEx (
     IN   EFI_HANDLE  Handle,
     IN   EFI_GUID    *Protocol,
