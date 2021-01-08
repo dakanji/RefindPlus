@@ -19,7 +19,7 @@ The aim is for most, if not all, of the fixes and features to be merged upsteam 
 - Misc Code Optimisation.
 
 ## Installation
-[MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), a automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1, MacPro4,1 and MacPro5,1. However, the RefindPlus efi file can work as a drop-in replacement for the default rEFInd efi file. Hence, to install, you can get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
+[MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1, MacPro4,1 and MacPro5,1. However, the RefindPlus efi file can work as a drop-in replacement for the default rEFInd efi file. Hence, to install, you can get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
 
 Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name).
 
