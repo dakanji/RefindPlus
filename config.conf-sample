@@ -79,23 +79,23 @@
 #
 #direct_gop_renderer true
 
-# Proceed automatically when notices are shown on screen  (1, true, or on)
-# instead of having to press a key to continue (0, false, or off).
-# When this token is activated, RefindPlus will pause for three seconds and
+# Proceed automatically when notices are shown on screen (1, true, or on)
+# instead of having to press a key to continue (0, false, or off). When
+# this token is activated, RefindPlus will pause for three seconds and
 # then proceed as if a key had been pressed.
 # Default is false
 #
 #continue_on_warning true
 
-# Force enable TRIM on non-Apple SSDs (1, true, or on) or not (0, false, or off).
-# 'TRIM', which can improve SSD health, is not enabled by default on
-# non-Apple SSDs in Mac OS. When this token is activated, RefindPlus will switch
-# 'TRIM' on in Mac OS for all SSDs including non-Apple SSDs. This is only applied
-# when booting Mac OS and does not switch 'TRIM' off when set to 'false' and
-# 'TRIM' has already been set.
+# Enable 'TRIM' on non-Apple SSDs (1, true, or on) or not (0, false, or off).
+# 'TRIM', which can improve SSD health, is not enabled by default on non-Apple
+# SSDs in Mac OS. When this token is activated, RefindPlus will switch 'TRIM'
+# on in Mac OS for all SSDs including non-Apple SSDs. This is only applied
+# when booting Mac OS and does not switch 'TRIM' off when set to 'false'
+# and 'TRIM' has already been set.
 # Default is false
 #
-#force_trim true
+#trim_force true
 
 # Disable Mac OS compatibility check when booting (1, true, or on)
 # or not (0, false, or off). Macs check whether the current Mac OS version is

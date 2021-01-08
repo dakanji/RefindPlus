@@ -33,7 +33,7 @@ Alternatively, you can use [MyBootMgr](https://forums.macrumors.com/threads/thre
 - provide_console_gop
 - direct_gop_renderer
 - continue_on_warning
-- force_trim
+- trim_force
 - disable_mac_compat_check
 - disable_amfi
 - protect_mac_nvram

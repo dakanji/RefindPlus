@@ -138,7 +138,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ProvideConsoleGOP = */ TRUE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
-    /* ForceTrim = */ FALSE,
+    /* TrimForce = */ FALSE,
     /* DisableMacCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
@@ -586,7 +586,7 @@ DisableMacCompatCheck (
 
 
 VOID
-ForceTrim (
+TrimForce (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -612,7 +612,7 @@ ForceTrim (
     MsgLog ("\n");
     MsgLog ("    * Enable TRIM ...%r", Status);
     #endif
-} // VOID ForceTrim()
+} // VOID TrimForce()
 
 
 // Extended 'OpenProtocol'
@@ -1837,8 +1837,8 @@ efi_main (
                     #endif
 
                     // Enable TRIM on non-Apple SSDs if configured to
-                    if (GlobalConfig.ForceTrim) {
-                        ForceTrim();
+                    if (GlobalConfig.TrimForce) {
+                        TrimForce();
                     }
 
                     // Set Mac boot args if configured to

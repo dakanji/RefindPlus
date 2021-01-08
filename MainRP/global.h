@@ -370,7 +370,7 @@ typedef struct {
    BOOLEAN          ProvideConsoleGOP;
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
-   BOOLEAN          ForceTrim;
+   BOOLEAN          TrimForce;
    BOOLEAN          DisableMacCompatCheck;
    BOOLEAN          DisableAMFI;
    BOOLEAN          ProtectMacNVRAM;
