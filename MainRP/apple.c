@@ -27,56 +27,91 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16 gCsrStatus[256];
+CHAR16 *gCsrStatus = NULL;
 
 // Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
 // information. If the variable is not present and the firmware is Apple, fake
-// it and claim it's enabled, since that's how Mac OS X 10.11 treats a system with
-// the variable absent.
-EFI_STATUS GetCsrStatus (UINT32 *CsrStatus) {
-    UINT32     *ReturnValue = NULL;
+// it and claim it is enabled. This is consistent with how Mac OS El Capitan
+// treats systems with the variable absent.
+EFI_STATUS
+GetCsrStatus (
+    UINT32 *CsrStatus
+) {
     UINTN      CsrLength;
-    EFI_GUID   CsrGuid = APPLE_GUID;
-    EFI_STATUS Status = EFI_INVALID_PARAMETER;
+    UINT32     *ReturnValue = NULL;
+    EFI_GUID   CsrGuid      = APPLE_GUID;
+    EFI_STATUS Status       = EFI_INVALID_PARAMETER;
 
     if (CsrStatus) {
-        Status = EfivarGetRaw (&CsrGuid, L"csr-active-config", (CHAR8**) &ReturnValue, &CsrLength);
+        Status = EfivarGetRaw (
+            &CsrGuid,
+            L"csr-active-config",
+            (CHAR8**) &ReturnValue,
+            &CsrLength
+        );
+
         if (Status == EFI_SUCCESS) {
             if (CsrLength == 4) {
                 *CsrStatus = *ReturnValue;
             } else {
                 Status = EFI_BAD_BUFFER_SIZE;
-                SPrint (gCsrStatus, 255, L" Unknown System Integrity Protection version");
+                gCsrStatus = L" Unknown System Integrity Protection version";
             }
+
             MyFreePool (ReturnValue);
-        } else if ((Status == EFI_NOT_FOUND) && (StriSubCmp (L"Apple", gST->FirmwareVendor))) {
+        } else if (Status == EFI_NOT_FOUND &&
+            StriSubCmp (L"Apple", gST->FirmwareVendor)
+        ) {
             *CsrStatus = SIP_ENABLED;
             Status = EFI_SUCCESS;
         } // if (Status == EFI_SUCCESS)
     } // if (CsrStatus)
+
     return Status;
 } // INTN GetCsrStatus()
 
 // Store string describing CSR status value in gCsrStatus variable, which appears
 // on the Info page. If DisplayMessage is TRUE, displays the new value of
-// gCsrStatus on the screen for three seconds.
-VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage) {
-    EG_PIXEL    BGColor = COLOR_LIGHTBLUE;
+// gCsrStatus on the screen for four seconds.
+VOID RecordgCsrStatus (
+    UINT32 CsrStatus,
+    BOOLEAN DisplayMessage
+) {
+    EG_PIXEL BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
         case SIP_ENABLED:
-            SPrint (gCsrStatus, 255, L" System Integrity Protection is enabled (0x%02x)", CsrStatus);
+            gCsrStatus = PoolPrint (
+                L" System Integrity Protection Enabled (0x%03x)",
+                CsrStatus
+            );
             break;
+
         case SIP_DISABLED:
-            SPrint (gCsrStatus, 255, L" System Integrity Protection is disabled (0x%02x)", CsrStatus);
+        case SIP_DISABLED_EX:
+        case SIP_DISABLED_ANY:
+        case SIP_DISABLED_KEXT:
+        case SIP_DISABLED_DEBUG:
+        case SIP_DISABLED_DEVICE:
+        case CSR_MAX_LEGAL_VALUE:
+            gCsrStatus = PoolPrint (
+                L" System Integrity Protection Disabled (0x%03x)",
+                CsrStatus
+            );
             break;
+
         default:
-            SPrint (gCsrStatus, 255, L" System Integrity Protection status: 0x%02x", CsrStatus);
+            gCsrStatus = PoolPrint (
+                L" System Integrity Protection Status: 0x%03x",
+                CsrStatus
+            );
     } // switch
     if (DisplayMessage) {
         egDisplayMessage (gCsrStatus, &BGColor, CENTER);
-        PauseSeconds (3);
+        PauseSeconds (4);
     } // if
+
+    MyFreePool (gCsrStatus);
 } // VOID RecordgCsrStatus()
 
 // Find the current CSR status and reset it to the next one in the
@@ -91,18 +126,35 @@ VOID RotateCsrValue (VOID) {
     Status = GetCsrStatus (&CurrentValue);
     if ((Status == EFI_SUCCESS) && GlobalConfig.CsrValues) {
         ListItem = GlobalConfig.CsrValues;
-        while ((ListItem != NULL) && (ListItem->Value != CurrentValue))
+
+        while ((ListItem != NULL) && (ListItem->Value != CurrentValue)) {
             ListItem = ListItem->Next;
+        }
+
         if (ListItem == NULL || ListItem->Next == NULL) {
             TargetCsr = GlobalConfig.CsrValues->Value;
         } else {
             TargetCsr = ListItem->Next->Value;
         }
-        Status = EfivarSetRaw (&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
+
+        Status = EfivarSetRaw (
+            &CsrGuid,
+            L"csr-active-config",
+            (CHAR8 *) &TargetCsr,
+            4,
+            TRUE
+        );
+
         if (Status == EFI_SUCCESS) {
             RecordgCsrStatus (TargetCsr, TRUE);
         } else {
-            SPrint (gCsrStatus, 255, L" Error setting System Integrity Protection code.");
+            EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+            egDisplayMessage (
+                L" Error setting System Integrity Protection status",
+                &BGColor,
+                CENTER
+            );
+            PauseSeconds (4);
         }
     } // if
 } // VOID RotateCsrValue()
