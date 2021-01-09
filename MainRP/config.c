@@ -610,8 +610,7 @@ ReadConfig (
     CHAR16          *FlagName;
     CHAR16          *TempStr = NULL;
     UINTN           TokenCount, i;
-    CHAR16          TmpShowScreenStr[128];
-    const CHAR16    *ShowScreenStr = NULL;
+    CHAR16          *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Read Config...\n");
@@ -652,6 +651,8 @@ ReadConfig (
         MsgLog ("%s\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
        if (!FileExists (SelfDir, L"icons")) {
            ShowScreenStr = L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode";
            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -659,6 +660,8 @@ ReadConfig (
            #if REFIT_DEBUG > 0
            MsgLog ("%s\n", ShowScreenStr);
            #endif
+
+           MyFreePool (ShowScreenStr);
 
           GlobalConfig.TextOnly = TRUE;
        }
@@ -722,16 +725,17 @@ ReadConfig (
                 else {
                     SwitchToText (FALSE);
 
-                    SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
+                    ShowScreenStr = PoolPrint (
                         L"  - WARN: Invalid 'hideui flag' Flag: '%s'",
                         FlagName
                     );
-                    ShowScreenStr = TmpShowScreenStr;
                     PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("%s\n", ShowScreenStr);
                     #endif
+
+                    MyFreePool (ShowScreenStr);
 
                    PauseForKey();
                 }
@@ -872,17 +876,16 @@ ReadConfig (
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            }
            else {
-               SPrint (TmpShowScreenStr, sizeof (TmpShowScreenStr),
+               ShowScreenStr = PoolPrint (
                    L"  - WARN: Invalid 'banner_type' Flag: '%s'",
                    TokenList[1]
                );
-
-               ShowScreenStr = TmpShowScreenStr;
                PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                #if REFIT_DEBUG > 0
                MsgLog ("%s\n", ShowScreenStr);
                #endif
+               MyFreePool (ShowScreenStr);
 
                PauseForKey();
            } // if/else

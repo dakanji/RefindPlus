@@ -984,6 +984,8 @@ WarnIfLegacyProblems (
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
 
+            MyFreePool (ShowScreenStr);
+
             PauseForKey();
         } // if (found)
     } // if no legacy support

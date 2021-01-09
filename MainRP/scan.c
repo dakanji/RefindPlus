@@ -1180,6 +1180,7 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
           }
 
           CheckError (Status, Message);
+          MyFreePool(Message);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
 
@@ -1527,6 +1528,7 @@ static LOADER_ENTRY * AddToolEntry (
     Entry->LoaderPath = (LoaderPath) ? StrDuplicate (LoaderPath) : NULL;
     Entry->Volume = Volume;
     Entry->UseGraphicsMode = UseGraphicsMode;
+    MyFreePool(TitleStr);
 
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
     return Entry;

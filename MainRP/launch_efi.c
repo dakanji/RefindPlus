@@ -302,13 +302,24 @@ EFI_STATUS RebootIntoFirmware(VOID) {
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
-    err = EfivarGetRaw(&GlobalGuid, L"OsIndications", &b, &size);
+    err = EfivarGetRaw(
+        &GlobalGuid,
+        L"OsIndications",
+        &b,
+        &size
+    );
     if (err == EFI_SUCCESS) {
         osind |= (UINT64)*b;
     }
     MyFreePool(b);
 
-    err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof (UINT64), TRUE);
+    err = EfivarSetRaw(
+        &GlobalGuid,
+        L"OsIndications",
+        (CHAR8 *) &osind,
+        sizeof (UINT64),
+        TRUE
+    );
     if (err != EFI_SUCCESS) {
         return err;
     }
@@ -322,6 +333,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     );
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
+    
     return err;
 } // EFI_STATUS RebootIntoFirmware()
 

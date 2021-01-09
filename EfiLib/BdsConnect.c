@@ -330,7 +330,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         );
 
                         if (EFI_ERROR (XStatus)) {
+                            #if REFIT_DEBUG > 0
                             DeviceData = L" - Not PCIe Device";
+                            #endif
                         }
                         else {
                             // Read PCI BUS
@@ -345,7 +347,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
 
                             if (EFI_ERROR (XStatus)) {
                                 MakeConnection = FALSE;
+
+                                #if REFIT_DEBUG > 0
                                 DeviceData = L" - Could Not Read PCIe Device Details";
+                                #endif
                             }
                             else {
                                 BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
@@ -354,9 +359,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                     // Comment out and set MakeConnection to FALSE
                                     // gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
                                     MakeConnection = FALSE;
+
+                                    #if REFIT_DEBUG > 0
                                     DeviceData = L" - Display Device ";
+                                    #endif
                                 }
                                 else {
+                                    #if REFIT_DEBUG > 0
                                     DeviceData = PoolPrint (
                                         L" - PCI(%02llX|%02llX:%02llX.%llX)",
                                         SegmentPCI,
@@ -364,6 +373,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                         DevicePCI,
                                         FunctionPCI
                                     );
+                                    #endif
                                 } // VGADevice
                             }
                         } // if !EFI_ERROR (XStatus)

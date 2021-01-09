@@ -72,13 +72,19 @@ secure_mode (
 
     /* FIXME - more paranoia here? */
     if (status != EFI_SUCCESS || charsize != sizeof (CHAR8) || *sb != 1) {
+        MyFreePool (sb);
         return FALSE;
     }
 
+    MyFreePool (sb);
+
     status = EfivarGetRaw(&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
     if (status == EFI_SUCCESS && charsize == sizeof (CHAR8) && *setupmode == 1) {
+        MyFreePool (setupmode);
         return FALSE;
     }
+
+    MyFreePool (setupmode);
 
     return TRUE;
 } // secure_mode()

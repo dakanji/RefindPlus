@@ -477,6 +477,7 @@ SetMacBootArgs (
 
         // Convert BootArg to char array in 'StrCharArray'
         CHAR16charConv (BootArg, DataNVRAM);
+        MyFreePool (BootArg);
 
         Status = refit_call5_wrapper(
             gRT->SetVariable,
@@ -486,6 +487,8 @@ SetMacBootArgs (
             sizeof (DataNVRAM),
             DataNVRAM
         );
+
+        MyFreePool (DataNVRAM);
     }
 
     #if REFIT_DEBUG > 0
@@ -502,8 +505,6 @@ SetMacBootArgs (
         MsgLog ("    * Disable Compat Check ...%r", Status);
     }
     #endif
-
-    MyFreePool (DataNVRAM);
 } // VOID SetBootArgs()
 
 
@@ -1051,12 +1052,17 @@ preCleanNvram (
 VOID AboutRefindPlus (
     VOID
 ) {
-    CHAR16  *FirmwareVendor;
+    CHAR16  *LineItem       = NULL;
+    CHAR16  *FirmwareVendor = NULL;
     UINT32  CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-        AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
+
+        LineItem = PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION);
+        AddMenuInfoLine (&AboutMenu, LineItem);
+        MyFreePool (LineItem);
+
         AddMenuInfoLine (&AboutMenu, L"");
 
         AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
@@ -1066,42 +1072,36 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Running on: ");
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"EFI Revision %d.%02d",
-                gST->Hdr.Revision >> 16,
-                gST->Hdr.Revision & ((1 << 16) - 1)
-            )
+
+        LineItem = PoolPrint (
+            L"EFI Revision %d.%02d",
+            gST->Hdr.Revision >> 16,
+            gST->Hdr.Revision & ((1 << 16) - 1)
         );
+        AddMenuInfoLine (&AboutMenu, LineItem);
+        MyFreePool (LineItem);
 
         #if defined (EFI32)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: x86 (32 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
+        LineItem = PoolPrint (
+            L"Platform: x86 (32 bit); Secure Boot %s",
+            secure_mode() ? L"active" : L"inactive"
         );
         #elif defined (EFIX64)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: x86_64 (64 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
+        LineItem = PoolPrint (
+            L"Platform: x86_64 (64 bit); Secure Boot %s",
+            secure_mode() ? L"active" : L"inactive"
         );
         #elif defined (EFIAARCH64)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: ARM (64 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
+        LineItem = PoolPrint (
+            L"Platform: ARM (64 bit); Secure Boot %s",
+            secure_mode() ? L"active" : L"inactive"
         );
         #else
-        AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
+        LineItem = L"Platform: Unknown";
         #endif
+        AddMenuInfoLine (&AboutMenu, LineItem);
+        MyFreePool (LineItem);
+
 
         if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
             RecordgCsrStatus (CsrStatus, FALSE);
@@ -1113,15 +1113,14 @@ VOID AboutRefindPlus (
         // More than ~65 causes empty info page on 800x600 display
         LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
 
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L" Firmware: %s %d.%02d",
-                FirmwareVendor,
-                gST->FirmwareRevision >> 16,
-                gST->FirmwareRevision & ((1 << 16) - 1)
-            )
+        LineItem = PoolPrint (
+            L" Firmware: %s %d.%02d",
+            FirmwareVendor,
+            gST->FirmwareRevision >> 16,
+            gST->FirmwareRevision & ((1 << 16) - 1)
         );
+        AddMenuInfoLine (&AboutMenu, LineItem);
+        MyFreePool (LineItem);
 
         AddMenuInfoLine (&AboutMenu, PoolPrint (L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine (&AboutMenu, L"");
@@ -1162,6 +1161,7 @@ VOID StoreLoaderName (
             (CHAR8**) &OldName,
             &Length
         );
+
         if ((Status != EFI_SUCCESS) ||
             (StrCmp (OldName, Name) != 0)
         ) {
@@ -1274,6 +1274,8 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
             MsgLog ("%s\n---------------\n\n", ShowScreenStr);
             #endif
 
+            MyFreePool (ShowScreenStr);
+
             PauseForKey();
             GlobalConfig.ContinueOnWarning = OurTempBool;
 
@@ -1324,12 +1326,21 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
             else {
                 ShowScreenStr = L"Specified Configuration File Not Found";
                 PrintUglyText (ShowScreenStr, NEXTLINE);
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("%s\n", ShowScreenStr);
+                #endif
+
+                MyFreePool (ShowScreenStr);
+
                 ShowScreenStr = L"Try Default:- 'config.conf / refind.conf'";
                 PrintUglyText (ShowScreenStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("%s\n\n", ShowScreenStr);
                 #endif
+
+                MyFreePool (ShowScreenStr);
 
                 HaltForKey();
             } // if/else
@@ -1367,6 +1378,7 @@ STATIC VOID AdjustDefaultSelection() {
             if (Status == EFI_SUCCESS) {
                 MyFreePool (Element);
                 Element = PreviousBoot;
+                MyFreePool (PreviousBoot);
             }
             else {
                 Element = NULL;
@@ -1713,6 +1725,8 @@ efi_main (
                     MsgLog ("%s\n\n", ShowScreenStr);
                     #endif
 
+                    MyFreePool (ShowScreenStr);
+
                     PauseForKey();
 
                     MainLoopRunning = FALSE;   // just in case we get this far
@@ -1927,6 +1941,7 @@ efi_main (
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
                 StartLoader (ourLoaderEntry, SelectionName);
+                MyFreePool (SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
@@ -1957,6 +1972,7 @@ efi_main (
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
+                MyFreePool (SelectionName);
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
@@ -1979,6 +1995,7 @@ efi_main (
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
+                MyFreePool (SelectionName);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool
@@ -2118,6 +2135,8 @@ efi_main (
     #if REFIT_DEBUG > 0
     MsgLog ("%s\n---------------\n\n", ShowScreenStr);
     #endif
+
+    MyFreePool (ShowScreenStr);
 
     PauseForKey();
     EndlessIdleLoop();

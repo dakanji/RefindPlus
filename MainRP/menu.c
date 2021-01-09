@@ -2156,6 +2156,7 @@ CHAR16* ReadHiddenTags (CHAR16 *VarName) {
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         MyFreePool (Buffer);
     }
+
     return (CHAR16 *) Buffer;
 } // CHAR16* ReadHiddenTags()
 
@@ -2192,7 +2193,7 @@ HideEfiTag (
 ) {
     REFIT_VOLUME       *TestVolume = NULL;
     BOOLEAN            TagHidden = FALSE;
-    CHAR16             *FullPath = NULL, *GuidStr = NULL;
+    CHAR16             *FullPath = NULL, *GuidStr = NULL, *LineItem = NULL;
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     UINTN              MenuExit;
     INTN               DefaultEntry = 1;
@@ -2210,7 +2211,11 @@ HideEfiTag (
         FullPath = StrDuplicate (Loader->Volume->PartName);
     }
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
-    AddMenuInfoLine (HideItemMenu, PoolPrint (L"Really hide %s?", FullPath));
+
+    LineItem = PoolPrint (L"Are you sure you want to hide '%s'?", FullPath);
+    AddMenuInfoLine (HideItemMenu, LineItem);
+    MyFreePool(LineItem);
+
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
     AddMenuEntry (HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2248,7 +2253,7 @@ HideLegacyTag (
     REFIT_MENU_ENTRY   *ChosenOption;
     INTN               DefaultEntry = 1;
     UINTN              MenuExit;
-    CHAR16             *Name = NULL;
+    CHAR16             *Name = NULL, *LineItem = NULL;
     BOOLEAN            TagHidden = FALSE;
 
     if (AllowGraphicsMode)
@@ -2265,7 +2270,11 @@ HideLegacyTag (
     if (!Name) {
         Name = StrDuplicate (L"Legacy OS");
     }
-    AddMenuInfoLine (HideItemMenu, PoolPrint (L"Really hide '%s'?", Name));
+
+    LineItem = PoolPrint (L"Are you sure you want to hide '%s'?", Name);
+    AddMenuInfoLine (HideItemMenu, LineItem);
+    MyFreePool(LineItem);
+
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
     AddMenuEntry (HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);

@@ -170,6 +170,8 @@ ReloadPCIROM (
                     else {
                         Status = refit_call3_wrapper(gBS->StartImage, ImageHandle, NULL, NULL);
                     }
+
+                    MyFreePool (RomFileName);
                 }
 
                 MyFreePool (DecompressedImageBuffer);
@@ -252,6 +254,8 @@ AcquireGOP (
                         if (EFI_ERROR (ReturnStatus)) {
                             ReturnStatus = Status;
                         }
+
+                        MyFreePool (RomFileName);
                     } // if BindingHandleCount
 
                     MyFreePool (BindingHandleBuffer);

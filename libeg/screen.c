@@ -286,6 +286,8 @@ egDumpGOPVideoModes (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
         HaltForKey();
 
         return EFI_UNSUPPORTED;
@@ -438,6 +440,8 @@ GopSetModeAndReconnectTextOut (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
         HaltForKey();
 
         return EFI_UNSUPPORTED;
@@ -487,6 +491,8 @@ egSetGOPMode (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
         HaltForKey();
         SwitchToGraphics();
 
@@ -511,6 +517,8 @@ egSetGOPMode (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         HaltForKey();
     }
@@ -568,6 +576,8 @@ egSetMaxResolution (
       #if REFIT_DEBUG > 0
       MsgLog ("%s\n---------------\n\n", ShowScreenStr);
       #endif
+
+      MyFreePool (ShowScreenStr);
 
       HaltForKey();
 
@@ -630,6 +640,8 @@ egSetMaxResolution (
       #if REFIT_DEBUG > 0
       MsgLog ("%s\n", ShowScreenStr);
       #endif
+
+      MyFreePool (ShowScreenStr);
 
       PauseForKey();
 
@@ -1306,7 +1318,6 @@ egSetScreenSize (
     UINT32       ScreenH;
     UINT32       UGADepth;
     UINT32       UGARefreshRate;
-    CHAR16       *TmpShowScreenStr  = NULL;
     CHAR16       *ShowScreenStr     = NULL;
 
     #if REFIT_DEBUG > 0
@@ -1326,6 +1337,8 @@ egSetScreenSize (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n", ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         PauseForKey();
 
@@ -1419,6 +1432,8 @@ egSetScreenSize (
             MsgLog ("%s", ShowScreenStr);
             #endif
 
+            MyFreePool (ShowScreenStr);
+
             ModeNum = 0;
             do {
 
@@ -1435,13 +1450,12 @@ egSetScreenSize (
                 );
                 if (!EFI_ERROR (Status) && (Info != NULL)) {
 
-                    TmpShowScreenStr = PoolPrint (
+                    ShowScreenStr = PoolPrint (
                         L"Available Mode: Mode[%02d][%dx%d]",
                         ModeNum,
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
-                    ShowScreenStr = TmpShowScreenStr;
                     PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1463,6 +1477,8 @@ egSetScreenSize (
                     #endif
 
                 } // if
+
+                MyFreePool (ShowScreenStr);
             } while (++ModeNum < GraphicsOutput->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
@@ -1505,18 +1521,18 @@ egSetScreenSize (
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            TmpShowScreenStr = PoolPrint (
+            ShowScreenStr = PoolPrint (
                 L"Error setting %dx%d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );
-            ShowScreenStr = TmpShowScreenStr;
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
+            MyFreePool (ShowScreenStr);
         } // if/else
     } // if/else if (UGADraw != NULL)
 
@@ -1536,7 +1552,6 @@ egSetTextMode (
     UINTN        i = 0;
     UINTN        Width;
     UINTN        Height;
-    CHAR16       *TmpShowScreenStr  = NULL;
     CHAR16       *ShowScreenStr     = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
@@ -1577,8 +1592,7 @@ egSetTextMode (
                 );
 
                 if (!EFI_ERROR (Status)) {
-                    TmpShowScreenStr = PoolPrint (L"  - Mode[%d] (%dx%d)", i, Width, Height);
-                    ShowScreenStr    = TmpShowScreenStr;
+                    ShowScreenStr = PoolPrint (L"  - Mode[%d] (%dx%d)", i, Width, Height);
                     PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1586,15 +1600,17 @@ egSetTextMode (
                     #endif
                 }
 
+                MyFreePool (ShowScreenStr);
             } while (++i < gST->ConOut->Mode->MaxMode);
 
-            TmpShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
-            ShowScreenStr    = TmpShowScreenStr;
+            ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
             PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
             #endif
+
+            MyFreePool (ShowScreenStr);
 
             PauseForKey();
             SwitchToGraphicsAndClear (TRUE);
@@ -2073,6 +2089,8 @@ egScreenShot (
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
         PauseForKey();
         SwitchToGraphics();
 
@@ -2111,6 +2129,8 @@ egScreenShot (
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
 
+        MyFreePool (ShowScreenStr);
+
         HaltForKey();
         SwitchToGraphics();
 
@@ -2134,6 +2154,8 @@ egScreenShot (
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
+
+            MyFreePool (ShowScreenStr);
 
             HaltForKey();
             SwitchToGraphics();
@@ -2162,6 +2184,8 @@ egScreenShot (
                 MsgLog ("%s\n\n", ShowScreenStr);
                 #endif
 
+                MyFreePool (ShowScreenStr);
+
                 HaltForKey();
                 SwitchToGraphics();
 
@@ -2187,6 +2211,8 @@ egScreenShot (
     #if REFIT_DEBUG > 0
     MsgLog ("    * Screenshot Taken and Saved:- '%s'\n\n", FileName);
     #endif
+
+    MyFreePool (FileName);
 
     return;
 

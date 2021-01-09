@@ -749,7 +749,7 @@ SwitchToGraphicsAndClear (
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen(ShowBanner);
-        
+
         #if REFIT_DEBUG > 0
         if (ShowBanner) {
             MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
@@ -782,13 +782,13 @@ BltClearScreen (
             }
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * Embedded Banner\n");
+                MsgLog ("    * Embedded Title Banner\n");
                 #endif
                 Banner = egPrepareEmbeddedImage(&egemb_refindplus_banner, FALSE);
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * Custom Banner\n");
+                MsgLog ("    * Custom Title Banner\n");
                 #endif
             }
         }

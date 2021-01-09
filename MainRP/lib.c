@@ -1215,7 +1215,7 @@ ScanVolume (
     EFI_HANDLE       WholeDiskHandle;
     UINTN            PartialLength;
     BOOLEAN          Bootable;
-    const CHAR16     *ShowScreenStr = NULL;
+    CHAR16           *ShowScreenStr = NULL;
 
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
@@ -1250,6 +1250,8 @@ ScanVolume (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         HaltForKey();
         SwitchToGraphics();
@@ -1483,8 +1485,8 @@ ScanVolumes (
     UINTN              SectorSum, i;
     UINT8              *SectorBuffer1, *SectorBuffer2;
     EFI_GUID           *UuidList;
-    EFI_GUID           NullUuid = NULL_GUID_VALUE;
-    const CHAR16       *ShowScreenStr = NULL;
+    EFI_GUID           GuidNull       = NULL_GUID_VALUE;
+    CHAR16             *ShowScreenStr = NULL;
 
     MyFreePool (Volumes);
     Volumes = NULL;
@@ -1518,7 +1520,7 @@ ScanVolumes (
            UuidList[HandleIndex] = Volume->VolUuid;
            for (i = 0; i < HandleIndex; i++) {
               if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
-                  (CompareMem (&(Volume->VolUuid), &NullUuid, sizeof (EFI_GUID)) != 0)
+                  (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
               ) {
                   // Duplicate filesystem UUID
                   Volume->IsReadable = FALSE;
@@ -1596,6 +1598,8 @@ ScanVolumes (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         PauseForKey();
         SwitchToGraphics();

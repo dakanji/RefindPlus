@@ -1,5 +1,6 @@
 0.12.0.AP (Pre-Release):
 -----------------------
+- Misc Improvements to Limit Memory Leaks
 - Renames "force_trim" config option as "trim_force"
 - Fixes Boot Loading Screen Interface on all Units
   * Allows Boot Loading Screen such as the Mac Stage 1 Loading Screen to display correctly.
