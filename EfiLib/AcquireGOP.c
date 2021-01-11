@@ -118,10 +118,10 @@ ReloadPCIROM (
                             &ScratchSize
                         );
 
-                        if (!EFI_ERROR (Status)) {
+                        if (!EFI_ERROR (Status) && ImageBuffer != NULL) {
                             DecompressedImageBuffer = AllocateZeroPool (DestinationSize);
 
-                            if (ImageBuffer != NULL) {
+                            if (DecompressedImageBuffer != NULL) {
                                 Scratch = AllocateZeroPool (ScratchSize);
 
                                 if (Scratch != NULL) {
@@ -135,15 +135,16 @@ ReloadPCIROM (
                                         Scratch,
                                         ScratchSize
                                     );
+                                    MyFreePool (Scratch);
 
                                     if (!EFI_ERROR (Status)) {
                                         LoadROM     = TRUE;
                                         ImageBuffer = DecompressedImageBuffer;
                                         ImageLength = DestinationSize;
                                     }
-
-                                    MyFreePool (Scratch);
                                 }
+
+                                MyFreePool (DecompressedImageBuffer);
                             }
                         }
                     }
@@ -152,7 +153,9 @@ ReloadPCIROM (
                 if (LoadROM) {
                     RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
                     FilePath    = refit_call2_wrapper(FileDevicePath, NULL, RomFileName);
-                    Status      = refit_call6_wrapper(
+                    MyFreePool (RomFileName);
+
+                    Status = refit_call6_wrapper(
                         gBS->LoadImage,
                         TRUE,
                         gImageHandle,
@@ -170,11 +173,9 @@ ReloadPCIROM (
                     else {
                         Status = refit_call3_wrapper(gBS->StartImage, ImageHandle, NULL, NULL);
                     }
-
-                    MyFreePool (RomFileName);
                 }
 
-                MyFreePool (DecompressedImageBuffer);
+                MyFreePool (ImageBuffer);
             }
         }
 
