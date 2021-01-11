@@ -79,9 +79,9 @@ static EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 static EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
 static EFI_GUID GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 
-static EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
-static EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
-static EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
+EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
+EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
+EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
 
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;

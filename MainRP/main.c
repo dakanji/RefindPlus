@@ -223,6 +223,8 @@ extern EFI_GUID RSA2048_GUID;
 extern EFI_GUID PKCS7_GUID;
 extern EFI_GUID EFI_CERT_SHA256_GUID;
 
+extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput;
+
 //
 // misc functions
 //
@@ -646,39 +648,47 @@ OpenProtocolEx (
 
     if (Status == EFI_UNSUPPORTED) {
         if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-            Status = refit_call5_wrapper(
-                gBS->LocateHandleBuffer,
-                ByProtocol,
-                &gEfiGraphicsOutputProtocolGuid,
-                NULL,
-                &HandleCount,
-                &HandleBuffer
-            );
-
-            if (!EFI_ERROR (Status)) {
-                for (i = 0; i < HandleCount; i++) {
-                    if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-                        Status = refit_call3_wrapper(
-                            gBS->HandleProtocol,
-                            HandleBuffer[i],
-                            &gEfiGraphicsOutputProtocolGuid,
-                            (VOID*) &OurGOP
-                        );
-
-                        if (!EFI_ERROR (Status)) {
-                            break;
-                        }
-                    } // if HandleBuffer[i]
-                } // for
-            } // if !EFI_ERROR Status
-
-            if (EFI_ERROR (Status) || OurGOP == NULL) {
-                Status = EFI_UNSUPPORTED;
-            }
-            else {
-                *Interface = OurGOP;
+            if (GraphicsOutput != NULL) {
+                *Interface = GraphicsOutput;
                 Status     = EFI_SUCCESS;
             }
+            else {
+                Status = refit_call5_wrapper(
+                    gBS->LocateHandleBuffer,
+                    ByProtocol,
+                    &gEfiGraphicsOutputProtocolGuid,
+                    NULL,
+                    &HandleCount,
+                    &HandleBuffer
+                );
+
+                if (!EFI_ERROR (Status)) {
+
+                    for (i = 0; i < HandleCount; i++) {
+                        if (HandleBuffer[i] != gST->ConsoleOutHandle) {
+                            Status = refit_call3_wrapper(
+                                gBS->HandleProtocol,
+                                HandleBuffer[i],
+                                &gEfiGraphicsOutputProtocolGuid,
+                                (VOID*) &OurGOP
+                            );
+
+                            if (!EFI_ERROR (Status)) {
+                                break;
+                            }
+                        } // if HandleBuffer[i]
+                    } // for
+
+                } // if !EFI_ERROR Status
+
+                if (EFI_ERROR (Status) || OurGOP == NULL) {
+                    Status = EFI_UNSUPPORTED;
+                }
+                else {
+                    *Interface = OurGOP;
+                    Status     = EFI_SUCCESS;
+                }
+            } // If GraphicsOutput != NULL
         } // if GuidsAreEqual
 
         MyFreePool (HandleBuffer);
@@ -760,6 +770,7 @@ IsValidTool (
 
             MyFreePool (DontScanThis);
         } // while
+
     } else {
         retval = FALSE;
     }
@@ -879,6 +890,7 @@ preBootKicker (
                     break;
                 }
             } // while Names
+
             MyFreePool (FilePath);
 
             if (FoundTool) {
@@ -988,36 +1000,36 @@ preCleanNvram (
             #endif
 
             k = 0;
-                while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
+            while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
 
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("    * Seek %s:\n", FilePath);
-                    #endif
+                #if REFIT_DEBUG > 0
+                MsgLog ("    * Seek %s:\n", FilePath);
+                #endif
 
-                    i = 0;
-                    for (i = 0; i < VolumesCount; i++) {
-                        if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
-                            ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                i = 0;
+                for (i = 0; i < VolumesCount; i++) {
+                    if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
+                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
 
-                            ourLoaderEntry->me.Title = Description;
-                            ourLoaderEntry->me.Tag = TAG_NVRAMCLEAN;
-                            ourLoaderEntry->me.Row = 1;
-                            ourLoaderEntry->me.ShortcutLetter = 'S';
-                            ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-                            ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
-                            ourLoaderEntry->Volume = Volumes[i];
-                            ourLoaderEntry->UseGraphicsMode = FALSE;
+                        ourLoaderEntry->me.Title = Description;
+                        ourLoaderEntry->me.Tag = TAG_NVRAMCLEAN;
+                        ourLoaderEntry->me.Row = 1;
+                        ourLoaderEntry->me.ShortcutLetter = 'S';
+                        ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                        ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume = Volumes[i];
+                        ourLoaderEntry->UseGraphicsMode = FALSE;
 
-                            FoundTool = TRUE;
-                            break;
-                        } // if
-                    } // for
-
-                    if (FoundTool) {
+                        FoundTool = TRUE;
                         break;
-                    }
-                } // while Names
-                MyFreePool (FilePath);
+                    } // if
+                } // for
+
+                if (FoundTool) {
+                    break;
+                }
+            } // while Names
+            MyFreePool (FilePath);
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0
