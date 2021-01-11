@@ -127,14 +127,14 @@ daCheckAltGop (
     Status  = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
-        &gEfiGraphicsOutputProtocolGuid,
+        &GraphicsOutputProtocolGuid,
         (VOID **) &OrigGop
     );
 
     if (EFI_ERROR (Status)) {
         Status = refit_call3_wrapper(
             gBS->LocateProtocol,
-            &gEfiGraphicsOutputProtocolGuid,
+            &GraphicsOutputProtocolGuid,
             NULL,
             (VOID **) &Gop
         );
@@ -153,7 +153,7 @@ daCheckAltGop (
         Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
-            &gEfiGraphicsOutputProtocolGuid,
+            &GraphicsOutputProtocolGuid,
             NULL,
             &HandleCount,
             &HandleBuffer
@@ -187,7 +187,7 @@ daCheckAltGop (
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[Index],
-                    &gEfiGraphicsOutputProtocolGuid,
+                    &GraphicsOutputProtocolGuid,
                     (VOID **) &Gop
                 );
 
