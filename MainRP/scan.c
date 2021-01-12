@@ -902,9 +902,7 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
 
         return FALSE;
     }
-    else {
-        MyFreePool (VolGuid);
-    } // if/else
+    MyFreePool (VolGuid);
 
     if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
         return FALSE;

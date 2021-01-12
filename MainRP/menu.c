@@ -2225,7 +2225,7 @@ HideEfiTag (
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
             MyFreePool (FullPath);
             FullPath = NULL;
-            MergeStrings (&FullPath, GuidAsString (&Loader->Volume->PartGuid), L'\0');
+            MergeStrings (&FullPath, GuidStr, L'\0');
             MergeStrings (&FullPath, L":", L'\0');
             MergeStrings (
                 &FullPath,

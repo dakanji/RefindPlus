@@ -627,6 +627,7 @@ ReadConfig (
        MergeStrings (&TempStr, SelfDirPath, L':');
        MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
        GlobalConfig.DontScanDirs = TempStr;
+       MyFreePool (TempStr);
        MyFreePool (GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
        MyFreePool (GlobalConfig.DontScanTools);
