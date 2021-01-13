@@ -743,21 +743,31 @@ LoadDrivers(
     MsgLog ("Load EFI Drivers from Default Folder...");
     #endif
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
-        SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-        CleanUpPathNameSlashes(SelfDirectory);
+        CleanUpPathNameSlashes(Directory);
+
+        if (SelfDirPath) {
+            SelfDirectory = StrDuplicate(SelfDirPath);
+            CleanUpPathNameSlashes(SelfDirectory);
+        }
+        else {
+            SelfDirectory = NULL;
+        }
+
         MergeStrings(&SelfDirectory, Directory, L'\\');
+
         CurFound = ScanDriverDir(SelfDirectory);
-        MyFreePool(Directory);
-        MyFreePool(SelfDirectory);
         if (CurFound > 0) {
             NumFound = NumFound + CurFound;
             break;
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Not Found or Empty", SelfDirectory);
+            MsgLog ("  - Not Found or Empty");
             #endif
         }
+
+        MyFreePool(Directory);
+        MyFreePool(SelfDirectory);
     }
 
     // Scan additional user-specified driver directories....
@@ -770,26 +780,33 @@ LoadDrivers(
         i = 0;
         while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes(Directory);
+            
             Length = StrLen(Directory);
             if (Length > 0) {
-                SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
-                CleanUpPathNameSlashes(SelfDirectory);
+                if (SelfDirPath) {
+                    SelfDirectory = StrDuplicate(SelfDirPath);
+                    CleanUpPathNameSlashes(SelfDirectory);
+                }
+                else {
+                    SelfDirectory = NULL;
+                }
+
                 MergeStrings(&SelfDirectory, Directory, L'\\');
+
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
                     ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
                     ReplaceSubstring(&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
+
                 CurFound = ScanDriverDir(SelfDirectory);
-                MyFreePool(SelfDirectory);
-                if (CurFound > 0) {
-                    NumFound = NumFound + CurFound;
-                }
-                else {
+                if (CurFound > 1) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Not Found or Empty", SelfDirectory);
+                    MsgLog ("  - Not Found or Empty");
                     #endif
                 }
             } // if
+
+            MyFreePool(SelfDirectory);
             MyFreePool(Directory);
         } // while
     }
@@ -799,9 +816,8 @@ LoadDrivers(
     #endif
 
     // connect all devices
-    if (NumFound > 0) {
-        ConnectAllDriversToAllControllers(TRUE);
-    }
+    // DA-TAG: Always run this
+    ConnectAllDriversToAllControllers(TRUE);
 
     return (NumFound > 0);
 } /* BOOLEAN LoadDrivers() */
