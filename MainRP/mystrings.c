@@ -71,12 +71,12 @@ BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
 } // BOOLEAN MyStriCmp()
 
 /*++
- * 
+ *
  * Routine Description:
  *
  *  Find a substring.
  *
- * Arguments: 
+ * Arguments:
  *
  *  String      - Null-terminated string to search.
  *  StrCharSet  - Null-terminated string to search for.
@@ -365,8 +365,9 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
 
    if (SmallString && List) {
       while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         if (MyStriCmp(OneElement, SmallString))
-            Found = TRUE;
+         if (MyStriCmp(OneElement, SmallString)) {
+             Found = TRUE;
+         }
          MyFreePool(OneElement);
       } // while
    } // if
@@ -383,8 +384,11 @@ BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
    if (BigString && List) {
       while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
          ElementLength = StrLen(OneElement);
-         if ((ElementLength <= StrLen(BigString)) && (StriSubCmp(OneElement, BigString)))
-            Found = TRUE;
+         if ((ElementLength <= StrLen(BigString)) &&
+            (StriSubCmp(OneElement, BigString))
+        ) {
+             Found = TRUE;
+         }
          MyFreePool(OneElement);
       } // while
    } // if

@@ -2375,6 +2375,7 @@ FilenameIn (
             } // if
             MyFreePool (OneElement);
         } // while
+        
         MyFreePool (TargetVolName);
         MyFreePool (TargetPath);
         MyFreePool (TargetFilename);

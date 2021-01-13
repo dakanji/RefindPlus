@@ -188,10 +188,10 @@ BdsLibVariableToOption (
   // Read the variable. We will never free this data.
   //
   Variable = BdsLibGetVariableAndSize (
-              VariableName,
-              &EfiGlobalVariableGuid,
-              &VariableSize
-              );
+      VariableName,
+      &EfiGlobalVariableGuid,
+      &VariableSize
+  );
   if (Variable == NULL) {
     return NULL;
   }
