@@ -769,6 +769,9 @@ IsValidTool (
             } // if
 
             MyFreePool (DontScanThis);
+            MyFreePool (DontVolName);
+            MyFreePool (DontPathName);
+            MyFreePool (DontFileName);
         } // while
 
     } else {
@@ -889,18 +892,21 @@ preBootKicker (
                 if (FoundTool) {
                     break;
                 }
+                else {
+                    MyFreePool (FilePath);
+                }
             } // while Names
-
-            MyFreePool (FilePath);
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load BootKicker\n\n");
                 #endif
+                MyFreePool (FilePath);
 
                 // Run BootKicker
                 StartTool (ourLoaderEntry);
+                
                 #if REFIT_DEBUG > 0
                 MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
@@ -908,6 +914,7 @@ preBootKicker (
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
+                MyFreePool (FilePath);
             }
         } else {
             #if REFIT_DEBUG > 0
@@ -1028,14 +1035,17 @@ preCleanNvram (
                 if (FoundTool) {
                     break;
                 }
+                else {
+                    MyFreePool (FilePath);
+                }
             } // while Names
-            MyFreePool (FilePath);
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load CleanNvram\n\n");
                 #endif
+                MyFreePool (FilePath);
 
                 ranCleanNvram = TRUE;
 
@@ -1046,6 +1056,7 @@ preCleanNvram (
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
+                MyFreePool (FilePath);
             }
         } else {
             #if REFIT_DEBUG > 0
