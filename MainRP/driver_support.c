@@ -780,7 +780,7 @@ LoadDrivers(
         i = 0;
         while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes(Directory);
-            
+
             Length = StrLen(Directory);
             if (Length > 0) {
                 if (SelfDirPath) {
@@ -799,11 +799,12 @@ LoadDrivers(
                 }
 
                 CurFound = ScanDriverDir(SelfDirectory);
-                if (CurFound > 1) {
-                    #if REFIT_DEBUG > 0
+                
+                #if REFIT_DEBUG > 0
+                if (CurFound < 1) {
                     MsgLog ("  - Not Found or Empty");
-                    #endif
                 }
+                #endif
             } // if
 
             MyFreePool(SelfDirectory);
