@@ -44,7 +44,8 @@ BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
             if ((SmallStr[SmallIndex] & ~0x20) == (BigStr[BigIndex] & ~0x20)) {
                 SmallIndex++;
                 BigIndex++;
-            } else {
+            }
+            else {
                 SmallIndex = 0;
                 BigStart++;
                 BigIndex = BigStart;
@@ -65,7 +66,8 @@ BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
                 SecondString++;
         }
         return (*FirstString == *SecondString);
-    } else {
+    }
+    else {
         return FALSE;
     }
 } // BOOLEAN MyStriCmp()
@@ -99,13 +101,15 @@ CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
         if (*String++ != *StrCharSet) {
             String = ++Src;
             StrCharSet = Sub;
-        } else {
+        }
+        else {
             StrCharSet++;
         }
     }
     if (*StrCharSet == L'\0') {
         return Src;
-    } else {
+    }
+    else {
         return NULL;
     }
 } // CHAR16 *MyStrStr()
@@ -159,7 +163,8 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
             StrCat(NewString, Second);
         MyFreePool(*First);
         *First = NewString;
-    } else {
+    }
+    else {
         Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
     } // if/else
 } // VOID MergeStrings()
@@ -186,7 +191,8 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
                 p++;
             } // while
             MyFreePool(Temp);
-        } else {
+        }
+        else {
             Print(L"Error! Unable to allocate memory in MergeWords()!\n");
         } // if/else
     } // if
@@ -212,13 +218,15 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
         if (i >= StrLen(SubString)) {
             SubString[0] = '\0';
             HasChanged = TRUE;
-        } else {
+        }
+        else {
             TempString = StrDuplicate(&SubString[i]);
             if (TempString != NULL) {
                 StrCpy(&SubString[1], TempString);
                 MyFreePool(TempString);
                 HasChanged = TRUE;
-            } else {
+            }
+            else {
                 // memory allocation problem; abort to avoid potentially infinite loop!
                 break;
             } // if/else
@@ -335,91 +343,116 @@ CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
 BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
     CHAR16 *Found, *Comma;
 
-    if ((ToDelete == NULL) || (List == NULL))
+    if ((ToDelete == NULL) || (List == NULL)) {
         return FALSE;
+    }
 
     if ((Found = MyStrStr(List, ToDelete)) != NULL) {
         if ((Comma = MyStrStr(Found, L",")) == NULL) {
             // Found is final element
             if (Found == List) { // Found is ONLY element
                 List[0] = L'\0';
-            } else { // Delete the comma preceding Found....
+            }
+            else {
+                // Delete the comma preceding Found....
                 Found--;
                 Found[0] = L'\0';
             } // if/else
-        } else { // Found is NOT final element
+        }
+        else {
+            // Found is NOT final element
             StrCpy(Found, &Comma[1]);
         } // if/else
         return TRUE;
-    } else {
+    }
+    else {
         return FALSE;
     } // if/else
 } // BOOLEAN DeleteItemFromCsvList()
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.
-BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
-   UINTN     i = 0;
-   BOOLEAN   Found = FALSE;
-   CHAR16    *OneElement;
+BOOLEAN IsIn(
+    IN CHAR16 *SmallString,
+    IN CHAR16 *List
+) {
+    UINTN     i      = 0;
+    BOOLEAN   Found  = FALSE;
+    CHAR16    *OneElement;
 
-   if (SmallString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         if (MyStriCmp(OneElement, SmallString)) {
-             Found = TRUE;
-         }
-         MyFreePool(OneElement);
-      } // while
-   } // if
-   return Found;
+    if (SmallString && List) {
+        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+            if (MyStriCmp(OneElement, SmallString)) {
+                Found = TRUE;
+            }
+            MyFreePool(OneElement);
+        } // while
+    } // if
+
+    return Found;
 } // BOOLEAN IsIn()
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
-BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
-   UINTN   i = 0, ElementLength;
-   BOOLEAN Found = FALSE;
-   CHAR16  *OneElement;
+BOOLEAN IsInSubstring(
+    IN CHAR16 *BigString,
+    IN CHAR16 *List
+) {
+    UINTN   i      = 0;
+    UINTN   k      = 0;
+    BOOLEAN Found  = FALSE;
+    CHAR16  *OneElement;
 
-   if (BigString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         ElementLength = StrLen(OneElement);
-         if ((ElementLength <= StrLen(BigString)) &&
-            (StriSubCmp(OneElement, BigString))
-        ) {
-             Found = TRUE;
-         }
-         MyFreePool(OneElement);
-      } // while
-   } // if
-   return Found;
+    if (BigString && List) {
+         while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+             k = StrLen(OneElement);
+             if ((k <= StrLen(BigString)) &&
+                (StriSubCmp(OneElement, BigString))
+            ) {
+                Found = TRUE;
+            }
+            MyFreePool(OneElement);
+        } // while
+    } // if
+
+    return Found;
 } // BOOLEAN IsSubstringIn()
 
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString
 // is preceded by "%", instead remove that character.
 // Returns TRUE if replacement was done, FALSE otherwise.
-BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString) {
+BOOLEAN ReplaceSubstring(
+    IN OUT CHAR16 **MainString,
+    IN     CHAR16 *SearchString,
+    IN     CHAR16 *ReplString
+) {
     BOOLEAN WasReplaced = FALSE;
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
     FoundSearchString = MyStrStr(*MainString, SearchString);
     if (FoundSearchString) {
         NewString = AllocateZeroPool(sizeof (CHAR16) * StrLen(*MainString));
+
         if (NewString) {
             EndString = &(FoundSearchString[StrLen(SearchString)]);
             FoundSearchString[0] = L'\0';
+
             if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             } // if
+
             StrCpy(NewString, *MainString);
             MergeStrings(&NewString, ReplString, L'\0');
             MergeStrings(&NewString, EndString, L'\0');
+
             MyFreePool(MainString);
+
             *MainString = NewString;
             WasReplaced = TRUE;
         } // if
     } // if
+
     return WasReplaced;
 } // BOOLEAN ReplaceSubstring()
 
@@ -437,6 +470,7 @@ BOOLEAN IsValidHex(CHAR16 *Input) {
         }
         i++;
     } // while
+
     return IsHex;
 } // BOOLEAN IsValidHex()
 
@@ -445,7 +479,11 @@ BOOLEAN IsValidHex(CHAR16 *Input) {
 // at the specified position and continuing for the specified number
 // of characters or until the end of the string, whichever is first.
 // NumChars must be between 1 and 16. Ignores invalid characters.
-UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
+UINT64 StrToHex(
+    CHAR16 *Input,
+    UINTN Pos,
+    UINTN NumChars
+) {
     UINT64 retval = 0x00;
     UINTN  NumDone = 0, InputLength;
     CHAR16 a;
@@ -474,6 +512,7 @@ UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
         }
         Pos++;
     } // while()
+
     return retval;
 } // StrToHex()
 
@@ -486,68 +525,88 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
     BOOLEAN retval = TRUE;
     CHAR16  a;
 
-    if (UnknownString == NULL)
+    if (UnknownString == NULL) {
         return FALSE;
+    }
 
     Length = StrLen(UnknownString);
-    if (Length != 36)
+    if (Length != 36) {
         return FALSE;
+    }
 
     for (i = 0; i < Length; i++) {
         a = UnknownString[i];
         if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-            if (a != L'-')
+            if (a != L'-') {
                 retval = FALSE;
-        } else if (((a < L'a') || (a > L'f')) &&
-                   ((a < L'A') || (a > L'F')) &&
-                   ((a < L'0') && (a > L'9'))) {
+            }
+        }
+        else if (((a < L'a') || (a > L'f')) &&
+            ((a < L'A') || (a > L'F')) &&
+            ((a < L'0') && (a > L'9'))
+        ) {
             retval = FALSE;
         } // if/else if
     } // for
+
     return retval;
 } // BOOLEAN IsGuid()
 
 // Return the GUID as a string, suitable for display to the user. Note that the calling
 // function is responsible for freeing the allocated memory.
-CHAR16 * GuidAsString(EFI_GUID *GuidData) {
-   CHAR16 *TheString;
+CHAR16 * GuidAsString(
+    EFI_GUID *GuidData
+) {
+    CHAR16 *TheString;
 
-   TheString = AllocateZeroPool(42 * sizeof (CHAR16));
-   if (GuidData && (TheString != 0)) {
-      SPrint (TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-              (UINTN)GuidData->Data1, (UINTN)GuidData->Data2, (UINTN)GuidData->Data3,
-              (UINTN)GuidData->Data4[0], (UINTN)GuidData->Data4[1], (UINTN)GuidData->Data4[2],
-              (UINTN)GuidData->Data4[3], (UINTN)GuidData->Data4[4], (UINTN)GuidData->Data4[5],
-              (UINTN)GuidData->Data4[6], (UINTN)GuidData->Data4[7]);
-   }
-   return TheString;
+    TheString = PoolPrint (
+        L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        (UINTN)GuidData->Data1,
+        (UINTN)GuidData->Data2,
+        (UINTN)GuidData->Data3,
+        (UINTN)GuidData->Data4[0],
+        (UINTN)GuidData->Data4[1],
+        (UINTN)GuidData->Data4[2],
+        (UINTN)GuidData->Data4[3],
+        (UINTN)GuidData->Data4[4],
+        (UINTN)GuidData->Data4[5],
+        (UINTN)GuidData->Data4[6],
+        (UINTN)GuidData->Data4[7]
+    );
+
+    return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
 
-EFI_GUID StringAsGuid(CHAR16 * InString) {
+EFI_GUID StringAsGuid(
+    CHAR16 * InString
+) {
     EFI_GUID  Guid = NULL_GUID_VALUE;
 
     if (!IsGuid(InString)) {
         return Guid;
     }
 
-    Guid.Data1 = (UINT32) StrToHex(InString, 0, 8);
-    Guid.Data2 = (UINT16) StrToHex(InString, 9, 4);
-    Guid.Data3 = (UINT16) StrToHex(InString, 14, 4);
-    Guid.Data4[0] = (UINT8) StrToHex(InString, 19, 2);
-    Guid.Data4[1] = (UINT8) StrToHex(InString, 21, 2);
-    Guid.Data4[2] = (UINT8) StrToHex(InString, 23, 2);
-    Guid.Data4[3] = (UINT8) StrToHex(InString, 26, 2);
-    Guid.Data4[4] = (UINT8) StrToHex(InString, 28, 2);
-    Guid.Data4[5] = (UINT8) StrToHex(InString, 30, 2);
-    Guid.Data4[6] = (UINT8) StrToHex(InString, 32, 2);
-    Guid.Data4[7] = (UINT8) StrToHex(InString, 34, 2);
+    Guid.Data1    = (UINT32) StrToHex(InString,  0, 8);
+    Guid.Data2    = (UINT16) StrToHex(InString,  9, 4);
+    Guid.Data3    = (UINT16) StrToHex(InString, 14, 4);
+    Guid.Data4[0] = (UINT8)  StrToHex(InString, 19, 2);
+    Guid.Data4[1] = (UINT8)  StrToHex(InString, 21, 2);
+    Guid.Data4[2] = (UINT8)  StrToHex(InString, 23, 2);
+    Guid.Data4[3] = (UINT8)  StrToHex(InString, 26, 2);
+    Guid.Data4[4] = (UINT8)  StrToHex(InString, 28, 2);
+    Guid.Data4[5] = (UINT8)  StrToHex(InString, 30, 2);
+    Guid.Data4[6] = (UINT8)  StrToHex(InString, 32, 2);
+    Guid.Data4[7] = (UINT8)  StrToHex(InString, 34, 2);
 
     return Guid;
 } // EFI_GUID StringAsGuid()
 
 // Delete the STRING_LIST pointed to by *StringList.
-VOID DeleteStringList(STRING_LIST *StringList) {
-    STRING_LIST *Current = StringList, *Previous;
+VOID DeleteStringList(
+    STRING_LIST *StringList
+) {
+    STRING_LIST *Previous;
+    STRING_LIST *Current = StringList;
 
     while (Current != NULL) {
         MyFreePool(Current->Value);

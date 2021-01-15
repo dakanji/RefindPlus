@@ -1964,23 +1964,22 @@ DirIterNext (
             // end of listing
             return FALSE;
         }
-        if (FilePattern != NULL) {
-            if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
-                KeepGoing = FALSE;
-            }
 
-            i = 0;
-            while (KeepGoing && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
-               if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
-                   KeepGoing = FALSE;
-               }
-               MyFreePool (OnePattern);
-            } // while
-            // else continue loop
-        }
-        else {
+        if (FilePattern == NULL) {
             break;
         }
+
+        if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
+            KeepGoing = FALSE;
+        }
+
+        i = 0;
+        while (KeepGoing && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
+           if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
+               KeepGoing = FALSE;
+           }
+           MyFreePool (OnePattern);
+        } // while
    } while (KeepGoing && FilePattern);
 
     *DirEntry = DirIter->LastFileInfo;
@@ -2375,7 +2374,7 @@ FilenameIn (
             } // if
             MyFreePool (OneElement);
         } // while
-        
+
         MyFreePool (TargetVolName);
         MyFreePool (TargetPath);
         MyFreePool (TargetFilename);

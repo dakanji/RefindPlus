@@ -229,6 +229,7 @@ static EFI_STATUS CreateDirectories(IN EFI_FILE *BaseDir) {
             EFI_FILE_DIRECTORY
         );
         Status = refit_call1_wrapper(TheDir->Close, TheDir);
+        
         MyFreePool(FileName);
         MyFreePool(TheDir);
     } // while()

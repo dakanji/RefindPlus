@@ -125,7 +125,8 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
             InitrdName = StrDuplicate(InitrdNames -> Value);
-        } else {
+        }
+        else {
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
             MaxSharedChars = 0;
 
@@ -170,8 +171,9 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
     CHAR16 *NewOptions = NULL;
 
-    if (Options != NULL)
+    if (Options != NULL) {
         NewOptions = StrDuplicate(Options);
+    }
 
     if (InitrdPath != NULL) {
         if (StriSubCmp(L"%v", Options)) {
@@ -179,11 +181,13 @@ CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
             ReplaceSubstring(&NewOptions, L"%v", InitrdVersion);
 
             MyFreePool(InitrdVersion);
-        } else if (!StriSubCmp(L"initrd=", Options)) {
+        }
+        else if (!StriSubCmp(L"initrd=", Options)) {
             MergeStrings(&NewOptions, L"initrd=", L' ');
             MergeStrings(&NewOptions, InitrdPath, 0);
         }
     }
+
     return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
 
@@ -202,6 +206,7 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool(Options);
     MyFreePool(InitrdName);
     MyFreePool(KernelVersion);
+    
     return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
 

@@ -933,10 +933,9 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
                 ScanIt = FALSE;
             }
         }
+
         MyFreePool (DontScanDir);
         MyFreePool (VolName);
-        DontScanDir = NULL;
-        VolName = NULL;
     } // while()
 
     return ScanIt;
@@ -1728,7 +1727,7 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             ) {
                 retval = FALSE;
             } // if
-            
+
             MyFreePool (DontScanThis);
             MyFreePool (TestVolName);
             MyFreePool (TestPathName);
@@ -1770,6 +1769,7 @@ static BOOLEAN FindTool (
         while ((FileName = FindCommaDelimited (Names, k++)) != NULL) {
             PathName = StrDuplicate (DirName);
             MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
+
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                 if ((Volumes[VolumeIndex]->RootDir != NULL)
                     && (IsValidTool (Volumes[VolumeIndex], PathName))
@@ -1806,9 +1806,11 @@ static BOOLEAN FindTool (
 
                 } // if
             } // for
+
             MyFreePool (PathName);
             MyFreePool (FileName);
         } // while Names
+
         MyFreePool (DirName);
     } // while Locations
 
@@ -2085,7 +2087,8 @@ VOID ScanForTools (VOID) {
                         MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
                         #endif
                     } // if
-                MyFreePool (FileName);
+
+                    MyFreePool (FileName);
                 } // while
 
                 if (!FoundTool) {
@@ -2140,12 +2143,12 @@ VOID ScanForTools (VOID) {
                             FALSE
                         );
 
-
                      #if REFIT_DEBUG > 0
                      MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
                      #endif
                   } // if
-                    MyFreePool (FileName);
+
+                  MyFreePool (FileName);
                 } // while
 
                 if (!FoundTool) {
@@ -2174,6 +2177,7 @@ VOID ScanForTools (VOID) {
                      MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
                      #endif
                     } // if
+
                     MyFreePool (FileName);
                 } // while
 
@@ -2188,9 +2192,7 @@ VOID ScanForTools (VOID) {
             case TAG_APPLE_RECOVERY:
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     j = 0;
-                    while (
-                        (FileName = FindCommaDelimited (GlobalConfig.MacOSRecoveryFiles, j++)) != NULL
-                    ) {
+                    while ((FileName = FindCommaDelimited (GlobalConfig.MacOSRecoveryFiles, j++)) != NULL) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool (Volumes[VolumeIndex], FileName))) {
                                 FoundTool = TRUE;
@@ -2201,6 +2203,7 @@ VOID ScanForTools (VOID) {
                                     ToolName,
                                     Volumes[VolumeIndex]->VolName
                                 );
+
                                 AddToolEntry (
                                     Volumes[VolumeIndex],
                                     FileName,
@@ -2215,6 +2218,8 @@ VOID ScanForTools (VOID) {
                                 #endif
                             } // if
                         } // if
+
+                        MyFreePool (FileName);
                     } // while
                 } // for
 
@@ -2228,10 +2233,9 @@ VOID ScanForTools (VOID) {
 
             case TAG_WINDOWS_RECOVERY:
                 j = 0;
-                while (
-                    (FileName = FindCommaDelimited (GlobalConfig.WindowsRecoveryFiles, j++)) != NULL
-                ) {
+                while ((FileName = FindCommaDelimited (GlobalConfig.WindowsRecoveryFiles, j++)) != NULL) {
                     SplitVolumeAndFilename (&FileName, &VolName);
+                    
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
@@ -2259,6 +2263,8 @@ VOID ScanForTools (VOID) {
                              #endif
                         } // if
                     } // for
+
+                    MyFreePool (FileName);
                 } // while
 
                 if (!FoundTool) {
@@ -2267,7 +2273,6 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
 
-                MyFreePool (FileName);
                 MyFreePool (VolName);
                 VolName = NULL;
 

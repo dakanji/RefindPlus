@@ -400,6 +400,7 @@ FindMenuShortcutEntry (
         MyFreePool (Shortcut);
         j++;
     } // while()
+
     return -1;
 } // static INTN FindMenuShortcutEntry()
 
@@ -2044,11 +2045,13 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         } else {
             i++;
         }
+
         MyFreePool (OneElement);
         MyFreePool (Filename);
         MyFreePool (VolName);
         DeletedSomething |= DeleteIt;
     } // while()
+
     return DeletedSomething;
 } // BOOLEAN RemoveInvalidFilenames()
 
@@ -2067,29 +2070,38 @@ VOID ManageHiddenTags (VOID) {
     EFI_STATUS          Status;
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     HiddenTags = ReadHiddenTags (L"HiddenTags");
     SaveTags = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
-    if (HiddenTags && (HiddenTags[0] != L'\0'))
+    if (HiddenTags && (HiddenTags[0] != L'\0')) {
         AllTags = StrDuplicate (HiddenTags);
+    }
     HiddenTools = ReadHiddenTags (L"HiddenTools");
     SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
-    if (HiddenTools && (HiddenTools[0] != L'\0'))
+    if (HiddenTools && (HiddenTools[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenTools, L',');
+    }
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-    if (HiddenLegacy && (HiddenLegacy[0] != L'\0'))
+    if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenLegacy, L',');
+    }
     if ((AllTags) && (StrLen (AllTags) > 0)) {
         AddMenuInfoLine (&HideItemMenu, L"Select a tag and press Enter to restore it");
+
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             MenuEntryItem->Title = StrDuplicate (OneElement);
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = 1;
             AddMenuEntry (&HideItemMenu, MenuEntryItem);
+
+            MyFreePool (OneElement);
+            MyFreePool (MenuEntryItem);
         } // while
+
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         if (MenuExit == MENU_EXIT_ENTER) {
             SaveTags |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
@@ -2138,8 +2150,6 @@ VOID ManageHiddenTags (VOID) {
     MyFreePool (HiddenTags);
     MyFreePool (HiddenTools);
     MyFreePool (HiddenLegacy);
-    MyFreePool (OneElement);
-    MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags (CHAR16 *VarName) {

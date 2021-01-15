@@ -906,7 +906,7 @@ preBootKicker (
 
                 // Run BootKicker
                 StartTool (ourLoaderEntry);
-                
+
                 #if REFIT_DEBUG > 0
                 MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
@@ -1412,6 +1412,7 @@ STATIC VOID AdjustDefaultSelection() {
         } // if
         MyFreePool (Element);
     } // while
+    
     MyFreePool (GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
