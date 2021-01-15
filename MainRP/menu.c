@@ -1736,7 +1736,7 @@ MainMenuStyle (
     INTN i;
     static UINTN row0PosX, row0PosXRunning, row1PosY, row0Loaders;
     UINTN row0Count, row1Count, row1PosX, row1PosXRunning;
-    static UINTN *itemPosX;
+    static UINTN *itemPosX = NULL;
     static UINTN row0PosY, textPosY;
 
     State->ScrollMode = SCROLL_MODE_ICONS;
@@ -1770,7 +1770,10 @@ MainMenuStyle (
                 textPosY = row1PosY;
             }
 
-            itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
+            if (!itemPosX) {
+                itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
+            }
+
             row0PosXRunning = row0PosX;
             row1PosXRunning = row1PosX;
             for (i = 0; i <= State->MaxIndex; i++) {

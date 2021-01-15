@@ -845,6 +845,7 @@ BltClearScreen (
             }
             egFreeImage(Banner);
         }
+        egFreeImage(NewBanner);
     }
     else { // not showing banner
         // clear to menu background color

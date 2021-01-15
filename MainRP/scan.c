@@ -1088,7 +1088,7 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
     CHAR16                  *Message, *Extension, *FullName;
-    struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
+    struct LOADER_LIST      *LoaderList = NULL, *NewLoader = NULL;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
 
@@ -1113,9 +1113,12 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
               FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader (Volume->RootDir, FullName)
           ) {
-              continue;   // skip this
+               // skip this
+               MyFreePool (Extension);
+               continue;
           }
 
+          CleanUpLoaderList (NewLoader);
           NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
           if (NewLoader != NULL) {
              NewLoader->FileName = StrDuplicate (FullName);
@@ -1181,6 +1184,8 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
           MyFreePool(Message);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
+
+     CleanUpLoaderList (NewLoader);
 
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
@@ -1272,6 +1277,7 @@ static BOOLEAN ScanMacOsLoader (REFIT_VOLUME *Volume, CHAR16* FullFileName) {
     MyFreePool (VolName);
     MyFreePool (PathName);
     MyFreePool (FileName);
+
     return ScanFallbackLoader;
 } // VOID ScanMacOsLoader()
 
@@ -1713,6 +1719,7 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
     if (FileExists (BaseVolume->RootDir, PathName) && IsValidLoader (BaseVolume->RootDir, PathName)) {
         SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
+
         while (retval && (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))) {
             SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
             if (MyStriCmp (TestFileName, DontFileName) &&
@@ -1721,7 +1728,11 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             ) {
                 retval = FALSE;
             } // if
+            
             MyFreePool (DontScanThis);
+            MyFreePool (TestVolName);
+            MyFreePool (TestPathName);
+            MyFreePool (TestFileName);
         } // while
     }
     else {

@@ -1519,30 +1519,33 @@ REFIT_FILE * ReadLinuxOptionsFile (
    do {
       OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
       FullFilename = FindPath (LoaderPath);
+
       if ((OptionsFilename != NULL) && (FullFilename != NULL)) {
          MergeStrings (&FullFilename, OptionsFilename, '\\');
+
          if (FileExists (Volume->RootDir, FullFilename)) {
             File = AllocateZeroPool (sizeof (REFIT_FILE));
             Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
+
             if (CheckError (Status, L"while loading the Linux options file")) {
-               if (File != NULL) {
-                   FreePool (File);
-               }
-               File = NULL;
+                MyFreePool (File);
             }
             else {
                GoOn = FALSE;
                FileFound = TRUE;
             } // if/else error
          } // if file exists
+
+         MyFreePool (OptionsFilename);
       }
       else { // a filename string is NULL
          GoOn = FALSE;
       } // if/else
+
       MyFreePool (OptionsFilename);
       MyFreePool (FullFilename);
-      OptionsFilename = FullFilename = NULL;
    } while (GoOn);
+
    if (!FileFound) {
       // No refind_linux.conf file; look for /etc/fstab and try to pull values from there....
       File = GenerateOptionsFromEtcFstab (Volume);
@@ -1551,6 +1554,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
           File = GenerateOptionsFromPartTypes();
       }
    } // if
+   
    return (File);
 } // REFIT_FILE * ReadLinuxOptionsFile()
 

@@ -95,17 +95,21 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
         MergeStrings(&Path, L"\\", 0);
     } // if
     DirIterOpen(Volume->RootDir, Path, &DirIter);
+
     // Now add a trailing backslash if it was NOT added earlier, for consistency in
     // building the InitrdName later....
-    if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\'))
+    if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\')) {
         MergeStrings(&Path, L"\\", 0);
+    }
+
     while (DirIterNext(&DirIter, 2, L"init*", &DirEntry)) {
         InitrdVersion = FindNumbers(DirEntry->FileName);
         if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))) {
                 CurrentInitrdName = AllocateZeroPool(sizeof (STRING_LIST));
-                if (InitrdNames == NULL)
+                if (InitrdNames == NULL) {
                     InitrdNames = FinalInitrdName = CurrentInitrdName;
+                }
                 if (CurrentInitrdName) {
                     CurrentInitrdName->Value = PoolPrint(L"%s%s", Path, DirEntry->FileName);
                     if (CurrentInitrdName != FinalInitrdName) {
@@ -114,34 +118,44 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
                     } // if
                 } // if
         } // if
+
         MyFreePool(InitrdVersion);
     } // while
+
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
             InitrdName = StrDuplicate(InitrdNames -> Value);
         } else {
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
             MaxSharedChars = 0;
+
             while (CurrentInitrdName != NULL) {
                 KernelPostNum = MyStrStr(LoaderPath, KernelVersion);
                 InitrdPostNum = MyStrStr(CurrentInitrdName->Value, KernelVersion);
                 SharedChars = NumCharsInCommon(KernelPostNum, InitrdPostNum);
-                if (SharedChars > MaxSharedChars || (SharedChars == MaxSharedChars && StrLen(CurrentInitrdName->Value) < StrLen(MaxSharedInitrd->Value))) {
+                if (SharedChars > MaxSharedChars ||
+                    (SharedChars == MaxSharedChars && StrLen(CurrentInitrdName->Value) < StrLen(MaxSharedInitrd->Value))
+                ) {
                     MaxSharedChars = SharedChars;
                     MaxSharedInitrd = CurrentInitrdName;
                 } // if
                 // TODO: Compute number of shared characters & compare with max.
                 CurrentInitrdName = CurrentInitrdName->Next;
-            }
-            if (MaxSharedInitrd)
+            } // while
+
+            if (MaxSharedInitrd) {
                 InitrdName = StrDuplicate(MaxSharedInitrd->Value);
+            }
         } // if/else
     } // if
+
     DeleteStringList(InitrdNames);
+    DeleteStringList(CurrentInitrdName);
 
     // Note: Don't FreePool(FileName), since Basename returns a pointer WITHIN the string it's passed.
     MyFreePool(KernelVersion);
     MyFreePool(Path);
+
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
 
@@ -246,6 +260,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
         SubScreen = TargetLoader->me.SubScreen;
         InitrdName = FindInitrd(FileName, Volume);
         KernelVersion = FindNumbers(FileName);
+
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
             ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry(TargetLoader);
@@ -265,6 +280,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
             AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         } // while
+
         MyFreePool(VolName);
         MyFreePool(Path);
         MyFreePool(SubmenuName);
