@@ -355,7 +355,7 @@ BdsLibConnectDevicePath (
  **/
 VOID
 EFIAPI
-BdsLibConnectAllDriversToAllControllers (VOID);
+BdsLibConnectAllDriversToAllControllers (IN BOOLEAN ResetGOP);
 
 /**
   This function will connect console device based on the console

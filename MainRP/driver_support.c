@@ -419,7 +419,7 @@ Error:
  * BSD-licensed; modifications by Roderick Smith are GPLv3. */
 EFI_STATUS
 ConnectAllDriversToAllControllers(
-    VOID
+    IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS  Status;
     UINTN       AllHandleCount;
@@ -466,6 +466,8 @@ ConnectAllDriversToAllControllers(
             Device = FALSE;
         }
 
+        // Dummy ... just to usepassed parameter
+        Parent = ResetGOP;
         if (Device) {
             Parent = FALSE;
             for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
@@ -496,8 +498,8 @@ Done:
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
 #else
-EFI_STATUS ConnectAllDriversToAllControllers() {
-    BdsLibConnectAllDriversToAllControllers();
+EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN ResetGOP) {
+    BdsLibConnectAllDriversToAllControllers(ResetGOP);
     return 0;
 }
 #endif
@@ -823,7 +825,7 @@ LoadDrivers(
 
     // connect all devices
     // DA-TAG: Always run this
-    ConnectAllDriversToAllControllers();
+    ConnectAllDriversToAllControllers(TRUE);
 
     return (NumFound > 0);
 } /* BOOLEAN LoadDrivers() */

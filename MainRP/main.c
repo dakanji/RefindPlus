@@ -1212,7 +1212,7 @@ VOID RescanAll (
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary....
     if (Reconnect) {
-        ConnectAllDriversToAllControllers();
+        ConnectAllDriversToAllControllers(FALSE);
         ScanVolumes();
     }
 

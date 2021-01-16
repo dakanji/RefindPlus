@@ -563,12 +563,12 @@ ApplyGOPFix (
 VOID
 EFIAPI
 BdsLibConnectAllDriversToAllControllers (
-    VOID
+    IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS Status;
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
-    if (EFI_ERROR (Status) && !ReLoaded) {
+    if (EFI_ERROR (Status) && ResetGOP && !ReLoaded) {
         ReLoaded = TRUE;
         Status = ApplyGOPFix();
 
