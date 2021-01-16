@@ -419,7 +419,7 @@ Error:
  * BSD-licensed; modifications by Roderick Smith are GPLv3. */
 EFI_STATUS
 ConnectAllDriversToAllControllers(
-    IN BOOLEAN GetLog
+    VOID
 ) {
     EFI_STATUS  Status;
     UINTN       AllHandleCount;
@@ -444,9 +444,7 @@ ConnectAllDriversToAllControllers(
     }
 
     for (Index = 0; Index < AllHandleCount; Index++) {
-        //
         // Scan the handle database
-        //
         Status = LibScanHandleDatabase(
             NULL,
             NULL,
@@ -485,9 +483,9 @@ ConnectAllDriversToAllControllers(
                        NULL,
                        TRUE
                    );
-                }
-            }
-        }
+               } // if HandleType[Index]
+            } // if !Parent
+        } // if Device
 
         MyFreePool (HandleBuffer);
         MyFreePool (HandleType);
@@ -498,8 +496,8 @@ Done:
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
 #else
-EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN GetLog) {
-    BdsLibConnectAllDriversToAllControllers(GetLog);
+EFI_STATUS ConnectAllDriversToAllControllers() {
+    BdsLibConnectAllDriversToAllControllers();
     return 0;
 }
 #endif
@@ -825,7 +823,7 @@ LoadDrivers(
 
     // connect all devices
     // DA-TAG: Always run this
-    ConnectAllDriversToAllControllers(TRUE);
+    ConnectAllDriversToAllControllers();
 
     return (NumFound > 0);
 } /* BOOLEAN LoadDrivers() */

@@ -1212,7 +1212,7 @@ VOID RescanAll (
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary....
     if (Reconnect) {
-        ConnectAllDriversToAllControllers(TRUE);
+        ConnectAllDriversToAllControllers();
         ScanVolumes();
     }
 
@@ -1522,7 +1522,6 @@ efi_main (
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Spoof Mac OS Version ...%r\n\n", Status);
         #endif
-
     }
 
     // Reset SystemTable if amended in LoadDrivers
