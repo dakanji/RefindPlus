@@ -752,11 +752,13 @@ LoadDrivers(
         else {
             SelfDirectory = NULL;
         }
-
         MergeStrings(&SelfDirectory, Directory, L'\\');
 
         CurFound = ScanDriverDir(SelfDirectory);
         if (CurFound > 0) {
+            MyFreePool(Directory);
+            MyFreePool(SelfDirectory);
+
             NumFound = NumFound + CurFound;
             break;
         }
@@ -766,9 +768,9 @@ LoadDrivers(
             #endif
         }
 
-        MyFreePool(Directory);
         MyFreePool(SelfDirectory);
-    }
+        MyFreePool(Directory);
+    } // while
 
     // Scan additional user-specified driver directories....
     if (GlobalConfig.DriverDirs != NULL) {
@@ -790,7 +792,6 @@ LoadDrivers(
                 else {
                     SelfDirectory = NULL;
                 }
-
                 MergeStrings(&SelfDirectory, Directory, L'\\');
 
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
@@ -799,12 +800,18 @@ LoadDrivers(
                 }
 
                 CurFound = ScanDriverDir(SelfDirectory);
-                
-                #if REFIT_DEBUG > 0
-                if (CurFound < 1) {
-                    MsgLog ("  - Not Found or Empty");
+                if (CurFound > 0) {
+                    MyFreePool(Directory);
+                    MyFreePool(SelfDirectory);
+
+                    NumFound = NumFound + CurFound;
+                    break;
                 }
-                #endif
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("  - Not Found or Empty");
+                    #endif
+                }
             } // if
 
             MyFreePool(SelfDirectory);

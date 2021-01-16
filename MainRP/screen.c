@@ -245,19 +245,18 @@ SetupScreen (
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * UI Scaling Disabled\n");
-                MsgLog ("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
-                    MsgLog ("    * HiDPI Monitor Detected\n");
+                    MsgLog ("    * HiDPI Monitor Detected");
                 }
                 else {
-                    MsgLog ("    * HiDPI Monitor Flagged\n");
+                    MsgLog ("    * HiDPI Monitor Flagged");
                 }
-                MsgLog ("    ** Scale Icons Up\n\n");
+                MsgLog (" ...Scale Icons Up\n\n");
                 #endif
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -267,8 +266,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * LoDPI Monitor Detected\n");
-                MsgLog ("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
                 #endif
             } // if
 
@@ -845,7 +843,6 @@ BltClearScreen (
             }
             egFreeImage(Banner);
         }
-        egFreeImage(NewBanner);
     }
     else { // not showing banner
         // clear to menu background color

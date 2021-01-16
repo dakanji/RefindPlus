@@ -151,7 +151,6 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     } // if
 
     DeleteStringList(InitrdNames);
-    DeleteStringList(CurrentInitrdName);
 
     // Note: Don't FreePool(FileName), since Basename returns a pointer WITHIN the string it's passed.
     MyFreePool(KernelVersion);

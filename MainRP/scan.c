@@ -902,7 +902,9 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
 
         return FALSE;
     }
-    MyFreePool (VolGuid);
+    else {
+        MyFreePool (VolGuid);
+    } // if/else
 
     if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
         return FALSE;
@@ -936,6 +938,8 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
 
         MyFreePool (DontScanDir);
         MyFreePool (VolName);
+        DontScanDir = NULL;
+        VolName = NULL;
     } // while()
 
     return ScanIt;
@@ -1087,7 +1091,7 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
     CHAR16                  *Message, *Extension, *FullName;
-    struct LOADER_LIST      *LoaderList = NULL, *NewLoader = NULL;
+    struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
 
@@ -1112,12 +1116,9 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
               FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
               !IsValidLoader (Volume->RootDir, FullName)
           ) {
-               // skip this
-               MyFreePool (Extension);
-               continue;
+              continue;   // skip this
           }
 
-          CleanUpLoaderList (NewLoader);
           NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
           if (NewLoader != NULL) {
              NewLoader->FileName = StrDuplicate (FullName);
@@ -1183,8 +1184,6 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
           MyFreePool(Message);
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
-
-     CleanUpLoaderList (NewLoader);
 
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
@@ -1531,7 +1530,6 @@ static LOADER_ENTRY * AddToolEntry (
     Entry->LoaderPath = (LoaderPath) ? StrDuplicate (LoaderPath) : NULL;
     Entry->Volume = Volume;
     Entry->UseGraphicsMode = UseGraphicsMode;
-    MyFreePool(TitleStr);
 
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
     return Entry;
@@ -1729,9 +1727,6 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             } // if
 
             MyFreePool (DontScanThis);
-            MyFreePool (TestVolName);
-            MyFreePool (TestPathName);
-            MyFreePool (TestFileName);
         } // while
     }
     else {
@@ -2147,8 +2142,7 @@ VOID ScanForTools (VOID) {
                      MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
                      #endif
                   } // if
-
-                  MyFreePool (FileName);
+                    MyFreePool (FileName);
                 } // while
 
                 if (!FoundTool) {
@@ -2218,8 +2212,6 @@ VOID ScanForTools (VOID) {
                                 #endif
                             } // if
                         } // if
-
-                        MyFreePool (FileName);
                     } // while
                 } // for
 
@@ -2263,8 +2255,6 @@ VOID ScanForTools (VOID) {
                              #endif
                         } // if
                     } // for
-
-                    MyFreePool (FileName);
                 } // while
 
                 if (!FoundTool) {
@@ -2273,6 +2263,7 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
 
+                MyFreePool (FileName);
                 MyFreePool (VolName);
                 VolName = NULL;
 

@@ -802,8 +802,6 @@ ScanLegacyUEFI (
               } // if/else
            } // if
         } // if (BdsOption != NULL)
-
-        MyFreePool (BootOrder);
         Index++;
     } // while
 } /* static VOID ScanLegacyUEFI() */

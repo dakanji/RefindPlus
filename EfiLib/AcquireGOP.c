@@ -118,10 +118,10 @@ ReloadPCIROM (
                             &ScratchSize
                         );
 
-                        if (!EFI_ERROR (Status) && ImageBuffer != NULL) {
+                        if (!EFI_ERROR (Status)) {
                             DecompressedImageBuffer = AllocateZeroPool (DestinationSize);
 
-                            if (DecompressedImageBuffer != NULL) {
+                            if (ImageBuffer != NULL) {
                                 Scratch = AllocateZeroPool (ScratchSize);
 
                                 if (Scratch != NULL) {
@@ -135,16 +135,15 @@ ReloadPCIROM (
                                         Scratch,
                                         ScratchSize
                                     );
-                                    MyFreePool (Scratch);
 
                                     if (!EFI_ERROR (Status)) {
                                         LoadROM     = TRUE;
                                         ImageBuffer = DecompressedImageBuffer;
                                         ImageLength = DestinationSize;
                                     }
-                                }
 
-                                MyFreePool (DecompressedImageBuffer);
+                                    MyFreePool (Scratch);
+                                }
                             }
                         }
                     }
@@ -153,9 +152,7 @@ ReloadPCIROM (
                 if (LoadROM) {
                     RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
                     FilePath    = refit_call2_wrapper(FileDevicePath, NULL, RomFileName);
-                    MyFreePool (RomFileName);
-
-                    Status = refit_call6_wrapper(
+                    Status      = refit_call6_wrapper(
                         gBS->LoadImage,
                         TRUE,
                         gImageHandle,
@@ -175,7 +172,7 @@ ReloadPCIROM (
                     }
                 }
 
-                MyFreePool (ImageBuffer);
+                MyFreePool (DecompressedImageBuffer);
             }
         }
 
@@ -255,8 +252,6 @@ AcquireGOP (
                         if (EFI_ERROR (ReturnStatus)) {
                             ReturnStatus = Status;
                         }
-
-                        MyFreePool (RomFileName);
                     } // if BindingHandleCount
 
                     MyFreePool (BindingHandleBuffer);

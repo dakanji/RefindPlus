@@ -1737,7 +1737,7 @@ MainMenuStyle (
     INTN i;
     static UINTN row0PosX, row0PosXRunning, row1PosY, row0Loaders;
     UINTN row0Count, row1Count, row1PosX, row1PosXRunning;
-    static UINTN *itemPosX = NULL;
+    static UINTN *itemPosX;
     static UINTN row0PosY, textPosY;
 
     State->ScrollMode = SCROLL_MODE_ICONS;
@@ -1773,20 +1773,20 @@ MainMenuStyle (
 
             if (!itemPosX) {
                 itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
+                row0PosXRunning = row0PosX;
+                row1PosXRunning = row1PosX;
+                for (i = 0; i <= State->MaxIndex; i++) {
+                    if (Screen->Entries[i]->Row == 0) {
+                        itemPosX[i] = row0PosXRunning;
+                        row0PosXRunning += TileSizes[0] + TILE_XSPACING;
+                    }
+                    else {
+                        itemPosX[i] = row1PosXRunning;
+                        row1PosXRunning += TileSizes[1] + TILE_XSPACING;
+                    }
+                }
             }
 
-            row0PosXRunning = row0PosX;
-            row1PosXRunning = row1PosX;
-            for (i = 0; i <= State->MaxIndex; i++) {
-                if (Screen->Entries[i]->Row == 0) {
-                    itemPosX[i] = row0PosXRunning;
-                    row0PosXRunning += TileSizes[0] + TILE_XSPACING;
-                }
-                else {
-                    itemPosX[i] = row1PosXRunning;
-                    row1PosXRunning += TileSizes[1] + TILE_XSPACING;
-                }
-            }
             // initial painting
             InitSelection();
             SwitchToGraphicsAndClear (TRUE);
@@ -2097,9 +2097,6 @@ VOID ManageHiddenTags (VOID) {
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = 1;
             AddMenuEntry (&HideItemMenu, MenuEntryItem);
-
-            MyFreePool (OneElement);
-            MyFreePool (MenuEntryItem);
         } // while
 
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2150,6 +2147,8 @@ VOID ManageHiddenTags (VOID) {
     MyFreePool (HiddenTags);
     MyFreePool (HiddenTools);
     MyFreePool (HiddenLegacy);
+    MyFreePool (OneElement);
+    MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags (CHAR16 *VarName) {

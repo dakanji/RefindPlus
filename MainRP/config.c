@@ -616,30 +616,36 @@ ReadConfig (
     MsgLog ("Read Config...\n");
     #endif
 
-    // Set a few defaults only if we're loading the default file.
+    // Set a few defaults only if we are loading the default file.
     if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
        MyFreePool (GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
-       MyFreePool (GlobalConfig.DontScanDirs);
+
        if (SelfVolume) {
            TempStr = GuidAsString (&(SelfVolume->PartGuid));
        }
        MergeStrings (&TempStr, SelfDirPath, L':');
        MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
-       GlobalConfig.DontScanDirs = TempStr;
+       MyFreePool (GlobalConfig.DontScanDirs);
+       GlobalConfig.DontScanDirs = StrDuplicate (TempStr);
        MyFreePool (TempStr);
+
        MyFreePool (GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
+       MergeStrings (&GlobalConfig.DontScanFiles, MOK_NAMES, L',');
+       MergeStrings (&GlobalConfig.DontScanFiles, FWUPDATE_NAMES, L',');
+
        MyFreePool (GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
-       MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
-       MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
+
        MyFreePool (GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
-       GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
-       GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
+
        MyFreePool (GlobalConfig.DefaultSelection);
        GlobalConfig.DefaultSelection = StrDuplicate (L"+");
+
+       GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
+       GlobalConfig.MacOSRecoveryFiles   = StrDuplicate (MACOS_RECOVERY_FILES);
     } // if
 
     if (!FileExists (SelfDir, FileName)) {
@@ -1535,8 +1541,6 @@ REFIT_FILE * ReadLinuxOptionsFile (
                FileFound = TRUE;
             } // if/else error
          } // if file exists
-
-         MyFreePool (OptionsFilename);
       }
       else { // a filename string is NULL
          GoOn = FALSE;
@@ -1554,7 +1558,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
           File = GenerateOptionsFromPartTypes();
       }
    } // if
-   
+
    return (File);
 } // REFIT_FILE * ReadLinuxOptionsFile()
 

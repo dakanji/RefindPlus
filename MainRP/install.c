@@ -118,8 +118,6 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
             MenuEntryItem->Row = i++;
             AddMenuEntry(&InstallMenu, MenuEntryItem);
             CurrentESP = CurrentESP->NextESP;
-
-            MyFreePool(Temp);
         } // while
 
         MenuExit = RunGenericMenu(&InstallMenu, Style, &DefaultEntry, &ChosenOption);
@@ -132,7 +130,7 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
                     ChosenVolume = CurrentESP->Volume;
                 } // if
                 CurrentESP = CurrentESP->NextESP;
-                MyFreePool(Temp);
+                MyFreePool(&Temp);
             } // while
 
         } // if
@@ -652,8 +650,8 @@ static EFI_STATUS SetBootDefault(UINTN BootNum) {
 
             MyFreePool(NewBootOrder);
         } // if
+        MyFreePool(BootOrder);
     } // if
-    MyFreePool(BootOrder);
 
     return Status;
 } // EFI_STATUS SetBootDefault()
@@ -932,8 +930,8 @@ static EFI_STATUS DeleteInvalidBootEntries(VOID) {
             TRUE
         );
         MyFreePool(NewBootOrder);
+        MyFreePool(BootOrder);
     } // if
-    MyFreePool(BootOrder);
 
     return Status;
 } // EFI_STATUS DeleteInvalidBootEntries()

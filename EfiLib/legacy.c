@@ -760,9 +760,6 @@ BdsAddNonExistingLegacyBootOptions (
     if ((LocalBbsTable[Index].BootPriority == BBS_IGNORE_ENTRY) ||
         (LocalBbsTable[Index].BootPriority == BBS_DO_NOT_BOOT_FROM)
         ) {
-            if (BootOrder != NULL) {
-              FreePool (BootOrder);
-            }
       continue;
     }
 
@@ -981,11 +978,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
           BootOrder,
           &BootOrderSize
           );
-
-          if (BootOptionVar != NULL) {
-            FreePool (BootOptionVar);
-          }
-
         continue;
       } else {
         FreePool (BootOrder);
@@ -1024,10 +1016,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
             (LocalBbsTable[BbsIndex].BootPriority == BBS_DO_NOT_BOOT_FROM)) &&
           (LocalBbsTable[BbsIndex].DeviceType == BbsEntry->DeviceType) &&
           DescStringMatch) {
-              if (BootOptionVar != NULL) {
-                FreePool (BootOptionVar);
-              }
-
         Index++;
         continue;
       }

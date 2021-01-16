@@ -769,9 +769,6 @@ IsValidTool (
             } // if
 
             MyFreePool (DontScanThis);
-            MyFreePool (DontVolName);
-            MyFreePool (DontPathName);
-            MyFreePool (DontFileName);
         } // while
 
     } else {
@@ -1412,7 +1409,7 @@ STATIC VOID AdjustDefaultSelection() {
         } // if
         MyFreePool (Element);
     } // while
-    
+
     MyFreePool (GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
