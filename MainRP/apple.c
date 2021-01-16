@@ -110,8 +110,6 @@ VOID RecordgCsrStatus (
         egDisplayMessage (gCsrStatus, &BGColor, CENTER);
         PauseSeconds (4);
     } // if
-
-    MyFreePool (gCsrStatus);
 } // VOID RecordgCsrStatus()
 
 // Find the current CSR status and reset it to the next one in the

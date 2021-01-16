@@ -1072,17 +1072,12 @@ preCleanNvram (
 VOID AboutRefindPlus (
     VOID
 ) {
-    CHAR16  *LineItem       = NULL;
-    CHAR16  *FirmwareVendor = NULL;
+    CHAR16  *FirmwareVendor;
     UINT32  CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-
-        LineItem = PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION);
-        AddMenuInfoLine (&AboutMenu, LineItem);
-        MyFreePool (LineItem);
-
+        AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
         AddMenuInfoLine (&AboutMenu, L"");
 
         AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
@@ -1092,36 +1087,42 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Running on: ");
-
-        LineItem = PoolPrint (
-            L"EFI Revision %d.%02d",
-            gST->Hdr.Revision >> 16,
-            gST->Hdr.Revision & ((1 << 16) - 1)
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"EFI Revision %d.%02d",
+                gST->Hdr.Revision >> 16,
+                gST->Hdr.Revision & ((1 << 16) - 1)
+            )
         );
-        AddMenuInfoLine (&AboutMenu, LineItem);
-        MyFreePool (LineItem);
 
         #if defined (EFI32)
-        LineItem = PoolPrint (
-            L"Platform: x86 (32 bit); Secure Boot %s",
-            secure_mode() ? L"active" : L"inactive"
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"Platform: x86 (32 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
         );
         #elif defined (EFIX64)
-        LineItem = PoolPrint (
-            L"Platform: x86_64 (64 bit); Secure Boot %s",
-            secure_mode() ? L"active" : L"inactive"
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"Platform: x86_64 (64 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
         );
         #elif defined (EFIAARCH64)
-        LineItem = PoolPrint (
-            L"Platform: ARM (64 bit); Secure Boot %s",
-            secure_mode() ? L"active" : L"inactive"
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"Platform: ARM (64 bit); Secure Boot %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
         );
         #else
-        LineItem = L"Platform: Unknown";
+        AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
-        AddMenuInfoLine (&AboutMenu, LineItem);
-        MyFreePool (LineItem);
-
 
         if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
             RecordgCsrStatus (CsrStatus, FALSE);
@@ -1133,14 +1134,15 @@ VOID AboutRefindPlus (
         // More than ~65 causes empty info page on 800x600 display
         LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
 
-        LineItem = PoolPrint (
-            L" Firmware: %s %d.%02d",
-            FirmwareVendor,
-            gST->FirmwareRevision >> 16,
-            gST->FirmwareRevision & ((1 << 16) - 1)
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L" Firmware: %s %d.%02d",
+                FirmwareVendor,
+                gST->FirmwareRevision >> 16,
+                gST->FirmwareRevision & ((1 << 16) - 1)
+            )
         );
-        AddMenuInfoLine (&AboutMenu, LineItem);
-        MyFreePool (LineItem);
 
         AddMenuInfoLine (&AboutMenu, PoolPrint (L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine (&AboutMenu, L"");
@@ -1163,7 +1165,7 @@ VOID AboutRefindPlus (
     }
 
     RunMenu (&AboutMenu, NULL);
-} /* VOID AboutRefindPlus() */
+} // VOID AboutRefindPlus()
 
 // Record the loader's name/description in the "PreviousBoot" EFI variable
 // if different from what is already stored there.
