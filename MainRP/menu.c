@@ -1771,19 +1771,17 @@ MainMenuStyle (
                 textPosY = row1PosY;
             }
 
-            if (!itemPosX) {
-                itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
-                row0PosXRunning = row0PosX;
-                row1PosXRunning = row1PosX;
-                for (i = 0; i <= State->MaxIndex; i++) {
-                    if (Screen->Entries[i]->Row == 0) {
-                        itemPosX[i] = row0PosXRunning;
-                        row0PosXRunning += TileSizes[0] + TILE_XSPACING;
-                    }
-                    else {
-                        itemPosX[i] = row1PosXRunning;
-                        row1PosXRunning += TileSizes[1] + TILE_XSPACING;
-                    }
+            itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
+            row0PosXRunning = row0PosX;
+            row1PosXRunning = row1PosX;
+            for (i = 0; i <= State->MaxIndex; i++) {
+                if (Screen->Entries[i]->Row == 0) {
+                    itemPosX[i] = row0PosXRunning;
+                    row0PosXRunning += TileSizes[0] + TILE_XSPACING;
+                }
+                else {
+                    itemPosX[i] = row1PosXRunning;
+                    row1PosXRunning += TileSizes[1] + TILE_XSPACING;
                 }
             }
 
