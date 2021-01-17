@@ -164,7 +164,7 @@ StartEFIImage (
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    CHAR16                  ErrorInfo[256];
+    CHAR16                  *ErrorInfo;
     CHAR16                  *FullLoadOptions = NULL;
 
     // set load options
@@ -240,10 +240,12 @@ StartEFIImage (
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
-    SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"While Loading '%s' from '%s'", ImageTitle, Volume->RootDir);
     if (CheckError(Status, ErrorInfo)) {
+        MyFreePool (ErrorInfo);
         goto bailout;
     }
+    MyFreePool (ErrorInfo);
 
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -252,11 +254,16 @@ StartEFIImage (
         (VOID **) &ChildLoadedImage
     );
     ReturnStatus = Status;
-    if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
+    if (CheckError(Status, L"While Getting 'LoadedImageProtocol' Handle")) {
         goto bailout_unload;
     }
-    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
+    ChildLoadedImage->LoadOptions = (VOID *) FullLoadOptions;
+    if (FullLoadOptions) {
+        ChildLoadedImage->LoadOptionsSize = ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16);
+    }
+    else {
+        ChildLoadedImage->LoadOptionsSize = 0;
+    }
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
@@ -266,8 +273,10 @@ StartEFIImage (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"Returned from Child Image:- '%s'", ImageTitle);
     CheckError(Status, ErrorInfo);
+    MyFreePool (ErrorInfo);
+
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -333,7 +342,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     );
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
-    
+
     return err;
 } // EFI_STATUS RebootIntoFirmware()
 

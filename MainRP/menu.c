@@ -590,7 +590,8 @@ RunGenericMenu (
         Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
-        } else {
+        }
+        else {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry = FindMenuShortcutEntry (Screen, KeyAsString);
@@ -682,7 +683,8 @@ RunGenericMenu (
 
                 if (Input == INPUT_KEY || Input == INPUT_POINTER) {
                     continue;
-                } else if (Input == INPUT_TIMEOUT) {
+                }
+                else if (Input == INPUT_TIMEOUT) {
                     ElapsCount = 10; // always counted as 1s to end of the timeout
                 }
 
@@ -832,7 +834,7 @@ RunGenericMenu (
                     break;
             } // switch()
         }
-    }
+    } // while
 
     pdClear();
     StyleFunc (Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -1776,11 +1778,11 @@ MainMenuStyle (
             row1PosXRunning = row1PosX;
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (Screen->Entries[i]->Row == 0) {
-                    itemPosX[i] = row0PosXRunning;
+                    itemPosX[i]      = row0PosXRunning;
                     row0PosXRunning += TileSizes[0] + TILE_XSPACING;
                 }
                 else {
-                    itemPosX[i] = row1PosXRunning;
+                    itemPosX[i]      = row1PosXRunning;
                     row1PosXRunning += TileSizes[1] + TILE_XSPACING;
                 }
             }
@@ -1890,8 +1892,9 @@ UINTN FindMainMenuItem (
                     ItemIndex = i;
                     break;
                 }
-        } // if
-        } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
+            } // if
+        }
+        else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
             if (PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
                 ItemIndex = i;
                 break;
@@ -1904,21 +1907,26 @@ UINTN FindMainMenuItem (
     return ItemIndex;
 } // VOID FindMainMenuItem()
 
-VOID GenerateWaitList() {
+VOID GenerateWaitList(
+    VOID
+) {
     UINTN PointerCount = pdCount();
+    UINTN Index;
+
     WaitListLength = 2 + PointerCount;
 
     WaitList = AllocatePool (sizeof (EFI_EVENT) * WaitListLength);
 
     WaitList[0] = gST->ConIn->WaitForKey;
 
-    UINTN Index;
     for (Index = 0; Index < PointerCount; Index++) {
         WaitList[Index + 1] = pdWaitEvent (Index);
     }
 } // VOID GenerateWaitList()
 
-UINTN WaitForInput (UINTN Timeout) {
+UINTN WaitForInput (
+    UINTN Timeout
+) {
     UINTN       Index = INPUT_TIMEOUT;
     UINTN       Length = WaitListLength;
     EFI_EVENT   TimerEvent = NULL;
@@ -1926,15 +1934,16 @@ UINTN WaitForInput (UINTN Timeout) {
 
     if (Timeout == 0) {
         Length--;
-    } else {
+    }
+    else {
         Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if (EFI_ERROR (Status)) {
             refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
-        } else {
-            Status = refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
-            WaitList[Length - 1] = TimerEvent;
         }
+
+        Status = refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
+        WaitList[Length - 1] = TimerEvent;
     }
 
     Status = refit_call3_wrapper(gBS->WaitForEvent, Length, WaitList, &Index);
@@ -1944,22 +1953,27 @@ UINTN WaitForInput (UINTN Timeout) {
         refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     }
-    else if (Index == 0) {
+
+    if (Index == 0) {
         return INPUT_KEY;
     }
-    else if (Index < Length - 1) {
+
+    if (Index < Length - 1) {
         return INPUT_POINTER;
     }
+
     return INPUT_TIMEOUT;
 } // UINTN WaitForInput()
 
 // Enable the user to edit boot loader options.
 // Returns TRUE if the user exited with edited options; FALSE if the user
 // pressed Esc to terminate the edit.
-static BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
-   UINTN x_max, y_max;
-   CHAR16 *EditedOptions;
-   BOOLEAN retval = FALSE;
+static BOOLEAN EditOptions (
+    LOADER_ENTRY *MenuEntry
+) {
+    UINTN x_max, y_max;
+    CHAR16 *EditedOptions;
+    BOOLEAN retval = FALSE;
 
    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
       return FALSE;
@@ -1986,18 +2000,24 @@ static BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
 // user-callable dispatcher functions
 //
 
-VOID DisplaySimpleMessage (CHAR16* Title, CHAR16 *Message) {
+VOID DisplaySimpleMessage (
+    CHAR16* Title,
+    CHAR16 *Message
+) {
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     INTN                DefaultEntry = 0;
     REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
                                          L"Press Enter to return to main menu", L"" };
 
-    if (!Message)
+    if (!Message) {
         return;
+    }
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
+
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     HideItemMenu.Title = Title;
     AddMenuInfoLine (&HideItemMenu, Message);
@@ -2010,7 +2030,10 @@ VOID DisplaySimpleMessage (CHAR16* Title, CHAR16 *Message) {
 // path, and filename components; if the filename omits the volume, the search
 // is not done and the item is left intact, no matter what.
 // Returns TRUE if any files were deleted, FALSE otherwise.
-static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
+static BOOLEAN RemoveInvalidFilenames (
+    CHAR16 *FilenameList,
+    CHAR16 *VarName
+) {
     UINTN i = 0;
     CHAR16 *Filename, *OneElement, *VolName = NULL;
     REFIT_VOLUME *Volume;
@@ -2021,6 +2044,7 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
     while ((OneElement = FindCommaDelimited (FilenameList, i)) != NULL) {
         DeleteIt = FALSE;
         Filename = StrDuplicate (OneElement);
+
         if (SplitVolumeAndFilename (&Filename, &VolName)) {
             DeleteIt = TRUE;
             if (FindVolume (&Volume, VolName) && Volume->RootDir) {
@@ -2038,10 +2062,12 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
                 } // if file exists
             } // if volume exists
         } // if list item includes volume
-        if (DeleteIt) {
-            DeleteItemFromCsvList (OneElement, FilenameList);
-        } else {
+
+        if (!DeleteIt) {
             i++;
+        }
+        else {
+            DeleteItemFromCsvList (OneElement, FilenameList);
         }
 
         MyFreePool (OneElement);
@@ -2055,7 +2081,9 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
 
 // Present a menu that enables the user to delete hidden tags (that is, to
 // un-hide them).
-VOID ManageHiddenTags (VOID) {
+VOID ManageHiddenTags (
+    VOID
+) {
     CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools, *HiddenLegacy, *OneElement = NULL;
     INTN                DefaultEntry = 0;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
@@ -2077,16 +2105,22 @@ VOID ManageHiddenTags (VOID) {
     if (HiddenTags && (HiddenTags[0] != L'\0')) {
         AllTags = StrDuplicate (HiddenTags);
     }
+
     HiddenTools = ReadHiddenTags (L"HiddenTools");
     SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
     if (HiddenTools && (HiddenTools[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenTools, L',');
     }
+
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
     if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenLegacy, L',');
     }
-    if ((AllTags) && (StrLen (AllTags) > 0)) {
+
+    if (!AllTags || StrLen (AllTags) < 1) {
+        DisplaySimpleMessage (L"Information", L"No hidden tags found");
+    }
+    else {
         AddMenuInfoLine (&HideItemMenu, L"Select a tag and press Enter to restore it");
 
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
@@ -2101,6 +2135,7 @@ VOID ManageHiddenTags (VOID) {
         if (MenuExit == MENU_EXIT_ENTER) {
             SaveTags |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
             SaveTools |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
+
             if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
                 i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
                 Status = EfivarSetRaw (
@@ -2114,6 +2149,7 @@ VOID ManageHiddenTags (VOID) {
                 CheckError (Status, L"in ManageHiddenTags()");
             } // if
         } // if
+
         if (SaveTags) {
             i = HiddenTags ? StrLen (HiddenTags) : 0;
             Status = EfivarSetRaw (
@@ -2125,6 +2161,7 @@ VOID ManageHiddenTags (VOID) {
             );
             CheckError (Status, L"in ManageHiddenTags()");
         }
+
         if (SaveTools) {
             i = HiddenTools ? StrLen (HiddenTools) : 0;
             Status = EfivarSetRaw (
@@ -2136,11 +2173,12 @@ VOID ManageHiddenTags (VOID) {
             );
             CheckError (Status, L"in ManageHiddenTags()");
         }
-        if (SaveTags || SaveTools || SaveLegacy)
+
+        if (SaveTags || SaveTools || SaveLegacy) {
             RescanAll (FALSE, FALSE);
-    } else {
-        DisplaySimpleMessage (L"Information", L"No hidden tags found");
+        }
     }
+
     MyFreePool (AllTags);
     MyFreePool (HiddenTags);
     MyFreePool (HiddenTools);
@@ -2149,7 +2187,9 @@ VOID ManageHiddenTags (VOID) {
     MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
-CHAR16* ReadHiddenTags (CHAR16 *VarName) {
+CHAR16 *ReadHiddenTags (
+    CHAR16 *VarName
+) {
     CHAR8       *Buffer = NULL;
     UINTN       Size;
     EFI_STATUS  Status;
@@ -2171,7 +2211,10 @@ CHAR16* ReadHiddenTags (CHAR16 *VarName) {
 } // CHAR16* ReadHiddenTags()
 
 // Add PathName to the hidden tags variable specified by *VarName.
-static VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
+static VOID AddToHiddenTags (
+    CHAR16 *VarName,
+    CHAR16 *Pathname
+) {
     CHAR16      *HiddenTags;
     EFI_STATUS  Status;
 
@@ -2209,15 +2252,23 @@ HideEfiTag (
     INTN               DefaultEntry = 1;
     REFIT_MENU_ENTRY   *ChosenOption;
 
-    if ((!Loader) || (!(Loader->Volume)) || (!(Loader->LoaderPath)) || (!HideItemMenu) || (!VarName))
+    if ((!Loader) ||
+        (!(Loader->Volume)) ||
+        (!(Loader->LoaderPath)) ||
+        (!HideItemMenu) ||
+        (!VarName)
+    ) {
         return FALSE;
+    }
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     if (Loader->Volume->VolName && (StrLen (Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->VolName);
-    } else if (Loader->Volume->PartName && (StrLen (Loader->Volume->PartName) > 0)) {
+    }
+    else if (Loader->Volume->PartName && (StrLen (Loader->Volume->PartName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->PartName);
     }
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
@@ -2328,13 +2379,15 @@ HideTag (
                 HideItemMenu.Title = L"Hide EFI OS Tag";
                 HideEfiTag (Loader, &HideItemMenu, L"HiddenTags");
                 RescanAll (FALSE, FALSE);
-            } else {
+            }
+            else {
                 DisplaySimpleMessage (
                     L"Cannot Hide Entry for Manual Boot Stanza",
                     L"You must edit config.conf to remove this entry."
                 );
             }
             break;
+
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:
             HideItemMenu.Title = L"Hide Legacy OS Tag";
@@ -2342,6 +2395,7 @@ HideTag (
                 RescanAll (FALSE, FALSE);
             }
             break;
+
         case TAG_ABOUT:
         case TAG_REBOOT:
         case TAG_SHUTDOWN:
@@ -2355,6 +2409,7 @@ HideTag (
                 L"To hide an internal tool, edit the 'showtools' line in config.conf"
             );
             break;
+
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
@@ -2363,19 +2418,25 @@ HideTag (
     } // switch()
 } // VOID HideTag()
 
-UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
-{
+UINTN RunMenu (
+    IN  REFIT_MENU_SCREEN *Screen,
+    OUT REFIT_MENU_ENTRY  **ChosenEntry
+) {
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     return RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 }
 
-UINTN RunMainMenu (REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_MENU_ENTRY **ChosenEntry)
-{
+UINTN RunMainMenu (
+    REFIT_MENU_SCREEN *Screen,
+    CHAR16** DefaultSelection,
+    REFIT_MENU_ENTRY **ChosenEntry
+) {
     MENU_STYLE_FUNC Style = TextMenuStyle;
     MENU_STYLE_FUNC MainStyle = TextMenuStyle;
     REFIT_MENU_ENTRY *TempChosenEntry;
@@ -2414,36 +2475,45 @@ UINTN RunMainMenu (REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_M
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
-               MenuExit = RunGenericMenu (TempChosenEntry->SubScreen, Style, &DefaultSubmenuIndex, &TempChosenEntry);
+               MenuExit = RunGenericMenu (
+                   TempChosenEntry->SubScreen,
+                   Style,
+                   &DefaultSubmenuIndex,
+                   &TempChosenEntry
+               );
+
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                    MenuExit = 0;
                }
+
                if (MenuExit == MENU_EXIT_DETAILS) {
                   if (!EditOptions ((LOADER_ENTRY *) TempChosenEntry)) {
                       MenuExit = 0;
                   }
-               } // if
+               }
             }
             else {
                 // no sub-screen; ignore keypress
                MenuExit = 0;
             }
         } // Enter sub-screen
+
         if (MenuExit == MENU_EXIT_HIDE) {
             if (GlobalConfig.HiddenTags) {
                 HideTag (TempChosenEntry);
             }
             MenuExit = 0;
         } // Hide launcher
-    }
+    } // while
 
     if (ChosenEntry) {
         *ChosenEntry = TempChosenEntry;
     }
+
     if (DefaultSelection) {
        MyFreePool (*DefaultSelection);
        *DefaultSelection = MenuTitle;
-    } // if
+    }
 
     return MenuExit;
 } /* UINTN RunMainMenu() */

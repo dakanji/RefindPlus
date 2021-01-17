@@ -1672,9 +1672,6 @@ efi_main (
     while (MainLoopRunning) {
         // Get a Clean Slate
         ReadAllKeyStrokes();
-        MenuExit       = 0;
-        ourLoaderEntry = NULL;
-        ChosenEntry    = NULL;
 
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
@@ -1696,7 +1693,6 @@ efi_main (
         }
 
         switch (ChosenEntry->Tag) {
-
             case TAG_NVRAMCLEAN:    // Clean NVRAM
 
                 #if REFIT_DEBUG > 0

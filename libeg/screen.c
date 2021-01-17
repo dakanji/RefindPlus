@@ -1648,12 +1648,15 @@ egScreenDescription (
         return ShowScreenStr;
     }
 
-    if (egHasGraphics) {
+    if (!egHasGraphics) {
+        GraphicsInfo = PoolPrint (L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
+    }
+    else {
         if (GraphicsOutput != NULL) {
-            SPrint (GraphicsInfo, 255, L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint (L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
         }
         else if (UGADraw != NULL) {
-            SPrint (GraphicsInfo, 255, L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint (L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
         }
         else {
             MyFreePool (GraphicsInfo);
@@ -1678,13 +1681,9 @@ egScreenDescription (
         }
 
         if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
-            TextInfo = AllocateZeroPool (256 * sizeof (CHAR16));
-            SPrint (TextInfo, 255, L"(Text Mode: %dx%d [Graphics Capable])", ConWidth, ConHeight);
+            TextInfo = PoolPrint (L"(Text Mode: %dx%d [Graphics Capable])", ConWidth, ConHeight);
             MergeStrings (&GraphicsInfo, TextInfo, L' ');
         }
-    }
-    else {
-        SPrint (GraphicsInfo, 255, L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
     }
 
     MyFreePool (TextInfo);

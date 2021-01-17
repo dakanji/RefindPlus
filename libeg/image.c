@@ -493,13 +493,14 @@ EG_IMAGE * egLoadIconAnyType (
 ) {
     EG_IMAGE  *Image = NULL;
     CHAR16    *Extension;
-    CHAR16    FileName[256];
+    CHAR16    *FileName;
     UINTN     i = 0;
 
     while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
-        SPrint (FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
-        Image = egLoadIcon (BaseDir, FileName, IconSize);
+        FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
+        Image    = egLoadIcon (BaseDir, FileName, IconSize);
         MyFreePool (Extension);
+        MyFreePool (FileName);
     } // while()
 
     return Image;

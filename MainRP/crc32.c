@@ -91,7 +91,7 @@ static UINT32 crc32_tab[] = {
    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-UINT32 crc32(UINT32 crc, const VOID *buf, UINTN size)
+UINT32 crc32 (UINT32 crc, const VOID *buf, UINTN size)
 {
    const UINT8 *p;
 
@@ -103,4 +103,3 @@ UINT32 crc32(UINT32 crc, const VOID *buf, UINTN size)
 
    return crc ^ ~0U;
 }
-

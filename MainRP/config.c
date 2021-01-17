@@ -98,7 +98,7 @@ RefitReadFile (
     EFI_FILE_HANDLE FileHandle;
     EFI_FILE_INFO   *FileInfo;
     UINT64          ReadSize;
-    CHAR16          Message[256];
+    CHAR16          *Message;
 
     File->Buffer = NULL;
     File->BufferSize = 0;
@@ -112,8 +112,10 @@ RefitReadFile (
         EFI_FILE_MODE_READ,
         0
     );
-    SPrint (Message, 255, L"while loading the file '%s'", FileName);
+
+    Message = PoolPrint (L"While Loading File:- '%s'", FileName);
     if (CheckError (Status, Message)) {
+        FreePool (Message);
         return Status;
     }
 
@@ -1420,12 +1422,15 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                                 Root[i] = '/';
                             }
                         }
+
                         Line = PoolPrint (L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
                         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
                         MyFreePool (Line);
+
                         Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
                         MyFreePool (Line);
+                        
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
                     } // if
                 } // if
