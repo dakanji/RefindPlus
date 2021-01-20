@@ -132,7 +132,7 @@
 # APFS drivers loaded using the 'enable_apfs' token. Verbose text output will be allowed,
 # if present, when this token is set to false. This token only acts on apfs drivers loaded
 # by RefindPlus using 'enable_apfs'. This token may impact other text output and should be
-# disabled if such impacts are observed. 
+# disabled if such impacts are observed.
 # The default setting is true (Suppresses verbose output when 'enable_apfs' is true)
 #
 #suppress_verbose_apfs false
@@ -143,9 +143,9 @@
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does
 # not have this issue and is recommended when running Windows directly from
 # RefindPlus on Apple Firmware.
-# The default setting is true (Prevents UEFI Windows writes to Apple NVRAM)
+# The default setting is false (Does not prevent UEFI Windows writes to Apple NVRAM)
 #
-#protect_mac_nvram false
+protect_mac_nvram true
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
