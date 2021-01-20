@@ -8,6 +8,12 @@
   * Hence, 'OsxAptioFix' drivers are no longer required on such units and actively discouraged
 - Fixes coverage gap in GOP Reinstallation from Random Access Memory
   * GOP was previously only reinstalled when at least one driver was loaded
+- Adds 'EnableAPFS' feature
+  * This eliminates the need for APFS drivers when APFS is not supported
+- Adds 'SuppressVerboseAPFS' feature
+  * This removes the scrolling loading text that appears when using apfs drivers
+  * Provided as a separate item as its action may impact other text output 
+
 
 0.12.0.AN (04 Jan 2021):
 -----------------------

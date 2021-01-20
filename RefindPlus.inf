@@ -100,11 +100,13 @@
   PerformanceLib
 # Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
   MemLogLib
-# Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
+# Added by dakanji (sf.net/u/dakanji/profile) from OpenCore
   OcConsoleLib
   OcMiscLib
-# Added by dakanji (https://sourceforge.net/u/dakanji/profile) for AcquireGOP
+# Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
   HandleParsingLib
+# Added by dakanji (sf.net/u/dakanji/profile) based on OcApfsLib from OpenCore
+  RpApfsLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

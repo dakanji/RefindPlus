@@ -74,7 +74,7 @@
 
   MemLogLib|RefindPlusPkg/Library/MemLogLib/MemLogLib.inf
 
-  # Added by dakanji (https://sourceforge.net/u/dakanji/profile) from OpenCore
+  # Added by dakanji (sf.net/u/dakanji/profile) from OpenCore
     OcConsoleLib|OpenCorePkg/Library/OcConsoleLib/OcConsoleLib.inf
     FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
     MtrrLib|UefiCpuPkg/Library/MtrrLib/MtrrLib.inf
@@ -84,8 +84,10 @@
     OcGuardLib|OpenCorePkg/Library/OcGuardLib/OcGuardLib.inf
     OcStringLib|OpenCorePkg/Library/OcStringLib/OcStringLib.inf
     OcDevicePathLib|OpenCorePkg/Library/OcDevicePathLib/OcDevicePathLib.inf
+    RpApfsLib|RefindPlusPkg/Library/RpApfsLib/RpApfsLib.inf
+    OcDriverConnectionLib|OpenCorePkg/Library/OcDriverConnectionLib/OcDriverConnectionLib.inf
 
-# Added by dakanji (https://sourceforge.net/u/dakanji/profile) for AcquireGOP
+# Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
     HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
     FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
     SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf

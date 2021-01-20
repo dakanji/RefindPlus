@@ -141,6 +141,8 @@ REFIT_CONFIG GlobalConfig = {
     /* TrimForce = */ FALSE,
     /* DisableMacCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
+    /* EnableAPFS = */ FALSE,
+    /* SuppressVerboseAPFS = */ TRUE,
     /* ProtectMacNVRAM = */ TRUE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
@@ -216,6 +218,8 @@ STATIC               EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
 
 extern VOID InitBooterLog (VOID);
+
+extern EFI_STATUS RpApfsConnectDevices (VOID);
 
 // Link to Cert GUIDs in mok/guid.c
 extern EFI_GUID X509_GUID;
@@ -1427,9 +1431,10 @@ efi_main (
 ) {
     EFI_STATUS  Status;
 
-    BOOLEAN  DriversLoaded   = FALSE;
     BOOLEAN  MainLoopRunning = TRUE;
+    BOOLEAN  EnableAPFS      = FALSE;
     BOOLEAN  MokProtocol     = FALSE;
+    BOOLEAN  DriversLoaded   = FALSE;
 
     REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     LOADER_ENTRY      *ourLoaderEntry = NULL;
@@ -1509,8 +1514,19 @@ efi_main (
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
+    if (GlobalConfig.EnableAPFS) {
+        Status = RpApfsConnectDevices();
+        if (!EFI_ERROR (Status)) {
+            EnableAPFS = TRUE;
+        }
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Enable APFS ...%s\n\n", Status);
+        #endif
+    }
+
     DriversLoaded = LoadDrivers();
-    if (DriversLoaded) {
+    if (DriversLoaded || EnableAPFS) {
         #if REFIT_DEBUG > 0
         MsgLog ("Scan Volumes...\n");
         #endif

@@ -373,6 +373,8 @@ typedef struct {
    BOOLEAN          TrimForce;
    BOOLEAN          DisableMacCompatCheck;
    BOOLEAN          DisableAMFI;
+   BOOLEAN          EnableAPFS;
+   BOOLEAN          SuppressVerboseAPFS;
    BOOLEAN          ProtectMacNVRAM;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;

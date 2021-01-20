@@ -80,6 +80,8 @@
 #define GetTime gST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
+BOOLEAN SuppressVerboseAPFS;
+
 // extern REFIT_MENU_ENTRY MenuEntryReturn;
 //static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
 
@@ -1041,6 +1043,12 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
           GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"enable_apfs")) {
+          GlobalConfig.EnableAPFS = HandleBoolean (TokenList, TokenCount);
+        }
+        else if (MyStriCmp (TokenList[0], L"suppress_verbose_apfs")) {
+          GlobalConfig.SuppressVerboseAPFS = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"protect_mac_nvram")) {
           GlobalConfig.ProtectMacNVRAM = HandleBoolean (TokenList, TokenCount);
         }
@@ -1073,7 +1081,9 @@ ReadConfig (
        Print (L"Icons directory doesn't exist; setting textonly = TRUE!\n");
        GlobalConfig.TextOnly = TRUE;
     }
-} /* VOID ReadConfig() */
+
+    SuppressVerboseAPFS = GlobalConfig.SuppressVerboseAPFS;
+} // VOID ReadConfig()
 
 static
 VOID
@@ -1430,7 +1440,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                         Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
                         MyFreePool (Line);
-                        
+
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
                     } // if
                 } // if
