@@ -65,20 +65,20 @@ uga_pass_through
 #
 provide_console_gop
 
-# Use the built in GOP renderer which may provide better performance and
+# Use the built-in GOP renderer which may provide better performance and
 # fix rendering issues on some GPU/firmware combinations such as the
 # Radeon VII and some versions of the Radeon 5700 XT on Classic Mac Pros.
 # However, this should only be used when there is an obvious benefit as
 # it may result in glitches in the pre-boot configuration screen or
 # slow scrolling response after booting into Mac OS.
-# Inactive when commented out (Does not use the built in GOP renderer)
+# Inactive when commented out (Does not use the built-in GOP renderer)
 #
 #direct_gop_renderer
 
-# Proceed automatically when notices are shown on screen instead of
+# Proceed automatically when notices are shown on-screen instead of
 # having to press a key to continue. When this token is active,
 # RefindPlus will pause for three seconds and then proceed as if a key
-# had been pressed when on-screen warning ae shown.
+# had been pressed when on-screen warnings are shown.
 # Inactive when commented out (Does not proceed automatically)
 #
 #continue_on_warning
