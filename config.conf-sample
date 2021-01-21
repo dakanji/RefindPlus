@@ -12,7 +12,7 @@
 # Set the CSR values for Apple's System Integrity Protection (SIP) feature.
 # Values are hexadecimal numbers that define which specific security features
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
-# to set new values. Apple's "csrutil enable" and "csrutil disable" commands typcally
+# to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
 # setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
 # further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
@@ -83,11 +83,10 @@ provide_console_gop
 #
 #continue_on_warning
 
-# Enable 'TRIM' on non-Apple SSDs (1, true, or on) or not (0, false, or off).
-# 'TRIM', which can improve SSD health, is not enabled by default on non-Apple
-# SSDs in Mac OS. When this token is active, RefindPlus will switch 'TRIM'
-# on in Mac OS for all SSDs including non-Apple SSDs. This token is only
-# applied when booting Mac OS.
+# Enable 'TRIM' on non-Apple SSDs. 'TRIM', which can improve SSD health,
+# is not enabled by default on non-Apple SSDs in Mac OS. When this token
+# is active, RefindPlus will switch 'TRIM' on in Mac OS for all SSDs including
+# non-Apple SSDs. This token is only applied when booting Mac OS.
 # Inactive when commented out (Does not enable 'TRIM')
 #
 trim_force
@@ -122,7 +121,7 @@ enable_apfs
 # suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' token.
 # This token only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
 # This token may impact other text output and should be disabled if such effects are observed.
-# Inactive when commented out (Does not suppresses verbose output)
+# Inactive when commented out (Does not suppress verbose output)
 #
 suppress_verbose_apfs
 
@@ -191,7 +190,7 @@ timeout 20
 # such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
 # variables. It does NOT affect Secure Boot or other non-RefindPlus
 # variables.
-# Active when commented out (Stores variables in NVRAM)
+# The default setiing is true (Store RefindPlus variables in NVRAM)
 #
 #use_nvram false
 
@@ -447,7 +446,7 @@ timeout 20
 # "drivers" and "drivers_{arch}" subdirectories of its own installation
 # directory (where "{arch}" is your architecture code); this option
 # specifies ADDITIONAL directories to scan.
-# Does not scan additional directories when commented out.
+# Inactive when commented out (Does not scan additional directories)
 #
 #scan_driver_dirs EFI/tools/drivers,drivers
 
@@ -470,12 +469,11 @@ timeout 20
 #scanfor internal,external,optical,manual
 
 # By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
-# devices. This sometimes doesn't detect all the available devices, though.
+# devices. However, this sometimes does not detect all the available devices.
 # For these cases, uefi_deep_legacy_scan results in a forced scan and
-# modification of NVRAM variables on each boot. Adding "0", "off", or
-# "false" resets to the default value. This token has no effect on Macs or
-# when no BIOS-mode options are set via scanfor.
-# The default setting is unset (or "uefi_deep_legacy_scan false")
+# modification of NVRAM variables on each boot. This token has no effect on
+# Macs or when no BIOS-mode options are set via scanfor.
+# Inactive when commented out (Does not result in a forced scan)
 #
 #uefi_deep_legacy_scan
 
@@ -566,23 +564,21 @@ timeout 20
 # useful for better integration with Linux distributions that provide
 # kernels with EFI stub loaders but that don't give those kernels filenames
 # that end in ".efi", particularly if the kernels are stored on a
-# filesystem that the EFI can read. When set to "1", "true", or "on", this
-# option causes all files in scanned directories with names that begin with
-# "vmlinuz", "bzImage", or "kernel" to be included as loaders, even if they
-# lack ".efi" extensions. Passing this option a "0", "false", or "off" value
-# causes kernels without ".efi" extensions to NOT be scanned.
-# Scans for kernels without ".efi" extensions when commented out.
+# filesystem that the EFI can read. When active, this option causes all files
+# in scanned directories with names that begin with "vmlinuz", "bzImage", or "kernel"
+# to be included as loaders, even if they lack ".efi" extensions.
+# Inactive when commented out (Only scans for kernels with ".efi" extensions)
 #
-#scan_all_linux_kernels false
+#scan_all_linux_kernels
 
 # Combine all Linux kernels in a given directory into a single entry.
 # When so set, the kernel with the most recent time stamp will be launched
 # by default, and its filename will appear in the entry's description.
 # To launch other kernels, the user must press F2 or Insert; alternate
 # kernels then appear as options on the sub-menu.
-# Kernels are "folded" into a single menu entry when commented out.
+# Inactive when commented out (Kernels are not "folded" into a single menu entry).
 #
-#fold_linux_kernels false
+#fold_linux_kernels
 
 # Comma-delimited list of strings to treat as if they were numbers for the
 # purpose of kernel version number detection. These strings are matched on a
@@ -599,7 +595,7 @@ timeout 20
 # (say, if your kernel filename includes "linux" but the initrd filename
 # doesn't), be sure this is set to an empty string
 # (extra_kernel_version_strings "") or comment out the option to disable it.
-# No extra version strings are used when commented out.
+# Inactive when commented out (No extra version strings are used)
 #
 #extra_kernel_version_strings linux-lts,linux
 
@@ -651,7 +647,7 @@ timeout 20
 # for more on this subject.
 # Inactive when commented out (Does not try to enable and lock the MSR)
 #
-#enable_and_lock_vmx false
+#enable_and_lock_vmx
 
 # Tell a Mac's EFI that Mac OS is about to be launched, even when it's not.
 # This option causes some Macs to initialize their hardware differently than
