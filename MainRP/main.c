@@ -1515,9 +1515,9 @@ efi_main (
     AdjustDefaultSelection();
 
     if (GlobalConfig.EnableAPFS) {
-        Status = RpApfsConnectDevices();
+        //Status = RpApfsConnectDevices();
         if (!EFI_ERROR (Status)) {
-            EnableAPFS = TRUE;
+            //EnableAPFS = TRUE;
         }
 
         #if REFIT_DEBUG > 0
