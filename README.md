@@ -22,7 +22,11 @@ The development focus is on Classic MacPros, MacPro3,1 to MacPro5,1 (and equival
 
 Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name).
 
-While RefindPlus will function with the rEFInd configuration file, refind.conf, this should be replaced with the RefindPlus configuration file, config.conf, to configure the additonal options provided by RefindPlus. A sample file is provided: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
+While RefindPlus will function with the rEFInd configuration file, refind.conf, this should be replaced with the RefindPlus configuration file, config.conf, to configure the additonal options provided by RefindPlus. 
+
+Note that if you run RefindPlus without activating the additonal RefindPlus options, as will be the case if using an unmodified rEFInd configuration file, RefindPlus will behave exactly as if you are running rEFInd. That is, the additonal options must be actively enabled.
+
+A sample RefindPlus configuration file is provided here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
 ## Additional Configurable Functionality
 - text_renderer

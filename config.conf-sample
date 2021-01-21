@@ -14,7 +14,7 @@
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
 # to set new values. Apple's "csrutil enable" and "csrutil disable" commands typcally
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that you can go beyond this, to values such as 877, 977 ... up to FFF, to
+# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
 # further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
 # or later, on unsupported Macs but should be used with caution.
 #   CSR_ALLOW_UNTRUSTED_KEXTS            0x001
@@ -30,30 +30,27 @@
 #   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE 0x400
 #   CSR_ALLOW_UNAUTHENTICATED_ROOT       0x800
 #
-#csr_values 10,77
+#csr_values 10,87F
 
-# Use a custom text renderer (1, true, or on) or not (0, false, or off).
-# The SimpleText protocol on the console handle is normally used to
+# The SimpleText protocol on the ConsoleOut handle is normally used to
 # output text. On Macs and some other firmware, this is complicated by
 # the ConsoleControl protocol which determines whether to output text,
 # graphics, or both, and this often results in an inability to display
 # text or run tools such as shell.efi that require text output. A text
 # renderer is added on top of GOP by this option as a workaround.
-# NB: This setting is forced to 'true' whenever text output is required,
-# such as when running EFI Shell or whenever RefindPlus is changed to text
+# NB: This setting is forced on whenever text output is required, such
+# as when running EFI Shell or whenever RefindPlus is changed to text
 # mode as part of its operations (Typically to handle errors).
-# The default setting is true (Uses a custom text renderer)
+# Inactive when commented out (Does not use a custom text renderer)
 #
-#text_renderer false
+text_renderer
 
-# Add UGA Protocol to GOP (1, true, or on) or not (0, false, or off) when
-# absent. This primarily works to permit booting older Operating Systems
-# running EFIBoot Protocols.
-# The default setting is true (Adds UGA Protocol to GOP)
+# Add UGA Protocol to GOP when absent. This primarily works to permit
+# booting older Operating Systems running EFIBoot Protocols.
+# Inactive when commented out (Does not add UGA Protocol to GOP)
 #
-#uga_pass_through false
+uga_pass_through
 
-# Add GOP to the console handle (1, true, or on) or not (0, false, or off).
 # On some Macs, such as the cMP 5,1, there can be multiple GOP instances:
 #     - One installed on the console handle
 #     - Others installed on GPU handles.
@@ -64,88 +61,78 @@
 # with Fully Compatible GPUs (GPUs with native Mac EFI). This replaces
 # the Console Handle GOP with one from a GPU Handle on such models when
 # running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
-# The default setting is true (Adds GOP to the console handle)
+# Inactive when commented out (Does not add GOP to the console handle)
 #
-#provide_console_gop false
+provide_console_gop
 
-# Use the built in GOP renderer (1, true, or on) or not (0, false, or off).
-# This may provide better performance and fix rendering issues on some
-# GPU/firmware combinations such as the Radeon VII and some versions of the
-# Radeon 5700 XT on Classic Mac Pros. However, this should only be used when
-# there is an obvious benefit as it may result in glitches in the pre-boot
-# screen or slow scrolling response after booting into Mac OS.
-# The default setting is false (Does not use the built in GOP renderer)
+# Use the built in GOP renderer which may provide better performance and
+# fix rendering issues on some GPU/firmware combinations such as the
+# Radeon VII and some versions of the Radeon 5700 XT on Classic Mac Pros.
+# However, this should only be used when there is an obvious benefit as
+# it may result in glitches in the pre-boot configuration screen or
+# slow scrolling response after booting into Mac OS.
+# Inactive when commented out (Does not use the built in GOP renderer)
 #
-#direct_gop_renderer true
+#direct_gop_renderer
 
-# Proceed automatically when notices are shown on screen (1, true, or on)
-# instead of having to press a key to continue (0, false, or off). When
-# this token is activated, RefindPlus will pause for three seconds and
-# then proceed as if a key had been pressed.
-# The default setting is false (Does not proceed automatically)
+# Proceed automatically when notices are shown on screen instead of
+# having to press a key to continue. When this token is active,
+# RefindPlus will pause for three seconds and then proceed as if a key
+# had been pressed when on-screen warning ae shown.
+# Inactive when commented out (Does not proceed automatically)
 #
-#continue_on_warning true
+#continue_on_warning
 
 # Enable 'TRIM' on non-Apple SSDs (1, true, or on) or not (0, false, or off).
 # 'TRIM', which can improve SSD health, is not enabled by default on non-Apple
-# SSDs in Mac OS. When this token is activated, RefindPlus will switch 'TRIM'
-# on in Mac OS for all SSDs including non-Apple SSDs. This is only applied
-# when booting Mac OS and does not switch 'TRIM' off when set to 'false'
-# and 'TRIM' has already been set.
-# The default setting is false (Does not enable 'TRIM')
+# SSDs in Mac OS. When this token is active, RefindPlus will switch 'TRIM'
+# on in Mac OS for all SSDs including non-Apple SSDs. This token is only
+# applied when booting Mac OS.
+# Inactive when commented out (Does not enable 'TRIM')
 #
-#trim_force true
+trim_force
 
-# Disable Mac OS compatibility check when booting (1, true, or on)
-# or not (0, false, or off). Macs check whether the current Mac OS version is
-# supported on the machine when booting and halts if not. When this token is
-# activated, RefindPlus will set the "-no_compat_check" boot argument which disables
-# this check and allows boot to proceed on otherwise unsupported Macs. This setting
-# is only applied when booting into Mac OS and does not remove the boot argument
-# when the token is set to 'false' and the boot argument is already present.
-# The default setting is false (Does not disable Mac OS compatibility check)
+# Disable Mac OS compatibility check when booting. Macs check whether the
+# current Mac OS version is supported on the machine when booting and halts if not.
+# When this token is active, RefindPlus will set the "-no_compat_check" boot argument
+# which disables this check and allows boot to proceed on otherwise unsupported Macs.
+# Inactive when commented out (Does not disable Mac OS compatibility check)
 #
-#disable_mac_compat_check true
+disable_mac_compat_check
 
-# Disable Apple Mobile File Integrity (AMFI) checks (1, true, or on)
-# or not (0, false, or off). When this token is activated, RefindPlus will set the
-# "amfi_get_out_of_my_way=1" argument which along with System Integrity Protection (SIP),
-# restricts access to entitlements by applications. This setting is only applied when
-# booting Mac OS and does not remove the boot argument when the token is set
-# to 'false' and the boot argument is already present.
-# The default setting is false (Does not disable AMFI checks)
+# Disable Apple Mobile File Integrity (AMFI) checks. When this token is active,
+# RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
+# System Integrity Protection (SIP), restricts access to entitlements by applications.
+# NB: This setting is only applied when booting Mac OS.
+# Inactive when commented out (Does not disable AMFI checks)
 #
-#disable_amfi true
+#disable_amfi
 
-# Enable APFS Filesystem capability (1, true, or on) or not (0, false, or off). When
-# this token is activated, RefindPlus will load Mac OS APFS Filesystem drivers, apfs.efi,
-# present in the /usr/standalone/i386/ folders of Mac OS 10.13 (High Sierra) and later.
-# The drivers are loaded to match each specific Mac OS version which ensures that changes
-# made by Apple in apfs.efi drives for different Mac OS versions are accounted for as
-# compared to loading a single apfs.efi driver for all Mac OS versions in use.
-# The default setting is false (Does not enable APFS)
+# Provide APFS Filesystem capability. When this token is active, RefindPlus will load
+# Mac OS APFS Filesystem drivers, apfs.efi, present in the /usr/standalone/i386/ folders of
+# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# Mac OS version which ensures that changes made by Apple in apfs.efi drives for different
+# Mac OS versions are accounted for as compared to loading a single apfs.efi driver for all
+# Mac OS versions in use.
+# Inactive when commented out (Does not enable APFS)
 #
-#enable_apfs true
+enable_apfs
 
-# Suppress verbose APFS loading text output (1, true, or on) or not (0, false, or off).
-# When this token is set to true, RefindPlus will suppress verbose text output from the
-# APFS drivers loaded using the 'enable_apfs' token. Verbose text output will be allowed,
-# if present, when this token is set to false. This token only acts on apfs drivers loaded
-# by RefindPlus using 'enable_apfs'. This token may impact other text output and should be
-# disabled if such impacts are observed.
-# The default setting is true (Suppresses verbose output when 'enable_apfs' is true)
+# Suppress verbose APFS loading text output. When this token is active, RefindPlus will
+# suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' token.
+# This token only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
+# This token may impact other text output and should be disabled if such effects are observed.
+# Inactive when commented out (Does not suppresses verbose output)
 #
-#suppress_verbose_apfs false
+suppress_verbose_apfs
 
-# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM (1, true, or on)
-# or not (0, false, or off). When this token is activated, RefindPlus will prevent
-# UEFI Windows Secure Boot from creating certificates to the NVRAM on Apple Firmware
-# as this can lead to damage resulting in an inability to boot. Legacy Windows does
-# not have this issue and is recommended when running Windows directly from
-# RefindPlus on Apple Firmware.
-# The default setting is false (Does not prevent UEFI Windows writes to Apple NVRAM)
+# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this token is active,
+# RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
+# as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
+# this issue and is recommended when running Windows directly from RefindPlus on Apple Firmware.
+# Inactive when commented out (Does not prevent UEFI Windows writes)
 #
-protect_mac_nvram true
+protect_mac_nvram
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
@@ -157,12 +144,11 @@ protect_mac_nvram true
 #
 #scale_ui 1
 
-# Set arbitrary boot arguments on Mac OS. When this token is activated,
+# Set arbitrary boot arguments on Mac OS. When this token is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
-# This setting is only applied when booting into Mac OS and does not remove arguments
-# when it is disabled and the arguments are already present. This token accounts for
-# arguments injected by 'disable_amfi' and 'disable_mac_compat_check' as required.
-# The default setting is inactive (No changes to boot arguments)
+# This setting is only applied when booting into Mac OS and accounts for arguments
+# injected by the 'disable_amfi' and 'disable_mac_compat_check' tokens as required.
+# Inactive when commented out (Does not change boot arguments)
 #
 #set_mac_boot_args "-v"
 
@@ -205,7 +191,7 @@ timeout 20
 # such as the PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy
 # variables. It does NOT affect Secure Boot or other non-RefindPlus
 # variables.
-# The default setting is true (Stores variables in NVRAM)
+# Active when commented out (Stores variables in NVRAM)
 #
 #use_nvram false
 
@@ -257,7 +243,7 @@ timeout 20
 # (ICNS images can also be used, but ICNS has limitations that make it a poor
 # choice for this purpose.) PNG and JPG support is limited by the underlying
 # libraries; some files, such as progressive JPGs, will not work.
-# The default setting is to use the embedded title banner
+# Uses the embedded title banner when commented out.
 #
 #banner hostname.bmp
 #banner mybanner.jpg
@@ -266,7 +252,7 @@ timeout 20
 # How to handle banners that are not the same size as the screen size:
 #  noscale     - Crop if too big, show with border if too small
 #  fillscreen  - Fill the screen
-# The default is set to noscale
+# Uses noscale when commented out.
 #
 #banner_scale fillscreen
 
@@ -276,7 +262,7 @@ timeout 20
 # the size of the big icons. Legal values are 32 and above. If the icon
 # files do not hold icons of the proper size, the icons are scaled to
 # the specified size.
-# The default values are 48 and 128 for small and big icons respectively.
+# Uses 48 and 128 for small and big icons respectively when commented out.
 #
 #small_icon_size 96
 #big_icon_size 256
@@ -304,14 +290,14 @@ timeout 20
 # outside of this range, for a total of 96 glyphs. Only monospaced fonts
 # are supported. Fonts may be of any size, although large fonts can
 # produce display irregularities.
-# The default setting is the built-in font (Luxi Mono Regular 12 point)
+# Uses the built-in font (Luxi Mono Regular 12 point) when commented out.
 #
 #font myfont.png
 
 # Use text mode only. When enabled, this option forces RefindPlus into text mode.
 # Passing this option a "0" value causes graphics mode to be used. Pasing
 # it no value or any non-0 value causes text mode to be used.
-# The default setting is to use graphics mode
+# Uses graphics mode when commented out.
 #
 #textonly
 
@@ -354,7 +340,7 @@ timeout 20
 # no way to select a specific submenu item. This feature is mutually
 # exclusive with the enable_mouse feature. If both are uncommented,
 # the one read most recently takes precedence.
-# The default setting is inactive (Does not enable touch screen support).
+# Inactive when commented out (Does not enable touch screen support).
 #
 #enable_touch
 
@@ -365,14 +351,14 @@ timeout 20
 # OS or tool by clicking it with the mouse pointer. This feature
 # is mutually exclusive with the enable_touch feature. If both
 # are uncommented, the one read most recently takes precedence.
-# The default setting is inactive (Does not enable mouse support).
+# Inactive when commented out (Does not enable mouse support).
 #
 #enable_mouse
 
 # Size of the mouse pointer, in pixels, per side.
 # The default setting is 16
 #
-#mouse_size
+#mouse_size 18
 
 # Speed of mouse tracking. Higher numbers equate to faster
 # mouse movement. This option requires that enable_mouse be
@@ -395,7 +381,7 @@ timeout 20
 #   elilo   - The ELILO boot loader
 #   grub    - The GRUB (Legacy or 2) boot loader
 #   windows - Microsoft Windows
-# The default setting is osx (Launches Mac OS in graphics mode)
+# Uses osx (Launches Mac OS in graphics mode) when commented out.
 #
 #use_graphics_for osx,linux
 
@@ -443,7 +429,7 @@ timeout 20
 # Just as with dont_scan_files, you can specify a filename alone, a
 # full pathname, or a volume identifier (filesystem label, partition
 # name, or partition GUID) and a full pathname.
-# The default setting is an empty list (nothing is excluded)
+# Has an empty list (nothing is excluded) when commented out.
 #
 #dont_scan_tools ESP2:/EFI/ubuntu/mmx64.efi,gptsync_x64.efi
 
@@ -461,7 +447,7 @@ timeout 20
 # "drivers" and "drivers_{arch}" subdirectories of its own installation
 # directory (where "{arch}" is your architecture code); this option
 # specifies ADDITIONAL directories to scan.
-# The default setting is not to scan additional directories for EFI drivers
+# Does not scan additional directories when commented out.
 #
 #scan_driver_dirs EFI/tools/drivers,drivers
 
@@ -512,7 +498,7 @@ timeout 20
 # to scan the somedir directory only on the filesystem named myvol. If a
 # specified directory doesn't exist, it is ignored (no error condition
 # results).
-# The default setting is to scan the "boot" directory and hardcoded directories
+# Scans the "boot" directory and hardcoded directories when commented out.
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 
@@ -526,7 +512,7 @@ timeout 20
 # "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
 # For legacy-mode scans, you can specify any subset of the boot loader
 # description shown when you highlight the option in RefindPlus.
-# The default setting is LRS_ESP
+# Set to LRS_ESP when commented out.
 #
 #dont_scan_volumes "Recovery HD"
 
@@ -545,7 +531,7 @@ timeout 20
 # the ESP, unless you precede the directory name by a filesystem name or
 # partition unique GUID, as in "myvol:EFI/somedir" to exclude EFI/somedir
 # from the scan on the myvol volume but not on other volumes.
-# The default setting is inactive (Does not exclude additional directories)
+# Inactive when commented out (Does not exclude additional directories)
 #
 #dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
@@ -572,7 +558,7 @@ timeout 20
 # If you want to keep these defaults but add to them, be sure to
 # specify "+" as the first item in the new list; if you don't, then
 # items from the default list are likely to appear.
-# The default setting is inactive (Does not exclude additional files)
+# Inactive when commented out (Does not exclude additional files)
 #
 #dont_scan_files shim.efi,MokManager.efi
 
@@ -585,7 +571,7 @@ timeout 20
 # "vmlinuz", "bzImage", or "kernel" to be included as loaders, even if they
 # lack ".efi" extensions. Passing this option a "0", "false", or "off" value
 # causes kernels without ".efi" extensions to NOT be scanned.
-# The default setting is true (Scans for kernels without ".efi" extensions)
+# Scans for kernels without ".efi" extensions when commented out.
 #
 #scan_all_linux_kernels false
 
@@ -594,7 +580,7 @@ timeout 20
 # by default, and its filename will appear in the entry's description.
 # To launch other kernels, the user must press F2 or Insert; alternate
 # kernels then appear as options on the sub-menu.
-# The default setting is true (kernels are "folded" into a single menu entry)
+# Kernels are "folded" into a single menu entry when commented out.
 #
 #fold_linux_kernels false
 
@@ -613,7 +599,7 @@ timeout 20
 # (say, if your kernel filename includes "linux" but the initrd filename
 # doesn't), be sure this is set to an empty string
 # (extra_kernel_version_strings "") or comment out the option to disable it.
-# The default setting is no extra version strings
+# No extra version strings are used when commented out.
 #
 #extra_kernel_version_strings linux-lts,linux
 
@@ -622,7 +608,7 @@ timeout 20
 # a subset in a scrolling list. If this value is set too high for the
 # screen to handle, it is reduced to the value that the screen can manage.
 # If this value is set to 0 it is adjusted to a number the screen can handle.
-# The default setting is 0 (Adjusts displayed boot loaders to screen width)
+# Adjusts displayed boot loaders to screen width when commented out.
 #
 #max_tags 0
 
@@ -648,7 +634,7 @@ timeout 20
 # case the last one to match takes precedence. Thus, you can set a main
 # option without a time followed by one or more that include times to
 # set different defaults for different times of day.
-# The default behavior is to boot the previously booted OS.
+# Boots the previously booted loader when commented out.
 #
 #default_selection 1
 #default_selection Microsoft
@@ -663,7 +649,7 @@ timeout 20
 # DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
 # http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 # for more on this subject.
-# The default setting is false (Does not try to enable and lock the MSR)
+# Inactive when commented out (Does not try to enable and lock the MSR)
 #
 #enable_and_lock_vmx false
 
@@ -678,7 +664,7 @@ timeout 20
 # with some hardware devices. When needed, a value of "10.9" usually works, but
 # you can experiment with other values. This feature has no effect on
 # non-Apple computers.
-# The default setting is inactive (No Mac OS spoofing is done)
+# Inactive when commented out (No Mac OS spoofing is done)
 #
 #spoof_osx_version 10.9
 
