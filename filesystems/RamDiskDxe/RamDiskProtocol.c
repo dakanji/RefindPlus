@@ -198,10 +198,6 @@ RamDiskPublishNfit (
          MultU64x32 (MemoryMapEntry->NumberOfPages, EFI_PAGE_SIZE)
          >= PrivateData->StartingAddr + PrivateData->Size)) {
       MemoryFound = TRUE;
-      DEBUG ((
-        EFI_D_INFO,
-        "RamDiskPublishNfit: RAM disk with reserved meomry type, will publish to NFIT.\n"
-        ));
       break;
     }
     MemoryMapEntry = NEXT_MEMORY_DESCRIPTOR (MemoryMapEntry, DescriptorSize);
@@ -241,11 +237,6 @@ RamDiskPublishNfit (
     //
     // A NFIT is already in the ACPI table.
     //
-    DEBUG ((
-      EFI_D_INFO,
-      "RamDiskPublishNfit: A NFIT is already exist in the ACPI Table.\n"
-      ));
-
     NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *)TableHeader;
     NfitLen    = NfitHeader->Length + sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
     Nfit       = AllocateZeroPool (NfitLen);
@@ -304,11 +295,6 @@ RamDiskPublishNfit (
     //
     // No NFIT is in the ACPI table, we will create one here.
     //
-    DEBUG ((
-      EFI_D_INFO,
-      "RamDiskPublishNfit: No NFIT is in the ACPI Table, will create one.\n"
-      ));
-
     NfitLen = sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE) +
               sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
     Nfit    = AllocateZeroPool (NfitLen);

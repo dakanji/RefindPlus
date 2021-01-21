@@ -38,12 +38,10 @@ ApfsFletcher64 (
   UINT64        Sum2;
   UINT32        Rem;
 
-  //
   // For APFS we have the following guarantees (checked outside).
   // - DataSize is always divisible by 4 (UINT32), the only potential exceptions
   //   are multiples of block sizes of 1 and 2, which we do not support and filter out.
   // - DataSize is always between 0x1000-8 and 0x10000-8, i.e. within UINT16.
-  //
   ASSERT (DataSize >= APFS_NX_MINIMUM_BLOCK_SIZE - sizeof (UINT64));
   ASSERT (DataSize <= APFS_NX_MAXIMUM_BLOCK_SIZE - sizeof (UINT64));
   ASSERT (DataSize % sizeof (UINT32) == 0);
@@ -54,29 +52,21 @@ ApfsFletcher64 (
   Walker     = Data;
   WalkerEnd  = Walker + DataSize / sizeof (UINT32);
 
-  //
   // Do usual Fletcher-64 rounds without modulo due to impossible overflow.
-  //
   while (Walker < WalkerEnd) {
-    //
     // Sum1 never overflows, because 0xFFFFFFFF * (0x10000-8) < MAX_UINT64.
     // This is just a normal sum of data values.
-    //
     Sum1 += *Walker;
-    //
+
     // Sum2 never overflows, because 0xFFFFFFFF * (0x4000-1) * 0x1FFF < MAX_UINT64.
     // This is just a normal arithmetical progression of sums.
-    //
     Sum2 += Sum1;
     ++Walker;
   }
 
-  //
   // Split Fletcher-64 halves.
   // As per Chinese remainder theorem, perform the modulo now.
   // No overflows also possible as seen from Sum1/Sum2 upper bounds above.
-  //
-
   Sum2 += Sum1;
   APFS_MOD_MAX_UINT32 (Sum2, &Rem);
   Sum2  = ~Rem;
@@ -108,7 +98,6 @@ ApfsBlockChecksumVerify (
     return TRUE;
   }
 
-  DEBUG ((DEBUG_INFO, "Checksum mismatch for %Lx\n", Block->ObjectOid));
   return FALSE;
 }
 
@@ -125,17 +114,12 @@ ApfsReadJumpStart (
   EFI_LBA                Lba;
   UINT32                 MaxExtents;
 
-  //
   // No jump start driver, ignore.
-  //
   if (PrivateData->EfiJumpStart == 0) {
-    DEBUG ((DEBUG_INFO, "Missing JumpStart for %g\n", &PrivateData->LocationInfo.ContainerUuid));
     return EFI_UNSUPPORTED;
   }
 
-  //
   // Allocate memory for jump start.
-  //
   JumpStart = AllocateZeroPool (PrivateData->ApfsBlockSize);
   if (JumpStart == NULL) {
     return EFI_OUT_OF_RESOURCES;
@@ -143,9 +127,7 @@ ApfsReadJumpStart (
 
   BlockIo = InternalApfsTranslateBlock (PrivateData, PrivateData->EfiJumpStart, &Lba);
 
-  //
   // Read jump start and abort on failure.
-  //
   Status = refit_call5_wrapper(
       BlockIo->ReadBlocks,
       BlockIo,
@@ -155,48 +137,27 @@ ApfsReadJumpStart (
       JumpStart
   );
 
-  DEBUG ((
-    DEBUG_INFO,
-    "Block (P:%d|F:%d) read req %Lx -> %Lx of %x (mask %u, mul %u) - %r\n",
-    BlockIo == PrivateData->BlockIo,
-    PrivateData->IsFusion,
-    PrivateData->EfiJumpStart,
-    Lba,
-    PrivateData->ApfsBlockSize,
-    PrivateData->FusionMask,
-    PrivateData->LbaMultiplier,
-    Status
-    ));
-
   if (EFI_ERROR (Status)) {
       FreePool (JumpStart);
       return Status;
   }
 
-  //
   // Jump start is expected to have JSDR magic.
   // Version is not checked by ApfsJumpStart driver.
-  //
   if (JumpStart->Magic != APFS_NX_EFI_JUMPSTART_MAGIC) {
-    DEBUG ((DEBUG_INFO, "Unknown JSDR magic %08x, expected %08x\n", JumpStart->Magic, APFS_NX_EFI_JUMPSTART_MAGIC));
     FreePool (JumpStart);
     return EFI_UNSUPPORTED;
   }
 
-  //
   // Calculate and verify checksum.
-  //
   if (!ApfsBlockChecksumVerify (&JumpStart->BlockHeader, PrivateData->ApfsBlockSize)) {
     FreePool (JumpStart);
     return EFI_UNSUPPORTED;
   }
 
-  //
   // Ensure that extent count does not overflow.
-  //
   MaxExtents = (PrivateData->ApfsBlockSize - sizeof (*JumpStart)) / sizeof (JumpStart->RecordExtents[0]);
   if (MaxExtents < JumpStart->NumExtents) {
-    DEBUG ((DEBUG_INFO, "Invalid extent count %u / %u\n", JumpStart->NumExtents, MaxExtents));
     FreePool (JumpStart);
     return EFI_UNSUPPORTED;
   }
@@ -269,9 +230,7 @@ ApfsReadDriver (
     EfiFileSize -= ChunkSize;
   }
 
-  //
   // Ensure that we do not have meaningful trailing memory just in case.
-  //
   if (OrgEfiFileSize != JumpStart->EfiFileLen) {
     ChunkPtr  = EfiFile;
     ChunkPtr += JumpStart->EfiFileLen;
@@ -295,29 +254,21 @@ InternalApfsReadSuperBlock (
   UINTN                ReadSize;
   UINTN                Retry;
 
-  //
-  // According to APFS spec APFS block size is a multiple of disk block size.
+  // According to APFS specs, APFS block size is a multiple of disk block size.
   // Start by reading APFS_NX_MINIMUM_BLOCK_SIZE aligned to block size.
-  //
   ReadSize = ALIGN_VALUE (APFS_NX_MINIMUM_BLOCK_SIZE, BlockIo->Media->BlockSize);
 
   SuperBlock = NULL;
 
-  //
   // Second attempt is given for cases when block size is bigger than our guessed size.
-  //
   for (Retry = 0; Retry < 2; ++Retry) {
-    //
     // Allocate memory for super block.
-    //
     SuperBlock = AllocateZeroPool (ReadSize);
     if (SuperBlock == NULL) {
       break;
     }
 
-    //
     // Read super block and abort on failure.
-    //
     Status = refit_call5_wrapper(
         BlockIo->ReadBlocks,
         BlockIo,
@@ -330,26 +281,15 @@ InternalApfsReadSuperBlock (
       break;
     }
 
-    DEBUG ((
-      DEBUG_VERBOSE,
-      "Testing disk with %8X magic %u block\n",
-      SuperBlock->Magic,
-      SuperBlock->BlockSize
-      ));
-
-    //
     // Super block is expected to have NXSB magic.
-    //
     if (SuperBlock->Magic != APFS_NX_SIGNATURE) {
       break;
     }
 
-    //
     // Ensure APFS block size is:
     // - A multiple of disk block size.
     // - Divisible by UINT32 for fletcher checksum to work (e.g. when block size is 1 or 2).
     // - Within minimum and maximum edges.
-    //
     if (SuperBlock->BlockSize < BlockIo->Media->BlockSize
       || (SuperBlock->BlockSize & (BlockIo->Media->BlockSize - 1)) != 0
       || (SuperBlock->BlockSize & (sizeof (UINT32) - 1)) != 0
@@ -358,9 +298,7 @@ InternalApfsReadSuperBlock (
       break;
     }
 
-    //
     // Check if we can calculate the checksum and try again on failure.
-    //
     if (SuperBlock->BlockSize > ReadSize) {
       ReadSize = SuperBlock->BlockSize;
       FreePool (SuperBlock);
@@ -368,37 +306,30 @@ InternalApfsReadSuperBlock (
       continue;
     }
 
-    //
     // Calculate and verify checksum.
-    //
     if (!ApfsBlockChecksumVerify (&SuperBlock->BlockHeader, SuperBlock->BlockSize)) {
       break;
     }
 
-    //
     // Verify object type and flags.
     // SubType being 0 comes from ApfsJumpStart and is not documented.
     // ObjectOid being 1 comes from ApfsJumpStart and is not documented.
-    //
     if (SuperBlock->BlockHeader.ObjectType != (APFS_OBJ_EPHEMERAL | APFS_OBJECT_TYPE_NX_SUPERBLOCK)
       || SuperBlock->BlockHeader.ObjectSubType != 0
       || SuperBlock->BlockHeader.ObjectOid != 1) {
       break;
     }
 
-    //
     // Super block is assumed to be legit.
-    //
     *SuperBlockPtr = SuperBlock;
     return EFI_SUCCESS;
   }
 
-  //
   // All retry attempts exceeded.
-  //
   if (SuperBlock != NULL) {
     FreePool (SuperBlock);
   }
+
   return EFI_UNSUPPORTED;
 }
 
@@ -417,12 +348,6 @@ InternalApfsReadDriver (
     &JumpStart
     );
   if (EFI_ERROR (Status)) {
-    DEBUG ((
-      DEBUG_INFO,
-      "Failed to read JumpStart for %g - %r\n",
-      &PrivateData->LocationInfo.ContainerUuid,
-      Status
-      ));
     return Status;
   }
 
@@ -436,12 +361,6 @@ InternalApfsReadDriver (
   FreePool (JumpStart);
 
   if (EFI_ERROR (Status)) {
-    DEBUG ((
-      DEBUG_INFO,
-      "Failed to read driver for %g - %r\n",
-      &PrivateData->LocationInfo.ContainerUuid,
-      Status
-      ));
     return Status;
   }
 
@@ -455,13 +374,10 @@ InternalApfsGetDriverVersion (
   OUT APFS_DRIVER_VERSION  **DriverVersionPtr
   )
 {
-  //
   // apfs.efi versioning is more restricted than generic PE parsing.
   // In future we can use our PE library, but for now we directly reimplement
   // EfiGetAPFSDriverVersion from apfs kernel extension.
   // Note, EfiGetAPFSDriverVersion is really badly implemented and is full of typos.
-  //
-
   EFI_IMAGE_DOS_HEADER      *DosHeader;
   EFI_IMAGE_NT_HEADERS64    *NtHeaders;
   EFI_IMAGE_SECTION_HEADER  *SectionHeader;

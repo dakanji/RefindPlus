@@ -1513,19 +1513,19 @@ efi_main (
     }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
+    DriversLoaded = LoadDrivers();
 
     if (GlobalConfig.EnableAPFS) {
-        //Status = RpApfsConnectDevices();
+        Status = RpApfsConnectDevices();
         if (!EFI_ERROR (Status)) {
-            //EnableAPFS = TRUE;
+            EnableAPFS = TRUE;
         }
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Enable APFS ...%s\n\n", Status);
+        MsgLog ("INFO: Enable APFS ...%r\n\n", Status);
         #endif
     }
 
-    DriversLoaded = LoadDrivers();
     if (DriversLoaded || EnableAPFS) {
         #if REFIT_DEBUG > 0
         MsgLog ("Scan Volumes...\n");

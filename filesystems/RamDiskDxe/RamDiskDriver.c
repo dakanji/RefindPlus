@@ -72,11 +72,6 @@ RamDiskAcpiCheck (
                   (VOID **)&mAcpiTableProtocol
                   );
   if (EFI_ERROR (Status)) {
-    DEBUG ((
-      EFI_D_INFO,
-      "RamDiskAcpiCheck: Cannot locate the EFI ACPI Table Protocol, "
-      "unable to publish RAM disks to NFIT.\n"
-      ));
     return;
   }
 
@@ -89,11 +84,6 @@ RamDiskAcpiCheck (
                   (VOID **)&mAcpiSdtProtocol
                   );
   if (EFI_ERROR (Status)) {
-    DEBUG ((
-      EFI_D_INFO,
-      "RamDiskAcpiCheck: Cannot locate the EFI ACPI Sdt Protocol, "
-      "unable to publish RAM disks to NFIT.\n"
-      ));
     mAcpiTableProtocol = NULL;
     return;
   }
@@ -139,7 +129,6 @@ RamDiskDxeEntryPoint (
                   &DummyInterface
                   );
   if (!EFI_ERROR (Status)) {
-    DEBUG ((EFI_D_INFO, "Driver already started!\n"));
     return EFI_ALREADY_STARTED;
   }
 

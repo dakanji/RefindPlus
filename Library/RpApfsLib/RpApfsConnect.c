@@ -122,13 +122,6 @@ ApfsStartDriver (
     );
 
     if (EFI_ERROR (Status)) {
-        DEBUG ((
-            DEBUG_INFO,
-            "Failed to load %g - %r\n",
-            &PrivateData->LocationInfo.ContainerUuid,
-            Status
-        ));
-
         return Status;
     }
 
@@ -159,22 +152,10 @@ ApfsStartDriver (
     );
 
     if (EFI_ERROR (Status)) {
-        DEBUG ((
-            DEBUG_INFO,
-            "Failed to start %g - %r\n",
-            &PrivateData->LocationInfo.ContainerUuid,
-            Status
-        ));
-
         gBS->UnloadImage (ImageHandle);
+
         return Status;
     }
-
-    DEBUG ((
-        DEBUG_INFO,
-        "Connecting APFS driver on handle %p\n",
-        PrivateData->LocationInfo.ControllerHandle
-    ));
 
     // Unblock handles as some types of firmware, such as that on the HP EliteBook 840 G2,
     // may automatically lock all volumes without filesystem drivers upon
@@ -213,8 +194,6 @@ ApfsConnectDevice (
     if (EFI_ERROR (Status)) {
         return Status;
     }
-
-    DEBUG ((DEBUG_INFO, "Got APFS super block for %g\n", &SuperBlock->Uuid));
 
     // We no longer need super block once we register ourselves.
     Status = ApfsRegisterPartition (Handle, BlockIo, SuperBlock, &PrivateData);
@@ -258,7 +237,6 @@ RpApfsConnectHandle (
     );
 
     if (!EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_VERBOSE, "FS already connected\n"));
         return EFI_ALREADY_STARTED;
     }
 
@@ -272,8 +250,6 @@ RpApfsConnectHandle (
     );
 
     if (EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_INFO, "Cannot connect, BlockIo error - %r\n", Status));
-
         return EFI_UNSUPPORTED;
     }
 
@@ -288,13 +264,6 @@ RpApfsConnectHandle (
     if (BlockIo->Media->BlockSize == 0 ||
         (BlockIo->Media->BlockSize & (BlockIo->Media->BlockSize - 1)) != 0
     ) {
-        DEBUG ((
-            DEBUG_INFO,
-            "Cannot connect, BlockIo malformed: %d %u\n",
-            BlockIo->Media->LogicalPartition,
-            BlockIo->Media->BlockSize
-        ));
-
         return EFI_UNSUPPORTED;
     }
 
@@ -308,8 +277,6 @@ RpApfsConnectHandle (
     );
 
     if (!EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_INFO, "Cannot connect, unsupported BDS\n"));
-
         return EFI_UNSUPPORTED;
     }
 
@@ -323,7 +290,6 @@ RpApfsConnectHandle (
     );
 
     if (!EFI_ERROR (Status)) {
-        DEBUG ((DEBUG_INFO, "Cannot connect, already handled\n"));
         return EFI_UNSUPPORTED;
     }
 
