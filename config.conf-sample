@@ -51,17 +51,17 @@ text_renderer
 #
 uga_pass_through
 
-# On some Macs, such as the cMP 5,1, there can be multiple GOP instances:
-#     - One installed on the console handle
+# Some Macs such as the MacPro5,1 may have multiple GOP instances:
+#     - One installed on the ConsoleOut handle
 #     - Others installed on GPU handles.
 # The Console Handle GOP is what everything (including Mac OS) uses and
 # is provided by the system firmware. Others are provided by GPU firmware.
-# Normally, the Mac EFI should transparently forward calls from the Console
-# Handle GOP to the others. On such models, it only works in this way
+# The Mac EFI should typically forward calls from the ConsoleOut Handle GOP
+# to the others transparently . On such models, it only works in this way
 # with Fully Compatible GPUs (GPUs with native Mac EFI). This replaces
-# the Console Handle GOP with one from a GPU Handle on such models when
-# running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
-# Inactive when commented out (Does not add GOP to the console handle)
+# the ConsoleOut Handle GOP with one from a GPU Handle on such models
+# when running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
+# Inactive when commented out (Does not add GOP to the ConsoleOut handle)
 #
 provide_console_gop
 
