@@ -53,6 +53,6 @@
 #include "../include/tiano_includes.h"
 #endif
 
-UINT32 crc32(UINT32 crc, const VOID *buf, UINTN size);
+UINT32 crc32refit (UINT32 crc, const VOID *buf, UINTN size);
 
 #endif

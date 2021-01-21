@@ -94,7 +94,7 @@ static BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
          HeaderSize = GptData->Header->header_size;
       StoredCrcValue = GptData->Header->header_crc32;
       GptData->Header->header_crc32 = 0;
-      CrcValue = crc32 (0x0, GptData->Header, HeaderSize);
+      CrcValue = crc32refit (0x0, GptData->Header, HeaderSize);
       if (CrcValue != StoredCrcValue)
          IsValid = FALSE;
       GptData->Header->header_crc32 = StoredCrcValue;
@@ -191,7 +191,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
             );
 
          // Check CRC status of table
-         if ((Status == EFI_SUCCESS) && (crc32 (0x0, GptData->Entries, BufferSize) != GptData->Header->entry_crc32))
+         if ((Status == EFI_SUCCESS) && (crc32refit (0x0, GptData->Entries, BufferSize) != GptData->Header->entry_crc32))
             Status = EFI_CRC_ERROR;
 
          // Now, ensure that every name is null-terminated....
