@@ -1541,6 +1541,8 @@ ScanVolumes (
                 MsgLog ("\n");
             }
             CHAR16 *VolDesc = Volume->VolName;
+            CHAR16* VolGUID = GuidAsString(&Volume->VolUuid);
+            CHAR16* PartGUID = GuidAsString(&Volume->PartGuid);
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 VolDesc = L"Whole Disk Volume";
             }
@@ -1578,7 +1580,9 @@ ScanVolumes (
                 VolDesc = L"ISO-9660 Volume";
             }
 
-            MsgLog ("Add to Collection:- '%s'", VolDesc);
+            MsgLog ("Add to Collection:- '%s' '%s' '%s' '%s'", VolDesc, Volume->PartName, VolGUID, PartGUID);
+            MyFreePool(VolGUID);
+            MyFreePool(PartGUID);
             ScannedOnce = TRUE;
         }
         #endif
