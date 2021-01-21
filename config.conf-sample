@@ -57,10 +57,11 @@ uga_pass_through
 # The Console Handle GOP is what everything (including Mac OS) uses and
 # is provided by the system firmware. Others are provided by GPU firmware.
 # The Mac EFI should typically forward calls from the ConsoleOut Handle GOP
-# to the others transparently . On such models, it only works in this way
-# with Fully Compatible GPUs (GPUs with native Mac EFI). This replaces
-# the ConsoleOut Handle GOP with one from a GPU Handle on such models
-# when running Semi Compatible GPUs (Compatible GPUs without Mac EFI).
+# to the others transparently. On such models, it only works in this way
+# with Fully Compatible GPUs (GPUs with native Mac EFI). This option replaces
+# GOP on the ConsoleOut Handle with one from a GPU Handle on such models
+# when running Semi Compatible GPUs (Compatible GPUs without Mac EFI)
+# to work around this issue.
 # Inactive when commented out (Does not add GOP to the ConsoleOut handle)
 #
 provide_console_gop
@@ -76,7 +77,7 @@ provide_console_gop
 #direct_gop_renderer
 
 # Proceed automatically when notices are shown on-screen instead of
-# having to press a key to continue. When this token is active,
+# having to press a key to continue. When this option is active,
 # RefindPlus will pause for three seconds and then proceed as if a key
 # had been pressed when on-screen warnings are shown.
 # Inactive when commented out (Does not proceed automatically)
@@ -84,22 +85,22 @@ provide_console_gop
 #continue_on_warning
 
 # Enable 'TRIM' on non-Apple SSDs. 'TRIM', which can improve SSD health,
-# is not enabled by default on non-Apple SSDs in Mac OS. When this token
+# is not enabled by default on non-Apple SSDs in Mac OS. When this option
 # is active, RefindPlus will switch 'TRIM' on in Mac OS for all SSDs including
-# non-Apple SSDs. This token is only applied when booting Mac OS.
+# non-Apple SSDs. This option is only applied when booting Mac OS.
 # Inactive when commented out (Does not enable 'TRIM')
 #
 trim_force
 
 # Disable Mac OS compatibility check when booting. Macs check whether the
 # current Mac OS version is supported on the machine when booting and halts if not.
-# When this token is active, RefindPlus will set the "-no_compat_check" boot argument
+# When this option is active, RefindPlus will set the "-no_compat_check" boot argument
 # which disables this check and allows boot to proceed on otherwise unsupported Macs.
 # Inactive when commented out (Does not disable Mac OS compatibility check)
 #
 disable_mac_compat_check
 
-# Disable Apple Mobile File Integrity (AMFI) checks. When this token is active,
+# Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
 # System Integrity Protection (SIP), restricts access to entitlements by applications.
 # NB: This setting is only applied when booting Mac OS.
@@ -107,7 +108,7 @@ disable_mac_compat_check
 #
 #disable_amfi
 
-# Provide APFS Filesystem capability. When this token is active, RefindPlus will load
+# Provide APFS Filesystem capability. When this option is active, RefindPlus will load
 # Mac OS APFS Filesystem drivers, apfs.efi, present in the /usr/standalone/i386/ folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version which ensures that changes made by Apple in apfs.efi drives for different
@@ -117,15 +118,15 @@ disable_mac_compat_check
 #
 enable_apfs
 
-# Suppress verbose APFS loading text output. When this token is active, RefindPlus will
-# suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' token.
-# This token only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
-# This token may impact other text output and should be disabled if such effects are observed.
+# Suppress verbose APFS loading text output. When this option is active, RefindPlus will
+# suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' option.
+# This option only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
+# This option may impact other text output and should be disabled if such effects are observed.
 # Inactive when commented out (Does not suppress verbose output)
 #
 suppress_verbose_apfs
 
-# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this token is active,
+# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
 # this issue and is recommended when running Windows directly from RefindPlus on Apple Firmware.
@@ -143,10 +144,10 @@ protect_mac_nvram
 #
 #scale_ui 1
 
-# Set arbitrary boot arguments on Mac OS. When this token is active,
+# Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
 # This setting is only applied when booting into Mac OS and accounts for arguments
-# injected by the 'disable_amfi' and 'disable_mac_compat_check' tokens as required.
+# injected by the 'disable_amfi' and 'disable_mac_compat_check' options as required.
 # Inactive when commented out (Does not change boot arguments)
 #
 #set_mac_boot_args "-v"
@@ -471,7 +472,7 @@ timeout 20
 # By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
 # devices. However, this sometimes does not detect all the available devices.
 # For these cases, uefi_deep_legacy_scan results in a forced scan and
-# modification of NVRAM variables on each boot. This token has no effect on
+# modification of NVRAM variables on each boot. This option has no effect on
 # Macs or when no BIOS-mode options are set via scanfor.
 # Inactive when commented out (Does not result in a forced scan)
 #
@@ -489,7 +490,7 @@ timeout 20
 # Mac OS' and Microsoft Windows' boot loaders in their normal locations,
 # and scans the root directory and every subdirectory of the /EFI directory
 # for additional boot loaders, but it doesn't recurse into these directories.
-# The also_scan_dirs token adds more directories to the scan list.
+# The also_scan_dirs option adds more directories to the scan list.
 # Directories are specified relative to the volume's root directory. This
 # option applies to ALL the volumes that RefindPlus scans UNLESS you include
 # a volume name and colon before the directory name, as in "myvol:/somedir"
@@ -520,7 +521,7 @@ timeout 20
 # com.apple.recovery.boot directory. Using the dont_scan_dirs option
 # enables you to "blacklist" other directories; but be sure to use "+"
 # as the first element if you want to continue blacklisting existing
-# directories. You might use this token to keep EFI/boot/bootx64.efi out
+# directories. You might use this option to keep EFI/boot/bootx64.efi out
 # of the menu if that's a duplicate of another boot loader or to exclude
 # a directory that holds drivers or non-bootloader utilities provided by
 # a hardware manufacturer. If a directory is listed both here and in
@@ -792,7 +793,7 @@ menuentry "My Mac OS" {
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
-# token itself, so if you want to override a setting in the main file,
+# option itself, so if you want to override a setting in the main file,
 # the secondary file must be referenced AFTER the setting you want to
 # override. Note that the secondary file may NOT load a tertiary file.
 #
