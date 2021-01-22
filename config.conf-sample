@@ -142,10 +142,10 @@ suppress_verbose_apfs
 protect_mac_nvram
 
 # Allow scans of volumes with duplicate UUIDs. When this option is active, RefindPlus
-# will allow include volumes with duplicate UUIDs when scanning for kernels and loaders.
+# will allow including volumes with duplicate UUIDs when scanning for kernels and loaders.
 # This would however typically result in multiple loaders displayed on the main screen and
 # this option should only be activated for specific configurations that require scanning of
-# duplicates. Specifically, this should on be enabled when loader exist on RAID Arrays.
+# duplicates. Specifically, this should NOT be enabled when loaders exist on RAID Arrays.
 # Inactive when commented out (Does not scan duplicate UUIDs)
 #
 #allow_duplicates
