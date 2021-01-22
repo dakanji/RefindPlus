@@ -12,17 +12,17 @@ The development focus is on Classic MacPros, MacPro3,1 to MacPro5,1 (and equival
 - Fixes inability of rEFInd to print to screen on Macs
   * This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
 - Allows disabling SIP to a high level
-  * Values such as `87F`, `977`, or the maximum `FFF`, are possible to allow unsigned DMG packages needed to run Mac OS v11.x (Big Sur) in unsupported environments.
+  * Values such as `87F`, `977`, or the maximum `FFF`, are possible to allow unsigned DMG packages needed to run Mac OS v11.0 (Big Sur) in unsupported environments.
 - Provides built-in APFS driver activation.
   * Removes the need to add APFS drivers to run recent Mac OS releases on units without APFS support.
 
 
 ## Installation
-[MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1, MacPro4,1, MacPro5,1 and Xserve3,1. However, the RefindPlus efi file can work as a drop-in replacement for the default rEFInd efi file. Hence, to install, you can get the [default rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) as normal.
+[MyBootMgr](https://forums.macrumors.com/threads/thread.2231693), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on Xerve3,1. However, the RefindPlus efi can work as a drop-in replacement for the rEFInd efi. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first.
 
-Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name).
+Once rEFInd is installed, replace the rEFInd efi with the RefindPlus efi. (Ensure that you rename the RefindPlus efi to match the rEFInd efi name).
 
-While RefindPlus will function with the rEFInd configuration file, refind.conf, this should be replaced with the RefindPlus configuration file, config.conf, to configure the additonal options provided by RefindPlus.
+While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus.
 
 Note that if you run RefindPlus without activating the additonal RefindPlus options, as will be the case if using an unmodified rEFInd configuration file, RefindPlus will behave exactly as if you are running rEFInd. That is, the additonal RefindPlus options must be actively enabled if they are required.
 
