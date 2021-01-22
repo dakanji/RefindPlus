@@ -1043,8 +1043,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
           GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"enable_apfs")) {
-          GlobalConfig.EnableAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"supply_apfs")) {
+          GlobalConfig.SupplyAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"suppress_verbose_apfs")) {
           GlobalConfig.SuppressVerboseAPFS = HandleBoolean (TokenList, TokenCount);

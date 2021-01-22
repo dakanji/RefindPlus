@@ -37,7 +37,7 @@ A sample RefindPlus configuration file is provided here: [config.conf-sample](ht
 - trim_force
 - disable_mac_compat_check
 - disable_amfi
-- enable_apfs
+- supply_apfs
 - suppress_verbose_apfs
 - protect_mac_nvram
 - set_mac_boot_args

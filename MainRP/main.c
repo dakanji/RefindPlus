@@ -141,7 +141,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TrimForce = */ FALSE,
     /* DisableMacCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
-    /* EnableAPFS = */ FALSE,
+    /* SupplyAPFS = */ FALSE,
     /* SuppressVerboseAPFS = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
     /* AllowDuplicates = */ FALSE,
@@ -1433,7 +1433,7 @@ efi_main (
     EFI_STATUS  Status;
 
     BOOLEAN  MainLoopRunning = TRUE;
-    BOOLEAN  EnableAPFS      = FALSE;
+    BOOLEAN  SupplyAPFS      = FALSE;
     BOOLEAN  MokProtocol     = FALSE;
     BOOLEAN  DriversLoaded   = FALSE;
 
@@ -1516,10 +1516,10 @@ efi_main (
     AdjustDefaultSelection();
     DriversLoaded = LoadDrivers();
 
-    if (GlobalConfig.EnableAPFS) {
+    if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();
         if (!EFI_ERROR (Status)) {
-            EnableAPFS = TRUE;
+            SupplyAPFS = TRUE;
         }
 
         #if REFIT_DEBUG > 0
@@ -1527,7 +1527,7 @@ efi_main (
         #endif
     }
 
-    if (DriversLoaded || EnableAPFS) {
+    if (DriversLoaded || SupplyAPFS) {
         #if REFIT_DEBUG > 0
         MsgLog ("Scan Volumes...\n");
         #endif

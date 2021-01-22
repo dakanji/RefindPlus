@@ -122,24 +122,24 @@ disable_mac_compat_check
 #
 #disable_amfi
 
-# Provide APFS Filesystem capability. When this option is active, RefindPlus will load
-# Mac OS APFS Filesystem drivers, apfs.efi, present in the /usr/standalone/i386/ folders of
+# Supply APFS filesystem capability. When this option is active, RefindPlus will load
+# Mac OS APFS filesystem drivers, apfs.efi, present in the /usr/standalone/i386/ folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version which ensures that changes made by Apple in apfs.efi drives for different
 # Mac OS versions are accounted for as compared to loading a single apfs.efi driver for all
 # Mac OS versions in use. This setting only applies to Mac OS.
 #
-# Inactive when commented out (Does not enable APFS)
+# Inactive when commented out (Does not supply APFS filesystem capability)
 #
-enable_apfs
+supply_apfs
 
 # Suppress verbose APFS loading text output. When this option is active, RefindPlus will
-# suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' option.
-# This option only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
+# suppress verbose text output from the APFS drivers loaded using the 'supply_apfs' option.
+# This option only acts on apfs drivers loaded by RefindPlus using 'supply_apfs'.
 # This option may impact other text output and should be disabled if such
 # effects are observed. This setting only applies to Mac OS.
 #
-# Inactive when commented out (Does not suppress verbose output)
+# Inactive when commented out (Does not suppress verbose APFS text output)
 #
 suppress_verbose_apfs
 
