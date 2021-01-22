@@ -47,39 +47,38 @@ text_renderer
 
 # Add UGA Protocol to GOP when absent. This primarily works to permit
 # booting older Operating Systems running EFIBoot Protocols.
-# Inactive when commented out (Does not add UGA Protocol to GOP)
+# Inactive when commented out (Does not add UGA to GOP)
 #
 uga_pass_through
 
 # Some Macs such as the MacPro5,1 may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
 #     - Others installed on GPU handles.
-# The Console Handle GOP is what everything (including Mac OS) uses and
-# is provided by the system firmware. Others are provided by GPU firmware.
-# The Mac EFI should typically forward calls from the ConsoleOut Handle GOP
-# to the others transparently. On such models, it only works in this way
-# with Fully Compatible GPUs (GPUs with native Mac EFI). This option replaces
+# GOP on the ConsoleOut Handle is what everything uses and is provided by
+# the system firmware. Others are provided by GPU firmware. The Mac EFI
+# should typically forward calls from the ConsoleOut Handle GOP to the
+# others transparently. On such models, it only works in this way with
+# Fully Compatible GPUs (GPUs with native Mac EFI). This option replaces
 # GOP on the ConsoleOut Handle with one from a GPU Handle on such models
 # when running Semi Compatible GPUs (Compatible GPUs without Mac EFI)
-# to work around this issue.
-# Inactive when commented out (Does not add GOP to the ConsoleOut handle)
+# Inactive when commented out (Does not provide ConsoleOut GOP)
 #
 provide_console_gop
 
-# Use the built-in GOP renderer which may provide better performance
+# Use a built-in GOP renderer which may provide better performance
 # and fix rendering issues on some GPU/firmware combinations such as
 # the Radeon VII and some versions of the Radeon 5700 XT. However,
 # this should only be used when there is an obvious benefit as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response after booting into the operating system.
-# Inactive when commented out (Does not use the built-in GOP renderer)
+# Inactive when commented out (Does not use the built-in GOP)
 #
 #direct_gop_renderer
 
 # Proceed automatically when notices are shown on-screen instead
 # of having to press a key to continue. When this option is active,
-# RefindPlus will pause for three seconds and then proceed as if a
-# key had been pressed when on-screen warnings are shown.
+# RefindPlus will pause for three seconds when on-screen warnings
+# are shown and then proceed as if a key had been pressed.
 # Inactive when commented out (Does not proceed automatically)
 #
 #continue_on_warning
@@ -99,7 +98,7 @@ trim_force
 # unsupported Macs. This setting only applies to Mac OS. Note that this setting will
 # create a Mac OS boot argument the first time it is triggered and that this will stay
 # active until explicitly cleared even if the setting is subsequently disabled.
-# Inactive when commented out (Does not disable Mac OS compatibility check)
+# Inactive when commented out (Does not disable the compatibility check)
 #
 disable_mac_compat_check
 
@@ -126,8 +125,8 @@ enable_apfs
 # Suppress verbose APFS loading text output. When this option is active, RefindPlus will
 # suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' option.
 # This option only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
-# This option may impact other text output and should be disabled if such effects are observed.
-# This setting only applies to Mac OS.
+# This option may impact other text output and should be disabled if such
+# effects are observed. This setting only applies to Mac OS.
 # Inactive when commented out (Does not suppress verbose output)
 #
 suppress_verbose_apfs
@@ -135,8 +134,8 @@ suppress_verbose_apfs
 # Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
-# this issue and is recommended when running Windows directly from RefindPlus on Apple Firmware.
-# This setting only applies when running Windows on Apple Firmware.
+# this issue and is recommended when running Windows on Apple Firmware.
+# This setting only applies when loading Windows on Apple Firmware.
 # Inactive when commented out (Does not prevent UEFI Windows writes)
 #
 protect_mac_nvram
