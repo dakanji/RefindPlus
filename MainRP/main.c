@@ -144,6 +144,7 @@ REFIT_CONFIG GlobalConfig = {
     /* EnableAPFS = */ FALSE,
     /* SuppressVerboseAPFS = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
+    /* AllowDuplicates = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
     /* RequestedScreenWidth = */ 0,

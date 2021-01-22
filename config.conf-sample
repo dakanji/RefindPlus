@@ -66,36 +66,39 @@ uga_pass_through
 #
 provide_console_gop
 
-# Use the built-in GOP renderer which may provide better performance and
-# fix rendering issues on some GPU/firmware combinations such as the
-# Radeon VII and some versions of the Radeon 5700 XT on Classic Mac Pros.
-# However, this should only be used when there is an obvious benefit as
-# it may result in glitches in the pre-boot configuration screen or
-# slow scrolling response after booting into Mac OS.
+# Use the built-in GOP renderer which may provide better performance
+# and fix rendering issues on some GPU/firmware combinations such as
+# the Radeon VII and some versions of the Radeon 5700 XT. However,
+# this should only be used when there is an obvious benefit as it
+# may result in glitches in the pre-boot configuration screen or
+# slow scrolling response after booting into the operating system.
 # Inactive when commented out (Does not use the built-in GOP renderer)
 #
 #direct_gop_renderer
 
-# Proceed automatically when notices are shown on-screen instead of
-# having to press a key to continue. When this option is active,
-# RefindPlus will pause for three seconds and then proceed as if a key
-# had been pressed when on-screen warnings are shown.
+# Proceed automatically when notices are shown on-screen instead
+# of having to press a key to continue. When this option is active,
+# RefindPlus will pause for three seconds and then proceed as if a
+# key had been pressed when on-screen warnings are shown.
 # Inactive when commented out (Does not proceed automatically)
 #
 #continue_on_warning
 
 # Enable 'TRIM' on non-Apple SSDs. 'TRIM', which can improve SSD health,
 # is not enabled by default on non-Apple SSDs in Mac OS. When this option
-# is active, RefindPlus will switch 'TRIM' on in Mac OS for all SSDs including
-# non-Apple SSDs. This option is only applied when booting Mac OS.
+# is active, RefindPlus will switch 'TRIM' on in Mac OS for all SSDs
+# including non-Apple SSDs. This setting only applies to Mac OS.
 # Inactive when commented out (Does not enable 'TRIM')
 #
 trim_force
 
 # Disable Mac OS compatibility check when booting. Macs check whether the
-# current Mac OS version is supported on the machine when booting and halts if not.
-# When this option is active, RefindPlus will set the "-no_compat_check" boot argument
-# which disables this check and allows boot to proceed on otherwise unsupported Macs.
+# current Mac OS version is supported on the machine when booting and halts
+# if not. When this option is active, RefindPlus will set the "-no_compat_check"
+# boot argument which disables this check and allows boot to proceed on otherwise
+# unsupported Macs. This setting only applies to Mac OS. Note that this setting will
+# create a Mac OS boot argument the first time it is triggered and that this will stay
+# active until explicitly cleared even if the setting is subsequently disabled.
 # Inactive when commented out (Does not disable Mac OS compatibility check)
 #
 disable_mac_compat_check
@@ -103,7 +106,9 @@ disable_mac_compat_check
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
 # System Integrity Protection (SIP), restricts access to entitlements by applications.
-# NB: This setting is only applied when booting Mac OS.
+# This setting only applies to Mac OS. Note that this setting will create a Mac OS
+# boot argument the first time it is triggered and that this will stay active
+# until explicitly cleared even if the setting is subsequently disabled.
 # Inactive when commented out (Does not disable AMFI checks)
 #
 #disable_amfi
@@ -113,7 +118,7 @@ disable_mac_compat_check
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version which ensures that changes made by Apple in apfs.efi drives for different
 # Mac OS versions are accounted for as compared to loading a single apfs.efi driver for all
-# Mac OS versions in use.
+# Mac OS versions in use. This setting only applies to Mac OS.
 # Inactive when commented out (Does not enable APFS)
 #
 enable_apfs
@@ -122,6 +127,7 @@ enable_apfs
 # suppress verbose text output from the APFS drivers loaded using the 'enable_apfs' option.
 # This option only acts on apfs drivers loaded by RefindPlus using 'enable_apfs'.
 # This option may impact other text output and should be disabled if such effects are observed.
+# This setting only applies to Mac OS.
 # Inactive when commented out (Does not suppress verbose output)
 #
 suppress_verbose_apfs
@@ -130,9 +136,19 @@ suppress_verbose_apfs
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
 # this issue and is recommended when running Windows directly from RefindPlus on Apple Firmware.
+# This setting only applies when running Windows on Apple Firmware.
 # Inactive when commented out (Does not prevent UEFI Windows writes)
 #
 protect_mac_nvram
+
+# Allow scans of volumes with duplicate UUIDs. When this option is active, RefindPlus
+# will allow include volumes with duplicate UUIDs when scanning for kernels and loaders.
+# This would however typically result in multiple loaders displayed on the main screen and
+# this option should only be activated for specific configurations that require scanning of
+# duplicates. Specifically, this should on be enabled when loader exist on RAID Arrays.
+# Inactive when commented out (Does not scan duplicate UUIDs)
+#
+#allow_duplicates
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
@@ -146,8 +162,8 @@ protect_mac_nvram
 
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
-# This setting is only applied when booting into Mac OS and accounts for arguments
-# injected by the 'disable_amfi' and 'disable_mac_compat_check' options as required.
+# This setting only applies to Mac OS and accounts for arguments injected by
+# the 'disable_amfi' and 'disable_mac_compat_check' options as required.
 # Inactive when commented out (Does not change boot arguments)
 #
 #set_mac_boot_args "-v"

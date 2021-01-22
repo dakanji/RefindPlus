@@ -376,6 +376,7 @@ typedef struct {
    BOOLEAN          EnableAPFS;
    BOOLEAN          SuppressVerboseAPFS;
    BOOLEAN          ProtectMacNVRAM;
+   BOOLEAN          AllowDuplicates;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    UINTN            RequestedScreenWidth;

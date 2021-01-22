@@ -709,10 +709,10 @@ static LOADER_ENTRY * AddLoaderEntry (
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
         if (LoaderTitle == NULL) {
-            TitleEntry = LoaderPath;
+            TitleEntry = StrDuplicate (LoaderPath);
         }
         else {
-            TitleEntry = LoaderTitle;
+            TitleEntry = StrDuplicate (LoaderTitle);
         }
 
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
@@ -752,50 +752,52 @@ static LOADER_ENTRY * AddLoaderEntry (
 
         #if REFIT_DEBUG > 0
         if (Volume->VolName) {
-            CHAR16 *VolDesc = Volume->VolName;
+            CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                VolDesc = L"Whole Disk Volume";
+                VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                VolDesc = L"Unknown Volume";
+                VolDesc = StrDuplicate (L"Unknown Volume");
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                VolDesc = L"HFS+ Volume";
+                VolDesc = StrDuplicate (L"HFS+ Volume");
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                VolDesc = L"NTFS Volume";
+                VolDesc = StrDuplicate (L"NTFS Volume");
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                VolDesc = L"FAT Volume";
+                VolDesc = StrDuplicate (L"FAT Volume");
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                VolDesc = L"Ext2 Volume";
+                VolDesc = StrDuplicate (L"Ext2 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                VolDesc = L"Ext3 Volume";
+                VolDesc = StrDuplicate (L"Ext3 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                VolDesc = L"Ext4 Volume";
+                VolDesc = StrDuplicate (L"Ext4 Volume");
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                VolDesc = L"ReiserFS Volume";
+                VolDesc = StrDuplicate (L"ReiserFS Volume");
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                VolDesc = L"BTRFS Volume";
+                VolDesc = StrDuplicate (L"BTRFS Volume");
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                VolDesc = L"XFS Volume";
+                VolDesc = StrDuplicate (L"XFS Volume");
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                VolDesc = L"ISO-9660 Volume";
+                VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
             MsgLog ("  - Found '%s' on '%s'\n", TitleEntry, VolDesc);
+            MyFreePool (VolDesc);
         }
         else {
             MsgLog ("  - Found %s:- '%s'\n", TitleEntry, Entry->LoaderPath);
         }
         #endif
 
+        MyFreePool (TitleEntry);
     }
 
     return (Entry);
@@ -2227,7 +2229,7 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited (GlobalConfig.WindowsRecoveryFiles, j++)) != NULL) {
                     SplitVolumeAndFilename (&FileName, &VolName);
-                    
+
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&

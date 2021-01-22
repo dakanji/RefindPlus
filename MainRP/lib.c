@@ -1476,17 +1476,26 @@ ScanVolumes (
 ) {
     EFI_STATUS         Status;
     EFI_HANDLE         *Handles;
-    REFIT_VOLUME       *Volume, *WholeDiskVolume;
-    MBR_PARTITION_INFO *MbrTable;
-    UINTN              HandleCount = 0;
-    UINTN              HandleIndex;
-    UINTN              VolumeIndex, VolumeIndex2;
-    UINTN              PartitionIndex;
-    UINTN              SectorSum, i;
-    UINT8              *SectorBuffer1, *SectorBuffer2;
+    REFIT_VOLUME       *Volume;
+    REFIT_VOLUME       *WholeDiskVolume;
+    UINTN              i                 = 0;
+    UINTN              SectorSum         = 0;
+    UINTN              HandleCount       = 0;
+    UINTN              HandleIndex       = 0;
+    UINTN              VolumeIndex       = 0;
+    UINTN              VolumeIndex2      = 0;
+    UINTN              PartitionIndex    = 0;
+    UINT8              *SectorBuffer1;
+    UINT8              *SectorBuffer2;
     EFI_GUID           *UuidList;
-    EFI_GUID           GuidNull       = NULL_GUID_VALUE;
-    CHAR16             *ShowScreenStr = NULL;
+    EFI_GUID           GuidNull          = NULL_GUID_VALUE;
+    CHAR16             *ShowScreenStr    = NULL;
+    MBR_PARTITION_INFO *MbrTable;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *VolDesc;
+    CHAR16 *PartGUID;
+    #endif
 
     MyFreePool (Volumes);
     Volumes = NULL;
@@ -1511,22 +1520,26 @@ ScanVolumes (
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
+
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable (Volume);
         ScanVolume (Volume);
-        if (UuidList) {
-           UuidList[HandleIndex] = Volume->VolUuid;
-           for (i = 0; i < HandleIndex; i++) {
-              if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
-                  (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-              ) {
-                  // Duplicate filesystem UUID
-                  Volume->IsReadable = FALSE;
-              } // if
-           } // for
-        } // if
+
+        if (!GlobalConfig.AllowDuplicates) {
+            if (UuidList) {
+               UuidList[HandleIndex] = Volume->VolUuid;
+               for (i = 0; i < HandleIndex; i++) {
+                  if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                      (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
+                  ) {
+                      // Duplicate Filesystem UUID
+                      Volume->IsReadable = FALSE;
+                  } // if CompareMem
+               } // for
+            } // if UuidList
+        } // if GlobalConfig.AllowDuplicates
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
 
@@ -1540,45 +1553,52 @@ ScanVolumes (
             if (ScannedOnce) {
                 MsgLog ("\n");
             }
-            CHAR16 *VolDesc = Volume->VolName;
+
+            VolDesc  = StrDuplicate (Volume->VolName);
+            PartGUID = GuidAsString (&Volume->PartGuid);
+
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                VolDesc = L"Whole Disk Volume";
+                VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                VolDesc = L"Unknown Volume";
+                VolDesc = StrDuplicate (L"Unknown Volume");
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                VolDesc = L"HFS+ Volume";
+                VolDesc = StrDuplicate (L"HFS+ Volume");
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                VolDesc = L"NTFS Volume";
+                VolDesc = StrDuplicate (L"NTFS Volume");
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                VolDesc = L"FAT Volume";
+                VolDesc = StrDuplicate (L"FAT Volume");
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                VolDesc = L"Ext2 Volume";
+                VolDesc = StrDuplicate (L"Ext2 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                VolDesc = L"Ext3 Volume";
+                VolDesc = StrDuplicate (L"Ext3 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                VolDesc = L"Ext4 Volume";
+                VolDesc = StrDuplicate (L"Ext4 Volume");
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                VolDesc = L"ReiserFS Volume";
+                VolDesc = StrDuplicate (L"ReiserFS Volume");
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                VolDesc = L"BTRFS Volume";
+                VolDesc = StrDuplicate (L"BTRFS Volume");
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                VolDesc = L"XFS Volume";
+                VolDesc = StrDuplicate (L"XFS Volume");
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                VolDesc = L"ISO-9660 Volume";
+                VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
 
-            MsgLog ("Add to Collection:- '%s'", VolDesc);
+            MsgLog ("Add to Collection:- '%s  :  %s'", PartGUID, VolDesc);
+
+            MyFreePool (VolDesc);
+            MyFreePool (PartGUID);
+
             ScannedOnce = TRUE;
         }
         #endif

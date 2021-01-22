@@ -569,22 +569,20 @@ static LEGACY_ENTRY
         }
     }
     if (Volume->VolName != NULL) {
-        VolDesc = Volume->VolName;
+        VolDesc = StrDuplicate (Volume->VolName);
     }
     else {
-        VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
+        VolDesc = StrDuplicate ((Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD");
     }
 
     if (MyStrStr (VolDesc, L"NTFS volume") != NULL) {
-        VolDesc = L"NTFS Volume";
+        VolDesc = StrDuplicate (L"NTFS Volume");
     }
 
-    LegacyTitle = AllocateZeroPool (256 * sizeof (CHAR16));
-    if (LegacyTitle != NULL) {
-        SPrint (LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
-    }
+    LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (LegacyTitle);
+       MyFreePool (VolDesc);
 
        return NULL;
     } // if
@@ -592,7 +590,7 @@ static LEGACY_ENTRY
     // prepare the menu entry
     Entry                    = AllocateZeroPool (sizeof (LEGACY_ENTRY));
     Entry->Enabled           = TRUE;
-    Entry->me.Title          = LegacyTitle;
+    Entry->me.Title          = StrDuplicate (LegacyTitle);
     Entry->me.Tag            = TAG_LEGACY;
     Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
@@ -637,6 +635,9 @@ static LEGACY_ENTRY
 
     Entry->me.SubScreen = SubScreen;
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
+    MyFreePool (LegacyTitle);
+    MyFreePool (VolDesc);
 
     return Entry;
 } /* static LEGACY_ENTRY * AddLegacyEntry() */
@@ -713,6 +714,8 @@ static LEGACY_ENTRY
     Entry->me.SubScreen = SubScreen;
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
+    MyFreePool (LegacyDescription);
+
     return Entry;
 } /* static LEGACY_ENTRY * AddLegacyEntryUEFI() */
 
@@ -728,11 +731,11 @@ ScanLegacyUEFI (
 ) {
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
-    UINT16                    *BootOrder = NULL;
     UINTN                     Index = 0;
-    CHAR16                    BootOption[10];
     UINTN                     BootOrderSize = 0;
+    CHAR16                    BootOption[10];
     CHAR16                    Buffer[20];
+    UINT16                    *BootOrder = NULL;
     BDS_COMMON_OPTION         *BdsOption;
     LIST_ENTRY                TempList;
     BBS_BBS_DEVICE_PATH       *BbsDevicePath = NULL;

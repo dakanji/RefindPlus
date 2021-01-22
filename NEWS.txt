@@ -12,7 +12,9 @@
   * This eliminates the need for APFS drivers when APFS is not supported
 - Adds 'SuppressVerboseAPFS' feature
   * This removes the scrolling loading text that appears when using apfs drivers
-  * Provided as a separate item as its action may impact other text output 
+  * Provided as a separate item as its action may impact other text output
+- Adds 'AllowDuplicates' feature
+  * This allows scanning of partitions with duplicate filesystem UUIDs if required
 
 
 0.12.0.AN (04 Jan 2021):
