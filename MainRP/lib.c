@@ -465,7 +465,7 @@ EfivarGetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
-            MsgLog ("         Set 'use_nvram' to 'true' to silence this warning\n\n");
+            MsgLog ("         Activate 'use_nvram' config option to silence this warning\n\n");
             #endif
         }
         else {
@@ -537,7 +537,7 @@ EfivarSetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("         Set 'use_nvram' to 'true' to silence this warning\n\n");
+            MsgLog ("         Activate 'use_nvram' config option to silence this warning\n\n");
             #endif
         }
         else {

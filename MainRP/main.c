@@ -132,7 +132,7 @@ REFIT_CONFIG GlobalConfig = {
     /* EnableMouse = */ FALSE,
     /* EnableTouch = */ FALSE,
     /* HiddenTags = */ TRUE,
-    /* UseNvram = */ TRUE,
+    /* UseNvram = */ FALSE,
     /* TextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,
@@ -265,7 +265,7 @@ EfivarSetRawEx (
 
             #if REFIT_DEBUG > 0
             MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("      Set 'use_nvram' to 'true' to silence this warning\n");
+            MsgLog ("      Activate 'use_nvram' config option to silence this warning\n\n");
             #endif
         }
         else {
@@ -1523,7 +1523,13 @@ efi_main (
         }
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Enable APFS ...%r\n\n", Status);
+        MsgLog ("INFO: Supply APFS ...");
+        if (Status == EFI_NOT_FOUND) {
+            MsgLog ("Not Required\n\n");
+        }
+        else {
+            MsgLog ("%r\n\n", Status);
+        }
         #endif
     }
 
@@ -1904,13 +1910,15 @@ efi_main (
                     }
 
                     // Set Mac boot args if configured to
+                    // Also disables AMFI if this is configured
+                    // Also disables Mac OS compatibility check if this is configured
                     if (GlobalConfig.SetMacBootArgs && GlobalConfig.SetMacBootArgs[0] != L'\0') {
                         SetMacBootArgs();
                     }
                     else {
                         if (GlobalConfig.DisableAMFI) {
                             // Disable AMFI if configured to
-                            // Also disables Mac OS compatibility check if configured
+                            // Also disables Mac OS compatibility check if this is configured
                             DisableAMFI();
                         }
                         else if (GlobalConfig.DisableMacCompatCheck) {
