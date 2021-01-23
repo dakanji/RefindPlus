@@ -5,7 +5,7 @@
 
 ##--------------------------------------------------------------##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
-##         Featues Provided or Extended by RefindPlus           ##
+##         Features Provided or Extended by RefindPlus          ##
 ##--------------------------------------------------------------##
 #
 #
@@ -204,7 +204,7 @@ protect_mac_nvram
 
 ##--------------------------------------------------------------##
 ##                STANDARD CONFIGURATION ITEMS                  ##
-##                Standard Featues from rEFInd                  ##
+##                  Standard rEFInd Features                    ##
 ##--------------------------------------------------------------##
 #
 #
