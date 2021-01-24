@@ -433,7 +433,7 @@ GopSetModeAndReconnectTextOut (
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n",ShowScreenStr);
+        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
         MyFreePool (ShowScreenStr);
