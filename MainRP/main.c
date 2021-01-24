@@ -1468,7 +1468,7 @@ efi_main (
     InitBooterLog();
 
     #if REFIT_DEBUG > 0
-    CHAR16 *NowDateStr = PoolPrint (
+    CONST CHAR16 *NowDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear,
         NowMonth,
@@ -1479,7 +1479,6 @@ efi_main (
     );
     MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFINDPLUS_VERSION, gST->FirmwareVendor);
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
-    MyFreePool(NowDateStr);
     #endif
 
     // read configuration

@@ -616,11 +616,8 @@ static LEGACY_ENTRY
     #endif
 
     // create the submenu
-    SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
-
+    SubScreen             = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    SubScreen->Title      = PoolPrint (L"Boot Options for %s on %s", LoaderTitle, VolDesc);
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
@@ -631,11 +628,8 @@ static LEGACY_ENTRY
     } // if/else
 
     // default entry
-    SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
-
+    SubEntry              = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
     SubEntry->me.Tag      = TAG_LEGACY;
     SubEntry->Volume      = Entry->Volume;
     SubEntry->LoadOptions = Entry->LoadOptions;
@@ -677,11 +671,8 @@ static LEGACY_ENTRY
     LimitStringLength (LegacyDescription, 100);
 
     // prepare the menu entry
-    Entry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
-
+    Entry                    = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    Entry->me.Title          = PoolPrint (L"Boot legacy OS from %s", LegacyDescription);
     Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
@@ -695,11 +686,8 @@ static LEGACY_ENTRY
     Entry->Enabled           = TRUE;
 
     // create the submenu
-    SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubScreen->Title, 255, L"No boot options for legacy target");
-
+    SubScreen             = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    SubScreen->Title      = L"No boot options for legacy target";
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
@@ -711,12 +699,9 @@ static LEGACY_ENTRY
 
     // default entry
     SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
-
-    SubEntry->me.Tag = TAG_LEGACY_UEFI;
-    Entry->BdsOption = BdsOption;
+    SubEntry->me.Title = PoolPrint (L"Boot %s", LegacyDescription);
+    SubEntry->me.Tag   = TAG_LEGACY_UEFI;
+    Entry->BdsOption   = BdsOption;
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
@@ -794,7 +779,9 @@ ScanLegacyUEFI (
            // Two checks necessary because some systems return EFI boot loaders
            // with a DeviceType value that would inappropriately include them
            // as legacy loaders....
-           if ((BbsDevicePath->DeviceType == DiskType) && (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)) {
+           if (BbsDevicePath->DeviceType == DiskType &&
+               BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS
+           ) {
               // USB flash drives appear as hard disks with certain media flags set.
               // Look for this, and if present, pass it on with the (technically
               // incorrect, but internally useful) BBS_TYPE_USB flag set.
@@ -868,8 +855,8 @@ VOID
 ScanLegacyDisc (
     VOID
 ) {
-    UINTN                   VolumeIndex;
-    REFIT_VOLUME            *Volume;
+    UINTN        VolumeIndex;
+    REFIT_VOLUME *Volume;
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -909,28 +896,28 @@ ScanLegacyInternal (
 } /* VOID ScanLegacyInternal() */
 
 // Scan external disks for legacy (BIOS) boot code
-// and add anything found to the list....
+// and add anything found to the list.
 VOID
 ScanLegacyExternal (
     VOID
 ) {
-   UINTN                   VolumeIndex;
-   REFIT_VOLUME            *Volume;
+    UINTN        VolumeIndex;
+    REFIT_VOLUME *Volume;
 
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-         Volume = Volumes[VolumeIndex];
-         if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
-             ScanLegacyVolume (Volume, VolumeIndex);
-         }
-      } // for
-   }
-   else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      // TODO: This actually doesn't do anything useful; leaving in hopes of
-      // fixing it later....
-      ScanLegacyUEFI (BBS_USB);
-   }
-} /* VOID ScanLegacyExternal() */
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
+                ScanLegacyVolume (Volume, VolumeIndex);
+            }
+        } // for
+    }
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        // TODO: This actually doesn't do anything useful; leaving in hopes of
+        // fixing it later.
+        ScanLegacyUEFI (BBS_USB);
+    }
+} // VOID ScanLegacyExternal()
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType (VOID) {
@@ -965,9 +952,9 @@ VOID
 WarnIfLegacyProblems (
     VOID
 ) {
-    UINTN    i               = 0;
-    CHAR16   *ShowScreenStr  = NULL;
-    BOOLEAN  found           = FALSE;
+    UINTN          i               = 0;
+    CONST CHAR16   *ShowScreenStr  = NULL;
+    BOOLEAN        found           = FALSE;
 
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
@@ -996,8 +983,6 @@ WarnIfLegacyProblems (
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
-
-            MyFreePool (ShowScreenStr);
 
             PauseForKey();
         } // if (found)

@@ -261,22 +261,20 @@ egDumpGOPVideoModes (
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status;
-    UINT32       MaxMode;
-    UINT32       Mode;
-    UINT32       ModeLog;
-    UINT32       NumModes;
-    UINT32       ModeCount;
-    UINT32       LoopCount;
-    UINTN        SizeOfInfo;
-    CHAR16       *PixelFormatDesc;
-    BOOLEAN      OurValidGOP    = FALSE;
-    CHAR16       *ShowScreenStr = NULL;
+    EFI_STATUS     Status;
+    UINT32         MaxMode;
+    UINT32         Mode;
+    UINT32         ModeLog;
+    UINT32         NumModes;
+    UINT32         ModeCount;
+    UINT32         LoopCount;
+    UINTN          SizeOfInfo;
+    CHAR16         *PixelFormatDesc;
+    BOOLEAN        OurValidGOP    = FALSE;
+    CONST CHAR16   *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
-
-        ShowScreenStr = L"Unsupported EFI";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -285,8 +283,6 @@ egDumpGOPVideoModes (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
-
-        MyFreePool (ShowScreenStr);
 
         HaltForKey();
 
@@ -425,12 +421,10 @@ GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
     EFI_STATUS   Status;
-    CHAR16       *ShowScreenStr = NULL;
+    CONST CHAR16 *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
-
-        ShowScreenStr = L"Unsupported EFI";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
@@ -439,8 +433,6 @@ GopSetModeAndReconnectTextOut (
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
-
-        MyFreePool (ShowScreenStr);
 
         HaltForKey();
 
