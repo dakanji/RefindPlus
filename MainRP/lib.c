@@ -119,6 +119,8 @@ BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
 BOOLEAN          SelfVolRun     = FALSE;
+BOOLEAN          DoneHeadings   = FALSE;
+
 extern EFI_GUID RefindPlusGuid;
 
 // Maximum size for disk sectors
@@ -465,7 +467,7 @@ EfivarGetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
-            MsgLog ("         Activate 'use_nvram' config option to silence this warning\n\n");
+            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
         else {
@@ -537,7 +539,7 @@ EfivarSetRaw (
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("         Activate 'use_nvram' config option to silence this warning\n\n");
+            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
         else {
@@ -589,7 +591,7 @@ AddListElement (
     }
     (*ListPtr)[*ElementCount] = NewElement;
     (*ElementCount)++;
-} /* VOID AddListElement() */
+} // VOID AddListElement()
 
 VOID
 FreeList (
@@ -1075,16 +1077,18 @@ CHAR16
     IN REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr = NULL;
-    CHAR16                *FoundName = NULL;
-    CHAR16                *SISize, *TypeName;
+    CHAR16                *ReturnName = NULL;
+    CHAR16                *FoundName  = NULL;
+    CHAR16                *TypeName   = NULL;
+    CHAR16                *SISize     = NULL;
 
     if (Volume->RootDir != NULL) {
         FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
      }
 
-    if ((FileSystemInfoPtr != NULL) &&
-        (FileSystemInfoPtr->VolumeLabel != NULL) &&
-        (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
+    if (FileSystemInfoPtr != NULL &&
+        FileSystemInfoPtr->VolumeLabel != NULL &&
+        StrLen (FileSystemInfoPtr->VolumeLabel) > 0
     ) {
         FoundName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
     }
@@ -1113,21 +1117,30 @@ CHAR16
     MyFreePool (FileSystemInfoPtr);
 
     if (FoundName == NULL) {
-        FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
-        if (FoundName != NULL) {
-            if (StrLen (TypeName) > 0) {
-                SPrint (FoundName, 255, L"%s Volume", TypeName);
-            }
-            else if (MediaCheck) {
-                SPrint (FoundName, 255, L"Disc/Network Volume (Assumed)");
-            }
-            else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
-                SPrint (FoundName, 255, L"APFS Container (Assumed)");
+        if (StrLen (TypeName) > 0) {
+            FoundName = PoolPrint (L"%s Volume", TypeName);
+        }
+        else if (MediaCheck) {
+            FoundName = L"Disc/Network Volume (Assumed)";
+        }
+        else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
+            EFI_GUID GuidAPFS = APFS_GUID_VALUE;
+            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                FoundName = L"APFS Container";
             }
             else {
-                SPrint (FoundName, 255, L"Unknown Volume");
+                FoundName = L"APFS Container (Assumed)";
             }
-        } // if allocated memory OK
+        }
+        else {
+            EFI_GUID GuidHFS = HFS_GUID_VALUE;
+            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                FoundName = L"HFS+ Volume";
+            }
+            else {
+                FoundName = L"Unknown Volume";
+            }
+        }
     } // if
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
@@ -1136,10 +1149,13 @@ CHAR16
 
     // Desperate fallback name....
     if (FoundName == NULL) {
-        FoundName = StrDuplicate (L"Unknown Volume");
+        FoundName = L"Unknown Volume";
     }
 
-    return FoundName;
+    ReturnName = StrDuplicate (FoundName);
+    MyFreePool (FoundName);
+
+    return ReturnName;
 } // static CHAR16 *GetVolumeName()
 
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
@@ -1478,6 +1494,8 @@ ScanVolumes (
     EFI_HANDLE         *Handles;
     REFIT_VOLUME       *Volume;
     REFIT_VOLUME       *WholeDiskVolume;
+    UINT8              *SectorBuffer1;
+    UINT8              *SectorBuffer2;
     UINTN              i                 = 0;
     UINTN              SectorSum         = 0;
     UINTN              HandleCount       = 0;
@@ -1485,16 +1503,15 @@ ScanVolumes (
     UINTN              VolumeIndex       = 0;
     UINTN              VolumeIndex2      = 0;
     UINTN              PartitionIndex    = 0;
-    UINT8              *SectorBuffer1;
-    UINT8              *SectorBuffer2;
-    EFI_GUID           *UuidList;
-    EFI_GUID           GuidNull          = NULL_GUID_VALUE;
     CHAR16             *ShowScreenStr    = NULL;
+    EFI_GUID           GuidNull          = NULL_GUID_VALUE;
+    EFI_GUID           *UuidList;
     MBR_PARTITION_INFO *MbrTable;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *VolDesc;
-    CHAR16 *PartGUID;
+    CHAR16  *VolDesc;
+    CHAR16  *PartGUID;
+    CHAR16  *PartTypeGUID;
     #endif
 
     MyFreePool (Volumes);
@@ -1529,17 +1546,17 @@ ScanVolumes (
 
         if (!GlobalConfig.AllowDuplicates) {
             if (UuidList) {
-               UuidList[HandleIndex] = Volume->VolUuid;
-               for (i = 0; i < HandleIndex; i++) {
-                  if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
-                      (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-                  ) {
-                      // Duplicate Filesystem UUID
-                      Volume->IsReadable = FALSE;
-                  } // if CompareMem
-               } // for
+                UuidList[HandleIndex] = Volume->VolUuid;
+                for (i = 0; i < HandleIndex; i++) {
+                    if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                        (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
+                    ) {
+                        // Duplicate Filesystem UUID
+                        Volume->IsReadable = FALSE;
+                    } // if CompareMem
+                } // for
             } // if UuidList
-        } // if GlobalConfig.AllowDuplicates
+        } // if !GlobalConfig.AllowDuplicates
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
 
@@ -1554,8 +1571,9 @@ ScanVolumes (
                 MsgLog ("\n");
             }
 
-            VolDesc  = StrDuplicate (Volume->VolName);
-            PartGUID = GuidAsString (&Volume->PartGuid);
+            VolDesc      = StrDuplicate (Volume->VolName);
+            PartGUID     = GuidAsString (&Volume->PartGuid);
+            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 VolDesc = StrDuplicate (L"Whole Disk Volume");
@@ -1594,10 +1612,24 @@ ScanVolumes (
                 VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
 
-            MsgLog ("Add to Collection:- '%s  :  %s'", PartGUID, VolDesc);
+            if (!DoneHeadings) {
+                CHAR16 *TmpNameA = L"VOLUME TYPE GUID";
+                CHAR16 *TmpNameB = L"VOLUME GUID";
+                CHAR16 *TmpNameC = L"VOLUME ID";
+
+                MsgLog ("%-41s%-41s%s\n", TmpNameA, TmpNameB, TmpNameC);
+
+                MyFreePool (TmpNameA);
+                MyFreePool (TmpNameB);
+                MyFreePool (TmpNameC);
+
+                DoneHeadings = TRUE;
+            }
+            MsgLog ("%s  :  %s  :  %s", PartTypeGUID, PartGUID, VolDesc);
 
             MyFreePool (VolDesc);
             MyFreePool (PartGUID);
+            MyFreePool (PartTypeGUID);
 
             ScannedOnce = TRUE;
         }
@@ -1713,7 +1745,7 @@ ScanVolumes (
 
                 // TODO: mark entry as non-bootable if it is an extended partition
 
-                // now we're reasonably sure the association is correct...
+                // We are now reasonably sure the association is correct...
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = PartitionIndex;
                 if (Volume->VolName == NULL) {
@@ -1727,7 +1759,7 @@ ScanVolumes (
             MyFreePool (SectorBuffer2);
         }
     } // for
-} /* VOID ScanVolumes() */
+} // VOID ScanVolumes()
 
 VOID
 SetVolumeIcons (

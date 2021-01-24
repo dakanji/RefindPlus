@@ -1200,7 +1200,13 @@ LOADER_ENTRY * AddStanzaEntries (
 
    Entry->Title           = StrDuplicate (Title);
    Entry->me.Title        = AllocateZeroPool (256 * sizeof (CHAR16));
-   SPrint (Entry->me.Title, 255, L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
+   SPrint (
+       Entry->me.Title,
+       255,
+       L"Boot %s from %s",
+       (Title != NULL) ? Title : L"Unknown",
+       CurrentVolume->VolName
+   );
    Entry->me.Row          = 0;
    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
    Entry->Volume          = CurrentVolume;
@@ -1319,49 +1325,65 @@ ScanUserConfigured (
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
                 if (Entry->Enabled) {
                     #if REFIT_DEBUG > 0
+                    CHAR16 *OurTitle  = StrDuplicate (Entry->Title);
+                    CHAR16* OurDesc   = StrDuplicate (Entry->LoaderPath);
+
                     if (Volume->VolName) {
-                        CHAR16 *VolDesc = Volume->VolName;
+                        CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
                         if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                            VolDesc = L"Whole Disk Volume";
+                            VolDesc = StrDuplicate (L"Whole Disk Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                            VolDesc = L"Unknown Volume";
+                            VolDesc = StrDuplicate (L"Unknown Volume");
                         }
                         else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                            VolDesc = L"HFS+ Volume";
+                            VolDesc = StrDuplicate (L"HFS+ Volume");
                         }
                         else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                            VolDesc = L"NTFS Volume";
+                            VolDesc = StrDuplicate (L"NTFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                            VolDesc = L"FAT Volume";
+                            VolDesc = StrDuplicate (L"FAT Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                            VolDesc = L"Ext2 Volume";
+                            VolDesc = StrDuplicate (L"Ext2 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                            VolDesc = L"Ext3 Volume";
+                            VolDesc = StrDuplicate (L"Ext3 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                            VolDesc = L"Ext4 Volume";
+                            VolDesc = StrDuplicate (L"Ext4 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                            VolDesc = L"ReiserFS Volume";
+                            VolDesc = StrDuplicate (L"ReiserFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                            VolDesc = L"BTRFS Volume";
+                            VolDesc = StrDuplicate (L"BTRFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                            VolDesc = L"XFS Volume";
+                            VolDesc = StrDuplicate (L"XFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                            VolDesc = L"ISO-9660 Volume";
+                            VolDesc = StrDuplicate (L"ISO-9660 Volume");
                         }
-                        MsgLog ("  - Found '%s' on '%s'\n", Entry->Title, VolDesc);
+
+                        MsgLog (
+                            "  - Found '%s' on '%s'\n",
+                            OurTitle,
+                            VolDesc
+                        );
+                        MyFreePool (VolDesc);
                     }
                     else {
-                        MsgLog ("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
+                        MsgLog (
+                            "  - Found '%s' :: '%s'\n",
+                            OurTitle,
+                            OurDesc
+                        );
                     }
+
+                    MyFreePool (OurTitle);
+                    MyFreePool (OurDesc);
                     #endif
 
                     if (Entry->me.SubScreen == NULL) {

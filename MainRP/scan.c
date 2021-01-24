@@ -751,6 +751,9 @@ static LOADER_ENTRY * AddLoaderEntry (
         AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
         #if REFIT_DEBUG > 0
+        CHAR16* OurTitle  = StrDuplicate (TitleEntry);
+        CHAR16* OurDesc   = StrDuplicate (Entry->LoaderPath);
+
         if (Volume->VolName) {
             CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
@@ -789,12 +792,24 @@ static LOADER_ENTRY * AddLoaderEntry (
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                 VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
-            MsgLog ("  - Found '%s' on '%s'\n", TitleEntry, VolDesc);
+
+            MsgLog (
+                "  - Found '%s' on '%s'\n",
+                OurTitle,
+                VolDesc
+            );
             MyFreePool (VolDesc);
         }
         else {
-            MsgLog ("  - Found %s:- '%s'\n", TitleEntry, Entry->LoaderPath);
+            MsgLog (
+                "  - Found '%s' :: '%s'\n",
+                OurTitle,
+                OurDesc
+            );
         }
+
+        MyFreePool (OurTitle);
+        MyFreePool (OurDesc);
         #endif
 
         MyFreePool (TitleEntry);

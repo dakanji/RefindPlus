@@ -265,7 +265,7 @@ EfivarSetRawEx (
 
             #if REFIT_DEBUG > 0
             MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("      Activate 'use_nvram' config option to silence this warning\n\n");
+            MsgLog ("      Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
         else {

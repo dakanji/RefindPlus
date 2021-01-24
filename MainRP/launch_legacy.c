@@ -602,7 +602,17 @@ static LEGACY_ENTRY
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
 
     #if REFIT_DEBUG > 0
-    MsgLog ("  - Found '%s' on '%s'\n", LoaderTitle, VolDesc);
+    CHAR16 *OurTitle  = StrDuplicate (LoaderTitle);
+    CHAR16* OurDesc   = StrDuplicate (VolDesc);
+
+    MsgLog (
+        "  - Found '%s' on '%s'\n",
+        OurTitle,
+        OurDesc
+    );
+
+    MyFreePool (OurTitle);
+    MyFreePool (OurDesc);
     #endif
 
     // create the submenu
