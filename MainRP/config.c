@@ -656,7 +656,7 @@ ReadConfig (
         SwitchToText (FALSE);
 
         ShowScreenStr = L"  - WARN: Cannot Find Configuration File. Loading Defaults";
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n", ShowScreenStr);
@@ -666,7 +666,7 @@ ReadConfig (
 
        if (!FileExists (SelfDir, L"icons")) {
            ShowScreenStr = L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode";
-           PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+           PrintUglyText (ShowScreenStr, NEXTLINE);
 
            #if REFIT_DEBUG > 0
            MsgLog ("%s\n", ShowScreenStr);
@@ -740,7 +740,7 @@ ReadConfig (
                         L"  - WARN: Invalid 'hideui flag' Flag: '%s'",
                         FlagName
                     );
-                    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                    PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("%s\n", ShowScreenStr);
@@ -891,7 +891,7 @@ ReadConfig (
                    L"  - WARN: Invalid 'banner_type' Flag: '%s'",
                    TokenList[1]
                );
-               PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+               PrintUglyText (ShowScreenStr, NEXTLINE);
 
                #if REFIT_DEBUG > 0
                MsgLog ("%s\n", ShowScreenStr);

@@ -271,18 +271,20 @@ egDumpGOPVideoModes (
     UINTN          SizeOfInfo;
     CHAR16         *PixelFormatDesc;
     BOOLEAN        OurValidGOP    = FALSE;
-    CONST CHAR16   *ShowScreenStr = L"Unsupported EFI";
+    CHAR16         *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         HaltForKey();
 
@@ -421,18 +423,20 @@ GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
     EFI_STATUS   Status;
-    CONST CHAR16 *ShowScreenStr = L"Unsupported EFI";
+    CHAR16       *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+        MsgLog ("%s\n---------------\n\n",ShowScreenStr);
         #endif
+
+        MyFreePool (ShowScreenStr);
 
         HaltForKey();
 
@@ -476,7 +480,7 @@ egSetGOPMode (
         ShowScreenStr = L"Unsupported EFI";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -503,7 +507,7 @@ egSetGOPMode (
         ShowScreenStr = L"  - Incompatible GPU";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -562,7 +566,7 @@ egSetMaxResolution (
       ShowScreenStr = L"Unsupported EFI";
 
       refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-      PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+      PrintUglyText (ShowScreenStr, NEXTLINE);
       refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
       #if REFIT_DEBUG > 0
@@ -627,7 +631,7 @@ egSetMaxResolution (
 
       ShowScreenStr = L"Could Not Set BestMode ...Seek Useable Mode";
 
-      PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+      PrintUglyText (ShowScreenStr, NEXTLINE);
 
       #if REFIT_DEBUG > 0
       MsgLog ("%s\n", ShowScreenStr);
@@ -1322,7 +1326,7 @@ egSetScreenSize (
         ShowScreenStr = L"Invalid Input Resolution in Config File!";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
 
@@ -1418,7 +1422,7 @@ egSetScreenSize (
             SwitchToText (FALSE);
 
             ShowScreenStr = L"Invalid Resolution Setting Provided ...Trying Default Modes:";
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s", ShowScreenStr);
@@ -1448,7 +1452,7 @@ egSetScreenSize (
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
-                    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                    PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("  - %s", ShowScreenStr);
@@ -1462,7 +1466,7 @@ egSetScreenSize (
                 }
                 else {
                     ShowScreenStr = L"Error : Could Not Query GraphicsOutput Mode";
-                    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                    PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("  - %s", ShowScreenStr);
@@ -1518,7 +1522,7 @@ egSetScreenSize (
                 *ScreenWidth,
                 *ScreenHeight
             );
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
@@ -1561,14 +1565,14 @@ egSetTextMode (
             SwitchToText (FALSE);
 
             ShowScreenStr = L"Error Setting Resolution ...Unsupported Mode";
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
             ShowScreenStr = L"Seek Available Modes:";
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
@@ -1585,7 +1589,7 @@ egSetTextMode (
 
                 if (!EFI_ERROR (Status)) {
                     ShowScreenStr = PoolPrint (L"  - Mode[%d] (%dx%d)", i, Width, Height);
-                    PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                    PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("%s\n", ShowScreenStr);
@@ -1596,7 +1600,7 @@ egSetTextMode (
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
@@ -1627,7 +1631,7 @@ egScreenDescription (
         ShowScreenStr = L"Memory Allocation Error";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -1659,7 +1663,7 @@ egScreenDescription (
             ShowScreenStr = L"Internal Error!";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
@@ -2073,7 +2077,7 @@ egScreenShot (
         ShowScreenStr = L"    * Error: Unable to Take Screen Shot";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -2113,7 +2117,7 @@ egScreenShot (
         ShowScreenStr = L"    * Error: Could Not Encode PNG";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -2139,7 +2143,7 @@ egScreenShot (
             ShowScreenStr = L"    * Error: Could Not Save Screenshot";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
@@ -2168,7 +2172,7 @@ egScreenShot (
                 ShowScreenStr = L"    * Error: Could Not Find ESP for Screenshot";
 
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-                PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+                PrintUglyText (ShowScreenStr, NEXTLINE);
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
                 #if REFIT_DEBUG > 0

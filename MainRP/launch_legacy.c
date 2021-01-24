@@ -952,9 +952,9 @@ VOID
 WarnIfLegacyProblems (
     VOID
 ) {
-    UINTN          i               = 0;
-    CONST CHAR16   *ShowScreenStr  = NULL;
-    BOOLEAN        found           = FALSE;
+    UINTN    i               = 0;
+    CHAR16   *ShowScreenStr  = NULL;
+    BOOLEAN  found           = FALSE;
 
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
@@ -977,12 +977,14 @@ WarnIfLegacyProblems (
             ShowScreenStr = L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n         (BIOS) boot options; however, this is not possible because your computer lacks\n         the necessary Compatibility Support Module (CSM) support or that support is\n         disabled in your firmware.";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
+
+            MyFreePool (ShowScreenStr);
 
             PauseForKey();
         } // if (found)

@@ -1260,7 +1260,7 @@ ScanVolume (
         ShowScreenStr = L"ERROR: Cannot get BlockIO Protocol";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
@@ -1639,7 +1639,7 @@ ScanVolumes (
         ShowScreenStr = L"** WARN: Could Not Set Volume";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText ((CHAR16 *) ShowScreenStr, NEXTLINE);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
