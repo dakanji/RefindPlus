@@ -1512,10 +1512,14 @@ ScanVolumes (
     CHAR16  *VolDesc;
     CHAR16  *PartGUID;
     CHAR16  *PartTypeGUID;
+
+    const CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
+    const CHAR16 *ITEMVOLB = L"VOLUME GUID";
+    const CHAR16 *ITEMVOLC = L"VOLUME ID";
     #endif
 
     MyFreePool (Volumes);
-    Volumes = NULL;
+    Volumes      = NULL;
     VolumesCount = 0;
     ForgetPartitionTables();
 
@@ -1613,16 +1617,7 @@ ScanVolumes (
             }
 
             if (!DoneHeadings) {
-                CHAR16 *TmpNameA = L"VOLUME TYPE GUID";
-                CHAR16 *TmpNameB = L"VOLUME GUID";
-                CHAR16 *TmpNameC = L"VOLUME ID";
-
-                MsgLog ("%-41s%-41s%s\n", TmpNameA, TmpNameB, TmpNameC);
-
-                MyFreePool (TmpNameA);
-                MyFreePool (TmpNameB);
-                MyFreePool (TmpNameC);
-
+                MsgLog ("%-41s%-41s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
                 DoneHeadings = TRUE;
             }
             MsgLog ("%s  :  %s  :  %s", PartTypeGUID, PartGUID, VolDesc);
@@ -1663,7 +1658,8 @@ ScanVolumes (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("\n\n");
+        MsgLog ("\n");
+        MsgLog ("%-41s%-41s%s\n\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
         #endif
     }
     SelfVolRun = TRUE;
