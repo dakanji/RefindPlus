@@ -2329,7 +2329,7 @@ HideLegacyTag (
         Name = StrDuplicate (LegacyLoader->BdsOption->Description);
     }
     if (!Name) {
-        Name = StrDuplicate (L"Legacy OS");
+        Name = L"Legacy OS";
     }
 
     LineItem = PoolPrint (L"Are you sure you want to hide '%s'?", Name);

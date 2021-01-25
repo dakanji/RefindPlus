@@ -576,7 +576,7 @@ static LEGACY_ENTRY
     }
 
     if (MyStrStr (VolDesc, L"NTFS volume") != NULL) {
-        VolDesc = StrDuplicate (L"NTFS Volume");
+        VolDesc = L"NTFS Volume";
     }
 
     LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);

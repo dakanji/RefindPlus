@@ -646,7 +646,7 @@ ReadConfig (
        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
 
        MyFreePool (GlobalConfig.DefaultSelection);
-       GlobalConfig.DefaultSelection = StrDuplicate (L"+");
+       GlobalConfig.DefaultSelection = L"+";
 
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
        GlobalConfig.MacOSRecoveryFiles   = StrDuplicate (MACOS_RECOVERY_FILES);
@@ -1331,40 +1331,40 @@ ScanUserConfigured (
                     if (Volume->VolName) {
                         CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
                         if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"Whole Disk Volume");
+                            VolDesc = L"Whole Disk Volume";
                         }
                         else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"Unknown Volume");
+                            VolDesc = L"Unknown Volume";
                         }
                         else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"HFS+ Volume");
+                            VolDesc = L"HFS+ Volume";
                         }
                         else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"NTFS Volume");
+                            VolDesc = L"NTFS Volume";
                         }
                         else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"FAT Volume");
+                            VolDesc = L"FAT Volume";
                         }
                         else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"Ext2 Volume");
+                            VolDesc = L"Ext2 Volume";
                         }
                         else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"Ext3 Volume");
+                            VolDesc = L"Ext3 Volume";
                         }
                         else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"Ext4 Volume");
+                            VolDesc = L"Ext4 Volume";
                         }
                         else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"ReiserFS Volume");
+                            VolDesc = L"ReiserFS Volume";
                         }
                         else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"BTRFS Volume");
+                            VolDesc = L"BTRFS Volume";
                         }
                         else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"XFS Volume");
+                            VolDesc = L"XFS Volume";
                         }
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                            VolDesc = StrDuplicate (L"ISO-9660 Volume");
+                            VolDesc = L"ISO-9660 Volume";
                         }
 
                         MsgLog (

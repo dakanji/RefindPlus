@@ -659,6 +659,7 @@ ScanDriverDir (
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
             // skip this
+            MyFreePool(DirEntry);
             continue;
         }
 

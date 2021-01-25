@@ -327,7 +327,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             // default entry
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title = StrDuplicate (L"Boot using default options");
+                SubEntry->me.Title = L"Boot using default options";
                 MainOptions = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (MainOptions);
@@ -461,14 +461,14 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 MyFreePool (SubScreen->Entries[0]->Title);
                 SubScreen->Entries[0]->Title = TokenList[0]
                     ? StrDuplicate (TokenList[0])
-                    : StrDuplicate (L"Boot Linux");
+                    : L"Boot Linux";
             } // if
 
             FreeTokenLine (&TokenList, &TokenCount);
             while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
                 ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
                 SubEntry = InitializeLoaderEntry (Entry);
-                SubEntry->me.Title = TokenList[0] ? StrDuplicate (TokenList[0]) : StrDuplicate (L"Boot Linux");
+                SubEntry->me.Title = TokenList[0] ? StrDuplicate (TokenList[0]) : L"Boot Linux";
                 MyFreePool (SubEntry->LoadOptions);
                 SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
                 FreeTokenLine (&TokenList, &TokenCount);
@@ -738,7 +738,7 @@ static LOADER_ENTRY * AddLoaderEntry (
         Entry->me.BadgeImage = Volume->VolBadgeImage;
 
         if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
-            Entry->LoaderPath = StrDuplicate (L"\\");
+            Entry->LoaderPath = L"\\";
         }
         else {
             Entry->LoaderPath = NULL;
@@ -757,40 +757,40 @@ static LOADER_ENTRY * AddLoaderEntry (
         if (Volume->VolName) {
             CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Whole Disk Volume");
+                VolDesc = L"Whole Disk Volume";
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Unknown Volume");
+                VolDesc = L"Unknown Volume";
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                VolDesc = StrDuplicate (L"HFS+ Volume");
+                VolDesc = L"HFS+ Volume";
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"NTFS Volume");
+                VolDesc = L"NTFS Volume";
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                VolDesc = StrDuplicate (L"FAT Volume");
+                VolDesc = L"FAT Volume";
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext2 Volume");
+                VolDesc = L"Ext2 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext3 Volume");
+                VolDesc = L"Ext3 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext4 Volume");
+                VolDesc = L"Ext4 Volume";
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"ReiserFS Volume");
+                VolDesc = L"ReiserFS Volume";
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                VolDesc = StrDuplicate (L"BTRFS Volume");
+                VolDesc = L"BTRFS Volume";
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"XFS Volume");
+                VolDesc = L"XFS Volume";
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"ISO-9660 Volume");
+                VolDesc = L"ISO-9660 Volume";
             }
 
             MsgLog (

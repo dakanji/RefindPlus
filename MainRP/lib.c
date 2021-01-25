@@ -1054,10 +1054,10 @@ SizeInIEEEUnits (
             SizeInIeee /= 1024;
         } // while
         if (Prefixes[Index] == ' ') {
-            Units = StrDuplicate (L"-byte");
+            Units = L"-byte";
         }
         else {
-            Units = StrDuplicate (L"  iB");
+            Units = L"  iB";
             Units[1] = Prefixes[Index];
         } // if/else
         SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
@@ -1580,40 +1580,40 @@ ScanVolumes (
             PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Whole Disk Volume");
+                VolDesc = L"Whole Disk Volume";
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Unknown Volume");
+                VolDesc = L"Unknown Volume";
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                VolDesc = StrDuplicate (L"HFS+ Volume");
+                VolDesc = L"HFS+ Volume";
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"NTFS Volume");
+                VolDesc = L"NTFS Volume";
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                VolDesc = StrDuplicate (L"FAT Volume");
+                VolDesc = L"FAT Volume";
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext2 Volume");
+                VolDesc = L"Ext2 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext3 Volume");
+                VolDesc = L"Ext3 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"Ext4 Volume");
+                VolDesc = L"Ext4 Volume";
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"ReiserFS Volume");
+                VolDesc = L"ReiserFS Volume";
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                VolDesc = StrDuplicate (L"BTRFS Volume");
+                VolDesc = L"BTRFS Volume";
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                VolDesc = StrDuplicate (L"XFS Volume");
+                VolDesc = L"XFS Volume";
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                VolDesc = StrDuplicate (L"ISO-9660 Volume");
+                VolDesc = L"ISO-9660 Volume";
             }
 
             if (!DoneHeadings) {

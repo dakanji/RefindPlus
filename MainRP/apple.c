@@ -199,7 +199,7 @@ SetAppleOSInfo (
     }
     else {
         if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
-            AppleOSVersion = StrDuplicate (L"Mac OS");
+            AppleOSVersion = L"Mac OS";
             MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
 
             if (AppleOSVersion) {
