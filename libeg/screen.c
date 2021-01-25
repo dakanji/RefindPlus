@@ -87,7 +87,7 @@ static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
-BOOLEAN egHasConsoleControl  = FALSE;
+BOOLEAN egHasConsoleControl  = TRUE;
 
 STATIC
 EFI_STATUS
@@ -809,8 +809,6 @@ egInitScreen (
         #endif
     }
     else {
-        egHasConsoleControl  = FALSE;
-
         #if REFIT_DEBUG > 0
         MsgLog ("  - Assess Console Control ...ok\n\n");
         #endif

@@ -231,6 +231,7 @@ static EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
         MyFreePool (FileName);
         MyFreePool (TheDir);
     } // while()
+    
     return (Status);
 } // CreateDirectories()
 

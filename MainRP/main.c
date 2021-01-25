@@ -1983,7 +1983,6 @@ efi_main (
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
                 StartLoader (ourLoaderEntry, SelectionName);
-                MyFreePool (SelectionName);
                 break;
 
             case TAG_LEGACY:   // Boot legacy OS
@@ -2014,7 +2013,6 @@ efi_main (
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
-                MyFreePool (SelectionName);
                 break;
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
@@ -2037,7 +2035,6 @@ efi_main (
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
-                MyFreePool (SelectionName);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool

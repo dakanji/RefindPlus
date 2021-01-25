@@ -395,6 +395,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                     break;
                                 }
                             }
+                            MyFreePool (GOPArray);
                         }
                     }
 
@@ -413,6 +414,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                         }
                         #endif
+                        
+                        MyFreePool (DevicePathStr);
                     }
                     // Temp from Clover END
 
@@ -467,6 +470,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
             MyFreePool (DeviceData);
         }  // for
 
+        MyFreePool (GopDevicePathStr);
         MyFreePool (HandleBuffer);
         MyFreePool (HandleType);
     } // if !EFI_ERROR (Status)

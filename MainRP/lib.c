@@ -1049,10 +1049,12 @@ SizeInIEEEUnits (
     if (TheValue != NULL) {
         NumPrefixes = StrLen (Prefixes);
         SizeInIeee = SizeInBytes;
+
         while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
             Index++;
             SizeInIeee /= 1024;
         } // while
+
         if (Prefixes[Index] == ' ') {
             Units = L"-byte";
         }
@@ -1060,9 +1062,13 @@ SizeInIEEEUnits (
             Units = L"  iB";
             Units[1] = Prefixes[Index];
         } // if/else
+
         SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
     } // if
+
     MyFreePool (Units);
+    MyFreePool (Prefixes);
+
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
 
