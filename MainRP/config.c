@@ -1366,17 +1366,18 @@ ScanUserConfigured (
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                             VolDesc = L"ISO-9660 Volume";
                         }
-
+                        MsgLog ("\n");
                         MsgLog (
-                            "  - Found '%s' on '%s'\n",
+                            "  - Found '%s' on '%s'",
                             OurTitle,
                             VolDesc
                         );
                         MyFreePool (VolDesc);
                     }
                     else {
+                        MsgLog ("\n");
                         MsgLog (
-                            "  - Found '%s' :: '%s'\n",
+                            "  - Found '%s' :: '%s'",
                             OurTitle,
                             OurDesc
                         );

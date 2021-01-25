@@ -605,8 +605,9 @@ static LEGACY_ENTRY
     CHAR16 *OurTitle  = StrDuplicate (LoaderTitle);
     CHAR16* OurDesc   = StrDuplicate (VolDesc);
 
+    MsgLog ("\n");
     MsgLog (
-        "  - Found '%s' on '%s'\n",
+        "  - Found '%s' on '%s'",
         OurTitle,
         OurDesc
     );
