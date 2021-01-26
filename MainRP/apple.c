@@ -80,6 +80,7 @@ VOID RecordgCsrStatus (
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
+        // Standard SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
                 L" System Integrity Protection Enabled (0x%03x)",
@@ -87,25 +88,42 @@ VOID RecordgCsrStatus (
             );
             break;
 
+        // Standard SIP "Disabled" Setting
         case SIP_DISABLED:
-        case SIP_DISABLED_EX:
-        case SIP_DISABLED_ANY:
-        case SIP_DISABLED_KEXT:
-        case SIP_DISABLED_DEBUG:
-        case SIP_DISABLED_DEVICE:
-        case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
                 L" System Integrity Protection Disabled (0x%03x)",
                 CsrStatus
             );
             break;
 
+        // Recognised Custom SIP "Disabled" Settings
+        case SIP_DISABLED_EX:
+        case SIP_DISABLED_ANY:
+        case SIP_DISABLED_KEXT:
+        case SIP_DISABLED_DEBUG:
+        case SIP_DISABLED_DBGANY:
+            gCsrStatus = PoolPrint (
+                L" System Integrity Protection Disabled (0x%03x - Custom Setting)",
+                CsrStatus
+            );
+            break;
+
+        // Max Legal CSR "Disabled" Setting
+        case CSR_MAX_LEGAL_VALUE:
+            gCsrStatus = PoolPrint (
+                L" System Integrity Protection Removed (0x%03x - Caution: All Protection Removed!)",
+                CsrStatus
+            );
+            break;
+
+        // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Status: 0x%03x",
+                L" System Integrity Protection Status: 0x%03x - Caution: Unknown Custom Setting",
                 CsrStatus
             );
     } // switch
+
     if (DisplayMessage) {
         egDisplayMessage (gCsrStatus, &BGColor, CENTER);
         PauseSeconds (4);
@@ -148,7 +166,7 @@ VOID RotateCsrValue (VOID) {
         } else {
             EG_PIXEL BGColor = COLOR_LIGHTBLUE;
             egDisplayMessage (
-                L" Error setting System Integrity Protection status",
+                L"Could Not Set SIP Status",
                 &BGColor,
                 CENTER
             );
