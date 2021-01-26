@@ -776,7 +776,8 @@ IsValidTool (
             MyFreePool (DontScanThis);
         } // while
 
-    } else {
+    }
+    else {
         retval = FALSE;
     }
 
@@ -912,19 +913,22 @@ preBootKicker (
                 #if REFIT_DEBUG > 0
                 MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
-            } else {
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
                 MyFreePool (FilePath);
             }
-        } else {
+        }
+        else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1054,19 +1058,22 @@ preCleanNvram (
                 // Run CleanNvram
                 StartTool (ourLoaderEntry);
 
-            } else {
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
                 MyFreePool (FilePath);
             }
-        } else {
+        }
+        else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1260,14 +1267,28 @@ STATIC BOOLEAN SecureBootSetup (
     VOID
 ) {
     EFI_STATUS  Status;
-    BOOLEAN     Success = FALSE;
+    BOOLEAN     Success         = FALSE;
+    CHAR16      *ShowScreenStr  = NULL;
+
 
     if (secure_mode() && ShimLoaded()) {
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
-        } else {
-            Print (L"Failed to Install MOK Secure Boot Extensions");
+        }
+        else {
+            ShowScreenStr = L"Failed to Install MOK Secure Boot Extensions";
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: %s\n---------------\n\n", ShowScreenStr);
+            #endif
+
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText (ShowScreenStr, NEXTLINE);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            MyFreePool (ShowScreenStr);
+
             PauseForKey();
         }
     }
@@ -1288,27 +1309,29 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
             Success = FALSE;
             BeginTextScreen (L"Secure Boot Policy Failure");
 
-            BOOLEAN OurTempBool = GlobalConfig.ContinueOnWarning;
-            GlobalConfig.ContinueOnWarning = TRUE;
+            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Shutdown in 9 Seconds";
 
-            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Reboot";
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: %s\n---------------\n\n", ShowScreenStr);
+            #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            #if REFIT_DEBUG > 0
-            MsgLog ("%s\n---------------\n\n", ShowScreenStr);
-            #endif
-
             MyFreePool (ShowScreenStr);
 
-            PauseForKey();
-            GlobalConfig.ContinueOnWarning = OurTempBool;
+            PauseSeconds(9);
 
-            refit_call4_wrapper(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+            refit_call4_wrapper(
+                gRT->ResetSystem,
+                EfiResetShutdown,
+                EFI_SUCCESS,
+                0, NULL
+            );
         }
     }
+
     return Success;
 } // VOID SecureBootUninstall
 
@@ -1612,7 +1635,8 @@ efi_main (
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Second\n", i);
            #endif
-       } else {
+       }
+       else {
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Seconds\n", i);
            #endif
