@@ -1355,7 +1355,7 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
     );
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Setting Config Filename:\n");
+        MsgLog ("Set Config Filename from Command Line Option:\n");
         #endif
 
         Options = (CHAR16 *) Info->LoadOptions;
@@ -1370,26 +1370,22 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
                 GlobalConfig.ConfigFilename = FileName;
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - Config File = %s\n\n", FileName);
+                MsgLog ("  - Config File:- '%s'\n\n", FileName);
                 #endif
             }
             else {
-                ShowScreenStr = L"Specified Configuration File Not Found";
-                PrintUglyText (ShowScreenStr, NEXTLINE);
-
+                ShowScreenStr = L"Specified Config File Not Found";
                 #if REFIT_DEBUG > 0
-                MsgLog ("%s\n", ShowScreenStr);
+                MsgLog ("** WARN: %s\n", ShowScreenStr);
                 #endif
-
+                PrintUglyText (ShowScreenStr, NEXTLINE);
                 MyFreePool (ShowScreenStr);
 
                 ShowScreenStr = L"Try Default:- 'config.conf / refind.conf'";
-                PrintUglyText (ShowScreenStr, NEXTLINE);
-
                 #if REFIT_DEBUG > 0
-                MsgLog ("%s\n\n", ShowScreenStr);
+                MsgLog ("         %s\n\n", ShowScreenStr);
                 #endif
-
+                PrintUglyText (ShowScreenStr, NEXTLINE);
                 MyFreePool (ShowScreenStr);
 
                 HaltForKey();
@@ -1398,9 +1394,14 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
             MyFreePool (FileName);
         } // if
         else {
+            ShowScreenStr = L"Invalid Load Option";
             #if REFIT_DEBUG > 0
-            MsgLog ("  - ERROR : Invalid Load Option\n\n");
+            MsgLog ("** WARN: %s\n", ShowScreenStr);
             #endif
+            PrintUglyText (ShowScreenStr, NEXTLINE);
+            MyFreePool (ShowScreenStr);
+
+            HaltForKey();
         }
     } // if
 } // VOID SetConfigFilename()
