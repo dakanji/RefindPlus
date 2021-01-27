@@ -1593,6 +1593,8 @@ ScanForBootloaders (
     if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
         MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
+    MyFreePool (HiddenTags);
+    
     HiddenTags = ReadHiddenTags (L"HiddenLegacy");
     if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
         MergeStrings (&GlobalConfig.DontScanVolumes, HiddenTags, L',');

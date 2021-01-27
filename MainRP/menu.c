@@ -2105,17 +2105,20 @@ VOID ManageHiddenTags (
     if (HiddenTags && (HiddenTags[0] != L'\0')) {
         AllTags = StrDuplicate (HiddenTags);
     }
+    MyFreePool (HiddenTags);
 
     HiddenTools = ReadHiddenTags (L"HiddenTools");
     SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
     if (HiddenTools && (HiddenTools[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenTools, L',');
     }
+    MyFreePool (HiddenTools);
 
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
     if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenLegacy, L',');
     }
+    MyFreePool (HiddenLegacy);
 
     if (!AllTags || StrLen (AllTags) < 1) {
         DisplaySimpleMessage (L"Information", L"No hidden tags found");
@@ -2180,13 +2183,11 @@ VOID ManageHiddenTags (
     }
 
     MyFreePool (AllTags);
-    MyFreePool (HiddenTags);
-    MyFreePool (HiddenTools);
-    MyFreePool (HiddenLegacy);
     MyFreePool (OneElement);
     MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
+// Calling function is responsible for freeing allocated memory.
 CHAR16 *ReadHiddenTags (
     CHAR16 *VarName
 ) {

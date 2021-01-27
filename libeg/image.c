@@ -85,6 +85,7 @@
 // Basic image handling
 //
 
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCreateImage (
     IN UINTN    Width,
     IN UINTN    Height,
@@ -103,12 +104,14 @@ EG_IMAGE * egCreateImage (
         return NULL;
     }
 
-    NewImage->Width = Width;
-    NewImage->Height = Height;
+    NewImage->Width    = Width;
+    NewImage->Height   = Height;
     NewImage->HasAlpha = HasAlpha;
+
     return NewImage;
 }
 
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCreateFilledImage (
     IN UINTN     Width,
     IN UINTN     Height,
@@ -127,6 +130,7 @@ EG_IMAGE * egCreateFilledImage (
     return NewImage;
 }
 
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCopyImage (
     IN EG_IMAGE *Image
 ) {
@@ -146,6 +150,7 @@ EG_IMAGE * egCopyImage (
 
 // Returns a smaller image composed of the specified crop area from the larger area.
 // If the specified area is larger than is in the original, returns NULL.
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCropImage (
     IN EG_IMAGE  *Image,
     IN UINTN     StartX,
@@ -170,6 +175,7 @@ EG_IMAGE * egCropImage (
             NewImage->PixelData[y * NewImage->Width + x] = Image->PixelData[(y + StartY) * Image->Width + x + StartX];
         }
     }
+
     return NewImage;
 } // EG_IMAGE * egCropImage()
 
@@ -263,6 +269,7 @@ egFreeImage (
 // Basic file operations
 //
 
+// Calling function is responsible for freeing allocated memory.
 EFI_STATUS
 egLoadFile (
     IN EFI_FILE  *BaseDir,
@@ -483,6 +490,7 @@ EG_IMAGE * egLoadIcon (
 // SubdirName is "myicons" and BaseName is "os_linux", this function will return
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egLoadIconAnyType (
     IN EFI_FILE  *BaseDir,
     IN CHAR16    *SubdirName,
@@ -512,6 +520,7 @@ EG_IMAGE * egLoadIconAnyType (
 // myicons/os_linux.png, icons/os_linux.icns, or icons/os_linux.png, in that
 // order of preference. Returns NULL if no such icon can be found. All file
 // references are relative to SelfDir.
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egFindIcon (
     IN CHAR16 *BaseName,
     IN UINTN  IconSize
@@ -529,6 +538,7 @@ EG_IMAGE * egFindIcon (
     return Image;
 } // EG_IMAGE * egFindIcon()
 
+// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egPrepareEmbeddedImage (
     IN EG_EMBEDDED_IMAGE  *EmbeddedImage,
     IN BOOLEAN            WantAlpha
