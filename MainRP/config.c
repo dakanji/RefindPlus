@@ -1523,6 +1523,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
                 );
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
                 MyFreePool (Line);
+
                 Line = PoolPrint (
                     L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
                     WriteStatus,
@@ -1530,6 +1531,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
                 );
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
                 MyFreePool (Line);
+
                 MyFreePool (GuidString);
             } // if (GuidString)
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);

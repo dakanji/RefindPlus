@@ -199,7 +199,8 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
             for (i = 0; i < GptData->Header->entry_count; i++)
                GptData->Entries[i].name[35] = '\0';
          } // if
-      } else {
+      }
+      else {
          Status = EFI_UNSUPPORTED;
       } // if/else valid header
    } // if header read OK
@@ -208,7 +209,8 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
       // Everything looks OK, so copy it over
       ClearGptData (*Data);
       *Data = GptData;
-   } else {
+   }
+   else {
       ClearGptData (GptData);
    } // if/else
 
@@ -223,22 +225,26 @@ GPT_ENTRY * FindPartWithGuid (EFI_GUID *Guid) {
    GPT_ENTRY *Found = NULL;
    GPT_DATA  *GptData;
 
-   if ((Guid == NULL) || (gPartitions == NULL))
-      return NULL;
+   if ((Guid == NULL) || (gPartitions == NULL)) {
+       return NULL;
+   }
 
    GptData = gPartitions;
-   while ((GptData != NULL) && (!Found)) {
+   while (!Found && GptData != NULL) {
       i = 0;
-      while ((i < GptData->Header->entry_count) && (!Found)) {
+      while (!Found && i < GptData->Header->entry_count) {
          if (GuidsAreEqual ((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
             Found = AllocateZeroPool (sizeof (GPT_ENTRY));
             CopyMem (Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
-         } else {
+         }
+         else {
             i++;
          } // if/else
-      } // while (scanning entries)
+      } // while scanning entries
+
       GptData = GptData->NextEntry;
-   } // while (scanning GPTs)
+   } // while scanning GPTs
+
    return Found;
 } // GPT_ENTRY * FindPartWithGuid()
 
@@ -264,16 +270,19 @@ VOID AddPartitionTable (REFIT_VOLUME *Volume) {
    if (Status == EFI_SUCCESS) {
       if (gPartitions == NULL) {
          gPartitions = GptData;
-      } else {
+      }
+      else {
          GptList = gPartitions;
          while (GptList->NextEntry != NULL) {
             GptList = GptList->NextEntry;
             NumTables++;
          } // while
+
          GptList->NextEntry = GptData;
          NumTables++;
       } // if/else
-   } else if (GptData != NULL) {
+   }
+   else if (GptData != NULL) {
       ClearGptData (GptData);
       NumTables = 0;
    } // if/else

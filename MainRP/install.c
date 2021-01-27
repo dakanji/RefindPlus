@@ -313,7 +313,7 @@ static EFI_STATUS CopyDirectory (IN EFI_FILE *SourceDirPtr,
     EFI_STATUS      Status = EFI_SUCCESS;
 
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
-    while (DirIterNext (&DirIter, 2, NULL, &DirEntry) && (Status == EFI_SUCCESS)) {
+    while (Status == EFI_SUCCESS && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
         SourceFileName = PoolPrint (L"%s\\%s", SourceDirName, DirEntry->FileName);
         DestFileName = PoolPrint (L"%s\\%s", DestDirName, DirEntry->FileName);
         Status = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);

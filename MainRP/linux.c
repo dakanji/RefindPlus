@@ -168,7 +168,8 @@ CHAR16 * FindInitrd (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
 CHAR16 *AddInitrdToOptions (CHAR16 *Options, CHAR16 *InitrdPath) {
-    CHAR16 *NewOptions = NULL;
+    CHAR16 *NewOptions    = NULL;
+    CHAR16 *InitrdVersion = NULL;
 
     if (Options != NULL) {
         NewOptions = StrDuplicate (Options);
@@ -176,9 +177,8 @@ CHAR16 *AddInitrdToOptions (CHAR16 *Options, CHAR16 *InitrdPath) {
 
     if (InitrdPath != NULL) {
         if (StriSubCmp (L"%v", Options)) {
-            CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
+            InitrdVersion = FindNumbers (InitrdPath);
             ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
-
             MyFreePool (InitrdVersion);
         }
         else if (!StriSubCmp (L"initrd=", Options)) {

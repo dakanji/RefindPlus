@@ -1155,6 +1155,7 @@ VOID AboutRefindPlus (
                 gST->FirmwareRevision & ((1 << 16) - 1)
             )
         );
+        MyFreePool (FirmwareVendor);
 
         AddMenuInfoLine (&AboutMenu, PoolPrint (L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine (&AboutMenu, L"");
@@ -1173,7 +1174,6 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
         AddMenuEntry (&AboutMenu, &MenuEntryReturn);
-        MyFreePool (FirmwareVendor);
     }
 
     RunMenu (&AboutMenu, NULL);
@@ -1692,9 +1692,13 @@ efi_main (
        BltClearScreen (TRUE);
     } // if
 
-    if (GlobalConfig.DefaultSelection) {
+    if (GlobalConfig.DefaultSelection != NULL) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
+    else {
+        SelectionName = L"Default";
+    }
+    
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
     }

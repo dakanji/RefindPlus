@@ -262,7 +262,10 @@ egFreeImage (
     IN EG_IMAGE *Image
 ) {
     MyFreePool (Image->PixelData);
+    Image->PixelData = NULL;
+
     MyFreePool (Image);
+    Image = NULL;
 }
 
 //

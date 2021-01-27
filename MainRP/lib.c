@@ -316,7 +316,6 @@ ReinitVolumes (
     EFI_STATUS       Status;
     REFIT_VOLUME     *Volume;
     UINTN            VolumeIndex;
-    EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE       DeviceHandle;
     EFI_HANDLE       WholeDiskHandle;
 
@@ -325,11 +324,10 @@ ReinitVolumes (
 
         if (Volume->DevicePath != NULL) {
             // get the handle for that path
-            RemainingDevicePath = Volume->DevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &RemainingDevicePath,
+                &(Volume->DevicePath),
                 &DeviceHandle
             );
 
@@ -347,11 +345,10 @@ ReinitVolumes (
 
         if (Volume->WholeDiskDevicePath != NULL) {
             // get the handle for that path
-            RemainingDevicePath = Volume->WholeDiskDevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &RemainingDevicePath,
+                &(Volume->WholeDiskDevicePath),
                 &WholeDiskHandle
             );
 
@@ -457,9 +454,11 @@ EfivarGetRaw (
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
             EFI_FILE_DIRECTORY
         );
+
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (VarsDir, name, &buf, size);
             ReadFromNvram = FALSE;
+            MyFreePool (VarsDir);
         }
         else if (Status == EFI_WRITE_PROTECTED) {
             // Override use_nvram
@@ -477,11 +476,8 @@ EfivarGetRaw (
             }
             #endif
 
-            MyFreePool (VarsDir);
-
             return Status;
         }
-        MyFreePool (VarsDir);
     }
 
     if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
@@ -532,6 +528,7 @@ EfivarSetRaw (
         );
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
+            MyFreePool (VarsDir);
         }
         else if (Status == EFI_WRITE_PROTECTED) {
             // Override use_nvram
@@ -549,7 +546,6 @@ EfivarSetRaw (
 
             return Status;
         }
-        MyFreePool (VarsDir);
     }
 
     if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
@@ -1063,10 +1059,10 @@ SizeInIEEEUnits (
             Units[1] = Prefixes[Index];
         } // if/else
 
-        SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
+        TheValue = PoolPrint (L"%ld%s", SizeInIeee, Units);
+        MyFreePool (Units);
     } // if
 
-    MyFreePool (Units);
     MyFreePool (Prefixes);
 
     return TheValue;
@@ -1183,20 +1179,22 @@ SetPartGuidAndName (
         HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
         if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
             Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
+
             PartInfo = FindPartWithGuid (&(Volume->PartGuid));
             if (PartInfo) {
                 Volume->PartName = StrDuplicate (PartInfo->name);
+                // DA_TAG: Should "PartInfo->type_guid" be dereferenced?
                 CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
 
-                if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
-                    ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)
+                if ((GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) &&
+                    (PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0
                 ) {
                     GlobalConfig.DiscoveredRoot = Volume;
                 } // if (GUIDs match && automounting OK)
 
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
                 MyFreePool (PartInfo);
-            } // if (PartInfo exists)
+            } // if PartInfo
         }
         else {
             // TODO: Better to assign a random GUID to MBR partitions, but I couldn't
@@ -1233,7 +1231,6 @@ ScanVolume (
     EFI_DEVICE_PATH  *DevicePath;
     EFI_DEVICE_PATH  *NextDevicePath;
     EFI_DEVICE_PATH  *DiskDevicePath;
-    EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE       WholeDiskHandle;
     UINTN            PartialLength;
     BOOLEAN          Bootable;
@@ -1331,14 +1328,12 @@ ScanVolume (
             );
 
             // get the handle for that path
-            RemainingDevicePath = DiskDevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &RemainingDevicePath,
+                &DiskDevicePath,
                 &WholeDiskHandle
             );
-            MyFreePool (DiskDevicePath);
 
             if (!EFI_ERROR (Status)) {
                 //Print (
@@ -1357,6 +1352,7 @@ ScanVolume (
                 if (!EFI_ERROR (Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
                 }
+                MyFreePool (DiskDevicePath);
 
                 // look at the BlockIO protocol
                 Status = refit_call3_wrapper(
