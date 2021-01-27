@@ -760,8 +760,8 @@ VOID
 BltClearScreen (
     BOOLEAN ShowBanner
 ) {
-    static EG_IMAGE *Banner = NULL;
-    EG_IMAGE *NewBanner = NULL;
+    static EG_IMAGE *Banner    = NULL;
+    EG_IMAGE        *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
@@ -778,6 +778,7 @@ BltClearScreen (
             if (GlobalConfig.BannerFileName) {
                 Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
+
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Embedded Title Banner\n");
@@ -791,34 +792,26 @@ BltClearScreen (
             }
         }
 
-        if (Banner) {
+        if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             MsgLog ("  - Scale Banner\n");
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-              if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
+              if (Banner->Height != ScreenH || Banner->Width != ScreenW) {
                  NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
-              } // if
+              }
            }
-           else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
+           else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
               NewBanner = egCropImage(
                   Banner, 0, 0,
-                  (Banner->Width > ScreenW) ? ScreenW : Banner->Width,
+                  (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
                   (Banner->Height > ScreenH) ? ScreenH : Banner->Height
               );
-           } // if/elseif
-           if (NewBanner) {
-               // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
-               //         Apparent Memory Conflict ... Needs Investigation.
-               //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-               if (egHasConsoleControl) {
-                   egFreeImage(Banner);
-               }
-               else {
-                   MyFreePool (Banner);
-               }
+           }
 
+           if (NewBanner != NULL) {
+               egFreeImage(Banner);
                Banner = NewBanner;
            }
            MenuBackgroundPixel = Banner->PixelData[0];
@@ -852,8 +845,8 @@ BltClearScreen (
             }
 
             // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
-            //         Apparent Memory Conflict ... Needs Investigation.
-            //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
+            //         Workaround Segmentation Fault ... Needs Investigation.
+            //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16
             if (egHasConsoleControl) {
                 egFreeImage(Banner);
             }
@@ -862,7 +855,8 @@ BltClearScreen (
             }
         }
     }
-    else { // not showing banner
+    else {
+        // not showing banner
         // clear to menu background color
         egClearScreen(&MenuBackgroundPixel);
     }
