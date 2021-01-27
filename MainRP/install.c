@@ -217,7 +217,7 @@ static EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
     UINTN    i = 0, Status = EFI_SUCCESS;
     EFI_FILE *TheDir = NULL;
 
-    while ((FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
+    while (Status == EFI_SUCCESS && (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL) {
         Status = refit_call5_wrapper(
             BaseDir->Open,
             BaseDir,
@@ -231,7 +231,7 @@ static EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
         MyFreePool (FileName);
         MyFreePool (TheDir);
     } // while()
-    
+
     return (Status);
 } // CreateDirectories()
 

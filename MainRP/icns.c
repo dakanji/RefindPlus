@@ -136,7 +136,7 @@ EG_IMAGE * LoadOSIcon (
     }
 
     // First, try to find an icon from the OSIconName list....
-    while (((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL) && (Image == NULL)) {
+    while (Image == NULL && ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL)) {
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (CutoutName);
