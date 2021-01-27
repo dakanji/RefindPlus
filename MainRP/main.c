@@ -1543,7 +1543,7 @@ efi_main (
             if (i > 3) {
                 GlobalConfig.ScanFor[i] = ' ';
             }
-            if (i == 1) {
+            else if (i == 1) {
                 GlobalConfig.ScanFor[i] = 'e';
             }
             else if (i == 2) {
