@@ -236,11 +236,11 @@ int main(int argc, char* argv[]) {
 
     njInit();
     if (njDecode(buf, size)) {
-        free((void*)buf);
+        free((void*) buf);
         printf("Error decoding the input file.\n");
         return 1;
     }
-    free((void*)buf);
+    free((void*) buf);
 
     f = fopen((argc > 2) ? argv[2] : (njIsColor() ? "nanojpeg_out.ppm" : "nanojpeg_out.pgm"), "wb");
     if (!f) {
@@ -768,7 +768,7 @@ NJ_INLINE void njUpsampleH(nj_component_t* c) {
     }
     c->width <<= 1;
     c->stride = c->width;
-    njFreeMem((void*)c->pixels);
+    njFreeMem((void*) c->pixels);
     c->pixels = out;
 }
 

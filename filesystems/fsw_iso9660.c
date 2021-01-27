@@ -130,13 +130,13 @@ static fsw_status_t rr_find_sp(struct iso9660_dirrec *dirrec, struct fsw_rock_ri
     fsw_u8 *r;
     int off = 0;
     struct fsw_rock_ridge_susp_sp *sp;
-    r = (fsw_u8 *)((fsw_u8 *)dirrec + sizeof (*dirrec) + dirrec->file_identifier_length);
-    off = (int)(r - (fsw_u8 *)dirrec);
+    r = (fsw_u8 *)((fsw_u8 *) dirrec + sizeof (*dirrec) + dirrec->file_identifier_length);
+    off = (int)(r - (fsw_u8 *) dirrec);
     while(off < dirrec->dirrec_length)
     {
         if (*r == 'S')
         {
-            sp = (struct fsw_rock_ridge_susp_sp *)r;
+            sp = (struct fsw_rock_ridge_susp_sp *) r;
             if(    sp->e.sig[0] == 'S'
                 && sp->e.sig[1] == 'P'
                 && sp->magic[0] == 0xbe
@@ -147,7 +147,7 @@ static fsw_status_t rr_find_sp(struct iso9660_dirrec *dirrec, struct fsw_rock_ri
             }
         }
         r++;
-        off = (int)(r - (fsw_u8 *)dirrec);
+        off = (int)(r - (fsw_u8 *) dirrec);
     }
     *psp = NULL;
     return FSW_NOT_FOUND;
@@ -159,8 +159,8 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
     int fCe = 0;
     struct fsw_rock_ridge_susp_nm *nm;
     int limit = dirrec->dirrec_length;
-    begin = (fsw_u8 *)dirrec;
-    r = (fsw_u8 *)dirrec + off;
+    begin = (fsw_u8 *) dirrec;
+    r = (fsw_u8 *) dirrec + off;
     str->data = NULL;
     str->len = 0;
     str->size = 0;
@@ -176,7 +176,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
                 fsw_alloc_zero(ISO9660_BLOCKSIZE, (void *)&begin);
             fCe = 1;
         //    DEBUG((DEBUG_WARN, "%a:%d we found CE before NM or its continuation\n", __FILE__, __LINE__));
-            ce = (union fsw_rock_ridge_susp_ce *)r;
+            ce = (union fsw_rock_ridge_susp_ce *) r;
             limit = ISOINT(ce->X.len);
             ce_off = ISOINT(ce->X.offset);
             rc = rr_read_ce(vol, ce, begin);
@@ -190,7 +190,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
         }
         if (r[0] == 'N' && r[1] == 'M')
         {
-            nm = (struct fsw_rock_ridge_susp_nm *)r;
+            nm = (struct fsw_rock_ridge_susp_nm *) r;
             if(    nm->e.sig[0] == 'N'
                 && nm->e.sig[1] == 'M')
             {
@@ -225,7 +225,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
             }
         }
         r++;
-        off = (int)(r - (fsw_u8 *)begin);
+        off = (int)(r - (fsw_u8 *) begin);
     }
     if(fCe == 1)
         fsw_free(begin);
@@ -257,7 +257,7 @@ static fsw_status_t rr_read_ce(struct fsw_iso9660_volume *vol, union fsw_rock_ri
 static void dump_dirrec(struct iso9660_dirrec *dirrec)
 {
     int i;
-    fsw_u8 *r = (fsw_u8 *)dirrec + dirrec->file_identifier_length;
+    fsw_u8 *r = (fsw_u8 *) dirrec + dirrec->file_identifier_length;
     int len = dirrec->dirrec_length;
     for (i = dirrec->file_identifier_length; i < len; ++i)
     {
@@ -294,7 +294,7 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
         if (status)
             return status;
 
-        voldesc = (struct iso9660_volume_descriptor *)buffer;
+        voldesc = (struct iso9660_volume_descriptor *) buffer;
         voldesc_type = voldesc->volume_descriptor_type;
         if (fsw_memeq(voldesc->standard_identifier, "CD001", 5)) {
             // descriptor follows ISO 9660 standard
@@ -361,12 +361,12 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
 
 #if 1
     status = fsw_block_get(vol, ISOINT(rootdir.extent_location), 0, &buffer);
-    sig = (char *)buffer + sua_pos;
-    entry = (struct fsw_rock_ridge_susp_entry *)sig;
+    sig = (char *) buffer + sua_pos;
+    entry = (struct fsw_rock_ridge_susp_entry *) sig;
     if (   entry->sig[0] == 'S'
         && entry->sig[1] == 'P')
     {
-        struct fsw_rock_ridge_susp_sp *sp = (struct fsw_rock_ridge_susp_sp *)entry;
+        struct fsw_rock_ridge_susp_sp *sp = (struct fsw_rock_ridge_susp_sp *) entry;
         if (sp->magic[0] == 0xbe && sp->magic[1] == 0xef)
         {
             vol->fRockRidge = 1;
@@ -405,7 +405,7 @@ static void fsw_iso9660_volume_free(struct fsw_iso9660_volume *vol)
 
 static fsw_status_t fsw_iso9660_volume_stat(struct fsw_iso9660_volume *vol, struct fsw_volume_stat *sb)
 {
-    sb->total_bytes = 0; //(fsw_u64)vol->sb->s_blocks_count      * vol->g.log_blocksize;
+    sb->total_bytes = 0; //(fsw_u64) vol->sb->s_blocks_count      * vol->g.log_blocksize;
     sb->free_bytes  = 0;
     return FSW_SUCCESS;
 }
@@ -603,9 +603,9 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
     int sp_off;
     int rc;
 
-    dirrec_buffer->ino = (ISOINT(((struct fsw_iso9660_dnode *)shand->dnode)->dirrec.extent_location)
+    dirrec_buffer->ino = (ISOINT(((struct fsw_iso9660_dnode *) shand->dnode)->dirrec.extent_location)
                           << ISO9660_BLOCKSIZE_BITS)
-        + (fsw_u32)shand->pos;
+        + (fsw_u32) shand->pos;
 
     // read fixed size part of directory record
     buffer_size = 33;
@@ -619,7 +619,7 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
     if (buffer_size < 33 || dirrec->dirrec_length == 0) {
         // end of directory reached
         fsw_u8 *r;
-        r = (fsw_u8 *)dirrec;
+        r = (fsw_u8 *) dirrec;
  //       DEBUG((DEBUG_INFO, "%a:%d bs:%d dl:%d\n", __FILE__, __LINE__, buffer_size, dirrec->dirrec_length));
         for(i = 0; i < buffer_size; ++i)
         {
@@ -650,7 +650,7 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
          if (   rc == FSW_SUCCESS
              && sp != NULL)
          {
-            sp_off = (fsw_u8 *)&sp[1] - (fsw_u8*)dirrec + sp->skip;
+            sp_off = (fsw_u8 *)&sp[1] - (fsw_u8*) dirrec + sp->skip;
          }
          rc = rr_find_nm(vol, dirrec, sp_off,  &dirrec_buffer->name);
          if (rc == FSW_SUCCESS)

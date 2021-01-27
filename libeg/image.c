@@ -300,7 +300,7 @@ egLoadFile (
 
     MyFreePool (FileInfo);
 
-    BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
+    BufferSize = (UINTN) ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
         refit_call1_wrapper(FileHandle->Close, FileHandle);
@@ -743,16 +743,16 @@ egRawCompose (
         for (x = 0; x < Width; x++) {
             Alpha = TopPtr->a;
             RevAlpha = 255 - Alpha;
-            Temp = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
+            Temp = (UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha + 0x80;
             CompPtr->b = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
+            Temp = (UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha + 0x80;
             CompPtr->g = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
+            Temp = (UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha + 0x80;
             CompPtr->r = (Temp + (Temp >> 8)) >> 8;
             /*
-            CompPtr->b = ((UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha) / 255;
-            CompPtr->g = ((UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha) / 255;
-            CompPtr->r = ((UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha) / 255;
+            CompPtr->b = ((UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha) / 255;
+            CompPtr->g = ((UINTN) CompPtr->g * RevAlpha + (UINTN) TopPtr->g * Alpha) / 255;
+            CompPtr->r = ((UINTN) CompPtr->r * RevAlpha + (UINTN) TopPtr->r * Alpha) / 255;
             */
             TopPtr++, CompPtr++;
         }

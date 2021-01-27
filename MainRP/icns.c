@@ -179,7 +179,7 @@ EG_IMAGE * DummyImage (
 
     LineOffset = PixelSize * 4;
 
-    YPtr = (CHAR8 *)Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
     for (y = 0; y < 32; y++) {
         Ptr = YPtr;
         for (x = 0; x < 32; x++) {

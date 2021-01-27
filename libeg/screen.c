@@ -295,7 +295,7 @@ egDumpGOPVideoModes (
     MaxMode = GraphicsOutput->Mode->MaxMode;
     if (MaxMode > 0) {
         Mode = GraphicsOutput->Mode->Mode;
-        NumModes = (INT32)MaxMode + 1;
+        NumModes = (INT32) MaxMode + 1;
         if (MaxMode == 0) {
             ModeCount = NumModes;
         }
@@ -521,16 +521,16 @@ egSetGOPMode (
     else {
         while (EFI_ERROR (Status) && i <= MaxMode) {
             Mode = Mode + Next;
-            Mode = (Mode >= (INT32)MaxMode)?0:Mode;
-            Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
-            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
+            Mode = (Mode >= (INT32) MaxMode)?0:Mode;
+            Mode = (Mode < 0)?((INT32) MaxMode - 1):Mode;
+            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32) Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
             #endif
 
             if (!EFI_ERROR (Status)) {
-                Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
+                Status = GopSetModeAndReconnectTextOut ((UINT32) Mode);
 
                 if (!EFI_ERROR (Status)) {
                     egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
@@ -1920,7 +1920,7 @@ egDrawImageArea (
         refit_call10_wrapper(
             GraphicsOutput->Blt,
             GraphicsOutput,
-            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
             EfiBltBufferToVideo,
             AreaPosX,
             AreaPosY,
@@ -1935,7 +1935,7 @@ egDrawImageArea (
         refit_call10_wrapper(
             UGADraw->Blt,
             UGADraw,
-            (EFI_UGA_PIXEL *)Image->PixelData,
+            (EFI_UGA_PIXEL *) Image->PixelData,
             EfiUgaBltBufferToVideo,
             AreaPosX,
             AreaPosY,
@@ -2014,7 +2014,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
        refit_call10_wrapper(
            GraphicsOutput->Blt,
            GraphicsOutput,
-           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
            EfiBltVideoToBltBuffer,
            XPos,
            YPos,
@@ -2029,7 +2029,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
        refit_call10_wrapper(
            UGADraw->Blt,
            UGADraw,
-           (EFI_UGA_PIXEL *)Image->PixelData,
+           (EFI_UGA_PIXEL *) Image->PixelData,
            EfiUgaVideoToBltBuffer,
            XPos,
            YPos,

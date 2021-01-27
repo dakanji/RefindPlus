@@ -231,7 +231,7 @@ VOID egEncodeBMP(IN EG_IMAGE *Image, OUT UINT8 **FileDataReturn, OUT UINTN *File
     }
     
     // fill header
-    BmpHeader = (BMP_IMAGE_HEADER *)FileData;
+    BmpHeader = (BMP_IMAGE_HEADER *) FileData;
     BmpHeader->CharB = 'B';
     BmpHeader->CharM = 'M';
     BmpHeader->Size = FileDataLength;

@@ -1319,13 +1319,13 @@ ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
-            PartialLength = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
-            DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool (PartialLength +
+            PartialLength = (UINT8 *) NextDevicePath - (UINT8 *)(Volume->DevicePath);
+            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (PartialLength +
                 sizeof (EFI_DEVICE_PATH)
             );
             CopyMem (DiskDevicePath, Volume->DevicePath, PartialLength);
             CopyMem (
-                (UINT8 *)DiskDevicePath + PartialLength,
+                (UINT8 *) DiskDevicePath + PartialLength,
                 EndDevicePath,
                 sizeof (EFI_DEVICE_PATH)
             );
@@ -1343,8 +1343,8 @@ ScanVolume (
             if (!EFI_ERROR (Status)) {
                 //Print (
                 //    L"  - original handle: %08x - disk handle: %08x\n",
-                //    (UINT32)DeviceHandle,
-                //    (UINT32)WholeDiskHandle
+                //    (UINT32) DeviceHandle,
+                //    (UINT32) WholeDiskHandle
                 //);
 
                 // get the device path for later
@@ -1883,7 +1883,7 @@ DirNextEntry (
         }
 
         // entry is ready to be returned
-        *DirEntry = (EFI_FILE_INFO *)Buffer;
+        *DirEntry = (EFI_FILE_INFO *) Buffer;
 
         // filter results
         if (FilterMode == 1) {
@@ -2118,7 +2118,7 @@ FindMem (
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem (BufferPtr, SearchString, SearchStringLength) == 0) {
-            return (INTN)Offset;
+            return (INTN) Offset;
         }
     }
 

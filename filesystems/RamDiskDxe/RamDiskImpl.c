@@ -360,13 +360,13 @@ HiiCreateRamDisk (
   if (MemoryType == RAM_DISK_BOOT_SERVICE_DATA_MEMORY) {
     Status = gBS->AllocatePool (
                     EfiBootServicesData,
-                    (UINTN)Size,
+                    (UINTN) Size,
                     (VOID**)&StartingAddr
                     );
   } else if (MemoryType == RAM_DISK_RESERVED_MEMORY) {
     Status = gBS->AllocatePool (
                     EfiReservedMemoryType,
-                    (UINTN)Size,
+                    (UINTN) Size,
                     (VOID**)&StartingAddr
                     );
   } else {

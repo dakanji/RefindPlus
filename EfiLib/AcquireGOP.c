@@ -83,7 +83,7 @@ ReloadPCIROM (
 
         ImageSize = Pcir->ImageLength * 512;
 
-        if (RomBarOffset - (UINTN)RomBar + ImageSize > RomSize) {
+        if (RomBarOffset - (UINTN) RomBar + ImageSize > RomSize) {
             break;
         }
 

@@ -566,7 +566,7 @@ void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
 
 fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer) {
    int              i, ReadCache = -1;
-   FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *)vol->host_data;
+   FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *) vol->host_data;
    EFI_STATUS       Status = EFI_SUCCESS;
    BOOLEAN          ReadOneBlock = FALSE;
    UINT64           StartRead = (UINT64) phys_bno * (UINT64) vol->phys_blocksize;
@@ -874,7 +874,7 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
     FSW_FILE_DATA       *File;
 
     // make sure the dnode has complete info
-    Status = fsw_efi_map_status(fsw_dnode_fill(dno), (FSW_VOLUME_DATA *)dno->vol->host_data);
+    Status = fsw_efi_map_status(fsw_dnode_fill(dno), (FSW_VOLUME_DATA *) dno->vol->host_data);
     if (EFI_ERROR(Status))
         return Status;
 
@@ -892,7 +892,7 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
 
     // open shandle
     Status = fsw_efi_map_status(fsw_shandle_open(dno, &File->shand),
-                                (FSW_VOLUME_DATA *)dno->vol->host_data);
+                                (FSW_VOLUME_DATA *) dno->vol->host_data);
     if (EFI_ERROR(Status)) {
         FreePool(File);
         return Status;
@@ -932,7 +932,7 @@ EFI_STATUS fsw_efi_file_read(IN FSW_FILE_DATA *File,
 
     buffer_size = (fsw_u32)*BufferSize;
     Status = fsw_efi_map_status(fsw_shandle_read(&File->shand, &buffer_size, Buffer),
-                                (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data);
+                                (FSW_VOLUME_DATA *) File->shand.dnode->vol->host_data);
     *BufferSize = buffer_size;
 
     return Status;
@@ -978,7 +978,7 @@ EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
                             IN UINT64 Attributes)
 {
     EFI_STATUS          Status;
-    FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
+    FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *) File->shand.dnode->vol->host_data;
     struct fsw_dnode    *dno;
     struct fsw_dnode    *target_dno;
     struct fsw_string   lookup_path;
@@ -991,7 +991,7 @@ EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
         return EFI_WRITE_PROTECTED;
 
     lookup_path.type = FSW_STRING_TYPE_UTF16;
-    lookup_path.len  = (int)StrLen(FileName);
+    lookup_path.len  = (int) StrLen(FileName);
     lookup_path.size = lookup_path.len * sizeof (fsw_u16);
     lookup_path.data = FileName;
 
@@ -1023,7 +1023,7 @@ EFI_STATUS fsw_efi_dir_read(IN FSW_FILE_DATA *File,
                             OUT VOID *Buffer)
 {
     EFI_STATUS          Status;
-    FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
+    FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *) File->shand.dnode->vol->host_data;
     struct fsw_dnode    *dno;
 
 #if DEBUG_LEVEL
@@ -1078,7 +1078,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
                                  OUT VOID *Buffer)
 {
     EFI_STATUS            Status;
-    FSW_VOLUME_DATA       *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
+    FSW_VOLUME_DATA       *Volume = (FSW_VOLUME_DATA *) File->shand.dnode->vol->host_data;
     EFI_FILE_SYSTEM_INFO  *FSInfo;
     UINTN                 RequiredSize;
     struct fsw_volume_stat vsb;
@@ -1104,7 +1104,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
         }
 
         // fill structure
-        FSInfo = (EFI_FILE_SYSTEM_INFO *)Buffer;
+        FSInfo = (EFI_FILE_SYSTEM_INFO *) Buffer;
         FSInfo->Size        = RequiredSize;
         FSInfo->ReadOnly    = TRUE;
         FSInfo->BlockSize   = Volume->vol->log_blocksize;
@@ -1135,7 +1135,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
         }
 
         // copy volume label
-        fsw_efi_strcpy(((EFI_FILE_SYSTEM_VOLUME_LABEL_INFO *)Buffer)->VolumeLabel, &Volume->vol->label);
+        fsw_efi_strcpy(((EFI_FILE_SYSTEM_VOLUME_LABEL_INFO *) Buffer)->VolumeLabel, &Volume->vol->label);
 
         // prepare for return
         *BufferSize = RequiredSize;
@@ -1156,7 +1156,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
 
 void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time)
 {
-    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *) sb->host_data;
 
     if (which == FSW_DNODE_STAT_CTIME)
         fsw_efi_decode_time(&FileInfo->CreateTime,       posix_time);
@@ -1174,7 +1174,7 @@ void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_ti
 
 void fsw_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
 {
-    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *) sb->host_data;
 
     if ((posix_mode & S_IWUSR) == 0)
         FileInfo->Attribute |= EFI_FILE_READ_ONLY;
@@ -1182,7 +1182,7 @@ void fsw_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
 
 void fsw_store_attr_efi(struct fsw_dnode_stat *sb, fsw_u16 attr)
 {
-    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *) sb->host_data;
 
     FileInfo->Attribute |= attr;
 }
@@ -1222,7 +1222,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
 
     // fill structure
     ZeroMem(Buffer, RequiredSize);
-    FileInfo = (EFI_FILE_INFO *)Buffer;
+    FileInfo = (EFI_FILE_INFO *) Buffer;
     FileInfo->Size = RequiredSize;
     FileInfo->FileSize          = dno->size;
     FileInfo->Attribute         = 0;

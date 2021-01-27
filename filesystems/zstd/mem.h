@@ -52,7 +52,7 @@ ZSTD_STATIC U16 ZSTD_readLE16(const void *memPtr) { return get_unaligned_le16(me
 
 ZSTD_STATIC void ZSTD_writeLE16(void *memPtr, U16 val) { put_unaligned_le16(val, memPtr); }
 
-ZSTD_STATIC U32 ZSTD_readLE24(const void *memPtr) { return ZSTD_readLE16(memPtr) + (((const BYTE *)memPtr)[2] << 16); }
+ZSTD_STATIC U32 ZSTD_readLE24(const void *memPtr) { return ZSTD_readLE16(memPtr) + (((const BYTE *) memPtr)[2] << 16); }
 
 ZSTD_STATIC U32 ZSTD_readLE32(const void *memPtr) { return get_unaligned_le32(memPtr); }
 
@@ -61,9 +61,9 @@ ZSTD_STATIC U64 ZSTD_readLE64(const void *memPtr) { return get_unaligned_le64(me
 ZSTD_STATIC size_t ZSTD_readLEST(const void *memPtr)
 {
 	if (ZSTD_32bits())
-		return (size_t)ZSTD_readLE32(memPtr);
+		return (size_t) ZSTD_readLE32(memPtr);
 	else
-		return (size_t)ZSTD_readLE64(memPtr);
+		return (size_t) ZSTD_readLE64(memPtr);
 }
 
 #endif /* MEM_H_MODULE */

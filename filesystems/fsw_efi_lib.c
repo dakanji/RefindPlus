@@ -94,7 +94,7 @@ VOID fsw_efi_decode_time(OUT EFI_TIME *EfiTime, IN UINT32 UnixTime)
             LEAPS_THRU_END_OF(y - 1);
         y = newy;
     }
-    EfiTime->Year = (UINT16)y;
+    EfiTime->Year = (UINT16) y;
     ip = mon_lengths[yleap];
     for (EfiTime->Month = 0; days >= (long) ip[EfiTime->Month]; ++(EfiTime->Month))
         days = days - (long) ip[EfiTime->Month];

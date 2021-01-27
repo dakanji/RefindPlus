@@ -130,7 +130,7 @@ RefitReadFile (
     ReadSize = FileInfo->FileSize;
     FreePool (FileInfo);
 
-    File->BufferSize = (UINTN)ReadSize;
+    File->BufferSize = (UINTN) ReadSize;
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
        size = 0;
@@ -150,9 +150,9 @@ RefitReadFile (
     Status = refit_call1_wrapper(FileHandle->Close, FileHandle);
 
     // setup for reading
-    File->Current8Ptr  = (CHAR8 *)File->Buffer;
+    File->Current8Ptr  = (CHAR8 *) File->Buffer;
     File->End8Ptr      = File->Current8Ptr + File->BufferSize;
-    File->Current16Ptr = (CHAR16 *)File->Buffer;
+    File->Current16Ptr = (CHAR16 *) File->Buffer;
     File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
 
     // detect encoding
@@ -369,7 +369,7 @@ ReadTokenLine (
             }
             *p++ = 0;
 
-            AddListElement ((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate (Token));
+            AddListElement ((VOID ***) TokenList, &TokenCount, (VOID *) StrDuplicate (Token));
         }
 
         FreePool (Line);
@@ -383,7 +383,7 @@ FreeTokenLine (
     IN OUT UINTN *TokenCount
 ) {
     // TODO: also free the items
-    FreeList ((VOID ***)TokenList, TokenCount);
+    FreeList ((VOID ***) TokenList, TokenCount);
 }
 
 // handle a parameter with a single integer argument
@@ -598,7 +598,7 @@ static
 LOADER_ENTRY * AddPreparedLoaderEntry (
     LOADER_ENTRY *Entry
 ) {
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return (Entry);
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
@@ -1172,7 +1172,7 @@ AddSubmenu (
         SubEntry->InitrdPath = NULL;
     } // if
     if (SubEntry->Enabled) {
-        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
     }
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
@@ -1474,9 +1474,9 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             } // while
 
             if (Options->Buffer) {
-                Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+                Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
                 Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-                Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+                Options->Current16Ptr = (CHAR16 *) Options->Buffer;
                 Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
             }
             else {
@@ -1533,9 +1533,9 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
                 MyFreePool (GuidString);
             } // if (GuidString)
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-            Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+            Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-            Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+            Options->Current16Ptr = (CHAR16 *) Options->Buffer;
             Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
         } // if (Options allocated OK)
     } // if (partition has root GUID)

@@ -127,17 +127,17 @@ ZSTD_STATIC size_t BIT_initDStream(BIT_DStream_t *bitD, const void *srcBuffer, s
 	}
 
 	if (srcSize >= sizeof (bitD->bitContainer)) { /* normal case */
-		bitD->start = (const char *)srcBuffer;
-		bitD->ptr = (const char *)srcBuffer + srcSize - sizeof (bitD->bitContainer);
+		bitD->start = (const char *) srcBuffer;
+		bitD->ptr = (const char *) srcBuffer + srcSize - sizeof (bitD->bitContainer);
 		bitD->bitContainer = ZSTD_readLEST(bitD->ptr);
 		{
-			BYTE const lastByte = ((const BYTE *)srcBuffer)[srcSize - 1];
+			BYTE const lastByte = ((const BYTE *) srcBuffer)[srcSize - 1];
 			bitD->bitsConsumed = lastByte ? 8 - BIT_highbit32(lastByte) : 0; /* ensures bitsConsumed is always set */
 			if (lastByte == 0)
 				return ERROR(GENERIC); /* endMark not present */
 		}
 	} else {
-		bitD->start = (const char *)srcBuffer;
+		bitD->start = (const char *) srcBuffer;
 		bitD->ptr = bitD->start;
 		bitD->bitContainer = *(const BYTE *)(bitD->start);
 		switch (srcSize) {
@@ -150,7 +150,7 @@ ZSTD_STATIC size_t BIT_initDStream(BIT_DStream_t *bitD, const void *srcBuffer, s
 		default:;
 		}
 		{
-			BYTE const lastByte = ((const BYTE *)srcBuffer)[srcSize - 1];
+			BYTE const lastByte = ((const BYTE *) srcBuffer)[srcSize - 1];
 			bitD->bitsConsumed = lastByte ? 8 - BIT_highbit32(lastByte) : 0;
 			if (lastByte == 0)
 				return ERROR(GENERIC); /* endMark not present */

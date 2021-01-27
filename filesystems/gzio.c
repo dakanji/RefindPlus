@@ -281,7 +281,7 @@ static ush mask_bits[] =
 
 #pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"
 
-#define NEEDBITS(n) do {while(k<(n)){b|=((ulg)get_byte(gzio))<<k;k+=8;}} while (0)
+#define NEEDBITS(n) do {while(k<(n)){b|=((ulg) get_byte(gzio))<<k;k+=8;}} while (0)
 #define DUMPBITS(n) do {b>>=(n);k-=(n);} while (0)
 
 static int
