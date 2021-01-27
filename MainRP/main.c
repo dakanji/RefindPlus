@@ -1505,60 +1505,56 @@ efi_main (
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
     #endif
 
-    // Prime Legacy Boot Settings
+    // Determine Legacy Boot Type
+    FindLegacyBootType();
+
+    // Set Default Scan Options
     i = 0;
     do {
         if (i == 0) {
-            GlobalConfig.ScanFor[i] = L'i';
+            GlobalConfig.ScanFor[i] = 'i';
         }
-        else if (i == 1) {
-            GlobalConfig.ScanFor[i] = L'e';
-        }
-        else if (i == 2) {
-            GlobalConfig.ScanFor[i] = L'o';
-        }
-        else if (i == 3) {
-            GlobalConfig.ScanFor[i] = L'm';
+        else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC ||
+            GlobalConfig.LegacyType == LEGACY_TYPE_UEFI
+        ) {
+            if (i > 6) {
+                GlobalConfig.ScanFor[i] = ' ';
+            }
+            else if (i == 1) {
+                GlobalConfig.ScanFor[i] = 'h';
+            }
+            else if (i == 2) {
+                GlobalConfig.ScanFor[i] = 'e';
+            }
+            else if (i == 3) {
+                GlobalConfig.ScanFor[i] = 'b';
+            }
+            else if (i == 4) {
+                GlobalConfig.ScanFor[i] = 'o';
+            }
+            else if (i == 5) {
+                GlobalConfig.ScanFor[i] = 'c';
+            }
+            else if (i == 6) {
+                GlobalConfig.ScanFor[i] = 'm';
+            }
         }
         else {
-            GlobalConfig.ScanFor[i] = L' ';
+            if (i > 3) {
+                GlobalConfig.ScanFor[i] = ' ';
+            }
+            if (i == 1) {
+                GlobalConfig.ScanFor[i] = 'e';
+            }
+            else if (i == 2) {
+                GlobalConfig.ScanFor[i] = 'o';
+            }
+            else if (i == 3) {
+                GlobalConfig.ScanFor[i] = 'm';
+            }
         }
         i++;
     } while ((i < NUM_SCAN_OPTIONS));
-
-    // Determine Legacy Boot Type
-    FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        // Update Settings for Legacy Mac Boot
-        i = 0;
-        do {
-            if (i == 0) {
-                GlobalConfig.ScanFor[i] = L'i';
-            }
-            else if (i == 1) {
-                GlobalConfig.ScanFor[i] = L'h';
-            }
-            else if (i == 2) {
-                GlobalConfig.ScanFor[i] = L'e';
-            }
-            else if (i == 3) {
-                GlobalConfig.ScanFor[i] = L'b';
-            }
-            else if (i == 4) {
-                GlobalConfig.ScanFor[i] = L'o';
-            }
-            else if (i == 5) {
-                GlobalConfig.ScanFor[i] = L'c';
-            }
-            else if (i == 6) {
-                GlobalConfig.ScanFor[i] = L'm';
-            }
-            else {
-                GlobalConfig.ScanFor[i] = L' ';
-            }
-            i++;
-        } while ((i < NUM_SCAN_OPTIONS));
-    }
 
     // read configuration
     SetConfigFilename (ImageHandle);

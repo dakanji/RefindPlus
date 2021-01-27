@@ -1575,7 +1575,7 @@ ScanForBootloaders (
         egDisplayMessage (L"Seeking Boot Loaders. Please Wait....", &BGColor, CENTER);
     }
 
-    // Determine up-front if we'll be scanning for legacy loaders....
+    // Determine up-front if we will be scanning for legacy loaders
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         s = GlobalConfig.ScanFor[i];
         if ((s == 'c') || (s == 'C') || (s == 'h') || (s == 'H') || (s == 'b') || (s == 'B')) {
