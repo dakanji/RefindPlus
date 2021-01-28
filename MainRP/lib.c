@@ -1336,12 +1336,6 @@ ScanVolume (
             );
 
             if (!EFI_ERROR (Status)) {
-                //Print (
-                //    L"  - original handle: %08x - disk handle: %08x\n",
-                //    (UINT32) DeviceHandle,
-                //    (UINT32) WholeDiskHandle
-                //);
-
                 // get the device path for later
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -1352,7 +1346,6 @@ ScanVolume (
                 if (!EFI_ERROR (Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
                 }
-                MyFreePool (DiskDevicePath);
 
                 // look at the BlockIO protocol
                 Status = refit_call3_wrapper(
@@ -1371,8 +1364,8 @@ ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
                     //CheckError (Status, L"from HandleProtocol");
                 }
-            } //else
-            //CheckError (Status, L"from LocateDevicePath");
+            } // if
+            MyFreePool (DiskDevicePath);
         }
 
         DevicePath = NextDevicePath;
