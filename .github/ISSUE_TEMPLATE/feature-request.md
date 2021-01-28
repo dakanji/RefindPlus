@@ -2,7 +2,7 @@
 name: Feature Request
 about: Suggest improvements for RefindPlus
 title: ''
-labels: Enhancement
+labels: ''
 assignees: ''
 
 ---
