@@ -316,6 +316,7 @@ ReinitVolumes (
     EFI_STATUS       Status;
     REFIT_VOLUME     *Volume;
     UINTN            VolumeIndex;
+    EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE       DeviceHandle;
     EFI_HANDLE       WholeDiskHandle;
 
@@ -324,10 +325,11 @@ ReinitVolumes (
 
         if (Volume->DevicePath != NULL) {
             // get the handle for that path
+            RemainingDevicePath = Volume->DevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &(Volume->DevicePath),
+                &RemainingDevicePath,
                 &DeviceHandle
             );
 
@@ -345,10 +347,11 @@ ReinitVolumes (
 
         if (Volume->WholeDiskDevicePath != NULL) {
             // get the handle for that path
+            RemainingDevicePath = Volume->WholeDiskDevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &(Volume->WholeDiskDevicePath),
+                &RemainingDevicePath,
                 &WholeDiskHandle
             );
 
@@ -1183,7 +1186,6 @@ SetPartGuidAndName (
             PartInfo = FindPartWithGuid (&(Volume->PartGuid));
             if (PartInfo) {
                 Volume->PartName = StrDuplicate (PartInfo->name);
-                // DA_TAG: Should "PartInfo->type_guid" be dereferenced?
                 CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
 
                 if ((GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) &&
@@ -1231,6 +1233,7 @@ ScanVolume (
     EFI_DEVICE_PATH  *DevicePath;
     EFI_DEVICE_PATH  *NextDevicePath;
     EFI_DEVICE_PATH  *DiskDevicePath;
+    EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE       WholeDiskHandle;
     UINTN            PartialLength;
     BOOLEAN          Bootable;
@@ -1328,10 +1331,11 @@ ScanVolume (
             );
 
             // get the handle for that path
+            RemainingDevicePath = DiskDevicePath;
             Status = refit_call3_wrapper(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
-                &DiskDevicePath,
+                &RemainingDevicePath,
                 &WholeDiskHandle
             );
 
