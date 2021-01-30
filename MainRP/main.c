@@ -1509,52 +1509,14 @@ efi_main (
     FindLegacyBootType();
 
     // Set Default Scan Options
-    i = 0;
-    do {
-        if (i == 0) {
-            GlobalConfig.ScanFor[i] = 'i';
-        }
-        else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC ||
-            GlobalConfig.LegacyType == LEGACY_TYPE_UEFI
-        ) {
-            if (i > 6) {
-                GlobalConfig.ScanFor[i] = ' ';
-            }
-            else if (i == 1) {
-                GlobalConfig.ScanFor[i] = 'h';
-            }
-            else if (i == 2) {
-                GlobalConfig.ScanFor[i] = 'e';
-            }
-            else if (i == 3) {
-                GlobalConfig.ScanFor[i] = 'b';
-            }
-            else if (i == 4) {
-                GlobalConfig.ScanFor[i] = 'o';
-            }
-            else if (i == 5) {
-                GlobalConfig.ScanFor[i] = 'c';
-            }
-            else if (i == 6) {
-                GlobalConfig.ScanFor[i] = 'm';
-            }
-        }
-        else {
-            if (i > 3) {
-                GlobalConfig.ScanFor[i] = ' ';
-            }
-            else if (i == 1) {
-                GlobalConfig.ScanFor[i] = 'e';
-            }
-            else if (i == 2) {
-                GlobalConfig.ScanFor[i] = 'o';
-            }
-            else if (i == 3) {
-                GlobalConfig.ScanFor[i] = 'm';
-            }
-        }
-        i++;
-    } while ((i < NUM_SCAN_OPTIONS));
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC ||
+        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI
+    ) {
+        CopyMem (GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+    }
+    else {
+        CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
+    }
 
     // read configuration
     SetConfigFilename (ImageHandle);
@@ -1698,7 +1660,7 @@ efi_main (
     else {
         SelectionName = L"Default";
     }
-    
+
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
     }
