@@ -1,4 +1,4 @@
-0.12.0.AP (Pre-Release):
+0.12.0.AP (01 Feb 2021):
 -----------------------
 - Fixes Default Legacy UEFI Scan Types
 - Misc Improvements to CSR Configuration Options
@@ -10,6 +10,8 @@
   * Hence, 'OsxAptioFix' drivers are no longer required on such units and actively discouraged
 - Fixes Coverage Gap in GOP Reinstallation from Random Access Memory
   * GOP was previously only reinstalled when at least one driver was loaded
+  * Side impact was that some devices handles were not connected if at least one driver was not present
+  * Additionally, some volumes were not scanned for bootlaoders in such instances 
 - Adds 'SupplyAPFS' Feature
   * This eliminates the need for manually adding APFS drivers when APFS is not supported
 - Adds 'SuppressVerboseAPFS' Feature
