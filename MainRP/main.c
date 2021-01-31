@@ -245,8 +245,9 @@ EfivarSetRawEx (
     BOOLEAN   persistent
 ) {
     UINT32      flags;
-    EFI_FILE    *VarsDir = NULL;
-    EFI_STATUS  Status;
+    BOOLEAN     WriteToNvram = TRUE;
+    EFI_FILE    *VarsDir     = NULL;
+    EFI_STATUS  Status       = EFI_SUCCESS;
 
     if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
@@ -257,30 +258,35 @@ EfivarSetRawEx (
             EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
-        if (Status == EFI_SUCCESS) {
+
+        if (!EFI_ERROR (Status)) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
         }
-        else if (Status == EFI_WRITE_PROTECTED) {
-            GlobalConfig.UseNvram = TRUE;
 
-            #if REFIT_DEBUG > 0
+        MyFreePool (VarsDir);
+
+        #if REFIT_DEBUG > 0
+        if (EFI_ERROR (Status)) {
             MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
             MsgLog ("      Activate the 'use_nvram' option to silence this warning\n\n");
-            #endif
         }
-        else {
-            return Status;
-        }
-        MyFreePool (VarsDir);
+        #endif
+
     }
 
-    if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindPlusGuid)) {
+    if (EFI_ERROR (Status) ||
+        GlobalConfig.UseNvram ||
+        !GuidsAreEqual (vendor, &RefindPlusGuid)
+    ) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
         Status = AltSetVariable (name, vendor, flags, size, buf);
+    }
+    else if (!EFI_ERROR (Status) && WriteToNvram == TRUE) {
+        Status = EFI_LOAD_ERROR;
     }
 
     return Status;
