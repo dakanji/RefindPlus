@@ -305,7 +305,7 @@ fsw_status_t fsw_posix_open_dno(struct fsw_posix_volume *pvol, const char *path,
     lookup_path.type = FSW_STRING_TYPE_ISO88591;
     lookup_path.len  = strlen(path);
     lookup_path.size = lookup_path.len;
-    lookup_path.data = (void *) path;
+    lookup_path.data = (void *)path;
 
     // resolve the path (symlinks along the way are automatically resolved)
     status = fsw_dnode_lookup_path(pvol->vol->root, &lookup_path, '/', &dno);
@@ -364,14 +364,14 @@ void fsw_posix_change_blocksize(struct fsw_volume *vol,
 
 fsw_status_t fsw_posix_read_block(struct fsw_volume *vol, fsw_u32 phys_bno, void *buffer)
 {
-    struct fsw_posix_volume *pvol = (struct fsw_posix_volume *) vol->host_data;
+    struct fsw_posix_volume *pvol = (struct fsw_posix_volume *)vol->host_data;
     off_t           block_offset, seek_result;
     ssize_t         read_result;
 
     FSW_MSG_DEBUGV((FSW_MSGSTR("fsw_posix_read_block: %d  (%d)\n"), phys_bno, vol->phys_blocksize));
 
     // read from disk
-    block_offset = (off_t) phys_bno * vol->phys_blocksize;
+    block_offset = (off_t)phys_bno * vol->phys_blocksize;
     seek_result = lseek(pvol->fd, block_offset, SEEK_SET);
     if (seek_result != block_offset)
         return FSW_IO_ERROR;
@@ -392,7 +392,7 @@ fsw_status_t fsw_posix_read_block(struct fsw_volume *vol, fsw_u32 phys_bno, void
 /*
 static void fsw_posix_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time)
 {
-    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *) sb->host_data;
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     if (which == FSW_DNODE_STAT_CTIME)
         fsw_posix_decode_time(&FileInfo->CreateTime,       posix_time);
@@ -412,7 +412,7 @@ static void fsw_posix_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw
 /*
 static void fsw_posix_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
 {
-    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *) sb->host_data;
+    EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     if ((posix_mode & S_IWUSR) == 0)
         FileInfo->Attribute |= EFI_FILE_READ_ONLY;
@@ -452,7 +452,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
 
     // fill structure
     ZeroMem(Buffer, RequiredSize);
-    FileInfo = (EFI_FILE_INFO *) Buffer;
+    FileInfo = (EFI_FILE_INFO *)Buffer;
     FileInfo->Size = RequiredSize;
     FileInfo->FileSize          = dno->size;
     FileInfo->Attribute         = 0;

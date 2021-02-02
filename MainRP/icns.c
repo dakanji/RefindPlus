@@ -136,9 +136,14 @@ EG_IMAGE * LoadOSIcon (
     }
 
     // First, try to find an icon from the OSIconName list....
-    while (Image == NULL && ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL)) {
+    while ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL) {
+        if (Image != NULL) {
+            MyFreePool (CutoutName);
+            break;
+        }
+
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-       Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (CutoutName);
        MyFreePool (BaseName);
     }
@@ -147,14 +152,14 @@ EG_IMAGE * LoadOSIcon (
     if (Image == NULL) {
         MyFreePool (BaseName);
         BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
-        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
         MyFreePool (BaseName);
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
-        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     MyFreePool (BaseName);
@@ -179,7 +184,7 @@ EG_IMAGE * DummyImage (
 
     LineOffset = PixelSize * 4;
 
-    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+    YPtr = (CHAR8 *)Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
     for (y = 0; y < 32; y++) {
         Ptr = YPtr;
         for (x = 0; x < 32; x++) {

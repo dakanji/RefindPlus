@@ -134,7 +134,7 @@ static size_t ZSTD_frameHeaderSize(const void *src, size_t srcSize)
 	if (srcSize < ZSTD_frameHeaderSize_prefix)
 		return ERROR(srcSize_wrong);
 	{
-		BYTE const fhd = ((const BYTE *) src)[4];
+		BYTE const fhd = ((const BYTE *)src)[4];
 		U32 const dictID = fhd & 3;
 		U32 const singleSegment = (fhd >> 5) & 1;
 		U32 const fcsId = fhd >> 6;
@@ -149,7 +149,7 @@ static size_t ZSTD_frameHeaderSize(const void *src, size_t srcSize)
 *             or an error code, which can be tested using ZSTD_isError() */
 size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src, size_t srcSize)
 {
-	const BYTE *ip = (const BYTE *) src;
+	const BYTE *ip = (const BYTE *)src;
 
 	if (srcSize < ZSTD_frameHeaderSize_prefix)
 		return ZSTD_frameHeaderSize_prefix;
@@ -158,7 +158,7 @@ size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src, size_t
 			if (srcSize < ZSTD_skippableHeaderSize)
 				return ZSTD_skippableHeaderSize; /* magic number + skippable frame length */
 			memset(fparamsPtr, 0, sizeof (*fparamsPtr));
-			fparamsPtr->frameContentSize = ZSTD_readLE32((const char *) src + 4);
+			fparamsPtr->frameContentSize = ZSTD_readLE32((const char *)src + 4);
 			fparamsPtr->windowSize = 0; /* windowSize==0 means a frame is skippable */
 			return 0;
 		}
@@ -221,7 +221,7 @@ size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src, size_t
 		case 3: frameContentSize = ZSTD_readLE64(ip + pos); break;
 		}
 		if (!windowSize)
-			windowSize = (U32) frameContentSize;
+			windowSize = (U32)frameContentSize;
 		if (windowSize > windowSizeMax)
 			return ERROR(frameParameter_windowTooLarge);
 		fparamsPtr->frameContentSize = frameContentSize;
@@ -289,7 +289,7 @@ static size_t ZSTD_setRleBlock(void *dst, size_t dstCapacity, const void *src, s
 		return ERROR(srcSize_wrong);
 	if (regenSize > dstCapacity)
 		return ERROR(dstSize_tooSmall);
-	memset(dst, *(const BYTE *) src, regenSize);
+	memset(dst, *(const BYTE *)src, regenSize);
 	return regenSize;
 }
 
@@ -301,7 +301,7 @@ size_t ZSTD_decodeLiteralsBlock(ZSTD_DCtx *dctx, const void *src, size_t srcSize
 		return ERROR(corruption_detected);
 
 	{
-		const BYTE *const istart = (const BYTE *) src;
+		const BYTE *const istart = (const BYTE *)src;
 		symbolEncodingType_e const litEncType = (symbolEncodingType_e)(istart[0] & 3);
 
 		switch (litEncType) {
@@ -623,12 +623,12 @@ static size_t ZSTD_buildSeqTable(FSE_DTable *DTableSpace, const FSE_DTable **DTa
 	case set_rle:
 		if (!srcSize)
 			return ERROR(srcSize_wrong);
-		if ((*(const BYTE *) src) > max)
+		if ((*(const BYTE *)src) > max)
 			return ERROR(corruption_detected);
-		FSE_buildDTable_rle(DTableSpace, *(const BYTE *) src);
+		FSE_buildDTable_rle(DTableSpace, *(const BYTE *)src);
 		*DTablePtr = DTableSpace;
 		return 1;
-	case set_basic: *DTablePtr = (const FSE_DTable *) tmpPtr; return 0;
+	case set_basic: *DTablePtr = (const FSE_DTable *)tmpPtr; return 0;
 	case set_repeat:
 		if (!flagRepeatTable)
 			return ERROR(corruption_detected);
@@ -636,12 +636,12 @@ static size_t ZSTD_buildSeqTable(FSE_DTable *DTableSpace, const FSE_DTable **DTa
 	default: /* impossible */
 	case set_compressed: {
 		U32 tableLog;
-		S16 *norm = (S16 *) workspace;
+		S16 *norm = (S16 *)workspace;
 		size_t const spaceUsed32 = UP_U32(sizeof (S16) * (MaxSeq + 1));
 
 		if ((spaceUsed32 << 2) > workspaceSize)
 			return ERROR(GENERIC);
-		workspace = (U32 *) workspace + spaceUsed32;
+		workspace = (U32 *)workspace + spaceUsed32;
 		workspaceSize -= (spaceUsed32 << 2);
 		{
 			size_t const headerSize = FSE_readNCount(norm, &max, &tableLog, src, srcSize);
@@ -659,7 +659,7 @@ static size_t ZSTD_buildSeqTable(FSE_DTable *DTableSpace, const FSE_DTable **DTa
 
 size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx *dctx, int *nbSeqPtr, const void *src, size_t srcSize)
 {
-	const BYTE *const istart = (const BYTE *const) src;
+	const BYTE *const istart = (const BYTE *const)src;
 	const BYTE *const iend = istart + srcSize;
 	const BYTE *ip = istart;
 
@@ -951,16 +951,16 @@ size_t ZSTD_execSequence(BYTE *op, BYTE *const oend, seq_t sequence, const BYTE 
 		while (op < oMatchEnd)
 			*op++ = *match++;
 	} else {
-		ZSTD_wildcopy(op, match, (ptrdiff_t) sequence.matchLength - 8); /* works even if matchLength < 8 */
+		ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength - 8); /* works even if matchLength < 8 */
 	}
 	return sequenceLength;
 }
 
 static size_t ZSTD_decompressSequences(ZSTD_DCtx *dctx, void *dst, size_t maxDstSize, const void *seqStart, size_t seqSize)
 {
-	const BYTE *ip = (const BYTE *) seqStart;
+	const BYTE *ip = (const BYTE *)seqStart;
 	const BYTE *const iend = ip + seqSize;
-	BYTE *const ostart = (BYTE * const) dst;
+	BYTE *const ostart = (BYTE * const)dst;
 	BYTE *const oend = ostart + maxDstSize;
 	BYTE *op = ostart;
 	const BYTE *litPtr = dctx->litPtr;
@@ -1206,16 +1206,16 @@ size_t ZSTD_execSequenceLong(BYTE *op, BYTE *const oend, seq_t sequence, const B
 		while (op < oMatchEnd)
 			*op++ = *match++;
 	} else {
-		ZSTD_wildcopy(op, match, (ptrdiff_t) sequence.matchLength - 8); /* works even if matchLength < 8 */
+		ZSTD_wildcopy(op, match, (ptrdiff_t)sequence.matchLength - 8); /* works even if matchLength < 8 */
 	}
 	return sequenceLength;
 }
 
 static size_t ZSTD_decompressSequencesLong(ZSTD_DCtx *dctx, void *dst, size_t maxDstSize, const void *seqStart, size_t seqSize)
 {
-	const BYTE *ip = (const BYTE *) seqStart;
+	const BYTE *ip = (const BYTE *)seqStart;
 	const BYTE *const iend = ip + seqSize;
-	BYTE *const ostart = (BYTE * const) dst;
+	BYTE *const ostart = (BYTE * const)dst;
 	BYTE *const oend = ostart + maxDstSize;
 	BYTE *op = ostart;
 	const BYTE *litPtr = dctx->litPtr;
@@ -1239,7 +1239,7 @@ static size_t ZSTD_decompressSequencesLong(ZSTD_DCtx *dctx, void *dst, size_t ma
 #define STORED_SEQS 4
 #define STOSEQ_MASK (STORED_SEQS - 1)
 #define ADVANCED_SEQS 4
-		seq_t *sequences = (seq_t *) dctx->entropy.workspace;
+		seq_t *sequences = (seq_t *)dctx->entropy.workspace;
 		int const seqAdvance = MIN(nbSeq, ADVANCED_SEQS);
 		seqState_t seqState;
 		int seqNb;
@@ -1252,7 +1252,7 @@ static size_t ZSTD_decompressSequencesLong(ZSTD_DCtx *dctx, void *dst, size_t ma
 		}
 		seqState.base = base;
 		seqState.pos = (size_t)(op - base);
-		seqState.gotoDict = (uPtrDiff) dictEnd - (uPtrDiff) base; /* cast to avoid undefined behaviour */
+		seqState.gotoDict = (uPtrDiff)dictEnd - (uPtrDiff)base; /* cast to avoid undefined behaviour */
 		CHECK_E(BIT_initDStream(&seqState.DStream, ip, iend - ip), corruption_detected);
 		FSE_initDState(&seqState.stateLL, &seqState.DStream, dctx->LLTptr);
 		FSE_initDState(&seqState.stateOffb, &seqState.DStream, dctx->OFTptr);
@@ -1310,7 +1310,7 @@ static size_t ZSTD_decompressSequencesLong(ZSTD_DCtx *dctx, void *dst, size_t ma
 
 static size_t ZSTD_decompressBlock_internal(ZSTD_DCtx *dctx, void *dst, size_t dstCapacity, const void *src, size_t srcSize)
 { /* blockType == blockCompressed */
-	const BYTE *ip = (const BYTE *) src;
+	const BYTE *ip = (const BYTE *)src;
 
 	if (srcSize >= ZSTD_BLOCKSIZE_ABSOLUTEMAX)
 		return ERROR(srcSize_wrong);
@@ -1336,7 +1336,7 @@ static void ZSTD_checkContinuity(ZSTD_DCtx *dctx, const void *dst)
 {
 	if (dst != dctx->previousDstEnd) { /* not contiguous */
 		dctx->dictEnd = dctx->previousDstEnd;
-		dctx->vBase = (const char *) dst - ((const char *)(dctx->previousDstEnd) - (const char *)(dctx->base));
+		dctx->vBase = (const char *)dst - ((const char *)(dctx->previousDstEnd) - (const char *)(dctx->base));
 		dctx->base = dst;
 		dctx->previousDstEnd = dst;
 	}
@@ -1347,7 +1347,7 @@ size_t ZSTD_decompressBlock(ZSTD_DCtx *dctx, void *dst, size_t dstCapacity, cons
 	size_t dSize;
 	ZSTD_checkContinuity(dctx, dst);
 	dSize = ZSTD_decompressBlock_internal(dctx, dst, dstCapacity, src, srcSize);
-	dctx->previousDstEnd = (char *) dst + dSize;
+	dctx->previousDstEnd = (char *)dst + dSize;
 	return dSize;
 }
 
@@ -1367,9 +1367,9 @@ size_t ZSTD_generateNxBytes(void *dst, size_t dstCapacity, BYTE byte, size_t len
 size_t ZSTD_findFrameCompressedSize(const void *src, size_t srcSize)
 {
 	if (srcSize >= ZSTD_skippableHeaderSize && (ZSTD_readLE32(src) & 0xFFFFFFF0U) == ZSTD_MAGIC_SKIPPABLE_START) {
-		return ZSTD_skippableHeaderSize + ZSTD_readLE32((const BYTE *) src + 4);
+		return ZSTD_skippableHeaderSize + ZSTD_readLE32((const BYTE *)src + 4);
 	} else {
-		const BYTE *ip = (const BYTE *) src;
+		const BYTE *ip = (const BYTE *)src;
 		const BYTE *const ipstart = ip;
 		size_t remainingSize = srcSize;
 		ZSTD_frameParams fParams;
@@ -1423,7 +1423,7 @@ size_t ZSTD_findFrameCompressedSize(const void *src, size_t srcSize)
 static size_t ZSTD_decompressFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCapacity, const void **srcPtr, size_t *srcSizePtr)
 {
 	const BYTE *ip = (const BYTE *)(*srcPtr);
-	BYTE *const ostart = (BYTE * const) dst;
+	BYTE *const ostart = (BYTE * const)dst;
 	BYTE *const oend = ostart + dstCapacity;
 	BYTE *op = ostart;
 	size_t remainingSize = *srcSizePtr;
@@ -1477,7 +1477,7 @@ static size_t ZSTD_decompressFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCapacit
 	}
 
 	if (dctx->fParams.checksumFlag) { /* Frame content checksum verification */
-		U32 const checkCalc = (U32) xxh64_digest(&dctx->xxhState);
+		U32 const checkCalc = (U32)xxh64_digest(&dctx->xxhState);
 		U32 checkRead;
 		if (remainingSize < 4)
 			return ERROR(checksum_wrong);
@@ -1508,12 +1508,12 @@ static size_t ZSTD_decompressMultiFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCa
 				size_t skippableSize;
 				if (srcSize < ZSTD_skippableHeaderSize)
 					return ERROR(srcSize_wrong);
-				skippableSize = ZSTD_readLE32((const BYTE *) src + 4) + ZSTD_skippableHeaderSize;
+				skippableSize = ZSTD_readLE32((const BYTE *)src + 4) + ZSTD_skippableHeaderSize;
 				if (srcSize < skippableSize) {
 					return ERROR(srcSize_wrong);
 				}
 
-				src = (const BYTE *) src + skippableSize;
+				src = (const BYTE *)src + skippableSize;
 				srcSize -= skippableSize;
 				continue;
 			} else {
@@ -1531,7 +1531,7 @@ static size_t ZSTD_decompressMultiFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCa
 				return res;
 			/* don't need to bounds check this, ZSTD_decompressFrame will have
 			 * already */
-			dst = (BYTE *) dst + res;
+			dst = (BYTE *)dst + res;
 			dstCapacity -= res;
 		}
 	}
@@ -1539,7 +1539,7 @@ static size_t ZSTD_decompressMultiFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCa
 	if (srcSize)
 		return ERROR(srcSize_wrong); /* input not entirely consumed */
 
-	return (BYTE *) dst - (BYTE *) dststart;
+	return (BYTE *)dst - (BYTE *)dststart;
 }
 
 /*-**************************************
@@ -1657,12 +1657,12 @@ size_t ZSTD_decompressContinue(ZSTD_DCtx *dctx, void *dst, size_t dstCapacity, c
 		} else {
 			dctx->stage = ZSTDds_decodeBlockHeader;
 			dctx->expected = ZSTD_blockHeaderSize;
-			dctx->previousDstEnd = (char *) dst + rSize;
+			dctx->previousDstEnd = (char *)dst + rSize;
 		}
 		return rSize;
 	}
 	case ZSTDds_checkChecksum: {
-		U32 const h32 = (U32) xxh64_digest(&dctx->xxhState);
+		U32 const h32 = (U32)xxh64_digest(&dctx->xxhState);
 		U32 const check32 = ZSTD_readLE32(src); /* srcSize == 4, guaranteed by dctx->expected */
 		if (check32 != h32)
 			return ERROR(checksum_wrong);
@@ -1689,9 +1689,9 @@ size_t ZSTD_decompressContinue(ZSTD_DCtx *dctx, void *dst, size_t dstCapacity, c
 static size_t ZSTD_refDictContent(ZSTD_DCtx *dctx, const void *dict, size_t dictSize)
 {
 	dctx->dictEnd = dctx->previousDstEnd;
-	dctx->vBase = (const char *) dict - ((const char *)(dctx->previousDstEnd) - (const char *)(dctx->base));
+	dctx->vBase = (const char *)dict - ((const char *)(dctx->previousDstEnd) - (const char *)(dctx->base));
 	dctx->base = dict;
-	dctx->previousDstEnd = (const char *) dict + dictSize;
+	dctx->previousDstEnd = (const char *)dict + dictSize;
 	return 0;
 }
 
@@ -1700,7 +1700,7 @@ static size_t ZSTD_refDictContent(ZSTD_DCtx *dctx, const void *dict, size_t dict
  * @return : size of entropy tables read */
 static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const dict, size_t const dictSize)
 {
-	const BYTE *dictPtr = (const BYTE *) dict;
+	const BYTE *dictPtr = (const BYTE *)dict;
 	const BYTE *const dictEnd = dictPtr + dictSize;
 
 	if (dictSize <= 8)
@@ -1764,7 +1764,7 @@ static size_t ZSTD_loadEntropy(ZSTD_entropyTables_t *entropy, const void *const 
 		}
 	}
 
-	return dictPtr - (const BYTE *) dict;
+	return dictPtr - (const BYTE *)dict;
 }
 
 static size_t ZSTD_decompress_insertDictionary(ZSTD_DCtx *dctx, const void *dict, size_t dictSize)
@@ -1777,14 +1777,14 @@ static size_t ZSTD_decompress_insertDictionary(ZSTD_DCtx *dctx, const void *dict
 			return ZSTD_refDictContent(dctx, dict, dictSize); /* pure content mode */
 		}
 	}
-	dctx->dictID = ZSTD_readLE32((const char *) dict + 4);
+	dctx->dictID = ZSTD_readLE32((const char *)dict + 4);
 
 	/* load entropy tables */
 	{
 		size_t const eSize = ZSTD_loadEntropy(&dctx->entropy, dict, dictSize);
 		if (ZSTD_isError(eSize))
 			return ERROR(dictionary_corrupted);
-		dict = (const char *) dict + eSize;
+		dict = (const char *)dict + eSize;
 		dictSize -= eSize;
 	}
 	dctx->litEntropy = dctx->fseEntropy = 1;
@@ -1842,7 +1842,7 @@ size_t ZSTD_DStreamWorkspaceBound(size_t maxWindowSize)
 
 ZSTD_DStream *ZSTD_initDStream(size_t maxWindowSize, void *workspace, size_t workspaceSize)
 {
-	ZSTD_DStreamWorkspace *ws = (ZSTD_DStreamWorkspace *) workspace;
+	ZSTD_DStreamWorkspace *ws = (ZSTD_DStreamWorkspace *)workspace;
 	ZSTD_DStream *zds = &ws->DStream;
 	memset(zds, 0, sizeof (ZSTD_DStream));
 	zds->dctx = &ws->DCtx;

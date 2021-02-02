@@ -369,7 +369,7 @@ typedef struct {
 ZSTD_STATIC void FSE_initDState(FSE_DState_t *DStatePtr, BIT_DStream_t *bitD, const FSE_DTable *dt)
 {
 	const void *ptr = dt;
-	const FSE_DTableHeader *const DTableH = (const FSE_DTableHeader *) ptr;
+	const FSE_DTableHeader *const DTableH = (const FSE_DTableHeader *)ptr;
 	DStatePtr->state = BIT_readBits(bitD, DTableH->tableLog);
 	BIT_reloadDStream(bitD);
 	DStatePtr->table = dt + 1;

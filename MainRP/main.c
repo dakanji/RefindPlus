@@ -264,14 +264,6 @@ EfivarSetRawEx (
         }
 
         MyFreePool (VarsDir);
-
-        #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
-            MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("      Activate the 'use_nvram' option to silence this warning\n\n");
-        }
-        #endif
-
     }
 
     if (EFI_ERROR (Status) ||
@@ -319,15 +311,6 @@ gRTSetVariableEx (
 
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockPRNG = FALSE;
-
-    #if REFIT_DEBUG > 0
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindPlusGuid)) {
-        MsgLog ("INFO: Using Emulated NVRAM\n");
-    }
-    else {
-        MsgLog ("INFO: Using Hardware NVRAM\n");
-    }
-    #endif
 
     if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
         GuidsAreEqual (VendorGuid, &X509Guid) ||

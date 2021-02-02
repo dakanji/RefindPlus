@@ -153,7 +153,7 @@ int fsw_streq_cstr(struct fsw_string *s1, const char *s2)
 
     temp_s.type = FSW_STRING_TYPE_ISO88591;
     temp_s.size = temp_s.len = i;
-    temp_s.data = (char *) s2;
+    temp_s.data = (char *)s2;
 
     return fsw_streq(s1, &temp_s);
 }
@@ -235,7 +235,7 @@ void fsw_strsplit(struct fsw_string *element, struct fsw_string *buffer, char se
     if (buffer->type == FSW_STRING_TYPE_ISO88591) {
         fsw_u8 *p;
 
-        p = (fsw_u8 *) element->data;
+        p = (fsw_u8 *)element->data;
         for (i = 0; i < maxlen; i++, p++) {
             if (*p == separator) {
                 buffer->data = p + 1;
@@ -255,7 +255,7 @@ void fsw_strsplit(struct fsw_string *element, struct fsw_string *buffer, char se
     } else if (buffer->type == FSW_STRING_TYPE_UTF16) {
         fsw_u16 *p;
 
-        p = (fsw_u16 *) element->data;
+        p = (fsw_u16 *)element->data;
         for (i = 0; i < maxlen; i++, p++) {
             if (*p == separator) {
                 buffer->data = p + 1;

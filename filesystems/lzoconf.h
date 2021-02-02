@@ -351,7 +351,7 @@ struct lzo_callback_t
 
 
 #ifndef lzo_sizeof_dict_t
-#  define lzo_sizeof_dict_t     ((unsigned) sizeof (lzo_bytep))
+#  define lzo_sizeof_dict_t     ((unsigned)sizeof (lzo_bytep))
 #endif
 
 /* lzo_init() should be the first function you call.
@@ -360,10 +360,10 @@ struct lzo_callback_t
  * lzo_init() is a macro to allow checking that the library and the
  * compiler's view of various types are consistent.
  */
-#define lzo_init() __lzo_init_v2(LZO_VERSION,(int) sizeof (short),(int) sizeof (int),\
-    (int) sizeof (long),(int) sizeof (lzo_uint32),(int) sizeof (lzo_uint),\
-    (int) lzo_sizeof_dict_t,(int) sizeof (char *),(int) sizeof (lzo_voidp),\
-    (int) sizeof (lzo_callback_t))
+#define lzo_init() __lzo_init_v2(LZO_VERSION,(int)sizeof (short),(int)sizeof (int),\
+    (int)sizeof (long),(int)sizeof (lzo_uint32),(int)sizeof (lzo_uint),\
+    (int)lzo_sizeof_dict_t,(int)sizeof (char *),(int)sizeof (lzo_voidp),\
+    (int)sizeof (lzo_callback_t))
 LZO_EXTERN(int) __lzo_init_v2(unsigned,int,int,int,int,int,int,int,int,int);
 
 /* version functions (useful for shared libraries) */

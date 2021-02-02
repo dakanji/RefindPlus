@@ -55,11 +55,11 @@ ReloadPCIROM (
 
     ImageIndex    = 0;
     Status        = EFI_NOT_FOUND;
-    RomBarOffset  = (UINTN) RomBar;
+    RomBarOffset  = (UINTN)RomBar;
 
     do {
         LoadROM      = FALSE;
-        EfiRomHeader = (EFI_PCI_EXPANSION_ROM_HEADER *) (UINTN) RomBarOffset;
+        EfiRomHeader = (EFI_PCI_EXPANSION_ROM_HEADER *) (UINTN)RomBarOffset;
 
         if (EfiRomHeader->Signature != PCI_EXPANSION_ROM_HEADER_SIGNATURE) {
             return EFI_VOLUME_CORRUPTED;
@@ -69,7 +69,7 @@ ReloadPCIROM (
         // The PCI Data Structure must be DWORD aligned.
         if (EfiRomHeader->PcirOffset == 0 ||
             (EfiRomHeader->PcirOffset & 3) != 0 ||
-            RomBarOffset - (UINTN) RomBar + EfiRomHeader->PcirOffset + sizeof (PCI_DATA_STRUCTURE) > RomSize
+            RomBarOffset - (UINTN)RomBar + EfiRomHeader->PcirOffset + sizeof (PCI_DATA_STRUCTURE) > RomSize
         ) {
             break;
         }
@@ -83,7 +83,7 @@ ReloadPCIROM (
 
         ImageSize = Pcir->ImageLength * 512;
 
-        if (RomBarOffset - (UINTN) RomBar + ImageSize > RomSize) {
+        if (RomBarOffset - (UINTN)RomBar + ImageSize > RomSize) {
             break;
         }
 
@@ -178,7 +178,7 @@ ReloadPCIROM (
 
         RomBarOffset = RomBarOffset + ImageSize;
         ImageIndex++;
-    } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN) RomBar) < RomSize));
+    } while (((Pcir->Indicator & 0x80) == 0x00) && ((RomBarOffset - (UINTN)RomBar) < RomSize));
 
     return Status;
 }

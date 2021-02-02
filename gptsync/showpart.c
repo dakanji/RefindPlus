@@ -49,7 +49,7 @@ static INTN FindMem(VOID *Buffer, UINTN BufferLength, VOID *SearchString, UINTN 
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem(BufferPtr, SearchString, SearchStringLength) == 0)
-            return (INTN) Offset;
+            return (INTN)Offset;
     }
     
     return -1;

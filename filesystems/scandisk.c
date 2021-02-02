@@ -78,7 +78,7 @@ static struct fsw_volume *create_dummy_volume(EFI_DISK_IO *diskio, UINT32 mediai
 
 static struct fsw_volume *clone_dummy_volume(struct fsw_volume *vol)
 {
-    FSW_VOLUME_DATA *Volume = (FSW_VOLUME_DATA *) vol->host_data;
+    FSW_VOLUME_DATA *Volume = (FSW_VOLUME_DATA *)vol->host_data;
     return create_dummy_volume(Volume->DiskIo, Volume->MediaId);
 }
 

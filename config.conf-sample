@@ -47,7 +47,7 @@
 #
 # Stores RefindPlus variables in the "vars" subdirectory when commented out
 #
-use_nvram
+#use_nvram
 
 # The SimpleText protocol on the ConsoleOut handle is normally used to
 # output text. On Macs and some other firmware, this is complicated by
@@ -61,14 +61,14 @@ use_nvram
 #
 # Inactive when commented out (Does not use a custom text renderer)
 #
-text_renderer
+#text_renderer
 
 # Add UGA Protocol to GOP when absent. This primarily works to permit
 # booting older Operating Systems running EFIBoot Protocols.
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
-uga_pass_through
+#uga_pass_through
 
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
@@ -83,7 +83,7 @@ uga_pass_through
 #
 # Inactive when commented out (Does not provide ConsoleOut GOP)
 #
-provide_console_gop
+#provide_console_gop
 
 # Use a built-in GOP renderer which may provide better performance
 # and fix rendering issues on some GPU/firmware combinations such as
@@ -113,7 +113,7 @@ provide_console_gop
 #
 # Inactive when commented out (Does not enable 'TRIM')
 #
-trim_force
+#trim_force
 
 # Disable Mac OS compatibility check when booting. Macs check whether the
 # current Mac OS version is supported on the machine when booting and halts
@@ -125,7 +125,7 @@ trim_force
 #
 # Inactive when commented out (Does not disable the compatibility check)
 #
-disable_mac_compat_check
+#disable_mac_compat_check
 
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
@@ -147,7 +147,7 @@ disable_mac_compat_check
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
 #
-supply_apfs
+#supply_apfs
 
 # Suppress verbose APFS loading text output. When this option is active, RefindPlus will
 # suppress verbose text output from the APFS drivers loaded using the 'supply_apfs' option.
@@ -157,7 +157,7 @@ supply_apfs
 #
 # Inactive when commented out (Does not suppress verbose APFS text)
 #
-suppress_verbose_apfs
+#suppress_verbose_apfs
 
 # Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
@@ -167,7 +167,7 @@ suppress_verbose_apfs
 #
 # Inactive when commented out (Does not stop UEFI Windows from writing to Apple NVRAM)
 #
-protect_mac_nvram
+#protect_mac_nvram
 
 # Allow scans of volumes with duplicate UUIDs. When this option is active, RefindPlus
 # will make volumes with duplicate UUIDs available for scanning for kernels and loaders.

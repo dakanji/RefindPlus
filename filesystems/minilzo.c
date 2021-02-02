@@ -1616,7 +1616,7 @@ extern "C" {
 #  elif (LZO_CC_MSC)
 #    define LZO_UNUSED_FUNC(func)   ((void) &func)
 #  elif (LZO_CC_KEILC || LZO_CC_PELLESC)
-#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int) func)>0)];}
+#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int)func)>0)];}
 #  else
 #    define LZO_UNUSED_FUNC(func)   ((void) func)
 #  endif
@@ -2329,9 +2329,9 @@ __lzo_align_gap(const lzo_voidp ptr, lzo_uint size)
 #endif
 
     assert(size > 0);
-    assert((long) n >= 0);
+    assert((long)n >= 0);
     assert(n <= size);
-    return (unsigned) n;
+    return (unsigned)n;
 }
 
 #endif
@@ -3453,7 +3453,7 @@ DO_COMPRESS      ( const lzo_bytep in , lzo_uint  in_len,
 #if 0 || (LZO_DETERMINISTIC)
         ll = LZO_MIN(ll, 49152);
 #endif
-        ll_end = (lzo_uintptr_t) ip + ll;
+        ll_end = (lzo_uintptr_t)ip + ll;
         if ((ll_end + ((t + ll) >> 5)) <= ll_end || (const lzo_bytep)(ll_end + ((t + ll) >> 5)) <= ip + ll)
             break;
 #if (LZO_DETERMINISTIC)
@@ -3897,7 +3897,7 @@ match:
                     goto eof_found;
                 m_pos -= 0x4000;
 #if defined(LZO1Z)
-                last_m_off = pd((const lzo_bytep) op, m_pos);
+                last_m_off = pd((const lzo_bytep)op, m_pos);
 #endif
 #endif
             }
@@ -4423,7 +4423,7 @@ match:
                     goto eof_found;
                 m_pos -= 0x4000;
 #if defined(LZO1Z)
-                last_m_off = pd((const lzo_bytep) op, m_pos);
+                last_m_off = pd((const lzo_bytep)op, m_pos);
 #endif
 #endif
             }

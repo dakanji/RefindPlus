@@ -213,7 +213,7 @@ PrintBytesRow(IN UINT8 *Bytes, IN UINTN Number, IN UINTN MaxNumber)
 	// print ASCII
 	for (Index = 0; Index < Number; Index++) {
 		if (Bytes[Index] >= 0x20 && Bytes[Index] <= 0x7e) {
-			DebugLog(1, "%c", (CHAR16) Bytes[Index]);
+			DebugLog(1, "%c", (CHAR16)Bytes[Index]);
 		} else {
 			DebugLog(1, "%c", L'.');
 		}
@@ -231,7 +231,7 @@ PrintBytes(IN VOID *Bytes, IN UINTN Number)
 
 	for (Index = 0; Index < Number; Index += 16) {
 		PrintBytesRow(
-            (UINT8*) Bytes + Index,
+            (UINT8*)Bytes + Index,
             ((Index + 16 < Number) ? 16 : (Number - Index)),
             16
         );
@@ -424,7 +424,7 @@ EFI_STATUS SetupBooterLog(BOOLEAN AllowGrownSize)
     Status = LogDataHub(&gEfiMiscSubClassGuid, L"boot-log", MemLogBuffer, MEM_LOG_INITIAL_SIZE);
     MemLogBuffer[MEM_LOG_INITIAL_SIZE-1] = PrevChar;
   } else {
-    Status = LogDataHub(&gEfiMiscSubClassGuid, L"boot-log", MemLogBuffer, (UINT32) MemLogLen);
+    Status = LogDataHub(&gEfiMiscSubClassGuid, L"boot-log", MemLogBuffer, (UINT32)MemLogLen);
   }
 
 	return Status;
@@ -445,5 +445,5 @@ EFI_STATUS SaveBooterLog(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *FileNam
 		return EFI_NOT_FOUND;
   }
 
-  return egSaveFile(BaseDir, FileName, (UINT8*) MemLogBuffer, MemLogLen);
+  return egSaveFile(BaseDir, FileName, (UINT8*)MemLogBuffer, MemLogLen);
 }

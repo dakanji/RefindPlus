@@ -331,7 +331,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 MainOptions = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (MainOptions);
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if (SubEntry != NULL)
             SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
             if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
@@ -373,7 +373,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Mac OS with a 64-bit kernel";
             SubEntry->LoadOptions     = L"arch=x86_64";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         } // if
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -381,7 +381,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Mac OS with a 32-bit kernel";
             SubEntry->LoadOptions     = L"arch=i386";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         } // if
 #endif
 
@@ -391,7 +391,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->me.Title        = L"Boot Mac OS in verbose mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
 
 #if defined (EFIX64)
@@ -400,7 +400,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->me.Title        = L"Boot Mac OS in verbose mode (64-bit)";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v arch=x86_64";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             }
 
             SubEntry = InitializeLoaderEntry (Entry);
@@ -408,7 +408,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->me.Title        = L"Boot Mac OS in verbose mode (32-bit)";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v arch=i386";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             }
 #endif
 
@@ -417,7 +417,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->me.Title        = L"Boot Mac OS in single user mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v -s";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
         } // single-user mode allowed
 
@@ -427,7 +427,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->me.Title        = L"Boot Mac OS in safe mode";
                 SubEntry->UseGraphicsMode = FALSE;
                 SubEntry->LoadOptions     = L"-v -x";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
         } // safe mode allowed
 
@@ -441,7 +441,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->LoaderPath      = StrDuplicate (DiagsFileName);
                 SubEntry->Volume          = Volume;
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
         } // if diagnostics entry found
 
@@ -473,7 +473,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
                 FreeTokenLine (&TokenList, &TokenCount);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // while
 
             MyFreePool (KernelVersion);
@@ -488,7 +488,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Run ELILO in interactive mode";
             SubEntry->LoadOptions     = L"-p";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -496,7 +496,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Linux for a 17\" iMac or a 15\" MacBook Pro (*)";
             SubEntry->LoadOptions     = L"-d 0 i17";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -504,7 +504,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Linux for a 20\" iMac (*)";
             SubEntry->LoadOptions     = L"-d 0 i20";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -512,7 +512,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Linux for a Mac Mini (*)";
             SubEntry->LoadOptions     = L"-d 0 mini";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         AddMenuInfoLine (SubScreen, L"NOTE: This is an example. Entries");
@@ -528,7 +528,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Windows from Hard Disk";
             SubEntry->LoadOptions     = L"-s -h";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -536,7 +536,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Boot Windows from CD-ROM";
             SubEntry->LoadOptions     = L"-s -c";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
 
         SubEntry = InitializeLoaderEntry (Entry);
@@ -544,7 +544,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             SubEntry->me.Title        = L"Run XOM in text mode";
             SubEntry->LoadOptions     = L"-v";
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         }
     } // entries for xom.efi
     if (GenerateReturn) {
@@ -1550,7 +1550,7 @@ static LOADER_ENTRY * AddToolEntry (
     Entry->Volume = Volume;
     Entry->UseGraphicsMode = UseGraphicsMode;
 
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
     return Entry;
 } /* static LOADER_ENTRY * AddToolEntry() */
 

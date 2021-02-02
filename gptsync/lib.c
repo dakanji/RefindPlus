@@ -219,8 +219,8 @@ UINTN read_mbr(VOID)
             continue;
 
         mbr_parts[mbr_part_count].index     = i;
-        mbr_parts[mbr_part_count].start_lba = (UINT64) table[i].start_lba;
-        mbr_parts[mbr_part_count].end_lba   = (UINT64) table[i].start_lba + (UINT64) table[i].size - 1;
+        mbr_parts[mbr_part_count].start_lba = (UINT64)table[i].start_lba;
+        mbr_parts[mbr_part_count].end_lba   = (UINT64)table[i].start_lba + (UINT64)table[i].size - 1;
         mbr_parts[mbr_part_count].mbr_type  = table[i].type;
         mbr_parts[mbr_part_count].active    = (table[i].flags == 0x80) ? TRUE : FALSE;
 
@@ -268,7 +268,7 @@ UINTN read_gpt(VOID)
         return status;
 
     // check signature
-    header = (GPT_HEADER *) sector;
+    header = (GPT_HEADER *)sector;
     if (header->signature != 0x5452415020494645ULL) {
         Print(L" No GPT partition table present!\n");
         return 0;

@@ -118,7 +118,7 @@ EFI_STATUS EFIAPI _efi_discovery_start ( EFI_HANDLE image_handle,
      goto err_init;
   }
   
-  exit_buf = (wchar_t *) user_to_phys(user_buf,0);
+  exit_buf = (wchar_t *)user_to_phys(user_buf,0);
 
   initialise();
   startup();

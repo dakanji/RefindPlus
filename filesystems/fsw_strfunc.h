@@ -35,8 +35,8 @@
 static int fsw_streq_ISO88591_UTF8(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u8 *p1 = (fsw_u8 *) s1data;
-    fsw_u8 *p2 = (fsw_u8 *) s2data;
+    fsw_u8 *p1 = (fsw_u8 *)s1data;
+    fsw_u8 *p2 = (fsw_u8 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -61,8 +61,8 @@ static int fsw_streq_ISO88591_UTF8(void *s1data, void *s2data, int len)
 static int fsw_streq_ISO88591_UTF16(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u8 *p1 = (fsw_u8 *) s1data;
-    fsw_u16 *p2 = (fsw_u16 *) s2data;
+    fsw_u8 *p1 = (fsw_u8 *)s1data;
+    fsw_u16 *p2 = (fsw_u16 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -77,8 +77,8 @@ static int fsw_streq_ISO88591_UTF16(void *s1data, void *s2data, int len)
 static int fsw_streq_ISO88591_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u8 *p1 = (fsw_u8 *) s1data;
-    fsw_u16 *p2 = (fsw_u16 *) s2data;
+    fsw_u8 *p1 = (fsw_u8 *)s1data;
+    fsw_u16 *p2 = (fsw_u16 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -93,8 +93,8 @@ static int fsw_streq_ISO88591_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 static int fsw_streq_UTF8_UTF16(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u8 *p1 = (fsw_u8 *) s1data;
-    fsw_u16 *p2 = (fsw_u16 *) s2data;
+    fsw_u8 *p1 = (fsw_u8 *)s1data;
+    fsw_u16 *p2 = (fsw_u16 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -119,8 +119,8 @@ static int fsw_streq_UTF8_UTF16(void *s1data, void *s2data, int len)
 static int fsw_streq_UTF8_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u8 *p1 = (fsw_u8 *) s1data;
-    fsw_u16 *p2 = (fsw_u16 *) s2data;
+    fsw_u8 *p1 = (fsw_u8 *)s1data;
+    fsw_u16 *p2 = (fsw_u16 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -145,8 +145,8 @@ static int fsw_streq_UTF8_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 static int fsw_streq_UTF16_UTF16_SWAPPED(void *s1data, void *s2data, int len)
 {
     int i;
-    fsw_u16 *p1 = (fsw_u16 *) s1data;
-    fsw_u16 *p2 = (fsw_u16 *) s2data;
+    fsw_u16 *p1 = (fsw_u16 *)s1data;
+    fsw_u16 *p2 = (fsw_u16 *)s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
@@ -173,8 +173,8 @@ static fsw_status_t fsw_strcoerce_UTF8_ISO88591(void *srcdata, int srclen, struc
     if (status)
         return status;
     
-    sp = (fsw_u8 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u8 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
         if ((c & 0xe0) == 0xc0) {
@@ -187,7 +187,7 @@ static fsw_status_t fsw_strcoerce_UTF8_ISO88591(void *srcdata, int srclen, struc
             c |= ((*sp++ & 0x3f) << 6);
             c |= (*sp++ & 0x3f);
         }
-        *dp++ = (fsw_u8) c;
+        *dp++ = (fsw_u8)c;
     }
     return FSW_SUCCESS;
 }
@@ -207,11 +207,11 @@ static fsw_status_t fsw_strcoerce_UTF16_ISO88591(void *srcdata, int srclen, stru
     if (status)
         return status;
     
-    sp = (fsw_u16 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u16 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
-        *dp++ = (fsw_u8) c;
+        *dp++ = (fsw_u8)c;
     }
     return FSW_SUCCESS;
 }
@@ -231,11 +231,11 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_ISO88591(void *srcdata, int srcl
     if (status)
         return status;
     
-    sp = (fsw_u16 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u16 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++; c = FSW_SWAPVALUE_U16(c);
-        *dp++ = (fsw_u8) c;
+        *dp++ = (fsw_u8)c;
     }
     return FSW_SUCCESS;
 }
@@ -255,11 +255,11 @@ static fsw_status_t fsw_strcoerce_ISO88591_UTF16(void *srcdata, int srclen, stru
     if (status)
         return status;
     
-    sp = (fsw_u8 *) srcdata;
-    dp = (fsw_u16 *) dest->data;
+    sp = (fsw_u8 *)srcdata;
+    dp = (fsw_u16 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
-        *dp++ = (fsw_u16) c;
+        *dp++ = (fsw_u16)c;
     }
     return FSW_SUCCESS;
 }
@@ -279,8 +279,8 @@ static fsw_status_t fsw_strcoerce_UTF8_UTF16(void *srcdata, int srclen, struct f
     if (status)
         return status;
     
-    sp = (fsw_u8 *) srcdata;
-    dp = (fsw_u16 *) dest->data;
+    sp = (fsw_u8 *)srcdata;
+    dp = (fsw_u16 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
         if ((c & 0xe0) == 0xc0) {
@@ -293,7 +293,7 @@ static fsw_status_t fsw_strcoerce_UTF8_UTF16(void *srcdata, int srclen, struct f
             c |= ((*sp++ & 0x3f) << 6);
             c |= (*sp++ & 0x3f);
         }
-        *dp++ = (fsw_u16) c;
+        *dp++ = (fsw_u16)c;
     }
     return FSW_SUCCESS;
 }
@@ -313,11 +313,11 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_UTF16(void *srcdata, int srclen,
     if (status)
         return status;
     
-    sp = (fsw_u16 *) srcdata;
-    dp = (fsw_u16 *) dest->data;
+    sp = (fsw_u16 *)srcdata;
+    dp = (fsw_u16 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++; c = FSW_SWAPVALUE_U16(c);
-        *dp++ = (fsw_u16) c;
+        *dp++ = (fsw_u16)c;
     }
     return FSW_SUCCESS;
 }
@@ -330,7 +330,7 @@ static fsw_status_t fsw_strcoerce_ISO88591_UTF8(void *srcdata, int srclen, struc
     fsw_u8       *dp;
     fsw_u32         c;
     
-    sp = (fsw_u8 *) srcdata;
+    sp = (fsw_u8 *)srcdata;
     destsize = 0;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
@@ -352,13 +352,13 @@ static fsw_status_t fsw_strcoerce_ISO88591_UTF8(void *srcdata, int srclen, struc
     if (status)
         return status;
     
-    sp = (fsw_u8 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u8 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
         
         if (c < 0x000080) {
-            *dp++ = (fsw_u8) c;
+            *dp++ = (fsw_u8)c;
         } else if (c < 0x000800) {
             *dp++ = (fsw_u8)(0xc0 | ((c >> 6) & 0x1f));
             *dp++ = (fsw_u8)(0x80 | (c & 0x3f));
@@ -384,7 +384,7 @@ static fsw_status_t fsw_strcoerce_UTF16_UTF8(void *srcdata, int srclen, struct f
     fsw_u8       *dp;
     fsw_u32         c;
     
-    sp = (fsw_u16 *) srcdata;
+    sp = (fsw_u16 *)srcdata;
     destsize = 0;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
@@ -406,13 +406,13 @@ static fsw_status_t fsw_strcoerce_UTF16_UTF8(void *srcdata, int srclen, struct f
     if (status)
         return status;
     
-    sp = (fsw_u16 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u16 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++;
         
         if (c < 0x000080) {
-            *dp++ = (fsw_u8) c;
+            *dp++ = (fsw_u8)c;
         } else if (c < 0x000800) {
             *dp++ = (fsw_u8)(0xc0 | ((c >> 6) & 0x1f));
             *dp++ = (fsw_u8)(0x80 | (c & 0x3f));
@@ -438,7 +438,7 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_UTF8(void *srcdata, int srclen, 
     fsw_u8       *dp;
     fsw_u32         c;
     
-    sp = (fsw_u16 *) srcdata;
+    sp = (fsw_u16 *)srcdata;
     destsize = 0;
     for (i = 0; i < srclen; i++) {
         c = *sp++; c = FSW_SWAPVALUE_U16(c);
@@ -460,13 +460,13 @@ static fsw_status_t fsw_strcoerce_UTF16_SWAPPED_UTF8(void *srcdata, int srclen, 
     if (status)
         return status;
     
-    sp = (fsw_u16 *) srcdata;
-    dp = (fsw_u8 *) dest->data;
+    sp = (fsw_u16 *)srcdata;
+    dp = (fsw_u8 *)dest->data;
     for (i = 0; i < srclen; i++) {
         c = *sp++; c = FSW_SWAPVALUE_U16(c);
         
         if (c < 0x000080) {
-            *dp++ = (fsw_u8) c;
+            *dp++ = (fsw_u8)c;
         } else if (c < 0x000800) {
             *dp++ = (fsw_u8)(0xc0 | ((c >> 6) & 0x1f));
             *dp++ = (fsw_u8)(0x80 | (c & 0x3f));

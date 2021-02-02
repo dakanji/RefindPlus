@@ -112,7 +112,7 @@ security_policy_authentication (
    if (DevicePathConst == NULL) {
       return EFI_INVALID_PARAMETER;
    } else {
-      DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *) DevicePathConst);
+      DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
    }
 
    Status = refit_call3_wrapper(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);

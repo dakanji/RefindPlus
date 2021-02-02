@@ -627,17 +627,17 @@ CHAR16 * GuidAsString (
 
     TheString = PoolPrint (
         L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        (UINTN) GuidData->Data1,
-        (UINTN) GuidData->Data2,
-        (UINTN) GuidData->Data3,
-        (UINTN) GuidData->Data4[0],
-        (UINTN) GuidData->Data4[1],
-        (UINTN) GuidData->Data4[2],
-        (UINTN) GuidData->Data4[3],
-        (UINTN) GuidData->Data4[4],
-        (UINTN) GuidData->Data4[5],
-        (UINTN) GuidData->Data4[6],
-        (UINTN) GuidData->Data4[7]
+        (UINTN)GuidData->Data1,
+        (UINTN)GuidData->Data2,
+        (UINTN)GuidData->Data3,
+        (UINTN)GuidData->Data4[0],
+        (UINTN)GuidData->Data4[1],
+        (UINTN)GuidData->Data4[2],
+        (UINTN)GuidData->Data4[3],
+        (UINTN)GuidData->Data4[4],
+        (UINTN)GuidData->Data4[5],
+        (UINTN)GuidData->Data4[6],
+        (UINTN)GuidData->Data4[7]
     );
 
     return TheString;

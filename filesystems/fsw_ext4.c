@@ -96,7 +96,7 @@ static int fsw_ext4_group_sparse(fsw_u32 group)
 static __inline fsw_u64
 fsw_ext4_group_first_block_no(struct ext4_super_block *sb, fsw_u32 group_no)
 {
-        return group_no * (fsw_u64) EXT4_BLOCKS_PER_GROUP(sb) +
+        return group_no * (fsw_u64)EXT4_BLOCKS_PER_GROUP(sb) +
                 sb->s_first_data_block;
 }
 
@@ -220,10 +220,10 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
             return status;
 
         // Get group descriptor table and block number of inode table...
-        gdesc = (struct ext4_group_desc *)((char *) buffer + gdesc_index * vol->sb->s_desc_size);
+        gdesc = (struct ext4_group_desc *)((char *)buffer + gdesc_index * vol->sb->s_desc_size);
         vol->inotab_bno[groupno] = gdesc->bg_inode_table_lo;
         if (vol->sb->s_desc_size >= EXT4_MIN_DESC_SIZE_64BIT)
-            vol->inotab_bno[groupno] |= (fsw_u64) gdesc->bg_inode_table_hi << 32;
+            vol->inotab_bno[groupno] |= (fsw_u64)gdesc->bg_inode_table_hi << 32;
 
         fsw_block_release(vol, gdesc_bno, buffer);
     }
@@ -262,12 +262,12 @@ static fsw_status_t fsw_ext4_volume_stat(struct fsw_ext4_volume *vol, struct fsw
 
     count = vol->sb->s_blocks_count_lo;
     if (vol->sb->s_desc_size >= EXT4_MIN_DESC_SIZE_64BIT)
-        count |= (fsw_u64) vol->sb->s_blocks_count_hi << 32;
+        count |= (fsw_u64)vol->sb->s_blocks_count_hi << 32;
     sb->total_bytes = count * vol->g.log_blocksize;
 
     count = vol->sb->s_free_blocks_count_lo;
     if (vol->sb->s_desc_size >= EXT4_MIN_DESC_SIZE_64BIT)
-        count |= (fsw_u64) vol->sb->s_free_blocks_count_hi << 32;
+        count |= (fsw_u64)vol->sb->s_free_blocks_count_hi << 32;
     sb->free_bytes  = count * vol->g.log_blocksize;
 
     return FSW_SUCCESS;
@@ -411,10 +411,10 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
     bno = extent->log_start;
 
     // First buffer is the i_block field from inode...
-    buffer = (void *) dno->raw->i_block;
+    buffer = (void *)dno->raw->i_block;
     buf_offset = 0;
     while(1) {
-        ext4_extent_header = (struct ext4_extent_header *)((char *) buffer + buf_offset);
+        ext4_extent_header = (struct ext4_extent_header *)((char *)buffer + buf_offset);
         buf_offset += sizeof (struct ext4_extent_header);
         FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent header with %d entries\n"),
                       ext4_extent_header->eh_entries));
@@ -426,14 +426,14 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
             if(ext4_extent_header->eh_depth == 0)
             {
                 // Leaf node, the header follows actual extents
-                ext4_extent = (struct ext4_extent *)((char *) buffer + buf_offset);
+                ext4_extent = (struct ext4_extent *)((char *)buffer + buf_offset);
                 buf_offset += sizeof (struct ext4_extent);
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent node cover %d...\n"), ext4_extent->ee_block));
 
                 // Is the requested block in this extent?
                 if(bno >= ext4_extent->ee_block && bno < ext4_extent->ee_block + ext4_extent->ee_len)
                 {
-                    extent->phys_start = ((fsw_u64) ext4_extent->ee_start_hi << 32) | ext4_extent->ee_start_lo;
+                    extent->phys_start = ((fsw_u64)ext4_extent->ee_start_hi << 32) | ext4_extent->ee_start_lo;
                     extent->phys_start += (bno - ext4_extent->ee_block);
                     extent->log_count = ext4_extent->ee_len - (bno - ext4_extent->ee_block);
                     return FSW_SUCCESS;
@@ -443,7 +443,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
             {
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index extents, depth %d\n"),
                           ext4_extent_header->eh_depth));
-                ext4_extent_idx = (struct ext4_extent_idx *)((char *) buffer + buf_offset);
+                ext4_extent_idx = (struct ext4_extent_idx *)((char *)buffer + buf_offset);
                 buf_offset += sizeof (struct ext4_extent_idx);
 
                 FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index node covers block %d...\n"),
@@ -451,7 +451,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
                 if(bno >= ext4_extent_idx->ei_block)
                 {
                     // Follow extent tree...
-                    fsw_u64 phys_bno = ((fsw_u64) ext4_extent_idx->ei_leaf_hi << 32) | ext4_extent_idx->ei_leaf_lo;
+                    fsw_u64 phys_bno = ((fsw_u64)ext4_extent_idx->ei_leaf_hi << 32) | ext4_extent_idx->ei_leaf_lo;
                     status = fsw_block_get(vol, phys_bno, 1, (void **)&buffer);
                     if (status)
                         return status;
@@ -732,7 +732,7 @@ static fsw_status_t fsw_ext4_readlink(struct fsw_ext4_volume *vol, struct fsw_ex
     if (dno->raw->i_blocks_lo - ea_blocks == 0) {
         // "fast" symlink, path is stored inside the inode
         s.type = FSW_STRING_TYPE_ISO88591;
-        s.size = s.len = (int) dno->g.size;
+        s.size = s.len = (int)dno->g.size;
         s.data = dno->raw->i_block;
         status = fsw_strdup_coerce(link_target, vol->g.host_string_type, &s);
     } else {

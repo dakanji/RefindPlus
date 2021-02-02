@@ -178,7 +178,7 @@ InitScroll (
     IN UINTN VisibleSpace
 ) {
     State->PreviousSelection = State->CurrentSelection = 0;
-    State->MaxIndex = (INTN) ItemCount - 1;
+    State->MaxIndex = (INTN)ItemCount - 1;
     State->FirstVisible = 0;
     if (AllowGraphicsMode) {
         State->MaxVisible = ScreenW / (TileSizes[0] + TILE_XSPACING) - 1;
@@ -187,7 +187,7 @@ InitScroll (
         State->MaxVisible = ConHeight - 4;
     }
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible)) {
-        State->MaxVisible = (INTN) VisibleSpace;
+        State->MaxVisible = (INTN)VisibleSpace;
     }
     State->PaintAll        = TRUE;
     State->PaintSelection  = FALSE;
@@ -865,7 +865,7 @@ ShowTextInfoLines (
             gST->ConOut,
             ATTR_BASIC
         );
-        for (i = 0; i < (INTN) Screen->InfoLineCount; i++) {
+        for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
             refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
             refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, Screen->InfoLines[i]);
         }
@@ -1386,7 +1386,7 @@ GraphicsMenuStyle (
 
             EntriesPosY += (TextLineHeight() * 2);
             if (Screen->InfoLineCount > 0) {
-                for (i = 0; i < (INTN) Screen->InfoLineCount; i++) {
+                for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
                     DrawText (
                         Screen->InfoLines[i],
                         FALSE,

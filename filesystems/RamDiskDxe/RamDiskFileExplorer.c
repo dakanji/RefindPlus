@@ -248,6 +248,6 @@ OpenFileByDevicePath(
   //
   // This is a weak spot since if the undefined SHELL_FILE_HANDLE format changes this must change also!
   //
-  *FileHandle = (VOID*) Handle1;
+  *FileHandle = (VOID*)Handle1;
   return EFI_SUCCESS;
 }

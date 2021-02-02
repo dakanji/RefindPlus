@@ -242,7 +242,7 @@ static UINT8 LegacyLoaderMediaPathData[] = {
     0xB8, 0xD8, 0xA9, 0x49, 0x8B, 0x8C, 0xE2, 0x1B,
     0x01, 0xAE, 0xF2, 0xB7, 0x7F, 0xFF, 0x04, 0x00,
 };
-static EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *) LegacyLoaderMediaPathData;
+static EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *)LegacyLoaderMediaPathData;
 
 static VOID
 ExtractLegacyLoaderPaths (
@@ -377,11 +377,11 @@ static UINT8 LegacyLoaderDevicePath5Data[] = {
 };
 
 static EFI_DEVICE_PATH *LegacyLoaderList[] = {
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath1Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath2Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath3Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath4Data,
-    (EFI_DEVICE_PATH *) LegacyLoaderDevicePath5Data,
+    (EFI_DEVICE_PATH *)LegacyLoaderDevicePath1Data,
+    (EFI_DEVICE_PATH *)LegacyLoaderDevicePath2Data,
+    (EFI_DEVICE_PATH *)LegacyLoaderDevicePath3Data,
+    (EFI_DEVICE_PATH *)LegacyLoaderDevicePath4Data,
+    (EFI_DEVICE_PATH *)LegacyLoaderDevicePath5Data,
     NULL
 };
 
@@ -449,9 +449,9 @@ StartLegacyImageList (
         }
         goto bailout_unload;
     }
-    ChildLoadedImage->LoadOptions = (VOID *) FullLoadOptions;
+    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
+        ? ((UINT32)StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
@@ -704,11 +704,11 @@ static LEGACY_ENTRY
     SubEntry->me.Tag   = TAG_LEGACY_UEFI;
     Entry->BdsOption   = BdsOption;
 
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
     AddMenuEntry (SubScreen, &MenuEntryReturn);
     Entry->me.SubScreen = SubScreen;
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
     MyFreePool (LegacyDescription);
 
@@ -775,7 +775,7 @@ ScanLegacyUEFI (
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {
-           BbsDevicePath = (BBS_BBS_DEVICE_PATH *) BdsOption->DevicePath;
+           BbsDevicePath = (BBS_BBS_DEVICE_PATH *)BdsOption->DevicePath;
            // Only add the entry if it is of a requested type (e.g. USB, HD)
            // Two checks necessary because some systems return EFI boot loaders
            // with a DeviceType value that would inappropriately include them

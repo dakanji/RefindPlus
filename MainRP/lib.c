@@ -467,11 +467,6 @@ EfivarGetRaw (
         if (!EFI_ERROR (Status)) {
             return Status;
         }
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
-        MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
-        #endif
     }
 
     if (EFI_ERROR (Status) ||
@@ -540,13 +535,6 @@ EfivarSetRaw (
         }
 
         MyFreePool (VarsDir);
-
-        #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
-            MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
-            MsgLog ("      Activate the 'use_nvram' option to silence this warning\n\n");
-        }
-        #endif
     }
 
     if (EFI_ERROR (Status) ||
@@ -1067,9 +1055,11 @@ SizeInIEEEUnits (
             Units[1] = Prefixes[Index];
         } // if/else
 
-        TheValue = PoolPrint (L"%ld%s", SizeInIeee, Units);
-        MyFreePool (Units);
+        SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
     } // if
+
+    MyFreePool (Units);
+    MyFreePool (Prefixes);
 
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
@@ -1266,7 +1256,7 @@ ScanVolume (
 
         SwitchToText (FALSE);
 
-        *ShowScreenStr = L"ERROR: Cannot get BlockIO Protocol";
+        ShowScreenStr = L"ERROR: Cannot get BlockIO Protocol";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1322,8 +1312,8 @@ ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
-            PartialLength  = (UINT8 *) NextDevicePath - (UINT8 *) Volume->DevicePath;
-            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (
+            PartialLength  = (UINT8 *)NextDevicePath - (UINT8 *)Volume->DevicePath;
+            DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool (
                 PartialLength + sizeof (EFI_DEVICE_PATH)
             );
             CopyMem (
@@ -1332,7 +1322,7 @@ ScanVolume (
                 PartialLength
             );
             CopyMem (
-                (UINT8 *) DiskDevicePath + PartialLength,
+                (UINT8 *)DiskDevicePath + PartialLength,
                 EndDevicePath,
                 sizeof (EFI_DEVICE_PATH)
             );
@@ -1345,6 +1335,7 @@ ScanVolume (
                 &RemainingDevicePath,
                 &WholeDiskHandle
             );
+            MyFreePool (DiskDevicePath);
 
             if (!EFI_ERROR (Status)) {
                 // get the device path for later
@@ -1354,6 +1345,7 @@ ScanVolume (
                     &DevicePathProtocol,
                     (VOID **) &DiskDevicePath
                 );
+
                 if (!EFI_ERROR (Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
                 }
@@ -1365,6 +1357,7 @@ ScanVolume (
                     &BlockIoProtocol,
                     (VOID **) &Volume->WholeDiskBlockIO
                 );
+
                 if (!EFI_ERROR (Status)) {
                     // check the media block size
                     if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
@@ -1376,7 +1369,6 @@ ScanVolume (
                     //CheckError (Status, L"from HandleProtocol");
                 }
             } // if !EFI_ERROR
-            MyFreePool (DiskDevicePath);
         } // if DevicePathType
 
         DevicePath = NextDevicePath;
@@ -1883,7 +1875,7 @@ DirNextEntry (
         }
 
         // entry is ready to be returned
-        *DirEntry = (EFI_FILE_INFO *) Buffer;
+        *DirEntry = (EFI_FILE_INFO *)Buffer;
 
         // filter results
         if (FilterMode == 1) {
@@ -2118,7 +2110,7 @@ FindMem (
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem (BufferPtr, SearchString, SearchStringLength) == 0) {
-            return (INTN) Offset;
+            return (INTN)Offset;
         }
     }
 

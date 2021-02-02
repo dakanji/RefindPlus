@@ -1,25 +1,26 @@
-0.12.0.AP (01 Feb 2021):
+0.12.0.AP (02 Feb 2021):
 -----------------------
-- Fixes Default Legacy UEFI Scan Types
 - Misc Improvements to CSR Configuration Options
 - Misc Improvements to Limit Memory Leaks
 - Renames "force_trim" Config Option to "trim_force"
-- Fixes Boot Loading Screen Interface on all Units
-  * Allows Boot Loading Screen such as the Mac Stage 1 Loading Screen to display correctly
-  * This had been unknowing fixed on MacPro5,1 units earlier and this is now extended to all units
-  * Hence, 'OsxAptioFix' drivers are no longer required on such units and actively discouraged
-- Fixes Coverage Gap in GOP Reinstallation from Random Access Memory
-  * GOP was previously only reinstalled when at least one driver was loaded
-  * Side impact was that some devices handles were not connected if at least one driver was not present
-  * Additionally, some volumes were not scanned for bootlaoders in such instances 
 - Adds 'SupplyAPFS' Feature
   * This eliminates the need for manually adding APFS drivers when APFS is not supported
 - Adds 'SuppressVerboseAPFS' Feature
-  * This removes the scrolling loading text that appears when using apfs drivers
+  * This suppresses the scrolling loading text that appears when loading APFS drivers
   * Provided as a separate item as its action may impact other text output
 - Adds 'AllowDuplicates' Feature
   * This allows scanning of partitions with duplicate filesystem UUIDs if required
-- Fixes Permitted Qemu Memory Leak Bug
+- Fixes Default Legacy UEFI Scan Types
+- Fixes Boot Loading Screen Interface on all Units
+  * Allows Boot Loading Screen such as the Mac Stage 1 Loading Screen to display correctly
+  * This had been unknowing fixed on MacPro5,1 units earlier and now extended to all units
+  * Hence, 'OsxAptioFix' drivers are no longer required on Macs and are actively discouraged
+- Fixes Device Handle Connection Bug
+  * Device handles were not connected if at least one user provided driver was not present
+  * This resulted in some volumes not being scanned for boot loaders in such instances
+  * Additionally, GOP was not acquired/provided from RAM when required in such instances
+  * This bug appeared in v0.12.0.AM
+- Fixes Permitted Qemu Memory Leak Wokaround Bug
   * A permitted memory leak supposed to be limited to Qemu had been applied to all users
   * Additionally, the scope was larger than required
   * This bug appeared in v0.12.0.AM
@@ -34,7 +35,7 @@
 - Fixes Bogus Bootable Windows BIOS Instances
 - Changes default config filename to config.conf
   * Retains support for refind.conf
-- Loads 'MemoryFix' driver on OpenCore Boots if required and available
+- Loads 'OsxAptioFix' driver on OpenCore Boots if required and available
   * Enables the Stage 1 Loading Screen on some Classic Macs
 - Fixes ESP detection for saving screenshots
   * ESP detection may have sometimes returned 'true' on other locations

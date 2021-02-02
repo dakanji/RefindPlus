@@ -125,7 +125,7 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
            BufferEnd = FileData + FileDataLength;
            // iterate over tagged blocks in the file
            while (Ptr + 8 <= BufferEnd) {
-               BlockLen = ((UINT32) Ptr[4] << 24) + ((UINT32) Ptr[5] << 16) + ((UINT32) Ptr[6] << 8) + (UINT32) Ptr[7];
+               BlockLen = ((UINT32)Ptr[4] << 24) + ((UINT32)Ptr[5] << 16) + ((UINT32)Ptr[6] << 8) + (UINT32)Ptr[7];
                if (Ptr + BlockLen > BufferEnd)   // block continues beyond end of file
                    break;
 
