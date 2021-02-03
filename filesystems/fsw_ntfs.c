@@ -164,7 +164,7 @@ static fsw_status_t fixup(fsw_u8 *record, char *magic, int sectorsize, int size)
     int off, cnt, i;
     fsw_u16 val;
 
-    if(*(int *)record != *(int *)magic)
+    if(*(int *) record != *(int *) magic)
 	return FSW_VOLUME_CORRUPTED;
 
     off = GETU16(record, 4);
@@ -382,7 +382,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
 	attribute_get_embeded(ptr, len, &ptr, &len);
 	*olenp = len;
 	if(optrp) {
-	    if((err = fsw_alloc(len, (void **)optrp)) != FSW_SUCCESS)
+	    if((err = fsw_alloc(len, (void **) optrp)) != FSW_SUCCESS)
 		return err;
 	    fsw_memcpy(*optrp, ptr, len);
 	}
@@ -394,7 +394,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
     if(!optrp)
 	return FSW_SUCCESS;
 
-    if((err = fsw_alloc_zero(olen, (void **)optrp)) != FSW_SUCCESS)
+    if((err = fsw_alloc_zero(olen, (void **) optrp)) != FSW_SUCCESS)
 	return err;
     fsw_u8 *buf = *optrp;
 
@@ -643,7 +643,7 @@ static int tobits(fsw_u32 val)
 
 static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
     fsw_status_t err;
     fsw_u8 *buffer;
     int sector_size;
@@ -694,7 +694,7 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
     mft_start[0] = GETU64(buffer, 0x30);
     mft_start[1] = GETU64(buffer, 0x38);
 
-    fsw_block_release(volg, 0, (void *)buffer);
+    fsw_block_release(volg, 0, (void *) buffer);
     fsw_set_blocksize(volg, cluster_size, cluster_size);
 
     init_mft(vol, &mft0, MFTNO_MFT);
@@ -710,7 +710,7 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
 	    }
 	    int n = vol->mftbits < vol->clbits ? (1<<vol->mftbits) : cluster_size;
 	    fsw_memcpy(ptr, buffer, n);
-	    fsw_block_release(volg, lcn, (void *)buffer);
+	    fsw_block_release(volg, lcn, (void *) buffer);
 	    ptr += n;
 	    len -= n;
 	    lcn++;
@@ -761,16 +761,16 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
 
 static void fsw_ntfs_volume_free(struct fsw_volume *volg)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
     if(vol->extmap.extent)
 	fsw_free(vol->extmap.extent);
     if(vol->upcase && vol->upcase != upcase)
-	fsw_free((void *)vol->upcase);
+	fsw_free((void *) vol->upcase);
 }
 
 static fsw_status_t fsw_ntfs_volume_stat(struct fsw_volume *volg, struct fsw_volume_stat *sb)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
     sb->total_bytes = vol->totalbytes;
     /* reading through cluster bitmap is too costly */
     sb->free_bytes  = 0;
@@ -779,7 +779,7 @@ static fsw_status_t fsw_ntfs_volume_stat(struct fsw_volume *volg, struct fsw_vol
 
 static void fsw_ntfs_dnode_free(struct fsw_volume *vol, struct fsw_dnode *dnog)
 {
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     free_mft(&dno->mft);
     free_attr(&dno->attr);
     if(dno->idxroot)
@@ -792,8 +792,8 @@ static void fsw_ntfs_dnode_free(struct fsw_volume *vol, struct fsw_dnode *dnog)
 
 static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnode *dnog)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     fsw_status_t err;
     int len;
 
@@ -901,8 +901,8 @@ static fsw_u32 get_ntfs_time(fsw_u8 *buf, int pos)
 
 static fsw_status_t fsw_ntfs_dnode_stat(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_dnode_stat *sb)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     fsw_status_t err;
     fsw_u16 attr;
     fsw_u8 *ptr;
@@ -1260,8 +1260,8 @@ static fsw_status_t fsw_ntfs_get_extent_sparse(struct fsw_ntfs_volume *vol, stru
 
 static fsw_status_t fsw_ntfs_get_extent(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_extent *extent)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
 
     if(dno->unreadable)
 	return FSW_UNSUPPORTED;
@@ -1368,8 +1368,8 @@ static fsw_u8 *fsw_ntfs_read_index_block(struct fsw_ntfs_volume *vol, struct fsw
 
 static fsw_status_t fsw_ntfs_dir_lookup(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_string *lookup_name, struct fsw_dnode **child_dno)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     int depth = 0;
     struct fsw_string s;
     fsw_u8 *buf;
@@ -1449,7 +1449,7 @@ notfound:
 
 static inline void set_shand_pos( struct fsw_shandle *shand, int block, int off)
 {
-    shand->pos = (((fsw_u64)block) << 32) + off;
+    shand->pos = (((fsw_u64) block) << 32) + off;
 }
 
 static inline int test_idxbmp(struct fsw_ntfs_dnode *dno, int block)
@@ -1468,8 +1468,8 @@ static inline int test_idxbmp(struct fsw_ntfs_dnode *dno, int block)
 #define shand_pos(x,y)	(((fsw_u64)(x)<<32)|(y))
 static fsw_status_t fsw_ntfs_dir_read(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_shandle *shand, struct fsw_dnode **child_dno)
 {
-    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *)volg;
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_volume *vol = (struct fsw_ntfs_volume *) volg;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     /*
      * high 32 bit: index block#
      * 		0 --> index root
@@ -1533,7 +1533,7 @@ miss:
 
 static fsw_status_t fsw_ntfs_readlink(struct fsw_volume *volg, struct fsw_dnode *dnog, struct fsw_string *link)
 {
-    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *)dnog;
+    struct fsw_ntfs_dnode *dno = (struct fsw_ntfs_dnode *) dnog;
     fsw_u8 *name;
     int i;
     int len;

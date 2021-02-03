@@ -178,7 +178,7 @@ InitScroll (
     IN UINTN VisibleSpace
 ) {
     State->PreviousSelection = State->CurrentSelection = 0;
-    State->MaxIndex = (INTN)ItemCount - 1;
+    State->MaxIndex = (INTN) ItemCount - 1;
     State->FirstVisible = 0;
     if (AllowGraphicsMode) {
         State->MaxVisible = ScreenW / (TileSizes[0] + TILE_XSPACING) - 1;
@@ -187,7 +187,7 @@ InitScroll (
         State->MaxVisible = ConHeight - 4;
     }
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible)) {
-        State->MaxVisible = (INTN)VisibleSpace;
+        State->MaxVisible = (INTN) VisibleSpace;
     }
     State->PaintAll        = TRUE;
     State->PaintSelection  = FALSE;
@@ -865,7 +865,7 @@ ShowTextInfoLines (
             gST->ConOut,
             ATTR_BASIC
         );
-        for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
+        for (i = 0; i < (INTN) Screen->InfoLineCount; i++) {
             refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
             refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, Screen->InfoLines[i]);
         }
@@ -1386,7 +1386,7 @@ GraphicsMenuStyle (
 
             EntriesPosY += (TextLineHeight() * 2);
             if (Screen->InfoLineCount > 0) {
-                for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
+                for (i = 0; i < (INTN) Screen->InfoLineCount; i++) {
                     DrawText (
                         Screen->InfoLines[i],
                         FALSE,
@@ -2105,20 +2105,17 @@ VOID ManageHiddenTags (
     if (HiddenTags && (HiddenTags[0] != L'\0')) {
         AllTags = StrDuplicate (HiddenTags);
     }
-    MyFreePool (HiddenTags);
 
     HiddenTools = ReadHiddenTags (L"HiddenTools");
     SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
     if (HiddenTools && (HiddenTools[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenTools, L',');
     }
-    MyFreePool (HiddenTools);
 
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
     if (HiddenLegacy && (HiddenLegacy[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenLegacy, L',');
     }
-    MyFreePool (HiddenLegacy);
 
     if (!AllTags || StrLen (AllTags) < 1) {
         DisplaySimpleMessage (L"Information", L"No hidden tags found");
@@ -2184,6 +2181,9 @@ VOID ManageHiddenTags (
 
     MyFreePool (AllTags);
     MyFreePool (OneElement);
+    MyFreePool (HiddenTags);
+    MyFreePool (HiddenTools);
+    MyFreePool (HiddenLegacy);
     MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
@@ -2276,8 +2276,6 @@ HideEfiTag (
 
     LineItem = PoolPrint (L"Are you sure you want to hide '%s'?", FullPath);
     AddMenuInfoLine (HideItemMenu, LineItem);
-    MyFreePool(LineItem);
-
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
     AddMenuEntry (HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2301,6 +2299,7 @@ HideEfiTag (
 
     MyFreePool (FullPath);
     MyFreePool (GuidStr);
+    MyFreePool (LineItem);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()
@@ -2318,8 +2317,9 @@ HideLegacyTag (
     CHAR16             *Name = NULL, *LineItem = NULL;
     BOOLEAN            TagHidden = FALSE;
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && LegacyLoader->me.Title) {
         Name = StrDuplicate (LegacyLoader->me.Title);
@@ -2335,8 +2335,6 @@ HideLegacyTag (
 
     LineItem = PoolPrint (L"Are you sure you want to hide '%s'?", Name);
     AddMenuInfoLine (HideItemMenu, LineItem);
-    MyFreePool(LineItem);
-
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
     AddMenuEntry (HideItemMenu, &MenuEntryNo);
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2345,6 +2343,8 @@ HideLegacyTag (
         TagHidden = TRUE;
     } // if
     MyFreePool (Name);
+    MyFreePool (LineItem);
+
     return TagHidden;
 } // BOOLEAN HideLegacyTag()
 
@@ -2379,6 +2379,12 @@ HideTag (
             if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
                 HideItemMenu.Title = L"Hide EFI OS Tag";
                 HideEfiTag (Loader, &HideItemMenu, L"HiddenTags");
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - %s\n\n", HideItemMenu.Title);
+                #endif
+
                 RescanAll (FALSE, FALSE);
             }
             else {
@@ -2393,6 +2399,11 @@ HideTag (
         case TAG_LEGACY_UEFI:
             HideItemMenu.Title = L"Hide Legacy OS Tag";
             if (HideLegacyTag (LegacyLoader, &HideItemMenu)) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - %s\n\n", HideItemMenu.Title);
+                #endif
+
                 RescanAll (FALSE, FALSE);
             }
             break;
@@ -2414,6 +2425,12 @@ HideTag (
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("User Input Received:\n");
+            MsgLog ("  - %s\n\n", HideItemMenu.Title);
+            #endif
+
             RescanAll (FALSE, FALSE);
             break;
     } // switch()

@@ -214,7 +214,7 @@ FakeRestoreTpl (
 
     // Dispatch pending events
     while (gEventPending != 0) {
-        PendingTpl = (UINTN)HighBitSet64 (gEventPending);
+        PendingTpl = (UINTN) HighBitSet64 (gEventPending);
         if (PendingTpl <= NewTpl) {
             break;
         }
@@ -374,7 +374,7 @@ FakeCreateEventEx (
 
     IEvent->NotifyTpl      = NotifyTpl;
     IEvent->NotifyFunction = NotifyFunction;
-    IEvent->NotifyContext  = (VOID *)NotifyContext;
+    IEvent->NotifyContext  = (VOID *) NotifyContext;
 
     if (EventGroup != NULL) {
         CopyGuid (&IEvent->EventGroup, EventGroup);
@@ -388,8 +388,8 @@ FakeCreateEventEx (
         IEvent->RuntimeData.Type           = Type;
         IEvent->RuntimeData.NotifyTpl      = NotifyTpl;
         IEvent->RuntimeData.NotifyFunction = NotifyFunction;
-        IEvent->RuntimeData.NotifyContext  = (VOID *)NotifyContext;
-        IEvent->RuntimeData.Event          = (EFI_EVENT *)IEvent;
+        IEvent->RuntimeData.NotifyContext  = (VOID *) NotifyContext;
+        IEvent->RuntimeData.Event          = (EFI_EVENT *) IEvent;
         InsertTailList (&gRuntime->EventHead, &IEvent->RuntimeData.Link);
     }
 
@@ -416,7 +416,7 @@ AmendSysTable (
     if (gST->Hdr.Revision <= 0x1FFFF ||
         gBS->Hdr.HeaderSize <= EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)
     ) {
-        uBS = (EFI_BOOT_SERVICES *)AllocateCopyPool (sizeof (*gBS) * 2, gBS);
+        uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (*gBS) * 2, gBS);
         if (uBS) {
             uBS->CreateEventEx  = FakeCreateEventEx;
             uBS->Hdr.HeaderSize = sizeof (*gBS);
@@ -433,7 +433,7 @@ AmendSysTable (
             gST->Hdr.Revision   = 0x0002001E;
             gST->Hdr.CRC32      = 0;
             gBS->CalculateCrc32 (
-                (VOID *)gST,
+                (VOID *) gST,
                 sizeof (EFI_SYSTEM_TABLE),
                 &gST->Hdr.CRC32
             );

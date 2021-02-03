@@ -1,3 +1,13 @@
+0.12.0.AQ (03 Feb 2021):
+-----------------------
+- Fixes Volume Scanning Bug
+  * Volumes were not scanned for boot loaders if at least one user provided driver was not present
+  * This bug appeared in v0.12.0.AM
+- Fixes Hidden Items Bug
+  * Tags and Tools could not be hidden and those hidden could not be managed
+  * This bug appeared in v0.12.0.AP
+
+
 0.12.0.AP (02 Feb 2021):
 -----------------------
 - Misc Improvements to CSR Configuration Options
@@ -17,8 +27,7 @@
   * Hence, 'OsxAptioFix' drivers are no longer required on Macs and are actively discouraged
 - Fixes Device Handle Connection Bug
   * Device handles were not connected if at least one user provided driver was not present
-  * This resulted in some volumes not being scanned for boot loaders in such instances
-  * Additionally, GOP was not acquired/provided from RAM when required in such instances
+  * This resulted in GOP not not being acquired/provided from RAM when required in such instances
   * This bug appeared in v0.12.0.AM
 - Fixes Permitted Qemu Memory Leak Wokaround Bug
   * A permitted memory leak supposed to be limited to Qemu had been applied to all users

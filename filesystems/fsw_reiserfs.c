@@ -192,8 +192,8 @@ static void fsw_reiserfs_volume_free(struct fsw_reiserfs_volume *vol)
 
 static fsw_status_t fsw_reiserfs_volume_stat(struct fsw_reiserfs_volume *vol, struct fsw_volume_stat *sb)
 {
-    sb->total_bytes = (fsw_u64)vol->sb->s_v1.s_block_count * vol->g.log_blocksize;
-    sb->free_bytes  = (fsw_u64)vol->sb->s_v1.s_free_blocks * vol->g.log_blocksize;
+    sb->total_bytes = (fsw_u64) vol->sb->s_v1.s_block_count * vol->g.log_blocksize;
+    sb->free_bytes  = (fsw_u64) vol->sb->s_v1.s_free_blocks * vol->g.log_blocksize;
     return FSW_SUCCESS;
 }
 
@@ -346,7 +346,7 @@ static fsw_status_t fsw_reiserfs_get_extent(struct fsw_reiserfs_volume *vol, str
     extent->log_count = 1;
 
     // get the item for the requested block
-    search_offset = (fsw_u64)extent->log_start * vol->g.log_blocksize + 1;
+    search_offset = (fsw_u64) extent->log_start * vol->g.log_blocksize + 1;
     status = fsw_reiserfs_item_search(vol, dno->dir_id, dno->g.dnode_id, search_offset, &item);
     if (status)
         return status;
@@ -364,14 +364,14 @@ static fsw_status_t fsw_reiserfs_get_extent(struct fsw_reiserfs_volume *vol, str
             FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_get_extent: intra_offset not block-aligned for indirect block\n")));
             goto bail;
         }
-        intra_bno = (fsw_u32)FSW_U64_DIV(intra_offset, vol->g.log_blocksize);
+        intra_bno = (fsw_u32) FSW_U64_DIV(intra_offset, vol->g.log_blocksize);
         nr_item = item.ih.ih_item_len / sizeof (fsw_u32);
         if (intra_bno >= nr_item) {
             FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_get_extent: indirect block too small\n")));
             goto bail;
         }
         extent->type = FSW_EXTENT_TYPE_PHYSBLOCK;
-        extent->phys_start = ((fsw_u32 *)item.item_data)[intra_bno];
+        extent->phys_start = ((fsw_u32 *) item.item_data)[intra_bno];
 
         // TODO: check if the following blocks can be aggregated into one extent
 
@@ -452,7 +452,7 @@ static fsw_status_t fsw_reiserfs_dir_lookup(struct fsw_reiserfs_volume *vol, str
     for(;;) {
 
         // search the directory item
-        dhead = (struct reiserfs_de_head *)item.item_data;
+        dhead = (struct reiserfs_de_head *) item.item_data;
         nr_item = item.ih.u.ih_entry_count;
         next_name_offset = item.ih.ih_item_len;
         for (i = 0; i < nr_item; i++, dhead++, next_name_offset = name_offset) {
@@ -531,7 +531,7 @@ static fsw_status_t fsw_reiserfs_dir_read(struct fsw_reiserfs_volume *vol, struc
     for(;;) {
 
         // search the directory item
-        dhead = (struct reiserfs_de_head *)item.item_data;
+        dhead = (struct reiserfs_de_head *) item.item_data;
         nr_item = item.ih.u.ih_entry_count;
         for (i = 0; i < nr_item; i++, dhead++) {
             if (dhead->deh_offset < shand->pos)
@@ -613,7 +613,7 @@ static int fsw_reiserfs_compare_key(struct reiserfs_key *key,
         return SECOND_GREATER;
 
     // determine format of the on-disk key
-    key_type = (fsw_u32)FSW_U64_SHR(key->u.k_offset_v2.v, 60);
+    key_type = (fsw_u32) FSW_U64_SHR(key->u.k_offset_v2.v, 60);
     if (key_type != TYPE_DIRECT && key_type != TYPE_INDIRECT && key_type != TYPE_DIRENTRY) {
         // detected 3.5 format (_v1)
         key_offset = key->u.k_offset_v1.k_offset;
@@ -660,7 +660,7 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
         status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
         if (status)
             return status;
-        bhead = (struct block_head *)buffer;
+        bhead = (struct block_head *) buffer;
         if (bhead->blk_level != tree_level) {
             FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_item_search: tree block %d has not expected level %d\n"), tree_bno, tree_level));
             fsw_block_release(vol, tree_bno, buffer);
@@ -719,7 +719,7 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
 
     // return results
     fsw_memcpy(&item->ih, ihead, sizeof (struct item_head));
-    item->item_type = (fsw_u32)FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
+    item->item_type = (fsw_u32) FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
     if (item->item_type != TYPE_DIRECT &&
         item->item_type != TYPE_INDIRECT &&
         item->item_type != TYPE_DIRENTRY) {
@@ -774,7 +774,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
         status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
         if (status)
             return status;
-        bhead = (struct block_head *)buffer;
+        bhead = (struct block_head *) buffer;
         if (bhead->blk_level != tree_level) {
             FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_item_next: tree block %d has not expected level %d\n"), tree_bno, tree_level));
             fsw_block_release(vol, tree_bno, buffer);
@@ -803,7 +803,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
             status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
             if (status)
                 return status;
-            bhead = (struct block_head *)buffer;
+            bhead = (struct block_head *) buffer;
             if (bhead->blk_level != tree_level) {
                 FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_item_next: tree block %d has not expected level %d\n"), tree_bno, tree_level));
                 fsw_block_release(vol, tree_bno, buffer);
@@ -826,7 +826,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
 
         // return results
         fsw_memcpy(&item->ih, ihead, sizeof (struct item_head));
-        item->item_type = (fsw_u32)FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
+        item->item_type = (fsw_u32) FSW_U64_SHR(ihead->ih_key.u.k_offset_v2.v, 60);
         if (item->item_type != TYPE_DIRECT &&
             item->item_type != TYPE_INDIRECT &&
             item->item_type != TYPE_DIRENTRY) {

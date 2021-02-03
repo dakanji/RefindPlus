@@ -15,19 +15,19 @@
 
 static inline uint16_t get_unaligned_le16(const void *s)
 {
-	const unsigned char *p = (const unsigned char *)s;
+	const unsigned char *p = (const unsigned char *) s;
 	return p[0]+ (p[1]<<8);
 }
 
 static inline uint32_t get_unaligned_le32(const void *s)
 {
-	const unsigned char *p = (const unsigned char *)s;
+	const unsigned char *p = (const unsigned char *) s;
 	return p[0]+ (p[1]<<8) + (p[2]<<16) + (p[3]<<24);
 }
 
 static inline uint64_t get_unaligned_le64(const void *s)
 {
-	const unsigned char *p = (const unsigned char *)s;
+	const unsigned char *p = (const unsigned char *) s;
 	uint64_t v0 = get_unaligned_le32(p);
 	uint64_t v1 = get_unaligned_le32(p+4);
 	return v0 + (v1<<32);
@@ -35,7 +35,7 @@ static inline uint64_t get_unaligned_le64(const void *s)
 
 static inline void put_unaligned_le16(uint16_t v, void *s)
 {
-	unsigned char *p = (unsigned char *)s;
+	unsigned char *p = (unsigned char *) s;
 	p[0] = v & 0xff;
 	p[1] = v >> 8;
 }

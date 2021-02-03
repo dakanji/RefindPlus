@@ -92,9 +92,9 @@ PrepareBlankLine (
 ) {
     UINTN i;
 
-    MyFreePool (BlankLine);
+    MyFreePool(BlankLine);
     // make a buffer for a whole text line
-    BlankLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
+    BlankLine = AllocatePool((ConWidth + 1) * sizeof (CHAR16));
     for (i = 0; i < ConWidth; i++) {
         BlankLine[i] = ' ';
     }
@@ -113,13 +113,13 @@ InitScreen (
     egInitScreen();
 
     if (egHasGraphicsMode()) {
-        egGetScreenSize (&ScreenW, &ScreenH);
+        egGetScreenSize(&ScreenW, &ScreenH);
         AllowGraphicsMode = TRUE;
     }
     else {
         AllowGraphicsMode = FALSE;
-        egSetTextMode (GlobalConfig.RequestedTextMode);
-        egSetGraphicsModeEnabled (FALSE);   // just to be sure we are in text mode
+        egSetTextMode(GlobalConfig.RequestedTextMode);
+        egSetGraphicsModeEnabled(FALSE);   // just to be sure we are in text mode
     }
     GraphicsScreenDirty = TRUE;
 
@@ -143,7 +143,7 @@ InitScreen (
 
     // show the banner if in text mode
     if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1)) {
-        DrawScreenHeader (L"Initializing...");
+        DrawScreenHeader(L"Initializing...");
     }
 }
 
@@ -168,7 +168,7 @@ SetupScreen (
         MsgLog ("Get Resolution From Mode:\n");
         #endif
 
-        egGetResFromMode (&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
+        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
     }
 
     // Set the believed-to-be current resolution to the LOWER of the current
@@ -185,13 +185,13 @@ SetupScreen (
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
-    if (egSetTextMode (GlobalConfig.RequestedTextMode)) {
+    if (egSetTextMode(GlobalConfig.RequestedTextMode)) {
 
         #if REFIT_DEBUG > 0
         MsgLog ("Set Text Mode:\n");
         #endif
 
-        egGetScreenSize (&NewWidth, &NewHeight);
+        egGetScreenSize(&NewWidth, &NewHeight);
         if ((NewWidth > ScreenW) || (NewHeight > ScreenH)) {
             ScreenW = NewWidth;
             ScreenH = NewHeight;
@@ -216,15 +216,15 @@ SetupScreen (
             MsgLog ("Set to User Requested Screen Size:\n");
             #endif
 
-            egSetScreenSize (&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
-            egGetScreenSize (&ScreenW, &ScreenH);
+            egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
+            egGetScreenSize(&ScreenW, &ScreenH);
         } // if user requested a particular screen resolution
     }
 
     if (GlobalConfig.TextOnly) {
         // Set text mode if requested
         AllowGraphicsMode = FALSE;
-        SwitchToText (FALSE);
+        SwitchToText(FALSE);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Set Screen to Text Mode\n\n");
@@ -286,7 +286,7 @@ SetupScreen (
             }
 
             if (GlobalConfig.ScreensaverTime != -1) {
-                BltClearScreen (TRUE);
+                BltClearScreen(TRUE);
 
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
@@ -317,7 +317,7 @@ SetupScreen (
 
         AllowGraphicsMode = FALSE;
         GlobalConfig.TextOnly = TRUE;
-        SwitchToText (FALSE);
+        SwitchToText(FALSE);
     }
 } // VOID SetupScreen()
 
@@ -343,7 +343,7 @@ SwitchToText (
         }
     }
 
-    egSetGraphicsModeEnabled (FALSE);
+    egSetGraphicsModeEnabled(FALSE);
     refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
@@ -400,7 +400,7 @@ VOID SwitchToGraphics (
     VOID
 ) {
     if (AllowGraphicsMode && !egIsGraphicsModeEnabled()) {
-        egSetGraphicsModeEnabled (TRUE);
+        egSetGraphicsModeEnabled(TRUE);
         GraphicsScreenDirty = TRUE;
     }
 }
@@ -412,8 +412,8 @@ VOID
 BeginTextScreen (
     IN CHAR16 *Title
 ) {
-    DrawScreenHeader (Title);
-    SwitchToText (FALSE);
+    DrawScreenHeader(Title);
+    SwitchToText(FALSE);
 
     // reset error flag
     haveError = FALSE;
@@ -424,7 +424,7 @@ FinishTextScreen (
     IN BOOLEAN WaitAlways
 ) {
     if (haveError || WaitAlways) {
-        SwitchToText (FALSE);
+        SwitchToText(FALSE);
         PauseForKey();
     }
 
@@ -446,9 +446,9 @@ BeginExternalScreen (
     }
     else {
         // clear to dark background
-        egClearScreen (&DarkBackgroundPixel);
-        DrawScreenHeader (Title);
-        SwitchToText (TRUE);
+        egClearScreen(&DarkBackgroundPixel);
+        DrawScreenHeader(Title);
+        SwitchToText(TRUE);
     }
 
     // reset error flag
@@ -463,7 +463,7 @@ FinishExternalScreen (
     GraphicsScreenDirty = TRUE;
 
     if (haveError) {
-        SwitchToText (FALSE);
+        SwitchToText(FALSE);
         PauseForKey();
     }
 
@@ -493,7 +493,7 @@ DrawScreenHeader (
     UINTN y;
 
     // clear to black background
-    egClearScreen (&DarkBackgroundPixel); // first clear in graphics mode
+    egClearScreen(&DarkBackgroundPixel); // first clear in graphics mode
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     refit_call1_wrapper(gST->ConOut->ClearScreen, gST->ConOut); // then clear in text mode
 
@@ -501,12 +501,12 @@ DrawScreenHeader (
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (y = 0; y < 3; y++) {
         refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, y);
-        Print (BlankLine);
+        Print(BlankLine);
     }
 
     // print header text
     refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
-    Print (L"RefindPlus - %s", Title);
+    Print(L"RefindPlus - %s", Title);
 
     // reposition cursor
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -549,13 +549,13 @@ PrintUglyText (
     EG_PIXEL BGColor = COLOR_RED;
 
     if (Text) {
-        if (AllowGraphicsMode && MyStriCmp (L"Apple", gST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
-            egDisplayMessage (Text, &BGColor, PositionCode);
+        if (AllowGraphicsMode && MyStriCmp(L"Apple", gST->FirmwareVendor) && egIsGraphicsModeEnabled()) {
+            egDisplayMessage(Text, &BGColor, PositionCode);
             GraphicsScreenDirty = TRUE;
         }
         else { // non-Mac or in text mode; a Print() statement will work
-            Print (Text);
-            Print (L"\n");
+            Print(Text);
+            Print(L"\n");
         } // if/else
     } // if
 } // VOID PrintUglyText()
@@ -566,10 +566,10 @@ HaltForKey (
 ) {
     UINTN index;
 
-    Print (L"\n");
+    Print(L"\n");
 
-    PrintUglyText (L"", NEXTLINE);
-    PrintUglyText (L"* Halted: Press Any Key to Continue *", NEXTLINE);
+    PrintUglyText(L"", NEXTLINE);
+    PrintUglyText(L"* Halted: Press Any Key to Continue *", NEXTLINE);
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
         refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
@@ -588,15 +588,15 @@ PauseForKey (
 ) {
     UINTN index;
 
-    Print (L"\n");
+    Print(L"\n");
 
     if (GlobalConfig.ContinueOnWarning) {
-        PrintUglyText (L"", NEXTLINE);
-        PrintUglyText (L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
+        PrintUglyText(L"", NEXTLINE);
+        PrintUglyText(L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
     }
     else {
-        PrintUglyText (L"", NEXTLINE);
-        PrintUglyText (L"* Paused: Press Any Key to Continue *", NEXTLINE);
+        PrintUglyText(L"", NEXTLINE);
+        PrintUglyText(L"* Paused: Press Any Key to Continue *", NEXTLINE);
     }
 
     if (GlobalConfig.ContinueOnWarning) {
@@ -629,7 +629,7 @@ DebugPause (
     VOID
 ) {
     // show console and wait for key
-    SwitchToText (FALSE);
+    SwitchToText(FALSE);
     PauseForKey();
 
     // reset error flag
@@ -660,31 +660,31 @@ CheckFatalError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return FALSE;
     }
 
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
-    StatusToString (ErrorName, Status);
+    StatusToString(ErrorName, Status);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** FATAL ERROR: %s %s\n", ErrorName, where);
     #endif
 
-    Temp = PoolPrint (L"Fatal Error: %s %s", ErrorName, where);
+    Temp = PoolPrint(L"Fatal Error: %s %s", ErrorName, where);
 #else
-    Temp = PoolPrint (L"Fatal Error: %s %s", Status, where);
+    Temp = PoolPrint(L"Fatal Error: %s %s", Status, where);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** FATAL ERROR: %r %s\n", Status, where);
     #endif
 #endif
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-    PrintUglyText (Temp, NEXTLINE);
+    PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
-    MyFreePool (Temp);
+    MyFreePool(Temp);
 
     return TRUE;
 } // BOOLEAN CheckFatalError()
@@ -696,21 +696,21 @@ CheckError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return FALSE;
     }
 
 #ifdef __MAKEWITH_GNUEFI
     CHAR16 ErrorName[64];
-    StatusToString (ErrorName, Status);
+    StatusToString(ErrorName, Status);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** WARN: %s %s\n", ErrorName, where);
     #endif
 
-    Temp = PoolPrint (L"Error: %s %s", ErrorName, where);
+    Temp = PoolPrint(L"Error: %s %s", ErrorName, where);
 #else
-    Temp = PoolPrint (L"Error: %r %s", Status, where);
+    Temp = PoolPrint(L"Error: %r %s", Status, where);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** WARN: %r %s\n", Status, where);
@@ -718,12 +718,12 @@ CheckError (
 #endif
 
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-    PrintUglyText (Temp, NEXTLINE);
+    PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
-    if (MyStrStr (where, L"While Reading Boot Sector") != NULL ||
-        MyStrStr (where, L"in ReadHiddenTags") != NULL
+    if (MyStrStr(where, L"While Reading Boot Sector") != NULL ||
+        MyStrStr(where, L"in ReadHiddenTags") != NULL
     ) {
         haveError = FALSE;
     }
@@ -731,7 +731,7 @@ CheckError (
         haveError = TRUE;
     }
 
-    MyFreePool (Temp);
+    MyFreePool(Temp);
 
     return haveError;
 } // BOOLEAN CheckError()
@@ -746,7 +746,7 @@ SwitchToGraphicsAndClear (
 ) {
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
-        BltClearScreen (ShowBanner);
+        BltClearScreen(ShowBanner);
 
         #if REFIT_DEBUG > 0
         if (ShowBanner) {
@@ -776,14 +776,14 @@ BltClearScreen (
             #endif
 
             if (GlobalConfig.BannerFileName) {
-                Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
+                Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
 
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Embedded Title Banner\n");
                 #endif
-                Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner, FALSE);
+                Banner = egPrepareEmbeddedImage(&egemb_refindplus_banner, FALSE);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -799,11 +799,11 @@ BltClearScreen (
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
               if (Banner->Height != ScreenH || Banner->Width != ScreenW) {
-                 NewBanner = egScaleImage (Banner, ScreenW, ScreenH);
+                 NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
               }
            }
            else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
-              NewBanner = egCropImage (
+              NewBanner = egCropImage(
                   Banner, 0, 0,
                   (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
                   (Banner->Height > ScreenH) ? ScreenH : Banner->Height
@@ -811,7 +811,7 @@ BltClearScreen (
            }
 
            if (NewBanner != NULL) {
-               egFreeImage (Banner);
+               egFreeImage(Banner);
                Banner = NewBanner;
            }
            MenuBackgroundPixel = Banner->PixelData[0];
@@ -823,10 +823,10 @@ BltClearScreen (
         #endif
 
         if (GlobalConfig.ScreensaverTime != -1) {
-            egClearScreen (&MenuBackgroundPixel);
+            egClearScreen(&MenuBackgroundPixel);
         }
         else {
-            egClearScreen (&Black);
+            egClearScreen(&Black);
         }
 
         if (Banner != NULL) {
@@ -841,14 +841,14 @@ BltClearScreen (
             }
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
             if (GlobalConfig.ScreensaverTime != -1) {
-                BltImage (Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
+                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
             }
 
             // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
             //         Workaround Segmentation Fault ... Needs Investigation.
             //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16
             if (egHasConsoleControl) {
-                egFreeImage (Banner);
+                egFreeImage(Banner);
             }
             else {
                 MyFreePool (Banner);
@@ -858,11 +858,11 @@ BltClearScreen (
     else {
         // not showing banner
         // clear to menu background color
-        egClearScreen (&MenuBackgroundPixel);
+        egClearScreen(&MenuBackgroundPixel);
     }
 
     GraphicsScreenDirty = FALSE;
-    egFreeImage (GlobalConfig.ScreenBackground);
+    egFreeImage(GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
 } // VOID BltClearScreen()
 
@@ -873,7 +873,7 @@ BltImage (
     IN UINTN XPos,
     IN UINTN YPos
 ) {
-    egDrawImage (Image, XPos, YPos);
+    egDrawImage(Image, XPos, YPos);
     GraphicsScreenDirty = TRUE;
 }
 
@@ -887,12 +887,12 @@ BltImageAlpha (
     EG_IMAGE *CompImage;
 
     // compose on background
-    CompImage = egCreateFilledImage (Image->Width, Image->Height, FALSE, BackgroundPixel);
-    egComposeImage (CompImage, Image, 0, 0);
+    CompImage = egCreateFilledImage(Image->Width, Image->Height, FALSE, BackgroundPixel);
+    egComposeImage(CompImage, Image, 0, 0);
 
     // blit to screen and clean up
-    egDrawImage (CompImage, XPos, YPos);
-    egFreeImage (CompImage);
+    egDrawImage(CompImage, XPos, YPos);
+    egFreeImage(CompImage);
     GraphicsScreenDirty = TRUE;
 }
 
@@ -907,7 +907,7 @@ BltImageAlpha (
 //    EG_IMAGE *CompImage;
 //
 //    // initialize buffer with base image
-//    CompImage = egCopyImage (BaseImage);
+//    CompImage = egCopyImage(BaseImage);
 //    TotalWidth  = BaseImage->Width;
 //    TotalHeight = BaseImage->Height;
 //
@@ -922,11 +922,11 @@ BltImageAlpha (
 //        CompHeight = TotalHeight;
 //    }
 //    OffsetY = (TotalHeight - CompHeight) >> 1;
-//    egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
+//    egComposeImage(CompImage, TopImage, OffsetX, OffsetY);
 //
 //    // blit to screen and clean up
-//    egDrawImage (CompImage, XPos, YPos);
-//    egFreeImage (CompImage);
+//    egDrawImage(CompImage, XPos, YPos);
+//    egFreeImage(CompImage);
 //    GraphicsScreenDirty = TRUE;
 //}
 
@@ -948,7 +948,7 @@ BltImageCompositeBadge (
 
      // initialize buffer with base image
      if (BaseImage != NULL) {
-         CompImage = egCopyImage (BaseImage);
+         CompImage = egCopyImage(BaseImage);
          TotalWidth  = BaseImage->Width;
          TotalHeight = BaseImage->Height;
      }
@@ -965,7 +965,7 @@ BltImageCompositeBadge (
              CompHeight = TotalHeight;
          }
          OffsetY = (TotalHeight - CompHeight) >> 1;
-         egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
+         egComposeImage(CompImage, TopImage, OffsetX, OffsetY);
      }
 
      // place the badge image
@@ -975,13 +975,13 @@ BltImageCompositeBadge (
      ) {
          OffsetX += CompWidth  - 8 - BadgeImage->Width;
          OffsetY += CompHeight - 8 - BadgeImage->Height;
-         egComposeImage (CompImage, BadgeImage, OffsetX, OffsetY);
+         egComposeImage(CompImage, BadgeImage, OffsetX, OffsetY);
      }
 
      // blit to screen and clean up
      if (CompImage != NULL) {
          if (CompImage->HasAlpha) {
-             egDrawImageWithTransparency (
+             egDrawImageWithTransparency(
                  CompImage,
                  NULL,
                  XPos,
@@ -991,9 +991,9 @@ BltImageCompositeBadge (
              );
          }
          else {
-             egDrawImage (CompImage, XPos, YPos);
+             egDrawImage(CompImage, XPos, YPos);
          }
-         egFreeImage (CompImage);
+         egFreeImage(CompImage);
          GraphicsScreenDirty = TRUE;
      }
 }

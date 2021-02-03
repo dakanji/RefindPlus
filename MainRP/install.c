@@ -313,7 +313,7 @@ static EFI_STATUS CopyDirectory (IN EFI_FILE *SourceDirPtr,
     EFI_STATUS      Status = EFI_SUCCESS;
 
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
-    while (Status == EFI_SUCCESS && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
+    while (DirIterNext (&DirIter, 2, NULL, &DirEntry) && (Status == EFI_SUCCESS)) {
         SourceFileName = PoolPrint (L"%s\\%s", SourceDirName, DirEntry->FileName);
         DestFileName = PoolPrint (L"%s\\%s", DestDirName, DirEntry->FileName);
         Status = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
@@ -590,17 +590,17 @@ static EFI_STATUS ConstructBootEntry (EFI_HANDLE *TargetVolume,
     *Size = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
     *Entry = Working = AllocateZeroPool (*Size);
     if (DevicePath && *Entry) {
-        *(UINT32 *)Working = LOAD_OPTION_ACTIVE;
+        *(UINT32 *) Working = LOAD_OPTION_ACTIVE;
         Working += sizeof (UINT32);
-        *(UINT16 *)Working = DevPathSize;
+        *(UINT16 *) Working = DevPathSize;
         Working += sizeof (UINT16);
-        StrCpy ((CHAR16 *)Working, Label);
+        StrCpy ((CHAR16 *) Working, Label);
         Working += StrSize (Label);
         CopyMem (Working, DevicePath, DevPathSize);
         // If support for arguments is required in the future, uncomment
         // the below two lines and adjust Size computation above appropriately.
         // Working += DevPathSize;
-        // StrCpy ((CHAR16 *)Working, Arguments);
+        // StrCpy ((CHAR16 *) Working, Arguments);
     } else {
         Status = EFI_OUT_OF_RESOURCES;
     } // if/else

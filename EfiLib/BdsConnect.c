@@ -259,7 +259,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         #endif
     }
     else {
-        AllHandleCountTrigger = (UINTN)AllHandleCount - 1;
+        AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
             HexIndex = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
@@ -414,7 +414,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                         }
                         #endif
-
+                        
                         MyFreePool (DevicePathStr);
                     }
                     // Temp from Clover END

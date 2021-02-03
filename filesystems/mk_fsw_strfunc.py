@@ -86,16 +86,16 @@ for combo in combos:
     getnext2 = getnext[enc2].replace('VARC', 'c2').replace('VARP', 'p2').replace("\n", "\n        ")
     
     output += """
-static int fsw_streq_%(enc1)s_%(enc2)s(void *s1data, void *s2data, int len)
+static int fsw_streq_%(enc1) s_%(enc2) s(void *s1data, void *s2data, int len)
 {
     int i;
-    %(type1)s *p1 = (%(type1)s *)s1data;
-    %(type2)s *p2 = (%(type2)s *)s2data;
+    %(type1) s *p1 = (%(type1) s *) s1data;
+    %(type2) s *p2 = (%(type2) s *) s2data;
     fsw_u32 c1, c2;
     
     for (i = 0; i < len; i++) {
-        %(getnext1)s
-        %(getnext2)s
+        %(getnext1) s
+        %(getnext2) s
         if (c1 != c2)
             return 0;
     }
@@ -111,25 +111,25 @@ for enc2 in ('ISO88591', 'UTF16'):
         type2 = types[enc2]
         getnext1 = getnext[enc1].replace('VARC', 'c').replace('VARP', 'sp').replace("\n", "\n        ")
         output += """
-static fsw_status_t fsw_strcoerce_%(enc1)s_%(enc2)s(void *srcdata, int srclen, struct fsw_string *dest)
+static fsw_status_t fsw_strcoerce_%(enc1) s_%(enc2) s(void *srcdata, int srclen, struct fsw_string *dest)
 {
     fsw_status_t    status;
     int             i;
-    %(type1)s       *sp;
-    %(type2)s       *dp;
+    %(type1) s       *sp;
+    %(type2) s       *dp;
     fsw_u32         c;
     
-    dest->type = FSW_STRING_TYPE_%(enc2)s;
+    dest->type = FSW_STRING_TYPE_%(enc2) s;
     dest->len  = srclen;
-    dest->size = srclen * sizeof (%(type2)s);
+    dest->size = srclen * sizeof (%(type2) s);
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
     
-    sp = (%(type1)s *)srcdata;
-    dp = (%(type2)s *)dest->data;
+    sp = (%(type1) s *) srcdata;
+    dp = (%(type2) s *) dest->data;
     for (i = 0; i < srclen; i++) {
-        %(getnext1)s
+        %(getnext1) s
         *dp++ = c;
     }
     return FSW_SUCCESS;
@@ -142,18 +142,18 @@ for enc2 in ('UTF8',):
         type2 = types[enc2]
         getnext1 = getnext[enc1].replace('VARC', 'c').replace('VARP', 'sp').replace("\n", "\n        ")
         output += """
-static fsw_status_t fsw_strcoerce_%(enc1)s_%(enc2)s(void *srcdata, int srclen, struct fsw_string *dest)
+static fsw_status_t fsw_strcoerce_%(enc1) s_%(enc2) s(void *srcdata, int srclen, struct fsw_string *dest)
 {
     fsw_status_t    status;
     int             i, destsize;
-    %(type1)s       *sp;
-    %(type2)s       *dp;
+    %(type1) s       *sp;
+    %(type2) s       *dp;
     fsw_u32         c;
     
-    sp = (%(type1)s *)srcdata;
+    sp = (%(type1) s *) srcdata;
     destsize = 0;
     for (i = 0; i < srclen; i++) {
-        %(getnext1)s
+        %(getnext1) s
         
         if (c < 0x000080)
             destsize++;
@@ -165,17 +165,17 @@ static fsw_status_t fsw_strcoerce_%(enc1)s_%(enc2)s(void *srcdata, int srclen, s
             destsize += 4;
     }
     
-    dest->type = FSW_STRING_TYPE_%(enc2)s;
+    dest->type = FSW_STRING_TYPE_%(enc2) s;
     dest->len  = srclen;
     dest->size = destsize;
     status = fsw_alloc(dest->size, &dest->data);
     if (status)
         return status;
     
-    sp = (%(type1)s *)srcdata;
-    dp = (%(type2)s *)dest->data;
+    sp = (%(type1) s *) srcdata;
+    dp = (%(type2) s *) dest->data;
     for (i = 0; i < srclen; i++) {
-        %(getnext1)s
+        %(getnext1) s
         
         if (c < 0x000080) {
             *dp++ = c;

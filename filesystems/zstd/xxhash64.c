@@ -99,7 +99,7 @@ void xxh64_reset(struct xxh64_state *statePtr, const uint64_t seed)
 
 int xxh64_update(struct xxh64_state *state, const void *input, const size_t len)
 {
-	const uint8_t *p = (const uint8_t *)input;
+	const uint8_t *p = (const uint8_t *) input;
 	const uint8_t *const b_end = p + len;
 
 	if (input == NULL)
@@ -108,15 +108,15 @@ int xxh64_update(struct xxh64_state *state, const void *input, const size_t len)
 	state->total_len += len;
 
 	if (state->memsize + len < 32) { /* fill in tmp buffer */
-		memcpy(((uint8_t *)state->mem64) + state->memsize, input, len);
-		state->memsize += (uint32_t)len;
+		memcpy(((uint8_t *) state->mem64) + state->memsize, input, len);
+		state->memsize += (uint32_t) len;
 		return 0;
 	}
 
 	if (state->memsize) { /* tmp buffer is full */
 		uint64_t *p64 = state->mem64;
 
-		memcpy(((uint8_t *)p64) + state->memsize, input,
+		memcpy(((uint8_t *) p64) + state->memsize, input,
 			32 - state->memsize);
 
 		state->v1 = xxh64_round(state->v1, get_unaligned_le64(p64));
@@ -165,8 +165,8 @@ int xxh64_update(struct xxh64_state *state, const void *input, const size_t len)
 
 uint64_t xxh64_digest(const struct xxh64_state *state)
 {
-	const uint8_t *p = (const uint8_t *)state->mem64;
-	const uint8_t *const b_end = (const uint8_t *)state->mem64 +
+	const uint8_t *p = (const uint8_t *) state->mem64;
+	const uint8_t *const b_end = (const uint8_t *) state->mem64 +
 		state->memsize;
 	uint64_t h64;
 
@@ -186,7 +186,7 @@ uint64_t xxh64_digest(const struct xxh64_state *state)
 		h64  = state->v3 + PRIME64_5;
 	}
 
-	h64 += (uint64_t)state->total_len;
+	h64 += (uint64_t) state->total_len;
 
 	while (p + 8 <= b_end) {
 		const uint64_t k1 = xxh64_round(0, get_unaligned_le64(p));

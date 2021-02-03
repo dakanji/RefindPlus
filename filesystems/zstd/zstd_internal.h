@@ -125,8 +125,8 @@ ZSTD_STATIC void ZSTD_copy8(void *dst, const void *src) {
 #define WILDCOPY_OVERLENGTH 8
 ZSTD_STATIC void ZSTD_wildcopy(void *dst, const void *src, ptrdiff_t length)
 {
-	const BYTE* ip = (const BYTE*)src;
-	BYTE* op = (BYTE*)dst;
+	const BYTE* ip = (const BYTE*) src;
+	BYTE* op = (BYTE*) dst;
 	BYTE* const oend = op + length;
 	/* Work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81388.
 	 * Avoid the bad case where the loop only runs once by handling the

@@ -134,7 +134,7 @@ simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
    char buf[1024];
 
    *size = sizeof (buf);
-   fi = (void *)buf;
+   fi = (void *) buf;
 
 
    efi_status = uefi_call_wrapper(file->GetInfo, 4, file, &FILE_INFO,

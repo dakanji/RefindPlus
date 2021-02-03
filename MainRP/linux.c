@@ -168,8 +168,7 @@ CHAR16 * FindInitrd (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
 CHAR16 *AddInitrdToOptions (CHAR16 *Options, CHAR16 *InitrdPath) {
-    CHAR16 *NewOptions    = NULL;
-    CHAR16 *InitrdVersion = NULL;
+    CHAR16 *NewOptions = NULL;
 
     if (Options != NULL) {
         NewOptions = StrDuplicate (Options);
@@ -177,8 +176,9 @@ CHAR16 *AddInitrdToOptions (CHAR16 *Options, CHAR16 *InitrdPath) {
 
     if (InitrdPath != NULL) {
         if (StriSubCmp (L"%v", Options)) {
-            InitrdVersion = FindNumbers (InitrdPath);
+            CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
             ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
+
             MyFreePool (InitrdVersion);
         }
         else if (!StriSubCmp (L"initrd=", Options)) {
@@ -282,7 +282,7 @@ VOID AddKernelToSubmenu (LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VO
             SubEntry->Volume = Volume;
             FreeTokenLine (&TokenList, &TokenCount);
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
         } // while
 
         MyFreePool (VolName);

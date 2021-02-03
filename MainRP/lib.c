@@ -446,7 +446,7 @@ EfivarGetRaw (
     UINT8       *buf          = NULL;
     EFI_FILE    *VarsDir      = NULL;
     BOOLEAN     ReadFromNvram = TRUE;
-    EFI_STATUS  Status        = EFI_SUCCESS;
+    EFI_STATUS  Status;
 
     if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
@@ -457,48 +457,52 @@ EfivarGetRaw (
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
             EFI_FILE_DIRECTORY
         );
-
-        if (!EFI_ERROR (Status)) {
+        if (Status == EFI_SUCCESS) {
             Status = egLoadFile (VarsDir, name, &buf, size);
             ReadFromNvram = FALSE;
         }
-        MyFreePool (VarsDir);
+        else if (Status == EFI_WRITE_PROTECTED) {
+            // Override use_nvram
+            GlobalConfig.UseNvram = TRUE;
 
-        if (!EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
+            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
+            #endif
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            if (Status != EFI_NOT_FOUND) {
+                MsgLog ("** WARN: Could Not Read '%s' NVRAM Variable\n", name);
+            }
+            #endif
+
+            MyFreePool (VarsDir);
+
             return Status;
         }
+        MyFreePool (VarsDir);
     }
 
-    if (EFI_ERROR (Status) ||
-        GlobalConfig.UseNvram ||
-        !GuidsAreEqual (vendor, &RefindPlusGuid)
-    ) {
-        l   = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
+        l = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool (l);
-
         if (!buf) {
             *buffer = NULL;
             return EFI_OUT_OF_RESOURCES;
         }
-
         Status = refit_call5_wrapper(gRT->GetVariable, name, vendor, NULL, &l, buf);
-
-        if (!EFI_ERROR (Status)) {
-            *buffer = (CHAR8*) buf;
-
-            if ((size) && ReadFromNvram) {
-                *size = l;
-            }
-        }
-        else {
-            MyFreePool (buf);
-            *buffer = NULL;
+    }
+    if (EFI_ERROR (Status) == EFI_SUCCESS) {
+        *buffer = (CHAR8*) buf;
+        if ((size) && ReadFromNvram) {
+            *size = l;
         }
     }
-    else if (!EFI_ERROR (Status) && ReadFromNvram == TRUE) {
-        Status = EFI_LOAD_ERROR;
+    else {
+        MyFreePool (buf);
+        *buffer = NULL;
     }
-
     return Status;
 } // EFI_STATUS EfivarGetRaw()
 
@@ -514,10 +518,8 @@ EfivarSetRaw (
     BOOLEAN   persistent
 ) {
     UINT32      flags;
-    BOOLEAN     WriteToNvram = TRUE;
-    EFI_FILE    *VarsDir     = NULL;
-    EFI_STATUS  Status       = EFI_SUCCESS;
-
+    EFI_FILE    *VarsDir = NULL;
+    EFI_STATUS  Status;
 
     if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
@@ -525,22 +527,32 @@ EfivarSetRaw (
             SelfDir,
             &VarsDir,
             L"vars",
-            EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE,
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
-
-        if (!EFI_ERROR (Status)) {
-            WriteToNvram = FALSE;
+        if (Status == EFI_SUCCESS) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
         }
+        else if (Status == EFI_WRITE_PROTECTED) {
+            // Override use_nvram
+            GlobalConfig.UseNvram = TRUE;
 
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
+            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
+            #endif
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: Could Not Save '%s' NVRAM Variable\n", name);
+            #endif
+
+            return Status;
+        }
         MyFreePool (VarsDir);
     }
 
-    if (EFI_ERROR (Status) ||
-        GlobalConfig.UseNvram ||
-        !GuidsAreEqual (vendor, &RefindPlusGuid)
-    ) {
+    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
@@ -548,10 +560,6 @@ EfivarSetRaw (
 
         Status = refit_call5_wrapper(gRT->SetVariable, name, vendor, flags, size, buf);
     }
-    else if (!EFI_ERROR (Status) && WriteToNvram == TRUE) {
-        Status = EFI_LOAD_ERROR;
-    }
-
     return Status;
 } // EFI_STATUS EfivarSetRaw()
 
@@ -1175,21 +1183,20 @@ SetPartGuidAndName (
         HdDevicePath = (HARDDRIVE_DEVICE_PATH*) DevicePath;
         if (HdDevicePath->SignatureType == SIGNATURE_TYPE_GUID) {
             Volume->PartGuid = *((EFI_GUID*) HdDevicePath->Signature);
-
             PartInfo = FindPartWithGuid (&(Volume->PartGuid));
             if (PartInfo) {
                 Volume->PartName = StrDuplicate (PartInfo->name);
                 CopyMem (&(Volume->PartTypeGuid), PartInfo->type_guid, sizeof (EFI_GUID));
 
-                if ((GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid)) &&
-                    (PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0
+                if (GuidsAreEqual (&(Volume->PartTypeGuid), &gFreedesktopRootGuid) &&
+                    ((PartInfo->attributes & GPT_NO_AUTOMOUNT) == 0)
                 ) {
                     GlobalConfig.DiscoveredRoot = Volume;
                 } // if (GUIDs match && automounting OK)
 
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
                 MyFreePool (PartInfo);
-            } // if PartInfo
+            } // if (PartInfo exists)
         }
         else {
             // TODO: Better to assign a random GUID to MBR partitions, but I couldn't
@@ -1223,14 +1230,14 @@ ScanVolume (
     REFIT_VOLUME *Volume
 ) {
     EFI_STATUS       Status;
-    EFI_DEVICE_PATH  *DevicePath           = NULL;
-    EFI_DEVICE_PATH  *NextDevicePath       = NULL;
-    EFI_DEVICE_PATH  *DiskDevicePath       = NULL;
-    EFI_DEVICE_PATH  *RemainingDevicePath  = NULL;
-    EFI_HANDLE       WholeDiskHandle       = NULL;
-    CHAR16           *ShowScreenStr        = NULL;
+    EFI_DEVICE_PATH  *DevicePath;
+    EFI_DEVICE_PATH  *NextDevicePath;
+    EFI_DEVICE_PATH  *DiskDevicePath;
+    EFI_DEVICE_PATH  *RemainingDevicePath;
+    EFI_HANDLE       WholeDiskHandle;
     UINTN            PartialLength;
     BOOLEAN          Bootable;
+    CHAR16           *ShowScreenStr = NULL;
 
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
@@ -1312,17 +1319,13 @@ ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
-            PartialLength  = (UINT8 *)NextDevicePath - (UINT8 *)Volume->DevicePath;
-            DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool (
-                PartialLength + sizeof (EFI_DEVICE_PATH)
+            PartialLength = (UINT8 *) NextDevicePath - (UINT8 *)(Volume->DevicePath);
+            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (PartialLength +
+                sizeof (EFI_DEVICE_PATH)
             );
+            CopyMem (DiskDevicePath, Volume->DevicePath, PartialLength);
             CopyMem (
-                DiskDevicePath,
-                Volume->DevicePath,
-                PartialLength
-            );
-            CopyMem (
-                (UINT8 *)DiskDevicePath + PartialLength,
+                (UINT8 *) DiskDevicePath + PartialLength,
                 EndDevicePath,
                 sizeof (EFI_DEVICE_PATH)
             );
@@ -1338,6 +1341,12 @@ ScanVolume (
             MyFreePool (DiskDevicePath);
 
             if (!EFI_ERROR (Status)) {
+                //Print (
+                //    L"  - original handle: %08x - disk handle: %08x\n",
+                //    (UINT32) DeviceHandle,
+                //    (UINT32) WholeDiskHandle
+                //);
+
                 // get the device path for later
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -1345,7 +1354,6 @@ ScanVolume (
                     &DevicePathProtocol,
                     (VOID **) &DiskDevicePath
                 );
-
                 if (!EFI_ERROR (Status)) {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
                 }
@@ -1357,7 +1365,6 @@ ScanVolume (
                     &BlockIoProtocol,
                     (VOID **) &Volume->WholeDiskBlockIO
                 );
-
                 if (!EFI_ERROR (Status)) {
                     // check the media block size
                     if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
@@ -1368,8 +1375,9 @@ ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
                     //CheckError (Status, L"from HandleProtocol");
                 }
-            } // if !EFI_ERROR
-        } // if DevicePathType
+            } //else
+            //CheckError (Status, L"from LocateDevicePath");
+        }
 
         DevicePath = NextDevicePath;
     } // while
@@ -1875,7 +1883,7 @@ DirNextEntry (
         }
 
         // entry is ready to be returned
-        *DirEntry = (EFI_FILE_INFO *)Buffer;
+        *DirEntry = (EFI_FILE_INFO *) Buffer;
 
         // filter results
         if (FilterMode == 1) {
@@ -2110,7 +2118,7 @@ FindMem (
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem (BufferPtr, SearchString, SearchStringLength) == 0) {
-            return (INTN)Offset;
+            return (INTN) Offset;
         }
     }
 

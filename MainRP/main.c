@@ -245,9 +245,8 @@ EfivarSetRawEx (
     BOOLEAN   persistent
 ) {
     UINT32      flags;
-    BOOLEAN     WriteToNvram = TRUE;
-    EFI_FILE    *VarsDir     = NULL;
-    EFI_STATUS  Status       = EFI_SUCCESS;
+    EFI_FILE    *VarsDir = NULL;
+    EFI_STATUS  Status;
 
     if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
         Status = refit_call5_wrapper(
@@ -258,27 +257,30 @@ EfivarSetRawEx (
             EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
-
-        if (!EFI_ERROR (Status)) {
+        if (Status == EFI_SUCCESS) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
         }
+        else if (Status == EFI_WRITE_PROTECTED) {
+            GlobalConfig.UseNvram = TRUE;
 
+            #if REFIT_DEBUG > 0
+            MsgLog ("WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
+            MsgLog ("      Activate the 'use_nvram' option to silence this warning\n\n");
+            #endif
+        }
+        else {
+            return Status;
+        }
         MyFreePool (VarsDir);
     }
 
-    if (EFI_ERROR (Status) ||
-        GlobalConfig.UseNvram ||
-        !GuidsAreEqual (vendor, &RefindPlusGuid)
-    ) {
+    if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindPlusGuid)) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
         Status = AltSetVariable (name, vendor, flags, size, buf);
-    }
-    else if (!EFI_ERROR (Status) && WriteToNvram == TRUE) {
-        Status = EFI_LOAD_ERROR;
     }
 
     return Status;
@@ -311,6 +313,15 @@ gRTSetVariableEx (
 
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockPRNG = FALSE;
+
+    #if REFIT_DEBUG > 0
+    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindPlusGuid)) {
+        MsgLog ("INFO: Using Emulated NVRAM\n");
+    }
+    else {
+        MsgLog ("INFO: Using Hardware NVRAM\n");
+    }
+    #endif
 
     if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
         GuidsAreEqual (VendorGuid, &X509Guid) ||
@@ -1144,7 +1155,6 @@ VOID AboutRefindPlus (
                 gST->FirmwareRevision & ((1 << 16) - 1)
             )
         );
-        MyFreePool (FirmwareVendor);
 
         AddMenuInfoLine (&AboutMenu, PoolPrint (L" Screen Output: %s", egScreenDescription()));
         AddMenuInfoLine (&AboutMenu, L"");
@@ -1163,6 +1173,7 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
         AddMenuEntry (&AboutMenu, &MenuEntryReturn);
+        MyFreePool (FirmwareVendor);
     }
 
     RunMenu (&AboutMenu, NULL);
@@ -1205,10 +1216,12 @@ VOID RescanAll (
     BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
-    FreeList (
-        (VOID ***) &(MainMenu.Entries),
-        &MainMenu.EntryCount
-    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Rescanning\n\n");
+    #endif
+
+    FreeList ((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries     = NULL;
     MainMenu.EntryCount  = 0;
 
@@ -1446,9 +1459,7 @@ efi_main (
     EFI_STATUS  Status;
 
     BOOLEAN  MainLoopRunning = TRUE;
-    BOOLEAN  SupplyAPFS      = FALSE;
     BOOLEAN  MokProtocol     = FALSE;
-    BOOLEAN  DriversLoaded   = FALSE;
 
     REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     LOADER_ENTRY      *ourLoaderEntry = NULL;
@@ -1534,13 +1545,10 @@ efi_main (
     }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
-    DriversLoaded = LoadDrivers();
+    LoadDrivers();
 
     if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();
-        if (!EFI_ERROR (Status)) {
-            SupplyAPFS = TRUE;
-        }
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Supply APFS ...");
@@ -1553,13 +1561,11 @@ efi_main (
         #endif
     }
 
-    if (DriversLoaded || SupplyAPFS) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Scan Volumes...\n");
-        #endif
+    #if REFIT_DEBUG > 0
+    MsgLog ("Scan Volumes...\n");
+    #endif
 
-        ScanVolumes();
-    }
+    ScanVolumes();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
         Status = SetAppleOSInfo();
@@ -1643,13 +1649,9 @@ efi_main (
        BltClearScreen (TRUE);
     } // if
 
-    if (GlobalConfig.DefaultSelection != NULL) {
+    if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
-    else {
-        SelectionName = L"Default";
-    }
-
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
     }

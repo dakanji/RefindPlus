@@ -173,10 +173,10 @@ fsw_hfs_read_file (struct fsw_hfs_dnode    * dno,
         fsw_u32 off = (fsw_u32)(pos & block_size_mask);
         fsw_s32 next_len = len;
 
-        log_bno = (fsw_u32)RShiftU64(pos, block_size_bits);
+        log_bno = (fsw_u32) RShiftU64(pos, block_size_bits);
 
         if (   next_len >= 0
-            && (fsw_u32)next_len >  block_size)
+            && (fsw_u32) next_len >  block_size)
             next_len = block_size;
         status = fsw_hfs_read_block(dno, log_bno, off, next_len, buf);
         if (status)
@@ -276,8 +276,8 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
 
         status = fsw_block_get(vol, blockno, 0, &buffer);
         CHECK(status);
-        voldesc = (HFSPlusVolumeHeader *)buffer;
-        mdb = (HFSMasterDirectoryBlock*)buffer;
+        voldesc = (HFSPlusVolumeHeader *) buffer;
+        mdb = (HFSMasterDirectoryBlock*) buffer;
         signature = be16_to_cpu(voldesc->signature);
 
         if ((signature == kHFSPlusSigWord) || (signature == kHFSXSigWord)) //H+ or HX
@@ -455,9 +455,9 @@ dirIndex = (long long) firstLeafNode * nodeSize;
  (long long) curNode * nodeSize, nodeSize, nodeBuf, 1);
  GetBTreeRecord(index, nodeBuf, nodeSize, &testKey, &entry);
  
- utf_encodestr(((HFSPlusCatalogKey *)testKey)->nodeName.unicode,
- SWAP_BE16(((HFSPlusCatalogKey *)testKey)->nodeName.length),
- (u_int8_t *)gTempStr, 256, OSBigEndian);
+ utf_encodestr(((HFSPlusCatalogKey *) testKey)->nodeName.unicode,
+ SWAP_BE16(((HFSPlusCatalogKey *) testKey)->nodeName.length),
+ (u_int8_t *) gTempStr, 256, OSBigEndian);
  
  *name = gTempStr; 
 
@@ -607,7 +607,7 @@ fsw_hfs_btree_search (struct fsw_hfs_btree * btree,
     status = fsw_alloc(btree->node_size, &buffer);
     if (status)
         return status;
-    node = (BTNodeDescriptor*)buffer;
+    node = (BTNodeDescriptor*) buffer;
 
     while (1)
     {
@@ -619,7 +619,7 @@ fsw_hfs_btree_search (struct fsw_hfs_btree * btree,
         match = 0;
         /* Read a node.  */
         if (fsw_hfs_read_file (btree->file,
-                               (fsw_u64)currnode * btree->node_size,
+                               (fsw_u64) currnode * btree->node_size,
                                btree->node_size, buffer) <= 0)
         {
             status = FSW_VOLUME_CORRUPTED;
@@ -763,10 +763,10 @@ typedef struct
 static int
 fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
 {
-    visitor_parameter_t* vp = (visitor_parameter_t*)param;
-    fsw_u8* base = (fsw_u8*)record->rawData + be16_to_cpu(record->length16) + 2;
-    fsw_u16 rec_type =  be16_to_cpu(*(fsw_u16*)base);
-    struct HFSPlusCatalogKey* cat_key = (HFSPlusCatalogKey*)record;
+    visitor_parameter_t* vp = (visitor_parameter_t*) param;
+    fsw_u8* base = (fsw_u8*) record->rawData + be16_to_cpu(record->length16) + 2;
+    fsw_u16 rec_type =  be16_to_cpu(*(fsw_u16*) base);
+    struct HFSPlusCatalogKey* cat_key = (HFSPlusCatalogKey*) record;
     fsw_u16   name_len;
     fsw_u16   *name_ptr;
     fsw_u32   i;
@@ -783,7 +783,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     {
         case kHFSPlusFolderRecord:
         {
-            HFSPlusCatalogFolder* folder_info = (HFSPlusCatalogFolder*)base;
+            HFSPlusCatalogFolder* folder_info = (HFSPlusCatalogFolder*) base;
 
             vp->file_info.id = be32_to_cpu(folder_info->folderID);
             vp->file_info.type = FSW_DNODE_TYPE_DIR;
@@ -795,7 +795,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
         }
         case kHFSPlusFileRecord:
         {
-            HFSPlusCatalogFile* file_info = (HFSPlusCatalogFile*)base;
+            HFSPlusCatalogFile* file_info = (HFSPlusCatalogFile*) base;
 
             vp->file_info.id = be32_to_cpu(file_info->fileID);
             vp->file_info.type = FSW_DNODE_TYPE_FILE;
@@ -827,7 +827,7 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
     fsw_memdup(&file_name->data, &cat_key->nodeName.unicode[0], 2*name_len);
     file_name->size = 2*name_len;
     file_name->type = FSW_STRING_TYPE_UTF16;
-    name_ptr = (fsw_u16*)file_name->data;
+    name_ptr = (fsw_u16*) file_name->data;
     for (i=0; i<name_len; i++)
     {
         name_ptr[i] = be16_to_cpu(name_ptr[i]);
@@ -892,7 +892,7 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
           return 1;
       }
 
-      node = (BTNodeDescriptor*)buffer;
+      node = (BTNodeDescriptor*) buffer;
       first_rec = 0;
   }
  done:
@@ -917,8 +917,8 @@ void deb(fsw_u16* p, int len, int swap)
 static int
 fsw_hfs_cmp_extkey(BTreeKey* key1, BTreeKey* key2)
 {
-    HFSPlusExtentKey* ekey1 = (HFSPlusExtentKey*)key1;
-    HFSPlusExtentKey* ekey2 = (HFSPlusExtentKey*)key2;
+    HFSPlusExtentKey* ekey1 = (HFSPlusExtentKey*) key1;
+    HFSPlusExtentKey* ekey2 = (HFSPlusExtentKey*) key2;
     int result;
 
     /* First key is read from the FS data, second is in-memory in CPU endianess */
@@ -939,8 +939,8 @@ fsw_hfs_cmp_extkey(BTreeKey* key1, BTreeKey* key2)
 static int
 fsw_hfs_cmp_catkey (BTreeKey *key1, BTreeKey *key2)
 {
-  HFSPlusCatalogKey *ckey1 = (HFSPlusCatalogKey*)key1;
-  HFSPlusCatalogKey *ckey2 = (HFSPlusCatalogKey*)key2;
+  HFSPlusCatalogKey *ckey1 = (HFSPlusCatalogKey*) key1;
+  HFSPlusCatalogKey *ckey2 = (HFSPlusCatalogKey*) key2;
 
   int      apos, bpos, lc;
   fsw_u16  ac, bc;
@@ -968,14 +968,14 @@ fsw_hfs_cmp_catkey (BTreeKey *key1, BTreeKey *key2)
       ac = be16_to_cpu(p1[apos]);
       lc = ac;
     };
-    ac = (fsw_u16)lc;
+    ac = (fsw_u16) lc;
 
     /* get next valid character from ckey2 */
     for (lc = 0; lc == 0 && bpos < ckey2->nodeName.length; bpos++) {
       bc = p2[bpos];
       lc = bc;
     };
-    bc = (fsw_u16)lc;
+    bc = (fsw_u16) lc;
 
     if (ac != bc || (ac == 0  && bc == 0))
       return ac - bc;
@@ -985,8 +985,8 @@ fsw_hfs_cmp_catkey (BTreeKey *key1, BTreeKey *key2)
 static int
 fsw_hfs_cmpi_catkey (BTreeKey *key1, BTreeKey *key2)
 {
-  HFSPlusCatalogKey *ckey1 = (HFSPlusCatalogKey*)key1;
-  HFSPlusCatalogKey *ckey2 = (HFSPlusCatalogKey*)key2;
+  HFSPlusCatalogKey *ckey1 = (HFSPlusCatalogKey*) key1;
+  HFSPlusCatalogKey *ckey2 = (HFSPlusCatalogKey*) key2;
 
   int      apos, bpos, lc;
   fsw_u16  ac, bc;
@@ -1019,14 +1019,14 @@ fsw_hfs_cmpi_catkey (BTreeKey *key1, BTreeKey *key2)
       ac = be16_to_cpu(p1[apos]);
       lc = ac ? fsw_to_lower(ac) : 0;
     };
-    ac = (fsw_u16)lc;
+    ac = (fsw_u16) lc;
 
     /* get next valid character from ckey2 */
     for (lc = 0; lc == 0 && bpos < ckey2->nodeName.length; bpos++) {
       bc = p2[bpos];
       lc = bc ? fsw_to_lower(bc) : 0;
     };
-    bc = (fsw_u16)lc;
+    bc = (fsw_u16) lc;
 
     if (ac != bc || (ac == 0  && bc == 0))
       return ac - bc;
@@ -1186,7 +1186,7 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
     file_info.name = &rec_name;
 
     catkey.parentID = dno->g.dnode_id;
-    catkey.nodeName.length = (fsw_u16)lookup_name->len;
+    catkey.nodeName.length = (fsw_u16) lookup_name->len;
 
     /* no need to allocate anything */
     if (lookup_name->type == FSW_STRING_TYPE_UTF16)
@@ -1236,17 +1236,17 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
     if (status)
         goto done;
 
-    file_key = (HFSPlusCatalogKey *)fsw_hfs_btree_rec (&vol->catalog_tree, node, ptr);
+    file_key = (HFSPlusCatalogKey *) fsw_hfs_btree_rec (&vol->catalog_tree, node, ptr);
     /* for plain HFS "-(keySize & 1)" would be needed */
-    base = (fsw_u8*)file_key + be16_to_cpu(file_key->keyLength) + 2;
-    rec_type =  be16_to_cpu(*(fsw_u16*)base);
+    base = (fsw_u8*) file_key + be16_to_cpu(file_key->keyLength) + 2;
+    rec_type =  be16_to_cpu(*(fsw_u16*) base);
 
     /** @todo: read additional info */
     switch (rec_type)
     {
         case kHFSPlusFolderRecord:
         {
-            HFSPlusCatalogFolder* info = (HFSPlusCatalogFolder*)base;
+            HFSPlusCatalogFolder* info = (HFSPlusCatalogFolder*) base;
 
             file_info.id = be32_to_cpu(info->folderID);
             file_info.type = FSW_DNODE_TYPE_DIR;
@@ -1259,7 +1259,7 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
         }
         case kHFSPlusFileRecord:
         {
-            HFSPlusCatalogFile* info = (HFSPlusCatalogFile*)base;
+            HFSPlusCatalogFile* info = (HFSPlusCatalogFile*) base;
 
             file_info.id = be32_to_cpu(info->fileID);
             file_info.type = FSW_DNODE_TYPE_FILE;

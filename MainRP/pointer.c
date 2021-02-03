@@ -277,8 +277,8 @@ EFI_STATUS pdUpdateState() {
             Status = EFI_SUCCESS;
 
 #ifdef EFI32
-            State.X = (UINTN)DivU64x64Remainder (APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
-            State.Y = (UINTN)DivU64x64Remainder (APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
+            State.X = (UINTN) DivU64x64Remainder (APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
+            State.Y = (UINTN) DivU64x64Remainder (APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
 #else
             State.X = (APointerState.CurrentX * ScreenW) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
             State.Y = (APointerState.CurrentY * ScreenH) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
@@ -300,12 +300,12 @@ EFI_STATUS pdUpdateState() {
             INT32 TargetY = 0;
 
 #ifdef EFI32
-	    TargetX = State.X + (INTN)DivS64x64Remainder (
+	    TargetX = State.X + (INTN) DivS64x64Remainder (
             SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
             SPointerProtocol[Index]->Mode->ResolutionX,
             NULL
         );
-            TargetY = State.Y + (INTN)DivS64x64Remainder (
+            TargetY = State.Y + (INTN) DivS64x64Remainder (
                 SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
                 SPointerProtocol[Index]->Mode->ResolutionY,
                 NULL
