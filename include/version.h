@@ -10,4 +10,4 @@
  *
  */
 
-#define REFINDPLUS_VERSION L"0.12.0.AQ"
+#define REFINDPLUS_VERSION L"0.12.0.AR (Pre-Release)"
