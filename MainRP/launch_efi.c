@@ -85,25 +85,59 @@
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
-static VOID WarnSecureBootError(CHAR16 *Name, BOOLEAN Verbose) {
-    if (Name == NULL)
-        Name = L"the loader";
+static VOID WarnSecureBootError(
+    CHAR16 *Name,
+    BOOLEAN Verbose
+) {
+    CHAR16 *ShowScreenStrA = NULL;
+    CHAR16 *ShowScreenStrB = NULL;
+    CHAR16 *ShowScreenStrC = NULL;
+    CHAR16 *ShowScreenStrD = NULL;
+    CHAR16 *ShowScreenStrE = NULL;
+
+    if (Name == NULL) {
+        Name = L"the Loader";
+    }
+
+    ShowScreenStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!", Name");
 
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-    Print(L"Secure Boot validation failure loading %s!\n", Name);
+    PrintUglyText (ShowScreenStrA, NEXTLINE);
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
     if (Verbose && secure_mode()) {
-        Print(L"\nThis computer is configured with Secure Boot active, but\n%s has failed validation.\n", Name);
-        Print(L"\nYou can:\n * Launch another boot loader\n");
-        Print(L" * Disable Secure Boot in your firmware\n");
-        Print(L" * Sign %s with a machine owner key (MOK)\n", Name);
-        Print(L" * Use a MOK utility (often present on the second row) to add a MOK with which\n");
-        Print(L"   %s has already been signed.\n", Name);
-        Print(L" * Use a MOK utility to register %s (\"enroll its hash\") without\n", Name);
-        Print(L"   signing it.\n");
-        Print(L"\nSee http://www.rodsbooks.com/refind/secureboot.html for more information\n");
-        PauseForKey();
+        ShowScreenStrB = PoolPrint (
+            L"This computer is configured with Secure Boot active but %s has failed validation.",
+            Name
+        );
+        PrintUglyText (ShowScreenStrB, NEXTLINE);
+        PrintUglyText (L"You can:", NEXTLINE);
+        PrintUglyText (L" * Launch another boot loader", NEXTLINE);
+        PrintUglyText (L" * Disable Secure Boot in your firmware", NEXTLINE);
+        ShowScreenStrC = PoolPrint (
+            L" * Sign %s with a machine owner key (MOK)",
+            Name
+        );
+        PrintUglyText (ShowScreenStrC, NEXTLINE);
+        ShowScreenStrD = PoolPrint (
+            L" * Use a MOK utility to add a MOK with which %s has already been signed.",
+            Name
+        );
+        PrintUglyText (ShowScreenStrD, NEXTLINE);
+        ShowScreenStrE = PoolPrint (
+            L" * Use a MOK utility to register %s ('Enroll its Hash') without signing it",
+            Name
+        );
+        PrintUglyText (ShowScreenStrE, NEXTLINE);
+        PrintUglyText (L"See http://www.rodsbooks.com/refind/secureboot.html for more information", NEXTLINE);
+
     } // if
+    PauseForKey();
+    MyFreePool (ShowScreenStrA);
+    MyFreePool (ShowScreenStrB);
+    MyFreePool (ShowScreenStrC);
+    MyFreePool (ShowScreenStrD);
+    MyFreePool (ShowScreenStrE);
 } // VOID WarnSecureBootError()
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
@@ -113,7 +147,8 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
-    UINTN           Size = sizeof (Header);
+    UINTN           Size           = sizeof (Header);
+    CHAR16          *ShowScreenStr = NULL;
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
@@ -185,7 +220,7 @@ StartEFIImage (
     }
 
     // load the image into memory
-    ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
+    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     // Some EFIs crash if attempting to load driver for invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
@@ -209,6 +244,7 @@ StartEFIImage (
             &ChildImageHandle
         );
         ReturnStatus = Status;
+
         if (secure_mode() && ShimLoaded()) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
             // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
@@ -233,15 +269,28 @@ StartEFIImage (
             );
         }
     } else {
-        Print(L"Invalid loader file!\n");
-        ReturnStatus = EFI_LOAD_ERROR;
+        SwitchToText (FALSE);
+
+        ShowScreenStr = L"Invalid Loader File:- '%s'", ImageTitle;
+
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (ShowScreenStr, NEXTLINE);
+        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        MyFreePool (ShowScreenStr);
+
+        PauseSeconds(3);
+        SwitchToGraphics();
     }
+
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
+
     SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
+        MyFreePool (ErrorInfo);
         goto bailout;
     }
 
@@ -322,7 +371,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     );
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
-    
+
     return err;
 } // EFI_STATUS RebootIntoFirmware()
 

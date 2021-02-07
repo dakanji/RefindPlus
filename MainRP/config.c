@@ -657,9 +657,8 @@ ReadConfig (
         MsgLog ("%s\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
        if (!FileExists (SelfDir, L"icons")) {
+           MyFreePool (ShowScreenStr);
            ShowScreenStr = L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode";
            PrintUglyText (ShowScreenStr, NEXTLINE);
 
@@ -667,13 +666,12 @@ ReadConfig (
            MsgLog ("%s\n", ShowScreenStr);
            #endif
 
-           MyFreePool (ShowScreenStr);
-
           GlobalConfig.TextOnly = TRUE;
        }
 
        PauseForKey();
        SwitchToGraphics();
+       MyFreePool (ShowScreenStr);
 
        return;
     }
@@ -741,9 +739,8 @@ ReadConfig (
                     MsgLog ("%s\n", ShowScreenStr);
                     #endif
 
+                    PauseForKey();
                     MyFreePool (ShowScreenStr);
-
-                   PauseForKey();
                 }
             }
         }
@@ -891,9 +888,9 @@ ReadConfig (
                #if REFIT_DEBUG > 0
                MsgLog ("%s\n", ShowScreenStr);
                #endif
-               MyFreePool (ShowScreenStr);
 
                PauseForKey();
+               MyFreePool (ShowScreenStr);
            } // if/else
         }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {

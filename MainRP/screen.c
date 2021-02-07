@@ -555,7 +555,8 @@ PrintUglyText (
             egDisplayMessage(Text, &BGColor, PositionCode);
             GraphicsScreenDirty = TRUE;
         }
-        else { // non-Mac or in text mode; a Print() statement will work
+        else {
+            // non-Mac or in text mode; a Print() statement will work
             Print(Text);
             Print(L"\n");
         } // if/else

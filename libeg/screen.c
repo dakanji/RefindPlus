@@ -283,7 +283,6 @@ egDumpGOPVideoModes (
         #endif
 
         HaltForKey();
-
         MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
@@ -436,7 +435,6 @@ GopSetModeAndReconnectTextOut (
         #endif
 
         HaltForKey();
-
         MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
@@ -487,10 +485,9 @@ egSetGOPMode (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
         SwitchToGraphics();
+        MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
     }
@@ -514,9 +511,8 @@ egSetGOPMode (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
+        MyFreePool (ShowScreenStr);
     }
     else {
         while (EFI_ERROR (Status) && i <= MaxMode) {
@@ -571,9 +567,8 @@ egSetMaxResolution (
       MsgLog ("%s\n---------------\n\n", ShowScreenStr);
       #endif
 
-      MyFreePool (ShowScreenStr);
-
       HaltForKey();
+      MyFreePool (ShowScreenStr);
 
       return EFI_UNSUPPORTED;
   }
@@ -636,9 +631,8 @@ egSetMaxResolution (
       MsgLog ("%s\n", ShowScreenStr);
       #endif
 
-      MyFreePool (ShowScreenStr);
-
       PauseForKey();
+      MyFreePool (ShowScreenStr);
 
       Status = egSetGOPMode (1);
 
@@ -1331,9 +1325,8 @@ egSetScreenSize (
         MsgLog ("%s\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         PauseForKey();
+        MyFreePool (ShowScreenStr);
 
         return FALSE;
     }
@@ -1604,10 +1597,9 @@ egSetTextMode (
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
-            MyFreePool (ShowScreenStr);
-
             PauseForKey();
             SwitchToGraphicsAndClear (TRUE);
+            MyFreePool (ShowScreenStr);
         } // if/else successful change
     } // if need to change mode
 
@@ -2083,11 +2075,10 @@ egScreenShot (
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         PauseForKey();
         SwitchToGraphics();
-
+        MyFreePool (ShowScreenStr);
+        
        goto bailout_wait;
     }
 
@@ -2123,10 +2114,9 @@ egScreenShot (
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
         SwitchToGraphics();
+        MyFreePool (ShowScreenStr);
 
         return;
     }
@@ -2149,10 +2139,9 @@ egScreenShot (
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
 
-            MyFreePool (ShowScreenStr);
-
             HaltForKey();
             SwitchToGraphics();
+            MyFreePool (ShowScreenStr);
 
             return;
         }
@@ -2178,10 +2167,9 @@ egScreenShot (
                 MsgLog ("%s\n\n", ShowScreenStr);
                 #endif
 
-                MyFreePool (ShowScreenStr);
-
                 HaltForKey();
                 SwitchToGraphics();
+                MyFreePool (ShowScreenStr);
 
                 return;
             }

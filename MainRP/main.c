@@ -1382,9 +1382,8 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 
                 PrintUglyText (ShowScreenStr, NEXTLINE);
 
-                MyFreePool (ShowScreenStr);
-
                 HaltForKey();
+                MyFreePool (ShowScreenStr);
             } // if/else
 
             MyFreePool (FileName);
@@ -1397,9 +1396,8 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
             #endif
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
-            MyFreePool (ShowScreenStr);
-
             HaltForKey();
+            MyFreePool (ShowScreenStr);
         }
     } // if
 } // VOID SetConfigFilename()

@@ -1251,10 +1251,9 @@ ScanVolume (
         MsgLog ("%s\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
         SwitchToGraphics();
+        MyFreePool (ShowScreenStr);
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
             Volume->DiskKind = DISK_KIND_OPTICAL;
