@@ -87,8 +87,6 @@ static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
-BOOLEAN egHasConsoleControl  = TRUE;
-
 STATIC
 EFI_STATUS
 EncodeAsPNG (
@@ -261,17 +259,17 @@ egDumpGOPVideoModes (
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS     Status;
-    UINT32         MaxMode;
-    UINT32         Mode;
-    UINT32         ModeLog;
-    UINT32         NumModes;
-    UINT32         ModeCount;
-    UINT32         LoopCount;
-    UINTN          SizeOfInfo;
-    CHAR16         *PixelFormatDesc;
-    BOOLEAN        OurValidGOP    = FALSE;
-    CHAR16         *ShowScreenStr = L"Unsupported EFI";
+    EFI_STATUS Status;
+    UINT32     MaxMode;
+    UINT32     Mode;
+    UINT32     ModeLog;
+    UINT32     NumModes;
+    UINT32     ModeCount;
+    UINT32     LoopCount;
+    UINTN      SizeOfInfo;
+    CHAR16     *PixelFormatDesc;
+    BOOLEAN    OurValidGOP    = FALSE;
+    CHAR16     *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
         SwitchToText (FALSE);
@@ -284,18 +282,19 @@ egDumpGOPVideoModes (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
+
+        MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
     }
+    MyFreePool (ShowScreenStr);
 
     // get dump
     MaxMode = GraphicsOutput->Mode->MaxMode;
     if (MaxMode > 0) {
         Mode = GraphicsOutput->Mode->Mode;
-        NumModes = (INT32) MaxMode + 1;
+        NumModes = (INT32)MaxMode + 1;
         if (MaxMode == 0) {
             ModeCount = NumModes;
         }
@@ -436,12 +435,13 @@ GopSetModeAndReconnectTextOut (
         MsgLog ("%s\n---------------\n\n", ShowScreenStr);
         #endif
 
-        MyFreePool (ShowScreenStr);
-
         HaltForKey();
+
+        MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
     }
+    MyFreePool (ShowScreenStr);
 
     Status = refit_call2_wrapper(
         GraphicsOutput->SetMode,
@@ -521,16 +521,16 @@ egSetGOPMode (
     else {
         while (EFI_ERROR (Status) && i <= MaxMode) {
             Mode = Mode + Next;
-            Mode = (Mode >= (INT32) MaxMode)?0:Mode;
-            Mode = (Mode < 0)?((INT32) MaxMode - 1):Mode;
-            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32) Mode, &SizeOfInfo, &Info);
+            Mode = (Mode >= (INT32)MaxMode)?0:Mode;
+            Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
+            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
             #endif
 
             if (!EFI_ERROR (Status)) {
-                Status = GopSetModeAndReconnectTextOut ((UINT32) Mode);
+                Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
 
                 if (!EFI_ERROR (Status)) {
                     egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
@@ -558,12 +558,10 @@ egSetMaxResolution (
     UINT32       MaxMode;
     UINT32       Mode;
     UINTN        SizeOfInfo;
-    CHAR16       *ShowScreenStr = NULL;
+    CHAR16       *ShowScreenStr = L"Unsupported EFI";
 
   if (GraphicsOutput == NULL) {
       SwitchToText (FALSE);
-
-      ShowScreenStr = L"Unsupported EFI";
 
       refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
       PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -579,6 +577,7 @@ egSetMaxResolution (
 
       return EFI_UNSUPPORTED;
   }
+  MyFreePool (ShowScreenStr);
 
   #if REFIT_DEBUG > 0
   MsgLog ("Set Screen Resolution:\n");
@@ -1592,9 +1591,10 @@ egSetTextMode (
                     #if REFIT_DEBUG > 0
                     MsgLog ("%s\n", ShowScreenStr);
                     #endif
+
+                    MyFreePool (ShowScreenStr);
                 }
 
-                MyFreePool (ShowScreenStr);
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
@@ -1642,15 +1642,12 @@ egScreenDescription (
         return ShowScreenStr;
     }
 
-    if (!egHasGraphics) {
-        GraphicsInfo = PoolPrint (L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
-    }
-    else {
+    if (egHasGraphics) {
         if (GraphicsOutput != NULL) {
-            GraphicsInfo = PoolPrint (L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
+            SPrint (GraphicsInfo, 255, L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
         }
         else if (UGADraw != NULL) {
-            GraphicsInfo = PoolPrint (L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
+            SPrint (GraphicsInfo, 255, L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
         }
         else {
             MyFreePool (GraphicsInfo);
@@ -1675,9 +1672,13 @@ egScreenDescription (
         }
 
         if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
-            TextInfo = PoolPrint (L"(Text Mode: %dx%d [Graphics Capable])", ConWidth, ConHeight);
+            TextInfo = AllocateZeroPool (256 * sizeof (CHAR16));
+            SPrint (TextInfo, 255, L"(Text Mode: %dx%d [Graphics Capable])", ConWidth, ConHeight);
             MergeStrings (&GraphicsInfo, TextInfo, L' ');
         }
+    }
+    else {
+        SPrint (GraphicsInfo, 255, L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
     }
 
     MyFreePool (TextInfo);
@@ -1920,7 +1921,7 @@ egDrawImageArea (
         refit_call10_wrapper(
             GraphicsOutput->Blt,
             GraphicsOutput,
-            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
             EfiBltBufferToVideo,
             AreaPosX,
             AreaPosY,
@@ -1935,7 +1936,7 @@ egDrawImageArea (
         refit_call10_wrapper(
             UGADraw->Blt,
             UGADraw,
-            (EFI_UGA_PIXEL *) Image->PixelData,
+            (EFI_UGA_PIXEL *)Image->PixelData,
             EfiUgaBltBufferToVideo,
             AreaPosX,
             AreaPosY,
@@ -2014,7 +2015,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
        refit_call10_wrapper(
            GraphicsOutput->Blt,
            GraphicsOutput,
-           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
+           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
            EfiBltVideoToBltBuffer,
            XPos,
            YPos,
@@ -2029,7 +2030,7 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
        refit_call10_wrapper(
            UGADraw->Blt,
            UGADraw,
-           (EFI_UGA_PIXEL *) Image->PixelData,
+           (EFI_UGA_PIXEL *)Image->PixelData,
            EfiUgaVideoToBltBuffer,
            XPos,
            YPos,
@@ -2204,8 +2205,6 @@ egScreenShot (
     #if REFIT_DEBUG > 0
     MsgLog ("    * Screenshot Taken and Saved:- '%s'\n\n", FileName);
     #endif
-
-    MyFreePool (FileName);
 
     return;
 

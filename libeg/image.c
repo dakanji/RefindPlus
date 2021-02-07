@@ -85,7 +85,6 @@
 // Basic image handling
 //
 
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCreateImage (
     IN UINTN    Width,
     IN UINTN    Height,
@@ -104,14 +103,12 @@ EG_IMAGE * egCreateImage (
         return NULL;
     }
 
-    NewImage->Width    = Width;
-    NewImage->Height   = Height;
+    NewImage->Width = Width;
+    NewImage->Height = Height;
     NewImage->HasAlpha = HasAlpha;
-
     return NewImage;
 }
 
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCreateFilledImage (
     IN UINTN     Width,
     IN UINTN     Height,
@@ -130,7 +127,6 @@ EG_IMAGE * egCreateFilledImage (
     return NewImage;
 }
 
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCopyImage (
     IN EG_IMAGE *Image
 ) {
@@ -150,7 +146,6 @@ EG_IMAGE * egCopyImage (
 
 // Returns a smaller image composed of the specified crop area from the larger area.
 // If the specified area is larger than is in the original, returns NULL.
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egCropImage (
     IN EG_IMAGE  *Image,
     IN UINTN     StartX,
@@ -175,7 +170,7 @@ EG_IMAGE * egCropImage (
             NewImage->PixelData[y * NewImage->Width + x] = Image->PixelData[(y + StartY) * Image->Width + x + StartX];
         }
     }
-
+    
     return NewImage;
 } // EG_IMAGE * egCropImage()
 
@@ -269,7 +264,6 @@ egFreeImage (
 // Basic file operations
 //
 
-// Calling function is responsible for freeing allocated memory.
 EFI_STATUS
 egLoadFile (
     IN EFI_FILE  *BaseDir,
@@ -307,7 +301,7 @@ egLoadFile (
 
     MyFreePool (FileInfo);
 
-    BufferSize = (UINTN) ReadSize;   // was limited to 1 GB above, so this is safe
+    BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
         refit_call1_wrapper(FileHandle->Close, FileHandle);
@@ -490,7 +484,6 @@ EG_IMAGE * egLoadIcon (
 // SubdirName is "myicons" and BaseName is "os_linux", this function will return
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egLoadIconAnyType (
     IN EFI_FILE  *BaseDir,
     IN CHAR16    *SubdirName,
@@ -499,19 +492,13 @@ EG_IMAGE * egLoadIconAnyType (
 ) {
     EG_IMAGE  *Image = NULL;
     CHAR16    *Extension;
-    CHAR16    *FileName;
+    CHAR16    FileName[256];
     UINTN     i = 0;
 
-    while ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) {
-        if (Image != NULL) {
-            MyFreePool (Extension);
-            break;
-        }
-
-        FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
-        Image    = egLoadIcon (BaseDir, FileName, IconSize);
+    while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
+        SPrint (FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
+        Image = egLoadIcon (BaseDir, FileName, IconSize);
         MyFreePool (Extension);
-        MyFreePool (FileName);
     } // while()
 
     return Image;
@@ -525,7 +512,6 @@ EG_IMAGE * egLoadIconAnyType (
 // myicons/os_linux.png, icons/os_linux.icns, or icons/os_linux.png, in that
 // order of preference. Returns NULL if no such icon can be found. All file
 // references are relative to SelfDir.
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egFindIcon (
     IN CHAR16 *BaseName,
     IN UINTN  IconSize
@@ -543,7 +529,6 @@ EG_IMAGE * egFindIcon (
     return Image;
 } // EG_IMAGE * egFindIcon()
 
-// Calling function is responsible for freeing allocated memory.
 EG_IMAGE * egPrepareEmbeddedImage (
     IN EG_EMBEDDED_IMAGE  *EmbeddedImage,
     IN BOOLEAN            WantAlpha
@@ -758,16 +743,16 @@ egRawCompose (
         for (x = 0; x < Width; x++) {
             Alpha = TopPtr->a;
             RevAlpha = 255 - Alpha;
-            Temp = (UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha + 0x80;
+            Temp = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
             CompPtr->b = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN) CompPtr->g * RevAlpha + (UINTN) TopPtr->g * Alpha + 0x80;
+            Temp = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
             CompPtr->g = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN) CompPtr->r * RevAlpha + (UINTN) TopPtr->r * Alpha + 0x80;
+            Temp = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
             CompPtr->r = (Temp + (Temp >> 8)) >> 8;
             /*
-            CompPtr->b = ((UINTN) CompPtr->b * RevAlpha + (UINTN) TopPtr->b * Alpha) / 255;
-            CompPtr->g = ((UINTN) CompPtr->g * RevAlpha + (UINTN) TopPtr->g * Alpha) / 255;
-            CompPtr->r = ((UINTN) CompPtr->r * RevAlpha + (UINTN) TopPtr->r * Alpha) / 255;
+            CompPtr->b = ((UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha) / 255;
+            CompPtr->g = ((UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha) / 255;
+            CompPtr->r = ((UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha) / 255;
             */
             TopPtr++, CompPtr++;
         }

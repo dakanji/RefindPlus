@@ -112,7 +112,7 @@ security_policy_authentication (
    if (DevicePathConst == NULL) {
       return EFI_INVALID_PARAMETER;
    } else {
-      DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *) DevicePathConst);
+      DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
    }
 
    Status = refit_call3_wrapper(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
@@ -122,7 +122,7 @@ security_policy_authentication (
    DevPathStr = DevicePathToStr(DevPath);
 
    Status = simple_file_open_by_handle(h, DevPathStr, &f, EFI_FILE_MODE_READ);
-   MyFreePool(DevPathStr);
+   MyFreePool (DevPathStr);
    if (Status != EFI_SUCCESS)
       goto out;
 
@@ -140,7 +140,7 @@ security_policy_authentication (
    FreePool(FileBuffer);
 
  out:
-   MyFreePool(OrigDevPath);
+   MyFreePool (OrigDevPath);
    return Status;
 } // EFI_STATUS security_policy_authentication()
 

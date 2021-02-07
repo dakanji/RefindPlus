@@ -85,7 +85,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 {
 	void *const tdPtr = dt + 1; /* because *dt is unsigned, 32-bits aligned on 32-bits */
 	FSE_DECODE_TYPE *const tableDecode = (FSE_DECODE_TYPE *)(tdPtr);
-	U16 *symbolNext = (U16 *) workspace;
+	U16 *symbolNext = (U16 *)workspace;
 
 	U32 const maxSV1 = maxSymbolValue + 1;
 	U32 const tableSize = 1 << tableLog;
@@ -102,14 +102,14 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 	/* Init, lay down lowprob symbols */
 	{
 		FSE_DTableHeader DTableH;
-		DTableH.tableLog = (U16) tableLog;
+		DTableH.tableLog = (U16)tableLog;
 		DTableH.fastMode = 1;
 		{
 			S16 const largeLimit = (S16)(1 << (tableLog - 1));
 			U32 s;
 			for (s = 0; s < maxSV1; s++) {
 				if (normalizedCounter[s] == -1) {
-					tableDecode[highThreshold--].symbol = (FSE_FUNCTION_TYPE) s;
+					tableDecode[highThreshold--].symbol = (FSE_FUNCTION_TYPE)s;
 					symbolNext[s] = 1;
 				} else {
 					if (normalizedCounter[s] >= largeLimit)
@@ -129,7 +129,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 		for (s = 0; s < maxSV1; s++) {
 			int i;
 			for (i = 0; i < normalizedCounter[s]; i++) {
-				tableDecode[position].symbol = (FSE_FUNCTION_TYPE) s;
+				tableDecode[position].symbol = (FSE_FUNCTION_TYPE)s;
 				position = (position + step) & tableMask;
 				while (position > highThreshold)
 					position = (position + step) & tableMask; /* lowprob area */
@@ -145,7 +145,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 		for (u = 0; u < tableSize; u++) {
 			FSE_FUNCTION_TYPE const symbol = (FSE_FUNCTION_TYPE)(tableDecode[u].symbol);
 			U16 nextState = symbolNext[symbol]++;
-			tableDecode[u].nbBits = (BYTE)(tableLog - BIT_highbit32((U32) nextState));
+			tableDecode[u].nbBits = (BYTE)(tableLog - BIT_highbit32((U32)nextState));
 			tableDecode[u].newState = (U16)((nextState << tableDecode[u].nbBits) - tableSize);
 		}
 	}
@@ -159,9 +159,9 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 size_t FSE_buildDTable_rle(FSE_DTable *dt, BYTE symbolValue)
 {
 	void *ptr = dt;
-	FSE_DTableHeader *const DTableH = (FSE_DTableHeader *) ptr;
+	FSE_DTableHeader *const DTableH = (FSE_DTableHeader *)ptr;
 	void *dPtr = dt + 1;
-	FSE_decode_t *const cell = (FSE_decode_t *) dPtr;
+	FSE_decode_t *const cell = (FSE_decode_t *)dPtr;
 
 	DTableH->tableLog = 0;
 	DTableH->fastMode = 0;
@@ -176,7 +176,7 @@ size_t FSE_buildDTable_rle(FSE_DTable *dt, BYTE symbolValue)
 FORCE_INLINE size_t FSE_decompress_usingDTable_generic(void *dst, size_t maxDstSize, const void *cSrc, size_t cSrcSize, const FSE_DTable *dt,
 						       const unsigned fast)
 {
-	BYTE *const ostart = (BYTE *) dst;
+	BYTE *const ostart = (BYTE *)dst;
 	BYTE *op = ostart;
 	BYTE *const omax = op + maxDstSize;
 	BYTE *const olimit = omax - 3;
@@ -244,7 +244,7 @@ FORCE_INLINE size_t FSE_decompress_usingDTable_generic(void *dst, size_t maxDstS
 size_t FSE_decompress_usingDTable(void *dst, size_t originalSize, const void *cSrc, size_t cSrcSize, const FSE_DTable *dt)
 {
 	const void *ptr = dt;
-	const FSE_DTableHeader *DTableH = (const FSE_DTableHeader *) ptr;
+	const FSE_DTableHeader *DTableH = (const FSE_DTableHeader *)ptr;
 	const U32 fastMode = DTableH->fastMode;
 
 	/* select fast mode (static) */
@@ -255,7 +255,7 @@ size_t FSE_decompress_usingDTable(void *dst, size_t originalSize, const void *cS
 
 size_t FSE_decompress_wksp(void *dst, size_t dstCapacity, const void *cSrc, size_t cSrcSize, unsigned maxLog, void *workspace, size_t workspaceSize)
 {
-	const BYTE *const istart = (const BYTE *) cSrc;
+	const BYTE *const istart = (const BYTE *)cSrc;
 	const BYTE *ip = istart;
 	unsigned tableLog;
 	unsigned maxSymbolValue = FSE_MAX_SYMBOL_VALUE;
@@ -267,14 +267,14 @@ size_t FSE_decompress_wksp(void *dst, size_t dstCapacity, const void *cSrc, size
 
 	FSE_STATIC_ASSERT(sizeof (FSE_DTable) == sizeof (U32));
 
-	dt = (FSE_DTable *)((U32 *) workspace + spaceUsed32);
+	dt = (FSE_DTable *)((U32 *)workspace + spaceUsed32);
 	spaceUsed32 += FSE_DTABLE_SIZE_U32(maxLog);
-	counting = (short *)((U32 *) workspace + spaceUsed32);
+	counting = (short *)((U32 *)workspace + spaceUsed32);
 	spaceUsed32 += UP_U32(sizeof (short) * (FSE_MAX_SYMBOL_VALUE + 1));
 
 	if ((spaceUsed32 << 2) > workspaceSize)
 		return ERROR(tableLog_tooLarge);
-	workspace = (U32 *) workspace + spaceUsed32;
+	workspace = (U32 *)workspace + spaceUsed32;
 	workspaceSize -= (spaceUsed32 << 2);
 
 	/* normal FSE decoding mode */
@@ -298,7 +298,7 @@ size_t FSE_decompress_wksp(void *dst, size_t dstCapacity, const void *cSrc, size
 ****************************************************************/
 size_t FSE_readNCount(short *normalizedCounter, unsigned *maxSVPtr, unsigned *tableLogPtr, const void *headerBuffer, size_t hbSize)
 {
-	const BYTE *const istart = (const BYTE *) headerBuffer;
+	const BYTE *const istart = (const BYTE *)headerBuffer;
 	const BYTE *const iend = istart + hbSize;
 	const BYTE *ip = istart;
 	int nbBits;
@@ -358,7 +358,7 @@ size_t FSE_readNCount(short *normalizedCounter, unsigned *maxSVPtr, unsigned *ta
 			int const max = (2 * threshold - 1) - remaining;
 			int count;
 
-			if ((bitStream & (threshold - 1)) < (U32) max) {
+			if ((bitStream & (threshold - 1)) < (U32)max) {
 				count = bitStream & (threshold - 1);
 				bitCount += nbBits - 1;
 			} else {
@@ -370,7 +370,7 @@ size_t FSE_readNCount(short *normalizedCounter, unsigned *maxSVPtr, unsigned *ta
 
 			count--;				 /* extra accuracy */
 			remaining -= count < 0 ? -count : count; /* -1 means +1 */
-			normalizedCounter[charnum++] = (short) count;
+			normalizedCounter[charnum++] = (short)count;
 			previous0 = !count;
 			while (remaining < threshold) {
 				nbBits--;

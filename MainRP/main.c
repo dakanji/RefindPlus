@@ -776,8 +776,7 @@ IsValidTool (
             MyFreePool (DontScanThis);
         } // while
 
-    }
-    else {
+    } else {
         retval = FALSE;
     }
 
@@ -905,30 +904,26 @@ preBootKicker (
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load BootKicker\n\n");
                 #endif
-                MyFreePool (FilePath);
 
                 // Run BootKicker
                 StartTool (ourLoaderEntry);
-
                 #if REFIT_DEBUG > 0
                 MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
-            }
-            else {
+            } else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
-                MyFreePool (FilePath);
             }
-        }
-        else {
+
+            MyFreePool (FilePath);
+        } else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    }
-    else {
+    } else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1051,29 +1046,26 @@ preCleanNvram (
                 MsgLog ("    ** Success: Found %s\n", FilePath);
                 MsgLog ("  - Load CleanNvram\n\n");
                 #endif
-                MyFreePool (FilePath);
 
                 ranCleanNvram = TRUE;
 
                 // Run CleanNvram
                 StartTool (ourLoaderEntry);
 
-            }
-            else {
+            } else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
-                MyFreePool (FilePath);
             }
-        }
-        else {
+
+            MyFreePool (FilePath);
+        } else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    }
-    else {
+    } else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1216,12 +1208,10 @@ VOID RescanAll (
     BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Rescanning\n\n");
-    #endif
-
-    FreeList ((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
+    FreeList (
+        (VOID ***) &(MainMenu.Entries),
+        &MainMenu.EntryCount
+    );
     MainMenu.Entries     = NULL;
     MainMenu.EntryCount  = 0;
 
@@ -1272,13 +1262,11 @@ STATIC BOOLEAN SecureBootSetup (
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
 
-
     if (secure_mode() && ShimLoaded()) {
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
-        }
-        else {
+        } else {
             ShowScreenStr = L"Failed to Install MOK Secure Boot Extensions";
 
             #if REFIT_DEBUG > 0
@@ -1314,7 +1302,7 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
             ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Shutdown in 9 Seconds";
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n---------------\n\n", ShowScreenStr);
+            MsgLog ("%s\n---------------\n\n", ShowScreenStr);
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -1329,7 +1317,8 @@ STATIC BOOLEAN SecureBootUninstall (VOID) {
                 gRT->ResetSystem,
                 EfiResetShutdown,
                 EFI_SUCCESS,
-                0, NULL
+                0,
+                NULL
             );
         }
     }
@@ -1381,13 +1370,18 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
                 MsgLog ("** WARN: %s\n", ShowScreenStr);
                 #endif
                 PrintUglyText (ShowScreenStr, NEXTLINE);
+
                 MyFreePool (ShowScreenStr);
 
                 ShowScreenStr = L"Try Default:- 'config.conf / refind.conf'";
+                PrintUglyText (ShowScreenStr, NEXTLINE);
+
                 #if REFIT_DEBUG > 0
                 MsgLog ("         %s\n\n", ShowScreenStr);
                 #endif
+
                 PrintUglyText (ShowScreenStr, NEXTLINE);
+
                 MyFreePool (ShowScreenStr);
 
                 HaltForKey();
@@ -1397,10 +1391,12 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
         } // if
         else {
             ShowScreenStr = L"Invalid Load Option";
+
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: %s\n", ShowScreenStr);
             #endif
             PrintUglyText (ShowScreenStr, NEXTLINE);
+
             MyFreePool (ShowScreenStr);
 
             HaltForKey();
@@ -1442,7 +1438,6 @@ STATIC VOID AdjustDefaultSelection() {
         } // if
         MyFreePool (Element);
     } // while
-
     MyFreePool (GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
@@ -1505,20 +1500,12 @@ efi_main (
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
     #endif
 
-    // Determine Legacy Boot Type
+    // read configuration
+    CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
-
-    // Set Default Scan Options
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC ||
-        GlobalConfig.LegacyType == LEGACY_TYPE_UEFI
-    ) {
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
         CopyMem (GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
     }
-    else {
-        CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
-    }
-
-    // read configuration
     SetConfigFilename (ImageHandle);
     MokProtocol = SecureBootSetup();
 
@@ -1545,7 +1532,6 @@ efi_main (
     }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
-    LoadDrivers();
 
     if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();
@@ -1561,10 +1547,11 @@ efi_main (
         #endif
     }
 
+    LoadDrivers();
+
     #if REFIT_DEBUG > 0
     MsgLog ("Scan Volumes...\n");
     #endif
-
     ScanVolumes();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
@@ -1639,8 +1626,7 @@ efi_main (
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Second\n", i);
            #endif
-       }
-       else {
+       } else {
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Seconds\n", i);
            #endif
@@ -1743,6 +1729,7 @@ efi_main (
         }
 
         switch (ChosenEntry->Tag) {
+
             case TAG_NVRAMCLEAN:    // Clean NVRAM
 
                 #if REFIT_DEBUG > 0

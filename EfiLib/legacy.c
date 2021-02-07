@@ -989,7 +989,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     // Skip Non-Legacy boot option
     //
     if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, &BbsIndex)) {
-      if (BootOptionVar != NULL) {
+      if (BootOptionVar!= NULL) {
         FreePool (BootOptionVar);
       }
       Index++;

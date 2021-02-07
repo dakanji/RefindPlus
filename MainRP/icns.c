@@ -82,30 +82,26 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }
 };
 
-static EG_PIXEL BlackPixel  = { 0x00, 0x00, 0x00, 0 };
-//static EG_PIXEL YellowPixel = { 0x00, 0xff, 0xff, 0 };
-
-EG_IMAGE * BuiltinIcon (
-    IN UINTN Id
-) {
+EG_IMAGE * BuiltinIcon(IN UINTN Id)
+{
     if (Id >= BUILTIN_ICON_COUNT) {
         return NULL;
     }
 
     if (BuiltinIconTable[Id].Image == NULL) {
-       BuiltinIconTable[Id].Image = egFindIcon (
+       BuiltinIconTable[Id].Image = egFindIcon(
            BuiltinIconTable[Id].FileName,
            GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
        );
        if (BuiltinIconTable[Id].Image == NULL) {
            if (Id == BUILTIN_ICON_TOOL_BOOTKICKER) {
-               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_bootscreen, FALSE);
+               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage(&egemb_tool_bootscreen, FALSE);
            }
            else if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
-               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE);
+               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage(&egemb_tool_clean_nvram, FALSE);
            }
            if (BuiltinIconTable[Id].Image == NULL) {
-               BuiltinIconTable[Id].Image = DummyImage (GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+               BuiltinIconTable[Id].Image = DummyImage(GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
            }
        }
     } // if
@@ -121,70 +117,56 @@ EG_IMAGE * BuiltinIcon (
 // Searches for icons with extensions in the ICON_EXTENSIONS list (via
 // egFindIcon()).
 // Returns image data. On failure, returns an ugly "dummy" icon.
-EG_IMAGE * LoadOSIcon (
-    IN CHAR16 *OSIconName OPTIONAL,
-    IN CHAR16 *FallbackIconName,
-    BOOLEAN BootLogo
-) {
+EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconName, BOOLEAN BootLogo)
+{
     EG_IMAGE        *Image = NULL;
-    CHAR16          *CutoutName, *BaseName;
+    CHAR16          *CutoutName, BaseName[256];
     UINTN           Index = 0;
 
-    if (GlobalConfig.TextOnly) {
-        // skip loading if not used anyway
+    if (GlobalConfig.TextOnly)      // skip loading if it's not used anyway
         return NULL;
-    }
 
     // First, try to find an icon from the OSIconName list....
-    while ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL) {
-        if (Image != NULL) {
-            MyFreePool (CutoutName);
-            break;
-        }
-
-        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-        Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-        MyFreePool (CutoutName);
-        MyFreePool (BaseName);
+    while (((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL) && (Image == NULL)) {
+       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       MyFreePool (CutoutName);
     }
 
     // If that fails, try again using the FallbackIconName....
     if (Image == NULL) {
-        MyFreePool (BaseName);
-        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
-        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
-        MyFreePool (BaseName);
-        BaseName = PoolPrint (L"os_%s", FallbackIconName);
-        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       SPrint(BaseName, 255, L"os_%s", FallbackIconName);
+       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
-
-    MyFreePool (BaseName);
 
     // If all of these fail, return the dummy image....
-    if (Image == NULL) {
-        Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-    }
+    if (Image == NULL)
+       Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
 
     return Image;
 } /* EG_IMAGE * LoadOSIcon() */
 
 
-EG_IMAGE * DummyImage (
-    IN UINTN PixelSize
-) {
+static EG_PIXEL BlackPixel  = { 0x00, 0x00, 0x00, 0 };
+//static EG_PIXEL YellowPixel = { 0x00, 0xff, 0xff, 0 };
+
+EG_IMAGE * DummyImage(IN UINTN PixelSize)
+{
     EG_IMAGE        *Image;
     UINTN           x, y, LineOffset;
     CHAR8           *Ptr, *YPtr;
 
-    Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BlackPixel);
+    Image = egCreateFilledImage(PixelSize, PixelSize, TRUE, &BlackPixel);
 
     LineOffset = PixelSize * 4;
 
-    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+    YPtr = (CHAR8 *)Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
     for (y = 0; y < 32; y++) {
         Ptr = YPtr;
         for (x = 0; x < 32; x++) {

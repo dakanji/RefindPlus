@@ -374,7 +374,7 @@ FakeCreateEventEx (
 
     IEvent->NotifyTpl      = NotifyTpl;
     IEvent->NotifyFunction = NotifyFunction;
-    IEvent->NotifyContext  = (VOID *) NotifyContext;
+    IEvent->NotifyContext  = (VOID *)NotifyContext;
 
     if (EventGroup != NULL) {
         CopyGuid (&IEvent->EventGroup, EventGroup);

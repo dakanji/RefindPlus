@@ -458,7 +458,7 @@ struct item_head {
 /*
 static inline int uniqueness2type(__u32 uniqueness)
 {
-	switch ((int) uniqueness) {
+	switch ((int)uniqueness) {
 	case V1_SD_UNIQUENESS:
 		return TYPE_STAT_DATA;
 	case V1_INDIRECT_UNIQUENESS:
@@ -1098,7 +1098,7 @@ struct path var = {.path_length = ILLEGAL_PATH_ELEMENT_OFFSET, .reada = 0,}
 #define get_last_bh(path) PATH_PLAST_BUFFER(path)
 #define get_ih(path) PATH_PITEM_HEAD(path)
 #define get_item_pos(path) PATH_LAST_POSITION(path)
-#define get_item(path) ((void *) B_N_PITEM(PATH_PLAST_BUFFER(path), PATH_LAST_POSITION (path)))
+#define get_item(path) ((void *)B_N_PITEM(PATH_PLAST_BUFFER(path), PATH_LAST_POSITION (path)))
 #define item_moved(ih,path) comp_items(ih, path)
 #define path_changed(ih,path) comp_items (ih, path)
 
@@ -1409,8 +1409,8 @@ extern struct item_operations *item_ops[TYPE_ANY + 1];
 /* indirect items consist of entries which contain blocknrs, pos
    indicates which entry, and B_I_POS_UNFM_POINTER resolves to the
    blocknr contained by the entry pos points to */
-#define B_I_POS_UNFM_POINTER(bh,ih,pos) le32_to_cpu(*(((unp_t *) B_I_PITEM(bh,ih)) + (pos)))
-#define PUT_B_I_POS_UNFM_POINTER(bh,ih,pos, val) do {*(((unp_t *) B_I_PITEM(bh,ih)) + (pos)) = cpu_to_le32(val); } while (0)
+#define B_I_POS_UNFM_POINTER(bh,ih,pos) le32_to_cpu(*(((unp_t *)B_I_PITEM(bh,ih)) + (pos)))
+#define PUT_B_I_POS_UNFM_POINTER(bh,ih,pos, val) do {*(((unp_t *)B_I_PITEM(bh,ih)) + (pos)) = cpu_to_le32(val); } while (0)
 
 struct reiserfs_iget_args {
 	__u32 objectid;
@@ -1507,7 +1507,7 @@ struct reiserfs_journal_header {
 #define JBH_HASH_MASK 8191
 
 #define _jhashfn(sb,block)	\
-	(((unsigned long) sb>>L1_CACHE_SHIFT) ^ \
+	(((unsigned long)sb>>L1_CACHE_SHIFT) ^ \
 	 (((block)<<(JBH_HASH_SHIFT - 6)) ^ ((block) >> 13) ^ ((block) << (JBH_HASH_SHIFT - 12))))
 #define journal_hash(t,sb,block) ((t)[_jhashfn((sb),(block)) & JBH_HASH_MASK])
 

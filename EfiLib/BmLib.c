@@ -137,14 +137,14 @@ EfiLibFileInfo (
   EFI_STATUS    Status;
   EFI_FILE_INFO *FileInfo = NULL;
   UINTN         Size = 0;
-  
+
   Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
   if (Status == EFI_BUFFER_TOO_SMALL) {
     FileInfo = AllocateZeroPool (Size);
     Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
   }
-  
-  return EFI_ERROR(Status)?NULL:FileInfo;
+
+  return EFI_ERROR (Status) ? NULL : FileInfo;
 }
 
 EFI_FILE_SYSTEM_INFO *
@@ -162,7 +162,7 @@ EfiLibFileSystemInfo (
     Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
   }
 
-  return EFI_ERROR(Status)?NULL:FileSystemInfo;
+  return EFI_ERROR (Status) ? NULL : FileSystemInfo;
 }
 
 /**

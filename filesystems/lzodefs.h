@@ -1596,7 +1596,7 @@ extern "C" {
 #  elif (LZO_CC_MSC)
 #    define LZO_UNUSED_FUNC(func)   ((void) &func)
 #  elif (LZO_CC_KEILC || LZO_CC_PELLESC)
-#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int) func)>0)];}
+#    define LZO_UNUSED_FUNC(func)   {extern int __lzo_unused[1-2*!(sizeof ((int)func)>0)];}
 #  else
 #    define LZO_UNUSED_FUNC(func)   ((void) func)
 #  endif

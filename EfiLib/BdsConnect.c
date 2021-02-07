@@ -21,6 +21,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 BOOLEAN FoundGOP = FALSE;
 BOOLEAN ReLoaded = FALSE;
+BOOLEAN egHasConsoleControl;
 
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
@@ -229,6 +230,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     UINTN  DevicePCI;
     UINTN  FunctionPCI;
     UINTN  HexIndex = 0;
+    UINTN  m;
+
+    egHasConsoleControl = FALSE;
 
 
     #if REFIT_DEBUG > 0
@@ -382,7 +386,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         );
 
                         if (!EFI_ERROR (XStatus)) {
-                            UINTN m;
                             for (m = 0; m < GOPCount; m++) {
                                 if (GOPArray[m] != gST->ConsoleOutHandle) {
                                     GopDevicePathStr = ConvertDevicePathToText (
@@ -395,8 +398,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                     break;
                                 }
                             }
-                            MyFreePool (GOPArray);
                         }
+
+                        MyFreePool (GOPArray);
                     }
 
                     if (FoundGOP) {
@@ -414,7 +418,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                         }
                         #endif
-                        
+
                         MyFreePool (DevicePathStr);
                     }
                     // Temp from Clover END
@@ -427,28 +431,40 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         DeviceData = L"";
                     }
 
-                    #if REFIT_DEBUG > 0
                     if (Parent) {
+                        #if REFIT_DEBUG > 0
                         MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
+                        #endif
                     }
                     else if (!EFI_ERROR (XStatus)) {
+                        egHasConsoleControl = TRUE;
+
+                        #if REFIT_DEBUG > 0
                         MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
+                        #endif
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
+                            #if REFIT_DEBUG > 0
                             MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                            #endif
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
+                            #if REFIT_DEBUG > 0
                             MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                            #endif
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
+                            #if REFIT_DEBUG > 0
                             MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                            #endif
                         }
                         else {
+                            #if REFIT_DEBUG > 0
                             MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                            #endif
                         }
                     } // if Parent
-                    #endif
 
                 } // if !Device
             } // if EFI_ERROR (XStatus)

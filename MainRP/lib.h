@@ -120,7 +120,7 @@ VOID ScanVolumes(VOID);
 VOID ReinitVolumes(VOID);
 VOID UninitRefitLib(VOID);
 VOID SetVolumeIcons(VOID);
-VOID MyFreePool(IN OUT VOID *Pointer);
+VOID MyFreePool (IN OUT VOID *Pointer);
 VOID EraseUint32List(UINT32_LIST **TheList);
 VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName);

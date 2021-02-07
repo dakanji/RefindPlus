@@ -31,7 +31,7 @@
 #ifndef CONST
 #define CONST
 #endif
-#define ASSERT_EFI_ERROR(status)  ASSERT(!EFI_ERROR(status))
+#define ASSERT_EFI_ERROR (Status)  ASSERT(!EFI_ERROR (Status))
 
 CHAR8 *
 UnicodeStrToAsciiStr (

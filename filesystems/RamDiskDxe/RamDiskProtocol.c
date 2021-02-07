@@ -198,6 +198,10 @@ RamDiskPublishNfit (
          MultU64x32 (MemoryMapEntry->NumberOfPages, EFI_PAGE_SIZE)
          >= PrivateData->StartingAddr + PrivateData->Size)) {
       MemoryFound = TRUE;
+      DEBUG ((
+        EFI_D_INFO,
+        "RamDiskPublishNfit: RAM disk with reserved meomry type, will publish to NFIT.\n"
+        ));
       break;
     }
     MemoryMapEntry = NEXT_MEMORY_DESCRIPTOR (MemoryMapEntry, DescriptorSize);
@@ -226,7 +230,7 @@ RamDiskPublishNfit (
     if (!EFI_ERROR (Status)) {
       TableIndex++;
 
-      if (((EFI_ACPI_SDT_HEADER *) TableHeader)->Signature ==
+      if (((EFI_ACPI_SDT_HEADER *)TableHeader)->Signature ==
           EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE_STRUCTURE_SIGNATURE) {
         break;
       }
@@ -237,7 +241,12 @@ RamDiskPublishNfit (
     //
     // A NFIT is already in the ACPI table.
     //
-    NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *) TableHeader;
+    DEBUG ((
+      EFI_D_INFO,
+      "RamDiskPublishNfit: A NFIT is already exist in the ACPI Table.\n"
+      ));
+
+    NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *)TableHeader;
     NfitLen    = NfitHeader->Length + sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
     Nfit       = AllocateZeroPool (NfitLen);
     if (Nfit == NULL) {
@@ -248,7 +257,7 @@ RamDiskPublishNfit (
     //
     // Update the NFIT head pointer.
     //
-    NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *) Nfit;
+    NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *)Nfit;
 
     //
     // Uninstall the origin NFIT from the ACPI table.
@@ -269,7 +278,7 @@ RamDiskPublishNfit (
     // of the origin NFIT.
     //
     SpaRange   = (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE *)
-                 ((UINT8 *) Nfit + NfitHeader->Length);
+                 ((UINT8 *)Nfit + NfitHeader->Length);
 
     //
     // Update the length field of the NFIT
@@ -295,6 +304,11 @@ RamDiskPublishNfit (
     //
     // No NFIT is in the ACPI table, we will create one here.
     //
+    DEBUG ((
+      EFI_D_INFO,
+      "RamDiskPublishNfit: No NFIT is in the ACPI Table, will create one.\n"
+      ));
+
     NfitLen = sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE) +
               sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
     Nfit    = AllocateZeroPool (NfitLen);
@@ -303,9 +317,9 @@ RamDiskPublishNfit (
     }
 
     SpaRange = (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE *)
-               ((UINT8 *) Nfit + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE));
+               ((UINT8 *)Nfit + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE));
 
-    NfitHeader                  = (EFI_ACPI_DESCRIPTION_HEADER *) Nfit;
+    NfitHeader                  = (EFI_ACPI_DESCRIPTION_HEADER *)Nfit;
     NfitHeader->Signature       = EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE_STRUCTURE_SIGNATURE;
     NfitHeader->Length          = NfitLen;
     NfitHeader->Revision        = EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE_REVISION;
@@ -327,7 +341,7 @@ RamDiskPublishNfit (
   SpaRange->SystemPhysicalAddressRangeLength = PrivateData->Size;
   CopyGuid (&SpaRange->AddressRangeTypeGUID, &PrivateData->TypeGuid);
 
-  Checksum             = CalculateCheckSum8((UINT8 *) Nfit, NfitHeader->Length);
+  Checksum             = CalculateCheckSum8((UINT8 *)Nfit, NfitHeader->Length);
   NfitHeader->Checksum = Checksum;
 
   //
@@ -403,7 +417,7 @@ RamDiskUnpublishNfit (
     if (!EFI_ERROR (Status)) {
       TableIndex++;
 
-      if (((EFI_ACPI_SDT_HEADER *) TableHeader)->Signature ==
+      if (((EFI_ACPI_SDT_HEADER *)TableHeader)->Signature ==
           EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE_STRUCTURE_SIGNATURE) {
         break;
       }
@@ -417,7 +431,7 @@ RamDiskUnpublishNfit (
     return EFI_NOT_FOUND;
   }
 
-  NewNfitLen    = ((EFI_ACPI_DESCRIPTION_HEADER *) TableHeader)->Length -
+  NewNfitLen    = ((EFI_ACPI_DESCRIPTION_HEADER *)TableHeader)->Length -
                   sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
 
   //
@@ -466,21 +480,21 @@ RamDiskUnpublishNfit (
   // Get a copy of the old NFIT header content.
   //
   CopyMem (NewNfit, TableHeader, sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE));
-  NewNfitHeader           = (EFI_ACPI_DESCRIPTION_HEADER *) NewNfit;
+  NewNfitHeader           = (EFI_ACPI_DESCRIPTION_HEADER *)NewNfit;
   NewNfitHeader->Length   = NewNfitLen;
   NewNfitHeader->Checksum = 0;
 
   //
   // Copy the content of required NFIT structures.
   //
-  NewNfitPtr       = (UINT8 *) NewNfit + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE);
+  NewNfitPtr       = (UINT8 *)NewNfit + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE);
   RemainLen        = NewNfitLen - sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE);
   NfitStructHeader = (EFI_ACPI_6_1_NFIT_STRUCTURE_HEADER *)
-                     ((UINT8 *) TableHeader + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE));
+                     ((UINT8 *)TableHeader + sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE));
   while (RemainLen > 0) {
     if ((NfitStructHeader->Type == EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE_TYPE) &&
         (NfitStructHeader->Length == sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE))) {
-      SpaRange = (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE *) NfitStructHeader;
+      SpaRange = (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE *)NfitStructHeader;
 
       if ((SpaRange->SystemPhysicalAddressRangeBase == PrivateData->StartingAddr) &&
           (SpaRange->SystemPhysicalAddressRangeLength == PrivateData->Size) &&
@@ -490,7 +504,7 @@ RamDiskUnpublishNfit (
         // from NFIT.
         //
         NfitStructHeader = (EFI_ACPI_6_1_NFIT_STRUCTURE_HEADER *)
-                           ((UINT8 *) NfitStructHeader + NfitStructHeader->Length);
+                           ((UINT8 *)NfitStructHeader + NfitStructHeader->Length);
         continue;
       }
     }
@@ -499,17 +513,17 @@ RamDiskUnpublishNfit (
     // Copy the content of origin NFIT.
     //
     CopyMem (NewNfitPtr, NfitStructHeader, NfitStructHeader->Length);
-    NewNfitPtr = (UINT8 *) NewNfitPtr + NfitStructHeader->Length;
+    NewNfitPtr = (UINT8 *)NewNfitPtr + NfitStructHeader->Length;
 
     //
     // Move to the header of next NFIT structure.
     //
     RemainLen       -= NfitStructHeader->Length;
     NfitStructHeader = (EFI_ACPI_6_1_NFIT_STRUCTURE_HEADER *)
-                       ((UINT8 *) NfitStructHeader + NfitStructHeader->Length);
+                       ((UINT8 *)NfitStructHeader + NfitStructHeader->Length);
   }
 
-  Checksum                = CalculateCheckSum8((UINT8 *) NewNfit, NewNfitHeader->Length);
+  Checksum                = CalculateCheckSum8((UINT8 *)NewNfit, NewNfitHeader->Length);
   NewNfitHeader->Checksum = Checksum;
 
   Status = mAcpiTableProtocol->UninstallAcpiTable (

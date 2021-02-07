@@ -130,14 +130,14 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         EFI_FILE_MODE_READ,
         0
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR (Status)) {
         return FALSE;
     }
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
 
-    IsValid = !EFI_ERROR(Status) &&
+    IsValid = !EFI_ERROR (Status) &&
               Size == sizeof (Header) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
                (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
@@ -164,7 +164,7 @@ StartEFIImage (
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    CHAR16                  *ErrorInfo;
+    CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
 
     // set load options
@@ -240,12 +240,10 @@ StartEFIImage (
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
-    ErrorInfo = PoolPrint (L"While Loading '%s' from '%s'", ImageTitle, Volume->RootDir);
+    SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
-        MyFreePool (ErrorInfo);
         goto bailout;
     }
-    MyFreePool (ErrorInfo);
 
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -254,16 +252,11 @@ StartEFIImage (
         (VOID **) &ChildLoadedImage
     );
     ReturnStatus = Status;
-    if (CheckError(Status, L"While Getting 'LoadedImageProtocol' Handle")) {
+    if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }
-    ChildLoadedImage->LoadOptions = (VOID *) FullLoadOptions;
-    if (FullLoadOptions) {
-        ChildLoadedImage->LoadOptionsSize = ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16);
-    }
-    else {
-        ChildLoadedImage->LoadOptionsSize = 0;
-    }
+    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
+    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
@@ -273,10 +266,8 @@ StartEFIImage (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    ErrorInfo = PoolPrint (L"Returned from Child Image:- '%s'", ImageTitle);
+    SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
     CheckError(Status, ErrorInfo);
-    MyFreePool (ErrorInfo);
-
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -294,7 +285,7 @@ bailout_unload:
     }
 
 bailout:
-    MyFreePool(FullLoadOptions);
+    MyFreePool (FullLoadOptions);
     if (!IsDriver) {
         FinishExternalScreen();
     }
@@ -311,24 +302,13 @@ EFI_STATUS RebootIntoFirmware(VOID) {
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
-    err = EfivarGetRaw(
-        &GlobalGuid,
-        L"OsIndications",
-        &b,
-        &size
-    );
+    err = EfivarGetRaw(&GlobalGuid, L"OsIndications", &b, &size);
     if (err == EFI_SUCCESS) {
         osind |= (UINT64)*b;
     }
-    MyFreePool(b);
+    MyFreePool (b);
 
-    err = EfivarSetRaw(
-        &GlobalGuid,
-        L"OsIndications",
-        (CHAR8 *) &osind,
-        sizeof (UINT64),
-        TRUE
-    );
+    err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof (UINT64), TRUE);
     if (err != EFI_SUCCESS) {
         return err;
     }
@@ -342,7 +322,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     );
     Print(L"Error calling ResetSystem: %r", err);
     PauseForKey();
-
+    
     return err;
 } // EFI_STATUS RebootIntoFirmware()
 

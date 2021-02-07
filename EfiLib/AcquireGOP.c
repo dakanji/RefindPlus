@@ -83,7 +83,7 @@ ReloadPCIROM (
 
         ImageSize = Pcir->ImageLength * 512;
 
-        if (RomBarOffset - (UINTN) RomBar + ImageSize > RomSize) {
+        if (RomBarOffset - (UINTN)RomBar + ImageSize > RomSize) {
             break;
         }
 
@@ -170,6 +170,8 @@ ReloadPCIROM (
                     else {
                         Status = refit_call3_wrapper(gBS->StartImage, ImageHandle, NULL, NULL);
                     }
+
+                     MyFreePool (RomFileName);
                 }
 
                 MyFreePool (DecompressedImageBuffer);
@@ -252,6 +254,8 @@ AcquireGOP (
                         if (EFI_ERROR (ReturnStatus)) {
                             ReturnStatus = Status;
                         }
+
+                        MyFreePool (RomFileName);
                     } // if BindingHandleCount
 
                     MyFreePool (BindingHandleBuffer);

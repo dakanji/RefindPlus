@@ -35,13 +35,13 @@ GPT_DATA *gPartitions = NULL;
 // and Header structures it contains. This function does *NOT*, however,
 // allocate memory for the Entries data structure, since its size is variable
 // and is determined by the contents of Header.
-GPT_DATA * AllocateGptData (VOID) {
+GPT_DATA * AllocateGptData(VOID) {
    GPT_DATA *GptData;
 
-   GptData = AllocateZeroPool (sizeof (GPT_DATA));
+   GptData = AllocateZeroPool(sizeof (GPT_DATA));
    if (GptData != NULL) {
-      GptData->ProtectiveMBR = AllocateZeroPool (sizeof (MBR_RECORD));
-      GptData->Header = AllocateZeroPool (sizeof (GPT_HEADER));
+      GptData->ProtectiveMBR = AllocateZeroPool(sizeof (MBR_RECORD));
+      GptData->Header = AllocateZeroPool(sizeof (GPT_HEADER));
       if ((GptData->ProtectiveMBR == NULL) || (GptData->Header == NULL)) {
          MyFreePool (GptData->ProtectiveMBR);
          MyFreePool (GptData->Header);
@@ -54,7 +54,7 @@ GPT_DATA * AllocateGptData (VOID) {
 
 // Unallocate a single GPT_DATA structure. This does NOT follow the
 // linked list, though.
-VOID ClearGptData (GPT_DATA *Data) {
+VOID ClearGptData(GPT_DATA *Data) {
    if (Data) {
       if (Data->ProtectiveMBR)
          MyFreePool (Data->ProtectiveMBR);
@@ -70,7 +70,7 @@ VOID ClearGptData (GPT_DATA *Data) {
 // little-endian assumptions!
 // Returns TRUE if the GPT protective MBR and header data appear valid,
 // FALSE otherwise.
-static BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
+static BOOLEAN GptHeaderValid(GPT_DATA *GptData) {
    BOOLEAN IsValid;
    UINT32 CrcValue, StoredCrcValue;
    UINTN HeaderSize = sizeof (GPT_HEADER);
@@ -94,7 +94,7 @@ static BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
          HeaderSize = GptData->Header->header_size;
       StoredCrcValue = GptData->Header->header_crc32;
       GptData->Header->header_crc32 = 0;
-      CrcValue = crc32refit (0x0, GptData->Header, HeaderSize);
+      CrcValue = crc32refit(0x0, GptData->Header, HeaderSize);
       if (CrcValue != StoredCrcValue)
          IsValid = FALSE;
       GptData->Header->header_crc32 = StoredCrcValue;
@@ -114,7 +114,7 @@ static BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
 // RefindPlus uses the data only to provide access to partition names. This is
 // non-critical data, so it's OK to return nothing, but having the program
 // hang on reading garbage or return nonsense could be very bad.
-EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
+EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
    EFI_STATUS Status = EFI_SUCCESS;
    UINT64     BufferSize;
    UINTN      i;
@@ -133,7 +133,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
       );
       if (EFI_ERROR (Status)) {
          Volume->BlockIO = NULL;
-         Print (L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
+         Print(L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
          Status = EFI_NOT_READY;
       }
    } // if
@@ -173,10 +173,10 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
    // If it looks like a valid protective MBR & GPT header, try to do more with it....
    if (Status == EFI_SUCCESS) {
-      if (GptHeaderValid (GptData)) {
+      if (GptHeaderValid(GptData)) {
          // Load actual GPT table....
          BufferSize = GptData->Header->entry_count * 128;
-         GptData->Entries = AllocatePool (BufferSize);
+         GptData->Entries = AllocatePool(BufferSize);
          if (GptData->Entries == NULL)
             Status = EFI_OUT_OF_RESOURCES;
 
@@ -206,10 +206,10 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
 
    if (Status == EFI_SUCCESS) {
       // Everything looks OK, so copy it over
-      ClearGptData (*Data);
+      ClearGptData(*Data);
       *Data = GptData;
    } else {
-      ClearGptData (GptData);
+      ClearGptData(GptData);
    } // if/else
 
    return Status;
@@ -218,7 +218,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
 // Look in gPartitions for a partition with the specified Guid. If found, return
 // a pointer to that partition's data. If not found, return a NULL pointer.
 // The calling function is responsible for freeing the returned memory.
-GPT_ENTRY * FindPartWithGuid (EFI_GUID *Guid) {
+GPT_ENTRY * FindPartWithGuid(EFI_GUID *Guid) {
    UINTN     i;
    GPT_ENTRY *Found = NULL;
    GPT_DATA  *GptData;
@@ -230,37 +230,37 @@ GPT_ENTRY * FindPartWithGuid (EFI_GUID *Guid) {
    while ((GptData != NULL) && (!Found)) {
       i = 0;
       while ((i < GptData->Header->entry_count) && (!Found)) {
-         if (GuidsAreEqual ((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
-            Found = AllocateZeroPool (sizeof (GPT_ENTRY));
-            CopyMem (Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
+         if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
+            Found = AllocateZeroPool(sizeof (GPT_ENTRY));
+            CopyMem(Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
          } else {
             i++;
          } // if/else
-      } // while (scanning entries)
+      } // while(scanning entries)
       GptData = GptData->NextEntry;
-   } // while (scanning GPTs)
+   } // while(scanning GPTs)
    return Found;
 } // GPT_ENTRY * FindPartWithGuid()
 
 // Erase the gPartitions linked-list data structure
-VOID ForgetPartitionTables (VOID) {
+VOID ForgetPartitionTables(VOID) {
    GPT_DATA  *Next;
 
    while (gPartitions != NULL) {
       Next = gPartitions->NextEntry;
-      ClearGptData (gPartitions);
+      ClearGptData(gPartitions);
       gPartitions = Next;
    } // while
 } // VOID ForgetPartitionTables()
 
 // If Volume points to a whole disk with a GPT, add it to the gPartitions
 // linked list of GPTs.
-VOID AddPartitionTable (REFIT_VOLUME *Volume) {
+VOID AddPartitionTable(REFIT_VOLUME *Volume) {
    GPT_DATA    *GptData = NULL, *GptList;
    EFI_STATUS  Status;
    UINTN       NumTables = 1;
 
-   Status = ReadGptData (Volume, &GptData);
+   Status = ReadGptData(Volume, &GptData);
    if (Status == EFI_SUCCESS) {
       if (gPartitions == NULL) {
          gPartitions = GptData;
@@ -274,7 +274,7 @@ VOID AddPartitionTable (REFIT_VOLUME *Volume) {
          NumTables++;
       } // if/else
    } else if (GptData != NULL) {
-      ClearGptData (GptData);
+      ClearGptData(GptData);
       NumTables = 0;
    } // if/else
 } // VOID AddPartitionTable()

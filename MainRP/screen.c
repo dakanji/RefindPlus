@@ -92,7 +92,7 @@ PrepareBlankLine (
 ) {
     UINTN i;
 
-    MyFreePool(BlankLine);
+    MyFreePool (BlankLine);
     // make a buffer for a whole text line
     BlankLine = AllocatePool((ConWidth + 1) * sizeof (CHAR16));
     for (i = 0; i < ConWidth; i++) {
@@ -245,7 +245,8 @@ SetupScreen (
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
+                MsgLog ("    * UI Scaling Disabled\n");
+                MsgLog ("    ** Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
@@ -266,7 +267,8 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
+                MsgLog ("    * LoDPI Monitor Detected\n");
+                MsgLog ("    ** Maintain Icon Scale\n\n");
                 #endif
             } // if
 
@@ -660,7 +662,7 @@ CheckFatalError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR(Status)) {
+    if (!EFI_ERROR (Status)) {
         return FALSE;
     }
 
@@ -684,7 +686,7 @@ CheckFatalError (
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
-    MyFreePool(Temp);
+    MyFreePool (Temp);
 
     return TRUE;
 } // BOOLEAN CheckFatalError()
@@ -696,7 +698,7 @@ CheckError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR(Status)) {
+    if (!EFI_ERROR (Status)) {
         return FALSE;
     }
 
@@ -731,7 +733,7 @@ CheckError (
         haveError = TRUE;
     }
 
-    MyFreePool(Temp);
+    MyFreePool (Temp);
 
     return haveError;
 } // BOOLEAN CheckError()
@@ -760,8 +762,8 @@ VOID
 BltClearScreen (
     BOOLEAN ShowBanner
 ) {
-    static EG_IMAGE *Banner    = NULL;
-    EG_IMAGE        *NewBanner = NULL;
+    static EG_IMAGE *Banner = NULL;
+    EG_IMAGE *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
 
@@ -778,7 +780,6 @@ BltClearScreen (
             if (GlobalConfig.BannerFileName) {
                 Banner = egLoadImage(SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
-
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Embedded Title Banner\n");
@@ -792,30 +793,40 @@ BltClearScreen (
             }
         }
 
-        if (Banner != NULL) {
+        if (Banner) {
             #if REFIT_DEBUG > 0
             MsgLog ("  - Scale Banner\n");
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-              if (Banner->Height != ScreenH || Banner->Width != ScreenW) {
+              if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
                  NewBanner = egScaleImage(Banner, ScreenW, ScreenH);
               }
            }
-           else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
+           else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
               NewBanner = egCropImage(
                   Banner, 0, 0,
-                  (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
+                  (Banner->Width > ScreenW) ? ScreenW : Banner->Width,
                   (Banner->Height > ScreenH) ? ScreenH : Banner->Height
               );
-           }
+          } // if GlobalConfig.BannerScale else if Banner->Width
 
-           if (NewBanner != NULL) {
-               egFreeImage(Banner);
-               Banner = NewBanner;
-           }
+           if (NewBanner) {
+               // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
+               //         Apparent Memory Conflict ... Needs Investigation.
+               //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
+               if (egHasConsoleControl) {
+                   egFreeImage (Banner);
+               }
+               else {
+                   MyFreePool (Banner);
+               }
+
+              Banner = NewBanner;
+           } // if NewBanner
+
            MenuBackgroundPixel = Banner->PixelData[0];
-        } // if Banner exists
+        } // if Banner
 
         // clear and draw banner
         #if REFIT_DEBUG > 0
@@ -839,16 +850,18 @@ BltClearScreen (
             if (BannerPosY < 0) {
                 BannerPosY = 0;
             }
+
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
+
             if (GlobalConfig.ScreensaverTime != -1) {
                 BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
             }
 
             // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
-            //         Workaround Segmentation Fault ... Needs Investigation.
-            //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16
+            //         Apparent Memory Conflict ... Needs Investigation.
+            //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
             if (egHasConsoleControl) {
-                egFreeImage(Banner);
+                egFreeImage (Banner);
             }
             else {
                 MyFreePool (Banner);
@@ -862,7 +875,17 @@ BltClearScreen (
     }
 
     GraphicsScreenDirty = FALSE;
-    egFreeImage(GlobalConfig.ScreenBackground);
+
+    // DA_TAG: Permit ScreenBackground->PixelData Memory Leak on items without ConsoleControl
+    //         Apparent Memory Conflict ... Needs Investigation.
+    //         Likely related to Qemu Specific Issue.
+    if (egHasConsoleControl) {
+        egFreeImage(GlobalConfig.ScreenBackground);
+    }
+    else {
+        MyFreePool (GlobalConfig.ScreenBackground);
+    }
+
     GlobalConfig.ScreenBackground = egCopyScreen();
 } // VOID BltClearScreen()
 

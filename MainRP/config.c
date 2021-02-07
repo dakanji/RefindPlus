@@ -117,9 +117,11 @@ RefitReadFile (
 
     Message = PoolPrint (L"While Loading File:- '%s'", FileName);
     if (CheckError (Status, Message)) {
-        FreePool (Message);
+        MyFreePool (Message);
+
         return Status;
     }
+    MyFreePool (Message);
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
@@ -130,7 +132,7 @@ RefitReadFile (
     ReadSize = FileInfo->FileSize;
     FreePool (FileInfo);
 
-    File->BufferSize = (UINTN) ReadSize;
+    File->BufferSize = (UINTN)ReadSize;
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
        size = 0;
@@ -150,9 +152,9 @@ RefitReadFile (
     Status = refit_call1_wrapper(FileHandle->Close, FileHandle);
 
     // setup for reading
-    File->Current8Ptr  = (CHAR8 *) File->Buffer;
+    File->Current8Ptr  = (CHAR8 *)File->Buffer;
     File->End8Ptr      = File->Current8Ptr + File->BufferSize;
-    File->Current16Ptr = (CHAR16 *) File->Buffer;
+    File->Current16Ptr = (CHAR16 *)File->Buffer;
     File->End16Ptr     = File->Current16Ptr + (File->BufferSize >> 1);
 
     // detect encoding
@@ -369,7 +371,7 @@ ReadTokenLine (
             }
             *p++ = 0;
 
-            AddListElement ((VOID ***) TokenList, &TokenCount, (VOID *) StrDuplicate (Token));
+            AddListElement ((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate (Token));
         }
 
         FreePool (Line);
@@ -383,7 +385,7 @@ FreeTokenLine (
     IN OUT UINTN *TokenCount
 ) {
     // TODO: also free the items
-    FreeList ((VOID ***) TokenList, TokenCount);
+    FreeList ((VOID ***)TokenList, TokenCount);
 }
 
 // handle a parameter with a single integer argument
@@ -598,7 +600,7 @@ static
 LOADER_ENTRY * AddPreparedLoaderEntry (
     LOADER_ENTRY *Entry
 ) {
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
     return (Entry);
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
@@ -624,32 +626,25 @@ ReadConfig (
     if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
        MyFreePool (GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
-
+       MyFreePool (GlobalConfig.DontScanDirs);
        if (SelfVolume) {
            TempStr = GuidAsString (&(SelfVolume->PartGuid));
        }
        MergeStrings (&TempStr, SelfDirPath, L':');
        MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
-       MyFreePool (GlobalConfig.DontScanDirs);
-       GlobalConfig.DontScanDirs = StrDuplicate (TempStr);
-       MyFreePool (TempStr);
-
+       GlobalConfig.DontScanDirs = TempStr;
        MyFreePool (GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-       MergeStrings (&GlobalConfig.DontScanFiles, MOK_NAMES, L',');
-       MergeStrings (&GlobalConfig.DontScanFiles, FWUPDATE_NAMES, L',');
-
        MyFreePool (GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
-
+       MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
+       MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
        MyFreePool (GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
-
-       MyFreePool (GlobalConfig.DefaultSelection);
-       GlobalConfig.DefaultSelection = L"+";
-
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
-       GlobalConfig.MacOSRecoveryFiles   = StrDuplicate (MACOS_RECOVERY_FILES);
+       GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
+       MyFreePool (GlobalConfig.DefaultSelection);
+       GlobalConfig.DefaultSelection = StrDuplicate (L"+");
     } // if
 
     if (!FileExists (SelfDir, FileName)) {
@@ -887,7 +882,7 @@ ReadConfig (
               GlobalConfig.BannerScale = BANNER_FILLSCREEN;
            }
            else {
-               ShowScreenStr = PoolPrint (
+                ShowScreenStr = PoolPrint (
                    L"  - WARN: Invalid 'banner_type' Flag: '%s'",
                    TokenList[1]
                );
@@ -1172,7 +1167,7 @@ AddSubmenu (
         SubEntry->InitrdPath = NULL;
     } // if
     if (SubEntry->Enabled) {
-        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
     }
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
@@ -1325,11 +1320,8 @@ ScanUserConfigured (
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
                 if (Entry->Enabled) {
                     #if REFIT_DEBUG > 0
-                    CHAR16 *OurTitle  = StrDuplicate (Entry->Title);
-                    CHAR16* OurDesc   = StrDuplicate (Entry->LoaderPath);
-
                     if (Volume->VolName) {
-                        CHAR16 *VolDesc = StrDuplicate (Volume->VolName);
+                        CHAR16 *VolDesc = Volume->VolName;
                         if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                             VolDesc = L"Whole Disk Volume";
                         }
@@ -1366,25 +1358,11 @@ ScanUserConfigured (
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                             VolDesc = L"ISO-9660 Volume";
                         }
-                        MsgLog ("\n");
-                        MsgLog (
-                            "  - Found '%s' on '%s'",
-                            OurTitle,
-                            VolDesc
-                        );
-                        MyFreePool (VolDesc);
+                        MsgLog ("  - Found '%s' on '%s'\n", Entry->Title, VolDesc);
                     }
                     else {
-                        MsgLog ("\n");
-                        MsgLog (
-                            "  - Found '%s' :: '%s'",
-                            OurTitle,
-                            OurDesc
-                        );
+                        MsgLog ("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
                     }
-
-                    MyFreePool (OurTitle);
-                    MyFreePool (OurDesc);
                     #endif
 
                     if (Entry->me.SubScreen == NULL) {
@@ -1474,9 +1452,9 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             } // while
 
             if (Options->Buffer) {
-                Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
+                Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
                 Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-                Options->Current16Ptr = (CHAR16 *) Options->Buffer;
+                Options->Current16Ptr = (CHAR16 *)Options->Buffer;
                 Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
             }
             else {
@@ -1533,9 +1511,9 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
                 MyFreePool (GuidString);
             } // if (GuidString)
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-            Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
+            Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-            Options->Current16Ptr = (CHAR16 *) Options->Buffer;
+            Options->Current16Ptr = (CHAR16 *)Options->Buffer;
             Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
         } // if (Options allocated OK)
     } // if (partition has root GUID)
@@ -1576,6 +1554,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
 
             if (CheckError (Status, L"while loading the Linux options file")) {
                 MyFreePool (File);
+                File = NULL;
             }
             else {
                GoOn = FALSE;
@@ -1586,9 +1565,9 @@ REFIT_FILE * ReadLinuxOptionsFile (
       else { // a filename string is NULL
          GoOn = FALSE;
       } // if/else
-
       MyFreePool (OptionsFilename);
       MyFreePool (FullFilename);
+      OptionsFilename = FullFilename = NULL;
    } while (GoOn);
 
    if (!FileFound) {
@@ -1620,7 +1599,7 @@ CHAR16 * GetFirstOptionsFromFile (
             Options = StrDuplicate (TokenList[1]);
         }
         FreeTokenLine (&TokenList, &TokenCount);
-        FreePool (File);
+        MyFreePool (File);
     } // if
 
     return Options;

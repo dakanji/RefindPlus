@@ -179,8 +179,8 @@ static void fsw_ext2_volume_free(struct fsw_ext2_volume *vol)
 
 static fsw_status_t fsw_ext2_volume_stat(struct fsw_ext2_volume *vol, struct fsw_volume_stat *sb)
 {
-    sb->total_bytes = (fsw_u64) vol->sb->s_blocks_count      * vol->g.log_blocksize;
-    sb->free_bytes  = (fsw_u64) vol->sb->s_free_blocks_count * vol->g.log_blocksize;
+    sb->total_bytes = (fsw_u64)vol->sb->s_blocks_count      * vol->g.log_blocksize;
+    sb->free_bytes  = (fsw_u64)vol->sb->s_free_blocks_count * vol->g.log_blocksize;
     return FSW_SUCCESS;
 }
 
@@ -544,7 +544,7 @@ static fsw_status_t fsw_ext2_readlink(struct fsw_ext2_volume *vol, struct fsw_ex
     if (dno->raw->i_blocks - ea_blocks == 0) {
         // "fast" symlink, path is stored inside the inode
         s.type = FSW_STRING_TYPE_ISO88591;
-        s.size = s.len = (int) dno->g.size;
+        s.size = s.len = (int)dno->g.size;
         s.data = dno->raw->i_block;
         status = fsw_strdup_coerce(link_target, vol->g.host_string_type, &s);
     } else {

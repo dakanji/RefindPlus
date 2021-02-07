@@ -439,7 +439,7 @@ ConnectAllDriversToAllControllers(
         &AllHandleCount,
         &AllHandleBuffer
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR (Status)) {
         return Status;
     }
 
@@ -466,7 +466,7 @@ ConnectAllDriversToAllControllers(
             Device = FALSE;
         }
 
-        // Dummy ... just to usepassed parameter
+        // Dummy ... just to use passed parameter which is only needed for TianoCore
         Parent = ResetGOP;
         if (Device) {
             Parent = FALSE;
@@ -548,7 +548,7 @@ ConnectFilesystemDriver(
         &HandleCount,
         &Handles
     );
-    if (EFI_ERROR(Status) || HandleCount == 0) {
+    if (EFI_ERROR (Status) || HandleCount == 0) {
         return;
     }
 
@@ -612,7 +612,7 @@ ConnectFilesystemDriver(
                     OpenInfo[OpenInfoIndex].AgentHandle,
                     NULL
                 );
-                if (!(EFI_ERROR(Status))) {
+                if (!(EFI_ERROR (Status))) {
                     DriverHandleList[0] = DriverHandle;
                     refit_call4_wrapper(
                         gBS->ConnectController,
@@ -659,7 +659,7 @@ ScanDriverDir (
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
             // skip this
-            MyFreePool(DirEntry);
+            MyFreePool (DirEntry);
             continue;
         }
 
@@ -683,7 +683,7 @@ ScanDriverDir (
             );
         }
 
-        MyFreePool(DirEntry);
+        MyFreePool (DirEntry);
 
         #if REFIT_DEBUG > 0
         if (RunOnce) {
@@ -708,14 +708,14 @@ ScanDriverDir (
             #endif
         }
 
-        MyFreePool(FileName);
+        MyFreePool (FileName);
     } // while
 
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
         FileName = PoolPrint(L"While Scanning the '%s' Directory", Path);
         CheckError(Status, FileName);
-        MyFreePool(FileName);
+        MyFreePool (FileName);
     }
 
     return (NumFound);
@@ -744,22 +744,13 @@ LoadDrivers(
     MsgLog ("Load EFI Drivers from Default Folder...");
     #endif
     while ((Directory = FindCommaDelimited(DRIVER_DIRS, i++)) != NULL) {
-        CleanUpPathNameSlashes(Directory);
-
-        if (SelfDirPath) {
-            SelfDirectory = StrDuplicate(SelfDirPath);
-            CleanUpPathNameSlashes(SelfDirectory);
-        }
-        else {
-            SelfDirectory = NULL;
-        }
+        SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
+        CleanUpPathNameSlashes(SelfDirectory);
         MergeStrings(&SelfDirectory, Directory, L'\\');
-
         CurFound = ScanDriverDir(SelfDirectory);
+        MyFreePool (Directory);
+        MyFreePool (SelfDirectory);
         if (CurFound > 0) {
-            MyFreePool(Directory);
-            MyFreePool(SelfDirectory);
-
             NumFound = NumFound + CurFound;
             break;
         }
@@ -768,10 +759,7 @@ LoadDrivers(
             MsgLog ("  - Not Found or Empty");
             #endif
         }
-
-        MyFreePool(SelfDirectory);
-        MyFreePool(Directory);
-    } // while
+    }
 
     // Scan additional user-specified driver directories....
     if (GlobalConfig.DriverDirs != NULL) {
@@ -783,30 +771,19 @@ LoadDrivers(
         i = 0;
         while ((Directory = FindCommaDelimited(GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes(Directory);
-
             Length = StrLen(Directory);
             if (Length > 0) {
-                if (SelfDirPath) {
-                    SelfDirectory = StrDuplicate(SelfDirPath);
-                    CleanUpPathNameSlashes(SelfDirectory);
-                }
-                else {
-                    SelfDirectory = NULL;
-                }
+                SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
+                CleanUpPathNameSlashes(SelfDirectory);
                 MergeStrings(&SelfDirectory, Directory, L'\\');
-
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
                     ReplaceSubstring(&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
                     ReplaceSubstring(&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
-
                 CurFound = ScanDriverDir(SelfDirectory);
+                MyFreePool (SelfDirectory);
                 if (CurFound > 0) {
-                    MyFreePool(Directory);
-                    MyFreePool(SelfDirectory);
-
                     NumFound = NumFound + CurFound;
-                    break;
                 }
                 else {
                     #if REFIT_DEBUG > 0
@@ -814,9 +791,7 @@ LoadDrivers(
                     #endif
                 }
             } // if
-
-            MyFreePool(SelfDirectory);
-            MyFreePool(Directory);
+            MyFreePool (Directory);
         } // while
     }
 

@@ -119,8 +119,6 @@ BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
 BOOLEAN          SelfVolRun     = FALSE;
-BOOLEAN          DoneHeadings   = FALSE;
-
 extern EFI_GUID RefindPlusGuid;
 
 // Maximum size for disk sectors
@@ -307,7 +305,7 @@ UninitVolumes (
         Volume->BlockIO = NULL;
         Volume->WholeDiskBlockIO = NULL;
     }
-} /* VOID UninitVolumes() */
+} // VOID UninitVolumes()
 
 VOID
 ReinitVolumes (
@@ -373,7 +371,7 @@ ReinitVolumes (
             }
         }
     }
-} /* VOID ReinitVolumes (VOID) */
+} // VOID ReinitVolumes (VOID)
 
 // called before running external programs to close open file handles
 VOID
@@ -397,7 +395,7 @@ UninitRefitLib (
        refit_call1_wrapper(SelfRootDir->Close, SelfRootDir);
        SelfRootDir = NULL;
     }
-} /* VOID UninitRefitLib() */
+} // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
 EFI_STATUS
@@ -994,7 +992,7 @@ ScanVolumeBootcode (
         }
         #endif
     }
-} /* VOID ScanVolumeBootcode() */
+} // VOID ScanVolumeBootcode()
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID
@@ -1049,26 +1047,20 @@ SizeInIEEEUnits (
     if (TheValue != NULL) {
         NumPrefixes = StrLen (Prefixes);
         SizeInIeee = SizeInBytes;
-
         while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
             Index++;
             SizeInIeee /= 1024;
         } // while
-
         if (Prefixes[Index] == ' ') {
-            Units = L"-byte";
+            Units = StrDuplicate (L"-byte");
         }
         else {
-            Units = L"  iB";
+            Units = StrDuplicate (L"  iB");
             Units[1] = Prefixes[Index];
         } // if/else
-
         SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
     } // if
-
     MyFreePool (Units);
-    MyFreePool (Prefixes);
-
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
 
@@ -1083,18 +1075,16 @@ CHAR16
     IN REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr = NULL;
-    CHAR16                *ReturnName = NULL;
-    CHAR16                *FoundName  = NULL;
-    CHAR16                *TypeName   = NULL;
-    CHAR16                *SISize     = NULL;
+    CHAR16                *FoundName = NULL;
+    CHAR16                *SISize, *TypeName;
 
     if (Volume->RootDir != NULL) {
         FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
      }
 
-    if (FileSystemInfoPtr != NULL &&
-        FileSystemInfoPtr->VolumeLabel != NULL &&
-        StrLen (FileSystemInfoPtr->VolumeLabel) > 0
+    if ((FileSystemInfoPtr != NULL) &&
+        (FileSystemInfoPtr->VolumeLabel != NULL) &&
+        (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
     ) {
         FoundName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
     }
@@ -1123,30 +1113,21 @@ CHAR16
     MyFreePool (FileSystemInfoPtr);
 
     if (FoundName == NULL) {
-        if (StrLen (TypeName) > 0) {
-            FoundName = PoolPrint (L"%s Volume", TypeName);
-        }
-        else if (MediaCheck) {
-            FoundName = L"Disc/Network Volume (Assumed)";
-        }
-        else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
-            EFI_GUID GuidAPFS = APFS_GUID_VALUE;
-            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                FoundName = L"APFS Container";
+        FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
+        if (FoundName != NULL) {
+            if (StrLen (TypeName) > 0) {
+                SPrint (FoundName, 255, L"%s Volume", TypeName);
             }
-            else {
+            else if (MediaCheck) {
+                FoundName = L"Disc/Network Volume (Assumed)";
+            }
+            else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
                 FoundName = L"APFS Container (Assumed)";
-            }
-        }
-        else {
-            EFI_GUID GuidHFS = HFS_GUID_VALUE;
-            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                FoundName = L"HFS+ Volume";
             }
             else {
                 FoundName = L"Unknown Volume";
             }
-        }
+        } // if allocated memory OK
     } // if
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
@@ -1158,10 +1139,7 @@ CHAR16
         FoundName = L"Unknown Volume";
     }
 
-    ReturnName = StrDuplicate (FoundName);
-    MyFreePool (FoundName);
-
-    return ReturnName;
+    return FoundName;
 } // static CHAR16 *GetVolumeName()
 
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
@@ -1319,13 +1297,13 @@ ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
-            PartialLength = (UINT8 *) NextDevicePath - (UINT8 *)(Volume->DevicePath);
-            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (PartialLength +
+            PartialLength = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
+            DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool (PartialLength +
                 sizeof (EFI_DEVICE_PATH)
             );
             CopyMem (DiskDevicePath, Volume->DevicePath, PartialLength);
             CopyMem (
-                (UINT8 *) DiskDevicePath + PartialLength,
+                (UINT8 *)DiskDevicePath + PartialLength,
                 EndDevicePath,
                 sizeof (EFI_DEVICE_PATH)
             );
@@ -1343,8 +1321,8 @@ ScanVolume (
             if (!EFI_ERROR (Status)) {
                 //Print (
                 //    L"  - original handle: %08x - disk handle: %08x\n",
-                //    (UINT32) DeviceHandle,
-                //    (UINT32) WholeDiskHandle
+                //    (UINT32)DeviceHandle,
+                //    (UINT32)WholeDiskHandle
                 //);
 
                 // get the device path for later
@@ -1490,7 +1468,7 @@ ScanExtendedPartition (
             } // if/else
         } // for
     } // for
-} /* VOID ScanExtendedPartition() */
+} // VOID ScanExtendedPartition()
 
 VOID
 ScanVolumes (
@@ -1498,34 +1476,20 @@ ScanVolumes (
 ) {
     EFI_STATUS         Status;
     EFI_HANDLE         *Handles;
-    REFIT_VOLUME       *Volume;
-    REFIT_VOLUME       *WholeDiskVolume;
-    UINT8              *SectorBuffer1;
-    UINT8              *SectorBuffer2;
-    UINTN              i                 = 0;
-    UINTN              SectorSum         = 0;
-    UINTN              HandleCount       = 0;
-    UINTN              HandleIndex       = 0;
-    UINTN              VolumeIndex       = 0;
-    UINTN              VolumeIndex2      = 0;
-    UINTN              PartitionIndex    = 0;
-    CHAR16             *ShowScreenStr    = NULL;
-    EFI_GUID           GuidNull          = NULL_GUID_VALUE;
-    EFI_GUID           *UuidList;
+    REFIT_VOLUME       *Volume, *WholeDiskVolume;
     MBR_PARTITION_INFO *MbrTable;
-
-    #if REFIT_DEBUG > 0
-    CHAR16  *VolDesc;
-    CHAR16  *PartGUID;
-    CHAR16  *PartTypeGUID;
-
-    CONST CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
-    CONST CHAR16 *ITEMVOLB = L"VOLUME GUID";
-    CONST CHAR16 *ITEMVOLC = L"VOLUME ID";
-    #endif
+    UINTN              HandleCount = 0;
+    UINTN              HandleIndex;
+    UINTN              VolumeIndex, VolumeIndex2;
+    UINTN              PartitionIndex;
+    UINTN              SectorSum, i;
+    UINT8              *SectorBuffer1, *SectorBuffer2;
+    EFI_GUID           *UuidList;
+    EFI_GUID           GuidNull       = NULL_GUID_VALUE;
+    CHAR16             *ShowScreenStr = NULL;
 
     MyFreePool (Volumes);
-    Volumes      = NULL;
+    Volumes = NULL;
     VolumesCount = 0;
     ForgetPartitionTables();
 
@@ -1547,7 +1511,6 @@ ScanVolumes (
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
-
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
@@ -1556,17 +1519,18 @@ ScanVolumes (
 
         if (!GlobalConfig.AllowDuplicates) {
             if (UuidList) {
-                UuidList[HandleIndex] = Volume->VolUuid;
-                for (i = 0; i < HandleIndex; i++) {
-                    if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
-                        (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-                    ) {
-                        // Duplicate Filesystem UUID
-                        Volume->IsReadable = FALSE;
-                    } // if CompareMem
-                } // for
-            } // if UuidList
+               UuidList[HandleIndex] = Volume->VolUuid;
+               for (i = 0; i < HandleIndex; i++) {
+                  if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                      (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
+                  ) {
+                      // Duplicate filesystem UUID
+                      Volume->IsReadable = FALSE;
+                  } // if
+               } // for
+           } // if UuidList
         } // if !GlobalConfig.AllowDuplicates
+
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
 
@@ -1580,11 +1544,7 @@ ScanVolumes (
             if (ScannedOnce) {
                 MsgLog ("\n");
             }
-
-            VolDesc      = StrDuplicate (Volume->VolName);
-            PartGUID     = GuidAsString (&Volume->PartGuid);
-            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
-
+            CHAR16 *VolDesc = Volume->VolName;
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 VolDesc = L"Whole Disk Volume";
             }
@@ -1622,16 +1582,7 @@ ScanVolumes (
                 VolDesc = L"ISO-9660 Volume";
             }
 
-            if (!DoneHeadings) {
-                MsgLog ("%-41s%-41s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
-                DoneHeadings = TRUE;
-            }
-            MsgLog ("%s  :  %s  :  %s", PartTypeGUID, PartGUID, VolDesc);
-
-            MyFreePool (VolDesc);
-            MyFreePool (PartGUID);
-            MyFreePool (PartTypeGUID);
-
+            MsgLog ("Add to Collection:- '%s'", VolDesc);
             ScannedOnce = TRUE;
         }
         #endif
@@ -1664,8 +1615,7 @@ ScanVolumes (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        MsgLog ("%-41s%-41s%s\n\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
+        MsgLog ("\n\n");
         #endif
     }
     SelfVolRun = TRUE;
@@ -1883,7 +1833,7 @@ DirNextEntry (
         }
 
         // entry is ready to be returned
-        *DirEntry = (EFI_FILE_INFO *) Buffer;
+        *DirEntry = (EFI_FILE_INFO *)Buffer;
 
         // filter results
         if (FilterMode == 1) {
@@ -2018,22 +1968,23 @@ DirIterNext (
             // end of listing
             return FALSE;
         }
+        if (FilePattern != NULL) {
+            if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
+                KeepGoing = FALSE;
+            }
 
-        if (FilePattern == NULL) {
+            i = 0;
+            while (KeepGoing && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
+               if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
+                   KeepGoing = FALSE;
+               }
+               MyFreePool (OnePattern);
+            } // while
+            // else continue loop
+        }
+        else {
             break;
         }
-
-        if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
-            KeepGoing = FALSE;
-        }
-
-        i = 0;
-        while (KeepGoing && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
-           if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
-               KeepGoing = FALSE;
-           }
-           MyFreePool (OnePattern);
-        } // while
    } while (KeepGoing && FilePattern);
 
     *DirEntry = DirIter->LastFileInfo;
@@ -2118,7 +2069,7 @@ FindMem (
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem (BufferPtr, SearchString, SearchStringLength) == 0) {
-            return (INTN) Offset;
+            return (INTN)Offset;
         }
     }
 

@@ -66,7 +66,7 @@ UINTN read_sector(UINT64 lba, UINT8 *buffer)
         512,
         buffer
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR (Status)) {
         // TODO: report error
         return 1;
     }
@@ -85,7 +85,7 @@ UINTN write_sector(UINT64 lba, UINT8 *buffer)
         512,
         buffer
     );
-    if (EFI_ERROR(Status)) {
+    if (EFI_ERROR (Status)) {
         // TODO: report error
         return 1;
     }
@@ -161,7 +161,7 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
             gST->ConIn,
             &Key
         );
-        if (EFI_ERROR(Status) && Status != EFI_NOT_READY) {
+        if (EFI_ERROR (Status) && Status != EFI_NOT_READY) {
             return 1;
         }
     } while (Status == EFI_NOT_READY);
@@ -299,7 +299,7 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
             &BlockIoProtocol,
             (VOID **) &BlockIO
         );
-        if (EFI_ERROR(Status)) {
+        if (EFI_ERROR (Status)) {
             // TODO: report error
             BlockIO = NULL;
         } else {

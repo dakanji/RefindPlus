@@ -76,7 +76,7 @@
 // If more than one initrd file matches the extracted version string AND they match
 // the same amount of characters, the initrd file with the shortest file name is used.
 // If no matching init file can be found, returns NULL.
-CHAR16 * FindInitrd (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
+CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     CHAR16              *InitrdName = NULL, *FileName, *KernelVersion, *InitrdVersion, *Path;
     CHAR16              *KernelPostNum, *InitrdPostNum;
     UINTN               MaxSharedChars, SharedChars;
@@ -84,78 +84,64 @@ CHAR16 * FindInitrd (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     REFIT_DIR_ITER      DirIter;
     EFI_FILE_INFO       *DirEntry;
 
-    FileName = Basename (LoaderPath);
-    KernelVersion = FindNumbers (FileName);
-    Path = FindPath (LoaderPath);
+    FileName = Basename(LoaderPath);
+    KernelVersion = FindNumbers(FileName);
+    Path = FindPath(LoaderPath);
 
     // Add trailing backslash for root directory; necessary on some systems, but must
     // NOT be added to all directories, since on other systems, a trailing backslash on
     // anything but the root directory causes them to flake out!
-    if (StrLen (Path) == 0) {
-        MergeStrings (&Path, L"\\", 0);
+    if (StrLen(Path) == 0) {
+        MergeStrings(&Path, L"\\", 0);
     } // if
-    DirIterOpen (Volume->RootDir, Path, &DirIter);
-
+    DirIterOpen(Volume->RootDir, Path, &DirIter);
     // Now add a trailing backslash if it was NOT added earlier, for consistency in
     // building the InitrdName later....
-    if ((StrLen (Path) > 0) && (Path[StrLen (Path) - 1] != L'\\')) {
-        MergeStrings (&Path, L"\\", 0);
-    }
-
-    while (DirIterNext (&DirIter, 2, L"init*", &DirEntry)) {
-        InitrdVersion = FindNumbers (DirEntry->FileName);
-        if (((KernelVersion != NULL) && (MyStriCmp (InitrdVersion, KernelVersion))) ||
+    if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\'))
+        MergeStrings(&Path, L"\\", 0);
+    while (DirIterNext(&DirIter, 2, L"init*", &DirEntry)) {
+        InitrdVersion = FindNumbers(DirEntry->FileName);
+        if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))) {
-                CurrentInitrdName = AllocateZeroPool (sizeof (STRING_LIST));
-                if (InitrdNames == NULL) {
+                CurrentInitrdName = AllocateZeroPool(sizeof (STRING_LIST));
+                if (InitrdNames == NULL)
                     InitrdNames = FinalInitrdName = CurrentInitrdName;
-                }
                 if (CurrentInitrdName) {
-                    CurrentInitrdName->Value = PoolPrint (L"%s%s", Path, DirEntry->FileName);
+                    CurrentInitrdName->Value = PoolPrint(L"%s%s", Path, DirEntry->FileName);
                     if (CurrentInitrdName != FinalInitrdName) {
                         FinalInitrdName->Next = CurrentInitrdName;
                         FinalInitrdName = CurrentInitrdName;
                     } // if
                 } // if
         } // if
-
         MyFreePool (InitrdVersion);
     } // while
-
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
-            InitrdName = StrDuplicate (InitrdNames -> Value);
-        }
-        else {
+            InitrdName = StrDuplicate(InitrdNames -> Value);
+        } else {
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
             MaxSharedChars = 0;
-
             while (CurrentInitrdName != NULL) {
-                KernelPostNum = MyStrStr (LoaderPath, KernelVersion);
-                InitrdPostNum = MyStrStr (CurrentInitrdName->Value, KernelVersion);
-                SharedChars = NumCharsInCommon (KernelPostNum, InitrdPostNum);
-                if (SharedChars > MaxSharedChars ||
-                    (SharedChars == MaxSharedChars && StrLen (CurrentInitrdName->Value) < StrLen (MaxSharedInitrd->Value))
-                ) {
+                KernelPostNum = MyStrStr(LoaderPath, KernelVersion);
+                InitrdPostNum = MyStrStr(CurrentInitrdName->Value, KernelVersion);
+                SharedChars = NumCharsInCommon(KernelPostNum, InitrdPostNum);
+                if (SharedChars > MaxSharedChars || (SharedChars == MaxSharedChars && StrLen(CurrentInitrdName->Value) < StrLen(MaxSharedInitrd->Value))) {
                     MaxSharedChars = SharedChars;
                     MaxSharedInitrd = CurrentInitrdName;
                 } // if
                 // TODO: Compute number of shared characters & compare with max.
                 CurrentInitrdName = CurrentInitrdName->Next;
-            } // while
-
-            if (MaxSharedInitrd) {
-                InitrdName = StrDuplicate (MaxSharedInitrd->Value);
             }
+            if (MaxSharedInitrd)
+                InitrdName = StrDuplicate(MaxSharedInitrd->Value);
         } // if/else
     } // if
+    DeleteStringList(InitrdNames);
 
-    DeleteStringList (InitrdNames);
-
-    // Note: Don't FreePool (FileName), since Basename returns a pointer WITHIN the string it's passed.
+    // Note: Don't FreePool(FileName), since Basename returns a pointer WITHIN the string it's passed.
     MyFreePool (KernelVersion);
     MyFreePool (Path);
-
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
 
@@ -167,52 +153,48 @@ CHAR16 * FindInitrd (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 // of initrd options.
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
-CHAR16 *AddInitrdToOptions (CHAR16 *Options, CHAR16 *InitrdPath) {
+CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
     CHAR16 *NewOptions = NULL;
 
-    if (Options != NULL) {
-        NewOptions = StrDuplicate (Options);
-    }
+    if (Options != NULL)
+        NewOptions = StrDuplicate(Options);
 
     if (InitrdPath != NULL) {
-        if (StriSubCmp (L"%v", Options)) {
-            CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
-            ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
+        if (StriSubCmp(L"%v", Options)) {
+            CHAR16 *InitrdVersion = FindNumbers(InitrdPath);
+            ReplaceSubstring(&NewOptions, L"%v", InitrdVersion);
 
             MyFreePool (InitrdVersion);
-        }
-        else if (!StriSubCmp (L"initrd=", Options)) {
-            MergeStrings (&NewOptions, L"initrd=", L' ');
-            MergeStrings (&NewOptions, InitrdPath, 0);
+        } else if (!StriSubCmp(L"initrd=", Options)) {
+            MergeStrings(&NewOptions, L"initrd=", L' ');
+            MergeStrings(&NewOptions, InitrdPath, 0);
         }
     }
-
     return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
 
 // Returns options for a Linux kernel. Reads them from an options file in the
 // kernel's directory; and if present, adds an initrd= option for an initial
 // RAM disk file with the same version number as the kernel file.
-CHAR16 * GetMainLinuxOptions (IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
+CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
 
-    Options = GetFirstOptionsFromFile (LoaderPath, Volume);
-    InitrdName = FindInitrd (LoaderPath, Volume);
-    KernelVersion = FindNumbers (InitrdName);
-    ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
-    FullOptions = AddInitrdToOptions (Options, InitrdName);
+    Options = GetFirstOptionsFromFile(LoaderPath, Volume);
+    InitrdName = FindInitrd(LoaderPath, Volume);
+    KernelVersion = FindNumbers(InitrdName);
+    ReplaceSubstring(&Options, KERNEL_VERSION, KernelVersion);
+    FullOptions = AddInitrdToOptions(Options, InitrdName);
 
     MyFreePool (Options);
     MyFreePool (InitrdName);
     MyFreePool (KernelVersion);
-
     return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
 
 // Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID" tokens to
 // OSIconName list. Intended for adding Linux distribution clues gleaned from
 // /etc/lsb-release and /etc/os-release files.
-static VOID ParseReleaseFile (CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileName) {
+static VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileName) {
     UINTN       FileSize = 0;
     REFIT_FILE  File;
     CHAR16      **TokenList;
@@ -221,16 +203,16 @@ static VOID ParseReleaseFile (CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 
     if ((Volume == NULL) || (FileName == NULL) || (OSIconName == NULL) || (*OSIconName == NULL))
         return;
 
-    if (FileExists (Volume->RootDir, FileName) &&
-        (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
+    if (FileExists(Volume->RootDir, FileName) &&
+        (RefitReadFile(Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
         do {
-            TokenCount = ReadTokenLine (&File, &TokenList);
-            if ((TokenCount > 1) && (MyStriCmp (TokenList[0], L"ID") ||
-                                     MyStriCmp (TokenList[0], L"NAME") ||
-                                     MyStriCmp (TokenList[0], L"DISTRIB_ID"))) {
-                MergeWords (OSIconName, TokenList[1], L',');
+            TokenCount = ReadTokenLine(&File, &TokenList);
+            if ((TokenCount > 1) && (MyStriCmp(TokenList[0], L"ID") ||
+                                     MyStriCmp(TokenList[0], L"NAME") ||
+                                     MyStriCmp(TokenList[0], L"DISTRIB_ID"))) {
+                MergeWords(OSIconName, TokenList[1], L',');
             } // if
-            FreeTokenLine (&TokenList, &TokenCount);
+            FreeTokenLine(&TokenList, &TokenCount);
         } while (TokenCount > 0);
         MyFreePool (File.Buffer);
     } // if
@@ -238,20 +220,20 @@ static VOID ParseReleaseFile (CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 
 
 // Try to guess the name of the Linux distribution & add that name to
 // OSIconName list.
-VOID GuessLinuxDistribution (CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath) {
+VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath) {
     // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues....
-    ParseReleaseFile (OSIconName, Volume, L"etc\\lsb-release");
-    ParseReleaseFile (OSIconName, Volume, L"etc\\os-release");
+    ParseReleaseFile(OSIconName, Volume, L"etc\\lsb-release");
+    ParseReleaseFile(OSIconName, Volume, L"etc\\os-release");
 
     // Search for clues in the kernel's filename....
-    if (StriSubCmp (L".fc", LoaderPath))
-        MergeStrings (OSIconName, L"fedora", L',');
-    if (StriSubCmp (L".el", LoaderPath))
-        MergeStrings (OSIconName, L"redhat", L',');
+    if (StriSubCmp(L".fc", LoaderPath))
+        MergeStrings(OSIconName, L"fedora", L',');
+    if (StriSubCmp(L".el", LoaderPath))
+        MergeStrings(OSIconName, L"redhat", L',');
 } // VOID GuessLinuxDistribution()
 
 // Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
-VOID AddKernelToSubmenu (LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume) {
+VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume) {
     REFIT_FILE          *File;
     CHAR16              **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
     CHAR16              *Path = NULL, *Title, *KernelVersion;
@@ -259,32 +241,30 @@ VOID AddKernelToSubmenu (LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VO
     LOADER_ENTRY        *SubEntry;
     UINTN               TokenCount;
 
-    File = ReadLinuxOptionsFile (TargetLoader->LoaderPath, Volume);
+    File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
     if (File != NULL) {
         SubScreen = TargetLoader->me.SubScreen;
-        InitrdName = FindInitrd (FileName, Volume);
-        KernelVersion = FindNumbers (FileName);
-
-        while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
-            ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
-            SubEntry = InitializeLoaderEntry (TargetLoader);
-            SplitPathName (FileName, &VolName, &Path, &SubmenuName);
-            MergeStrings (&SubmenuName, L": ", '\0');
-            MergeStrings (&SubmenuName, TokenList[0] ? StrDuplicate (TokenList[0]) : StrDuplicate (L"Boot Linux"), '\0');
-            Title = StrDuplicate (SubmenuName);
-            LimitStringLength (Title, MAX_LINE_LENGTH);
+        InitrdName = FindInitrd(FileName, Volume);
+        KernelVersion = FindNumbers(FileName);
+        while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
+            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            SubEntry = InitializeLoaderEntry(TargetLoader);
+            SplitPathName(FileName, &VolName, &Path, &SubmenuName);
+            MergeStrings(&SubmenuName, L": ", '\0');
+            MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
+            Title = StrDuplicate(SubmenuName);
+            LimitStringLength(Title, MAX_LINE_LENGTH);
             SubEntry->me.Title = Title;
             MyFreePool (SubEntry->LoadOptions);
-            SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+            SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
             MyFreePool (SubEntry->LoaderPath);
-            SubEntry->LoaderPath = StrDuplicate (FileName);
-            CleanUpPathNameSlashes (SubEntry->LoaderPath);
+            SubEntry->LoaderPath = StrDuplicate(FileName);
+            CleanUpPathNameSlashes(SubEntry->LoaderPath);
             SubEntry->Volume = Volume;
-            FreeTokenLine (&TokenList, &TokenCount);
+            FreeTokenLine(&TokenList, &TokenCount);
             SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
         } // while
-
         MyFreePool (VolName);
         MyFreePool (Path);
         MyFreePool (SubmenuName);
@@ -301,14 +281,14 @@ VOID AddKernelToSubmenu (LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VO
 // behave identically on non-SB systems, or when one will fail when SB
 // is active.
 // CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
-BOOLEAN HasSignedCounterpart (IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
+BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     CHAR16 *NewFile = NULL;
     BOOLEAN retval = FALSE;
 
-    MergeStrings (&NewFile, FullName, 0);
-    MergeStrings (&NewFile, L".efi.signed", 0);
+    MergeStrings(&NewFile, FullName, 0);
+    MergeStrings(&NewFile, L".efi.signed", 0);
     if (NewFile != NULL) {
-        if (FileExists (Volume->RootDir, NewFile))
+        if (FileExists(Volume->RootDir, NewFile))
             retval = TRUE;
         MyFreePool (NewFile);
     } // if
