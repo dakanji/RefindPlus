@@ -99,7 +99,7 @@ static VOID WarnSecureBootError(
         Name = L"the Loader";
     }
 
-    ShowScreenStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!", Name");
+    ShowScreenStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!", Name);
 
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (ShowScreenStrA, NEXTLINE);
@@ -107,7 +107,7 @@ static VOID WarnSecureBootError(
 
     if (Verbose && secure_mode()) {
         ShowScreenStrB = PoolPrint (
-            L"This computer is configured with Secure Boot active but %s has failed validation.",
+            L"This computer is configured with Secure Boot active but '%s' has failed validation.",
             Name
         );
         PrintUglyText (ShowScreenStrB, NEXTLINE);
@@ -120,12 +120,12 @@ static VOID WarnSecureBootError(
         );
         PrintUglyText (ShowScreenStrC, NEXTLINE);
         ShowScreenStrD = PoolPrint (
-            L" * Use a MOK utility to add a MOK with which %s has already been signed.",
+            L" * Use a MOK utility to add a MOK with which '%s' has already been signed.",
             Name
         );
         PrintUglyText (ShowScreenStrD, NEXTLINE);
         ShowScreenStrE = PoolPrint (
-            L" * Use a MOK utility to register %s ('Enroll its Hash') without signing it",
+            L" * Use a MOK utility to register '%s' ('Enroll its Hash') without signing it",
             Name
         );
         PrintUglyText (ShowScreenStrE, NEXTLINE);
@@ -148,7 +148,6 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
     UINTN           Size           = sizeof (Header);
-    CHAR16          *ShowScreenStr = NULL;
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
@@ -166,6 +165,10 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         0
     );
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("** WARN: Read Loader File ...\n\n", Status);
+        #endif
+
         return FALSE;
     }
 
@@ -199,8 +202,9 @@ StartEFIImage (
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
+    CHAR16                  *FullLoadOptions  = NULL;
+    CHAR16                  *ShowScreenStr    = NULL;
     CHAR16                  ErrorInfo[256];
-    CHAR16                  *FullLoadOptions = NULL;
 
     // set load options
     if (LoadOptions != NULL) {
@@ -271,7 +275,7 @@ StartEFIImage (
     } else {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Invalid Loader File:- '%s'", ImageTitle;
+        ShowScreenStr = PoolPrint (L"Invalid Loader File:- '%s'", ImageTitle);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
