@@ -34,7 +34,7 @@ A sample RefindPlus configuration file is provided here: [config.conf-sample](ht
 - provide_console_gop
 - direct_gop_renderer
 - continue_on_warning
-- trim_force
+- force_trim
 - disable_mac_compat_check
 - disable_amfi
 - supply_apfs

@@ -105,15 +105,19 @@
 #
 #continue_on_warning
 
-# Enable 'TRIM' on non-Apple SSDs. 'TRIM', which can improve SSD health,
+# Force 'TRIM' on non-Apple SSDs. 'TRIM', which may improve SSD health,
 # is not enabled by default on non-Apple SSDs in Mac OS. When this option
-# is active, RefindPlus will switch 'TRIM' on in Mac OS for all SSDs
-# including non-Apple SSDs. This setting only applies to Mac OS.
-# NB: Enabling 'TRIM' can significantly increase boot times.
+# is active, RefindPlus will force Mac OS 'TRIM' on for all SSDs types
+# including on non-Apple SSDs. This setting only applies to Mac OS. Note
+# that this setting will create a Mac OS NVRAM entry the first time it is
+# triggered and that this will stay active until explicitly cleared even
+# if the setting is subsequently disabled. Also note that forcing 'TRIM'
+# may significantly increase boot times and that if 'TRIM' is forced on 
+# using Mac OS Terminal, warnings about data integrity are generated.
 #
-# Inactive when commented out (Does not enable 'TRIM')
+# Inactive when commented out (Does not force 'TRIM' on)
 #
-#trim_force
+#force_trim
 
 # Disable Mac OS compatibility check when booting. Macs check whether the
 # current Mac OS version is supported on the machine when booting and halts

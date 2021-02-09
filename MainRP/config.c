@@ -1026,8 +1026,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"continue_on_warning")) {
           GlobalConfig.ContinueOnWarning = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"trim_force")) {
-          GlobalConfig.TrimForce = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"force_trim")) {
+          GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_mac_compat_check")) {
           GlobalConfig.DisableMacCompatCheck = HandleBoolean (TokenList, TokenCount);

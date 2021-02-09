@@ -1,5 +1,7 @@
-0.12.0.AR (DD MMM YYYY):
+0.12.0.AR (Pre-Release):
 -----------------------
+- Renames "trim_force" Config Option back to "force_trim"
+  * This more accurately reflects the action taken
 - Fixes Several Memory Management Issues
   * These had largely been introduced after the v0.12.0.AN Release
   * One outcome had been a failure to run on units some units (mainly laptops)

@@ -375,7 +375,7 @@ typedef struct {
    BOOLEAN          ProvideConsoleGOP;
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
-   BOOLEAN          TrimForce;
+   BOOLEAN          ForceTRIM;
    BOOLEAN          DisableMacCompatCheck;
    BOOLEAN          DisableAMFI;
    BOOLEAN          SupplyAPFS;
