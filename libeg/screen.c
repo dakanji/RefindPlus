@@ -795,7 +795,7 @@ egInitScreen (
     }
 
     if (EFI_ERROR (Status)) {
-        egHasConsoleControl  = FALSE;
+        ConsoleControlFlag  = FALSE;
 
         #if REFIT_DEBUG > 0
         MsgLog ("  - Assess Console Control ...NOT OK!\n\n");
@@ -2078,7 +2078,7 @@ egScreenShot (
         PauseForKey();
         SwitchToGraphics();
         MyFreePool (ShowScreenStr);
-        
+
        goto bailout_wait;
     }
 

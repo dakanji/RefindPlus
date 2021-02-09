@@ -123,8 +123,12 @@ BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
 BOOLEAN          SelfVolRun     = FALSE;
+BOOLEAN          DoneHeadings   = FALSE;
 
 extern EFI_GUID RefindPlusGuid;
+
+extern BOOLEAN LogNewLine;
+extern BOOLEAN ScanningLoaders;
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -132,8 +136,6 @@ extern EFI_GUID RefindPlusGuid;
 // Number of bytes to read from a partition to determine its filesystem type
 // and identify its boot loader, and hence probable BIOS-mode OS installation
 #define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
-
-
 
 BOOLEAN egIsGraphicsModeEnabled (VOID);
 
@@ -469,6 +471,11 @@ EfivarGetRaw (
             GlobalConfig.UseNvram = TRUE;
 
             #if REFIT_DEBUG > 0
+            if (ScanningLoaders) {
+                LogNewLine = FALSE;
+                MsgLog ("\n");
+            }
+
             MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
@@ -1080,8 +1087,11 @@ CHAR16
     IN REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr = NULL;
-    CHAR16                *FoundName = NULL;
+    CHAR16                *FoundName         = NULL;
     CHAR16                *SISize, *TypeName;
+    EFI_GUID              GuidHFS  = HFS_GUID_VALUE;
+    EFI_GUID              GuidAPFS = APFS_GUID_VALUE;
+
 
     if (Volume->RootDir != NULL) {
         FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
@@ -1127,13 +1137,29 @@ CHAR16
                 FoundName = L"Disc/Network Volume (Assumed)";
             }
             else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
-                FoundName = L"APFS Container (Assumed)";
+                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                    FoundName = L"Unidentified Volume (HFS+)";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                    FoundName = L"APFS Container";
+                }
+                else {
+                    FoundName = L"APFS Container (Assumed)";
+                }
             }
             else {
-                FoundName = L"Unknown Volume";
-            }
-        } // if allocated memory OK
-    } // if
+                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                    FoundName = L"Unidentified Volume (HFS+)";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                    FoundName = L"Unidentified Volume (APFS)";
+                }
+                else {
+                    FoundName = L"Unidentified Volume";
+                }
+            } // if StrLen TypeName else if MyStriCmp else
+        } // if FoundName != NULL
+    } // if FoundName == NULL
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
     // such as:
@@ -1558,14 +1584,14 @@ SetPrebootVolumes (
 
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Cloak PreBoot Partitions:");
+        MsgLog ("Map Volumes to PreBoot:");
         #endif
         for (i = 0; i < VolumesCount; i++) {
             SwapName = SetPreBootNames(Volumes[i]);
             if (SwapName) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("\n");
-                MsgLog ("  - Cloaked PreBoot Partition:- '%s'", Volumes[i]->VolName);
+                MsgLog ("  - Mapped Volume:- '%s'", Volumes[i]->VolName);
                 #endif
                 MyFreePool (Volumes[i]->VolName);
                 Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
@@ -1595,6 +1621,16 @@ ScanVolumes (
     EFI_GUID           GuidNull       = NULL_GUID_VALUE;
     CHAR16             *ShowScreenStr = NULL;
 
+    #if REFIT_DEBUG > 0
+    CHAR16  *VolDesc;
+    CHAR16  *PartGUID;
+    CHAR16  *PartTypeGUID;
+
+    CONST CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
+    CONST CHAR16 *ITEMVOLB = L"VOLUME GUID";
+    CONST CHAR16 *ITEMVOLC = L"VOLUME ID";
+    #endif
+
     MyFreePool (Volumes);
     Volumes = NULL;
     VolumesCount = 0;
@@ -1618,11 +1654,13 @@ ScanVolumes (
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
+
     if (SelfVolRun) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Collect Volumes:\n");
+        MsgLog ("Enumerate Volumes:\n");
         #endif
     }
+
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
@@ -1656,7 +1694,11 @@ ScanVolumes (
             if (ScannedOnce) {
                 MsgLog ("\n");
             }
-            CHAR16 *VolDesc = Volume->VolName;
+
+            VolDesc      = StrDuplicate (Volume->VolName);
+            PartGUID     = GuidAsString (&Volume->PartGuid);
+            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
+
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 VolDesc = L"Whole Disk Volume";
             }
@@ -1694,7 +1736,16 @@ ScanVolumes (
                 VolDesc = L"ISO-9660 Volume";
             }
 
-            MsgLog ("Add to Collection:- '%s'", VolDesc);
+            if (!DoneHeadings) {
+                MsgLog ("%-41s%-41s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
+                DoneHeadings = TRUE;
+            }
+            MsgLog ("%s  :  %s  :  %s", PartTypeGUID, PartGUID, VolDesc);
+
+            MyFreePool (VolDesc);
+            MyFreePool (PartGUID);
+            MyFreePool (PartTypeGUID);
+
             ScannedOnce = TRUE;
         }
         #endif
@@ -1727,6 +1778,8 @@ ScanVolumes (
     }
     else {
         #if REFIT_DEBUG > 0
+        MsgLog ("\n");
+        MsgLog ("%-41s%-41s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC);
         MsgLog ("\n\n");
         #endif
     }

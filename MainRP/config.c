@@ -1358,10 +1358,12 @@ ScanUserConfigured (
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                             VolDesc = L"ISO-9660 Volume";
                         }
-                        MsgLog ("  - Found '%s' on '%s'\n", Entry->Title, VolDesc);
+                        MsgLog ("\n");
+                        MsgLog ("  - Found '%s' on '%s'", Entry->Title, VolDesc);
                     }
                     else {
-                        MsgLog ("  - Found %s : '%s'\n", Entry->Title, Entry->LoaderPath);
+                        MsgLog ("\n");
+                        MsgLog ("  - Found '%s' :: '%s'", Entry->Title, Entry->LoaderPath);
                     }
                     #endif
 

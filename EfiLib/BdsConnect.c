@@ -21,7 +21,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 BOOLEAN FoundGOP = FALSE;
 BOOLEAN ReLoaded = FALSE;
-BOOLEAN egHasConsoleControl;
+BOOLEAN ConsoleControlFlag;
 
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
@@ -232,7 +232,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     UINTN  HexIndex = 0;
     UINTN  m;
 
-    egHasConsoleControl = FALSE;
+    ConsoleControlFlag = FALSE;
 
 
     #if REFIT_DEBUG > 0
@@ -437,7 +437,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         #endif
                     }
                     else if (!EFI_ERROR (XStatus)) {
-                        egHasConsoleControl = TRUE;
+                        ConsoleControlFlag = TRUE;
 
                         #if REFIT_DEBUG > 0
                         MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
@@ -523,7 +523,7 @@ BdsLibConnectAllDriversToAllControllersEx (
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
-            if (!FoundGOP) {
+            if (!FoundGOP && ConsoleControlFlag) {
                 MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
             }
         }
@@ -588,7 +588,7 @@ BdsLibConnectAllDriversToAllControllers (
     EFI_STATUS Status;
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
-    if (EFI_ERROR (Status) && ResetGOP && !ReLoaded) {
+    if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && ConsoleControlFlag) {
         ReLoaded = TRUE;
         Status = ApplyGOPFix();
 

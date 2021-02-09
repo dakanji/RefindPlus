@@ -245,8 +245,7 @@ SetupScreen (
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * UI Scaling Disabled\n");
-                MsgLog ("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
@@ -267,8 +266,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * LoDPI Monitor Detected\n");
-                MsgLog ("    ** Maintain Icon Scale\n\n");
+                MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
                 #endif
             } // if
 
@@ -816,7 +814,7 @@ BltClearScreen (
                // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
                //         Apparent Memory Conflict ... Needs Investigation.
                //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-               if (egHasConsoleControl) {
+               if (ConsoleControlFlag) {
                    egFreeImage (Banner);
                }
                else {
@@ -861,7 +859,7 @@ BltClearScreen (
             // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
             //         Apparent Memory Conflict ... Needs Investigation.
             //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-            if (egHasConsoleControl) {
+            if (ConsoleControlFlag) {
                 egFreeImage (Banner);
             }
             else {
@@ -880,7 +878,7 @@ BltClearScreen (
     // DA_TAG: Permit ScreenBackground->PixelData Memory Leak on items without ConsoleControl
     //         Apparent Memory Conflict ... Needs Investigation.
     //         Likely related to Qemu Specific Issue.
-    if (egHasConsoleControl) {
+    if (ConsoleControlFlag) {
         egFreeImage(GlobalConfig.ScreenBackground);
     }
     else {

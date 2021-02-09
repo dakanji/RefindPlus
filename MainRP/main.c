@@ -1698,10 +1698,7 @@ efi_main (
 
     #if REFIT_DEBUG > 0
     MsgLog (
-        "INFO: Loaded RefindPlus v%s on %s Firmware ...User Input Pending\n\n",
-        REFINDPLUS_VERSION,
-        gST->FirmwareVendor
-    );
+        "INFO: Loaded RefindPlus v%s ...User Input Pending\n\n", REFINDPLUS_VERSION);
     #endif
 
     while (MainLoopRunning) {

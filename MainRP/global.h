@@ -452,7 +452,7 @@ extern EFI_GUID          GlobalGuid;
 extern EFI_GUID          RefindPlusGuid;
 
 extern BOOLEAN           TweakSysTable;
-extern BOOLEAN           egHasConsoleControl;
+extern BOOLEAN           ConsoleControlFlag;
 
 extern REFIT_MENU_SCREEN MainMenu;
 

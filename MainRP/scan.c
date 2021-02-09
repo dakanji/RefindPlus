@@ -128,7 +128,10 @@
 // a ".efi" extension to be found when scanning for boot loaders.
 #define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
-EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
+EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
+
+BOOLEAN  LogNewLine      = TRUE;
+BOOLEAN  ScanningLoaders = FALSE;
 
 static REFIT_MENU_ENTRY MenuEntryAbout = {
     L"About RefindPlus",
@@ -787,10 +790,12 @@ static LOADER_ENTRY * AddLoaderEntry (
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                 VolDesc = L"ISO-9660 Volume";
             }
-            MsgLog ("  - Found '%s' on '%s'\n", TitleEntry, VolDesc);
+            MsgLog ("\n");
+            MsgLog ("  - Found '%s' on '%s'", TitleEntry, VolDesc);
         }
         else {
-            MsgLog ("  - Found %s:- '%s'\n", TitleEntry, Entry->LoaderPath);
+            MsgLog ("\n");
+            MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
         #endif
 
@@ -1555,15 +1560,17 @@ ScanForBootloaders (
 ) {
     UINTN    i;
     UINTN    k;
-    CHAR8    s;
+    CHAR8    ScanOption;
     BOOLEAN  ScanForLegacy = FALSE;
-    EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+    EG_PIXEL BGColor       = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags;
     CHAR16   *HiddenLegacy;
     CHAR16   ShortCutKey;
 
+    ScanningLoaders = TRUE;
+
     #if REFIT_DEBUG > 0
-    MsgLog ("Seek Boot Loaders...\n");
+    MsgLog ("Seek Boot Loaders...");
     #endif
 
     if (ShowMessage){
@@ -1572,14 +1579,23 @@ ScanForBootloaders (
 
     // Determine up-front if we'll be scanning for legacy loaders....
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
-        s = GlobalConfig.ScanFor[i];
-        if ((s == 'c') || (s == 'C') || (s == 'h') || (s == 'H') || (s == 'b') || (s == 'B')) {
+        ScanOption = GlobalConfig.ScanFor[i];
+        if ((ScanOption == 'c') ||
+            (ScanOption == 'C') ||
+            (ScanOption == 'h') ||
+            (ScanOption == 'H') ||
+            (ScanOption == 'b') ||
+            (ScanOption == 'B')
+        ) {
             ScanForLegacy = TRUE;
         }
     } // for
 
     // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
-    if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) && ScanForLegacy && GlobalConfig.DeepLegacyScan) {
+    if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) &&
+        ScanForLegacy &&
+        GlobalConfig.DeepLegacyScan
+    ) {
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();
     } // if
@@ -1601,56 +1617,104 @@ ScanForBootloaders (
         switch (GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Manual:\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Manual:");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);
                 break;
             case 'i': case 'I':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Internal:\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Internal:");
                 #endif
 
                 ScanInternal();
                 break;
             case 'h': case 'H':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Internal (Legacy):\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Internal (Legacy):");
                 #endif
 
                 ScanLegacyInternal();
                 break;
             case 'e': case 'E':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan External:\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan External:");
                 #endif
 
                 ScanExternal();
                 break;
             case 'b': case 'B':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan External (Legacy):\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan External (Legacy):");
                 #endif
 
                 ScanLegacyExternal();
                 break;
             case 'o': case 'O':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Optical:\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Optical:");
                 #endif
 
                 ScanOptical();
                 break;
             case 'c': case 'C':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Disc (Legacy):\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Disc (Legacy):");
                 #endif
 
                 ScanLegacyDisc();
                 break;
             case 'n': case 'N':
                 #if REFIT_DEBUG > 0
-                MsgLog ("Scan Net Boot:\n");
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Net Boot:");
                 #endif
 
                 ScanNetboot();
@@ -1664,6 +1728,7 @@ ScanForBootloaders (
     else {
         // assign shortcut keys
         #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
         MsgLog ("Assign Keyboard Shortcut Keys:\n");
         #endif
 
@@ -1720,6 +1785,8 @@ ScanForBootloaders (
 
     // wait for user ACK when there were errors
     FinishTextScreen (FALSE);
+
+    ScanningLoaders = FALSE;
 } // VOID ScanForBootloaders()
 
 // Checks to see if a specified file seems to be a valid tool.
