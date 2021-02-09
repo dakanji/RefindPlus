@@ -159,13 +159,27 @@
 #
 #suppress_verbose_apfs
 
+# Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
+# of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.0 (Big Sur) when
+# SIP is enabled. Attempts to run the Mac OS 11.0 Boot Loader directly with SIP enabled result
+# in kernel panics. When this option is activated, RefindPlus will map Mac OS APFS volumes to
+# their respective "PreBoot" partitions which will be used to boot such Mac OS Instances and
+# the "PreBoot" partitions will be hidden from view. This feature also facilitates directly
+# booting into FileVault encrypted APFS volumes without requiring "PreBoot" partitions.
+# NB: Maintain the default naming pattern for APFS data volumes, 'VolName - Data', to
+# improve the reliability of this option in distinguishing between APFS partitions.
+#
+# Inactive when commented out (Does not enforce APFS requirements)
+#
+#enforce_apfs
+
 # Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
 # this issue and is recommended when running Windows on Apple Firmware.
 # This setting only applies when loading Windows on Apple Firmware.
 #
-# Inactive when commented out (Does not stop UEFI Windows from writing to Apple NVRAM)
+# Inactive when commented out (Does not prevent UEFI Windows writes to Apple NVRAM)
 #
 #protect_mac_nvram
 
@@ -627,8 +641,8 @@ timeout 20
 # kernels with EFI stub loaders but that do not give those kernels filenames
 # that end in ".efi", particularly if the kernels are stored on a
 # filesystem that the EFI can read. When active, this option causes all files
-# in scanned directories with names that begin with "vmlinuz", "bzImage", or "kernel"
-# to be included as loaders, even if they lack ".efi" extensions.
+# in scanned directories with names that begin with "vmlinuz", "bzImage", or
+# "kernel" to be included as loaders, even if they lack ".efi" extensions.
 #
 # Inactive when commented out (Only scans for kernels with ".efi" extensions)
 #

@@ -201,6 +201,9 @@
 #define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be Mac OS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
+#define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
+#define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
+
 
 // Filename patterns that identify EFI boot loaders. Note that a single case (either L"*.efi" or
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
@@ -377,6 +380,7 @@ typedef struct {
    BOOLEAN          DisableAMFI;
    BOOLEAN          SupplyAPFS;
    BOOLEAN          SuppressVerboseAPFS;
+   BOOLEAN          EnforceAPFS;
    BOOLEAN          ProtectMacNVRAM;
    BOOLEAN          AllowDuplicates;
    BOOLEAN          ShutdownAfterTimeout;
@@ -435,9 +439,12 @@ extern CHAR16            *SelfDirPath;
 extern REFIT_VOLUME      *SelfVolume;
 extern REFIT_VOLUME      **Volumes;
 
+extern REFIT_VOLUME **PreBootVolumes;
+
 extern REFIT_CONFIG      GlobalConfig;
 
 extern UINTN             VolumesCount;
+extern UINTN             PreBootVolumesCount;
 
 extern EFI_GUID          gEfiLegacyBootProtocolGuid;
 extern EFI_GUID          gEfiGlobalVariableGuid;

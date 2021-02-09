@@ -1041,6 +1041,9 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"suppress_verbose_apfs")) {
           GlobalConfig.SuppressVerboseAPFS = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"enforce_apfs")) {
+          GlobalConfig.EnforceAPFS = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"protect_mac_nvram")) {
           GlobalConfig.ProtectMacNVRAM = HandleBoolean (TokenList, TokenCount);
         }

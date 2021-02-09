@@ -76,8 +76,6 @@
 //
 // constants
 
-#define MACOSX_LOADER_DIR      L"System\\Library\\CoreServices"
-#define MACOSX_LOADER_PATH     ( MACOSX_LOADER_DIR L"\\boot.efi" )
 #if defined (EFIX64)
 #define SHELL_NAMES L"\\EFI\\BOOT\\x64_tools\\x64_Shell.efi,\\EFI\\BOOT\\x64_tools\\shell_x64.efi,\\EFI\\BOOT\\x64_tools\\shell.efi,\\EFI\\tools_x64\\x64_Shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\\EFI\\tools_x64\\shell.efi,\\EFI\\tools\\x64_Shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\tools\\shell.efi,\\EFI\\x64_Shell.efi,\\EFI\\shell_x64.efi,\\EFI\\shell.efi,\\x64_Shell.efi,\\shell_x64.efi,\\shell.efi"
 #define GPTSYNC_NAMES L"\\EFI\\BOOT\\x64_tools\\gptsync.efi,\\EFI\\BOOT\\x64_tools\\gptsync_x64.efi,\\EFI\\tools_x64\\gptsync.efi,\\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
@@ -1245,12 +1243,22 @@ static VOID ScanNetboot() {
     }
 } // VOID ScanNetboot()
 
+
 // Adds *FullFileName as a Mac OS loader, if it exists.
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
-static BOOLEAN ScanMacOsLoader (REFIT_VOLUME *Volume, CHAR16* FullFileName) {
+STATIC
+BOOLEAN
+ScanMacOsLoader (
+    REFIT_VOLUME *Volume,
+    CHAR16       *FullFileName
+) {
+    BOOLEAN  AddThisEntry       = TRUE;
     BOOLEAN  ScanFallbackLoader = TRUE;
-    CHAR16   *VolName = NULL, *PathName = NULL, *FileName = NULL;
+    CHAR16   *VolName           = NULL;
+    CHAR16   *PathName          = NULL;
+    CHAR16   *FileName          = NULL;
+
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
     if (FileExists (Volume->RootDir, FullFileName) &&
@@ -1262,7 +1270,15 @@ static BOOLEAN ScanMacOsLoader (REFIT_VOLUME *Volume, CHAR16* FullFileName) {
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
         else {
-            AddLoaderEntry (FullFileName, L"Mac OS", Volume, TRUE);
+            if (GlobalConfig.EnforceAPFS &&
+                MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
+            ) {
+                AddThisEntry = FALSE;
+            }
+
+            if (AddThisEntry) {
+                AddLoaderEntry (FullFileName, L"Mac OS", Volume, TRUE);
+            }
         }
 
         if (DuplicatesFallback (Volume, FullFileName)) {
@@ -1272,6 +1288,7 @@ static BOOLEAN ScanMacOsLoader (REFIT_VOLUME *Volume, CHAR16* FullFileName) {
     MyFreePool (VolName);
     MyFreePool (PathName);
     MyFreePool (FileName);
+
     return ScanFallbackLoader;
 } // VOID ScanMacOsLoader()
 

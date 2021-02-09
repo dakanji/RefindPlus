@@ -143,6 +143,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableAMFI = */ FALSE,
     /* SupplyAPFS = */ FALSE,
     /* SuppressVerboseAPFS = */ FALSE,
+    /* EnforceAPFS = */ FALSE,
     /* ProtectMacNVRAM = */ FALSE,
     /* AllowDuplicates = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
@@ -1875,7 +1876,7 @@ efi_main (
                 if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") == NULL &&
                     MyStrStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
                 ) {
-                    if (MyStrStr (ourLoaderEntry->Volume->VolName, L"Preboot") != NULL) {
+                    if (MyStriCmp (ourLoaderEntry->Volume->VolName, L"PreBoot")) {
                         ourLoaderEntry->Title = L"Mac OS";
                     }
                     else {

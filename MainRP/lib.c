@@ -114,11 +114,16 @@ CHAR16           *SelfDirPath;
 
 REFIT_VOLUME     *SelfVolume    = NULL;
 REFIT_VOLUME     **Volumes      = NULL;
+
+REFIT_VOLUME **PreBootVolumes      = NULL;
+UINTN        PreBootVolumesCount   = 0;
+
 UINTN            VolumesCount   = 0;
 BOOLEAN          MediaCheck     = FALSE;
 BOOLEAN          ScannedOnce    = FALSE;
 BOOLEAN          SelfVolSet     = FALSE;
 BOOLEAN          SelfVolRun     = FALSE;
+
 extern EFI_GUID RefindPlusGuid;
 
 // Maximum size for disk sectors
@@ -1469,6 +1474,109 @@ ScanExtendedPartition (
     } // for
 } // VOID ScanExtendedPartition()
 
+// Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
+// Returns TRUE if a match was found and FALSE if not.
+STATIC
+BOOLEAN
+SetPreBootNames (
+    REFIT_VOLUME *Volume
+) {
+    UINTN   PreBootIndex;
+    BOOLEAN NameSwap  = FALSE;
+    BOOLEAN FoundGUID = FALSE;
+
+    for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+        if (GuidsAreEqual (
+                &(PreBootVolumes[PreBootIndex]->PartGuid),
+                &(Volume->PartGuid)
+            )
+        ) {
+            FoundGUID = TRUE;
+            if (!(MyStriCmp (Volume->VolName, L"PreBoot")) &&
+                !(MyStriCmp (Volume->VolName, L"Recovery")) &&
+                !(MyStriCmp (Volume->VolName, L"Update")) &&
+                !(MyStriCmp (Volume->VolName, L"VM")) &&
+                MyStrStr (Volume->VolName, L"APFS Container") == NULL &&
+                FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
+            ) {
+                NameSwap = TRUE;
+                break;
+            } // if !MyStriCmp
+        } // if GuidsAreEqual
+    } // for
+
+    if (!NameSwap && FoundGUID) {
+        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+            if (GuidsAreEqual (
+                    &(PreBootVolumes[PreBootIndex]->PartGuid),
+                    &(Volume->PartGuid)
+                )
+            ) {
+                if (!(MyStriCmp (Volume->VolName, L"PreBoot")) &&
+                    !(MyStriCmp (Volume->VolName, L"Recovery")) &&
+                    !(MyStriCmp (Volume->VolName, L"Update")) &&
+                    !(MyStriCmp (Volume->VolName, L"VM")) &&
+                    MyStrStr (Volume->VolName, L"APFS Container") == NULL &&
+                    MyStrStr (Volume->VolName, L" - Data") == NULL
+                ) {
+                    NameSwap = TRUE;
+                    break;
+                } // if !MyStriCmp
+            } // if GuidsAreEqual
+        } // for
+    } // if !NameSwap
+
+    if (NameSwap) {
+        MyFreePool (PreBootVolumes[PreBootIndex]->VolName);
+        PreBootVolumes[PreBootIndex]->VolName = AllocateZeroPool (256 * sizeof (UINT16));
+        PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
+    }
+
+    return NameSwap;
+} // VOID SetPreBootNames()
+
+// Create a subset of Mac OS 'PreBoot' volumes from the volume collection.
+STATIC
+VOID
+SetPrebootVolumes (
+    VOID
+) {
+    UINTN   i;
+    BOOLEAN SwapName     = FALSE;
+    BOOLEAN FoundPreboot = FALSE;
+
+    MyFreePool (PreBootVolumes);
+    PreBootVolumes      = NULL;
+    PreBootVolumesCount = 0;
+
+    for (i = 0; i < VolumesCount; i++) {
+        if (MyStriCmp (Volumes[i]->VolName, L"PreBoot")) {
+            FoundPreboot = TRUE;
+            AddListElement ((VOID ***) &PreBootVolumes, &PreBootVolumesCount, Volumes[i]);
+        }
+    }
+
+    if (FoundPreboot) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("Cloak PreBoot Partitions:");
+        #endif
+        for (i = 0; i < VolumesCount; i++) {
+            SwapName = SetPreBootNames(Volumes[i]);
+            if (SwapName) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("\n");
+                MsgLog ("  - Cloaked PreBoot Partition:- '%s'", Volumes[i]->VolName);
+                #endif
+                MyFreePool (Volumes[i]->VolName);
+                Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
+            }
+        }
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
+        #endif
+    }
+} // VOID SetPrebootVolumes()
+
 VOID
 ScanVolumes (
     VOID
@@ -1510,6 +1618,11 @@ ScanVolumes (
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
+    if (SelfVolRun) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("Collect Volumes:\n");
+        #endif
+    }
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         Volume->DeviceHandle = Handles[HandleIndex];
@@ -1710,6 +1823,10 @@ ScanVolumes (
             MyFreePool (SectorBuffer2);
         }
     } // for
+
+    if (SelfVolRun && GlobalConfig.EnforceAPFS) {
+        SetPrebootVolumes();
+    }
 } // VOID ScanVolumes()
 
 VOID
