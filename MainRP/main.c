@@ -603,19 +603,20 @@ ForceTRIM (
     UINT32      AppleFLAGS    = APPLE_FLAGS;
     CHAR16      *NameNVRAM    = L"EnableTRIM";
     char        DataNVRAM[1]  = {0x01};
-
-    Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
-
-    if (Status != EFI_ALREADY_STARTED) {
-        Status = refit_call5_wrapper(
-            gRT->SetVariable,
-            NameNVRAM,
-            &AppleGUID,
-            AppleFLAGS,
-            sizeof (DataNVRAM),
-            DataNVRAM
-        );
-    }
+// DA_TAG: Deactivate pending review of impact on NVRAM.
+Status = EFI_SUCCESS;
+//    Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
+//
+//    if (Status != EFI_ALREADY_STARTED) {
+//        Status = refit_call5_wrapper(
+//            gRT->SetVariable,
+//            NameNVRAM,
+//            &AppleGUID,
+//            AppleFLAGS,
+//            sizeof (DataNVRAM),
+//            DataNVRAM
+//        );
+//    }
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
