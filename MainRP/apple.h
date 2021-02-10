@@ -69,20 +69,10 @@ extern CHAR16 *gCsrStatus;
 
 EFI_STATUS SetAppleOSInfo();
 EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
-EFI_STATUS CheckAppleNvramEntry (
-    IN  CHAR16      *NameNVRAM,
-    IN  CONST VOID  *DataNVRAM
-);
 
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
 VOID ForceTRIM(VOID);
 VOID DisableMacCompatCheck(VOID);
 VOID DisableAMFI(VOID);
-VOID *GetAppleNvramEntry (
-    IN      CHAR16        *VariableName,
-    OUT     UINT32        *Attributes    OPTIONAL,
-    OUT     UINTN         *DataSize      OPTIONAL
-);
-
 #endif

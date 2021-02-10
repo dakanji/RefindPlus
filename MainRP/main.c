@@ -381,38 +381,71 @@ gRTSetVariableEx (
 } // VOID gRTSetVariableEx()
 
 
-// Convert CHAR16 to char array
+// Convert CHAR16 to CHAR8 array
 STATIC
 VOID
-CHAR16charConv (
+StrChar16ArrChar8 (
     IN  CHAR16  *StrCHAR16,
-    OUT char    StrCharArray[256]
+    OUT CHAR8   ArrCHAR8[256]
 ) {
-    // Get the number of characters (plus null terminator) in StrCHAR16
     UINTN k = -1;
+    UINTN i = -1;
+
+    // Get the number of characters (plus null terminator) in StrCHAR16
     do {
         // increment index
         k = k + 1;
     } while (StrCHAR16[k] != L'\0');
 
-    // Move StrCHAR16 characters to StrCharArray
-    UINTN i = -1;
+    // Move StrCHAR16 characters to ArrCHAR8
     do {
         // increment index
         i = i + 1;
 
         if (i > 255) {
             // prevent overflow
-            StrCharArray[i]  = L'\0';
+            ArrCHAR8[i]  = L'\0';
             break;
         }
         else {
-            // convert to single byte char and assign to array
-            char character   = StrCHAR16[i];
-            StrCharArray[i]  = character;
+            // convert to single byte character and assign to array
+            CHAR8 character  = StrCHAR16[i];
+            ArrCHAR8[i]      = character;
         }
     } while (i < k);
-} // VOID CHAR16charConv
+} // VOID StrChar16ArrChar8
+
+
+STATIC
+EFI_STATUS
+NvramEntryCheck (
+    IN  CHAR16  *NameNVRAM,
+    IN  CHAR8   *DataNVRAM
+) {
+    UINTN       VarSize;
+    UINTN       SizeNVRAM;
+    CHAR16      *VarData;
+    EFI_GUID    AppleGUID = APPLE_GUID;
+    EFI_STATUS  Status;
+
+    SizeNVRAM = sizeof (DataNVRAM);
+
+    Status = EfivarGetRaw (
+        &AppleGUID,
+        NameNVRAM,
+        (CHAR8**) &VarData,
+        &VarSize
+    );
+
+    // Test whether boot args are equivalent
+    if (!EFI_ERROR (Status) &&
+        (MyStrStr ((CHAR16 *) VarData, (CHAR16 *) DataNVRAM) != NULL)
+    ) {
+        Status = EFI_ALREADY_STARTED;
+    }
+
+    return Status;
+}
 
 
 STATIC
@@ -424,10 +457,9 @@ SetMacBootArgs (
     EFI_GUID    AppleGUID                  = APPLE_GUID;
     BOOLEAN     LogDisableAMFI             = FALSE;
     BOOLEAN     LogDisableMacCompatCheck   = FALSE;
-    UINT32      AppleFLAGS                 = APPLE_FLAGS;
     CHAR16      *NameNVRAM                 = L"boot-args";
     CHAR16      *BootArg;
-    char        DataNVRAM[256];
+    CHAR8       DataNVRAM[256];
 
     if (!GlobalConfig.SetMacBootArgs || GlobalConfig.SetMacBootArgs[0] == L'\0') {
         Status = EFI_INVALID_PARAMETER;
@@ -483,20 +515,21 @@ SetMacBootArgs (
             );
         }
 
-        // Convert BootArg to char array in 'StrCharArray'
-        CHAR16charConv (BootArg, DataNVRAM);
+        // Convert BootArg to CHAR8 array in 'ArrCHAR8'
+        StrChar16ArrChar8 (BootArg, DataNVRAM);
         MyFreePool (BootArg);
 
-        Status = refit_call5_wrapper(
-            gRT->SetVariable,
-            NameNVRAM,
-            &AppleGUID,
-            AppleFLAGS,
-            sizeof (DataNVRAM),
-            DataNVRAM
-        );
+        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
 
-        MyFreePool (DataNVRAM);
+        if (Status != EFI_ALREADY_STARTED) {
+            Status = EfivarSetRaw (
+                &AppleGUID,
+                NameNVRAM,
+                DataNVRAM,
+                sizeof (DataNVRAM),
+                TRUE
+            );
+        }
     }
 
     #if REFIT_DEBUG > 0
@@ -522,37 +555,38 @@ DisableAMFI (
 ) {
     EFI_STATUS  Status;
     EFI_GUID    AppleGUID   = APPLE_GUID;
-    UINT32      AppleFLAGS  = APPLE_FLAGS;
     CHAR16      *NameNVRAM  = L"boot-args";
 
     if (GlobalConfig.DisableMacCompatCheck) {
         // Combine with DisableMacCompatCheck
-        char DataNVRAM[] = "amfi_get_out_of_my_way=1 -no_compat_check";
+        CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1 -no_compat_check";
 
-        Status = refit_call5_wrapper(
-            gRT->SetVariable,
-            NameNVRAM,
-            &AppleGUID,
-            AppleFLAGS,
-            sizeof (DataNVRAM),
-            DataNVRAM
-        );
+        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
 
-        MyFreePool (DataNVRAM);
+        if (Status != EFI_ALREADY_STARTED) {
+            Status = EfivarSetRaw (
+                &AppleGUID,
+                NameNVRAM,
+                DataNVRAM,
+                sizeof (DataNVRAM),
+                TRUE
+            );
+        }
     }
     else {
-        char DataNVRAM[] = "amfi_get_out_of_my_way=1";
+        CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1";
 
-        Status = refit_call5_wrapper(
-            gRT->SetVariable,
-            NameNVRAM,
-            &AppleGUID,
-            AppleFLAGS,
-            sizeof (DataNVRAM),
-            DataNVRAM
-        );
+        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
 
-        MyFreePool (DataNVRAM);
+        if (Status != EFI_ALREADY_STARTED) {
+            Status = EfivarSetRaw (
+                &AppleGUID,
+                NameNVRAM,
+                DataNVRAM,
+                sizeof (DataNVRAM),
+                TRUE
+            );
+        }
     }
 
     #if REFIT_DEBUG > 0
@@ -572,20 +606,20 @@ DisableMacCompatCheck (
 ) {
     EFI_STATUS  Status;
     EFI_GUID    AppleGUID    = APPLE_GUID;
-    UINT32      AppleFLAGS   = APPLE_FLAGS;
     CHAR16      *NameNVRAM   = L"boot-args";
-    char        DataNVRAM[]  = "-no_compat_check";
+    CHAR8       DataNVRAM[]  = "-no_compat_check";
 
-    Status = refit_call5_wrapper(
-        gRT->SetVariable,
-        NameNVRAM,
-        &AppleGUID,
-        AppleFLAGS,
-        sizeof (DataNVRAM),
-        DataNVRAM
-    );
+    Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
 
-    MyFreePool (DataNVRAM);
+    if (Status != EFI_ALREADY_STARTED) {
+        Status = EfivarSetRaw (
+            &AppleGUID,
+            NameNVRAM,
+            DataNVRAM,
+            sizeof (DataNVRAM),
+            TRUE
+        );
+    }
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
@@ -600,23 +634,20 @@ ForceTRIM (
 ) {
     EFI_STATUS  Status;
     EFI_GUID    AppleGUID     = APPLE_GUID;
-    UINT32      AppleFLAGS    = APPLE_FLAGS;
     CHAR16      *NameNVRAM    = L"EnableTRIM";
-    char        DataNVRAM[1]  = {0x01};
-// DA_TAG: Deactivate pending review of impact on NVRAM.
-Status = EFI_SUCCESS;
-//    Status = CheckAppleNvramEntry (NameNVRAM, (VOID *) DataNVRAM);
-//
-//    if (Status != EFI_ALREADY_STARTED) {
-//        Status = refit_call5_wrapper(
-//            gRT->SetVariable,
-//            NameNVRAM,
-//            &AppleGUID,
-//            AppleFLAGS,
-//            sizeof (DataNVRAM),
-//            DataNVRAM
-//        );
-//    }
+    CHAR8       DataNVRAM[1]  = {0x01};
+
+    Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
+
+    if (Status != EFI_ALREADY_STARTED) {
+        Status = EfivarSetRaw (
+            &AppleGUID,
+            NameNVRAM,
+            DataNVRAM,
+            sizeof (DataNVRAM),
+            TRUE
+        );
+    }
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
