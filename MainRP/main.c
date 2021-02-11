@@ -315,28 +315,19 @@ gRTSetVariableEx (
     BOOLEAN BlockCert = FALSE;
     BOOLEAN BlockPRNG = FALSE;
 
-    #if REFIT_DEBUG > 0
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (VendorGuid, &RefindPlusGuid)) {
-        MsgLog ("INFO: Using Emulated NVRAM\n");
-    }
-    else {
-        MsgLog ("INFO: Using Hardware NVRAM\n");
-    }
-    #endif
-
     if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
-        GuidsAreEqual (VendorGuid, &X509Guid) ||
-        GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha001Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha224Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha256Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha384Guid) ||
-        GuidsAreEqual (VendorGuid, &Sha512Guid) ||
-        GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
-        GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
-        GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
-        GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)) &&
-        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+        (GuidsAreEqual (VendorGuid, &X509Guid)) ||
+        (GuidsAreEqual (VendorGuid, &PKCS7Guid)) ||
+        (GuidsAreEqual (VendorGuid, &Sha001Guid)) ||
+        (GuidsAreEqual (VendorGuid, &Sha224Guid)) ||
+        (GuidsAreEqual (VendorGuid, &Sha256Guid)) ||
+        (GuidsAreEqual (VendorGuid, &Sha384Guid)) ||
+        (GuidsAreEqual (VendorGuid, &Sha512Guid)) ||
+        (GuidsAreEqual (VendorGuid, &RSA2048Guid)) ||
+        (GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid)) ||
+        (GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid)) ||
+        (GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid))) &&
+        (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL)
     ) {
         // Abort if Windows is trying to write to Mac NVRAM or
         // payload to be saved to Mac NVRAM is a certificate
@@ -361,59 +352,18 @@ gRTSetVariableEx (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("      Write '%s' to NVRAM ...%r", VariableName, Status);
-    if (BlockCert) {
+    MsgLog ("INFO: Write '%s' to NVRAM ...%r", VariableName, Status);
+    if (BlockCert || BlockPRNG) {
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: Prevented Microsoft Secure Boot NVRAM Write Attempt");
         MsgLog ("\n");
-        MsgLog ("WARN: Prevented Certificate Write to NVRAM Attempt on Apple Firmware");
-        MsgLog ("\n");
-        MsgLog ("      Successful Write Attempt May Damage Boot ROM on Apple Firmware");
-    }
-    else if (BlockPRNG) {
-        MsgLog ("\n");
-        MsgLog ("WARN: Prevented Secure Boot Write to NVRAM Attempt on Apple Firmware");
-        MsgLog ("\n");
-        MsgLog ("      Successful Write Attempt May Damage Boot ROM on Apple Firmware");
+        MsgLog ("         Successful NVRAM Write May Result in BootROM Damage");
     }
     MsgLog ("\n\n");
     #endif
 
     return Status;
 } // VOID gRTSetVariableEx()
-
-
-// Convert CHAR16 to CHAR8 array
-STATIC
-VOID
-StrChar16ArrChar8 (
-    IN  CHAR16  *StrCHAR16,
-    OUT CHAR8   ArrCHAR8[256]
-) {
-    UINTN k = -1;
-    UINTN i = -1;
-
-    // Get the number of characters (plus null terminator) in StrCHAR16
-    do {
-        // increment index
-        k = k + 1;
-    } while (StrCHAR16[k] != L'\0');
-
-    // Move StrCHAR16 characters to ArrCHAR8
-    do {
-        // increment index
-        i = i + 1;
-
-        if (i > 255) {
-            // prevent overflow
-            ArrCHAR8[i]  = L'\0';
-            break;
-        }
-        else {
-            // convert to single byte character and assign to array
-            CHAR8 character  = StrCHAR16[i];
-            ArrCHAR8[i]      = character;
-        }
-    } while (i < k);
-} // VOID StrChar16ArrChar8
 
 
 STATIC
@@ -424,6 +374,7 @@ NvramEntryCheck (
 ) {
     UINTN       VarSize;
     UINTN       SizeNVRAM;
+    CHAR8       StrNVRAM[255];
     CHAR16      *VarData;
     EFI_GUID    AppleGUID = APPLE_GUID;
     EFI_STATUS  Status;
@@ -437,10 +388,10 @@ NvramEntryCheck (
         &VarSize
     );
 
+    MyUnicodeStrToAsciiStr (VarData, StrNVRAM);
+
     // Test whether boot args are equivalent
-    if (!EFI_ERROR (Status) &&
-        (MyStrStr ((CHAR16 *) VarData, (CHAR16 *) DataNVRAM) != NULL)
-    ) {
+    if (!EFI_ERROR (Status) && MyAsciiStrStr (StrNVRAM, DataNVRAM) != NULL) {
         Status = EFI_ALREADY_STARTED;
     }
 
@@ -459,7 +410,7 @@ SetMacBootArgs (
     BOOLEAN     LogDisableMacCompatCheck   = FALSE;
     CHAR16      *NameNVRAM                 = L"boot-args";
     CHAR16      *BootArg;
-    CHAR8       DataNVRAM[256];
+    CHAR8       DataNVRAM[255];
 
     if (!GlobalConfig.SetMacBootArgs || GlobalConfig.SetMacBootArgs[0] == L'\0') {
         Status = EFI_INVALID_PARAMETER;
@@ -516,7 +467,7 @@ SetMacBootArgs (
         }
 
         // Convert BootArg to CHAR8 array in 'ArrCHAR8'
-        StrChar16ArrChar8 (BootArg, DataNVRAM);
+        MyUnicodeStrToAsciiStr  (BootArg, DataNVRAM);
         MyFreePool (BootArg);
 
         Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);

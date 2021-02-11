@@ -111,6 +111,71 @@ CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
     }
 } // CHAR16 *MyStrStr()
 
+/**
+  Returns the first occurrence of a Null-terminated ASCII sub-string
+  in a Null-terminated ASCII string.
+
+  This function scans the contents of the ASCII string specified by String
+  and returns the first occurrence of SearchString. If SearchString is not
+  found in String, then NULL is returned. If the length of SearchString is zero,
+  then String is returned.
+
+  If String is NULL, then ASSERT().
+  If SearchString is NULL, then ASSERT().
+
+  If PcdMaximumAsciiStringLength is not zero, and SearchString or
+  String contains more than PcdMaximumAsciiStringLength Unicode characters
+  not including the Null-terminator, then ASSERT().
+
+  @param  String          A pointer to a Null-terminated ASCII string.
+  @param  SearchString    A pointer to a Null-terminated ASCII string to search for.
+
+  @retval NULL            If the SearchString does not appear in String.
+  @retval others          If there is a match return the first occurrence of SearchingString.
+                          If the length of SearchString is zero,return String.
+
+**/
+CHAR8* MyAsciiStrStr (
+    IN CONST CHAR8 *String,
+    IN CONST CHAR8 *SearchString
+) {
+    CONST CHAR8 *FirstMatch;
+    CONST CHAR8 *SearchStringTmp;
+
+    //
+    // ASSERT both strings are less long than PcdMaximumAsciiStringLength
+    //
+    ASSERT (AsciiStrSize (String) != 0);
+    ASSERT (AsciiStrSize (SearchString) != 0);
+
+    if (*SearchString == '\0') {
+      return (CHAR8 *) String;
+    }
+
+    while (*String != '\0') {
+      SearchStringTmp = SearchString;
+      FirstMatch = String;
+
+      while ((*String == *SearchStringTmp)
+              && (*String != '\0')) {
+        String++;
+        SearchStringTmp++;
+      }
+
+      if (*SearchStringTmp == '\0') {
+        return (CHAR8 *) FirstMatch;
+      }
+
+      if (*String == '\0') {
+        return NULL;
+      }
+
+      String = FirstMatch + 1;
+    }
+
+    return NULL;
+} // CHAR16 *MyAsciiStrStr()
+
 // Convert input string to all-lowercase.
 // DO NOT USE the standard StrLwr() function, since it's broken on some EFIs!
 VOID ToLower(CHAR16 * MyString) {
@@ -555,3 +620,36 @@ VOID DeleteStringList(STRING_LIST *StringList) {
         MyFreePool (Previous);
     }
 } // VOID DeleteStringList()
+
+// Convert Unicode String To Ascii String
+VOID
+MyUnicodeStrToAsciiStr (
+    IN  CHAR16  *StrCHAR16,
+    OUT CHAR8   ArrCHAR8[256]
+) {
+    UINTN k = -1;
+    UINTN i = -1;
+
+    // Get the number of characters (plus null terminator) in StrCHAR16
+    do {
+        // increment index
+        k = k + 1;
+    } while (StrCHAR16[k] != L'\0');
+
+    // Move StrCHAR16 characters to ArrCHAR8
+    do {
+        // increment index
+        i = i + 1;
+
+        if (i > 255) {
+            // prevent overflow
+            ArrCHAR8[i]  = L'\0';
+            break;
+        }
+        else {
+            // convert to single byte character and assign to array
+            CHAR8 character  = StrCHAR16[i];
+            ArrCHAR8[i]      = character;
+        }
+    } while (i < k);
+} // VOID MyUnicodeStrToAsciiStr
