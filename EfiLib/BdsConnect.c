@@ -64,7 +64,7 @@ daConnectController (
     );
 
     return Status;
-}
+} // EFI_STATUS daConnectController()
 
 EFI_STATUS
 ScanDeviceHandles (
@@ -198,9 +198,11 @@ ScanDeviceHandles (
     *HandleType   = NULL;
 
     return Status;
-}
+} // EFI_STATUS ScanDeviceHandles()
 
-EFI_STATUS BdsLibConnectMostlyAllEfi (
+
+EFI_STATUS
+BdsLibConnectMostlyAllEfi (
     VOID
 ) {
     EFI_STATUS           XStatus;
@@ -494,7 +496,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
 	MyFreePool (AllHandleBuffer);
 
 	return Status;
-}
+} // EFI_STATUS BdsLibConnectMostlyAllEfi()
 
 /**
   Connects all drivers to all controllers.
@@ -540,7 +542,7 @@ BdsLibConnectAllDriversToAllControllersEx (
     else {
         return EFI_NOT_FOUND;
     }
-}
+} // EFI_STATUS BdsLibConnectAllDriversToAllControllersEx()
 
 // Many cases of of GPUs not working on EFI 1.x Units such as Classic MacPros are due
 // to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
@@ -571,7 +573,7 @@ ApplyGOPFix (
     }
 
     return Status;
-} /* BOOLEAN ApplyGOPFix() */
+} // BOOLEAN ApplyGOPFix()
 
 
 /**
@@ -593,9 +595,9 @@ BdsLibConnectAllDriversToAllControllers (
         Status = ApplyGOPFix();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Provide GOP from Volatile Memory ...%r\n\n", Status);
+        MsgLog ("INFO: Issue GOP from Volatile Memory ...%r\n\n", Status);
         #endif
 
         ReLoaded = FALSE;
     }
-}
+} // VOID BdsLibConnectAllDriversToAllControllers()
