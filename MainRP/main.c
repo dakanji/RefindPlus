@@ -218,6 +218,7 @@ BOOLEAN                                     AptioWarn      = FALSE;
 BOOLEAN                                     ConfigWarn     = FALSE;
 STATIC               EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
+EFI_HANDLE_PROTOCOL                         OrigHandleProtocol;
 
 extern VOID InitBooterLog (VOID);
 
@@ -656,7 +657,7 @@ OpenProtocolEx (
                     for (i = 0; i < HandleCount; i++) {
                         if (HandleBuffer[i] != gST->ConsoleOutHandle) {
                             Status = refit_call3_wrapper(
-                                gBS->HandleProtocol,
+                                OrigHandleProtocol,
                                 HandleBuffer[i],
                                 &gEfiGraphicsOutputProtocolGuid,
                                 (VOID*) &OurGOP
@@ -699,7 +700,8 @@ HandleProtocolEx (
 ) {
     EFI_STATUS Status;
 
-    Status = gBS->OpenProtocol (
+    Status = refit_call6_wrapper(
+        gBS->OpenProtocol,
         Handle,
         Protocol,
         Interface,
@@ -1230,6 +1232,7 @@ STATIC VOID InitializeLib (
     );
 
     // Upgrade EFI_BOOT_SERVICES.HandleProtocol
+    OrigHandleProtocol   = gBS->HandleProtocol;
     gBS->HandleProtocol  = HandleProtocolEx;
     gBS->Hdr.CRC32       = 0;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
