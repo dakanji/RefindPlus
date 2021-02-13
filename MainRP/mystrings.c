@@ -641,7 +641,7 @@ MyUnicodeStrToAsciiStr (
         // increment index
         i = i + 1;
 
-        if (i > 255) {
+        if (i > 254) {
             // prevent overflow
             ArrCHAR8[i]  = L'\0';
             break;
