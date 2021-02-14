@@ -621,11 +621,10 @@ OpenProtocolEx (
     IN   EFI_HANDLE  ControllerHandle,
     IN   UINT32      Attributes
 ) {
-    EFI_STATUS                   Status;
-    UINTN                        i              = 0;
-    UINTN                        HandleCount    = 0;
-    EFI_HANDLE                   *HandleBuffer  = NULL;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL *OurGOP        = NULL;
+    EFI_STATUS  Status;
+    UINTN       i              = 0;
+    UINTN       HandleCount    = 0;
+    EFI_HANDLE  *HandleBuffer  = NULL;
 
     Status = OrigOpenProtocol (
         Handle,
@@ -639,8 +638,8 @@ OpenProtocolEx (
     if (Status == EFI_UNSUPPORTED) {
         if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
             if (GraphicsOutput != NULL) {
-                *Interface = GraphicsOutput;
                 Status     = EFI_SUCCESS;
+                *Interface = GraphicsOutput;
             }
             else {
                 Status = refit_call5_wrapper(
@@ -653,14 +652,16 @@ OpenProtocolEx (
                 );
 
                 if (!EFI_ERROR (Status)) {
-
                     for (i = 0; i < HandleCount; i++) {
                         if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-                            Status = refit_call3_wrapper(
-                                OrigHandleProtocol,
+                            Status = refit_call6_wrapper(
+                                OrigOpenProtocol,
                                 HandleBuffer[i],
                                 &gEfiGraphicsOutputProtocolGuid,
-                                (VOID*) &OurGOP
+                                *Interface,
+                                AgentHandle,
+                                NULL,
+                                EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                             );
 
                             if (!EFI_ERROR (Status)) {
@@ -671,12 +672,8 @@ OpenProtocolEx (
 
                 } // if !EFI_ERROR Status
 
-                if (EFI_ERROR (Status) || OurGOP == NULL) {
+                if (EFI_ERROR (Status) || *Interface == NULL) {
                     Status = EFI_UNSUPPORTED;
-                }
-                else {
-                    *Interface = OurGOP;
-                    Status     = EFI_SUCCESS;
                 }
             } // If GraphicsOutput != NULL
         } // if GuidsAreEqual
