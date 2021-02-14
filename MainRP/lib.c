@@ -453,7 +453,9 @@ EfivarGetRaw (
     BOOLEAN     ReadFromNvram = TRUE;
     EFI_STATUS  Status;
 
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
+    if (!GlobalConfig.UseNvram &&
+        GuidsAreEqual (vendor, &RefindPlusGuid)
+    ) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
@@ -462,14 +464,12 @@ EfivarGetRaw (
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
             EFI_FILE_DIRECTORY
         );
+
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (VarsDir, name, &buf, size);
             ReadFromNvram = FALSE;
         }
-        else if (Status == EFI_WRITE_PROTECTED) {
-            // Override use_nvram
-            GlobalConfig.UseNvram = TRUE;
-
+        else {
             #if REFIT_DEBUG > 0
             if (ScanningLoaders) {
                 LogNewLine = FALSE;
@@ -480,17 +480,7 @@ EfivarGetRaw (
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
-        else {
-            #if REFIT_DEBUG > 0
-            if (Status != EFI_NOT_FOUND) {
-                MsgLog ("** WARN: Could Not Read '%s' NVRAM Variable\n", name);
-            }
-            #endif
 
-            MyFreePool (VarsDir);
-
-            return Status;
-        }
         MyFreePool (VarsDir);
     }
 
@@ -531,7 +521,9 @@ EfivarSetRaw (
     EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status;
 
-    if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
+    if (!GlobalConfig.UseNvram &&
+        GuidsAreEqual (vendor, &RefindPlusGuid)
+    ) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
             SelfDir,
@@ -540,26 +532,20 @@ EfivarSetRaw (
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
+
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
         }
-        else if (Status == EFI_WRITE_PROTECTED) {
-            // Override use_nvram
-            GlobalConfig.UseNvram = TRUE;
-
+        else {
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM ... Trying Hardware NVRAM\n", name);
+            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
-        else {
-            #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Save '%s' NVRAM Variable\n", name);
-            #endif
 
-            return Status;
-        }
         MyFreePool (VarsDir);
+
+        return Status;
     }
 
     if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
