@@ -569,7 +569,7 @@ static LEGACY_ENTRY
         }
     }
     if (Volume->VolName != NULL) {
-        VolDesc = Volume->VolName;
+        VolDesc = StrDuplicate (Volume->VolName);
     }
     else {
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
@@ -580,9 +580,11 @@ static LEGACY_ENTRY
     }
 
     LegacyTitle = AllocateZeroPool (256 * sizeof (CHAR16));
-    if (LegacyTitle != NULL) {
-        SPrint (LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    if (LegacyTitle == NULL) {
+        return NULL;
     }
+
+    SPrint (LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (LegacyTitle);
 

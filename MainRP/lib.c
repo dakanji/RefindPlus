@@ -1680,39 +1680,51 @@ ScanVolumes (
             PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"Whole Disk Volume";
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"Unknown Volume";
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"HFS+ Volume";
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"NTFS Volume";
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"FAT Volume";
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"Ext2 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"Ext3 Volume";
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"Ext4 Volume";
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"ReiserFS Volume";
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"BTRFS Volume";
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"XFS Volume";
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
+                MyFreePool (VolDesc);
                 VolDesc = L"ISO-9660 Volume";
             }
 
