@@ -1,6 +1,15 @@
 0.12.0.AR (Pre-Release):
 -----------------------
-- Renames "trim_force" Config Option back to "force_trim"
+- Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables 
+- No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
+  * Previously saved settings to Hardware NVRAM when Emulated NVRAM was not writable
+  * This condition affected HFS+ setups and was implemented to help such users out
+  * Now, the setting will simply not be saved in such instances
+  * A debug log item will inform users that the setting was not saved
+- Improves OpenProtocol and HandleProtocol Mapping
+  * Fixes potential race condition in mapping structure
+  * Discards superflous variables
+- Renames "trim_force" Config Option Back to "force_trim"
   * This more accurately reflects the action taken
 - Fixes Several Memory Management Issues
   * These had largely been introduced after the v0.12.0.AN Release
