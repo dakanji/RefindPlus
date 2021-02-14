@@ -1570,7 +1570,7 @@ SetPrebootVolumes (
 
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Map Volumes to PreBoot:");
+        MsgLog ("Map APFS Volumes to PreBoot:");
         #endif
         for (i = 0; i < VolumesCount; i++) {
             SwapName = SetPreBootNames(Volumes[i]);
@@ -1640,12 +1640,6 @@ ScanVolumes (
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
-
-    if (SelfVolRun) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Enumerate Volumes:\n");
-        #endif
-    }
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
