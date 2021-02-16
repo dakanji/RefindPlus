@@ -166,7 +166,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     );
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("** WARN: Read Loader File ...\n\n", Status);
+        MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
         #endif
 
         return FALSE;
