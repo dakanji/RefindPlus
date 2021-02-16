@@ -319,6 +319,7 @@ StartEFIImage (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
+    MyFreePool (ErrorInfo);
     SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
     CheckError(Status, ErrorInfo);
     if (IsDriver) {
@@ -327,6 +328,7 @@ StartEFIImage (
         // from binding to partitions.
         ConnectFilesystemDriver(ChildImageHandle);
     }
+    MyFreePool (ErrorInfo);
 
     // re-open file handles
     ReinitRefitLib();

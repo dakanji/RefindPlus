@@ -428,11 +428,13 @@ StartLegacyImageList (
             break;
         }
     } // for
+
     SPrint (ErrorInfo, 255, L"while loading legacy loader");
     if (CheckError (Status, ErrorInfo)) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
+        MyFreePool (ErrorInfo);
         goto bailout;
     }
 
@@ -442,6 +444,7 @@ StartLegacyImageList (
         &LoadedImageProtocol,
         (VOID **) &ChildLoadedImage
     );
+
     ReturnStatus = Status;
     if (CheckError (Status, L"while getting a LoadedImageProtocol handle")) {
         if (ErrorInStep != NULL) {
@@ -449,6 +452,7 @@ StartLegacyImageList (
         }
         goto bailout_unload;
     }
+
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
         ? ((UINT32)StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
@@ -462,12 +466,14 @@ StartLegacyImageList (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
+    MyFreePool (ErrorInfo);
     SPrint (ErrorInfo, 255, L"returned from legacy loader");
     if (CheckError (Status, ErrorInfo)) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 3;
         }
     }
+    MyFreePool (ErrorInfo);
 
     // re-open file handles
     ReinitRefitLib();
