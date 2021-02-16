@@ -1874,8 +1874,11 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    // Re-Map OpenProtocol
-                    ReMapOpenProtocol();
+                    if (ConsoleControlFlag) {
+                        // Re-Map OpenProtocol
+                        // Limit to Units with Console Control
+                        ReMapOpenProtocol();
+                    }
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
