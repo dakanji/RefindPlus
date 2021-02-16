@@ -412,7 +412,7 @@ StartLegacyImageList (
     Print (L"Starting legacy loader\nUsing load options '%s'\n", FullLoadOptions ? FullLoadOptions : L"");
 
     // load the image into memory
-    ReturnStatus = Status = EFI_NOT_FOUND;  // in case the list is empty
+    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         Status = refit_call6_wrapper(
             gBS->LoadImage,
