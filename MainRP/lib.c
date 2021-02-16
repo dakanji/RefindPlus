@@ -451,7 +451,7 @@ EfivarGetRaw (
     UINT8       *buf          = NULL;
     EFI_FILE    *VarsDir      = NULL;
     BOOLEAN     ReadFromNvram = TRUE;
-    EFI_STATUS  Status;
+    EFI_STATUS  Status        = EFI_LOAD_ERROR;
 
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (vendor, &RefindPlusGuid)
@@ -484,7 +484,9 @@ EfivarGetRaw (
         MyFreePool (VarsDir);
     }
 
-    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
+    if (GlobalConfig.UseNvram ||
+        !GuidsAreEqual (vendor, &RefindPlusGuid)
+    ) {
         l = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
         buf = AllocatePool (l);
         if (!buf) {
@@ -519,7 +521,7 @@ EfivarSetRaw (
 ) {
     UINT32      flags;
     EFI_FILE    *VarsDir = NULL;
-    EFI_STATUS  Status;
+    EFI_STATUS  Status   = EFI_LOAD_ERROR;
 
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (vendor, &RefindPlusGuid)
@@ -548,7 +550,9 @@ EfivarSetRaw (
         return Status;
     }
 
-    if (GlobalConfig.UseNvram || ! GuidsAreEqual (vendor, &RefindPlusGuid)) {
+    if (GlobalConfig.UseNvram ||
+        !GuidsAreEqual (vendor, &RefindPlusGuid)
+    ) {
         flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
         if (persistent) {
             flags |= EFI_VARIABLE_NON_VOLATILE;
