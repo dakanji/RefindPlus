@@ -1304,9 +1304,12 @@ ScanUserConfigured (
     REFIT_FILE        File;
     REFIT_VOLUME      *Volume;
     CHAR16            **TokenList;
-    CHAR16            *VolDesc = NULL;
     UINTN             TokenCount, size;
     LOADER_ENTRY      *Entry;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *VolDesc = NULL;
+    #endif
 
     if (FileExists (SelfDir, FileName)) {
         Status = RefitReadFile (SelfDir, FileName, &File, &size);

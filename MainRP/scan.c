@@ -704,7 +704,10 @@ static LOADER_ENTRY * AddLoaderEntry (
 ) {
     LOADER_ENTRY  *Entry;
     CHAR16        *TitleEntry = NULL;
-    CHAR16        *VolDesc    = NULL;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *VolDesc = NULL;
+    #endif
 
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);

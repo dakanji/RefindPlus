@@ -115,11 +115,11 @@ daCheckAltGop (
     VOID
 ) {
     EFI_STATUS                    Status;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *Gop;
+    UINTN                         i;
     UINTN                         HandleCount;
     EFI_HANDLE                    *HandleBuffer;
-    UINTN                         Index;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *Gop;
 
     OrigGop = NULL;
     Status  = refit_call3_wrapper(
@@ -179,12 +179,12 @@ daCheckAltGop (
         BOOLEAN OurValidGOP;
 
         Status = EFI_NOT_FOUND;
-        for (Index = 0; Index < HandleCount; ++Index) {
+        for (i = 0; i < HandleCount; i++) {
             OurValidGOP = FALSE;
-            if (HandleBuffer[Index] != gST->ConsoleOutHandle) {
+            if (HandleBuffer[i] != gST->ConsoleOutHandle) {
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
-                    HandleBuffer[Index],
+                    HandleBuffer[i],
                     &GraphicsOutputProtocolGuid,
                     (VOID **) &Gop
                 );
@@ -192,7 +192,7 @@ daCheckAltGop (
                 if (!EFI_ERROR (Status)) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("\n");
-                    MsgLog ("  - Found Replacement Candidate on GPU Handle[%02d]\n", Index);
+                    MsgLog ("  - Found Replacement Candidate on GPU Handle[%02d]\n", i);
                     #endif
 
                     #if REFIT_DEBUG > 0
@@ -232,7 +232,7 @@ daCheckAltGop (
                         break;
                     } // if Width == 0 || Height == 0
                 } // if !EFI_ERROR (Status)
-            } // if HandleBuffer[Index]
+            } // if HandleBuffer[i]
         } // for
 
         FreePool (HandleBuffer);
@@ -883,7 +883,7 @@ egInitScreen (
 
                             #if REFIT_DEBUG > 0
                             MsgLog (
-                                "    *** Select Handle[%02d] @ %dx%d\n",
+                                "    *** Select Handle[%02d] @ %5dx%-5d\n",
                                 i,
                                 UGAWidth,
                                 UGAHeight
@@ -893,7 +893,7 @@ egInitScreen (
                         else {
                             #if REFIT_DEBUG > 0
                             MsgLog (
-                                "    *** Ignore Handle[%02d] @ %dx%d\n",
+                                "    *** Ignore Handle[%02d] @ %5dx%-5d\n",
                                 i,
                                 Width,
                                 Height
@@ -1002,7 +1002,7 @@ egInitScreen (
 
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
-                                    "    *** Select Handle[%02d][%02d] @ %dx%d\n",
+                                    "    *** Select Handle[%02d][%02d] @ %5dx%-5d\n",
                                     i,
                                     GOPMode,
                                     GOPWidth,
@@ -1013,7 +1013,7 @@ egInitScreen (
                             else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
-                                    "        Ignore Handle[%02d][%02d] @ %dx%d\n",
+                                    "        Ignore Handle[%02d][%02d] @ %5dx%-5d\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,
