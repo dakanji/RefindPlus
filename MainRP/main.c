@@ -1870,9 +1870,9 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    if (ConsoleControlFlag) {
+                    if (DetectedDevices) {
                         // Re-Map OpenProtocol
-                        // Limit to Units with Console Control
+                        // Limit to Units with Devices Detected
                         ReMapOpenProtocol();
                     }
 

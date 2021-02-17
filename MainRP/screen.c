@@ -805,7 +805,7 @@ BltClearScreen (
                // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
                //         Apparent Memory Conflict ... Needs Investigation.
                //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-               if (ConsoleControlFlag) {
+               if (DetectedDevices) {
                    egFreeImage (Banner);
                }
                else {
@@ -856,10 +856,10 @@ BltClearScreen (
 
     GraphicsScreenDirty = FALSE;
 
-    // DA_TAG: Permit ScreenBackground->PixelData Memory Leak on items without ConsoleControl
+    // DA_TAG: Permit ScreenBackground->PixelData Memory Leak on items without Devices Detected
     //         Apparent Memory Conflict ... Needs Investigation.
     //         Likely related to Qemu Specific Issue.
-    if (ConsoleControlFlag) {
+    if (DetectedDevices) {
         egFreeImage(GlobalConfig.ScreenBackground);
     }
     else {

@@ -800,7 +800,7 @@ egInitScreen (
     }
 
     if (EFI_ERROR (Status)) {
-        ConsoleControlFlag  = FALSE;
+        DetectedDevices  = FALSE;
 
         #if REFIT_DEBUG > 0
         MsgLog ("  - Assess Console Control ...NOT OK!\n\n");
