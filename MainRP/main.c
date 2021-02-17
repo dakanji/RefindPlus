@@ -2135,7 +2135,7 @@ efi_main (
                 }
                 #endif
 
-                InstallRefind();
+                InstallRefindPlus();
                 break;
 
             case TAG_BOOTORDER:

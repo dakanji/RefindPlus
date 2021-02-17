@@ -685,7 +685,7 @@ static EFI_STATUS CreateNvramEntry(EFI_HANDLE DeviceHandle) {
 
 // Install RefindPlus to an ESP that the user specifies, create an NVRAM entry for
 // that installation, and set it as the default boot option.
-VOID InstallRefind(VOID) {
+VOID InstallRefindPlus(VOID) {
     ESP_LIST      *AllESPs;
     REFIT_VOLUME  *SelectedESP; // Do not free
     UINTN         Status;
@@ -703,7 +703,7 @@ VOID InstallRefind(VOID) {
             DisplaySimpleMessage(L"Warning", L"Problems encountered during installation");
         } // if/else
     } // if
-} // VOID InstallRefind()
+} // VOID InstallRefindPlus()
 
 /***********************
  *
