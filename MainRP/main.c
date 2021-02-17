@@ -1843,6 +1843,12 @@ efi_main (
                 #endif
 
                 AboutRefindPlus();
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - Exit 'About RefindPlus' Page\n\n");
+                #endif
+
                 break;
 
             case TAG_LOADER:   // Boot OS via .EFI loader
@@ -2046,7 +2052,13 @@ efi_main (
                 break;
 
             case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the EFI UseNVRAM
-                RebootIntoLoader((LOADER_ENTRY *)ChosenEntry);
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - Reboot into Loader\n---------------\n\n");
+                #endif
+
+                RebootIntoLoader ((LOADER_ENTRY *) ChosenEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries
@@ -2057,6 +2069,12 @@ efi_main (
                 #endif
 
                 ManageHiddenTags();
+
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - Exit Hidden Tags Page\n\n");
+                #endif
+
                 break;
 
             case TAG_EXIT:    // Terminate RefindPlus
@@ -2128,8 +2146,13 @@ efi_main (
                 #endif
 
                 ManageBootorder();
-                break;
 
+                #if REFIT_DEBUG > 0
+                MsgLog ("User Input Received:\n");
+                MsgLog ("  - Exit Manage Boot Order Page\n\n");
+                #endif
+
+                break;
         } // switch()
     } // while()
     MyFreePool (SelectionName);
@@ -2140,11 +2163,13 @@ efi_main (
     MsgLog ("Fallback: Restart Computer...\n");
     MsgLog ("Screen Termination:\n");
     #endif
+
     TerminateScreen();
 
     #if REFIT_DEBUG > 0
     MsgLog ("System Reset:\n\n");
     #endif
+
     refit_call4_wrapper(
         gRT->ResetSystem,
         EfiResetCold,
