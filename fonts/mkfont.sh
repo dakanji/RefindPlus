@@ -25,6 +25,14 @@
 #
 #  0.6.6  -  Initial release
 
+###
+# Modified for RefindPlus
+# Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+#
+# Modifications distributed under the preceding terms.
+###
+
+
 if [[ $# != 4 ]] ; then
    echo "Usage: $0 font-name font-size y-offset bitmap-filename.png"
    echo "   font-name: Name of font (use 'convert -list font | less' to get list)"
@@ -35,8 +43,8 @@ if [[ $# != 4 ]] ; then
    echo ""
    exit 1
 fi
-
-Convert=`which convert 2> /dev/null`
+      
+Convert="$(command -v convert 2> /dev/null)"
 if [[ ! -x $Convert ]] ; then
    echo "The 'convert' program is required but could not be found. It's part of the"
    echo "ImagMagick program, usually installed in the 'imagemagick' package."

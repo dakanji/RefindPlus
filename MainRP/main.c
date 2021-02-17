@@ -34,25 +34,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -181,6 +172,7 @@ REFIT_CONFIG GlobalConfig = {
     /* *DontScanDirs = */ NULL,
     /* *DontScanFiles = */ NULL,
     /* *DontScanTools = */ NULL,
+    /* *DontScanFirmware = */ NULL,
     /* *WindowsRecoveryFiles = */ NULL,
     /* *MacOSRecoveryFiles = */ NULL,
     /* *DriverDirs = */ NULL,
@@ -1060,6 +1052,7 @@ VOID AboutRefindPlus (
     VOID
 ) {
     CHAR16  *FirmwareVendor;
+    CHAR16  *TempStr;
     UINT32  CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
@@ -1131,7 +1124,10 @@ VOID AboutRefindPlus (
             )
         );
 
-        AddMenuInfoLine (&AboutMenu, PoolPrint (L" Screen Output: %s", egScreenDescription()));
+        TempStr = egScreenDescription();
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
+        MyFreePool(TempStr);
+
         AddMenuInfoLine (&AboutMenu, L"");
 
         #if defined (__MAKEWITH_GNUEFI)
@@ -1483,10 +1479,10 @@ efi_main (
     #endif
 
     // read configuration
-    CopyMem (GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
+    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        CopyMem (GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     }
     SetConfigFilename (ImageHandle);
     MokProtocol = SecureBootSetup();
@@ -2047,6 +2043,10 @@ efi_main (
                 }
 
                 StartTool (ourLoaderEntry);
+                break;
+
+            case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the EFI UseNVRAM
+                RebootIntoLoader((LOADER_ENTRY *)ChosenEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries

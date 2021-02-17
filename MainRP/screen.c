@@ -34,25 +34,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -537,7 +528,7 @@ ReadAllKeyStrokes (
     return GotKeyStrokes;
 }
 
-// Displays *text without regard to appearances. Used mainly for debugging
+// Displays *Text without regard to appearances. Used mainly for debugging
 // and rare error messages.
 // Position code is used only in graphics mode.
 // TODO: Improve to handle multi-line text.
@@ -854,16 +845,6 @@ BltClearScreen (
 
             if (GlobalConfig.ScreensaverTime != -1) {
                 BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
-            }
-
-            // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
-            //         Apparent Memory Conflict ... Needs Investigation.
-            //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-            if (ConsoleControlFlag) {
-                egFreeImage (Banner);
-            }
-            else {
-                MyFreePool (Banner);
             }
         }
     }

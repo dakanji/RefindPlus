@@ -17,18 +17,18 @@
 # setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
 # further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
 # or later, on unsupported Macs but should be used with caution.
-#   CSR_ALLOW_UNTRUSTED_KEXTS            0x001
-#   CSR_ALLOW_UNRESTRICTED_FS            0x002
-#   CSR_ALLOW_TASK_FOR_PID               0x004
-#   CSR_ALLOW_KERNEL_DEBUGGER            0x008
-#   CSR_ALLOW_APPLE_INTERNAL             0x010
-#   CSR_ALLOW_UNRESTRICTED_DTRACE        0x020
-#   CSR_ALLOW_UNRESTRICTED_NVRAM         0x040
-#   CSR_ALLOW_DEVICE_CONFIGURATION       0x080
-#   CSR_ALLOW_ANY_RECOVERY_OS            0x100
-#   CSR_ALLOW_UNAPPROVED_KEXTS           0x200
-#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE 0x400
-#   CSR_ALLOW_UNAUTHENTICATED_ROOT       0x800
+#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
+#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
+#   CSR_ALLOW_TASK_FOR_PID                  0x0004
+#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
+#   CSR_ALLOW_APPLE_INTERNAL                0x0010
+#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
+#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
+#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
+#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
+#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
 #
 # Inactive when commented out (CSR values for SIP cannot be set)
 #
@@ -112,7 +112,7 @@
 # that this setting will create a Mac OS NVRAM entry the first time it is
 # triggered and that this will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also note that forcing 'TRIM'
-# may significantly increase boot times and that if 'TRIM' is forced on 
+# may significantly increase boot times and that if 'TRIM' is forced on
 # using Mac OS Terminal, warnings about data integrity are generated.
 #
 # Inactive when commented out (Does not force 'TRIM' on)
@@ -201,7 +201,7 @@
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
 # This setting allows overriding the detection as follows:
 #  -1    - Never scale UI elements up
-#   0    - Scale UI elements up, or not, based on screen vertical resolution
+#   0    - Scale UI elements up, or not, based on screen resolution
 #   1    - Always scale UI elements up
 #
 # The default setting is 0 (Scales UI elements based on screen resolution)
@@ -393,6 +393,7 @@ timeout 20
 #resolution 1024 768
 #resolution 1440 900
 #resolution 3
+#resolution max
 
 # Enable touch screen support. If active, this feature enables use of
 # touch screen controls (as on tablets). Note, however, that not all
@@ -532,6 +533,7 @@ timeout 20
 #  biosexternal  - BIOS external boot loaders (USB, eSATA, etc.)
 #  cd            - BIOS optical-disc boot loaders
 #  manual        - use stanzas later in this configuration file
+#  firmware      - boot EFI programs set in the firmware's NVRAM
 # Note that the legacy BIOS options require firmware support, which is
 # not present on all computers.
 # The netboot option is experimental and relies on the ipxe.efi and
@@ -639,6 +641,17 @@ timeout 20
 # Inactive when commented out (Does not exclude additional files)
 #
 #dont_scan_files shim.efi,MokManager.efi
+
+# EFI NVRAM Boot#### variables that should NOT be presented as loaders
+# when "firmware" is an option to "scanfor". The comma-separated list
+# presented here contains strings that are matched against the
+# description field -- if a value here is a case-insensitive substring
+# of the boot option description, then it will be excluded from the
+# boot list. To specify a string that includes a space, enclose it
+# in quotes. Specifying "shell" will counteract the automatic
+# inclusion of built-in EFI shells.
+#
+#dont_scan_firmware HARDDISK,shell,"Removable Device"
 
 # Scan for Linux kernels that lack a ".efi" filename extension. This is
 # useful for better integration with Linux distributions that provide
@@ -874,6 +887,22 @@ menuentry "My Mac OS" {
     icon \EFI\refind\icons\os_mac.png
     volume "Mac OS boot"
     loader \System\Library\CoreServices\boot.efi
+    disabled
+}
+
+# The firmware_bootnum token takes a HEXADECIMAL value as an option
+# and sets that value using the EFI's BootNext variable and then
+# reboots the computer. This then causes a one-time boot of the
+# computer using this EFI boot option. It can be used for various
+# purposes, but one that's likely to interest some rEFInd users is
+# that some Macs with HiDPI displays produce lower-resolution
+# desktops when booted through rEFInd than when booted via Apple's
+# own boot manager. Booting using the firmware_bootnum option
+# produces the better resolution. Note that no loader option is
+# used in this type of configuration.
+menuentry "macOS via BootNext" {
+    icon /EFI/refind/icons/os_mac.png
+    firmware_bootnum 80
     disabled
 }
 

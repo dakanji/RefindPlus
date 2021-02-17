@@ -68,6 +68,7 @@ os_mageia.png -- AwOken/clear/128x128/start-here/start-here-mageia.png
 os_mandriva.png -- AwOken/clear/128x128/start-here/start-here-mandriva5.png
 os_network.png -- AwOken/clear/128x128/places/network-workgroup1.png
 os_ubuntu.png -- AwOken/clear/128x128/start-here/start-here-ubuntu.png
+os_uefi.png -- AwOkenWhite/clear/128x128/start-here/start-here-umbrella3.png
 os_unknown.png -- AwOken/clear/128x128/actions/color-line1.png
 os_win8.png -- AwOken/clear/128x128/apps/live1.png
 
@@ -97,6 +98,7 @@ os_xubuntu.png -- AwOkenWhite/clear/128x128/start-here/start-here-xubuntu1.png
 tool_mok_tool.png -- AwOkenWhite/clear/128x128/apps/gnome-keyring-manager.png
 tool_netboot.png -- AwOken/clear/128x128/places/network-workgroup1.png
 tool_shell.png -- AwOken/clear/128x128/apps/terminal3.png
+vol_efi.png -- AwOkenWhite/clear/128x128/status/indicator-cpufreq.png
 vol_external.png -- AwOkenWhite/clear/128x128/devices/drive-removable-media-usb2.png
 vol_internal.png -- AwOken/clear/128/128/drive-harddisk/Internal.png
 vol_net.png -- AwOken/clear/128/128/drive-harddisk/Server.png

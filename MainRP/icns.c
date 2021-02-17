@@ -33,6 +33,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for eEFInd
+ * Copyright (c) 2021 Roderick W Smith
+ */ 
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #include "global.h"
 #include "lib.h"
@@ -77,6 +88,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"vol_external", ICON_SIZE_BADGE },
    { NULL, L"vol_optical", ICON_SIZE_BADGE },
    { NULL, L"vol_net", ICON_SIZE_BADGE },
+   { NULL, L"vol_efi", ICON_SIZE_BADGE },
    { NULL, L"mouse", ICON_SIZE_MOUSE },
    { NULL, L"tool_bootscreen", ICON_SIZE_SMALL },
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }

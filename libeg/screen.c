@@ -34,25 +34,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
  *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 // July 2020: Extensively modiied by dakanji (dakanji@users.sourceforge.net)
@@ -100,7 +92,13 @@ EncodeAsPNG (
   unsigned ErrorCode;
 
   // Should return 0 on success
-  ErrorCode = lodepng_encode32 ((unsigned char **) Buffer, BufferSize, RawData, Width, Height);
+  ErrorCode = lodepng_encode32 (
+      (unsigned char **) Buffer,
+      BufferSize,
+      RawData,
+      Width,
+      Height
+  );
 
   if (ErrorCode != 0) {
     return EFI_INVALID_PARAMETER;
@@ -580,7 +578,14 @@ egSetMaxResolution (
 
   MaxMode = GraphicsOutput->Mode->MaxMode;
   for (Mode = 0; Mode < MaxMode; Mode++) {
-    Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
+    Status = refit_call4_wrapper(
+        GraphicsOutput->QueryMode,
+        GraphicsOutput,
+        Mode,
+        &SizeOfInfo,
+        &Info
+    );
+
     if (!EFI_ERROR (Status)) {
       if (Width > Info->HorizontalResolution) {
         continue;
@@ -1263,7 +1268,7 @@ egGetResFromMode (
    EFI_STATUS                            Status;
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
-   if ((ModeWidth != NULL) && (Height != NULL)) {
+   if ((ModeWidth != NULL) && (Height != NULL) && GraphicsOutput) {
       Status = refit_call4_wrapper(
           GraphicsOutput->QueryMode,
           GraphicsOutput,
@@ -1273,10 +1278,12 @@ egGetResFromMode (
       );
       if (!EFI_ERROR (Status) && (Info != NULL)) {
          *ModeWidth = Info->HorizontalResolution;
-         *Height = Info->VerticalResolution;
+         *Height    = Info->VerticalResolution;
+
          return TRUE;
       }
    }
+
    return FALSE;
 } // BOOLEAN egGetResFromMode()
 
@@ -1285,7 +1292,7 @@ egGetResFromMode (
 // number rather than a horizontal resolution. If the specified resolution is not
 // valid, displays a warning with the valid modes on GOP (UEFI) systems, or silently
 // fails on UGA (EFI 1.x) systems. Note that this function attempts to set ANY screen
-// resolution, even 0x0 or ridiculously large values.
+// resolution, even 1x1 or ridiculously large values.
 // Upon success, returns actual screen resolution in *ScreenWidth and *ScreenHeight.
 // These values are unchanged upon failure.
 // Returns TRUE if successful, FALSE if not.
@@ -1331,14 +1338,16 @@ egSetScreenSize (
         return FALSE;
     }
 
-    if (GraphicsOutput != NULL) { // GOP mode (UEFI)
+    if (GraphicsOutput != NULL) {
+        // GOP mode (UEFI)
         CurrentModeNum = GraphicsOutput->Mode->Mode;
 
         #if REFIT_DEBUG > 0
         MsgLog ("  - GraphicsOutput Object Found ...Current Mode = %d\n", CurrentModeNum);
         #endif
 
-        if (*ScreenHeight == 0) { // User specified a mode number (stored in *ScreenWidth); use it directly
+        if (*ScreenHeight == 0) {
+            // User specified a mode number (stored in *ScreenWidth); use it directly
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
                 #if REFIT_DEBUG > 0
@@ -1378,13 +1387,13 @@ egSetScreenSize (
                     &Size,
                     &Info
                 );
-                if (!EFI_ERROR (Status)
-                    && (Size >= sizeof (*Info)
-                    && (Info != NULL))
-                    && (Info->HorizontalResolution == *ScreenWidth)
-                    && (Info->VerticalResolution   == *ScreenHeight)
-                    && ((ModeNum == CurrentModeNum)
-                    || (refit_call2_wrapper(
+                if ((!EFI_ERROR (Status)) &&
+                    (Size >= sizeof (*Info) &&
+                    (Info != NULL)) &&
+                    (Info->HorizontalResolution == *ScreenWidth) &&
+                    (Info->VerticalResolution   == *ScreenHeight) &&
+                    ((ModeNum == CurrentModeNum) ||
+                    (refit_call2_wrapper(
                         GraphicsOutput->SetMode,
                         GraphicsOutput,
                         ModeNum
@@ -1405,10 +1414,11 @@ egSetScreenSize (
         } // if/else
 
         if (ModeSet) {
-            egScreenWidth = *ScreenWidth;
+            egScreenWidth  = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
         }
-        else { // If unsuccessful, display an error message for the user....
+        else {
+            // If unsuccessful, display an error message for the user....
             SwitchToText (FALSE);
 
             ShowScreenStr = L"Invalid Resolution Setting Provided ...Trying Default Modes:";
@@ -1670,7 +1680,7 @@ egScreenDescription (
         }
     }
     else {
-        SPrint (GraphicsInfo, 255, L"Text-Foo Console: %dx%d", ConWidth, ConHeight);
+        SPrint (GraphicsInfo, 255, L"Text-Only Console: %dx%d", ConWidth, ConHeight);
     }
 
     MyFreePool (TextInfo);

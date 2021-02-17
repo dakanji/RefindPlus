@@ -37,6 +37,13 @@
 /*
  * Changes by Roderick Smith are licensed under the preceding terms.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #include "fsw_efi.h"
 #include "fsw_core.h"
@@ -76,7 +83,7 @@ EFI_GUID gMyEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_IN
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
 /** Expands to the EFI driver name given the file system type name. */
-#define FSW_EFI_DRIVER_NAME(t) L"RefindPlus 0.12.0 " FSW_EFI_STRINGIFY(t) L" File System Driver"
+#define FSW_EFI_DRIVER_NAME(t) L"RefindPlus 0.13.0 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
 

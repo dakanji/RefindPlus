@@ -6,21 +6,12 @@
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 
@@ -232,7 +223,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
 // merges each word separately. Words are defined as string fragments separated
-// by ' ', '_', or '-'.
+// by ' ', ':', '_', or '-'.
 VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
@@ -241,7 +232,12 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
         Temp = Word = p = StrDuplicate(SourceString);
         if (Temp) {
             while (!LineFinished) {
-                if ((*p == L' ') || (*p == L'_') || (*p == L'-') || (*p == L'\0')) {
+                if ((*p == L' ') ||
+                    (*p == L':') ||
+                    (*p == L'_') ||
+                    (*p == L'-') ||
+                    (*p == L'\0')
+                ) {
                     if (*p == L'\0')
                         LineFinished = TRUE;
                     *p = L'\0';
@@ -251,6 +247,7 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
                 } // if
                 p++;
             } // while
+
             MyFreePool (Temp);
         } else {
             Print(L"Error! Unable to allocate memory in MergeWords()!\n");
@@ -442,21 +439,35 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
-BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
-   UINTN   i = 0, ElementLength;
-   BOOLEAN Found = FALSE;
-   CHAR16  *OneElement;
+BOOLEAN
+IsInSubstring(
+    IN CHAR16 *BigString,
+    IN CHAR16 *List
+) {
+    UINTN   i = 0, ElementLength;
+    BOOLEAN Found = FALSE;
+    CHAR16  *OneElement;
 
-   if (BigString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         ElementLength = StrLen(OneElement);
-         if ((ElementLength <= StrLen(BigString)) && (StriSubCmp(OneElement, BigString))) {
-             Found = TRUE;
-         }
-         MyFreePool (OneElement);
-      } // while
-   } // if
-   return Found;
+    if (BigString && List) {
+        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+            ElementLength = StrLen(OneElement);
+            if ((ElementLength <= StrLen(BigString)) &&
+                (ElementLength > 0) &&
+                (StriSubCmp(OneElement, BigString))
+            ) {
+                Found = TRUE;
+            } // if
+
+            if ((ElementLength <= StrLen(BigString)) &&
+                (StriSubCmp(OneElement, BigString))
+            ) {
+                Found = TRUE;
+            }
+            MyFreePool (OneElement);
+        } // while
+    } // if
+
+    return Found;
 } // BOOLEAN IsSubstringIn()
 
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString

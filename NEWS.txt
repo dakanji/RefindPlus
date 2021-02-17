@@ -1,6 +1,6 @@
-0.12.0.AR (Pre-Release):
+0.13.0.AA (Pre-Release):
 -----------------------
-- Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables 
+- Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables
 - No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
   * Previously saved settings to Hardware NVRAM when Emulated NVRAM was not writable
   * This condition affected HFS+ setups and was implemented to help such users out
@@ -17,6 +17,34 @@
 - Adds 'EnforceAPFS' Feature
   * Allows booting Mac OS Big Sur when SIP is disabled.
   * Allows booting FileVault encrypted volumes directly.
+
+
+0.13.0 (15 FEB 2021): UPSTREAM RELEASE
+--------------------------------------
+- Fixed compile problem with GCC version 10.
+- Fixed compile problems with GCC 9 and the Btrfs and HFS+ drivers under EDK2.
+- Replaced use of "which" with "command -v" in shell scripts.
+- Fixed detection of UUID on ext2/3/4 filesystems; old code incorrectly
+  marked filesystems with different UUIDs but the same label as duplicates.
+- Fixed bug that caused mouse pointer to disappear on 64-bit systems when
+  it was moved, when mouse pointer support was active.
+- Fixed memory management bug that could cause rEFInd to hang in some situations.
+- Fixed bug that could cause EFI 1.x (UGA graphics) systems to hang if
+  the refind.conf "resolution" line specified only one parameter. (This
+  is valid for EFI 2.x/GOP graphics systems, but not for UGA graphics.)
+  This misconfiguration, if found, is now ignored.
+- Imported improvements from RefindPlus (https://github.com/dakanji/refindplus):
+  - Expand list of supported Apple SIP/CSR values
+  - Add support for EXT4_FEATURE_INCOMPAT_ENCRYPT flag to ext4fs driver
+  - Improved detection of video modes
+  - New "max" option to "resolution" parameter in refind.conf (is
+    default in RefindPlus, but configurable option in rEFInd)
+- Implemented new feature enabling rEFInd to set the EFI BootNext variable
+  and reboot into an EFI-defined boot loader. Such options are
+  auto-scanned if the new "firmware" option to the "scanfor" token is used;
+  and manual boot stanzas can use the new "firmware_bootnum" token, which
+  takes a hexadecimal number corresponding to the Boot#### number shown by
+  efibootmgr in Linux or under the EFI boot order editor in rEFInd.
 
 
 0.12.0.AQ (03 Feb 2021):
@@ -248,19 +276,15 @@
 - Does not include Debug Version
 
 
-0.12.0 (3/13/2020): UPSTREAM RELEASE
--------------------
-
+0.12.0 (13 Mar 2020): UPSTREAM RELEASE
+--------------------------------------
 - Plugged several memory leaks -- but many more remain.
-
 - Change internal identification of rEFInd's volume from a volume name to a
   Partition GUID, which is more precise and less likely to result in
   mis-identification for purposes of not scanning rEFInd's own directory.
-
 - Improved FAT partition discovery by including the FAT serial number, which
   should prevent two FAT partitions with the same volume name as being
   mis-identified as RAID mirrors, and thus ignoring one of them.
-
 - Added a new EFI boot order maintenance option. To use it, uncomment the
   "showtools" option in refind.conf and add the "bootorder" option to the
   list. The resulting tool enables you to move any item in the EFI's boot
@@ -269,7 +293,6 @@
   in NVRAM will be deleted.) You cannot create new options from this tool or
   otherwise edit them. Note that this feature adjusts the *EFI's* boot
   order, NOT the order of icons shown on rEFInd's screen.
-
 - Added a new self-installation feature. When activated (by setting the
   "install" token on the "showtools" line in refind.conf), selecting the
   install icon in the second row on the main rEFInd screen will enable the
@@ -280,7 +303,6 @@
   when using the --usedefault option to refind-install. The intent is that
   this feature can be used on emergency recovery media or to install rEFInd
   for the first time. It's not likely to be useful in day-to-day use.
-
 - Previous versions of rEFInd have all passed the name of the program being
   launched as a parameter to that program, just as the EFI shell does. This
   is causing problems for a new unified kernel image format that combines a
@@ -293,25 +315,20 @@
   end of options lists passed to the Mac OS boot loader, since it ignores the
   commands if this is not done. (No space is added to commands passed to
   other programs, though.)
-
 - The handling of screen resets on return from a program has been adjusted
   to avoid problems with program error messages being erased by rEFInd's
   screen clearing. If a program returns an error code, its output should
   remain visible until the user presses a key in response to rEFInd's prompt
   to do so.
-
 - Fixed bug that caused gptsync to sometimes hang on launch.
-
 - Improved identification of the ESP in the refind-install script in Linux.
   Previously, NVMe devices and some corner cases were handled incorrectly.
   This new code should fix these problems. This variant changes from a
   dependency on parted to one on the gdisk package (the sgdisk program,
   specifically).
-
 - Re-structured source code to split former main.c across four files
   (main.c, launch_efi.c, linux.c, and scan.c), since main.c was getting
   ridiculously large.
-
 - I'm officially deprecating the ELILO- and XOM-specific code in rEFInd.
   ELILO hasn't seen development on its Sourceforge page since 2013, and XOM
   was rendered obsolete by Boot Camp and seems to have faded into
@@ -323,9 +340,9 @@
   "generic" boot loaders. For the moment, the code remains in place, but I
   may remove it on no further notice in the future.
 
-0.11.5 (2/12/2020): UPSTREAM RELEASE
--------------------
 
+0.11.5 (12 Feb 2020): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused screen corruption when exiting the EFI shell
   (and perhaps other programs) on some systems.
 
@@ -358,9 +375,9 @@
 
 - Updated LodePNG to latest version (20200211).
 
-0.11.4 (11/12/2018): UPSTREAM RELEASE
---------------------
 
+0.11.4 (12 Nov 2018): UPSTREAM RELEASE
+--------------------------------------
 - Fixed a problem with RefindPkg.dsc that caused compilation failures
   with the latest git version of TianoCore when using the edk2 target.
 
@@ -384,9 +401,9 @@
   first loader found. Explicitly setting the option via default_selection
   still worked.
 
-0.11.3 (7/22/2018): UPSTREAM RELEASE
--------------------
 
+0.11.3 (22 Jul 2018): UPSTREAM RELEASE
+--------------------------------------
 - Changes to scripts for portability; should have no visible effects.
 
 - Updated pointer support to work on some (many? Most?) 32-bit systems.
@@ -430,9 +447,9 @@
 - Fixed bug that caused rEFInd to ignore refind.conf if the first
   line was empty.
 
-0.11.2 (10/22/2017): UPSTREAM RELEASE
---------------------
 
+0.11.2 (22 Oct 2017): UPSTREAM RELEASE
+--------------------------------------
 - Fixed a bug that caused the hidden-tags feature to not work unless
   it was explicitly set in refind.conf. (It should have been enabled by
   default, and now it is.)
@@ -440,9 +457,9 @@
 - Fixed a bug (introduced in 0.11.1) that caused setting volumes in
   manual boot stanzas to fail.
 
-0.11.1 (10/9/2017): UPSTREAM RELEASE
--------------------
 
+0.11.1 (09 Oct 2017): UPSTREAM RELEASE
+--------------------------------------
 - Modified refind-install to be smarter about modifying NVRAM entries under
   Linux. It now re-creates existing rEFInd entries only if the existing
   entries don't point to the same location that rEFInd will use.
@@ -462,9 +479,9 @@
 - Fixed bug, introduced in 0.11.0, that caused the Apple and Microsoft
   recovery tools to not be detected.
 
-0.11.0 (8/13/2017): UPSTREAM RELEASE
--------------------
 
+0.11.0 (13 Aug 2017): UPSTREAM RELEASE
+--------------------------------------
 - Fixed lack of scaling of disk badges when other icons were properly scaled
   on HiDPI/retina displays.
 
@@ -525,9 +542,9 @@
   not be sorted down in the kernel list if they happened to be the first
   ones passed to rEFInd by the EFI.
 
-0.10.9 (7/30/2017): UPSTREAM RELEASE
--------------------
 
+0.10.9 (30 Jul 2017): UPSTREAM RELEASE
+--------------------------------------
 - The PauseForKey() function now works on Macs in graphics mode, which can
   help when some errors are encountered. (Most of the errors associated with
   this function still rely on Print(), which still doesn't work on Macs; but
@@ -564,9 +581,9 @@
   now build rEFInd binary, gptsync, and drivers in the "TianoCore" way, in
   addition to by using Linux Makefiles.
 
-0.10.8 (5/21/2017): UPSTREAM RELEASE
--------------------
 
+0.10.8 (21 May 2017): UPSTREAM RELEASE
+--------------------------------------
 - Added shimx64.efi.signed as a valid Shim source filename, and
   mm{arch}.efi.signed as a valid MokManager source filename, to
   refind-install script. This enables users on Ubuntu to point to Ubuntu's
@@ -588,9 +605,9 @@
   easy way to tell which Mac OS version a given Mac OS boot loader will load,
   so it's one name or the other for everything.
 
-0.10.7 (4/17/2017): UPSTREAM RELEASE
--------------------
 
+0.10.7 (17 APR 2017): UPSTREAM RELEASE
+--------------------------------------
 - Update refind-install to recognize and copy mmx64.efi as alternative
   name for MokManager.
 
@@ -602,9 +619,9 @@
 - Fixed memory management bug (introduced in 0.10.6) that caused error
   messages to be displayed on some systems.
 
-0.10.6 (4/16/2017): UPSTREAM RELEASE
--------------------
 
+0.10.6 (16 APR 2017): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug in drivers that could cause filesystems to not be registered,
   and perhaps other unknown problems. This manifested on 32-bit GNU-EFI
   compiles, but in principle it could cause problems on 64-bit or TianoCore
@@ -626,9 +643,9 @@
   Mac "retina" displays, which tend to get bumped down to a lower resolution
   by rEFInd.
 
-0.10.5 (3/4/2017): UPSTREAM RELEASE
-------------------
 
+0.10.5 (04 MAR 2017): UPSTREAM RELEASE
+--------------------------------------
 - Two improvements to initrd detection for Linux kernels:
   - If multiple initrd files match the kernel's version number, the file
     with more matching characters after the version number is used, rather
@@ -652,9 +669,9 @@
 
 - Fixes to touch/tablet support to improve reliability.
 
-0.10.4 (10/9/2016): UPSTREAM RELEASE
--------------------
 
+0.10.4 (09 OCT 2016): UPSTREAM RELEASE
+--------------------------------------
 - Fixed compile problem for drivers with recent versions of GNU-EFI
   (3.0.4, maybe 3.0.3).
 
@@ -673,9 +690,9 @@
 - Tweaked refind-install to do a better job of detecting disks other
   than /dev/sd? and /dev/hd? devices.
 
-0.10.3 (4/24/2016): UPSTREAM RELEASE
--------------------
 
+0.10.3 (24 APR 2016): UPSTREAM RELEASE
+--------------------------------------
 - Altered RPM & Debian installation scripts so as to NOT call sbsign if
   Secure Boot is disabled. This is a response to Ubuntu bug #1574372
   (https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372): In
@@ -728,9 +745,9 @@
   X, or some other tool takes over as the primary boot manager. It can be
   called from a startup script to handle this task automatically.
 
-0.10.2 (1/26/2016): UPSTREAM RELEASE
--------------------
 
+0.10.2 (26 JAN 2016): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug in refind-install that caused mountesp to be installed as a FILE
   called /usr/local/bin on Mac OS X if the /usr/local/bin directory did not
   already exist.
@@ -755,9 +772,9 @@
 
 - Added centos.crt and centos.cer public key files.
 
-0.10.1 (12/12/2015): UPSTREAM RELEASE
---------------------
 
+0.10.1 (12 DEC 2015): UPSTREAM RELEASE
+--------------------------------------
 - Change to PPA version: Installing the PPA now queries the user about
   whether to install to the ESP. Upgrades will remember the initial
   selection.
@@ -832,9 +849,9 @@
   feature does NOT work in Mac OS X, but there's relatively little need for it
   there.
 
-0.10.0 (11/8/2015): UPSTREAM RELEASE
--------------------
 
+0.10.0 (08 NOV 2015): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused refind-install to not unmount the ESP when it
   should under Mac OS X.
 
@@ -924,9 +941,9 @@
   rEFInd without disabling SIP for the main installation, even for just one
   boot.
 
-0.9.2 (9/19/2015): UPSTREAM RELEASE
-------------------
 
+0.9.2 (19 SEP 2015): UPSTREAM RELEASE
+--------------------------------------
 - Added "--keepname" option to install.sh. This option causes install.sh
   to keep refind_x64.efi named as such rather than rename it as grubx64.efi
   when using Shim. This option is meaningful only if the --shim option is
@@ -945,9 +962,9 @@
   launch anything else unless it was signed by a key in the computer's main
   Secure Boot db list.
 
-0.9.1 (9/13/2015): UPSTREAM RELEASE
-------------------
 
+0.9.1 (13 SEP 2015): UPSTREAM RELEASE
+--------------------------------------
 - When rEFInd identifies the root (/) partition via the Freedesktop.org
   Discoverable Partitions Specification, it now checks two of the
   partition's attributes, as per the DPS (see
@@ -991,9 +1008,9 @@
   firmware, so I can only replace some of the most direct calls to
   potentially buggy system calls.
 
-0.9.0 (7/26/2015): UPSTREAM RELEASE
-------------------
 
+0.9.0 (26 JUL 2015): UPSTREAM RELEASE
+--------------------------------------
 - New icon for Kali Linux, submitted by Francesco D'Eugenio.
 
 - Minor code changes to ensure that rEFInd compiles with GCC 5.1. (Tested
@@ -1041,9 +1058,9 @@
   to have added their own local keys to their firmware's db.) For
   consistency, I've made the same change to the RPM .spec file.
 
-0.8.7 (3/1/2015): UPSTREAM RELEASE
------------------
 
+0.8.7 (01 MAR 2015): UPSTREAM RELEASE
+--------------------------------------
 - Fixed install.sh bug that caused inappropriate installation under the
   name bootx64.efi (or bootia32.efi) under Linux, with a failure to update
   the boot entries in NVRAM, has been fixed.
@@ -1086,9 +1103,9 @@
 - install.sh should no longer complain when copying Shim or MokManager over
   itself.
 
-0.8.6 (2/8/2015): UPSTREAM RELEASE
------------------
 
+0.8.6 (08 FEB 2015): UPSTREAM RELEASE
+--------------------------------------
 - Removed special case of ignoring an HFS+ name of "HFS+ volume", since the
   old rEFInd HFS+ driver that produced this name for all HFS+ volumes has
   long since been updated to deliver a real name.
@@ -1124,9 +1141,8 @@
   the ESP on disks with partition numbers of 10 or above.
 
 
-0.8.5 (2/1/2015): UPSTREAM RELEASE
------------------
-
+0.8.5 (01 FEB 2015): UPSTREAM RELEASE
+--------------------------------------
 - Added NTFS EFI filesystem driver.
 
 - Minor improvements to filesystem driver framework code.
@@ -1156,9 +1172,8 @@
   from other than the first hard disk.
 
 
-0.8.4 (12/8/2014): UPSTREAM RELEASE
-------------------
-
+0.8.4 (08 DEC 2014): UPSTREAM RELEASE
+--------------------------------------
 - Tweaked default for dont_scan_volumes: Removed "Recovery HD". This change
   better suits the needs of Mac OS X 10.10 ("Yosemite") installations, but may
   result in some stray Recovery HD entries on some Macs.
@@ -1186,9 +1201,9 @@
 - Added support for the iPXE network boot tool (see BUILDING.txt for
   building and basic use instructions).
 
-0.8.3 (7/6/2014): UPSTREAM RELEASE
------------------
 
+0.8.3 (06 JUL 2014): UPSTREAM RELEASE
+--------------------------------------
 - Added new feature: Setting "timeout = -1" in refind.conf causes rEFInd to
   immediately boot the default option UNLESS a keypress is in the buffer
   when rEFInd launches. In that case, if the keypress corresponds to a
@@ -1226,15 +1241,15 @@
   kernels by default, simply uncomment the "scan_all_linux_kernels" line
   and ensure it's set to "false".
 
-0.8.2.1 (6/8/2014): UPSTREAM RELEASE
--------------------
 
+0.8.2.1 (08 JUN 2014): UPSTREAM RELEASE
+--------------------------------------
 - Removed stray bit of debugging code that caused a prompt to press a
   key to appear at rEFInd startup.
 
-0.8.2 (6/8/2014): UPSTREAM RELEASE
------------------
 
+0.8.2 (08 JUN 2014): UPSTREAM RELEASE
+--------------------------------------
 - Changed behavior when default_selection is not set: It now boots the
   previously-booted loader, assuming it's still available; if not, rEFInd
   boots the first loader (as it does now). Behavior is unchanged if
@@ -1261,9 +1276,9 @@
   the default value (useful in a loaded secondary configuration file to
   override a setting in the main file).
 
-0.8.1 (5/15/2014): UPSTREAM RELEASE
-------------------
 
+0.8.1 (15 MAY 2014): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that could cause rEFInd to fail to detect boot loaders stored
   on the root directory of a partition.
 
@@ -1302,9 +1317,9 @@
 - Chainloading to BIOS-mode boot loaders now works on UEFI-based PCs when
   rEFInd is built with GNU-EFI, not just when built with Tianocore.
 
-0.8.0 (5/4/2014): UPSTREAM RELEASE
------------------
 
+0.8.0 (04 MAY 2014): UPSTREAM RELEASE
+--------------------------------------
 - The "dont_scan_volumes" parameter now also works with legacy-boot
   volumes. Unlike with EFI volumes, where the option you pass must exactly
   match an entire volume name, when applied to legacy-boot volumes, it
@@ -1332,9 +1347,9 @@
 - Fixed memory-allocation bug that could cause error message displays,
   and possibly hangs, when re-scanning boot loaders.
 
-0.7.9 (4/20/2014): UPSTREAM RELEASE
-------------------
 
+0.7.9 (20 APR 2014): UPSTREAM RELEASE
+--------------------------------------
 - Attempt to fix rEFInd perpetually re-scanning after ejecting a disc on
   some Macs.
 
@@ -1359,9 +1374,8 @@
   utility."
 
 
-0.7.8 (3/9/2014): UPSTREAM RELEASE
------------------
-
+0.7.8 (09 MAR 2014): UPSTREAM RELEASE
+--------------------------------------
 - Added "debian" directory to source, which facilitates creation of Debian
   packages. Packages built in this way are built with GNU-EFI and don't run
   any post-installation script, so although the rEFInd binaries are on the
@@ -1402,9 +1416,9 @@
   it's only when installing on an older system that's NOT been updated that
   problems might arise.
 
-0.7.7 (1/3/2014): UPSTREAM RELEASE
------------------
 
+0.7.7 (03 JAN 2014): UPSTREAM RELEASE
+--------------------------------------
 - Can now specify complete paths, optionally including volumes, in
   dont_scan_files.
 
@@ -1437,9 +1451,9 @@
   and PARTUUID= specification to appear in generated refind_linux.conf file
   under some circumstances.
 
-0.7.6 (12/15/2013): UPSTREAM RELEASE
--------------------
 
+0.7.6 (15 DEC 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added support for multiple "default_selection" targets. These MUST be
   comma-separated AND enclosed in quotes, as in:
   default_selection "fred,ginger"
@@ -1470,9 +1484,9 @@
   install to an already-bootable partition with this option, since it will
   overwrite the existing boot loader, which would render Mac OS X unbootable.
 
-0.7.5 (11/10/2013): UPSTREAM RELEASE
--------------------
 
+0.7.5 (10 NOV 2013): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused unbootable exFAT partitions to show up as
   bootable on Macs with BIOS/CSM/legacy boot options enabled.
 
@@ -1489,16 +1503,16 @@
   gray a second or so later; and when launching Linux, it will clear to
   black a second or so later.
 
-0.7.4.1 (8/25/2013): UPSTREAM RELEASE
---------------------
 
+0.7.4.1 (25 AUG 2013): UPSTREAM RELEASE
+--------------------------------------
 - My initial 0.7.4 release broke legacy-boot ability on Macs, so I quickly
   released this version using the original 0.7.4 filenames to fix the
   problem.
 
-0.7.4 (8/25/2013): UPSTREAM RELEASE
-------------------
 
+0.7.4 (25 AUG 2013): UPSTREAM RELEASE
+--------------------------------------
 - Fixed options passing to loader to include loader's filename as the first
   option. This omission had no effect on most boot loaders, but caused
   VMware's mboot64.efi to fail.
@@ -1520,17 +1534,17 @@
   under some conditions. (Launching from Firewire drives on Macs is the
   known case, but there may be others.)
 
-0.7.3 (8/7/2013): UPSTREAM RELEASE
------------------
 
+0.7.3 (07 AUG 2013): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused missing media-type badges on BIOS-mode boot
   loaders on Macs.
 
 - Fixed bug that caused failure when launching BIOS-mode OSes on Macs.
 
-0.7.2 (8/6/2013): UPSTREAM RELEASE
------------------
 
+0.7.2 (06 AUG 2013): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused display glitches in the final entry on the first
   row of icons if the second row of icons was empty.
 
@@ -1553,9 +1567,9 @@
 - Fixed handling of /.VolumeBadge.icns (or /.VolumeBadge.png) files, which
   was broken.
 
-0.7.1 (7/8/2013): UPSTREAM RELEASE
------------------
 
+0.7.1 (08 JUL 2013): UPSTREAM RELEASE
+--------------------------------------
 - Fixed build problem with recent development versions of EDK2.
 
 - Added scan for Boot Repair's backup of the Windows boot loader
@@ -1567,9 +1581,9 @@
 
 - Fixed bug in driver cache that caused Btrfs driver to hang sometimes.
 
-0.7.0 (6/27/2013): UPSTREAM RELEASE
-------------------
 
+0.7.0 (27 JUN 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added Btrfs signature to rEFInd, so that it can identify the filesystem
   type for volumes that lack labels.
 
@@ -1594,9 +1608,9 @@
 - New Btrfs driver, contributed by Samuel Liao based on GRUB 2.00 Btrfs
   code.
 
-0.6.12 (6/18/2013): UPSTREAM RELEASE
--------------------
 
+0.6.12 (18 JUN 2013): UPSTREAM RELEASE
+--------------------------------------
 - Changed the 64-bit EFI shell included in the CD-R and USB flash drive
   images to a version 2 shell that should support the "bcfg" command.
 
@@ -1613,9 +1627,9 @@
   file is not available. This enables rEFInd to boot Linux without any
   rEFInd-specific configuration files on some (but not all) systems.
 
-0.6.11 (5/13/2013): UPSTREAM RELEASE
--------------------
 
+0.6.11 (13 MAY 2013): UPSTREAM RELEASE
+--------------------------------------
 - New feature: rEFInd now ignores symbolic links to files on filesystems
   that support them. This prevents the "vmlinuz" symbolic link that some
   distributions create in the root directory from appearing in the loader
@@ -1641,9 +1655,9 @@
 - Fixed bug in gptsync that caused it to hang if the disk had too few GPT
   partitions to fill the MBR.
 
-0.6.10 (5/5/2013): UPSTREAM RELEASE
-------------------
 
+0.6.10 (05 MAY 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added support for "screensaver" token. If set to a positive integer, this
   causes the screen to blank after the specified number of seconds of
   inactivity. Pressing most keys (unfortunately NOT including Shift, Alt,
@@ -1672,9 +1686,9 @@
   "screenshot.bmp", the name is now "screenshot_###.bmp", where "###" is a
   sequence number, starting with "001".
 
-0.6.9 (4/25/2013): UPSTREAM RELEASE
-------------------
 
+0.6.9 (25 APR 2013): UPSTREAM RELEASE
+--------------------------------------
 - Modified default banner to include the new rEFInd icon, provided by Erik
   Kemperman.
 
@@ -1693,9 +1707,9 @@
   disconnected. This can help in booting a headless server or a system with
   a bluetooth or other keyboard that's not recognized by the EFI.
 
-0.6.8 (3/18/2013): UPSTREAM RELEASE
-------------------
 
+0.6.8 (16 APR 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added workaround for presumed EFI bug that was causing "Invalid
   Parameter" errors when scanning for boot loaders on some computers.
 
@@ -1707,9 +1721,9 @@
 
 - Fixed bug that caused icons named after boot loaders to not be used.
 
-0.6.7 (2/3/2013): UPSTREAM RELEASE
------------------
 
+0.6.7 (06 FEB 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added a more explicit error message summarizing options when a launch of
   a program results in a Secure Boot failure.
 
@@ -1733,9 +1747,9 @@
   icons directory -- previously, an ICNS file in the default directory
   would override a PNG file in the user-specified directory.
 
-0.6.6 (1/26/2013): UPSTREAM RELEASE
-------------------
 
+0.6.6 (26 JAN 2013): UPSTREAM RELEASE
+--------------------------------------
 - rEFInd now ignores the fallback boot loader (EFI/BOOT/bootx64.efi or
   EFI/BOOT/bootia32.efi) if it's identical to another boot loader on
   the same volume. This is intended to help unclutter the display on
@@ -1767,9 +1781,9 @@
 - Fixed bug in install.sh that caused the script to fail to update
   drivers when rEFInd was installed in EFI/BOOT/.
 
-0.6.5 (1/16/2013): UPSTREAM RELEASE
-------------------
 
+0.6.5 (16 JAN 2013): UPSTREAM RELEASE
+--------------------------------------
 - Improved text color support: rEFInd now uses black text against light
   backgrounds and white text against dark backgrounds.
 
@@ -1789,9 +1803,9 @@
   too big. Note that "too big" can be substantially smaller than the screen
   resolution!
 
-0.6.4 (1/8/2013): UPSTREAM RELEASE
------------------
 
+0.6.4 (08 JAN 2013): UPSTREAM RELEASE
+--------------------------------------
 - Revised install.sh to copy ext2fs driver, rather than ext4fs driver, for
   ext2/3 filesystems. This can help keep non-functional entries from links
   from /vmlinuz to /boot/vmlinuz out of the menu if the system uses ext4fs
@@ -1800,9 +1814,9 @@
 - Fixed a couple of memory management bugs that cause rEFInd to hang at
   startup on some systems.
 
-0.6.3 (1/6/2013): UPSTREAM RELEASE
------------------
 
+0.6.3 (06 JAN 2013): UPSTREAM RELEASE
+--------------------------------------
 - Added the ability to specify a volume name or number in the
   "dont_scan_dirs" and "also_scan_dirs" tokens.
 
@@ -1830,9 +1844,9 @@
 - New "--yes" option to install.sh to help with unattended or automated
   installations (as from an RPM or Debian package).
 
-0.6.2 (12/30/2012): UPSTREAM RELEASE
--------------------
 
+0.6.2 (30 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Inclusion of a sample refind.spec file for the benefit of RPM
   distribution maintainers who might want to include rEFInd. It's a bit
   rough, but it gets you a good chunk of the way there....
@@ -1864,9 +1878,9 @@
   adjust the text mode at all. (Prior versions set it to mode 0 by
   default.)
 
-0.6.1 (12/21/2012): UPSTREAM RELEASE
--------------------
 
+0.6.1 (21 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added "--root" option to install.sh, to enable installation of rEFInd
   to something other than the currently-running OS. This is intended for
   use on emergency discs.
@@ -1902,9 +1916,9 @@
   message but before displaying the "Hit any key to continue" message when
   a boot loader launch failed.
 
-0.6.0 (12/16/2012): UPSTREAM RELEASE
--------------------
 
+0.6.0 (16 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed a memory allocation bug that could cause a program crash when
   specifying certain values with the "also_scan_dirs", "dont_scan_volumes",
   "dont_scan_dirs", "dont_scan_files", and "scan_driver_dirs" refind.conf
@@ -1963,14 +1977,14 @@
 - Fixed bug in install.sh that prevented creation of refind_linux.conf file
   on Linux systems.
 
-0.5.1.1 (12/12/2012): UPSTREAM RELEASE
----------------------
 
+0.5.1.1 (12 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug in install.sh that prevented it from working on Mac OS X.
 
-0.5.1 (12/11/2012): UPSTREAM RELEASE
--------------------
 
+0.5.1 (11 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added support for "0" options to "textonly" and "scan_all_linux_kernels"
   to reverse the usual meaning of these tokens. This is useful for
   including these options in a secondary configuration file called with the
@@ -2002,9 +2016,8 @@
   This fix might help with some other boot loaders in Secure Boot mode,
   too, but I don't know of any specifics.
 
-0.5.0 (12/6/2012): UPSTREAM RELEASE
-------------------
-
+0.5.0 (06 DEC 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added the ability to include quote marks ('"') in refind.conf and
   refind_linux.conf tokens by doubling them up, as in:
   "ro root=/dev/sda4 some_value=""this is it"""
@@ -2062,9 +2075,9 @@
 - Added "--usedefault {devicename}" and "--drivers" options to the
   install.sh script and changed the "esp" option to "--esp".
 
-0.4.7 (11/6/2012): UPSTREAM RELEASE
-------------------
 
+0.4.7 (06 NOV 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added an icon for gummiboot.
 
 - Added a boot option editor: Pressing the Insert or F2 key from a boot
@@ -2080,9 +2093,9 @@
   present by default, as a carryover from rEFIt) causes problems when
   booting Linux kernels from FAT partitions.
 
-0.4.6 (10/6/2012): UPSTREAM RELEASE
-------------------
 
+0.4.6 (06 OCT 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed some minor memory management issues.
 
 - Added new "scan_delay" feature to impose a delay before scanning
@@ -2104,16 +2117,16 @@
 
 - Added new legacy (BIOS) boot support for UEFI-based PCs.
 
-0.4.5 (8/12/2012): UPSTREAM RELEASE
-------------------
 
+0.4.5 (12 AUG 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused a failure to boot BIOS-based OSes on Macs.
 
 - Fixed bug in install.sh that caused it to fail to detect rEFItBlesser.
 
-0.4.4 (6/23/2012): UPSTREAM RELEASE
-------------------
 
+0.4.4 (26 JUN 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused filesystem labels to be corrupted by rEFInd on
   32-bit systems.
 
@@ -2126,9 +2139,9 @@
 
 - Tweaked install script to better isolate the ESP under Mac OS X.
 
-0.4.3 (6/21/2012): UPSTREAM RELEASE
-------------------
 
+0.4.3 (21 JUN 2012): UPSTREAM RELEASE
+--------------------------------------
 - rEFInd now supports compilation using the TianoCore UDK2010/EDK2
   development kit in addition to GNU-EFI.
 
@@ -2151,9 +2164,9 @@
   for holding Linux kernel options. The kernel developers plan to use
   "linux.conf" themselves.
 
-0.4.2 (6/3/2012): UPSTREAM RELEASE
------------------
 
+0.4.2 (03 JUN 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added a message to install.sh when run on Macs to remind users to update
   the "scanfor" line in refind.conf if they need to boot BIOS-based OSes
   via rEFInd.
@@ -2171,9 +2184,9 @@
 - Added "dont_scan_dirs" configuration file option, which adds directories
   to a "blacklist" of directories that are NOT scanned for boot loaders.
 
-0.4.1 (5/25/2012): UPSTREAM RELEASE
-------------------
 
+0.4.1 (25 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added "scanning for new boot loaders" message to the re-scan function
   (hitting Esc at the main menu). It usually flashes up too quickly to
   be of importance, but if the scan function takes a while because of
@@ -2192,9 +2205,9 @@
 - Fixed bug that could cause rEFInd to appear in its own menu after
   running a shell and then re-scanning for boot loaders.
 
-0.4.0 (5/20/2012): UPSTREAM RELEASE
-------------------
 
+0.4.0 (20 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Inclusion of drivers for ISO-9660, HFS+, ReiserFS, and ext2fs. Most of
   these drivers originated with rEFIt, although the HFS+ driver seems to
   have come from Oracle's VirtualBox, with some files from Apple. I hadn't
@@ -2215,9 +2228,9 @@
 - Fixed a problem that could cause GRUB 2 to fail to read its configuration
   file when launched from rEFInd.
 
-0.3.5 (5/15/2012): UPSTREAM RELEASE
-------------------
 
+0.3.5 (15 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Removed the GRUB 2 detection "reciped" added with 0.3.2, since I've
   received reports that it's not working as intended.
 
@@ -2231,9 +2244,9 @@
 - Fixed a bug that could cause the scroll-right arrow to be replaced by the
   scroll-left arrow under some circumstances.
 
-0.3.4 (5/9/2012): UPSTREAM RELEASE
------------------
 
+0.3.4 (09 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added new configuration file option: "icons_dir", which sets the name
   of the subdirectory in which icons are found. See the documentation or
   sample configuration file for a full description.
@@ -2251,9 +2264,9 @@
 - Improved screen redraws to produce less flicker when moving among the
   second-row tags or to the last tag on the first row.
 
-0.3.3 (5/6/2012): UPSTREAM RELEASE
------------------
 
+0.3.3 (06 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Improved menu navigation:
   - In graphics mode, left & right arrow keys move left & right, while up &
     down arrows move between rows.
@@ -2266,9 +2279,9 @@
   when first started in text mode and scrolling is done sensibly when too
   many entries exist to fit on the screen.
 
-0.3.2 (5/4/2012): UPSTREAM RELEASE
------------------
 
+0.3.2 (05 MAY 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added the install.sh script to install rEFInd on Linux and Mac OS X
   systems. This script must be run as root (or via sudo). It requires
   no options, but on Mac OS X, passing it the "esp" option causes it
@@ -2287,9 +2300,8 @@
   options.
 
 
-0.3.1 (4/27/2012): UPSTREAM RELEASE
-------------------
-
+0.3.1 (27 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused spurious "Unsupported while scanning the root
   directory" messages under some conitions on Macs.
 
@@ -2314,9 +2326,8 @@
 - Eliminated bogus OS loader tags for filenames that end in ".icns" when
   the scan_all_linux_kernels option is set.
 
-0.3.0 (4/22/2012): UPSTREAM RELEASE
-------------------
-
+0.3.0 (22 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - I'm officially upgrading this project's status from "alpha" to "beta" and
   giving it a bump from 0.2.x to 0.3.0. This doesn't reflect any major
   milestone with this version; rather, it reflects my sense that rEFInd has
@@ -2361,9 +2372,8 @@
   field was set to NULL rather than even an empty string). In such
   situations, rEFInd now reports the volume name as "Unknown".
 
-0.2.7 (4/19/2012): UPSTREAM RELEASE
-------------------
-
+0.2.7 (19 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - After much trial and tribulation, I've overcome a GNU-EFI limitation and
   enabled rEFInd to load EFI drivers. This feature was present in the
   original build of rEFIt but was removed in the versions that could
@@ -2389,9 +2399,9 @@
   list. It defaults to "elilo,boot", but you can set it to any directory or
   directories you like.
 
-0.2.6 (4/14/2012): UPSTREAM RELEASE
-------------------
 
+0.2.6 (14 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added "volume" keyword to configuration file's stanza options. This
   option changes the volume from which subsequent files (specified by
   "loader" and "icon") are loaded. You pass "volume" the name/label of the
@@ -2405,9 +2415,9 @@
   mapping on some (but not all) systems. Affected computers include at
   least some Intel motherboards, maybe others.
 
-0.2.5 (4/9/2012): UPSTREAM RELEASE
------------------
 
+0.2.5 (09 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused an inability to associate initial RAM disks with
   Linux kernels stored in a volume's root directory.
 
@@ -2428,9 +2438,9 @@
 - Fixed bug that caused "unknown disable flag" to be shown (very briefly)
   instead of "unknown hideui flag" when an improper hideui flag was set.
 
-0.2.4 (4/5/2012): UPSTREAM RELEASE
------------------
 
+0.2.4 (05 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Created new refind.conf entry: "showtools". This entry takes options of
   "shell", "gptsync", "about", "exit", "reboot", and "shutdown". This
   option is in some respects an affirmative version of portions of the old
@@ -2469,9 +2479,9 @@
   which was never officially documented but worked as a carryover from
   rEFIt, is no longer valid.
 
-0.2.3 (3/26/2012): UPSTREAM RELEASE
-------------------
 
+0.2.3 (26 MAR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed (maybe) a bug that caused hangs when launching a second program
   after returning from a first. There are some weird system-to-system
   differences, though, and this fix causes (apparently harmless) error
@@ -2488,9 +2498,9 @@
 
 - Added logo for Arch Linux.
 
-0.2.2 (3/23/2012): UPSTREAM RELEASE
-------------------
 
+0.2.2 (23 MAR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Fixed bug that caused program failure when Linux kernels with EFI stub
   support were detected with no associated version numbers. rEFInd now
   permits automatic linking of *ONE* versionless kernel to *ONE*
@@ -2504,9 +2514,8 @@
   small screens (800x600). NOTE: Problem still occurs on screens smaller
   than this, but such systems are very rare.
 
-0.2.1 (3/19/2012): UPSTREAM RELEASE
-------------------
-
+0.2.1 (19 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Added ability to set a "default_selection" that's a title or a substring
   of one -- the name given to a stanza in a "menuentry" or the boot
   loader's filename, in most cases, although "Mac OS X", "Windows XP
@@ -2524,7 +2533,6 @@
   filename Linux Mint ACTUALLY uses for its ESP boot loader directory.
 
 
-0.2.0 (3/14/2012): UPSTREAM RELEASE
-------------------
-
+0.2.0 (14 APR 2012): UPSTREAM RELEASE
+--------------------------------------
 - Initial public release

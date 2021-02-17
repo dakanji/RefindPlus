@@ -18,6 +18,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "global.h"
 #include "config.h"
@@ -29,10 +35,10 @@
 
 CHAR16 *gCsrStatus = NULL;
 
-// Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
-// information. If the variable is not present and the firmware is Apple, fake
-// it and claim it is enabled. This is consistent with how Mac OS El Capitan
-// treats systems with the variable absent.
+// Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
+// Protection [SIP], or "rootless") status information. If the variable is not
+// present and the firmware is Apple, fake it and claim it is enabled, since
+// that's how OS X 10.11 treats a system with the variable absent.
 EFI_STATUS
 GetCsrStatus (
     UINT32 *CsrStatus
@@ -83,7 +89,7 @@ VOID RecordgCsrStatus (
         // Standard SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Enabled (0x%03x)",
+                L" System Integrity Protection Enabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -91,7 +97,7 @@ VOID RecordgCsrStatus (
         // Standard SIP "Disabled" Setting
         case SIP_DISABLED:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Disabled (0x%03x)",
+                L" System Integrity Protection Disabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -103,7 +109,7 @@ VOID RecordgCsrStatus (
         case SIP_DISABLED_DEBUG:
         case SIP_DISABLED_DBGANY:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Disabled (0x%03x - Custom Setting)",
+                L" System Integrity Protection Disabled (0x%04x - Custom Setting)",
                 CsrStatus
             );
             break;
@@ -111,7 +117,7 @@ VOID RecordgCsrStatus (
         // Max Legal CSR "Disabled" Setting
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Removed (0x%03x - Caution: All Protection Removed!)",
+                L" System Integrity Protection Removed (0x%04x - Caution: All Protection Removed!)",
                 CsrStatus
             );
             break;
@@ -119,7 +125,7 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Status: 0x%03x - Caution: Unknown Custom Setting",
+                L" System Integrity Protection Status: 0x%04x - Caution: Unknown Custom Setting",
                 CsrStatus
             );
     } // switch

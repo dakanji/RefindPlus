@@ -2,12 +2,17 @@
  * MainRP/install.c
  * Functions related to installation of RefindPlus and management of EFI boot order
  *
- * Copyright (c) 2020 by Roderick W. Smith
+ * Copyright (c) 2020-2021 by Roderick W. Smith
  *
  * Distributed under the terms of the GNU General Public License (GPL)
  * version 3 (GPLv3), a copy of which must be distributed with this source
  * code or binaries made from it.
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -706,15 +711,8 @@ VOID InstallRefind(VOID) {
  *
  ***********************/
 
-// A linked-list data structure intended to hold a list of all the EFI boot
-// entries on the computer....
-typedef struct _boot_entry_list {
-    EFI_BOOT_ENTRY           BootEntry;
-    struct _boot_entry_list  *NextBootEntry;
-} BOOT_ENTRY_LIST;
-
 // Create a list of Boot entries matching the BootOrder list.
-static BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
+BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
     UINTN            Status = EFI_SUCCESS, i;
     UINT16           *BootOrder = NULL;
     UINTN            VarSize, ListSize;
@@ -761,7 +759,7 @@ static BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
 } // BOOT_ENTRY_LIST * FindBootOrderEntries()
 
 // Delete a linked-list BOOT_ENTRY_LIST data structure
-static VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries) {
+VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries) {
     BOOT_ENTRY_LIST *Current;
 
     while (Entries != NULL) {

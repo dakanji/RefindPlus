@@ -34,12 +34,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2015 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
  *
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
  */
 
 #ifndef __ICNS_H_
@@ -77,10 +83,11 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id);
 #define BUILTIN_ICON_VOL_EXTERNAL          (19)
 #define BUILTIN_ICON_VOL_OPTICAL           (20)
 #define BUILTIN_ICON_VOL_NET               (21)
-#define BUILTIN_ICON_MOUSE                 (22)
-#define BUILTIN_ICON_TOOL_BOOTKICKER       (23)
-#define BUILTIN_ICON_TOOL_NVRAMCLEAN       (24)
-#define BUILTIN_ICON_COUNT                 (25)
+#define BUILTIN_ICON_VOL_EFI               (22)
+#define BUILTIN_ICON_MOUSE                 (23)
+#define BUILTIN_ICON_TOOL_BOOTKICKER       (24)
+#define BUILTIN_ICON_TOOL_NVRAMCLEAN       (25)
+#define BUILTIN_ICON_COUNT                 (26)
 
 #endif
 

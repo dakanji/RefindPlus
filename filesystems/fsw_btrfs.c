@@ -25,6 +25,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * Modified for rEFInd
+ * Copyright (c) 2021 Roderick W Smith
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 //#define DPRINT(x...)  Print(x)
 
@@ -734,7 +745,11 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     if(err)
         return FSW_UNSUPPORTED;
 
-    if(!uuid_eq(vol->uuid, sb.uuid))
+    u[0] = sb.uuid[0];
+    u[1] = sb.uuid[1];
+    u[2] = sb.uuid[2];
+    u[3] = sb.uuid[3];
+    if(!uuid_eq(vol->uuid, u))
         return FSW_UNSUPPORTED;
 
     return btrfs_add_multi_device(vol, slave, &sb);
@@ -2189,4 +2204,3 @@ struct fsw_fstype_table   FSW_FSTYPE_TABLE_NAME(btrfs) = {
     fsw_btrfs_dir_read,
     fsw_btrfs_readlink,
 };
-

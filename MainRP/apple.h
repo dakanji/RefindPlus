@@ -17,6 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifndef __APPLE_H_
 #define __APPLE_H_
@@ -27,20 +33,20 @@
 // Apple's NVRAM ACCESS FLAGS
 #define APPLE_FLAGS EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
 
-// These codes are returned in the first byte of the csr-active-config variable
-#define CSR_ALLOW_UNTRUSTED_KEXTS             0x001
-#define CSR_ALLOW_UNRESTRICTED_FS             0x002
-#define CSR_ALLOW_TASK_FOR_PID                0x004
-#define CSR_ALLOW_KERNEL_DEBUGGER             0x008
-#define CSR_ALLOW_APPLE_INTERNAL              0x010
-#define CSR_ALLOW_UNRESTRICTED_DTRACE         0x020
-#define CSR_ALLOW_UNRESTRICTED_NVRAM          0x040
-#define CSR_ALLOW_DEVICE_CONFIGURATION        0x080
-#define CSR_ALLOW_ANY_RECOVERY_OS             0x100
-#define CSR_ALLOW_UNAPPROVED_KEXTS            0x200
-#define CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE  0x400
-#define CSR_ALLOW_UNAUTHENTICATED_ROOT        0x800
-#define CSR_END_OF_LIST                       0xFFFFFFFF
+// These codes are returned in the first two bytes of the csr-active-config variable
+#define CSR_ALLOW_UNTRUSTED_KEXTS              0x0001
+#define CSR_ALLOW_UNRESTRICTED_FS              0x0002
+#define CSR_ALLOW_TASK_FOR_PID                 0x0004
+#define CSR_ALLOW_KERNEL_DEBUGGER              0x0008
+#define CSR_ALLOW_APPLE_INTERNAL               0x0010
+#define CSR_ALLOW_UNRESTRICTED_DTRACE          0x0020
+#define CSR_ALLOW_UNRESTRICTED_NVRAM           0x0040
+#define CSR_ALLOW_DEVICE_CONFIGURATION         0x0080
+#define CSR_ALLOW_ANY_RECOVERY_OS              0x0100
+#define CSR_ALLOW_UNAPPROVED_KEXTS             0x0200
+#define CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE   0x0400
+#define CSR_ALLOW_UNAUTHENTICATED_ROOT         0x0800
+#define CSR_END_OF_LIST                        0xFFFFFFFF
 
 // Standard SIP "Enabled" Setting
 #define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010

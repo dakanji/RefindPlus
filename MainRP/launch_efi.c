@@ -34,25 +34,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -164,6 +155,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         EFI_FILE_MODE_READ,
         0
     );
+
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
@@ -184,6 +176,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
 #endif
+
     return IsValid;
 } // BOOLEAN IsValidLoader()
 
@@ -215,6 +208,7 @@ StartEFIImage (
             // when passing options to Apple's boot.efi...
         } // if
     } // if (LoadOptions != NULL)
+
     if (Verbose) {
         Print(
             L"Starting %s\nUsing load options '%s'\n",
@@ -272,7 +266,8 @@ StartEFIImage (
                 &ChildImageHandle2
             );
         }
-    } else {
+    }
+    else {
         SwitchToText (FALSE);
 
         ShowScreenStr = PoolPrint (L"Invalid Loader File:- '%s'", ImageTitle);
@@ -305,11 +300,16 @@ StartEFIImage (
         (VOID **) &ChildLoadedImage
     );
     ReturnStatus = Status;
+
     if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }
+
     ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
-    ChildLoadedImage->LoadOptionsSize = FullLoadOptions ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
+    ChildLoadedImage->LoadOptionsSize = FullLoadOptions
+        ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16)
+        : 0;
+
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
@@ -350,22 +350,39 @@ bailout:
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware(VOID) {
-    CHAR8 *b;
-    UINTN size;
-    UINT64 osind;
-    EFI_STATUS err;
+    CHAR8      *b;
+    UINTN      size;
+    UINT64     osind;
+    EFI_STATUS Status;
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
-    err = EfivarGetRaw(&GlobalGuid, L"OsIndications", &b, &size);
-    if (err == EFI_SUCCESS) {
-        osind |= (UINT64)*b;
+    Status = EfivarGetRaw(
+        &GlobalGuid,
+        L"OsIndications",
+        &b,
+        &size
+    );
+
+    if (Status == EFI_SUCCESS) {
+        osind |= (UINT64) *b;
     }
     MyFreePool (b);
 
-    err = EfivarSetRaw(&GlobalGuid, L"OsIndications", (CHAR8 *)&osind, sizeof (UINT64), TRUE);
-    if (err != EFI_SUCCESS) {
-        return err;
+    Status = EfivarSetRaw(
+        &GlobalGuid,
+        L"OsIndications",
+        (CHAR8 *) &osind,
+        sizeof (UINT64),
+        TRUE
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Reboot Into Firmware ...%r\n\n", Status);
+    #endif
+
+    if (Status != EFI_SUCCESS) {
+        return Status;
     }
 
     refit_call4_wrapper(
@@ -375,11 +392,42 @@ EFI_STATUS RebootIntoFirmware(VOID) {
         0,
         NULL
     );
-    Print(L"Error calling ResetSystem: %r", err);
+
+    Print(L"Error calling ResetSystem: %r", Status);
     PauseForKey();
 
-    return err;
+    return Status;
 } // EFI_STATUS RebootIntoFirmware()
+
+// Reboot into a loader defined in the EFI's NVRAM
+VOID
+RebootIntoLoader (
+    LOADER_ENTRY *Entry
+) {
+    EFI_STATUS Status;
+
+    Status = EfivarSetRaw(
+        &GlobalGuid,
+        L"BootNext",
+        (CHAR8*) &(Entry->EfiBootNum),
+        sizeof (UINT16),
+        TRUE
+    );
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Reboot Into Loader ...%r\n\n", Status);
+    #endif
+
+    if (EFI_ERROR(Status)) {
+        Print(L"Error: %d\n", Status);
+        return;
+    }
+
+    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+
+    Print(L"Error calling ResetSystem: %r", Status);
+    PauseForKey();
+} // RebootIntoLoader()
 
 //
 // EFI OS loader functions
@@ -405,6 +453,7 @@ static VOID DoEnableAndLockVMX(VOID) {
 #endif
 } // VOID DoEnableAndLockVMX()
 
+// Directly launch an EFI boot loader (or similar program)
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
@@ -423,6 +472,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     );
 } // VOID StartLoader()
 
+// Launch an EFI tool (a shell, SB management utility, etc.)
 VOID StartTool(IN LOADER_ENTRY *Entry) {
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);

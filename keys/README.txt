@@ -32,6 +32,9 @@ The files in this directory are, in alphabetical order:
   centos.crt file included here is transformed from the original file by
   openssl. Tested booting CentOS 7.
 
+- debian.cer -- Debian's public key, obtained from
+  https://dsa.debian.org/secure-boot-ca.
+
 - fedora-ca.cer & fedora-ca.crt -- Fedora's public key, matched to the one
   used used to sign Fedora's shim 0.8 binary.
 

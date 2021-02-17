@@ -34,25 +34,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -70,6 +61,7 @@
 #include "launch_legacy.h"
 #include "linux.h"
 #include "scan.h"
+#include "install.h"
 #include "../include/refit_call_wrapper.h"
 
 
@@ -291,12 +283,18 @@ LOADER_ENTRY *InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
         NewEntry->OSType          = 0;
+        NewEntry->EfiLoaderPath   = NULL;
+        NewEntry->EfiBootNum      = 0;
+
         if (Entry != NULL) {
             NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate (Entry->LoaderPath) : NULL;
             NewEntry->Volume          = Entry->Volume;
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
             NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate (Entry->LoadOptions) : NULL;
             NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate (Entry->InitrdPath) : NULL;
+            NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
+            NewEntry->EfiBootNum      = Entry->EfiBootNum;
+
         }
     } // if
     return (NewEntry);
@@ -694,6 +692,66 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     MyFreePool (NoExtension);
 } // VOID SetLoaderDefaults()
 
+// Add an NVRAM-based EFI boot loader entry to the menu.
+STATIC
+LOADER_ENTRY * AddEfiLoaderEntry (
+    IN EFI_DEVICE_PATH *EfiLoaderPath,
+    IN CHAR16 *LoaderTitle,
+    IN UINT16 EfiBootNum,
+    IN UINTN Row,
+    EG_IMAGE *Icon
+) {
+    LOADER_ENTRY  *Entry;
+    CHAR16        *OSIconName = NULL;
+    CHAR16        *FullTitle = NULL;
+
+    Entry = InitializeLoaderEntry (NULL);
+    if (Entry) {
+        Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
+
+        if (LoaderTitle) {
+            FullTitle = PoolPrint (L"Reboot to %s", LoaderTitle);
+        }
+
+        Entry->me.Title     = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
+        Entry->me.Row       = Row;
+        Entry->me.Tag       = TAG_FIRMWARE_LOADER;
+        Entry->Title        = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
+        Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
+        Entry->EfiBootNum    = EfiBootNum;
+
+        MergeWords (&OSIconName, Entry->me.Title, L',');
+        MergeStrings (&OSIconName, L"unknown", L',');
+
+        if (Icon) {
+            Entry->me.Image = Icon;
+        }
+        else {
+            Entry->me.Image = LoadOSIcon (OSIconName, NULL, FALSE);
+        }
+
+        if (Row == 0) {
+            Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
+        }
+        else {
+            Entry->me.BadgeImage = NULL;
+        }
+
+        MyFreePool (OSIconName);
+
+        Entry->LoaderPath = NULL;
+        Entry->Volume = NULL;
+        Entry->LoadOptions = NULL;
+        Entry->InitrdPath = NULL;
+        Entry->Enabled = TRUE;
+    } // if (Entry)
+
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
+    return Entry;
+} // LOADER_ENTRY * AddEfiLoaderEntry()
+
+
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
 static LOADER_ENTRY * AddLoaderEntry (
@@ -711,8 +769,8 @@ static LOADER_ENTRY * AddLoaderEntry (
 
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
-    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     if (Entry != NULL) {
+        Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
         if (LoaderTitle == NULL) {
             TitleEntry = LoaderPath;
         }
@@ -720,7 +778,7 @@ static LOADER_ENTRY * AddLoaderEntry (
             TitleEntry = LoaderTitle;
         }
 
-        Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+        Entry->Title    = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
         Entry->me.Title = AllocateZeroPool (sizeof (CHAR16) * 256);
 
         // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
@@ -1521,6 +1579,73 @@ ScanOptical (
     } // for
 } // static VOID ScanOptical()
 
+// Scan options stored in EFI firmware's boot list. Adds discovered and allowed
+// items to the specified Row.
+// If MatchThis != NULL, only adds items with labels containing any element of
+// the MatchThis comma-delimited string; otherwise, searches for anything that
+// doesn't match GlobalConfig.DontScanFirmware or the contents of the
+// HiddenFirmware EFI variable.
+// If Icon != NULL, uses the specified icon; otherwise tries to find one to
+// match the label.
+STATIC
+VOID ScanFirmwareDefined (
+    IN UINTN Row,
+    IN CHAR16 *MatchThis,
+    IN EG_IMAGE *Icon
+) {
+    BOOT_ENTRY_LIST *BootEntries;
+    BOOT_ENTRY_LIST *CurrentEntry;
+    BOOLEAN         ScanIt      = TRUE;
+    CHAR16          *OneElement = NULL;
+    CHAR16          *DontScanFirmware;
+    UINTN           i;
+
+    DontScanFirmware = ReadHiddenTags (L"HiddenFirmware");
+    MergeStrings (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
+
+    if (Row == 0) {
+        MergeStrings(&DontScanFirmware, L"shell", L',');
+    }
+
+    BootEntries  = FindBootOrderEntries();
+    CurrentEntry = BootEntries;
+
+    while (CurrentEntry != NULL) {
+        if (MatchThis) {
+            ScanIt = FALSE;
+            i = 0;
+            while (!ScanIt && (OneElement = FindCommaDelimited (MatchThis, i++))) {
+                if (StriSubCmp (OneElement, CurrentEntry->BootEntry.Label) &&
+                    !IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)
+                ) {
+                        ScanIt = TRUE;
+                }
+                MyFreePool (OneElement);
+            } // while()
+        } else {
+            if (IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)) {
+                ScanIt = FALSE;
+            }
+        } // if/else
+
+        if (ScanIt) {
+            AddEfiLoaderEntry (
+                CurrentEntry->BootEntry.DevPath,
+                CurrentEntry->BootEntry.Label,
+                CurrentEntry->BootEntry.BootNum,
+                Row,
+                Icon
+            );
+        }
+
+        CurrentEntry = CurrentEntry->NextBootEntry;
+        ScanIt = TRUE; // Assume the next item is to be scanned
+    } // while()
+
+    MyFreePool (DontScanFirmware);
+    DeleteBootOrderEntries (BootEntries);
+} // static VOID ScanFirmwareDefined()
+
 // default volume badge icon based on disk kind
 EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
     EG_IMAGE * Badge = NULL;
@@ -1581,7 +1706,8 @@ ScanForBootloaders (
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor       = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags;
-    CHAR16   *HiddenLegacy;
+    CHAR16   *OrigDontScanFiles;
+    CHAR16   *OrigDontScanVolumes;
     CHAR16   ShortCutKey;
 
     ScanningLoaders = TRUE;
@@ -1617,17 +1743,28 @@ ScanForBootloaders (
         BdsAddNonExistingLegacyBootOptions();
     } // if
 
+    // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
+    // to include contents of EFI HiddenTags and HiddenLegacy variables so that we don't
+    // have to re-load these EFI variables in several functions called from this one.
+    // To do this, we must be able to restore the original contents, so back them up
+    // first.
+    // We do *NOT* do this with GlobalConfig.DontScanFirmware and
+    // GlobalConfig.DontScanTools variables because they're used in only one function
+    // each, so it's easier to create a temporary variable for the merged contents
+    // there and not modify the global variable.
+    OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
+    OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
+
+    // Add hidden tags to two GlobalConfig.DontScan* variables....
     HiddenTags = ReadHiddenTags (L"HiddenTags");
     if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
         MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
-    MyFreePool (HiddenTags);
 
-    HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-    if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
-        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
+    HiddenTags = ReadHiddenTags (L"HiddenTags");
+    if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
+        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenTags, L',');
     }
-    MyFreePool (HiddenLegacy);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -1645,6 +1782,7 @@ ScanForBootloaders (
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);
                 break;
+
             case 'i': case 'I':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1658,6 +1796,7 @@ ScanForBootloaders (
 
                 ScanInternal();
                 break;
+
             case 'h': case 'H':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1671,6 +1810,7 @@ ScanForBootloaders (
 
                 ScanLegacyInternal();
                 break;
+
             case 'e': case 'E':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1684,6 +1824,7 @@ ScanForBootloaders (
 
                 ScanExternal();
                 break;
+
             case 'b': case 'B':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1697,6 +1838,7 @@ ScanForBootloaders (
 
                 ScanLegacyExternal();
                 break;
+
             case 'o': case 'O':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1710,6 +1852,7 @@ ScanForBootloaders (
 
                 ScanOptical();
                 break;
+
             case 'c': case 'C':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1723,6 +1866,7 @@ ScanForBootloaders (
 
                 ScanLegacyDisc();
                 break;
+
             case 'n': case 'N':
                 #if REFIT_DEBUG > 0
                 if (LogNewLine) {
@@ -1736,11 +1880,33 @@ ScanForBootloaders (
 
                 ScanNetboot();
                 break;
+
+            case 'f': case 'F':
+                #if REFIT_DEBUG > 0
+                if (LogNewLine) {
+                    MsgLog ("\n");
+                }
+                else {
+                    LogNewLine = TRUE;
+                }
+                MsgLog ("Scan Firmware:");
+                #endif
+
+                ScanFirmwareDefined(0, NULL, NULL);
+                break;
         } // switch()
     } // for
 
+    // Restore the backed-up GlobalConfig.DontScan* variables....
+    MyFreePool(GlobalConfig.DontScanFiles);
+    GlobalConfig.DontScanFiles = OrigDontScanFiles;
+    MyFreePool(GlobalConfig.DontScanVolumes);
+    GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
+
     if (MainMenu.EntryCount < 1) {
+        #if REFIT_DEBUG > 0
         MsgLog ("* WARN: Could Not Find Boot Loaders\n\n");
+        #endif
     }
     else {
         // assign shortcut keys
@@ -1810,13 +1976,17 @@ ScanForBootloaders (
 // Returns TRUE if it passes all tests, FALSE otherwise
 static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
-    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL;
+    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
+    DontScanTools = ReadHiddenTags(L"HiddenTools");
+    MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
+
     if (FileExists (BaseVolume->RootDir, PathName) && IsValidLoader (BaseVolume->RootDir, PathName)) {
         SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
-        while (retval && (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))) {
+
+        while (retval && (DontScanThis = FindCommaDelimited(DontScanTools, i++))) {
             SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
             if (MyStriCmp (TestFileName, DontFileName) &&
                 ((DontPathName == NULL) || (MyStriCmp (TestPathName, DontPathName))) &&
@@ -1834,6 +2004,7 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     MyFreePool (TestVolName);
     MyFreePool (TestPathName);
     MyFreePool (TestFileName);
+    MyFreePool (DontScanTools);
 
     return retval;
 } // BOOLEAN IsValidTool()
@@ -1913,7 +2084,6 @@ VOID ScanForTools (VOID) {
     CHAR16           *VolName = NULL;
     CHAR16           *MokLocations;
     CHAR16           Description[256];
-    CHAR16           *HiddenTools;
     REFIT_MENU_ENTRY *TempMenuEntry;
     UINTN            i;
     UINTN            j;
@@ -1932,12 +2102,6 @@ VOID ScanForTools (VOID) {
     if (MokLocations != NULL) {
         MergeStrings (&MokLocations, SelfDirPath, L',');
     }
-
-    HiddenTools = ReadHiddenTags (L"HiddenTools");
-    if ((HiddenTools) && (StrLen (HiddenTools) > 0)) {
-        MergeStrings (&GlobalConfig.DontScanTools, HiddenTools, L',');
-    }
-    MyFreePool (HiddenTools);
 
     for (i = 0; i < NUM_TOOLS; i++) {
         // Reset Vars
@@ -2178,7 +2342,10 @@ VOID ScanForTools (VOID) {
                         #endif
                     } // if
                 MyFreePool (FileName);
+                FileName = NULL;
                 } // while
+
+                ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0

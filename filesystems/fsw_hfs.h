@@ -14,6 +14,15 @@
  * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  */
+/*
+ * Modified for rEFInd by Roderick W Smith
+ */ 
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifndef _FSW_HFS_H_
 #define _FSW_HFS_H_
@@ -74,8 +83,8 @@ struct fsw_hfs_key
     struct HFSPlusExtentKey  ext_key;
     struct HFSPlusCatalogKey cat_key;
     fsw_u16                  key_len; /* Length is at the beginning of all keys */
-  };
-};
+  } HFS_ALIGNMENT;
+} HFS_ALIGNMENT;
 
 #pragma pack()
 

@@ -34,25 +34,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
- *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
@@ -508,8 +499,9 @@ EfivarGetRaw (
     return Status;
 } // EFI_STATUS EfivarGetRaw()
 
-// Set an EFI variable, either to NVRAM or to a disk file under RefindPlus'
-// "vars" subdirectory, depending on GlobalConfig.UseNvram.
+// Set an EFI variable. This is normally done to NVRAM; however, RefindPlus'
+// variables (as determined by the *vendor code) will be saved to a disk file IF
+// GlobalConfig.UseNvram == FALSE.
 // Returns EFI status
 EFI_STATUS
 EfivarSetRaw (
@@ -710,7 +702,9 @@ SetFilesystemData (
             else {
                Volume->FSType = FS_TYPE_EXT2;
             }
-            CopyMem (&(Volume->VolUuid), Buffer + 1024 + 120, sizeof (EFI_GUID));
+
+            CopyMem (&(Volume->VolUuid), Buffer + 1024 + 104, sizeof (EFI_GUID));
+
             return;
          }
       } // search for ext2/3/4 magic

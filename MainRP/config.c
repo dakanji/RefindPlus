@@ -35,26 +35,18 @@
  */
 
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3) or (at your option) any later version.
  *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "global.h"
 #include "lib.h"
@@ -637,6 +629,8 @@ ReadConfig (
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
        MyFreePool (GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
+       MyFreePool(GlobalConfig.DontScanFirmware);
+       GlobalConfig.DontScanFirmware = NULL;
        MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
        MyFreePool (GlobalConfig.DontScanVolumes);
@@ -786,6 +780,9 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"don't_scan_files") || MyStriCmp (TokenList[0], L"dont_scan_files")) {
            HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
         }
+        else if (MyStriCmp (TokenList[0], L"don't_scan_firmware") || MyStriCmp (TokenList[0], L"dont_scan_firmware")) {
+           HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
+        }
         else if (MyStriCmp (TokenList[0], L"don't_scan_tools") || MyStriCmp (TokenList[0], L"dont_scan_tools")) {
            HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
         }
@@ -933,13 +930,18 @@ ReadConfig (
            HandleInt (TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
-           GlobalConfig.RequestedScreenWidth = Atoi (TokenList[1]);
-           if (TokenCount == 3) {
-               GlobalConfig.RequestedScreenHeight = Atoi (TokenList[2]);
-           }
-           else {
-               GlobalConfig.RequestedScreenHeight = 0;
-           }
+            if (MyStriCmp(TokenList[1], L"max")) {
+               GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
+               GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
+            } else {
+               GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
+               if (TokenCount == 3) {
+                   GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
+               }
+               else {
+                   GlobalConfig.RequestedScreenHeight = 0;
+               }
+            }
         }
         else if (MyStriCmp (TokenList[0], L"screensaver")) {
            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
@@ -1157,6 +1159,7 @@ AddSubmenu (
             SubEntry->Enabled = FALSE;
         } // if/elseif
 
+
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
 
@@ -1265,11 +1268,20 @@ LOADER_ENTRY * AddStanzaEntries (
          Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
       }
       else if (MyStriCmp (TokenList[0], L"disabled")) {
-         Entry->Enabled = FALSE;
+          Entry->Enabled = FALSE;
+      }
+      else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+          Entry->EfiBootNum    = StrToHex(TokenList[1], 0, 16);
+          Entry->EfiLoaderPath = NULL;
+          Entry->LoaderPath    = NULL;
+          MyFreePool(Entry->me.Title);
+          Entry->me.Title      = StrDuplicate(Title);
+          Entry->me.BadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EFI);
+          Entry->me.Tag        = TAG_FIRMWARE_LOADER;
       }
       else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
-         AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
-         AddedSubmenu = TRUE;
+          AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
+          AddedSubmenu = TRUE;
       } // set options to pass to the loader program
 
       FreeTokenLine (&TokenList, &TokenCount);
