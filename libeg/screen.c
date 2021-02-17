@@ -210,19 +210,25 @@ daCheckAltGop (
                             if (Height > Info->VerticalResolution) {
                                 continue;
                             }
-                            Width = Info->HorizontalResolution;
+                            Width  = Info->HorizontalResolution;
                             Height = Info->VerticalResolution;
                         }
                     } // for
 
                     if (Width == 0 || Height == 0) {
                         #if REFIT_DEBUG > 0
-                        MsgLog ("    ** Invalid Candidate : Width = %d, Height = %d", Width, Height);
+                        MsgLog (
+                            "    ** Invalid Candidate : Width = %d, Height = %d",
+                            Width, Height
+                        );
                         #endif
                     }
                     else {
                         #if REFIT_DEBUG > 0
-                        MsgLog ("    ** Valid Candidate : Width = %d, Height = %d", Width, Height);
+                        MsgLog (
+                            "    ** Valid Candidate : Width = %d, Height = %d",
+                            Width, Height
+                        );
                         #endif
 
                         OurValidGOP = TRUE;
@@ -315,7 +321,13 @@ egDumpGOPVideoModes (
                 break;
             }
 
-            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, Mode, &SizeOfInfo, &Info);
+            Status = refit_call4_wrapper(
+                GraphicsOutput->QueryMode,
+                GraphicsOutput,
+                Mode,
+                &SizeOfInfo,
+                &Info
+            );
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r", Mode, Status);
@@ -517,7 +529,14 @@ egSetGOPMode (
             Mode = Mode + Next;
             Mode = (Mode >= (INT32)MaxMode)?0:Mode;
             Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
-            Status = refit_call4_wrapper(GraphicsOutput->QueryMode, GraphicsOutput, (UINT32)Mode, &SizeOfInfo, &Info);
+
+            Status = refit_call4_wrapper(
+                GraphicsOutput->QueryMode,
+                GraphicsOutput,
+                (UINT32)Mode,
+                &SizeOfInfo,
+                &Info
+            );
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
@@ -527,7 +546,7 @@ egSetGOPMode (
                 Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
 
                 if (!EFI_ERROR (Status)) {
-                    egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+                    egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
                     egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
                 }
             }
@@ -593,9 +612,10 @@ egSetMaxResolution (
       if (Height > Info->VerticalResolution) {
         continue;
       }
-      Width = Info->HorizontalResolution;
-      Height = Info->VerticalResolution;
+
       BestMode = Mode;
+      Width    = Info->HorizontalResolution;
+      Height   = Info->VerticalResolution;
     }
   }
 
@@ -605,18 +625,19 @@ egSetMaxResolution (
 
   // check if requested mode is equal to current mode
   if (BestMode == GraphicsOutput->Mode->Mode) {
+      Status = EFI_SUCCESS;
 
       #if REFIT_DEBUG > 0
       MsgLog ("Screen Resolution Already Set\n\n");
       #endif
-      egScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
+
+      egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
       egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-      Status = EFI_SUCCESS;
   }
   else {
     Status = GopSetModeAndReconnectTextOut (BestMode);
     if (!EFI_ERROR (Status)) {
-      egScreenWidth = Width;
+      egScreenWidth  = Width;
       egScreenHeight = Height;
 
       #if REFIT_DEBUG > 0
@@ -679,12 +700,9 @@ egDetermineScreenSize (
     }
     else if (UGADraw != NULL) {
         Status = refit_call5_wrapper(
-            UGADraw->GetMode,
-            UGADraw,
-            &ScreenW,
-            &ScreenH,
-            &UGADepth,
-            &UGARefreshRate
+            UGADraw->GetMode, UGADraw,
+            &ScreenW, &ScreenH,
+            &UGADepth, &UGARefreshRate
         );
         if (EFI_ERROR (Status)) {
             UGADraw = NULL;   // graphics not available
@@ -1205,13 +1223,11 @@ egInitScreen (
         if (GraphicsOutput == NULL) {
             UINT32 Width, Height, Depth, RefreshRate;
             Status = refit_call5_wrapper(
-                UGADraw->GetMode,
-                UGADraw,
-                &Width,
-                &Height,
-                &Depth,
-                &RefreshRate
+                UGADraw->GetMode, UGADraw,
+                &Width, &Height,
+                &Depth, &RefreshRate
             );
+
             if (EFI_ERROR (Status)) {
                 // Graphics not available
                 UGADraw = NULL;
@@ -1489,27 +1505,21 @@ egSetScreenSize (
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
         Status = refit_call5_wrapper(
-            UGADraw->GetMode,
-            UGADraw,
-            &ScreenW,
-            &ScreenH,
-            &UGADepth,
-            &UGARefreshRate
+            UGADraw->GetMode, UGADraw,
+            &ScreenW, &ScreenH,
+            &UGADepth, &UGARefreshRate
         );
         Status = refit_call5_wrapper(
-            UGADraw->SetMode,
-            UGADraw,
-            ScreenW,
-            ScreenH,
-            UGADepth,
-            UGARefreshRate
+            UGADraw->SetMode, UGADraw,
+            ScreenW, ScreenH,
+            UGADepth, UGARefreshRate
         );
 
-        *ScreenWidth = (UINTN) ScreenW;
+        *ScreenWidth  = (UINTN) ScreenW;
         *ScreenHeight = (UINTN) ScreenH;
 
         if (!EFI_ERROR (Status)) {
-            egScreenWidth = *ScreenWidth;
+            egScreenWidth  = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
             ModeSet = TRUE;
         }
@@ -1646,10 +1656,16 @@ egScreenDescription (
 
     if (egHasGraphics) {
         if (GraphicsOutput != NULL) {
-            SPrint (GraphicsInfo, 255, L"Graphics Output Protocol (UEFI), %dx%d", egScreenWidth, egScreenHeight);
+            SPrint (GraphicsInfo, 255,
+                L"Graphics Output Protocol (UEFI 2.x): %dx%d",
+                egScreenWidth, egScreenHeight
+            );
         }
         else if (UGADraw != NULL) {
-            SPrint (GraphicsInfo, 255, L"Universal Graphics Adapter (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
+            SPrint (GraphicsInfo, 255,
+                L"Universal Graphics Adapter (EFI 1.x): %dx%d",
+                egScreenWidth, egScreenHeight
+            );
         }
         else {
             MyFreePool (GraphicsInfo);
@@ -1657,14 +1673,14 @@ egScreenDescription (
 
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"Internal Error!";
+            ShowScreenStr = L"Internal Error While Getting Graphics Details";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n\n", ShowScreenStr);
+            MsgLog ("** Warn: %s\n\n", ShowScreenStr);
             #endif
 
             PauseForKey();
@@ -1673,14 +1689,23 @@ egScreenDescription (
             return ShowScreenStr;
         }
 
-        if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
+        if (!AllowGraphicsMode) {
+            // Graphics Capable Hardware in Text Mode
             TextInfo = AllocateZeroPool (256 * sizeof (CHAR16));
-            SPrint (TextInfo, 255, L"(Text Mode: %dx%d [Graphics Capable])", ConWidth, ConHeight);
+            SPrint (
+                TextInfo, 255,
+                L"(Text Mode: %dx%d [Graphics Capable])",
+                ConWidth, ConHeight
+            );
             MergeStrings (&GraphicsInfo, TextInfo, L' ');
         }
     }
     else {
-        SPrint (GraphicsInfo, 255, L"Text-Only Console: %dx%d", ConWidth, ConHeight);
+        SPrint (
+            GraphicsInfo, 255,
+            L"Text-Only Console: %dx%d",
+            ConWidth, ConHeight
+        );
     }
 
     MyFreePool (TextInfo);
@@ -1706,8 +1731,7 @@ egIsGraphicsModeEnabled (
             ConsoleControl->GetMode,
             ConsoleControl,
             &CurrentMode,
-            NULL,
-            NULL
+            NULL, NULL
         );
 
         return (CurrentMode == EfiConsoleControlScreenGraphics) ? TRUE : FALSE;
@@ -1728,12 +1752,16 @@ egSetGraphicsModeEnabled (
             ConsoleControl->GetMode,
             ConsoleControl,
             &CurrentMode,
-            NULL,
-            NULL
+            NULL, NULL
         );
 
-        NewMode = Enable ? EfiConsoleControlScreenGraphics
-                         : EfiConsoleControlScreenText;
+        if (Enable) {
+            NewMode = EfiConsoleControlScreenGraphics;
+        }
+        else {
+            NewMode = EfiConsoleControlScreenText;
+        }
+
         if (CurrentMode != NewMode) {
             refit_call2_wrapper(
                 ConsoleControl->SetMode,
@@ -1775,31 +1803,21 @@ egClearScreen (
         // layout, and the header from TianoCore actually defines them
         // to be the same type.
         refit_call10_wrapper(
-            GraphicsOutput->Blt,
-            GraphicsOutput,
+            GraphicsOutput->Blt, GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) &FillColor,
              EfiBltVideoFill,
-             0,
-             0,
-             0,
-             0,
-             egScreenWidth,
-             egScreenHeight,
+             0, 0, 0, 0,
+             egScreenWidth, egScreenHeight,
              0
          );
     }
     else if (UGADraw != NULL) {
         refit_call10_wrapper(
-            UGADraw->Blt,
-            UGADraw,
+            UGADraw->Blt, UGADraw,
             &FillColor,
             EfiUgaVideoFill,
-            0,
-            0,
-            0,
-            0,
-            egScreenWidth,
-            egScreenHeight,
+            0, 0, 0, 0,
+            egScreenWidth, egScreenHeight,
             0
         );
     }
@@ -1816,12 +1834,17 @@ egDrawImage (
     // NOTE: Weird seemingly redundant tests because some placement code can "wrap around" and
     // send "negative" values, which of course become very large unsigned ints that can then
     // wrap around AGAIN if values are added to them.....
-    if (!egHasGraphics || ((ScreenPosX + Image->Width) > egScreenWidth) || ((ScreenPosY + Image->Height) > egScreenHeight) ||
-        (ScreenPosX > egScreenWidth) || (ScreenPosY > egScreenHeight))
+    if ((!egHasGraphics) ||
+        ((ScreenPosX + Image->Width)  > egScreenWidth) ||
+        ((ScreenPosY + Image->Height) > egScreenHeight) ||
+        (ScreenPosX > egScreenWidth) ||
+        (ScreenPosY > egScreenHeight)
+    ) {
         return;
+    }
 
-    if ((GlobalConfig.ScreenBackground == NULL)
-        || ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))
+    if ((GlobalConfig.ScreenBackground == NULL) ||
+        ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))
     ) {
        CompImage = Image;
     }
@@ -1831,11 +1854,10 @@ egDrawImage (
     else {
        CompImage = egCropImage (
            GlobalConfig.ScreenBackground,
-           ScreenPosX,
-           ScreenPosY,
-           Image->Width,
-           Image->Height
+           ScreenPosX, ScreenPosY,
+           Image->Width, Image->Height
        );
+
        if (CompImage == NULL) {
            #if REFIT_DEBUG > 0
           MsgLog ("Error! Cannot crop image in egDrawImage()!\n");
@@ -1843,36 +1865,29 @@ egDrawImage (
 
           return;
        }
+
        egComposeImage (CompImage, Image, 0, 0);
     }
 
     if (GraphicsOutput != NULL) {
         refit_call10_wrapper(
-            GraphicsOutput->Blt,
-            GraphicsOutput,
+            GraphicsOutput->Blt, GraphicsOutput,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) CompImage->PixelData,
             EfiBltBufferToVideo,
-            0,
-            0,
-            ScreenPosX,
-            ScreenPosY,
-            CompImage->Width,
-            CompImage->Height,
+            0, 0,
+            ScreenPosX, ScreenPosY,
+            CompImage->Width, CompImage->Height,
             0
         );
     }
     else if (UGADraw != NULL) {
         refit_call10_wrapper(
-            UGADraw->Blt,
-            UGADraw,
+            UGADraw->Blt, UGADraw,
             (EFI_UGA_PIXEL *) CompImage->PixelData,
             EfiUgaBltBufferToVideo,
-            0,
-            0,
-            ScreenPosX,
-            ScreenPosY,
-            CompImage->Width,
-            CompImage->Height,
+            0, 0,
+            ScreenPosX, ScreenPosY,
+            CompImage->Width, CompImage->Height,
             0
         );
     }
@@ -1895,9 +1910,18 @@ egDrawImageWithTransparency (
 ) {
    EG_IMAGE *Background;
 
-   Background = egCropImage (GlobalConfig.ScreenBackground, XPos, YPos, Width, Height);
+   Background = egCropImage (
+       GlobalConfig.ScreenBackground,
+       XPos, YPos,
+       Width, Height
+   );
+
    if (Background != NULL) {
-      BltImageCompositeBadge (Background, Image, BadgeImage, XPos, YPos);
+      BltImageCompositeBadge (
+          Background,
+          Image, BadgeImage,
+          XPos, YPos
+      );
       egFreeImage (Background);
    }
 } // VOID DrawImageWithTransparency()
@@ -1915,37 +1939,35 @@ egDrawImageArea (
     if (!egHasGraphics)
         return;
 
-    egRestrictImageArea (Image, AreaPosX, AreaPosY, &AreaWidth, &AreaHeight);
-    if (AreaWidth == 0)
+    egRestrictImageArea (
+        Image,
+        AreaPosX, AreaPosY,
+        &AreaWidth, &AreaHeight
+    );
+
+    if (AreaWidth == 0) {
         return;
+    }
 
     if (GraphicsOutput != NULL) {
         refit_call10_wrapper(
-            GraphicsOutput->Blt,
-            GraphicsOutput,
-            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+            GraphicsOutput->Blt, GraphicsOutput,
+            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
             EfiBltBufferToVideo,
-            AreaPosX,
-            AreaPosY,
-            ScreenPosX,
-            ScreenPosY,
-            AreaWidth,
-            AreaHeight,
+            AreaPosX, AreaPosY,
+            ScreenPosX, ScreenPosY,
+            AreaWidth, AreaHeight,
             Image->Width * 4
         );
     }
     else if (UGADraw != NULL) {
         refit_call10_wrapper(
-            UGADraw->Blt,
-            UGADraw,
-            (EFI_UGA_PIXEL *)Image->PixelData,
+            UGADraw->Blt, UGADraw,
+            (EFI_UGA_PIXEL *) Image->PixelData,
             EfiUgaBltBufferToVideo,
-            AreaPosX,
-            AreaPosY,
-            ScreenPosX,
-            ScreenPosY,
-            AreaWidth,
-            AreaHeight,
+            AreaPosX, AreaPosY,
+            ScreenPosX, ScreenPosY,
+            AreaWidth, AreaHeight,
             Image->Width * 4
         );
     }
@@ -1968,10 +1990,18 @@ egDisplayMessage (
       egMeasureText (Text, &BoxWidth, &BoxHeight);
       BoxWidth += 14;
       BoxHeight *= 2;
-      if (BoxWidth > egScreenWidth)
-         BoxWidth = egScreenWidth;
+
+      if (BoxWidth > egScreenWidth) {
+          BoxWidth = egScreenWidth;
+      }
+
       Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, BGColor);
-      egRenderText (Text, Box, 7, BoxHeight / 4, (BGColor->r + BGColor->g + BGColor->b) / 3);
+      egRenderText (
+          Text, Box, 7,
+          BoxHeight / 4,
+          (BGColor->r + BGColor->g + BGColor->b) / 3
+      );
+
       switch (PositionCode) {
           case CENTER:
               Position = (egScreenHeight - BoxHeight) / 2;
@@ -1986,9 +2016,11 @@ egDisplayMessage (
               Position += BoxHeight + (BoxHeight / 10);
               break;
       } // switch()
+
       egDrawImage (Box, (egScreenWidth - BoxWidth) / 2, Position);
-      if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5)))
+      if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5))) {
           Position = 1;
+      }
    } // if non-NULL inputs
 } // VOID egDisplayMessage()
 
@@ -2000,11 +2032,15 @@ EG_IMAGE * egCopyScreen (VOID) {
 
 // Copy the current contents of the specified display area into an EG_IMAGE....
 // Returns pointer if successful, NULL if not.
-EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
-   EG_IMAGE *Image = NULL;
+EG_IMAGE * egCopyScreenArea (
+    UINTN XPos,  UINTN YPos,
+    UINTN Width, UINTN Height
+) {
+    EG_IMAGE *Image = NULL;
 
-   if (!egHasGraphics)
-      return NULL;
+   if (!egHasGraphics) {
+       return NULL;
+   }
 
    // allocate a buffer for the screen area
    Image = egCreateImage (Width, Height, FALSE);
@@ -2015,31 +2051,23 @@ EG_IMAGE * egCopyScreenArea (UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) 
    // get full screen image
    if (GraphicsOutput != NULL) {
        refit_call10_wrapper(
-           GraphicsOutput->Blt,
-           GraphicsOutput,
+           GraphicsOutput->Blt, GraphicsOutput,
            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
            EfiBltVideoToBltBuffer,
-           XPos,
-           YPos,
-           0,
-           0,
-           Image->Width,
-           Image->Height,
+           XPos, YPos,
+           0, 0,
+           Image->Width, Image->Height,
            0
        );
    }
    else if (UGADraw != NULL) {
        refit_call10_wrapper(
-           UGADraw->Blt,
-           UGADraw,
+           UGADraw->Blt, UGADraw,
            (EFI_UGA_PIXEL *)Image->PixelData,
            EfiUgaVideoToBltBuffer,
-           XPos,
-           YPos,
-           0,
-           0,
-           Image->Width,
-           Image->Height,
+           XPos, YPos,
+           0, 0,
+           Image->Width, Image->Height,
            0
        );
    }
@@ -2210,7 +2238,10 @@ egScreenShot (
 bailout_wait:
     i = 0;
     egSetGraphicsModeEnabled (FALSE);
-    refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &i);
+    refit_call3_wrapper(
+        gBS->WaitForEvent, 1,
+        &gST->ConIn->WaitForKey, &i
+    );
 }
 
 /* EOF */
