@@ -14,7 +14,7 @@
 #include <Protocol/LoadedImage.h>
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include "../MainRP/lib.h"
+#include "../MainLoader/lib.h"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 

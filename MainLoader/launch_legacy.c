@@ -1,5 +1,5 @@
 /*
- * MainRP/launch_legacy.c
+ * MainLoader/launch_legacy.c
  * Functions related to BIOS/CSM/legacy booting
  *
  * Copyright (c) 2006 Christoph Pfisterer

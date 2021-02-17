@@ -50,7 +50,7 @@
 #include "icns.h"
 #include "config.h"
 #include "mystrings.h"
-#include "../MainRP/screen.h"
+#include "../MainLoader/screen.h"
 #include "../include/egemb_tool_bootscreen.h"
 #include "../include/egemb_tool_clean_nvram.h"
 

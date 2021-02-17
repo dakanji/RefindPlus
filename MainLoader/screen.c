@@ -1,5 +1,5 @@
 /*
- * MainRP/screen.c
+ * MainLoader/screen.c
  * Screen handling functions
  *
  * Copyright (c) 2006 Christoph Pfisterer

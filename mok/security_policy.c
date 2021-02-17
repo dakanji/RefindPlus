@@ -9,7 +9,7 @@
 #include <global.h>
 
 #include "guid.h"
-#include "../MainRP/lib.h"
+#include "../MainLoader/lib.h"
 #include "simple_file.h"
 #include "../include/refit_call_wrapper.h"
 #include "mok.h"

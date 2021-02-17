@@ -56,10 +56,10 @@
  */
 
 #include "libegint.h"
-#include "../MainRP/global.h"
-#include "../MainRP/lib.h"
-#include "../MainRP/screen.h"
-#include "../MainRP/mystrings.h"
+#include "../MainLoader/global.h"
+#include "../MainLoader/lib.h"
+#include "../MainLoader/screen.h"
+#include "../MainLoader/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"
 #include "libeg.h"

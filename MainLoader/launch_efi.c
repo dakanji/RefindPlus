@@ -1,5 +1,5 @@
 /*
- * MainRP/launch_efi.c
+ * MainLoader/launch_efi.c
  * Code related to launching EFI programs
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer

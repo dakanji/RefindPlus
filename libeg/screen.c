@@ -49,10 +49,10 @@
 
 // July 2020: Extensively modiied by dakanji (dakanji@users.sourceforge.net)
 #include "libegint.h"
-#include "../MainRP/screen.h"
-#include "../MainRP/global.h"
-#include "../MainRP/lib.h"
-#include "../MainRP/mystrings.h"
+#include "../MainLoader/screen.h"
+#include "../MainLoader/global.h"
+#include "../MainLoader/lib.h"
+#include "../MainLoader/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "libeg.h"
 #include "lodepng.h"

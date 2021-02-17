@@ -1,5 +1,5 @@
 /*
- * MainRP/main.c
+ * MainLoader/main.c
  * Main code for the boot menu
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer

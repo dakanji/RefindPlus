@@ -1,5 +1,5 @@
 /*
- * MainRP/install.h
+ * MainLoader/install.h
  * Headers related to installation of RefindPlus
  *
  * Copyright (c) 2020-2021 by Roderick W. Smith

@@ -1,5 +1,5 @@
 /*
- * MainRP/config.c
+ * MainLoader/config.c
  * Configuration file functions
  *
  * Copyright (c) 2006 Christoph Pfisterer

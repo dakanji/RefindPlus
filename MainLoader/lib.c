@@ -1,5 +1,5 @@
 /*
- * MainRP/lib.c
+ * MainLoader/lib.c
  * General library functions
  *
  * Copyright (c) 2006-2009 Christoph Pfisterer
@@ -925,7 +925,7 @@ ScanVolumeBootcode (
 
         /**
          * NOTE: If you add an operating system with a name that starts with 'W' or 'L', you
-         *       need to fix AddLegacyEntry in MainRP/launch_legacy.c.
+         *       need to fix AddLegacyEntry in MainLoader/launch_legacy.c.
          *       DA_TAGGED
         **/
 

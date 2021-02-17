@@ -1,5 +1,5 @@
 /*
- * MainRP/pointer.h
+ * MainLoader/pointer.h
  * pointer device functions header file
  *
  * Copyright (c) 2018 CJ Vaughter

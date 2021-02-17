@@ -1,5 +1,5 @@
 /*
- * MainRP/pointer.c
+ * MainLoader/pointer.c
  * Pointer device functions
  *
  * Copyright (c) 2018 CJ Vaughter

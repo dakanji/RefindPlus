@@ -1,5 +1,5 @@
 /*
- * MainRP/screen_edit.h
+ * MainLoader/screen_edit.h
  *
  * Line-editing functions borrowed from gummiboot
  *

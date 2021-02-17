@@ -1,5 +1,5 @@
 /*
- * MainRP/linux.c
+ * MainLoader/linux.c
  * Code related specifically to Linux loaders
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer

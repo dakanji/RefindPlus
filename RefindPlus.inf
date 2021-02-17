@@ -40,24 +40,24 @@
   mok/guid.c
   mok/security_policy.c
   mok/simple_file.c
-  MainRP/apple.c
-  MainRP/config.c
-  MainRP/crc32.c
-  MainRP/driver_support.c
-  MainRP/gpt.c
-  MainRP/icns.c
-  MainRP/install.c
-  MainRP/launch_efi.c
-  MainRP/launch_legacy.c
-  MainRP/lib.c
-  MainRP/line_edit.c
-  MainRP/linux.c
-  MainRP/main.c
-  MainRP/menu.c
-  MainRP/mystrings.c
-  MainRP/pointer.c
-  MainRP/scan.c
-  MainRP/screen.c
+  MainLoader/apple.c
+  MainLoader/config.c
+  MainLoader/crc32.c
+  MainLoader/driver_support.c
+  MainLoader/gpt.c
+  MainLoader/icns.c
+  MainLoader/install.c
+  MainLoader/launch_efi.c
+  MainLoader/launch_legacy.c
+  MainLoader/lib.c
+  MainLoader/line_edit.c
+  MainLoader/linux.c
+  MainLoader/main.c
+  MainLoader/menu.c
+  MainLoader/mystrings.c
+  MainLoader/pointer.c
+  MainLoader/scan.c
+  MainLoader/screen.c
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c

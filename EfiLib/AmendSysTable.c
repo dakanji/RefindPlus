@@ -10,7 +10,7 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "../MainRP/global.h"
+#include "../MainLoader/global.h"
 #include "../include/refit_call_wrapper.h"
 #include "../../MdeModulePkg/Core/Dxe/DxeMain.h"
 #include "../../MdeModulePkg/Core/Dxe/Event/Event.h"

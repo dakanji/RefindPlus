@@ -27,7 +27,7 @@
 #endif
 #include "legacy.h"
 #include "GenericBdsLib.h"
-#include "../MainRP/global.h"
+#include "../MainLoader/global.h"
 #include "../include/refit_call_wrapper.h"
 
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping     = NULL;

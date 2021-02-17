@@ -1,5 +1,5 @@
 /*
- * MainRP/scan.c
+ * MainLoader/scan.c
  * Code related to scanning for boot loaders
  *
  * Copyright (c) 2006-2010 Christoph Pfisterer
