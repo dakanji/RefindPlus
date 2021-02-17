@@ -653,15 +653,8 @@ VOID InstallRefind(VOID) {
  *
  ***********************/
 
-// A linked-list data structure intended to hold a list of all the EFI boot
-// entries on the computer....
-typedef struct _boot_entry_list {
-    EFI_BOOT_ENTRY           BootEntry;
-    struct _boot_entry_list  *NextBootEntry;
-} BOOT_ENTRY_LIST;
-
 // Create a list of Boot entries matching the BootOrder list.
-static BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
+BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
     UINTN            Status = EFI_SUCCESS, i;
     UINT16           *BootOrder = NULL;
     UINTN            VarSize, ListSize;
@@ -708,7 +701,7 @@ static BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
 } // BOOT_ENTRY_LIST * FindBootOrderEntries()
 
 // Delete a linked-list BOOT_ENTRY_LIST data structure
-static VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries) {
+VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries) {
     BOOT_ENTRY_LIST *Current;
 
     while (Entries != NULL) {

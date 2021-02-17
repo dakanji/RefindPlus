@@ -23,10 +23,15 @@ To compile rEFInd, you'll need the following:
     "frozen" forms (UDK2014, UDK2017, UDK2018, and so on); however, the term
     "EDK2" is often used in reference to the TianoCore toolkit generally. To
     simplify matters, I officially support only one UDK version at any given
-    moment. Currently (rEFInd 0.11.3), this version is UDK2018; however, I
-    used UDK2017 for rEFInd 0.10.9 through 0.11.2, and UDK2014 unofficially
-    works via a different build procedure (see below), which is now
-    deprecated.
+    moment. Currently (rEFInd 0.12.1), this version is UDK2018; however, I
+    used UDK2017 for rEFInd 0.10.9 through 0.11.2, and UDK2014 may
+    unofficially work via a different build procedure (see below), which is
+    now deprecated. (This build process is broken with Ubuntu 20.04 and GCC
+    9.3.) The UDK2018 version I use is available from
+    https://github.com/tianocore/tianocore.github.io/wiki/UDK2018. I tried a
+    newer version in February of 2021 (edk2-edk2-stable202011), but it
+    failed to compile because of the removal of in-tree libraries and other
+    problems.
 
   * The GNU-EFI package (http://sourceforge.net/projects/gnu-efi/). You can
     install this from a package called "gnu-efi"; however, rEFInd relies on
@@ -39,18 +44,29 @@ To compile rEFInd, you'll need the following:
     a package manager. If you install from source code, you may need to
     adjust those Makefiles' paths.
 
-Of the two toolkits, I prefer to use TianoCore because it produces binaries
-that are about 5-30KiB smaller than those made by GNU-EFI, and I can easily
-build 32-bit binaries on my 64-bit Linux installations. Also, I've had
-problems on a 32-bit Mac Mini with the drivers produced by GNU-EFI hanging
-the system. (I haven't encountered this problem on UEFI-based PCs.) That
-said, the TianoCore EDK2 package is much harder to install, so you may
-prefer to use GNU-EFI unless you have a specific need for the TianoCore
-toolkit. Also, somewhere between GCC 5.4 and 7.3, problems have appeared
-that prevent compiling the i386/IA32 binaries via TianoCore. Automated build
-tools like the OpenSUSE Build Service (OBS) and the Ubuntu Personal Package
-Archive (PPA) mechanism don't yet support TianoCore.
-
+Of the two toolkits, I recommend using GNU-EFI if you're compiling for your
+native architecture (e.g., X64 on an X64/x86-64/AMD64 system). GNU-EFI is
+*MUCH* easier to install, particularly if you're using an unsupported
+version of TianoCore -- the TianoCore developers keep making changes that
+break its ability to compile; and even the procedures I document here can
+break on distributions other than what I use -- Ubuntu 20.04, currently. (I
+suspect the TianoCore developers are trying to support too many build
+platforms.). In the past, TianoCore-based rEFInd binaries supported some
+features didn't work when building with GNU-EFI; but these GNU-EFI
+limitations have long been in the past. Because GNU-EFI is a standard part
+of most Linux distributions but TianoCore's EDK2 is not, binaries built for
+most distributions and in archives like my own Ubuntu PPA for rEFInd are
+built with GNU-EFI. TianoCore still has some advantages, though. One of
+these is that cross-compiling with it is easier (if you can get the
+TianoCore package to build). For this reason, I use it to build my binary
+.zip files, since I can build the X64, IA32, and AARCH64 binaries on one
+computer. Also, I've had problems on a 32-bit Mac Mini with the drivers
+produced by GNU-EFI hanging the system. (I haven't encountered this problem
+on UEFI-based PCs.) The TianoCore EDK2 is also usable on a wide variety of
+OSes, including macOS and Windows, so you might be able to get rEFInd to
+compile on these OSes using TianoCore, although I do not provide support for
+such attempts. (The upcoming section, "Compiling rEFInd Under MacOS," does
+provide some pointers, though.)
 
 Preparing Your Development Kit
 ==============================
@@ -134,7 +150,7 @@ you'll need to be root to do this in the specified location):
     - TARGET_ARCH = X64 (on x86-64; leave this as IA32 on x86 or change it
       to AARCH64 on ARM64). If you plan to build multiple architectures,
       you can set this to "IA32 X64" or some other combination.
-    - TOOL_CHAIN_TAG = GCC49 (or other value depending on your GCC version;
+    - TOOL_CHAIN_TAG = GCC5 (or other value depending on your GCC version;
       type "gcc -v" to learn your GCC version number). Note that support
       for the latest GCC version takes a while to make it into the
       TianoCore toolkit, so if you're using a very recent GCC, you may need
@@ -151,8 +167,8 @@ you'll need to be root to do this in the specified location):
 
 6. The documentation refers to editing Conf/tools_def.txt in addition to
    Conf/target.txt, but doesn't specify what to change in
-   Conf/tools_def.txt. I haven't found it necessary to make any changes in
-   Conf/tools_def.txt EXCEPT for two cases:
+   Conf/tools_def.txt. Some of the changes I've needed to make in various
+   build environments include:
 
     * When using GCC 4.7 on a Fedora 17 system with the original UDK2014,
       GCC 4.7 was newer than the most recent GCC that TianoCore supported at
@@ -172,11 +188,26 @@ you'll need to be root to do this in the specified location):
         *_GCC49_AARCH64_CC_PATH          = /usr/bin/aarch64-linux-gnu-gcc
       Similar changes for other variables in the same block are necessary.
 
-7. Type "make -C BaseTools/Source/C". (This step is not documented on the
+    * When compiling for x86 (IA32) on an x86-64 system running Ubuntu
+      20.04, I needed to add "-fno-pie -fno-pic" to the GCC5_IA32_CC_FLAGS
+      definition. (At this time, TianoCore's UDK2018 and November 2020
+      snapshots' GCC definitions maxed out at GCC5, but Ubuntu 20.04 shipped
+      with GCC 9.3.)
+
+    * When compiling for ARM64 (AARCH64) on an x86-64 system running
+      Ubuntu 20.04, I needed to add "-fno-unwind-tables" to the
+      GCC5_AARCH64_CC_FLAGS definition.
+
+7. You may need to remove "-Werror" from two locations in
+   BaseTools/Source/C/Makefiles/header.makefile. I found this to be
+   necessary under Ubuntu 20.04 (using GCC 9.3), but not under Ubuntu 18.04
+   (using GCC 7.5).
+
+8. Type "make -C BaseTools/Source/C". (This step is not documented on the
    EDK Web page.) Note that this requires the g++ compiler and UUID
    development libraries.
 
-8. Type "build" to build the main set of EDK2 files. This process is
+9. Type "build" to build the main set of EDK2 files. This process is
    likely to take a few minutes. This step requires Python 2; if you have
    Python 3 installed, you may need to adjust the default python for this
    build (for instance, by typing "eselect python set python2.7" in
@@ -222,13 +253,12 @@ With your development system set up, you can compile rEFInd as follows:
    "gptsync_ia32.efi", "gptsync_x64.efi", or "gptsync_aa64.efi" program
    file, in the "gptsync" subdirectory. If you want to build IA32 binaries
    on an x86-64 (X64) system and if you're using TianoCore, type "ARCH=ia32
-   make". (As noted earlier, this facility broke somewhere between GCC 5.4
-   and GCC 7.3.) Similarly, you can specify "ARCH=aarch64" to cross-compile
-   for ARM64, but this works only if you're using the TianoCore build kit,
-   and only if you set up TianoCore for cross-compiling. If you plan to
-   build multiple architectures, be sure to copy the .efi file for the first
-   build out of the refind subdirectory and type "make clean" before
-   building the second architecture.
+   make". Similarly, you can specify "ARCH=aarch64" to cross-compile for
+   ARM64, but this works only if you're using the TianoCore build kit, and
+   only if you set up TianoCore for cross-compiling. If you plan to build
+   multiple architectures, be sure to copy the .efi file for the first build
+   out of the refind subdirectory and type "make clean" before building the
+   second architecture.
 
 The top-level rEFInd Makefile supports three toolchains, each of which
 provides several options to compile a subset of rEFInd's programs. (Note
@@ -243,14 +273,16 @@ that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
   GNU-EFI toolkit.
 * all_gnuefi -- This target builds everything (refind_x64.efi,
   gptsync_x64.efi, and the filesystem drivers) with the GNU-EFI toolkit.
-* tiano -- This deprecated target builds refind_x64.efi and gptsync_x64.efi
-  with the TianoCore toolkit by using custom Makefile rules, bypassing the
-  TianoCore toolkit's "build" command. The result is slightly faster
-  compilation in a more traditional Unix/Linux way; but the compilation
-  rules are fragile and work only with the UDK2014 toolkit. Also, the
-  gptsync_x64.efi program is not built on ARM64/AARCH64 because the build
-  process fails. (As hybrid MBRs are likely to be useless on this platform,
-  the inability to build gptsync_aa64.efi is no great loss.)
+* tiano -- This deprecated, and increasingly unreliable, target builds
+  refind_x64.efi and gptsync_x64.efi with the TianoCore toolkit by using
+  custom Makefile rules, bypassing the TianoCore toolkit's "build" command.
+  The result is slightly faster compilation in a more traditional Unix/Linux
+  way; but the compilation rules are fragile and work only with the UDK2014
+  toolkit. They worked with Ubuntu 18.04 and GCC 7.5, but now fail with
+  Ubuntu 20.04 and GCC 9.3. Also, the gptsync_x64.efi program is not built
+  on ARM64/AARCH64 because the build process fails. (As hybrid MBRs are
+  likely to be useless on this platform, the inability to build
+  gptsync_aa64.efi is no great loss.)
 * gptsync_tiano -- This target works like the preceding one, but builds
   only gptsync_x64.efi.
 * fs_tiano -- This target works like the preceding two, but builds the
@@ -260,21 +292,23 @@ that I specify AMD64/x86-64/X64 filenames in the below for simplicity.) The
 * edk2 -- Like the "tiano" target, this one builds with the TianoCore
   toolkit; but it employs a build method more like that favored by
   TianoCore. It relies on .dsc, .dec, and .inf files as well as the "build"
-  program that comes with TianoCore. This method works with UDK2014,
-  UDK2018, and the latest (as of July, 2017) EDK2 snapshot. It also works
-  under OS X, if TianoCore is properly prepared. One limitation is that
-  building with UDK2014 for ARM64/AARCH64 requires modifying the .inf files
-  to remove the reference to CompilerIntrinsicsLib. This build method is
-  also a little bit slower than the preceding ones, in part because
-  EVERYTHING is built; narrower targets simply copy fewer of the resulting
-  files from within the TianoCore directory tree. Note that this method,
-  unlike the preceding ones, requires WRITE access to the TianoCore build
-  tree, or at least to the Build and Conf subdirectories of that tree, as
-  well as to the root of the tree. (This method creates a symbolic link of
-  the main rEFInd directory into the root of the TianoCore tree, and the
-  build process creates a subdirectory called Build/Refind to hold temporary
-  files and the final .efi files. The "make" utility then copies these files
-  to the same locations used by the tiano and gnuefi targets.)
+  program that comes with TianoCore. This method works with UDK2014 and
+  UDK2018. It might work with more recent EDK2 snapshots, but as noted
+  earlier, my attempt to use a November 2020 snapshot failed because I
+  couldn't get it to compile. This method also works under macOS, if
+  TianoCore is properly prepared. One limitation is that building with
+  UDK2014 for ARM64/AARCH64 requires modifying the .inf files to remove the
+  reference to CompilerIntrinsicsLib. This build method is also a little bit
+  slower than the preceding ones, in part because EVERYTHING is built;
+  narrower targets simply copy fewer of the resulting files from within the
+  TianoCore directory tree. Note that this method, unlike the preceding
+  ones, requires WRITE access to the TianoCore build tree, or at least to
+  the Build and Conf subdirectories of that tree, as well as to the root of
+  the tree. (This method creates a symbolic link of the main rEFInd
+  directory into the root of the TianoCore tree, and the build process
+  creates a subdirectory called Build/Refind to hold temporary files and the
+  final .efi files. The "make" utility then copies these files to the same
+  locations used by the tiano and gnuefi targets.)
 * gptsync_edk2 -- This target copies just the gptsync_x64.efi binary to its
   final destination.
 * fs_edk2 -- This target works like the "edk2" target, but copies only
@@ -350,9 +384,9 @@ is dropped into the main TianoCore source tree and compiled there using the
 "build" command. rEFInd can be compiled in this way. I am providing
 instructions on compiling in this way because it may work better than
 rEFInd's Makefiles in some cases, especially if you're using a non-Linux
-platform for development. I've successfully compiled rEFInd 0.10.8 under OS
-X in this way. (I present details and caveats shortly.) Note that the "edk2"
-and related Makefile targets use this method behind the scenes. The
+platform for development. I've successfully compiled rEFInd 0.10.8 under
+macOS in this way. (I present details and caveats shortly.) Note that the
+"edk2" and related Makefile targets use this method behind the scenes. The
 procedure is:
 
 1. Download and prepare the TianoCore toolkit, as described earlier,
@@ -401,18 +435,18 @@ Build/Refind/RELEASE_GCC49/X64/ntfs.efi
 Build/Refind/RELEASE_GCC49/X64/refind.efi
 Build/Refind/RELEASE_GCC49/X64/reiserfs.efi
 
-I've tested this procedure under Ubuntu 16.04 with GCC 5.4.0 and under OS X
+I've tested this procedure under Ubuntu 16.04 with GCC 5.4.0 and under macOS
 10.11 with both Clang 7.0.0/XCode 7.1.1 and Clang 8.0.0/XCode 8.1.1. (See
 below for Mac caveats.) In theory, it might work under Windows, but if you
 use anything but a GCC- or Clang-derived compiler, there's a good chance
 you'll run into a compiler-specific code incompatibility.
 
 
-Compiling rEFInd Under OS X
-===========================
+Compiling rEFInd Under MacOS
+============================
 
-Building under OS X is *NOT SUPPORTED.* I've tested this procedure and it
-seems to work in minimal testing. My build under OS X required several
+Building under macOS is *NOT SUPPORTED.* I've tested this procedure and it
+seems to work in minimal testing. My build under macOS required several
 changes for compilation to succeed:
 
 * A relatively recent TianoCore EDK2 from the TianoCore git repository is
@@ -436,7 +470,7 @@ changes for compilation to succeed:
   prevented the rEFInd binary from compiling with "-Werror" intact related
   to ((sysv_abi)) declarations in mok/mok.h. This makes me think that the
   resulting binary may be incompatible with Shim, although I've not tested
-  this; my only testing of the binary built under OS X were on systems with
+  this; my only testing of the binary built under macOS were on systems with
   Secure Boot disabled or with the Secure Boot system under my complete
   control and without Shim installed.
 
@@ -445,7 +479,8 @@ changes for compilation to succeed:
 
 * I've been unable to get the Btrfs driver to build. To adjust the package
   to omit this driver, edit the RefindPkg.dsc file and remove the line near
-  the bottom that reads "RefindPkg/filesystems/btrfs.inf".
+  the bottom that reads "RefindPkg/filesystems/btrfs.inf". (This limitation
+  may be resolved with rEFInd 0.12.1, but I haven't tested it.)
 
 Note that if you want to use macOS or Windows to compile rEFInd, you might
 be able to create a project or Makefile for your non-GCC compiler or use a
@@ -477,7 +512,7 @@ ESP as follows:
 * Copy the icons subdirectory, including all its files, to EFI/refind.
 
 You'll then need to activate rEFInd in your EFI. This can be done with
-tools such as "efibootmgr" under Linux or "bless" under OS X. See the
+tools such as "efibootmgr" under Linux or "bless" under macOS. See the
 docs/refind/installing.html file for details.
 
 

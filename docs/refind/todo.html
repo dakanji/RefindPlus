@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/13/2020, referencing rEFInd 0.12.0</p>
+2/15/2021, referencing rEFInd 0.13.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -240,19 +240,17 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	remission. Changes made in version 0.11.0 improve error reporting on
 	Macs, which may help with this issue.</li>
 
-    <li>Another Mac-specific display problem relates to "retina" displays:
-	Some users report that rEFInd comes up in a lower resolution than
-	the screen supports, and that this setting persists into the running
-	macOS instance, and can't be adjusted using the usual macOS means.
-	I've just recently (mid-2017) purchased an iMac with a "retina"
-	display, so I can now begin to investigate this problem, but as of
-	rEFInd 0.11.0, I haven't yet had a chance to look into it in depth.
-	I've heard that this problem affects not just rEFInd, but also GRUB,
-	and even Windows when dual-booting on a Mac; see <a
+    <li>On Macs with HiDPI (aka "Retina") displays, booting macOS via rEFInd
+	results in a lower resolution than booting macOS normally.
+	Similarly, booting any other OS results in sub-optimal resolution.
+	This problem is mitigated by the new (as of rEFInd 0.13.0) ability
+	to boot to a firmware-defined boot option; booting in this way
+	eliminates the problem for macOS, but not for Linux and probably not
+	for Windows. A better solution is desirable. See <a
 	href="https://youtu.be/tgTMxB-ffjM?t=3m44s">this YouTube video</a>
 	and <a
 	href="http://askubuntu.com/questions/866920/limited-resolution-booting-with-refind-on-imac-5k">This
-	AskUbuntu question and answers,</a> for instance.</li>
+	AskUbuntu question and answers.</a></li>
 
     <li>Some EFIs have bugs that cause the allegedly case-insensitive
 	<tt>StriCmp()</tt> function to perform a case-sensitive comparison.
@@ -413,10 +411,6 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
         to visually impaired users when rEFInd is ready to accept input would be
         helpful.</li>
 
-    <li>There's currently no way to create a manual boot stanza for a
-	BIOS-booted OS. This isn't a big priority for me personally, but I
-	can see how it could be for some people.</li>
-
     </ul></li> <!-- New features -->
 
 <li><b>Improvements to the EFI drivers:</b>
@@ -455,8 +449,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
     <li>rEFInd's support for network booting is primitive and relies on the
 	external iPXE package. In my own testing, iPXE retrieves the
-	BIOS-mode boot loader from some servers that offer both, which
-	makes it useless on those networks.</li>
+	BIOS-mode boot loader from some servers that offer both, which makes
+	it useless on those networks. The reboot-to-firmware-boot-options
+	feature in rEFInd 0.13.0 at least partially addresses this
+	problem.</li>
 
     <li>The handling of encrypted local Secure Boot keys by
 	<tt>refind-install</tt> could be improved. Specifically, if you
@@ -467,7 +463,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 	a rEFInd RPM or Debian package is installed, that installation may
 	fail to set things up correctly.</li>
 
-    <li>A Mac-specific package is highly desirable.</li>
+    <li>A Mac-specific package is highly desirable, but seems impractical,
+        given SIP.</li>
 
     </ul></li>
 
@@ -475,7 +472,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

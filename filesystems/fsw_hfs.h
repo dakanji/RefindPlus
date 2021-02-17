@@ -74,8 +74,8 @@ struct fsw_hfs_key
     struct HFSPlusExtentKey  ext_key;
     struct HFSPlusCatalogKey cat_key;
     fsw_u16                  key_len; /* Length is at the beginning of all keys */
-  };
-};
+  } HFS_ALIGNMENT;
+} HFS_ALIGNMENT;
 
 #pragma pack()
 

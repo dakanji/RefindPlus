@@ -325,6 +325,7 @@ Files: icons/arrow_left.png
        icons/os_slackware.png
        icons/os_suse.png
        icons/os_ubuntu.png
+       icons/os_uefi.png
        icons/os_unknown.png
        icons/os_win8.png
        icons/os_xubuntu.png
@@ -332,6 +333,7 @@ Files: icons/arrow_left.png
        icons/tool_netboot.png
        icons/tool_shell.png
        icons/tool_windows_rescue.png
+       icons/vol_efi.png
        icons/vol_external.png
        icons/vol_internal.png
        icons/vol_net.png

@@ -214,8 +214,8 @@ EFI_STATUS pdUpdateState() {
         if(!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 
-            INTN TargetX = 0;
-            INTN TargetY = 0;
+            INT32 TargetX = 0;
+            INT32 TargetY = 0;
 
 #ifdef EFI32
 	    TargetX = State.X + (INTN)DivS64x64Remainder(SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed, SPointerProtocol[Index]->Mode->ResolutionX, NULL);
@@ -230,7 +230,7 @@ EFI_STATUS pdUpdateState() {
             } else if(TargetX >= UGAWidth) {
                 State.X = UGAWidth - 1;
             } else {
-                State.X = (UINTN)TargetX;
+                State.X = TargetX;
             }
 
             if(TargetY < 0) {
@@ -238,7 +238,7 @@ EFI_STATUS pdUpdateState() {
             } else if(TargetY >= UGAHeight) {
                 State.Y = UGAHeight - 1;
             } else { 
-                State.Y = (UINTN)TargetY;
+                State.Y = TargetY;
             }
 
             State.Holding = SPointerState.LeftButton;

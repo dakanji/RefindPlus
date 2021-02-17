@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
@@ -64,25 +64,26 @@
 #define TAG_TOOL             (4)
 #define TAG_LOADER           (5)
 #define TAG_LEGACY           (6)
-#define TAG_EXIT             (7)
-#define TAG_SHELL            (8)
-#define TAG_GPTSYNC          (9)
-#define TAG_LEGACY_UEFI      (10)
-#define TAG_APPLE_RECOVERY   (11)
-#define TAG_WINDOWS_RECOVERY (12)
-#define TAG_MOK_TOOL         (13)
-#define TAG_FIRMWARE         (14)
-#define TAG_MEMTEST          (15)
-#define TAG_GDISK            (16)
-#define TAG_NETBOOT          (17)
-#define TAG_CSR_ROTATE       (18)
-#define TAG_FWUPDATE_TOOL    (19)
-#define TAG_HIDDEN           (20)
-#define TAG_INSTALL          (21)
-#define TAG_BOOTORDER        (22)
-#define NUM_TOOLS            (23)
+#define TAG_FIRMWARE_LOADER  (7)
+#define TAG_EXIT             (8)
+#define TAG_SHELL            (9)
+#define TAG_GPTSYNC          (10)
+#define TAG_LEGACY_UEFI      (11)
+#define TAG_APPLE_RECOVERY   (12)
+#define TAG_WINDOWS_RECOVERY (13)
+#define TAG_MOK_TOOL         (14)
+#define TAG_FIRMWARE         (15)
+#define TAG_MEMTEST          (16)
+#define TAG_GDISK            (17)
+#define TAG_NETBOOT          (18)
+#define TAG_CSR_ROTATE       (19)
+#define TAG_FWUPDATE_TOOL    (20)
+#define TAG_HIDDEN           (21)
+#define TAG_INSTALL          (22)
+#define TAG_BOOTORDER        (23)
+#define NUM_TOOLS            (24)
 
-#define NUM_SCAN_OPTIONS 10
+#define NUM_SCAN_OPTIONS 11
 
 #define DEFAULT_ICONS_DIR L"icons"
 
@@ -224,6 +225,7 @@
 
 // Configuration file variables
 #define KERNEL_VERSION L"%v"
+#define MAX_RES_CODE 2147483647 /* 2^31 - 1 */
 
 //
 // global definitions
@@ -288,7 +290,7 @@ typedef struct _refit_menu_entry {
 } REFIT_MENU_ENTRY;
 
 typedef struct _refit_menu_screen {
-   CHAR16      *Title;
+   CHAR16      *Title; // For EFI firmware entry, this includes "Reboot to" prefix
    EG_IMAGE    *TitleImage;
    UINTN       InfoLineCount;
    CHAR16      **InfoLines;
@@ -302,7 +304,7 @@ typedef struct _refit_menu_screen {
 
 typedef struct {
    REFIT_MENU_ENTRY me;
-   CHAR16           *Title;
+   CHAR16           *Title; // For EFI firmware entry, this is "raw" title
    CHAR16           *LoaderPath;
    REFIT_VOLUME     *Volume;
    BOOLEAN          UseGraphicsMode;
@@ -311,6 +313,8 @@ typedef struct {
    CHAR16           *InitrdPath; // Linux stub loader only
    CHAR8            OSType;
    UINTN            DiscoveryType;
+   EFI_DEVICE_PATH  *EfiLoaderPath; // path to NVRAM-defined loader
+   UINT16           EfiBootNum; // Boot#### number for NVRAM-defined loader
 } LOADER_ENTRY;
 
 typedef struct {
@@ -360,6 +364,7 @@ typedef struct {
    CHAR16           *DontScanDirs;
    CHAR16           *DontScanFiles;
    CHAR16           *DontScanTools;
+   CHAR16           *DontScanFirmware;
    CHAR16           *WindowsRecoveryFiles;
    CHAR16           *MacOSRecoveryFiles;
    CHAR16           *DriverDirs;

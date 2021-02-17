@@ -267,11 +267,18 @@ DeterminePlatform() {
    case "$OSTYPE" in
    darwin*)
       CpuType=`ioreg -l -p IODeviceTree | grep firmware-abi | cut -d "\"" -f 4`
-      if [[ "$CpuType" == EFI32 ]] ; then
-         Platform="ia32"
-      else
+      case "$CpuType" in
+      EFI64)
          Platform="x64"
-      fi
+         ;;
+      EFI32)
+         Platform="ia32"
+         ;;
+      *)
+         echo "Unknown CPU type '$CpuType'; aborting!"
+         exit 1
+         ;;
+      esac
       ;;
    linux*)
       CpuType=`uname -m`
@@ -787,7 +794,7 @@ MountDefaultTarget() {
 # Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
 # should the system's boot entry list be lost
 CreateBootCsvFile() {
-   IConv=`which iconv 2> /dev/null`
+   IConv="$(command -v iconv 2> /dev/null)"
    if [[ -x "$IConv" ]] ; then
       if [[ "$Platform" == "x64" && -d "$InstallDir/$TargetDir" ]] ; then
          echo "$TargetX64,rEFInd Boot Manager,,This is the boot entry for rEFInd" | \
@@ -879,7 +886,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.12.0</string>
+        <string>0.13.0</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -1052,7 +1059,7 @@ GenerateKeys() {
    PrivateKey="$EtcKeysDir/$LocalKeysBase.key"
    CertKey="$EtcKeysDir/$LocalKeysBase.crt"
    DerKey="$EtcKeysDir/$LocalKeysBase.cer"
-   OpenSSL=`which openssl 2> /dev/null`
+   OpenSSL="$(command -v openssl 2> /dev/null)"
 
    # Do the work only if one or more of the necessary keys is missing
    # TODO: Technically, we don't need the DerKey; but if it's missing and openssl
@@ -1122,7 +1129,7 @@ SignOneBinary() {
 # key files in $EtcKeysDir. If they're present, use them to re-sign the binaries. If
 # not, try to generate new keys and store them in $EtcKeysDir.
 ReSignBinaries() {
-   SBSign=`which sbsign 2> /dev/null`
+   SBSign="$(command -v sbsign 2> /dev/null)"
    echo "Found sbsign at $SBSign"
    TempDir="/tmp/refind_local"
    if [[ ! -x "$SBSign" ]] ; then
@@ -1166,8 +1173,8 @@ FindLinuxESP() {
    local TypeCode
 
    echo "The ESP doesn't seem to be mounted! Trying to find it...."
-   Dmraid=`which dmraid 2> /dev/null`
-   Sgdisk=`which sgdisk 2> /dev/null`
+   Dmraid="$(command -v dmraid 2> /dev/null)"
+   Sgdisk="$(command -v sgdisk 2> /dev/null)"
    if [[ ! -x "$Sgdisk" ]] ; then
       echo "The sgdisk program (part of the gdisk package) is not installed; please"
       echo "install it and try again."
@@ -1268,7 +1275,7 @@ AddBootEntry() {
    local ExistingEntryBootNum
    local FirstBoot
 
-   Efibootmgr=`which efibootmgr 2> /dev/null`
+   Efibootmgr="$(command -v efibootmgr 2> /dev/null)"
    if [[ "$Efibootmgr" ]] ; then
       InstallPart=`grep "$InstallDir " /etc/mtab | grep -v autofs | cut -d " " -f 1 | tail -n1`
       for Name in `lsblk -r | grep disk | cut -f 1 -d " "` ; do

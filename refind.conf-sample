@@ -160,9 +160,10 @@ timeout 20
 #
 #textmode 2
 
-# Set the screen's video resolution. Pass this option either:
-#  * two values, corresponding to the X and Y resolutions
-#  * one value, corresponding to a GOP (UEFI) video mode
+# Set the screen's video resolution. Pass this option one of the following:
+#  * two integer values, corresponding to the X and Y resolutions
+#  * one integer value, corresponding to a GOP (UEFI) video mode
+#  * the string "max", which sets the maximum available resolution
 # Note that not all resolutions are supported. On UEFI systems, passing
 # an incorrect value results in a message being shown on the screen to
 # that effect, along with a list of supported modes. On EFI 1.x systems
@@ -175,6 +176,7 @@ timeout 20
 #resolution 1024 768
 #resolution 1440 900
 #resolution 3
+#resolution max
 
 # Enable touch screen support. If active, this feature enables use of
 # touch screen controls (as on tablets). Note, however, that not all
@@ -201,7 +203,7 @@ timeout 20
 # Size of the mouse pointer, in pixels, per side.
 # Default is 16
 #
-#mouse_size
+#mouse_size 16
 
 # Speed of mouse tracking. Higher numbers equate to faster
 # mouse movement. This option requires that enable_mouse be
@@ -300,6 +302,7 @@ timeout 20
 #  biosexternal  - BIOS external boot loaders (USB, eSATA, etc.)
 #  cd            - BIOS optical-disc boot loaders
 #  manual        - use stanzas later in this configuration file
+#  firmware      - boot EFI programs set in the firmware's NVRAM
 # Note that the legacy BIOS options require firmware support, which is
 # not present on all computers.
 # The netboot option is experimental and relies on the ipxe.efi and
@@ -307,7 +310,7 @@ timeout 20
 # On UEFI PCs, default is internal,external,optical,manual
 # On Macs, default is internal,hdbios,external,biosexternal,optical,cd,manual
 #
-#scanfor internal,external,optical,manual
+#scanfor internal,external,optical,manual,firmware
 
 # By default, rEFInd relies on the UEFI firmware to detect BIOS-mode boot
 # devices. This sometimes doesn't detect all the available devices, though.
@@ -399,6 +402,17 @@ timeout 20
 #
 #dont_scan_files shim.efi,MokManager.efi
 
+# EFI NVRAM Boot#### variables that should NOT be presented as loaders
+# when "firmware" is an option to "scanfor". The comma-separated list
+# presented here contains strings that are matched against the
+# description field -- if a value here is a case-insensitive substring
+# of the boot option description, then it will be excluded from the
+# boot list. To specify a string that includes a space, enclose it
+# in quotes. Specifying "shell" will counteract the automatic
+# inclusion of built-in EFI shells.
+#
+#dont_scan_firmware HARDDISK,shell,"Removable Device"
+
 # Scan for Linux kernels that lack a ".efi" filename extension. This is
 # useful for better integration with Linux distributions that provide
 # kernels with EFI stub loaders but that don't give those kernels filenames
@@ -453,7 +467,7 @@ timeout 20
 # keyboard accelerators available within rEFInd.  You may select the
 # default loader using:
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
-#    will be the default. 
+#    will be the default.
 #  - A "+" symbol at the start of the string, which refers to the most
 #    recently booted loader.
 #  - Any substring that corresponds to a portion of the loader's title
@@ -506,20 +520,24 @@ timeout 20
 #spoof_osx_version 10.9
 
 # Set the CSR values for Apple's System Integrity Protection (SIP) feature.
-# Values are one-byte (two-character) hexadecimal numbers. These values
+# Values are two-byte (four-character) hexadecimal numbers. These values
 # define which specific security features are enabled. Below are the codes
 # for what the values mean. Add them up (in hexadecimal!) to set new values.
 # Apple's "csrutil enable" and "csrutil disable" commands set values of 10
-# and 77, respectively.
-#   CSR_ALLOW_UNTRUSTED_KEXTS       0x01
-#   CSR_ALLOW_UNRESTRICTED_FS       0x02
-#   CSR_ALLOW_TASK_FOR_PID          0x04
-#   CSR_ALLOW_KERNEL_DEBUGGER       0x08
-#   CSR_ALLOW_APPLE_INTERNAL        0x10
-#   CSR_ALLOW_UNRESTRICTED_DTRACE   0x20
-#   CSR_ALLOW_UNRESTRICTED_NVRAM    0x40
-#
-#csr_values 10,77
+# and 877, respectively.
+#   CSR_ALLOW_UNTRUSTED_KEXTS            0x0001
+#   CSR_ALLOW_UNRESTRICTED_FS            0x0002
+#   CSR_ALLOW_TASK_FOR_PID               0x0004
+#   CSR_ALLOW_KERNEL_DEBUGGER            0x0008
+#   CSR_ALLOW_APPLE_INTERNAL             0x0010
+#   CSR_ALLOW_UNRESTRICTED_DTRACE        0x0020
+#   CSR_ALLOW_UNRESTRICTED_NVRAM         0x0040
+#   CSR_ALLOW_DEVICE_CONFIGURATION       0x0080
+#   CSR_ALLOW_ANY_RECOVERY_OS            0x0100
+#   CSR_ALLOW_UNAPPROVED_KEXTS           0x0200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE 0x0400
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT       0x0800
+#csr_values 10,877
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
@@ -641,7 +659,7 @@ menuentry "Windows via shell script" {
     disabled
 }
 
-# Mac OS is normally detected and run automatically; however,
+# MacOS is normally detected and run automatically; however,
 # if you want to do something unusual, a manual boot stanza may
 # be the way to do it. This one does nothing very unusual, but
 # it may serve as a starting point. Note that you'll almost
@@ -651,5 +669,21 @@ menuentry "My macOS" {
     icon \EFI\refind\icons\os_mac.png
     volume "macOS boot"
     loader \System\Library\CoreServices\boot.efi
+    disabled
+}
+
+# The firmware_bootnum token takes a HEXADECIMAL value as an option
+# and sets that value using the EFI's BootNext variable and then
+# reboots the computer. This then causes a one-time boot of the
+# computer using this EFI boot option. It can be used for various
+# purposes, but one that's likely to interest some rEFInd users is
+# that some Macs with HiDPI displays produce lower-resolution
+# desktops when booted through rEFInd than when booted via Apple's
+# own boot manager. Booting using the firmware_bootnum option
+# produces the better resolution. Note that no loader option is
+# used in this type of configuration.
+menuentry "macOS via BootNext" {
+    icon /EFI/refind/icons/os_mac.png
+    firmware_bootnum 80
     disabled
 }

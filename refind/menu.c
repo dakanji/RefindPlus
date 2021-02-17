@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -1492,10 +1492,22 @@ static BOOLEAN RemoveInvalidFilenames(CHAR16 *FilenameList, CHAR16 *VarName) {
     return DeletedSomething;
 } // BOOLEAN RemoveInvalidFilenames()
 
+// Save a list of items to be hidden to NVRAM or disk, as determined by
+// GlobalConfig.UseNvram.
+static VOID SaveHiddenList(IN CHAR16 *HiddenList, IN CHAR16 *VarName) {
+    EFI_STATUS Status;
+    UINTN i;
+
+    i = HiddenList ? StrLen(HiddenList) : 0;
+    Status = EfivarSetRaw(&RefindGuid, VarName, (CHAR8 *) HiddenList, i * 2 + 2 * (i > 0), TRUE);
+    CheckError(Status, L"in SaveHiddenList()");
+} // VOID SaveHiddenList()
+
 // Present a menu that enables the user to delete hidden tags (that is, to
 // un-hide them).
 VOID ManageHiddenTags(VOID) {
-    CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools, *HiddenLegacy, *OneElement = NULL;
+    CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools;
+    CHAR16              *HiddenLegacy, *HiddenFirmware, *OneElement = NULL;
     INTN                DefaultEntry = 0;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
@@ -1503,8 +1515,7 @@ VOID ManageHiddenTags(VOID) {
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
     UINTN               MenuExit, i = 0;
-    BOOLEAN             SaveTags = FALSE, SaveTools = FALSE, SaveLegacy = FALSE;
-    EFI_STATUS          Status;
+    BOOLEAN             SaveTags, SaveTools, SaveLegacy = FALSE, SaveFirmware = FALSE;
 
     HideItemMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode)
@@ -1521,6 +1532,9 @@ VOID ManageHiddenTags(VOID) {
     HiddenLegacy = ReadHiddenTags(L"HiddenLegacy");
     if (HiddenLegacy && (HiddenLegacy[0] != L'\0'))
         MergeStrings(&AllTags, HiddenLegacy, L',');
+    HiddenFirmware = ReadHiddenTags(L"HiddenFirmware");
+    if (HiddenFirmware && (HiddenFirmware[0] != L'\0'))
+        MergeStrings(&AllTags, HiddenFirmware, L',');
     if ((AllTags) && (StrLen(AllTags) > 0)) {
         AddMenuInfoLine(&HideItemMenu, L"Select a tag and press Enter to restore it");
         while ((OneElement = FindCommaDelimited(AllTags, i++)) != NULL) {
@@ -1534,24 +1548,18 @@ VOID ManageHiddenTags(VOID) {
         if (MenuExit == MENU_EXIT_ENTER) {
             SaveTags |= DeleteItemFromCsvList(ChosenOption->Title, HiddenTags);
             SaveTools |= DeleteItemFromCsvList(ChosenOption->Title, HiddenTools);
-            if (DeleteItemFromCsvList(ChosenOption->Title, HiddenLegacy)) {
-                i = HiddenLegacy ? StrLen(HiddenLegacy) : 0;
-                Status = EfivarSetRaw(&RefindGuid, L"HiddenLegacy", (CHAR8 *) HiddenLegacy, i * 2 + 2 * (i > 0), TRUE);
-                SaveLegacy = TRUE;
-                CheckError(Status, L"in ManageHiddenTags()");
-            } // if
+            SaveFirmware |= DeleteItemFromCsvList(ChosenOption->Title, HiddenFirmware);
+            SaveLegacy |= DeleteItemFromCsvList(ChosenOption->Title, HiddenLegacy);
         } // if
-        if (SaveTags) {
-            i = HiddenTags ? StrLen(HiddenTags) : 0;
-            Status = EfivarSetRaw(&RefindGuid, L"HiddenTags", (CHAR8 *) HiddenTags, i * 2 + 2 * (i > 0), TRUE);
-            CheckError(Status, L"in ManageHiddenTags()");
-        }
-        if (SaveTools) {
-            i = HiddenTools ? StrLen(HiddenTools) : 0;
-            Status = EfivarSetRaw(&RefindGuid, L"HiddenTools", (CHAR8 *) HiddenTools, i * 2 + 2 * (i > 0), TRUE);
-            CheckError(Status, L"in ManageHiddenTags()");
-        }
-        if (SaveTags || SaveTools || SaveLegacy)
+        if (SaveTags)
+            SaveHiddenList(HiddenTags, L"HiddenTags");
+        if (SaveLegacy)
+            SaveHiddenList(HiddenLegacy, L"HiddenLegacy");
+        if (SaveTools)
+            SaveHiddenList(HiddenTools, L"HiddenTools");
+        if (SaveFirmware)
+            SaveHiddenList(HiddenFirmware, L"HiddenFirmware");
+        if (SaveTags || SaveTools || SaveLegacy || SaveFirmware)
             RescanAll(FALSE, FALSE);
     } else {
         DisplaySimpleMessage(L"Information", L"No hidden tags found");
@@ -1560,6 +1568,7 @@ VOID ManageHiddenTags(VOID) {
     MyFreePool(HiddenTags);
     MyFreePool(HiddenTools);
     MyFreePool(HiddenLegacy);
+    MyFreePool(HiddenFirmware);
     MyFreePool(OneElement);
     MyFreePool(MenuEntryItem);
 } // VOID ManageHiddenTags()
@@ -1642,6 +1651,27 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
     return TagHidden;
 } // BOOLEAN HideEfiTag()
 
+static BOOLEAN HideFirmwareTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu) {
+    MENU_STYLE_FUNC    Style = TextMenuStyle;
+    REFIT_MENU_ENTRY   *ChosenOption;
+    INTN               DefaultEntry = 1;
+    UINTN              MenuExit;
+    BOOLEAN            TagHidden = FALSE;
+
+    if (AllowGraphicsMode)
+        Style = GraphicsMenuStyle;
+
+    AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide '%s'?", Loader->Title));
+    AddMenuEntry(HideItemMenu, &MenuEntryYes);
+    AddMenuEntry(HideItemMenu, &MenuEntryNo);
+    MenuExit = RunGenericMenu(HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    if (MyStriCmp(ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+        AddToHiddenTags(L"HiddenFirmware", Loader->Title);
+        TagHidden = TRUE;
+    } // if
+    return TagHidden;
+} // BOOLEAN HideFirmwareTag()
+
 static BOOLEAN HideLegacyTag(LEGACY_ENTRY *LegacyLoader, REFIT_MENU_SCREEN *HideItemMenu) {
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     REFIT_MENU_ENTRY   *ChosenOption;
@@ -1705,6 +1735,11 @@ static VOID HideTag(REFIT_MENU_ENTRY *ChosenEntry) {
         case TAG_LEGACY_UEFI:
             HideItemMenu.Title = L"Hide Legacy OS Tag";
             if (HideLegacyTag(LegacyLoader, &HideItemMenu))
+                RescanAll(FALSE, FALSE);
+            break;
+        case TAG_FIRMWARE_LOADER:
+            HideItemMenu.Title = L"Hide Firmware Boot Option Tag";
+            if (HideFirmwareTag(Loader, &HideItemMenu))
                 RescanAll(FALSE, FALSE);
             break;
         case TAG_ABOUT:
@@ -1774,7 +1809,10 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         MenuTitle = StrDuplicate(TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
-               MenuExit = RunGenericMenu(TempChosenEntry->SubScreen, Style, &DefaultSubmenuIndex, &TempChosenEntry);
+               MenuExit = RunGenericMenu(TempChosenEntry->SubScreen,
+                                         Style,
+                                         &DefaultSubmenuIndex,
+                                         &TempChosenEntry);
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN)
                    MenuExit = 0;
                if (MenuExit == MENU_EXIT_DETAILS) {

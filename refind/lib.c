@@ -398,8 +398,9 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
     return Status;
 } // EFI_STATUS EfivarGetRaw()
 
-// Set an EFI variable, either to NVRAM or to a disk file under rEFInd's
-// "vars" subdirectory, depending on GlobalConfig.UseNvram.
+// Set an EFI variable. This is normally done to NVRAM; however, rEFInd-specific
+// variables (as determined by the *vendor code) will be saved to a disk file IF
+// GlobalConfig.UseNvram == FALSE.
 // Returns EFI status
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
     UINT32 flags;
@@ -538,7 +539,7 @@ static VOID SetFilesystemData(IN UINT8 *Buffer, IN UINTN BufferSize, IN OUT REFI
             } else { // none of these features; presume it's ext2...
                Volume->FSType = FS_TYPE_EXT2;
             }
-            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 120, sizeof(EFI_GUID));
+            CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
             return;
          }
       } // search for ext2/3/4 magic

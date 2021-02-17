@@ -29,10 +29,10 @@
 
 CHAR16 gCsrStatus[256];
 
-// Get CSR (Apple's System Integrity Protection [SIP], or "rootless") status
-// information. If the variable is not present and the firmware is Apple, fake
-// it and claim it's enabled, since that's how OS X 10.11 treats a system with
-// the variable absent.
+// Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
+// Protection [SIP], or "rootless") status information. If the variable is not
+// present and the firmware is Apple, fake it and claim it's enabled, since
+// that's how OS X 10.11 treats a system with the variable absent.
 EFI_STATUS GetCsrStatus(UINT32 *CsrStatus) {
     UINT32     *ReturnValue = NULL;
     UINTN      CsrLength;

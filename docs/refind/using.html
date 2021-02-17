@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/13/2020, referencing rEFInd 0.12.0</p>
+2/15/2021, referencing rEFInd 0.13.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -147,10 +147,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>For the most part, rEFInd is easy to use; just use your keyboard's arrow keys to select the OS you want to boot or the utility you want to launch and press the Enter key. A few details aren't entirely intuitive, though, so this page describes them.</p>
 
 <a name="basic">
-<h2>Using Basic rEFInd Features</h2>
+<h2 class="clear">Using Basic rEFInd Features</h2>
 </a>
 
-<p>With rEFInd in place and added to your firmware's list of boot utilities, you can reboot your computer. Depending on your configuration, rEFInd may come up immediately or you may need to select it from your firmware's boot options or reconfigure your firmware to present rEFInd automatically. Unfortunately, I can't offer much specific advice on this score, since EFI implementations differ so much in their user interfaces.</p>
+<p>With rEFInd in place and added to your firmware's list of boot utilities, as described in <a href="installing.html">Installing and Uninstalling rEFInd,</a> you can reboot your computer. Depending on your configuration, rEFInd will probably come up immediately. If there was an installation problem or if your firmware is buggy, though, you may need to select it from your firmware's boot options or reconfigure your firmware to present rEFInd automatically. Unfortunately, I can't offer much specific advice on this score, since EFI implementations differ so much in their user interfaces. The <a href="installing.html">Installing and Uninstalling rEFInd</a> and <a href="bootcoup.html">Keeping rEFInd Booting</a> pages offer some tips on common problems, though.</p>
 
 <p>Assuming rEFInd starts up correctly, you should see its main screen, which resembles the following:</p>
 
@@ -186,9 +186,9 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>By default, the options to display an information page, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch <tt>gdisk</tt>, launch a memory test utility, launch the Apple recovery utility, launch the Windows recovery utility, and launch a Secure Boot key management utility will also appear automatically if these utilities are installed. A tag to reboot into the firmware appears if your firmware supports this feature. Options to launch the hybrid MBR tool (<tt>gptsync</tt>) and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default if you don't want them.</p>
+<p>By default, options to display an information page, manage hidden tags, shutdown the computer, and reboot the computer are present. Options to launch a shell, launch <tt>gdisk</tt>, launch a memory test utility, launch the Apple recovery utility, launch the Windows recovery utility, and launch a Secure Boot key management utility will also appear automatically if these utilities are installed. A tag to reboot into the firmware appears if your firmware supports this feature. Options to launch the hybrid MBR tool (<tt>gptsync</tt>) and to exit from rEFInd are not displayed by default; you must edit the configuration file to enable these features, or to disable those that are displayed by default if you don't want them.</p>
 
-<p>To launch an OS or utility, you should select its tag and then press the Enter key or the space bar.</p>
+<p>The easiest way to launch an OS or utility is to select its tag and then press the Enter key or the space bar.</p>
 
 <p class="sidebar"><b>Note:</b>On UEFI-based PCs, rEFInd defaults to scanning for EFI, but <i>not</i> for BIOS, boot loaders. If you want to launch BIOS-mode OSes from rEFInd, you must edit the <tt>scanfor</tt> line in <tt>refind.conf</tt>, as described on the <a href="configfile.html">Configuring the Boot Manager</a> page. On Macs, rEFInd scans for BIOS-based OSes by default, since such configurations are a common way to launch Windows on Macs.</p>
 
@@ -338,7 +338,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Sometimes it's necessary to boot a legacy (BIOS-based) OS on an EFI computer. This is especially true on Macs, since this has been the usual method of dual-booting macOS and Windows. (Since the release of Windows 8, though, booting Windows in EFI mode on Macs has become both more practical and more common.) In the past, many Linux distributions installed more easily in BIOS mode on Macs, but many Linux distributions now favor native EFI-mode installation on Macs. (See my <a href="https://www.rodsbooks.com/ubuntu-efi/">EFI-Booting Ubuntu on a Mac</a> page for an in-depth look at this topic.)</p>
 
-<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in one mode or the other. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. Most of the BSDs (FreeBSD being a notable exception), Haiku, DOS, Windows XP and earlier, and many more obscure OSes still lack EFI support and so must be booted in BIOS mode. You might also want to boot a BIOS-mode emergency recovery CD, such as <a href="http://partedmagic.com">Parted Magic</a> or <a href="http://www.sysresccd.org">System Rescue CD.</a> Note, however, that EFI-mode support is being added to OSes. It's possible that some of those I've mentioned here will support EFI-mode booting by the time you read this!</p>
+<p>On UEFI-based PCs, booting some OSes in EFI mode and others in BIOS mode is less often necessary, since it's usually easy to install all your OSes in one mode or the other. If you have a working EFI-mode OS installation, though, and if you want to install an OS that lacks EFI-mode boot support, you may need to boot in both modes. Most of the BSDs (FreeBSD being a notable exception), Haiku, DOS, Windows XP and earlier, and many more obscure OSes still lack EFI support and so must be booted in BIOS mode. You might also want to boot a BIOS-mode emergency recovery CD. Note, however, that EFI-mode support is being added to OSes. It's possible that some of those I've mentioned here will support EFI-mode booting by the time you read this!</p>
 
 <p>To help out when you need to boot in BIOS mode, rEFInd supports booting legacy OSes; however, the details vary between Macs and UEFI PCs. Also, be aware that some UEFI PCs lack the Compatibility Support Module (CSM) that's required for this feature to work. This is true even of some computers that can boot BIOS-based OSes natively. This can happen because the firmware is basically a BIOS with a UEFI implementation tacked on top of it; such systems rely on the native BIOS to boot in BIOS mode, and may not provide a way for EFI applications to access the BIOS features via CSM mechanisms. If you have such a computer and if you enable a legacy boot option in the configuration file, rEFInd notifies you of its inability to present legacy boot options when it starts up.</p>
 
@@ -378,13 +378,15 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li><b>Don't boot with removable media attached (unless you intend to boot from them)</b>&mdash;If you insert an optical disc into your drive or plug in a removable device like a USB flash drive, rEFInd will attempt to scan it. This will slow down rEFInd's startup process, so you shouldn't make a habit of booting with such media inserted. In fact, there's another reason not to boot with external media attached: If such a medium is infected with malware, and if your firmware is configured to boot from external media first, you'll end up running the malware, possibly infecting your computer.</li>
 
+<li><b>Adjust rEFInd installation options</b>&mdash;Some Mac users have problems with a ~30-second delay before rEFInd's menu appears at all. The usual cause is a delay in Apple's EFI implementation that can be worked around by installing rEFInd in particular ways. See the <a href="installing.html#sluggish">Fixing Macintosh Boot Problems</a> section of the <a href="installing.html">Installing and Uninstalling rEFInd</a> page for details.</li>
+
 </ul>
 
 <p>I hope these tips will help you to overcome any speed problems you're experiencing. As I said, rEFInd is reasonably fast on many computers, so you might not run into problems in the first place. If you do, though, reducing rEFInd's workload can help.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

@@ -1,6 +1,6 @@
 body {
-    color:black;
-    background-color:white;
+/*    color:black;
+    background-color:white; */
     text-align:left;
 /*    font-family:"Georgia",serif; */
 }
@@ -17,6 +17,10 @@ li {
 h1,h2,h3,h4 {
     text-align:center;
     font-family:"Bitstream Vera Sans", "Verdana", "Helvetica", "Arial", sans-serif;
+}
+
+.clear {
+  clear: both;
 }
 
 .userinput {
@@ -50,7 +54,12 @@ h1,h2,h3,h4 {
 }
 
 .highlight {
-    background: #888888;
+    width: 95%;
+    float: center;
+    padding: 5px;
+    margin: 10px;
+    border: 5px solid gray;
+    background: #EEE;
 }
 
 .sidebar {

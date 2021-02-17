@@ -332,7 +332,7 @@ BOOLEAN ReadAllKeyStrokes(VOID)
     return GotKeyStrokes;
 }
 
-// Displays *text without regard to appearances. Used mainly for debugging
+// Displays *Text without regard to appearances. Used mainly for debugging
 // and rare error messages.
 // Position code is used only in graphics mode.
 // TODO: Improve to handle multi-line text.
@@ -500,7 +500,6 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
             GlobalConfig.BannerBottomEdge = BannerPosY + Banner->Height;
             if (GlobalConfig.ScreensaverTime != -1)
                BltImage(Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
-            egFreeImage(Banner);
         }
 
     } else { // not showing banner

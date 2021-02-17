@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -278,6 +278,20 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     return err;
 } // EFI_STATUS RebootIntoFirmware()
 
+// Reboot into a loader defined in the EFI's NVRAM
+VOID RebootIntoLoader(LOADER_ENTRY *Entry) {
+    EFI_STATUS Status;
+
+    Status = EfivarSetRaw(&GlobalGuid, L"BootNext", (CHAR8*) &(Entry->EfiBootNum), sizeof(UINT16), TRUE);
+    if (EFI_ERROR(Status)) {
+        Print(L"Error: %d\n", Status);
+        return;
+    }
+    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    Print(L"Error calling ResetSystem: %r", Status);
+    PauseForKey();
+} // RebootIntoLoader()
+
 //
 // EFI OS loader functions
 //
@@ -302,6 +316,7 @@ static VOID DoEnableAndLockVMX(VOID) {
 #endif
 } // VOID DoEnableAndLockVMX()
 
+// Directly launch an EFI boot loader (or similar program)
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
@@ -313,6 +328,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
                   Basename(Entry->LoaderPath), Entry->OSType, !Entry->UseGraphicsMode, FALSE);
 } // VOID StartLoader()
 
+// Launch an EFI tool (a shell, SB management utility, etc.)
 VOID StartTool(IN LOADER_ENTRY *Entry) {
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);

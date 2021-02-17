@@ -1,3 +1,42 @@
+0.13.0 (2/15/2021):
+-------------------
+
+- Fixed compile problem with GCC version 10.
+
+- Fixed compile problems with GCC 9 and the Btrfs and HFS+ drivers under
+  EDK2.
+
+- Replaced use of "which" with "command -v" in shell scripts.
+
+- Fixed detection of UUID on ext2/3/4 filesystems; old code incorrectly
+  marked filesystems with different UUIDs but the same label as duplicates.
+
+- Fixed bug that caused mouse pointer to disappear on 64-bit systems when
+  it was moved, when mouse pointer support was active.
+
+- Fixed memory management bug that could cause rEFInd to hang in some
+  situations.
+
+- Fixed bug that could cause EFI 1.x (UGA graphics) systems to hang if
+  the refind.conf "resolution" line specified only one parameter. (This
+  is valid for EFI 2.x/GOP graphics systems, but not for UGA graphics.)
+  This misconfiguration, if found, is now ignored.
+
+- Imported improvements from RefindPlus
+  (https://github.com/dakanji/refindplus):
+  - Expand list of supported Apple SIP/CSR values
+  - Add support for EXT4_FEATURE_INCOMPAT_ENCRYPT flag to ext4fs driver
+  - Improved detection of video modes
+  - New "max" option to "resolution" parameter in refind.conf (is
+    default in RefindPlus, but configurable option in rEFInd)
+
+- Implemented new feature enabling rEFInd to set the EFI BootNext variable
+  and reboot into an EFI-defined boot loader. Such options are
+  auto-scanned if the new "firmware" option to the "scanfor" token is used;
+  and manual boot stanzas can use the new "firmware_bootnum" token, which
+  takes a hexadecimal number corresponding to the Boot#### number shown by
+  efibootmgr in Linux or under the EFI boot order editor in rEFInd.
+
 0.12.0 (3/13/2020):
 -------------------
 

@@ -52,7 +52,16 @@ typedef struct {
 //     CHAR16           *Arguments; // Part of original data structure, but we don't use
 } EFI_BOOT_ENTRY;
 
+// A linked-list data structure intended to hold a list of all the EFI boot
+// entries on the computer....
+typedef struct _boot_entry_list {
+    EFI_BOOT_ENTRY           BootEntry;
+    struct _boot_entry_list  *NextBootEntry;
+} BOOT_ENTRY_LIST;
+
 VOID InstallRefind(VOID);
+BOOT_ENTRY_LIST * FindBootOrderEntries(VOID);
+VOID DeleteBootOrderEntries(BOOT_ENTRY_LIST *Entries);
 VOID ManageBootorder(VOID);
 
 #endif

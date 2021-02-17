@@ -81,6 +81,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
 EFI_STATUS RebootIntoFirmware(VOID);
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
 VOID StartTool(IN LOADER_ENTRY *Entry);
+VOID RebootIntoLoader(LOADER_ENTRY *Entry);
 
 #endif
 

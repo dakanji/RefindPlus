@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/8/2015; last Web page update:
-3/13/2020, referencing rEFInd 0.12.0</p>
+2/15/2021, referencing rEFInd 0.13.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -159,10 +159,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<p>Apple's macOS 10.11 (aka <i>El Capitan</i>) added a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature causes some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this new feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
+<p>Apple's macOS 10.11 (aka <i>El Capitan</i>) added a new feature, known as System Integrity Protection (SIP), aka "rootless" mode. This feature causes some consternation for advanced users, because it restricts what you can do with your computer, even as <tt>root</tt>. This page is dedicated to this feature, including basic information on why SIP exists, how to install rEFInd on a computer with SIP enabled, and how to use rEFInd to manage SIP. Note that if you've come here for help installing rEFInd on a Mac with SIP enabled, you can click to one of the methods in the "Contents" box to the left of this paragraph. I recommend trying Recovery mode first; but if you have reason to try another method, you can do so.</p>
 
 <a name="what_is">
-<h2>What Is SIP?</h2>
+<h2 class="clear">What Is SIP?</h2>
 </a>
 
 <p>To understand SIP, you should first know that Unix-like systems, including macOS, have traditionally provided a model of security in which ordinary users can read and write their own files (word processor documents, digital photos, etc.), but cannot write to system files (programs, system configuration files, etc.)&mdash;and users cannot even read some system files. This system security model has worked well for decades on traditional Unix systems, which have been administered by computer professionals and used by individuals with less experience. For administrative tasks, the <tt>root</tt> account is used. On Macs, this access is generally granted by the <tt>sudo</tt> command or by various GUI tools. Most Macs, in contrast to traditional Unix mainframes and minicomputers from the 20th century, are single-user computers that are administered by their users. Such people often lack the knowledge of the professional system administrators who have traditionally managed Unix systems; but they must still perform system administration tasks such as installing new software and configuring network settings. MacOS has always provided some measure of security by requiring users to enter their passwords before performing these dangerous tasks, and by providing GUI tools to help guide users through these tasks in a way that minimizes the risk of damage.</p>
@@ -271,9 +271,11 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <li>You can use many Linux distributions' installers to run a minimal Linux system that you can use for installing rEFInd. This can be a useful trick even if you don't intend to run Linux normally. An <a href="http://www.ubuntu.com">Ubuntu</a> image can be useful for this. You should insert the boot medium and hold down Option (or Alt) while booting to launch the installer, but be sure to pick the option to "try Ubuntu before installing" (or a similar option for other Linux distributions). You may need to install the <tt>efibootmgr</tt> package to install rEFInd. (Typing <tt class="userinput">sudo apt-get install efibootmgr</tt> should do this in Ubuntu.)</li>
 
+<li>For purposes of this discussion, rEFInd 0.12.0 and later count as "another OS." As described on the <a href="installing.html">Installing rEFInd</a> page (and in particular its <a href="installing.html#from_refind">Installing rEFInd from Within rEFInd</a> section), rEFInd can install itself from an external boot medium. There are some caveats described in that section, though. Most importantly, rEFInd may take longer to appear than with other installation methods. If you intend to dual-boot macOS and Linux, you might start with this method and then re-install rEFInd (or use <tt>efibootmgr</tt> to create a fresh boot definition) within Linux; the boot entries created by <tt>efibootmgr</tt> don't seem to cause this problem, in my experience.</li>
+
 </ul>
 
-<p>I've tested this method of installing rEFInd on my MacBook Air (purchased in late 2014) and on my first-generation 32-bit Mac Mini, but I can't promise it will work on all Macs&mdash;or even on a Mac that's identical to one of mine but with a configuration that's different from mine. This installation method has worked well for me, and reports I've seen recently suggest it works fine for many others, too. On the other hand, in the past (mid-2010s and earlier), this method was less reliable. I assume that improvements to Linux kernels and <tt>efibootmgr</tt> have rendered this method more reliable, so I recommend using the latest Linux (or other OS) version you can find if you want to use this method.</p>
+<p>I've installed rEFInd from Linux and/or rEFInd itself on a 2017 iMac 18,2; on a 2014 MacBook Air 6,2; and on my first-generation 32-bit Mac Mini. I can't promise it will work on all Macs, though&mdash;or even on a Mac that's identical to one of mine but with a configuration that's different from mine. This installation method has worked well for me, and reports I've seen recently suggest it works fine for many others, too. On the other hand, in the past (mid-2010s and earlier), this method was less reliable. I assume that improvements to Linux kernels and <tt>efibootmgr</tt> have rendered this method more reliable, so I recommend using the latest Linux (or other OS) version you can find if you want to use this method.</p>
 
 <a name="refind_manage">
 <h2>Using rEFInd to Manage SIP</h2>
@@ -281,13 +283,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Once rEFInd is installed, you can use it to manage SIP features; however, the rEFInd features needed to do this are disabled by default. You must uncomment or add two lines to your <tt>refind.conf</tt> file:</p>
 
-<p class="sidebar"><b>Note:</b> Apple code samples and technical discussions are filled with the acronym "CSR." I don't know what this acronym means, but as it appears to be used in preference to "SIP" or "rootless" when referring to specific values, I used it in the <tt>refind.conf</tt> file's token names.</p>
+<p class="sidebar"><b>Note:</b> Apple code samples and technical discussions are filled with the acronym "CSR." <a href="https://github.com/apple/darwin-xnu/blob/a449c6a3b8014d9406c2ddbdc81795da24aa7443/config/MASTER#L738">A line in one Apple source code file</a> suggests that this stands for <i>Configurable Security Restrictions.</i> As this acronym appears to be used in preference to "SIP" or "rootless" when referring to specific values, I used it in the <tt>refind.conf</tt> file's token names.</p>
 
 <ul>
 
 <li><tt class="userinput">showtools</tt>&mdash;This line specifies tools that appear on the second row of icons in rEFInd. The new tool for managing SIP is called <tt>csr_rotate</tt>, so you must uncomment <tt>showtools</tt> and add this option, or create a new <tt>showtools</tt> line.</li>
 
-<li><tt class="userinput">csr_values</tt>&mdash;This line lists the hexadecimal values through which you can rotate once <tt>csr_rotate</tt> is active on the <tt>showtools</tt> line. The trick to this token is selecting appropriate options. Several sites, such as <a href="http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">this one,</a> describe the meanings of the various options, but often not in much detail. Apple's own <tt>csrutil</tt> command sets values of 77 (disabled) or 10 (enabled). Note also that you specify hexadecimal values on this line, but without a leading <tt>0x</tt> or other hexadecimal-notation indicator. If you specify gibberish values, or hexadecimal values higher than those used by SIP, rEFInd ignores the bad entries. Thus, if some of your values are being ignored, you should check your <tt>csr_values</tt> line for typos.</li>
+<li><tt class="userinput">csr_values</tt>&mdash;This line lists the hexadecimal values through which you can rotate once <tt>csr_rotate</tt> is active on the <tt>showtools</tt> line. The trick to this token is selecting appropriate options. Several sites, such as <a href="http://web.archive.org/web/20160116011239/http://www.idelta.info/archives/sip-rootless-internal-in-el-capitan/">this one,</a> describe the meanings of the various options, but often not in much detail. Initially, Apple's own <tt>csrutil</tt> command sets values of 77 (disabled) or 10 (enabled); however, updates since the initial implementation have added more bits, as described in <a href="https://www.reddit.com/r/hackintosh/comments/bt17xk/differences_between_0x67_and_0x3e7/">this Reddit thread,</a> so now 877 (disabled) and 10 (enabled) are more common. Note also that you specify hexadecimal values on this line, but without a leading <tt>0x</tt> or other hexadecimal-notation indicator. If you specify gibberish values, or hexadecimal values higher than those used by SIP, rEFInd ignores the bad entries. Thus, if some of your values are being ignored, you should check your <tt>csr_values</tt> line for typos.</li>
 
 </ul>
 
@@ -322,7 +324,7 @@ csr_values 10,77</pre>
 
 <hr />
 
-<p>copyright &copy; 2015&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2015&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

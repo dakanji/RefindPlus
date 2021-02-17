@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-3/13/2020, referencing rEFInd 0.12.0</p>
+2/15/2021, referencing rEFInd 0.13.0</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -123,138 +123,161 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <hr />
 
-<p>rEFInd is a fork of the <a href="http://refit.sourceforge.net">rEFIt</a> boot manager. As such, it has many features in common with rEFIt. These include the following:</p>
+<p>rEFInd is a fork of the <a href="http://refit.sourceforge.net">rEFIt</a> boot manager. As such, it has many features in common with rEFIt; however, rEFInd expands on rEFIt's capabilities. In particular, rEFInd makes it practical to directly launch Linux kernels; adds video resolution options; adds support for Secure Boot; provides features to launch BIOS/CSM/legacy-mode OSes on UEFI-based PCs (which rEFIt can do only on Macs); can be installed and used on newer versions of macOS (but the macOS installer is more primitive than the one provided with rEFIt); can install to a hard disk from a boot of rEFInd from a removable disk; and more.</p>
+
+<p>In broad outline, rEFInd's features include the following:</p>
 
 <ul>
 
-<li>Support for both text-mode and graphical operation.</li>
+<li><b>Platform support</b>
 
-<li>Auto-detection of EFI and BIOS boot loaders.</li>
+  <ul>
 
-<li>User-configurable graphics and icons&mdash;you can set your own background, set new icons, and so on.</li>
+    <li>Binaries exist for x86 (aka IA32), x86-64 (aka X64 or AMD64), and ARM64 (aka AARCH64). The x86-64 binary is the best-tested of these, and the ARM64 binary is the most poorly-tested. (I've tested ARM only within a QEMU emulator.)</li>
 
-<li>Launch EFI boot loaders.</li>
+    <li>Works on EFI 1.1 (mainly Apple Macs) and UEFI 2.x (most EFI-based PCs and newer Macs).</li>
 
-<li>Launch legacy (BIOS) boot loaders on Macs. (rEFInd also supports legacy boots on some UEFI PCs; see below.)</li>
+    <li>Packages exist as <tt>.zip</tt> files (cross-platform), RPMs (for Fedora, OpenSUSE, and various other Linux distributions), Debian packages (for Debian, Ubuntu, and related distributions), and Ubuntu PPAs. See the <a href="getting.html">Getting rEFInd</a> page for details.</li>
 
-<li>Launch options for an external EFI shell or disk partitioner. (See the <a href="installing.html">Installing rEFInd</a> section for information on how to obtain and install these components.)</li>
+    <li>Installation is best done via a script that runs in macOS and Linux. (Linux packages may run the install script automatically.) Manual installation procedures for Linux, macOS, and Windows exist, too. An option to install rEFInd from a rEFInd USB flash drive or optical disc also exists. See the <a href="installing.html">Installing and Uninstalling rEFInd</a> page for details.</li>
 
-<li>Provide the <tt>gptsync</tt> utility for creating hybrid MBRs. Note that rEFInd's version of <tt>gptsync</tt> is significantly updated compared to rEFIt's. Also, this tool should be used only on Macs that dual-boot with a BIOS-based OS, such as Windows; or <i>very</i> rarely on other computers.</li>
+    <li>rEFInd provides an option to manage the EFI's own boot order. This feature is disabled by default; to enable it, add <tt>bootorder</tt> to the <tt>showtools</tt> option in <tt>refind.conf</tt>.</li>
 
-<li>Set OS-specific boot options, such as to launch macOS with verbose text-mode debug messages.</li>
+    <li>The main development platform is Linux, using either <a href="https://sourceforge.net/projects/gnu-efi/">GNU-EFI</a> or <a href="https://github.com/tianocore/tianocore.github.io/wiki/Getting-Started-with-EDK-II">TianoCore EDK2</a> build kits. See the <a href="https://sourceforge.net/p/refind/code/ci/master/tree/BUILDING.txt"><tt>BUILDING.txt</tt></a> file in the source code package for information on compiling rEFInd yourself.</li>
 
-<li>Load EFI drivers for filesystems or hardware devices not supported natively by your firmware. (This feature is absent in some builds of rEFIt and in rEFInd prior to version 0.2.7.)</li>
+    <li>rEFInd is licensed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Pulic License (GPL), version 3.</a></li>
 
-<li>Inclusion of drivers for the Linux ReiserFS and ext2 filesystems in the
-    main package. (These drivers are absent from rEFInd prior to version
-    0.4.0. See below concerning drivers for additional filesystems.)</li>
+  </ul></li>
+
+<li><b>Automatic OS detection</b>
+
+  <ul>
+
+    <li>Rather than rely on a configuration file to identify bootable OSes, as is the case with most boot managers, rEFInd actively scans for EFI boot loader files, BIOS/CSM/legacy boot loaders, and EFI boot options stored in the EFI's own NVRAM-based boot manager memory. You can also manually identify boot options for EFI-based and NVRAM-defined boot loaders, similar to the way other boot managers work.</li>
+
+    <li>Although rEFInd is, first and foremost, a tool for launching EFI-based OSes, rEFInd is one of the few EFI boot programs that can redirect the boot process to BIOS-based OSes.</li>
+
+    <li>rEFInd can detect Linux kernels with EFI stub loader support to boot them directly, minimizing Linux configuration requirements. (See the upcoming bullet point on <a href="#linux">Linux-specific features</a> for more details.)</li>
+
+    <li>As part of its OS detection, rEFInd can identify several tools, including EFI shells, disk partitioning utilities, Windows and macOS recovery partitions, Secure Boot utilities, and memory test tools.</li>
+
+    <li>You can boot to a network (PXE or HTTP) boot server in either of two ways:
+      <ul>
+      <li>Beginning with rEFInd 0.8.4, <i>experimental</i> network boot loader support exists via the <a href="http://ipxe.org">iPXE</a> EFI binaries. When activated, rEFInd should add a network-boot option to its menu when a suitable network boot server is available.</li>
+      <li>Beginning with rEFInd 0.13.0, the firmware reboot feature enables use of network boot options provided by the computer's firmware.</li>
+      </ul>
+
+    <li>You can tell rEFInd to <i>not</i> scan certain volumes, directories, or filenames, to limit options you want to omit. This can be done various ways, as described <a href="configfile.html#hiding">here.</a> The easiest method involves a few keypresses at rEFInd's main menu.</li>
+
+    <li>You can specify additional directories to scan for boot loaders and drivers, beyond those scanned by default.</li>
+
+    <li>Pressing the Esc key causes rEFInd to re-scan boot loaders, to assist when changing removable media or after making a change to the configuration file with an EFI shell.</li>
+
+    <li>The delay before scanning for boot loaders upon program start can be adjusted, for systems on which there's a delay before disks become available.</li>
+
+  </ul></li>
+
+<li><b>OS launch options</b>
+
+  <ul>
+
+    <li>OS launch options can be specified in the main rEFInd configuration file (<tt>refind.conf</tt>, stored in rEFInd's main directory); or for Linux kernels, in the <tt>refind_linux.conf</tt> file, stored in the same directory as the kernel.</li>
+
+    <li>You can set OS-specific boot options, such as to launch macOS with verbose text-mode debug messages.</li>
+
+    <li>rEFInd enables specifying the default boot option by any substring in the description. You can also specify multiple defaults, so that if the first isn't available, another will take its place (which is useful when using removable disks). You can also add time specifications to set a default to be used only during certain hours of the day. If no default loader is set, rEFInd defaults to the last-booted loader.</li>
+
+    <li>You can fine-tune options passed to EFI boot loaders, via manual configuration.</li>
+
+    <li>An option editor enables you to edit the options passed to an EFI boot loader on a per-boot basis.</li>
+
+  </ul></li>
+
+<li><b>Graphics features</b>
+
+  <ul>
+
+    <li>rEFInd support for both text-mode and graphical operation.</li>
+
+    <li>You can set the screen's graphics resolution, within limits imposed by the EFI. Similarly, you can specify the text-mode resolution.</li>
+
+    <li>User-configurable graphics, icons, and fonts exist&mdash;you can set your own background, set new icons, and so on.</li>
+
+    <li>rEFInd upports icons, selection backgrounds, and banner graphics in PNG, JPEG, ICNS ,and BMP formats, although some formats make more sense for some purposes than others. See <a href="themes.html">Theming rEFInd</a> for details.</li>
+
+    <li>Icons, fonts, and banner backgrounds can be scaled to adjust icon size for users with high-resolution displays, poor eyesight, or simply for personal preference reasons.</li>
+
+    <li>A screen saver feature, activated by the <tt>screensaver <tt class="variable">seconds</tt></tt> token in <tt>refind.conf</tt>, exists: Set <tt class="variable">seconds</tt> to the number of seconds before the screen will blank to prevent burn-in.</li>
+
+  </ul></li>
+
+<li><b>User interaction features</b>
+
+  <ul>
+
+    <li><i>Some</i> (but not all) touch-screen displays, as used on tablet computers, work. (This feature is disabled by default; you must uncomment the <tt>enable_touch</tt> token in <tt>refind.conf</tt> to activate it.)</li>
+
+    <li>On some (but not all) computers, mouse input can be used to select the boot loader to run. (As with touch screens, this feature is disabled by default; you must uncomment <tt>enable_mouse</tt> to activate it. The <tt>mouse_size</tt> and <tt>mouse_speed</tt> tokens fine-tune mouse operation.)</li>
+
+  </ul></li>
+
+<li><b>Mac-specific features</b>
+
+  <ul>
+
+    <li>rEFInd can spoof the booting of macOS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
+
+    <li>rEFInd can adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in macOS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
+
+  </ul></li>
+
+<a name="linux">
+<li><b>Linux-specific features</b>
+</a>
+
+  <ul>
+
+    <li>rEFInd can auto-detect Linux initial RAM disk files and read Linux kernel options from a <tt>refind_linux.conf</tt> file. These features support (nearly) automatic handling of Linux kernels with embedded EFI stub loader support.</li>
+
+    <li>By default, rEFInd "folds" multiple Linux kernels into a single entry in the main menu. Additional kernels appear as options in the submenu. This feature can be disabled by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>, which causes each kernel to get its own main-menu icon.</li>
+
+    <li>In the absence of a <tt>refind_linux.conf</tt> file, rEFInd tries to guess minimal Linux boot options for a kernel based on the contents of <tt>/etc/fstab</tt> and/or the partition type codes specified by the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Specification (DPS)</a>. These options are limited in their abilities, but they're often enough to get an installation to boot without any system-specific configuration.</li>
+
+  </ul></li>
+
+<li><b>Extra tools and utilities</b>
+
+  <ul>
+
+    <li>rEFInd ships with EFI filesystem drivers for several common filesystems, including ext2/3fs, ext4fs, Btrfs, ReiserFS, HFS+, and ISO-9660. Code for an NTFS driver is also included, but is not compiled by default because the driver has proven to be troublesome. The main use for these drivers is to enable rEFInd to read Linux kernels from popular Linux-native filesystems; however, other uses exist, such as facilitating booting from some optical discs or making very large files available to other EFI utilities.</li>
+
+    <li>The <tt>gptsync</tt> utility can create a fresh <a href="https://www.rodsbooks.com/gdisk/hybrid.html">hybrid MBR</a> on a GPT disk. Hybrid MBRs are ugly and <i><b>dangerous,</b></i> so <tt>gptsync</tt> is not installed by default except under macOS, and the rEFInd configuration file option to activate it is disabled by default. That said, hybrid MBRs were required to launch older BIOS-mode OSes, such as Windows 7 and earlier, on Intel-based Macs, and they are still useful when launching old or exotic OSes, mostly on Macs.</li>
+
+  </ul></li>
+
+<li><b>Miscellaneous features</b>
+
+  <ul>
+
+    <li>You can specify a configuration file to use at program launch time via the <tt>-c <tt class="variable">filename</tt></tt> command-line option. This feature requires manual installation or launching rEFInd from an EFI shell or some other EFI program you can configure.</li>
+
+    <li>rEFInd detects a fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/BOOT/bootia32.efi</tt>) that's redundant with another boot loader, to keep the fallback boot loader out of menus when it's unnecessary.</li>
+
+    <li>rEFInd provides an "exit" option (disabled by default), so that you can return to whatever shell or boot manager you used to launch rEFInd, should this ability be desirable.</li>
+
+    <li>rEFInd can "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">Shim boot loader</a> to validate binaries supported by Shim or its machine owner key (MOK) list when booting with Secure Boot active.</li>
+
+    <li>rEFInd can set the VMX bit on certain Intel CPUs. This feature is necessary for certain virtualization tools, such as Hyper-V, and not all EFIs enable users to set it.</li>
+
+  </ul></li>
 
 </ul>
-
-<p>rEFInd expands on rEFIt by providing features that improve on or go beyond those of rEFIt, such as:</p>
-
-<ul>
-
-<li>Bug fixes, focusing on those that have bothered me personally.</li>
-
-<li>The ability to specify a configuration file to use at program launch
-    time via the <tt>-c <tt class="variable">filename</tt></tt>
-    command-line option.</li>
-
-<li>User-configurable methods of detecting boot loaders:
-
-    <ul>
-    <li>Auto-detection of EFI boot loaders, independently on internal hard disks, external hard disks, optical discs, and network boot loaders.</li>
-    <li>Auto-detection of legacy BIOS boot loaders, independently on internal hard disks, external hard disks, and optical discs.</li>
-    <li>Manually via the configuration file</li>
-    </ul>
-
-    You can select which of these methods to use to construct the rEFInd main boot menu. Although rEFIt supports auto-detection, it does not support manual configuration; and rEFIt's options to enable, disable, and prioritize individual boot loader detection methods are primitive compared to those in rEFInd.</li>
-
-<li>Beginning with rEFInd 0.8.4, <i>experimental</i> network boot loader support via the <a href="http://ipxe.org">iPXE</a> EFI binaries. When activated, rEFInd should add a network-boot option to its menu when a suitable network boot server is available.</li>
-
-<li>Support for launching legacy BIOS boot loaders on UEFI PCs with
-suitable CSM support (as of version 0.4.6, with significant improvements in
-version 0.8.0). Note that some UEFI PCs,
-such as those with Gigabyte's Hybrid EFI, lack a usable CSM.</li>
-
-<li>Improved flexibility in setting the default OS to boot. rEFInd enables specifying the default by any substring in the description. You can also specify multiple defaults, so that if the first isn't available, another will take its place (which is useful when using removable disks). You can also add time specifications to set a default to be used only during certain hours of the day. If no default loader is set, rEFInd defaults to the last-booted loader.</li>
-
-<li>Support for partition names or GUID values as fallbacks for filesystem labels in certain configuration file settings. Partition names may be shown as values to be displayed as part of the descriptive text for boot tags on the main menu, too, if a filesystem has no label.</li>
-
-<li>The ability to fine-tune options passed to EFI boot loaders, via manual configuration.</li>
-
-<li>An option editor to enable you to edit the options passed to an EFI boot loader on a per-boot basis.</li>
-
-<li>The ability to specify additional directories to scan for boot loaders and drivers (as of version 0.2.7).</li>
-
-<li>The ability to specify volumes and directories to <i>not</i> be scanned for boot loaders, even if they would ordinarily be scanned (as of version 0.6.0 for volumes and 0.4.2 for directories).</li>
-
-<li>The ability to specify boot loader files to be ignored. This can be set either in the configuration file or dynamically as you're using rEFInd.</li>
-
-<li>The ability to re-scan boot loaders, to assist when changing removable media or after making a change to the configuration file with an EFI shell (as of version 0.3.5).</li>
-
-<li>A configurable delay before scanning for boot loaders, for systems on which there's a delay before disks become available (as of version 0.4.6).</li>
-
-<li>The ability to specify an additional icon storage directory, to assist in efforts to customize rEFInd's appearance (as of version 0.3.4).</li>
-
-<li>Support for icons, selection backgrounds, and banner graphics in PNG and JPEG formats, in addition to the ICNS and BMP formats supported by rEFIt.</li>
-
-<li>Support for full-screen banner images.</li>
-
-<li>Support for scaling icons, to adjust icon size for users with high-resolution displays, poor eyesight, or simply for personal preference reasons.</li>
-
-<li>The ability to set the screen's graphics resolution, within limits imposed by the EFI (as of rEFInd 0.3.0). Similarly, as of version 0.6.0, you can specify the text-mode resolution.</li>
-
-<li>Proper handling of more OS options than can fit on the screen. (rEFIt displays an empty list in graphical mode when it detects too many OSes.)</li>
-
-<li>The ability to handle <i>some</i> (but not all) touch-screen displays, as used on tablet computers.</li>
-
-<li>On some (but not all) computers, the ability to handle mouse input to select the boot loader to run.</li>
-
-<li>Additional OS icons (most of which are Linux distributions, at least so far). This can make it easier to find a specific distribution in the boot list if you've installed multiple Linux distributions.</li>
-
-<li>Support for loading user-defined fonts, in the form of PNG files containing ASCII characters 32 through 126 plus a glyph to be used for values outside that range.</li>
-
-<li>The ability to auto-detect Linux initial RAM disk files and to read Linux kernel options from a <tt>refind_linux.conf</tt> file. These features support (nearly) automatic handling of Linux kernels with embedded EFI stub loader support (a new feature with Linux 3.3.0).</li>
-
-<li>The ability to "fold" multiple Linux kernels into a single entry in the main menu. Additional kernels appear as options in the submenu. This feature is enabled by default, but can be disabled by setting <tt>fold_linux_kernels false</tt> in <tt>refind.conf</tt>.</li>
-
-<li>In the absence of a <tt>refind_linux.conf</tt> file, the ability to pass minimal Linux boot options to a kernel based on the contents of <tt>/etc/fstab</tt>. This is limited to cases in which the kernel resides on the Linux root (<tt>/</tt>) filesystem, though, and it won't work if the installation requires any unusual options.</li>
-
-<li>As of rEFInd 0.9.0, if a Linux root (<tt>/</tt>) filesystem is identified by the type code specified by the <a href="http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec/">Discoverable Partitions Specification (DPS)</a> and the root filesystem cannot be identified via <tt>refind_linux.conf</tt> or <tt>/etc/fstab</tt>, rEFInd passes a kernel <tt>root=</tt> identifier based on the identified DPS root (<tt>/</tt>) type code.</li>
-
-<li>Fixes to display problems on many UEFI-based PCs.</li>
-
-<li>Beginning with version 0.6.10, a screen saver feature, activated by the <tt>screensaver <tt class="variable">seconds</tt></tt> token in <tt>refind.conf</tt>: Set <tt class="variable">seconds</tt> to the number of seconds before the screen will blank to prevent burn-in.</li>
-
-<li>Detection of a fallback boot loader (<tt>EFI/BOOT/bootx64.efi</tt> or <tt>EFI/BOOT/bootia32.efi</tt>) that's redundant with another boot loader, to keep the fallback boot loader out of menus when it's unnecessary.</li>
-
-<li>An "exit" option (disabled by default), so that you can return to whatever shell or boot manager you used to launch rEFInd, should this ability be desirable. (This feature first appeared in rEFInd 0.2.4.)</li>
-
-<li>Drivers for ISO-9660, NTFS, HFS+, ext4fs, and Btrfs, which are not included in rEFIt. (The NTFS driver has proven troublesome, and so is not compiled by default.) The ISO-9660 driver is based on code from the rEFIt project, but was never completed by its original author. It was completed by Oracle for VirtualBox. The ext4fs driver is derived from the rEFIt ext2fs driver, and the Btrfs and NTFS drivers are derived from the rEFIt and GRUB 2.0 driver code.</li>
-
-<li>Beginning with version 0.5.0, the ability to "talk" to the <a href="http://mjg59.dreamwidth.org/20303.html">shim boot loader</a> to validate binaries supported by shim or its machine owner key (MOK) list when booting with Secure Boot active.</li>
-
-<li>The <tt>gptsync</tt> utility, included with rEFInd 0.6.9 and later, has safety checks to prevent creating a fresh hybrid MBR if the MBR side has been adjusted without adjusting the GPT side&mdash;a common source of problems. This update also prioritizes partition inclusion in the hybrid MBR, which can help on disks that have many partitions. OTOH, as of rEFInd 0.6.9, this version of <tt>gptsync</tt> is relatively untested.</li>
-
-<li>The ability to set the VMX bit on certain Intel CPUs. This feature is necessary for certain virtualization tools, such as Hyper-V, and not all EFIs enable users to set it.</li>
-
-<li>Beginning with version 0.10.0, the ability to spoof the booting of macOS when booting non-Apple OSes. This changes the way a Mac's EFI initializes hardware, which can get secondary video chipsets working on some Macs. This feature is controlled via the <tt>spoof_osx_version</tt> token in <tt>refind.conf</tt>.</li>
-
-<li>Beginning with version 0.10.0, the ability to adjust Apple System Integrity Protection (SIP; aka "rootless" or "CSR") settings. These settings control what features are off-limits even to <tt>root</tt> in macOS 10.11 (El Capitan) and later. To use this feature, you must set specific CSR values on <tt>refind.conf</tt>'s <tt>csr_values</tt> line <i>and</i> add <tt>csr_rotate</tt> to the <tt>showtools</tt> line.</li>
-
-<li>Beginning with version 0.10.1, support for ARM64 (aka AARCH64 or AA64) CPUs. Such systems that boot using UEFI are quite rare, at least in December of 2015.</li>
-
-</ul>
-
-<p>On the flip side, at least for Mac users, rEFInd comes with less sophisticated Mac installation tools than does rEFIt, in favor of more OS-agnostic packaging.</p>
 
 <p>If these features sound useful, then read on and try rEFInd. If not, you may need to look elsewhere. My <a href="https://www.rodsbooks.com/efi-bootloaders/index.html">Managing EFI Boot Loaders for Linux</a> page may be useful to you in this case.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

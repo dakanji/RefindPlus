@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/19/2012; last Web page update:
-3/13/2020, referencing rEFInd 0.12.0</p>
+2/15/2021, referencing rEFInd 0.13.0</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -146,8 +146,10 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </div>
 
-<p>rEFInd relies on both built-in and external graphical elements in its user interface, and all of these elements can be replaced by user-specified files. This fact makes rEFInd's "look and feel" highly adjustable even by non-programmers. This page will help you get started in making such changes to each of the major sets of features: banners and backgrounds, icons, icon selection backgrounds, and fonts. I conclude this page with pointers to a few themes that users have created for rEFInd.</p><a name="basics">
-<h2>Theming Basics</h2>
+<p>rEFInd relies on both built-in and external graphical elements in its user interface, and all of these elements can be replaced by user-specified files. This fact makes rEFInd's "look and feel" highly adjustable even by non-programmers. This page will help you get started in making such changes to each of the major sets of features: banners and backgrounds, icons, icon selection backgrounds, and fonts. I conclude this page with pointers to a few themes that users have created for rEFInd.</p>
+
+<a name="basics">
+<h2 class="clear">Theming Basics</h2>
 </a>
 
 <p>Broadly speaking, rEFInd's graphical elements fall into four categories:</p>
@@ -196,7 +198,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>If you want to use a full-screen background but also include the rEFInd logo, you can merge the two in a graphics editor by including the <tt>refind_banner-alpha.png</tt> or <tt>refind-banner.svg</tt> image from the <tt>banners</tt> subdirectory of the rEFInd package in your background.</p>
 
-<p>It's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can now do this with just one image file.</p>
+<p>It's possible to stretch or shrink any image to fill the screen. To do so, you should use the <tt>banner_scale</tt> option in <tt>refind.conf</tt>: Set it to <tt>noscale</tt> (the default) to use small banners as such or to crop larger images; or set it to <tt>fillscreen</tt> to adjust your banner's size to exactly fill the screen. This should be particularly handy for theme developers who want to use a full-screen background image, since you can do this with just one image file.</p>
 
 <a name="icons">
 <h2>Icons</h2>
@@ -214,19 +216,13 @@ use just one color, aside from the drop shadow. Of course, the point of
 themes is that you might get bored with, or simply not like, the default
 graphics, so you can change them.</p>
 
-<p>As described on various other pages of this document, rEFInd relies on icon files located in its <tt>icons</tt> subdirectory, and occasionally elsewhere, to define its overall appearance. You can adjust rEFInd's icons in a few ways:</p>
+<p>As described on various other pages of this document, rEFInd relies on icon files located in its <tt>icons</tt> subdirectory, and occasionally elsewhere, to define its overall appearance. You can adjust rEFInd's icons in several ways, as detailed in the <a href="configfile.html#icons">Setting OS Icons</a> section of <a href="configfile.html">Configuring the Boot Manager.</a> For creating a theme, though, the following techniques are most helpful:</p>
 
 <ul>
 
 <li>You can create new icons, place them in a subdirectory of rEFInd's main directory, and tell the program to use the new icons by setting the <tt>icons_dir</tt> token in <tt>refind.conf</tt>. This will affect the appearance of the OS tags, the utility tags, and so on. The names of these icons should match those in the <tt>icons</tt> subdirectory (although you can substitute file formats, with a suitable filename change), and are fairly self-explanatory. The default size for OS tags is 128x128 pixels, tags for 2nd-row utilities are ordinarily 48x48 pixels, and drive-type badges are 32x32 pixels by default. If an icon is missing from the directory specified by <tt>icons_dir</tt>, rEFInd falls back to the icon from the standard <tt>icons</tt> subdirectory; thus, you can replace just a subset of the standard icons. rEFInd can use icons in any of several formats, as described earlier, in <a href="#basics">Theming Basics.</a> PNG files are the easiest to generate on most platforms. You can generate ICNS files in various Apple programs or by using the <a href="http://icns.sourceforge.net/">libicns</a> library (and in particular its <tt>png2icns</tt> program) in Linux.</li>
 
 <li>You can do as above, but place your new icons in the default <tt>icons</tt> subdirectory. This method is discouraged because using the <tt>refind-install</tt> script to upgrade rEFInd will replace your customized icons.</li>
-
-<li>You can customize the appearance of an individual boot loader by placing an ICNS or PNG file in its directory with the same name as the boot loader but with a suitable image file extension, such as <tt>.icns</tt> or <tt>.png</tt>. For instance, if your boot loader program is <tt>elilo.efi</tt>, you can create a custom icon by naming it <tt>elilo.png</tt>.</li>
-
-<li>You can provide an icon for boot loaders stored in the root directory of a filesystem by placing a file called <tt>.VolumeIcon.icns</tt>, <tt>.VolumeIcon.png</tt>, <tt>.VolumeIcon.bmp</tt>, <tt>.VolumeIcon.jpg</tt>, or <tt>.VolumeIcon.jpeg</tt> in that volume's root.</li>
-
-<li>You can set a custom badge (the icon that identifies the disk type) by creating a file called <tt>.VolumeBadge.icns</tt>, <tt>.VolumeBadge.png</tt>, <tt>.VolumeBadge.bmp</tt>, <tt>.VolumeBadge.jpg</tt>, or <tt>.VolumeBadge.jpeg</tt> in that volume's root. This setting applies to all the boot loaders found on this volume, even if they're in subdirectories.</li>
 
 <li>You can adjust the sizes of icons by using the <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens in <tt>refind.conf</tt>. These tokens adjust the size of the first-row OS and second-row tool icons, respectively. The <tt>big_icon_size</tt> option also indirectly sets the disk-type badge size; badges have sides that are 1/4 the size of OS icons. The icons provided with rEFInd are 128x128 for OS icons, 48x48 for tools, and 32x32 for badges. The <tt>big_icon_size</tt> and <tt>small_icon_size</tt> tokens cause these icons to be scaled to the desired value; however, for best results you should replace the default icons with ones generated natively in the desired size. (All the image file formats supported by rEFInd are bitmap formats, and so the images will be degraded by scaling operations.)</li>
 
@@ -322,14 +318,14 @@ tedious.</p>
 
 <li>Zhu Qunying has created a <a href="http://zhu-qy.blogspot.com/2014/02/a-slackware-banner-logo-for-refind-boot.html">Slackware-themed banner logo</a> for rEFInd. Although it's not a full theme, I thought I'd mention it.</li>
 
-<li>naymlezwun has created an <a href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750">macOS theme</a> for rEFInd.</li>
+<li>naymlezwun has created an <a href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750">OS X theme</a> for rEFInd.</li>
 
     <br /><center><a
     href="http://naymlezwun.deviantart.com/art/rEFInd-OS-X-Theme-469807750"><img
     src="http://pre11.deviantart.net/6da5/th/pre/f/2014/202/9/e/refind_os_x_theme_by_naymlezwun-d7rplza.png"
     align="center" width="750" alt="the rEFInd macOS theme uses Mac-like icons" border=2> </a></center><br />
 
-<li>jamaladdeen on deviantART has created another <a href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1">macOS theme</a> that resembles the macOS environment.</li>
+<li>jamaladdeen on deviantART has created another <a href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1">OS X theme</a> that resembles the macOS environment.</li>
 
     <br /><center><a
     href="http://jamaladdeen.deviantart.com/art/rEFInd-OSX-Standard-Theme-1-0-492876132?ga_submit_new=10%253A1415269035&ga_type=edit&ga_changes=1&ga_recent=1"><img
@@ -415,9 +411,6 @@ tedious.</p>
     align="center" width="800" alt="A theme that emulates the look of
     writing on a chalkboard" border=2> </a></center><br />
 
-
-
-
 <li>The <a
     href="https://www.deviantart.com/aliciatransmuted/art/rEFInd-splash-771160419">rEFInd-splash</a>
     theme by AliciaTransmuted provides a swimming pool theme to the rEFInd main screen. See <a
@@ -430,6 +423,23 @@ tedious.</p>
     align="center" width="800" alt="A theme that emulates the look of
     writing on a chalkboard" border=2> </a></center><br />
 
+<li><a href="https://github.com/SLywnow/hi-themes-refind">HI-THEMES</a> by
+    SLywnow is set of colorful themes with a tool for managing them. Most of
+    the themes are dominated by a single color, like the red one shown
+    here:</li>
+
+    <br /><center><a
+    href="hi-theme.png"><img
+    src="hi-theme.png"
+    align="center" width="800" alt="HI-THEMES provides several themes dominated by a single color" border=2> </a></center><br />
+
+<li><a href="https://www.pling.com/p/1464629/">Papirus</a> by
+    Duke93 uses distinctive icons against a dark background.</li>
+
+    <br /><center><a
+    href="papirus-theme.png"><img
+    src="papirus-theme.png"
+    align="center" width="800" alt="The Papirus theme uses distinctive icons against a dark background." border=2> </a></center><br />
 
 </ul>
 
@@ -437,7 +447,7 @@ tedious.</p>
 
 <hr />
 
-<p>copyright &copy; 2012&ndash;2020 by Roderick W. Smith</p>
+<p>copyright &copy; 2012&ndash;2021 by Roderick W. Smith</p>
 
 <p>This document is licensed under the terms of the <a href="FDL-1.3.txt">GNU Free Documentation License (FDL), version 1.3.</a></p>
 

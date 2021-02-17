@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * Modifications copyright (c) 2012-2020 Roderick W. Smith
+ * Modifications copyright (c) 2012-2021 Roderick W. Smith
  *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), or (at your option) any later version.
@@ -124,6 +124,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* *DontScanDirs = */ NULL,
                               /* *DontScanFiles = */ NULL,
                               /* *DontScanTools = */ NULL,
+                              /* *DontScanFirmware = */ NULL,
                               /* *WindowsRecoveryFiles = */ NULL,
                               /* *MacOSRecoveryFiles = */ NULL,
                               /* *DriverDirs = */ NULL,
@@ -145,6 +146,7 @@ EFI_GUID RefindGuid = REFIND_GUID_VALUE;
 VOID AboutrEFInd(VOID)
 {
     CHAR16     *FirmwareVendor;
+    CHAR16     *TempStr;
     UINT32     CsrStatus;
 
     if (AboutMenu.EntryCount == 0) {
@@ -176,9 +178,12 @@ VOID AboutrEFInd(VOID)
         }
         FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
         LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor, ST->FirmwareRevision >> 16,
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
+                                              ST->FirmwareRevision >> 16,
                                               ST->FirmwareRevision & ((1 << 16) - 1)));
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", egScreenDescription()));
+        TempStr = egScreenDescription();
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
+        MyFreePool(TempStr);
         AddMenuInfoLine(&AboutMenu, L"");
 #if defined(__MAKEWITH_GNUEFI)
         AddMenuInfoLine(&AboutMenu, L"Built with GNU-EFI");
@@ -357,10 +362,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         return Status;
 
     // read configuration
-    CopyMem(GlobalConfig.ScanFor, "ieom      ", NUM_SCAN_OPTIONS);
+    CopyMem(GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
-       CopyMem(GlobalConfig.ScanFor, "ihebocm   ", NUM_SCAN_OPTIONS);
+       CopyMem(GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
     MokProtocol = SecureBootSetup();
 
@@ -451,6 +456,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 StartLegacyUEFI((LEGACY_ENTRY *)ChosenEntry, SelectionName);
+                break;
+
+            case TAG_FIRMWARE_LOADER: // Reboot to a loader defined in the EFI UseNVRAM
+                RebootIntoLoader((LOADER_ENTRY *)ChosenEntry);
                 break;
 
             case TAG_TOOL:     // Start a EFI tool

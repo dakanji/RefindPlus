@@ -141,7 +141,8 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     if (vol->sb->s_rev_level == EXT4_DYNAMIC_REV &&
         (vol->sb->s_feature_incompat & ~(EXT4_FEATURE_INCOMPAT_FILETYPE | EXT4_FEATURE_INCOMPAT_RECOVER |
                                          EXT4_FEATURE_INCOMPAT_EXTENTS | EXT4_FEATURE_INCOMPAT_FLEX_BG |
-                                         EXT4_FEATURE_INCOMPAT_64BIT | EXT4_FEATURE_INCOMPAT_META_BG)))
+                                         EXT4_FEATURE_INCOMPAT_64BIT | EXT4_FEATURE_INCOMPAT_META_BG |
+                                         EXT4_FEATURE_INCOMPAT_ENCRYPT)))
         return FSW_UNSUPPORTED;
 
     if (vol->sb->s_rev_level == EXT4_DYNAMIC_REV &&
@@ -180,13 +181,13 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     }
 
     // Calculate group descriptor count the way the kernel does it...
-    groupcnt = (vol->sb->s_blocks_count_lo - vol->sb->s_first_data_block + 
+    groupcnt = (vol->sb->s_blocks_count_lo - vol->sb->s_first_data_block +
                 vol->sb->s_blocks_per_group - 1) / vol->sb->s_blocks_per_group;
 
-    // Descriptors in one block... s_desc_size needs to be set! (Usually 128 since normal block 
+    // Descriptors in one block... s_desc_size needs to be set! (Usually 128 since normal block
     // descriptors are 32 byte and block size is 4096)
     gdesc_per_block = EXT4_DESC_PER_BLOCK(vol->sb);
-    
+
     // Read the group descriptors to get inode table offsets
     status = fsw_alloc(sizeof(fsw_u64) * groupcnt, &vol->inotab_bno);
     if (status)
@@ -201,7 +202,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
             // If option meta_bg is set, the block group descriptor is in meta block group...
             metabg_of_gdesc = (fsw_u32)(groupno / gdesc_per_block) * gdesc_per_block;
             gdesc_bno = fsw_ext4_group_first_block_no(vol->sb, metabg_of_gdesc);
-            // We need to know if the block group in questition has a super block, if yes, the 
+            // We need to know if the block group in questition has a super block, if yes, the
             // block group descriptors are in the next block number
             if(!(vol->sb->s_feature_ro_compat & EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER) || fsw_ext4_group_sparse(metabg_of_gdesc))
                 gdesc_bno += 1;
@@ -415,7 +416,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
     while(1) {
         ext4_extent_header = (struct ext4_extent_header *)((char *)buffer + buf_offset);
         buf_offset += sizeof(struct ext4_extent_header);
-        FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent header with %d entries\n"), 
+        FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: extent header with %d entries\n"),
                       ext4_extent_header->eh_entries));
         if(ext4_extent_header->eh_magic != EXT4_EXT_MAGIC)
             return FSW_VOLUME_CORRUPTED;
@@ -440,7 +441,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
             }
             else
             {
-                FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index extents, depth %d\n"), 
+                FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_get_by_extent: index extents, depth %d\n"),
                           ext4_extent_header->eh_depth));
                 ext4_extent_idx = (struct ext4_extent_idx *)((char *)buffer + buf_offset);
                 buf_offset += sizeof(struct ext4_extent_idx);
