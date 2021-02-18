@@ -1,6 +1,11 @@
 0.13.0.AA (Pre-Release):
 -----------------------
-- Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables
+- Syncs RefindPlus with Upstream v0.13.0
+  * Limited to items that did not originate from RefindPlus (kept in their original form)
+  * Does not adopt interpretation of video mode detection in the upstream 'MyLibLocateProtocol' function
+  * Maintains default to max screen resolution
+  * However, accepts upstream config files including the new 'Max' option (which is disregarded)
+  * All other upstream options incoporated including rebooting into firmware efi and new manual stanza options
 - No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
   * Previously saved settings to Hardware NVRAM when Emulated NVRAM was not writable
   * This condition affected HFS+ setups and was implemented to help such users out
@@ -17,6 +22,10 @@
 - Adds 'EnforceAPFS' Feature
   * Allows booting Mac OS Big Sur when SIP is disabled.
   * Allows booting FileVault encrypted volumes directly.
+- Fixes crashes on incompatible but disabled manual stanzas
+  * Disabled manual stanzas are skipped without being processed
+- Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables
+  * Now compares new variables with existing NVRAM variables and does not write if already present.
 
 
 0.13.0 (15 FEB 2021): UPSTREAM RELEASE
