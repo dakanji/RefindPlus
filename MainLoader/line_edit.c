@@ -26,6 +26,12 @@
 "
  *   -- Albert Einstein
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "global.h"
 #include "screen.h"
@@ -187,7 +193,8 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
          if (first > 10) {
             first -= 10;
             cursor = 10;
-         } else {
+         }
+         else {
             cursor = first;
             first = 0;
          }

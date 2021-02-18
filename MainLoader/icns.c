@@ -36,7 +36,7 @@
 /*
  * Modified for eEFInd
  * Copyright (c) 2021 Roderick W Smith
- */ 
+ */
 /*
  * Modified for RefindPlus
  * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
@@ -186,7 +186,8 @@ EG_IMAGE * DummyImage(IN UINTN PixelSize)
                 *Ptr++ = 0;
                 *Ptr++ = 0;
                 *Ptr++ = 0;
-            } else {
+            }
+            else {
                 *Ptr++ = 0;
                 *Ptr++ = 255;
                 *Ptr++ = 255;

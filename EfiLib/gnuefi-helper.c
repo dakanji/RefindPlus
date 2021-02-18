@@ -9,10 +9,16 @@
  * are licensed and made available under the terms and conditions of the BSD License
  * which accompanies this distribution.  The full text of the license may be found at
  * http://opensource.org/licenses/bsd-license.php
- * 
+ *
  * THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
  *
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
  */
 
 #include "gnuefi-helper.h"
@@ -24,14 +30,14 @@ EFI_GUID gEfiDevicePathUtilitiesProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0
 EFI_GUID gEfiLegacyBiosProtocolGuid = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d }};
 
 /**
-  Convert a Null-terminated Unicode string to a Null-terminated 
+  Convert a Null-terminated Unicode string to a Null-terminated
   ASCII string and returns the ASCII string.
 
-  This function converts the content of the Unicode string Source 
-  to the ASCII string Destination by copying the lower 8 bits of 
-  each Unicode character. It returns Destination. The function terminates 
-  the ASCII string Destination  by appending a Null-terminator character 
-  at the end. The caller is responsible to make sure Destination points 
+  This function converts the content of the Unicode string Source
+  to the ASCII string Destination by copying the lower 8 bits of
+  each Unicode character. It returns Destination. The function terminates
+  the ASCII string Destination  by appending a Null-terminator character
+  at the end. The caller is responsible to make sure Destination points
   to a buffer with size equal or greater than (StrLen (Source) + 1) in bytes.
 
   If Destination is NULL, then ASSERT().
@@ -39,15 +45,15 @@ EFI_GUID gEfiLegacyBiosProtocolGuid = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 0x3b
   If Source is not aligned on a 16-bit boundary, then ASSERT().
   If Source and Destination overlap, then ASSERT().
 
-  If any Unicode characters in Source contain non-zero value in 
+  If any Unicode characters in Source contain non-zero value in
   the upper 8 bits, then ASSERT().
 
-  If PcdMaximumUnicodeStringLength is not zero, and Source contains 
-  more than PcdMaximumUnicodeStringLength Unicode characters not including 
+  If PcdMaximumUnicodeStringLength is not zero, and Source contains
+  more than PcdMaximumUnicodeStringLength Unicode characters not including
   the Null-terminator, then ASSERT().
 
-  If PcdMaximumAsciiStringLength is not zero, and Source contains more 
-  than PcdMaximumAsciiStringLength Unicode characters not including the 
+  If PcdMaximumAsciiStringLength is not zero, and Source contains more
+  than PcdMaximumAsciiStringLength Unicode characters not including the
   Null-terminator, then ASSERT().
 
   @param  Source        Pointer to a Null-terminated Unicode string.
@@ -82,7 +88,7 @@ UnicodeStrToAsciiStr (
 
   while (*Source != '\0') {
     //
-    // If any Unicode characters in Source contain 
+    // If any Unicode characters in Source contain
     // non-zero value in the upper 8 bits, then ASSERT().
     //
     ASSERT (*Source < 0x100);
@@ -189,7 +195,7 @@ IsDevicePathValid (
 /**
   Returns the size of a device path in bytes.
 
-  This function returns the size, in bytes, of the device path data structure 
+  This function returns the size, in bytes, of the device path data structure
   specified by DevicePath including the end of device path node.
   If DevicePath is NULL or invalid, then 0 is returned.
 
@@ -233,25 +239,25 @@ GetDevicePathSize (
   Creates a copy of the current device path instance and returns a pointer to the next device path
   instance.
 
-  This function creates a copy of the current device path instance. It also updates 
-  DevicePath to point to the next device path instance in the device path (or NULL 
+  This function creates a copy of the current device path instance. It also updates
+  DevicePath to point to the next device path instance in the device path (or NULL
   if no more) and updates Size to hold the size of the device path instance copy.
   If DevicePath is NULL, then NULL is returned.
   If DevicePath points to a invalid device path, then NULL is returned.
-  If there is not enough memory to allocate space for the new device path, then 
-  NULL is returned.  
-  The memory is allocated from EFI boot services memory. It is the responsibility 
+  If there is not enough memory to allocate space for the new device path, then
+  NULL is returned.
+  The memory is allocated from EFI boot services memory. It is the responsibility
   of the caller to free the memory allocated.
   If Size is NULL, then ASSERT().
- 
-  @param  DevicePath                 On input, this holds the pointer to the current 
-                                     device path instance. On output, this holds 
-                                     the pointer to the next device path instance 
+
+  @param  DevicePath                 On input, this holds the pointer to the current
+                                     device path instance. On output, this holds
+                                     the pointer to the next device path instance
                                      or NULL if there are no more device path
-                                     instances in the device path pointer to a 
+                                     instances in the device path pointer to a
                                      device path data structure.
-  @param  Size                       On output, this holds the size of the device 
-                                     path instance, in bytes or zero, if DevicePath 
+  @param  Size                       On output, this holds the size of the device
+                                     path instance, in bytes or zero, if DevicePath
                                      is NULL.
 
   @return A pointer to the current device path instance.
@@ -291,7 +297,7 @@ GetNextDevicePathInstance (
   // Compute the size of the device path instance
   //
   *Size = ((UINTN) DevPath - (UINTN) (*DevicePath)) + sizeof (EFI_DEVICE_PATH_PROTOCOL);
- 
+
   //
   // Make a copy and return the device path instance
   //
@@ -306,7 +312,8 @@ GetNextDevicePathInstance (
   //
   if (DevicePathSubType (DevPath) == END_ENTIRE_DEVICE_PATH_SUBTYPE) {
     *DevicePath = NULL;
-  } else {
+  }
+  else {
     *DevicePath = NextDevicePathNode (DevPath);
   }
 

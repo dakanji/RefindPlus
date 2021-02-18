@@ -14,6 +14,12 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
  *
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifdef __MAKEWITH_GNUEFI
 #include "efi.h"
@@ -182,7 +188,8 @@ BdsBuildLegacyDevNameString (
   if (Index >= 5 && Index <= 16 && (CurBBSEntry->DeviceType == BBS_HARDDISK || CurBBSEntry->DeviceType == BBS_CDROM)) {
     Fmt = L"%s %d";
     UnicodeSPrint (BootString, BufSize, Fmt, Type, Index - 5);
-  } else {
+  }
+  else {
     UnicodeSPrint (BootString, BufSize, Fmt, Type);
   }
 }
@@ -222,7 +229,8 @@ BdsIsLegacyBootOption (
     Ptr += sizeof (BBS_TABLE);
     *BbsIndex = *(UINT16 *) Ptr;
     Ret       = TRUE;
-  } else {
+  }
+  else {
     *BbsEntry = NULL;
     Ret       = FALSE;
   }
@@ -358,7 +366,8 @@ BdsCreateLegacyBootOption (
 
   if ((*BootOrderList) == NULL) {
     CurrentBootOptionNo = 0;
-  } else {
+  }
+  else {
     for (ArrayIndex = 0; ArrayIndex < (UINTN) (*BootOrderListSize / sizeof (UINT16)); ArrayIndex++) {
       IndexNotFound = TRUE;
       for (BootOrderIndex = 0; BootOrderIndex < (UINTN) (*BootOrderListSize / sizeof (UINT16)); BootOrderIndex++) {
@@ -370,7 +379,8 @@ BdsCreateLegacyBootOption (
 
       if (!IndexNotFound) {
         continue;
-      } else {
+      }
+      else {
         break;
       }
     }
@@ -611,7 +621,8 @@ GroupMultipleLegacyBootOption4SameType (
       // *NextIndex is the index in BootOption to put the next Option Number for the same type
       //
       *NextIndex = Index + 1;
-    } else {
+    }
+    else {
       //
       // insert the current boot option before *NextIndex, causing [*Next .. Index] shift right one position
       //
@@ -825,7 +836,8 @@ BdsAddNonExistingLegacyBootOptions (
         BootOrderSize,
         BootOrder
     );
-  } else {
+  }
+  else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }
 
@@ -979,7 +991,8 @@ BdsDeleteAllInvalidLegacyBootOptions (
           &BootOrderSize
           );
         continue;
-      } else {
+      }
+      else {
         FreePool (BootOrder);
         return EFI_OUT_OF_RESOURCES;
       }
@@ -1046,7 +1059,8 @@ BdsDeleteAllInvalidLegacyBootOptions (
           BootOrderSize,
           BootOrder
       );
-  } else {
+  }
+  else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }
 

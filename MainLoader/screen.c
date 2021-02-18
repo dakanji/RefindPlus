@@ -220,7 +220,8 @@ SetupScreen (
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Set Screen to Text Mode\n\n");
         #endif
-    } else if (AllowGraphicsMode) {
+    }
+    else if (AllowGraphicsMode) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0

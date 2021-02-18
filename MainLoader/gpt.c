@@ -17,7 +17,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "gpt.h"
 #include "lib.h"
@@ -199,7 +205,8 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
             for (i = 0; i < GptData->Header->entry_count; i++)
                GptData->Entries[i].name[35] = '\0';
          } // if
-      } else {
+      }
+      else {
          Status = EFI_UNSUPPORTED;
       } // if/else valid header
    } // if header read OK
@@ -208,7 +215,8 @@ EFI_STATUS ReadGptData(REFIT_VOLUME *Volume, GPT_DATA **Data) {
       // Everything looks OK, so copy it over
       ClearGptData(*Data);
       *Data = GptData;
-   } else {
+   }
+   else {
       ClearGptData(GptData);
    } // if/else
 
@@ -233,7 +241,8 @@ GPT_ENTRY * FindPartWithGuid(EFI_GUID *Guid) {
          if (GuidsAreEqual((EFI_GUID*) &(GptData->Entries[i].partition_guid), Guid)) {
             Found = AllocateZeroPool(sizeof (GPT_ENTRY));
             CopyMem(Found, &GptData->Entries[i], sizeof (GPT_ENTRY));
-         } else {
+         }
+         else {
             i++;
          } // if/else
       } // while(scanning entries)
@@ -264,7 +273,8 @@ VOID AddPartitionTable(REFIT_VOLUME *Volume) {
    if (Status == EFI_SUCCESS) {
       if (gPartitions == NULL) {
          gPartitions = GptData;
-      } else {
+      }
+      else {
          GptList = gPartitions;
          while (GptList->NextEntry != NULL) {
             GptList = GptList->NextEntry;
@@ -273,7 +283,8 @@ VOID AddPartitionTable(REFIT_VOLUME *Volume) {
          GptList->NextEntry = GptData;
          NumTables++;
       } // if/else
-   } else if (GptData != NULL) {
+   }
+   else if (GptData != NULL) {
       ClearGptData(GptData);
       NumTables = 0;
    } // if/else

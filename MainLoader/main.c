@@ -751,7 +751,8 @@ IsValidTool (
             MyFreePool (DontScanThis);
         } // while
 
-    } else {
+    }
+    else {
         retval = FALSE;
     }
 
@@ -885,20 +886,23 @@ preBootKicker (
                 #if REFIT_DEBUG > 0
                 MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
-            } else {
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
             }
 
             MyFreePool (FilePath);
-        } else {
+        }
+        else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1027,20 +1031,23 @@ preCleanNvram (
                 // Run CleanNvram
                 StartTool (ourLoaderEntry);
 
-            } else {
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
             }
 
             MyFreePool (FilePath);
-        } else {
+        }
+        else {
             #if REFIT_DEBUG > 0
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
         } // if
-    } else {
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
         #endif
@@ -1246,7 +1253,8 @@ STATIC BOOLEAN SecureBootSetup (
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
-        } else {
+        }
+        else {
             ShowScreenStr = L"Failed to Install MOK Secure Boot Extensions";
 
             #if REFIT_DEBUG > 0
@@ -1604,7 +1612,8 @@ efi_main (
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Second\n", i);
            #endif
-       } else {
+       }
+       else {
            #if REFIT_DEBUG > 0
            MsgLog ("  - Waited %d Seconds\n", i);
            #endif

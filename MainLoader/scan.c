@@ -1622,7 +1622,8 @@ VOID ScanFirmwareDefined (
                 }
                 MyFreePool (OneElement);
             } // while()
-        } else {
+        }
+        else {
             if (IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)) {
                 ScanIt = FALSE;
             }

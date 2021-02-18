@@ -56,10 +56,11 @@ BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
                 FirstString++;
                 SecondString++;
         }
+
         return (*FirstString == *SecondString);
-    } else {
-        return FALSE;
     }
+
+    return FALSE;
 } // BOOLEAN MyStriCmp()
 
 /*++
@@ -91,15 +92,17 @@ CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
         if (*String++ != *StrCharSet) {
             String = ++Src;
             StrCharSet = Sub;
-        } else {
+        }
+        else {
             StrCharSet++;
         }
     }
+
     if (*StrCharSet == L'\0') {
         return Src;
-    } else {
-        return NULL;
     }
+
+    return NULL;
 } // CHAR16 *MyStrStr()
 
 /**
@@ -204,7 +207,9 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
             MyFreePool (*First);
             *First = NULL;
         }
+
         NewString[0] = L'\0';
+
         if (*First != NULL) {
             StrCat(NewString, *First);
             if (AddChar) {
@@ -212,11 +217,14 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
                 NewString[Length1 + 1] = '\0';
             } // if (AddChar)
         } // if (*First != NULL)
-        if (Second != NULL)
+
+        if (Second != NULL) {
             StrCat(NewString, Second);
+        }
         MyFreePool (*First);
         *First = NewString;
-    } else {
+    }
+    else {
         Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
     } // if/else
 } // VOID MergeStrings()
@@ -249,7 +257,8 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
             } // while
 
             MyFreePool (Temp);
-        } else {
+        }
+        else {
             Print(L"Error! Unable to allocate memory in MergeWords()!\n");
         } // if/else
     } // if
@@ -275,13 +284,15 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
         if (i >= StrLen(SubString)) {
             SubString[0] = '\0';
             HasChanged = TRUE;
-        } else {
+        }
+        else {
             TempString = StrDuplicate(&SubString[i]);
             if (TempString != NULL) {
                 StrCpy(&SubString[1], TempString);
                 MyFreePool (TempString);
                 HasChanged = TRUE;
-            } else {
+            }
+            else {
                 // memory allocation problem; abort to avoid potentially infinite loop!
                 break;
             } // if/else
@@ -406,17 +417,20 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
             // Found is final element
             if (Found == List) { // Found is ONLY element
                 List[0] = L'\0';
-            } else { // Delete the comma preceding Found....
+            }
+            else { // Delete the comma preceding Found....
                 Found--;
                 Found[0] = L'\0';
             } // if/else
-        } else { // Found is NOT final element
+        }
+        else { // Found is NOT final element
             StrCpy(Found, &Comma[1]);
         } // if/else
+
         return TRUE;
-    } else {
-        return FALSE;
-    } // if/else
+    }  // if
+
+    return FALSE;
 } // BOOLEAN DeleteItemFromCsvList()
 
 // Returns TRUE if SmallString is an element in the comma-delimited List,
@@ -573,12 +587,14 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
         if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
             if (a != L'-')
                 retval = FALSE;
-        } else if (((a < L'a') || (a > L'f')) &&
+        }
+        else if (((a < L'a') || (a > L'f')) &&
                    ((a < L'A') || (a > L'F')) &&
                    ((a < L'0') && (a > L'9'))) {
             retval = FALSE;
         } // if/else if
     } // for
+
     return retval;
 } // BOOLEAN IsGuid()
 

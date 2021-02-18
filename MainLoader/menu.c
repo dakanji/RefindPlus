@@ -580,7 +580,8 @@ RunGenericMenu (
         Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
-        } else {
+        }
+        else {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry = FindMenuShortcutEntry (Screen, KeyAsString);
@@ -672,7 +673,8 @@ RunGenericMenu (
 
                 if (Input == INPUT_KEY || Input == INPUT_POINTER) {
                     continue;
-                } else if (Input == INPUT_TIMEOUT) {
+                }
+                else if (Input == INPUT_TIMEOUT) {
                     ElapsCount = 10; // always counted as 1s to end of the timeout
                 }
 
@@ -1880,7 +1882,8 @@ UINTN FindMainMenuItem (
                     break;
                 }
         } // if
-        } else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
+        }
+        else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
             if (PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
                 ItemIndex = i;
                 break;
@@ -1915,12 +1918,14 @@ UINTN WaitForInput (UINTN Timeout) {
 
     if (Timeout == 0) {
         Length--;
-    } else {
+    }
+    else {
         Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if (EFI_ERROR (Status)) {
             refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
-        } else {
+        }
+        else {
             Status = refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
             WaitList[Length - 1] = TimerEvent;
         }
@@ -2029,7 +2034,8 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         } // if list item includes volume
         if (DeleteIt) {
             DeleteItemFromCsvList (OneElement, FilenameList);
-        } else {
+        }
+        else {
             i++;
         }
         MyFreePool (OneElement);
@@ -2156,7 +2162,8 @@ ManageHiddenTags (
         if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
             RescanAll (FALSE, FALSE);
         }
-    } else {
+    }
+    else {
         DisplaySimpleMessage (L"Information", L"No hidden tags found");
     }
     MyFreePool (AllTags);
@@ -2235,7 +2242,8 @@ HideEfiTag (
 
     if (Loader->Volume->VolName && (StrLen (Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->VolName);
-    } else if (Loader->Volume->PartName && (StrLen (Loader->Volume->PartName) > 0)) {
+    }
+    else if (Loader->Volume->PartName && (StrLen (Loader->Volume->PartName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->PartName);
     }
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
@@ -2385,7 +2393,8 @@ HideTag (
                 #endif
 
                 RescanAll (FALSE, FALSE);
-            } else {
+            }
+            else {
                 DisplaySimpleMessage (
                     L"Cannot Hide Entry for Manual Boot Stanza",
                     L"You must edit config.conf to remove this entry."

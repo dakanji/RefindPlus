@@ -111,9 +111,11 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
             if (PartName && (StrLen(PartName) > 0) && VolName && (StrLen(VolName) > 0) &&
                 !MyStriCmp(VolName, PartName)) {
                 Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, VolName);
-            } else if (VolName && (StrLen(VolName) > 0)) {
+            }
+            else if (VolName && (StrLen(VolName) > 0)) {
                  Temp = PoolPrint(L"%s - '%s'", GuidStr, VolName);
-            } else {
+            }
+            else {
                 Temp = PoolPrint(L"%s - no name", GuidStr);
             }
             MyFreePool (&GuidStr);
@@ -135,7 +137,8 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
                 MyFreePool (&Temp);
             } // while
         } // if
-    } else {
+    }
+    else {
         DisplaySimpleMessage(L"Information", L"No eligible ESPs found");
     } // if
     return ChosenVolume;
@@ -185,7 +188,8 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
             MyFreePool (NewInfo);
             MyFreePool (FilePtr);
             MyFreePool (Buffer);
-        } else {
+        }
+        else {
             Status = EFI_BUFFER_TOO_SMALL;
         }
     } // if
@@ -427,13 +431,15 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
         ConfFile = PoolPrint(L"%s\\config.conf-sample", SourceDir);
         if (FileExists(SourceVolume->RootDir, ConfFile)) {
             StrCpy(SourceFile, ConfFile);
-        } else {
+        }
+        else {
             SourceFile = PoolPrint(L"%s\\config.conf", SourceDir);
         }
         MyFreePool (ConfFile);
         if (FileExists(TargetDir, L"\\EFI\\refind\\config.conf")) {
             Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\config.conf-sample");
-        } else {
+        }
+        else {
             Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\config.conf");
         }
         MyFreePool (SourceFile);
@@ -599,7 +605,8 @@ static EFI_STATUS ConstructBootEntry(EFI_HANDLE *TargetVolume,
         // the below two lines and adjust Size computation above appropriately.
         // Working += DevPathSize;
         // StrCpy((CHAR16 *)Working, Arguments);
-    } else {
+    }
+    else {
         Status = EFI_OUT_OF_RESOURCES;
     } // if/else
     MyFreePool (DevicePath);
@@ -699,7 +706,8 @@ VOID InstallRefindPlus(VOID) {
         DeleteESPList(AllESPs);
         if (Status == EFI_SUCCESS) {
             DisplaySimpleMessage(L"Information", L"RefindPlus successfully installed");
-        } else {
+        }
+        else {
             DisplaySimpleMessage(L"Warning", L"Problems encountered during installation");
         } // if/else
     } // if
@@ -742,11 +750,13 @@ BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
                 L->NextBootEntry = NULL;
                 if (ListStart == NULL) {
                     ListStart = L;
-                } else {
+                }
+                else {
                     ListEnd->NextBootEntry = L;
                 } // if/else
                 ListEnd = L;
-            } else {
+            }
+            else {
                 Status = EFI_OUT_OF_RESOURCES;
             } // if/else
         } // if
@@ -804,13 +814,15 @@ static UINTN PickOneBootOption(IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOr
                                     Entries->BootEntry.BootNum,
                                     Entries->BootEntry.Label,
                                     Filename, Volume->VolName);
-                } else {
+                }
+                else {
                     Temp = PoolPrint(L"Boot%04x - %s - %s",
                                     Entries->BootEntry.BootNum,
                                     Entries->BootEntry.Label,
                                     Filename);
                 } // if/else
-            } else {
+            }
+            else {
                 Temp = PoolPrint(L"Boot%04x - %s",
                                  Entries->BootEntry.BootNum,
                                  Entries->BootEntry.Label);
@@ -835,7 +847,8 @@ static UINTN PickOneBootOption(IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOr
             *BootOrderNum = ChosenOption->Row;
         }
         MyFreePool (MenuEntryItem);
-    } else {
+    }
+    else {
         DisplaySimpleMessage(L"Information", L"EFI boot order list is unavailable");
     } // if
     return Operation;

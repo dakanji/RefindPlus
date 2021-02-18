@@ -15,6 +15,12 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
+/*
+* Modified for RefindPlus
+* Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+*
+* Modifications distributed under the preceding terms.
+*/
 
 #include "BdsHelper.h"
 #include "legacy.h"
@@ -76,12 +82,14 @@ VOID UpdateBbsTable (BDS_COMMON_OPTION *Option) {
          if (MyStriCmp(Desc, Option->Description)) {
             // This entry exactly matches what we're looking for; make it highest priority
             LocalBbsTable[Idx].BootPriority = 0;
-         } else {
+         }
+         else {
             // This entry doesn't exactly match, but is the right disk type; make it a bit lower
             // in priority. Done mainly as a fallback in case of string-matching weirdness.
             LocalBbsTable[Idx].BootPriority = 1;
          } // if/else
-      } else if (LocalBbsTable[Idx].BootPriority <= 1) {
+      }
+      else if (LocalBbsTable[Idx].BootPriority <= 1) {
          // Something's got a high enough boot priority to interfere with booting
          // our chosen entry, so bump it down a bit....
          LocalBbsTable[Idx].BootPriority = 2;

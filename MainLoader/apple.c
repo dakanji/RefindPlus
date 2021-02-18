@@ -59,13 +59,15 @@ GetCsrStatus (
         if (Status == EFI_SUCCESS) {
             if (CsrLength == 4) {
                 *CsrStatus = *ReturnValue;
-            } else {
+            }
+            else {
                 Status = EFI_BAD_BUFFER_SIZE;
                 gCsrStatus = L" Unknown System Integrity Protection version";
             }
 
             MyFreePool (ReturnValue);
-        } else if (Status == EFI_NOT_FOUND &&
+        }
+        else if (Status == EFI_NOT_FOUND &&
             StriSubCmp (L"Apple", gST->FirmwareVendor)
         ) {
             *CsrStatus = SIP_ENABLED;
@@ -155,7 +157,8 @@ VOID RotateCsrValue (VOID) {
 
         if (ListItem == NULL || ListItem->Next == NULL) {
             TargetCsr = GlobalConfig.CsrValues->Value;
-        } else {
+        }
+        else {
             TargetCsr = ListItem->Next->Value;
         }
 
@@ -169,7 +172,8 @@ VOID RotateCsrValue (VOID) {
 
         if (Status == EFI_SUCCESS) {
             RecordgCsrStatus (TargetCsr, TRUE);
-        } else {
+        }
+        else {
             EG_PIXEL BGColor = COLOR_LIGHTBLUE;
             egDisplayMessage (
                 L"Could Not Set SIP Status",

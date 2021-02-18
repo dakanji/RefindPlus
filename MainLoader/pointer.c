@@ -17,7 +17,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "pointer.h"
 #include "global.h"
@@ -319,17 +325,21 @@ EFI_STATUS pdUpdateState() {
 
             if (TargetX < 0) {
                 State.X = 0;
-            } else if (TargetX >= ScreenW) {
+            }
+            else if (TargetX >= ScreenW) {
                 State.X = ScreenW - 1;
-            } else {
+            }
+            else {
                 State.X = TargetX;
             }
 
             if (TargetY < 0) {
                 State.Y = 0;
-            } else if (TargetY >= ScreenH) {
+            }
+            else if (TargetY >= ScreenH) {
                 State.Y = ScreenH - 1;
-            } else {
+            }
+            else {
                 State.Y = TargetY;
             }
 
