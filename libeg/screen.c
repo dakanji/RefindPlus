@@ -558,6 +558,8 @@ egSetGOPMode (
     return Status;
 }
 
+// On GOP systems, set the maximum available resolution.
+// On UGA systems, just record the current resolution.
 EFI_STATUS
 egSetMaxResolution (
     VOID
@@ -571,25 +573,23 @@ egSetMaxResolution (
     UINT32       MaxMode;
     UINT32       Mode;
     UINTN        SizeOfInfo;
-    CHAR16       *ShowScreenStr = L"Unsupported EFI";
 
-  if (GraphicsOutput == NULL) {
-      SwitchToText (FALSE);
+    if (GraphicsOutput == NULL) {
+        // Cannot do this in text mode or with UGA.
+        // So get and set basic data and ignore.
+        UINT32 Depth, RefreshRate;
 
-      refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-      PrintUglyText (ShowScreenStr, NEXTLINE);
-      refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        Status = refit_call5_wrapper(
+            UGADraw->GetMode, UGADraw,
+            &Width, &Height,
+            &Depth, &RefreshRate
+        );
 
-      #if REFIT_DEBUG > 0
-      MsgLog ("%s\n---------------\n\n", ShowScreenStr);
-      #endif
+        GlobalConfig.RequestedScreenWidth  = Width;
+        GlobalConfig.RequestedScreenHeight = Height;
 
-      HaltForKey();
-      MyFreePool (ShowScreenStr);
-
-      return EFI_UNSUPPORTED;
-  }
-  MyFreePool (ShowScreenStr);
+        return EFI_UNSUPPORTED;
+    }
 
   #if REFIT_DEBUG > 0
   MsgLog ("Set Screen Resolution:\n");
@@ -1197,15 +1197,23 @@ egInitScreen (
             GraphicsOutput = NULL;
         }
         else {
-            egSetMaxResolution();
-            egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
-            egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
             egHasGraphics  = TRUE;
+
+            Status = egSetMaxResolution();
+
+            if (!EFI_ERROR (Status)) {
+                egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
+                egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+            }
+            else {
+                egScreenWidth  = GlobalConfig.RequestedScreenWidth;
+                egScreenHeight = GlobalConfig.RequestedScreenHeight;
+            }
 
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
             if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgLog ("INFO: Implement Graphics Output Protocol ...Success\n\n");
+                MsgLog ("INFO: Implement Graphics Output Protocol ...%r\n\n", Status);
             }
             #endif
         }
