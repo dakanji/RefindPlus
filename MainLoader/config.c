@@ -1184,11 +1184,23 @@ LOADER_ENTRY * AddStanzaEntries (
     REFIT_VOLUME *Volume,
     CHAR16 *Title
 ) {
-   CHAR16       **TokenList;
-   UINTN        TokenCount;
-   LOADER_ENTRY *Entry;
-   BOOLEAN      DefaultsSet = FALSE, AddedSubmenu = FALSE;
-   REFIT_VOLUME *CurrentVolume = Volume;
+    CHAR16        **TokenList;
+    UINTN         TokenCount;
+    BOOLEAN       DefaultsSet    = FALSE;
+    BOOLEAN       AddedSubmenu   = FALSE;
+    LOADER_ENTRY  *Entry;
+    REFIT_VOLUME  *CurrentVolume = Volume;
+
+   // skip disabled stanzas
+   while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
+       if (MyStriCmp (TokenList[0], L"disabled")) {
+           FreeTokenLine (&TokenList, &TokenCount);
+
+           return NULL;
+       }
+
+       FreeTokenLine (&TokenList, &TokenCount);
+   } // while()
 
    // prepare the menu entry
    Entry = InitializeLoaderEntry (NULL);
