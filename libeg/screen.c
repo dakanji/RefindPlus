@@ -277,7 +277,6 @@ egDumpGOPVideoModes (
 
     if (GraphicsOutput == NULL) {
         #if REFIT_DEBUG > 0
-        MsgLog ("\n\n");
         MsgLog ("** WARN: Could not Find GOP Instance\n\n");
         #endif
 
