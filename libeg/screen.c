@@ -273,25 +273,16 @@ egDumpGOPVideoModes (
     UINTN      SizeOfInfo;
     CHAR16     *PixelFormatDesc;
     BOOLEAN    OurValidGOP    = FALSE;
-    CHAR16     *ShowScreenStr = L"Unsupported EFI";
+    CHAR16     *ShowScreenStr = NULL;
 
     if (GraphicsOutput == NULL) {
-        SwitchToText (FALSE);
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: Could not Find GOP Instance\n\n");
         #endif
-
-        HaltForKey();
-        MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
     }
-    MyFreePool (ShowScreenStr);
 
     // get dump
     MaxMode = GraphicsOutput->Mode->MaxMode;
@@ -431,25 +422,10 @@ GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
     EFI_STATUS   Status;
-    CHAR16       *ShowScreenStr = L"Unsupported EFI";
 
     if (GraphicsOutput == NULL) {
-        SwitchToText (FALSE);
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
-        #endif
-
-        HaltForKey();
-        MyFreePool (ShowScreenStr);
-
         return EFI_UNSUPPORTED;
     }
-    MyFreePool (ShowScreenStr);
 
     Status = refit_call2_wrapper(
         GraphicsOutput->SetMode,
@@ -458,7 +434,7 @@ GopSetModeAndReconnectTextOut (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("  - Switch to GOP Mode[%d] ...%r\n", ModeNumber, Status);
+    MsgLog ("  - Switch to GOP Mode[%d] ...%r\n\n", ModeNumber, Status);
     #endif
 
     return Status;
@@ -475,54 +451,31 @@ egSetGOPMode (
     UINTN        SizeOfInfo;
     INT32        Mode;
     UINT32       i = 0;
-    CHAR16       *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Set GOP Mode:\n");
+    MsgLog ("Set GOP Mode:");
     #endif
 
     if (GraphicsOutput == NULL) {
-
-        SwitchToText (FALSE);
-
-        ShowScreenStr = L"Unsupported EFI";
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: Could not Set GOP Mode\n\n");
         #endif
-
-        HaltForKey();
-        SwitchToGraphics();
-        MyFreePool (ShowScreenStr);
 
         return EFI_UNSUPPORTED;
     }
 
     MaxMode = GraphicsOutput->Mode->MaxMode;
-    Mode = GraphicsOutput->Mode->Mode;
+    Mode    = GraphicsOutput->Mode->Mode;
 
 
     if (MaxMode < 1) {
         Status = EFI_UNSUPPORTED;
 
-        SwitchToText (FALSE);
-
-        ShowScreenStr = L"  - Incompatible GPU";
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: Incompatible GPU\n\n");
         #endif
-
-        HaltForKey();
-        MyFreePool (ShowScreenStr);
     }
     else {
         while (EFI_ERROR (Status) && i <= MaxMode) {
@@ -539,6 +492,7 @@ egSetGOPMode (
             );
 
             #if REFIT_DEBUG > 0
+            MsgLog ("\n");
             MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
             #endif
 
@@ -591,84 +545,71 @@ egSetMaxResolution (
         return EFI_UNSUPPORTED;
     }
 
-  #if REFIT_DEBUG > 0
-  MsgLog ("Set Screen Resolution:\n");
-  #endif
+    #if REFIT_DEBUG > 0
+    MsgLog ("Set Screen Resolution:\n");
+    #endif
 
-  MaxMode = GraphicsOutput->Mode->MaxMode;
-  for (Mode = 0; Mode < MaxMode; Mode++) {
-    Status = refit_call4_wrapper(
-        GraphicsOutput->QueryMode,
-        GraphicsOutput,
-        Mode,
-        &SizeOfInfo,
-        &Info
-    );
+    MaxMode = GraphicsOutput->Mode->MaxMode;
+    for (Mode = 0; Mode < MaxMode; Mode++) {
+        Status = refit_call4_wrapper(
+            GraphicsOutput->QueryMode,
+            GraphicsOutput,
+            Mode,
+            &SizeOfInfo,
+            &Info
+        );
 
-    if (!EFI_ERROR (Status)) {
-      if (Width > Info->HorizontalResolution) {
-        continue;
-      }
-      if (Height > Info->VerticalResolution) {
-        continue;
-      }
+        if (!EFI_ERROR (Status)) {
+            if (Width > Info->HorizontalResolution) {
+                continue;
+            }
+            if (Height > Info->VerticalResolution) {
+                continue;
+            }
 
-      BestMode = Mode;
-      Width    = Info->HorizontalResolution;
-      Height   = Info->VerticalResolution;
+            BestMode = Mode;
+            Width    = Info->HorizontalResolution;
+            Height   = Info->VerticalResolution;
+        }
     }
-  }
 
-  #if REFIT_DEBUG > 0
-  MsgLog ("  - BestMode: GOP Mode[%d] @ %dx%d\n", BestMode, Width, Height);
-  #endif
+    #if REFIT_DEBUG > 0
+    MsgLog ("  - BestMode: GOP Mode[%d] @ %dx%d", BestMode, Width, Height);
+    #endif
 
-  // check if requested mode is equal to current mode
-  if (BestMode == GraphicsOutput->Mode->Mode) {
-      Status = EFI_SUCCESS;
+    // check if requested mode is equal to current mode
+    if (BestMode == GraphicsOutput->Mode->Mode) {
+        Status = EFI_SUCCESS;
 
-      #if REFIT_DEBUG > 0
-      MsgLog ("Screen Resolution Already Set\n\n");
-      #endif
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
+        MsgLog ("INFO: Screen Resolution Already Set\n\n");
+        #endif
 
-      egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
-      egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-  }
-  else {
-    Status = GopSetModeAndReconnectTextOut (BestMode);
-    if (!EFI_ERROR (Status)) {
-      egScreenWidth  = Width;
-      egScreenHeight = Height;
-
-      #if REFIT_DEBUG > 0
-      MsgLog ("Screen Resolution Set\n\n", Status);
-      #endif
-
+        egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
+        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
     }
     else {
-      // we can not set BestMode - search for first one that we can
-      SwitchToText (FALSE);
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n");
+        #endif
 
-      ShowScreenStr = L"Could Not Set BestMode ...Seek Useable Mode";
+        Status = GopSetModeAndReconnectTextOut (BestMode);
+        if (!EFI_ERROR (Status)) {
+            egScreenWidth  = Width;
+            egScreenHeight = Height;
+        }
+        else {
+            // we cannot set BestMode - search for first one that we can use
+            Status = egSetGOPMode (1);
 
-      PrintUglyText (ShowScreenStr, NEXTLINE);
-
-      #if REFIT_DEBUG > 0
-      MsgLog ("%s\n", ShowScreenStr);
-      #endif
-
-      PauseForKey();
-      MyFreePool (ShowScreenStr);
-
-      Status = egSetGOPMode (1);
-
-      #if REFIT_DEBUG > 0
-      MsgLog ("  - Mode Seek ...%r\n\n", Status);
-      #endif
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: Could Not Set BestMode ...Using First Useable Mode\n\n");
+            #endif
+        }
     }
-  }
 
-  return Status;
+    return Status;
 }
 
 
@@ -1091,7 +1032,7 @@ egInitScreen (
     }
     else if (!EFI_ERROR (Status) && XFlag != EFI_ALREADY_STARTED) {
         if (OldGOP->Mode->MaxMode > 0) {
-            XFlag = EFI_SUCCESS;
+            XFlag        = EFI_SUCCESS;
             thisValidGOP = TRUE;
 
             // Set GOP to OldGOP
@@ -1191,7 +1132,7 @@ egInitScreen (
 
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Invalid GOP Instance\n\n");
+            MsgLog ("** WARN: Invalid GOP Instance\n\n");
             #endif
 
             GraphicsOutput = NULL;
@@ -1236,25 +1177,25 @@ egInitScreen (
                 &Depth, &RefreshRate
             );
 
-            if (EFI_ERROR (Status)) {
+            if (!EFI_ERROR (Status)) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("INFO: GOP not Available\n");
+                MsgLog ("      Fall Back on UGA\n\n");
+                #endif
+
+                egHasGraphics  = TRUE;
+                egScreenWidth  = GlobalConfig.RequestedScreenWidth  = Width;
+                egScreenHeight = GlobalConfig.RequestedScreenHeight = Height;
+            }
+            else {
                 // Graphics not available
-                UGADraw = NULL;
+                UGADraw               = NULL;
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("INFO: Graphics not Available\n");
                 MsgLog ("      Fall Back on Text Mode\n\n");
                 #endif
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("INFO: GOP not Available\n");
-                MsgLog ("      Fall Back on UGA\n\n");
-                #endif
-
-                egScreenWidth  = Width;
-                egScreenHeight = Height;
-                egHasGraphics  = TRUE;
             }
         }
     }
