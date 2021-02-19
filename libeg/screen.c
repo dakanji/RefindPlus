@@ -272,8 +272,8 @@ egDumpGOPVideoModes (
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
     CHAR16     *PixelFormatDesc;
-    BOOLEAN    OurValidGOP    = FALSE;
-    CHAR16     *ShowScreenStr = NULL;
+    BOOLEAN    OurValidGOP = FALSE;
+
 
     if (GraphicsOutput == NULL) {
         #if REFIT_DEBUG > 0
