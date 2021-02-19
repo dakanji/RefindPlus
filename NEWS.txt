@@ -9,6 +9,9 @@
   * To be borne in mind for changes if such reports are received
   * Still accepts upstream config files including the new 'Max' resolution option (which is disregarded)
   * All other upstream options incoporated including rebooting into firmware efi and the new manual stanza options
+- Fixes Potential GNUEFI Build Failure
+  * The feature that provides Strict UEFI 2.x GOP has only ever worked on versions compiled with Tianocore.
+  * Now takes steps to prevent build failures on GNUEFI which might not find linked Tianocore resources.
 - No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
   * Previously saved settings to Hardware NVRAM when Emulated NVRAM was not writable
   * This condition affected HFS+ setups and was implemented to help such users out
