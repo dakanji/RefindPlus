@@ -2,7 +2,7 @@
  * AmendSysTable.c
  * Amends the SystemTable to provide CreateEventEx and a UEFI 2 Revision Number
  *
- * Copyright (c) 2020 Dayo Akanji (dakanji@users.sourceforge.net)
+ * Copyright (c) 2020 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2020 Joe van Tunen (joevt@shaw.ca)
  * Portions Copyright (c) 2004-2008 The Intel Corporation
  *

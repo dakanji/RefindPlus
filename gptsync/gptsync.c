@@ -36,7 +36,7 @@
 /* Changes copyright (c) 2013 Roderick W. Smith */
 /*
 * Modified for RefindPlus
-* Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+* Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
 *
 * Modifications distributed under the preceding terms.
 */

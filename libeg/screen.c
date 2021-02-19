@@ -42,12 +42,12 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (dakanji@users.sourceforge.net)
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
 
-// July 2020: Extensively modiied by dakanji (dakanji@users.sourceforge.net)
+// July 2020: Extensively modiied by dakanji (sf.net/u/dakanji/profile)
 #include "libegint.h"
 #include "../MainLoader/screen.h"
 #include "../MainLoader/global.h"
