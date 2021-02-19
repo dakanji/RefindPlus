@@ -222,7 +222,7 @@ extern EFI_GUID RSA2048_GUID;
 extern EFI_GUID PKCS7_GUID;
 extern EFI_GUID EFI_CERT_SHA256_GUID;
 
-extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput;
+extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 //
 // misc functions
@@ -629,9 +629,9 @@ OpenProtocolEx (
 
     if (Status == EFI_UNSUPPORTED) {
         if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
-            if (GraphicsOutput != NULL) {
+            if (GOPDraw != NULL) {
                 Status     = EFI_SUCCESS;
-                *Interface = GraphicsOutput;
+                *Interface = GOPDraw;
             }
             else {
                 Status = refit_call5_wrapper(
@@ -667,7 +667,7 @@ OpenProtocolEx (
                 if (EFI_ERROR (Status) || *Interface == NULL) {
                     Status = EFI_UNSUPPORTED;
                 }
-            } // If GraphicsOutput != NULL
+            } // If GOPDraw != NULL
         } // if GuidsAreEqual
 
         MyFreePool (HandleBuffer);

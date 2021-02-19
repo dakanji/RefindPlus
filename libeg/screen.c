@@ -69,11 +69,11 @@
 // Console defines and variables
 static EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 static EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
-static EFI_GUID GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+static EFI_GUID GOPDrawProtocolGuid        = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 
 EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
-EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
+EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw        = NULL;
 
 static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
@@ -123,14 +123,14 @@ daCheckAltGop (
     Status  = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
-        &GraphicsOutputProtocolGuid,
+        &GOPDrawProtocolGuid,
         (VOID **) &OrigGop
     );
 
     if (EFI_ERROR (Status)) {
         Status = refit_call3_wrapper(
             gBS->LocateProtocol,
-            &GraphicsOutputProtocolGuid,
+            &GOPDrawProtocolGuid,
             NULL,
             (VOID **) &Gop
         );
@@ -141,7 +141,7 @@ daCheckAltGop (
             MsgLog ("INFO: Usable GOP Exists on ConsoleOut Handle\n\n");
             #endif
 
-            GraphicsOutput = OrigGop;
+            GOPDraw = OrigGop;
 
             return EFI_ALREADY_STARTED;
         }
@@ -149,7 +149,7 @@ daCheckAltGop (
         Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
-            &GraphicsOutputProtocolGuid,
+            &GOPDrawProtocolGuid,
             NULL,
             &HandleCount,
             &HandleBuffer
@@ -183,7 +183,7 @@ daCheckAltGop (
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
-                    &GraphicsOutputProtocolGuid,
+                    &GOPDrawProtocolGuid,
                     (VOID **) &Gop
                 );
 
@@ -275,7 +275,7 @@ egDumpGOPVideoModes (
     BOOLEAN    OurValidGOP = FALSE;
 
 
-    if (GraphicsOutput == NULL) {
+    if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
         MsgLog ("** WARN: Could not Find GOP Instance\n\n");
         #endif
@@ -284,9 +284,9 @@ egDumpGOPVideoModes (
     }
 
     // get dump
-    MaxMode = GraphicsOutput->Mode->MaxMode;
+    MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
-        Mode = GraphicsOutput->Mode->Mode;
+        Mode = GOPDraw->Mode->Mode;
         NumModes = (INT32)MaxMode + 1;
         if (MaxMode == 0) {
             ModeCount = NumModes;
@@ -300,8 +300,8 @@ egDumpGOPVideoModes (
         MsgLog (
             "Query GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx):\n",
             ModeCount,
-            GraphicsOutput->Mode->FrameBufferBase,
-            GraphicsOutput->Mode->FrameBufferBase + GraphicsOutput->Mode->FrameBufferSize
+            GOPDraw->Mode->FrameBufferBase,
+            GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
         #endif
 
@@ -312,8 +312,8 @@ egDumpGOPVideoModes (
             }
 
             Status = refit_call4_wrapper(
-                GraphicsOutput->QueryMode,
-                GraphicsOutput,
+                GOPDraw->QueryMode,
+                GOPDraw,
                 Mode,
                 &SizeOfInfo,
                 &Info
@@ -422,13 +422,13 @@ GopSetModeAndReconnectTextOut (
 ) {
     EFI_STATUS   Status;
 
-    if (GraphicsOutput == NULL) {
+    if (GOPDraw == NULL) {
         return EFI_UNSUPPORTED;
     }
 
     Status = refit_call2_wrapper(
-        GraphicsOutput->SetMode,
-        GraphicsOutput,
+        GOPDraw->SetMode,
+        GOPDraw,
         ModeNumber
     );
 
@@ -455,7 +455,7 @@ egSetGOPMode (
     MsgLog ("Set GOP Mode:");
     #endif
 
-    if (GraphicsOutput == NULL) {
+    if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
         MsgLog ("** WARN: Could not Set GOP Mode\n\n");
@@ -464,8 +464,8 @@ egSetGOPMode (
         return EFI_UNSUPPORTED;
     }
 
-    MaxMode = GraphicsOutput->Mode->MaxMode;
-    Mode    = GraphicsOutput->Mode->Mode;
+    MaxMode = GOPDraw->Mode->MaxMode;
+    Mode    = GOPDraw->Mode->Mode;
 
 
     if (MaxMode < 1) {
@@ -483,8 +483,8 @@ egSetGOPMode (
             Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
 
             Status = refit_call4_wrapper(
-                GraphicsOutput->QueryMode,
-                GraphicsOutput,
+                GOPDraw->QueryMode,
+                GOPDraw,
                 (UINT32)Mode,
                 &SizeOfInfo,
                 &Info
@@ -499,8 +499,8 @@ egSetGOPMode (
                 Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
 
                 if (!EFI_ERROR (Status)) {
-                    egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
-                    egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+                    egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
+                    egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
                 }
             }
 
@@ -527,7 +527,7 @@ egSetMaxResolution (
     UINT32       Mode;
     UINTN        SizeOfInfo;
 
-    if (GraphicsOutput == NULL) {
+    if (GOPDraw == NULL) {
         // Cannot do this in text mode or with UGA.
         // So get and set basic data and ignore.
         UINT32 Depth, RefreshRate;
@@ -548,11 +548,11 @@ egSetMaxResolution (
     MsgLog ("Set Screen Resolution:\n");
     #endif
 
-    MaxMode = GraphicsOutput->Mode->MaxMode;
+    MaxMode = GOPDraw->Mode->MaxMode;
     for (Mode = 0; Mode < MaxMode; Mode++) {
         Status = refit_call4_wrapper(
-            GraphicsOutput->QueryMode,
-            GraphicsOutput,
+            GOPDraw->QueryMode,
+            GOPDraw,
             Mode,
             &SizeOfInfo,
             &Info
@@ -577,7 +577,7 @@ egSetMaxResolution (
     #endif
 
     // check if requested mode is equal to current mode
-    if (BestMode == GraphicsOutput->Mode->Mode) {
+    if (BestMode == GOPDraw->Mode->Mode) {
         Status = EFI_SUCCESS;
 
         #if REFIT_DEBUG > 0
@@ -585,8 +585,8 @@ egSetMaxResolution (
         MsgLog ("INFO: Screen Resolution Already Set\n\n");
         #endif
 
-        egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
-        egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+        egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
+        egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
     }
     else {
         #if REFIT_DEBUG > 0
@@ -619,7 +619,7 @@ egSetMaxResolution (
 // Make the necessary system calls to identify the current graphics mode.
 // Stores the results in the file-global variables egScreenWidth,
 // egScreenHeight, and egHasGraphics. The first two of these will be
-// unchanged if neither GraphicsOutput nor UGADraw is a valid pointer.
+// unchanged if neither GOPDraw nor UGADraw is a valid pointer.
 static
 VOID
 egDetermineScreenSize (
@@ -633,9 +633,9 @@ egDetermineScreenSize (
 
     // get screen size
     egHasGraphics = FALSE;
-    if (GraphicsOutput != NULL) {
-        egScreenWidth   = GraphicsOutput->Mode->Info->HorizontalResolution;
-        egScreenHeight  = GraphicsOutput->Mode->Info->VerticalResolution;
+    if (GOPDraw != NULL) {
+        egScreenWidth   = GOPDraw->Mode->Info->HorizontalResolution;
+        egScreenHeight  = GOPDraw->Mode->Info->VerticalResolution;
         egHasGraphics   = TRUE;
     }
     else if (UGADraw != NULL) {
@@ -894,8 +894,8 @@ egInitScreen (
         #endif
     }
 
-    // Get GraphicsOutput Protocol
-    GraphicsOutput = NULL;
+    // Get GOPDraw Protocol
+    GOPDraw = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("  - Seek Graphics Output Protocol\n");
@@ -905,7 +905,7 @@ egInitScreen (
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
-        &GraphicsOutputProtocolGuid,
+        &GOPDrawProtocolGuid,
         (VOID **) &OldGOP
     );
 
@@ -918,7 +918,7 @@ egInitScreen (
         Status = refit_call5_wrapper(
             gBS->LocateHandleBuffer,
             ByProtocol,
-            &GraphicsOutputProtocolGuid,
+            &GOPDrawProtocolGuid,
             NULL,
             &HandleCount,
             &HandleBuffer
@@ -942,7 +942,7 @@ egInitScreen (
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
-                    &GraphicsOutputProtocolGuid,
+                    &GOPDrawProtocolGuid,
                     (VOID*) &OldGOP
                 );
 
@@ -994,7 +994,7 @@ egInitScreen (
             // try locating directly
             Status = refit_call3_wrapper(
                 gBS->LocateProtocol,
-                &GraphicsOutputProtocolGuid,
+                &GOPDrawProtocolGuid,
                 NULL,
                 (VOID*) &OldGOP
             );
@@ -1035,7 +1035,7 @@ egInitScreen (
             thisValidGOP = TRUE;
 
             // Set GOP to OldGOP
-            GraphicsOutput = OldGOP;
+            GOPDraw = OldGOP;
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Assess Graphics Output Protocol ...ok\n\n");
@@ -1057,8 +1057,8 @@ egInitScreen (
                     if (!EFI_ERROR (Status)) {
                         Status = gBS->HandleProtocol (
                             gST->ConsoleOutHandle,
-                            &GraphicsOutputProtocolGuid,
-                            (VOID **) &GraphicsOutput
+                            &GOPDrawProtocolGuid,
+                            (VOID **) &GOPDraw
                         );
                     }
                 }
@@ -1071,13 +1071,13 @@ egInitScreen (
             XFlag  = EFI_LOAD_ERROR;
         }
 
-        if (GraphicsOutput == NULL) {
+        if (GOPDraw == NULL) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Cannot Implement Direct GOP Renderer\n\n");
             #endif
         }
         else {
-            if (GraphicsOutput->Mode->Info->PixelFormat == PixelBltOnly) {
+            if (GOPDraw->Mode->Info->PixelFormat == PixelBltOnly) {
                 Status = EFI_UNSUPPORTED;
             }
             else {
@@ -1089,7 +1089,7 @@ egInitScreen (
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
                     gST->ConsoleOutHandle,
-                    &GraphicsOutputProtocolGuid,
+                    &GOPDrawProtocolGuid,
                     (VOID **) &OldGOP
                 );
                 if (EFI_ERROR (Status)) {
@@ -1097,7 +1097,7 @@ egInitScreen (
                 }
                 else {
                     if (OldGOP->Mode->MaxMode > 0) {
-                        GraphicsOutput = OldGOP;
+                        GOPDraw = OldGOP;
                         XFlag = EFI_ALREADY_STARTED;
                     }
                 }
@@ -1126,7 +1126,7 @@ egInitScreen (
 
     // Get Screen Size
     egHasGraphics = FALSE;
-    if (GraphicsOutput != NULL) {
+    if (GOPDraw != NULL) {
         Status = egDumpGOPVideoModes();
 
         if (EFI_ERROR (Status)) {
@@ -1134,7 +1134,7 @@ egInitScreen (
             MsgLog ("** WARN: Invalid GOP Instance\n\n");
             #endif
 
-            GraphicsOutput = NULL;
+            GOPDraw = NULL;
         }
         else {
             egHasGraphics  = TRUE;
@@ -1142,8 +1142,8 @@ egInitScreen (
             Status = egSetMaxResolution();
 
             if (!EFI_ERROR (Status)) {
-                egScreenWidth  = GraphicsOutput->Mode->Info->HorizontalResolution;
-                egScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
+                egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
+                egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
             }
             else {
                 egScreenWidth  = GlobalConfig.RequestedScreenWidth;
@@ -1168,7 +1168,7 @@ egInitScreen (
             #endif
         }
 
-        if (GraphicsOutput == NULL) {
+        if (GOPDraw == NULL) {
             UINT32 Width, Height, Depth, RefreshRate;
             Status = refit_call5_wrapper(
                 UGADraw->GetMode, UGADraw,
@@ -1199,7 +1199,7 @@ egInitScreen (
         }
     }
 
-    if (GraphicsOutput != NULL &&
+    if ((GOPDraw != NULL) &&
         (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
     ) {
         // Implement Text Renderer
@@ -1232,10 +1232,10 @@ egGetResFromMode (
    EFI_STATUS                            Status;
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
-   if ((ModeWidth != NULL) && (Height != NULL) && GraphicsOutput) {
+   if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
       Status = refit_call4_wrapper(
-          GraphicsOutput->QueryMode,
-          GraphicsOutput,
+          GOPDraw->QueryMode,
+          GOPDraw,
           *ModeWidth,
           &Size,
           &Info
@@ -1302,12 +1302,12 @@ egSetScreenSize (
         return FALSE;
     }
 
-    if (GraphicsOutput != NULL) {
+    if (GOPDraw != NULL) {
         // GOP mode (UEFI)
-        CurrentModeNum = GraphicsOutput->Mode->Mode;
+        CurrentModeNum = GOPDraw->Mode->Mode;
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - GraphicsOutput Object Found ...Current Mode = %d\n", CurrentModeNum);
+        MsgLog ("  - GOPDraw Object Found ...Current Mode = %d\n", CurrentModeNum);
         #endif
 
         if (*ScreenHeight == 0) {
@@ -1322,8 +1322,8 @@ egSetScreenSize (
             }
             else if (egGetResFromMode (ScreenWidth, ScreenHeight) &&
                 (refit_call2_wrapper(
-                    GraphicsOutput->SetMode,
-                    GraphicsOutput,
+                    GOPDraw->SetMode,
+                    GOPDraw,
                     ModeNum
                 ) == EFI_SUCCESS)
             ) {
@@ -1335,7 +1335,7 @@ egSetScreenSize (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - Could Not Set GraphicsOutput Mode\n\n");
+                MsgLog ("  - Could Not Set GOPDraw Mode\n\n");
                 #endif
             }
             // User specified width & height; must find mode...
@@ -1345,8 +1345,8 @@ egSetScreenSize (
             // and if so, switch to it....
             do {
                 Status = refit_call4_wrapper(
-                    GraphicsOutput->QueryMode,
-                    GraphicsOutput,
+                    GOPDraw->QueryMode,
+                    GOPDraw,
                     ModeNum,
                     &Size,
                     &Info
@@ -1358,23 +1358,23 @@ egSetScreenSize (
                     (Info->VerticalResolution   == *ScreenHeight) &&
                     ((ModeNum == CurrentModeNum) ||
                     (refit_call2_wrapper(
-                        GraphicsOutput->SetMode,
-                        GraphicsOutput,
+                        GOPDraw->SetMode,
+                        GOPDraw,
                         ModeNum
                     ) == EFI_SUCCESS))
                 ) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Mode Set from GraphicsOutput Query\n\n");
+                    MsgLog ("  - Mode Set from GOPDraw Query\n\n");
                     #endif
 
                     ModeSet = TRUE;
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Could Not Set GraphicsOutput Mode\n\n");
+                    MsgLog ("  - Could Not Set GOPDraw Mode\n\n");
                     #endif
                 }
-            } while ((++ModeNum < GraphicsOutput->Mode->MaxMode) && !ModeSet);
+            } while ((++ModeNum < GOPDraw->Mode->MaxMode) && !ModeSet);
         } // if/else
 
         if (ModeSet) {
@@ -1402,8 +1402,8 @@ egSetScreenSize (
                 #endif
 
                 Status = refit_call4_wrapper(
-                    GraphicsOutput->QueryMode,
-                    GraphicsOutput,
+                    GOPDraw->QueryMode,
+                    GOPDraw,
                     ModeNum,
                     &Size,
                     &Info
@@ -1429,7 +1429,7 @@ egSetScreenSize (
 
                 }
                 else {
-                    ShowScreenStr = L"Error : Could Not Query GraphicsOutput Mode";
+                    ShowScreenStr = L"Error : Could Not Query GOPDraw Mode";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1439,7 +1439,7 @@ egSetScreenSize (
                 } // if
 
                 MyFreePool (ShowScreenStr);
-            } while (++ModeNum < GraphicsOutput->Mode->MaxMode);
+            } while (++ModeNum < GOPDraw->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
             MsgLog ("\n\n");
@@ -1449,7 +1449,8 @@ egSetScreenSize (
             SwitchToGraphicsAndClear (TRUE);
         } // if GOP mode (UEFI)
     }
-    else if (UGADraw != NULL) { // UGA mode (EFI 1.x)
+    else if (UGADraw != NULL) {
+        // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
         Status = refit_call5_wrapper(
@@ -1467,9 +1468,9 @@ egSetScreenSize (
         *ScreenHeight = (UINTN) ScreenH;
 
         if (!EFI_ERROR (Status)) {
+            ModeSet        = TRUE;
             egScreenWidth  = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
-            ModeSet = TRUE;
         }
         else {
             // TODO: Find a list of supported modes and display it.
@@ -1603,7 +1604,7 @@ egScreenDescription (
     }
 
     if (egHasGraphics) {
-        if (GraphicsOutput != NULL) {
+        if (GOPDraw != NULL) {
             SPrint (GraphicsInfo, 255,
                 L"Graphics Output Protocol (UEFI 2.x): %dx%d",
                 egScreenWidth, egScreenHeight
@@ -1746,17 +1747,16 @@ egClearScreen (
     }
     FillColor.Reserved = 0;
 
-    if (GraphicsOutput != NULL) {
+    if (GOPDraw != NULL) {
         // EFI_GRAPHICS_OUTPUT_BLT_PIXEL and EFI_UGA_PIXEL have the same
         // layout, and the header from TianoCore actually defines them
         // to be the same type.
         refit_call10_wrapper(
-            GraphicsOutput->Blt, GraphicsOutput,
+            GOPDraw->Blt, GOPDraw,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) &FillColor,
              EfiBltVideoFill,
              0, 0, 0, 0,
-             egScreenWidth, egScreenHeight,
-             0
+             egScreenWidth, egScreenHeight, 0
          );
     }
     else if (UGADraw != NULL) {
@@ -1765,8 +1765,7 @@ egClearScreen (
             &FillColor,
             EfiUgaVideoFill,
             0, 0, 0, 0,
-            egScreenWidth, egScreenHeight,
-            0
+            egScreenWidth, egScreenHeight, 0
         );
     }
 }
@@ -1817,15 +1816,14 @@ egDrawImage (
        egComposeImage (CompImage, Image, 0, 0);
     }
 
-    if (GraphicsOutput != NULL) {
+    if (GOPDraw != NULL) {
         refit_call10_wrapper(
-            GraphicsOutput->Blt, GraphicsOutput,
+            GOPDraw->Blt, GOPDraw,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) CompImage->PixelData,
             EfiBltBufferToVideo,
             0, 0,
             ScreenPosX, ScreenPosY,
-            CompImage->Width, CompImage->Height,
-            0
+            CompImage->Width, CompImage->Height, 0
         );
     }
     else if (UGADraw != NULL) {
@@ -1835,8 +1833,7 @@ egDrawImage (
             EfiUgaBltBufferToVideo,
             0, 0,
             ScreenPosX, ScreenPosY,
-            CompImage->Width, CompImage->Height,
-            0
+            CompImage->Width, CompImage->Height, 0
         );
     }
     if ((CompImage != GlobalConfig.ScreenBackground) && (CompImage != Image)) {
@@ -1897,9 +1894,9 @@ egDrawImageArea (
         return;
     }
 
-    if (GraphicsOutput != NULL) {
+    if (GOPDraw != NULL) {
         refit_call10_wrapper(
-            GraphicsOutput->Blt, GraphicsOutput,
+            GOPDraw->Blt, GOPDraw,
             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
             EfiBltBufferToVideo,
             AreaPosX, AreaPosY,
@@ -1997,26 +1994,24 @@ EG_IMAGE * egCopyScreenArea (
    }
 
    // get full screen image
-   if (GraphicsOutput != NULL) {
+   if (GOPDraw != NULL) {
        refit_call10_wrapper(
-           GraphicsOutput->Blt, GraphicsOutput,
-           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+           GOPDraw->Blt, GOPDraw,
+           (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) Image->PixelData,
            EfiBltVideoToBltBuffer,
            XPos, YPos,
            0, 0,
-           Image->Width, Image->Height,
-           0
+           Image->Width, Image->Height, 0
        );
    }
    else if (UGADraw != NULL) {
        refit_call10_wrapper(
            UGADraw->Blt, UGADraw,
-           (EFI_UGA_PIXEL *)Image->PixelData,
+           (EFI_UGA_PIXEL *) Image->PixelData,
            EfiUgaVideoToBltBuffer,
            XPos, YPos,
            0, 0,
-           Image->Width, Image->Height,
-           0
+           Image->Width, Image->Height, 0
        );
    }
 
