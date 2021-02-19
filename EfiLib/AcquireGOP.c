@@ -10,6 +10,21 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
+#ifdef __MAKEWITH_GNUEFI
+
+/**
+  @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
+**/
+EFI_STATUS
+AcquireGOP (
+    VOID
+) {
+    // NOOP if not compiled using EDK II
+    return EFI_INCOMPATIBLE_VERSION;
+}
+
+#else
+
 #include "Platform.h"
 #include "../MainLoader/lib.h"
 #include "../include/refit_call_wrapper.h"
@@ -18,7 +33,7 @@
 /**
   @param[in] RomBar       The Rom Base address.
   @param[in] RomSize      The Rom size.
-  @param[in] FileName      The file name.
+  @param[in] FileName     The file name.
 
   @retval EFI_SUCCESS             The command completed successfully.
   @retval EFI_INVALID_PARAMETER   Command usage error.
@@ -186,14 +201,15 @@ ReloadPCIROM (
 }
 
 /**
-  @retval EFI_SUCCESS             The command completed successfully.
-  @retval EFI_INVALID_PARAMETER   Command usage error.
-  @retval EFI_UNSUPPORTED         Protocols unsupported.
-  @retval EFI_OUT_OF_RESOURCES    Out of memory.
-  @retval EFI_VOLUME_CORRUPTED    Inconsistent signatures.
-  @retval EFI_PROTOCOL_ERROR      PciIoProtocolGuid not found.
-  @retval EFI_LOAD_ERROR          Failed to get PciIoProtocolGuid handle.
-  @retval Other value             Unknown error.
+  @retval EFI_SUCCESS               The command completed successfully.
+  @retval EFI_INVALID_PARAMETER     Command usage error.
+  @retval EFI_UNSUPPORTED           Protocols unsupported.
+  @retval EFI_OUT_OF_RESOURCES      Out of memory.
+  @retval EFI_VOLUME_CORRUPTED      Inconsistent signatures.
+  @retval EFI_PROTOCOL_ERROR        PciIoProtocolGuid not found.
+  @retval EFI_LOAD_ERROR            Failed to get PciIoProtocolGuid handle.
+  @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
+  @retval Other value               Unknown error.
 **/
 EFI_STATUS
 AcquireGOP (
@@ -266,3 +282,5 @@ AcquireGOP (
 
     return ReturnStatus;
 }
+
+#endif

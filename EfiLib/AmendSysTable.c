@@ -10,6 +10,21 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
+#ifdef __MAKEWITH_GNUEFI
+
+/**
+  @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
+**/
+EFI_STATUS
+AmendSysTable (
+    VOID
+) {
+    // NOOP if not compiled using EDK II
+    return EFI_INCOMPATIBLE_VERSION;
+}
+
+#else
+
 #include "../MainLoader/global.h"
 #include "../include/refit_call_wrapper.h"
 #include "../../MdeModulePkg/Core/Dxe/DxeMain.h"
@@ -452,3 +467,5 @@ AmendSysTable (
 
     return Status;
 }
+
+#endif
