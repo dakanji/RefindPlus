@@ -1190,17 +1190,7 @@ LOADER_ENTRY * AddStanzaEntries (
     BOOLEAN       AddedSubmenu   = FALSE;
     LOADER_ENTRY  *Entry;
     REFIT_VOLUME  *CurrentVolume = Volume;
-
-   // skip disabled stanzas
-   while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
-       if (MyStriCmp (TokenList[0], L"disabled")) {
-           FreeTokenLine (&TokenList, &TokenCount);
-
-           return NULL;
-       }
-
-       FreeTokenLine (&TokenList, &TokenCount);
-   } // while()
+    REFIT_VOLUME  *PreviousVolume;
 
    // prepare the menu entry
    Entry = InitializeLoaderEntry (NULL);
@@ -1233,6 +1223,7 @@ LOADER_ENTRY * AddStanzaEntries (
          DefaultsSet = TRUE;
       }
       else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
+         PreviousVolume = CurrentVolume;
          if (FindVolume (&CurrentVolume, TokenList[1])) {
             if ((CurrentVolume != NULL) &&
                 (CurrentVolume->IsReadable) &&
@@ -1248,8 +1239,12 @@ LOADER_ENTRY * AddStanzaEntries (
                );
                Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
                Entry->Volume        = CurrentVolume;
-            } // if volume is readable
-         } // if match found
+            }
+            else {
+                // It won't work out; reset to previous working volume
+                CurrentVolume = PreviousVolume;
+            } // if/else volume is readable
+        } // if match found
       }
       else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
          MyFreePool (Entry->me.Image);
@@ -1346,7 +1341,7 @@ ScanUserConfigured (
         while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
             if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
-                if (Entry->Enabled) {
+                if ((Entry) && (Entry->Enabled)) {
                     #if REFIT_DEBUG > 0
                     if (Volume->VolName) {
                         VolDesc = StrDuplicate (Volume->VolName);
