@@ -1,11 +1,14 @@
 0.13.0.AA (Pre-Release):
 -----------------------
 - Syncs RefindPlus with Upstream v0.13.0
-  * Limited to items that did not originate from RefindPlus (kept in their original form)
-  * Does not adopt interpretation of video mode detection in the upstream 'MyLibLocateProtocol' function
-  * Maintains default to max screen resolution
-  * However, accepts upstream config files including the new 'Max' option (which is disregarded)
-  * All other upstream options incoporated including rebooting into firmware efi and new manual stanza options
+  * Limited to items that did not originate from RefindPlus (which are kept in their original form)
+  * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection
+  * This was implemented upstream in a new 'MyLibLocateProtocol' function
+  * Maintains the maximum available screen resolution as the default screen resolution
+  * Selected resolutions larger than screen size reported as possibility upstream have not been observed so far
+  * To be borne in mind for changes if such reports are received
+  * Still accepts upstream config files including the new 'Max' resolution option (which is disregarded)
+  * All other upstream options incoporated including rebooting into firmware efi and the new manual stanza options
 - No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
   * Previously saved settings to Hardware NVRAM when Emulated NVRAM was not writable
   * This condition affected HFS+ setups and was implemented to help such users out
