@@ -489,13 +489,17 @@ VOID StartLegacy (
     UINTN           ErrorInStep = 0;
     EFI_DEVICE_PATH *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
+    CHAR16 *ShowScreenStrA = NULL;
+    CHAR16 *ShowScreenStrB = NULL;
+
+
     BeginExternalScreen (TRUE, L"Booting Legacy OS (Mac mode)");
 
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
     if (BootLogoImage != NULL) {
         BltImageAlpha (
             BootLogoImage,
-            (ScreenW  - BootLogoImage->Width ) >> 1,
+            (ScreenW - BootLogoImage->Width ) >> 1,
             (ScreenH - BootLogoImage->Height) >> 1,
             &StdBackgroundPixel
         );
@@ -515,11 +519,46 @@ VOID StartLegacy (
     Status = StartLegacyImageList (DiscoveredPathList, Entry->LoadOptions, &ErrorInStep);
     if (Status == EFI_NOT_FOUND) {
         if (ErrorInStep == 1) {
-            Print (L"\nPlease make sure that you have the latest firmware update installed.\n");
+            SwitchToText (FALSE);
+
+            ShowScreenStrA = L"Please make sure you have the latest firmware update installed.";
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText (ShowScreenStrA, NEXTLINE);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: %s\n\n", ShowScreenStrA);
+            #endif
+
+            PauseForKey();
+            SwitchToGraphics();
+            MyFreePool (ShowScreenStrA);
         }
         else if (ErrorInStep == 3) {
-            Print (L"\nThe firmware refused to boot from the selected volume. Note that external\n"
-                  L"hard drives are not well-supported by Apple's firmware for legacy OS booting.\n");
+            SwitchToText (FALSE);
+
+            ShowScreenStrA = L"The firmware refused to boot from the selected volume.";
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText (ShowScreenStrA, NEXTLINE);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("** WARN: %s\n", ShowScreenStrA);
+            #endif
+
+            ShowScreenStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting.";
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText (ShowScreenStrB, NEXTLINE);
+            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+            #if REFIT_DEBUG > 0
+            MsgLog ("         %s\n\n", ShowScreenStrB);
+            #endif
+
+            PauseForKey();
+            SwitchToGraphics();
+            MyFreePool (ShowScreenStrA);
+            MyFreePool (ShowScreenStrB);
         }
     }
     FinishExternalScreen();
