@@ -171,7 +171,7 @@ SetupScreen (
         MsgLog ("Sync Resolution:\n");
         #endif
 
-       ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth) ? ScreenW : GlobalConfig.RequestedScreenWidth;
+       ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth)  ? ScreenW : GlobalConfig.RequestedScreenWidth;
        ScreenH = (ScreenH < GlobalConfig.RequestedScreenHeight) ? ScreenH : GlobalConfig.RequestedScreenHeight;
     }
 
@@ -253,7 +253,7 @@ SetupScreen (
 
                 GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
-                GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
+                GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
                 GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
             }
             else {

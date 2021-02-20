@@ -742,19 +742,6 @@ egInitScreen (
             }
             FreePool (HandleBuffer);
         }
-        else {
-            // try locating directly
-            Status = refit_call3_wrapper(
-                gBS->LocateProtocol,
-                &ConsoleControlProtocolGuid,
-                NULL,
-                (VOID*) &ConsoleControl
-            );
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("    * Seek Directly ...%r\n", Status);
-            #endif
-        }
     }
 
     if (EFI_ERROR (Status)) {
@@ -868,19 +855,6 @@ egInitScreen (
             }
             FreePool (HandleBuffer);
         }
-        else {
-            // try locating directly
-            Status = refit_call3_wrapper(
-                gBS->LocateProtocol,
-                &UgaDrawProtocolGuid,
-                NULL,
-                (VOID*) &UGADraw
-            );
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("    * Seek Directly ...%r\n", Status);
-            #endif
-        }
     }
 
     if (EFI_ERROR (Status)) {
@@ -991,18 +965,6 @@ egInitScreen (
             FreePool (HandleBuffer);
         }
         else {
-            // try locating directly
-            Status = refit_call3_wrapper(
-                gBS->LocateProtocol,
-                &GOPDrawProtocolGuid,
-                NULL,
-                (VOID*) &OldGOP
-            );
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("    * Seek Directly ...%r\n", Status);
-            #endif
-
             if (EFI_ERROR (Status)) {
                 // Force to NOT FOUND on error as subsequent code relies on this
                 Status = EFI_NOT_FOUND;

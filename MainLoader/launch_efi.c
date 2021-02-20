@@ -309,7 +309,7 @@ StartEFIImage (
         goto bailout_unload;
     }
 
-    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
+    ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
         ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
