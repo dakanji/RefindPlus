@@ -32,6 +32,9 @@
   * Disabled manual stanzas are skipped without being processed
 - Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables
   * Now compares new variables with existing NVRAM variables and does not write if already present.
+- Adds the 'IgnorePreviousBoot' Feature
+  * Provides option not to always save the name of the previously booted loader 
+
 
 
 0.13.0 (15 FEB 2021): UPSTREAM RELEASE

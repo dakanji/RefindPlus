@@ -380,6 +380,7 @@ typedef struct {
    BOOLEAN          EnableTouch;
    BOOLEAN          HiddenTags;
    BOOLEAN          UseNvram;
+   BOOLEAN          IgnorePreviousBoot;
    BOOLEAN          TextRenderer;
    BOOLEAN          UgaPassThrough;
    BOOLEAN          ProvideConsoleGOP;

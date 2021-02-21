@@ -49,6 +49,19 @@
 #
 #use_nvram
 
+# RefindPlus defaults to storing the name of the last booted loader in a
+# 'PreviousBoot' variable in the NVRAM under the RefindPlus GUID. This
+# provides a default option to be selected on the main screen when RefindPlus
+# is loaded. This may increase wear and tear on the motherboard's NVRAM.
+# The 'use_nvram' token can be used to write to the filesystem instead
+# to reduce this, but on some setups, such as when the 'default_selection'
+# token is set, such writes are not required at all. When this option is
+# active, RefindPlus will not exexute such writes at all.
+#
+# Always saves the 'PreviousBoot' variable when commented out
+#
+#ignore_previous_boot
+
 # The SimpleText protocol on the ConsoleOut handle is normally used to
 # output text. On Macs and some other firmware, this is complicated by
 # the ConsoleControl protocol which determines whether to output text,

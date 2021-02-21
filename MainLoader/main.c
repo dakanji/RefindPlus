@@ -124,6 +124,7 @@ REFIT_CONFIG GlobalConfig = {
     /* EnableTouch = */ FALSE,
     /* HiddenTags = */ TRUE,
     /* UseNvram = */ FALSE,
+    /* IgnorePreviousBoot = */ FALSE,
     /* TextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,
@@ -1165,6 +1166,11 @@ VOID StoreLoaderName (
     EFI_STATUS  Status;
     CHAR16      *OldName = NULL;
     UINTN       Length;
+
+    // Do not set if configured not to
+    if (GlobalConfig.IgnorePreviousBoot) {
+        return;
+    }
 
     if (Name) {
         Status = EfivarGetRaw (
