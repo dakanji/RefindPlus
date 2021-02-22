@@ -427,6 +427,8 @@ RebootIntoLoader (
         return;
     }
 
+    StoreLoaderName(Entry->me.Title);
+
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     Print(L"Error calling ResetSystem: %r", Status);
