@@ -160,6 +160,7 @@ REFIT_CONFIG GlobalConfig = {
     },
     /* BannerScale = */ BANNER_NOSCALE,
     /* ScaleUI = */ 0,
+    /* LogLevel = */ 0,
     /* *DiscoveredRoot = */ NULL,
     /* *SelfDevicePath = */ NULL,
     /* *BannerFileName = */ NULL,
@@ -1499,7 +1500,6 @@ efi_main (
         CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     }
     SetConfigFilename (ImageHandle);
-    MokProtocol = SecureBootSetup();
 
     // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
     // however, if drivers are loaded, a second call to ScanVolumes() is needed
@@ -1524,6 +1524,7 @@ efi_main (
     }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
+    MokProtocol = SecureBootSetup();
 
     if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();

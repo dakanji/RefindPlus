@@ -1,6 +1,10 @@
 0.13.0.AA (Pre-Release):
 -----------------------
-- Syncs RefindPlus with Upstream v0.13.0
+- Syncs with Upstream Post v0.13.0 Changes
+  * Fixes bug that can cause issues with disabled manual boot stanza references unreadable volumes
+  * Accounts for new upstream initial logging function (ignored by RefindPlus)
+  * Records EFI-based reboot option in PreviousBoot variable
+- Syncs with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
   * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection
   * This was implemented upstream in a new 'MyLibLocateProtocol' function
@@ -28,12 +32,10 @@
 - Adds 'EnforceAPFS' Feature
   * Allows booting Mac OS Big Sur when SIP is disabled.
   * Allows booting FileVault encrypted volumes directly.
-- Fixes crashes on incompatible but disabled manual stanzas
-  * Disabled manual stanzas are skipped without being processed
 - Attempts to Avoid Hardware NVRAM Writes of Unchanged Variables
   * Now compares new variables with existing NVRAM variables and does not write if already present.
 - Adds the 'IgnorePreviousBoot' Feature
-  * Provides option not to always save the name of the previously booted loader 
+  * Provides option not to always save the name of the previously booted loader
 
 
 

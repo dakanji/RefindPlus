@@ -233,6 +233,10 @@
 #
 #set_mac_boot_args "-v"
 
+# Note: The logging level token below is ignored by RefindPlus
+#
+#log_level 0
+
 
 ##--------------------------------------------------------------##
 ##                STANDARD CONFIGURATION ITEMS                  ##

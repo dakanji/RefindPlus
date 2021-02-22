@@ -55,6 +55,7 @@ BOOLEAN ReplaceSubstring(
     IN     CHAR16 *ReplString
 );
 
+CHAR16 *GetTimeString(VOID);
 CHAR16 *MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
 CHAR16 *FindNumbers(IN CHAR16 *InString);
 CHAR16 * GuidAsString(EFI_GUID *GuidData);

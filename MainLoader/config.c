@@ -763,6 +763,9 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"scan_delay") && (TokenCount == 2)) {
            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
+        else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
+           HandleInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
+        }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
         }

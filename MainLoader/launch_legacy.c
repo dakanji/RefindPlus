@@ -858,11 +858,6 @@ ScanLegacyVolume (
 
     ShowVolume = FALSE;
     HideIfOthersFound = FALSE;
-    //if (Volume->IsAppleLegacy) {
-    //    Print (L"  Volume is Apple legacy\n");
-    //    ShowVolume = TRUE;
-    //    HideIfOthersFound = TRUE;
-    //} else
     if (Volume->HasBootCode) {
         ShowVolume = TRUE;
         if (Volume->BlockIO == Volume->WholeDiskBlockIO &&

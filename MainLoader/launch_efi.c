@@ -355,6 +355,7 @@ bailout:
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware(VOID) {
     CHAR8      *b;
+    CHAR16     *ShowScreenStr = NULL;
     UINTN      size;
     UINT64     osind;
     EFI_STATUS Status;
@@ -389,6 +390,8 @@ EFI_STATUS RebootIntoFirmware(VOID) {
         return Status;
     }
 
+    UninitRefitLib();
+
     refit_call4_wrapper(
         gRT->ResetSystem,
         EfiResetCold,
@@ -397,8 +400,20 @@ EFI_STATUS RebootIntoFirmware(VOID) {
         NULL
     );
 
-    Print(L"Error calling ResetSystem: %r", Status);
+    ReinitRefitLib();
+
+    ShowScreenStr = PoolPrint(L"Error calling ResetSystem ...%r", Status);
+
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    PrintUglyText (ShowScreenStr, NEXTLINE);
+    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("** WARN: %s\n\n", ShowScreenStr);
+    #endif
+
     PauseForKey();
+    MyFreePool (ShowScreenStr);
 
     return Status;
 } // EFI_STATUS RebootIntoFirmware()
@@ -419,7 +434,7 @@ RebootIntoLoader (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot Into Loader ...%r\n\n", Status);
+    MsgLog ("INFO: Reboot Into EFI Loader ...%r\n\n", Status);
     #endif
 
     if (EFI_ERROR(Status)) {

@@ -400,6 +400,8 @@ EFI_STATUS
 ReinitRefitLib (
     VOID
 ) {
+    EFI_STATUS Status;
+
     ReinitVolumes();
 
     if ((gST->Hdr.Revision >> 16) == 1) {
@@ -421,7 +423,9 @@ ReinitRefitLib (
        }
     } // if
 
-    return FinishInitRefitLib();
+    Status = FinishInitRefitLib();
+    
+    return Status;
 }
 
 //

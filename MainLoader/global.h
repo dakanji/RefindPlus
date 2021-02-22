@@ -411,6 +411,7 @@ typedef struct {
    UINTN            IconSizes[4];
    UINTN            BannerScale;
    UINTN            ScaleUI;
+   UINTN            LogLevel;
    REFIT_VOLUME     *DiscoveredRoot;
    EFI_DEVICE_PATH  *SelfDevicePath;
    CHAR16           *BannerFileName;

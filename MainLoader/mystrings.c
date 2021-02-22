@@ -18,6 +18,8 @@
 #include "mystrings.h"
 #include "lib.h"
 #include "screen.h"
+#include "../include/refit_call_wrapper.h"
+
 
 BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
     BOOLEAN Found = 0, Terminate = 0;
@@ -635,6 +637,29 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 
     return Guid;
 } // EFI_GUID StringAsGuid()
+
+// Returns the current time as a string in 24-hour format; e.g., 14:03:17.
+// Discards date portion, since for our purposes, we really don't care.
+// Calling function is responsible for releasing returned string.
+CHAR16 *GetTimeString(VOID) {
+    CHAR16  *TimeStr = NULL;
+    EFI_TIME CurrentTime;
+    EFI_STATUS Status = EFI_SUCCESS;
+
+    Status = refit_call2_wrapper(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
+    if (EFI_ERROR(Status)) {
+        TimeStr = PoolPrint(L"unknown time");
+    }
+    else {
+        TimeStr = PoolPrint(
+            L"%02d:%02d:%02d",
+            CurrentTime.Hour,
+            CurrentTime.Minute,
+            CurrentTime.Second
+        );
+    }
+    return TimeStr;
+} // CHAR16 *GetTimeString()
 
 // Delete the STRING_LIST pointed to by *StringList.
 VOID DeleteStringList(STRING_LIST *StringList) {
