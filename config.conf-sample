@@ -5,35 +5,10 @@
 
 ##--------------------------------------------------------------##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
-##         Features Provided or Extended by RefindPlus          ##
+##          Features Provided or Amended by RefindPlus          ##
 ##--------------------------------------------------------------##
 #
 #
-# Set the CSR values for Apple's System Integrity Protection (SIP) feature.
-# Values are hexadecimal numbers that define which specific security features
-# are enabled. Below are the codes for what the values mean. Add them up (in hex)
-# to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
-# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
-# further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
-# or later, on unsupported Macs but should be used with caution.
-#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
-#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
-#   CSR_ALLOW_TASK_FOR_PID                  0x0004
-#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
-#   CSR_ALLOW_APPLE_INTERNAL                0x0010
-#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
-#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
-#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
-#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
-#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
-#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
-#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
-#
-# Inactive when commented out (CSR values for SIP cannot be set)
-#
-#csr_values 10,77
-
 # While using NVRAM works with most computers, this increases wear
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may not work and may lead to an inability to boot.
@@ -48,6 +23,24 @@
 # Stores RefindPlus variables in the "vars" subdirectory when commented out
 #
 #use_nvram
+
+# Set the screen's video resolution. Pass this option either:
+#  * two values, corresponding to the X and Y resolutions
+#  * one value, corresponding to a GOP (UEFI) video mode
+# Note that not all resolutions are supported. On UEFI systems, passing
+# an incorrect value results in a message being shown on the screen to
+# that effect, along with a list of supported modes. On EFI 1.x systems
+# (e.g., Macintoshes), setting an incorrect mode silently fails. On both
+# types of systems, setting an incorrect resolution results in the default
+# resolution being used. A resolution of 1024x768 usually works, but higher
+# values often do not.
+#
+# Uses the system default, usually 800x600, when commented out
+#
+#resolution 1024 768
+#resolution 1440 900
+#resolution 3
+#resolution max
 
 # RefindPlus defaults to storing the name of the last booted loader in a
 # 'PreviousBoot' variable in the NVRAM under the RefindPlus GUID. This
@@ -393,24 +386,6 @@ timeout 20
 # Uses 1024 when commented out
 #
 #textmode 2
-
-# Set the screen's video resolution. Pass this option either:
-#  * two values, corresponding to the X and Y resolutions
-#  * one value, corresponding to a GOP (UEFI) video mode
-# Note that not all resolutions are supported. On UEFI systems, passing
-# an incorrect value results in a message being shown on the screen to
-# that effect, along with a list of supported modes. On EFI 1.x systems
-# (e.g., Macintoshes), setting an incorrect mode silently fails. On both
-# types of systems, setting an incorrect resolution results in the default
-# resolution being used. A resolution of 1024x768 usually works, but higher
-# values often do not.
-#
-# Uses the system default, usually 800x600, when commented out
-#
-#resolution 1024 768
-#resolution 1440 900
-#resolution 3
-#resolution max
 
 # Enable touch screen support. If active, this feature enables use of
 # touch screen controls (as on tablets). Note, however, that not all
@@ -789,6 +764,31 @@ timeout 20
 # Inactive when commented out (No Mac OS spoofing is done)
 #
 #spoof_osx_version 10.9
+
+# Set the CSR values for Apple's System Integrity Protection (SIP) feature.
+# Values are hexadecimal numbers that define which specific security features
+# are enabled. Below are the codes for what the values mean. Add them up (in hex)
+# to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
+# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
+# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
+# further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
+# or later, on unsupported Macs but should be used with caution.
+#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
+#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
+#   CSR_ALLOW_TASK_FOR_PID                  0x0004
+#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
+#   CSR_ALLOW_APPLE_INTERNAL                0x0010
+#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
+#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
+#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
+#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
+#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
+#
+# Inactive when commented out (CSR values for SIP cannot be set)
+#
+#csr_values 10,77
 
 # Sample manual configuration stanzas. Each begins with the "menuentry"
 # keyword followed by a name that is to appear in the menu (use quotes
