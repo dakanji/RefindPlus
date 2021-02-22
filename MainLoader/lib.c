@@ -424,7 +424,7 @@ ReinitRefitLib (
     } // if
 
     Status = FinishInitRefitLib();
-    
+
     return Status;
 }
 
@@ -464,9 +464,9 @@ EfivarGetRaw (
             Status = egLoadFile (VarsDir, name, &buf, size);
             ReadFromNvram = FALSE;
         }
-        else {
+        else if (Status != EFI_NOT_FOUND) {
             #if REFIT_DEBUG > 0
-            if (ScanningLoaders) {
+            if (ScanningLoaders && LogNewLine) {
                 LogNewLine = FALSE;
                 MsgLog ("\n");
             }
@@ -1572,10 +1572,10 @@ SetPrebootVolumes (
 
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Map APFS Volumes to PreBoot:");
+        MsgLog ("ReMap APFS Volumes:");
         #endif
         for (i = 0; i < VolumesCount; i++) {
-            SwapName = SetPreBootNames(Volumes[i]);
+            SwapName = SetPreBootNames (Volumes[i]);
             if (SwapName) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("\n");
