@@ -712,6 +712,15 @@ timeout 20
 #
 #extra_kernel_version_strings linux-lts,linux
 
+# Write to systemd EFI variables (currently only LoaderDevicePartUUID) when
+# launching Linux via an EFI stub loader, ELILO, or GRUB. This variable,
+# when present, causes systemd to mount the ESP at /boot *IF* that
+# directory is empty and nothing else is mounted there.
+#
+# Inactive when commented out (No write to systemd EFI variables)
+#
+#write_systemd_vars
+
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, RefindPlus shows
 # a subset in a scrolling list. If this value is set too high for the

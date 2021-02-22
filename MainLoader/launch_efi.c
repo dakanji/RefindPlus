@@ -195,13 +195,17 @@ StartEFIImage (
     IN BOOLEAN       Verbose,
     IN BOOLEAN       IsDriver
 ) {
-    EFI_STATUS              Status, ReturnStatus;
-    EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
+    EFI_STATUS              Status;
+    EFI_STATUS              ReturnStatus;
+    EFI_HANDLE              ChildImageHandle;
+    EFI_HANDLE              ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
+    EFI_GUID                SystemdGuid       = SYSTEMD_GUID_VALUE;
     CHAR16                  *FullLoadOptions  = NULL;
     CHAR16                  *ShowScreenStr    = NULL;
     CHAR16                  ErrorInfo[256];
+    CHAR16                  *EspGUID;
 
     // set load options
     if (LoadOptions != NULL) {
@@ -316,6 +320,33 @@ StartEFIImage (
 
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
+    if ((GlobalConfig.WriteSystemdVars) &&
+        ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
+    ) {
+        // Tell systemd what ESP RefindPlus used
+        EspGUID = GuidAsString(&(SelfVolume->PartGuid));
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Systemd LoaderDevicePartUUID:- '%s'\n\n", EspGUID);
+        #endif
+
+        Status = EfivarSetRaw(
+            &SystemdGuid,
+            L"LoaderDevicePartUUID",
+            (CHAR8 *) EspGUID,
+            StrLen(EspGUID) * 2 + 2,
+            TRUE
+        );
+
+        Status = EFI_LOAD_ERROR;
+        #if REFIT_DEBUG > 0
+        if (EFI_ERROR(Status)) {
+            MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ...%r\n\n", Status);
+        }
+        #endif
+
+        MyFreePool(EspGUID);
+    } // if write systemd EFI variables
 
     // close open file handles
     UninitRefitLib();

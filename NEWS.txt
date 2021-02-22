@@ -1,9 +1,10 @@
 0.13.0.AA (Pre-Release):
 -----------------------
-- Syncs with Upstream Post v0.13.0 Changes
+- Syncs with Upstream Post v0.13.0 Updates
   * Fixes bug that can cause issues with disabled manual boot stanza references unreadable volumes
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
   * Records EFI-based reboot option in PreviousBoot variable
+  * Implement support for setting systemd's LoaderDevicePartUUID EFI variable
 - Syncs with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
   * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection

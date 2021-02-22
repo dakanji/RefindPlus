@@ -243,6 +243,7 @@
 #define HFS_GUID_VALUE         { 0x48465300, 0x0000, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 #define APFS_GUID_VALUE        { 0x7C3457EF, 0x0000, 0x11AA, { 0xAA, 0x11, 0x00, 0x30, 0x65, 0x43, 0xEC, 0xAC } };
 #define MICROSOFT_VENDOR_GUID  { 0x77FA9ABD, 0x0359, 0x4D32, { 0xBD, 0x60, 0x28, 0xF4, 0xE7, 0x8F, 0x78, 0x4B } };
+#define SYSTEMD_GUID_VALUE     { 0x4a67b082, 0x0a4c, 0x41cf, { 0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f } };
 
 // Define EFI Certificate GUIDs. Others are in mok/guid.c
 #define EFI_CERT_SHA1_GUID \
@@ -396,6 +397,7 @@ typedef struct {
    BOOLEAN          AllowDuplicates;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
+   BOOLEAN          WriteSystemdVars;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;

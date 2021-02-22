@@ -140,6 +140,7 @@ REFIT_CONFIG GlobalConfig = {
     /* AllowDuplicates = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
+    /* WriteSystemdVars = */ FALSE,
     /* RequestedScreenWidth = */ 0,
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,
