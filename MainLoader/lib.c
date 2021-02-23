@@ -1873,6 +1873,10 @@ ScanVolumes (
         }
     } // for
 
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: 'AllowDuplicates' is Active\n\n");
+    #endif
+
     if (SelfVolRun && GlobalConfig.EnforceAPFS) {
         SetPrebootVolumes();
     }
