@@ -394,7 +394,7 @@ typedef struct {
    BOOLEAN          SuppressVerboseAPFS;
    BOOLEAN          EnforceAPFS;
    BOOLEAN          ProtectMacNVRAM;
-   BOOLEAN          AllowDuplicates;
+   BOOLEAN          ScanOtherESP;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;
    BOOLEAN          WriteSystemdVars;

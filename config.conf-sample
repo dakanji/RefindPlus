@@ -193,15 +193,12 @@
 #
 #protect_mac_nvram
 
-# Allow scans of volumes with duplicate UUIDs. When this option is active, RefindPlus
-# will make volumes with duplicate UUIDs available for scanning for kernels and loaders.
-# This would however typically result in multiple loaders displayed on the main screen and
-# this option should only be activated for specific configurations that require scanning of
-# duplicates. Specifically, this should NOT be enabled when loaders exist on RAID Arrays.
+# Allow scans of multiple ESPs. When this option is active, RefindPlus will make other ESPs,
+# separate from that containing RefindPlus, available for scanning for kernels and loaders.
 #
-# Inactive when commented out (Does not make volumes with duplicate UUIDs available)
+# Inactive when commented out (Does not make other ESPs available)
 #
-#allow_duplicates
+#scan_other_esp
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.

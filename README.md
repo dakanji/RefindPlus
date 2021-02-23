@@ -30,7 +30,7 @@ Configuration differences between the rEFInd and RefindPlus implementations as a
 - `use_nvram`: Deactivated by default. That is, application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this token.
 - `resolution`: The `max` setting is ignored as the maximum available resolution is automatically used by default by RefindPlus when required.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
-- rEFInd now allows the scanning of other ESPs from that containing the rEFInd loader. The previous behaviour in which these were treated as duplicates was considered an eror and changed. RefindPlus however, prefers the previous behaviour and maintains this. Users are provided an option to override this behaviour in favour of the new rEFInd behaviour by using the RefindPlus-specific `allow-duplicates` token.
+- rEFInd now allows the scanning of other ESPs from that containing the rEFInd loader. The previous behaviour in which these were treated as duplicates was considered an eror and changed. RefindPlus however, prefers the previous behaviour and maintains this. Users are provided an option to override this behaviour in favour of the new rEFInd behaviour by using the RefindPlus-specific `scan_other_esp` token.
 
 A sample RefindPlus configuration file is provided here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
@@ -46,6 +46,7 @@ A sample RefindPlus configuration file is provided here: [config.conf-sample](ht
 - provide_console_gop
 - text_renderer
 - scale_ui
+- scan_other_esp
 - set_mac_boot_args
 - supply_apfs
 - suppress_verbose_apfs

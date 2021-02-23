@@ -1609,6 +1609,8 @@ ScanVolumes (
     UINT8              *SectorBuffer1, *SectorBuffer2;
     EFI_GUID           *UuidList;
     EFI_GUID           GuidNull       = NULL_GUID_VALUE;
+    EFI_GUID           ESPGuid        = ESP_GUID_VALUE;
+
     CHAR16             *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
@@ -1651,10 +1653,9 @@ ScanVolumes (
         AddPartitionTable (Volume);
         ScanVolume (Volume);
 
-        if (GlobalConfig.AllowDuplicates) {
-            if (UuidList) {
-                EFI_GUID ESPGuid = ESP_GUID_VALUE;
-                UuidList[HandleIndex] = Volume->VolUuid;
+        if (UuidList) {
+            UuidList[HandleIndex] = Volume->VolUuid;
+            if (GlobalConfig.ScanOtherESP) {
                 // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
                 // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
                 // normal file systems they are likely to all share the same volume UUID, and it is also
@@ -1664,25 +1665,22 @@ ScanVolumes (
                         (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                         (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
                     ) {
-                        // This is a duplicate filesystem UUID
+                        // This is a duplicate filesystem item
                         Volume->IsReadable = FALSE;
                     } // if
                 } // for
-            } // if UuidList
-        }
-        else {
-            if (UuidList) {
-                UuidList[HandleIndex] = Volume->VolUuid;
+            }
+            else {
                 for (i = 0; i < HandleIndex; i++) {
                     if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                         (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
                     ) {
-                        // Duplicate filesystem UUID
+                        // This is a duplicate filesystem item
                         Volume->IsReadable = FALSE;
                     } // if
                 } // for
-            } // if UuidList
-        } // if/else GlobalConfig.AllowDuplicates
+            } // if/else GlobalConfig.ScanOtherESP
+        } // if UuidList
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
 
@@ -1892,7 +1890,7 @@ ScanVolumes (
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: 'AllowDuplicates' is Active\n\n");
+    MsgLog ("INFO: 'ScanOtherESP' ...Active\n\n");
     #endif
 
     if (SelfVolRun && GlobalConfig.EnforceAPFS) {
