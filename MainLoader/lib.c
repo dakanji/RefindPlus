@@ -1651,20 +1651,38 @@ ScanVolumes (
         AddPartitionTable (Volume);
         ScanVolume (Volume);
 
-        if (!GlobalConfig.AllowDuplicates) {
+        if (GlobalConfig.AllowDuplicates) {
             if (UuidList) {
-               UuidList[HandleIndex] = Volume->VolUuid;
-               for (i = 0; i < HandleIndex; i++) {
-                  if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
-                      (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-                  ) {
-                      // Duplicate filesystem UUID
-                      Volume->IsReadable = FALSE;
-                  } // if
-               } // for
-           } // if UuidList
-        } // if !GlobalConfig.AllowDuplicates
-
+                EFI_GUID ESPGuid = ESP_GUID_VALUE;
+                UuidList[HandleIndex] = Volume->VolUuid;
+                // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
+                // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
+                // normal file systems they are likely to all share the same volume UUID, and it is also
+                // unlikely that they are part of software RAID mirrors.
+                for (i = 0; i < HandleIndex; i++) {
+                    if ((!GuidsAreEqual (&(Volume->PartTypeGuid), &ESPGuid)) &&
+                        (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                        (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
+                    ) {
+                        // This is a duplicate filesystem UUID
+                        Volume->IsReadable = FALSE;
+                    } // if
+                } // for
+            } // if UuidList
+        }
+        else {
+            if (UuidList) {
+                UuidList[HandleIndex] = Volume->VolUuid;
+                for (i = 0; i < HandleIndex; i++) {
+                    if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                        (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
+                    ) {
+                        // Duplicate filesystem UUID
+                        Volume->IsReadable = FALSE;
+                    } // if
+                } // for
+            } // if UuidList
+        } // if/else GlobalConfig.AllowDuplicates
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
 

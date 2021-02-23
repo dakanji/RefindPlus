@@ -37,6 +37,8 @@
   * Now compares new variables with existing NVRAM variables and does not write if already present.
 - Adds the 'IgnorePreviousBoot' Feature
   * Provides option not to always save the name of the previously booted loader
+- Limits 'AllowDuplicates' feature to ESPs
+  * This feature now only applies to ESPs.
 
 
 
