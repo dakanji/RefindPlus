@@ -265,12 +265,14 @@
 #define KERNEL_VERSION L"%v"
 #define MAX_RES_CODE 2147483647 /* 2^31 - 1 */
 
-//DA-TAG
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore
 // Forward Declaration for OpenCore Integration
 EFI_STATUS OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
 EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
+#endif
 
 
 //

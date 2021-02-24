@@ -1010,6 +1010,8 @@ egInitScreen (
             MsgLog ("  - Assess Graphics Output Protocol ...NOT OK!\n\n");
             #endif
 
+            #ifdef __MAKEWITH_TIANO
+            // DA-TAG: Limit to TianoCore
             if (GlobalConfig.ProvideConsoleGOP) {
                 Status = daCheckAltGop();
 
@@ -1025,6 +1027,8 @@ egInitScreen (
                     }
                 }
             }
+            #endif
+
         }
     }
 
@@ -1043,7 +1047,10 @@ egInitScreen (
                 Status = EFI_UNSUPPORTED;
             }
             else {
+                #ifdef __MAKEWITH_TIANO
+                // DA-TAG: Limit to TianoCore
                 Status = OcUseDirectGop (-1);
+                #endif
             }
 
             if (!EFI_ERROR (Status)) {
@@ -1121,6 +1128,8 @@ egInitScreen (
         }
     }
     if (UGADraw != NULL) {
+        #ifdef __MAKEWITH_TIANO
+        // DA-TAG: Limit to TianoCore
         if (GlobalConfig.UgaPassThrough && thisValidGOP) {
             // Run OcProvideUgaPassThrough from OpenCorePkg
             Status = OcProvideUgaPassThrough();
@@ -1129,6 +1138,7 @@ egInitScreen (
             MsgLog ("INFO: Implement UGA Pass Through ...%r\n\n", Status);
             #endif
         }
+        #endif
 
         if (GOPDraw == NULL) {
             UINT32 Width, Height, Depth, RefreshRate;
@@ -1174,10 +1184,13 @@ egInitScreen (
             ScreenMode = EfiConsoleControlScreenText;
         }
 
+        #ifdef __MAKEWITH_TIANO
+        // DA-TAG: Limit to TianoCore
         Status = OcUseBuiltinTextOutput (ScreenMode);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
+        #endif
         #endif
     }
 }

@@ -1681,6 +1681,8 @@ efi_main (
     AdjustDefaultSelection();
     MokProtocol = SecureBootSetup();
 
+    #ifdef __MAKEWITH_TIANO
+    // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();
 
@@ -1694,6 +1696,7 @@ efi_main (
         }
         #endif
     }
+    #endif
 
     LoadDrivers();
 

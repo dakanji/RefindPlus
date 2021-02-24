@@ -50,6 +50,7 @@
 # to reduce this, but on some setups, such as when the 'default_selection'
 # token is set, such writes are not required at all. When this option is
 # active, RefindPlus will not exexute such writes at all.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Always saves the 'PreviousBoot' variable when commented out
 #
@@ -64,6 +65,7 @@
 # NB: This setting is forced on whenever text output is required, such
 # as when running EFI Shell or whenever RefindPlus is changed to text
 # mode as part of its operations (Typically to handle errors).
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not use a custom text renderer)
 #
@@ -71,6 +73,7 @@
 
 # Add UGA Protocol to GOP when absent. This primarily works to permit
 # booting older Operating Systems running EFIBoot Protocols.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
@@ -86,6 +89,7 @@
 # GPUs with system firmware support. This option replaces GOP on the
 # ConsoleOut Handle with one from a GPU Handle on such models when
 # running compatible GPUs without system firmware support.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not provide ConsoleOut GOP)
 #
@@ -97,6 +101,7 @@
 # this should only be used when there is an obvious benefit as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response after booting into the operating system.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not use the built-in GOP)
 #
@@ -154,6 +159,7 @@
 # Mac OS version and this ensures that changes made by Apple to the drivers for different
 # Mac OS versions are accounted for as compared to loading a single APFS driver for every
 # Mac OS versions in use. This setting only applies to Mac OS.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
 #
@@ -164,6 +170,7 @@
 # This option only acts on apfs drivers loaded by RefindPlus using 'supply_apfs'.
 # This option may impact other text output and should be disabled if such
 # effects are observed. This setting only applies to Mac OS.
+# NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not suppress verbose APFS text)
 #
