@@ -563,7 +563,7 @@ ApplyGOPFix (
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Acquire GOP on Volatile Memory ...%r\n\n", Status);
+        MsgLog ("INFO: Acquire GOP on Volatile Storage ...%r\n\n", Status);
         #endif
 
         // connect all devices
@@ -595,7 +595,7 @@ BdsLibConnectAllDriversToAllControllers (
         Status = ApplyGOPFix();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Issue GOP from Volatile Memory ...%r\n\n", Status);
+        MsgLog ("INFO: Issue GOP from Volatile Storage ...%r\n\n", Status);
         #endif
 
         ReLoaded = FALSE;
