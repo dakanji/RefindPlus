@@ -338,7 +338,6 @@ StartEFIImage (
             TRUE
         );
 
-        Status = EFI_LOAD_ERROR;
         #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ...%r\n\n", Status);
