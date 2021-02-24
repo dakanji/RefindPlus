@@ -437,19 +437,19 @@ ReinitRefitLib (
 // Returns EFI status
 EFI_STATUS
 EfivarGetRaw (
-    EFI_GUID  *vendor,
-    CHAR16    *name,
-    CHAR8     **buffer,
-    UINTN     *size
+    IN  EFI_GUID  *VendorGUID,
+    IN  CHAR16    *VariableName,
+    OUT CHAR8    **VariableData,
+    OUT UINTN     *VariableSize     OPTIONAL
 ) {
-    UINTN       l;
-    UINT8       *buf          = NULL;
+    UINTN       BufferSize;
+    UINT8       *TmpBuffer    = NULL;
     EFI_FILE    *VarsDir      = NULL;
     BOOLEAN     ReadFromNvram = TRUE;
     EFI_STATUS  Status        = EFI_LOAD_ERROR;
 
     if (!GlobalConfig.UseNvram &&
-        GuidsAreEqual (vendor, &RefindPlusGuid)
+        GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
         Status = refit_call5_wrapper(
             SelfDir->Open,
@@ -461,7 +461,7 @@ EfivarGetRaw (
         );
 
         if (Status == EFI_SUCCESS) {
-            Status = egLoadFile (VarsDir, name, &buf, size);
+            Status = egLoadFile (VarsDir, VariableName, &TmpBuffer, VariableSize);
             ReadFromNvram = FALSE;
         }
         else if (Status != EFI_NOT_FOUND) {
@@ -471,7 +471,7 @@ EfivarGetRaw (
                 MsgLog ("\n");
             }
 
-            MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", name);
+            MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", VariableName);
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
@@ -480,56 +480,88 @@ EfivarGetRaw (
     }
 
     if (GlobalConfig.UseNvram ||
-        !GuidsAreEqual (vendor, &RefindPlusGuid)
+        !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
-        l = sizeof (CHAR16 *) * EFI_MAXIMUM_VARIABLE_SIZE;
-        buf = AllocatePool (l);
-        if (!buf) {
-            *buffer = NULL;
+        // Pass in a zero-size buffer to find the required buffer size.
+        BufferSize = 0;
+        Status = refit_call5_wrapper(
+            gRT->GetVariable,
+            VariableName,
+            VendorGUID,
+            NULL,
+            &BufferSize,
+            TmpBuffer
+        );
+
+        // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and
+        // BufferSize updated.
+        // Any other status means the variable does not exist.
+        if (Status != EFI_BUFFER_TOO_SMALL) {
+            MyFreePool (TmpBuffer);
+            *VariableData = NULL;
+            return Status;
+        }
+
+        TmpBuffer = AllocateZeroPool (BufferSize);
+        if (!TmpBuffer) {
+            MyFreePool (TmpBuffer);
+            *VariableData = NULL;
             return EFI_OUT_OF_RESOURCES;
         }
-        Status = refit_call5_wrapper(gRT->GetVariable, name, vendor, NULL, &l, buf);
+
+        // Retry with the correct buffer size.
+        Status = refit_call5_wrapper(
+            gRT->GetVariable,
+            VariableName,
+            VendorGUID,
+            NULL,
+            &BufferSize,
+            TmpBuffer
+        );
     }
+
+    // Retry with the correct buffer size.
     if (EFI_ERROR (Status) == EFI_SUCCESS) {
-        *buffer = (CHAR8*) buf;
-        if ((size) && ReadFromNvram) {
-            *size = l;
+        *VariableData = (CHAR8*) TmpBuffer;
+        if ((VariableSize) && ReadFromNvram) {
+            *VariableSize = BufferSize;
         }
     }
     else {
-        MyFreePool (buf);
-        *buffer = NULL;
+        MyFreePool (TmpBuffer);
+        *VariableData = NULL;
     }
+
     return Status;
 } // EFI_STATUS EfivarGetRaw ()
 
 // Set an EFI variable. This is normally done to NVRAM; however, RefindPlus'
-// variables (as determined by the *vendor code) will be saved to a disk file IF
+// variables (as determined by the *VendorGUID code) will be saved to a disk file IF
 // GlobalConfig.UseNvram == FALSE.
 // Returns EFI status
 EFI_STATUS
 EfivarSetRaw (
-    EFI_GUID  *vendor,
-    CHAR16    *name,
-    CHAR8     *buf,
-    UINTN     size,
-    BOOLEAN   persistent
+    IN  EFI_GUID  *VendorGUID,
+    IN  CHAR16    *VariableName,
+    IN  CHAR8     *VariableData,
+    IN  UINTN      VariableSize,
+    IN  BOOLEAN    Persistent
 ) {
-    UINT32      flags;
+    UINT32      StorageFlags;
     CHAR8       *OldBuf;
     UINTN       OldSize;
     EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status   = EFI_ALREADY_STARTED;
     EFI_STATUS  OldStatus;
 
-    OldStatus = EfivarGetRaw (vendor, name, &OldBuf, &OldSize);
+    OldStatus = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
 
     if ((EFI_ERROR (OldStatus)) ||
-        (size != OldSize) ||
-        (CompareMem (buf, OldBuf, size) != 0)
+        (VariableSize != OldSize) ||
+        (CompareMem (VariableData, OldBuf, VariableSize) != 0)
     ) {
         if (!GlobalConfig.UseNvram &&
-            GuidsAreEqual (vendor, &RefindPlusGuid)
+            GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
             Status = refit_call5_wrapper(
                 SelfDir->Open,
@@ -541,11 +573,11 @@ EfivarSetRaw (
             );
 
             if (Status == EFI_SUCCESS) {
-                Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
+                Status = egSaveFile (VarsDir, VariableName, (UINT8 *) VariableData, VariableSize);
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
+                MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", VariableName);
                 MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
                 #endif
             }
@@ -556,14 +588,21 @@ EfivarSetRaw (
         }
 
         if (GlobalConfig.UseNvram ||
-            !GuidsAreEqual (vendor, &RefindPlusGuid)
+            !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
-            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-            if (persistent) {
-                flags |= EFI_VARIABLE_NON_VOLATILE;
+            StorageFlags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+            if (Persistent) {
+                StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
             }
 
-            Status = refit_call5_wrapper(gRT->SetVariable, name, vendor, flags, size, buf);
+            Status = refit_call5_wrapper(
+                gRT->SetVariable,
+                VariableName,
+                VendorGUID,
+                StorageFlags,
+                VariableSize,
+                VariableData
+            );
         }
 
     }

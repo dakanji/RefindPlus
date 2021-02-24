@@ -100,15 +100,17 @@ EFI_STATUS ReinitRefitLib(VOID);
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
 EFI_STATUS EfivarGetRaw (
-    EFI_GUID *vendor,
-    CHAR16 *name,
-    CHAR8 **buffer,
-    UINTN *size
+    IN  EFI_GUID  *VendorGUID,
+    IN  CHAR16    *VariableName,
+    OUT CHAR8    **VariableData,
+    OUT UINTN     *VariableSize     OPTIONAL
 );
 EFI_STATUS EfivarSetRaw (
-    EFI_GUID *vendor, CHAR16 *name,
-    CHAR8 *buf, UINTN size,
-    BOOLEAN persistent
+    IN  EFI_GUID  *VendorGUID,
+    IN  CHAR16    *VariableName,
+    IN  CHAR8     *VariableData,
+    IN  UINTN      VariableSize,
+    IN  BOOLEAN    Persistent
 );
 EFI_STATUS DirNextEntry(
     IN EFI_FILE *Directory,
