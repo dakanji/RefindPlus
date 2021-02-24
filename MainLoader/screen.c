@@ -378,7 +378,7 @@ SwitchToText (
             (!AllowGraphicsMode || GlobalConfig.TextOnly)
         ) {
             MsgLog (
-                "  Could Not Get Text Console Size ...Using Default: %dx%d\n\n",
+                "  Could Not Get Text Console Size ...Using Default: %d x %d\n\n",
                 ConHeight,
                 ConWidth
             );
@@ -391,7 +391,7 @@ SwitchToText (
             (!AllowGraphicsMode || GlobalConfig.TextOnly)
         ) {
             MsgLog (
-                "  Text Console Size = %dx%d\n\n",
+                "  Text Console Size = %d x %d\n\n",
                 ConWidth,
                 ConHeight
             );

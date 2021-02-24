@@ -351,7 +351,7 @@ egDumpGOPVideoModes (
                 #if REFIT_DEBUG > 0
                 if (LoopCount < ModeCount) {
                     MsgLog (
-                        " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
@@ -360,7 +360,7 @@ egDumpGOPVideoModes (
                 }
                 else {
                     MsgLog (
-                        " @ %5dx%-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
@@ -573,7 +573,7 @@ egSetMaxResolution (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("  - BestMode: GOP Mode[%d] @ %dx%d", BestMode, Width, Height);
+    MsgLog ("  - BestMode: GOP Mode[%d] @ %d x %d", BestMode, Width, Height);
     #endif
 
     // check if requested mode is equal to current mode
@@ -833,7 +833,7 @@ egInitScreen (
 
                             #if REFIT_DEBUG > 0
                             MsgLog (
-                                "    *** Select Handle[%02d] @ %5dx%-5d\n",
+                                "    *** Select Handle[%02d] @ %5d x %-5d\n",
                                 i,
                                 UGAWidth,
                                 UGAHeight
@@ -843,7 +843,7 @@ egInitScreen (
                         else {
                             #if REFIT_DEBUG > 0
                             MsgLog (
-                                "    *** Ignore Handle[%02d] @ %5dx%-5d\n",
+                                "    *** Ignore Handle[%02d] @ %5d x %-5d\n",
                                 i,
                                 Width,
                                 Height
@@ -939,7 +939,7 @@ egInitScreen (
 
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
-                                    "    *** Select Handle[%02d][%02d] @ %5dx%-5d\n",
+                                    "    *** Select Handle[%02d][%02d] @ %5d x %-5d\n",
                                     i,
                                     GOPMode,
                                     GOPWidth,
@@ -950,7 +950,7 @@ egInitScreen (
                             else {
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
-                                    "        Ignore Handle[%02d][%02d] @ %5dx%-5d\n",
+                                    "        Ignore Handle[%02d][%02d] @ %5d x %-5d\n",
                                     i,
                                     GOPMode,
                                     Info->HorizontalResolution,
@@ -1386,7 +1386,7 @@ egSetScreenSize (
                 if (!EFI_ERROR (Status) && (Info != NULL)) {
 
                     ShowScreenStr = PoolPrint (
-                        L"Available Mode: Mode[%02d][%dx%d]",
+                        L"Available Mode: Mode[%02d][%d x %d]",
                         ModeNum,
                         Info->HorizontalResolution,
                         Info->VerticalResolution
@@ -1452,7 +1452,7 @@ egSetScreenSize (
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
             ShowScreenStr = PoolPrint (
-                L"Error setting %dx%d resolution ...Unsupported Mode",
+                L"Error setting %d x %d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );
@@ -1522,7 +1522,7 @@ egSetTextMode (
                 );
 
                 if (!EFI_ERROR (Status)) {
-                    ShowScreenStr = PoolPrint (L"  - Mode[%d] (%dx%d)", i, Width, Height);
+                    ShowScreenStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1581,13 +1581,13 @@ egScreenDescription (
     if (egHasGraphics) {
         if (GOPDraw != NULL) {
             SPrint (GraphicsInfo, 255,
-                L"Graphics Output Protocol (UEFI 2.x): %dx%d",
+                L"Graphics Output Protocol (UEFI 2.x): %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
         else if (UGADraw != NULL) {
             SPrint (GraphicsInfo, 255,
-                L"Universal Graphics Adapter (EFI 1.x): %dx%d",
+                L"Universal Graphics Adapter (EFI 1.x): %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
@@ -1618,7 +1618,7 @@ egScreenDescription (
             TextInfo = AllocateZeroPool (256 * sizeof (CHAR16));
             SPrint (
                 TextInfo, 255,
-                L"(Text Mode: %dx%d [Graphics Capable])",
+                L"(Text Mode: %d x %d [Graphics Capable])",
                 ConWidth, ConHeight
             );
             MergeStrings (&GraphicsInfo, TextInfo, L' ');
@@ -1627,7 +1627,7 @@ egScreenDescription (
     else {
         SPrint (
             GraphicsInfo, 255,
-            L"Text-Only Console: %dx%d",
+            L"Text-Only Console: %d x %d",
             ConWidth, ConHeight
         );
     }

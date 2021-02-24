@@ -79,7 +79,7 @@ for filename in sys.argv[1:]:
     mode = origimage.mode
     data = origimage.getdata()
 
-    print "%s: %dx%d %s" % (filename, width, height, mode)
+    print "%s: %d x %d %s" % (filename, width, height, mode)
 
     basename = filename[:-4]   # TODO!!!!!!
     identname = basename.replace("-", "_")
