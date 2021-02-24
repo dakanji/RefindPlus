@@ -1708,7 +1708,14 @@ ScanVolumes (
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
             if (ScannedOnce) {
-                MsgLog ("\n");
+                if ((HandleIndex % 5) == 0 &&
+                    (HandleCount - HandleIndex) > 2
+                ) {
+                    MsgLog ("\n\n");
+                }
+                else {
+                    MsgLog ("\n");
+                }
             }
 
             VolDesc      = StrDuplicate (Volume->VolName);
