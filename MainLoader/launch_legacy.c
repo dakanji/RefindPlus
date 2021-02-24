@@ -209,13 +209,12 @@ WriteBootDiskHint (
 ){
    EFI_STATUS Status;
 
-   Status = refit_call5_wrapper(
-       gRT->SetVariable,
-       L"BootCampHD",
+   Status = EfivarSetRaw (
        &AppleVariableVendorID,
-       EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+       L"BootCampHD",
+       (CHAR8*) WholeDiskDevicePath,
        GetDevicePathSize (WholeDiskDevicePath),
-       WholeDiskDevicePath
+       TRUE
    );
 
    if (EFI_ERROR (Status)) {

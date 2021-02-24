@@ -1171,35 +1171,19 @@ VOID AboutRefindPlus (
 VOID StoreLoaderName (
     IN CHAR16 *Name
 ) {
-    EFI_STATUS  Status;
-    CHAR16      *OldName = NULL;
-    UINTN       Length;
-
     // Do not set if configured not to
     if (GlobalConfig.IgnorePreviousBoot) {
         return;
     }
 
     if (Name) {
-        Status = EfivarGetRaw (
+        EfivarSetRaw (
             &RefindPlusGuid,
             L"PreviousBoot",
-            (CHAR8**) &OldName,
-            &Length
+            (CHAR8*) Name,
+            StrLen (Name) * 2 + 2,
+            TRUE
         );
-
-        if ((Status != EFI_SUCCESS) ||
-            (StrCmp (OldName, Name) != 0)
-        ) {
-            EfivarSetRaw (
-                &RefindPlusGuid,
-                L"PreviousBoot",
-                (CHAR8*) Name,
-                StrLen (Name) * 2 + 2,
-                TRUE
-            );
-        } // if
-        MyFreePool (OldName);
     } // if
 } // VOID StoreLoaderName()
 

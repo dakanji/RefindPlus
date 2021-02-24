@@ -43,6 +43,10 @@
   * This more accurately reflects the action taken
 - Adds System Info Logging
   * Based on reinterpretation of upstream additions
+- Modified 'EfivarSetRaw' to match upstream changes that better align this with RefindPlus
+  * Now only saves variables when not currently existing or do not match new values.
+  * This is intended to reduce wear and tear on NVRAM storage.
+  * Exisiting measures taken in RefindPlus such as 'ignore_previous_boot' remain.
 
 
 0.13.0 (15 FEB 2021): UPSTREAM RELEASE

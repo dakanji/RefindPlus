@@ -516,46 +516,62 @@ EfivarSetRaw (
     BOOLEAN   persistent
 ) {
     UINT32      flags;
+    CHAR8       *OldBuf;
+    UINTN       OldSize;
     EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status   = EFI_LOAD_ERROR;
+    EFI_STATUS  OldStatus;
 
-    if (!GlobalConfig.UseNvram &&
-        GuidsAreEqual (vendor, &RefindPlusGuid)
+    OldStatus = EfivarGetRaw (vendor, name, &OldBuf, &OldSize);
+
+    if ((EFI_ERROR (OldStatus)) ||
+        (size != OldSize) ||
+        (CompareMem (buf, OldBuf, size) != 0)
     ) {
-        Status = refit_call5_wrapper(
-            SelfDir->Open,
-            SelfDir,
-            &VarsDir,
-            L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-            EFI_FILE_DIRECTORY
-        );
+        if (!GlobalConfig.UseNvram &&
+            GuidsAreEqual (vendor, &RefindPlusGuid)
+        ) {
+            Status = refit_call5_wrapper(
+                SelfDir->Open,
+                SelfDir,
+                &VarsDir,
+                L"vars",
+                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                EFI_FILE_DIRECTORY
+            );
 
-        if (Status == EFI_SUCCESS) {
-            Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
+            if (Status == EFI_SUCCESS) {
+                Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
+                MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
+                #endif
+            }
+
+            MyFreePool (VarsDir);
+
+            return Status;
         }
-        else {
-            #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
-            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
-            #endif
+
+        if (GlobalConfig.UseNvram ||
+            !GuidsAreEqual (vendor, &RefindPlusGuid)
+        ) {
+            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+            if (persistent) {
+                flags |= EFI_VARIABLE_NON_VOLATILE;
+            }
+
+            Status = refit_call5_wrapper(gRT->SetVariable, name, vendor, flags, size, buf);
         }
 
-        MyFreePool (VarsDir);
-
-        return Status;
     }
 
-    if (GlobalConfig.UseNvram ||
-        !GuidsAreEqual (vendor, &RefindPlusGuid)
-    ) {
-        flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-        if (persistent) {
-            flags |= EFI_VARIABLE_NON_VOLATILE;
-        }
-
-        Status = refit_call5_wrapper(gRT->SetVariable, name, vendor, flags, size, buf);
+    if (OldStatus == EFI_SUCCESS) {
+        MyFreePool (&OldBuf);
     }
+
     return Status;
 } // EFI_STATUS EfivarSetRaw()
 
