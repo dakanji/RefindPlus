@@ -27,10 +27,11 @@ While RefindPlus will function with the rEFInd configuration file, `refind.conf`
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.0. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
 
 Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.0 are:
-- `use_nvram`: Deactivated by default. That is, application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this token.
+- `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
+- `use_nvram`: Application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
 - `resolution`: The `max` setting is ignored as the maximum available resolution is automatically used by default by RefindPlus when required.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
-- rEFInd now allows the scanning of other ESPs from that containing the rEFInd loader. The previous behaviour in which these were treated as duplicates was considered an eror and changed. RefindPlus however, prefers the previous behaviour and maintains this. Users are provided an option to override this behaviour in favour of the new rEFInd behaviour by using the RefindPlus-specific `scan_other_esp` token.
+- rEFInd now scans of other ESPs for loaders in addition to that containing the rEFInd loader and the earlier behaviour, in which other ESPs were treated as duplicates and ignored, had been considered an error and changed. The earlier behaviour is preferred in RefindPlus where it is maintained. However, users are provided an option to override this behaviour in favour of the new rEFInd behaviour by activating the RefindPlus-specific `scan_other_esp` configuration token.
 
 A sample RefindPlus configuration file is provided here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
