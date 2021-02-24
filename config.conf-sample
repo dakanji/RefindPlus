@@ -691,7 +691,7 @@ timeout 20
 #
 # Inactive when commented out (No write to systemd EFI variables)
 #
-#write_systemd_vars
+write_systemd_vars
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, RefindPlus shows
