@@ -63,7 +63,7 @@ secure_mode (
     UINTN charsize = sizeof (char);
     UINT8 *sb = NULL, *setupmode = NULL;
 
-    status = EfivarGetRaw(
+    status = EfivarGetRaw (
         &global_var,
         L"SecureBoot",
         (CHAR8 **) &sb,
@@ -75,7 +75,7 @@ secure_mode (
         return FALSE;
     }
 
-    status = EfivarGetRaw(&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
+    status = EfivarGetRaw (&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
     if (status == EFI_SUCCESS && charsize == sizeof (CHAR8) && *setupmode == 1) {
         return FALSE;
     }

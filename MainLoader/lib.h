@@ -99,13 +99,13 @@ INTN FindMem(
 EFI_STATUS ReinitRefitLib(VOID);
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
-EFI_STATUS EfivarGetRaw(
+EFI_STATUS EfivarGetRaw (
     EFI_GUID *vendor,
     CHAR16 *name,
     CHAR8 **buffer,
     UINTN *size
 );
-EFI_STATUS EfivarSetRaw(
+EFI_STATUS EfivarSetRaw (
     EFI_GUID *vendor, CHAR16 *name,
     CHAR8 *buf, UINTN size,
     BOOLEAN persistent

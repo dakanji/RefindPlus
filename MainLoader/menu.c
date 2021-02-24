@@ -2058,7 +2058,7 @@ SaveHiddenList(
     UINTN      i;
     i = HiddenList ? StrLen(HiddenList) : 0;
 
-    Status = EfivarSetRaw(
+    Status = EfivarSetRaw (
         &RefindPlusGuid,
         VarName,
         (CHAR8 *) HiddenList,

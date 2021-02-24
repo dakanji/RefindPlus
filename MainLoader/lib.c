@@ -501,7 +501,7 @@ EfivarGetRaw (
         *buffer = NULL;
     }
     return Status;
-} // EFI_STATUS EfivarGetRaw()
+} // EFI_STATUS EfivarGetRaw ()
 
 // Set an EFI variable. This is normally done to NVRAM; however, RefindPlus'
 // variables (as determined by the *vendor code) will be saved to a disk file IF
@@ -573,7 +573,7 @@ EfivarSetRaw (
     }
 
     return Status;
-} // EFI_STATUS EfivarSetRaw()
+} // EFI_STATUS EfivarSetRaw ()
 
 //
 // list functions

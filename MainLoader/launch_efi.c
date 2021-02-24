@@ -330,22 +330,22 @@ StartEFIImage (
         MsgLog ("INFO: Systemd LoaderDevicePartUUID:- '%s'\n\n", EspGUID);
         #endif
 
-        Status = EfivarSetRaw(
+        Status = EfivarSetRaw (
             &SystemdGuid,
             L"LoaderDevicePartUUID",
             (CHAR8 *) EspGUID,
-            StrLen(EspGUID) * 2 + 2,
+            StrLen (EspGUID) * 2 + 2,
             TRUE
         );
 
         Status = EFI_LOAD_ERROR;
         #if REFIT_DEBUG > 0
-        if (EFI_ERROR(Status)) {
+        if (EFI_ERROR (Status)) {
             MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ...%r\n\n", Status);
         }
         #endif
 
-        MyFreePool(EspGUID);
+        MyFreePool (EspGUID);
     } // if write systemd EFI variables
 
     // close open file handles
@@ -355,8 +355,8 @@ StartEFIImage (
 
     // control returns here when the child image calls Exit()
     MyFreePool (ErrorInfo);
-    SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
-    CheckError(Status, ErrorInfo);
+    SPrint (ErrorInfo, 255, L"returned from %s", ImageTitle);
+    CheckError (Status, ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -384,7 +384,7 @@ bailout:
 } /* EFI_STATUS StartEFIImage() */
 
 // From gummiboot: Reboot the computer into its built-in user interface
-EFI_STATUS RebootIntoFirmware(VOID) {
+EFI_STATUS RebootIntoFirmware (VOID) {
     CHAR8      *b;
     CHAR16     *ShowScreenStr = NULL;
     UINTN      size;
@@ -393,7 +393,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
-    Status = EfivarGetRaw(
+    Status = EfivarGetRaw (
         &GlobalGuid,
         L"OsIndications",
         &b,
@@ -405,7 +405,7 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     }
     MyFreePool (b);
 
-    Status = EfivarSetRaw(
+    Status = EfivarSetRaw (
         &GlobalGuid,
         L"OsIndications",
         (CHAR8 *) &osind,
@@ -456,7 +456,7 @@ RebootIntoLoader (
 ) {
     EFI_STATUS Status;
 
-    Status = EfivarSetRaw(
+    Status = EfivarSetRaw (
         &GlobalGuid,
         L"BootNext",
         (CHAR8*) &(Entry->EfiBootNum),
