@@ -1448,8 +1448,13 @@ LogBasicInfo (
     UINT64     MaximumVariableSize;
     UINT64     MaximumVariableStorageSize;
     UINT64     RemainingVariableStorageSize;
-    UINTN      EfiMajorVersion            = gST->Hdr.Revision >> 16;
-    EFI_GUID   ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+    UINTN      EfiMajorVersion                    = gST->Hdr.Revision >> 16;
+    UINTN      HandleCount                        = 0;
+    EFI_GUID   ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+    EFI_GUID   AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
+    EFI_HANDLE *HandleBuffer                      = NULL;
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
+
 
     MsgLog ("INFO: System Details\n");
 
@@ -1481,9 +1486,32 @@ LogBasicInfo (
     MsgLog ("      Shim:- '%s'\n", ShimLoaded() ? L"Active" : L"Inactive");
     MsgLog ("      Secure Boot:- '%s'\n", secure_mode() ? L"Active" : L"Inactive");
 
-    MsgLog ("      EFI Non-Volatile Storage Info:\n");
+    if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
+        Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
+        if (EFI_ERROR (Status)) {
+            HandleCount = 0;
+        }
+        else {
+            Status = gBS->LocateHandleBuffer (
+                ByProtocol,
+                &AppleFramebufferInfoProtocolGuid,
+                NULL,
+                &HandleCount,
+                &HandleBuffer
+            );
+            if (EFI_ERROR (Status)) {
+                HandleCount = 0;
+            }
+
+        }
+        MsgLog ("      Apple Framebuffers:- '%d'\n", HandleCount);
+        MyFreePool (HandleBuffer);
+    }
+
     if (EfiMajorVersion > 1) {
         // QueryVariableInfo() is not supported in EFI 1.x
+        MsgLog ("      EFI Non-Volatile Storage Info:\n");
+
         Status = refit_call4_wrapper(
             gRT->QueryVariableInfo,
             EFI_VARIABLE_NON_VOLATILE,
@@ -1499,9 +1527,6 @@ LogBasicInfo (
             MsgLog ("        - Remaining Available   : %ld\n", RemainingVariableStorageSize);
             MsgLog ("        - Maximum Variable Size : %ld\n", MaximumVariableSize);
         }
-    }
-    else {
-        MsgLog ("        * WARN: Not Available on EFI 1.x\n");
     }
 
     // Report which video output devices are available. We don't actually

@@ -27,8 +27,39 @@
 #ifndef __APPLE_H_
 #define __APPLE_H_
 
+#ifndef APPLE_FRAMEBUFFER_INFO_H
+#define APPLE_FRAMEBUFFER_INFO_H
+
+// Apple Framebuffer Info GUID
+#define APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID \
+    { 0xE316E100, 0x0751, 0x4C49, \
+    { 0x90, 0x56, 0x48, 0x6C, 0x7E, 0x47, 0x29, 0x03 } }
+
+typedef struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ APPLE_FRAMEBUFFER_INFO_PROTOCOL;
+
+typedef
+EFI_STATUS
+(EFIAPI *APPLE_FRAMEBUFFER_INFO_GET_INFO) (
+    IN   APPLE_FRAMEBUFFER_INFO_PROTOCOL  *This,
+    OUT  EFI_PHYSICAL_ADDRESS             *FramebufferBase,
+    OUT  UINT32                           *FramebufferSize,
+    OUT  UINT32                           *ScreenRowBytes,
+    OUT  UINT32                           *ScreenWidth,
+    OUT  UINT32                           *ScreenHeight,
+    OUT  UINT32                           *ScreenDepth
+);
+
+struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
+    APPLE_FRAMEBUFFER_INFO_GET_INFO     GetInfo;
+};
+
+#endif // APPLE_FRAMEBUFFER_INFO_H
+
+
 // Apple's GUID
-#define APPLE_GUID { 0x7c436110, 0xab2a, 0x4bbb, { 0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82 } };
+#define APPLE_GUID \
+    { 0x7c436110, 0xab2a, 0x4bbb, \
+    { 0xa8, 0x80, 0xfe, 0x41, 0x99, 0x5c, 0x9f, 0x82 } };
 
 // Apple's NVRAM ACCESS FLAGS
 #define APPLE_FLAGS EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
