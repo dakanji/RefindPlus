@@ -1787,7 +1787,7 @@ efi_main (
         }
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-        PauseForKey();
+        PauseSeconds(6);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: User Warning");
