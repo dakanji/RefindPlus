@@ -519,7 +519,7 @@ EfivarSetRaw (
     CHAR8       *OldBuf;
     UINTN       OldSize;
     EFI_FILE    *VarsDir = NULL;
-    EFI_STATUS  Status   = EFI_LOAD_ERROR;
+    EFI_STATUS  Status   = EFI_ALREADY_STARTED;
     EFI_STATUS  OldStatus;
 
     OldStatus = EfivarGetRaw (vendor, name, &OldBuf, &OldSize);
