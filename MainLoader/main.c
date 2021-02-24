@@ -1083,14 +1083,23 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Running on: ");
+
+        if ((gST->Hdr.Revision >> 16) == 1) {
+            TempStr = L"EFI";
+        }
+        else {
+            TempStr = L"UEFI";
+        }
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
-                L"EFI Revision %d.%02d",
+                L"EFI Revision: %s %d.%02d",
+                TempStr,
                 gST->Hdr.Revision >> 16,
                 gST->Hdr.Revision & ((1 << 16) - 1)
             )
         );
+        MyFreePool (TempStr);
 
         #if defined (EFI32)
         AddMenuInfoLine (
@@ -1443,11 +1452,20 @@ LogBasicInfo (
     EFI_GUID   ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 
     MsgLog ("INFO: System Details\n");
+
+    if ((gST->Hdr.Revision >> 16) == 1) {
+        TempStr = L"EFI";
+    }
+    else {
+        TempStr = L"UEFI";
+    }
     MsgLog (
-        "      EFI Revision:- 'EFI %d.%02d'\n",
+        "      EFI Revision:- '%s %d.%02d'\n",
+        TempStr,
         gST->Hdr.Revision >> 16,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
+    MyFreePool (TempStr);
 
     MsgLog ("      Architecture:- ");
     #if defined(EFI32)
