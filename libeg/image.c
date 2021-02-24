@@ -170,7 +170,7 @@ EG_IMAGE * egCropImage (
             NewImage->PixelData[y * NewImage->Width + x] = Image->PixelData[(y + StartY) * Image->Width + x + StartX];
         }
     }
-    
+
     return NewImage;
 } // EG_IMAGE * egCropImage()
 
@@ -466,14 +466,23 @@ EG_IMAGE * egLoadIcon (
     // decode it
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
     FreePool (FileData);
+
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
-       NewImage = egScaleImage (Image, IconSize, IconSize);
-       if (!NewImage) {
-          Print (L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
-                Image->Width, Image->Height, IconSize, IconSize, Path);
-       }
-       egFreeImage (Image);
-       Image = NewImage;
+        NewImage = egScaleImage (Image, IconSize, IconSize);
+        if (!NewImage) {
+            #if REFIT_DEBUG > 0
+            MsgLog (
+                "** WARN: Could not Scale Icon in '%s' from %d x %d to %d x %d\n\n",
+                Path,
+                Image->Width, Image->Height,
+                IconSize, IconSize
+            );
+            #endif
+        }
+        else {
+            egFreeImage (Image);
+            Image = NewImage;
+        }
     }
 
     return Image;
