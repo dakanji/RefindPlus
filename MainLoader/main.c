@@ -1460,7 +1460,7 @@ LogBasicInfo (
 
     MsgLog ("System Details...\n");
     MsgLog (
-        "EFI Revision:- 'EFI %d.%02d'\n"
+        "EFI Revision:- 'EFI %d.%02d'\n",
         gST->Hdr.Revision >> 16,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
