@@ -795,7 +795,7 @@ BltClearScreen (
             }
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * Embedded Title Banner\n");
+                MsgLog ("    * Default Title Banner\n");
                 #endif
                 Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner, FALSE);
             }

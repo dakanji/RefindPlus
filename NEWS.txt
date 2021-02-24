@@ -41,8 +41,8 @@
   * Reflects change of scope
 - Changes 'trim_force' Config Option Back to 'force_trim'
   * This more accurately reflects the action taken
-
-
+- Adds System Info Logging
+  * Based on reinterpretation of upstream additions
 
 
 0.13.0 (15 FEB 2021): UPSTREAM RELEASE

@@ -62,8 +62,14 @@
 #include "launch_efi.h"
 #include "scan.h"
 #include "../include/refit_call_wrapper.h"
+#include "../libeg/efiConsoleControl.h"
+#include "../libeg/efiUgaDraw.h"
 #include "../include/version.h"
 #include "../libeg/libeg.h"
+
+#ifndef __MAKEWITH_GNUEFI
+#define LibLocateProtocol EfiLibLocateProtocol
+#endif
 
 INT16 NowYear   = 0;
 INT16 NowMonth  = 0;
@@ -1136,7 +1142,7 @@ VOID AboutRefindPlus (
 
         TempStr = egScreenDescription();
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
-        MyFreePool(TempStr);
+        MyFreePool (TempStr);
 
         AddMenuInfoLine (&AboutMenu, L"");
 
@@ -1253,9 +1259,10 @@ STATIC VOID InitializeLib (
 STATIC BOOLEAN SecureBootSetup (
     VOID
 ) {
-    EFI_STATUS  Status;
+    EFI_STATUS  Status          = EFI_NOT_FOUND;
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
+
 
     if (secure_mode() && ShimLoaded()) {
         Status = security_policy_install();
@@ -1436,6 +1443,105 @@ STATIC VOID AdjustDefaultSelection() {
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
+#if REFIT_DEBUG > 0
+// Log basic information (RefindPlus version, EFI version, etc.) to the log file.
+STATIC
+VOID
+LogBasicInfo (
+    VOID
+) {
+    EFI_STATUS Status;
+    CHAR16     *TempStr = NULL;
+    UINT64     MaximumVariableSize;
+    UINT64     MaximumVariableStorageSize;
+    UINT64     RemainingVariableStorageSize;
+    UINTN      EfiMajorVersion            = gST->Hdr.Revision >> 16;
+    EFI_GUID   ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+
+    MsgLog ("System Details...\n");
+    MsgLog (
+        "EFI Revision:- 'EFI %d.%02d'\n"
+        gST->Hdr.Revision >> 16,
+        gST->Hdr.Revision & ((1 << 16) - 1)
+    );
+
+    MsgLog ("Architecture:- ");
+    #if defined(EFI32)
+        MsgLog ("'x86/IA32/i386 (32-bit)'\n");
+    #elif defined(EFIX64)
+        MsgLog ("'x86-64/X64/AMD64 (64-bit)'\n");
+    #elif defined(EFIAARCH64)
+        MsgLog ("'ARM64/AARCH64 (64-bit)'\n");
+    #else
+        MsgLog ("'Unknown'\n");
+    #endif
+
+    MsgLog ("Shim:- '%s'\n", ShimLoaded() ? L"Active" : L"Inactive");
+    MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active" : L"Inactive");
+
+    MsgLog ("EFI Non-Volatile Storage Info:\n");
+    if (EfiMajorVersion > 1) {
+        // QueryVariableInfo() is not supported in EFI 1.x
+        Status = refit_call4_wrapper(
+            gRT->QueryVariableInfo,
+            EFI_VARIABLE_NON_VOLATILE,
+            &MaximumVariableStorageSize,
+            &RemainingVariableStorageSize,
+            &MaximumVariableSize
+        );
+        if (EFI_ERROR(Status)) {
+            MsgLog ("** WARN: Could not Retrieve on UEFI 2.x\n");
+        }
+        else {
+            MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
+            MsgLog ("  - Remaining Available   : %ld\n", RemainingVariableStorageSize);
+            MsgLog ("  - Maximum Variable Size : %ld\n", MaximumVariableSize);
+        }
+    }
+    else {
+        MsgLog ("  - Not Readable (EFI 1.x)\n");
+    }
+
+    // Report which video output devices are available. We don't actually
+    // use them, so just use TempStr as a throwaway pointer to the protocol.
+    MsgLog ("Native Screen Modes:\n");
+    MyFreePool (TempStr);
+    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
+    MyFreePool (TempStr);
+    if (EFI_ERROR(Status)) {
+        TempStr = L"Not Detected";
+    }
+    else {
+        TempStr = L"Detected";
+    }
+    MsgLog ("  - Text Mode ...%s\n", TempStr);
+
+    MyFreePool (TempStr);
+    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempStr);
+    MyFreePool (TempStr);
+    if (EFI_ERROR(Status)) {
+        TempStr = L"Not Detected";
+    }
+    else {
+        TempStr = L"Detected";
+    }
+    MsgLog ("  - Graphics Mode (UGA) ...%s\n", TempStr);
+
+    MyFreePool (TempStr);
+    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempStr);
+    MyFreePool (TempStr);
+    if (EFI_ERROR(Status)) {
+        TempStr = L"Not Detected";
+    }
+    else {
+        TempStr = L"Detected";
+    }
+    MsgLog ("  - Graphics Mode (GOP) ...%s\n\n", TempStr);
+
+    MyFreePool (TempStr);
+} // VOID LogBasicInfo()
+#endif
+
 //
 // main entry point
 //
@@ -1454,8 +1560,8 @@ efi_main (
     LOADER_ENTRY      *ourLoaderEntry = NULL;
     LEGACY_ENTRY      *ourLegacyEntry = NULL;
 
-    UINTN  MenuExit = 0;
     UINTN  i        = 0;
+    UINTN  MenuExit = 0;
 
     EG_PIXEL  BGColor        = COLOR_LIGHTBLUE;
     CHAR16    *SelectionName = NULL;
@@ -1470,7 +1576,7 @@ efi_main (
     }
 
     EFI_TIME Now;
-    SystemTable->RuntimeServices->GetTime (&Now, NULL);
+    gRT->GetTime (&Now, NULL);
     NowYear   = Now.Year;
     NowMonth  = Now.Month;
     NowDay    = Now.Day;
@@ -1490,8 +1596,22 @@ efi_main (
         NowMinute,
         NowSecond
     );
-    MsgLog ("Loading RefindPlus v%s on %s Firmware\n", REFINDPLUS_VERSION, gST->FirmwareVendor);
+    MsgLog (
+        "Loading RefindPlus v%s on %s Firmware\n",
+        REFINDPLUS_VERSION,
+        gST->FirmwareVendor
+    );
+
+#if defined(__MAKEWITH_GNUEFI)
+    MsgLog ("Made With:- 'GNU-EFI'\n");
+#else
+    MsgLog ("Made With:- 'TianoCore (EDK2)'\n");
+#endif
+
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
+
+    // Log System Details
+    LogBasicInfo ();
     #endif
 
     // read configuration

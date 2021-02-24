@@ -1890,7 +1890,9 @@ ScanVolumes (
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: 'ScanOtherESP' ...Active\n\n");
+    if (SelfVolRun && GlobalConfig.ScanOtherESP) {
+        MsgLog ("INFO: 'ScanOtherESP' ...Active\n\n");
+    }
     #endif
 
     if (SelfVolRun && GlobalConfig.EnforceAPFS) {
