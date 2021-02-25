@@ -502,7 +502,7 @@ UINTN gptsync(VOID)
     UINTN   status_gpt, status_mbr;
     BOOLEAN proceed = FALSE;
 
-    Print(L"gptsync v0.13.0\ncopyright (c) 2006-2007 Christoph Pfisterer & 2013 Roderick W. Smith\n");
+    Print(L"gptsync v0.13.1\ncopyright (c) 2006-2007 Christoph Pfisterer & 2013 Roderick W. Smith\n");
 
     // get full information from disk
     status_gpt = read_gpt();

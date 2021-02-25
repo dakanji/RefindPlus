@@ -12,4 +12,3 @@ DebugLog (
 #else
   #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
 #endif
-
