@@ -5,6 +5,7 @@
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
   * Records selected EFI-based reboot options in the PreviousBoot variable
   * Implements support for setting systemd's LoaderDevicePartUUID EFI variable
+  * Re-interpretes partial icon scaling fix implemented upstream  
 - Syncs with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
   * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection

@@ -453,6 +453,7 @@ EG_IMAGE * egLoadIcon (
     UINTN           FileDataLength;
     EG_IMAGE        *Image, *NewImage;
 
+    // return null if unable to get to image
     if (BaseDir == NULL || Path == NULL) {
         return NULL;
     }
@@ -467,19 +468,16 @@ EG_IMAGE * egLoadIcon (
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
     FreePool (FileData);
 
+    // return null if unable to decode
+    if (Image == NULL) {
+        return NULL;
+    }
+
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
         NewImage = egScaleImage (Image, IconSize, IconSize);
-        if (!NewImage) {
-            #if REFIT_DEBUG > 0
-            MsgLog (
-                "** WARN: Could not Scale Icon in '%s' from %d x %d to %d x %d\n\n",
-                Path,
-                Image->Width, Image->Height,
-                IconSize, IconSize
-            );
-            #endif
-        }
-        else {
+
+        // use scaled image if available
+        if (NewImage != NULL) {
             egFreeImage (Image);
             Image = NewImage;
         }
