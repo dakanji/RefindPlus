@@ -381,7 +381,6 @@ NvramEntryCheck (
     IN  CHAR16  *NameNVRAM,
     IN  CHAR8   *DataNVRAM
 ) {
-    UINTN       VarSize;
     UINTN       SizeNVRAM;
     CHAR8       StrNVRAM[255];
     CHAR16      *VarData;
@@ -394,7 +393,7 @@ NvramEntryCheck (
         &AppleGUID,
         NameNVRAM,
         (CHAR8**) &VarData,
-        &VarSize
+        NULL
     );
 
     MyUnicodeStrToAsciiStr (VarData, StrNVRAM);
@@ -1408,7 +1407,7 @@ STATIC VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
 STATIC VOID AdjustDefaultSelection() {
-    UINTN i = 0, j;
+    UINTN i = 0;
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
     EFI_STATUS Status;
 
@@ -1422,7 +1421,7 @@ STATIC VOID AdjustDefaultSelection() {
                 &RefindPlusGuid,
                 L"PreviousBoot",
                 (CHAR8 **) &PreviousBoot,
-                &j
+                NULL
             );
 
             if (Status == EFI_SUCCESS) {

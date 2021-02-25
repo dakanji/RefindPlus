@@ -384,9 +384,8 @@ bailout:
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
-    CHAR8      *b;
+    CHAR8      *ItemBuffer;
     CHAR16     *ShowScreenStr = NULL;
-    UINTN      size;
     UINT64     osind;
     EFI_STATUS Status;
 
@@ -395,14 +394,14 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     Status = EfivarGetRaw (
         &GlobalGuid,
         L"OsIndications",
-        &b,
-        &size
+        &ItemBuffer,
+        NULL
     );
 
     if (Status == EFI_SUCCESS) {
-        osind |= (UINT64) *b;
+        osind |= (UINT64) *ItemBuffer;
     }
-    MyFreePool (b);
+    MyFreePool (ItemBuffer);
 
     Status = EfivarSetRaw (
         &GlobalGuid,

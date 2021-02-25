@@ -2090,7 +2090,7 @@ VOID ScanForTools (VOID) {
     UINTN            j;
     UINTN            VolumeIndex;
     UINT64           osind;
-    CHAR8            *b = 0;
+    CHAR8            *ItemBuffer = 0;
     UINT32           CsrValue;
     BOOLEAN          FoundTool;
     CHAR16           *ToolName = NULL;
@@ -2299,10 +2299,10 @@ VOID ScanForTools (VOID) {
                 if (EfivarGetRaw (
                     &GlobalGuid,
                     L"OsIndicationsSupported",
-                    &b,
-                    &j
+                    &ItemBuffer,
+                    NULL
                 ) == EFI_SUCCESS) {
-                    osind = (UINT64)*b;
+                    osind = (UINT64) *ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
                         TempMenuEntry = CopyMenuEntry (&MenuEntryFirmware);
@@ -2313,7 +2313,7 @@ VOID ScanForTools (VOID) {
                         MsgLog ("              - Added '%s' Tool\n", ToolName);
                         #endif
                     } // if
-                    MyFreePool (b);
+                    MyFreePool (ItemBuffer);
                 } // if
 
                 if (!FoundTool) {

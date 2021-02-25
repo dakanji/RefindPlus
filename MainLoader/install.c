@@ -744,7 +744,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     ListSize = VarSize / sizeof (UINT16);
     for (i = 0; i < ListSize; i++) {
         VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-        Status = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
+        Status = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, NULL);
         if (Status == EFI_SUCCESS) {
             L = AllocateZeroPool (sizeof (BOOT_ENTRY_LIST));
             if (L) {
@@ -869,14 +869,19 @@ static EFI_STATUS DeleteInvalidBootEntries (VOID) {
     CHAR8    *Contents;
     CHAR16   *VarName;
 
-    Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
+    Status = EfivarGetRaw (
+        &GlobalGuid,
+        L"BootOrder",
+        (CHAR8**) &BootOrder,
+        &VarSize
+    );
     if (Status == EFI_SUCCESS) {
         ListSize = VarSize / sizeof (UINT16);
         NewBootOrder = AllocateZeroPool (VarSize);
 
         for (i = 0; i < ListSize; i++) {
             VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-            Status = EfivarGetRaw (&GlobalGuid, VarName, &Contents, &VarSize);
+            Status = EfivarGetRaw (&GlobalGuid, VarName, &Contents, NULL);
             MyFreePool (VarName);
             if (Status == EFI_SUCCESS) {
                 NewBootOrder[j++] = BootOrder[i];
