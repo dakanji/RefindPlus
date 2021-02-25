@@ -1,3 +1,48 @@
+0.13.1 (2/24/2021):
+-------------------
+
+- Removed MyLibLocateProtocol(), based on RefindPlus code, because it
+  caused at least one Mac to hang.
+
+- Fixed bug that could cause rEFInd to misbehave or hang if a disabled
+  manual boot stanza referenced a volume with a name that existed but was
+  unreadable.
+
+- Added logging feature, activated by the log_level token in refind.conf.
+  This takes a numeric log level (currently from 0 to 3), with 0 meaning no
+  logging and 1-3 meaning increasing levels of logging. This feature is
+  intended to be used only when debugging problems, as it can slow rEFInd
+  down, especially at higher log levels.
+
+- Updated LodePNG library to version 20201017.
+
+- Fixed bug that caused rEFInd to not record a reboot to an EFI NVRAM-based
+  boot option, thus preventing it from being made the default boot option on
+  the next boot, if "default_selection +" was used.
+
+- Added ability to write to the LoaderDevicePartUUID EFI variable, which
+  systemd uses to identify the ESP that was used to boot the computer, and
+  to mount that partition at /boot if that directory is empty and has
+  nothing else mounted. This rEFInd feature is activated by the
+  write_systemd_vars token in refind.conf, and is enabled by default.
+
+- Modified EfivarSetRaw(), which rEFInd uses to write system variables, to
+  save a variable only if it does not currently exist or does not match the
+  new value. This is intended to reduce wear and tear on NVRAM storage.
+  (Previously, rEFInd did this with its own PreviousBoot variable, but this
+  change expands this functionality to apply to all EFI variables that
+  rEFInd might write.)
+
+- Uncommented use_nvram from refind.conf-sample and set it to false. This
+  change will cause new rEFInd installations to save rEFInd's own variables
+  (PreviousBoot, HiddenTags, and others) on disk rather than in NVRAM.
+  Existing installations won't be affected by this change. The point is to
+  try to save wear and tear on NVRAM storage; however, users who install
+  rEFInd to an HFS+ volume will need to comment out use_nvram or set it to
+  true in order to use features that rely on rEFInd's variable storage.
+
+- Additional replacements of "which" with "command -v" in mvrefind.
+
 0.13.0 (2/15/2021):
 -------------------
 

@@ -70,8 +70,15 @@
 #include "driver_support.h"
 #include "launch_efi.h"
 #include "scan.h"
+#include "log.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
+#include "../libeg/efiConsoleControl.h"
+#include "../libeg/efiUgaDraw.h"
+
+#ifndef __MAKEWITH_GNUEFI
+#define LibLocateProtocol EfiLibLocateProtocol
+#endif
 
 //
 // Some built-in menu definitions....
@@ -94,6 +101,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                               /* UseNvram = */ TRUE,
                               /* ShutdownAfterTimeout = */ FALSE,
                               /* Install = */ FALSE,
+                              /* WriteSystemdVars = */ FALSE,
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -111,6 +119,7 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
                                                   DEFAULT_BIG_ICON_SIZE,
                                                   DEFAULT_MOUSE_SIZE },
                               /* BannerScale = */ BANNER_NOSCALE,
+                              /* LogLevel = */ 0,
                               /* *DiscoveredRoot = */ NULL,
                               /* *SelfDevicePath = */ NULL,
                               /* *BannerFileName = */ NULL,
@@ -149,6 +158,7 @@ VOID AboutrEFInd(VOID)
     CHAR16     *TempStr;
     UINT32     CsrStatus;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Displaying About/Info screen");
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon(BUILTIN_ICON_FUNC_ABOUT);
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"rEFInd Version %s", REFIND_VERSION));
@@ -159,6 +169,11 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Running on:");
+        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
+        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
+                                              ST->FirmwareRevision >> 16,
+                                              ST->FirmwareRevision & ((1 << 16) - 1)));
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" EFI Revision %d.%02d", ST->Hdr.Revision >> 16, ST->Hdr.Revision & ((1 << 16) - 1)));
 #if defined(EFI32)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Platform: x86 (32 bit); Secure Boot %s",
@@ -176,11 +191,6 @@ VOID AboutrEFInd(VOID)
             RecordgCsrStatus(CsrStatus, FALSE);
             AddMenuInfoLine(&AboutMenu, gCsrStatus);
         }
-        FirmwareVendor = StrDuplicate(ST->FirmwareVendor);
-        LimitStringLength(FirmwareVendor, MAX_LINE_LENGTH); // More than ~65 causes empty info page on 800x600 display
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Firmware: %s %d.%02d", FirmwareVendor,
-                                              ST->FirmwareRevision >> 16,
-                                              ST->FirmwareRevision & ((1 << 16) - 1)));
         TempStr = egScreenDescription();
         AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
         MyFreePool(TempStr);
@@ -203,21 +213,15 @@ VOID AboutrEFInd(VOID)
 // Record the value of the loader's name/description in rEFInd's "PreviousBoot" EFI variable,
 // if it's different from what's already stored there.
 VOID StoreLoaderName(IN CHAR16 *Name) {
-    EFI_STATUS   Status;
-    CHAR16       *OldName = NULL;
-    UINTN        Length;
 
     if (Name) {
-        Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8**) &OldName, &Length);
-        if ((Status != EFI_SUCCESS) || (StrCmp(OldName, Name) != 0)) {
-            EfivarSetRaw(&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen(Name) * 2 + 2, TRUE);
-        } // if
-        MyFreePool(OldName);
+        EfivarSetRaw(&RefindGuid, L"PreviousBoot", (CHAR8*) Name, StrLen(Name) * 2 + 2, TRUE);
     } // if
 } // VOID StoreLoaderName()
 
 // Rescan for boot loaders
 VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect) {
+    LOG(1, LOG_LINE_NORMAL, L"Re-scanning all boot loaders");
     FreeList((VOID ***) &(MainMenu.Entries), &MainMenu.EntryCount);
     MainMenu.Entries = NULL;
     MainMenu.EntryCount = 0;
@@ -253,7 +257,9 @@ static BOOLEAN SecureBootSetup(VOID) {
     EFI_STATUS Status;
     BOOLEAN    Success = FALSE;
 
+    LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
     if (secure_mode() && ShimLoaded()) {
+        LOG(2, LOG_LINE_NORMAL, L"Secure boot mode detected with loaded Shim; adding MOK extensions");
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
@@ -261,6 +267,8 @@ static BOOLEAN SecureBootSetup(VOID) {
             Print(L"Failed to install MOK Secure Boot extensions");
             PauseForKey();
         }
+    } else {
+        LOG(2, LOG_LINE_NORMAL, L"Secure boot disabled; doing nothing");
     }
     return Success;
 } // VOID SecureBootSetup()
@@ -321,6 +329,7 @@ static VOID AdjustDefaultSelection() {
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
     EFI_STATUS Status;
 
+    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with PreviousBoot values");
     while ((Element = FindCommaDelimited(GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp(Element, L"+")) {
             Status = EfivarGetRaw(&RefindGuid, L"PreviousBoot", (CHAR8 **) &PreviousBoot, &j);
@@ -339,6 +348,90 @@ static VOID AdjustDefaultSelection() {
     MyFreePool(GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
+
+// Log basic information (rEFInd version, EFI version, etc.) to the log file.
+VOID LogBasicInfo(VOID) {
+    EFI_STATUS Status;
+    UINT64     MaximumVariableStorageSize;
+    UINT64     RemainingVariableStorageSize;
+    UINT64     MaximumVariableSize;
+    UINTN      EfiMajorVersion = ST->Hdr.Revision >> 16;
+    CHAR16     *TempStr;
+    EFI_GUID   ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+    EFI_GUID   UgaDrawProtocolGuid = EFI_UGA_DRAW_PROTOCOL_GUID;
+    EFI_GUID   GraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+
+    LOG(1, LOG_LINE_SEPARATOR, L"System information");
+#if defined(__MAKEWITH_GNUEFI)
+    LOG(1, LOG_LINE_NORMAL, L"rEFInd %s built with GNU-EFI", REFIND_VERSION);
+#else
+    LOG(1, LOG_LINE_NORMAL, L"rEFInd %s built with TianoCore EDK2", REFIND_VERSION);
+#endif
+    TempStr = GuidAsString(&(SelfVolume->PartGuid));
+    LOG(1, LOG_LINE_NORMAL, L"rEFInd boot partition GUID: %s", TempStr);
+    MyFreePool(TempStr);
+#if defined(EFI32)
+    LOG(1, LOG_LINE_NORMAL, L"Platform: x86/IA32/i386 (32-bit)");
+#elif defined(EFIX64)
+    LOG(1, LOG_LINE_NORMAL, L"Platform: x86-64/X64/AMD64 (64-bit)");
+#elif defined(EFIAARCH64)
+    LOG(1, LOG_LINE_NORMAL, L"Platform: ARM64/AARCH64 (64-bit)");
+#else
+    LOG(1, LOG_LINE_NORMAL, L"Platform: unknown");
+#endif
+    LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
+        ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
+    LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", EfiMajorVersion,
+        ST->Hdr.Revision & ((1 << 16) - 1));
+    LOG(1, LOG_LINE_NORMAL, L"Secure Boot %s", secure_mode() ? L"active" : L"inactive");
+    LOG(1, LOG_LINE_NORMAL, L"Shim is%s available", ShimLoaded() ? L"" : L" not");
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC:
+            TempStr = L"CSM type: Mac";
+            break;
+        case LEGACY_TYPE_UEFI:
+            TempStr = L"CSM type: UEFI";
+            break;
+        case LEGACY_TYPE_NONE:
+            TempStr = L"CSM is unavailable";
+            break;
+        default: // should never happen; just in case....
+            TempStr = L"CSM type: unknown";
+            break;
+    }
+    LOG(1, LOG_LINE_NORMAL, TempStr);
+    if (EfiMajorVersion > 1) { // QueryVariableInfo() is not supported in EFI 1.x
+        LOG(3, LOG_LINE_NORMAL, L"Trying to get variable info....");
+        Status = refit_call4_wrapper(RT->QueryVariableInfo, EFI_VARIABLE_NON_VOLATILE,
+                                     &MaximumVariableStorageSize, &RemainingVariableStorageSize,
+                                     &MaximumVariableSize);
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error %d; Unable to retrieve EFI variable capacity", Status);
+        } else {
+            LOG(1, LOG_LINE_NORMAL, L"EFI non-volatile storage:");
+            LOG(1, LOG_LINE_NORMAL, L"   Total storage: %ld", MaximumVariableStorageSize);
+            LOG(1, LOG_LINE_NORMAL, L"   Remaining available: %ld", RemainingVariableStorageSize);
+            LOG(1, LOG_LINE_NORMAL, L"   Maximum variable size: %ld", MaximumVariableSize);
+        }
+    } else {
+        LOG(1, LOG_LINE_NORMAL, L"EFI 1.x; EFI non-volatile storage information is unavailable");
+    }
+
+    // Report which video output devices are available. We don't actually
+    // use them, so just use TempStr as a throwaway pointer to the protocol.
+    Status = LibLocateProtocol(&ConsoleControlProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support text mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
+    Status = LibLocateProtocol(&UgaDrawProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support UGA Draw graphics mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
+    Status = LibLocateProtocol(&GraphicsOutputProtocolGuid, (VOID **) &TempStr);
+    LOG(1, LOG_LINE_NORMAL, L"System does%s support GOP graphics mode",
+        EFI_ERROR(Status) ? L" not" : L"");
+
+} // VOID LogBasicInfo()
 
 //
 // main entry point
@@ -367,18 +460,23 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC)
        CopyMem(GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     SetConfigFilename(ImageHandle);
-    MokProtocol = SecureBootSetup();
 
-    // Scan volumes first to find SelfVolume, which is required by LoadDrivers();
-    // however, if drivers are loaded, a second call to ScanVolumes() is needed
-    // to register the new filesystem(s) accessed by the drivers.
-    // Also, ScanVolumes() must be done before ReadConfig(), which needs
-    // SelfVolume->VolName.
+    // Scan volumes first to find SelfVolume, which is needed by LoadDrivers()
+    // and ReadConfig(); however, if drivers are loaded, a second call to
+    // ScanVolumes() is needed to register the new filesystem(s) accessed
+    // by the drivers.
     ScanVolumes();
+    ReadConfig(GlobalConfig.ConfigFilename);
+    if (GlobalConfig.LogLevel > 0) {
+        StartLogging(FALSE);
+        LogBasicInfo();
+    }
     if (LoadDrivers())
         ScanVolumes();
-    ReadConfig(GlobalConfig.ConfigFilename);
+
+    LOG(1, LOG_LINE_SEPARATOR, L"Initializing basic features");
     AdjustDefaultSelection();
+    MokProtocol = SecureBootSetup();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();
@@ -388,6 +486,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 
     // disable EFI watchdog timer
+    LOG(1, LOG_LINE_NORMAL, L"Setting watchdog timer");
     refit_call4_wrapper(BS->SetWatchdogTimer, 0x0000, 0x0000, 0x0000, NULL);
 
     // further bootstrap (now with config available)
@@ -401,8 +500,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
-       if (GlobalConfig.ScanDelay > 1)
+       if (GlobalConfig.ScanDelay > 1) {
+          LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
           egDisplayMessage(L"Pausing before disk scan; please wait....", &BGColor, CENTER);
+       }
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
        RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
@@ -414,6 +515,7 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if (GlobalConfig.ShutdownAfterTimeout)
         MainMenu.TimeoutText = L"Shutdown";
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Entering main loop");
     while (MainLoopRunning) {
         MenuExit = RunMainMenu(&MainMenu, &SelectionName, &ChosenEntry);
 
@@ -432,13 +534,17 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
             case TAG_REBOOT:    // Reboot
                 TerminateScreen();
+                LOG(1, LOG_LINE_SEPARATOR, L"Rebooting system");
                 refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+                LOG(1, LOG_LINE_NORMAL, L"Reboot FAILED!");
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_SHUTDOWN: // Shut Down
                 TerminateScreen();
+                LOG(1, LOG_LINE_SEPARATOR, L"Shutting down system");
                 refit_call4_wrapper(RT->ResetSystem, EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+                LOG(1, LOG_LINE_NORMAL, L"Shutdown FAILED!");
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -501,7 +607,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
+    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!");
+    UninitRefitLib();
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    ReinitRefitLib();
+    LOG(1, LOG_LINE_SEPARATOR, L"Shutdown after main loop exit has FAILED!");
+    StopLogging();
     EndlessIdleLoop();
 
     return EFI_SUCCESS;

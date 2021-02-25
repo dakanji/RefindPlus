@@ -63,6 +63,7 @@
 #include "driver_support.h"
 #include "../include/refit_call_wrapper.h"
 #include "launch_efi.h"
+#include "log.h"
 #include "scan.h"
 
 //
@@ -137,6 +138,8 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
                Header[Size+2] == 0 && Header[Size+3] == 0 &&
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
+    LOG(1, LOG_LINE_NORMAL, L"'%s' %s a valid loader", FileName,
+        IsValid ? L"is" : L"is NOT");
 #endif
     return IsValid;
 } // BOOLEAN IsValidLoader()
@@ -156,6 +159,8 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
+    CHAR16                  *EspGUID;
+    EFI_GUID                SystemdGuid = SYSTEMD_GUID_VALUE;
 
     // set load options
     if (LoadOptions != NULL) {
@@ -166,6 +171,10 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             // when passing options to Apple's boot.efi...
         } // if
     } // if (LoadOptions != NULL)
+    LOG(1, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
+    LOG(1, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
+    if (IsDriver)
+        LOG(1, LOG_LINE_NORMAL, L"Note: %s is a driver", ImageTitle);
     if (Verbose)
         Print(L"Starting %s\nUsing load options '%s'\n", ImageTitle, FullLoadOptions ? FullLoadOptions : L"");
 
@@ -198,14 +207,17 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
             // NOTE: This doesn't check the return status or handle errors. It could
             // conceivably do weird things if, say, rEFInd were on a USB drive that the
             // user pulls before launching a program.
+            LOG(3, LOG_LINE_NORMAL, L"Employing Shim LoadImage() hack");
             refit_call6_wrapper(BS->LoadImage, FALSE, SelfImageHandle, GlobalConfig.SelfDevicePath,
                                 NULL, 0, &ChildImageHandle2);
         }
     } else {
         Print(L"Invalid loader file!\n");
+        LOG(1, LOG_LINE_NORMAL, L"Invalid loader file!");
         ReturnStatus = EFI_LOAD_ERROR;
     }
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
+        LOG(1, LOG_LINE_NORMAL, L"Secure boot error while loading '%s'", ImageTitle);
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
@@ -224,8 +236,24 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
 
+    if ((GlobalConfig.WriteSystemdVars) && ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))) {
+        // Tell systemd what ESP rEFInd used
+        EspGUID = GuidAsString(&(SelfVolume->PartGuid));
+        LOG(1, LOG_LINE_NORMAL, L"Setting systemd's LoaderDevicePartUUID variable to %s", EspGUID);
+        Status = EfivarSetRaw(&SystemdGuid, L"LoaderDevicePartUUID", (CHAR8 *) EspGUID,
+                              StrLen(EspGUID) * 2 + 2, TRUE);
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL,
+                L"Error %d when trying to set LoaderDevicePartUUID EFI variable", Status);
+        }
+        MyFreePool(EspGUID);
+    } // if write systemd EFI variables
+
     // close open file handles
+    LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", ImageTitle);
     UninitRefitLib();
+
+    // Actually launch the program....
     ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
@@ -240,6 +268,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // re-open file handles
     ReinitRefitLib();
+    LOG(1, LOG_LINE_NORMAL, L"Program has returned %d", Status);
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
@@ -251,6 +280,7 @@ bailout:
     if (!IsDriver)
         FinishExternalScreen();
 
+    LOG(1, LOG_LINE_THIN_SEP, L"Next loader");
     return ReturnStatus;
 } /* EFI_STATUS StartEFIImage() */
 
@@ -272,8 +302,12 @@ EFI_STATUS RebootIntoFirmware(VOID) {
     if (err != EFI_SUCCESS)
         return err;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the computer's firmware");
+    UninitRefitLib();
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
-    Print(L"Error calling ResetSystem: %r", err);
+    ReinitRefitLib();
+    LOG(1, LOG_LINE_NORMAL, L"Error calling ResetSystem: %r", err);
+    Print(L"Error calling ResetSystem: %r\n", err);
     PauseForKey();
     return err;
 } // EFI_STATUS RebootIntoFirmware()
@@ -282,13 +316,21 @@ EFI_STATUS RebootIntoFirmware(VOID) {
 VOID RebootIntoLoader(LOADER_ENTRY *Entry) {
     EFI_STATUS Status;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into EFI loader '%s' (Boot%04x)",
+        Entry->Title, Entry->EfiBootNum);
     Status = EfivarSetRaw(&GlobalGuid, L"BootNext", (CHAR8*) &(Entry->EfiBootNum), sizeof(UINT16), TRUE);
     if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error: %d", Status);
         Print(L"Error: %d\n", Status);
         return;
     }
+    StoreLoaderName(Entry->me.Title);
+    LOG(1, LOG_LINE_NORMAL, L"Attempting to reboot....", Entry->Title, Entry->EfiBootNum);
+    UninitRefitLib();
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
-    Print(L"Error calling ResetSystem: %r", Status);
+    ReinitRefitLib();
+    LOG(1, LOG_LINE_NORMAL, L"Error calling ResetSystem: %r", Status);
+    Print(L"Error calling ResetSystem: %r\n", Status);
     PauseForKey();
 } // RebootIntoLoader()
 
@@ -303,6 +345,7 @@ static VOID DoEnableAndLockVMX(VOID) {
     UINT32 msr = 0x3a;
     UINT32 low_bits = 0, high_bits = 0;
 
+    LOG(1, LOG_LINE_NORMAL, L"Attempting to enable and lock VMX");
     // is VMX active ?
     __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
 
@@ -318,6 +361,7 @@ static VOID DoEnableAndLockVMX(VOID) {
 
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
+    LOG(1, LOG_LINE_SEPARATOR, L"Launching '%s'", SelectionName);
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
     }
@@ -330,6 +374,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
 VOID StartTool(IN LOADER_ENTRY *Entry) {
+    LOG(1, LOG_LINE_SEPARATOR, L"Starting '%s'", Entry->me.Title);
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,

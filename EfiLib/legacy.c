@@ -28,6 +28,7 @@
 #include "legacy.h"
 #include "GenericBdsLib.h"
 #include "../refind/global.h"
+#include "../refind/lib.h"
 #include "../include/refit_call_wrapper.h"
 
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping     = NULL;
@@ -460,15 +461,9 @@ BdsCreateLegacyBootOption (
 
   Ptr += sizeof (BBS_TABLE);
   *((UINT16 *) Ptr) = (UINT16) Index;
-
-  Status = refit_call5_wrapper(gRT->SetVariable,
-                  BootString,
-                  &EfiGlobalVariableGuid,
-                  VAR_FLAG,
-                  BufferSize,
-                  Buffer
-                  );
-
+  Status = EfivarSetRaw(&EfiGlobalVariableGuid, BootString,
+                        (CHAR8*) Buffer,
+                        BufferSize, TRUE);
   FreePool (Buffer);
   
   Buffer = NULL;
@@ -816,13 +811,9 @@ BdsAddNonExistingLegacyBootOptions (
     );
 
   if (BootOrderSize > 0) {
-    Status = refit_call5_wrapper(gRT->SetVariable,
-                    L"BootOrder",
-                    &EfiGlobalVariableGuid,
-                    VAR_FLAG,
-                    BootOrderSize,
-                    BootOrder
-                    );
+    Status = EfivarSetRaw(&EfiGlobalVariableGuid, L"BootOrder",
+                          (CHAR8*) BootOrder,
+                          BootOrderSize, TRUE);
   } else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }
@@ -1034,13 +1025,9 @@ BdsDeleteAllInvalidLegacyBootOptions (
   // Adjust the number of boot options.
   //
   if (BootOrderSize != 0) {
-    Status = refit_call5_wrapper(gRT->SetVariable,
-                    L"BootOrder",
-                    &EfiGlobalVariableGuid,
-                    VAR_FLAG,
-                    BootOrderSize,
-                    BootOrder
-                    );
+    Status = EfivarSetRaw(&EfiGlobalVariableGuid, L"BootOrder",
+                          (CHAR8*) BootOrder,
+                          BootOrderSize, TRUE);
   } else {
     EfiLibDeleteVariable (L"BootOrder", &EfiGlobalVariableGuid);
   }

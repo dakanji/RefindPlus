@@ -14,6 +14,7 @@
 #include "lib.h"
 #include "screen.h"
 #include "install.h"
+#include "log.h"
 #include "menu.h"
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
@@ -36,6 +37,7 @@ typedef struct _esp_list {
 static VOID DeleteESPList(ESP_LIST *AllESPs) {
     ESP_LIST *Temp;
 
+    LOG(3, LOG_LINE_NORMAL, L"Deleting list of ESPs");
     while (AllESPs != NULL) {
         Temp = AllESPs;
         AllESPs = AllESPs->NextESP;
@@ -53,6 +55,7 @@ static ESP_LIST * FindAllESPs(VOID) {
     UINTN VolumeIndex;
     EFI_GUID ESPGuid = ESP_GUID_VALUE;
 
+    LOG(2, LOG_LINE_NORMAL, L"Searching for ESPs");
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL &&
             GuidsAreEqual(&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
@@ -92,6 +95,8 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
     REFIT_MENU_SCREEN   InstallMenu = { L"Install rEFInd", NULL, 0, NULL, 0, NULL, 0, NULL,
                                         L"Select a destination and press Enter or",
                                         L"press Esc to return to main menu without changes" };
+
+    LOG(2, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
@@ -107,10 +112,11 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
                 !MyStriCmp(VolName, PartName)) {
                 Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, VolName);
             } else if (VolName && (StrLen(VolName) > 0)) {
-                 Temp = PoolPrint(L"%s - '%s'", GuidStr, VolName);
+                Temp = PoolPrint(L"%s - '%s'", GuidStr, VolName);
             } else {
                 Temp = PoolPrint(L"%s - no name", GuidStr);
             }
+            LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to UI list of ESPs");
             MyFreePool(&GuidStr);
             MenuEntryItem->Title = Temp;
             MenuEntryItem->Tag = TAG_RETURN;
@@ -132,6 +138,7 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
         } // if
     } else {
         DisplaySimpleMessage(L"Information", L"No eligible ESPs found");
+        LOG(2, LOG_LINE_NORMAL, L"No ESPs found");
     } // if
     return ChosenVolume;
 } // REFIT_VOLUME *PickOneESP()
@@ -632,6 +639,7 @@ VOID InstallRefind(VOID) {
     REFIT_VOLUME  *SelectedESP; // Do not free
     UINTN         Status;
 
+    LOG(1, LOG_LINE_NORMAL, L"Installing rEFInd to an ESP");
     AllESPs = FindAllESPs();
     SelectedESP = PickOneESP(AllESPs);
     if (SelectedESP) {
@@ -662,6 +670,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries(VOID) {
     CHAR16           *Contents = NULL;
     BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
 
+    LOG(1, LOG_LINE_NORMAL, L"Finding boot order entries");
     Status = EfivarGetRaw(&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
     if (Status != EFI_SUCCESS)
         return NULL;
@@ -789,6 +798,7 @@ static EFI_STATUS DeleteInvalidBootEntries(VOID) {
     CHAR8    *Contents;
     CHAR16   *VarName;
 
+    LOG(1, LOG_LINE_NORMAL, L"Deleting invalid boot entries from internal BootOrder list");
     Status = EfivarGetRaw(&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
     if (Status == EFI_SUCCESS) {
         ListSize = VarSize / sizeof(UINT16);
@@ -816,6 +826,7 @@ VOID ManageBootorder(VOID) {
     UINTN           BootNum = 0, Operation;
     CHAR16          *Name, *Message;
 
+    LOG(1, LOG_LINE_NORMAL, L"Managing boot order list");
     Entries = FindBootOrderEntries();
     Operation = PickOneBootOption(Entries, &BootNum);
     if (Operation == EFI_BOOT_OPTION_DELETE) {

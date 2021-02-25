@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/15/2021, referencing rEFInd 0.13.0</p>
+2/24/2021, referencing rEFInd 0.13.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -160,7 +160,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<p class="sidebar"><b>Warning:</b> By default, rEFInd stores its dynamic tags in NVRAM. This is a limited resource, so it's possible to exhaust it, at which point the computer can begin behaving strangely. The <tt>use_nvram</tt> option in <tt>refind.conf</tt> can change this&mdash;setting it to <tt>false</tt> causes rEFInd to instead store its variables on disk. If you want to make heavy use of the dynamic hiding feature, I recommend setting <tt>use_nvram false</tt> in <tt>refind.conf</tt>.</p>
+<p class="sidebar"><b>Note:</b> Beginning with rEFInd 0.13.1, the default configuration file causes rEFInd to store its dynamic tags on disk. This works fine in most cases, but if you installed rEFInd on an HFS+ volume, you'll have to comment out the <tt>use_nvram false</tt> option in <tt>refind.conf</tt> or set it to <tt>true</tt> in order to use dynamic tag hiding. If you make this change, be aware that NVRAM is a limited resource, so it's possible to exhaust it, at which point the computer can begin behaving strangely.</p>
 
 <li><b>Hiding entries dynamically</b>&mdash;rEFInd 0.11.0 introduced a dynamic tag hiding feature. To use it, highlight a tag and hit the Delete (on PCs) or minus (<tt>-</tt>) key. (The Delete key on Macs is the Backspace key on PCs, and will not work for this; however, some Mac keyboards have a key marked Del that will do the job.) rEFInd will ask for confirmation. If you give it, the OS or external tool tag will disappear, and should remain hidden indefinitely. (Note that you cannot hide built-in tools, such as the About/Info display and the reboot-to-firmware option, in this way.) rEFInd stores the list of EFI OS tags so hidden in NVRAM or on disk (as determined by the <tt>use_nvram</tt> token in <tt>refind.conf</tt>) using the <tt>HiddenTags</tt> variable, BIOS/CSM/legacy OS tags as <tt>HiddenLegacy</tt>, hidden firmware reboot tags using the <tt>HiddenFirmware</tt> variable, and tool tags as <tt>HiddenTools</tt>. If you want to recover a tag you've hidden, you can do so by using the hidden tag maintenance function, which appears on the second row of the rEFInd menu as a recycling symbol. You can disable both the ability to hide tags and to recover them by uncommenting the <tt>showtools</tt> item in <tt>refind.conf</tt> and ensuring that <tt>hidden_tags</tt> is <i>not</i> among the options. (Even if you disable this feature, rEFInd continues to honor tags it finds in NVRAM or on disk.)</li>
 
@@ -182,7 +182,7 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 </ul>
 
-<p>Overall, dynamic hiding is the quickest and easiest way to hide one or two unwanted entries &mdash; you can do it from within rEFInd, with just a few keystrokes. The fact that this method relies on NVRAM is a drawback, but not a big one; and it can be changed by setting <tt>use_nvram false</tt> in <tt>refind.conf</tt>. Other methods may be preferable if you want to hide multiple tags or if a tag name changes unpredictably (like a Linux kernel with a version number in its filename, which changes whenever the kernel is updated). Changing <tt>scanfor</tt> is also appropriate if you want to hide all boot tags related to certain boot methods, such as all external devices or all BIOS/CSM/legacy boot options.</p>
+<p>Overall, dynamic hiding is the quickest and easiest way to hide one or two unwanted entries &mdash; you can do it from within rEFInd, with just a few keystrokes. Other methods may be preferable if you want to hide multiple tags or if a tag name changes unpredictably (like a Linux kernel with a version number in its filename, which changes whenever the kernel is updated). Changing <tt>scanfor</tt> is also appropriate if you want to hide all boot tags related to certain boot methods, such as all external devices or all BIOS/CSM/legacy boot options.</p>
 
 <a name="icons">
 <h2>Setting OS Icons</h2>
@@ -263,9 +263,14 @@ timeout 20
    <td>If set to <tt>false</tt> or one of its synonyms (the default), rEFInd boots the option set via <tt>default_selection</tt> when the timeout period is reached. When set to <tt>true</tt> or one of its synonyms, rEFInd attempts to shut down the computer when the timeout period is reached. <i>Many older EFIs lack software shutdown support. On them, setting this option to <tt>true</tt> will cause a reboot or a hang once the timeout value is reached!</i></td>
 </tr>
 <tr>
+   <td><tt>log_level</tt></td>
+   <td>numeric value (<tt>0</tt> to <tt>3</tt>)</td>
+   <td>Sets the logging level. The default level of <tt>0</tt> performs no logging. Higher values cause rEFInd to log information on its activity to the <tt>refind.log</tt> file, which resides in the directory from which rEFInd launched; or in the root of the first ESP that rEFInd can locate, if rEFInd's launch directory is read-only (as when rEFInd is launched from an HFS+ volume). The resulting log file is in UTF-16 format, so you'll need to read it with a text editor or other tool that can parse UTF-16. This feature is intended to help with debugging problems; the log level should be kept at <tt>0</tt> in normal operation. Increasing the log level, especially above <tt>1</tt>, can degrade rEFInd's performance.</td>
+</tr>
+<tr>
    <td><tt>use_nvram</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt> (the default), stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk).</td>
+   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk). The internal default is <tt>true</tt>; however, <tt>use_nvram false</tt> is set in the default <tt>refind.conf</tt> file, so rEFInd will use disk storage by default on a fresh installation.</td>
 </tr>
 <tr>
    <td><tt>screensaver</tt></td>
@@ -468,6 +473,11 @@ timeout 20
    <td><tt>extra_kernel_version_strings</tt></td>
    <td>comma-delimited list of strings</td>
    <td>For the benefit of Linux distributions, such as Arch, that lack version numbers in their kernel filenames but that can provide multiple kernels, you can specify strings that can treated like version numbers. For instance, for Arch you might set this to <tt>linux-lts,linux</tt>; thereafter, the <tt>vmlinuz-linux-lts</tt> kernel will match to an initrd file containing the string <tt>linux-lts</tt> and <tt>vmlinuz-linux</tt> will match an initrd file with a filename that includes <tt>linux</tt>, but not <tt>linux-lts</tt>. Note that, if one specified string is a subset of the other (as in this example), the longer substring <i>must</i> appear first in the list. Also, if a filename includes both a specified string and one or more digits, the match covers both; for instance, <tt>vmlinuz-linux-4.8</tt> would match an initrd file with a name that includes <tt>linux-4.8</tt>. The default is to do no extra matching.</td>
+</tr>
+<tr>
+   <td><tt>write_systemd_vars</tt></td>
+   <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
+   <td>When activated, and when rEFInd believes it is launching an EFI-stub Linux kernel, ELILO, or GRUB, rEFInd will write the GUID of the partition from which it was launched to the <tt>LoaderDevicePartUUID</tt> EFI variable with a vendor GUID of 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f, as described on the <a href="https://systemd.io/BOOT_LOADER_INTERFACE/">systemd Boot Loader Interface page.</a> This has the effect of communicating to Linux's systemd what ESP is active; systemd will then mount the ESP at <tt>/boot</tt> or <tt>/efi</tt> <i>if</i> that directory is is empty and nothing else is mounted there. (Note that most Linux distributions use other means to mount the ESP at <tt>/boot/efi</tt>.) This option has no effect when launching non-Linux OSes (except via GRUB). It is disabled by default. Note that, because the variable is persistent, disabling this feature after booting with it enabled will not eliminate an existing entry. If this causes problems (say, if you want to keep your ESP unmounted by default but find that systemd keeps mounting it), you must alter the systemd configuration, as described in <a href="https://www.freedesktop.org/software/systemd/man/systemd-gpt-auto-generator.html">its documentation;</a> or remove the relevant EFI variable. The latter can be done by typing <tt class="userinput">chattr -i /sys/firmware/efi/efivars/LoaderDevicePartUUID-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f</tt> as <tt>root</tt>, followed by <tt class="userinput">rm /sys/firmware/efi/efivars/LoaderDevicePartUUID-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f</tt>, also as <tt>root</tt>.</td>
 </tr>
 <tr>
    <td><tt>max_tags</tt></td>

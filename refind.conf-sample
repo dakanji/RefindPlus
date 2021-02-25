@@ -12,6 +12,16 @@
 #
 timeout 20
 
+# Set the logging level. When set to 0, rEFInd does not log its actions.
+# When set to 1 or above, rEFInd creates a file called refind.log in
+# its home directory on the ESP and records information about what it's
+# doing. Higher values record more information, up to a maximum of 3.
+# This token should be left at the default of 0 except when debugging
+# problems.
+# Default value is 0
+#
+#log_level 1
+
 # Normally, when the timeout period has passed, rEFInd boots the
 # default_selection. If the following option is uncommented, though,
 # rEFInd will instead attempt to shut down the computer.
@@ -36,7 +46,7 @@ timeout 20
 # variables.
 # Default is true
 #
-#use_nvram false
+use_nvram false
 
 # Screen saver timeout; the screen blanks after the specified number of
 # seconds with no keyboard input. The screen returns after most keypresses
@@ -453,6 +463,14 @@ timeout 20
 # Default is no extra version strings
 #
 #extra_kernel_version_strings linux-lts,linux
+
+# Write to systemd EFI variables (currently only LoaderDevicePartUUID) when
+# launching Linux via an EFI stub loader, ELILO, or GRUB. This variable,
+# when present, causes systemd to mount the ESP at /boot or /efi *IF* either
+# directory is empty and nothing else is mounted there.
+# Default is "false"
+#
+#write_systemd_vars true
 
 # Set the maximum number of tags that can be displayed on the screen at
 # any time. If more loaders are discovered than this value, rEFInd shows

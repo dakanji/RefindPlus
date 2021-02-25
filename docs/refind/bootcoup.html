@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 4/24/2016; last Web page update:
-2/15/2021, referencing rEFInd 0.13.0</p>
+2/24/2021, referencing rEFInd 0.13.1</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -502,7 +502,23 @@ Boot0085* ubuntu</pre>
 
 <p>This procedure is only an example for one EFI. In fact, some EFIs, including the one in the ASUS P8 H77-I, feature multiple user interface modes. The ASUS has an "Advanced" mode, for instance, in which the procedure would be slightly different. They key point, though, is to locate whatever menu displays the boot order and use that menu to adjust it. Such a menu may be shown on the main screen, as in the case of the ASUS' "EZ-Mode," or on a menu you must select&mdash;often called "Boot" or something similar. Some EFIs, particularly for low-end fully-assembled desktop and laptop computers, lack this functionality altogether.</p>
 
-<p>As with most other fixes described on this page, this one won't protect you from future boot coups. Most boot coups are caused by actions of an OS, so prevention must be handled on an OS-by-OS basis.</p>
+<p>One other example (documented in more detail by <a href="https://www.macworld.com/article/1135944/startupboot.html">Macworld</a>) deserves mention. On many (maybe all) Intel-based Macs, you can adjust the boot order as follows:</p>
+
+<ol>
+
+<li>Start with the computer turned off, then power it on; or restart it.</li>
+
+<li>Immediately press and hold the Option (or Alt) key to activate the Mac's built-in boot manager.</li>
+
+<li>Hold the Control key <i>as you use the arrow keys</i> to move the cursor over the item you want to make the default.</li>
+
+<li>Press the Enter key to boot the selected item.</li>
+
+</ol>
+
+<p>This Mac-specific procedure presents only a limited selection of options. In particular, it will show macOS, bootable removable disks, and rEFInd installed to a dedicated HFS+ partition via the <tt>refind-install --ownhfs</tt> procedure; but it will not show rEFInd (or other boot programs) installed to the ESP, even if those options have EFI boot entries. Thus, it may not do what you need; but if you install rEFInd to an HFS+ volume, this procedure could be a useful tool for recovering from a boot coup.</p>
+
+<p>As with most other fixes described on this page, recovering from a boot coup using your firmware's setup tools won't protect you from future boot coups. Most boot coups are caused by actions of an OS, so prevention must be handled on an OS-by-OS basis.</p>
 
 <a name="efi_shell">
 <h3>Using an EFI Shell to Adjust Your Boot Priority</h3>

@@ -1,5 +1,5 @@
 /*
-LodePNG version 20200211
+LodePNG version 20201017
 
 Copyright (c) 2005-2020 Lode Vandevenne
 
@@ -28,7 +28,7 @@ freely, subject to the following restrictions:
  * for GNU-EFI compatibility. The associated lodepng.c file is unmodified
  * from the original.
  */
- 
+
 #ifndef LODEPNG_H
 #define LODEPNG_H
 
@@ -293,12 +293,21 @@ struct LodePNGDecompressSettings {
   unsigned ignore_adler32; /*if 1, continue and don't give an error message if the Adler32 checksum is corrupted*/
   unsigned ignore_nlen; /*ignore complement of len checksum in uncompressed blocks*/
 
-  /*use custom zlib decoder instead of built in one (default: null)*/
+  /*Maximum decompressed size, beyond this the decoder may (and is encouraged to) stop decoding,
+  return an error, output a data size > max_output_size and all the data up to that point. This is
+  not hard limit nor a guarantee, but can prevent excessive memory usage. This setting is
+  ignored by the PNG decoder, but is used by the deflate/zlib decoder and can be used by custom ones.
+  Set to 0 to impose no limit (the default).*/
+  size_t max_output_size;
+
+  /*use custom zlib decoder instead of built in one (default: null).
+  Should return 0 if success, any non-0 if error (numeric value not exposed).*/
   unsigned (*custom_zlib)(unsigned char**, size_t*,
                           const unsigned char*, size_t,
                           const LodePNGDecompressSettings*);
   /*use custom deflate decoder instead of built in one (default: null)
-  if custom_zlib is not null, custom_inflate is ignored (the zlib format uses deflate)*/
+  if custom_zlib is not null, custom_inflate is ignored (the zlib format uses deflate).
+  Should return 0 if success, any non-0 if error (numeric value not exposed).*/
   unsigned (*custom_inflate)(unsigned char**, size_t*,
                              const unsigned char*, size_t,
                              const LodePNGDecompressSettings*);
@@ -477,30 +486,36 @@ typedef struct LodePNGInfo {
   unsigned background_b;       /*blue component of suggested background color*/
 
   /*
-  non-international text chunks (tEXt and zTXt)
+  Non-international text chunks (tEXt and zTXt)
 
   The char** arrays each contain num strings. The actual messages are in
   text_strings, while text_keys are keywords that give a short description what
   the actual text represents, e.g. Title, Author, Description, or anything else.
 
-  All the string fields below including keys, names and language tags are null terminated.
+  All the string fields below including strings, keys, names and language tags are null terminated.
   The PNG specification uses null characters for the keys, names and tags, and forbids null
   characters to appear in the main text which is why we can use null termination everywhere here.
 
-  A keyword is minimum 1 character and maximum 79 characters long. It's
-  discouraged to use a single line length longer than 79 characters for texts.
+  A keyword is minimum 1 character and maximum 79 characters long (plus the
+  additional null terminator). It's discouraged to use a single line length
+  longer than 79 characters for texts.
 
   Don't allocate these text buffers yourself. Use the init/cleanup functions
   correctly and use lodepng_add_text and lodepng_clear_text.
+
+  Standard text chunk keywords and strings are encoded using Latin-1.
   */
   size_t text_num; /*the amount of texts in these char** buffers (there may be more texts in itext)*/
   char** text_keys; /*the keyword of a text chunk (e.g. "Comment")*/
   char** text_strings; /*the actual text*/
 
   /*
-  international text chunks (iTXt)
+  International text chunks (iTXt)
   Similar to the non-international text chunks, but with additional strings
-  "langtags" and "transkeys".
+  "langtags" and "transkeys", and the following text encodings are used:
+  keys: Latin-1, langtags: ASCII, transkeys and strings: UTF-8.
+  keys must be 1-79 characters (plus the additional null terminator), the other
+  strings are any length.
   */
   size_t itext_num; /*the amount of international texts in this PNG*/
   char** itext_keys; /*the English keyword of the text chunk (e.g. "Comment")*/
@@ -662,8 +677,19 @@ typedef struct LodePNGDecoderSettings {
 
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
   unsigned read_text_chunks; /*if false but remember_unknown_chunks is true, they're stored in the unknown chunks*/
+
   /*store all bytes from unknown chunks in the LodePNGInfo (off by default, useful for a png editor)*/
   unsigned remember_unknown_chunks;
+
+  /* maximum size for decompressed text chunks. If a text chunk's text is larger than this, an error is returned,
+  unless reading text chunks is disabled or this limit is set higher or disabled. Set to 0 to allow any size.
+  By default it is a value that prevents unreasonably large strings from hogging memory. */
+  size_t max_text_size;
+
+  /* maximum size for compressed ICC chunks. If the ICC profile is larger than this, an error will be returned. Set to
+  0 to allow any size. By default this is a value that prevents ICC profiles that would be much larger than any
+  legitimate profile could be to hog memory. */
+  size_t max_icc_size;
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
 } LodePNGDecoderSettings;
 
@@ -894,18 +920,18 @@ const unsigned char* lodepng_chunk_find_const(const unsigned char* chunk, const 
 
 /*
 Appends chunk to the data in out. The given chunk should already have its chunk header.
-The out variable and outlength are updated to reflect the new reallocated buffer.
+The out variable and outsize are updated to reflect the new reallocated buffer.
 Returns error code (0 if it went ok)
 */
-unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsigned char* chunk);
+unsigned lodepng_chunk_append(unsigned char** out, size_t* outsize, const unsigned char* chunk);
 
 /*
 Appends new chunk to out. The chunk to append is given by giving its length, type
 and data separately. The type is a 4-letter string.
-The out variable and outlength are updated to reflect the new reallocated buffer.
+The out variable and outsize are updated to reflect the new reallocated buffer.
 Returne error code (0 if it went ok)
 */
-unsigned lodepng_chunk_create(unsigned char** out, size_t* outlength, unsigned length,
+unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize, unsigned length,
                               const char* type, const unsigned char* data);
 
 
@@ -1077,8 +1103,7 @@ TODO:
 [ ] let the C++ wrapper catch exceptions coming from the standard library and return LodePNG error codes
 [ ] allow user to provide custom color conversion functions, e.g. for premultiplied alpha, padding bits or not, ...
 [ ] allow user to give data (void*) to custom allocator
-[ ] provide alternatives for C library functions not present on some platforms (memcpy, ...)
-[ ] rename "grey" to "gray" everywhere since "color" also uses US spelling (keep "grey" copies for backwards compatibility)
+[X] provide alternatives for C library functions not present on some platforms (memcpy, ...)
 */
 
 #endif /*LODEPNG_H inclusion guard*/
@@ -1529,6 +1554,11 @@ of the error in English as a string.
 
 Check the implementation of lodepng_error_text to see the meaning of each code.
 
+It is not recommended to use the numerical values to programmatically make
+different decisions based on error types as the numbers are not guaranteed to
+stay backwards compatible. They are for human consumption only. Programmatically
+only 0 or non-0 matter.
+
 
 8. chunks and PNG editing
 -------------------------
@@ -1594,12 +1624,12 @@ Iterate to the next chunk. This works if you have a buffer with consecutive chun
 functions do no boundary checking of the allocated data whatsoever, so make sure there is enough
 data available in the buffer to be able to go to the next chunk.
 
-unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsigned char* chunk):
-unsigned lodepng_chunk_create(unsigned char** out, size_t* outlength, unsigned length,
+unsigned lodepng_chunk_append(unsigned char** out, size_t* outsize, const unsigned char* chunk):
+unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize, unsigned length,
                               const char* type, const unsigned char* data):
 
 These functions are used to create new chunks that are appended to the data in *out that has
-length *outlength. The append function appends an existing chunk to the new data. The create
+length *outsize. The append function appends an existing chunk to the new data. The create
 function creates a new chunk with the given parameters and appends it. Type is the 4-letter
 name of the chunk.
 
@@ -1799,6 +1829,8 @@ symbol.
 Not all changes are listed here, the commit history in github lists more:
 https://github.com/lvandeve/lodepng
 
+*) 17 okt 2020: prevent decoding too large text/icc chunks by default.
+*) 06 mar 2020: simplified some of the dynamic memory allocations.
 *) 12 jan 2020: (!) added 'end' argument to lodepng_chunk_next to allow correct
    overflow checks.
 *) 14 aug 2019: around 25% faster decoding thanks to huffman lookup tables.

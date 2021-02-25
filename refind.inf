@@ -49,6 +49,7 @@
   refind/lib.c
   refind/line_edit.c
   refind/linux.c
+  refind/log.c
   refind/main.c
   refind/menu.c
   refind/mystrings.c

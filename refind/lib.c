@@ -63,6 +63,8 @@
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
 #include "config.h"
+#include "driver_support.h"
+#include "log.h"
 #include "mystrings.h"
 
 #ifdef __MAKEWITH_GNUEFI
@@ -313,6 +315,12 @@ VOID ReinitVolumes(VOID)
 // called before running external programs to close open file handles
 VOID UninitRefitLib(VOID)
 {
+    // Closing the log file is unnecessary on most systems; however, at
+    // least one I own (with an ASRock FM2A88M Extreme 4+ motherboard)
+    // produces 0-length log files if the file is not closed prior to
+    // launching a follow-on program. Thus, take care of this here....
+    StopLogging();
+
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
     if(SelfRootDir == SelfVolume->RootDir)
@@ -334,6 +342,8 @@ VOID UninitRefitLib(VOID)
 // called after running external programs to re-open file handles
 EFI_STATUS ReinitRefitLib(VOID)
 {
+    EFI_STATUS Status;
+
     ReinitVolumes();
 
     if ((ST->Hdr.Revision >> 16) == 1) {
@@ -354,7 +364,16 @@ EFI_STATUS ReinitRefitLib(VOID)
           SelfRootDir = SelfVolume->RootDir;
     } // if
 
-    return FinishInitRefitLib();
+    Status = FinishInitRefitLib();
+    if (EFI_ERROR(Status)) {
+        // if Status shows an error, we may not be able to re-open
+        // the log file, so disable logging to prevent a subsequent
+        // hang or other problem....
+        GlobalConfig.LogLevel = 0;
+    } else {
+        StartLogging(TRUE);
+    }
+    return Status;
 }
 
 //
@@ -364,13 +383,15 @@ EFI_STATUS ReinitRefitLib(VOID)
 // Retrieve a raw EFI variable, either from NVRAM or from a disk file under
 // rEFInd's "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
-EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size) {
+EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer, OUT UINTN *size OPTIONAL) {
     UINT8 *buf = NULL;
     UINTN l;
     EFI_STATUS Status;
     EFI_FILE *VarsDir = NULL;
     BOOLEAN ReadFromNvram = TRUE;
 
+    LOG(3, LOG_LINE_NORMAL, L"Getting EFI variable '%s' from %s", name,
+        GlobalConfig.UseNvram ? L"NVRAM" : L"disk");
     if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
         Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
                                   EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, EFI_FILE_DIRECTORY);
@@ -401,25 +422,41 @@ EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *s
 // Set an EFI variable. This is normally done to NVRAM; however, rEFInd-specific
 // variables (as determined by the *vendor code) will be saved to a disk file IF
 // GlobalConfig.UseNvram == FALSE.
+// To minimize wear & tear on NVRAM, this function first reads the contents of
+// the variable (if possible), and writes the variable only if its contents
+// have changed (or if the variable is new).
 // Returns EFI status
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent) {
-    UINT32 flags;
-    EFI_FILE *VarsDir = NULL;
-    EFI_STATUS Status;
+    UINT32      flags;
+    EFI_FILE    *VarsDir = NULL;
+    EFI_STATUS  Status = EFI_SUCCESS, OldStatus;
+    CHAR8       *OldBuf;
+    UINTN       OldSize;
 
-    if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
-        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
-                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
-        if (Status == EFI_SUCCESS) {
-            Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
+    OldStatus = EfivarGetRaw(vendor, name, &OldBuf, &OldSize);
+    LOG(2, LOG_LINE_NORMAL, L"Saving EFI variable '%s' to %s", name,
+        GlobalConfig.UseNvram ? L"NVRAM" : L"disk");
+    if ((EFI_ERROR(OldStatus)) || (size != OldSize) || (CompareMem(buf, OldBuf, size) != 0)) {
+        if ((GlobalConfig.UseNvram == FALSE) && GuidsAreEqual(vendor, &RefindGuid)) {
+            Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &VarsDir, L"vars",
+                                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+            if (Status == EFI_SUCCESS) {
+                Status = egSaveFile(VarsDir, name, (UINT8 *) buf, size);
+            }
+            MyFreePool(VarsDir);
+        } else {
+            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+            if (persistent)
+                flags |= EFI_VARIABLE_NON_VOLATILE;
+
+            Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
         }
-        MyFreePool(VarsDir);
     } else {
-        flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-        if (persistent)
-            flags |= EFI_VARIABLE_NON_VOLATILE;
-
-        Status = refit_call5_wrapper(RT->SetVariable, name, vendor, flags, size, buf);
+        LOG(2, LOG_LINE_NORMAL, L"Not writing variable '%s'; it's unchanged", name);
+    }
+    if (OldStatus == EFI_SUCCESS) {
+        LOG(3, LOG_LINE_NORMAL, L"Freeing OldBuf");
+        MyFreePool(&OldBuf);
     }
     return Status;
 } // EFI_STATUS EfivarSetRaw()
@@ -938,6 +975,8 @@ static BOOLEAN HasWindowsBiosBootFiles(REFIT_VOLUME *Volume) {
     return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 
+// Discover basic information about a single volume -- whether it's internal
+// or external, its name, etc.
 VOID ScanVolume(REFIT_VOLUME *Volume)
 {
     EFI_STATUS              Status;
@@ -1126,6 +1165,16 @@ static VOID ScanExtendedPartition(REFIT_VOLUME *WholeDiskVolume, MBR_PARTITION_I
     } // for
 } /* VOID ScanExtendedPartition() */
 
+// Scan volumes to register them in the global Volumes array, which
+// includes volume names, filesystem type information, etc.
+//
+// NOTE: Logging in this function will be effective only when it's called
+// after ReadConfig(); but ReadConfig() needs the volumes discovered in
+// this function, so this function *MUST* be called first, before logging
+// is activated. This function may be called a second time if drivers are
+// loaded or if the user hits the Esc key to re-scan volumes, though.
+// Thus, logging is not useless, but it can't be relied upon to produce
+// results on the first pass.
 VOID ScanVolumes(VOID)
 {
     EFI_STATUS              Status;
@@ -1141,6 +1190,7 @@ VOID ScanVolumes(VOID)
     EFI_GUID                *UuidList;
     EFI_GUID                NullUuid = NULL_GUID_VALUE;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for volumes");
     MyFreePool(Volumes);
     Volumes = NULL;
     VolumesCount = 0;
@@ -1148,6 +1198,7 @@ VOID ScanVolumes(VOID)
 
     // get all filesystem handles
     Status = LibLocateHandle(ByProtocol, &BlockIoProtocol, NULL, &HandleCount, &Handles);
+    LOG(2, LOG_LINE_NORMAL, L"Found handles for %d volumes", HandleCount);
     if (Status == EFI_NOT_FOUND) {
         return;  // no filesystems. strange, but true...
     }
@@ -1161,6 +1212,7 @@ VOID ScanVolumes(VOID)
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable(Volume);
         ScanVolume(Volume);
+        LOG(1, LOG_LINE_NORMAL, L"Identified volume '%s'", Volume->VolName);
         if (UuidList) {
            UuidList[HandleIndex] = Volume->VolUuid;
            for (i = 0; i < HandleIndex; i++) {
@@ -1260,13 +1312,16 @@ VOID SetVolumeIcons(VOID) {
     UINTN        VolumeIndex;
     REFIT_VOLUME *Volume;
 
+    LOG(1, LOG_LINE_NORMAL, L"Setting volume icons....");
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
         // Set volume icon based on .VolumeBadge icon or disk kind
+        LOG(2, LOG_LINE_NORMAL, L"Setting volume badge icon for volume %d", VolumeIndex);
         SetVolumeBadgeIcon(Volume);
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {
             // get custom volume icons if present
             if (!Volume->VolIconImage) {
+                LOG(2, LOG_LINE_NORMAL, L"Trying to load custom volume icon image for volume %d", VolumeIndex);
                 Volume->VolIconImage = egLoadIconAnyType(Volume->RootDir, L"", L".VolumeIcon", GlobalConfig.IconSizes[ICON_SIZE_BIG]);
             }
         }

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/15/2021, referencing rEFInd 0.13.0</p>
+2/24/2021, referencing rEFInd 0.13.1</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -258,6 +258,8 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <li><b>Miscellaneous features</b>
 
   <ul>
+
+    <li>For debugging problems, the <tt>log_level</tt> token in <tt>refind.conf</tt> enables activating logging to a log file, <tt>refind.log</tt>, which is stored in rEFInd's main directory (or in the root of the first ESP that rEFInd can find, if rEFInd can't write to its own directory).</li>
 
     <li>You can specify a configuration file to use at program launch time via the <tt>-c <tt class="variable">filename</tt></tt> command-line option. This feature requires manual installation or launching rEFInd from an EFI shell or some other EFI program you can configure.</li>
 

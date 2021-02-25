@@ -60,6 +60,7 @@ BOOLEAN IsGuid(CHAR16 *UnknownString);
 CHAR16 * GuidAsString(EFI_GUID *GuidData);
 EFI_GUID StringAsGuid(CHAR16 * InString);
 
+CHAR16 *GetTimeString(VOID);
 VOID DeleteStringList(STRING_LIST *StringList);
 
 #endif

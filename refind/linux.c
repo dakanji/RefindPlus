@@ -61,6 +61,7 @@
 #include "menu.h"
 #include "mystrings.h"
 #include "linux.h"
+#include "log.h"
 #include "scan.h"
 
 // Locate an initrd or initramfs file that matches the kernel specified by LoaderPath.
@@ -84,8 +85,10 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     REFIT_DIR_ITER      DirIter;
     EFI_FILE_INFO       *DirEntry;
 
+    LOG(1, LOG_LINE_NORMAL, L"Searching for an initrd to match '%s' on '%s'", LoaderPath, Volume->VolName);
     FileName = Basename(LoaderPath);
     KernelVersion = FindNumbers(FileName);
+    LOG(3, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
     Path = FindPath(LoaderPath);
 
     // Add trailing backslash for root directory; necessary on some systems, but must
@@ -142,6 +145,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     // Note: Don't FreePool(FileName), since Basename returns a pointer WITHIN the string it's passed.
     MyFreePool(KernelVersion);
     MyFreePool(Path);
+    LOG(1, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
 
@@ -288,8 +292,10 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     MergeStrings(&NewFile, FullName, 0);
     MergeStrings(&NewFile, L".efi.signed", 0);
     if (NewFile != NULL) {
-        if (FileExists(Volume->RootDir, NewFile))
+        if (FileExists(Volume->RootDir, NewFile)) {
+            LOG(2, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
             retval = TRUE;
+        }
         MyFreePool(NewFile);
     } // if
 

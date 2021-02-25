@@ -150,7 +150,7 @@ CheckForFiles() {
       exit 1
    fi
    if [[ $EspTargetDir != "/efi/boot" && $EspTargetDir != "/efi/microsoft/boot" ]] ; then
-      Efibootmgr=`which efibootmgr 2> /dev/null`
+      Efibootmgr="$(command -v efibootmgr 2> /dev/null)"
       if [[ ! -f $Efibootmgr ]] ; then
          echo "Moving to a non-default directory requires a working efibootmgr utility, but"
          echo "one can't be found! Aborting!"
@@ -219,7 +219,7 @@ PostMoveCleanup() {
 # Create a BOOT.CSV file in the same directory as rEFInd, to help in recovery
 # should the system's boot entry list be lost
 CreateBootCsvFile() {
-   IConv=`which iconv 2> /dev/null`
+   IConv="$(command -v iconv 2> /dev/null)"
    if [[ -x "$IConv" && -d "$TargetDir" ]] ; then
       echo "$Target,rEFInd boot manager,,This is the boot entry for rEFInd" | \
            $IConv -t UCS-2 > "$TargetDir/BOOT.CSV"
@@ -230,7 +230,7 @@ CreateBootCsvFile() {
 # If necessary, create a new NVRAM entry for the new location
 AddNvramEntry() {
    InstallIt="0"
-   Efibootmgr=`which efibootmgr 2> /dev/null`
+   Efibootmgr="$(command -v efibootmgr 2> /dev/null)"
    InstallDisk=`grep $InstallDir /etc/mtab | grep -v autofs | cut -d " " -f 1 | cut -c 1-8`
    PartNum=`grep $InstallDir /etc/mtab | grep -v autofs | cut -d " " -f 1 | cut -c 9-10`
 

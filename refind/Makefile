@@ -38,7 +38,8 @@ LOCAL_LIBS      = -leg -lmok -lEfiLib
 
 OBJS            = apple.o config.o crc32.o driver_support.o gpt.o icns.o \
                   install.o launch_efi.o launch_legacy.o lib.o line_edit.o \
-                  linux.o main.o menu.o mystrings.o pointer.o scan.o screen.o
+                  linux.o log.o main.o menu.o mystrings.o pointer.o scan.o \
+                  screen.o
 
 include $(SRCDIR)/../Make.common
 

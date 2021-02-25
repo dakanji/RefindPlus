@@ -1,3 +1,14 @@
+NOTE
+====
+
+The rEFInd Makefiles are complex, in order to support building in three ways
+(described shortly). As a consequence (and, likely, because I'm not exactly
+a Makefile guru), tracking of header files is basically non-existent.
+Therefore, if you use git to update to a later version of rEFInd, you should
+do a "make clean" before building a new version of rEFInd, to be sure any
+changed data structures are cleanly applied to all the object files that use
+them.
+
 Requirements
 ============
 

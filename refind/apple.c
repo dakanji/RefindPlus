@@ -24,6 +24,7 @@
 #include "lib.h"
 #include "screen.h"
 #include "apple.h"
+#include "log.h"
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
@@ -88,6 +89,7 @@ VOID RotateCsrValue(VOID) {
     EFI_GUID     CsrGuid = CSR_GUID;
     EFI_STATUS   Status;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Rotating CSR value");
     Status = GetCsrStatus(&CurrentValue);
     if ((Status == EFI_SUCCESS) && GlobalConfig.CsrValues) {
         ListItem = GlobalConfig.CsrValues;
@@ -98,12 +100,15 @@ VOID RotateCsrValue(VOID) {
         } else {
             TargetCsr = ListItem->Next->Value;
         }
+        LOG(1, LOG_LINE_NORMAL, L"CSR value was 0x%04x; setting to 0x%04x", CurrentValue, TargetCsr);
         Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
         if (Status == EFI_SUCCESS)
             RecordgCsrStatus(TargetCsr, TRUE);
         else
             SPrint(gCsrStatus, 255, L" Error setting System Integrity Protection code.");
-    } // if
+    } else {
+        LOG(1, LOG_LINE_NORMAL, L"Could not retrieve CSR value or csr_values not set");
+    } // if/else
 } // VOID RotateCsrValue()
 
 
@@ -135,16 +140,20 @@ EFI_STATUS SetAppleOSInfo() {
     EFI_GUID apple_set_os_guid = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     EfiAppleSetOsInterface *SetOs = NULL;
 
+    LOG(1, LOG_LINE_NORMAL, L"Setting Apple OS information, if applicable");
     Status = refit_call3_wrapper(BS->LocateProtocol, &apple_set_os_guid, NULL, (VOID**) &SetOs);
 
     // If not a Mac, ignore the call....
-    if ((Status != EFI_SUCCESS) || (!SetOs))
+    if ((Status != EFI_SUCCESS) || (!SetOs)) {
+        LOG(2, LOG_LINE_NORMAL, L"Not a Mac; not setting Apple OS information");
         return EFI_SUCCESS;
+    }
 
     if ((SetOs->Version != 0) && GlobalConfig.SpoofOSXVersion) {
         AppleOSVersion = StrDuplicate(L"Mac OS X");
         MergeStrings(&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
         if (AppleOSVersion) {
+            LOG(2, LOG_LINE_NORMAL, L"Setting Apple OS information to '%s'", AppleOSVersion);
             AppleOSVersion8 = AllocateZeroPool((StrLen(AppleOSVersion) + 1) * sizeof(CHAR8));
             UnicodeStrToAsciiStr(AppleOSVersion, AppleOSVersion8);
             if (AppleOSVersion8) {

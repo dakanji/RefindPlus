@@ -93,7 +93,7 @@ EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 VOID UninitRefitLib(VOID);
 EFI_STATUS ReinitRefitLib(VOID);
 
-EFI_STATUS EfivarGetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 **buffer, UINTN *size);
+EFI_STATUS EfivarGetRaw(IN EFI_GUID *vendor, IN CHAR16 *name, OUT CHAR8 **buffer, OUT UINTN *size OPTIONAL);
 EFI_STATUS EfivarSetRaw(EFI_GUID *vendor, CHAR16 *name, CHAR8 *buf, UINTN size, BOOLEAN persistent);
 
 VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName);

@@ -62,6 +62,7 @@
 #include "lib.h"
 #include "menu.h"
 #include "mystrings.h"
+#include "log.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_refind_banner.h"
@@ -87,8 +88,6 @@ static BOOLEAN GraphicsScreenDirty;
 
 // general defines and variables
 
-static BOOLEAN haveError = FALSE;
-
 static VOID PrepareBlankLine(VOID) {
     UINTN i;
 
@@ -106,13 +105,16 @@ static VOID PrepareBlankLine(VOID) {
 
 VOID InitScreen(VOID)
 {
+    LOG(1, LOG_LINE_NORMAL, L"Entering InitScreen()");
     // initialize libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
+        LOG(2, LOG_LINE_NORMAL, L"Have graphics mode; setting screen size");
         egGetScreenSize(&UGAWidth, &UGAHeight);
         AllowGraphicsMode = TRUE;
     } else {
+        LOG(2, LOG_LINE_NORMAL, L"No graphics mode detected; setting text mode");
         AllowGraphicsMode = FALSE;
         egSetTextMode(GlobalConfig.RequestedTextMode);
         egSetGraphicsModeEnabled(FALSE);   // just to be sure we are in text mode
@@ -123,7 +125,9 @@ VOID InitScreen(VOID)
     refit_call2_wrapper(ST->ConOut->EnableCursor, ST->ConOut, FALSE);
 
     // get size of text console
-    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut, ST->ConOut->Mode->Mode, &ConWidth, &ConHeight) != EFI_SUCCESS) {
+    if (refit_call4_wrapper(ST->ConOut->QueryMode, ST->ConOut,
+                            ST->ConOut->Mode->Mode, &ConWidth,
+                            &ConHeight) != EFI_SUCCESS) {
         // use default values on error
         ConWidth = 80;
         ConHeight = 25;
@@ -141,6 +145,7 @@ VOID SetupScreen(VOID)
 {
     UINTN NewWidth, NewHeight;
 
+    LOG(1, LOG_LINE_NORMAL, L"Setting screen resolution and mode");
     // Convert mode number to horizontal & vertical resolution values
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0))
        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -151,6 +156,7 @@ VOID SetupScreen(VOID)
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight > 0)) {
        UGAWidth = (UGAWidth < GlobalConfig.RequestedScreenWidth) ? UGAWidth : GlobalConfig.RequestedScreenWidth;
        UGAHeight = (UGAHeight < GlobalConfig.RequestedScreenHeight) ? UGAHeight : GlobalConfig.RequestedScreenHeight;
+       LOG(2, LOG_LINE_NORMAL, L"Recording current resolution as %dx%d", UGAWidth, UGAHeight);
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
@@ -159,8 +165,12 @@ VOID SetupScreen(VOID)
        if ((NewWidth > UGAWidth) || (NewHeight > UGAHeight)) {
           UGAWidth = NewWidth;
           UGAHeight = NewHeight;
+          LOG(2, LOG_LINE_NORMAL, L"After setting text mode, recording new current resolution as %dx%d",
+              UGAWidth, UGAHeight);
        }
-       if ((UGAWidth > GlobalConfig.RequestedScreenWidth) || (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
+       if ((UGAWidth > GlobalConfig.RequestedScreenWidth) ||
+           (UGAHeight > GlobalConfig.RequestedScreenHeight)) {
+           LOG(2, LOG_LINE_NORMAL, L"Adjusting requested screen size based on actual screen size");
            // Requested text mode forces us to use a bigger graphics mode
            GlobalConfig.RequestedScreenWidth = UGAWidth;
            GlobalConfig.RequestedScreenHeight = UGAHeight;
@@ -168,11 +178,14 @@ VOID SetupScreen(VOID)
     }
 
     if (GlobalConfig.RequestedScreenWidth > 0) {
+       LOG(2, LOG_LINE_NORMAL, L"Setting screen size to %dx%d", GlobalConfig.RequestedScreenWidth,
+           GlobalConfig.RequestedScreenHeight);
        egSetScreenSize(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
        egGetScreenSize(&UGAWidth, &UGAHeight);
     } // if user requested a particular screen resolution
 
     if (GlobalConfig.TextOnly) {
+        LOG(2, LOG_LINE_NORMAL, L"Setting text-only mode");
         // switch to text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText(FALSE);
@@ -180,6 +193,7 @@ VOID SetupScreen(VOID)
         // clear screen and show banner
         // (now we know we'll stay in graphics mode)
         if ((UGAWidth >= HIDPI_MIN) && !HaveResized) {
+            LOG(2, LOG_LINE_NORMAL, L"Doubling icon sizes for HiDPI display");
             GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
             GlobalConfig.IconSizes[ICON_SIZE_BIG] *= 2;
@@ -224,20 +238,6 @@ VOID BeginTextScreen(IN CHAR16 *Title)
 {
     DrawScreenHeader(Title);
     SwitchToText(FALSE);
-
-    // reset error flag
-    haveError = FALSE;
-}
-
-VOID FinishTextScreen(IN BOOLEAN WaitAlways)
-{
-    if (haveError || WaitAlways) {
-       PauseForKey();
-       SwitchToText(FALSE);
-    }
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
@@ -253,9 +253,6 @@ VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
         DrawScreenHeader(Title);
         SwitchToText(TRUE);
     }
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID FinishExternalScreen(VOID)
@@ -263,16 +260,8 @@ VOID FinishExternalScreen(VOID)
     // make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
-    if (haveError) {
-        SwitchToText(FALSE);
-        PauseForKey();
-    }
-
     // Reset the screen resolution, in case external program changed it....
     SetupScreen();
-
-    // reset error flag
-    haveError = FALSE;
 }
 
 VOID TerminateScreen(VOID)
@@ -371,18 +360,6 @@ VOID PauseSeconds(UINTN Seconds) {
      refit_call1_wrapper(BS->Stall, 1000000 * Seconds);
 } // VOID PauseSeconds()
 
-#if REFIT_DEBUG > 0
-VOID DebugPause(VOID)
-{
-    // show console and wait for key
-    SwitchToText(FALSE);
-    PauseForKey();
-
-    // reset error flag
-    haveError = FALSE;
-}
-#endif
-
 VOID EndlessIdleLoop(VOID)
 {
     UINTN index;
@@ -414,7 +391,7 @@ BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where)
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
+    LOG(1, LOG_LINE_NORMAL, Temp);
     MyFreePool(Temp);
 
     return TRUE;
@@ -437,7 +414,7 @@ BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where)
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_ERROR);
     PrintUglyText(Temp, NEXTLINE);
     refit_call2_wrapper(ST->ConOut->SetAttribute, ST->ConOut, ATTR_BASIC);
-    haveError = TRUE;
+    LOG(1, LOG_LINE_NORMAL, Temp);
     MyFreePool(Temp);
 
     return TRUE;

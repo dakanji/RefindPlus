@@ -27,6 +27,7 @@
 #include "mystrings.h"
 #include "lib.h"
 #include "screen.h"
+#include "../include/refit_call_wrapper.h"
 
 BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
     BOOLEAN Found = 0, Terminate = 0;
@@ -359,39 +360,39 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
 // Returns TRUE if SmallString is an element in the comma-delimited List,
 // FALSE otherwise. Performs comparison case-insensitively.
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
-   UINTN     i = 0;
-   BOOLEAN   Found = FALSE;
-   CHAR16    *OneElement;
+    UINTN     i = 0;
+    BOOLEAN   Found = FALSE;
+    CHAR16    *OneElement;
 
-   if (SmallString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         if (MyStriCmp(OneElement, SmallString))
-            Found = TRUE;
-         MyFreePool(OneElement);
-      } // while
-   } // if
-   return Found;
+    if (SmallString && List) {
+        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+            if (MyStriCmp(OneElement, SmallString))
+                Found = TRUE;
+            MyFreePool(OneElement);
+        } // while
+    } // if
+    return Found;
 } // BOOLEAN IsIn()
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
 BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List) {
-   UINTN   i = 0, ElementLength;
-   BOOLEAN Found = FALSE;
-   CHAR16  *OneElement;
+    UINTN   i = 0, ElementLength;
+    BOOLEAN Found = FALSE;
+    CHAR16  *OneElement;
 
-   if (BigString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         ElementLength = StrLen(OneElement);
-         if ((ElementLength <= StrLen(BigString)) &&
-             (ElementLength > 0) &&
-             (StriSubCmp(OneElement, BigString))) {
-                Found = TRUE;
-         } // if
-         MyFreePool(OneElement);
-      } // while
-   } // if
-   return Found;
+    if (BigString && List) {
+        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+            ElementLength = StrLen(OneElement);
+            if ((ElementLength <= StrLen(BigString)) &&
+                 (ElementLength > 0) &&
+                 (StriSubCmp(OneElement, BigString))) {
+                    Found = TRUE;
+            } // if
+            MyFreePool(OneElement);
+        } // while
+    } // if
+    return Found;
 } // BOOLEAN IsSubstringIn()
 
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString
@@ -509,17 +510,17 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
 // Return the GUID as a string, suitable for display to the user. Note that the calling
 // function is responsible for freeing the allocated memory.
 CHAR16 * GuidAsString(EFI_GUID *GuidData) {
-   CHAR16 *TheString;
+    CHAR16 *TheString;
 
-   TheString = AllocateZeroPool(42 * sizeof(CHAR16));
-   if (GuidData && (TheString != 0)) {
-      SPrint (TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-              (UINTN)GuidData->Data1, (UINTN)GuidData->Data2, (UINTN)GuidData->Data3,
-              (UINTN)GuidData->Data4[0], (UINTN)GuidData->Data4[1], (UINTN)GuidData->Data4[2],
-              (UINTN)GuidData->Data4[3], (UINTN)GuidData->Data4[4], (UINTN)GuidData->Data4[5],
-              (UINTN)GuidData->Data4[6], (UINTN)GuidData->Data4[7]);
-   }
-   return TheString;
+    TheString = AllocateZeroPool(42 * sizeof(CHAR16));
+    if (GuidData && (TheString != 0)) {
+        SPrint (TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                (UINTN)GuidData->Data1, (UINTN)GuidData->Data2, (UINTN)GuidData->Data3,
+                (UINTN)GuidData->Data4[0], (UINTN)GuidData->Data4[1], (UINTN)GuidData->Data4[2],
+                (UINTN)GuidData->Data4[3], (UINTN)GuidData->Data4[4], (UINTN)GuidData->Data4[5],
+                (UINTN)GuidData->Data4[6], (UINTN)GuidData->Data4[7]);
+    }
+    return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
 
 EFI_GUID StringAsGuid(CHAR16 * InString) {
@@ -543,6 +544,26 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 
     return Guid;
 } // EFI_GUID StringAsGuid()
+
+// Returns the current time as a string in 24-hour format; e.g., 14:03:17.
+// Discards date portion, since for our purposes, we really don't care.
+// Calling function is responsible for releasing returned string.
+CHAR16 *GetTimeString(VOID) {
+    CHAR16  *TimeStr = NULL;
+    EFI_TIME CurrentTime;
+    EFI_STATUS Status = EFI_SUCCESS;
+
+    Status = refit_call2_wrapper(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
+    if (EFI_ERROR(Status)) {
+        TimeStr = PoolPrint(L"unknown time");
+    } else {
+        TimeStr = PoolPrint(L"%02d:%02d:%02d",
+                            CurrentTime.Hour,
+                            CurrentTime.Minute,
+                            CurrentTime.Second);
+    }
+    return TimeStr;
+} // CHAR16 *GetTimeString()
 
 // Delete the STRING_LIST pointed to by *StringList.
 VOID DeleteStringList(STRING_LIST *StringList) {

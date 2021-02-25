@@ -1,3 +1,9 @@
+refind (0.13.1-0ppa1) focal; urgency=medium
+
+  * Version bump
+
+ -- Roderick Smith <rodsmith@rodsbooks.com>  Wed, 24 Feb 2021 20:13:47 -0500
+
 refind (0.13.0-0ppa1) focal; urgency=medium
 
   * Version bump

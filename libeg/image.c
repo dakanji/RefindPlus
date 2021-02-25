@@ -63,6 +63,7 @@
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"
 #include "libeg.h"
+#include "log.h"
 
 #define MAX_FILE_SIZE (1024*1024*1024)
 
@@ -168,15 +169,20 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
    UINTN Offset = 0;
    UINTN x_ratio, y_ratio, x_diff, y_diff;
 
-   if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0))
+   LOG(3, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
+   if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
+      LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), Image is NULL or a size is 0");
       return NULL;
+   }
 
    if ((Image->Width == NewWidth) && (Image->Height == NewHeight))
       return (egCopyImage(Image));
 
    NewImage = egCreateImage(NewWidth, NewHeight, Image->HasAlpha);
-   if (NewImage == NULL)
+   if (NewImage == NULL) {
+      LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), unable to create new image");
       return NULL;
+   }
 
    x_ratio = ((Image->Width - 1) * FP_MULTIPLIER) / NewWidth;
    y_ratio = ((Image->Height - 1) * FP_MULTIPLIER) / NewHeight;
@@ -218,6 +224,7 @@ EG_IMAGE * egScaleImage(IN EG_IMAGE *Image, IN UINTN NewWidth, IN UINTN NewHeigh
                                             (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
       } // for (j...)
    } // for (i...)
+   LOG(3, LOG_LINE_NORMAL, L"Scaling of image complete");
    return NewImage;
 } // EG_IMAGE * egScaleImage()
 
@@ -246,6 +253,7 @@ EFI_STATUS egLoadFile(IN EFI_FILE *BaseDir, IN CHAR16 *FileName, OUT UINT8 **Fil
     if ((BaseDir == NULL) || (FileName == NULL))
        return EFI_NOT_FOUND;
 
+    LOG(3, LOG_LINE_NORMAL, L"Loading file '%s'", FileName);
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR(Status)) {
         return Status;
@@ -392,11 +400,14 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
        NewImage = egScaleImage(Image, IconSize, IconSize);
        if (!NewImage) {
+          LOG(1, LOG_LINE_NORMAL, L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
+              Image->Width, Image->Height, IconSize, IconSize, Path);
           Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
                 Image->Width, Image->Height, IconSize, IconSize, Path);
+       } else {
+         egFreeImage(Image);
+         Image = NewImage;
        }
-       egFreeImage(Image);
-       Image = NewImage;
     }
 
     return Image;

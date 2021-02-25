@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 2/15/2021</p>
+<p>Last Web page update: 2/24/2021</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -125,6 +125,30 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 <p>The following summarizes changes in rEFInd's public releases:</p>
 
 <ul>
+
+<li><b>0.13.1 (2/24/2021)</b>&mdash;This release adds a couple of new features that won't impact most people (although one is a fairly major addition) and several small bug fixes and minor changes:
+
+<ul>
+
+    <li>The biggest new feature is a logging facility: If <tt>log_level</tt> is set to a value higher than <tt>0</tt>, rEFInd will log its actions in a UTF-16 file called <tt>refind.log</tt> in the same directory as the rEFInd binary, or on the first accessible ESP if rEFInd was launched from a read-only filesystem (such as an HFS+ volume). This feature is intended to assist in debugging problems, not for regular use, since it can slow rEFInd's operation. Thus, it should be commented out or set to its default value of <tt>0</tt> in most cases. If you need to use it, values from <tt>1</tt> to <tt>3</tt> are currently supported, with higher values doing more logging. I'm likely to expand the amount of logging done, and may increase beyond level <tt>3</tt>, in the future.</li>
+
+    <li>To support the <a href="https://systemd.io/BOOT_LOADER_INTERFACE/">systemd Boot Loader Interface,</a> rEFInd can now write the GUID of the partition from which rEFInd was launched to an EFI variable called <tt>LoaderDevicePartUUID</tt> whenever rEFInd launches a Linux kernel with EFI stub support, ELILO, or GRUB. (rEFInd does not touch this variable when launching macOS or Windows.) When this variable is present, systemd can use it to mount the ESP at <tt>/boot</tt> or <tt>/efi</tt>, if one of these directories is present and empty. This activity is enabled by setting <tt>write_systemd_vars true</tt> in <tt>refind.conf</tt>.</li>
+
+    <li>rEFInd now checks EFI variables before writing them, and will not re-write them if doing so would not change them. Previously, rEFInd did this for its PreviousBoot variable; but now it does so for all writes to EFI variables, so as to minimize wear and tear on NVRAM.</li>
+
+    <li>I have uncommented <tt>use_nvram</tt> and set it to <tt>false</tt> in <tt>refind.conf</tt>. This will cause new installations to save rEFInd's own variables to disk rather than to NVRAM, to save wear and tear on the latter; however, if rEFInd is installed to a read-only filesystem (most likely HFS+), then features such as boot to the most-recently-booted OS and dynamic tag hiding will not work unless <tt>use_nvram</tt> is commented out or set to <tt>true</tt>. This change will not affect upgrades to existing installations.</li>
+
+    <li>I have reverted some of the video device discovery changes made in version 0.13.0 after receiving a bug report indicating that they caused at least one Mac model to hang.</li>
+
+    <li>Fixed a bug that could cause rEFInd to misbehave or hang if a disabled manual boot stanza referenced a volume with a name that existed but was unreadable.</li>
+
+    <li>Version 0.13.0 failed to record boots to EFI-based boot options; thus, they would not be used as the default boot option when <tt>default_selection +</tt> was used on the next boot. This has now been fixed.</li>
+
+    <li>Updated <a href="https://lodev.org/lodepng/">LodePNG</a> library (which rEFInd uses for PNG support) to version 20201017.</li>
+
+    <li>Additional replacements of <tt>which</tt> with <tt>command -v</tt> in <tt>mvrefind</tt>.</li>
+
+</ul></li>
 
 <li><b>0.13.0 (2/15/2021)</b>&mdash;This release implements one major user-visible change, several bug fixes (including one major one), and a few smaller improvements:
 
