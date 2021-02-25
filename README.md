@@ -17,26 +17,28 @@ The development focus is on MacPro3,1 to MacPro5,1 (and equivalent Xserve), but 
   * Removes the need to add APFS drivers to run recent Mac OS releases on units without APFS support.
   * Additionally, this ensures that matching APFS drivers for specific Mac OS releases are used.
 - Supports Apple's APFS filesystem requirements
-  * This allows booting Mac OS v11.0 (Big Sur) from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled and potentially compromising system integrity.
+  * This allows booting Mac OS v11.0 (Big Sur) from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
 
 ## Additional Configurable Functionality
-  - continue_on_warning
-  - direct_gop_renderer
-  - disable_amfi
-  - disable_mac_compat_check
-  - enforce_apfs
-  - force_trim
-  - ignore_previous_boot
-  - protect_mac_nvram
-  - provide_console_gop
-  - text_renderer
-  - scale_ui
-  - scan_other_esp
-  - set_mac_boot_args
-  - supply_apfs
-  - suppress_verbose_apfs
-  - uga_pass_through
+Config Token| Functionality
+--- | ---
+continue_on_warning| Proceeds as if a key is pressed after screen warnings (enables remote login).
+direct_gop_renderer| Provides a potentially improved GOP instance for certain GPUs.
+disable_amfi| Disables AMFI Checks on Mac OS if required.
+disable_mac_compat_check| Disables Mac version compatibility checks if required.
+enforce_apfs| Allows directly booting Big Sur as well as FileVault (without needing PreBoot).
+force_trim| Forces `TRIM` on non-Apple SSDs if required.
+ignore_previous_boot| Disables saving the last booted loader if not required.
+protect_mac_nvram| Stops UEFI from writing to Apple NVRAM as this may lead to damage.
+provide_console_gop| Fixes issues with GOP on some Legacy Macs.
+text_renderer| Provides a text renderer that allows text mode when not otherwise available.
+scale_ui| Provides control of UI element scaling.
+scan_other_esp| Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
+set_mac_boot_args| Allows arbitrary Mac OS boot argument strings .
+supply_apfs| Provides APFS file system capability if required.
+suppress_verbose_apfs| Supresses verbose APFS text on boot when `supply_apfs` is active if required.
+uga_pass_through| Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 ## Installation
 [MyBootMgr](https://www.dakanji.com/creations/index.html), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on Xserve3,1. However, the RefindPlus efi can work as a drop-in replacement for the rEFInd efi. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd.
@@ -52,7 +54,7 @@ Configuration differences between the rEFInd and RefindPlus implementations as a
 - `use_nvram`: Application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
 - `resolution`: The `max` setting is ignored as the maximum available resolution is automatically used by default by RefindPlus when required.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
-- rEFInd now scans other ESPs for loaders in addition to that containing the rEFInd loader and the earlier behaviour, in which other ESPs were treated as duplicates and ignored, has been considered an error and changed. The earlier behaviour is preferred in RefindPlus where it is maintained. However, users are provided an option to override this behaviour in favour of the new rEFInd behaviour by activating the RefindPlus-specific `scan_other_esp` configuration token.
+- rEFInd now scans other ESPs for loaders, in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
 
 A sample RefindPlus configuration file is provided here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
