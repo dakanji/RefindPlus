@@ -1129,11 +1129,17 @@ CHAR16
 *GetVolumeName (
     IN REFIT_VOLUME *Volume
 ) {
-    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr = NULL;
-    CHAR16                *FoundName         = NULL;
-    CHAR16                *SISize, *TypeName;
-    EFI_GUID              GuidHFS  = HFS_GUID_VALUE;
-    EFI_GUID              GuidAPFS = APFS_GUID_VALUE;
+    CHAR16                *SISize;
+    CHAR16                *TypeName;
+    CHAR16                *FoundName          = NULL;
+    EFI_GUID              GuidHFS             = HFS_GUID_VALUE;
+    EFI_GUID              GuidAPFS            = APFS_GUID_VALUE;
+    EFI_GUID              GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
+    EFI_GUID              GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
+    EFI_GUID              GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
+    EFI_GUID              GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
+    EFI_GUID              GuidAppleTvRecovery = APPLE_TV_RECOVERY_GUID;
+    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr  = NULL;
 
 
     if (Volume->RootDir != NULL) {
@@ -1180,14 +1186,29 @@ CHAR16
                 FoundName = L"Disc/Network Volume (Assumed)";
             }
             else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
-                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                    FoundName = L"Unidentified Volume (HFS+)";
+                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
+                    FoundName = L"Apple Raid (Online)";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
+                    FoundName = L"Apple Raid (Offline)";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
+                    FoundName = L"Recovery HD";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
+                    FoundName = L"AppleTV Recovery";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
+                    FoundName = L"FileVault/CoreStorage Container";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    FoundName = L"APFS Container";
+                    FoundName = L"FileVault/APFS Container";
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                    FoundName = L"Unidentified HFS+ Volume";
                 }
                 else {
-                    FoundName = L"APFS Container (Assumed)";
+                    FoundName = L"Unidentified Mac Volume";
                 }
             }
             else {
