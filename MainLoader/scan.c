@@ -1350,7 +1350,7 @@ ScanMacOsLoader (
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
         else {
-            if (GlobalConfig.EnforceAPFS &&
+            if (GlobalConfig.ReinforceAPFS &&
                 MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
             ) {
                 AddThisEntry = FALSE;

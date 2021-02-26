@@ -1978,7 +1978,7 @@ ScanVolumes (
     }
     #endif
 
-    if (SelfVolRun && GlobalConfig.EnforceAPFS) {
+    if (SelfVolRun && GlobalConfig.ReinforceAPFS) {
         SetPrebootVolumes();
     }
 } // VOID ScanVolumes()

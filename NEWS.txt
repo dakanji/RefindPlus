@@ -5,7 +5,7 @@
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
   * Records selected EFI-based reboot options in the PreviousBoot variable
   * Implements support for setting systemd's LoaderDevicePartUUID EFI variable
-  * Re-interpretes partial icon scaling fix implemented upstream  
+  * Re-interpretes partial icon scaling fix implemented upstream
 - Syncs with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
   * Does not adopt upstream reinterpretation of RefindPlus graphics protocol detection
@@ -38,6 +38,8 @@
   * Provides option not to always save the name of the previously booted loader
 - Limits 'AllowDuplicates' feature to ESPs
   * This feature now only applies to ESPs.
+- Changes 'enforce_apfs' Config Option to 'reinforce_apfs'
+  * More accurately describes functionality
 - Changes 'allow_duplicates' Config Option to 'scan_other_esp'
   * Reflects change of scope
 - Changes 'trim_force' Config Option Back to 'force_trim'

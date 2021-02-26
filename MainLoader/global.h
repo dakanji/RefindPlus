@@ -399,7 +399,7 @@ typedef struct {
    BOOLEAN          DisableAMFI;
    BOOLEAN          SupplyAPFS;
    BOOLEAN          SuppressVerboseAPFS;
-   BOOLEAN          EnforceAPFS;
+   BOOLEAN          ReinforceAPFS;
    BOOLEAN          ProtectMacNVRAM;
    BOOLEAN          ScanOtherESP;
    BOOLEAN          ShutdownAfterTimeout;
