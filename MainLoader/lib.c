@@ -1187,16 +1187,16 @@ CHAR16
             }
             else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
                 if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
-                    FoundName = L"Apple Raid (Online)";
+                    FoundName = L"Apple Raid Partition (Online)";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
-                    FoundName = L"Apple Raid (Offline)";
+                    FoundName = L"Apple Raid Partition (Offline)";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
                     FoundName = L"Recovery HD";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
-                    FoundName = L"AppleTV Recovery";
+                    FoundName = L"AppleTV Recovery Partition";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
                     FoundName = L"FileVault/CoreStorage Container";
@@ -1208,18 +1208,18 @@ CHAR16
                     FoundName = L"Unidentified HFS+ Volume";
                 }
                 else {
-                    FoundName = L"Unidentified Mac Volume";
+                    FoundName = L"Unknown Volume";
                 }
             }
             else {
                 if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                    FoundName = L"Unidentified Volume (HFS+)";
+                    FoundName = L"Unidentified HFS+ Volume";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    FoundName = L"Unidentified Volume (APFS)";
+                    FoundName = L"Unidentified APFS Volume";
                 }
                 else {
-                    FoundName = L"Unidentified Volume";
+                    FoundName = L"Unknown Volume";
                 }
             } // if StrLen TypeName else if MyStriCmp else
         } // if FoundName != NULL
@@ -1868,7 +1868,7 @@ ScanVolumes (
     }
     else if (!SelfVolRun) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Self Volume:- '%s'\n\n", SelfVolume->VolName);
+        MsgLog ("INFO: Self Volume:- '%s :: %s'\n\n", SelfVolume->VolName, SelfVolume->PartGuid);
         #endif
     }
     else {

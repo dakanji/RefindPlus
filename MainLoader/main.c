@@ -1462,7 +1462,7 @@ LogBasicInfo (
     APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
 
 
-    MsgLog ("INFO: System Details\n");
+    MsgLog ("System Summary...\n");
 
     if ((gST->Hdr.Revision >> 16) == 1) {
         TempStr = L"EFI";
@@ -1471,14 +1471,14 @@ LogBasicInfo (
         TempStr = L"UEFI";
     }
     MsgLog (
-        "      EFI Revision:- '%s %d.%02d'\n",
+        "EFI Revision:- '%s %d.%02d'\n",
         TempStr,
         gST->Hdr.Revision >> 16,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
     MyFreePool (TempStr);
 
-    MsgLog ("      Architecture:- ");
+    MsgLog ("Architecture:- ");
     #if defined(EFI32)
         MsgLog ("'x86/IA32/i386 (32-bit)'\n");
     #elif defined(EFIX64)
@@ -1489,8 +1489,8 @@ LogBasicInfo (
         MsgLog ("'Unknown'\n");
     #endif
 
-    MsgLog ("      Shim:- '%s'\n", ShimLoaded() ? L"Active" : L"Inactive");
-    MsgLog ("      Secure Boot:- '%s'\n", secure_mode() ? L"Active" : L"Inactive");
+    MsgLog ("Shim:- '%s'\n", ShimLoaded() ? L"Active" : L"Inactive");
+    MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active" : L"Inactive");
 
     if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
         Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
@@ -1510,13 +1510,13 @@ LogBasicInfo (
             }
 
         }
-        MsgLog ("      Apple Framebuffers:- '%d'\n", HandleCount);
+        MsgLog ("Apple Framebuffers:- '%d'\n", HandleCount);
         MyFreePool (HandleBuffer);
     }
 
     if (EfiMajorVersion > 1) {
         // QueryVariableInfo() is not supported in EFI 1.x
-        MsgLog ("      EFI Non-Volatile Storage Info:\n");
+        MsgLog ("EFI Non-Volatile Storage Info:\n");
 
         Status = refit_call4_wrapper(
             gRT->QueryVariableInfo,
@@ -1526,18 +1526,18 @@ LogBasicInfo (
             &MaximumVariableSize
         );
         if (EFI_ERROR(Status)) {
-            MsgLog ("      * WARN: Could not Retrieve on UEFI 2.x\n");
+            MsgLog ("* WARN: Could not Retrieve on UEFI 2.x\n");
         }
         else {
-            MsgLog ("        - Total Storage         : %ld\n", MaximumVariableStorageSize);
-            MsgLog ("        - Remaining Available   : %ld\n", RemainingVariableStorageSize);
-            MsgLog ("        - Maximum Variable Size : %ld\n", MaximumVariableSize);
+            MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
+            MsgLog ("  - Remaining Available   : %ld\n", RemainingVariableStorageSize);
+            MsgLog ("  - Maximum Variable Size : %ld\n", MaximumVariableSize);
         }
     }
 
     // Report which video output devices are available. We don't actually
     // use them, so just use TempStr as a throwaway pointer to the protocol.
-    MsgLog ("      Native Screen Modes:\n");
+    MsgLog ("Native Screen Modes:\n");
     MyFreePool (TempStr);
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
     MyFreePool (TempStr);
@@ -1547,7 +1547,7 @@ LogBasicInfo (
     else {
         TempStr = L"Detected";
     }
-    MsgLog ("        - Text Mode ...%s\n", TempStr);
+    MsgLog ("  - Text Mode ...%s\n", TempStr);
 
     MyFreePool (TempStr);
     Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempStr);
@@ -1558,7 +1558,7 @@ LogBasicInfo (
     else {
         TempStr = L"Detected";
     }
-    MsgLog ("        - Graphics Mode (UGA) ...%s\n", TempStr);
+    MsgLog ("  - Graphics Mode (UGA) ...%s\n", TempStr);
 
     MyFreePool (TempStr);
     Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempStr);
@@ -1569,7 +1569,7 @@ LogBasicInfo (
     else {
         TempStr = L"Detected";
     }
-    MsgLog ("        - Graphics Mode (GOP) ...%s\n\n", TempStr);
+    MsgLog ("  - Graphics Mode (GOP) ...%s\n\n", TempStr);
 
     MyFreePool (TempStr);
 } // VOID LogBasicInfo()
@@ -1638,7 +1638,7 @@ efi_main (
 #if defined(__MAKEWITH_GNUEFI)
     MsgLog ("Made With:- 'GNU-EFI'\n");
 #else
-    MsgLog ("Made With:- 'TianoCore (EDK2)'\n");
+    MsgLog ("Made With:- 'TianoCore (EDK II)'\n");
 #endif
 
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
