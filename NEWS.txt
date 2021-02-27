@@ -1,5 +1,7 @@
 0.13.1.AA (Pre-Release):
 -----------------------
+- Syncs with Upstream Post v0.13.1 Updates
+  * Adds icon for Manjaro Linux
 - Syncs with Upstream v0.13.1
   * Fixes bug that can cause issues with disabled manual boot stanza referencing unreadable volumes
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
