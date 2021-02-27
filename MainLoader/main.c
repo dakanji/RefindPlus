@@ -1655,6 +1655,9 @@ efi_main (
     }
     SetConfigFilename (ImageHandle);
 
+    // Set Secure Boot Up
+    MokProtocol = SecureBootSetup();
+
     // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
     // however, if drivers are loaded, a second call to ScanVolumes() is needed
     // to register the new filesystem (s) accessed by the drivers.
@@ -1678,7 +1681,6 @@ efi_main (
     }
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
-    MokProtocol = SecureBootSetup();
 
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
