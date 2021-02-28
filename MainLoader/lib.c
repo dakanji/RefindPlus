@@ -1199,10 +1199,10 @@ CHAR16
                     FoundName = L"AppleTV Recovery Partition";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
-                    FoundName = L"FileVault/CoreStorage Container";
+                    FoundName = L"Fusion/FileVault Container";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    FoundName = L"FileVault/APFS Container";
+                    FoundName = L"APFS/FileVault Container";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
                     FoundName = L"Unidentified HFS+ Volume";
@@ -1868,7 +1868,8 @@ ScanVolumes (
     }
     else if (!SelfVolRun) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Self Volume:- '%s :: %s'\n\n", SelfVolume->VolName, SelfVolume->PartGuid);
+        CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
+        MsgLog ("INFO: Self Volume:- '%s :: %s'\n\n", SelfVolume->VolName, SelfGUID);
         #endif
     }
     else {
