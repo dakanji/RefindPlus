@@ -967,20 +967,34 @@ static VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
 static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
-    CHAR16   *VolName = NULL, *DontScanDir, *PathCopy = NULL, *VolGuid = NULL;
-    UINTN    i = 0;
-    BOOLEAN  ScanIt = TRUE;
+    UINTN    i            = 0;
+    CHAR16   *VolName     = NULL;
+    CHAR16   *VolGuid     = NULL;
+    CHAR16   *PathCopy    = NULL;
+    CHAR16   *DontScanDir = NULL;
+    BOOLEAN  ScanIt       = TRUE;
+    BOOLEAN  FilerScan    = TRUE;
 
-    VolGuid = GuidAsString (&(Volume->PartGuid));
-    if ((IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) ||
-        (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
-        (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
+    // Skip initial scan filter for 'PreBoot' volumes when 'ReinforceAPFS' is active
+    // DA-TAG: Review Requirement
+    if ((GlobalConfig.ReinforceAPFS) &&
+        (MyStriCmp (L"PreBoot", Volume->VolName) || MyStriCmp (L"PreBoot", Volume->PartName))
     ) {
-        MyFreePool (VolGuid);
-
-        return FALSE;
+        FilerScan = FALSE;
     }
-    MyFreePool (VolGuid);
+
+    if (FilerScan) {
+        VolGuid = GuidAsString (&(Volume->PartGuid));
+        if ((IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) ||
+            (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
+            (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
+        ) {
+            MyFreePool (VolGuid);
+
+            return FALSE;
+        }
+        MyFreePool (VolGuid);
+    }
 
     if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
         return FALSE;
