@@ -26,11 +26,13 @@ The files in this directory are, in alphabetical order:
 - canonical-uefi-ca.crt & canonical-uefi-ca.cer -- Canonical's public key,
   matched to the one used to sign Ubuntu boot loaders and kernels.
 
-- centos.crt & centos.cer -- Public keys used to sign CentOS binaries, taken
-  from shim-signed-0.9-2.el7.src.rpm. Note that the binary's centos.crt file
-  was actually in .cer format, and has been renamed appropriately. The
-  centos.crt file included here is transformed from the original file by
-  openssl. Tested booting CentOS 7.
+- centossecurebootca2.cer & centossecurebootca2.crt -- Public keys used to
+  authenticate CentOS binaries, taken from shim-15-15.el8_2.src.rpm. Note
+  that these are new files for CentOS 8; CentOS 7 used a now-expired key.
+
+- centossecureboot201.cer & centossecureboot201.crt -- I'm not entirely sure
+  what this is, but it comes from the same shim-15-15.el8_2.src.rpm package
+  as the preceding files.
 
 - debian.cer -- Debian's public key, obtained from
   https://dsa.debian.org/secure-boot-ca.
