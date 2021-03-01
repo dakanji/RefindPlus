@@ -759,14 +759,13 @@ VOID
 SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
-    BOOLEAN gotGraphics = egIsGraphicsModeEnabled();
-
     SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen (ShowBanner);
     }
 
     #if REFIT_DEBUG > 0
+    BOOLEAN gotGraphics = egIsGraphicsModeEnabled();
     if (!gotGraphics) {
         MsgLog ("INFO: Restore Graphics Mode ...Success\n\n");
     }
