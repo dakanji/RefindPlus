@@ -123,10 +123,10 @@
 # that this setting will create a Mac OS NVRAM entry the first time it is
 # triggered and that this will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also note that forcing 'TRIM'
-# may significantly increase boot times and that if 'TRIM' is forced on
-# using Mac OS Terminal, warnings about data integrity are generated.
+# may significantly increase boot times and that enabling 'TRIM' on
+# non-Apple SSDs may affect the integrity of data on such SSDs.
 #
-# Inactive when commented out (Does not force 'TRIM' on)
+# Inactive when commented out (Does not force 'TRIM' on non-Apple SSDs)
 #
 #force_trim
 
