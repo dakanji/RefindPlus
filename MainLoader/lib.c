@@ -1877,7 +1877,7 @@ ScanVolumes (
     else if (!SelfVolRun) {
         #if REFIT_DEBUG > 0
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-        MsgLog ("INFO: Self Volume:- '%s :: %s'\n\n", SelfVolume->VolName, SelfGUID);
+        MsgLog ("INFO: Self Volume:- '%s::%s'\n\n", SelfVolume->VolName, SelfGUID);
         #endif
     }
     else {
