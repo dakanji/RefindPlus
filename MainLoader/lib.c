@@ -1582,12 +1582,11 @@ SetPreBootNames (
             )
         ) {
             FoundGUID = TRUE;
-            if (Volume->VolName &&
-                !(MyStriCmp (Volume->VolName, L"PreBoot")) &&
-                !(MyStriCmp (Volume->VolName, L"Recovery")) &&
-                !(MyStriCmp (Volume->VolName, L"Update")) &&
-                !(MyStriCmp (Volume->VolName, L"VM")) &&
-                MyStrStr (Volume->VolName, L"FileVault Container") == NULL &&
+            if (!MyStriCmp (Volume->VolName, L"Recovery") &&
+                !MyStriCmp (Volume->VolName, L"PreBoot") &&
+                !MyStriCmp (Volume->VolName, L"Update") &&
+                !MyStriCmp (Volume->VolName, L"VM") &&
+                MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
                 NameSwap = TRUE;
@@ -1603,12 +1602,11 @@ SetPreBootNames (
                     &(Volume->PartGuid)
                 )
             ) {
-                if (Volume->VolName &&
-                    !(MyStriCmp (Volume->VolName, L"PreBoot")) &&
-                    !(MyStriCmp (Volume->VolName, L"Recovery")) &&
-                    !(MyStriCmp (Volume->VolName, L"Update")) &&
-                    !(MyStriCmp (Volume->VolName, L"VM")) &&
-                    MyStrStr (Volume->VolName, L"FileVault Container") == NULL &&
+                if (!MyStriCmp (Volume->VolName, L"Recovery") &&
+                    !MyStriCmp (Volume->VolName, L"PreBoot") &&
+                    !MyStriCmp (Volume->VolName, L"Update") &&
+                    !MyStriCmp (Volume->VolName, L"VM") &&
+                    MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                     MyStrStr (Volume->VolName, L" - Data") == NULL
                 ) {
                     NameSwap = TRUE;
@@ -1652,17 +1650,27 @@ SetPrebootVolumes (
         #if REFIT_DEBUG > 0
         MsgLog ("ReMap APFS Volumes:");
         #endif
+
         for (i = 0; i < VolumesCount; i++) {
-            SwapName = SetPreBootNames (Volumes[i]);
-            if (SwapName) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("\n");
-                MsgLog ("  - Mapped Volume:- '%s'", Volumes[i]->VolName);
-                #endif
-                MyFreePool (Volumes[i]->VolName);
-                Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
-            }
-        }
+            if (Volumes[i]->VolName != NULL) {
+                if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL) {
+                    SwapName = FALSE;
+                }
+                else {
+                    SwapName = SetPreBootNames (Volumes[i]);
+                }
+
+                if (SwapName) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("\n");
+                    MsgLog ("  - Mapped Volume:- '%s'", Volumes[i]->VolName);
+                    #endif
+                    MyFreePool (Volumes[i]->VolName);
+                    Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
+                }
+            } // if Volume->VolName
+        } // for
+
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
         #endif
