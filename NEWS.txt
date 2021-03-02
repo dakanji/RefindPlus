@@ -1,3 +1,10 @@
+0.13.1.AB (02 Mar 2021):
+- Fixes APFS ReMapping
+  * APFS Containers were not excluded as should have been the case
+- Fixes Hour Logging
+  * Deviation from GetTime spec meant some log files were not in chronological order
+
+
 0.13.1.AA (02 Mar 2021):
 -----------------------
 - Syncs with Upstream Post v0.13.1 Updates
