@@ -79,73 +79,73 @@ CHAR16
 ) {
     CHAR16  *AltHour = NULL;
 
-    if (NowHour == 1) {
+    if (NowHour == 0) {
         AltHour = L"a";
     }
-    else if (NowHour == 2) {
+    else if (NowHour == 1) {
         AltHour = L"b";
     }
-    else if (NowHour == 3) {
+    else if (NowHour == 2) {
         AltHour = L"c";
     }
-    else if (NowHour == 4) {
+    else if (NowHour == 3) {
         AltHour = L"d";
     }
-    else if (NowHour == 5) {
+    else if (NowHour == 4) {
         AltHour = L"e";
     }
-    else if (NowHour == 6) {
+    else if (NowHour == 5) {
         AltHour = L"f";
     }
-    else if (NowHour == 7) {
+    else if (NowHour == 6) {
         AltHour = L"g";
     }
-    else if (NowHour == 8) {
+    else if (NowHour == 7) {
         AltHour = L"h";
     }
-    else if (NowHour == 9) {
+    else if (NowHour == 8) {
         AltHour = L"i";
     }
-    else if (NowHour == 10) {
+    else if (NowHour == 9) {
         AltHour = L"j";
     }
-    else if (NowHour == 11) {
+    else if (NowHour == 10) {
         AltHour = L"k";
     }
-    else if (NowHour == 12) {
+    else if (NowHour == 11) {
         AltHour = L"m";
     }
-    else if (NowHour == 13) {
+    else if (NowHour == 12) {
         AltHour = L"n";
     }
-    else if (NowHour == 14) {
+    else if (NowHour == 13) {
         AltHour = L"p";
     }
-    else if (NowHour == 15) {
+    else if (NowHour == 14) {
         AltHour = L"q";
     }
-    else if (NowHour == 16) {
+    else if (NowHour == 17) {
         AltHour = L"r";
     }
-    else if (NowHour == 17) {
+    else if (NowHour == 16) {
         AltHour = L"s";
     }
-    else if (NowHour == 18) {
+    else if (NowHour == 17) {
         AltHour = L"t";
     }
-    else if (NowHour == 19) {
+    else if (NowHour == 18) {
         AltHour = L"u";
     }
-    else if (NowHour == 20) {
+    else if (NowHour == 19) {
         AltHour = L"v";
     }
-    else if (NowHour == 21) {
+    else if (NowHour == 20) {
         AltHour = L"w";
     }
-    else if (NowHour == 22) {
+    else if (NowHour == 21) {
         AltHour = L"x";
     }
-    else if (NowHour == 23) {
+    else if (NowHour == 22) {
         AltHour = L"y";
     }
     else {
