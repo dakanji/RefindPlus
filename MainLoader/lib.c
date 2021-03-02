@@ -1582,12 +1582,12 @@ SetPreBootNames (
             )
         ) {
             FoundGUID = TRUE;
-            if (!(MyStriCmp (Volume->VolName, L"PreBoot")) &&
+            if (Volume->VolName &&
+                !(MyStriCmp (Volume->VolName, L"PreBoot")) &&
                 !(MyStriCmp (Volume->VolName, L"Recovery")) &&
                 !(MyStriCmp (Volume->VolName, L"Update")) &&
                 !(MyStriCmp (Volume->VolName, L"VM")) &&
-                !(MyStriCmp (Volume->VolName, L"")) &&
-                MyStrStr (Volume->VolName, L"APFS Container") == NULL &&
+                MyStrStr (Volume->VolName, L"FileVault Container") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
                 NameSwap = TRUE;
@@ -1603,12 +1603,12 @@ SetPreBootNames (
                     &(Volume->PartGuid)
                 )
             ) {
-                if (!(MyStriCmp (Volume->VolName, L"PreBoot")) &&
+                if (Volume->VolName &&
+                    !(MyStriCmp (Volume->VolName, L"PreBoot")) &&
                     !(MyStriCmp (Volume->VolName, L"Recovery")) &&
                     !(MyStriCmp (Volume->VolName, L"Update")) &&
                     !(MyStriCmp (Volume->VolName, L"VM")) &&
-                    !(MyStriCmp (Volume->VolName, L"")) &&
-                    MyStrStr (Volume->VolName, L"APFS Container") == NULL &&
+                    MyStrStr (Volume->VolName, L"FileVault Container") == NULL &&
                     MyStrStr (Volume->VolName, L" - Data") == NULL
                 ) {
                     NameSwap = TRUE;
