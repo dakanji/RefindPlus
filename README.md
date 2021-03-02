@@ -52,6 +52,7 @@ While RefindPlus will function with the rEFInd configuration file, `refind.conf`
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.1. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
 
 Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.1 are:
+- `firmware_bootnum`: Manual Stanzas with this token are ignored by RefindPlus due to reliability issues.
 - `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
 - `use_nvram`: Application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
 - `resolution`: The `max` setting is ignored as the maximum available resolution is automatically used by default by RefindPlus when required.

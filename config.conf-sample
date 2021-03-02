@@ -927,19 +927,3 @@ menuentry "My Mac OS" {
     loader \System\Library\CoreServices\boot.efi
     disabled
 }
-
-# The firmware_bootnum token takes a HEXADECIMAL value as an option
-# and sets that value using the EFI's BootNext variable and then
-# reboots the computer. This then causes a one-time boot of the
-# computer using this EFI boot option. It can be used for various
-# purposes, but one that's likely to interest some rEFInd users is
-# that some Macs with HiDPI displays produce lower-resolution
-# desktops when booted through rEFInd than when booted via Apple's
-# own boot manager. Booting using the firmware_bootnum option
-# produces the better resolution. Note that no loader option is
-# used in this type of configuration.
-menuentry "macOS via BootNext" {
-    icon /EFI/refind/icons/os_mac.png
-    firmware_bootnum 80
-    disabled
-}
