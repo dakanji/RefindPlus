@@ -794,6 +794,14 @@ write_systemd_vars
 #
 #csr_values 10,77
 
+# Include a secondary configuration file within this one. This secondary
+# file is loaded as if its options appeared at the point of the "include"
+# option itself, so if you want to override a setting in the main file,
+# the secondary file must be referenced AFTER the setting you want to
+# override. Note that the secondary file may NOT load a tertiary file.
+#
+#include manual.conf
+
 # Sample manual configuration stanzas. Each begins with the "menuentry"
 # keyword followed by a name that is to appear in the menu (use quotes
 # if you want the name to contain a space) and an open curly brace
@@ -935,11 +943,3 @@ menuentry "macOS via BootNext" {
     firmware_bootnum 80
     disabled
 }
-
-# Include a secondary configuration file within this one. This secondary
-# file is loaded as if its options appeared at the point of the "include"
-# option itself, so if you want to override a setting in the main file,
-# the secondary file must be referenced AFTER the setting you want to
-# override. Note that the secondary file may NOT load a tertiary file.
-#
-#include manual.conf
