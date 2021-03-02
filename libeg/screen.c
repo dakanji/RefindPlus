@@ -1581,13 +1581,13 @@ egScreenDescription (
     if (egHasGraphics) {
         if (GOPDraw != NULL) {
             SPrint (GraphicsInfo, 255,
-                L"Graphics Output Protocol (UEFI 2.x): %d x %d",
+                L"Graphics Output Protocol @ %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
         else if (UGADraw != NULL) {
             SPrint (GraphicsInfo, 255,
-                L"Universal Graphics Adapter (EFI 1.x): %d x %d",
+                L"Universal Graphics Adapter @ %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
@@ -1597,7 +1597,7 @@ egScreenDescription (
 
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"Internal Error While Getting Graphics Details";
+            ShowScreenStr = L"Could not Get Graphics Details";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);

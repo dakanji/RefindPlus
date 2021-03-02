@@ -1082,10 +1082,10 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
         AddMenuInfoLine (&AboutMenu, L"");
 
-        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
-        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2012-2020 Roderick W. Smith");
-        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020 Dayo Akanji");
-        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) Intel Corporation and others");
+        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji");
+        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
+        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
+        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Running on: ");
@@ -1107,56 +1107,39 @@ VOID AboutRefindPlus (
         );
         MyFreePool (TempStr);
 
+        // More than ~65 causes empty info page on 800x600 display
+        LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
+
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (L"Firmware Vendor: %s", FirmwareVendor)
+        );
+
         #if defined (EFI32)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: x86 (32 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
-        );
+        AddMenuInfoLine (&AboutMenu, L"Platform: x86 (32 bit)");
         #elif defined (EFIX64)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: x86_64 (64 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
-        );
+        AddMenuInfoLine (&AboutMenu, L"Platform: x86_64 (64 bit)");
         #elif defined (EFIAARCH64)
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Platform: ARM (64 bit); Secure Boot %s",
-                secure_mode() ? L"active" : L"inactive"
-            )
-        );
+        AddMenuInfoLine (&AboutMenu, L"Platform: ARM (64 bit)");
         #else
         AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
+
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"Secure Boot: %s",
+                secure_mode() ? L"active" : L"inactive"
+            )
+        );
 
         if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
             RecordgCsrStatus (CsrStatus, FALSE);
             AddMenuInfoLine (&AboutMenu, gCsrStatus);
         }
 
-        FirmwareVendor = StrDuplicate (gST->FirmwareVendor);
-
-        // More than ~65 causes empty info page on 800x600 display
-        LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
-
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L" Firmware: %s %d.%02d",
-                FirmwareVendor,
-                gST->FirmwareRevision >> 16,
-                gST->FirmwareRevision & ((1 << 16) - 1)
-            )
-        );
-
         TempStr = egScreenDescription();
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L" Screen Output: %s", TempStr));
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", TempStr));
         MyFreePool (TempStr);
 
         AddMenuInfoLine (&AboutMenu, L"");
@@ -1638,7 +1621,7 @@ efi_main (
 #if defined(__MAKEWITH_GNUEFI)
     MsgLog ("Made With:- 'GNU-EFI'\n");
 #else
-    MsgLog ("Made With:- 'TianoCore (EDK II)'\n");
+    MsgLog ("Made With:- 'TianoCore EDK II'\n");
 #endif
 
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
