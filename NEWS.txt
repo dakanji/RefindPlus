@@ -1,4 +1,4 @@
-0.13.1.AA (Pre-Release):
+0.13.1.AA (02 Mar 2021):
 -----------------------
 - Syncs with Upstream Post v0.13.1 Updates
   * Adds icon for Manjaro Linux
@@ -17,7 +17,8 @@
   * To be borne in mind for changes if such reports are received
   * Still accepts upstream config files including the new 'Max' resolution option (which is disregarded)
   * All other upstream options incoporated including rebooting into firmware efi and the new manual stanza options
-- Fixes Potential GNUEFI Build Failure
+  * Does not implement 'firmware_bootnum' manual stanzas dues to reliability issues
+- Fixes Potential GNUEFI Build Failure (Partial)
   * The feature that provides Strict UEFI 2.x GOP has only ever worked on versions compiled with Tianocore.
   * Now takes steps to prevent build failures on GNUEFI which might not find linked Tianocore resources.
 - No Longer Saves RefindPlus Settings to Hardware NVRAM When Not Explicitly Set
@@ -30,7 +31,7 @@
   * Discards superflous variables
 - Fixes Several Memory Management Issues
   * These had largely been introduced after the v0.12.0.AN Release
-  * One outcome had been a failure to run on units some units (mainly laptops)
+  * One outcome had been a failure to run on some units
 - Adds 'EnforceAPFS' Feature
   * Allows booting Mac OS Big Sur when SIP is disabled.
   * Allows booting FileVault encrypted volumes directly.
