@@ -1463,11 +1463,11 @@ LogBasicInfo (
 
     MsgLog ("Architecture:- ");
     #if defined(EFI32)
-        MsgLog ("'x86/IA32/i386 (32-bit)'\n");
+        MsgLog ("'x86 (32 bit)'\n");
     #elif defined(EFIX64)
-        MsgLog ("'x86-64/X64/AMD64 (64-bit)'\n");
+        MsgLog ("'x86_64 (64 bit)'\n");
     #elif defined(EFIAARCH64)
-        MsgLog ("'ARM64/AARCH64 (64-bit)'\n");
+        MsgLog ("'ARM (64 bit)'\n");
     #else
         MsgLog ("'Unknown'\n");
     #endif
