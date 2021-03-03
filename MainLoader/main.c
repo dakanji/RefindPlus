@@ -1447,7 +1447,7 @@ LogBasicInfo (
 
     MsgLog ("System Summary...\n");
 
-    if ((gST->Hdr.Revision >> 16) == 1) {
+    if (EfiMajorVersion == 1) {
         TempStr = L"EFI";
     }
     else {
@@ -1456,7 +1456,7 @@ LogBasicInfo (
     MsgLog (
         "EFI Revision:- '%s %d.%02d'\n",
         TempStr,
-        gST->Hdr.Revision >> 16,
+        EfiMajorVersion,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
     MyFreePool (TempStr);
@@ -2134,11 +2134,6 @@ efi_main (
                 }
                 #endif
 
-                if (!GlobalConfig.TextOnly ||
-                    MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL
-                ) {
-                    ourLoaderEntry->UseGraphicsMode = TRUE;
-                }
                 StartLoader (ourLoaderEntry, SelectionName);
                 break;
 
