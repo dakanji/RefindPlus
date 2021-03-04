@@ -1,6 +1,6 @@
 0.13.1.AC (PreRelease):
-- Drops Switch to Graphics Mode on EFI Boot
-  * Maintains default mode instead of switching to graphics mode when booting EFI loaders
+- Drops Switch to Graphics Mode on EFI Boot (When not OpenCore)
+  * Maintains default mode instead of switching to graphics mode when booting EFI loaders 
 
 
 0.13.1.AB (02 Mar 2021):
