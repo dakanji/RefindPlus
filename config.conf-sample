@@ -9,48 +9,14 @@
 ##--------------------------------------------------------------##
 #
 #
-# While using NVRAM works with most computers, this increases wear
-# and tear on the motherboard's NVRAM. In situations where the NVRAM is
-# old and worn out, it may not work and may lead to an inability to boot.
-# Storing variables on disk is a viable alternative and RefindPlus can save
-# its variables to the "vars" subdirectory of the RefindPlus directory on disk.
-# However, this will not work if RefindPlus is on a filesystem that is read-only
-# to the EFI (e.g. HFS+ volumes), and it may also increase the risk of filesystem
-# damage. Note that this option ONLY applies to RefindPlus variables such as the
-# PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy variables. It does NOT
-# apply to any non-RefindPlus variables which will always be written to NVRAM.
-#
-# Stores RefindPlus variables in the "vars" subdirectory when commented out
-#
-#use_nvram
-
-# Set the screen's video resolution. Pass this option either:
-#  * two values, corresponding to the X and Y resolutions
-#  * one value, corresponding to a GOP (UEFI) video mode
-# Note that not all resolutions are supported. On UEFI systems, passing
-# an incorrect value results in a message being shown on the screen to
-# that effect, along with a list of supported modes. On EFI 1.x systems
-# (e.g., Macintoshes), setting an incorrect mode silently fails. On both
-# types of systems, setting an incorrect resolution results in the default
-# resolution being used. A 'max' setting is ignored in RefindPlus which
-# uses the maximum screen resolution by default.
-#
-# Uses the maximum screen resolution when commented out
-#
-#resolution 1024 768
-#resolution 1440 900
-#resolution 3
-#resolution max
-
 # RefindPlus defaults to storing the name of the last booted loader in a
 # 'PreviousBoot' variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
-# is loaded. This may increase wear and tear on the motherboard's NVRAM.
-# The 'use_nvram' token can be used to write to the filesystem instead
-# to reduce this, but on some setups, such as when the 'default_selection'
-# token is set, such writes are not required at all. When this option is
+# is loaded. This can increase wear and tear on the motherboard's NVRAM and
+# disabling the 'use_nvram' token allows writing to the filesystem instead
+# to reduce this. On some setups however, such as when the 'default_selection'
+# token is set, such writes are not required at all and when this option is
 # active, RefindPlus will not exexute such writes at all.
-# NB: This functionality is only available on TianoCore Builds
 #
 # Always saves the 'PreviousBoot' variable when commented out
 #
@@ -229,6 +195,77 @@
 # Inactive when commented out (Does not change boot arguments)
 #
 #set_mac_boot_args "-v"
+
+# While using NVRAM works with most computers, this increases wear
+# and tear on the motherboard's NVRAM. In situations where the NVRAM is
+# old and worn out, it may fail to work and lead to an inability to boot.
+# Storing variables on disk is a viable alternative and RefindPlus can save
+# its variables to the "vars" subdirectory of the RefindPlus directory on disk.
+# However, this will not work if RefindPlus is on a filesystem that is read-only
+# to the EFI (e.g. HFS+ volumes), and it may also increase the risk of filesystem
+# damage. Note that this option ONLY applies to RefindPlus variables such as the
+# PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy variables. It does NOT
+# apply to any non-RefindPlus variables which will always be written to NVRAM.
+#
+# Stores RefindPlus variables in the "vars" subdirectory when commented out
+#
+#use_nvram
+
+# Which non-bootloader tools to show on the tools line, and in what
+# order to display them:
+#  shell            - UEFI/EFI Shell. (External program; see documentation)
+#  memtest          - Memory Testing Utility. (External program; memtest86)
+#  gptsync          - the (dangerous) gptsync.efi utility (requires external
+#                     program; see RefindPlus documentation for details)
+#  gdisk            - the gdisk partitioning program
+#  show_bootscreen  - Load Apple Boot Screen if available. (External program)
+#                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
+#                     'Fully Compatible GPUs' are those with native Apple Boot Screen
+#  clean_nvram      - Reset NVRAM from Refind. (External program)
+#                     Requires Apple Firmware.
+#  apple_recovery   - boots the Apple Recovery HD partition, if present
+#  windows_recovery - boots an OEM Windows recovery tool, if present
+#                     (see also the windows_recovery_files option)
+#  mok_tool         - makes available the Machine Owner Key (MOK) maintenance
+#                     tool, MokManager.efi, used on Secure Boot systems
+#  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
+#                     policy. Requires "csr_values" to be set.
+#  install          - an option to install RefindPlus from the current location
+#                     to another ESP
+#  bootorder        - adjust the EFI's (NOT RefindPlus') boot order
+#  about            - an "about this program" option
+#  hidden_tags      - manage hidden tags
+#  exit             - a tag to exit from RefindPlus
+#  shutdown         - shuts down the computer (a bug causes this to reboot
+#                     many UEFI systems)
+#  reboot           - a tag to reboot the computer
+#  firmware         - a tag to reboot the computer into the firmware's
+#                     user interface (ignored on older computers)
+#  fwupdate         - a tag to update the firmware; launches the fwupx64.efi
+#                     (or similar) program
+#  netboot          - launch the ipxe.efi tool for network (PXE) booting
+#
+# The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate
+#
+#showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
+
+# Set the screen's video resolution. Pass this option either:
+#  * two values, corresponding to the X and Y resolutions
+#  * one value, corresponding to a GOP (UEFI) video mode
+# Note that not all resolutions are supported. On UEFI systems, passing
+# an incorrect value results in a message being shown on the screen to
+# that effect, along with a list of supported modes. On EFI 1.x systems
+# (e.g., Macintoshes), setting an incorrect mode silently fails. On both
+# types of systems, setting an incorrect resolution results in the default
+# resolution being used. The 'max' setting is ignored as RefindPlus uses
+# the maximum screen resolution by default when required.
+#
+# Uses the maximum screen resolution when commented out
+#
+#resolution 1024 768
+#resolution 1440 900
+#resolution 3
+#resolution max
 
 # Note: The logging level token below is ignored by RefindPlus
 #
@@ -449,44 +486,6 @@ timeout 20
 # Uses osx (Launches Mac OS in graphics mode) when commented out
 #
 #use_graphics_for osx,linux
-
-# Which non-bootloader tools to show on the tools line, and in what
-# order to display them:
-#  shell            - UEFI/EFI Shell. (External program; see documentation)
-#  memtest          - Memory Testing Utility. (External program; memtest86)
-#  gptsync          - the (dangerous) gptsync.efi utility (requires external
-#                     program; see RefindPlus documentation for details)
-#  gdisk            - the gdisk partitioning program
-#  show_bootscreen  - Load Apple Boot Screen if available. (External program)
-#                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
-#                     'Fully Compatible GPUs' are those with native Apple Boot Screen
-#  clean_nvram      - Reset NVRAM from Refind. (External program)
-#                     Requires Apple Firmware.
-#  apple_recovery   - boots the Apple Recovery HD partition, if present
-#  windows_recovery - boots an OEM Windows recovery tool, if present
-#                     (see also the windows_recovery_files option)
-#  mok_tool         - makes available the Machine Owner Key (MOK) maintenance
-#                     tool, MokManager.efi, used on Secure Boot systems
-#  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
-#                     policy. Requires "csr_values" to be set.
-#  install          - an option to install RefindPlus from the current location
-#                     to another ESP
-#  bootorder        - adjust the EFI's (NOT RefindPlus') boot order
-#  about            - an "about this program" option
-#  hidden_tags      - manage hidden tags
-#  exit             - a tag to exit from RefindPlus
-#  shutdown         - shuts down the computer (a bug causes this to reboot
-#                     many UEFI systems)
-#  reboot           - a tag to reboot the computer
-#  firmware         - a tag to reboot the computer into the firmware's
-#                     user interface (ignored on older computers)
-#  fwupdate         - a tag to update the firmware; launches the fwupx64.efi
-#                     (or similar) program
-#  netboot          - launch the ipxe.efi tool for network (PXE) booting
-#
-# The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate
-#
-#showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an
