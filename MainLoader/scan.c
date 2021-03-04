@@ -105,7 +105,7 @@
 #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
 #define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi"
 #define BOOTKICKER_NAMES        L"\\BootKicker.efi"
-#define BOOTKICKER_NAMES        L"\\CleanNvram.efi"
+#define NVRAMCLEAN_NAMES        L"\\CleanNvram.efi"
 #define DRIVER_DIRS             L"drivers"
 #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
 #define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
