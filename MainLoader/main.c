@@ -1073,9 +1073,10 @@ preCleanNvram (
 VOID AboutRefindPlus (
     VOID
 ) {
-    CHAR16  *FirmwareVendor;
-    CHAR16  *TempStr;
     UINT32  CsrStatus;
+    CHAR16  *TempStr         = NULL;
+    CHAR16  *FirmwareVendor  = NULL;
+    
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
@@ -2107,7 +2108,7 @@ efi_main (
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
-                
+
                 StartLoader (ourLoaderEntry, SelectionName);
                 break;
 
