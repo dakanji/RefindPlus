@@ -1433,7 +1433,7 @@ LogBasicInfo (
     VOID
 ) {
     EFI_STATUS Status;
-    CHAR16     *TempStr = NULL;
+    CHAR16     *TempMode = NULL;
     UINT64     MaximumVariableSize;
     UINT64     MaximumVariableStorageSize;
     UINT64     RemainingVariableStorageSize;
@@ -1446,20 +1446,12 @@ LogBasicInfo (
 
 
     MsgLog ("System Summary...\n");
-
-    if (EfiMajorVersion == 1) {
-        TempStr = L"EFI";
-    }
-    else {
-        TempStr = L"UEFI";
-    }
     MsgLog (
         "EFI Revision:- '%s %d.%02d'\n",
-        TempStr,
+        (EfiMajorVersion == 1) ? L"EFI" : L"UEFI",
         EfiMajorVersion,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
-    MyFreePool (TempStr);
 
     MsgLog ("Architecture:- ");
     #if defined(EFI32)
@@ -1472,8 +1464,8 @@ LogBasicInfo (
         MsgLog ("'Unknown'\n");
     #endif
 
-    MsgLog ("Shim:- '%s'\n", ShimLoaded() ? L"Active" : L"Inactive");
-    MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active" : L"Inactive");
+    MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
+    MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
 
     if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
         Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
@@ -1498,7 +1490,7 @@ LogBasicInfo (
     }
 
     if (EfiMajorVersion > 1) {
-        // QueryVariableInfo() is not supported in EFI 1.x
+        // NB: QueryVariableInfo() is not supported by EFI 1.x
         MsgLog ("EFI Non-Volatile Storage Info:\n");
 
         Status = refit_call4_wrapper(
@@ -1509,7 +1501,7 @@ LogBasicInfo (
             &MaximumVariableSize
         );
         if (EFI_ERROR(Status)) {
-            MsgLog ("* WARN: Could not Retrieve on UEFI 2.x\n");
+            MsgLog ("** WARN: Could not Retrieve on UEFI 2.x\n");
         }
         else {
             MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
@@ -1519,42 +1511,20 @@ LogBasicInfo (
     }
 
     // Report which video output devices are available. We don't actually
-    // use them, so just use TempStr as a throwaway pointer to the protocol.
+    // use them, so just use TempMode as a throwaway pointer to the protocol.
     MsgLog ("Native Screen Modes:\n");
-    MyFreePool (TempStr);
-    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
-    MyFreePool (TempStr);
-    if (EFI_ERROR(Status)) {
-        TempStr = L"Not Detected";
-    }
-    else {
-        TempStr = L"Detected";
-    }
-    MsgLog ("  - Text Mode ...%s\n", TempStr);
 
-    MyFreePool (TempStr);
-    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempStr);
-    MyFreePool (TempStr);
-    if (EFI_ERROR(Status)) {
-        TempStr = L"Not Detected";
-    }
-    else {
-        TempStr = L"Detected";
-    }
-    MsgLog ("  - Graphics Mode (UGA) ...%s\n", TempStr);
+    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempMode);
+    MsgLog ("  - Text Mode ...%s\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MyFreePool (TempMode);
 
-    MyFreePool (TempStr);
-    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempStr);
-    MyFreePool (TempStr);
-    if (EFI_ERROR(Status)) {
-        TempStr = L"Not Detected";
-    }
-    else {
-        TempStr = L"Detected";
-    }
-    MsgLog ("  - Graphics Mode (GOP) ...%s\n\n", TempStr);
+    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempMode);
+    MsgLog ("  - Graphics Mode (UGA) ...%s\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MyFreePool (TempMode);
 
-    MyFreePool (TempStr);
+    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempMode);
+    MsgLog ("  - Graphics Mode (GOP) ...%s\n\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MyFreePool (TempMode);
 } // VOID LogBasicInfo()
 #endif
 
