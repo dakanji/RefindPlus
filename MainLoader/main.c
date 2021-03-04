@@ -1075,8 +1075,8 @@ VOID AboutRefindPlus (
 ) {
     UINT32  CsrStatus;
     CHAR16  *TempStr         = NULL;
-    CHAR16  *FirmwareVendor  = NULL;
-    
+    CHAR16  *FirmwareVendor  = gST->FirmwareVendor;
+
 
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
@@ -1089,24 +1089,14 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
         AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, L"Running on: ");
 
-        if ((gST->Hdr.Revision >> 16) == 1) {
-            TempStr = L"EFI";
-        }
-        else {
-            TempStr = L"UEFI";
-        }
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"EFI Revision: %s %d.%02d",
-                TempStr,
-                gST->Hdr.Revision >> 16,
-                gST->Hdr.Revision & ((1 << 16) - 1)
-            )
-        );
-        MyFreePool (TempStr);
+        #if defined (__MAKEWITH_GNUEFI)
+        AddMenuInfoLine (&AboutMenu, L"Built with GNU-EFI");
+        #else
+        AddMenuInfoLine (&AboutMenu, L"Built with TianoCore EDK II");
+        #endif
+
+        AddMenuInfoLine (&AboutMenu, L"");
 
         // More than ~65 causes empty info page on 800x600 display
         LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
@@ -1126,6 +1116,23 @@ VOID AboutRefindPlus (
         AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
 
+        if ((gST->Hdr.Revision >> 16) == 1) {
+            TempStr = L"EFI";
+        }
+        else {
+            TempStr = L"UEFI";
+        }
+        AddMenuInfoLine (
+            &AboutMenu,
+            PoolPrint (
+                L"EFI Revision: %s %d.%02d",
+                TempStr,
+                gST->Hdr.Revision >> 16,
+                gST->Hdr.Revision & ((1 << 16) - 1)
+            )
+        );
+        MyFreePool (TempStr);
+
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
@@ -1144,17 +1151,8 @@ VOID AboutRefindPlus (
         MyFreePool (TempStr);
 
         AddMenuInfoLine (&AboutMenu, L"");
-
-        #if defined (__MAKEWITH_GNUEFI)
-        AddMenuInfoLine (&AboutMenu, L"Built with GNU-EFI");
-        #else
-        AddMenuInfoLine (&AboutMenu, L"Built with TianoCore EDK II");
-        #endif
-
-        AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
-        AddMenuInfoLine (&AboutMenu, L"Visit the project repository for more information:");
-        AddMenuInfoLine (&AboutMenu, L"https://github.com/dakanji/RefindPlus/blob/GOPFix/README.md");
+        AddMenuInfoLine (&AboutMenu, L"https://github.com/dakanji/RefindPlus");
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
@@ -1755,8 +1753,6 @@ efi_main (
         MsgLog ("INFO: Displaying User Warning\n\n");
         #endif
 
-        BOOLEAN GraphicsModeActive = egIsGraphicsModeEnabled();
-
         SwitchToText (FALSE);
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -1790,12 +1786,12 @@ efi_main (
         }
         #endif
 
-        if (GraphicsModeActive) {
+        if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
 
-            SwitchToGraphicsAndClear(TRUE);
+            SwitchToGraphicsAndClear (TRUE);
         }
         else {
             #if REFIT_DEBUG > 0

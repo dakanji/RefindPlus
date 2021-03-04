@@ -62,7 +62,7 @@ GetCsrStatus (
             }
             else {
                 Status = EFI_BAD_BUFFER_SIZE;
-                gCsrStatus = L" Unknown System Integrity Protection version";
+                gCsrStatus = L"Unknown System Integrity Protection Version";
             }
 
             MyFreePool (ReturnValue);
@@ -91,7 +91,7 @@ VOID RecordgCsrStatus (
         // Standard SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Enabled (0x%04x)",
+                L"System Integrity Protection Enabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -99,7 +99,7 @@ VOID RecordgCsrStatus (
         // Standard SIP "Disabled" Setting
         case SIP_DISABLED:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Disabled (0x%04x)",
+                L"System Integrity Protection Disabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -111,7 +111,7 @@ VOID RecordgCsrStatus (
         case SIP_DISABLED_DEBUG:
         case SIP_DISABLED_DBGANY:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Disabled (0x%04x - Custom Setting)",
+                L"System Integrity Protection Disabled (0x%04x - Custom Setting)",
                 CsrStatus
             );
             break;
@@ -119,7 +119,7 @@ VOID RecordgCsrStatus (
         // Max Legal CSR "Disabled" Setting
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Removed (0x%04x - Caution: All Protection Removed!)",
+                L"System Integrity Protection Removed (0x%04x - Caution: All Protection Removed!)",
                 CsrStatus
             );
             break;
@@ -127,7 +127,7 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L" System Integrity Protection Status: 0x%04x - Caution: Unknown Custom Setting",
+                L"System Integrity Protection Status: 0x%04x - Caution: Unknown Custom Setting",
                 CsrStatus
             );
     } // switch
