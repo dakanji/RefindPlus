@@ -32,10 +32,10 @@
 # that effect, along with a list of supported modes. On EFI 1.x systems
 # (e.g., Macintoshes), setting an incorrect mode silently fails. On both
 # types of systems, setting an incorrect resolution results in the default
-# resolution being used. A resolution of 1024x768 usually works, but higher
-# values often do not.
+# resolution being used. A 'max' setting is ignored in RefindPlus which
+# uses the maximum screen resolution by default.
 #
-# Uses the system default, usually 800x600, when commented out
+# Uses the maximum screen resolution when commented out
 #
 #resolution 1024 768
 #resolution 1440 900
@@ -484,9 +484,9 @@ timeout 20
 #                     (or similar) program
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 #
-# The default setting is shell,memtest,gdisk,apple_recovery,windows_recovery,mok_tool,about,hidden_tags,shutdown,reboot,firmware,fwupdate
+# The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate
 #
-#showtools shell, bootorder, gdisk, memtest, mok_tool, apple_recovery, windows_recovery, about, hidden_tags, reboot, exit, firmware, fwupdate
+#showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an
