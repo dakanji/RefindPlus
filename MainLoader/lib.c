@@ -1575,6 +1575,7 @@ SetPreBootNames (
                 !MyStriCmp (Volume->VolName, L"PreBoot") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
                 !MyStriCmp (Volume->VolName, L"VM") &&
+                MyStrStr (Volume->VolName, L"Unknown") == NULL &&
                 MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
@@ -1595,6 +1596,7 @@ SetPreBootNames (
                     !MyStriCmp (Volume->VolName, L"PreBoot") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
                     !MyStriCmp (Volume->VolName, L"VM") &&
+                    MyStrStr (Volume->VolName, L"Unknown") == NULL &&
                     MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                     MyStrStr (Volume->VolName, L" - Data") == NULL
                 ) {
