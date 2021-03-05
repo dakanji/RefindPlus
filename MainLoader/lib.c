@@ -738,108 +738,92 @@ SetFilesystemData (
    char    *MagicString;
 
    if ((Buffer != NULL) && (Volume != NULL)) {
-      SetMem (&(Volume->VolUuid), sizeof (EFI_GUID), 0);
-      Volume->FSType = FS_TYPE_UNKNOWN;
+       SetMem(&(Volume->VolUuid), sizeof(EFI_GUID), 0);
+       Volume->FSType = FS_TYPE_UNKNOWN;
 
-      if (BufferSize >= (1024 + 100)) {
-         Magic16 = (UINT16*) (Buffer + 1024 + 56);
+       if (BufferSize >= (1024 + 100)) {
+           Magic16 = (UINT16*) (Buffer + 1024 + 56);
+           if (*Magic16 == EXT2_SUPER_MAGIC) { // ext2/3/4
+               Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
+               Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
+               if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) { // check for extents or flex_bg
+                   Volume->FSType = FS_TYPE_EXT4;
+               } else if (*Ext2Compat & 0x0004) { // check for journal
+                   Volume->FSType = FS_TYPE_EXT3;
+               } else { // none of these features; presume it's ext2...
+                   Volume->FSType = FS_TYPE_EXT2;
+               }
+               CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
+               return;
+           }
+       } // search for ext2/3/4 magic
 
-         if (*Magic16 == EXT2_SUPER_MAGIC) {
-             // ext2/3/4
-            Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
-            Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
+       if (BufferSize >= (65536 + 100)) {
+           MagicString = (char*) (Buffer + 65536 + 52);
+           if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0) ||
+               (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0) ||
+               (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)) {
+                   Volume->FSType = FS_TYPE_REISERFS;
+                   CopyMem(&(Volume->VolUuid), Buffer + 65536 + 84, sizeof(EFI_GUID));
+                   return;
+           } // if
+       } // search for ReiserFS magic
 
-            // check for extents or flex_bg
-            if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) {
-               Volume->FSType = FS_TYPE_EXT4;
-            }
-            // check for journal
-            else if (*Ext2Compat & 0x0004) {
-               Volume->FSType = FS_TYPE_EXT3;
-            }
-            // none of these features; presume it's ext2...
-            else {
-               Volume->FSType = FS_TYPE_EXT2;
-            }
+       if (BufferSize >= (65536 + 64 + 8)) {
+           MagicString = (char*) (Buffer + 65536 + 64);
+           if (CompareMem(MagicString, BTRFS_SIGNATURE, 8) == 0) {
+               Volume->FSType = FS_TYPE_BTRFS;
+               return;
+           } // if
+       } // search for Btrfs magic
 
-            CopyMem (&(Volume->VolUuid), Buffer + 1024 + 104, sizeof (EFI_GUID));
+       if (BufferSize >= 512) {
+           MagicString = (char*) Buffer;
+           if (CompareMem(MagicString, XFS_SIGNATURE, 4) == 0) {
+               Volume->FSType = FS_TYPE_XFS;
+               return;
+           }
+       } // search for XFS magic
 
-            return;
-         }
-      } // search for ext2/3/4 magic
+       if (BufferSize >= (1024 + 2)) {
+           Magic16 = (UINT16*) (Buffer + 1024);
+           if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
+               Volume->FSType = FS_TYPE_HFSPLUS;
+               return;
+           }
+       } // search for HFS+ magic
 
-      if (BufferSize >= (65536 + 100)) {
-         MagicString = (char*) (Buffer + 65536 + 52);
-         if (CompareMem (MagicString, REISERFS_SUPER_MAGIC_STRING, 8) == 0 ||
-             CompareMem (MagicString, REISER2FS_SUPER_MAGIC_STRING, 9) == 0 ||
-             CompareMem (MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0
-         ) {
-            Volume->FSType = FS_TYPE_REISERFS;
-            CopyMem (&(Volume->VolUuid), Buffer + 65536 + 84, sizeof (EFI_GUID));
-            return;
-         } // if
-      } // search for ReiserFS magic
+       if (BufferSize >= 512) {
+          // Search for NTFS, FAT, and MBR/EBR.
+          // These all have 0xAA55 at the end of the first sector, so we must
+          // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
+          // figure out where to look for the filesystem serial numbers.
+          Magic16 = (UINT16*) (Buffer + 510);
+          if (*Magic16 == FAT_MAGIC) {
+              MagicString = (char*) Buffer;
+              if (CompareMem(MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
+                  Volume->FSType = FS_TYPE_NTFS;
+                  CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
+              } else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
+                         (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)) {
+                  Volume->FSType = FS_TYPE_FAT;
+                  CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
+              } else if (CompareMem(MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
+                  Volume->FSType = FS_TYPE_FAT;
+                  CopyMem(&(Volume->VolUuid), Buffer + 0x43, sizeof(UINT32));
+              } else if (!Volume->BlockIO->Media->LogicalPartition) {
+                  Volume->FSType = FS_TYPE_WHOLEDISK;
+              } // if/else
+              return;
+           } // if
+       } // search for FAT and NTFS magic
 
-      if (BufferSize >= (65536 + 64 + 8)) {
-         MagicString = (char*) (Buffer + 65536 + 64);
-         if (CompareMem (MagicString, BTRFS_SIGNATURE, 8) == 0) {
-            Volume->FSType = FS_TYPE_BTRFS;
-            return;
-         } // if
-      } // search for Btrfs magic
-
-      if (BufferSize >= 512) {
-         MagicString = (char*) Buffer;
-         if (CompareMem (MagicString, XFS_SIGNATURE, 4) == 0) {
-            Volume->FSType = FS_TYPE_XFS;
-            return;
-         }
-      } // search for XFS magic
-
-      if (BufferSize >= (1024 + 2)) {
-         Magic16 = (UINT16*) (Buffer + 1024);
-         if ((*Magic16 == HFSPLUS_MAGIC1) || (*Magic16 == HFSPLUS_MAGIC2)) {
-            Volume->FSType = FS_TYPE_HFSPLUS;
-            return;
-         }
-      } // search for HFS+ magic
-
-      if (BufferSize >= 512) {
-         // Search for NTFS, FAT, and MBR/EBR.
-         // These all have 0xAA55 at the end of the first sector, so we must
-         // also search for NTFS, FAT12, FAT16, and FAT32 signatures to
-         // figure out where to look for the filesystem serial numbers.
-         Magic16 = (UINT16*) (Buffer + 510);
-         if (*Magic16 == FAT_MAGIC) {
-            MagicString = (char*) Buffer;
-            if (CompareMem (MagicString + 3, NTFS_SIGNATURE, 8) == 0) {
-               Volume->FSType = FS_TYPE_NTFS;
-               CopyMem (&(Volume->VolUuid), Buffer + 0x48, sizeof (UINT64));
-            }
-            else if ((CompareMem (MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
-                (CompareMem (MagicString + 0x36, FAT16_SIGNATURE, 8) == 0)
-            ) {
-                Volume->FSType = FS_TYPE_FAT;
-                CopyMem (&(Volume->VolUuid), Buffer + 0x27, sizeof (UINT32));
-            }
-            else if (CompareMem (MagicString + 0x52, FAT32_SIGNATURE, 8) == 0) {
-                Volume->FSType = FS_TYPE_FAT;
-                CopyMem (&(Volume->VolUuid), Buffer + 0x43, sizeof (UINT32));
-            }
-            else if (!Volume->BlockIO->Media->LogicalPartition) {
-                Volume->FSType = FS_TYPE_WHOLEDISK;
-            } // if/else
-
-            return;
-         } // if
-      } // search for FAT and NTFS magic
-
-      // If no other filesystem is identified and block size is right, assume
-      // it's ISO-9660....
-      if (Volume->BlockIO->Media->BlockSize == 2048) {
-          Volume->FSType = FS_TYPE_ISO9660;
-          return;
-      }
+       // If no other filesystem is identified and block size is right, assume
+       // it's ISO-9660....
+       if (Volume->BlockIO->Media->BlockSize == 2048) {
+           Volume->FSType = FS_TYPE_ISO9660;
+           return;
+       }
    } // if ((Buffer != NULL) && (Volume != NULL))
 } // UINT32 SetFilesystemData()
 
@@ -1370,14 +1354,6 @@ ScanVolume (
             Bootable = TRUE;
         }
 
-//         if (DevicePathType (DevicePath) == MEDIA_DEVICE_PATH &&
-//              DevicePathSubType (DevicePath) == MEDIA_VENDOR_DP
-//          ) {
-//             Volume->IsAppleLegacy = TRUE;  // legacy BIOS device entry
-//             // TODO: also check for Boot Camp GUID
-//             Bootable = FALSE; // this handle's BlockIO is just an alias for the whole device
-//         }
-
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
             PartialLength = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
@@ -1402,12 +1378,6 @@ ScanVolume (
             MyFreePool (DiskDevicePath);
 
             if (!EFI_ERROR (Status)) {
-                //Print (
-                //    L"  - original handle: %08x - disk handle: %08x\n",
-                //    (UINT32)DeviceHandle,
-                //    (UINT32)WholeDiskHandle
-                //);
-
                 // get the device path for later
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -1446,7 +1416,7 @@ ScanVolume (
     if (!Bootable) {
         if (Volume->HasBootCode) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  Volume Considered Non-Bootable, but Boot Code is Present\n");
+            MsgLog ("** WARN: Volume Considered Non-Bootable, but Boot Code is Present\n");
             #endif
         }
         Volume->HasBootCode = FALSE;
@@ -2082,6 +2052,11 @@ DirNextEntry (
 
             if (BufferSize <= LastBufferSize) {
                 BufferSize = LastBufferSize * 2;
+            }
+            else {
+                #if REFIT_DEBUG > 1
+                MsgLog (Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
+                #endif
             }
             Buffer = EfiReallocatePool (Buffer, LastBufferSize, BufferSize);
             LastBufferSize = BufferSize;

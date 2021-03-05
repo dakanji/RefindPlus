@@ -1,5 +1,7 @@
 0.13.1.AC (PreRelease):
-- Drops Switch to Graphics Mode on EFI Boot (When not OpenCore)
+- Syncs with Upstream Post v0.13.1 Updates
+  * Misc Improvements (Skips items already in RefindPlus)
+- Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders
 - Improve APFS Remapping
   * Previously failed when using the 'ReScanAll' feature or when not running Apple Firmware

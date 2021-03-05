@@ -995,12 +995,9 @@ WarnIfLegacyProblems (
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
         do {
-            if (GlobalConfig.ScanFor[i] == 'h' ||
-                GlobalConfig.ScanFor[i] == 'b' ||
-                GlobalConfig.ScanFor[i] == 'c' ||
-                GlobalConfig.ScanFor[i] == 'H' ||
-                GlobalConfig.ScanFor[i] == 'B' ||
-                GlobalConfig.ScanFor[i] == 'C'
+            if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
+                GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
+                GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'b'
             ) {
                 found = TRUE;
             }
