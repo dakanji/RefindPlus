@@ -934,9 +934,13 @@ ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
-               GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
-               GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
-            } else {
+                // Set to 0 to ignore 'max' setting
+                //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
+                //GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
+                GlobalConfig.RequestedScreenWidth  = 0;
+                GlobalConfig.RequestedScreenHeight = 0;
+            }
+            else {
                GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
                if (TokenCount == 3) {
                    GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
