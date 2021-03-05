@@ -1185,7 +1185,7 @@ CHAR16
             else if (MediaCheck) {
                 FoundName = L"Disc/Network Volume (Assumed)";
             }
-            else if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
+            else {
                 if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
                     FoundName = L"Apple Raid Partition (Online)";
                 }
@@ -1206,17 +1206,6 @@ CHAR16
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
                     FoundName = L"Unidentified HFS+ Volume";
-                }
-                else {
-                    FoundName = L"Unknown Volume";
-                }
-            }
-            else {
-                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                    FoundName = L"Unidentified HFS+ Volume";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    FoundName = L"Unidentified APFS Volume";
                 }
                 else {
                     FoundName = L"Unknown Volume";
