@@ -19,9 +19,10 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/refit_call_wrapper.h"
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 
-BOOLEAN FoundGOP = FALSE;
-BOOLEAN ReLoaded = FALSE;
-BOOLEAN DetectedDevices;
+BOOLEAN FoundGOP        = FALSE;
+BOOLEAN ReLoaded        = FALSE;
+BOOLEAN PostConnect     = FALSE;
+BOOLEAN DetectedDevices = FALSE;
 
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
@@ -238,11 +239,13 @@ BdsLibConnectMostlyAllEfi (
 
 
     #if REFIT_DEBUG > 0
-    if (ReLoaded) {
-        MsgLog ("Reconnect Device Handles to Controllers...\n");
-    }
-    else {
-        MsgLog ("Link Device Handles to Controllers...\n");
+    if (PostConnect) {
+        if (ReLoaded) {
+            MsgLog ("Reconnect Device Handles to Controllers...\n");
+        }
+        else {
+            MsgLog ("Link Device Handles to Controllers...\n");
+        }
     }
     #endif
     // DISABLE scan all handles
@@ -261,7 +264,9 @@ BdsLibConnectMostlyAllEfi (
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("** ERROR: Could Not Locate Device Handles\n\n");
+        if (PostConnect) {
+            MsgLog ("** ERROR: Could Not Locate Device Handles\n\n");
+        }
         #endif
     }
     else {
@@ -281,7 +286,9 @@ BdsLibConnectMostlyAllEfi (
 
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
+                if (PostConnect) {
+                    MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
+                }
                 #endif
             }
             else {
@@ -301,7 +308,9 @@ BdsLibConnectMostlyAllEfi (
 
                 if (!Device) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("Handle 0x%03X ...Discarded [Not Device]", HexIndex);
+                    if (PostConnect) {
+                        MsgLog ("Handle 0x%03X ...Discarded [Not Device]", HexIndex);
+                    }
                     #endif
                 }
                 else {
@@ -435,35 +444,47 @@ BdsLibConnectMostlyAllEfi (
 
                     if (Parent) {
                         #if REFIT_DEBUG > 0
-                        MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
+                        if (PostConnect) {
+                            MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
+                        }
                         #endif
                     }
                     else if (!EFI_ERROR (XStatus)) {
                         DetectedDevices = TRUE;
 
                         #if REFIT_DEBUG > 0
-                        MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
+                        if (PostConnect) {
+                            MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
+                        }
                         #endif
                     }
                     else {
                         if (XStatus == EFI_NOT_STARTED) {
                             #if REFIT_DEBUG > 0
-                            MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                            if (PostConnect) {
+                                MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                            }
                             #endif
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
                             #if REFIT_DEBUG > 0
-                            MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                            if (PostConnect) {
+                                MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                            }
                             #endif
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
                             #if REFIT_DEBUG > 0
-                            MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                            if (PostConnect) {
+                                MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                            }
                             #endif
                         }
                         else {
                             #if REFIT_DEBUG > 0
-                            MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                            if (PostConnect) {
+                                MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                            }
                             #endif
                         }
                     } // if Parent
@@ -477,11 +498,13 @@ BdsLibConnectMostlyAllEfi (
             }
 
             #if REFIT_DEBUG > 0
-            if (i == AllHandleCountTrigger) {
-                MsgLog ("\n\n");
-            }
-            else {
-                MsgLog ("\n");
+            if (PostConnect) {
+                if (i == AllHandleCountTrigger) {
+                    MsgLog ("\n\n");
+                }
+                else {
+                    MsgLog ("\n");
+                }
             }
             #endif
 
@@ -517,6 +540,14 @@ BdsLibConnectAllDriversToAllControllersEx (
 
         // Connect All drivers
         XStatus = BdsLibConnectMostlyAllEfi();
+
+        if (!PostConnect) {
+            // Reset and reconnect if only connected once.
+            PostConnect     = TRUE;
+            FoundGOP        = FALSE;
+            DetectedDevices = FALSE;
+            XStatus         = BdsLibConnectMostlyAllEfi();
+        }
 
         // Check if possible to dispatch additional DXE drivers as
         // BdsLibConnectAllEfi() may have revealed new DXE drivers.

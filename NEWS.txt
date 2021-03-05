@@ -3,8 +3,13 @@
   * Misc Improvements (Skips items already in RefindPlus)
 - Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders
-- Improve APFS Remapping
+- Improves APFS Remapping
   * Previously failed when using the 'ReScanAll' feature or when not running Apple Firmware
+- Improves Device Handle Connection
+  * Now always runs the connection process a minimum of two (2) times
+  * This is because several links are only revealed after a first pass
+  * Trades a typically imperceptible increase in boot time for improved stability and reliability
+  * NB: The first pass is silent and is not logged
 
 
 0.13.1.AB (02 Mar 2021):
