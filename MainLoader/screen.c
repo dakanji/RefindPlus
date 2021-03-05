@@ -76,6 +76,8 @@ EG_PIXEL DarkBackgroundPixel = { 0x0,  0x0,  0x0,  0 };
 static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
 
+extern BOOLEAN ScreenLoaded;
+
 
 static VOID
 PrepareBlankLine (
@@ -770,7 +772,7 @@ SwitchToGraphicsAndClear (
         MsgLog ("INFO: Restore Graphics Mode ...Success\n\n");
     }
     #endif
-}
+} // VOID SwitchToGraphicsAndClear()
 
 VOID
 BltClearScreen (
@@ -891,6 +893,12 @@ BltClearScreen (
     }
 
     GlobalConfig.ScreenBackground = egCopyScreen();
+
+    #if REFIT_DEBUG > 0
+    if (ScreenLoaded) {
+        MsgLog ("INFO: Awaiting User Input\n\n");
+    }
+    #endif
 } // VOID BltClearScreen()
 
 

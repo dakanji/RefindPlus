@@ -217,6 +217,7 @@ STATIC               BOOLEAN                ranCleanNvram  = FALSE;
 BOOLEAN                                     TweakSysTable  = FALSE;
 BOOLEAN                                     AptioWarn      = FALSE;
 BOOLEAN                                     ConfigWarn     = FALSE;
+BOOLEAN                                     ScreenLoaded   = FALSE;
 STATIC               EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
 EFI_HANDLE_PROTOCOL                         OrigHandleProtocol;
@@ -1800,9 +1801,16 @@ efi_main (
         }
     }
 
+    // Flag screen status
+    ScreenLoaded = TRUE;
+
     #if REFIT_DEBUG > 0
     MsgLog (
-        "INFO: Loaded RefindPlus v%s ...User Input Pending\n\n", REFINDPLUS_VERSION);
+        "INFO: Loaded RefindPlus v%s on %s Firmware\n",
+        REFINDPLUS_VERSION,
+        gST->FirmwareVendor
+    );
+    MsgLog ("      Awaiting User Input\n\n");
     #endif
 
     while (MainLoopRunning) {
@@ -2241,7 +2249,7 @@ efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Toggle Mac SIP\n\n");
+                MsgLog ("  - Toggle Mac SIP\n");
                 #endif
 
                 RotateCsrValue();

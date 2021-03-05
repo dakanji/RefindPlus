@@ -2147,7 +2147,7 @@ egScreenShot (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("    * Screenshot Taken and Saved:- '%s'\n\n", FileName);
+    MsgLog ("    * Screenshot Taken:- '%s'\n\n", FileName);
     #endif
 
     return;

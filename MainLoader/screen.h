@@ -78,6 +78,7 @@ extern CHAR16 *BlankLine;
 
 extern UINTN ScreenW;
 extern UINTN ScreenH;
+
 extern BOOLEAN AllowGraphicsMode;
 
 extern EG_PIXEL StdBackgroundPixel;

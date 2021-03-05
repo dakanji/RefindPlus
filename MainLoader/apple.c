@@ -133,8 +133,12 @@ VOID RecordgCsrStatus (
     } // switch
 
     if (DisplayMessage) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("    * %s\n\n", gCsrStatus);
+        #endif
+
         egDisplayMessage (gCsrStatus, &BGColor, CENTER);
-        PauseSeconds (4);
+        PauseSeconds (3);
     } // if
 } // VOID RecordgCsrStatus()
 
