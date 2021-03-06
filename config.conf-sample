@@ -216,12 +216,12 @@
 #  shell            - UEFI/EFI Shell. (External program; see documentation)
 #  memtest          - Memory Testing Utility. (External program; memtest86)
 #  gptsync          - the (dangerous) gptsync.efi utility (requires external
-#                     program; see RefindPlus documentation for details)
+#                     program; see documentation for details)
 #  gdisk            - the gdisk partitioning program
-#  show_bootscreen  - Load Apple Boot Screen if available. (External program)
+#  show_bootscreen  - load Apple Boot Screen if available. (External program)
 #                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
 #                     'Fully Compatible GPUs' are those with native Apple Boot Screen
-#  clean_nvram      - Reset NVRAM from Refind. (External program)
+#  clean_nvram      - reset NVRAM from RefindPlus. (External program)
 #                     Requires Apple Firmware.
 #  apple_recovery   - boots the Apple Recovery HD partition, if present
 #  windows_recovery - boots an OEM Windows recovery tool, if present
@@ -267,7 +267,7 @@
 #resolution 3
 #resolution max
 
-# Note: The logging level token below is ignored by RefindPlus
+# Note: The logging level token below is ignored.
 #
 #log_level 0
 
