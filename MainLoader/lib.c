@@ -79,6 +79,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define REISER2FS_JR_SUPER_MAGIC_STRING  "ReIsEr3Fs"
 #define BTRFS_SIGNATURE                  "_BHRfS_M"
 #define XFS_SIGNATURE                    "XFSB"
+#define JFS_SIGNATURE                    "JFS1"
 #define NTFS_SIGNATURE                   "NTFS    "
 #define FAT12_SIGNATURE                  "FAT12   "
 #define FAT16_SIGNATURE                  "FAT16   "
@@ -493,8 +494,7 @@ EfivarGetRaw (
             TmpBuffer
         );
 
-        // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and
-        // BufferSize updated.
+        // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
         // Any other status means the variable does not exist.
         if (Status != EFI_BUFFER_TOO_SMALL) {
             MyFreePool (TmpBuffer);
@@ -520,7 +520,6 @@ EfivarGetRaw (
         );
     }
 
-    // Retry with the correct buffer size.
     if (EFI_ERROR (Status) == EFI_SUCCESS) {
         *VariableData = (CHAR8*) TmpBuffer;
         if ((VariableSize) && ReadFromNvram) {
@@ -702,6 +701,9 @@ FSTypeName (
       case FS_TYPE_XFS:
          retval = L"XFS";
          break;
+      case FS_TYPE_JFS:
+         retval = L"JFS";
+         break;
       case FS_TYPE_ISO9660:
          retval = L"ISO-9660";
          break;
@@ -714,6 +716,33 @@ FSTypeName (
    } // switch
    return retval;
 } // CHAR16 *FSTypeName()
+
+// Sets the FsName field of Volume, based on data recorded in the partition's
+// filesystem. This field may remain unchanged if there's no known filesystem
+// or if the name field is empty.
+STATIC
+VOID
+SetFilesystemName (
+    REFIT_VOLUME *Volume
+) {
+    EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
+
+    if ((Volume) && (Volume->RootDir != NULL)) {
+        FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
+    }
+
+    if ((FileSystemInfoPtr != NULL) &&
+        (FileSystemInfoPtr->VolumeLabel != NULL) &&
+        (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
+    ) {
+        if (Volume->FsName) {
+            MyFreePool (Volume->FsName);
+            Volume->FsName = NULL;
+        }
+        Volume->FsName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
+    }
+    MyFreePool (FileSystemInfoPtr);
+} // VOID *SetFilesystemName()
 
 // Identify the filesystem type and record the filesystem's UUID/serial number,
 // if possible. Expects a Buffer containing the first few (normally at least
@@ -784,6 +813,14 @@ SetFilesystemData (
                return;
            }
        } // search for XFS magic
+
+       if (BufferSize >= (32768 + 4)) {
+           MagicString = (char*) (Buffer + 32768);
+           if (CompareMem (MagicString, JFS_SIGNATURE, 4) == 0) {
+               Volume->FSType = FS_TYPE_JFS;
+               return;
+           }
+       } // search for JFS magic
 
        if (BufferSize >= (1024 + 2)) {
            Magic16 = (UINT16*) (Buffer + 1024);
@@ -1104,7 +1141,7 @@ SizeInIEEEUnits (
 } // CHAR16 *SizeInIEEEUnits()
 
 // Return a name for the volume. Ideally this should be the label for the
-// filesystem or volume, but this function falls back to describing the
+// filesystem or partition, but this function falls back to describing the
 // filesystem by size (200 MiB, etc.) and/or type (ext2, HFS+, etc.), if
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
@@ -1126,19 +1163,13 @@ CHAR16
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr  = NULL;
 
 
-    if (Volume->RootDir != NULL) {
-        FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
-     }
-
-    if ((FileSystemInfoPtr != NULL) &&
-        (FileSystemInfoPtr->VolumeLabel != NULL) &&
-        (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
-    ) {
-        FoundName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
+    if ((Volume->FsName) && (StrLen(Volume->FsName) > 0)) {
+        FoundName = StrDuplicate (Volume->FsName);
     }
 
     // If no filesystem name, try to use the partition name....
-    if ((FoundName == NULL) && (Volume->PartName != NULL) &&
+    if ((FoundName == NULL) &&
+        (Volume->PartName) &&
         (StrLen (Volume->PartName) > 0) &&
         !IsIn (Volume->PartName, IGNORE_PARTITION_NAMES)
     ) {
@@ -1149,16 +1180,20 @@ CHAR16
     TypeName = FSTypeName (Volume->FSType);
 
     // No filesystem or acceptable partition name, so use fs type and size
-    if ((FoundName == NULL) && (FileSystemInfoPtr != NULL)) {
-        FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
-        if (FoundName != NULL) {
-            SISize = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
-            SPrint (FoundName, 255, L"%s[%s] Volume", TypeName, SISize);
-            MyFreePool (SISize);
-        } // if allocated memory OK
+    if (FoundName == NULL) {
+        if (Volume->RootDir != NULL) {
+            FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
+        }
+        if (FileSystemInfoPtr != NULL) {
+            FoundName = AllocateZeroPool (sizeof(CHAR16) * 256);
+            if (FoundName != NULL) {
+                SISize = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
+                SPrint (FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
+                MyFreePool (SISize);
+            } // if allocated memory OK
+            MyFreePool(FileSystemInfoPtr);
+        }
     } // if (FoundName == NULL)
-
-    MyFreePool (FileSystemInfoPtr);
 
     if (FoundName == NULL) {
         FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
@@ -1425,6 +1460,7 @@ ScanVolume (
     // open the root directory of the volume
     Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
 
+    SetFilesystemName (Volume);
     Volume->VolName = GetVolumeName (Volume);
 
     if (Volume->RootDir == NULL) {
@@ -2571,7 +2607,7 @@ FindVolume (
     return (Found);
 } // static VOID FindVolume()
 
-// Returns TRUE if Description matches Volume's VolName, PartName, or (once
+// Returns TRUE if Description matches Volume's VolName, FsName, or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
 BOOLEAN
 VolumeMatchesDescription (
@@ -2588,7 +2624,9 @@ VolumeMatchesDescription (
         return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
     }
     else {
-        return (MyStriCmp (Description, Volume->VolName) || MyStriCmp (Description, Volume->PartName));
+        return (MyStriCmp(Description, Volume->VolName) ||
+                MyStriCmp(Description, Volume->PartName) ||
+                MyStriCmp(Description, Volume->FsName));
     }
 } // BOOLEAN VolumeMatchesDescription()
 

@@ -2243,9 +2243,6 @@ HideEfiTag (
     if (Loader->Volume->VolName && (StrLen (Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->VolName);
     }
-    else if (Loader->Volume->PartName && (StrLen (Loader->Volume->PartName) > 0)) {
-        FullPath = StrDuplicate (Loader->Volume->PartName);
-    }
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
     AddMenuInfoLine (HideItemMenu, PoolPrint (L"Are you sure you want to hide '%s'?", FullPath));
     AddMenuEntry (HideItemMenu, &MenuEntryYes);

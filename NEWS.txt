@@ -1,6 +1,8 @@
 0.13.1.AC (PreRelease):
 - Syncs with Upstream Post v0.13.1 Updates
   * Misc Improvements (Skips items already in RefindPlus)
+  * Identifies JFS volumes if a third-party JFS driver is installed.
+  * Improves separation of filesystem name vs. partition name internally.
 - Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders
 - Improves APFS Remapping
