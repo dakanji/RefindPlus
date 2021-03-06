@@ -801,9 +801,8 @@ preBootKicker (
         BootKickerMenu.Title = L"BootKicker";
         AddMenuInfoLine (&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
         AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
-        AddMenuInfoLine (&BootKickerMenu, L"Fully Compatible GPUs provide native Mac Boot Screen");
-        AddMenuInfoLine (&BootKickerMenu, L"Hangs and needs physical reboot with other GPUs");
-        AddMenuInfoLine (&BootKickerMenu, L"Classic MacPros not supported on any GPU");
+        AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
+        AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&BootKickerMenu, L"You must have at least one of the files below:");
@@ -1806,7 +1805,6 @@ efi_main (
         REFINDPLUS_VERSION,
         gST->FirmwareVendor
     );
-    MsgLog ("      Awaiting User Input\n\n");
     #endif
 
     while (MainLoopRunning) {
