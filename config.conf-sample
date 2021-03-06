@@ -124,7 +124,7 @@
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version and this ensures that changes made by Apple to the drivers for different
 # Mac OS versions are accounted for as compared to loading a single APFS driver for every
-# Mac OS versions in use. This setting only applies to Mac OS.
+# Mac OS versions in use. This setting only applies to Mac OS and only functions if needed.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
@@ -135,7 +135,7 @@
 # suppress verbose text output from the APFS drivers loaded using the 'supply_apfs' option.
 # This option only acts on apfs drivers loaded by RefindPlus using 'supply_apfs'.
 # This option may impact other text output and should be disabled if such
-# effects are observed. This setting only applies to Mac OS.
+# negative effects are observed. This setting only applies to Mac OS.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not suppress verbose APFS text)
@@ -159,7 +159,7 @@
 # Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
-# this issue and is recommended when running Windows on Apple Firmware.
+# this issue and is recommended instead when running Windows on Apple Firmware.
 # This setting only applies when loading Windows on Apple Firmware.
 #
 # Inactive when commented out (Does not prevent UEFI Windows writes to Apple NVRAM)
@@ -466,7 +466,7 @@ timeout 20
 #
 # The default setting is 4
 #
-#mouse_speed 4
+#mouse_speed 6
 
 # Launch specified operating system in graphics mode. RefindPlus defaults
 # to text mode and displays basic pre-launch information when launching
