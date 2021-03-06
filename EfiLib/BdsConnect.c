@@ -368,7 +368,7 @@ BdsLibConnectMostlyAllEfi (
                                     MakeConnection = FALSE;
 
                                     #if REFIT_DEBUG > 0
-                                    DeviceData = L" - Display Device ";
+                                    DeviceData = L" - Monitor Display";
                                     #endif
                                 }
                                 else {
