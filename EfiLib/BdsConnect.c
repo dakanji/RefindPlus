@@ -535,6 +535,9 @@ BdsLibConnectAllDriversToAllControllersEx (
     EFI_STATUS  Status;
     EFI_STATUS  XStatus;
 
+    // Always position for multiple scan
+    PostConnect = FALSE;
+
     do {
         FoundGOP = FALSE;
 
