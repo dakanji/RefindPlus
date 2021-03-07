@@ -1802,7 +1802,7 @@ efi_main (
 
     #if REFIT_DEBUG > 0
     MsgLog (
-        "INFO: Loaded RefindPlus v%s on %s Firmware\n",
+        "INFO: Loaded RefindPlus v%s on %s Firmware\n\n",
         REFINDPLUS_VERSION,
         gST->FirmwareVendor
     );
