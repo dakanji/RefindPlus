@@ -34,6 +34,7 @@ ignore_previous_boot| Disables saving the last booted loader if not required.
 protect_mac_nvram| Stops UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop| Fixes issues with GOP on some Legacy Macs.
 reinforce_apfs| Allows directly booting Big Sur as well as FileVault (without needing PreBoot).
+reinstall_gop| Reinstalls GOP driver on capable legacy units (such as classic MacPros).
 scale_ui| Provides control of UI element scaling.
 scan_other_esp| Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
 set_mac_boot_args| Allows arbitrary Mac OS boot argument strings.
@@ -47,7 +48,7 @@ In addition to the tokens above, two additional tools can be activated using the
 - `show_bootscreen` : This allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
 ## Installation
-[MyBootMgr](https://www.dakanji.com/creations/index.html), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on Xserve3,1. However, the RefindPlus efi can work as a drop-in replacement for the rEFInd efi. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. Once rEFInd is installed, replace the rEFInd efi with the RefindPlus efi. (Ensure that you rename the RefindPlus efi to match the rEFInd efi name). This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd. 
+[MyBootMgr](https://www.dakanji.com/creations/index.html), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on Xserve3,1. However, the RefindPlus efi can work as a drop-in replacement for the rEFInd efi. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. Once rEFInd is installed, replace the rEFInd efi with the RefindPlus efi. (Ensure that you rename the RefindPlus efi to match the rEFInd efi name). This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd.
 
 While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 

@@ -619,14 +619,16 @@ BdsLibConnectAllDriversToAllControllers (
     EFI_STATUS Status;
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
-    if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
-        ReLoaded = TRUE;
-        Status = ApplyGOPFix();
+    if (GlobalConfig.ReinstallGOP) {
+        if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
+            ReLoaded = TRUE;
+            Status = ApplyGOPFix();
 
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Issue GOP from Volatile Storage ...%r\n\n", Status);
-        #endif
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Issue GOP from Volatile Storage ...%r\n\n", Status);
+            #endif
 
-        ReLoaded = FALSE;
+            ReLoaded = FALSE;
+        }
     }
 } // VOID BdsLibConnectAllDriversToAllControllers()

@@ -394,6 +394,7 @@ typedef struct {
    BOOLEAN          TextRenderer;
    BOOLEAN          UgaPassThrough;
    BOOLEAN          ProvideConsoleGOP;
+   BOOLEAN          ReinstallGOP;
    BOOLEAN          UseDirectGop;
    BOOLEAN          ContinueOnWarning;
    BOOLEAN          ForceTRIM;

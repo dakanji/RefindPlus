@@ -134,6 +134,7 @@ REFIT_CONFIG GlobalConfig = {
     /* TextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,
+    /* ReinstallGOP = */ FALSE,
     /* UseDirectGop = */ FALSE,
     /* ContinueOnWarning = */ FALSE,
     /* ForceTRIM = */ FALSE,
