@@ -531,7 +531,6 @@ BdsLibConnectAllDriversToAllControllersEx (
     VOID
 ) {
     EFI_STATUS  Status;
-    EFI_STATUS  XStatus;
 
     // Always position for multiple scan
     PostConnect = FALSE;
@@ -540,12 +539,12 @@ BdsLibConnectAllDriversToAllControllersEx (
         FoundGOP = FALSE;
 
         // Connect All drivers
-        XStatus = BdsLibConnectMostlyAllEfi();
+        BdsLibConnectMostlyAllEfi();
 
         if (!PostConnect) {
             // Reset and reconnect if only connected once.
             PostConnect = TRUE;
-            XStatus     = BdsLibConnectMostlyAllEfi();
+            BdsLibConnectMostlyAllEfi();
         }
 
         // Check if possible to dispatch additional DXE drivers as
