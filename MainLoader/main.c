@@ -2019,6 +2019,16 @@ efi_main (
                     );
                     #endif
                 }
+                else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("User Input Received:\n");
+                    MsgLog (
+                        "  - Load Clover Instance:- '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
+                    #endif
+                }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
