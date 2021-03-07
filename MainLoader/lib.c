@@ -1581,6 +1581,8 @@ SetPreBootNames (
                 !MyStriCmp (Volume->VolName, L"PreBoot") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
                 !MyStriCmp (Volume->VolName, L"VM") &&
+                !MyStriCmp (Volume->VolName, L"") &&
+                *Volume->VolName != L'\0' &&
                 MyStrStr (Volume->VolName, L"Unknown") == NULL &&
                 MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
@@ -1602,6 +1604,8 @@ SetPreBootNames (
                     !MyStriCmp (Volume->VolName, L"PreBoot") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
                     !MyStriCmp (Volume->VolName, L"VM") &&
+                    !MyStriCmp (Volume->VolName, L"") &&
+                    *Volume->VolName != L'\0' &&
                     MyStrStr (Volume->VolName, L"Unknown") == NULL &&
                     MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                     MyStrStr (Volume->VolName, L" - Data") == NULL
@@ -1649,7 +1653,7 @@ SetPrebootVolumes (
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
-            if (Volumes[i]->VolName != NULL) {
+            if (Volumes[i]->VolName != NULL && (*Volumes[i]->VolName != L'\0')) {
                 if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL) {
                     SwapName = FALSE;
                 }
