@@ -1,0 +1,143 @@
+/*
+ * MainLoader/log.c
+ *
+ * Definitions to handle RefindPlus' logging facility, activated by setting
+ * log_level in config.conf.
+ * NB: This feature is currently disabled in RefindPlus in favour
+ *     of a debug build. The 'log_level' token is thus inactive
+ *
+ */
+/*
+ * Copyright (c) 2012-2020 Roderick W. Smith
+ *
+ * Distributed under the terms of the GNU General Public License (GPL)
+ * version 3 (GPLv3), a copy of which must be distributed with this source
+ * code or binaries made from it.
+ *
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
+#include "log.h"
+#include "global.h"
+#include "lib.h"
+#include "mystrings.h"
+#include "../include/refit_call_wrapper.h"
+#include "screen.h"
+
+EFI_FILE_HANDLE  gLogHandle;
+CHAR16           *gLogTemp = NULL;
+
+
+// Open the logging file (refindplus.log).
+// Sets the global gLogHandle variable to point to the file.
+// Returns EFI_STATUS of file open operation. This might error out if RefindPlus
+// is installed on a read-only filesystem, for instance.
+// If Restart == TRUE, then begin logging at the end of the file;
+// if Restart == FALSE, then delete the file and start a new one.
+EFI_STATUS StartLogging(BOOLEAN Restart) {
+    EFI_STATUS      Status = EFI_SUCCESS;
+    UINT64          FileMode;
+    UINTN           BufferSize;
+    EFI_FILE_HANDLE FoundEsp;
+    EFI_FILE_INFO   *FileInfo;
+    UINT8           Utf16[2]; // String to hold ID for UTF-16 file start
+
+    // DA-TAG: Override Logging
+    GlobalConfig.LogLevel = 0;
+    return EFI_SUCCESS;
+
+    if (GlobalConfig.LogLevel > 0) {
+        if (Restart)
+            FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE;
+        else
+            FileMode = EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE;
+        Status = refit_call5_wrapper(SelfDir->Open, SelfDir, &gLogHandle, L"refindplus.log",
+                                     FileMode, 0);
+        if (EFI_ERROR(Status)) {
+            Status = egFindESP(&FoundEsp);
+            if (!EFI_ERROR(Status)) {
+                Status = refit_call5_wrapper(FoundEsp->Open, FoundEsp,
+                                             &gLogHandle, L"refindplus.log",
+                                             FileMode, 0);
+            }
+        }
+        if (EFI_ERROR(Status)) {
+            GlobalConfig.LogLevel = 0;
+            PrintUglyText(L"Unable to open log file!", CENTER);
+            PauseForKey();
+        } else {
+            // File has been opened; however, if it already exists, then RefindPlus
+            // will end up writing into the existing file, so it could end up
+            // containing remnants of the earlier file if it was larger than
+            // this one needs to be. To prevent that, check the file size. If
+            // it's bigger than 0, delete it and start again....
+            FileInfo = LibFileInfo(gLogHandle);
+            if ((FileInfo != NULL) && (FileInfo->FileSize > 0)) {
+                if (!Restart) {
+                    Status = refit_call1_wrapper(gLogHandle->Delete, gLogHandle);
+                    StartLogging(FALSE);
+                }
+            } else {
+                // UTF-16 files begin with these two bytes, so write them....
+                Utf16[0] = 0xFF;
+                Utf16[1] = 0xFE;
+                BufferSize = 2;
+                refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, Utf16);
+                LOG(1, LOG_LINE_SEPARATOR, L"Beginning logging");
+            } // if/else
+            if (Restart) {
+                refit_call2_wrapper(gLogHandle->SetPosition, gLogHandle, 0xFFFFFFFFFFFFFFFF);
+            }
+        } // if/else
+    } // if
+    return Status;
+} // EFI_STATUS StartLogging()
+
+VOID StopLogging(VOID) {
+    if (GlobalConfig.LogLevel > 0)
+        refit_call1_wrapper(gLogHandle->Close, gLogHandle); // close logging file
+} // VOID StopLogging()
+
+// Write a message (*Message) to the log file. (This pointer is freed
+// and set to NUL by this function, the point being to keep these
+// operations outside of the macro that calls this function.)
+// LogLineType specifies the type of the log line, as specified by the
+// LOG_LINE_* constants defined in log.h.
+VOID WriteToLog(CHAR16 **Message, UINTN LogLineType) {
+    CHAR16   *TimeStr      = NULL;
+    CHAR16   *FinalMessage = NULL;
+    UINTN    BufferSize;
+
+    // DA-TAG: Override Logging
+    MyFreePool(*Message);
+    *Message = NULL;
+    return;
+
+    switch (LogLineType) {
+        case LOG_LINE_SEPARATOR:
+            FinalMessage = PoolPrint(L"\n==========%s==========\n", *Message);
+            break;
+        case LOG_LINE_THIN_SEP:
+            FinalMessage = PoolPrint(L"\n----------%s----------\n", *Message);
+            break;
+        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this.... */
+            TimeStr = GetTimeString();
+            FinalMessage = PoolPrint(L"%s - %s\n", TimeStr, *Message);
+            MyFreePool(TimeStr);
+            break;
+    } // switch
+
+    if (FinalMessage) {
+        BufferSize = StrLen(FinalMessage) * 2;
+        refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, FinalMessage);
+        refit_call1_wrapper(gLogHandle->Flush, gLogHandle);
+        MyFreePool(FinalMessage);
+    }
+    MyFreePool(*Message);
+    *Message = NULL;
+} // VOID WriteToLog()

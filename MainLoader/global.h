@@ -483,7 +483,7 @@ extern REFIT_MENU_SCREEN MainMenu;
 
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
-
+// Global function definitions....
 
 VOID AboutRefindPlus(VOID);
 EG_IMAGE * GetDiskBadge(IN UINTN DiskType);

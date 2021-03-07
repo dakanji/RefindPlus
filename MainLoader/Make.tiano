@@ -37,7 +37,7 @@ endif
 
 SOURCE_NAMES     = apple AutoGen config crc32 driver_support gpt icns \
                    install  launch_efi launch_legacy lib line_edit linux \
-                   main menu mystrings pointer scan screen
+                   log main menu mystrings pointer scan screen
 OBJS             = $(SOURCE_NAMES:=.obj)
 
 all: $(BUILDME)

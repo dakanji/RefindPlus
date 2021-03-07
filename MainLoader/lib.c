@@ -53,6 +53,7 @@
 #include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
+#include "log.h"
 #include "config.h"
 #include "mystrings.h"
 
@@ -377,6 +378,12 @@ VOID
 UninitRefitLib (
     VOID
 ) {
+    // Closing the log file is unnecessary on most systems; however, at
+    // least one I own (with an ASRock FM2A88M Extreme 4+ motherboard)
+    // produces 0-length log files if the file is not closed prior to
+    // launching a follow-on program. Thus, take care of this here....
+    StopLogging();
+
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
     if (SelfRootDir == SelfVolume->RootDir) {
@@ -425,7 +432,15 @@ ReinitRefitLib (
     } // if
 
     Status = FinishInitRefitLib();
-
+    if (EFI_ERROR(Status)) {
+        // if Status shows an error, we may not be able to re-open
+        // the log file, so disable logging to prevent a subsequent
+        // hang or other problem....
+        GlobalConfig.LogLevel = 0;
+    }
+    else {
+        StartLogging(TRUE);
+    }
     return Status;
 }
 
