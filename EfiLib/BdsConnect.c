@@ -401,8 +401,7 @@ BdsLibConnectMostlyAllEfi (
                                 if (GOPArray[m] != gST->ConsoleOutHandle) {
                                     GopDevicePathStr = ConvertDevicePathToText (
                                         DevicePathFromHandle (GOPArray[m]),
-                                        FALSE,
-                                        FALSE
+                                        FALSE, FALSE
                                     );
 
                                     FoundGOP = TRUE;
@@ -417,8 +416,7 @@ BdsLibConnectMostlyAllEfi (
                     if (FoundGOP) {
                         DevicePathStr = ConvertDevicePathToText (
                             DevicePathFromHandle (AllHandleBuffer[i]),
-                            FALSE,
-                            FALSE
+                            FALSE, FALSE
                         );
 
                         #if REFIT_DEBUG > 0
@@ -546,10 +544,8 @@ BdsLibConnectAllDriversToAllControllersEx (
 
         if (!PostConnect) {
             // Reset and reconnect if only connected once.
-            PostConnect     = TRUE;
-            FoundGOP        = FALSE;
-            DetectedDevices = FALSE;
-            XStatus         = BdsLibConnectMostlyAllEfi();
+            PostConnect = TRUE;
+            XStatus     = BdsLibConnectMostlyAllEfi();
         }
 
         // Check if possible to dispatch additional DXE drivers as
