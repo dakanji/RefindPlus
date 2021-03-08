@@ -52,7 +52,6 @@
   MainLoader/lib.c
   MainLoader/line_edit.c
   MainLoader/linux.c
-  MainLoader/log.c
   MainLoader/main.c
   MainLoader/menu.c
   MainLoader/mystrings.c
