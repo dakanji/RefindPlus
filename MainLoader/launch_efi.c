@@ -204,7 +204,7 @@ StartEFIImage (
     EFI_GUID                SystemdGuid       = SYSTEMD_GUID_VALUE;
     CHAR16                  *FullLoadOptions  = NULL;
     CHAR16                  *ShowScreenStr    = NULL;
-    CHAR16                  ErrorInfo[256];
+    CHAR16                  *ErrorInfo;
     CHAR16                  *EspGUID;
 
     // set load options
@@ -295,11 +295,12 @@ StartEFIImage (
         goto bailout;
     }
 
-    SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
         MyFreePool (ErrorInfo);
         goto bailout;
     }
+    MyFreePool (ErrorInfo);
 
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -353,16 +354,15 @@ StartEFIImage (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    MyFreePool (ErrorInfo);
-    SPrint (ErrorInfo, 255, L"returned from %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"returned from %s", ImageTitle);
     CheckError (Status, ErrorInfo);
+    MyFreePool (ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
         // from binding to partitions.
         ConnectFilesystemDriver(ChildImageHandle);
     }
-    MyFreePool (ErrorInfo);
 
     // re-open file handles
     ReinitRefitLib();
@@ -505,34 +505,44 @@ static VOID DoEnableAndLockVMX(VOID) {
 
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
+    CHAR16 *LoaderPath;
+
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
     }
 
+    LoaderPath = Basename(Entry->LoaderPath);
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
     StartEFIImage(
         Entry->Volume,
         Entry->LoaderPath,
         Entry->LoadOptions,
-        Basename(Entry->LoaderPath),
+        LoaderPath,
         Entry->OSType,
         !Entry->UseGraphicsMode,
         FALSE
     );
+
+    MyFreePool (LoaderPath);
 } // VOID StartLoader()
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
 VOID StartTool(IN LOADER_ENTRY *Entry) {
+    CHAR16 *LoaderPath;
+
+    LoaderPath = Basename(Entry->LoaderPath);
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);
     StartEFIImage(
         Entry->Volume,
         Entry->LoaderPath,
         Entry->LoadOptions,
-        Basename(Entry->LoaderPath),
+        LoaderPath,
         Entry->OSType,
         TRUE,
         FALSE
     );
+
+    MyFreePool(LoaderPath);
 } /* VOID StartTool() */

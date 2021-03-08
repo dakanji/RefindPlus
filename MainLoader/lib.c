@@ -1134,24 +1134,23 @@ SizeInIEEEUnits (
     CHAR16 *Units = NULL, *Prefixes = L" KMGTPEZ";
     CHAR16 *TheValue;
 
-    TheValue = AllocateZeroPool (sizeof (CHAR16) * 256);
-    if (TheValue != NULL) {
-        NumPrefixes = StrLen (Prefixes);
-        SizeInIeee = SizeInBytes;
-        while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
-            Index++;
-            SizeInIeee /= 1024;
-        } // while
-        if (Prefixes[Index] == ' ') {
-            Units = StrDuplicate (L"-byte");
-        }
-        else {
-            Units = StrDuplicate (L"  iB");
-            Units[1] = Prefixes[Index];
-        } // if/else
-        SPrint (TheValue, 255, L"%ld%s", SizeInIeee, Units);
-    } // if
+    NumPrefixes = StrLen (Prefixes);
+    SizeInIeee = SizeInBytes;
+    while ((SizeInIeee > 1024) && (Index < (NumPrefixes - 1))) {
+        Index++;
+        SizeInIeee /= 1024;
+    } // while
+
+    if (Prefixes[Index] == ' ') {
+        Units = StrDuplicate (L"-byte");
+    } else {
+        Units = StrDuplicate (L"  iB");
+        Units[1] = Prefixes[Index];
+    } // if/else
+
+    TheValue = PoolPrint (L"%ld%s", SizeInIeee, Units);
     MyFreePool (Units);
+
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
 
@@ -1200,62 +1199,51 @@ CHAR16
             FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
         }
         if (FileSystemInfoPtr != NULL) {
-            FoundName = AllocateZeroPool (sizeof(CHAR16) * 256);
-            if (FoundName != NULL) {
-                SISize = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
-                SPrint (FoundName, 255, L"%s%s volume", SISize, FSTypeName(Volume->FSType));
-                MyFreePool (SISize);
-            } // if allocated memory OK
-            MyFreePool(FileSystemInfoPtr);
+            SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
+            FoundName = PoolPrint (L"%s%s volume", SISize, TypeName);
+            MyFreePool (SISize);
+            MyFreePool (FileSystemInfoPtr);
         }
     } // if (FoundName == NULL)
 
     if (FoundName == NULL) {
-        FoundName = AllocateZeroPool (sizeof (CHAR16) * 256);
-        if (FoundName != NULL) {
-            if (StrLen (TypeName) > 0) {
-                SPrint (FoundName, 255, L"%s Volume", TypeName);
+        if (StrLen (TypeName) > 0) {
+            FoundName = PoolPrint (L"%s Volume", TypeName);
+        }
+        else if (MediaCheck) {
+            FoundName = L"Disc/Network Volume (Assumed)";
+        }
+        else {
+            if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
+                FoundName = StrDuplicate (L"Apple Raid Partition (Online)");
             }
-            else if (MediaCheck) {
-                FoundName = L"Disc/Network Volume (Assumed)";
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
+                FoundName = StrDuplicate (L"Apple Raid Partition (Offline)");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
+                FoundName = StrDuplicate (L"Recovery HD");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
+                FoundName = StrDuplicate (L"AppleTV Recovery Partition");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
+                FoundName = StrDuplicate (L"Fusion/FileVault Container");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                FoundName = StrDuplicate (L"APFS/FileVault Container");
+            }
+            else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                FoundName = StrDuplicate (L"Unidentified HFS+ Volume");
             }
             else {
-                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
-                    FoundName = L"Apple Raid Partition (Online)";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
-                    FoundName = L"Apple Raid Partition (Offline)";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidRecoveryHD)) {
-                    FoundName = L"Recovery HD";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
-                    FoundName = L"AppleTV Recovery Partition";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
-                    FoundName = L"Fusion/FileVault Container";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    FoundName = L"APFS/FileVault Container";
-                }
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                    FoundName = L"Unidentified HFS+ Volume";
-                }
-                else {
-                    FoundName = L"Unknown Volume";
-                }
-            } // if StrLen TypeName else if MyStriCmp else
-        } // if FoundName != NULL
+                FoundName = StrDuplicate (L"Unknown Volume");
+            }
+        } // if StrLen TypeName else if MyStriCmp else
     } // if FoundName == NULL
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
     // such as:
     //  - use or add disk/partition number (e.g., "(hd0,2)")
-
-    // Desperate fallback name....
-    if (FoundName == NULL) {
-        FoundName = L"Unknown Volume";
-    }
 
     return FoundName;
 } // static CHAR16 *GetVolumeName()
@@ -1548,18 +1536,15 @@ ScanExtendedPartition (
             else {
                 // found a logical partition
                 Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
-                Volume->DiskKind = WholeDiskVolume->DiskKind;
-                Volume->IsMbrPartition = TRUE;
+                Volume->DiskKind          = WholeDiskVolume->DiskKind;
+                Volume->IsMbrPartition    = TRUE;
                 Volume->MbrPartitionIndex = LogicalPartitionIndex++;
-                Volume->VolName = AllocateZeroPool (256 * sizeof (UINT16));
-                SPrint (
-                    Volume->VolName,
-                    255,
+                Volume->VolName           = PoolPrint (
                     L"Partition %d",
                     Volume->MbrPartitionIndex + 1
                 );
-                Volume->BlockIO = WholeDiskVolume->BlockIO;
-                Volume->BlockIOOffset = ExtCurrent + EMbrTable[i].StartLBA;
+                Volume->BlockIO          = WholeDiskVolume->BlockIO;
+                Volume->BlockIOOffset    = ExtCurrent + EMbrTable[i].StartLBA;
                 Volume->WholeDiskBlockIO = WholeDiskVolume->BlockIO;
 
                 Bootable = FALSE;
@@ -1808,51 +1793,51 @@ ScanVolumes (
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Whole Disk Volume";
+                VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Unknown Volume";
+                VolDesc = StrDuplicate (L"Unknown Volume");
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"HFS+ Volume";
+                VolDesc = StrDuplicate (L"HFS+ Volume");
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"NTFS Volume";
+                VolDesc = StrDuplicate (L"NTFS Volume");
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"FAT Volume";
+                VolDesc = StrDuplicate (L"FAT Volume");
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext2 Volume";
+                VolDesc = StrDuplicate (L"Ext2 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext3 Volume";
+                VolDesc = StrDuplicate (L"Ext3 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext4 Volume";
+                VolDesc = StrDuplicate (L"Ext4 Volume");
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"ReiserFS Volume";
+                VolDesc = StrDuplicate (L"ReiserFS Volume");
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"BTRFS Volume";
+                VolDesc = StrDuplicate (L"BTRFS Volume");
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"XFS Volume";
+                VolDesc = StrDuplicate (L"XFS Volume");
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"ISO-9660 Volume";
+                VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
 
             if (!DoneHeadings) {
@@ -1875,7 +1860,7 @@ ScanVolumes (
     if (!SelfVolSet) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"** WARN: Could Not Set Volume";
+        ShowScreenStr = StrDuplicate (L"** WARN: Could Not Set Volume");
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1986,8 +1971,7 @@ ScanVolumes (
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = PartitionIndex;
                 if (Volume->VolName == NULL) {
-                    Volume->VolName = AllocateZeroPool (sizeof (CHAR16) * 256);
-                    SPrint (Volume->VolName, 255, L"Partition %d", PartitionIndex + 1);
+                    Volume->VolName = PoolPrint (L"Partition %d", PartitionIndex + 1);
                 }
                 break;
             }
@@ -2328,7 +2312,7 @@ Basename (
         }
     }
 
-    return FileName;
+    return StrDuplicate (FileName);
 }
 
 // Remove the .efi extension from FileName -- for instance, if FileName is
@@ -2695,6 +2679,7 @@ FilenameIn (
 VOID MyFreePool (IN VOID *Pointer) {
     if (Pointer != NULL) {
         FreePool (Pointer);
+        Pointer = NULL;
     }
 }
 

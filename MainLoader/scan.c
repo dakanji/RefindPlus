@@ -211,29 +211,37 @@ static REFIT_MENU_SCREEN* CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
     UINTN i;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if ((Entry != NULL) && (NewEntry != NULL)) {
-        CopyMem (NewEntry, Entry, sizeof (REFIT_MENU_SCREEN));
-        NewEntry->Title = (Entry->Title) ? StrDuplicate (Entry->Title) : NULL;
-        NewEntry->TimeoutText = (Entry->TimeoutText) ? StrDuplicate (Entry->TimeoutText) : NULL;
 
+    if ((Entry != NULL) && (NewEntry != NULL)) {
+        NewEntry->Title = (Entry->Title) ? StrDuplicate (Entry->Title) : NULL;
         if (Entry->TitleImage != NULL) {
             NewEntry->TitleImage = AllocatePool (sizeof (EG_IMAGE));
-            if (NewEntry->TitleImage != NULL)
+            if (NewEntry->TitleImage != NULL) {
                 CopyMem (NewEntry->TitleImage, Entry->TitleImage, sizeof (EG_IMAGE));
+            }
         } // if
 
+        NewEntry->InfoLineCount = Entry->InfoLineCount;
         NewEntry->InfoLines = (CHAR16**) AllocateZeroPool (Entry->InfoLineCount * (sizeof (CHAR16*)));
+
         for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
             NewEntry->InfoLines[i] = (Entry->InfoLines[i]) ? StrDuplicate (Entry->InfoLines[i]) : NULL;
         } // for
 
+        NewEntry->EntryCount = Entry->EntryCount;
         NewEntry->Entries = (REFIT_MENU_ENTRY**) AllocateZeroPool (Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY*)));
+
         for (i = 0; i < Entry->EntryCount && NewEntry->Entries; i++) {
             AddMenuEntry (NewEntry, Entry->Entries[i]);
         } // for
+
+        NewEntry->TimeoutSeconds = Entry->TimeoutSeconds;
+        NewEntry->TimeoutText    = (Entry->TimeoutText) ? StrDuplicate(Entry->TimeoutText) : NULL;
+
         NewEntry->Hint1 = (Entry->Hint1) ? StrDuplicate (Entry->Hint1) : NULL;
         NewEntry->Hint2 = (Entry->Hint2) ? StrDuplicate (Entry->Hint2) : NULL;
     } // if
+
     return (NewEntry);
 } // REFIT_MENU_SCREEN* CopyMenuScreen()
 
@@ -316,9 +324,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
     if (Entry->me.SubScreen == NULL) { // No subscreen yet; initialize default entry....
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen != NULL) {
-            SubScreen->Title = AllocateZeroPool (sizeof (CHAR16) * 256);
-            SPrint (SubScreen->Title,
-                255,
+            SubScreen->Title = PoolPrint (
                 L"Boot Options for %s on %s",
                 (Entry->Title != NULL) ? Entry->Title : FileName, Entry->Volume->VolName
             );
@@ -691,6 +697,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     MyFreePool (PathOnly);
     MyFreePool (OSIconName);
     MyFreePool (NoExtension);
+    MyFreePool (NameClues);
 } // VOID SetLoaderDefaults()
 
 // Add an NVRAM-based EFI boot loader entry to the menu.
@@ -786,16 +793,17 @@ static LOADER_ENTRY * AddLoaderEntry (
         // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
         // Note: Volume->VolName will be NULL for network boot programs.
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
-            SPrint (
-                Entry->me.Title,
-                255,
+            Entry->me.Title = PoolPrint (
                 L"Boot %s from %s ",
                 (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
                 Volume->VolName
             );
         }
         else {
-            SPrint (Entry->me.Title, 255, L"Boot %s ", (LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+            Entry->me.Title = PoolPrint (
+                L"Boot %s ",
+                (LoaderTitle != NULL) ? TitleEntry : LoaderPath
+            );
         }
 
         Entry->me.Row = 0;
@@ -820,51 +828,51 @@ static LOADER_ENTRY * AddLoaderEntry (
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Whole Disk Volume";
+                VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Unknown Volume";
+                VolDesc = StrDuplicate (L"Unknown Volume");
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"HFS+ Volume";
+                VolDesc = StrDuplicate (L"HFS+ Volume");
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"NTFS Volume";
+                VolDesc = StrDuplicate (L"NTFS Volume");
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"FAT Volume";
+                VolDesc = StrDuplicate (L"FAT Volume");
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext2 Volume";
+                VolDesc = StrDuplicate (L"Ext2 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext3 Volume";
+                VolDesc = StrDuplicate (L"Ext3 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"Ext4 Volume";
+                VolDesc = StrDuplicate (L"Ext4 Volume");
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"ReiserFS Volume";
+                VolDesc = StrDuplicate (L"ReiserFS Volume");
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"BTRFS Volume";
+                VolDesc = StrDuplicate (L"BTRFS Volume");
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"XFS Volume";
+                VolDesc = StrDuplicate (L"XFS Volume");
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                 MyFreePool (VolDesc);
-                VolDesc = L"ISO-9660 Volume";
+                VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
             MsgLog ("\n");
             MsgLog ("  - Found '%s' on '%s'", TitleEntry, VolDesc);
@@ -1335,7 +1343,6 @@ static VOID ScanNetboot() {
                 NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
                 NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
                 AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
-                MyFreePool (NetVolume);
             } // if support files exist and are valid
     }
 } // VOID ScanNetboot()
@@ -1393,7 +1400,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     EFI_STATUS       Status;
     REFIT_DIR_ITER   EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
-    CHAR16           FileName[256], *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
+    CHAR16           *FileName, *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
     UINTN            i, Length;
     BOOLEAN          ScanFallbackLoader = TRUE;
     BOOLEAN          FoundBRBackup = FALSE;
@@ -1406,25 +1413,29 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
 
         // check for Mac OS boot loader
         if (ShouldScan (Volume, MACOSX_LOADER_DIR)) {
-            StrCpy (FileName, MACOSX_LOADER_PATH);
+            FileName = StrDuplicate (MACOSX_LOADER_PATH);
             ScanFallbackLoader &= ScanMacOsLoader (Volume, FileName);
+            MyFreePool (FileName);
             DirIterOpen (Volume->RootDir, L"\\", &EfiDirIter);
 
             while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
                 if (IsGuid (EfiDirEntry->FileName)) {
-                    SPrint (FileName, 255, L"%s\\%s", EfiDirEntry->FileName, MACOSX_LOADER_PATH);
+                    FileName = PoolPrint (L"%s\\%s", EfiDirEntry->FileName, MACOSX_LOADER_PATH);
                     ScanFallbackLoader &= ScanMacOsLoader (Volume, FileName);
-                    SPrint (FileName, 255, L"%s\\%s", EfiDirEntry->FileName, L"boot.efi");
+                    MyFreePool (FileName);
+                    FileName = PoolPrint (L"%s\\%s", EfiDirEntry->FileName, L"boot.efi");
 
                     if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
                         MergeStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
                     }
+
+                    MyFreePool (FileName);
                 } // if
             } // while
             Status = DirIterClose (&EfiDirIter);
 
             // check for XOM
-            StrCpy (FileName, L"System\\Library\\CoreServices\\xom.efi");
+            FileName = StrDuplicate (L"System\\Library\\CoreServices\\xom.efi");
             if (FileExists (Volume->RootDir, FileName) &&
                 !FilenameIn (Volume, MACOSX_LOADER_DIR, L"xom.efi", GlobalConfig.DontScanFiles)
             ) {
@@ -1433,11 +1444,12 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
+            MyFreePool (FileName);
         } // if should scan Mac directory
 
         // check for Microsoft boot loader/menu
         if (ShouldScan (Volume, L"EFI\\Microsoft\\Boot")) {
-            StrCpy (FileName, L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
+            FileName = StrDuplicate (L"EFI\\Microsoft\\Boot\\bkpbootmgfw.efi");
             if (FileExists (Volume->RootDir, FileName) &&
                 !FilenameIn (
                     Volume,
@@ -1452,7 +1464,9 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
-            StrCpy (FileName, L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
+            MyFreePool (FileName);
+
+            FileName = StrDuplicate (L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
             if (FileExists (Volume->RootDir, FileName) &&
                 !FilenameIn (
                     Volume,
@@ -1482,6 +1496,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
+            MyFreePool (FileName);
         } // if
 
         // scan the root directory for EFI executables
@@ -1500,11 +1515,14 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 continue;
             }
 
-            SPrint (FileName, 255, L"EFI\\%s", EfiDirEntry->FileName);
+            FileName = PoolPrint (L"EFI\\%s", EfiDirEntry->FileName);
             if (ScanLoaderDir (Volume, FileName, MatchPatterns)) {
                 ScanFallbackLoader = FALSE;
             }
+
+            MyFreePool (FileName);
         } // while()
+
         Status = DirIterClose (&EfiDirIter);
         if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
             Temp = PoolPrint (L"While Scanning the EFI System Partition on '%s'", Volume->VolName);
@@ -1936,11 +1954,11 @@ ScanForBootloaders (
         for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
             if (i < 9) {
                 k = i + 1;
-                ShortCutKey = (CHAR16)('1' + i);
+                ShortCutKey = (CHAR16) ('1' + i);
             }
             else if (i == 9) {
                 k = 0;
-                ShortCutKey = (CHAR16)('9' - i);
+                ShortCutKey = (CHAR16) ('9' - i);
             }
             else {
                 break;
@@ -1963,16 +1981,16 @@ ScanForBootloaders (
         CHAR16   *LoaderStr;
 
         if (i == 1) {
-            keyStr = L"Key";
+            keyStr = StrDuplicate (L"Key");
         }
         else {
-            keyStr = L"Keys";
+            keyStr = StrDuplicate (L"Keys");
         }
         if (MainMenu.EntryCount == 1) {
-            LoaderStr = L"Boot Loader";
+            LoaderStr = StrDuplicate (L"Boot Loader");
         }
         else {
-            LoaderStr = L"Boot Loaders";
+            LoaderStr = StrDuplicate (L"Boot Loaders");
         }
         MsgLog (
             "INFO: Assigned Keyboard Shortcut %s to %d of %d %s\n\n",
@@ -1981,6 +1999,8 @@ ScanForBootloaders (
             MainMenu.EntryCount,
             LoaderStr
         );
+        MyFreePool (keyStr);
+        MyFreePool (LoaderStr);
         #endif
     }
 
@@ -2044,7 +2064,7 @@ static BOOLEAN FindTool (
     BOOLEAN FoundTool = FALSE;
 
 //DA-TAG: Commented Out
-//    CHAR16 FullDescription[256];
+//    CHAR16 FullDescription;
 
     while ((DirName = FindCommaDelimited (Locations, j++)) != NULL) {
         k = 0;
@@ -2057,9 +2077,7 @@ static BOOLEAN FindTool (
                 ) {
                     FoundTool = TRUE;
 //DA-TAG: Commented Out
-//                    SPrint (
-//                        FullDescription,
-//                        255,
+//                    FullDescription = PoolPrint (
 //                        L"%s at %s on %s",
 //                        Description,
 //                        PathName,
@@ -2090,6 +2108,7 @@ static BOOLEAN FindTool (
             MyFreePool (PathName);
             MyFreePool (FileName);
         } // while Names
+
         MyFreePool (DirName);
     } // while Locations
 
@@ -2101,7 +2120,7 @@ VOID ScanForTools (VOID) {
     CHAR16           *FileName = NULL;
     CHAR16           *VolName = NULL;
     CHAR16           *MokLocations;
-    CHAR16           Description[256];
+    CHAR16           *Description;
     REFIT_MENU_ENTRY *TempMenuEntry;
     UINTN            i;
     UINTN            j;
@@ -2131,91 +2150,91 @@ VOID ScanForTools (VOID) {
         #if REFIT_DEBUG > 0
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_SHUTDOWN:
-                ToolName = L"Shut Computer Down";
+                ToolName = StrDuplicate (L"Shut Computer Down");
                 break;
 
             case TAG_REBOOT:
-                ToolName = L"Restart Computer";
+                ToolName = StrDuplicate (L"Restart Computer");
                 break;
 
             case TAG_ABOUT:
-                ToolName = L"About RefindPlus";
+                ToolName = StrDuplicate (L"About RefindPlus");
                 break;
 
             case TAG_EXIT:
-                ToolName = L"Exit RefindPlus";
+                ToolName = StrDuplicate (L"Exit RefindPlus");
                 break;
 
             case TAG_HIDDEN:
-                ToolName = L"Hidden Tags";
+                ToolName = StrDuplicate (L"Hidden Tags");
                 break;
 
             case TAG_FIRMWARE:
-                ToolName = L"Firmware";
+                ToolName = StrDuplicate (L"Firmware");
                 break;
 
             case TAG_SHELL:
-                ToolName = L"UEFI Shell";
+                ToolName = StrDuplicate (L"UEFI Shell");
                 break;
 
             case TAG_GPTSYNC:
-                ToolName = L"GPT Sync";
+                ToolName = StrDuplicate (L"GPT Sync");
                 break;
 
             case TAG_GDISK:
-                ToolName = L"GDisk";
+                ToolName = StrDuplicate (L"GDisk");
                 break;
 
             case TAG_NETBOOT:
-                ToolName = L"Net Boot";
+                ToolName = StrDuplicate (L"Net Boot");
                 break;
 
             case TAG_APPLE_RECOVERY:
-                ToolName = L"Apple Recovery";
+                ToolName = StrDuplicate (L"Apple Recovery");
                 break;
 
             case TAG_WINDOWS_RECOVERY:
-                ToolName = L"Windows Recovery";
+                ToolName = StrDuplicate (L"Windows Recovery");
                 break;
 
             case TAG_MOK_TOOL:
-                ToolName = L"MOK";
+                ToolName = StrDuplicate (L"MOK");
                 break;
 
             case TAG_FWUPDATE_TOOL:
-                ToolName = L"Firmware Update";
+                ToolName = StrDuplicate (L"Firmware Update");
                 break;
 
             case TAG_CSR_ROTATE:
-                ToolName = L"Toggle Mac SIP";
+                ToolName = StrDuplicate (L"Toggle Mac SIP");
                 break;
 
             case TAG_INSTALL:
-                ToolName = L"Install RefindPlus";
+                ToolName = StrDuplicate (L"Install RefindPlus");
                 break;
 
             case TAG_BOOTORDER:
-                ToolName = L"Manage Boot Order";
+                ToolName = StrDuplicate (L"Manage Boot Order");
                 break;
 
             case TAG_PRE_BOOTKICKER:
-                ToolName = L"Mac BootKicker";
+                ToolName = StrDuplicate (L"Mac BootKicker");
                 break;
 
             case TAG_PRE_NVRAMCLEAN:
-                ToolName = L"Clean Mac Nvram";
+                ToolName = StrDuplicate (L"Clean Mac Nvram");
                 break;
 
             case TAG_MEMTEST:
-                ToolName = L"Memtest";
+                ToolName = StrDuplicate (L"Memtest");
                 break;
 
             default:
-                ToolName = L"Skipped";
+                ToolName = StrDuplicate (L"Skipped");
         }
 
         if (!GlobalConfig.ShowTools[i]) {
-            ToolName = L"Skipped";
+            ToolName = StrDuplicate (L"Skipped");
         }
 
         if (MyStrStr (ToolName, L"Skipped") != NULL) {
@@ -2360,7 +2379,6 @@ VOID ScanForTools (VOID) {
                         #endif
                     } // if
                 MyFreePool (FileName);
-                FileName = NULL;
                 } // while
 
                 ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
@@ -2471,9 +2489,7 @@ VOID ScanForTools (VOID) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool (Volumes[VolumeIndex], FileName))) {
                                 FoundTool = TRUE;
-                                SPrint (
-                                    Description,
-                                    255,
+                                Description = PoolPrint (
                                     L"%s on %s",
                                     ToolName,
                                     Volumes[VolumeIndex]->VolName
@@ -2515,9 +2531,7 @@ VOID ScanForTools (VOID) {
                             ((VolName == NULL) || MyStriCmp (VolName, Volumes[VolumeIndex]->VolName))
                         ) {
                             FoundTool = TRUE;
-                            SPrint (
-                                Description,
-                                255,
+                            Description = PoolPrint (
                                 L"%s on %s",
                                 ToolName,
                                 Volumes[VolumeIndex]->VolName
@@ -2531,11 +2545,16 @@ VOID ScanForTools (VOID) {
                                 TRUE
                             );
 
+                            MyFreePool (Description);
+
                              #if REFIT_DEBUG > 0
                              MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
                              #endif
                         } // if
                     } // for
+
+                    MyFreePool (FileName);
+                    MyFreePool (VolName);
                 } // while
 
                 if (!FoundTool) {
@@ -2543,10 +2562,6 @@ VOID ScanForTools (VOID) {
                     MsgLog ("              - WARN: Could Not Find '%s'\n", ToolName);
                     #endif
                 }
-
-                MyFreePool (FileName);
-                MyFreePool (VolName);
-                VolName = NULL;
 
                 break;
 

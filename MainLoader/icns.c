@@ -132,7 +132,7 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id)
 EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconName, BOOLEAN BootLogo)
 {
     EG_IMAGE        *Image = NULL;
-    CHAR16          *CutoutName, BaseName[256];
+    CHAR16          *CutoutName, *BaseName;
     UINTN           Index = 0;
 
     if (GlobalConfig.TextOnly)      // skip loading if it's not used anyway
@@ -140,21 +140,24 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
 
     // First, try to find an icon from the OSIconName list....
     while (((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL) && (Image == NULL)) {
-       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
+       Image    = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (CutoutName);
+       MyFreePool (BaseName);
     }
 
     // If that fails, try again using the FallbackIconName....
     if (Image == NULL) {
-       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
-       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+       Image    = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       MyFreePool (BaseName);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
-       SPrint(BaseName, 255, L"os_%s", FallbackIconName);
-       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       BaseName = PoolPrint (L"os_%s", FallbackIconName);
+       Image    = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       MyFreePool (BaseName);
     }
 
     // If all of these fail, return the dummy image....

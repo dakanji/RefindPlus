@@ -62,7 +62,7 @@ GetCsrStatus (
             }
             else {
                 Status = EFI_BAD_BUFFER_SIZE;
-                gCsrStatus = L"Unknown System Integrity Protection Version";
+                gCsrStatus = StrDuplicate (L"Unknown System Integrity Protection Version");
             }
 
             MyFreePool (ReturnValue);

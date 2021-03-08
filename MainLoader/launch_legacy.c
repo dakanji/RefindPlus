@@ -389,7 +389,6 @@ StartLegacyImageList (
     EFI_HANDLE              ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     UINTN                   DevicePathIndex;
-    CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
 
     if (ErrorInStep != NULL) {
@@ -420,12 +419,10 @@ StartLegacyImageList (
         }
     } // for
 
-    SPrint (ErrorInfo, 255, L"while loading legacy loader");
-    if (CheckError (Status, ErrorInfo)) {
+    if (CheckError (Status, L"while loading legacy loader")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
-        MyFreePool (ErrorInfo);
         goto bailout;
     }
 
@@ -457,14 +454,11 @@ StartLegacyImageList (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    MyFreePool (ErrorInfo);
-    SPrint (ErrorInfo, 255, L"returned from legacy loader");
-    if (CheckError (Status, ErrorInfo)) {
+    if (CheckError (Status, L"returned from legacy loader")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 3;
         }
     }
-    MyFreePool (ErrorInfo);
 
     // re-open file handles
     ReinitRefitLib();
@@ -615,12 +609,7 @@ static LEGACY_ENTRY
         VolDesc = L"NTFS Volume";
     }
 
-    LegacyTitle = AllocateZeroPool (256 * sizeof (CHAR16));
-    if (LegacyTitle == NULL) {
-        return NULL;
-    }
-
-    SPrint (LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (LegacyTitle);
 
@@ -648,9 +637,7 @@ static LEGACY_ENTRY
 
     // create the submenu
     SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
+    SubScreen->Title = PoolPrint (L"Boot Options for %s on %s", LoaderTitle, VolDesc);
 
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
@@ -664,9 +651,7 @@ static LEGACY_ENTRY
 
     // default entry
     SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
+    SubEntry->me.Title = PoolPrint (L"Boot %s", LoaderTitle);
 
     SubEntry->me.Tag      = TAG_LEGACY;
     SubEntry->Volume      = Entry->Volume;
@@ -707,9 +692,7 @@ static LEGACY_ENTRY
 
     // prepare the menu entry
     Entry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
+    Entry->me.Title = PoolPrint (L"Boot legacy OS from %s", LegacyDescription);
 
     Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.Row            = 0;
@@ -725,9 +708,7 @@ static LEGACY_ENTRY
 
     // create the submenu
     SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubScreen->Title, 255, L"No boot options for legacy target");
+    SubScreen->Title = StrDuplicate (L"No boot options for legacy target");
 
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
@@ -741,9 +722,7 @@ static LEGACY_ENTRY
 
     // default entry
     SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-
-    SPrint (SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
+    SubEntry->me.Title = PoolPrint (L"Boot %s", LegacyDescription);
 
     SubEntry->me.Tag = TAG_LEGACY_UEFI;
     Entry->BdsOption = BdsOption;

@@ -113,7 +113,6 @@ RefitReadFile (
 
         return Status;
     }
-    MyFreePool (Message);
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
@@ -133,14 +132,18 @@ RefitReadFile (
     else {
        *size = File->BufferSize;
     } // if/else
+
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
     if (CheckError (Status, Message)) {
+        MyFreePool (Message);
         MyFreePool (File->Buffer);
         File->Buffer = NULL;
         refit_call1_wrapper(FileHandle->Close, FileHandle);
 
         return Status;
     }
+    MyFreePool (Message);
+
     Status = refit_call1_wrapper(FileHandle->Close, FileHandle);
 
     // setup for reading
@@ -1138,10 +1141,7 @@ AddSubmenu (
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                     TitleMenu = Title;
                     MyFreePool (SubEntry->me.Title);
-                    SubEntry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-                    SPrint (
-                        SubEntry->me.Title,
-                        255,
+                    SubEntry->me.Title = PoolPrint (
                         L"Boot %s from %s",
                         (TitleMenu != NULL) ? TitleMenu : L"Unknown",
                         Volume->VolName
@@ -1215,10 +1215,7 @@ LOADER_ENTRY * AddStanzaEntries (
    }
 
    Entry->Title           = StrDuplicate (Title);
-   Entry->me.Title        = AllocateZeroPool (256 * sizeof (CHAR16));
-   SPrint (
-       Entry->me.Title,
-       255,
+   Entry->me.Title        = PoolPrint (
        L"Boot %s from %s",
        (Title != NULL) ? Title : L"Unknown",
        CurrentVolume->VolName
@@ -1246,10 +1243,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 (CurrentVolume->RootDir)
             ) {
                MyFreePool (Entry->me.Title);
-               Entry->me.Title = AllocateZeroPool (256 * sizeof (CHAR16));
-               SPrint (
-                   Entry->me.Title,
-                   255,
+               Entry->me.Title = PoolPrint (
                    L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
                    CurrentVolume->VolName
                );
@@ -1367,51 +1361,51 @@ ScanUserConfigured (
 
                         if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"Whole Disk Volume";
+                            VolDesc = StrDuplicate (L"Whole Disk Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"Unknown Volume";
+                            VolDesc = StrDuplicate (L"Unknown Volume");
                         }
                         else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"HFS+ Volume";
+                            VolDesc = StrDuplicate (L"HFS+ Volume");
                         }
                         else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"NTFS Volume";
+                            VolDesc = StrDuplicate (L"NTFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"FAT Volume";
+                            VolDesc = StrDuplicate (L"FAT Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"Ext2 Volume";
+                            VolDesc = StrDuplicate (L"Ext2 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"Ext3 Volume";
+                            VolDesc = StrDuplicate (L"Ext3 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"Ext4 Volume";
+                            VolDesc = StrDuplicate (L"Ext4 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"ReiserFS Volume";
+                            VolDesc = StrDuplicate (L"ReiserFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"BTRFS Volume";
+                            VolDesc = StrDuplicate (L"BTRFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"XFS Volume";
+                            VolDesc = StrDuplicate (L"XFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
                             MyFreePool (VolDesc);
-                            VolDesc = L"ISO-9660 Volume";
+                            VolDesc = StrDuplicate (L"ISO-9660 Volume");
                         }
                         MsgLog ("\n");
                         MsgLog ("  - Found '%s' on '%s'", Entry->Title, VolDesc);
@@ -1458,7 +1452,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     EFI_STATUS   Status;
     CHAR16       **TokenList;
     CHAR16       *Line;
-    CHAR16       Root[100];
+    CHAR16       *Root;
 
     if (FileExists (Volume->RootDir, L"\\etc\\fstab")) {
         Options = AllocateZeroPool (sizeof (REFIT_FILE));
@@ -1466,14 +1460,10 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         Status  = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
 
         if (CheckError (Status, L"while reading /etc/fstab")) {
-            if (Options != NULL) {
-                FreePool (Options);
-            }
-            if (Fstab != NULL) {
-                FreePool (Fstab);
-            }
+            MyFreePool (Options);
+            MyFreePool (Fstab);
             Options = NULL;
-            Fstab = NULL;
+            Fstab   = NULL;
         }
         else {
             // File read; locate root fs and create entries
@@ -1482,12 +1472,12 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 if (TokenCount > 2) {
                     Root[0] = '\0';
                     if (StrCmp (TokenList[1], L"\\") == 0) {
-                        SPrint (Root, 99, L"%s", TokenList[0]);
+                        Root = PoolPrint (L"%s", TokenList[0]);
                     }
                     else if (StrCmp (TokenList[2], L"\\") == 0) {
-                        SPrint (Root, 99, L"%s=%s", TokenList[0], TokenList[1]);
+                        Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
                     } // if/elseif/elseif
-                    if (Root[0] != L'\0') {
+                    if (Root && (Root[0] != L'\0')) {
                         for (i = 0; i < StrLen (Root); i++) {
                             if (Root[i] == '\\') {
                                 Root[i] = '/';
@@ -1504,6 +1494,8 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
 
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
                     } // if
+                    MyFreePool (Root);
+                    Root = NULL;
                 } // if
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while

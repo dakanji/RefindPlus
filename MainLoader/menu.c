@@ -2043,6 +2043,7 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         MyFreePool (VolName);
         DeletedSomething |= DeleteIt;
     } // while()
+
     return DeletedSomething;
 } // BOOLEAN RemoveInvalidFilenames()
 
@@ -2090,17 +2091,18 @@ ManageHiddenTags (
     EFI_STATUS          Status = EFI_SUCCESS;
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     HiddenTags = ReadHiddenTags (L"HiddenTags");
-    SaveTags = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
+    SaveTags   = RemoveInvalidFilenames (HiddenTags, L"HiddenTags");
     if (HiddenTags && (HiddenTags[0] != L'\0')) {
         AllTags = StrDuplicate (HiddenTags);
     }
 
     HiddenTools = ReadHiddenTags (L"HiddenTools");
-    SaveTools = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
+    SaveTools   = RemoveInvalidFilenames (HiddenTools, L"HiddenTools");
     if (HiddenTools && (HiddenTools[0] != L'\0')) {
         MergeStrings (&AllTags, HiddenTools, L',');
     }
@@ -2119,19 +2121,20 @@ ManageHiddenTags (
         AddMenuInfoLine (&HideItemMenu, L"Select a tag and press Enter to restore it");
 
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
-            MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+            MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);
-            MenuEntryItem->Tag = TAG_RETURN;
-            MenuEntryItem->Row = 1;
+            MenuEntryItem->Tag   = TAG_RETURN;
+            MenuEntryItem->Row   = 1;
             AddMenuEntry (&HideItemMenu, MenuEntryItem);
+            MyFreePool (OneElement);
         } // while
 
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         if (MenuExit == MENU_EXIT_ENTER) {
-            SaveTags |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
-            SaveTools |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
-            SaveFirmware |= DeleteItemFromCsvList(ChosenOption->Title, HiddenFirmware);
-            SaveLegacy |= DeleteItemFromCsvList(ChosenOption->Title, HiddenLegacy);
+            SaveTags     |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTags);
+            SaveTools    |= DeleteItemFromCsvList (ChosenOption->Title, HiddenTools);
+            SaveFirmware |= DeleteItemFromCsvList (ChosenOption->Title, HiddenFirmware);
+            SaveLegacy   |= DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy);
 
             if (DeleteItemFromCsvList (ChosenOption->Title, HiddenLegacy)) {
                 i = HiddenLegacy ? StrLen (HiddenLegacy) : 0;
@@ -2171,8 +2174,6 @@ ManageHiddenTags (
     MyFreePool (HiddenTools);
     MyFreePool (HiddenLegacy);
     MyFreePool (HiddenFirmware);
-    MyFreePool (OneElement);
-    MyFreePool (MenuEntryItem);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags (CHAR16 *VarName) {
@@ -2264,10 +2265,10 @@ HideEfiTag (
         }
         AddToHiddenTags (VarName, FullPath);
         TagHidden = TRUE;
+        MyFreePool (GuidStr);
     } // if
 
     MyFreePool (FullPath);
-    MyFreePool (GuidStr);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()

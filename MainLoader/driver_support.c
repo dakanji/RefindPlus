@@ -664,7 +664,7 @@ ScanDriverDir (
         }
 
         NumFound++;
-        FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
+        FileName = PoolPrint (L"%s\\%s", Path, DirEntry->FileName);
 
         if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
             MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
@@ -713,7 +713,7 @@ ScanDriverDir (
 
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
-        FileName = PoolPrint(L"While Scanning the '%s' Directory", Path);
+        FileName = PoolPrint (L"While Scanning the '%s' Directory", Path);
         CheckError(Status, FileName);
         MyFreePool (FileName);
     }

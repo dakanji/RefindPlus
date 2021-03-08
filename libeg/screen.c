@@ -1554,70 +1554,29 @@ CHAR16 *
 egScreenDescription (
     VOID
 ) {
-    CHAR16       *GraphicsInfo;
-    CHAR16       *TextInfo      = NULL;
-    CHAR16       *ShowScreenStr = NULL;
-
-    GraphicsInfo = AllocateZeroPool (256 * sizeof (CHAR16));
-    if (GraphicsInfo == NULL) {
-        SwitchToText (FALSE);
-
-        ShowScreenStr = L"Memory Allocation Error";
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("%s\n\n", ShowScreenStr);
-        #endif
-
-        PauseForKey();
-        SwitchToGraphics();
-
-        return ShowScreenStr;
-    }
+    CHAR16  *GraphicsInfo  = NULL;
+    CHAR16  *TextInfo      = NULL;
 
     if (egHasGraphics) {
         if (GOPDraw != NULL) {
-            SPrint (GraphicsInfo, 255,
+            GraphicsInfo = PoolPrint (
                 L"Graphics Output Protocol @ %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
         else if (UGADraw != NULL) {
-            SPrint (GraphicsInfo, 255,
+            GraphicsInfo = PoolPrint (
                 L"Universal Graphics Adapter @ %d x %d",
                 egScreenWidth, egScreenHeight
             );
         }
         else {
-            MyFreePool (GraphicsInfo);
-            MyFreePool (TextInfo);
-
-            SwitchToText (FALSE);
-
-            ShowScreenStr = L"Could not Get Graphics Details";
-
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("** Warn: %s\n\n", ShowScreenStr);
-            #endif
-
-            PauseForKey();
-            SwitchToGraphics();
-
-            return ShowScreenStr;
+            GraphicsInfo = StrDuplicate (L"Could not Get Graphics Details");
         }
 
         if (!AllowGraphicsMode) {
             // Graphics Capable Hardware in Text Mode
-            TextInfo = AllocateZeroPool (256 * sizeof (CHAR16));
-            SPrint (
-                TextInfo, 255,
+            TextInfo = PoolPrint (
                 L"(Text Mode: %d x %d [Graphics Capable])",
                 ConWidth, ConHeight
             );
@@ -1625,8 +1584,7 @@ egScreenDescription (
         }
     }
     else {
-        SPrint (
-            GraphicsInfo, 255,
+        GraphicsInfo = PoolPrint (
             L"Text-Only Console: %d x %d",
             ConWidth, ConHeight
         );
