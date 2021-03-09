@@ -110,6 +110,6 @@ EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
 VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue(VOID);
 VOID ForceTRIM(VOID);
-VOID DisableMacCompatCheck(VOID);
+VOID DisableCompatCheck(VOID);
 VOID DisableAMFI(VOID);
 #endif

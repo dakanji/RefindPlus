@@ -21,6 +21,9 @@
     "ON" or "OFF" in the configuration file. Default is "OFF"
 - Treats OpenCore as other EFI Loaders
   * No longer specifically switches booting the OpenCore EFI to graphics mode
+- Changes 'disable_mac_compat_check' Config Option to 'disable_compat_check'
+  * Makes this consistent with other similar options
+
 
 0.13.1.AB (02 Mar 2021):
 - Fixes APFS ReMapping

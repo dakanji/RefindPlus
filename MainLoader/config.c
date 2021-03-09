@@ -1050,8 +1050,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"force_trim")) {
           GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"disable_mac_compat_check")) {
-          GlobalConfig.DisableMacCompatCheck = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"disable_compat_check")) {
+          GlobalConfig.DisableCompatCheck = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
           GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);

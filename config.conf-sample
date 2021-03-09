@@ -125,7 +125,7 @@
 #
 # Inactive when commented out (Does not disable the compatibility check)
 #
-#disable_mac_compat_check
+#disable_compat_check
 
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
@@ -206,10 +206,10 @@
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
 # This setting only applies to Mac OS and accounts for arguments injected by
-# 'disable_amfi' and 'disable_mac_compat_check' as required. Note that this
-# setting will create a Mac OS boot argument the first time it is triggered
-# and that this will stay active until explicitly cleared even if the
-# setting is subsequently disabled.
+# 'disable_amfi' and 'disable_compat_check' as required. Note that this
+# will create a Mac OS boot argument the first time it is triggered
+# and that this will stay active until explicitly cleared even if
+# the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not change boot arguments)
 #

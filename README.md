@@ -28,7 +28,7 @@ Config Token| Functionality
 continue_on_warning| Proceeds as if a key is pressed after screen warnings (enables remote login).
 direct_gop_renderer| Provides a potentially improved GOP instance for certain GPUs.
 disable_amfi| Disables AMFI Checks on Mac OS if required.
-disable_mac_compat_check| Disables Mac version compatibility checks if required.
+disable_compat_check| Disables Mac version compatibility checks if required.
 force_trim| Forces `TRIM` on non-Apple SSDs if required.
 ignore_previous_boot| Disables saving the last booted loader if not required.
 protect_mac_nvram| Stops UEFI Windows from saving certificates to Apple NVRAM.
