@@ -1185,14 +1185,26 @@ egInitScreen (
         }
 
         #ifdef __MAKEWITH_TIANO
-        // DA-TAG: Limit to TianoCore
-        Status = OcUseBuiltinTextOutput (ScreenMode);
+            // DA-TAG: Limit to TianoCore
+            Status = OcUseBuiltinTextOutput (ScreenMode);
 
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
-        #endif
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
+            #endif
         #endif
     }
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *ScreenModeType;
+    if (egHasGraphics) {
+        ScreenModeType = StrDuplicate (L"Graphics");
+    }
+    else {
+        ScreenModeType = StrDuplicate (L"Text");
+    }
+    MsgLog ("INFO: Screen Mode:- '%s'\n\n", ScreenModeType);
+    MyFreePool (ScreenModeType);
+    #endif
 }
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
