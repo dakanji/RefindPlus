@@ -1065,8 +1065,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"reinforce_apfs")) {
           GlobalConfig.ReinforceAPFS = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"protect_mac_nvram")) {
-          GlobalConfig.ProtectMacNVRAM = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
+          GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
           GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);

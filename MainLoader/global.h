@@ -403,7 +403,7 @@ typedef struct {
    BOOLEAN          SupplyAPFS;
    BOOLEAN          SuppressVerboseAPFS;
    BOOLEAN          ReinforceAPFS;
-   BOOLEAN          ProtectMacNVRAM;
+   BOOLEAN          ProtectNVRAM;
    BOOLEAN          ScanOtherESP;
    BOOLEAN          ShutdownAfterTimeout;
    BOOLEAN          Install;

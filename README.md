@@ -31,7 +31,7 @@ disable_amfi| Disables AMFI Checks on Mac OS if required.
 disable_compat_check| Disables Mac version compatibility checks if required.
 force_trim| Forces `TRIM` on non-Apple SSDs if required.
 ignore_previous_boot| Disables saving the last booted loader if not required.
-protect_mac_nvram| Stops UEFI Windows from saving certificates to Apple NVRAM.
+protect_nvram| Stops UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop| Fixes issues with GOP on some Legacy Macs.
 reinforce_apfs| Allows directly booting Big Sur as well as FileVault (without needing PreBoot).
 reinstall_gop| Reinstalls GOP driver on capable legacy units (such as classic MacPros).

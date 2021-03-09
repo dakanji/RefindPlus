@@ -183,7 +183,7 @@
 #
 # Inactive when commented out (Does not prevent UEFI Windows writes to Apple NVRAM)
 #
-#protect_mac_nvram
+#protect_nvram
 
 # Allow scans of multiple ESPs. When this option is active, RefindPlus will make other ESPs,
 # separate from that containing RefindPlus, available for scanning for kernels and loaders.

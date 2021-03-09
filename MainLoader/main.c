@@ -143,7 +143,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SupplyAPFS = */ FALSE,
     /* SuppressVerboseAPFS = */ FALSE,
     /* ReinforceAPFS = */ FALSE,
-    /* ProtectMacNVRAM = */ FALSE,
+    /* ProtectNVRAM = */ FALSE,
     /* ScanOtherESP = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
@@ -2067,7 +2067,7 @@ efi_main (
                     ReMapOpenProtocol();
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
-                    if (GlobalConfig.ProtectMacNVRAM &&
+                    if (GlobalConfig.ProtectNVRAM &&
                         MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
