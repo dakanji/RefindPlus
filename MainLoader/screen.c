@@ -407,13 +407,22 @@ SwitchToText (
     #endif
 }
 
-VOID SwitchToGraphics (
+EFI_STATUS
+SwitchToGraphics (
     VOID
 ) {
-    if (AllowGraphicsMode && !egIsGraphicsModeEnabled()) {
-        egSetGraphicsModeEnabled (TRUE);
-        GraphicsScreenDirty = TRUE;
+    if (AllowGraphicsMode) {
+        if (!egIsGraphicsModeEnabled()) {
+            egSetGraphicsModeEnabled (TRUE);
+            GraphicsScreenDirty = TRUE;
+
+            return EFI_SUCCESS;
+        }
+
+        return EFI_ALREADY_STARTED;
     }
+
+    return EFI_NOT_FOUND;
 }
 
 //
@@ -759,15 +768,20 @@ VOID
 SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
-    SwitchToGraphics();
+    EFI_STATUS Status;
+    
+    #if REFIT_DEBUG > 0
+    BOOLEAN    gotGraphics = egIsGraphicsModeEnabled();
+    #endif
+
+    Status = SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen (ShowBanner);
     }
 
     #if REFIT_DEBUG > 0
-    BOOLEAN gotGraphics = egIsGraphicsModeEnabled();
     if (!gotGraphics) {
-        MsgLog ("INFO: Restore Graphics Mode ...Success\n\n");
+        MsgLog ("INFO: Restore Graphics Mode ...%r\n\n", Status);
     }
     #endif
 } // VOID SwitchToGraphicsAndClear()
