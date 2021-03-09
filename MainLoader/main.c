@@ -2114,10 +2114,6 @@ efi_main (
                 }
                 #endif
 
-                if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    ourLoaderEntry->UseGraphicsMode = TRUE;
-                }
-
                 StartLoader (ourLoaderEntry, SelectionName);
                 break;
 
