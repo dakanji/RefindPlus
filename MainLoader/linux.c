@@ -89,25 +89,29 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     DirIterOpen(Volume->RootDir, Path, &DirIter);
     // Now add a trailing backslash if it was NOT added earlier, for consistency in
     // building the InitrdName later....
-    if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\'))
+    if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\')) {
         MergeStrings(&Path, L"\\", 0);
-    while (DirIterNext(&DirIter, 2, L"init*", &DirEntry)) {
+    }
+
+    while (DirIterNext(&DirIter, 2, L"init*,booster*", &DirEntry)) {
         InitrdVersion = FindNumbers(DirEntry->FileName);
         if (((KernelVersion != NULL) && (MyStriCmp(InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))) {
                 CurrentInitrdName = AllocateZeroPool(sizeof (STRING_LIST));
-                if (InitrdNames == NULL)
+                if (InitrdNames == NULL) {
                     InitrdNames = FinalInitrdName = CurrentInitrdName;
+                }
                 if (CurrentInitrdName) {
                     CurrentInitrdName->Value = PoolPrint(L"%s%s", Path, DirEntry->FileName);
                     if (CurrentInitrdName != FinalInitrdName) {
                         FinalInitrdName->Next = CurrentInitrdName;
-                        FinalInitrdName = CurrentInitrdName;
+                        FinalInitrdName       = CurrentInitrdName;
                     } // if
                 } // if
         } // if
         MyFreePool (InitrdVersion);
     } // while
+
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
             InitrdName = StrDuplicate(InitrdNames -> Value);
@@ -135,7 +139,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool (KernelVersion);
     MyFreePool (FileName);
     MyFreePool (Path);
-    
+
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
 

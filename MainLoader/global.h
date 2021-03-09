@@ -442,7 +442,7 @@ typedef struct {
    CHAR16           *MacOSRecoveryFiles;
    CHAR16           *DriverDirs;
    CHAR16           *IconsDir;
-   CHAR16           *SetMacBootArgs;
+   CHAR16           *SetBootArgs;
    CHAR16           *ExtraKernelVersionStrings;
    CHAR16           *SpoofOSXVersion;
    UINT32_LIST      *CsrValues;

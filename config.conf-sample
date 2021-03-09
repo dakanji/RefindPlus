@@ -213,7 +213,7 @@
 #
 # Inactive when commented out (Does not change boot arguments)
 #
-#set_mac_boot_args "-v"
+#set_boot_args "-v"
 
 # While using NVRAM works with most computers, this increases wear
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is

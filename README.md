@@ -37,7 +37,7 @@ reinforce_apfs| Allows directly booting Big Sur as well as FileVault (without ne
 reinstall_gop| Reinstalls GOP driver on capable legacy units (such as classic MacPros).
 scale_ui| Provides control of UI element scaling.
 scan_other_esp| Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
-set_mac_boot_args| Allows arbitrary Mac OS boot argument strings.
+set_boot_args| Allows arbitrary Mac OS boot argument strings.
 supply_apfs| Provides APFS file system capability if required.
 suppress_verbose_apfs| Supresses verbose APFS text on boot (if required when using `supply_apfs`).
 text_renderer| Provides a text renderer that allows text mode when not otherwise available.
