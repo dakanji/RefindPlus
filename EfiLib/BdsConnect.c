@@ -19,6 +19,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../include/refit_call_wrapper.h"
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
 
+#define IS_PCI_GFX(_p) IS_CLASS2 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_OTHER)
+
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
 BOOLEAN PostConnect     = FALSE;
@@ -235,8 +237,8 @@ BdsLibConnectMostlyAllEfi (
     UINTN  HexIndex = 0;
     UINTN  m;
 
-    DetectedDevices = FALSE;
 
+    DetectedDevices = FALSE;
 
     #if REFIT_DEBUG > 0
     if (PostConnect) {
@@ -273,9 +275,9 @@ BdsLibConnectMostlyAllEfi (
         AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
-            HexIndex = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
+            HexIndex       = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
             MakeConnection = TRUE;
-            DeviceData = NULL;
+            DeviceData     = NULL;
 
             XStatus = ScanDeviceHandles (
                 AllHandleBuffer[i],
@@ -320,7 +322,7 @@ BdsLibConnectMostlyAllEfi (
                     for (k = 0; k < HandleCount; k++) {
                         if (HandleType[k] & EFI_HANDLE_TYPE_PARENT_HANDLE) {
                             MakeConnection = FALSE;
-                            Parent = TRUE;
+                            Parent         = TRUE;
                             break;
                         }
                     } // for
@@ -338,7 +340,7 @@ BdsLibConnectMostlyAllEfi (
 
                         if (EFI_ERROR (XStatus)) {
                             #if REFIT_DEBUG > 0
-                            DeviceData = L" - Not PCIe Device";
+                            DeviceData = StrDuplicate (L" - Not PCIe Device");
                             #endif
                         }
                         else {
@@ -356,23 +358,24 @@ BdsLibConnectMostlyAllEfi (
                                 MakeConnection = FALSE;
 
                                 #if REFIT_DEBUG > 0
-                                DeviceData = L" - Could Not Read PCIe Device Details";
+                                DeviceData = StrDuplicate (L" - Unreadable Item");
                                 #endif
                             }
                             else {
+                                #if REFIT_DEBUG > 0
                                 BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
+                                BOOLEAN GFXDevice = IS_PCI_GFX(&Pci);
                                 if (VGADevice) {
                                     // DA-TAG: Unable to reconnect after disconnecting here
                                     // Comment out and set MakeConnection to FALSE
                                     // gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
                                     MakeConnection = FALSE;
-
-                                    #if REFIT_DEBUG > 0
-                                    DeviceData = L" - Monitor Display";
-                                    #endif
+                                    DeviceData     = StrDuplicate (L" - Monitor Display");
+                                }
+                                else if (GFXDevice) {
+                                    DeviceData = StrDuplicate (L" - Graphics Card  ");
                                 }
                                 else {
-                                    #if REFIT_DEBUG > 0
                                     DeviceData = PoolPrint (
                                         L" - PCI(%02llX|%02llX:%02llX.%llX)",
                                         SegmentPCI,
@@ -380,8 +383,8 @@ BdsLibConnectMostlyAllEfi (
                                         DevicePCI,
                                         FunctionPCI
                                     );
-                                    #endif
                                 } // VGADevice
+                                #endif
                             }
                         } // if !EFI_ERROR (XStatus)
                     } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
@@ -543,7 +546,9 @@ BdsLibConnectAllDriversToAllControllersEx (
 
         if (!PostConnect) {
             // Reset and reconnect if only connected once.
-            PostConnect = TRUE;
+            PostConnect     = TRUE;
+            FoundGOP        = FALSE;
+            DetectedDevices = FALSE;
             BdsLibConnectMostlyAllEfi();
         }
 
@@ -622,7 +627,7 @@ BdsLibConnectAllDriversToAllControllers (
     if (GlobalConfig.ReinstallGOP) {
         if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
             ReLoaded = TRUE;
-            Status = ApplyGOPFix();
+            Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Issue GOP from Volatile Storage ...%r\n\n", Status);
