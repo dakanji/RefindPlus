@@ -1202,8 +1202,21 @@ egInitScreen (
     else {
         ScreenModeType = StrDuplicate (L"Text");
     }
-    MsgLog ("INFO: Screen Mode:- '%s'\n\n", ScreenModeType);
+    MsgLog ("INFO: Current Screen Mode:- '%s'", ScreenModeType);
     MyFreePool (ScreenModeType);
+
+    if (egHasGraphics) {
+        MsgLog ("\n\n");
+    }
+    else {
+        MsgLog ("\n");
+        if (GlobalConfig.TextOnly) {
+            MsgLog ("      'TextOnly'  Setting:- 'Active'\n\n");
+        }
+        else {
+            MsgLog ("      'TextOnly'  Setting:- 'Inactive'\n\n");
+        }
+    }
     #endif
 }
 

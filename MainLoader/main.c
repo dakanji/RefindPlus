@@ -2106,12 +2106,7 @@ efi_main (
                 }
 
                 #if REFIT_DEBUG > 0
-                if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("\n---------------\n\n");
-                }
-                else {
-                    MsgLog ("\n\n");
-                }
+                MsgLog ("\n---------------\n\n");
                 #endif
 
                 StartLoader (ourLoaderEntry, SelectionName);
