@@ -1638,7 +1638,7 @@ SetPrebootVolumes (
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
-            if (Volumes[i]->VolName && (Volumes[i]->VolName[0] != L'\0')) {
+            if (Volumes[i]->VolName && (*Volumes[i]->VolName != L'\0')) {
                 if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL) {
                     SwapName = FALSE;
                 }
