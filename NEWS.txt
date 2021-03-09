@@ -9,6 +9,7 @@
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders
 - Improves APFS Remapping
   * Previously failed when using the 'ReScanAll' feature or when not running on Apple Firmware
+  * Improves volume filtering
 - Fixes Ignoring the Upstream 'max' Resolution Setting
   * The setting was previously not ignored as was intended
 - Improves Device Handle Connection
