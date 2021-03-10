@@ -399,12 +399,12 @@ static EG_IMAGE * egDecodeAny (
 ) {
    EG_IMAGE *NewImage = NULL;
 
-   NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL) {
-       NewImage = egDecodePNG (FileData, FileDataLength, IconSize, WantAlpha);
-   }
+   NewImage = egDecodePNG (FileData, FileDataLength, IconSize, WantAlpha);
    if (NewImage == NULL) {
        NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
+   }
+   if (NewImage == NULL) {
+       NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
    }
    if (NewImage == NULL) {
        NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
@@ -608,8 +608,8 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
     if (WantAlpha &&
         (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
+        EmbeddedImage->PixelMode  == EG_EIPIXELMODE_COLOR_ALPHA ||
+        EmbeddedImage->PixelMode  == EG_EIPIXELMODE_ALPHA)
     ) {
         // copy alpha plane
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
