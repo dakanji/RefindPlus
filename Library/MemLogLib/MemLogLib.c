@@ -148,9 +148,9 @@ MemLogInit (
     return EFI_OUT_OF_RESOURCES;
   }
   mMemLog->BufferSize = MEM_LOG_INITIAL_SIZE;
-  mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
-  mMemLog->Cursor = mMemLog->Buffer;
-  mMemLog->Callback = NULL;
+  mMemLog->Buffer     = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
+  mMemLog->Cursor     = mMemLog->Buffer;
+  mMemLog->Callback   = NULL;
 
   //
   // Calibrate TSC for timings
@@ -259,12 +259,11 @@ MemLogVA (
     return;
   }
 
-  if (mMemLog == NULL) {
-    Status = MemLogInit ();
-    if (EFI_ERROR (Status)) {
+  Status = MemLogInit ();
+  if (EFI_ERROR (Status)) {
       return;
-    }
   }
+
 
   //
   // Check if buffer can accept MEM_LOG_MAX_LINE_SIZE chars.
@@ -366,11 +365,9 @@ GetMemLogBuffer (
 {
   EFI_STATUS        Status;
 
-  if (mMemLog == NULL) {
-    Status = MemLogInit ();
-    if (EFI_ERROR (Status)) {
+  Status = MemLogInit ();
+  if (EFI_ERROR (Status)) {
       return NULL;
-    }
   }
 
   return mMemLog != NULL ? mMemLog->Buffer : NULL;
@@ -388,11 +385,9 @@ GetMemLogLen (
 {
   EFI_STATUS        Status;
 
-  if (mMemLog == NULL) {
-    Status = MemLogInit ();
-    if (EFI_ERROR (Status)) {
+  Status = MemLogInit ();
+  if (EFI_ERROR (Status)) {
       return 0;
-    }
   }
 
   return mMemLog != NULL ? mMemLog->Cursor - mMemLog->Buffer : 0;
@@ -409,11 +404,9 @@ SetMemLogCallback (
 {
   EFI_STATUS        Status;
 
-  if (mMemLog == NULL) {
-    Status = MemLogInit ();
-    if (EFI_ERROR (Status)) {
+  Status = MemLogInit ();
+  if (EFI_ERROR (Status)) {
       return;
-    }
   }
   mMemLog->Callback = Callback;
 }
@@ -427,11 +420,9 @@ GetMemLogTscTicksPerSecond (VOID)
 {
   EFI_STATUS        Status;
 
-  if (mMemLog == NULL) {
-    Status = MemLogInit ();
-    if (EFI_ERROR (Status)) {
+  Status = MemLogInit ();
+  if (EFI_ERROR (Status)) {
       return 0;
-    }
   }
   return mMemLog->TscFreqSec;
 }
