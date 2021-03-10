@@ -171,8 +171,13 @@ MemLogInit (
     } else { */
       AsciiSPrint(InitError, sizeof (InitError), "ACPI I/O space is not enabled.");
    // }
-  } else if ((TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR) == 0) { // Timer address can't be obtained
-    AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
+   // DA-TAG: Dead Code Below
+   //         Review Later
+    //} else if ((TimerAddr = (
+    //    (PciRead16 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_BASE))) &
+    //    B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR) == 0
+    //) { // Timer address can't be obtained
+    //AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
   } else {
     // Check that Timer is advancing
     AcpiTick0 = IoRead32 (TimerAddr);

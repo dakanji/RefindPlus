@@ -113,69 +113,69 @@ EG_IMAGE * egDecodeICNS(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
         return NULL;
     }
 
-    for (;;) {
-        DataPtr = NULL;
-        DataLen = 0;
-        MaskPtr = NULL;
-        MaskLen = 0;
+    DataPtr = NULL;
+    DataLen = 0;
+    MaskPtr = NULL;
+    MaskLen = 0;
 
-        do {
-           IconSize = SizesToTry[SizeToTry];
-           Ptr = FileData + 8;
-           BufferEnd = FileData + FileDataLength;
-           // iterate over tagged blocks in the file
-           while (Ptr + 8 <= BufferEnd) {
-               BlockLen = ((UINT32)Ptr[4] << 24) + ((UINT32)Ptr[5] << 16) + ((UINT32)Ptr[6] << 8) + (UINT32)Ptr[7];
-               if (Ptr + BlockLen > BufferEnd)   // block continues beyond end of file
-                   break;
+    do {
+       IconSize = SizesToTry[SizeToTry];
+       Ptr = FileData + 8;
+       BufferEnd = FileData + FileDataLength;
+       // iterate over tagged blocks in the file
+       while (Ptr + 8 <= BufferEnd) {
+           BlockLen = ((UINT32)Ptr[4] << 24) + ((UINT32)Ptr[5] << 16) + ((UINT32)Ptr[6] << 8) + (UINT32)Ptr[7];
+           if (Ptr + BlockLen > BufferEnd)   // block continues beyond end of file
+               break;
 
-               // extract the appropriate blocks for each pixel size
-               if (IconSize == 128) {
-                   if (Ptr[0] == 'i' && Ptr[1] == 't' && Ptr[2] == '3' && Ptr[3] == '2') {
-                       if (Ptr[8] == 0 && Ptr[9] == 0 && Ptr[10] == 0 && Ptr[11] == 0) {
-                           DataPtr = Ptr + 12;
-                           DataLen = BlockLen - 12;
-                       }
-                   } else if (Ptr[0] == 't' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                       MaskPtr = Ptr + 8;
-                       MaskLen = BlockLen - 8;
+           // extract the appropriate blocks for each pixel size
+           if (IconSize == 128) {
+               if (Ptr[0] == 'i' && Ptr[1] == 't' && Ptr[2] == '3' && Ptr[3] == '2') {
+                   if (Ptr[8] == 0 && Ptr[9] == 0 && Ptr[10] == 0 && Ptr[11] == 0) {
+                       DataPtr = Ptr + 12;
+                       DataLen = BlockLen - 12;
                    }
-
-               } else if (IconSize == 48) {
-                   if (Ptr[0] == 'i' && Ptr[1] == 'h' && Ptr[2] == '3' && Ptr[3] == '2') {
-                       DataPtr = Ptr + 8;
-                       DataLen = BlockLen - 8;
-                   } else if (Ptr[0] == 'h' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                       MaskPtr = Ptr + 8;
-                       MaskLen = BlockLen - 8;
-                   }
-
-               } else if (IconSize == 32) {
-                   if (Ptr[0] == 'i' && Ptr[1] == 'l' && Ptr[2] == '3' && Ptr[3] == '2') {
-                       DataPtr = Ptr + 8;
-                       DataLen = BlockLen - 8;
-                   } else if (Ptr[0] == 'l' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                       MaskPtr = Ptr + 8;
-                       MaskLen = BlockLen - 8;
-                   }
-
-               } else if (IconSize == 16) {
-                   if (Ptr[0] == 'i' && Ptr[1] == 's' && Ptr[2] == '3' && Ptr[3] == '2') {
-                       DataPtr = Ptr + 8;
-                       DataLen = BlockLen - 8;
-                   } else if (Ptr[0] == 's' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
-                       MaskPtr = Ptr + 8;
-                       MaskLen = BlockLen - 8;
-                   }
-
                }
-
-               Ptr += BlockLen;
+               else if (Ptr[0] == 't' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                   MaskPtr = Ptr + 8;
+                   MaskLen = BlockLen - 8;
+               }
            }
-        } while ((DataPtr == NULL) && (SizeToTry++ < MAX_ICNS_SIZES));
+           else if (IconSize == 48) {
+               if (Ptr[0] == 'i' && Ptr[1] == 'h' && Ptr[2] == '3' && Ptr[3] == '2') {
+                   DataPtr = Ptr + 8;
+                   DataLen = BlockLen - 8;
+               }
+               else if (Ptr[0] == 'h' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                   MaskPtr = Ptr + 8;
+                   MaskLen = BlockLen - 8;
+               }
+           }
+           else if (IconSize == 32) {
+               if (Ptr[0] == 'i' && Ptr[1] == 'l' && Ptr[2] == '3' && Ptr[3] == '2') {
+                   DataPtr = Ptr + 8;
+                   DataLen = BlockLen - 8;
+               }
+               else if (Ptr[0] == 'l' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                   MaskPtr = Ptr + 8;
+                   MaskLen = BlockLen - 8;
+               }
+           }
+           else if (IconSize == 16) {
+               if (Ptr[0] == 'i' && Ptr[1] == 's' && Ptr[2] == '3' && Ptr[3] == '2') {
+                   DataPtr = Ptr + 8;
+                   DataLen = BlockLen - 8;
+               }
+               else if (Ptr[0] == 's' && Ptr[1] == '8' && Ptr[2] == 'm' && Ptr[3] == 'k') {
+                   MaskPtr = Ptr + 8;
+                   MaskLen = BlockLen - 8;
+               }
+           }
 
-        break;
-    }
+           Ptr += BlockLen;
+       }
+    } while ((DataPtr == NULL) && (SizeToTry++ < MAX_ICNS_SIZES));
+
 
     if (DataPtr == NULL)
         return NULL;   // no image found
