@@ -286,14 +286,9 @@ egDumpGOPVideoModes (
     // get dump
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
-        Mode = GOPDraw->Mode->Mode;
-        NumModes = (INT32)MaxMode + 1;
-        if (MaxMode == 0) {
-            ModeCount = NumModes;
-        }
-        else {
-            ModeCount = MaxMode;
-        }
+        Mode      = GOPDraw->Mode->Mode;
+        NumModes  = (INT32)MaxMode + 1;
+        ModeCount = MaxMode;
         LoopCount = 0;
 
         #if REFIT_DEBUG > 0
@@ -1033,10 +1028,6 @@ egInitScreen (
     }
 
     if (XFlag != EFI_NOT_FOUND && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
-        if (XFlag != EFI_SUCCESS) {
-            XFlag  = EFI_LOAD_ERROR;
-        }
-
         if (GOPDraw == NULL) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Cannot Implement Direct GOP Renderer\n\n");
