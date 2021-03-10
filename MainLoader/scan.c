@@ -1196,7 +1196,7 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
     CHAR16                  *Message, *Extension, *FullName;
-    struct LOADER_LIST      *LoaderList = NULL, *NewLoader;
+    struct LOADER_LIST      *LoaderList  = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
 
@@ -1260,11 +1260,16 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
            NewLoader = NewLoader->NextEntry;
        } // while
 
-       if (NewLoader != NULL && FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
-           AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
+       if (NewLoader != NULL) {
+           if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
+               AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
+           }
        }
 
-       CleanUpLoaderList (LoaderList);
+       if (LoaderList != NULL) {
+           CleanUpLoaderList (LoaderList);
+       }
+
        Status = DirIterClose (&DirIter);
        // NOTE: EFI_INVALID_PARAMETER really is an error that should be reported;
        // but I've gotten reports from users who are getting this error occasionally
