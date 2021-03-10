@@ -740,15 +740,15 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
     int len;
     if(read_mft(vol, mft0.buf, MFTNO_VOLUME)==FSW_SUCCESS &&
 	    find_attribute_direct(mft0.buf, 1<<vol->mftbits, AT_VOLUME_NAME, &ptr, &len)==FSW_SUCCESS &&
-	    GETU8(ptr, 8)==0)
-    {
-	struct fsw_string s;
-	s.type = FSW_STRING_TYPE_UTF16_LE;
-	s.size = GETU16(ptr, 0x10);
-	s.len = s.size / 2;
-	s.data = ptr + GETU16(ptr, 0x14);
-	Print(L"Volume name [%.*ls]\n", s.len, s.data);
-	err = fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
+	    GETU8(ptr, 8)==0
+    ) {
+        struct fsw_string s;
+        s.type = FSW_STRING_TYPE_UTF16_LE;
+        s.size = GETU16(ptr, 0x10);
+        s.len = s.size / 2;
+        s.data = ptr + GETU16(ptr, 0x14);
+        Print(L"Volume name [%.*ls]\n", s.len, s.data);
+        fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
     }
     free_mft(&mft0);
 
