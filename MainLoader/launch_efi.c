@@ -197,15 +197,15 @@ StartEFIImage (
 ) {
     EFI_STATUS              Status;
     EFI_STATUS              ReturnStatus;
-    EFI_HANDLE              ChildImageHandle;
-    EFI_HANDLE              ChildImageHandle2;
-    EFI_DEVICE_PATH         *DevicePath;
+    EFI_HANDLE              ChildImageHandle  = NULL;
+    EFI_HANDLE              ChildImageHandle2 = NULL;
+    EFI_DEVICE_PATH         *DevicePath       = NULL;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     EFI_GUID                SystemdGuid       = SYSTEMD_GUID_VALUE;
     CHAR16                  *FullLoadOptions  = NULL;
     CHAR16                  *ShowScreenStr    = NULL;
-    CHAR16                  *ErrorInfo;
-    CHAR16                  *EspGUID;
+    CHAR16                  *ErrorInfo        = NULL;
+    CHAR16                  *EspGUID          = NULL;
 
     // set load options
     if (LoadOptions != NULL) {
