@@ -236,9 +236,8 @@ SetAppleOSInfo (
 
             if (AppleOSVersion) {
                 AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
-                UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
-
                 if (AppleOSVersion8) {
+                    UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
                     Status = refit_call1_wrapper(SetOs->SetOsVersion, AppleOSVersion8);
                     if (!EFI_ERROR (Status)) {
                         Status = EFI_SUCCESS;
