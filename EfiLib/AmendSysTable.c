@@ -153,7 +153,7 @@ FakeDispatchEventNotifies (
         FakeAcquireLock (&gEventQueueLock);
     } // while
 
-    gEventPending &= ~(UINTN)(1 << Priority);
+    gEventPending &= ~((UINTN) (1) << Priority);
     FakeReleaseLock (&gEventQueueLock);
 }
 

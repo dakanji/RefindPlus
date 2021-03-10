@@ -215,27 +215,27 @@ fsw_hfs_compute_shift(fsw_u32 size)
 void
 HFSGetDescription(CICell ih, char *str, long strMaxLen)
 {
-  
+
   UInt16 nodeSize;
   UInt32 firstLeafNode;
   long long dirIndex;
   char *name;
   long flags, time;
-  
+
   if (HFSInitPartition(ih) == -1)  { return; }
-  
-  // Fill some crucial data structures by side effect. 
+
+  // Fill some crucial data structures by side effect.
   dirIndex = 0;
   HFSGetDirEntry(ih, "/", &dirIndex, &name, &flags, &time, 0, 0);
-  
-  // Now we can loook up the volume name node. 
+
+  // Now we can loook up the volume name node.
   nodeSize = be16_to_cpu(gBTHeaders[kBTreeCatalog]->nodeSize);
   firstLeafNode = SWAP_BE32(gBTHeaders[kBTreeCatalog]->firstLeafNode);
-  
+
   dirIndex = (long long) firstLeafNode * nodeSize;
-  
+
   GetCatalogEntry(&dirIndex, &name, &flags, &time, 0, 0);
-  
+
   strncpy(str, name, strMaxLen);
   str[strMaxLen] = '\0';
 }
@@ -437,7 +437,7 @@ long flags, time;
 
 if (HFSInitPartition(ih) == -1)  { return; }
 
-// Fill some crucial data structures by side effect. 
+// Fill some crucial data structures by side effect.
 dirIndex = 0;
 HFSGetDirEntry(ih, "/", &dirIndex, &name, &flags, &time, 0, 0);
 
@@ -454,12 +454,12 @@ dirIndex = (long long) firstLeafNode * nodeSize;
  ReadExtent(extent, extentSize, kHFSCatalogFileID,
  (long long) curNode * nodeSize, nodeSize, nodeBuf, 1);
  GetBTreeRecord(index, nodeBuf, nodeSize, &testKey, &entry);
- 
+
  utf_encodestr(((HFSPlusCatalogKey *)testKey)->nodeName.unicode,
  SWAP_BE16(((HFSPlusCatalogKey *)testKey)->nodeName.length),
  (u_int8_t *)gTempStr, 256, OSBigEndian);
- 
- *name = gTempStr; 
+
+ *name = gTempStr;
 
 strncpy(str, name, strMaxLen);
 str[strMaxLen] = '\0';
@@ -885,7 +885,7 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
       }
 
       if (fsw_hfs_read_file (btree->file,
-                             next_node * btree->node_size,
+                             (fsw_u64) (next_node) * btree->node_size,
                              btree->node_size, buffer) <= 0)
       {
           status = FSW_VOLUME_CORRUPTED;

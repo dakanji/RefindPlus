@@ -5701,7 +5701,8 @@ static void Adam7_interlace(unsigned char* out, const unsigned char* in, unsigne
       size_t obp, ibp; /*bit pointers (for out and in buffer)*/
       for(y = 0; y < passh[i]; ++y)
       for(x = 0; x < passw[i]; ++x) {
-        ibp = (ADAM7_IY[i] + y * ADAM7_DY[i]) * olinebits + (ADAM7_IX[i] + x * ADAM7_DX[i]) * bpp;
+        ibp = (ADAM7_IY[i] + (UINTN) (y) * ADAM7_DY[i]) * olinebits +
+            (ADAM7_IX[i] + (UINTN) (x) * ADAM7_DX[i]) * (UINTN) (bpp);
         obp = (8 * passstart[i]) + (y * ilinebits + x * bpp);
         for(b = 0; b < bpp; ++b) {
           unsigned char bit = readBitFromReversedStream(&ibp, in);
@@ -5726,7 +5727,8 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
   unsigned error = 0;
 
   if(info_png->interlace_method == 0) {
-    *outsize = h + (h * ((w * bpp + 7u) / 8u)); /*image size plus an extra byte per scanline + possible padding bits*/
+    /*image size plus an extra byte per scanline + possible padding bits*/
+    *outsize = h + (h * (((UINTN) (w) * bpp + 7u) / 8u));
     *out = (unsigned char*)lodepng_malloc(*outsize);
     if(!(*out) && (*outsize)) error = 83; /*alloc fail*/
 

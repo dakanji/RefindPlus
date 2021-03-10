@@ -902,18 +902,19 @@ static INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
 
     // Following values are overestimates; I'm assuming 31 days in every month.
     // This is fine for the purpose of this function, which is limited
-    Time1InSeconds = Time1->Second
-        + (Time1->Minute * 60)
-        + (Time1->Hour * 3600)
-        + (Time1->Day * 86400)
-        + (Time1->Month * 2678400)
-        + ((Time1->Year - 1998) * 32140800);
-    Time2InSeconds = Time2->Second
-        + (Time2->Minute * 60)
-        + (Time2->Hour * 3600)
-        + (Time2->Day * 86400)
-        + (Time2->Month * 2678400)
-        + ((Time2->Year - 1998) * 32140800);
+    Time1InSeconds = (INT64) (Time1->Second)
+        + ((INT64) (Time1->Minute)      * 60)
+        + ((INT64) (Time1->Hour)        * 3600)
+        + ((INT64) (Time1->Day)         * 86400)
+        + ((INT64) (Time1->Month)       * 2678400)
+        + ((INT64) (Time1->Year - 1998) * 32140800);
+        
+    Time2InSeconds = (INT64) (Time2->Second)
+        + ((INT64) (Time2->Minute)      * 60)
+        + ((INT64) (Time2->Hour)        * 3600)
+        + ((INT64) (Time2->Day)         * 86400)
+        + ((INT64) (Time2->Month)       * 2678400)
+        + ((INT64) (Time2->Year - 1998) * 32140800);
 
     if (Time1InSeconds < Time2InSeconds) {
         return (-1);

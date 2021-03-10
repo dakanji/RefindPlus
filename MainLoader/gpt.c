@@ -169,7 +169,7 @@
      if (Status == EFI_SUCCESS) {
          if (GptHeaderValid (GptData)) {
              // Load actual GPT table....
-             BufferSize = GptData->Header->entry_count * 128;
+             BufferSize       = (UINT64) (GptData->Header->entry_count) * 128;
              GptData->Entries = AllocatePool (BufferSize);
              if (GptData->Entries == NULL)
                  Status = EFI_OUT_OF_RESOURCES;
