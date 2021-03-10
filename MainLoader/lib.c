@@ -453,16 +453,17 @@ EfivarGetRaw (
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
         Status = refit_call5_wrapper(
-            SelfDir->Open,
-            SelfDir,
-            &VarsDir,
-            L"vars",
+            SelfDir->Open, SelfDir,
+            &VarsDir, L"vars",
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
             EFI_FILE_DIRECTORY
         );
 
         if (Status == EFI_SUCCESS) {
-            Status = egLoadFile (VarsDir, VariableName, &TmpBuffer, VariableSize);
+            Status = egLoadFile (
+                VarsDir, VariableName,
+                &TmpBuffer, VariableSize
+            );
             ReadFromNvram = FALSE;
         }
         else if (Status != EFI_NOT_FOUND) {
@@ -486,12 +487,9 @@ EfivarGetRaw (
         // Pass in a zero-size buffer to find the required buffer size.
         BufferSize = 0;
         Status = refit_call5_wrapper(
-            gRT->GetVariable,
-            VariableName,
-            VendorGUID,
-            NULL,
-            &BufferSize,
-            TmpBuffer
+            gRT->GetVariable, VariableName,
+            VendorGUID, NULL,
+            &BufferSize, TmpBuffer
         );
 
         // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
@@ -499,6 +497,8 @@ EfivarGetRaw (
         if (Status != EFI_BUFFER_TOO_SMALL) {
             MyFreePool (TmpBuffer);
             *VariableData = NULL;
+            *VariableSize = 0;
+
             return Status;
         }
 
@@ -506,17 +506,16 @@ EfivarGetRaw (
         if (!TmpBuffer) {
             MyFreePool (TmpBuffer);
             *VariableData = NULL;
+            *VariableSize = 0;
+
             return EFI_OUT_OF_RESOURCES;
         }
 
         // Retry with the correct buffer size.
         Status = refit_call5_wrapper(
-            gRT->GetVariable,
-            VariableName,
-            VendorGUID,
-            NULL,
-            &BufferSize,
-            TmpBuffer
+            gRT->GetVariable, VariableName,
+            VendorGUID, NULL,
+            &BufferSize, TmpBuffer
         );
     }
 
@@ -525,10 +524,14 @@ EfivarGetRaw (
         if ((VariableSize) && ReadFromNvram) {
             *VariableSize = BufferSize;
         }
+        else {
+            *VariableSize = 0;
+        }
     }
     else {
         MyFreePool (TmpBuffer);
         *VariableData = NULL;
+        *VariableSize = 0;
     }
 
     return Status;
