@@ -110,6 +110,11 @@ EfiStrDuplicate (
   CHAR16  *Dest;
   UINTN   Size;
 
+  // Do not deference Null pointers
+  if (Src == NULL) {
+      return NULL;
+  }
+
   Size  = StrSize (Src); //at least 2bytes
   Dest  = AllocateZeroPool (Size);
   if (Dest != NULL) {
