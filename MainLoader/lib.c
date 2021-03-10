@@ -443,7 +443,7 @@ EfivarGetRaw (
     OUT CHAR8    **VariableData,
     OUT UINTN     *VariableSize     OPTIONAL
 ) {
-    UINTN       BufferSize;
+    UINTN       BufferSize    = 0;
     UINT8       *TmpBuffer    = NULL;
     EFI_FILE    *VarsDir      = NULL;
     BOOLEAN     ReadFromNvram = TRUE;
