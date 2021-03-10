@@ -555,7 +555,7 @@ SetDefaultByTime (
    BOOLEAN               SetIt = FALSE;
 
    StartTime = HandleTime (TokenList[2]);
-   EndTime = HandleTime (TokenList[3]);
+   EndTime   = HandleTime (TokenList[3]);
 
    if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
       Status = refit_call2_wrapper(GetTime, &CurrentTime, NULL);
@@ -579,7 +579,7 @@ SetDefaultByTime (
          }
       }
       else { // Time range DOES cross midnight
-         if ((Now >= StartTime) && (Now <= EndTime)) {
+         if ((Now >= StartTime) || (Now <= EndTime)) {
              SetIt = TRUE;
          }
       } // if/else time range crosses midnight
