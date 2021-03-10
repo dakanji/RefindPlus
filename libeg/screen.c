@@ -639,6 +639,7 @@ egDetermineScreenSize (
             &ScreenW, &ScreenH,
             &UGADepth, &UGARefreshRate
         );
+
         if (EFI_ERROR (Status)) {
             UGADraw = NULL;   // graphics not available
         }
@@ -680,7 +681,7 @@ egInitScreen (
 
 
     #if REFIT_DEBUG > 0
-            MsgLog ("Check for Graphics:\n");
+    MsgLog ("Check for Graphics:\n");
     #endif
 
     // Get ConsoleControl Protocol
@@ -752,7 +753,6 @@ egInitScreen (
         #endif
     }
 
-
     // Get UGADraw Protocol
     UGADraw = NULL;
 
@@ -811,12 +811,9 @@ egInitScreen (
 
                 if (!EFI_ERROR (Status)) {
                     Status = refit_call5_wrapper(
-                        TmpUGA->GetMode,
-                        TmpUGA,
-                        &Width,
-                        &Height,
-                        &Depth,
-                        &RefreshRate
+                        TmpUGA->GetMode, TmpUGA,
+                        &Width, &Height,
+                        &Depth, &RefreshRate
                     );
                     if (!EFI_ERROR (Status)) {
                         if (UGAWidth < Width ||
@@ -829,9 +826,7 @@ egInitScreen (
                             #if REFIT_DEBUG > 0
                             MsgLog (
                                 "    *** Select Handle[%02d] @ %5d x %-5d\n",
-                                i,
-                                UGAWidth,
-                                UGAHeight
+                                i, UGAWidth, UGAHeight
                             );
                             #endif
                         }
@@ -839,9 +834,7 @@ egInitScreen (
                             #if REFIT_DEBUG > 0
                             MsgLog (
                                 "    *** Ignore Handle[%02d] @ %5d x %-5d\n",
-                                i,
-                                Width,
-                                Height
+                                i, Width, Height
                             );
                             #endif
                         }
@@ -957,7 +950,7 @@ egInitScreen (
                     }
                 }
             }
-            FreePool (HandleBuffer);
+            MyFreePool (HandleBuffer);
         }
         else {
             if (EFI_ERROR (Status)) {
@@ -1052,6 +1045,7 @@ egInitScreen (
                     &GOPDrawProtocolGuid,
                     (VOID **) &OldGOP
                 );
+
                 if (EFI_ERROR (Status)) {
                     OldGOP = NULL;
                 }
@@ -1118,6 +1112,7 @@ egInitScreen (
             #endif
         }
     }
+
     if (UGADraw != NULL) {
         #ifdef __MAKEWITH_TIANO
         // DA-TAG: Limit to TianoCore
@@ -1188,12 +1183,13 @@ egInitScreen (
     #if REFIT_DEBUG > 0
     CHAR16 *ScreenModeType;
     if (egHasGraphics) {
-        ScreenModeType = StrDuplicate (L"Graphics");
+        ScreenModeType = StrDuplicate (L"Yes");
     }
     else {
-        ScreenModeType = StrDuplicate (L"Text");
+        ScreenModeType = StrDuplicate (L"No");
     }
-    MsgLog ("INFO: Current Screen Mode:- '%s'", ScreenModeType);
+
+    MsgLog ("INFO: Graphics Avaliable:- '%s'", ScreenModeType);
     MyFreePool (ScreenModeType);
 
     if (egHasGraphics) {
@@ -1202,10 +1198,10 @@ egInitScreen (
     else {
         MsgLog ("\n");
         if (GlobalConfig.TextOnly) {
-            MsgLog ("      'TextOnly'  Setting:- 'Active'\n\n");
+            MsgLog ("      'TextOnly' Setting:- 'On'\n\n");
         }
         else {
-            MsgLog ("      'TextOnly'  Setting:- 'Inactive'\n\n");
+            MsgLog ("      'TextOnly' Setting:- 'Off'\n\n");
         }
     }
     #endif
@@ -1267,7 +1263,7 @@ egSetScreenSize (
     UINT32       ScreenH;
     UINT32       UGADepth;
     UINT32       UGARefreshRate;
-    CHAR16       *ShowScreenStr     = NULL;
+    CHAR16       *ShowScreenStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
@@ -1342,6 +1338,7 @@ egSetScreenSize (
                     &Size,
                     &Info
                 );
+
                 if ((!EFI_ERROR (Status)) &&
                     (Size >= sizeof (*Info) &&
                     (Info != NULL)) &&
@@ -1426,7 +1423,6 @@ egSetScreenSize (
                     #if REFIT_DEBUG > 0
                     MsgLog ("  - %s", ShowScreenStr);
                     #endif
-
                 } // if
 
                 MyFreePool (ShowScreenStr);
@@ -1449,6 +1445,7 @@ egSetScreenSize (
             &ScreenW, &ScreenH,
             &UGADepth, &UGARefreshRate
         );
+
         Status = refit_call5_wrapper(
             UGADraw->SetMode, UGADraw,
             ScreenW, ScreenH,
@@ -1547,7 +1544,6 @@ egSetTextMode (
 
                     MyFreePool (ShowScreenStr);
                 }
-
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
@@ -1802,22 +1798,22 @@ egDrawImageWithTransparency (
     UINTN    Width,
     UINTN    Height
 ) {
-   EG_IMAGE *Background;
+    EG_IMAGE *Background;
 
-   Background = egCropImage (
-       GlobalConfig.ScreenBackground,
-       XPos, YPos,
-       Width, Height
-   );
+    Background = egCropImage (
+        GlobalConfig.ScreenBackground,
+        XPos, YPos,
+        Width, Height
+    );
 
-   if (Background != NULL) {
-      BltImageCompositeBadge (
-          Background,
-          Image, BadgeImage,
-          XPos, YPos
-      );
-      egFreeImage (Background);
-   }
+    if (Background != NULL) {
+        BltImageCompositeBadge (
+            Background,
+            Image, BadgeImage,
+            XPos, YPos
+        );
+        egFreeImage (Background);
+    }
 } // VOID DrawImageWithTransparency()
 
 VOID
@@ -1830,8 +1826,9 @@ egDrawImageArea (
     IN UINTN    ScreenPosX,
     IN UINTN    ScreenPosY
 ) {
-    if (!egHasGraphics)
+    if (!egHasGraphics) {
         return;
+    }
 
     egRestrictImageArea (
         Image,
