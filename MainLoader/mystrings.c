@@ -577,25 +577,36 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
     BOOLEAN retval = TRUE;
     CHAR16  a;
 
-    if (UnknownString == NULL)
-        return FALSE;
-
-    Length = StrLen(UnknownString);
-    if (Length != 36)
-        return FALSE;
-
-    for (i = 0; i < Length; i++) {
-        a = UnknownString[i];
-        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-            if (a != L'-')
-                retval = FALSE;
-        }
-        else if (((a < L'a') || (a > L'f')) &&
-                   ((a < L'A') || (a > L'F')) &&
-                   ((a < L'0') && (a > L'9'))) {
+    if (UnknownString == NULL) {
+        retval = FALSE;
+    }
+    else {
+        Length = StrLen(UnknownString);
+        if (Length != 36) {
             retval = FALSE;
-        } // if/else if
-    } // for
+        }
+        else {
+            for (i = 0; i < Length; i++) {
+                a = UnknownString[i];
+                if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+                    if (a != L'-') {
+                        retval = FALSE;
+                        break;
+                    }
+                }
+                // DA_TAG: Condotion below can never be met
+                //         Comment out until review
+                //else if (((a < L'a') || (a > L'f')) &&
+                //    ((a < L'A') || (a > L'F')) &&
+                //    ((a < L'0') && (a > L'9'))
+                //) {
+                //    retval = FALSE;
+                //    break;
+                //} // if/else if
+            } // for
+        }
+    }
+
 
     return retval;
 } // BOOLEAN IsGuid()
