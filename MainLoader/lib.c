@@ -735,7 +735,6 @@ SetFilesystemName (
     }
 
     if ((FileSystemInfoPtr != NULL) &&
-        (FileSystemInfoPtr->VolumeLabel != NULL) &&
         (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
     ) {
         if (Volume->FsName) {
