@@ -1442,7 +1442,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     MyFreePool (FileName);
                 } // if
             } // while
-            Status = DirIterClose (&EfiDirIter);
+            DirIterClose (&EfiDirIter);
 
             // check for XOM
             FileName = StrDuplicate (L"System\\Library\\CoreServices\\xom.efi");
