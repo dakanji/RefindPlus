@@ -245,28 +245,34 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
         SubScreen = TargetLoader->me.SubScreen;
         InitrdName = FindInitrd(FileName, Volume);
         KernelVersion = FindNumbers(FileName);
+
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
             ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
-            SubEntry = InitializeLoaderEntry(TargetLoader);
-            SplitPathName(FileName, &VolName, &Path, &SubmenuName);
-            MergeStrings(&SubmenuName, L": ", '\0');
-            MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
-            Title = StrDuplicate(SubmenuName);
-            LimitStringLength(Title, MAX_LINE_LENGTH);
-            SubEntry->me.Title = Title;
-            MyFreePool (SubEntry->LoadOptions);
-            SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
-            MyFreePool (SubEntry->LoaderPath);
-            SubEntry->LoaderPath = StrDuplicate(FileName);
-            CleanUpPathNameSlashes(SubEntry->LoaderPath);
-            SubEntry->Volume = Volume;
-            FreeTokenLine(&TokenList, &TokenCount);
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-            AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            SubEntry = InitializeLoaderEntry (TargetLoader);
+
+            // DA_TAG: InitializeLoaderEntry can return NULL
+            if (SubEntry != NULL) {
+                SplitPathName(FileName, &VolName, &Path, &SubmenuName);
+                MergeStrings(&SubmenuName, L": ", '\0');
+                MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
+                Title = StrDuplicate(SubmenuName);
+                LimitStringLength(Title, MAX_LINE_LENGTH);
+                SubEntry->me.Title = Title;
+                MyFreePool (SubEntry->LoadOptions);
+                SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
+                MyFreePool (SubEntry->LoaderPath);
+                SubEntry->LoaderPath = StrDuplicate (FileName);
+                CleanUpPathNameSlashes(SubEntry->LoaderPath);
+                SubEntry->Volume = Volume;
+                FreeTokenLine(&TokenList, &TokenCount);
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+                AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                MyFreePool (VolName);
+                MyFreePool (Path);
+                MyFreePool (SubmenuName);
+            }
         } // while
-        MyFreePool (VolName);
-        MyFreePool (Path);
-        MyFreePool (SubmenuName);
+
         MyFreePool (InitrdName);
         MyFreePool (File);
         MyFreePool (KernelVersion);
