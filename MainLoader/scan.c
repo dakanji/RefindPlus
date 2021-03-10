@@ -305,6 +305,7 @@ LOADER_ENTRY *InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
 
         }
     } // if
+
     return (NewEntry);
 } // LOADER_ENTRY *InitializeLoaderEntry()
 
@@ -473,12 +474,16 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
             while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
                 ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
                 SubEntry = InitializeLoaderEntry (Entry);
-                SubEntry->me.Title = TokenList[0] ? StrDuplicate (TokenList[0]) : StrDuplicate (L"Boot Linux");
-                MyFreePool (SubEntry->LoadOptions);
-                SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
-                FreeTokenLine (&TokenList, &TokenCount);
-                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title = TokenList[0]
+                        ? StrDuplicate (TokenList[0])
+                        : StrDuplicate (L"Boot Linux");
+                    MyFreePool (SubEntry->LoadOptions);
+                    SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+                    FreeTokenLine (&TokenList, &TokenCount);
+                    SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                } // if
             } // while
 
             MyFreePool (KernelVersion);
