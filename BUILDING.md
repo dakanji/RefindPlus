@@ -70,25 +70,25 @@ $ brew upgrade qemu
 ```
 
 ## Prepare the Bespoke TianoCore EDK II (UDK2018) Environment
-### Fork the Refind-UDK Repository
+### Fork the RefindPlusUDK Repository
 
-Navigate to `https://github.com/dakanji/Refind-UDK` and fork the repository
+Navigate to `https://github.com/dakanji/RefindPlusUDK` and fork the repository
 
-### Clone the Forked Refind-UDK Repository
+### Clone the Forked RefindPlusUDK Repository
 In Terminal, create a `RefindPlus` folder under your `Documents` folder, `cd` to that directory and clone the "RefindPlus Ready" TianoCore EDK II (UDK2018) repository into an `edk2` folder:
 
 ```
 $ mkdir ~/Documents/RefindPlus
 $ cd ~/Documents/RefindPlus
-$ git clone https://github.com/YOUR_GITHUB_USERNAME/Refind-UDK.git edk2
+$ git clone https://github.com/YOUR_GITHUB_USERNAME/RefindPlusUDK.git edk2
 $ cd ~/Documents/RefindPlus/edk2
 $ git checkout rudk
-$ git remote add upstream https://github.com/dakanji/Refind-UDK.git
+$ git remote add upstream https://github.com/dakanji/RefindPlusUDK.git
 ```
 
 **NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
 
-Your local `Refind-UDK` repository will be under `Documents/RefindPlus/edk2`
+Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 
 ### Build Required BaseTools C Tool Binaries
 
@@ -137,7 +137,7 @@ Your local `RefindPlus` repository will be under `Documents/RefindPlus/Working`
 **NB:** If you get an error after running the script, try running it again.
 
 ### Sync Manually
-#### Refind-UDK
+#### RefindPlusUDK
 In Terminal, run the following commands:
 
 ```
