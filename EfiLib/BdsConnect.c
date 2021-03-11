@@ -416,7 +416,7 @@ BdsLibConnectMostlyAllEfi (
                         MyFreePool (GOPArray);
                     }
 
-                    if (FoundGOP) {
+                    if (FoundGOP && GopDevicePathStr != NULL) {
                         DevicePathStr = ConvertDevicePathToText (
                             DevicePathFromHandle (AllHandleBuffer[i]),
                             FALSE, FALSE
