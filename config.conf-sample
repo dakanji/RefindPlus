@@ -276,8 +276,7 @@
 # that effect, along with a list of supported modes. On EFI 1.x systems
 # (e.g., Macintoshes), setting an incorrect mode silently fails. On both
 # types of systems, setting an incorrect resolution results in the default
-# resolution being used. The 'max' setting is ignored as RefindPlus uses
-# the maximum screen resolution by default when required.
+# resolution being used. 
 #
 # Uses the maximum screen resolution when commented out
 #
