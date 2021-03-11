@@ -26,6 +26,8 @@
   * 'disable_mac_compat_check' to 'disable_compat_check'
   * 'set_mac_boot_args' to 'set_boot_args'
   * 'protect_mac_nvram' to 'protect_nvram'
+- Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
+  * Misc fixes appear to have resolved previously experienced issues
 
 
 0.13.1.AB (02 Mar 2021):

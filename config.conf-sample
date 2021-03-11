@@ -945,3 +945,18 @@ menuentry "My Mac OS" {
     loader \System\Library\CoreServices\boot.efi
     disabled
 }
+
+# The firmware_bootnum token takes a HEXADECIMAL value as an option
+# and sets that value using the EFI's 'BootNext' variable and then
+# reboots the computer. This triggers a one-time boot using this
+# boot option. It can be used for various purposes, but one that
+# may be of interest is that some Macs may produce lower-resolution
+# displays with HiDPI monitors when booted via RefindPlus as compared
+# to when booted via the Apple boot manager. Booting with RefindPlus
+# using this option may produce a better resolution. Note that the
+# 'loader' option is not used in this type of configuration.
+menuentry "macOS via BootNext" {
+    icon /EFI/refind/icons/os_mac.png
+    firmware_bootnum 80
+    disabled
+}

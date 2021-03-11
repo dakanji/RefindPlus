@@ -1288,16 +1288,13 @@ LOADER_ENTRY * AddStanzaEntries (
           Entry->Enabled = FALSE;
       }
       else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
-          // DA-TAG: Getting funnies when this is enabled.
-          //         Disable until properly investigated
-          Entry->Enabled = FALSE;
-          //Entry->EfiBootNum    = StrToHex(TokenList[1], 0, 16);
-          //Entry->EfiLoaderPath = NULL;
-          //Entry->LoaderPath    = NULL;
-          //MyFreePool(Entry->me.Title);
-          //Entry->me.Title      = StrDuplicate(Title);
-          //Entry->me.BadgeImage = BuiltinIcon(BUILTIN_ICON_VOL_EFI);
-          //Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+          MyFreePool (Entry->me.Title);
+          Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
+          Entry->EfiLoaderPath = NULL;
+          Entry->LoaderPath    = NULL;
+          Entry->me.Title      = StrDuplicate (Title);
+          Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
+          Entry->me.Tag        = TAG_FIRMWARE_LOADER;
       }
       else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
           AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
