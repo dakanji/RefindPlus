@@ -1,3 +1,5 @@
+[![Scan Status](https://scan.coverity.com/projects/22695/badge.svg?flat=1)](https://scan.coverity.com/projects/22695)
+
 # RefindPlus
 ## Overview
 Enhanced version of the amazing rEFInd Boot Manager that incorporates various fixes and additional features.
