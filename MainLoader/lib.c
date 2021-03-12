@@ -98,30 +98,34 @@ EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21
 
 // variables
 
-EFI_HANDLE       SelfImageHandle;
-EFI_LOADED_IMAGE *SelfLoadedImage;
-EFI_FILE         *SelfRootDir;
-EFI_FILE         *SelfDir;
-CHAR16           *SelfDirPath;
+EFI_HANDLE         SelfImageHandle;
 
-REFIT_VOLUME     *SelfVolume    = NULL;
-REFIT_VOLUME     **Volumes      = NULL;
+EFI_LOADED_IMAGE  *SelfLoadedImage;
 
-REFIT_VOLUME **PreBootVolumes      = NULL;
-UINTN        PreBootVolumesCount   = 0;
+EFI_FILE          *SelfRootDir;
+EFI_FILE          *SelfDir;
 EFI_FILE          *gVarsDir = NULL;
 
-UINTN            VolumesCount   = 0;
-BOOLEAN          MediaCheck     = FALSE;
-BOOLEAN          ScannedOnce    = FALSE;
-BOOLEAN          SelfVolSet     = FALSE;
-BOOLEAN          SelfVolRun     = FALSE;
-BOOLEAN          DoneHeadings   = FALSE;
+CHAR16            *SelfDirPath;
+
+REFIT_VOLUME      *SelfVolume     = NULL;
+REFIT_VOLUME     **Volumes        = NULL;
+REFIT_VOLUME     **PreBootVolumes = NULL;
+
+UINTN              PreBootVolumesCount = 0;
+UINTN              VolumesCount        = 0;
+
+BOOLEAN            MediaCheck     = FALSE;
+BOOLEAN            ScannedOnce    = FALSE;
+BOOLEAN            SelfVolSet     = FALSE;
+BOOLEAN            SelfVolRun     = FALSE;
+BOOLEAN            DoneHeadings   = FALSE;
 
 extern EFI_GUID RefindPlusGuid;
 
-extern BOOLEAN LogNewLine;
-extern BOOLEAN ScanningLoaders;
+extern BOOLEAN  LogNewLine;
+extern BOOLEAN  ScanningLoaders;
+
 
 // Maximum size for disk sectors
 #define SECTOR_SIZE 4096
@@ -550,11 +554,13 @@ EfivarGetRaw (
 
     if (EFI_ERROR (Status) == EFI_SUCCESS) {
         *VariableData = (CHAR8*) TmpBuffer;
-        if ((BufferSize) && ReadFromNvram) {
-            *VariableSize = BufferSize;
-        }
-        else {
-            *VariableSize = 0;
+        if (ReadFromNvram) {
+            if (BufferSize) {
+                *VariableSize = BufferSize;
+            }
+            else {
+                *VariableSize = 0;
+            }
         }
     }
     else {

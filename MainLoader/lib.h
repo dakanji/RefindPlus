@@ -89,17 +89,17 @@ typedef struct {
 
 extern EFI_GUID gFreedesktopRootGuid;
 
-INTN FindMem(
+INTN FindMem (
     IN VOID *Buffer,
     IN UINTN BufferLength,
     IN VOID *SearchString,
     IN UINTN SearchStringLength
 );
 
-EFI_STATUS ReinitRefitLib(VOID);
-EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
-EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
 EFI_STATUS FindVarsDir (VOID);
+EFI_STATUS ReinitRefitLib (VOID);
+EFI_STATUS InitRefitLib (IN EFI_HANDLE ImageHandle);
+EFI_STATUS DirIterClose (IN OUT REFIT_DIR_ITER *DirIter);
 EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
@@ -113,57 +113,57 @@ EFI_STATUS EfivarSetRaw (
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
 );
-EFI_STATUS DirNextEntry(
+EFI_STATUS DirNextEntry (
     IN EFI_FILE *Directory,
     IN OUT EFI_FILE_INFO **DirEntry,
     IN UINTN FilterMode
 );
 
-VOID ScanVolumes(VOID);
-VOID ReinitVolumes(VOID);
-VOID UninitRefitLib(VOID);
-VOID SetVolumeIcons(VOID);
+VOID ScanVolumes (VOID);
+VOID ReinitVolumes (VOID);
+VOID UninitRefitLib (VOID);
+VOID SetVolumeIcons (VOID);
 VOID MyFreePool (IN OUT VOID *Pointer);
-VOID EraseUint32List(UINT32_LIST **TheList);
-VOID SetVolumeBadgeIcon(REFIT_VOLUME *Volume);
-VOID CleanUpPathNameSlashes(IN OUT CHAR16 *PathName);
-VOID FreeList(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
-VOID SplitPathName(CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
-VOID CreateList(OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount);
-VOID AddListElement(IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement);
-VOID DirIterOpen(
+VOID EraseUint32List (UINT32_LIST **TheList);
+VOID SetVolumeBadgeIcon (REFIT_VOLUME *Volume);
+VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
+VOID FreeList (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
+VOID SplitPathName (CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
+VOID CreateList (OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount);
+VOID AddListElement (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement);
+VOID DirIterOpen (
     IN EFI_FILE *BaseDir,
     IN CHAR16 *RelativePath OPTIONAL,
     OUT REFIT_DIR_ITER *DirIter
 );
-VOID FindVolumeAndFilename(
+VOID FindVolumeAndFilename (
     IN EFI_DEVICE_PATH *loadpath,
     OUT REFIT_VOLUME **DeviceVolume,
     OUT CHAR16 **loader
 );
 
-CHAR16 *Basename(IN CHAR16 *Path);
-CHAR16 *FindPath(IN CHAR16* FullPath);
-CHAR16 *FindExtension(IN CHAR16 *Path);
-CHAR16 *FindLastDirName(IN CHAR16 *Path);
-CHAR16 *StripEfiExtension(CHAR16 *FileName);
-CHAR16 *GetVolumeName(IN REFIT_VOLUME *Volume);
-CHAR16 *SplitDeviceString(IN OUT CHAR16 *InString);
+CHAR16 *Basename (IN CHAR16 *Path);
+CHAR16 *FindPath (IN CHAR16* FullPath);
+CHAR16 *FindExtension (IN CHAR16 *Path);
+CHAR16 *FindLastDirName (IN CHAR16 *Path);
+CHAR16 *StripEfiExtension (CHAR16 *FileName);
+CHAR16 *GetVolumeName (IN REFIT_VOLUME *Volume);
+CHAR16 *SplitDeviceString (IN OUT CHAR16 *InString);
 
-BOOLEAN EjectMedia(VOID);
+BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (REFIT_VOLUME *Volume);
-BOOLEAN GuidsAreEqual(EFI_GUID *Guid1, EFI_GUID *Guid2);
-BOOLEAN FindVolume(REFIT_VOLUME **Volume, CHAR16 *Identifier);
-BOOLEAN FileExists(IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
-BOOLEAN SplitVolumeAndFilename(IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
-BOOLEAN VolumeMatchesDescription(REFIT_VOLUME *Volume, CHAR16 *Description);
-BOOLEAN FilenameIn(
+BOOLEAN GuidsAreEqual (EFI_GUID *Guid1, EFI_GUID *Guid2);
+BOOLEAN FindVolume (REFIT_VOLUME **Volume, CHAR16 *Identifier);
+BOOLEAN FileExists (IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
+BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
+BOOLEAN VolumeMatchesDescription (REFIT_VOLUME *Volume, CHAR16 *Description);
+BOOLEAN FilenameIn (
     IN REFIT_VOLUME *Volume,
     IN CHAR16 *Directory,
     IN CHAR16 *Filename,
     IN CHAR16 *List
 );
-BOOLEAN DirIterNext(
+BOOLEAN DirIterNext (
     IN OUT REFIT_DIR_ITER *DirIter,
     IN UINTN FilterMode,
     IN CHAR16 *FilePattern OPTIONAL,
