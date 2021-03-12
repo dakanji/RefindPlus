@@ -1980,18 +1980,25 @@ static BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
 // user-callable dispatcher functions
 //
 
-VOID DisplaySimpleMessage (CHAR16* Title, CHAR16 *Message) {
+VOID
+DisplaySimpleMessage (
+    CHAR16* Title,
+    CHAR16 *Message
+) {
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     INTN                DefaultEntry = 0;
     REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
                                          L"Press Enter to return to main menu", L"" };
 
-    if (!Message)
+    if (!Message) {
         return;
+    }
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
+
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     HideItemMenu.Title = Title;
     AddMenuInfoLine (&HideItemMenu, Message);

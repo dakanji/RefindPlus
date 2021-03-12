@@ -776,13 +776,16 @@
  //  - *Entries: Linked-list set of boot entries. Unmodified.
  //  - *BootOrderNum: Returns the Boot#### number to be promoted or deleted.
  static UINTN PickOneBootOption (IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOrderNum) {
-     CHAR16              *Temp = NULL, *Filename = NULL;
-     REFIT_VOLUME        *Volume = NULL;
-     INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE;
-     UINTN               Operation = EFI_BOOT_OPTION_DO_NOTHING;
-     MENU_STYLE_FUNC     Style = TextMenuStyle;
-     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
-     REFIT_MENU_SCREEN   Menu = { L"Manage EFI Boot Order", NULL, 0, NULL, 0, NULL, 0, NULL,
+     CHAR16              *Temp          = NULL;
+     CHAR16              *Filename      = NULL;
+     INTN                 DefaultEntry  = 0;
+     INTN                 MenuExit      = MENU_EXIT_ESCAPE;
+     UINTN                Operation     = EFI_BOOT_OPTION_DO_NOTHING;
+     REFIT_VOLUME        *Volume        = NULL;
+     MENU_STYLE_FUNC      Style         = TextMenuStyle;
+     REFIT_MENU_ENTRY    *ChosenOption  = NULL;
+     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
+     REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, NULL, 0, NULL, 0, NULL,
                                   L"Select an option and press Enter to make it the default, press '-' or",
                                   L"Delete to delete it, or Esc to return to main menu without changes" };
      if (AllowGraphicsMode)

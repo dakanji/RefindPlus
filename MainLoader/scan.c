@@ -908,7 +908,7 @@ static INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
         + ((INT64) (Time1->Day)         * 86400)
         + ((INT64) (Time1->Month)       * 2678400)
         + ((INT64) (Time1->Year - 1998) * 32140800);
-        
+
     Time2InSeconds = (INT64) (Time2->Second)
         + ((INT64) (Time2->Minute)      * 60)
         + ((INT64) (Time2->Hour)        * 3600)
@@ -1191,8 +1191,13 @@ IsSymbolicLink (
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
 // the most recent one appears first in the list.
 // Returns TRUE if a duplicate for FALLBACK_FILENAME was found, FALSE if not.
-static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR16 *Pattern)
-{
+STATIC
+BOOLEAN
+ScanLoaderDir (
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *Path,
+    IN CHAR16       *Pattern
+) {
     EFI_STATUS              Status;
     REFIT_DIR_ITER          DirIter;
     EFI_FILE_INFO           *DirEntry;
@@ -1202,10 +1207,13 @@ static BOOLEAN ScanLoaderDir (IN REFIT_VOLUME *Volume, IN CHAR16 *Path, IN CHAR1
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
-    if ((!SelfDirPath || !Path || (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
-           (!InSelfPath)) && (ShouldScan (Volume, Path))) {
+    if ((!SelfDirPath || !Path ||
+        (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
+        (!InSelfPath)) && (ShouldScan (Volume, Path))
+    ) {
        // look through contents of the directory
        DirIterOpen (Volume->RootDir, Path, &DirIter);
+
        while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
           Extension = FindExtension (DirEntry->FileName);
           FullName = StrDuplicate (Path);
