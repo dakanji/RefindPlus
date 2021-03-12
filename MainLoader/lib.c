@@ -521,7 +521,7 @@ EfivarGetRaw (
 
     if (EFI_ERROR (Status) == EFI_SUCCESS) {
         *VariableData = (CHAR8*) TmpBuffer;
-        if ((VariableSize) && ReadFromNvram) {
+        if ((BufferSize) && ReadFromNvram) {
             *VariableSize = BufferSize;
         }
         else {
