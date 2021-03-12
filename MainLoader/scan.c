@@ -1247,35 +1247,37 @@ ScanLoaderDir (
           MyFreePool (FullName);
        } // while
 
-       NewLoader = LoaderList;
-       while (NewLoader != NULL) {
-           IsLinux = (StriSubCmp (L"bzImage", NewLoader->FileName) ||
-                      StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
-                      StriSubCmp (L"kernel", NewLoader->FileName));
-           if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
-               AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
-           }
-           else {
-               LatestEntry = AddLoaderEntry (
-                   NewLoader->FileName,
-                   NULL,
-                   Volume,
-                   !(IsLinux && GlobalConfig.FoldLinuxKernels)
-               );
-               if (IsLinux && (FirstKernel == NULL)) {
-                   FirstKernel = LatestEntry;
-               }
-           }
-           NewLoader = NewLoader->NextEntry;
-       } // while
-
-       if (NewLoader != NULL) {
-           if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
-               AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
-           }
-       }
-
        if (LoaderList != NULL) {
+           NewLoader = LoaderList;
+           while (NewLoader != NULL) {
+               IsLinux = (StriSubCmp (L"bzImage", NewLoader->FileName) ||
+                          StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
+                          StriSubCmp (L"kernel", NewLoader->FileName));
+               if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
+                   AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
+               }
+               else {
+                   LatestEntry = AddLoaderEntry (
+                       NewLoader->FileName,
+                       NULL,
+                       Volume,
+                       !(IsLinux && GlobalConfig.FoldLinuxKernels)
+                   );
+                   if (IsLinux && (FirstKernel == NULL)) {
+                       FirstKernel = LatestEntry;
+                   }
+               }
+               NewLoader = NewLoader->NextEntry;
+           } // while
+
+           // DA-TAG: NewLoader is always NULL here
+           //         While Loop above only terminates when it is NULL
+           //if (NewLoader != NULL) {
+           //   if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
+           //       AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
+           //   }
+           //}
+
            CleanUpLoaderList (LoaderList);
        }
 
