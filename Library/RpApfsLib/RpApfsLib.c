@@ -54,23 +54,6 @@ RpApfsConnectParentDevice (
       Status = EFI_NOT_FOUND;
 
       for (Index = 0; Index < HandleCount; ++Index) {
-          if (ParentDevicePath != NULL && PrefixLength > 0) {
-              XStatus = refit_call3_wrapper(
-                  gBS->HandleProtocol,
-                  HandleBuffer[Index],
-                  &gEfiDevicePathProtocolGuid,
-                  (VOID **) &ChildDevicePath
-              );
-
-              if (EFI_ERROR (XStatus)) {
-                  continue;
-              }
-
-              if (CompareMem (ParentDevicePath, ChildDevicePath, PrefixLength) != 0) {
-                  continue;
-              }
-          }
-
           XStatus = RpApfsConnectHandle (HandleBuffer[Index]);
           if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
               if (EFI_ERROR (Status)) {
