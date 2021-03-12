@@ -226,14 +226,18 @@
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may fail to work and lead to an inability to boot.
 # Storing variables on disk is a viable alternative and RefindPlus can save
-# its variables to the "vars" subdirectory of the RefindPlus directory on disk.
-# However, this will not work if RefindPlus is on a filesystem that is read-only
-# to the EFI (e.g. HFS+ volumes), and it may also increase the risk of filesystem
-# damage. Note that this option ONLY applies to RefindPlus variables such as the
-# PreviousBoot, HiddenTags, HiddenTools, and HiddenLegacy variables. It does NOT
-# apply to any non-RefindPlus variables which will always be written to NVRAM.
+# its variables to the "rp-vars" subdirectory of the RefindPlus directory on
+# disk. However, this will not work if RefindPlus is on a filesystem that is
+# read-only to the EFI (e.g. HFS+ volumes). In such cases, an attempt to write
+# to the first ESP that RefindPlus can identify will be made. If this attempt
+# is not sucessful, the variable will not be saved and this will be logged
+# if running the debug version. Note that this option ONLY applies to
+# RefindPlus variables such as the  PreviousBoot, HiddenTags,
+# HiddenTools, and HiddenLegacy variables. It does not
+# apply to any 'non-RefindPlus' variables which will
+# always be written to the motherboard's NVRAM.
 #
-# Stores RefindPlus variables in the "vars" subdirectory when commented out
+# Stores RefindPlus variables in the "rp-vars" subdirectory when commented out
 #
 #use_nvram
 

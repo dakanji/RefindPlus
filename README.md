@@ -58,7 +58,7 @@ Note that if you run RefindPlus without activating the additonal  options, as wi
 
 Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.1 are:
 - `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
-- `use_nvram`: Application variables are written to the `vars` folder on the file system instead of to the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
+- `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
 - rEFInd now scans other ESPs for loaders, in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
 

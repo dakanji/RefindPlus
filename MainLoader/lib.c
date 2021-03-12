@@ -109,6 +109,7 @@ REFIT_VOLUME     **Volumes      = NULL;
 
 REFIT_VOLUME **PreBootVolumes      = NULL;
 UINTN        PreBootVolumesCount   = 0;
+EFI_FILE          *gVarsDir = NULL;
 
 UINTN            VolumesCount   = 0;
 BOOLEAN          MediaCheck     = FALSE;
@@ -433,6 +434,43 @@ ReinitRefitLib (
 // EFI variable read and write functions
 //
 
+// Create a directory for holding RefindPlus variables, if they are stored on
+// disk. This will be in the RefindPlus install directory if possible, or on the
+// first ESP that RefindPlus can identify if not (this typically means RefindPlus
+// is on a read-only filesystem, such as HFS+ on a Mac). If neither location can
+// be used, the variable is not stored. Sets the pointer to the directory in the
+// file-global gVarsDir variable and returns the status of the operation.
+EFI_STATUS
+FindVarsDir (
+    VOID
+) {
+    EFI_STATUS       Status = EFI_SUCCESS;
+    EFI_FILE_HANDLE  EspRootDir;
+
+    if (gVarsDir == NULL) {
+        Status = refit_call5_wrapper(
+            SelfDir->Open, SelfDir,
+            &gVarsDir, L"rp-vars",
+            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+            EFI_FILE_DIRECTORY
+        );
+
+        if (EFI_ERROR (Status)) {
+            Status = egFindESP (&EspRootDir);
+            if (Status == EFI_SUCCESS) {
+                Status = refit_call5_wrapper(
+                    EspRootDir->Open, EspRootDir,
+                    &gVarsDir, L"rp-vars",
+                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                    EFI_FILE_DIRECTORY
+                );
+            }
+        }
+    }
+
+    return Status;
+} // EFI_STATUS FindVarsDir()
+
 // Retrieve a raw EFI variable, either from NVRAM or from a disk file under
 // RefindPlus' "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
@@ -445,23 +483,16 @@ EfivarGetRaw (
 ) {
     UINTN       BufferSize    = 0;
     UINT8       *TmpBuffer    = NULL;
-    EFI_FILE    *VarsDir      = NULL;
     BOOLEAN     ReadFromNvram = TRUE;
     EFI_STATUS  Status        = EFI_LOAD_ERROR;
 
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
-        Status = refit_call5_wrapper(
-            SelfDir->Open, SelfDir,
-            &VarsDir, L"vars",
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
-            EFI_FILE_DIRECTORY
-        );
-
+        Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (
-                VarsDir, VariableName,
+                gVarsDir, VariableName,
                 &TmpBuffer, VariableSize
             );
             ReadFromNvram = FALSE;
@@ -477,8 +508,6 @@ EfivarGetRaw (
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
             #endif
         }
-
-        MyFreePool (VarsDir);
     }
 
     if (GlobalConfig.UseNvram ||
@@ -552,7 +581,6 @@ EfivarSetRaw (
     UINT32      StorageFlags;
     CHAR8       *OldBuf;
     UINTN       OldSize;
-    EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status   = EFI_ALREADY_STARTED;
     EFI_STATUS  OldStatus;
 
@@ -565,17 +593,9 @@ EfivarSetRaw (
         if (!GlobalConfig.UseNvram &&
             GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
-            Status = refit_call5_wrapper(
-                SelfDir->Open,
-                SelfDir,
-                &VarsDir,
-                L"vars",
-                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
-                EFI_FILE_DIRECTORY
-            );
-
+            Status = FindVarsDir();
             if (Status == EFI_SUCCESS) {
-                Status = egSaveFile (VarsDir, VariableName, (UINT8 *) VariableData, VariableSize);
+                Status = egSaveFile (gVarsDir, VariableName, (UINT8 *) VariableData, VariableSize);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -583,8 +603,6 @@ EfivarSetRaw (
                 MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
                 #endif
             }
-
-            MyFreePool (VarsDir);
 
             return Status;
         }

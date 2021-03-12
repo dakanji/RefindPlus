@@ -232,6 +232,8 @@ extern EFI_GUID RSA2048_GUID;
 extern EFI_GUID PKCS7_GUID;
 extern EFI_GUID EFI_CERT_SHA256_GUID;
 
+extern EFI_FILE *gVarsDir;
+
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 //
@@ -251,7 +253,6 @@ EfivarSetRawEx (
     UINT32      flags;
     CHAR8       *OldBuf;
     UINTN       OldSize;
-    EFI_FILE    *VarsDir = NULL;
     EFI_STATUS  Status   = EFI_ALREADY_STARTED;
     EFI_STATUS  OldStatus;
 
@@ -261,16 +262,9 @@ EfivarSetRawEx (
         (CompareMem (buf, OldBuf, size) != 0)
     ) {
         if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
-            Status = refit_call5_wrapper(
-                SelfDir->Open,
-                SelfDir,
-                &VarsDir,
-                L"vars",
-                EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE,
-                EFI_FILE_DIRECTORY
-            );
+            Status = FindVarsDir();
             if (Status == EFI_SUCCESS) {
-                Status = egSaveFile (VarsDir, name, (UINT8 *) buf, size);
+                Status = egSaveFile (gVarsDir, name, (UINT8 *) buf, size);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -278,8 +272,6 @@ EfivarSetRawEx (
                 MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
                 #endif
             }
-
-            MyFreePool (VarsDir);
 
             return Status;
         }

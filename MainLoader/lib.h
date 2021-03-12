@@ -99,6 +99,7 @@ INTN FindMem(
 EFI_STATUS ReinitRefitLib(VOID);
 EFI_STATUS InitRefitLib(IN EFI_HANDLE ImageHandle);
 EFI_STATUS DirIterClose(IN OUT REFIT_DIR_ITER *DirIter);
+EFI_STATUS FindVarsDir (VOID);
 EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
