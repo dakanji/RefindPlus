@@ -35,10 +35,7 @@ RpApfsConnectParentDevice (
   EFI_STATUS       XStatus;
   UINTN            HandleCount;
   EFI_HANDLE       *HandleBuffer;
-  EFI_DEVICE_PATH  *ParentDevicePath = NULL;
-  EFI_DEVICE_PATH  *ChildDevicePath;
   UINTN            Index;
-  UINTN            PrefixLength = 0;
 
   HandleCount = 0;
   Status = refit_call5_wrapper(
