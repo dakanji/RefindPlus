@@ -5,7 +5,7 @@
 
 ##--------------------------------------------------------------##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
-##          Features Provided or Amended by RefindPlus          ##
+##             New Features Provided by RefindPlus              ##
 ##--------------------------------------------------------------##
 #
 #
@@ -215,6 +215,13 @@
 #
 #set_boot_args "-v"
 
+
+##--------------------------------------------------------------##
+##                 AMENDED CONFIGURATION ITEMS                  ##
+##           Existing Features Modified in RefindPlus           ##
+##--------------------------------------------------------------##
+#
+#
 # While using NVRAM works with most computers, this increases wear
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may fail to work and lead to an inability to boot.
@@ -276,7 +283,7 @@
 # that effect, along with a list of supported modes. On EFI 1.x systems
 # (e.g., Macintoshes), setting an incorrect mode silently fails. On both
 # types of systems, setting an incorrect resolution results in the default
-# resolution being used. 
+# resolution being used.
 #
 # Uses the maximum screen resolution when commented out
 #
@@ -305,7 +312,7 @@
 #
 # The default setting is 0 (No timeout)
 #
-timeout 20
+#timeout 20
 
 # Normally, when the timeout period has passed, RefindPlus boots the
 # default_selection. If the following option is uncommented, though,
@@ -953,7 +960,7 @@ menuentry "My Mac OS" {
 # displays with HiDPI monitors when booted via RefindPlus as compared
 # to when booted via the Apple boot manager. Booting with RefindPlus
 # using this option may produce a better resolution. Note that the
-# 'loader' option is not used in this type of configuration.
+# 'loader' option is not used for this type of configuration.
 menuentry "macOS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
