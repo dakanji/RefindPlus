@@ -10,15 +10,15 @@
 #
 #
 # RefindPlus defaults to storing the name of the last booted loader in a
-# 'PreviousBoot' variable in the NVRAM under the RefindPlus GUID. This
+# "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
 # is loaded. This can increase wear and tear on the motherboard's NVRAM and
-# disabling the 'use_nvram' token allows writing to the filesystem instead
-# to reduce this. On some setups however, such as when the 'default_selection'
+# disabling the "use_nvram" token allows writing to the filesystem instead
+# to reduce this. On some setups however, such as when the "default_selection"
 # token is set, such writes are not required at all and when this option is
 # active, RefindPlus will not exexute such writes at all.
 #
-# Always saves the 'PreviousBoot' variable when commented out
+# Always saves the "PreviousBoot" variable when commented out
 #
 #ignore_previous_boot
 
@@ -101,17 +101,17 @@
 #
 #continue_on_warning
 
-# Force 'TRIM' on non-Apple SSDs. 'TRIM', which may improve SSD health,
+# Force "TRIM" on non-Apple SSDs. "TRIM", which may improve SSD health,
 # is not enabled by default on non-Apple SSDs in Mac OS. When this option
-# is active, RefindPlus will force Mac OS 'TRIM' on for all SSDs types
+# is active, RefindPlus will force Mac OS "TRIM" on for all SSDs types
 # including on non-Apple SSDs. This setting only applies to Mac OS. Note
 # that this setting will create a Mac OS NVRAM entry the first time it is
 # triggered and that this will stay active until explicitly cleared even
-# if the setting is subsequently disabled. Also note that forcing 'TRIM'
-# may significantly increase boot times and that enabling 'TRIM' on
+# if the setting is subsequently disabled. Also note that forcing "TRIM"
+# may significantly increase boot times and that enabling "TRIM" on
 # non-Apple SSDs may affect the integrity of data on such SSDs.
 #
-# Inactive when commented out (Does not force 'TRIM' on non-Apple SSDs)
+# Inactive when commented out (Does not force "TRIM" on non-Apple SSDs)
 #
 #force_trim
 
@@ -151,8 +151,8 @@
 #supply_apfs
 
 # Suppress verbose APFS loading text output. When this option is active, RefindPlus will
-# suppress verbose text output from the APFS drivers loaded using the 'supply_apfs' option.
-# This option only acts on apfs drivers loaded by RefindPlus using 'supply_apfs'.
+# suppress verbose text output from the APFS drivers loaded using the "supply_apfs" option.
+# This option only acts on apfs drivers loaded by RefindPlus using "supply_apfs".
 # This option may impact other text output and should be disabled if such
 # negative effects are observed. This setting only applies to Mac OS.
 # NB: This functionality is only available on TianoCore Builds
@@ -168,14 +168,14 @@
 # their respective "PreBoot" partitions which will be used to boot such Mac OS Instances and
 # the "PreBoot" partitions will be hidden from view. This feature also facilitates directly
 # booting into FileVault encrypted APFS volumes without requiring "PreBoot" partitions.
-# NB: Maintain the default naming pattern for APFS data volumes, 'VolName - Data', to
+# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data", to
 # improve the reliability of this option in distinguishing between APFS partitions.
 #
 # Inactive when commented out (Does not actively support APFS requirements)
 #
 #reinforce_apfs
 
-# Prevent UEFI Windows 'Secure Boot' from writing to Apple NVRAM. When this option is active,
+# Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
 # this issue and is recommended instead when running Windows on Apple Firmware.
@@ -199,14 +199,14 @@
 #   0    - Scale UI elements up, or not, based on screen resolution
 #   1    - Always scale UI elements up
 #
-# The default setting is 0 (Scales UI elements based on screen resolution)
+# Scales UI elements based on screen resolution when commented out
 #
 #scale_ui 1
 
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
 # This setting only applies to Mac OS and accounts for arguments injected by
-# 'disable_amfi' and 'disable_compat_check' as required. Note that this
+# "disable_amfi" and "disable_compat_check" as required. Note that this
 # will create a Mac OS boot argument the first time it is triggered
 # and that this will stay active until explicitly cleared even if
 # the setting is subsequently disabled.
@@ -222,22 +222,20 @@
 ##--------------------------------------------------------------##
 #
 #
-# While using NVRAM works with most computers, this increases wear
+# While using NVRAM works with most computers, this can increase wear
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may fail to work and lead to an inability to boot.
 # Storing variables on disk is a viable alternative and RefindPlus can save
-# its variables to the "rp-vars" subdirectory of the RefindPlus directory on
-# disk. However, this will not work if RefindPlus is on a filesystem that is
-# read-only to the EFI (e.g. HFS+ volumes). In such cases, an attempt to write
-# to the first ESP that RefindPlus can identify will be made. If this attempt
-# is not sucessful, the variable will not be saved and this will be logged
-# if running the debug version. Note that this option ONLY applies to
-# RefindPlus variables such as the  PreviousBoot, HiddenTags,
-# HiddenTools, and HiddenLegacy variables. It does not
-# apply to any 'non-RefindPlus' variables which will
-# always be written to the motherboard's NVRAM.
+# its variables to a folder on the filesystem instead. However, this will not
+# work if RefindPlus is on a filesystem that is read-only to the EFI, such as
+# HFS+ volumes. In such cases, an attempt to write to the first ESP RefindPlus
+# can identify will be made. If this attempt is not sucessful, the variable will
+# not be saved and this fact will be logged if running the debug version. NB: This
+# option only applies to RefindPlus variables such as the PreviousBoot, HiddenTags,
+# HiddenTools, and HiddenLegacy variables and does not apply to any variables from
+# other processes/libraries (These are always written to the motherboard's NVRAM).
 #
-# Stores RefindPlus variables in the "rp-vars" subdirectory when commented out
+# Stores RefindPlus variables to the filesystem when commented out
 #
 #use_nvram
 
@@ -250,7 +248,7 @@
 #  gdisk            - the gdisk partitioning program
 #  show_bootscreen  - load Apple Boot Screen if available. (External program)
 #                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
-#                     'Fully Compatible GPUs' are those with native Apple Boot Screen
+#                     "Fully Compatible GPUs" are those with native Apple Boot Screen
 #  clean_nvram      - reset NVRAM from RefindPlus. (External program)
 #                     Requires Apple Firmware.
 #  apple_recovery   - boots the Apple Recovery HD partition, if present
@@ -314,7 +312,7 @@
 # shortcut key. If no matching shortcut is found, RefindPlus displays its
 # menu with no timeout.
 #
-# The default setting is 0 (No timeout)
+# The timeout is disabled when commented out
 #
 #timeout 20
 
@@ -324,7 +322,7 @@
 # CAUTION: MANY COMPUTERS WILL INSTEAD HANG OR REBOOT! Macs and more
 # recent UEFI-based PCs are most likely to work with this feature.
 #
-# The default setting is to boot the default selection
+# Boots the default selection when commented out
 #
 #shutdown_after_timeout
 
@@ -333,7 +331,7 @@
 # (Excluding modifier keys such as Shift, Control, Alt, and Option).
 # "-1" causes RefindPlus to start up with the screensaver active.
 #
-# The default setting is to disable the screensaver
+# The screensaver is diabled when commented out
 #
 #screensaver 300
 
@@ -350,7 +348,7 @@
 #  badges      - device-type badges for boot options
 #  all         - all of the above
 #
-# The default setting is none of these (All elements are active)
+# All elements are active when commented out
 #
 #hideui singleuser
 #hideui all
@@ -366,21 +364,21 @@
 # implementations do not support transparency, which is highly desirable
 # in icons.
 #
-# The default setting is to load icons from the "icons" folder
+# Loads icons from the "icons" folder when commented out
 #
 #icons_dir myicons
 #icons_dir icons/snowy
 
-# Use a custom title banner instead of the RefindPlus icon and name. The file
-# path is relative to the directory where the RefindPlus efi file is located.
-# The colour in the top left corner of the image is used as the background
-# colour for the menu screens. Currently uncompressed BMP images with colour
-# depths of 24, 8, 4 or 1 bits are supported, as well as PNG and JPG images.
-# (ICNS images can also be used, but ICNS has limitations that make it a poor
-# choice for this purpose.) PNG and JPG support is limited by the underlying
-# libraries; some files, such as progressive JPGs, will not work.
+# Use a custom title banner instead of the default embedded banner. The
+# file path is relative to the directory where the RefindPlus efi file is
+# located. The colour in the top left corner of the image is used for the
+# background colour for the menu screens. Currently uncompressed BMP files
+# with colour depths of 24, 8, 4 or 1 bits are supported, as well as PNG and
+# JPEG files. ICNS files can also be used but have limitations that make them
+# poor choices for this purpose. Some PNG and JPEG features are not supported
+# and some files, such as progressive JPEG files, cannot be used.
 #
-# The default setting is to use the embedded title banner
+# Uses the default title banner when commented out
 #
 #banner hostname.bmp
 #banner mybanner.jpg
@@ -459,7 +457,7 @@
 
 # Enable touch screen support. If active, this feature enables use of
 # touch screen controls (as on tablets). Note, however, that not all
-# tablets' EFIs provide the necessary underlying support, so this
+# tablet EFIs provide the necessary underlying support, so this
 # feature may not work for you. If it does work, you should be able
 # to launch an OS or tool by touching it. In a submenu, touching
 # anywhere launches the currently-selection item; there is, at present,
@@ -472,7 +470,7 @@
 #enable_touch
 
 # Enable mouse support. If active, this feature enables use of the
-# computer's mouse. Note, however, that not all computers' EFIs
+# computer's mouse. Note, however, that not all computer EFIs
 # provide the necessary underlying support, so this feature may not
 # work for you. If it does work, you should be able to launch an
 # OS or tool by clicking it with the mouse pointer. This feature
@@ -588,7 +586,7 @@
 #scan_delay 5
 
 # When scanning volumes for EFI boot loaders, RefindPlus always looks for
-# Mac OS' and Microsoft Windows' boot loaders in their normal locations,
+# the Mac OS and Microsoft Windows boot loaders in their normal locations,
 # and scans the root directory and every subdirectory of the /EFI directory
 # for additional boot loaders, but it does not recurse into these directories.
 # The also_scan_dirs option adds more directories to the scan list.
@@ -607,7 +605,7 @@
 # For EFI-mode scans, you normally specify a volume by its label, which you
 # can obtain in an EFI shell by typing "vol", from Linux by typing
 # "blkid /dev/{devicename}", or by examining the disk's label in various
-# operating systems' file browsers. It is also possible to identify partitions
+# operating system file browsers. It is also possible to identify partitions
 # by their unique GUIDs (aka its "PARTUUID" in Linux parlance). (Note that this
 # is NOT the partition TYPE CODE GUID.) This identifier can be obtained via
 # "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
@@ -639,7 +637,7 @@
 #dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
 # Files that should NOT be included as EFI boot loaders (on the
-# first line of the display). If you're using a boot loader that
+# first line of the display). If you are using a boot loader that
 # relies on support programs or drivers that are installed alongside
 # the main binary or if you want to "blacklist" certain loaders by
 # name rather than location, use this option. Note that this will
@@ -651,8 +649,8 @@
 # a complete pathname (e.g., "/EFI/somedir/notme.efi"), or as a
 # complete pathname with volume (e.g., "SOMEDISK:/EFI/somedir/notme.efi"
 # or 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi").
-# OS tags hidden via the Delete or '-' key in the RefindPlus menu are
-# added to this list, but stored in NVRAM.
+# OS tags hidden via the "Delete" or "-" key in the RefindPlus
+# menu are added to this list, but stored in NVRAM.
 # The default setting is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
 # HashTool-signed.efi,bootmgr.efi,fb{arch}.efi
@@ -705,7 +703,7 @@
 # "linux" as version strings, they MUST be specified as "linux-lts,linux",
 # since if you specify it the other way, both vmlinuz-linux and
 # vmlinuz-linux-lts will return with "linux" as the "version string," which
-# is not what you'd want. Also, if the kernel or initrd file includes both a
+# is not desirable. Also, if the kernel or initrd file includes both a
 # specified string and digits, the "version string" includes both. For
 # instance, "vmlinuz-linux-4.8" would yield a version string of "linux-4.8".
 # This option is intended for Arch and other distributions that do not include
@@ -754,7 +752,7 @@ write_systemd_vars
 # If you follow the selector(s) with two times, in 24-hour format, the
 # default will apply only between those times. The times are in the
 # motherboard's time standard, whether that is UTC or local time, so if
-# you use UTC, you'll need to adjust this from local time manually.
+# you use UTC, you will need to adjust this from local time manually.
 # Times may span midnight as in "23:30 00:30", which applies to 11:30 PM
 # to 12:30 AM. You may specify multiple default_selection lines, in which
 # case the last one to match takes precedence. Thus, you can set a main
@@ -946,7 +944,7 @@ menuentry "Windows via shell script" {
 # Mac OS is normally detected and run automatically; however,
 # if you want to do something unusual, a manual boot stanza may
 # be the way to do it. This one does nothing very unusual, but
-# it may serve as a starting point. Note that you'll almost
+# it may serve as a starting point. Note that you will almost
 # certainly need to change the "volume" line for this example
 # to work.
 menuentry "My Mac OS" {
@@ -957,14 +955,14 @@ menuentry "My Mac OS" {
 }
 
 # The firmware_bootnum token takes a HEXADECIMAL value as an option
-# and sets that value using the EFI's 'BootNext' variable and then
+# and sets that value using the EFI's "BootNext" variable and then
 # reboots the computer. This triggers a one-time boot using this
 # boot option. It can be used for various purposes, but one that
 # may be of interest is that some Macs may produce lower-resolution
 # displays with HiDPI monitors when booted via RefindPlus as compared
 # to when booted via the Apple boot manager. Booting with RefindPlus
 # using this option may produce a better resolution. Note that the
-# 'loader' option is not used for this type of configuration.
+# "loader" option is not used for this type of configuration.
 menuentry "macOS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
