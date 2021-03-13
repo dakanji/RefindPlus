@@ -49,8 +49,8 @@ In addition to the tokens above, two additional tools can be activated using the
 - `clean_nvram` : This allows resetting nvram directly from RefindPlus.
 - `show_bootscreen` : This allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
-## Configuration Differences
-Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.1 are:
+## Divergence
+Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.1 are:
 - `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
 - `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
