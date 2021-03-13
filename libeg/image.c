@@ -477,7 +477,7 @@ EG_IMAGE * egLoadIcon (
         NewImage = egScaleImage (Image, IconSize, IconSize);
 
         // use scaled image if available
-        if (NewImage != NULL) {
+        if (NewImage) {
             egFreeImage (Image);
             Image = NewImage;
         }
@@ -546,10 +546,13 @@ EG_IMAGE * egPrepareEmbeddedImage (
     UINTN     CompLen;
     UINTN     PixelCount;
 
-    // sanity check
+    // sanity checks
+    if (!EmbeddedImage) {
+        return NULL;
+    }
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
         (EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE &&
-        EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE)
+        EmbeddedImage->CompressMode  != EG_EICOMPMODE_RLE)
     ) {
         return NULL;
     }
@@ -639,17 +642,19 @@ egRestrictImageArea (
     IN OUT UINTN  *AreaWidth,
     IN OUT UINTN  *AreaHeight
 ) {
-    if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
-        // out of bounds, operation has no effect
-        *AreaWidth  = 0;
-        *AreaHeight = 0;
-    }
-    else {
-        // calculate affected area
-        if (*AreaWidth > Image->Width - AreaPosX)
-            *AreaWidth = Image->Width - AreaPosX;
-        if (*AreaHeight > Image->Height - AreaPosY)
-            *AreaHeight = Image->Height - AreaPosY;
+    if (Image && AreaWidth && AreaHeight) {
+        if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
+            // out of bounds, operation has no effect
+            *AreaWidth  = 0;
+            *AreaHeight = 0;
+        }
+        else {
+            // calculate affected area
+            if (*AreaWidth > Image->Width - AreaPosX)
+                *AreaWidth = Image->Width - AreaPosX;
+            if (*AreaHeight > Image->Height - AreaPosY)
+                *AreaHeight = Image->Height - AreaPosY;
+        }
     }
 }
 
@@ -662,14 +667,16 @@ egFillImage (
     EG_PIXEL    FillColor;
     EG_PIXEL    *PixelPtr;
 
-    FillColor = *Color;
-    if (!CompImage->HasAlpha) {
-        FillColor.a = 0;
-    }
+    if (CompImage && Color) {
+        FillColor = *Color;
+        if (!CompImage->HasAlpha) {
+            FillColor.a = 0;
+        }
 
-    PixelPtr = CompImage->PixelData;
-    for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++) {
-        *PixelPtr = FillColor;
+        PixelPtr = CompImage->PixelData;
+        for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++) {
+            *PixelPtr = FillColor;
+        }
     }
 }
 
@@ -687,21 +694,23 @@ egFillImageArea (
     EG_PIXEL    *PixelPtr;
     EG_PIXEL    *PixelBasePtr;
 
-    egRestrictImageArea (CompImage, AreaPosX, AreaPosY, &AreaWidth, &AreaHeight);
+    if (CompImage && Color) {
+        egRestrictImageArea (CompImage, AreaPosX, AreaPosY, &AreaWidth, &AreaHeight);
 
-    if (AreaWidth > 0) {
-        FillColor = *Color;
-        if (!CompImage->HasAlpha) {
-            FillColor.a = 0;
-        }
-
-        PixelBasePtr = CompImage->PixelData + AreaPosY * CompImage->Width + AreaPosX;
-        for (y = 0; y < AreaHeight; y++) {
-            PixelPtr = PixelBasePtr;
-            for (x = 0; x < AreaWidth; x++, PixelPtr++) {
-                *PixelPtr = FillColor;
+        if (AreaWidth > 0) {
+            FillColor = *Color;
+            if (!CompImage->HasAlpha) {
+                FillColor.a = 0;
             }
-            PixelBasePtr += CompImage->Width;
+
+            PixelBasePtr = CompImage->PixelData + AreaPosY * CompImage->Width + AreaPosX;
+            for (y = 0; y < AreaHeight; y++) {
+                PixelPtr = PixelBasePtr;
+                for (x = 0; x < AreaWidth; x++, PixelPtr++) {
+                    *PixelPtr = FillColor;
+                }
+                PixelBasePtr += CompImage->Width;
+            }
         }
     }
 }
@@ -718,15 +727,19 @@ egRawCopy (
     UINTN       x, y;
     EG_PIXEL    *TopPtr, *CompPtr;
 
-    for (y = 0; y < Height; y++) {
-        TopPtr = TopBasePtr;
-        CompPtr = CompBasePtr;
-        for (x = 0; x < Width; x++) {
-            *CompPtr = *TopPtr;
-            TopPtr++, CompPtr++;
+    if (CompBasePtr && TopBasePtr) {
+        for (y = 0; y < Height; y++) {
+            TopPtr  = TopBasePtr;
+            CompPtr = CompBasePtr;
+
+            for (x = 0; x < Width; x++) {
+                *CompPtr = *TopPtr;
+                TopPtr++, CompPtr++;
+            }
+
+            TopBasePtr  += TopLineOffset;
+            CompBasePtr += CompLineOffset;
         }
-        TopBasePtr += TopLineOffset;
-        CompBasePtr += CompLineOffset;
     }
 }
 
@@ -745,27 +758,28 @@ egRawCompose (
     UINTN       RevAlpha;
     UINTN       Temp;
 
-    for (y = 0; y < Height; y++) {
-        TopPtr = TopBasePtr;
-        CompPtr = CompBasePtr;
-        for (x = 0; x < Width; x++) {
-            Alpha = TopPtr->a;
-            RevAlpha = 255 - Alpha;
-            Temp = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
-            CompPtr->b = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
-            CompPtr->g = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
-            CompPtr->r = (Temp + (Temp >> 8)) >> 8;
-            /*
-            CompPtr->b = ((UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha) / 255;
-            CompPtr->g = ((UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha) / 255;
-            CompPtr->r = ((UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha) / 255;
-            */
-            TopPtr++, CompPtr++;
+    if (CompBasePtr && TopBasePtr) {
+        for (y = 0; y < Height; y++) {
+            TopPtr  = TopBasePtr;
+            CompPtr = CompBasePtr;
+
+            for (x = 0; x < Width; x++) {
+                Alpha    = TopPtr->a;
+                RevAlpha = 255 - Alpha;
+
+                Temp       = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
+                CompPtr->b = (Temp + (Temp >> 8)) >> 8;
+                Temp       = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
+                CompPtr->g = (Temp + (Temp >> 8)) >> 8;
+                Temp       = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
+                CompPtr->r = (Temp + (Temp >> 8)) >> 8;
+
+                TopPtr++, CompPtr++;
+            }
+
+            TopBasePtr  += TopLineOffset;
+            CompBasePtr += CompLineOffset;
         }
-        TopBasePtr  += TopLineOffset;
-        CompBasePtr += CompLineOffset;
     }
 }
 
@@ -779,31 +793,34 @@ egComposeImage (
     UINTN CompWidth;
     UINTN CompHeight;
 
-    CompWidth  = TopImage->Width;
-    CompHeight = TopImage->Height;
-    egRestrictImageArea (CompImage, PosX, PosY, &CompWidth, &CompHeight);
+    if (CompImage && TopImage) {
+        CompWidth  = TopImage->Width;
+        CompHeight = TopImage->Height;
 
-    // compose
-    if (CompWidth > 0) {
-        if (TopImage->HasAlpha) {
-            egRawCompose (
-                CompImage->PixelData + PosY * CompImage->Width + PosX,
-                TopImage->PixelData,
-                CompWidth,
-                CompHeight,
-                CompImage->Width,
-                TopImage->Width
-            );
-        }
-        else {
-            egRawCopy (
-                CompImage->PixelData + PosY * CompImage->Width + PosX,
-                TopImage->PixelData,
-                CompWidth,
-                CompHeight,
-                CompImage->Width,
-                TopImage->Width
-            );
+        egRestrictImageArea (CompImage, PosX, PosY, &CompWidth, &CompHeight);
+
+        // compose
+        if (CompWidth > 0) {
+            if (TopImage->HasAlpha) {
+                egRawCompose (
+                    CompImage->PixelData + PosY * CompImage->Width + PosX,
+                    TopImage->PixelData,
+                    CompWidth,
+                    CompHeight,
+                    CompImage->Width,
+                    TopImage->Width
+                );
+            }
+            else {
+                egRawCopy (
+                    CompImage->PixelData + PosY * CompImage->Width + PosX,
+                    TopImage->PixelData,
+                    CompWidth,
+                    CompHeight,
+                    CompImage->Width,
+                    TopImage->Width
+                );
+            }
         }
     }
 } /* VOID egComposeImage() */
@@ -820,9 +837,11 @@ egInsertPlane (
 ) {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = *SrcDataPtr++;
-        DestPlanePtr += 4;
+    if (SrcDataPtr && DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = *SrcDataPtr++;
+            DestPlanePtr += 4;
+        }
     }
 }
 
@@ -834,9 +853,11 @@ egSetPlane (
 ) {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = Value;
-        DestPlanePtr += 4;
+    if (DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = Value;
+            DestPlanePtr += 4;
+        }
     }
 }
 

@@ -118,8 +118,14 @@ EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ico
 
    // allocate image structure and buffer
    NewImage = egCreateImage(Width, Height, WantAlpha);
-   if ((NewImage == NULL) || (NewImage->Width != Width) || (NewImage->Height != Height))
-      return NULL;
+   if (NewImage == NULL) {
+       return NULL;
+   }
+   if (NewImage->Width != Width || NewImage->Height != Height) {
+       // Should never happen; just being paranoid....
+       egFreeImage(NewImage);
+       return NULL;
+   }
 
    LodeData = (lode_color *) PixelData;
 
