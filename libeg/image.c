@@ -404,10 +404,10 @@ static EG_IMAGE * egDecodeAny (
        NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
    }
    if (NewImage == NULL) {
-       NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
+       NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
    }
    if (NewImage == NULL) {
-       NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
+       NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
    }
 
    return NewImage;
