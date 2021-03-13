@@ -96,32 +96,40 @@
      INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
      MENU_STYLE_FUNC     Style = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
-     REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, NULL, 0, NULL, 0, NULL,
+
+     CHAR16 *MenuInfo = L"Select a partition and press Enter to install RefindPlus";
+     REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
                                          L"Select a destination and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
-     if (AllowGraphicsMode)
+     if (AllowGraphicsMode) {
          Style = GraphicsMenuStyle;
+     }
 
      if (AllESPs) {
          CurrentESP = AllESPs;
-         AddMenuInfoLine (&InstallMenu, L"Select a partition and press Enter to install RefindPlus");
+         AddMenuInfoLine (&InstallMenu, StrDuplicate (MenuInfo));
+         MyFreePool (MenuInfo);
          while (CurrentESP != NULL) {
              MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-             GuidStr = GuidAsString (&(CurrentESP->Volume->PartGuid));
-             PartName = CurrentESP->Volume->PartName;
-             FsName = CurrentESP->Volume->FsName;
-             VolName = CurrentESP->Volume->VolName;
+             GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
+             PartName      = CurrentESP->Volume->PartName;
+             FsName        = CurrentESP->Volume->FsName;
+             VolName       = CurrentESP->Volume->VolName;
              if (PartName && (StrLen (PartName) > 0) && FsName && (StrLen (FsName) > 0) &&
                  !MyStriCmp (FsName, PartName)) {
                  Temp = PoolPrint (L"%s - '%s', aka '%s'", GuidStr, PartName, FsName);
-             } else if (FsName && (StrLen (FsName) > 0)) {
+             }
+             else if (FsName && (StrLen (FsName) > 0)) {
                  Temp = PoolPrint (L"%s - '%s'", GuidStr, FsName);
-             } else if (PartName && (StrLen (PartName) > 0)) {
+             }
+             else if (PartName && (StrLen (PartName) > 0)) {
                  Temp = PoolPrint (L"%s - '%s'", GuidStr, PartName);
-             } else if (VolName && (StrLen (VolName) > 0)) {
+             }
+             else if (VolName && (StrLen (VolName) > 0)) {
                  Temp = PoolPrint (L"%s - '%s'", GuidStr, VolName);
-             } else {
+             }
+             else {
                  Temp = PoolPrint (L"%s - no name", GuidStr);
              }
 
@@ -132,6 +140,7 @@
              AddMenuEntry (&InstallMenu, MenuEntryItem);
              CurrentESP = CurrentESP->NextESP;
          } // while
+
          MenuExit = RunGenericMenu (&InstallMenu, Style, &DefaultEntry, &ChosenOption);
          if (MenuExit == MENU_EXIT_ENTER) {
              CurrentESP = AllESPs;
@@ -144,9 +153,11 @@
                  MyFreePool (&Temp);
              } // while
          } // if
-     } else {
+     }
+     else {
          DisplaySimpleMessage (L"Information", L"No eligible ESPs found");
      } // if
+
      return ChosenVolume;
  } // REFIT_VOLUME *PickOneESP()
 
@@ -785,14 +796,17 @@
      MENU_STYLE_FUNC      Style         = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption  = NULL;
      REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
-     REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, NULL, 0, NULL, 0, NULL,
+
+     CHAR16 *MenuInfo = L"Select an option and press Enter to make it the default or '-' to delete it";
+     REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
                                   L"Select an option and press Enter to make it the default, press '-' or",
                                   L"Delete to delete it, or Esc to return to main menu without changes" };
      if (AllowGraphicsMode)
          Style = GraphicsMenuStyle;
 
      if (Entries) {
-         AddMenuInfoLine (&Menu, L"Select an option and press Enter to make it the default or '-' to delete it");
+         AddMenuInfoLine (&Menu, StrDuplicate (MenuInfo));
+         MyFreePool (MenuInfo);
          while (Entries != NULL) {
              MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
              FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
@@ -816,13 +830,14 @@
 
              MyFreePool (Filename);
              Filename = NULL;
-             Volume = NULL;
+             Volume   = NULL;
              MenuEntryItem->Title = StrDuplicate (Temp);
              MenuEntryItem->Row = Entries->BootEntry.BootNum; // Not really the row; the Boot#### number
              AddMenuEntry (&Menu, MenuEntryItem);
              Entries = Entries->NextBootEntry;
              MyFreePool (Temp);
          } // while
+
          MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
          if (MenuExit == MENU_EXIT_ENTER) {
              Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
@@ -836,6 +851,7 @@
      } else {
          DisplaySimpleMessage (L"Information", L"EFI boot order list is unavailable");
      } // if
+
      return Operation;
  } // REFIT_VOLUME *PickOneBootOption()
 

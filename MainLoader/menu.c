@@ -1985,15 +1985,15 @@ DisplaySimpleMessage (
     CHAR16* Title,
     CHAR16 *Message
 ) {
+    if (!Message) {
+        return;
+    }
+
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     INTN                DefaultEntry = 0;
     REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
                                          L"Press Enter to return to main menu", L"" };
-
-    if (!Message) {
-        return;
-    }
 
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
@@ -2001,7 +2001,6 @@ DisplaySimpleMessage (
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     HideItemMenu.Title = Title;
-    AddMenuInfoLine (&HideItemMenu, Message);
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 } // VOID DisplaySimpleMessage()
@@ -2085,17 +2084,19 @@ VOID
 ManageHiddenTags (
     VOID
 ) {
+    EFI_STATUS          Status = EFI_SUCCESS;
     CHAR16              *AllTags = NULL, *HiddenTags, *HiddenTools;
     CHAR16              *HiddenLegacy, *HiddenFirmware, *OneElement = NULL;
     INTN                DefaultEntry = 0;
-    MENU_STYLE_FUNC     Style = TextMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
-    REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, NULL, 0, NULL, 0, NULL,
-                                         L"Select an option and press Enter or",
-                                         L"press Esc to return to main menu without changes" };
     UINTN               MenuExit, i = 0;
     BOOLEAN             SaveTags, SaveTools, SaveLegacy = FALSE, SaveFirmware = FALSE;
-    EFI_STATUS          Status = EFI_SUCCESS;
+    MENU_STYLE_FUNC     Style = TextMenuStyle;
+    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
+
+    CHAR16 *MenuInfo = L"Select a tag and press Enter to restore it";
+    REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
+                                         L"Select an option and press Enter or",
+                                         L"press Esc to return to main menu without changes" };
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode) {
@@ -2125,8 +2126,8 @@ ManageHiddenTags (
     }
 
     if ((AllTags) && (StrLen (AllTags) > 0)) {
-        AddMenuInfoLine (&HideItemMenu, L"Select a tag and press Enter to restore it");
-
+        AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
+        MyFreePool (MenuInfo);
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);
@@ -2176,6 +2177,7 @@ ManageHiddenTags (
     else {
         DisplaySimpleMessage (L"Information", L"No hidden tags found");
     }
+
     MyFreePool (AllTags);
     MyFreePool (HiddenTags);
     MyFreePool (HiddenTools);

@@ -780,11 +780,11 @@ preBootKicker (
     MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
 
+    CHAR16 *MenuInfo = L"A tool to kick in the Apple Boot Screen";
     REFIT_MENU_SCREEN BootKickerMenu = {
         L"BootKicker",
-        NULL,
-        0, NULL, 0,
-        NULL, 0, NULL,
+        NULL, 0, &MenuInfo,
+        0, NULL, 0, NULL,
         L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
         L""
     };
@@ -792,7 +792,8 @@ preBootKicker (
     if (BootKickerMenu.EntryCount == 0) {
         BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
-        AddMenuInfoLine (&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
+        AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
+        MyFreePool (MenuInfo);
         AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
         AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
         AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
@@ -925,11 +926,11 @@ preCleanNvram (
     MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
 
+    CHAR16 *MenuInfo = L"A Tool to Clean/Reset Nvram on Macs";
     REFIT_MENU_SCREEN CleanNvramMenu = {
         L"Clean Mac NVRAM",
-        NULL,
-        0, NULL, 0,
-        NULL, 0, NULL,
+        NULL, 0, &MenuInfo,
+        0, NULL, 0, NULL,
         L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
         L""
     };
@@ -937,7 +938,8 @@ preCleanNvram (
     if (CleanNvramMenu.EntryCount == 0) {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         CleanNvramMenu.Title = L"Clean Mac NVRAM";
-        AddMenuInfoLine (&CleanNvramMenu, L"A Tool to Clean/Reset Nvram on Macs");
+        AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
+        MyFreePool (MenuInfo);
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
