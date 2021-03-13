@@ -99,58 +99,76 @@ VOID egMeasureText(IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height) {
         *Height = BaseFontImage->Height;
 }
 
-VOID egRenderText(IN CHAR16 *Text, IN OUT EG_IMAGE *CompImage, IN UINTN PosX, IN UINTN PosY, IN UINT8 BGBrightness)
-{
+VOID egRenderText (
+    IN CHAR16       *Text,
+    IN OUT EG_IMAGE *CompImage,
+    IN UINTN         PosX,
+    IN UINTN         PosY,
+    IN UINT8         BGBrightness
+) {
     EG_IMAGE        *FontImage;
     EG_PIXEL        *BufferPtr;
     EG_PIXEL        *FontPixelData;
-    UINTN           BufferLineOffset, FontLineOffset;
-    UINTN           TextLength;
-    UINTN           i, c;
+    UINTN            BufferLineOffset, FontLineOffset;
+    UINTN            TextLength;
+    UINTN            i, c;
+
+    // Nothing to do if nothing was passed
+    if (!Text) {
+        return;
+    }
 
     egPrepareFont();
 
     // clip the text
-    if (Text)
-       TextLength = StrLen(Text);
-    else
-       TextLength = 0;
+    TextLength = StrLen (Text);
 
-    if (TextLength * FontCellWidth + PosX > CompImage->Width)
+    if (TextLength * FontCellWidth + PosX > CompImage->Width) {
         TextLength = (CompImage->Width - PosX) / FontCellWidth;
+    }
 
     if (BGBrightness < 128) {
        if (LightFontImage == NULL) {
           LightFontImage = egCopyImage(BaseFontImage);
-          if (LightFontImage == NULL)
-             return;
+          if (LightFontImage == NULL) {
+              return;
+          }
+
           for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
              LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
              LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
              LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
           } // for
+
        } // if
        FontImage = LightFontImage;
-    } else {
-       if (DarkFontImage == NULL)
-          DarkFontImage = egCopyImage(BaseFontImage);
-       if (DarkFontImage == NULL)
-          return;
+    }
+    else {
+       if (DarkFontImage == NULL) {
+           DarkFontImage = egCopyImage(BaseFontImage);
+       }
+       if (DarkFontImage == NULL) {
+           return;
+       }
        FontImage = DarkFontImage;
     } // if/else
 
     // render it
-    BufferPtr = CompImage->PixelData;
-    BufferLineOffset = CompImage->Width;
-    BufferPtr += PosX + PosY * BufferLineOffset;
-    FontPixelData = FontImage->PixelData;
-    FontLineOffset = FontImage->Width;
+    BufferPtr         = CompImage->PixelData;
+    BufferLineOffset  = CompImage->Width;
+    BufferPtr        += PosX + PosY * BufferLineOffset;
+    FontPixelData     = FontImage->PixelData;
+    FontLineOffset    = FontImage->Width;
+
     for (i = 0; i < TextLength; i++) {
         c = Text[i];
-        if (c < 32 || c >= 127)
+        if (c < 32 || c >= 127) {
             c = 95;
-        else
+        }
+        else {
             c -= 32;
+        }
+
         egRawCompose(BufferPtr, FontPixelData + c * FontCellWidth,
                      FontCellWidth, FontImage->Height,
                      BufferLineOffset, FontLineOffset);
