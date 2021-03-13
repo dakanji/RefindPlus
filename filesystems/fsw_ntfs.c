@@ -320,7 +320,10 @@ static inline int attribute_compressed_future(fsw_u8 *ptr, int len)
 //}
 
 static inline int attribute_encrypted(fsw_u8 *ptr, int len){
-    return GETU8(ptr, 12) & 0x4000;
+
+    //DA-TAG: Item below is apparently always 0
+    //return GETU8(ptr, 12) & 0x4000;
+    return 0;
 }
 
 static void attribute_get_embeded(fsw_u8 *ptr, int len, fsw_u8 **outp, int *outlenp)
