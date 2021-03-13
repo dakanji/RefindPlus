@@ -869,9 +869,11 @@ egCopyPlane (
 ) {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = *SrcPlanePtr;
-        DestPlanePtr += 4, SrcPlanePtr += 4;
+    if (SrcPlanePtr && DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = *SrcPlanePtr;
+            DestPlanePtr += 4, SrcPlanePtr += 4;
+        }
     }
 }
 
