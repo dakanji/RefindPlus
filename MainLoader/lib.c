@@ -464,7 +464,7 @@ FindVarsDir (
             if (Status == EFI_SUCCESS) {
                 Status = refit_call5_wrapper(
                     EspRootDir->Open, EspRootDir,
-                    &gVarsDir, L"rp-vars",
+                    &gVarsDir, L"refind-vars",
                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
                     EFI_FILE_DIRECTORY
                 );
