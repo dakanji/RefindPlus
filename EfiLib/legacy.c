@@ -187,10 +187,10 @@ BdsBuildLegacyDevNameString (
   //
   if (Index >= 5 && Index <= 16 && (CurBBSEntry->DeviceType == BBS_HARDDISK || CurBBSEntry->DeviceType == BBS_CDROM)) {
     Fmt = L"%s %d";
-    UnicodeSPrint (BootString, BufSize, Fmt, Type, Index - 5);
+    SPrint (BootString, BufSize, Fmt, Type, Index - 5);
   }
   else {
-    UnicodeSPrint (BootString, BufSize, Fmt, Type);
+    SPrint (BootString, BufSize, Fmt, Type);
   }
 }
 
@@ -282,7 +282,7 @@ BdsFindLegacyBootOptionByDevTypeAndName (
   // Loop all boot option from variable
   //
   for (Index = 0; Index < BootOptionNum; Index++) {
-    UnicodeSPrint (BootOption, sizeof (BootOption), L"Boot%04x", (UINTN) BootOrder[Index]);
+    SPrint (BootOption, sizeof (BootOption), L"Boot%04x", (UINTN) BootOrder[Index]);
     BootOptionVar = BdsLibGetVariableAndSize (
                       BootOption,
                       &EfiGlobalVariableGuid,
@@ -388,7 +388,7 @@ BdsCreateLegacyBootOption (
     CurrentBootOptionNo = (UINT16) ArrayIndex;
   }
 
-  UnicodeSPrint (
+  SPrint (
     BootString,
     sizeof (BootString),
     L"Boot%04x",
@@ -875,7 +875,7 @@ BdsDeleteBootOption (
   Status    = EFI_SUCCESS;
   Index2Del = 0;
 
-  UnicodeSPrint (BootOption, sizeof (BootOption), L"Boot%04x", OptionNumber);
+  SPrint (BootOption, sizeof (BootOption), L"Boot%04x", OptionNumber);
   Status = EfiLibDeleteVariable (BootOption, &EfiGlobalVariableGuid);
 
   //
@@ -965,7 +965,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
 
   Index = 0;
   while (Index < BootOrderSize / sizeof (UINT16)) {
-    UnicodeSPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
+    SPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
     BootOptionVar = BdsLibGetVariableAndSize (
                       BootOption,
                       &EfiGlobalVariableGuid,

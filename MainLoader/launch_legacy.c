@@ -792,7 +792,7 @@ ScanLegacyUEFI (
     while (Index < BootOrderSize / sizeof (UINT16)) {
         // Grab each boot option variable from the boot order, and convert
         // the variable into a BDS boot option
-        UnicodeSPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
+        SPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {

@@ -64,6 +64,8 @@
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateProtocol EfiLibLocateProtocol
 #define LibOpenRoot EfiLibOpenRoot
+#else
+#include <efilib.h>
 #endif
 
 // Console defines and variables
