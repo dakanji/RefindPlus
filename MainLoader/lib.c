@@ -454,7 +454,7 @@ FindVarsDir (
     if (gVarsDir == NULL) {
         Status = refit_call5_wrapper(
             SelfDir->Open, SelfDir,
-            &gVarsDir, L"rp-vars",
+            &gVarsDir, L"vars",
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
@@ -622,12 +622,9 @@ EfivarSetRaw (
             }
 
             Status = refit_call5_wrapper(
-                gRT->SetVariable,
-                VariableName,
-                VendorGUID,
-                StorageFlags,
-                VariableSize,
-                VariableData
+                gRT->SetVariable, VariableName,
+                VendorGUID, StorageFlags,
+                VariableSize, VariableData
             );
         }
 
