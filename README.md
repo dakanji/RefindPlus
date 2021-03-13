@@ -49,18 +49,19 @@ In addition to the tokens above, two additional tools can be activated using the
 - `clean_nvram` : This allows resetting nvram directly from RefindPlus.
 - `show_bootscreen` : This allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
+## Configuration Differences
+Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.1 are:
+- `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
+- `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
+- `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
+- rEFInd now scans other ESPs for loaders, in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
+
 ## Installation
 [MyBootMgr](https://www.dakanji.com/creations/index.html), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on Xserve3,1. However, the RefindPlus efi can work as a drop-in replacement for the rEFInd efi. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. Once rEFInd is installed, replace the rEFInd efi with the RefindPlus efi. (Ensure that you rename the RefindPlus efi to match the rEFInd efi name). This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd.
 
 While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.1. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
-
-Configuration differences between the rEFInd and RefindPlus implementations as at rEFInd v0.13.1 are:
-- `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
-- `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
-- `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
-- rEFInd now scans other ESPs for loaders, in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
