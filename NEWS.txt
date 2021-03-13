@@ -22,6 +22,8 @@
     "ON" or "OFF" in the configuration file. Default is "OFF"
 - Treats OpenCore as other EFI Loaders
   * No longer specifically switches booting the OpenCore EFI to graphics mode
+- Now Specfically Logs Booting Clover Instances
+  * Now separately identifies Clover instances in the debug log when these are booted
 - Changes Misc Token Names for Internal Consistency
   * 'disable_mac_compat_check' to 'disable_compat_check'
   * 'set_mac_boot_args' to 'set_boot_args'
