@@ -20,7 +20,7 @@
  #include "lib.h"
  #include "screen.h"
  #include "install.h"
- //#include "log.h"
+ #include "scan.h"
  #include "menu.h"
  #include "mystrings.h"
  #include "../include/refit_call_wrapper.h"
@@ -798,7 +798,7 @@
      MENU_STYLE_FUNC      Style         = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption  = NULL;
      REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
-     
+
      REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
      CHAR16 *MenuInfo = L"Select an option and press Enter to make it the default or '-' to delete it";
      REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
