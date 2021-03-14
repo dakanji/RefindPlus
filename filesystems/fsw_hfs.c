@@ -276,8 +276,8 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
 
         status = fsw_block_get(vol, blockno, 0, &buffer);
         CHECK(status);
-        voldesc = (HFSPlusVolumeHeader *)buffer;
-        mdb = (HFSMasterDirectoryBlock*)buffer;
+        voldesc   = (HFSPlusVolumeHeader *)buffer;
+        mdb       = (HFSMasterDirectoryBlock*)buffer;
         signature = be16_to_cpu(voldesc->signature);
 
         if ((signature == kHFSPlusSigWord) || (signature == kHFSXSigWord)) //H+ or HX
@@ -330,7 +330,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         s.type = FSW_STRING_TYPE_ISO88591;
         #define kHFSVolumeNameFallback "HFS+ volume"
         s.size = s.len = (sizeof(kHFSVolumeNameFallback) - 1);
-        s.data = kHFSVolumeNameFallback;        
+        s.data = kHFSVolumeNameFallback;
         status = fsw_strdup_coerce(&vol->g.label, vol->g.host_string_type, &s);
         CHECK(status);
 
@@ -415,7 +415,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
         vol->extents_tree.node_size = be16_to_cpu (tree_header.nodeSize);
 
         rv = FSW_SUCCESS;
-    } while (0);
+    } while (rv != FSW_SUCCESS);
 
 #undef CHECK
 
