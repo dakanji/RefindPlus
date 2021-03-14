@@ -5736,8 +5736,9 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     /*image size plus an extra byte per scanline + possible padding bits*/
     *outsize = h + (h * (((UINTN) (w) * bpp + 7u) / 8u));
     *out = (unsigned char*)lodepng_malloc(*outsize);
-    if(!(*out) && (*outsize)) {
-        error = 83; /*alloc fail*/
+    if(!(*out)) {
+        /*alloc fail*/
+        error = 83;
     }
 
     if(error == 0) {
@@ -5768,9 +5769,9 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
         /*alloc fail*/
         error = 83;
     }
-    
+
     adam7 = (unsigned char*)lodepng_malloc(passstart[7]);
-    if(!adam7 && passstart[7]) {
+    if(!adam7) {
         /*alloc fail*/
         error = 83;
     }
@@ -5959,7 +5960,7 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
     size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) / 8u;
 
     converted = (unsigned char*)lodepng_malloc(size);
-    if(!converted && size) {
+    if(!converted) {
         /*alloc fail*/
         state->error = 83;
     }

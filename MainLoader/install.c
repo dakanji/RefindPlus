@@ -92,13 +92,14 @@
  static REFIT_VOLUME *PickOneESP (ESP_LIST *AllESPs) {
      ESP_LIST            *CurrentESP;
      REFIT_VOLUME        *ChosenVolume = NULL;
-     CHAR16              *Temp = NULL, *GuidStr, *PartName, *FsName, *VolName;
-     INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
-     MENU_STYLE_FUNC     Style = TextMenuStyle;
+     CHAR16              *Temp         = NULL, *GuidStr, *PartName, *FsName, *VolName;
+     INTN                DefaultEntry  = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
+     MENU_STYLE_FUNC     Style         = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
 
+     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
      CHAR16 *MenuInfo = L"Select a partition and press Enter to install RefindPlus";
-     REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
+     REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                          L"Select a destination and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
@@ -157,6 +158,7 @@
      else {
          DisplaySimpleMessage (L"Information", L"No eligible ESPs found");
      } // if
+     MyFreePool (TempMenuEntry);
 
      return ChosenVolume;
  } // REFIT_VOLUME *PickOneESP()
@@ -796,13 +798,15 @@
      MENU_STYLE_FUNC      Style         = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption  = NULL;
      REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
-
+     
+     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
      CHAR16 *MenuInfo = L"Select an option and press Enter to make it the default or '-' to delete it";
-     REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
+     REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                   L"Select an option and press Enter to make it the default, press '-' or",
                                   L"Delete to delete it, or Esc to return to main menu without changes" };
-     if (AllowGraphicsMode)
+     if (AllowGraphicsMode) {
          Style = GraphicsMenuStyle;
+     }
 
      if (Entries) {
          AddMenuInfoLine (&Menu, StrDuplicate (MenuInfo));
@@ -851,6 +855,7 @@
      } else {
          DisplaySimpleMessage (L"Information", L"EFI boot order list is unavailable");
      } // if
+     MyFreePool (TempMenuEntry);
 
      return Operation;
  } // REFIT_VOLUME *PickOneBootOption()
