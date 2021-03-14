@@ -50,7 +50,7 @@ In addition to the tokens above, two additional tools can be activated using the
 - `show_bootscreen` : This allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
 ## Divergence
-Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.1 are:
+Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
 - `screensaver`: The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
@@ -62,7 +62,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.1 ar
 
 While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
-Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.1. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
+Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).

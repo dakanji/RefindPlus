@@ -1,5 +1,5 @@
-0.13.1.AC (PreRelease):
-- Syncs with Upstream Post v0.13.1 Updates
+0.13.2.AA (PreRelease):
+- Syncs with Upstream v0.13.2
   * Misc Improvements (Skips items already implemented in RefindPlus)
   * Does not adopt upstream changes to non-volatile variable storage
   * Identifies JFS volumes if a third-party JFS driver is installed
