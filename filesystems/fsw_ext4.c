@@ -723,7 +723,7 @@ static fsw_status_t fsw_ext4_readlink(struct fsw_ext4_volume *vol, struct fsw_ex
     int             ea_blocks;
     struct fsw_string s;
 
-    if (dno->g.size > sizeof (dno->raw->i_block)) {
+    if (dno->g.size > FSW_PATH_MAX)  {
         return FSW_VOLUME_CORRUPTED;
     }
 
@@ -731,6 +731,10 @@ static fsw_status_t fsw_ext4_readlink(struct fsw_ext4_volume *vol, struct fsw_ex
     ea_blocks = dno->raw->i_file_acl_lo ? (vol->g.log_blocksize >> 9) : 0;
 
     if (dno->raw->i_blocks_lo - ea_blocks == 0) {
+        if (dno->g.size > sizeof (dno->raw->i_block)) {
+            return FSW_VOLUME_CORRUPTED;
+        }
+
         // "fast" symlink, path is stored inside the inode
         s.type = FSW_STRING_TYPE_ISO88591;
         s.size = s.len = (int)dno->g.size;
