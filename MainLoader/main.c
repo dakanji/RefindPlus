@@ -775,16 +775,18 @@ VOID
 preBootKicker (
     VOID
 ) {
-    UINTN             MenuExit;
-    INTN              DefaultEntry  = 1;
-    MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
+    UINTN              MenuExit;
+    INTN               DefaultEntry   = 1;
+    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
-
-    CHAR16 *MenuInfo = L"A tool to kick in the Apple Boot Screen";
-    REFIT_MENU_SCREEN BootKickerMenu = {
+    REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryBootKicker);
+    TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+    CHAR16            *MenuInfo       = L"A tool to kick in the Apple Boot Screen";
+    REFIT_MENU_SCREEN  BootKickerMenu = {
         L"BootKicker",
         NULL, 0, &MenuInfo,
-        0, NULL, 0, NULL,
+        0, &TempMenuEntry,
+        0, NULL,
         L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
         L""
     };
@@ -821,8 +823,11 @@ preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"");
+
         AddMenuEntry (&BootKickerMenu, &MenuEntryBootKicker);
         AddMenuEntry (&BootKickerMenu, &MenuEntryReturn);
+
+        MyFreePool (TempMenuEntry);
     }
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
@@ -921,16 +926,18 @@ VOID
 preCleanNvram (
     VOID
 ) {
-    UINTN             MenuExit;
-    INTN              DefaultEntry  = 1;
-    MENU_STYLE_FUNC   Style         = GraphicsMenuStyle;
+    UINTN              MenuExit;
+    INTN               DefaultEntry   = 1;
+    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
-
-    CHAR16 *MenuInfo = L"A Tool to Clean/Reset Nvram on Macs";
-    REFIT_MENU_SCREEN CleanNvramMenu = {
+    REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryCleanNvram);
+    TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+    CHAR16            *MenuInfo       = L"A Tool to Clean/Reset Nvram on Macs";
+    REFIT_MENU_SCREEN  CleanNvramMenu = {
         L"Clean Mac NVRAM",
         NULL, 0, &MenuInfo,
-        0, NULL, 0, NULL,
+        0, &TempMenuEntry,
+        0, NULL,
         L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
         L""
     };
@@ -969,8 +976,11 @@ preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
+
         AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
         AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
+
+        MyFreePool (TempMenuEntry);
     }
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);

@@ -1989,10 +1989,12 @@ DisplaySimpleMessage (
         return;
     }
 
-    MENU_STYLE_FUNC     Style = TextMenuStyle;
-    INTN                DefaultEntry = 0;
+    MENU_STYLE_FUNC      Style          = TextMenuStyle;
+    INTN                 DefaultEntry   = 0;
     REFIT_MENU_ENTRY    *ChosenOption;
-    REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
+    REFIT_MENU_ENTRY    *TempMenuEntry  = CopyMenuEntry (&MenuEntryReturn);
+    TempMenuEntry->Image                = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+    REFIT_MENU_SCREEN    HideItemMenu   = { NULL, NULL, 0, NULL, 0, &TempMenuEntry, 0, NULL,
                                          L"Press Enter to return to main menu", L"" };
 
     if (AllowGraphicsMode) {

@@ -250,7 +250,7 @@ static REFIT_MENU_SCREEN* CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
 // to the heap. This enables easier deletion of the whole set of menu
 // entries when re-scanning.
 // Returns a pointer to the copy of the menu entry.
-static REFIT_MENU_ENTRY* CopyMenuEntry (REFIT_MENU_ENTRY *Entry) {
+REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry) {
     REFIT_MENU_ENTRY *NewEntry;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
