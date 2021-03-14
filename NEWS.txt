@@ -30,6 +30,10 @@
   * 'protect_mac_nvram' to 'protect_nvram'
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
+- Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers
+  * Fixes Also Implemented Upstream
+- Applies Multiple Code Quality Fixes
+  * Several issues closed out following Coverity scan of the code base
 
 
 0.13.1.AB (02 Mar 2021):
