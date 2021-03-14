@@ -26,7 +26,13 @@ freely, subject to the following restrictions:
 /*
 The manual and changelog are in the header file "lodepng.h"
 Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for C.
-*/
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "lodepng.h"
 
@@ -5730,9 +5736,11 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
     /*image size plus an extra byte per scanline + possible padding bits*/
     *outsize = h + (h * (((UINTN) (w) * bpp + 7u) / 8u));
     *out = (unsigned char*)lodepng_malloc(*outsize);
-    if(!(*out) && (*outsize)) error = 83; /*alloc fail*/
+    if(!(*out) && (*outsize)) {
+        error = 83; /*alloc fail*/
+    }
 
-    if(!error) {
+    if(error == 0) {
       /*non multiple of 8 bits per scanline, padding bits needed per scanline*/
       if(bpp < 8 && w * bpp != ((w * bpp + 7u) / 8u) * 8u) {
         unsigned char* padded = (unsigned char*)lodepng_malloc(h * ((w * bpp + 7u) / 8u));
@@ -5756,12 +5764,18 @@ static unsigned preProcessScanlines(unsigned char** out, size_t* outsize, const 
 
     *outsize = filter_passstart[7]; /*image size plus an extra byte per scanline + possible padding bits*/
     *out = (unsigned char*)lodepng_malloc(*outsize);
-    if(!(*out)) error = 83; /*alloc fail*/
-
+    if(!(*out)) {
+        /*alloc fail*/
+        error = 83;
+    }
+    
     adam7 = (unsigned char*)lodepng_malloc(passstart[7]);
-    if(!adam7 && passstart[7]) error = 83; /*alloc fail*/
+    if(!adam7 && passstart[7]) {
+        /*alloc fail*/
+        error = 83;
+    }
 
-    if(!error) {
+    if(error == 0) {
       unsigned i;
 
       Adam7_interlace(adam7, in, w, h, bpp);
@@ -5945,13 +5959,16 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
     size_t size = ((size_t)w * (size_t)h * (size_t)lodepng_get_bpp(&info.color) + 7u) / 8u;
 
     converted = (unsigned char*)lodepng_malloc(size);
-    if(!converted && size) state->error = 83; /*alloc fail*/
-    if(!state->error) {
+    if(!converted && size) {
+        /*alloc fail*/
+        state->error = 83;
+    }
+    if(state->error == 0) {
       state->error = lodepng_convert(converted, image, &info.color, &state->info_raw, w, h);
     }
-    if(!state->error) preProcessScanlines(&data, &datasize, converted, w, h, &info, &state->encoder);
+    if(state->error == 0) preProcessScanlines(&data, &datasize, converted, w, h, &info, &state->encoder);
     lodepng_free(converted);
-    if(state->error) goto cleanup;
+    if(state->error != 0) goto cleanup;
   }
   else preProcessScanlines(&data, &datasize, image, w, h, &info, &state->encoder);
 
