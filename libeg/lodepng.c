@@ -400,8 +400,9 @@ static char* alloc_string(const char* in) {
 
 #if defined(LODEPNG_COMPILE_DECODER) || defined(LODEPNG_COMPILE_PNG)
 static unsigned lodepng_read32bitInt(const unsigned char* buffer) {
-  return (((unsigned)buffer[0] << 24u) | ((unsigned)buffer[1] << 16u) |
-         ((unsigned)buffer[2] << 8u) | (unsigned)buffer[3]);
+    unsigned retval = (((unsigned)buffer[0] << 24u) | ((unsigned)buffer[1] << 16u) |
+                       ((unsigned)buffer[2] << 8u) | (unsigned)buffer[3]);
+    return retval;
 }
 #endif /*defined(LODEPNG_COMPILE_DECODER) || defined(LODEPNG_COMPILE_PNG)*/
 
@@ -2539,6 +2540,13 @@ const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk) {
 
 unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {
   unsigned length = lodepng_chunk_length(chunk);
+
+  /* Sanitise length */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (length > 100000) {
+      return 0;
+  }
+
   unsigned CRC = lodepng_read32bitInt(&chunk[length + 8]);
   /*the CRC is taken of the data and the 4 chunk type letters, not the length*/
   unsigned checksum = lodepng_crc32(&chunk[4], length + 4);
@@ -2548,6 +2556,13 @@ unsigned lodepng_chunk_check_crc(const unsigned char* chunk) {
 
 void lodepng_chunk_generate_crc(unsigned char* chunk) {
   unsigned length = lodepng_chunk_length(chunk);
+
+  /* Sanitise length */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (length > 100000) {
+    return;
+  }
+
   unsigned CRC = lodepng_crc32(&chunk[4], length + 4);
   lodepng_set32bitInt(chunk + 8 + length, CRC);
 }
@@ -2610,6 +2625,13 @@ unsigned lodepng_chunk_append(unsigned char** out, size_t* outlength, const unsi
 
   /* OC: UEFI ReallocatePool compatibility. */
   new_buffer = (unsigned char*)lodepng_reallocate(*out, *outlength, new_length);
+
+  /* Sanitise new_length */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (new_length > 100000) {
+      return 0;
+  }
+
   if(!new_buffer) return 83; /*alloc fail*/
   (*out) = new_buffer;
   (*outlength) = new_length;
@@ -4081,8 +4103,20 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h, LodePNGState* state,
   }
 
   /*read the values given in the header*/
-  width = lodepng_read32bitInt(&in[16]);
+  width  = lodepng_read32bitInt(&in[16]);
+  /* Sanitise  width */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (width > 5000) {
+      CERROR_RETURN_ERROR(state->error, 28);
+  }
+
   height = lodepng_read32bitInt(&in[20]);
+  /* Sanitise height */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (height > 5000) {
+      CERROR_RETURN_ERROR(state->error, 28);
+  }
+
   /*TODO: remove the undocumented feature that allows to give null pointers to width or height*/
   if(w) *w = width;
   if(h) *h = height;
@@ -4989,6 +5023,13 @@ unsigned lodepng_decode(unsigned char** out, unsigned* w, unsigned* h,
                         const unsigned char* in, size_t insize) {
   *out = 0;
   decodeGeneric(out, w, h, state, in, insize);
+
+  /* Sanitise *w */
+  // DA-TAG: Initial arbitrary large value. Needs review
+  if (*w > 100000) {
+      return 0;
+  }
+
   if(state->error) return state->error;
   if(!state->decoder.color_convert || lodepng_color_mode_equal(&state->info_raw, &state->info_png.color)) {
     /*same color type, no copying or converting of data needed*/
