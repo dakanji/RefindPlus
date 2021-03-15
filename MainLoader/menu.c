@@ -118,6 +118,7 @@ InitSelection (
     EG_IMAGE  *TempSmallImage   = NULL;
     EG_IMAGE  *TempBigImage     = NULL;
     BOOLEAN   LoadedSmallImage  = FALSE;
+    BOOLEAN   TaintFree         = TRUE;
 
     if (!AllowGraphicsMode || (SelectionImages[0] != NULL)) {
         return;
@@ -140,7 +141,10 @@ InitSelection (
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
     }
     if (TempBigImage == NULL) {
-        if (LoadedSmallImage) {
+        if (TempSmallImage->Width > 128 || TempSmallImage->Height > 128) {
+            TaintFree = FALSE;
+        }
+        if (TaintFree && LoadedSmallImage) {
            // calculate big selection image from small one
            TempBigImage = egCopyImage (TempSmallImage);
         }
