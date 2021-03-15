@@ -38,11 +38,6 @@
 #include "lib.h"
 #include "../include/refit_call_wrapper.h"
 
-#include "global.h"
-#include "screen.h"
-#include "lib.h"
-#include "../include/refit_call_wrapper.h"
-
 static void cursor_left (UINTN *cursor, UINTN *first)
 {
     if ((*cursor) > 0)
