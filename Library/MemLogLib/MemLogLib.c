@@ -1,6 +1,28 @@
 /** @file
   Default instance of MemLogLib library for simple log services to memory buffer.
 **/
+/*
+ * This file is from the Clover Boot Loader
+ * Copyright (c) 2019, CloverHackyColor
+ * https://github.com/CloverHackyColor/CloverBootloader
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+/* Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #include <Uefi.h>
 #include <Library/BaseLib.h>
@@ -15,9 +37,7 @@
 #include <Library/PciLib.h>
 #include "GenericIch.h"
 
-//
 // Struct for holding mem buffer.
-//
 typedef struct {
   CHAR8             *Buffer;
   CHAR8             *Cursor;
@@ -33,19 +53,13 @@ typedef struct {
 } MEM_LOG;
 
 
-//
 // Guid for internal protocol for publishing mem log buffer.
-//
-EFI_GUID  mMemLogProtocolGuid = { 0x74B91DA4, 0x2B4C, 0x11E2, {0x99, 0x03, 0x22, 0xF0, 0x61, 0x88, 0x70, 0x9B } };
+EFI_GUID  mMemLogProtocolGuid = {0x74B91DA4, 0x2B4C, 0x11E2, {0x99, 0x03, 0x22, 0xF0, 0x61, 0x88, 0x70, 0x9B }};
 
-//
 // Pointer to mem log buffer.
-//
 MEM_LOG   *mMemLog = NULL;
 
-//
 // Buffer for debug time.
-//
 CHAR8     mTimingTxt[32];
 
 
@@ -54,7 +68,6 @@ CHAR8     mTimingTxt[32];
   Inits mem log.
 
   @retval EFI_SUCCESS   The constructor always returns EFI_SUCCESS.
-
 **/
 CHAR8*
 GetTiming(VOID)
@@ -70,23 +83,40 @@ GetTiming(VOID)
 	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
 		CurrentTsc = AsmReadTsc();
 
-		dTStartMs = DivU64x64Remainder(MultU64x32(CurrentTsc - mMemLog->TscStart, 1000), mMemLog->TscFreqSec, NULL);
+		dTStartMs = DivU64x64Remainder(
+            MultU64x32(
+                CurrentTsc - mMemLog->TscStart,
+                1000
+            ),
+            mMemLog->TscFreqSec,
+            NULL
+        );
 		dTStartSec = DivU64x64Remainder(dTStartMs, 1000, &dTStartMs);
         // Limit logged value to 999
         UINT64 dTStartSecLog;
         if (dTStartSec > 999) {
             dTStartSecLog = 999;
-        } else {
+        }
+        else {
             dTStartSecLog = dTStartSec;
         }
 
-		dTLastMs = DivU64x64Remainder(MultU64x32(CurrentTsc - mMemLog->TscLast, 1000), mMemLog->TscFreqSec, NULL);
+		dTLastMs = DivU64x64Remainder(
+            MultU64x32(
+                CurrentTsc - mMemLog->TscLast,
+                1000
+            ),
+            mMemLog->TscFreqSec,
+            NULL
+        );
 		dTLastSec = DivU64x64Remainder(dTLastMs, 1000, &dTLastMs);
+
         // Limit logged value to 999
         UINT64 dTLastSecLog;
         if (dTLastSec > 999) {
             dTLastSecLog = 999;
-        } else {
+        }
+        else {
             dTLastSecLog = dTLastSec;
         }
 
@@ -111,7 +141,6 @@ GetTiming(VOID)
   Inits mem log.
 
   @retval EFI_SUCCESS   The constructor always returns EFI_SUCCESS.
-
 **/
 EFI_STATUS
 EFIAPI
@@ -160,30 +189,29 @@ MemLogInit (
   if ((PciRead16(PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
       // Intel ICH device was not found
       TimerAddr = 0;
-      AsciiSPrint(InitError, sizeof (InitError), "Intel ICH device was not found.");
+      AsciiSPrint(InitError, sizeof (InitError), "Intel ICH Device Not Found");
   }
   else if ((PciRead8(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
-      AsciiSPrint(InitError, sizeof (InitError), "ACPI I/O space is not enabled.");
+      AsciiSPrint(InitError, sizeof (InitError), "ACPI I/O Space Not Enabled");
   }
   else {
       TimerAddr = ((PciRead16(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
        if (TimerAddr < 9) {
            TimerAddr = 0;
-           AsciiSPrint(InitError, sizeof (InitError), "Timer address not obtained.");
+           AsciiSPrint(InitError, sizeof (InitError), "Timer Address Not Obtained");
       }
       else {
           // Check that Timer is advancing
           AcpiTick0 = IoRead32 (TimerAddr);
           gBS->Stall(1000); // 1ms
           AcpiTick1 = IoRead32(TimerAddr);
-          
+
           if (AcpiTick0 == AcpiTick1) {
               TimerAddr = 0;
-              AsciiSPrint(InitError, sizeof (InitError), "Timer not advancing.");
+              AsciiSPrint(InitError, sizeof (InitError), "Timer Not Advancing");
           }
       }
   }
-
 
   // We prefer to use the ACPI PM Timer when possible. If it is not available we fallback to old method.
   if (TimerAddr == 0) {
@@ -232,15 +260,19 @@ MemLogInit (
       Tsc1 = AsmReadTsc();
 
       // Done ... get another TSC
-      mMemLog->TscFreqSec = DivU64x32(MultU64x32((Tsc1 - Tsc0), V_ACPI_TMR_FREQUENCY), AcpiTicksDelta);
+      mMemLog->TscFreqSec = DivU64x32(
+          MultU64x32(
+              (Tsc1 - Tsc0),
+              V_ACPI_TMR_FREQUENCY
+          ),
+          AcpiTicksDelta
+      );
   }
 
   mMemLog->TscStart = Tsc0;
   mMemLog->TscLast  = Tsc0;
 
-  //
   // Install (publish) MEM_LOG
-  //
   Status = gBS->InstallMultipleProtocolInterfaces (
       &gImageHandle,
       &mMemLogProtocolGuid,
@@ -248,10 +280,11 @@ MemLogInit (
       NULL
   );
 
-// DA-TAG: Hide non-critical message
-//  if (InitError[0] != '\0') {
-//      MemLog(TRUE, 1, "** WARN: MemLog Calibrated Without ACPI PM Timer [%a]\n", InitError);
-//  }
+// Show Notice if Required
+if (InitError[0] != '\0') {
+    MemLog(FALSE, 1, "INFO: Could Not Calibrate ACPI PM Timer\n");
+    MemLog(FALSE, 1, "      %a\n\n", InitError);
+}
 
   return Status;
 }
@@ -263,7 +296,6 @@ MemLogInit (
   @param  DebugMode   DebugMode will be passed to Callback function if it is set.
   @param  Format      The format string for the debug message to print.
   @param  Marker      VA_LIST with variable arguments for Format.
-
 **/
 VOID
 EFIAPI
@@ -287,11 +319,8 @@ MemLogVA (
       return;
   }
 
-
-  //
   // Check if buffer can accept MEM_LOG_MAX_LINE_SIZE chars.
   // Increase buffer if not.
-  //
   if ((UINTN)(mMemLog->Cursor - mMemLog->Buffer) + MEM_LOG_MAX_LINE_SIZE > mMemLog->BufferSize) {
       UINTN Offset;
       // not enough place for max line - make buffer bigger
@@ -301,46 +330,44 @@ MemLogVA (
         return;
       }
       Offset = mMemLog->Cursor - mMemLog->Buffer;
-      mMemLog->Buffer = ReallocatePool(mMemLog->BufferSize, mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE, mMemLog->Buffer);
+      mMemLog->Buffer = ReallocatePool(
+          mMemLog->BufferSize, mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE,
+          mMemLog->Buffer
+      );
       mMemLog->BufferSize += MEM_LOG_INITIAL_SIZE;
       mMemLog->Cursor = mMemLog->Buffer + Offset;
     }
 
-  //
   // Add log to buffer
-  //
   LastMessage = mMemLog->Cursor;
   if (Timing) {
-    //
-    // Write timing only at the beginnign of a new line
-    //
+    // Write timing only when starting a new line
     if ((mMemLog->Buffer[0] == '\0') || (mMemLog->Cursor[-1] == '\n')) {
       DataWritten = AsciiSPrint(
-                                mMemLog->Cursor,
-                                mMemLog->BufferSize - (mMemLog->Cursor - mMemLog->Buffer),
-                                "%a  ",
-                                GetTiming ());
+          mMemLog->Cursor,
+          mMemLog->BufferSize - (mMemLog->Cursor - mMemLog->Buffer),
+          "%a  ",
+          GetTiming ()
+      );
       mMemLog->Cursor += DataWritten;
     }
 
   }
+
   DataWritten = AsciiVSPrint(
-                             mMemLog->Cursor,
-                             mMemLog->BufferSize - (mMemLog->Cursor - mMemLog->Buffer),
-                             Format,
-                             Marker);
+      mMemLog->Cursor,
+      mMemLog->BufferSize - (mMemLog->Cursor - mMemLog->Buffer),
+      Format,
+      Marker
+  );
   mMemLog->Cursor += DataWritten;
 
-  //
   // Pass this last message to callback if defined
-  //
   if (mMemLog->Callback != NULL) {
     mMemLog->Callback(DebugMode, LastMessage);
   }
 
-  //
   // Write to standard debug device also
-  //
   DebugPrint(DEBUG_INFO, LastMessage);
 }
 
@@ -354,7 +381,6 @@ MemLogVA (
   @param  Format      The format string for the debug message to print.
   @param  ...         The variable argument list whose contents are accessed
   based on the format string specified by Format.
-
  **/
 VOID
 EFIAPI
