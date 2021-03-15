@@ -632,6 +632,12 @@ fsw_hfs_btree_search (struct fsw_hfs_btree * btree,
 
         count = be16_to_cpu (node->numRecords);
 
+        /* Sanitise count */
+        // DA-TAG: Initial arbitrary large value. Needs review
+        if (count > 100000) {
+            return 0;
+        }
+
 #if 1
         for (rec = 0; rec < count; rec++)
         {
@@ -821,14 +827,19 @@ fsw_hfs_btree_visit_node(BTreeKey *record, void* param)
             break;
     }
 
-    name_len = be16_to_cpu(cat_key->nodeName.length);
-
-    file_name =  vp->file_info.name;
+    name_len       = be16_to_cpu(cat_key->nodeName.length);
+    file_name      =  vp->file_info.name;
     file_name->len = name_len;
+    /* Sanitise file_name->len */
+    // DA-TAG: Initial arbitrary large value. Needs review
+    if (file_name->len > 100000) {
+        return 0;
+    }
+
     fsw_memdup(&file_name->data, &cat_key->nodeName.unicode[0], 2*name_len);
     file_name->size = 2*name_len;
     file_name->type = FSW_STRING_TYPE_UTF16;
-    name_ptr = (fsw_u16*)file_name->data;
+    name_ptr        = (fsw_u16*)file_name->data;
     for (i=0; i<name_len; i++)
     {
         name_ptr[i] = be16_to_cpu(name_ptr[i]);
@@ -847,8 +858,8 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
 {
   fsw_status_t status;
   /* We modify node, so make a copy */
-  BTNodeDescriptor*     node = first_node;
-  fsw_u8* buffer = NULL;
+  BTNodeDescriptor * node   = first_node;
+  fsw_u8           * buffer = NULL;
 
   status = fsw_alloc(btree->node_size, &buffer);
   if (status)
@@ -859,6 +870,13 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
       fsw_u32 i;
       fsw_u32 count =  be16_to_cpu(node->numRecords);
       fsw_u32 next_node;
+
+      /* Sanitise count */
+      // DA-TAG: Initial arbitrary large value. Needs review
+      if (count > 100000) {
+          status = FSW_VOLUME_CORRUPTED;
+          goto done;
+      }
 
       /* Iterate over all records in this node.  */
       for (i = first_rec; i < count; i++)
@@ -960,6 +978,14 @@ fsw_hfs_cmp_catkey (BTreeKey *key1, BTreeKey *key2)
   p1 = &ckey1->nodeName.unicode[0];
   p2 = &ckey2->nodeName.unicode[0];
   key1Len = be16_to_cpu (ckey1->nodeName.length);
+  /* Sanitise key1Len */
+  if (key1Len == 0 && ckey2->nodeName.length == 0) {
+      return 0;
+  }
+  if (key1Len > 255) {
+      return 0;
+  }
+
   apos = bpos = 0;
 
   while(1)
