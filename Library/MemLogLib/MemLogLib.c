@@ -129,20 +129,14 @@ MemLogInit (
     return  EFI_SUCCESS;
   }
 
-  //
   // Try to use existing MEM_LOG
-  //
   Status = gBS->LocateProtocol (&mMemLogProtocolGuid, NULL, (VOID **) &mMemLog);
   if (Status == EFI_SUCCESS && mMemLog != NULL) {
-    //
-    // We are inited with existing MEM_LOG
-    //
+    // We are inited with an existing MEM_LOG
     return EFI_SUCCESS;
   }
 
-  //
   // Set up and publish new MEM_LOG
-  //
   mMemLog = AllocateZeroPool ( sizeof (MEM_LOG) );
   if (mMemLog == NULL) {
     return EFI_OUT_OF_RESOURCES;
@@ -152,87 +146,112 @@ MemLogInit (
   mMemLog->Cursor     = mMemLog->Buffer;
   mMemLog->Callback   = NULL;
 
-  //
   // Calibrate TSC for timings
-  //
   InitError[0]='\0';
 
   // We will try to calibrate TSC frequency according to the ACPI Power Management Timer.
   // The ACPI PM Timer is running at a universal known frequency of 3579545Hz.
   // So, we wait 357954 clocks of the ACPI timer (100ms), and compare with how much TSC advanced.
-  // This seems to provide a much more accurate calibration than using gBS->Stall(), especially on UEFI machines, and is important as this value is used later to calculate FSBFrequency.
+  // This seems to provide a much more accurate calibration than using gBS->Stall(),
+  // especially on UEFI machines, and is important as this value is used later to calculate FSBFrequency.
 
-  // Check if we can use the timer - we need to be on Intel ICH, get ACPI PM Timer Address from PCI, and check that it's sane
-  if ((PciRead16 (PCI_ICH_LPC_ADDRESS (0))) != 0x8086) {
+  // Check if we can use the timer - we need to be on Intel ICH,
+  //  get ACPI PM Timer Address from PCI, and check that it is sane
+  if ((PciRead16(PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
       // Intel ICH device was not found
       AsciiSPrint(InitError, sizeof (InitError), "Intel ICH device was not found.");
-  } else if ((PciRead8 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
+  }
+  else if ((PciRead8(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
       AsciiSPrint(InitError, sizeof (InitError), "ACPI I/O space is not enabled.");
-// DA-TAG: Dead Code
-// Condition can never be met
-//  } else if ((TimerAddr = ((PciRead16 (PCI_ICH_LPC_ADDRESS (R_ICH_LPC_ACPI_BASE))) &
-//      B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR) == 0
-//  ) {
-//      // Timer address can't be obtained
-//      AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
-  } else {
-      // Check that Timer is advancing
-      AcpiTick0 = IoRead32 (TimerAddr);
-      gBS->Stall(1000); // 1ms
-      AcpiTick1 = IoRead32(TimerAddr);
-      if (AcpiTick0 == AcpiTick1) {
-          // Timer is not advancing
-          TimerAddr = 0; // Flag it as not working
-          AsciiSPrint(InitError, sizeof (InitError), "Timer is not advancing.");
+  }
+  else {
+      TimerAddr = ((PciRead16(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
+       if (TimerAddr == 0) {
+          // Timer address can't be obtained
+          AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
+      }
+      else {
+          // Check that Timer is advancing
+          AcpiTick0 = IoRead32 (TimerAddr);
+          gBS->Stall(1000); // 1ms
+          AcpiTick1 = IoRead32(TimerAddr);
+          if (AcpiTick0 == AcpiTick1) {
+              // Timer is not advancing
+              TimerAddr = 0; // Flag it as not working
+              AsciiSPrint(InitError, sizeof (InitError), "Timer is not advancing.");
+          }
       }
   }
+
 
   // We prefer to use the ACPI PM Timer when possible. If it is not available we fallback to old method.
-  if (TimerAddr != 0) { // ACPI PM Timer seems to be working
+  if (TimerAddr == 0) {
+      // ACPI PM Timer is not working, fall back on the old method
 
-    // ACPI PM timers are usually of 24-bit length, but there are some less common cases of 32-bit length also. When the maximal number is reached, it overflows.
-    // The code below can handle overflow with AcpiTicksTarget of up to 24-bit size, on both available sizes of ACPI PM Timers (24-bit and 32-bit).
+      // Read Current Tsc
+      Tsc0 = AsmReadTsc();
 
-    AcpiTicksTarget = V_ACPI_TMR_FREQUENCY/10; // 357954 clocks of ACPI timer (100ms)
+      // Wait for 100ms
+      gBS->Stall(100000); // 100ms
 
-    AcpiTick0 = IoRead32 (TimerAddr); // read ACPI tick
-    Tsc0 = AsmReadTsc(); // read TSC
-    do {
-      CpuPause();
-      // check how many AcpiTicks passed since we started
-      AcpiTick1 = IoRead32 (TimerAddr);
-      if (AcpiTick0 <= AcpiTick1) { // no overflow
-        AcpiTicksDelta = AcpiTick1 - AcpiTick0;
-      } else if (AcpiTick0 - AcpiTick1 <= 0x00FFFFFF) { // overflow, 24-bit timer
-        AcpiTicksDelta = (0x00FFFFFF - AcpiTick0) + AcpiTick1;
-      } else { // overflow, 32-bit timer
-        AcpiTicksDelta = (0xFFFFFFFF - AcpiTick0) + AcpiTick1;
-      }
-    } while (AcpiTicksDelta < AcpiTicksTarget); // keep checking Acpi ticks until target is reached
-    Tsc1 = AsmReadTsc(); // we're done, get another TSC
-    mMemLog->TscFreqSec = DivU64x32(MultU64x32((Tsc1 - Tsc0), V_ACPI_TMR_FREQUENCY), AcpiTicksDelta);
-  } else {
-    // ACPI PM Timer is not working, fallback to old method
-    Tsc0 = AsmReadTsc();
-    gBS->Stall(100000); // 100ms
-    Tsc1 = AsmReadTsc();
-    mMemLog->TscFreqSec = MultU64x32((Tsc1 - Tsc0), 10);
+      // Read New Current Tsc
+      Tsc1 = AsmReadTsc();
+
+      // Get Frequency from Tsc Difference
+      mMemLog->TscFreqSec = MultU64x32((Tsc1 - Tsc0), 10);
   }
+  else {
+      // ACPI PM Timer seems to be working
+      // ACPI PM timers are usually of 24-bit length but there are some less common cases of 32-bit lengths.
+      //   When the maximal number is reached, it overflows.
+      // The code below can handle overflow with AcpiTicksTarget of up to 24-bit size,
+      AcpiTicksTarget = V_ACPI_TMR_FREQUENCY/10; // 357954 clocks of ACPI timer (100ms)
+      AcpiTick0       = IoRead32 (TimerAddr); // read ACPI tick
+      Tsc0            = AsmReadTsc(); // read TSC
+
+      do {
+          CpuPause();
+
+          // check how many AcpiTicks have passed since we started
+          AcpiTick1 = IoRead32 (TimerAddr);
+          if (AcpiTick0 <= AcpiTick1) {
+              // no overflow
+              AcpiTicksDelta = AcpiTick1 - AcpiTick0;
+          }
+          else if (AcpiTick0 - AcpiTick1 <= 0x00FFFFFF) {
+              // overflow, 24-bit timer
+              AcpiTicksDelta = (0x00FFFFFF - AcpiTick0) + AcpiTick1;
+          }
+          else {
+              // overflow, 32-bit timer
+              AcpiTicksDelta = (0xFFFFFFFF - AcpiTick0) + AcpiTick1;
+          }
+      } while (AcpiTicksDelta < AcpiTicksTarget); // keep checking Acpi ticks until target is reached
+
+      Tsc1 = AsmReadTsc();
+
+      // Done ... get another TSC
+      mMemLog->TscFreqSec = DivU64x32(MultU64x32((Tsc1 - Tsc0), V_ACPI_TMR_FREQUENCY), AcpiTicksDelta);
+  }
+
   mMemLog->TscStart = Tsc0;
-  mMemLog->TscLast = Tsc0;
+  mMemLog->TscLast  = Tsc0;
 
   //
   // Install (publish) MEM_LOG
   //
   Status = gBS->InstallMultipleProtocolInterfaces (
-                                                   &gImageHandle,
-                                                   &mMemLogProtocolGuid,
-                                                   mMemLog,
-                                                   NULL
-                                                   );
-  if (InitError[0] != '\0') {
-    MemLog(TRUE, 1, "Warn: MemLog was calibrated without ACPI PM Timer [%a]\n", InitError);
-  }
+      &gImageHandle,
+      &mMemLogProtocolGuid,
+      mMemLog,
+      NULL
+  );
+
+// DA-TAG: Hide non-critical message
+//  if (InitError[0] != '\0') {
+//      MemLog(TRUE, 1, "** WARN: MemLog Calibrated Without ACPI PM Timer [%a]\n", InitError);
+//  }
+
   return Status;
 }
 
