@@ -159,6 +159,7 @@ MemLogInit (
   //  get ACPI PM Timer Address from PCI, and check that it is sane
   if ((PciRead16(PCI_ICH_LPC_ADDRESS(0))) != 0x8086) {
       // Intel ICH device was not found
+      TimerAddr = 0;
       AsciiSPrint(InitError, sizeof (InitError), "Intel ICH device was not found.");
   }
   else if ((PciRead8(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_CNT)) & B_ICH_LPC_ACPI_CNT_ACPI_EN) == 0) {
@@ -166,19 +167,19 @@ MemLogInit (
   }
   else {
       TimerAddr = ((PciRead16(PCI_ICH_LPC_ADDRESS(R_ICH_LPC_ACPI_BASE))) & B_ICH_LPC_ACPI_BASE_BAR) + R_ACPI_PM1_TMR;
-       if (TimerAddr == 0) {
-          // Timer address can't be obtained
-          AsciiSPrint(InitError, sizeof (InitError), "Timer address can't be obtained.");
+       if (TimerAddr < 9) {
+           TimerAddr = 0;
+           AsciiSPrint(InitError, sizeof (InitError), "Timer address not obtained.");
       }
       else {
           // Check that Timer is advancing
           AcpiTick0 = IoRead32 (TimerAddr);
           gBS->Stall(1000); // 1ms
           AcpiTick1 = IoRead32(TimerAddr);
+          
           if (AcpiTick0 == AcpiTick1) {
-              // Timer is not advancing
-              TimerAddr = 0; // Flag it as not working
-              AsciiSPrint(InitError, sizeof (InitError), "Timer is not advancing.");
+              TimerAddr = 0;
+              AsciiSPrint(InitError, sizeof (InitError), "Timer not advancing.");
           }
       }
   }
