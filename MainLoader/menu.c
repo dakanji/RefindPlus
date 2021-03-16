@@ -545,27 +545,29 @@ SaveScreen (
 //
 UINTN
 RunGenericMenu (
-    IN REFIT_MENU_SCREEN *Screen,
-    IN MENU_STYLE_FUNC StyleFunc,
-    IN OUT INTN *DefaultEntryIndex,
+    IN REFIT_MENU_SCREEN  *Screen,
+    IN MENU_STYLE_FUNC     StyleFunc,
+    IN OUT INTN           *DefaultEntryIndex,
     OUT REFIT_MENU_ENTRY **ChosenEntry
 ) {
-    SCROLL_STATE State;
-    EFI_STATUS Status;
-    EFI_INPUT_KEY key;
-    INTN ShortcutEntry;
-    BOOLEAN HaveTimeout = FALSE;
-    BOOLEAN WaitForRelease = FALSE;
-    UINTN TimeoutCountdown = 0;
-    INTN PreviousTime = -1, CurrentTime, TimeSinceKeystroke = 0;
-    CHAR16 TimeoutMessage[256];
-    CHAR16 KeyAsString[2];
-    UINTN MenuExit;
-    EFI_STATUS PointerStatus = EFI_NOT_READY;
-    UINTN Item;
+    EFI_STATUS     Status;
+    EFI_STATUS     PointerStatus      = EFI_NOT_READY;
+    SCROLL_STATE   State;
+    EFI_INPUT_KEY  key;
+    INTN           ShortcutEntry;
+    BOOLEAN        HaveTimeout        = FALSE;
+    BOOLEAN        WaitForRelease     = FALSE;
+    UINTN          TimeoutCountdown   = 0;
+    INTN           TimeSinceKeystroke = 0;
+    INTN           PreviousTime       = -1;
+    INTN           CurrentTime;
+    CHAR16        *TimeoutMessage;
+    CHAR16         KeyAsString[2];
+    UINTN          MenuExit;
+    UINTN          Item;
 
     if (Screen->TimeoutSeconds > 0) {
-        HaveTimeout = TRUE;
+        HaveTimeout      = TRUE;
         TimeoutCountdown = Screen->TimeoutSeconds * 10;
     }
     MenuExit = 0;
@@ -588,14 +590,14 @@ RunGenericMenu (
         else {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
-            ShortcutEntry = FindMenuShortcutEntry (Screen, KeyAsString);
+            ShortcutEntry  = FindMenuShortcutEntry (Screen, KeyAsString);
             if (ShortcutEntry >= 0) {
                 State.CurrentSelection = ShortcutEntry;
                 MenuExit = MENU_EXIT_ENTER;
             }
             else {
                 WaitForRelease = TRUE;
-                HaveTimeout = FALSE;
+                HaveTimeout    = FALSE;
             }
         }
     }
@@ -634,11 +636,17 @@ RunGenericMenu (
         if (HaveTimeout) {
             CurrentTime = (TimeoutCountdown + 5) / 10;
             if (CurrentTime != PreviousTime) {
-               SPrint (TimeoutMessage, 255, L"%s in %d seconds", Screen->TimeoutText, CurrentTime);
+               TimeoutMessage = PoolPrint (
+                   L"%s in %d seconds",
+                   Screen->TimeoutText,
+                   CurrentTime
+               );
 
                if (GlobalConfig.ScreensaverTime != -1) {
                    StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
                }
+               MyFreePool (TimeoutMessage);
+
                PreviousTime = CurrentTime;
             }
         }
@@ -650,8 +658,8 @@ RunGenericMenu (
         Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
 
         if (Status == EFI_SUCCESS) {
-            PointerActive = FALSE;
-            DrawSelection = TRUE;
+            PointerActive      = FALSE;
+            DrawSelection      = TRUE;
             TimeSinceKeystroke = 0;
         }
         else if (PointerStatus == EFI_SUCCESS) {
@@ -684,13 +692,15 @@ RunGenericMenu (
 
                 TimeSinceKeystroke += ElapsCount;
                 if (HaveTimeout) {
-                    TimeoutCountdown = TimeoutCountdown <= ElapsCount ? 0 : TimeoutCountdown - ElapsCount;
+                    TimeoutCountdown = (TimeoutCountdown > ElapsCount)
+                    ? TimeoutCountdown - ElapsCount
+                    : 0;
                 }
                 else if (GlobalConfig.ScreensaverTime > 0 &&
                     TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10)
                 ) {
                     SaveScreen();
-                    State.PaintAll = TRUE;
+                    State.PaintAll     = TRUE;
                     TimeSinceKeystroke = 0;
                 } // if
             }
@@ -794,7 +804,7 @@ RunGenericMenu (
             switch (Item) {
                 case POINTER_NO_ITEM:
                     if (DrawSelection) {
-                        DrawSelection = FALSE;
+                        DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
                     break;
@@ -803,7 +813,7 @@ RunGenericMenu (
                         UpdateScroll (&State, SCROLL_PAGE_UP);
                     }
                     if (DrawSelection) {
-                        DrawSelection = FALSE;
+                        DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
                     break;
@@ -812,14 +822,14 @@ RunGenericMenu (
                         UpdateScroll (&State, SCROLL_PAGE_DOWN);
                     }
                     if (DrawSelection) {
-                        DrawSelection = FALSE;
+                        DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
                     break;
                 default:
                     if (!DrawSelection || Item != State.CurrentSelection) {
-                        DrawSelection = TRUE;
-                        State.PaintSelection = TRUE;
+                        DrawSelection          = TRUE;
+                        State.PaintSelection   = TRUE;
                         State.CurrentSelection = Item;
                     }
                     if (PointerState.Press) {
@@ -879,9 +889,8 @@ TextMenuStyle (
     UINTN ItemWidth;
     UINTN MenuHeight;
 
-    static UINTN  MenuPosY;
+    static UINTN    MenuPosY;
     static CHAR16 **DisplayStrings;
-    CHAR16        TimeoutMessage[256];
 
     State->ScrollMode = SCROLL_MODE_TEXT;
 
@@ -1043,8 +1052,7 @@ TextMenuStyle (
                 // paint or update message
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
-                SPrint (TimeoutMessage, 255, L"%s  ", ParamText);
-                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, TimeoutMessage);
+                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, ParamText);
             }
             break;
     }
@@ -1094,8 +1102,7 @@ DrawText (
             // draw selection bar background
             egFillImageArea (
                 TextBuffer,
-                0,
-                0,
+                0, 0,
                 FieldWidth,
                 TextBuffer->Height,
                 &SelectionBackgroundPixel
@@ -1112,10 +1119,8 @@ DrawText (
             (Bg.r + Bg.g + Bg.b) / 3
         );
         egDrawImageWithTransparency (
-            TextBuffer,
-            NULL,
-            XPos,
-            YPos,
+            TextBuffer, NULL,
+            XPos, YPos,
             TextBuffer->Width,
             TextBuffer->Height
         );
@@ -1168,13 +1173,12 @@ DrawTextWithTransparency (
     egMeasureText (Text, &TextWidth, NULL);
     if (TextWidth == 0) {
        TextWidth = ScreenW;
-       XPos = 0;
+       XPos      = 0;
     }
 
     TextBuffer = egCropImage (
         GlobalConfig.ScreenBackground,
-        XPos,
-        YPos,
+        XPos, YPos,
         TextWidth,
         TextLineHeight()
     );
@@ -1187,15 +1191,12 @@ DrawTextWithTransparency (
     egRenderText (
         Text,
         TextBuffer,
-        0,
-        0,
+        0, 0,
         AverageBrightness (TextBuffer)
     );
     egDrawImageWithTransparency (
-        TextBuffer,
-        NULL,
-        XPos,
-        YPos,
+        TextBuffer, NULL,
+        XPos, YPos,
         TextBuffer->Width,
         TextBuffer->Height
     );
@@ -1215,7 +1216,7 @@ ComputeSubScreenWindowSize (
     UINTN *LineWidth
 ) {
     UINTN i, ItemWidth, HintTop, BannerBottomEdge, TitleWidth;
-    UINTN FontCellWidth = egGetFontCellWidth();
+    UINTN FontCellWidth  = egGetFontCellWidth();
     UINTN FontCellHeight = egGetFontHeight();
 
     *Width     = 20;
@@ -1261,7 +1262,7 @@ ComputeSubScreenWindowSize (
     *XPos = (ScreenW - *Width) / 2;
 
     // top of hint text
-    HintTop = ScreenH - (FontCellHeight * 3);
+    HintTop  = ScreenH - (FontCellHeight * 3);
     *Height *= TextLineHeight();
 
     if (Screen->TitleImage &&
@@ -1303,7 +1304,9 @@ GraphicsMenuStyle (
 ) {
     INTN i;
     UINTN ItemWidth;
-    static UINTN LineWidth, MenuWidth, MenuHeight, EntriesPosX, TitlePosX, EntriesPosY, TimeoutPosY, CharWidth;
+    static UINTN LineWidth, MenuWidth, MenuHeight;
+    static UINTN EntriesPosX, EntriesPosY;
+    static UINTN TitlePosX, TimeoutPosY, CharWidth;
     EG_IMAGE *Window;
     EG_PIXEL *BackgroundPixel = &(GlobalConfig.ScreenBackground->PixelData[0]);
 
@@ -1314,12 +1317,9 @@ GraphicsMenuStyle (
         case MENU_FUNCTION_INIT:
             InitScroll (State, Screen->EntryCount, 0);
             ComputeSubScreenWindowSize (
-                Screen,
-                State,
-                &EntriesPosX,
-                &EntriesPosY,
-                &MenuWidth,
-                &MenuHeight,
+                Screen, State,
+                &EntriesPosX, &EntriesPosY,
+                &MenuWidth, &MenuHeight,
                 &LineWidth
             );
             TimeoutPosY = EntriesPosY + (Screen->EntryCount + 1) * TextLineHeight();
@@ -1341,8 +1341,9 @@ GraphicsMenuStyle (
                TitlePosX = EntriesPosX;
                if (CharWidth > 0) {
                   i = MenuWidth / CharWidth - 2;
-                  if (i > 0)
-                     Screen->Title[i] = 0;
+                  if (i > 0) {
+                      Screen->Title[i] = 0;
+                  }
                } // if
             } // if/else
             break;
@@ -1353,12 +1354,9 @@ GraphicsMenuStyle (
 
         case MENU_FUNCTION_PAINT_ALL:
             ComputeSubScreenWindowSize (
-                Screen,
-                State,
-                &EntriesPosX,
-                &EntriesPosY,
-                &MenuWidth,
-                &MenuHeight,
+                Screen, State,
+                &EntriesPosX, &EntriesPosY,
+                &MenuWidth, &MenuHeight,
                 &LineWidth
             );
             DrawText (
@@ -1383,10 +1381,8 @@ GraphicsMenuStyle (
                 for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
                     DrawText (
                         Screen->InfoLines[i],
-                        FALSE,
-                        LineWidth,
-                        EntriesPosX,
-                        EntriesPosY
+                        FALSE, LineWidth,
+                        EntriesPosX, EntriesPosY
                     );
                     EntriesPosY += TextLineHeight();
                 }
@@ -1426,15 +1422,13 @@ GraphicsMenuStyle (
             // redraw selection cursor
             DrawText (
                 Screen->Entries[State->PreviousSelection]->Title,
-                FALSE,
-                LineWidth,
+                FALSE, LineWidth,
                 EntriesPosX,
                 EntriesPosY + State->PreviousSelection * TextLineHeight()
             );
             DrawText (
                 Screen->Entries[State->CurrentSelection]->Title,
-                TRUE,
-                LineWidth,
+                TRUE, LineWidth,
                 EntriesPosX,
                 EntriesPosY + State->CurrentSelection * TextLineHeight()
             );
@@ -1464,8 +1458,7 @@ DrawMainMenuEntry (
     if (selected && DrawSelection) {
         Background = egCropImage (
             GlobalConfig.ScreenBackground,
-            XPos,
-            YPos,
+            XPos, YPos,
             SelectionImages[Entry->Row]->Width,
             SelectionImages[Entry->Row]->Height
         );
@@ -1474,15 +1467,13 @@ DrawMainMenuEntry (
             egComposeImage (
                 Background,
                 SelectionImages[Entry->Row],
-                0,
-                0
+                0, 0
             );
             BltImageCompositeBadge (
                 Background,
                 Entry->Image,
                 Entry->BadgeImage,
-                XPos,
-                YPos
+                XPos, YPos
             );
             egFreeImage (Background);
         } // if
@@ -1492,8 +1483,7 @@ DrawMainMenuEntry (
         egDrawImageWithTransparency (
             Entry->Image,
             Entry->BadgeImage,
-            XPos,
-            YPos,
+            XPos, YPos,
             SelectionImages[Entry->Row]->Width,
             SelectionImages[Entry->Row]->Height
         );
@@ -1691,9 +1681,9 @@ PaintArrows (
     UINTN Width, Height, RightX, AdjPosY;
 
     // NOTE: Assume that left and right arrows are of the same size...
-     Width  = egemb_arrow_left.Width;
-     Height = egemb_arrow_left.Height;
-     RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+     Width   = egemb_arrow_left.Width;
+     Height  = egemb_arrow_left.Height;
+     RightX  = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
      AdjPosY = PosY - (Height / 2);
 
      // For PaintIcon() calls, the starting Y position is moved to the midpoint
@@ -1902,11 +1892,10 @@ UINTN FindMainMenuItem (
 
 VOID GenerateWaitList() {
     UINTN PointerCount = pdCount();
+
     WaitListLength = 2 + PointerCount;
-
-    WaitList = AllocatePool (sizeof (EFI_EVENT) * WaitListLength);
-
-    WaitList[0] = gST->ConIn->WaitForKey;
+    WaitList       = AllocatePool (sizeof (EFI_EVENT) * WaitListLength);
+    WaitList[0]    = gST->ConIn->WaitForKey;
 
     UINTN Index;
     for (Index = 0; Index < PointerCount; Index++) {
@@ -1915,8 +1904,8 @@ VOID GenerateWaitList() {
 } // VOID GenerateWaitList()
 
 UINTN WaitForInput (UINTN Timeout) {
-    UINTN       Index = INPUT_TIMEOUT;
-    UINTN       Length = WaitListLength;
+    UINTN       Index      = INPUT_TIMEOUT;
+    UINTN       Length     = WaitListLength;
     EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
 
@@ -2010,7 +1999,7 @@ DisplaySimpleMessage (
     HideItemMenu.Title = Title;
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
-    
+
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
     if (MenuExit == 0) {
         return;
