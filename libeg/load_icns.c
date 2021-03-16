@@ -260,7 +260,13 @@ EG_IMAGE * egDecodeICNS (
         egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
     }
     else {
-        egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
+        // DA-TAG: Comment out original function call
+        //         Set Alpha Channel to 255 (No Transparency)
+        //         Appears to be logical intent here
+        //egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
+        for (UINTN AlphaIndex = 0; AlphaIndex < PixelCount; AlphaIndex++) {
+            NewImage->PixelData[AlphaIndex].a = 255;
+        }
     }
 
     // FUTURE: scale to originally requested size if we had to load another size

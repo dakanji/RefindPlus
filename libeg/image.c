@@ -609,10 +609,10 @@ EG_IMAGE * egPrepareEmbeddedImage (
         egSetPlane (PLPTR (NewImage, b), 0, PixelCount);
     }
 
-    if (WantAlpha &&
-        (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-        EmbeddedImage->PixelMode  == EG_EIPIXELMODE_COLOR_ALPHA ||
-        EmbeddedImage->PixelMode  == EG_EIPIXELMODE_ALPHA)
+    if (WantAlpha && (
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
+        EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
     ) {
         // copy alpha plane
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
@@ -624,7 +624,13 @@ EG_IMAGE * egPrepareEmbeddedImage (
         }
     }
     else {
-        egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
+        // DA-TAG: Comment out original function call
+        //         Set Alpha Channel to 255 (No Transparency)
+        //         Appears to be logical intent here
+        //egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
+        for (UINTN AlphaIndex = 0; AlphaIndex < PixelCount; AlphaIndex++) {
+            NewImage->PixelData[AlphaIndex].a = 255;
+        }
     }
 
     return NewImage;
