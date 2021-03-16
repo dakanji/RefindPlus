@@ -827,8 +827,8 @@ RunGenericMenu (
                     }
                     break;
             } // switch()
-        }
-    }
+        } // if/else
+    } // while()
 
     pdClear();
     StyleFunc (Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -839,7 +839,7 @@ RunGenericMenu (
     *DefaultEntryIndex = State.CurrentSelection;
 
     return MenuExit;
-} /* static UINTN RunGenericMenu() */
+} // UINTN RunGenericMenu()
 
 //
 // text-mode generic style
@@ -1920,11 +1920,11 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
 
+    Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
         Length--;
     }
     else {
-        Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
         if (EFI_ERROR (Status)) {
             refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;

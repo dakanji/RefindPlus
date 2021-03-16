@@ -36,6 +36,8 @@
   * Several issues closed out following Coverity scan of the code base
 - Fixes Default Timeout Setting
   * Was previously set to 20 seconds and not disabled as documented
+- Fixes Menu Keystroke Event
+  * Could cause RefindPlus to hang when processing keystrokes in menus
 
 
 0.13.1.AB (02 Mar 2021):
