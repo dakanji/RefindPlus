@@ -609,11 +609,14 @@ EG_IMAGE * egPrepareEmbeddedImage (
         egSetPlane (PLPTR (NewImage, b), 0, PixelCount);
     }
 
-    if (WantAlpha && (
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
+    if (EmbeddedImage->PixelMode != EG_EIPIXELMODE_GRAY_ALPHA  &&
+        EmbeddedImage->PixelMode != EG_EIPIXELMODE_COLOR_ALPHA &&
+        EmbeddedImage->PixelMode != EG_EIPIXELMODE_ALPHA
     ) {
+        WantAlpha = FALSE;
+    }
+
+    if (WantAlpha) {
         // copy alpha plane
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
