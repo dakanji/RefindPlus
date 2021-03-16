@@ -460,11 +460,12 @@ extern EFI_FILE          *SelfRootDir;
 extern EFI_FILE          *SelfDir;
 
 extern CHAR16            *SelfDirPath;
+extern CHAR16            *gHiddenTools;
 
 extern REFIT_VOLUME      *SelfVolume;
 extern REFIT_VOLUME      **Volumes;
 
-extern REFIT_VOLUME **PreBootVolumes;
+extern REFIT_VOLUME      **PreBootVolumes;
 
 extern REFIT_CONFIG      GlobalConfig;
 

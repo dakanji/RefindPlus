@@ -2039,7 +2039,13 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
-    DontScanTools = ReadHiddenTags(L"HiddenTools");
+    if (gHiddenTools == NULL) {
+        DontScanTools = ReadHiddenTags (L"HiddenTools");
+        gHiddenTools  = StrDuplicate (DontScanTools);
+    }
+    else {
+        DontScanTools = StrDuplicate (gHiddenTools);
+    }
     MergeStrings(&DontScanTools, GlobalConfig.DontScanTools, L',');
 
     if (FileExists (BaseVolume->RootDir, PathName) && IsValidLoader (BaseVolume->RootDir, PathName)) {

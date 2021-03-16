@@ -1,4 +1,8 @@
 0.13.2.AA (PreRelease):
+- Syncs with Upstream Post v0.13.2 Updates
+  * Minimises Reading of 'HiddenTools' Variable
+  * Fixes Menu Keystroke Event
+    Could cause RefindPlus to hang when processing keystrokes in menus
 - Syncs with Upstream v0.13.2
   * Misc Improvements (Skips items already implemented in RefindPlus)
   * Does not adopt upstream changes to non-volatile variable storage
@@ -36,8 +40,6 @@
   * Several issues closed out following Coverity scan of the code base
 - Fixes Default Timeout Setting
   * Was previously set to 20 seconds and not disabled as documented
-- Fixes Menu Keystroke Event
-  * Could cause RefindPlus to hang when processing keystrokes in menus
 
 
 0.13.1.AB (02 Mar 2021):

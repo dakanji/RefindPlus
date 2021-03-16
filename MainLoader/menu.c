@@ -1885,14 +1885,14 @@ UINTN FindMainMenuItem (
                     ItemIndex = i;
                     break;
                 }
-        } // if
+            } // if i <= State->LastVisible
         }
         else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
             if (PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
                 ItemIndex = i;
                 break;
             }
-        }
+        } // if/else Screen->Entries[i]->Row
     }
 
     MyFreePool (itemPosX);
@@ -2172,6 +2172,8 @@ ManageHiddenTags (
         }
         if (SaveTools) {
             SaveHiddenList(HiddenTools, L"HiddenTools");
+            MyFreePool (gHiddenTools);
+            gHiddenTools = NULL;
         }
         if (SaveFirmware) {
             SaveHiddenList(HiddenFirmware, L"HiddenFirmware");
@@ -2452,6 +2454,8 @@ HideTag (
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
+            MyFreePool (gHiddenTools);
+            gHiddenTools = NULL;
 
             #if REFIT_DEBUG > 0
             MsgLog ("User Input Received:\n");
