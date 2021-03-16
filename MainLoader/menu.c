@@ -1995,6 +1995,7 @@ DisplaySimpleMessage (
 
     MENU_STYLE_FUNC      Style          = TextMenuStyle;
     INTN                 DefaultEntry   = 0;
+    UINTN                MenuExit;
     REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_ENTRY    *TempMenuEntry  = CopyMenuEntry (&MenuEntryReturn);
     TempMenuEntry->Image                = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
@@ -2008,7 +2009,12 @@ DisplaySimpleMessage (
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     HideItemMenu.Title = Title;
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
-    RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    
+    // DA-TAG: Tick box to run check after 'RunGenericMenu'
+    if (MenuExit == 0) {
+        return;
+    }
 } // VOID DisplaySimpleMessage()
 
 // Check each filename in FilenameList to be sure it refers to a valid file. If
