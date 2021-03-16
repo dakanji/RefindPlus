@@ -198,14 +198,20 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
                 fsw_u8 *tmp = NULL;
                 if (nm->flags & RR_NM_CURR)
                 {
-                     fsw_memdup(str->data, ".", 1);
                      str->len = 1;
+                     if (str->data == NULL) {
+                         fsw_alloc_zero((2 * str->len) + 1, (void **)&str->data);
+                     }
+                     fsw_memdup(str->data, ".", str->len);
                      goto done;
                 }
                 if (nm->flags & RR_NM_PARE)
                 {
-                     fsw_memdup(str->data, "..", 2);
                      str->len = 2;
+                     if (str->data == NULL) {
+                         fsw_alloc_zero((2 * str->len) + 1, (void **)&str->data);
+                     }
+                     fsw_memdup(str->data, "..", str->len);
                      goto done;
                 }
                 len = nm->e.len - sizeof (struct fsw_rock_ridge_susp_nm) + 1;

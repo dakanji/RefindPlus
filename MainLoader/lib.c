@@ -649,17 +649,21 @@ AddListElement (
 ) {
     UINTN AllocateCount;
 
-    if ((*ElementCount & 15) == 0) {
+    if (*ListPtr == NULL) {
+        AllocateCount = *ElementCount + 16;
+        *ListPtr      = AllocateZeroPool (AllocateCount * sizeof (VOID *));
+    }
+    else if ((*ElementCount & 15) == 0) {
         AllocateCount = *ElementCount + 16;
 
         if (*ElementCount == 0) {
-            *ListPtr = AllocatePool (sizeof (VOID *) * AllocateCount);
+            *ListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
         }
         else {
             *ListPtr = EfiReallocatePool (
                 *ListPtr,
-                sizeof (VOID *) * (*ElementCount),
-                sizeof (VOID *) * AllocateCount
+                *ElementCount * sizeof (VOID *),
+                AllocateCount * sizeof (VOID *)
             );
         }
     }
