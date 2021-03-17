@@ -294,6 +294,17 @@
 #resolution 3
 #resolution max
 
+# Timeout in seconds for the main menu screen. Setting the timeout to 0
+# disables automatic booting (i.e., no timeout). Setting it to -1 causes
+# an immediate boot to the default OS *UNLESS* a keypress is in the buffer
+# when RefindPlus launches, in which case that keypress is interpreted as
+# a shortcut key. If no matching shortcut is found, RefindPlus displays
+# its menu with no timeout.
+#
+# The timeout is disabled when commented out
+#
+#timeout 20
+
 # Note: The logging level token below is ignored.
 #
 #log_level 0
@@ -305,17 +316,6 @@
 ##--------------------------------------------------------------##
 #
 #
-# Timeout in seconds for the main menu screen. Setting the timeout to 0
-# disables automatic booting (i.e., no timeout). Setting it to -1 causes
-# an immediate boot to the default OS *UNLESS* a keypress is in the buffer
-# when RefindPlus launches, in which case that keypress is interpreted as a
-# shortcut key. If no matching shortcut is found, RefindPlus displays its
-# menu with no timeout.
-#
-# The timeout is disabled when commented out
-#
-#timeout 20
-
 # Normally, when the timeout period has passed, RefindPlus boots the
 # default_selection. If the following option is uncommented, though,
 # RefindPlus will instead attempt to shut down the computer.
@@ -963,7 +963,7 @@ menuentry "My Mac OS" {
 # to when booted via the Apple boot manager. Booting with RefindPlus
 # using this option may produce a better resolution. Note that the
 # "loader" option is not used for this type of configuration.
-menuentry "macOS via BootNext" {
+menuentry "Mac OS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
     disabled

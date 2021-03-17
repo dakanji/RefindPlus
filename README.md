@@ -51,6 +51,7 @@ In addition to the tokens above, two additional tools can be activated using the
 
 ## Divergence
 Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:
+- `timeout`: The default setting is for no timeout unless specifically set.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
 - `screensaver`: The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
