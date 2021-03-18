@@ -609,39 +609,27 @@ EG_IMAGE * egPrepareEmbeddedImage (
         egSetPlane (PLPTR (NewImage, b), 0, PixelCount);
     }
 
+    // Handle Alpha
     if (!WantAlpha) {
         // Default to 'Opaque' if Alpha is not Required
         egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
+    else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
+             EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
+             EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
+    ) {
+        // Copy Alpha Mask in if Required and Present
+        if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
+        }
+        else {
+            egInsertPlane (CompData, PLPTR (NewImage, a), PixelCount);
+            CompData += PixelCount;
+        }
+    }
     else {
-        // Check for Alpha Mask
-        BOOLEAN AlphaMask;
-        if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-            EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-            EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
-        ) {
-            // Alpha Mask is Present
-            AlphaMask = TRUE;
-        }
-        else {
-            // Alpha Mask is Absent
-            AlphaMask = FALSE;
-        }
-
-        if (AlphaMask) {
-            // Copy in Alpha Mask if Present
-            if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-                egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
-            }
-            else {
-                egInsertPlane (CompData, PLPTR (NewImage, a), PixelCount);
-                CompData += PixelCount;
-            }
-        }
-        else {
-            // Default to 'Opaque' if Alpha Mask is Absent
-            egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
-        }
+        // Default to 'Opaque' if Alpha Mask is Required but Absent
+        egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
 
     return NewImage;
