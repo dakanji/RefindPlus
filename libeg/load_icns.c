@@ -256,16 +256,12 @@ EG_IMAGE * egDecodeICNS (
     }
 
     // Handle Alpha
-    if (!WantAlpha) {
-        // Default to 'Opaque' if Alpha is not Required
-        egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
-    }
-    else if (MaskPtr == NULL && MaskLen >= PixelCount) {
+    if (WantAlpha && MaskPtr == NULL && MaskLen >= PixelCount) {
         // Add Alpha Mask if Required, Present and Valid
         egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
     }
     else {
-        // Default to 'Opaque' if Alpha Mask is Required but Absent or Invalid
+        // Default to 'Opaque' Otherwise
         egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
 
