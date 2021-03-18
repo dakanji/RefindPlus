@@ -255,12 +255,30 @@ EG_IMAGE * egDecodeICNS (
         }
     }
 
-    // add/set alpha plane
-    if (MaskPtr != NULL && MaskLen >= PixelCount && WantAlpha) {
-        egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
+    if (!WantAlpha) {
+        // Default to 'Opaque' if Alpha is not Required
+        egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
     else {
-        egSetPlane (PLPTR (NewImage, a), WantAlpha ? 255 : 0, PixelCount);
+        // Check Alpha Mask
+        BOOLEAN AlphaMask;
+        if (MaskPtr == NULL && MaskLen >= PixelCount) {
+            // Alpha Mask is Present and Valid
+            AlphaMask = TRUE;
+        }
+        else {
+            // Alpha Mask is Absent or Invalid
+            AlphaMask = FALSE;
+        }
+
+        if (AlphaMask) {
+            // Add Alpha Mask if Present and Valid
+            egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
+        }
+        else {
+            // Default to 'Opaque' if Alpha Mask is Absent or Invalid
+            egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
+        }
     }
 
     // FUTURE: scale to originally requested size if we had to load another size
