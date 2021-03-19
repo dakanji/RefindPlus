@@ -257,11 +257,11 @@ EG_IMAGE * egDecodeICNS (
 
     // Handle Alpha
     if (WantAlpha && MaskPtr == NULL && MaskLen >= PixelCount) {
-        // Add Alpha Mask if Required, Present and Valid
+        // Add Alpha Mask if Required, Available and Valid
         egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
     }
     else {
-        // Default to 'Opaque' Otherwise
+        // Default to 'Opaque' is not Required, Unavailable or Invalid
         egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
 

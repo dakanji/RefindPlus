@@ -37,8 +37,7 @@
 - Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers
   * Fixes Also Implemented Upstream
 - Applies Multiple Code Quality Fixes
-  * Several issues closed out following Coverity scan of the code base
-  * Coverity Summary: https://scan.coverity.com/projects/22695
+  * Several issues identified by an automated static analysis of the code base closed out
 - Fixes Default Timeout Setting
   * Was previously set to 20 seconds and not disabled as documented
 

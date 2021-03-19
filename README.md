@@ -4,7 +4,7 @@
 ## Overview
 Enhanced version of the amazing rEFInd Boot Manager that incorporates various fixes and additional features.
 
-The development focus is on MacPro3,1 to MacPro5,1 (and equivalent Xserve), but may be useful to other rEFInd users (especially if on a Mac).
+The development focus is on MacPro3,1 to MacPro5,1 (as well as Xserve3,1) but may be useful to other rEFInd users (particularly if on a Mac).
 
 ## Headline Features
 - Maintains feature and configuration parity with the base rEFInd version.
@@ -23,7 +23,7 @@ The development focus is on MacPro3,1 to MacPro5,1 (and equivalent Xserve), but 
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
 
 ## Additional Configurable Functionality
-RefindPlus-specific funtionality can be activated by adding the tokens below to a rEFInd config file and passing to RefindPlus.
+RefindPlus-specific funtionality can be activated by adding the tokens below to a rEFInd configuration file.
 
 Config Token| Functionality
 --- | ---
@@ -51,11 +51,11 @@ In addition to the tokens above, two additional tools can be activated using the
 
 ## Divergence
 Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:
-- `timeout`: The default setting is for no timeout unless specifically set.
+- `timeout`: The default is no timeout unless explicitly set.
 - `log_level`: Ignored by RefindPlus as debug logs are provided by a dedicated debug build.
 - `screensaver`: The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
-- `write_systemd_vars`: Systemd EFI variables are not written unless specifically set to do so by activating this configuration token.
-- `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless specifically set to do so by activating this configuration token.
+- `write_systemd_vars`: Systemd EFI variables are not written unless explicitly set to do so by activating this configuration token.
+- `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
 - rEFInd now scans other ESPs for loaders, in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
 
 ## Installation
