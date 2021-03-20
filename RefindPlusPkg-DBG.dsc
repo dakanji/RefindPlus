@@ -106,5 +106,5 @@
   RefindPlusPkg/filesystems/ntfs.inf
 
 [PcdsFixedAtBuild]
-  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x29
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1D
   gEfiMdePkgTokenSpaceGuid.PcdDebugClearMemoryValue|0x00
