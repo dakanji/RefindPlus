@@ -485,6 +485,7 @@ VOID StartLegacy (
     CHAR16 *ShowScreenStrA = NULL;
     CHAR16 *ShowScreenStrB = NULL;
 
+    NotBoot = FALSE;
 
     BeginExternalScreen (TRUE, L"Booting Legacy OS (Mac mode)");
 
@@ -563,6 +564,8 @@ StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16 *SelectionName
 ) {
+    NotBoot = FALSE;
+    
     BeginExternalScreen (TRUE, L"Booting Legacy OS (UEFI mode)");
     StoreLoaderName (SelectionName);
 

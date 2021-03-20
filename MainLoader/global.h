@@ -479,6 +479,7 @@ extern EFI_GUID          RefindPlusGuid;
 
 extern BOOLEAN           TweakSysTable;
 extern BOOLEAN           DetectedDevices;
+extern BOOLEAN           NotBoot;
 
 extern REFIT_MENU_SCREEN MainMenu;
 

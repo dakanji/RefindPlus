@@ -1814,6 +1814,8 @@ efi_main (
     #endif
 
     while (MainLoopRunning) {
+        NotBoot = TRUE;
+
         // Get a Clean Slate
         ReadAllKeyStrokes();
 

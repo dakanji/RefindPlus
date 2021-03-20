@@ -66,7 +66,9 @@ CHAR16 *BlankLine = NULL;
 
 UINTN   ScreenW;
 UINTN   ScreenH;
+
 BOOLEAN AllowGraphicsMode;
+BOOLEAN NotBoot            = TRUE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -341,11 +343,11 @@ SwitchToText (
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
         HaveOverriden = TRUE;
 
-        if (!EFI_ERROR (Status)) {
-            #if REFIT_DEBUG > 0
+        #if REFIT_DEBUG > 0
+        if (!EFI_ERROR (Status) && NotBoot) {
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
-            #endif
         }
+        #endif
     }
 
     egSetGraphicsModeEnabled (FALSE);
@@ -353,7 +355,8 @@ SwitchToText (
 
     #if REFIT_DEBUG > 0
     if ((GraphicsModeOnEntry) &&
-        (!AllowGraphicsMode || GlobalConfig.TextOnly)
+        (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
+        (NotBoot)
     ) {
         MsgLog ("Determine Text Console Size:\n");
     }
@@ -375,7 +378,8 @@ SwitchToText (
 
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry) &&
-            (!AllowGraphicsMode || GlobalConfig.TextOnly)
+            (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
+            (NotBoot)
         ) {
             MsgLog (
                 "  Could Not Get Text Console Size ...Using Default: %d x %d\n\n",
@@ -388,7 +392,8 @@ SwitchToText (
     else {
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry) &&
-            (!AllowGraphicsMode || GlobalConfig.TextOnly)
+            (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
+            (NotBoot)
         ) {
             MsgLog (
                 "  Text Console Size = %d x %d\n\n",
@@ -401,10 +406,12 @@ SwitchToText (
     PrepareBlankLine();
 
     #if REFIT_DEBUG > 0
-    if (GraphicsModeOnEntry) {
+    if (GraphicsModeOnEntry && NotBoot) {
         MsgLog ("INFO: Switch to Text Mode ...Success\n\n");
     }
     #endif
+
+    NotBoot = TRUE;
 }
 
 EFI_STATUS
@@ -769,7 +776,7 @@ SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
     EFI_STATUS Status;
-    
+
     #if REFIT_DEBUG > 0
     BOOLEAN    gotGraphics = egIsGraphicsModeEnabled();
     #endif
