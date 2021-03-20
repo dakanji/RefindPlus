@@ -10,7 +10,7 @@
   * Improves separation of filesystem name vs. partition name internally
   * Applies extensive memory management improvements
 - Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
-  * Maintains default mode instead of switching to graphics mode when booting EFI loaders
+  * Maintains default mode instead of switching to graphics mode when booting EFI loaders such as OpenCore
 - Improves APFS Remapping
   * Previously failed when using the 'ReScanAll' feature or when not running on Apple Firmware
   * Improves volume filtering
@@ -24,8 +24,6 @@
 - Adds 'reinstall_gop' as Configuration Option
   * This allows switching the 'Reinstall GOP from RAM' Feature, introduced in v0.12.0.AM,
     "ON" or "OFF" in the configuration file. Default is "OFF"
-- Treats OpenCore as other EFI Loaders
-  * No longer specifically switches booting the OpenCore EFI to graphics mode
 - Now Specfically Logs Booting Clover Instances
   * Now separately identifies Clover instances in the debug log when these are booted
 - Changes Misc Token Names for Internal Consistency
@@ -35,7 +33,9 @@
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
 - Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers
-  * Fixes Also Implemented Upstream
+  * Fixes also implemented upstream
+  * Users should change earlier versions of these drivers for current ones
+  * Copies available from upstream post v0.13.1 releases or after building RefindPlus
 - Applies Multiple Code Quality Fixes
   * Several issues identified by an automated static analysis of the code base closed out
 - Fixes Default Timeout Setting
