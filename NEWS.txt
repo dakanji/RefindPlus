@@ -40,6 +40,8 @@
   * Several issues identified by an automated static analysis of the code base closed out
 - Fixes Default Timeout Setting
   * Was previously set to 20 seconds and not disabled as documented
+- Fixes Repeated Icon Scaling on HiDPI Monitors
+  * Icons on HiDPI monitors were repeatedly scaled up on each return to the main screen
 
 
 0.13.1.AB (02 Mar 2021):

@@ -149,6 +149,7 @@ SetupScreen (
     UINTN          NewHeight;
     BOOLEAN        gotGraphics;
     STATIC BOOLEAN BannerLoaded = FALSE;
+    STATIC BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Setup Screen...\n");
@@ -263,13 +264,25 @@ SetupScreen (
                 else {
                     MsgLog ("    * HiDPI Monitor Flagged ...");
                 }
-                MsgLog ("Scale Icons Up\n\n");
                 #endif
 
-                GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
-                GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
-                GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
-                GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+                if (ScaledIcons) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("Maintain Previously Scaled Icons)\n\n");
+                    #endif
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("Scale Icons Up\n\n");
+                    #endif
+
+                    GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_SMALL] *= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]   *= 2;
+                    GlobalConfig.IconSizes[ICON_SIZE_MOUSE] *= 2;
+
+                    ScaledIcons = TRUE;
+                }
             }
             else {
                 #if REFIT_DEBUG > 0
