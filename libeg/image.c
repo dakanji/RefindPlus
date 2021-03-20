@@ -614,7 +614,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
     ) {
-        // Add Alpha Mask if Required and Available
+        // Add Alpha Mask if Available and Required
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
         }
@@ -624,7 +624,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         }
     }
     else {
-        // Default to 'Opaque' if Alpha is not Required or Unavailable
+        // Default to 'Opaque' if Alpha is Unavailable or Not Required 
         egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
     }
 
