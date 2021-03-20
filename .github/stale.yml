@@ -36,7 +36,7 @@ markComment: >
 #   Your comment here.
 
 # Comment to post when closing a stale Issue or Pull Request.
-# closeComment: >
+closeComment: >
   This issue has been automatically closed as it has not had any activity recently.
   Thank you for your contribution.
 
