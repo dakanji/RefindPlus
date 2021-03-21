@@ -604,9 +604,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
     else {
         // set color planes to black
-        egSetPlane (PLPTR(NewImage, r), 0, PixelCount);
-        egSetPlane (PLPTR(NewImage, g), 0, PixelCount);
-        egSetPlane (PLPTR(NewImage, b), 0, PixelCount);
+        egSetPlane (PLPTRX(NewImage, r), 0, PixelCount);
+        egSetPlane (PLPTRX(NewImage, g), 0, PixelCount);
+        egSetPlane (PLPTRX(NewImage, b), 0, PixelCount);
     }
 
     // Handle Alpha
@@ -625,7 +625,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
     else {
         // Default to 'Opaque' if Alpha is Unavailable or Not Required
-        egSetPlane (PLPTR(NewImage, a), 255, PixelCount);
+        egSetPlane (PLPTRX(NewImage, a), 255, PixelCount);
     }
 
     return NewImage;
