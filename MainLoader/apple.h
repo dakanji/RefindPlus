@@ -64,19 +64,19 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 // Apple's NVRAM ACCESS FLAGS
 #define APPLE_FLAGS EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
 
-// These codes are returned in the first two bytes of the csr-active-config variable
-#define CSR_ALLOW_UNTRUSTED_KEXTS              0x0001
-#define CSR_ALLOW_UNRESTRICTED_FS              0x0002
-#define CSR_ALLOW_TASK_FOR_PID                 0x0004
-#define CSR_ALLOW_KERNEL_DEBUGGER              0x0008
-#define CSR_ALLOW_APPLE_INTERNAL               0x0010
-#define CSR_ALLOW_UNRESTRICTED_DTRACE          0x0020
-#define CSR_ALLOW_UNRESTRICTED_NVRAM           0x0040
-#define CSR_ALLOW_DEVICE_CONFIGURATION         0x0080
-#define CSR_ALLOW_ANY_RECOVERY_OS              0x0100
-#define CSR_ALLOW_UNAPPROVED_KEXTS             0x0200
-#define CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE   0x0400
-#define CSR_ALLOW_UNAUTHENTICATED_ROOT         0x0800
+// These codes are returned with the csr-active-config NVRAM variable
+#define CSR_ALLOW_UNTRUSTED_KEXTS              0x0001        // Introduced in Mac OS 10.11 El Capitan
+#define CSR_ALLOW_UNRESTRICTED_FS              0x0002        //               Ditto
+#define CSR_ALLOW_TASK_FOR_PID                 0x0004        //               Ditto
+#define CSR_ALLOW_KERNEL_DEBUGGER              0x0008        //               Ditto
+#define CSR_ALLOW_APPLE_INTERNAL               0x0010        //               Ditto
+#define CSR_ALLOW_UNRESTRICTED_DTRACE          0x0020        //               Ditto
+#define CSR_ALLOW_UNRESTRICTED_NVRAM           0x0040        //               Ditto
+#define CSR_ALLOW_DEVICE_CONFIGURATION         0x0080        //               Ditto
+#define CSR_ALLOW_ANY_RECOVERY_OS              0x0100        // Introduced in Mac OS 10.12 Sierra
+#define CSR_ALLOW_UNAPPROVED_KEXTS             0x0200        // Introduced in Mac OS 10.13 High Sierra
+#define CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE   0x0400        // Introduced in Mac OS 10.14 Mojave
+#define CSR_ALLOW_UNAUTHENTICATED_ROOT         0x0800        // Introduced in Mac OS 11.00 Big Sur
 #define CSR_END_OF_LIST                        0xFFFFFFFF
 
 // Standard SIP "Enabled" Setting
