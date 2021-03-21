@@ -236,9 +236,9 @@ EG_IMAGE * egDecodeICNS (
         // pixel data is compressed, RGB planar
         CompData = DataPtr;
         CompLen  = DataLen;
-        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, r), PixelCount);
-        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, g), PixelCount);
-        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, b), PixelCount);
+        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
+        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
+        egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
         // possible assertion: CompLen == 0
         if (CompLen > 0) {
             Print (L" egLoadICNSIcon: %d bytes of compressed data left\n", CompLen);
@@ -258,11 +258,11 @@ EG_IMAGE * egDecodeICNS (
     // Handle Alpha
     if (WantAlpha && MaskPtr == NULL && MaskLen >= PixelCount) {
         // Add Alpha Mask if Available, Valid and Required
-        egInsertPlane (MaskPtr, PLPTR (NewImage, a), PixelCount);
+        egInsertPlane (MaskPtr, PLPTR(NewImage, a), PixelCount);
     }
     else {
         // Default to 'Opaque' if Alpha is Unavailable, Invalid or Not Required
-        egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
+        egSetPlane (PLPTR(NewImage, a), 255, PixelCount);
     }
 
     // FUTURE: scale to originally requested size if we had to load another size

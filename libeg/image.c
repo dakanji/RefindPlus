@@ -574,14 +574,14 @@ EG_IMAGE * egPrepareEmbeddedImage (
     ) {
         // copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, r), PixelCount);
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
         }
         else {
-            egInsertPlane (CompData, PLPTR (NewImage, r), PixelCount);
+            egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
         }
-        egCopyPlane (PLPTR (NewImage, r), PLPTR (NewImage, g), PixelCount);
-        egCopyPlane (PLPTR (NewImage, r), PLPTR (NewImage, b), PixelCount);
+        egCopyPlane (PLPTR(NewImage, r), PLPTR(NewImage, g), PixelCount);
+        egCopyPlane (PLPTR(NewImage, r), PLPTR(NewImage, b), PixelCount);
 
     }
     else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
@@ -589,24 +589,24 @@ EG_IMAGE * egPrepareEmbeddedImage (
     ) {
         // copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, r), PixelCount);
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, g), PixelCount);
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, b), PixelCount);
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
         }
         else {
-            egInsertPlane (CompData, PLPTR (NewImage, r), PixelCount);
+            egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
-            egInsertPlane (CompData, PLPTR (NewImage, g), PixelCount);
+            egInsertPlane (CompData, PLPTR(NewImage, g), PixelCount);
             CompData += PixelCount;
-            egInsertPlane (CompData, PLPTR (NewImage, b), PixelCount);
+            egInsertPlane (CompData, PLPTR(NewImage, b), PixelCount);
             CompData += PixelCount;
         }
     }
     else {
         // set color planes to black
-        egSetPlane (PLPTR (NewImage, r), 0, PixelCount);
-        egSetPlane (PLPTR (NewImage, g), 0, PixelCount);
-        egSetPlane (PLPTR (NewImage, b), 0, PixelCount);
+        egSetPlane (PLPTR(NewImage, r), 0, PixelCount);
+        egSetPlane (PLPTR(NewImage, g), 0, PixelCount);
+        egSetPlane (PLPTR(NewImage, b), 0, PixelCount);
     }
 
     // Handle Alpha
@@ -616,16 +616,16 @@ EG_IMAGE * egPrepareEmbeddedImage (
     ) {
         // Add Alpha Mask if Available and Required
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR (NewImage, a), PixelCount);
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, a), PixelCount);
         }
         else {
-            egInsertPlane (CompData, PLPTR (NewImage, a), PixelCount);
+            egInsertPlane (CompData, PLPTR(NewImage, a), PixelCount);
             CompData += PixelCount;
         }
     }
     else {
-        // Default to 'Opaque' if Alpha is Unavailable or Not Required 
-        egSetPlane (PLPTR (NewImage, a), 255, PixelCount);
+        // Default to 'Opaque' if Alpha is Unavailable or Not Required
+        egSetPlane (PLPTR(NewImage, a), 255, PixelCount);
     }
 
     return NewImage;
