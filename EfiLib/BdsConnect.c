@@ -17,7 +17,10 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../MainLoader/mystrings.h"
 #include "../MainLoader/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
+
+#if REFIT_DEBUG > 0
 #include "../../ShellPkg/Include/Library/HandleParsingLib.h"
+#endif
 
 #define IS_PCI_GFX(_p) IS_CLASS2 (_p, PCI_CLASS_DISPLAY, PCI_CLASS_DISPLAY_OTHER)
 
@@ -225,9 +228,6 @@ BdsLibConnectMostlyAllEfi (
     EFI_PCI_IO_PROTOCOL* PciIo;
 
     UINTN      GOPCount;
-    CHAR16     *GopDevicePathStr = NULL;
-    CHAR16     *DevicePathStr    = NULL;
-    CHAR16     *DeviceData       = NULL;
     EFI_HANDLE *GOPArray         = NULL;
 
     UINTN  SegmentPCI;
@@ -237,6 +237,12 @@ BdsLibConnectMostlyAllEfi (
     UINTN  HexIndex = 0;
     UINTN  m;
 
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *GopDevicePathStr = NULL;
+    CHAR16 *DevicePathStr    = NULL;
+    CHAR16 *DeviceData       = NULL;
+    #endif
 
     DetectedDevices = FALSE;
 
@@ -250,6 +256,7 @@ BdsLibConnectMostlyAllEfi (
         }
     }
     #endif
+
     // DISABLE scan all handles
     //Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, &AllHandleCount, &AllHandleBuffer);
     //
@@ -277,7 +284,10 @@ BdsLibConnectMostlyAllEfi (
         for (i = 0; i < AllHandleCount; i++) {
             HexIndex       = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
             MakeConnection = TRUE;
-            DeviceData     = NULL;
+
+            #if REFIT_DEBUG > 0
+            DeviceData = NULL;
+            #endif
 
             XStatus = ScanDeviceHandles (
                 AllHandleBuffer[i],
@@ -363,17 +373,22 @@ BdsLibConnectMostlyAllEfi (
                             }
                             else {
                                 #if REFIT_DEBUG > 0
+
                                 BOOLEAN VGADevice = IS_PCI_VGA(&Pci);
                                 BOOLEAN GFXDevice = IS_PCI_GFX(&Pci);
+
                                 if (VGADevice) {
-                                    // DA-TAG: Unable to reconnect after disconnecting here
-                                    // Comment out and set MakeConnection to FALSE
+                                    // DA-TAG: Unable to reconnect later after disconnecting here
+                                    //         Comment out and set MakeConnection to FALSE
                                     // gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
                                     MakeConnection = FALSE;
                                     DeviceData     = StrDuplicate (L" - Monitor Display");
                                 }
                                 else if (GFXDevice) {
-                                    DeviceData = StrDuplicate (L" - Graphics Card  ");
+                                    // DA-TAG: Currently unable to detect GFX Device
+                                    //         Revisit Clover implementation later
+                                    //         Not currently missed but may allow new options
+                                    DeviceData = StrDuplicate (L" - GraphicsFX Card");
                                 }
                                 else {
                                     DeviceData = PoolPrint (
@@ -384,9 +399,10 @@ BdsLibConnectMostlyAllEfi (
                                         FunctionPCI
                                     );
                                 } // VGADevice
+
                                 #endif
-                            }
-                        } // if !EFI_ERROR (XStatus)
+                            } // if/else EFI_ERROR (XStatus)
+                        } // if/else !EFI_ERROR (XStatus)
                     } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
 
                     if (!FoundGOP) {
@@ -402,10 +418,12 @@ BdsLibConnectMostlyAllEfi (
                         if (!EFI_ERROR (XStatus)) {
                             for (m = 0; m < GOPCount; m++) {
                                 if (GOPArray[m] != gST->ConsoleOutHandle) {
+                                    #if REFIT_DEBUG > 0
                                     GopDevicePathStr = ConvertDevicePathToText (
                                         DevicePathFromHandle (GOPArray[m]),
                                         FALSE, FALSE
                                     );
+                                    #endif
 
                                     FoundGOP = TRUE;
                                     break;
@@ -416,32 +434,36 @@ BdsLibConnectMostlyAllEfi (
                         MyFreePool (GOPArray);
                     }
 
+                    #if REFIT_DEBUG > 0
+
                     if (FoundGOP && GopDevicePathStr != NULL) {
                         DevicePathStr = ConvertDevicePathToText (
                             DevicePathFromHandle (AllHandleBuffer[i]),
                             FALSE, FALSE
                         );
 
-                        #if REFIT_DEBUG > 0
                         if (StrStr (GopDevicePathStr, DevicePathStr)) {
                             DeviceData = PoolPrint (
                                 L"%s : Leverages GOP",
                                 DeviceData
                             );
                         }
-                        #endif
 
                         MyFreePool (DevicePathStr);
                     }
+
+                    #endif
                     // Temp from Clover END
 
                     if (MakeConnection) {
                         XStatus = daConnectController (AllHandleBuffer[i], NULL, NULL, TRUE);
                     }
 
+                    #if REFIT_DEBUG > 0
                     if (DeviceData == NULL) {
                         DeviceData = L"";
                     }
+                    #endif
 
                     if (Parent) {
                         #if REFIT_DEBUG > 0
@@ -460,36 +482,31 @@ BdsLibConnectMostlyAllEfi (
                         #endif
                     }
                     else {
+                        #if REFIT_DEBUG > 0
+
                         if (XStatus == EFI_NOT_STARTED) {
-                            #if REFIT_DEBUG > 0
                             if (PostConnect) {
                                 MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
                             }
-                            #endif
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
-                            #if REFIT_DEBUG > 0
                             if (PostConnect) {
                                 MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
                             }
-                            #endif
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
-                            #if REFIT_DEBUG > 0
                             if (PostConnect) {
                                 MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
                             }
-                            #endif
                         }
                         else {
-                            #if REFIT_DEBUG > 0
                             if (PostConnect) {
                                 MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
                             }
-                            #endif
                         }
-                    } // if Parent
 
+                        #endif
+                    } // if Parent elseif !EFI_ERROR (XStatus) else
                 } // if !Device
             } // if EFI_ERROR (XStatus)
 
@@ -499,6 +516,7 @@ BdsLibConnectMostlyAllEfi (
             }
 
             #if REFIT_DEBUG > 0
+
             if (PostConnect) {
                 if (i == AllHandleCountTrigger) {
                     MsgLog ("\n\n");
@@ -507,12 +525,16 @@ BdsLibConnectMostlyAllEfi (
                     MsgLog ("\n");
                 }
             }
-            #endif
 
             MyFreePool (DeviceData);
+
+            #endif
         }  // for
 
+        #if REFIT_DEBUG > 0
         MyFreePool (GopDevicePathStr);
+        #endif
+
         MyFreePool (HandleBuffer);
         MyFreePool (HandleType);
     } // if !EFI_ERROR (Status)
