@@ -462,10 +462,7 @@ SetBootArgs (
         }
         else {
             // Use Args Alone
-            BootArg = PoolPrint (
-                L"%s",
-                GlobalConfig.SetBootArgs
-            );
+            BootArg = PoolPrint (L"%s", GlobalConfig.SetBootArgs);
         }
 
         // Convert BootArg to CHAR8 array in 'ArrCHAR8'
@@ -732,15 +729,15 @@ IsValidTool (
     IN  REFIT_VOLUME  *BaseVolume,
     IN  CHAR16        *PathName
 ) {
-    CHAR16  *DontVolName  = NULL;
-    CHAR16  *DontPathName = NULL;
-    CHAR16  *DontFileName = NULL;
-    CHAR16  *DontScanThis;
-    CHAR16  *TestVolName  = NULL;
-    CHAR16  *TestPathName = NULL;
-    CHAR16  *TestFileName = NULL;
-    BOOLEAN retval        = TRUE;
-    UINTN   i = 0;
+    UINTN     i            = 0;
+    BOOLEAN   retval       = TRUE;
+    CHAR16   *TestVolName  = NULL;
+    CHAR16   *DontVolName  = NULL;
+    CHAR16   *DontPathName = NULL;
+    CHAR16   *DontFileName = NULL;
+    CHAR16   *TestPathName = NULL;
+    CHAR16   *TestFileName = NULL;
+    CHAR16   *DontScanThis = NULL;
 
     if (FileExists (BaseVolume->RootDir, PathName) &&
         IsValidLoader (BaseVolume->RootDir, PathName)
