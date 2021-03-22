@@ -10,10 +10,10 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#ifdef __MAKEWITH_GNUEFI
+#ifndef __MAKEWITH_TIANO
 
 /**
-  @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
+  @retval EFI_INCOMPATIBLE_VERSION  Not running on compatible TianoCore compiled version
 **/
 EFI_STATUS
 AcquireGOP (
