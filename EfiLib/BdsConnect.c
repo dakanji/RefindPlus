@@ -311,7 +311,7 @@ BdsLibConnectMostlyAllEfi (
                 if (!Device) {
                     #if REFIT_DEBUG > 0
                     if (PostConnect) {
-                        MsgLog ("Handle 0x%03X ...Ignored [Not a Device]", HexIndex);
+                        MsgLog ("Handle 0x%03X ...Discounted [Other Item]", HexIndex);
                     }
                     #endif
                 }
