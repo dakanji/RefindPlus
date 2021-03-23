@@ -1204,7 +1204,7 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
 {
     fsw_status_t               status;
     struct HFSPlusCatalogKey   catkey;
-    fsw_u32                    ptr;
+    fsw_u32                    ptr = 0;
     fsw_u16                    rec_type;
     BTNodeDescriptor *         node = NULL;
     struct fsw_string          rec_name;
@@ -1342,7 +1342,7 @@ static fsw_status_t fsw_hfs_dir_read(struct fsw_hfs_volume *vol,
 {
     fsw_status_t               status;
     struct HFSPlusCatalogKey   catkey;
-    fsw_u32                    ptr;
+    fsw_u32                    ptr  = 0;
     BTNodeDescriptor *         node = NULL;
 
     visitor_parameter_t        param;
