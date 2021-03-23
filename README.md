@@ -6,6 +6,8 @@ Enhanced version of the amazing rEFInd Boot Manager that incorporates various fi
 
 The development focus is on MacPro3,1 to MacPro5,1 (as well as Xserve3,1) but may be useful to other rEFInd users (particularly if on a Mac).
 
+**NB:** This ReadMe reflects the current unreleased code base. [CLICK HERE](https://github.com/dakanji/RefindPlus/tree/90ef53e09dee68b99fdd438b982e0f404c47ede5#refindplus) for the ReadMe related to the current released version of RefindPlus.
+
 ## Headline Features
 - Maintains feature and configuration parity with the base rEFInd version.
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
