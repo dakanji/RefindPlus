@@ -134,7 +134,7 @@ Your local `RefindPlus` repository will be under `Documents/RefindPlus/Working`
 - Drag the `RepoUpdater.sh` file into Terminal
 - Press `Enter`
 
-**NB:** If you get an error after running the script, try running it again.
+**NB:** If you get an error after running the script, try running it again as subsequent runs should realign things. If the script still fails after a fourth attempt, use the manual sync steps outlined below instead.
 
 ### Sync Manually
 #### RefindPlusUDK
