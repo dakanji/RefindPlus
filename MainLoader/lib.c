@@ -631,7 +631,7 @@ EfivarSetRaw (
     }
 
     if (OldStatus == EFI_SUCCESS) {
-        MyFreePool (&OldBuf);
+        MyFreePool (OldBuf);
     }
 
     return Status;
