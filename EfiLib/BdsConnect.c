@@ -234,11 +234,11 @@ BdsLibConnectMostlyAllEfi (
     UINTN  BusPCI;
     UINTN  DevicePCI;
     UINTN  FunctionPCI;
-    UINTN  HexIndex = 0;
     UINTN  m;
 
 
     #if REFIT_DEBUG > 0
+    UINTN  HexIndex          = 0;
     CHAR16 *GopDevicePathStr = NULL;
     CHAR16 *DevicePathStr    = NULL;
     CHAR16 *DeviceData       = NULL;
@@ -282,10 +282,10 @@ BdsLibConnectMostlyAllEfi (
         AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
 
         for (i = 0; i < AllHandleCount; i++) {
-            HexIndex       = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
             MakeConnection = TRUE;
 
             #if REFIT_DEBUG > 0
+            HexIndex   = ConvertHandleToHandleIndex (AllHandleBuffer[i]);
             DeviceData = NULL;
             #endif
 
