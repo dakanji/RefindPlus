@@ -1062,8 +1062,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"suppress_verbose_apfs")) {
           GlobalConfig.SuppressVerboseAPFS = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"reinforce_apfs")) {
-          GlobalConfig.ReinforceAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"associate_apfs")) {
+          GlobalConfig.AssociateAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
           GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);

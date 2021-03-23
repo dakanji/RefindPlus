@@ -164,16 +164,16 @@
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
 # of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.0 (Big Sur) when
 # SIP is enabled. Attempts to run the Mac OS 11.0 Boot Loader directly with SIP enabled result
-# in kernel panics. When this option is activated, RefindPlus will map Mac OS APFS volumes to
-# their respective "PreBoot" partitions which will be used to boot such Mac OS Instances and
+# in kernel panics. When this option is activated, RefindPlus will associate APFS volumes with
+# their respective "PreBoot" partitions which will be used to boot such Mac OS instances while
 # the "PreBoot" partitions will be hidden from view. This feature also facilitates directly
 # booting into FileVault encrypted APFS volumes without requiring "PreBoot" partitions.
 # NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data", to
 # improve the reliability of this option in distinguishing between APFS partitions.
 #
-# Inactive when commented out (Does not actively support APFS requirements)
+# Inactive when commented out (Does not associate APFS volumes with PreBoot partitions)
 #
-#reinforce_apfs
+#associate_apfs
 
 # Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware

@@ -26,10 +26,11 @@
     "ON" or "OFF" in the configuration file. Default is "OFF"
 - Now Specfically Logs Booting Clover Instances
   * Now separately identifies Clover instances in the debug log when these are booted
-- Changes Misc Token Names for Internal Consistency
+- Changes Misc Token Names for Internal Consistency or to better reflect function
   * 'disable_mac_compat_check' to 'disable_compat_check'
   * 'set_mac_boot_args' to 'set_boot_args'
   * 'protect_mac_nvram' to 'protect_nvram'
+  * 'reinforce_apfs' to 'associate_apfs'
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
 - Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers

@@ -411,7 +411,7 @@ typedef struct {
    BOOLEAN          DisableAMFI;
    BOOLEAN          SupplyAPFS;
    BOOLEAN          SuppressVerboseAPFS;
-   BOOLEAN          ReinforceAPFS;
+   BOOLEAN          AssociateAPFS;
    BOOLEAN          ProtectNVRAM;
    BOOLEAN          ScanOtherESP;
    BOOLEAN          ShutdownAfterTimeout;
