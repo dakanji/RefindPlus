@@ -1919,7 +1919,7 @@ UINTN WaitForInput (UINTN Timeout) {
             return INPUT_TIMER_ERROR;
         }
         else {
-            Status = refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
+            refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
             WaitList[Length - 1] = TimerEvent;
         }
     }

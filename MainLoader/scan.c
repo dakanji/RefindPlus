@@ -1332,7 +1332,7 @@ static CHAR16 *RuniPXEDiscover (EFI_HANDLE Volume) {
         return NULL;
     }
 
-    Status = refit_call3_wrapper(
+    refit_call3_wrapper(
         gBS->StartImage,
         iPXEHandle,
         &boot_info_size,

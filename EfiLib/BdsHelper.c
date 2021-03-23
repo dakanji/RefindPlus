@@ -71,7 +71,7 @@ VOID UpdateBbsTable (
     }
 
     OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
-    Status    = refit_call5_wrapper(
+    refit_call5_wrapper(
         LegacyBios->GetBbsInfo,
         LegacyBios,
         &HddCount,

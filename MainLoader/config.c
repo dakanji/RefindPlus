@@ -144,7 +144,7 @@ RefitReadFile (
     }
     MyFreePool (Message);
 
-    Status = refit_call1_wrapper(FileHandle->Close, FileHandle);
+    refit_call1_wrapper(FileHandle->Close, FileHandle);
 
     // setup for reading
     File->Current8Ptr  = (CHAR8 *)File->Buffer;

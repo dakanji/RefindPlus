@@ -370,7 +370,7 @@ StartEFIImage (
 bailout_unload:
     // unload the image, we don't care if it works or not...
     if (!IsDriver) {
-        Status = refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
+        refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
     }
 
 bailout:

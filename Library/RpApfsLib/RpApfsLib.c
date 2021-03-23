@@ -73,7 +73,7 @@ RpApfsConnectDevices (
     VOID        *PartitionInfoInterface;
 
 
-    Status = refit_call3_wrapper(
+    refit_call3_wrapper(
         gBS->LocateProtocol,
         &gEfiPartitionInfoProtocolGuid,
         NULL,

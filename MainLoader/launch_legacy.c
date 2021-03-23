@@ -465,7 +465,7 @@ StartLegacyImageList (
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    Status = refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
+    refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MyFreePool (FullLoadOptions);
@@ -565,7 +565,7 @@ StartLegacyUEFI (
     CHAR16 *SelectionName
 ) {
     NotBoot = FALSE;
-    
+
     BeginExternalScreen (TRUE, L"Booting Legacy OS (UEFI mode)");
     StoreLoaderName (SelectionName);
 

@@ -130,7 +130,7 @@ daCheckAltGop (
     );
 
     if (EFI_ERROR (Status)) {
-        Status = refit_call3_wrapper(
+        refit_call3_wrapper(
             gBS->LocateProtocol,
             &GOPDrawProtocolGuid,
             NULL,
@@ -288,7 +288,6 @@ egDumpGOPVideoModes (
     // get dump
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
-        Mode      = GOPDraw->Mode->Mode;
         NumModes  = (INT32)MaxMode + 1;
         ModeCount = MaxMode;
         LoopCount = 0;
@@ -516,7 +515,7 @@ egSetMaxResolution (
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
-    EFI_STATUS   Status   = EFI_UNSUPPORTED;
+    EFI_STATUS   Status;
     UINT32       Width    = 0;
     UINT32       Height   = 0;
     UINT32       BestMode = 0;
@@ -529,7 +528,7 @@ egSetMaxResolution (
         // So get and set basic data and ignore.
         UINT32 Depth, RefreshRate;
 
-        Status = refit_call5_wrapper(
+        refit_call5_wrapper(
             UGADraw->GetMode, UGADraw,
             &Width, &Height,
             &Depth, &RefreshRate
@@ -721,7 +720,6 @@ egInitScreen (
         #endif
 
         if (!EFI_ERROR (Status)) {
-            i = 0;
             for (i = 0; i < HandleCount; i++) {
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -798,7 +796,6 @@ egInitScreen (
             UINT32                Depth;
             UINT32                RefreshRate;
 
-            i = 0;
             for (i = 0; i < HandleCount; i++) {
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -901,7 +898,6 @@ egInitScreen (
             UINT32 GOPMode;
             UINTN  SizeOfInfo;
 
-            i = 0;
             for (i = 0; i < HandleCount; i++) {
                 Status = refit_call3_wrapper(
                     gBS->HandleProtocol,
@@ -1442,7 +1438,7 @@ egSetScreenSize (
         // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
-        Status = refit_call5_wrapper(
+        refit_call5_wrapper(
             UGADraw->GetMode, UGADraw,
             &ScreenW, &ScreenH,
             &UGADepth, &UGARefreshRate

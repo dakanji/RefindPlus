@@ -375,13 +375,10 @@ NvramEntryCheck (
     IN  CHAR16  *NameNVRAM,
     IN  CHAR8   *DataNVRAM
 ) {
-    UINTN       SizeNVRAM;
     CHAR8       StrNVRAM[255];
     CHAR16      *VarData;
     EFI_GUID    AppleGUID = APPLE_GUID;
     EFI_STATUS  Status;
-
-    SizeNVRAM = sizeof (DataNVRAM);
 
     Status = EfivarGetRaw (
         &AppleGUID,
@@ -857,7 +854,6 @@ preBootKicker (
                 MsgLog ("    * Seek %s:\n", FilePath);
                 #endif
 
-                i = 0;
                 for (i = 0; i < VolumesCount; i++) {
                     if ((Volumes[i]->RootDir != NULL) &&
                         IsValidTool (Volumes[i], FilePath)
@@ -1010,7 +1006,6 @@ preCleanNvram (
                 MsgLog ("    * Seek %s:\n", FilePath);
                 #endif
 
-                i = 0;
                 for (i = 0; i < VolumesCount; i++) {
                     if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
                         ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -1820,8 +1815,6 @@ efi_main (
 
         // The Escape key triggers a re-scan operation....
         if (MenuExit == MENU_EXIT_ESCAPE) {
-            MenuExit = 0;
-
             #if REFIT_DEBUG > 0
             MsgLog ("User Input Received:\n");
             MsgLog ("  - Escape Key Pressed ...Rescan All\n\n");

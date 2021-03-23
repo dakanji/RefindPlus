@@ -259,15 +259,16 @@
              gPartitions = GptData;
          } else {
              GptList = gPartitions;
+             
              while (GptList->NextEntry != NULL) {
                  GptList = GptList->NextEntry;
                  NumTables++;
              } // while
+
              GptList->NextEntry = GptData;
              NumTables++;
          } // if/else
      } else if (GptData != NULL) {
          ClearGptData (GptData);
-         NumTables = 0;
      } // if/else
  } // VOID AddPartitionTable()

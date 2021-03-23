@@ -872,7 +872,6 @@ BdsDeleteBootOption (
   EFI_STATUS  Status;
   UINTN       Index2Del;
 
-  Status    = EFI_SUCCESS;
   Index2Del = 0;
 
   SPrint (BootOption, sizeof (BootOption), L"Boot%04x", OptionNumber);
@@ -931,7 +930,6 @@ BdsDeleteAllInvalidLegacyBootOptions (
   UINT16                    BootDesc[100];
   BOOLEAN                   DescStringMatch;
 
-  Status        = EFI_SUCCESS;
   BootOrder     = NULL;
   BootOrderSize = 0;
   HddCount      = 0;
@@ -940,7 +938,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
   LocalBbsTable = NULL;
   BbsEntry      = NULL;
 
-  Status        = EfiLibLocateProtocol (&gEfiLegacyBiosProtocolGuid, (VOID **) &LegacyBios);
+  Status = EfiLibLocateProtocol (&gEfiLegacyBiosProtocolGuid, (VOID **) &LegacyBios);
   if (EFI_ERROR (Status)) {
     return Status;
   }

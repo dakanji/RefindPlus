@@ -233,8 +233,14 @@
      EFI_FILE *TheDir = NULL;
 
      while ((FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
-         Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &TheDir, FileName,
-                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, EFI_FILE_DIRECTORY);
+         refit_call5_wrapper(
+             BaseDir->Open,
+             BaseDir,
+             &TheDir,
+             FileName,
+             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+             EFI_FILE_DIRECTORY
+         );
          Status = refit_call1_wrapper(TheDir->Close, TheDir);
          MyFreePool (FileName);
          MyFreePool (TheDir);
@@ -735,14 +741,14 @@
      ListSize = VarSize / sizeof (UINT16);
      for (i = 0; i < ListSize; i++) {
          VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-         Status = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
+         Status  = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
          if (Status == EFI_SUCCESS) {
              L = AllocateZeroPool (sizeof (BOOT_ENTRY_LIST));
              if (L) {
                  L->BootEntry.BootNum = BootOrder[i];
                  L->BootEntry.Options = (UINT32) Contents[0];
-                 L->BootEntry.Size = (UINT16) Contents[2];
-                 L->BootEntry.Label = StrDuplicate ((CHAR16*) &(Contents[3]));
+                 L->BootEntry.Size    = (UINT16) Contents[2];
+                 L->BootEntry.Label   = StrDuplicate ((CHAR16*) &(Contents[3]));
                  L->BootEntry.DevPath = AllocatePool (L->BootEntry.Size);
                  CopyMem (L->BootEntry.DevPath,
                          (EFI_DEVICE_PATH*) &Contents[3 + StrSize (L->BootEntry.Label)/2],
@@ -750,17 +756,18 @@
                  L->NextBootEntry = NULL;
                  if (ListStart == NULL) {
                      ListStart = L;
-                 } else {
+                 }
+                 else {
                      ListEnd->NextBootEntry = L;
-                 } // if/else
+                 }
                  ListEnd = L;
-             } else {
-                 Status = EFI_OUT_OF_RESOURCES;
-             } // if/else
+             } // if
          } // if
+
          MyFreePool (VarName);
          MyFreePool (Contents);
      } // for
+
      MyFreePool (BootOrder);
 
      return ListStart;

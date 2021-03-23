@@ -21,6 +21,11 @@
  * Foundation, in version 2 as it comes in the "COPYING" file of the
  * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
  */
 
 #include "fsw_hfs.h"
@@ -344,7 +349,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
                 be64_to_cpu(vol->primary_voldesc->catalogFile.logicalSize);
 
         /* Setup extents overflow file */
-        status = fsw_dnode_create_root(vol, kHFSExtentsFileID, &vol->extents_tree.file);
+        fsw_dnode_create_root(vol, kHFSExtentsFileID, &vol->extents_tree.file);
         fsw_memcpy (vol->extents_tree.file->extents,
                     vol->primary_voldesc->extentsFile.extents,
                     sizeof vol->extents_tree.file->extents);
@@ -364,7 +369,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
                               sizeof (BTHeaderRec), (fsw_u8 *) &tree_header);
         if (r <= 0)
         {
-            status = FSW_VOLUME_CORRUPTED;
+            rv = FSW_VOLUME_CORRUPTED;
             break;
         }
         vol->case_sensitive =
@@ -407,7 +412,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
                               sizeof (BTHeaderRec), (fsw_u8 *) &tree_header);
         if (r <= 0)
         {
-            status = FSW_VOLUME_CORRUPTED;
+            rv = FSW_VOLUME_CORRUPTED;
             break;
         }
 
@@ -908,7 +913,7 @@ fsw_hfs_btree_iterate_node (struct fsw_hfs_btree * btree,
                              btree->node_size, buffer) <= 0)
       {
           status = FSW_VOLUME_CORRUPTED;
-          return 1;
+          goto done;
       }
 
       node = (BTNodeDescriptor*)buffer;

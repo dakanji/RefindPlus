@@ -58,6 +58,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "fsw_iso9660.h"
 //#include <Protocol/MsgLog.h>
@@ -366,8 +372,8 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
     //FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: success (SUA(pos:%x, sz:%d)!!!)\n"), sua_pos, sua_size));
 
 #if 1
-    status = fsw_block_get(vol, ISOINT(rootdir.extent_location), 0, &buffer);
-    sig = (char *)buffer + sua_pos;
+    fsw_block_get(vol, ISOINT(rootdir.extent_location), 0, &buffer);
+    sig   = (char *)buffer + sua_pos;
     entry = (struct fsw_rock_ridge_susp_entry *)sig;
     if (   entry->sig[0] == 'S'
         && entry->sig[1] == 'P')
