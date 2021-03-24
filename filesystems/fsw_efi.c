@@ -87,65 +87,99 @@ EFI_GUID gMyEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_IN
 
 // function prototypes
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                                  IN EFI_HANDLE                          ControllerHandle,
-                                                  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                              IN EFI_HANDLE                          ControllerHandle,
-                                              IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath);
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                             IN EFI_HANDLE                          ControllerHandle,
-                                             IN UINTN                               NumberOfChildren,
-                                             IN EFI_HANDLE                          *ChildHandleBuffer);
-
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
-                                                      IN  CHAR8                               *Language,
-                                                      OUT CHAR16                              **DriverName);
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
-                                                          IN  EFI_HANDLE                          ControllerHandle,
-                                                          IN  EFI_HANDLE                          ChildHandle  OPTIONAL,
-                                                          IN  CHAR8                               *Language,
-                                                          OUT CHAR16                              **ControllerName);
-
-void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
-                              fsw_u32 old_phys_blocksize, fsw_u32 old_log_blocksize,
-                              fsw_u32 new_phys_blocksize, fsw_u32 new_log_blocksize);
-fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer);
-
-EFI_STATUS fsw_efi_map_status(fsw_status_t fsw_status, FSW_VOLUME_DATA *Volume);
-
-EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(IN EFI_FILE_IO_INTERFACE *This,
-                                                OUT EFI_FILE **Root);
-EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
-                                       OUT EFI_FILE **NewFileHandle);
-
-EFI_STATUS fsw_efi_file_read(IN FSW_FILE_DATA *File,
-                             IN OUT UINTN *BufferSize,
-                             OUT VOID *Buffer);
-EFI_STATUS fsw_efi_file_getpos(IN FSW_FILE_DATA *File,
-                               OUT UINT64 *Position);
-EFI_STATUS fsw_efi_file_setpos(IN FSW_FILE_DATA *File,
-                               IN UINT64 Position);
-
-EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
-                            OUT EFI_FILE **NewHandle,
-                            IN CHAR16 *FileName,
-                            IN UINT64 OpenMode,
-                            IN UINT64 Attributes);
-EFI_STATUS fsw_efi_dir_read(IN FSW_FILE_DATA *File,
-                            IN OUT UINTN *BufferSize,
-                            OUT VOID *Buffer);
-EFI_STATUS fsw_efi_dir_setpos(IN FSW_FILE_DATA *File,
-                              IN UINT64 Position);
-
-EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
-                                 IN EFI_GUID *InformationType,
-                                 IN OUT UINTN *BufferSize,
-                                 OUT VOID *Buffer);
-EFI_STATUS fsw_efi_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
-                                       IN struct fsw_dnode *dno,
-                                       IN OUT UINTN *BufferSize,
-                                       OUT VOID *Buffer);
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
+    IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN EFI_HANDLE                               ControllerHandle,
+    IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
+);
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(
+    IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN EFI_HANDLE                               ControllerHandle,
+    IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
+);
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
+    IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN EFI_HANDLE                               ControllerHandle,
+    IN UINTN                                    NumberOfChildren,
+    IN EFI_HANDLE                              *ChildHandleBuffer
+);
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(
+    IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL   *This,
+    IN  CHAR8                                    *Language,
+    OUT CHAR16                                  **DriverName
+);
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(
+    IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
+    IN  EFI_HANDLE                               ControllerHandle,
+    IN  EFI_HANDLE                               ChildHandle  OPTIONAL,
+    IN  CHAR8                                   *Language,
+    OUT CHAR16                                 **ControllerName
+);
+void EFIAPI fsw_efi_change_blocksize(
+    struct fsw_volume *vol,
+    fsw_u32 old_phys_blocksize,
+    fsw_u32 old_log_blocksize,
+    fsw_u32 new_phys_blocksize,
+    fsw_u32 new_log_blocksize
+);
+fsw_status_t EFIAPI fsw_efi_read_block(
+    struct fsw_volume *vol,
+    fsw_u64 phys_bno,
+    void *buffer
+);
+EFI_STATUS fsw_efi_map_status(
+    fsw_status_t     fsw_status,
+    FSW_VOLUME_DATA *Volume
+);
+EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(
+    IN EFI_FILE_IO_INTERFACE *This,
+    OUT EFI_FILE **Root
+);
+EFI_STATUS fsw_efi_dnode_to_FileHandle(
+    IN struct fsw_dnode *dno,
+    OUT EFI_FILE **NewFileHandle
+);
+EFI_STATUS fsw_efi_file_read(
+    IN FSW_FILE_DATA *File,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+);
+EFI_STATUS fsw_efi_file_getpos(
+    IN FSW_FILE_DATA *File,
+    OUT UINT64 *Position
+);
+EFI_STATUS fsw_efi_file_setpos(
+    IN FSW_FILE_DATA *File,
+    IN UINT64 Position
+);
+EFI_STATUS fsw_efi_dir_open(
+    IN FSW_FILE_DATA *File,
+    OUT EFI_FILE **NewHandle,
+    IN CHAR16 *FileName,
+    IN UINT64 OpenMode,
+    IN UINT64 Attributes
+);
+EFI_STATUS fsw_efi_dir_read(
+    IN FSW_FILE_DATA *File,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+);
+EFI_STATUS fsw_efi_dir_setpos(
+    IN FSW_FILE_DATA *File,
+    IN UINT64 Position
+);
+EFI_STATUS fsw_efi_dnode_getinfo(
+    IN FSW_FILE_DATA *File,
+    IN EFI_GUID *InformationType,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+);
+EFI_STATUS fsw_efi_dnode_fill_FileInfo(
+    IN FSW_VOLUME_DATA *Volume,
+    IN struct fsw_dnode *dno,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+);
 
 /**
  * Structure for holding disk cache data.
@@ -171,9 +205,7 @@ REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
     fsw_efi_DriverBinding_Supported,
     fsw_efi_DriverBinding_Start,
     fsw_efi_DriverBinding_Stop,
-    0x10,
-    NULL,
-    NULL
+    0x10, NULL, NULL
 };
 
 /**
@@ -192,7 +224,6 @@ REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL fsw_efi_ComponentName_table = {
 
 struct fsw_host_table   fsw_efi_host_table = {
     FSW_STRING_TYPE_UTF16,
-
     fsw_efi_change_blocksize,
     fsw_efi_read_block
 };
@@ -209,9 +240,10 @@ VOID EFIAPI fsw_efi_clear_cache(VOID) {
          FreePool(Caches[i].Cache);
          Caches[i].Cache = NULL;
       } // if
-            Caches[i].CacheStart = 0;
-            Caches[i].CacheValid = FALSE;
-            Caches[i].Volume = NULL;
+
+      Caches[i].CacheStart = 0;
+      Caches[i].CacheValid = FALSE;
+      Caches[i].Volume     = NULL;
    }
    LastRead = -1;
 } // VOID EFIAPI fsw_efi_clear_cache();
@@ -221,9 +253,10 @@ VOID EFIAPI fsw_efi_clear_cache(VOID) {
  * on the image's handle. Actually mounting a file system is initiated through
  * the Driver Binding protocol at the firmware's request.
  */
-EFI_STATUS EFIAPI fsw_efi_main(IN EFI_HANDLE         ImageHandle,
-                               IN EFI_SYSTEM_TABLE   *SystemTable)
-{
+EFI_STATUS EFIAPI fsw_efi_main(
+    IN EFI_HANDLE          ImageHandle,
+    IN EFI_SYSTEM_TABLE   *SystemTable
+) {
     EFI_STATUS  Status;
 
 #ifndef __MAKEWITH_TIANO
@@ -260,15 +293,6 @@ EFI_STATUS EFIAPI fsw_efi_main(IN EFI_HANDLE         ImageHandle,
         return Status;
     }
 
-//	OverrideFunctions();
-//   Msg = NULL;
-//   msgCursor = NULL;
-//   Status = gBS->LocateProtocol(&gMsgLogProtocolGuid, NULL, (VOID **) &Msg);
-//   if (!EFI_ERROR (Status) && (Msg != NULL)) {
-//     msgCursor = Msg->Cursor;
-//     BootLog("MsgLog installed into VBoxFs\n");
-//   }
-
     return EFI_SUCCESS;
 }
 
@@ -283,10 +307,11 @@ EFI_DRIVER_ENTRY_POINT(fsw_efi_main)
  * and implicitly checks if the disk is already in use by another driver.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                                  IN EFI_HANDLE                   ControllerHandle,
-                                                  IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
-{
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
+    IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN EFI_HANDLE                               ControllerHandle,
+    IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
+) {
     EFI_STATUS          Status;
     EFI_DISK_IO         *DiskIo;
 
@@ -342,10 +367,13 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(IN REFINDPLUS_EFI_DRIVER_BINDI
  * device handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                              IN EFI_HANDLE                   ControllerHandle,
-                                              IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath)
-{
+EFI_STATUS
+EFIAPI
+fsw_efi_DriverBinding_Start(
+    IN REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN EFI_HANDLE                               ControllerHandle,
+    IN REFINDPLUS_EFI_DEVICE_PATH_PROTOCOL     *RemainingDevicePath
+) {
     EFI_STATUS          Status;
     EFI_BLOCK_IO        *BlockIo;
     EFI_DISK_IO         *DiskIo;
@@ -366,7 +394,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_P
          EFI_OPEN_PROTOCOL_GET_PROTOCOL
      );   // NOTE: we only want to look at the MediaId
     if (EFI_ERROR (Status)) {
-//        Print(L"Fsw ERROR: OpenProtocol(BlockIo) returned %x\n", Status);
         return Status;
     }
 
@@ -380,7 +407,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_P
         EFI_OPEN_PROTOCOL_BY_DRIVER
     );
     if (EFI_ERROR (Status)) {
-        Print(L"Fsw ERROR: OpenProtocol(DiskIo) returned %x\n", Status);
         return Status;
     }
 
@@ -414,9 +440,6 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_P
             &Volume->FileSystem,
             NULL
         );
-        if (EFI_ERROR (Status)) {
-//            Print(L"Fsw ERROR: InstallMultipleProtocolInterfaces returned %x\n", Status);
-        }
     }
 
     // on errors, close the opened protocols
@@ -447,14 +470,15 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Start(IN REFINDPLUS_EFI_DRIVER_BINDING_P
  * case; it closes all file handles between commands.
  */
 
-EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
-                                             IN  EFI_HANDLE                   ControllerHandle,
-                                             IN  UINTN                        NumberOfChildren,
-                                             IN  EFI_HANDLE                   *ChildHandleBuffer)
-{
-    EFI_STATUS          Status;
+EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
+    IN  REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL  *This,
+    IN  EFI_HANDLE                   ControllerHandle,
+    IN  UINTN                        NumberOfChildren,
+    IN  EFI_HANDLE                  *ChildHandleBuffer
+) {
+    EFI_STATUS             Status;
     EFI_FILE_IO_INTERFACE *FileSystem;
-    FSW_VOLUME_DATA     *Volume;
+    FSW_VOLUME_DATA       *Volume;
 
 #if DEBUG_LEVEL
     Print(L"fsw_efi_DriverBinding_Stop\n");
@@ -520,17 +544,20 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(IN  REFINDPLUS_EFI_DRIVER_BINDING_P
  * based on the file system type actually used in compilation.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
-                                                      IN  CHAR8                        *Language,
-                                                      OUT CHAR16                       **DriverName)
-{
-    if (Language == NULL || DriverName == NULL)
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(
+    IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL  *This,
+    IN  CHAR8                                   *Language,
+    OUT CHAR16                                 **DriverName
+) {
+    if (Language == NULL || DriverName == NULL) {
         return EFI_INVALID_PARAMETER;
+    }
 
     if (Language[0] == 'e' && Language[1] == 'n' && Language[2] == 'g' && Language[3] == 0) {
         *DriverName = FSW_EFI_DRIVER_NAME(FSTYPE);
         return EFI_SUCCESS;
     }
+
     return EFI_UNSUPPORTED;
 }
 
@@ -539,12 +566,13 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(IN  REFINDPLUS_EFI_COMPONE
  * because this is not a "bus" driver in the sense of the EFI Driver Model.
  */
 
-EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL    *This,
-                                                          IN  EFI_HANDLE                     ControllerHandle,
-                                                          IN  EFI_HANDLE                     ChildHandle  OPTIONAL,
-                                                          IN  CHAR8                          *Language,
-                                                          OUT CHAR16                         **ControllerName)
-{
+EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(
+    IN  REFINDPLUS_EFI_COMPONENT_NAME_PROTOCOL    *This,
+    IN  EFI_HANDLE                      ControllerHandle,
+    IN  EFI_HANDLE                      ChildHandle  OPTIONAL,
+    IN  CHAR8                          *Language,
+    OUT CHAR16                        **ControllerName
+) {
     return EFI_UNSUPPORTED;
 }
 
@@ -553,11 +581,15 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(IN  REFINDPLUS_EFI_COM
  * when the file system driver changes the block sizes for the volume.
  */
 
-void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
-                              fsw_u32 old_phys_blocksize, fsw_u32 old_log_blocksize,
-                              fsw_u32 new_phys_blocksize, fsw_u32 new_log_blocksize)
+void EFIAPI fsw_efi_change_blocksize(
+    struct fsw_volume *vol,
+    fsw_u32 old_phys_blocksize,
+    fsw_u32 old_log_blocksize,
+    fsw_u32 new_phys_blocksize,
+    fsw_u32 new_log_blocksize)
 {
     // nothing to do
+    return;
 }
 
 /**
@@ -571,7 +603,11 @@ void EFIAPI fsw_efi_change_blocksize(struct fsw_volume *vol,
  * disk.
  */
 
-fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno, void *buffer) {
+fsw_status_t EFIAPI fsw_efi_read_block(
+    struct fsw_volume *vol,
+    fsw_u64            phys_bno,
+    void              *buffer
+) {
    int              i, ReadCache = -1;
    FSW_VOLUME_DATA  *Volume = (FSW_VOLUME_DATA *)vol->host_data;
    EFI_STATUS       Status = EFI_SUCCESS;
@@ -604,8 +640,9 @@ fsw_status_t EFIAPI fsw_efi_read_block(struct fsw_volume *vol, fsw_u64 phys_bno,
          LastRead = 1;
       ReadCache = 1 - LastRead; // NOTE: If NUM_CACHES > 2, this must become more complex
       Caches[ReadCache].CacheValid = FALSE;
-      if (Caches[ReadCache].Cache == NULL)
-         Caches[ReadCache].Cache = AllocatePool(CACHE_SIZE);
+      if (Caches[ReadCache].Cache == NULL) {
+          Caches[ReadCache].Cache = AllocatePool(CACHE_SIZE);
+      }
       if (Caches[ReadCache].Cache != NULL) {
          // TODO: Below call hangs on my 32-bit Mac Mini when compiled with GNU-EFI.
          // The same binary is fine under VirtualBox, and the same call is fine when
@@ -692,9 +729,10 @@ EFI_STATUS fsw_efi_map_status(fsw_status_t fsw_status, FSW_VOLUME_DATA *Volume)
  * handle is closed by the client using it.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(IN EFI_FILE_IO_INTERFACE *This,
-                                                OUT EFI_FILE **Root)
-{
+EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(
+    IN EFI_FILE_IO_INTERFACE *This,
+    OUT EFI_FILE **Root
+) {
     EFI_STATUS          Status;
     FSW_VOLUME_DATA     *Volume = FSW_VOLUME_FROM_FILE_SYSTEM(This);
 
@@ -713,12 +751,13 @@ EFI_STATUS EFIAPI fsw_efi_FileSystem_OpenVolume(IN EFI_FILE_IO_INTERFACE *This,
  * based on the kind of file handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Open(IN EFI_FILE *This,
-                                          OUT EFI_FILE **NewHandle,
-                                          IN CHAR16 *FileName,
-                                          IN UINT64 OpenMode,
-                                          IN UINT64 Attributes)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Open(
+    IN EFI_FILE *This,
+    OUT EFI_FILE **NewHandle,
+    IN CHAR16 *FileName,
+    IN UINT64 OpenMode,
+    IN UINT64 Attributes
+) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
     if (File->Type == FSW_EFI_FILE_TYPE_DIR)
@@ -732,8 +771,7 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Open(IN EFI_FILE *This,
  * and frees the memory used for the structure.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Close(IN EFI_FILE *This)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Close(IN EFI_FILE *This) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
 #if DEBUG_LEVEL
@@ -751,8 +789,7 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Close(IN EFI_FILE *This)
  * and returns a warning because this driver is read-only.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Delete(IN EFI_FILE *This)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Delete(IN EFI_FILE *This) {
     EFI_STATUS          Status;
 
     Status = refit_call1_wrapper(This->Close, This);
@@ -769,10 +806,11 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Delete(IN EFI_FILE *This)
  * based on the kind of file handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Read(IN EFI_FILE *This,
-                                          IN OUT UINTN *BufferSize,
-                                          OUT VOID *Buffer)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Read(
+    IN EFI_FILE *This,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
     if (File->Type == FSW_EFI_FILE_TYPE_FILE)
@@ -787,10 +825,11 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Read(IN EFI_FILE *This,
  * because this driver is read-only.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Write(IN EFI_FILE *This,
-                                           IN OUT UINTN *BufferSize,
-                                           IN VOID *Buffer)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Write(
+    IN EFI_FILE *This,
+    IN OUT UINTN *BufferSize,
+    IN VOID *Buffer
+) {
     // this driver is read-only
     return EFI_WRITE_PROTECTED;
 }
@@ -800,9 +839,10 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Write(IN EFI_FILE *This,
  * based on the kind of file handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_GetPosition(IN EFI_FILE *This,
-                                                 OUT UINT64 *Position)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_GetPosition(
+    IN EFI_FILE *This,
+    OUT UINT64 *Position
+) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
     if (File->Type == FSW_EFI_FILE_TYPE_FILE)
@@ -816,9 +856,10 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_GetPosition(IN EFI_FILE *This,
  * based on the kind of file handle.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_SetPosition(IN EFI_FILE *This,
-                                                 IN UINT64 Position)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_SetPosition(
+    IN EFI_FILE *This,
+    IN UINT64 Position
+) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
     if (File->Type == FSW_EFI_FILE_TYPE_FILE)
@@ -833,11 +874,12 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_SetPosition(IN EFI_FILE *This,
  * function implementing this.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_GetInfo(IN EFI_FILE *This,
-                                             IN EFI_GUID *InformationType,
-                                             IN OUT UINTN *BufferSize,
-                                             OUT VOID *Buffer)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_GetInfo(
+    IN EFI_FILE *This,
+    IN EFI_GUID *InformationType,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+) {
     FSW_FILE_DATA      *File = FSW_FILE_FROM_FILE_HANDLE(This);
 
     return fsw_efi_dnode_getinfo(File, InformationType, BufferSize, Buffer);
@@ -848,11 +890,12 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_GetInfo(IN EFI_FILE *This,
  * because this driver is read-only.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_SetInfo(IN EFI_FILE *This,
-                                             IN EFI_GUID *InformationType,
-                                             IN UINTN BufferSize,
-                                             IN VOID *Buffer)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_SetInfo(
+    IN EFI_FILE *This,
+    IN EFI_GUID *InformationType,
+    IN UINTN BufferSize,
+    IN VOID *Buffer
+) {
     // this driver is read-only
     return EFI_WRITE_PROTECTED;
 }
@@ -862,8 +905,7 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_SetInfo(IN EFI_FILE *This,
  * because this driver is read-only.
  */
 
-EFI_STATUS EFIAPI fsw_efi_FileHandle_Flush(IN EFI_FILE *This)
-{
+EFI_STATUS EFIAPI fsw_efi_FileHandle_Flush(IN EFI_FILE *This) {
     // this driver is read-only
     return EFI_WRITE_PROTECTED;
 }
@@ -874,9 +916,10 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Flush(IN EFI_FILE *This)
  * with the interface functions.
  */
 
-EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
-                                       OUT EFI_FILE **NewFileHandle)
-{
+EFI_STATUS fsw_efi_dnode_to_FileHandle(
+    IN struct fsw_dnode *dno,
+    OUT EFI_FILE **NewFileHandle
+) {
     EFI_STATUS          Status;
     FSW_FILE_DATA       *File;
 
@@ -926,10 +969,11 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(IN struct fsw_dnode *dno,
  * Data read function for regular files. Calls through to fsw_shandle_read.
  */
 
-EFI_STATUS fsw_efi_file_read(IN FSW_FILE_DATA *File,
-                             IN OUT UINTN *BufferSize,
-                             OUT VOID *Buffer)
-{
+EFI_STATUS fsw_efi_file_read(
+    IN FSW_FILE_DATA *File,
+    IN OUT UINTN     *BufferSize,
+    OUT VOID         *Buffer
+) {
     EFI_STATUS          Status;
     fsw_u32             buffer_size;
 
@@ -949,9 +993,10 @@ EFI_STATUS fsw_efi_file_read(IN FSW_FILE_DATA *File,
  * Get file position for regular files.
  */
 
-EFI_STATUS fsw_efi_file_getpos(IN FSW_FILE_DATA *File,
-                               OUT UINT64 *Position)
-{
+EFI_STATUS fsw_efi_file_getpos(
+    IN FSW_FILE_DATA *File,
+    OUT UINT64       *Position
+) {
     *Position = File->shand.pos;
     return EFI_SUCCESS;
 }
@@ -961,8 +1006,10 @@ EFI_STATUS fsw_efi_file_getpos(IN FSW_FILE_DATA *File,
  * to be a special value for the end of the file.
  */
 
-EFI_STATUS fsw_efi_file_setpos(IN FSW_FILE_DATA *File, IN UINT64 Position)
-{
+EFI_STATUS fsw_efi_file_setpos(
+    IN FSW_FILE_DATA *File,
+    IN UINT64         Position
+) {
     if (Position == 0xFFFFFFFFFFFFFFFFULL)
         File->shand.pos = File->shand.dnode->size;
     else
@@ -978,12 +1025,13 @@ EFI_STATUS fsw_efi_file_setpos(IN FSW_FILE_DATA *File, IN UINT64 Position)
  * call to fsw_dnode_resolve because EFI has no concept of symbolic links.
  */
 
-EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
-                            OUT EFI_FILE **NewHandle,
-                            IN CHAR16 *FileName,
-                            IN UINT64 OpenMode,
-                            IN UINT64 Attributes)
-{
+EFI_STATUS fsw_efi_dir_open(
+    IN FSW_FILE_DATA  *File,
+    OUT EFI_FILE     **NewHandle,
+    IN CHAR16         *FileName,
+    IN UINT64          OpenMode,
+    IN UINT64          Attributes
+) {
     EFI_STATUS          Status;
     FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
     struct fsw_dnode    *dno;
@@ -1025,10 +1073,11 @@ EFI_STATUS fsw_efi_dir_open(IN FSW_FILE_DATA *File,
  * the next directory entry.
  */
 
-EFI_STATUS fsw_efi_dir_read(IN FSW_FILE_DATA *File,
-                            IN OUT UINTN *BufferSize,
-                            OUT VOID *Buffer)
-{
+EFI_STATUS fsw_efi_dir_read(
+    IN FSW_FILE_DATA *File,
+    IN OUT UINTN     *BufferSize,
+    OUT VOID         *Buffer
+) {
     EFI_STATUS          Status;
     FSW_VOLUME_DATA     *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
     struct fsw_dnode    *dno;
@@ -1062,8 +1111,10 @@ EFI_STATUS fsw_efi_dir_read(IN FSW_FILE_DATA *File,
  * position to zero.
  */
 
-EFI_STATUS fsw_efi_dir_setpos(IN FSW_FILE_DATA *File, IN UINT64 Position)
-{
+EFI_STATUS fsw_efi_dir_setpos(
+    IN FSW_FILE_DATA *File,
+    IN UINT64 Position
+) {
     if (Position == 0) {
         File->shand.pos = 0;
         return EFI_SUCCESS;
@@ -1079,11 +1130,12 @@ EFI_STATUS fsw_efi_dir_setpos(IN FSW_FILE_DATA *File, IN UINT64 Position)
  * requested by the caller.
  */
 
-EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
-                                 IN EFI_GUID *InformationType,
-                                 IN OUT UINTN *BufferSize,
-                                 OUT VOID *Buffer)
-{
+EFI_STATUS fsw_efi_dnode_getinfo(
+    IN FSW_FILE_DATA *File,
+    IN EFI_GUID      *InformationType,
+    IN OUT UINTN     *BufferSize,
+    OUT VOID         *Buffer
+) {
     EFI_STATUS            Status;
     FSW_VOLUME_DATA       *Volume = (FSW_VOLUME_DATA *)File->shand.dnode->vol->host_data;
     EFI_FILE_SYSTEM_INFO  *FSInfo;
@@ -1161,8 +1213,11 @@ EFI_STATUS fsw_efi_dnode_getinfo(IN FSW_FILE_DATA *File,
  * appropriate member of the EFI_FILE_INFO structure that we're filling.
  */
 
-void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_time)
-{
+void fsw_store_time_posix(
+    struct fsw_dnode_stat *sb,
+    int which,
+    fsw_u32 posix_time
+) {
     EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     if (which == FSW_DNODE_STAT_CTIME)
@@ -1179,16 +1234,20 @@ void fsw_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw_u32 posix_ti
  * adjustments to the EFI_FILE_INFO structure that we're filling.
  */
 
-void fsw_store_attr_posix(struct fsw_dnode_stat *sb, fsw_u16 posix_mode)
-{
+void fsw_store_attr_posix(
+    struct fsw_dnode_stat *sb,
+    fsw_u16 posix_mode
+) {
     EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     if ((posix_mode & S_IWUSR) == 0)
         FileInfo->Attribute |= EFI_FILE_READ_ONLY;
 }
 
-void fsw_store_attr_efi(struct fsw_dnode_stat *sb, fsw_u16 attr)
-{
+void fsw_store_attr_efi(
+    struct fsw_dnode_stat *sb,
+    fsw_u16 attr
+) {
     EFI_FILE_INFO       *FileInfo = (EFI_FILE_INFO *)sb->host_data;
 
     FileInfo->Attribute |= attr;
@@ -1198,11 +1257,12 @@ void fsw_store_attr_efi(struct fsw_dnode_stat *sb, fsw_u16 attr)
  * Common function to fill an EFI_FILE_INFO with information about a dnode.
  */
 
-EFI_STATUS fsw_efi_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
-                                       IN struct fsw_dnode *dno,
-                                       IN OUT UINTN *BufferSize,
-                                       OUT VOID *Buffer)
-{
+EFI_STATUS fsw_efi_dnode_fill_FileInfo(
+    IN FSW_VOLUME_DATA *Volume,
+    IN struct fsw_dnode *dno,
+    IN OUT UINTN *BufferSize,
+    OUT VOID *Buffer
+) {
     EFI_STATUS          Status;
     EFI_FILE_INFO       *FileInfo;
     UINTN               RequiredSize;
