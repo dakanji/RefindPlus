@@ -296,10 +296,24 @@ BdsLibConnectMostlyAllEfi (
                 &HandleType
             );
 
-            if (EFI_ERROR (XStatus)) {
+            if (HandleType == NULL) {
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
-                    MsgLog ("Handle 0x%03X - FATAL: %r", HexIndex, XStatus);
+                    MsgLog ("Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
+                }
+                #endif
+            }
+            else if (HandleType[i] == NULL) {
+                #if REFIT_DEBUG > 0
+                if (PostConnect) {
+                    MsgLog ("Handle 0x%03X - ERROR: No Handle Type", HexIndex);
+                }
+                #endif
+            }
+            else if (EFI_ERROR (XStatus)) {
+                #if REFIT_DEBUG > 0
+                if (PostConnect) {
+                    MsgLog ("Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
                 }
                 #endif
             }

@@ -171,17 +171,22 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
 static EG_PIXEL BlackPixel  = { 0x00, 0x00, 0x00, 0 };
 //static EG_PIXEL YellowPixel = { 0x00, 0xff, 0xff, 0 };
 
-EG_IMAGE * DummyImage(IN UINTN PixelSize)
-{
+EG_IMAGE * DummyImage (
+    IN UINTN PixelSize
+) {
     EG_IMAGE        *Image;
     UINTN           x, y, LineOffset;
     CHAR8           *Ptr, *YPtr;
 
-    Image = egCreateFilledImage(PixelSize, PixelSize, TRUE, &BlackPixel);
+    Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BlackPixel);
+
+    if (Image == NULL) {
+        return NULL;
+    }
 
     LineOffset = PixelSize * 4;
 
-    YPtr = (CHAR8 *)Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
     for (y = 0; y < 32; y++) {
         Ptr = YPtr;
         for (x = 0; x < 32; x++) {

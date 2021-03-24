@@ -94,17 +94,14 @@ RefitReadFile (
     UINT64          ReadSize;
     CHAR16          *Message;
 
-    File->Buffer = NULL;
+    File->Buffer     = NULL;
     File->BufferSize = 0;
 
     // read the file, allocating a buffer on the way
     Status = refit_call5_wrapper(
-        BaseDir->Open,
-        BaseDir,
-        &FileHandle,
-        FileName,
-        EFI_FILE_MODE_READ,
-        0
+        BaseDir->Open, BaseDir,
+        &FileHandle, FileName,
+        EFI_FILE_MODE_READ, 0
     );
 
     Message = PoolPrint (L"While Loading File:- '%s'", FileName);
@@ -123,7 +120,7 @@ RefitReadFile (
     ReadSize = FileInfo->FileSize;
     FreePool (FileInfo);
 
-    File->BufferSize = (UINTN)ReadSize;
+    File->BufferSize = (UINTN) ReadSize;
     File->Buffer = AllocatePool (File->BufferSize);
     if (File->Buffer == NULL) {
        size = 0;
@@ -1456,11 +1453,13 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         Fstab   = AllocateZeroPool (sizeof (REFIT_FILE));
         Status  = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
 
-        if (CheckError (Status, L"while reading /etc/fstab")) {
+        if (Fstab == NULL ||
+            Options == NULL ||
+            CheckError (Status, L"while reading /etc/fstab")
+        ) {
             MyFreePool (Options);
             MyFreePool (Fstab);
-            Options = NULL;
-            Fstab   = NULL;
+            return NULL;
         }
         else {
             // File read; locate root fs and create entries
@@ -1468,12 +1467,14 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 if (TokenCount > 2) {
                     Root[0] = '\0';
+
                     if (StrCmp (TokenList[1], L"\\") == 0) {
                         Root = PoolPrint (L"%s", TokenList[0]);
                     }
                     else if (StrCmp (TokenList[2], L"\\") == 0) {
                         Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
-                    } // if/elseif/elseif
+                    }
+
                     if (Root && (Root[0] != L'\0')) {
                         for (i = 0; i < StrLen (Root); i++) {
                             if (Root[i] == '\\') {
@@ -1490,9 +1491,9 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                         MyFreePool (Line);
 
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-                    } // if
+                    } // if Root && Root[0]
+
                     MyFreePool (Root);
-                    Root = NULL;
                 } // if
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while
@@ -1505,7 +1506,6 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             }
             else {
                 MyFreePool (Options);
-                Options = NULL;
             }
 
             MyFreePool (Fstab->Buffer);
@@ -1578,52 +1578,53 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
 // The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
 // it wasn't found.
 REFIT_FILE * ReadLinuxOptionsFile (
-    IN CHAR16 *LoaderPath,
+    IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-   CHAR16       *OptionsFilename, *FullFilename;
-   BOOLEAN      GoOn = TRUE, FileFound = FALSE;
-   UINTN        i = 0, size;
-   REFIT_FILE   *File = NULL;
-   EFI_STATUS   Status;
+    EFI_STATUS   Status;
+    CHAR16      *OptionsFilename;
+    CHAR16      *FullFilename;
+    UINTN        size;
+    UINTN        i         = 0;
+    BOOLEAN      GoOn      = TRUE;
+    BOOLEAN      FileFound = FALSE;
+    REFIT_FILE  *File      = NULL;
 
-   do {
-      OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
-      FullFilename = FindPath (LoaderPath);
+    do {
+        OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
+        FullFilename    = FindPath (LoaderPath);
 
-      if ((OptionsFilename != NULL) && (FullFilename != NULL)) {
-         MergeStrings (&FullFilename, OptionsFilename, '\\');
+        if ((OptionsFilename != NULL) && (FullFilename != NULL)) {
+            MergeStrings (&FullFilename, OptionsFilename, '\\');
 
-         if (FileExists (Volume->RootDir, FullFilename)) {
-            File = AllocateZeroPool (sizeof (REFIT_FILE));
-            Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
+            if (FileExists (Volume->RootDir, FullFilename)) {
+                File = AllocateZeroPool (sizeof (REFIT_FILE));
+                if (File) {
+                    Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
+                    if (!CheckError (Status, L"while loading the Linux options file")) {
+                        GoOn      = FALSE;
+                        FileFound = TRUE;
+                    }
+                }
+            } // if FileExists
+        }
+        else {
+            // a filename string is NULL
+            GoOn = FALSE;
+        } // if/else
 
-            if (CheckError (Status, L"while loading the Linux options file")) {
-                MyFreePool (File);
-                File = NULL;
-            }
-            else {
-               GoOn = FALSE;
-               FileFound = TRUE;
-            } // if/else error
-         } // if file exists
-      }
-      else { // a filename string is NULL
-         GoOn = FALSE;
-      } // if/else
-      MyFreePool (OptionsFilename);
-      MyFreePool (FullFilename);
-      OptionsFilename = FullFilename = NULL;
-   } while (GoOn);
+        MyFreePool (OptionsFilename);
+        MyFreePool (FullFilename);
+    } while (GoOn);
 
-   if (!FileFound) {
-      // No refind_linux.conf file; look for /etc/fstab and try to pull values from there....
-      File = GenerateOptionsFromEtcFstab (Volume);
-      // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec....
-      if (!File) {
-          File = GenerateOptionsFromPartTypes();
-      }
-   } // if
+    if (!FileFound) {
+         // No refind_linux.conf file; look for /etc/fstab and try to pull values from there
+         File = GenerateOptionsFromEtcFstab (Volume);
+         // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
+         if (!File) {
+             File = GenerateOptionsFromPartTypes();
+         }
+     } // if
 
    return (File);
 } // REFIT_FILE * ReadLinuxOptionsFile()

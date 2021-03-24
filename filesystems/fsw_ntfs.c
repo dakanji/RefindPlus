@@ -808,6 +808,11 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
     if(err != FSW_SUCCESS)
 	goto error_out;
 
+    if (dno->mft.buf == NULL) {
+        err = FSW_NOT_FOUND;
+    	goto error_out;
+    }
+
     len = GETU8(dno->mft.buf, 22);
     if( (len & 1) == 0 ) {
 	err = FSW_NOT_FOUND;
@@ -823,7 +828,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 		dno->g.size = len;
 		dno->g.type = FSW_DNODE_TYPE_SYMLINK;
 		dno->islink = 1;
-		dno->fsize = len;
+		dno->fsize  = len;
 		return FSW_SUCCESS;
 	    default:
 		fsw_free(dno->cbuf);

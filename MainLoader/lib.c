@@ -1740,12 +1740,23 @@ ScanVolumes (
         return;
     }
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
+    if (UuidList == NULL) {
+        Status = EFI_BUFFER_TOO_SMALL;
+        CheckError (Status, L"While Allocating UuidList");
+        return;
+    }
 
     // first pass: collect information about all handles
     ScannedOnce = FALSE;
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
+        if (Volume == NULL) {
+            Status = EFI_BUFFER_TOO_SMALL;
+            CheckError (Status, L"While Allocating Volumes");
+            return;
+        }
+
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable (Volume);
         ScanVolume (Volume);
