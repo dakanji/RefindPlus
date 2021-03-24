@@ -224,6 +224,7 @@ BdsLibConnectMostlyAllEfi (
     BOOLEAN              MakeConnection = TRUE;
     BOOLEAN              Parent;
     BOOLEAN              Device;
+    BOOLEAN              DevTag;
     PCI_TYPE00           Pci;
     EFI_PCI_IO_PROTOCOL* PciIo;
 
@@ -296,24 +297,17 @@ BdsLibConnectMostlyAllEfi (
                 &HandleType
             );
 
-            if (HandleType == NULL) {
-                #if REFIT_DEBUG > 0
-                if (PostConnect) {
-                    MsgLog ("Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
-                }
-                #endif
-            }
-            else if (HandleType[i] == NULL) {
-                #if REFIT_DEBUG > 0
-                if (PostConnect) {
-                    MsgLog ("Handle 0x%03X - ERROR: No Handle Type", HexIndex);
-                }
-                #endif
-            }
-            else if (EFI_ERROR (XStatus)) {
+            if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
                     MsgLog ("Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
+                }
+                #endif
+            }
+            else if (HandleType == NULL) {
+                #if REFIT_DEBUG > 0
+                if (PostConnect) {
+                    MsgLog ("Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
                 }
                 #endif
             }
@@ -351,10 +345,20 @@ BdsLibConnectMostlyAllEfi (
                         }
                     } // for
 
+                    // Assume  Not Device
+                    DevTag = FALSE;
+
+                    for (k = 0; k < HandleCount; k++) {
+                        if (HandleType[k] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
+                            DevTag = TRUE;
+                            break;
+                        }
+                    } // for
+
                     // Assume Success
                     XStatus = EFI_SUCCESS;
 
-                    if (HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
+                    if (DevTag) {
                         XStatus = refit_call3_wrapper(
                             gBS->HandleProtocol,
                             AllHandleBuffer[i],
@@ -417,7 +421,7 @@ BdsLibConnectMostlyAllEfi (
                                 #endif
                             } // if/else EFI_ERROR (XStatus)
                         } // if/else !EFI_ERROR (XStatus)
-                    } // if HandleType[i] & EFI_HANDLE_TYPE_DEVICE_HANDLE
+                    } // if DevTag
 
                     if (!FoundGOP) {
                         XStatus = refit_call5_wrapper(
@@ -543,14 +547,14 @@ BdsLibConnectMostlyAllEfi (
             MyFreePool (DeviceData);
 
             #endif
+            
+            MyFreePool (HandleBuffer);
+            MyFreePool (HandleType);
         }  // for
 
         #if REFIT_DEBUG > 0
         MyFreePool (GopDevicePathStr);
         #endif
-
-        MyFreePool (HandleBuffer);
-        MyFreePool (HandleType);
     } // if !EFI_ERROR (Status)
 
 	MyFreePool (AllHandleBuffer);
