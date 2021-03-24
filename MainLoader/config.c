@@ -1443,13 +1443,13 @@ static
 REFIT_FILE * GenerateOptionsFromEtcFstab (
     REFIT_VOLUME *Volume
 ) {
-    UINTN        TokenCount, i;
-    REFIT_FILE   *Options = NULL;
-    REFIT_FILE   *Fstab = NULL;
-    EFI_STATUS   Status;
-    CHAR16       **TokenList;
-    CHAR16       *Line;
+    EFI_STATUS    Status;
+    UINTN         TokenCount, i;
     CHAR16       *Root;
+    CHAR16       *Line;
+    CHAR16      **TokenList;
+    REFIT_FILE   *Options = NULL;
+    REFIT_FILE   *Fstab   = NULL;
 
     if (FileExists (Volume->RootDir, L"\\etc\\fstab")) {
         Options = AllocateZeroPool (sizeof (REFIT_FILE));

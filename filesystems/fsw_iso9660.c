@@ -367,20 +367,25 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
 
 
     rootdir = pvoldesc->root_directory;
-    sua_pos = (sizeof (struct iso9660_dirrec)) + rootdir.file_identifier_length + (rootdir.file_identifier_length % 2) - 2;
+    sua_pos = (sizeof (struct iso9660_dirrec)) +
+            rootdir.file_identifier_length +
+            (rootdir.file_identifier_length % 2) - 2;
     //int sua_size = rootdir.dirrec_length - rootdir.file_identifier_length;
     //FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: success (SUA(pos:%x, sz:%d)!!!)\n"), sua_pos, sua_size));
 
 #if 1
-    fsw_block_get(vol, ISOINT(rootdir.extent_location), 0, &buffer);
-    sig   = (char *)buffer + sua_pos;
-    entry = (struct fsw_rock_ridge_susp_entry *)sig;
-    if (   entry->sig[0] == 'S'
-        && entry->sig[1] == 'P')
-    {
-        struct fsw_rock_ridge_susp_sp *sp = (struct fsw_rock_ridge_susp_sp *)entry;
-        if (sp->magic[0] == 0xbe && sp->magic[1] == 0xef)
-        {
+    status = fsw_block_get (vol, ISOINT(rootdir.extent_location), 0, &buffer);
+    if (status)
+        return status;
+
+    sig   = (char *) buffer + sua_pos;
+    entry = (struct fsw_rock_ridge_susp_entry *) sig;
+
+    if (entry->sig[0] == 'S' &&
+        entry->sig[1] == 'P'
+    ) {
+        struct fsw_rock_ridge_susp_sp *sp = (struct fsw_rock_ridge_susp_sp *) entry;
+        if (sp->magic[0] == 0xbe && sp->magic[1] == 0xef) {
             vol->fRockRidge = 1;
         } else {
  //           FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: SP magic isn't valid\n")));

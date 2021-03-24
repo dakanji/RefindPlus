@@ -176,7 +176,7 @@ daCheckAltGop (
         UINT32  MaxMode;
         UINT32  Mode;
         UINTN   SizeOfInfo;
-        BOOLEAN OurValidGOP;
+        BOOLEAN OurValidGOP = FALSE;
 
         Status = EFI_NOT_FOUND;
         for (i = 0; i < HandleCount; i++) {

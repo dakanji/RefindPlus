@@ -969,7 +969,7 @@ TextMenuStyle (
                     if (i == State->CurrentSelection) {
                         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
                     }
-                    else {
+                    else if (DisplayStrings[i]) {
                         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_BASIC);
                         refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, DisplayStrings[i]);
                     }
@@ -1018,11 +1018,13 @@ TextMenuStyle (
                 gST->ConOut,
                 ATTR_CHOICE_BASIC
             );
-            refit_call2_wrapper(
-                gST->ConOut->OutputString,
-                gST->ConOut,
-                DisplayStrings[State->PreviousSelection]
-            );
+            if (DisplayStrings[State->PreviousSelection] != NULL) {
+                refit_call2_wrapper(
+                    gST->ConOut->OutputString,
+                    gST->ConOut,
+                    DisplayStrings[State->PreviousSelection]
+                );
+            }
             refit_call3_wrapper(
                 gST->ConOut->SetCursorPosition,
                 gST->ConOut,

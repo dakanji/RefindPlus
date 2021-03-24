@@ -2027,15 +2027,17 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         SetVolumeBadgeIcon (Volume);
-        if (Volumes[i]->DiskKind == DISK_KIND_INTERNAL) {
-            // get custom volume icons if present
-            if (!Volume->VolIconImage) {
-                Volume->VolIconImage = egLoadIconAnyType (
-                    Volume->RootDir,
-                    L"",
-                    L".VolumeIcon",
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
+        if (Volume->DiskKind) {
+            if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+                // get custom volume icons if present
+                if (!Volume->VolIconImage) {
+                    Volume->VolIconImage = egLoadIconAnyType (
+                        Volume->RootDir,
+                        L"",
+                        L".VolumeIcon",
+                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                    );
+                }
             }
         }
     } // for

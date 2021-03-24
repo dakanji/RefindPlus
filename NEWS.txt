@@ -38,7 +38,7 @@
   * Users should change earlier versions of these drivers for current ones
   * Copies available from upstream post v0.13.1 releases or after building RefindPlus
 - Applies Multiple Code Quality Fixes
-  * Several issues identified by an automated static analysis of the code base closed out
+  * Fixes several issues identified by static analysis of the code base
 - Fixes Default Timeout Setting
   * Was previously set to 20 seconds and not disabled as documented
 - Fixes Repeated Icon Scaling on HiDPI Monitors
