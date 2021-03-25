@@ -5194,10 +5194,16 @@ static unsigned addChunk_PLTE(ucvector* out, const LodePNGColorMode* info) {
   size_t i;
   ucvector PLTE;
   ucvector_init(&PLTE);
+
+  if (PLTE.data == NULL) {
+      return 0;
+  }
+
   for(i = 0; i != info->palettesize * 4; ++i) {
     /*add all channels except alpha channel*/
     if(i % 4 != 3) ucvector_push_back(&PLTE, info->palette[i]);
   }
+
   error = addChunk(out, "PLTE", PLTE.data, PLTE.size);
   ucvector_cleanup(&PLTE);
 
@@ -5209,6 +5215,11 @@ static unsigned addChunk_tRNS(ucvector* out, const LodePNGColorMode* info) {
   size_t i;
   ucvector tRNS;
   ucvector_init(&tRNS);
+
+  if (tRNS.data == NULL) {
+      return 0;
+  }
+
   if(info->colortype == LCT_PALETTE) {
     size_t amount = info->palettesize;
     /*the tail of palette values that all have 255 as alpha, does not have to be encoded*/

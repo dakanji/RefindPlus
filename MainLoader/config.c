@@ -1451,14 +1451,18 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     if (FileExists (Volume->RootDir, L"\\etc\\fstab")) {
         Options = AllocateZeroPool (sizeof (REFIT_FILE));
         Fstab   = AllocateZeroPool (sizeof (REFIT_FILE));
-        Status  = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
-
-        if (Fstab == NULL ||
-            Options == NULL ||
-            CheckError (Status, L"while reading /etc/fstab")
-        ) {
+        if (Fstab == NULL || Options == NULL) {
             MyFreePool (Options);
             MyFreePool (Fstab);
+
+            return NULL;
+        }
+
+        Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
+        if (CheckError (Status, L"while reading /etc/fstab")) {
+            MyFreePool (Options);
+            MyFreePool (Fstab);
+
             return NULL;
         }
         else {

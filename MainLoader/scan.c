@@ -935,32 +935,37 @@ static struct LOADER_LIST * AddLoaderListEntry (
     struct LOADER_LIST *LoaderList,
     struct LOADER_LIST *NewEntry
 ) {
-    struct LOADER_LIST *LatestEntry, *CurrentEntry, *PrevEntry = NULL;
-    BOOLEAN LinuxRescue = FALSE;
+    struct LOADER_LIST *LatestEntry  = NULL;
+    struct LOADER_LIST *CurrentEntry = NULL;
+    struct LOADER_LIST *PrevEntry    = NULL;
+    BOOLEAN LinuxRescue              = FALSE;
 
-    LatestEntry = CurrentEntry = LoaderList;
     if (LoaderList == NULL) {
         LatestEntry = NewEntry;
     }
     else {
+        LatestEntry = CurrentEntry = LoaderList;
         if (StriSubCmp (L"vmlinuz-0-rescue", NewEntry->FileName)) {
             LinuxRescue = TRUE;
         }
+
         while ((CurrentEntry != NULL) &&
             !StriSubCmp (L"vmlinuz-0-rescue", CurrentEntry->FileName) &&
             (LinuxRescue || (TimeComp (&(NewEntry->TimeStamp), &(CurrentEntry->TimeStamp)) < 0))
         ) {
-            PrevEntry = CurrentEntry;
+            PrevEntry   = CurrentEntry;
             CurrentEntry = CurrentEntry->NextEntry;
         } // while
+
         NewEntry->NextEntry = CurrentEntry;
         if (PrevEntry == NULL) {
             LatestEntry = NewEntry;
         }
         else {
             PrevEntry->NextEntry = NewEntry;
-        } // if/else
+        }
     } // if/else
+
     return (LatestEntry);
 } // static VOID AddLoaderListEntry()
 
@@ -1216,7 +1221,8 @@ ScanLoaderDir (
 
        while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
           Extension = FindExtension (DirEntry->FileName);
-          FullName = StrDuplicate (Path);
+          FullName  = StrDuplicate (Path);
+          
           MergeStrings (&FullName, DirEntry->FileName, L'\\');
           CleanUpPathNameSlashes (FullName);
 
@@ -1235,9 +1241,10 @@ ScanLoaderDir (
 
           NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
           if (NewLoader != NULL) {
-             NewLoader->FileName = StrDuplicate (FullName);
+             NewLoader->FileName  = StrDuplicate (FullName);
              NewLoader->TimeStamp = DirEntry->ModificationTime;
-             LoaderList = AddLoaderListEntry (LoaderList, NewLoader);
+             LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
+
              if (DuplicatesFallback (Volume, FullName)) {
                  FoundFallbackDuplicate = TRUE;
              }
@@ -1250,17 +1257,18 @@ ScanLoaderDir (
        if (LoaderList != NULL) {
            NewLoader = LoaderList;
            while (NewLoader != NULL) {
-               IsLinux = (StriSubCmp (L"bzImage", NewLoader->FileName) ||
-                          StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
-                          StriSubCmp (L"kernel", NewLoader->FileName));
+               IsLinux = (
+                   StriSubCmp (L"bzImage", NewLoader->FileName) ||
+                   StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
+                   StriSubCmp (L"kernel", NewLoader->FileName)
+               );
                if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
                    AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
                }
                else {
                    LatestEntry = AddLoaderEntry (
                        NewLoader->FileName,
-                       NULL,
-                       Volume,
+                       NULL, Volume,
                        !(IsLinux && GlobalConfig.FoldLinuxKernels)
                    );
                    if (IsLinux && (FirstKernel == NULL)) {

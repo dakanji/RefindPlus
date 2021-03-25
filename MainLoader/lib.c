@@ -1696,19 +1696,22 @@ ScanVolumes (
 ) {
     EFI_STATUS         Status;
     EFI_HANDLE         *Handles;
-    REFIT_VOLUME       *Volume, *WholeDiskVolume;
+    REFIT_VOLUME       *Volume = NULL;
+    REFIT_VOLUME       *WholeDiskVolume;
     MBR_PARTITION_INFO *MbrTable;
-    UINTN              HandleCount = 0;
-    UINTN              HandleIndex;
-    UINTN              VolumeIndex, VolumeIndex2;
-    UINTN              PartitionIndex;
-    UINTN              SectorSum, i;
-    UINT8              *SectorBuffer1, *SectorBuffer2;
+    UINTN               HandleCount = 0;
+    UINTN               HandleIndex;
+    UINTN               VolumeIndex;
+    UINTN               VolumeIndex2;
+    UINTN               PartitionIndex;
+    UINTN               SectorSum, i;
+    UINT8              *SectorBuffer1;
+    UINT8              *SectorBuffer2;
+    CHAR16             *ShowScreenStr  = NULL;
     EFI_GUID           *UuidList;
-    EFI_GUID           GuidNull       = NULL_GUID_VALUE;
-    EFI_GUID           ESPGuid        = ESP_GUID_VALUE;
-
-    CHAR16             *ShowScreenStr = NULL;
+    EFI_GUID            GuidNull       = NULL_GUID_VALUE;
+    EFI_GUID            ESPGuid        = ESP_GUID_VALUE;
+    BOOLEAN             DupFlag;
 
     #if REFIT_DEBUG > 0
     CHAR16  *VolDesc;
@@ -1721,7 +1724,6 @@ ScanVolumes (
     #endif
 
     MyFreePool (Volumes);
-    Volumes = NULL;
     VolumesCount = 0;
     ForgetPartitionTables();
 
@@ -1733,16 +1735,21 @@ ScanVolumes (
         &HandleCount,
         &Handles
     );
-    if (Status == EFI_NOT_FOUND) {
-        return;  // no filesystems. strange, but true...
-    }
-    if (CheckError (Status, L"Found While Listing All File Systems")) {
+    if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
+        MsgLog ("** ERROR: %r While Listing File Systems\n\n", Status);
+        #endif
+
         return;
     }
+
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
+        #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
-        CheckError (Status, L"While Allocating UuidList");
+        MsgLog ("** ERROR: %r While Allocating UuidList\n\n", Status);
+        #endif
+
         return;
     }
 
@@ -1752,8 +1759,11 @@ ScanVolumes (
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         if (Volume == NULL) {
+            #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
-            CheckError (Status, L"While Allocating Volumes");
+            MsgLog ("** ERROR: %r While Allocating Volumes\n\n", Status);
+            #endif
+
             return;
         }
 
@@ -1763,31 +1773,29 @@ ScanVolumes (
 
         if (UuidList) {
             UuidList[HandleIndex] = Volume->VolUuid;
-            if (GlobalConfig.ScanOtherESP) {
-                // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
-                // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
-                // normal file systems they are likely to all share the same volume UUID, and it is also
-                // unlikely that they are part of software RAID mirrors.
-                for (i = 0; i < HandleIndex; i++) {
-                    if ((!GuidsAreEqual (&(Volume->PartTypeGuid), &ESPGuid)) &&
+            // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
+            // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
+            // normal file systems they are likely to all share the same volume UUID, and it is also
+            // unlikely that they are part of software RAID mirrors.
+            for (i = 0; i < HandleIndex; i++) {
+                if (GlobalConfig.ScanOtherESP) {
+                    DupFlag = (
+                        (!GuidsAreEqual (&(Volume->PartTypeGuid), &ESPGuid)) &&
                         (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                         (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-                    ) {
-                        // This is a duplicate filesystem item
-                        Volume->IsReadable = FALSE;
-                    } // if
-                } // for
-            }
-            else {
-                for (i = 0; i < HandleIndex; i++) {
-                    if ((CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
+                    );
+                }
+                else {
+                    DupFlag = (
+                        (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                         (CompareMem (&(Volume->VolUuid), &GuidNull, sizeof (EFI_GUID)) != 0)
-                    ) {
-                        // This is a duplicate filesystem item
-                        Volume->IsReadable = FALSE;
-                    } // if
-                } // for
-            } // if/else GlobalConfig.ScanOtherESP
+                    );
+                }
+                if (DupFlag) {
+                    // This is a duplicate filesystem item
+                    Volume->IsReadable = FALSE;
+                } // if
+            } // for
         } // if UuidList
 
         AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
@@ -1901,7 +1909,10 @@ ScanVolumes (
     else if (!SelfVolRun) {
         #if REFIT_DEBUG > 0
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-        MsgLog ("INFO: Self Volume:- '%s::%s'\n\n", SelfVolume->VolName, SelfGUID);
+        MsgLog (
+            "INFO: Self Volume:- '%s::%s'\n\n",
+            SelfVolume->VolName, SelfGUID
+        );
         #endif
     }
     else {
@@ -1919,7 +1930,8 @@ ScanVolumes (
         // check MBR partition table for extended partitions
         if (Volume->BlockIO != NULL && Volume->WholeDiskBlockIO != NULL &&
             Volume->BlockIO == Volume->WholeDiskBlockIO && Volume->BlockIOOffset == 0 &&
-            Volume->MbrPartitionTable != NULL) {
+            Volume->MbrPartitionTable != NULL
+        ) {
             MbrTable = Volume->MbrPartitionTable;
             for (PartitionIndex = 0; PartitionIndex < 4; PartitionIndex++) {
                 if (IS_EXTENDED_PART_TYPE (MbrTable[PartitionIndex].Type)) {
@@ -1931,16 +1943,20 @@ ScanVolumes (
         // search for corresponding whole disk volume entry
         WholeDiskVolume = NULL;
         if (Volume->BlockIO != NULL && Volume->WholeDiskBlockIO != NULL &&
-            Volume->BlockIO != Volume->WholeDiskBlockIO) {
+            Volume->BlockIO != Volume->WholeDiskBlockIO
+        ) {
             for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
                 if (Volumes[VolumeIndex2]->BlockIO == Volume->WholeDiskBlockIO &&
-                    Volumes[VolumeIndex2]->BlockIOOffset == 0) {
+                    Volumes[VolumeIndex2]->BlockIOOffset == 0
+                ) {
                     WholeDiskVolume = Volumes[VolumeIndex2];
                 }
             }
         }
 
-        if (WholeDiskVolume != NULL && WholeDiskVolume->MbrPartitionTable != NULL) {
+        if (WholeDiskVolume != NULL &&
+            WholeDiskVolume->MbrPartitionTable != NULL
+        ) {
             // check if this volume is one of the partitions in the table
             MbrTable = WholeDiskVolume->MbrPartitionTable;
             SectorBuffer1 = AllocatePool (512);
@@ -1994,7 +2010,10 @@ ScanVolumes (
                 Volume->IsMbrPartition = TRUE;
                 Volume->MbrPartitionIndex = PartitionIndex;
                 if (Volume->VolName == NULL) {
-                    Volume->VolName = PoolPrint (L"Partition %d", PartitionIndex + 1);
+                    Volume->VolName = PoolPrint (
+                        L"Partition %d",
+                        PartitionIndex + 1
+                    );
                 }
                 break;
             }

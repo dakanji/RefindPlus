@@ -334,6 +334,9 @@ MemLogVA (
           mMemLog->BufferSize, mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE,
           mMemLog->Buffer
       );
+      if (mMemLog->Buffer == NULL) {
+          return;
+      }
       mMemLog->BufferSize += MEM_LOG_INITIAL_SIZE;
       mMemLog->Cursor = mMemLog->Buffer + Offset;
     }

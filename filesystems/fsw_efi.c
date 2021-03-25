@@ -412,6 +412,9 @@ fsw_efi_DriverBinding_Start(
 
     // allocate volume structure
     Volume = AllocateZeroPool(sizeof (FSW_VOLUME_DATA));
+    if (Volume == NULL) {
+        return EFI_BUFFER_TOO_SMALL;
+    }
     Volume->Signature       = FSW_VOLUME_DATA_SIGNATURE;
     Volume->Handle          = ControllerHandle;
     Volume->DiskIo          = DiskIo;
@@ -934,6 +937,9 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(
 
     // allocate file structure
     File = AllocateZeroPool(sizeof (FSW_FILE_DATA));
+    if (File == NULL) {
+        return EFI_BUFFER_TOO_SMALL;
+    }
     File->Signature = FSW_FILE_DATA_SIGNATURE;
     if (dno->type == FSW_DNODE_TYPE_FILE)
         File->Type = FSW_EFI_FILE_TYPE_FILE;

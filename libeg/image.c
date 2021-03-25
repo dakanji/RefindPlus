@@ -256,6 +256,10 @@ VOID
 egFreeImage (
     IN EG_IMAGE *Image
 ) {
+    if (Image == NULL) {
+        return;
+    }
+    
     MyFreePool (Image->PixelData);
     MyFreePool (Image);
 }
