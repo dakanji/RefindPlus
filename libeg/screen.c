@@ -1185,7 +1185,7 @@ egInitScreen (
         ScreenModeType = StrDuplicate (L"No");
     }
 
-    MsgLog ("INFO: Graphics Avaliable:- '%s'", ScreenModeType);
+    MsgLog ("INFO: Graphics Available:- '%s'", ScreenModeType);
     MyFreePool (ScreenModeType);
 
     if (egHasGraphics) {
