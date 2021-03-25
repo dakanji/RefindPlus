@@ -1889,9 +1889,11 @@ ScanVolumes (
     MyFreePool (Handles);
 
     if (!SelfVolSet) {
+        SelfVolRun = TRUE;
+
         SwitchToText (FALSE);
 
-        ShowScreenStr = StrDuplicate (L"** WARN: Could Not Set Volume");
+        ShowScreenStr = StrDuplicate (L"** WARN: Could Not Set Self Volume");
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1907,13 +1909,18 @@ ScanVolumes (
         SwitchToGraphics();
     }
     else if (!SelfVolRun) {
+        SelfVolRun = TRUE;
+
         #if REFIT_DEBUG > 0
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
         MsgLog (
             "INFO: Self Volume:- '%s::%s'\n\n",
             SelfVolume->VolName, SelfGUID
         );
+        MyFreePool (SelfGUID);
         #endif
+
+        return;
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1922,7 +1929,6 @@ ScanVolumes (
         MsgLog ("\n\n");
         #endif
     }
-    SelfVolRun = TRUE;
 
     // second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
