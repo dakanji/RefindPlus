@@ -251,7 +251,6 @@
  VOID AddPartitionTable (REFIT_VOLUME *Volume) {
      GPT_DATA    *GptData = NULL, *GptList;
      EFI_STATUS  Status;
-     UINTN       NumTables = 1;
 
      Status = ReadGptData (Volume, &GptData);
      if (Status == EFI_SUCCESS) {
@@ -259,14 +258,12 @@
              gPartitions = GptData;
          } else {
              GptList = gPartitions;
-             
+
              while (GptList->NextEntry != NULL) {
                  GptList = GptList->NextEntry;
-                 NumTables++;
              } // while
 
              GptList->NextEntry = GptData;
-             NumTables++;
          } // if/else
      } else if (GptData != NULL) {
          ClearGptData (GptData);

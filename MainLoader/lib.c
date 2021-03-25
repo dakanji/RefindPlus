@@ -2107,7 +2107,7 @@ DirNextEntry (
     IN OUT EFI_FILE_INFO **DirEntry,
     IN UINTN FilterMode
 ) {
-    EFI_STATUS Status;
+    EFI_STATUS Status = EFI_BAD_BUFFER_SIZE;
     VOID       *Buffer;
     UINTN      LastBufferSize;
     UINTN      BufferSize;
@@ -2120,7 +2120,10 @@ DirNextEntry (
 
         // read next directory entry
         LastBufferSize = BufferSize = 256;
-        Buffer = AllocatePool (BufferSize);
+        Buffer         = AllocatePool (BufferSize);
+        if (Buffer == NULL) {
+            return EFI_BAD_BUFFER_SIZE;
+        }
 
         for (IterCount = 0; ; IterCount++) {
             Status = refit_call3_wrapper(
@@ -2141,7 +2144,7 @@ DirNextEntry (
                 MsgLog (Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
                 #endif
             }
-            Buffer = EfiReallocatePool (Buffer, LastBufferSize, BufferSize);
+            Buffer         = EfiReallocatePool (Buffer, LastBufferSize, BufferSize);
             LastBufferSize = BufferSize;
         }
 

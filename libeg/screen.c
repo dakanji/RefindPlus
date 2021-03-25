@@ -266,11 +266,9 @@ egDumpGOPVideoModes (
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
     EFI_STATUS Status;
-    UINT32     MaxMode;
     UINT32     Mode;
-    UINT32     ModeLog;
+    UINT32     MaxMode;
     UINT32     NumModes;
-    UINT32     ModeCount;
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
     CHAR16     *PixelFormatDesc;
@@ -289,13 +287,12 @@ egDumpGOPVideoModes (
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
         NumModes  = (INT32)MaxMode + 1;
-        ModeCount = MaxMode;
         LoopCount = 0;
 
         #if REFIT_DEBUG > 0
         MsgLog (
             "Query GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx):\n",
-            ModeCount,
+            MaxMode,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
@@ -345,7 +342,7 @@ egDumpGOPVideoModes (
                 }
 
                 #if REFIT_DEBUG > 0
-                if (LoopCount < ModeCount) {
+                if (LoopCount < MaxMode) {
                     MsgLog (
                         " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
                         Info->HorizontalResolution,
@@ -366,6 +363,8 @@ egDumpGOPVideoModes (
                 #endif
             }
             else {
+                #if REFIT_DEBUG > 0
+                UINT32 ModeLog;
                 // Limit logged value to 99
                 if (Mode > 99) {
                     ModeLog = 99;
@@ -374,9 +373,8 @@ egDumpGOPVideoModes (
                     ModeLog = Mode;
                 }
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("  - Mode[%d]: %r", ModeLog, Status);
-                if (LoopCount < ModeCount) {
+                if (LoopCount < MaxMode) {
                     if (Mode > 99) {
                         MsgLog ( ". NB: Real Mode = %d\n", Mode);
                     }

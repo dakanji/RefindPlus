@@ -759,7 +759,7 @@ fsw_status_t fsw_dnode_readlink_data(struct fsw_dnode *dno, struct fsw_string *l
 
 fsw_status_t fsw_dnode_resolve(struct fsw_dnode *dno, struct fsw_dnode **target_dno_out)
 {
-    fsw_status_t    status;
+    fsw_status_t    status = FSW_NOT_FOUND;
     struct fsw_string target_name;
     struct fsw_dnode *target_dno;
     /* Linux kernel max link count is 40 */

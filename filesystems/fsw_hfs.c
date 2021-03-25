@@ -1077,7 +1077,7 @@ static fsw_status_t fsw_hfs_get_extent(struct fsw_hfs_volume * vol,
                                        struct fsw_hfs_dnode  * dno,
                                        struct fsw_extent     * extent)
 {
-    fsw_status_t         status;
+    fsw_status_t         status = FSW_NOT_FOUND;
     fsw_u32              lbno;
     HFSPlusExtentRecord  *exts;
     BTNodeDescriptor     *node = NULL;

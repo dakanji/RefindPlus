@@ -318,24 +318,29 @@
      return (Status);
  } // EFI_STATUS CopyDirectory()
 
- // Copy Linux drivers for detected filesystems, but not for undetected filesystems.
- // Note: Does NOT copy HFS+ driver on Apple hardware even if HFS+ is detected;
- // but it DOES copy the HFS+ driver on non-Apple hardware if HFS+ is detected,
- // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
- // as a Linux /boot partition. That's weird, but it does work.
- static EFI_STATUS CopyDrivers (IN EFI_FILE *SourceDirPtr,
-                               IN CHAR16 *SourceDirName,
-                               IN EFI_FILE *DestDirPtr,
-                               IN CHAR16 *DestDirName) {
-     CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
-     CHAR16          *DriverName = NULL; // Note: Assign to string constants; do not free.
-     EFI_STATUS      Status = EFI_SUCCESS;
-     EFI_STATUS      WorstStatus = EFI_SUCCESS;
-     BOOLEAN         DriverCopied[NUM_FS_TYPES];
-     UINTN           i;
+// Copy Linux drivers for detected filesystems, but not for undetected filesystems.
+// Note: Does NOT copy HFS+ driver on Apple hardware even if HFS+ is detected;
+// but it DOES copy the HFS+ driver on non-Apple hardware if HFS+ is detected,
+// even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
+// as a Linux /boot partition. That's weird, but it does work.
+static
+EFI_STATUS
+CopyDrivers (
+    IN EFI_FILE *SourceDirPtr,
+    IN CHAR16 *SourceDirName,
+    IN EFI_FILE *DestDirPtr,
+    IN CHAR16 *DestDirName
+) {
+    CHAR16         *DestFileName = NULL, *SourceFileName = NULL;
+    CHAR16         *DriverName   = NULL; // Note: Assign to string constants; do not free.
+    EFI_STATUS      Status       = EFI_SUCCESS;
+    EFI_STATUS      WorstStatus  = EFI_SUCCESS;
+    BOOLEAN         DriverCopied[NUM_FS_TYPES];
+    UINTN           i;
 
-     for (i = 0; i < NUM_FS_TYPES; i++)
+     for (i = 0; i < NUM_FS_TYPES; i++) {
          DriverCopied[i] = FALSE;
+     }
 
      for (i = 0; i < VolumesCount; i++) {
          DriverName = NULL;

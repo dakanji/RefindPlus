@@ -2475,14 +2475,17 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     return RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 }
 
-UINTN RunMainMenu (REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_MENU_ENTRY **ChosenEntry)
-{
-    MENU_STYLE_FUNC Style = TextMenuStyle;
+UINTN RunMainMenu (
+    REFIT_MENU_SCREEN  *Screen,
+    CHAR16            **DefaultSelection,
+    REFIT_MENU_ENTRY  **ChosenEntry
+) {
+    MENU_STYLE_FUNC Style     = TextMenuStyle;
     MENU_STYLE_FUNC MainStyle = TextMenuStyle;
     REFIT_MENU_ENTRY *TempChosenEntry;
     CHAR16 *MenuTitle;
-    UINTN MenuExit = 0;
-    INTN DefaultEntryIndex = -1;
+    UINTN MenuExit           = 0;
+    INTN DefaultEntryIndex   = -1;
     INTN DefaultSubmenuIndex = -1;
 
     // remove any buffered key strokes
@@ -2507,11 +2510,14 @@ UINTN RunMainMenu (REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_M
     // Generate this now and keep it around forever, since it's likely to be
     // used after this function terminates....
     GenerateWaitList();
+    MenuTitle       = StrDuplicate (L"Unknown");
+    TempChosenEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
 
     while (!MenuExit) {
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
         Screen->TimeoutSeconds = 0;
 
+        MyFreePool (MenuTitle);
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
