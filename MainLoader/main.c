@@ -315,10 +315,8 @@ gRTSetVariableEx (
     EFI_GUID     RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID     TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
-    BOOLEAN BlockCert = FALSE;
-    BOOLEAN BlockPRNG = FALSE;
-
-    if ((GuidsAreEqual (VendorGuid, &WinGuid) ||
+    BOOLEAN BlockCert = (
+        (GuidsAreEqual (VendorGuid, &WinGuid) ||
         (GuidsAreEqual (VendorGuid, &X509Guid)) ||
         (GuidsAreEqual (VendorGuid, &PKCS7Guid)) ||
         (GuidsAreEqual (VendorGuid, &Sha001Guid)) ||
@@ -331,20 +329,13 @@ gRTSetVariableEx (
         (GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid)) ||
         (GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid))) &&
         (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL)
-    ) {
-        // Abort if Windows is trying to write to Mac NVRAM or
-        // payload to be saved to Mac NVRAM is a certificate
-        BlockCert = TRUE;
-    }
-    else if ((MyStriCmp (VariableName, L"UnlockID") ||
-        MyStriCmp (VariableName, L"UnlockIDCopy")) &&
+    );
+    BOOLEAN BlockPRNG = (
+        (MyStriCmp (VariableName, L"UnlockID") || MyStriCmp (VariableName, L"UnlockIDCopy")) &&
         MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
-    ) {
-        // Abort if Windows is trying to write UEFI PRNG hash to Mac NVRAM
-        // DA_TAG: Slight paranoia ... Review later
-        BlockPRNG = TRUE;
-    }
-    else {
+    );
+
+    if (!BlockCert && !BlockPRNG) {
         Status = EfivarSetRawEx (
             VendorGuid,
             VariableName,
@@ -404,31 +395,40 @@ SetBootArgs (
     VOID
 ) {
     EFI_STATUS  Status;
-    EFI_GUID    AppleGUID                  = APPLE_GUID;
-    BOOLEAN     LogDisableAMFI             = FALSE;
-    BOOLEAN     LogDisableCompatCheck   = FALSE;
-    CHAR16      *NameNVRAM                 = L"boot-args";
+    EFI_GUID    AppleGUID   = APPLE_GUID;
+    CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *BootArg;
     CHAR8       DataNVRAM[255];
 
+    #if REFIT_DEBUG > 0
+    BOOLEAN LogDisableAMFI        = FALSE;
+    BOOLEAN LogDisableCompatCheck = FALSE;
+    #endif
+
     if (!GlobalConfig.SetBootArgs || GlobalConfig.SetBootArgs[0] == L'\0') {
+        #if REFIT_DEBUG > 0
         Status = EFI_INVALID_PARAMETER;
+        #endif
     }
     else {
         if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way=1") != NULL) {
+            #if REFIT_DEBUG > 0
             if (GlobalConfig.DisableAMFI) {
                 // Ensure Logging
                 LogDisableAMFI = TRUE;
             }
+            #endif
 
             // Do not duplicate 'amfi_get_out_of_my_way=1'
             GlobalConfig.DisableAMFI = FALSE;
         }
         if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check") != NULL) {
+            #if REFIT_DEBUG > 0
             if (GlobalConfig.DisableCompatCheck) {
                 // Ensure Logging
                 LogDisableCompatCheck = TRUE;
             }
+            #endif
 
             // Do not duplicate '-no_compat_check'
             GlobalConfig.DisableCompatCheck = FALSE;
@@ -1237,7 +1237,7 @@ STATIC VOID InitializeLib (
 STATIC BOOLEAN SecureBootSetup (
     VOID
 ) {
-    EFI_STATUS  Status          = EFI_NOT_FOUND;
+    EFI_STATUS  Status;
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
 

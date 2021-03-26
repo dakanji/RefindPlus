@@ -2018,7 +2018,7 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
     CHAR16 *Filename, *OneElement, *VolName = NULL;
     REFIT_VOLUME *Volume;
     EFI_FILE_HANDLE FileHandle;
-    BOOLEAN DeleteIt = FALSE, DeletedSomething = FALSE;
+    BOOLEAN DeleteIt, DeletedSomething = FALSE;
     EFI_STATUS Status;
 
     while ((OneElement = FindCommaDelimited (FilenameList, i)) != NULL) {

@@ -346,27 +346,26 @@ SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
     EFI_STATUS     Status;
-    BOOLEAN        GraphicsModeOnEntry;
     STATIC BOOLEAN HaveOverriden = FALSE;
-
-    GraphicsModeOnEntry = egIsGraphicsModeEnabled();
 
     if (!GlobalConfig.TextRenderer && !HaveOverriden) {
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
         HaveOverriden = TRUE;
 
-        #if REFIT_DEBUG > 0
         if (!EFI_ERROR (Status) && NotBoot) {
+            // Condition inside to silence 'Dead Store' flags
+            #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
+            #endif
         }
-        #endif
     }
 
     egSetGraphicsModeEnabled (FALSE);
     refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
+    BOOLEAN GraphicsModeOnEntry = egIsGraphicsModeEnabled();
     if ((GraphicsModeOnEntry) &&
         (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
         (NotBoot)

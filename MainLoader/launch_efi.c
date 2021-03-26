@@ -137,7 +137,7 @@ static VOID WarnSecureBootError(
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
 BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
-    BOOLEAN         IsValid = TRUE;
+    BOOLEAN         IsValid;
 #if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
@@ -179,6 +179,8 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
                Header[Size+2] == 0 && Header[Size+3] == 0 &&
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
+#else
+    IsValid = TRUE;
 #endif
 
     return IsValid;

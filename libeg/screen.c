@@ -271,9 +271,11 @@ egDumpGOPVideoModes (
     UINT32     NumModes;
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
-    CHAR16     *PixelFormatDesc;
     BOOLEAN    OurValidGOP = FALSE;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *PixelFormatDesc;
+    #endif
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
@@ -319,6 +321,7 @@ egDumpGOPVideoModes (
             if (!EFI_ERROR (Status)) {
                 OurValidGOP = TRUE;
 
+                #if REFIT_DEBUG > 0
                 switch (Info->PixelFormat) {
                     case PixelRedGreenBlueReserved8BitPerColor:
                         PixelFormatDesc = L"8bit RGB";
@@ -341,7 +344,6 @@ egDumpGOPVideoModes (
                         break;
                 }
 
-                #if REFIT_DEBUG > 0
                 if (LoopCount < MaxMode) {
                     MsgLog (
                         " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",

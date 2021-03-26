@@ -93,7 +93,7 @@
      ESP_LIST            *CurrentESP;
      REFIT_VOLUME        *ChosenVolume = NULL;
      CHAR16              *Temp         = NULL, *GuidStr, *PartName, *FsName, *VolName;
-     INTN                DefaultEntry  = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
+     INTN                DefaultEntry  = 0, MenuExit, i = 1;
      MENU_STYLE_FUNC     Style         = TextMenuStyle;
      REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
 
@@ -327,9 +327,9 @@ static
 EFI_STATUS
 CopyDrivers (
     IN EFI_FILE *SourceDirPtr,
-    IN CHAR16 *SourceDirName,
+    IN CHAR16   *SourceDirName,
     IN EFI_FILE *DestDirPtr,
-    IN CHAR16 *DestDirName
+    IN CHAR16   *DestDirName
 ) {
     CHAR16         *DestFileName = NULL, *SourceFileName = NULL;
     CHAR16         *DriverName   = NULL; // Note: Assign to string constants; do not free.
@@ -391,12 +391,14 @@ CopyDrivers (
                  break;
 
          } // switch
+
          if (DriverName) {
              SourceFileName = PoolPrint (L"%s\\%s%s", SourceDirName, DriverName, INST_PLATFORM_EXTENSION);
-             DestFileName = PoolPrint (L"%s\\%s%s", DestDirName, DriverName, INST_PLATFORM_EXTENSION);
-             Status = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
-             if (EFI_ERROR (Status))
+             DestFileName   = PoolPrint (L"%s\\%s%s", DestDirName, DriverName, INST_PLATFORM_EXTENSION);
+             Status         = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
+             if (EFI_ERROR (Status)) {
                  WorstStatus = Status;
+             }
              MyFreePool (SourceFileName);
              MyFreePool (DestFileName);
          } // if
@@ -804,7 +806,7 @@ CopyDrivers (
      CHAR16              *Temp          = NULL;
      CHAR16              *Filename      = NULL;
      INTN                 DefaultEntry  = 0;
-     INTN                 MenuExit      = MENU_EXIT_ESCAPE;
+     INTN                 MenuExit;
      UINTN                Operation     = EFI_BOOT_OPTION_DO_NOTHING;
      REFIT_VOLUME        *Volume        = NULL;
      MENU_STYLE_FUNC      Style         = TextMenuStyle;

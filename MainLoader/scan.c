@@ -1209,7 +1209,7 @@ ScanLoaderDir (
     CHAR16                  *Message, *Extension, *FullName;
     struct LOADER_LIST      *LoaderList  = NULL, *NewLoader;
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
-    BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux = FALSE, InSelfPath;
+    BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
     if ((!SelfDirPath || !Path ||
@@ -1222,7 +1222,7 @@ ScanLoaderDir (
        while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
           Extension = FindExtension (DirEntry->FileName);
           FullName  = StrDuplicate (Path);
-          
+
           MergeStrings (&FullName, DirEntry->FileName, L'\\');
           CleanUpPathNameSlashes (FullName);
 
@@ -1255,6 +1255,7 @@ ScanLoaderDir (
        } // while
 
        if (LoaderList != NULL) {
+           IsLinux   = FALSE;
            NewLoader = LoaderList;
            while (NewLoader != NULL) {
                IsLinux = (
@@ -1765,8 +1766,11 @@ VOID
 ScanForBootloaders (
     BOOLEAN ShowMessage
 ) {
-    UINTN    i;
+    #if REFIT_DEBUG > 0
     UINTN    k;
+    #endif
+
+    UINTN    i;
     CHAR8    ScanOption;
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor       = COLOR_LIGHTBLUE;
@@ -1982,12 +1986,18 @@ ScanForBootloaders (
 
         for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
             if (i < 9) {
+                #if REFIT_DEBUG > 0
                 k = i + 1;
+                #endif
+
                 ShortCutKey = (CHAR16) ('1' + i);
             }
             else if (i == 9) {
-                k = 0;
                 ShortCutKey = (CHAR16) ('9' - i);
+
+                #if REFIT_DEBUG > 0
+                k = 0;
+                #endif
             }
             else {
                 break;

@@ -55,7 +55,7 @@
 static UINTN check_mbr(VOID)
 {
     UINTN       i, k;
-    BOOLEAN     found = FALSE;
+    BOOLEAN     found;
 
     // check each entry
     for (i = 0; i < mbr_part_count; i++) {

@@ -1645,7 +1645,7 @@ SetPrebootVolumes (
     VOID
 ) {
     UINTN   i;
-    BOOLEAN SwapName     = FALSE;
+    BOOLEAN SwapName;
     BOOLEAN FoundPreboot = FALSE;
 
     MyFreePool (PreBootVolumes);
@@ -2045,20 +2045,9 @@ SetVolumeIcons (
     VOID
 ) {
     UINTN        i;
-    UINTN        k;
-    UINTN        LogVal;
     REFIT_VOLUME *Volume;
 
     for (i = 0; i < VolumesCount; i++) {
-        k = i + 1;
-        // Limit logged value to 99
-        if (k > 999) {
-            LogVal = 999;
-        }
-        else {
-            LogVal = k;
-        }
-
         Volume = Volumes[i];
 
         // Set volume icon based on .VolumeBadge icon or disk kind

@@ -215,16 +215,15 @@ BdsLibConnectMostlyAllEfi (
     EFI_STATUS           Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
     EFI_HANDLE           *HandleBuffer    = NULL;
-    UINTN                AllHandleCount;
-    UINTN                AllHandleCountTrigger;
     UINTN                i;
     UINTN                k;
     UINTN                HandleCount;
-    UINT32               *HandleType    = NULL;
-    BOOLEAN              MakeConnection = TRUE;
+    UINTN                AllHandleCount;
+    UINT32               *HandleType = NULL;
     BOOLEAN              Parent;
     BOOLEAN              Device;
     BOOLEAN              DevTag;
+    BOOLEAN              MakeConnection;
     PCI_TYPE00           Pci;
     EFI_PCI_IO_PROTOCOL* PciIo;
 
@@ -280,7 +279,9 @@ BdsLibConnectMostlyAllEfi (
         #endif
     }
     else {
-        AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
+        #if REFIT_DEBUG > 0
+        UINTN AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
+        #endif
 
         for (i = 0; i < AllHandleCount; i++) {
             MakeConnection = TRUE;
@@ -547,7 +548,7 @@ BdsLibConnectMostlyAllEfi (
             MyFreePool (DeviceData);
 
             #endif
-            
+
             MyFreePool (HandleBuffer);
             MyFreePool (HandleType);
         }  // for
