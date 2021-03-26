@@ -995,10 +995,10 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
     BOOLEAN  ScanIt       = TRUE;
     BOOLEAN  FilerScan    = TRUE;
 
-    // Skip initial scan filter for 'PreBoot' volumes when 'AssociateAPFS' is active
+    // Skip initial scan filter for 'PreBoot' volumes when 'SyncAPFS' is active
     // DA-TAG: Review Requirement
-    if ((GlobalConfig.AssociateAPFS) &&
-        (MyStriCmp (L"PreBoot", Volume->VolName) || MyStriCmp (L"PreBoot", Volume->PartName))
+    if ((MyStriCmp (L"PreBoot", Volume->VolName) || MyStriCmp (L"PreBoot", Volume->PartName)) &&
+        (GlobalConfig.SyncAPFS)
     ) {
         FilerScan = FALSE;
     }
@@ -1404,8 +1404,8 @@ ScanMacOsLoader (
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
         else {
-            if (GlobalConfig.AssociateAPFS &&
-                MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
+            if (MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL &&
+                GlobalConfig.SyncAPFS
             ) {
                 AddThisEntry = FALSE;
             }

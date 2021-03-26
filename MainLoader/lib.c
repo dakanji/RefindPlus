@@ -2035,7 +2035,7 @@ ScanVolumes (
     }
     #endif
 
-    if (SelfVolRun && GlobalConfig.AssociateAPFS) {
+    if (SelfVolRun && GlobalConfig.SyncAPFS) {
         SetPrebootVolumes();
     }
 } // VOID ScanVolumes()

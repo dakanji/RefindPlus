@@ -27,25 +27,25 @@ The development focus is on MacPro3,1 to MacPro5,1 (as well as Xserve3,1) but ma
 ## Additional Configurable Functionality
 RefindPlus-specific funtionality can be activated by adding the tokens below to a rEFInd configuration file.
 
-Config Token| Functionality
---- | ---
-associate_apfs| Allows directly booting Big Sur as well as FileVault (without needing PreBoot).
-continue_on_warning| Proceeds as if a key is pressed after screen warnings (enables remote login).
-direct_gop_renderer| Provides a potentially improved GOP instance for certain GPUs.
-disable_amfi| Disables AMFI Checks on Mac OS if required.
-disable_compat_check| Disables Mac version compatibility checks if required.
-force_trim| Forces `TRIM` on non-Apple SSDs if required.
-ignore_previous_boot| Disables saving the last booted loader if not required.
-protect_nvram| Stops UEFI Windows from saving certificates to Apple NVRAM.
-provide_console_gop| Fixes issues with GOP on some Legacy Macs.
-reinstall_gop| Reinstalls GOP driver on capable legacy units (such as classic MacPros).
-scale_ui| Provides control of UI element scaling.
-scan_other_esp| Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
-set_boot_args| Allows arbitrary Mac OS boot argument strings.
-supply_apfs| Provides APFS file system capability if required.
-suppress_verbose_apfs| Supresses verbose APFS text on boot (if required when using `supply_apfs`).
-text_renderer| Provides a text renderer that allows text mode when not otherwise available.
-uga_pass_through| Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
+Token| Functionality
+---- | ----
+continue_on_warning  |Proceeds as if a key is pressed after screen warnings (for remote login).
+direct_gop_renderer  |Provides a potentially improved GOP instance for certain GPUs.
+disable_amfi         |Disables AMFI Checks on Mac OS if required.
+disable_compat_check |Disables Mac version compatibility checks if required.
+force_trim           |Forces `TRIM` on non-Apple SSDs if required.
+ignore_previous_boot |Disables saving the last booted loader if not required.
+protect_nvram        |Stops UEFI Windows from saving certificates to Apple NVRAM.
+provide_console_gop  |Fixes issues with GOP on some Legacy Macs.
+reinstall_gop        |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
+scale_ui             |Provides control of UI element scaling.
+scan_other_esp       |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
+set_boot_args        |Allows arbitrary Mac OS boot argument strings.
+supply_apfs          |Provides APFS file system capability if required (built in APFS driver).
+suppress_verbose_apfs|Supresses verbose APFS text on boot (if required with `supply_apfs`).
+sync_apfs            |Boot APFS volumes, such as Big Sur and FileVault, directly (without PreBoot).
+text_renderer        |Provides a text renderer that allows text mode when not otherwise available.
+uga_pass_through     |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 In addition to the tokens above, two additional tools can be activated using the `showtools` token:
 - `clean_nvram` : This allows resetting nvram directly from RefindPlus.
