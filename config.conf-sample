@@ -9,14 +9,14 @@
 ##--------------------------------------------------------------##
 #
 #
-# RefindPlus defaults to storing the name of the last booted loader in a
-# "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
+# RefindPlus defaults to storing the name of the last booted loader in
+# a "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
-# is loaded. This can increase wear and tear on the motherboard's NVRAM and
-# disabling the "use_nvram" token allows writing to the filesystem instead
-# to reduce this. On some setups however, such as when the "default_selection"
-# token is set, such writes are not required at all and when this option is
-# active, RefindPlus will not exexute such writes at all.
+# is loaded. This can however increase wear and tear on the NVRAM and disabling
+# the "use_nvram" token allows writing to the filesystem instead to reduce this.
+# On some setups however, such as when the "default_selection" token is set,
+# such writes are not required at all and when this option is active,
+# RefindPlus will not exexute such writes at all.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
@@ -27,8 +27,8 @@
 # the ConsoleControl protocol which determines whether to output text,
 # graphics, or both, and this often results in an inability to display
 # text or run tools such as shell.efi that require text output. A text
-# renderer is added on top of GOP by this option as a workaround.
-# NB: This setting is forced on whenever text output is required, such
+# renderer is added on top of GOP by this option as a workaround. Note
+# that this setting is forced on whenever text output is required, such
 # as when running EFI Shell or whenever RefindPlus is changed to text
 # mode as part of its operations (Typically to handle errors).
 # NB: This functionality is only available on TianoCore Builds
@@ -37,8 +37,8 @@
 #
 #text_renderer
 
-# Add UGA Protocol to GOP when absent. This primarily works to permit
-# booting older Operating Systems running EFIBoot Protocols.
+# Adds the UGA Protocol to GOP when absent. This option allows the RefindPlus
+# screen when using modern GPUs on units with only EFIBoot capability.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not add UGA to GOP)
