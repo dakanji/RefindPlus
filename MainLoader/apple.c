@@ -96,8 +96,9 @@ VOID RecordgCsrStatus (
             );
             break;
 
-        // Standard SIP "Disabled" Setting
+        // Standard SIP "Disabled" Settings
         case SIP_DISABLED:
+        case SIP_DISABLED_EX:
             gCsrStatus = PoolPrint (
                 L"System Integrity Protection Disabled (0x%04x)",
                 CsrStatus
@@ -105,11 +106,10 @@ VOID RecordgCsrStatus (
             break;
 
         // Recognised Custom SIP "Disabled" Settings
-        case SIP_DISABLED_EX:
+        case SIP_DISABLED_RT:
         case SIP_DISABLED_ANY:
         case SIP_DISABLED_KEXT:
-        case SIP_DISABLED_DEBUG:
-        case SIP_DISABLED_DBGANY:
+        case SIP_DISABLED_XRCVR:
             gCsrStatus = PoolPrint (
                 L"System Integrity Protection Disabled (0x%04x - Custom Setting)",
                 CsrStatus

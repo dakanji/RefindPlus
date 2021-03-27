@@ -82,17 +82,20 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 // Standard SIP "Enabled" Setting
 #define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010
 
-// Standard SIP "Disabled" Setting
+// Standard SIP "Disabled" Setting (Mac OS 10.11+)
 #define SIP_DISABLED (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
     CSR_ALLOW_TASK_FOR_PID | CSR_ALLOW_APPLE_INTERNAL | \
     CSR_ALLOW_UNRESTRICTED_DTRACE | CSR_ALLOW_UNRESTRICTED_NVRAM)                          // 0x077
 
+// Standard SIP "Disabled" Setting (Mac OS 11.00+)
+#define SIP_DISABLED_EX (SIP_DISABLED | \
+    CSR_ALLOW_KERNEL_DEBUGGER | CSR_ALLOW_UNAUTHENTICATED_ROOT)                            // 0x87F
+
 // Recognised Custom SIP "Disabled" Settings
-#define SIP_DISABLED_EX (SIP_DISABLED | CSR_ALLOW_UNAUTHENTICATED_ROOT)                    // 0x877
-#define SIP_DISABLED_DEBUG (SIP_DISABLED_EX | CSR_ALLOW_KERNEL_DEBUGGER)                   // 0x87F
-#define SIP_DISABLED_ANY (SIP_DISABLED_EX | CSR_ALLOW_ANY_RECOVERY_OS)                     // 0x977
-#define SIP_DISABLED_DBGANY (SIP_DISABLED_DEBUG | CSR_ALLOW_ANY_RECOVERY_OS)               // 0x97F
-#define SIP_DISABLED_KEXT (SIP_DISABLED_DEBUG | CSR_ALLOW_UNAPPROVED_KEXTS)                // 0xA7F
+#define SIP_DISABLED_RT (SIP_DISABLED | CSR_ALLOW_UNAUTHENTICATED_ROOT)                    // 0x877
+#define SIP_DISABLED_ANY (SIP_DISABLED_RT | CSR_ALLOW_ANY_RECOVERY_OS)                     // 0x977
+#define SIP_DISABLED_XRCVR (SIP_DISABLED_EX | CSR_ALLOW_ANY_RECOVERY_OS)                   // 0x97F
+#define SIP_DISABLED_KEXT (SIP_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                   // 0xA7F
 
 // Max Legal CSR "Disabled" Setting
 #define CSR_MAX_LEGAL_VALUE (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
@@ -105,11 +108,11 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 extern CHAR16 *gCsrStatus;
 
 EFI_STATUS SetAppleOSInfo();
-EFI_STATUS GetCsrStatus(UINT32 *CsrValue);
+EFI_STATUS GetCsrStatus (UINT32 *CsrValue);
 
-VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage);
-VOID RotateCsrValue(VOID);
-VOID ForceTRIM(VOID);
-VOID DisableCompatCheck(VOID);
-VOID DisableAMFI(VOID);
+VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
+VOID RotateCsrValue (VOID);
+VOID ForceTRIM (VOID);
+VOID DisableCompatCheck (VOID);
+VOID DisableAMFI (VOID);
 #endif
