@@ -4,7 +4,13 @@
 ## Overview
 RefindPlus is a variant of the [rEFInd Boot Manager](https://www.rodsbooks.com/refind) incorporating various fixes and additional features.
 
-The development focus is currently on the Early 2008 Mac Pro (**MacPro3,1**), Early 2009 Mac Pro (**MacPro4,1**), Mid 2010 and Mid 2012 Mac Pros (**MacPro5,1**) as well as the Early 2009 Xserve (**Xserve3,1**). However, the fixes and enhancements RefindPlus brings are not limited in application to those units and should be of interest to anyone requiring a capable and flexible boot manager.
+The current development focus is on the following units:
+- **MacPro3,1**: Early 2008 Mac Pro
+- **MacPro4,1**: Early 2009 Mac Pro
+- **MacPro5,1**: Mid 2010 and Mid 2012 Mac Pros
+- **XServe3,1**: Early 2009 XServe
+
+However, the fixes and enhancements that RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
 
 **NB:** This ReadMe reflects the current unreleased code base. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Released.md) for that related to the current release.
 
