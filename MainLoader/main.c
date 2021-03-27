@@ -208,20 +208,20 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-CHAR16   *gHiddenTools   = NULL;
-EFI_GUID  RefindPlusGuid = REFINDPLUS_GUID;
-
 #define BOOTKICKER_FILES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
-STATIC               BOOLEAN                ranCleanNvram  = FALSE;
-BOOLEAN                                     TweakSysTable  = FALSE;
-BOOLEAN                                     AptioWarn      = FALSE;
-BOOLEAN                                     ConfigWarn     = FALSE;
-STATIC               EFI_SET_VARIABLE       AltSetVariable;
-EFI_OPEN_PROTOCOL                           OrigOpenProtocol;
-EFI_HANDLE_PROTOCOL                         OrigHandleProtocol;
+CHAR16                *VendorInfo           = NULL;
+CHAR16                *gHiddenTools         = NULL;
+BOOLEAN                ranCleanNvram        = FALSE;
+BOOLEAN                TweakSysTable        = FALSE;
+BOOLEAN                AptioWarn            = FALSE;
+BOOLEAN                ConfigWarn           = FALSE;
+EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
+EFI_SET_VARIABLE       AltSetVariable;
+EFI_OPEN_PROTOCOL      OrigOpenProtocol;
+EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 
 extern VOID InitBooterLog (VOID);
 
@@ -328,11 +328,11 @@ gRTSetVariableEx (
         (GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid)) ||
         (GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid)) ||
         (GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid))) &&
-        (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL)
+        (MyStrStr (VendorInfo, L"Apple") != NULL)
     );
     BOOLEAN BlockPRNG = (
         (MyStriCmp (VariableName, L"UnlockID") || MyStriCmp (VariableName, L"UnlockIDCopy")) &&
-        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+        MyStrStr (VendorInfo, L"Apple") != NULL
     );
 
     if (!BlockCert && !BlockPRNG) {
@@ -1072,7 +1072,7 @@ VOID AboutRefindPlus (
 ) {
     UINT32  CsrStatus;
     CHAR16  *TempStr         = NULL;
-    CHAR16  *FirmwareVendor  = gST->FirmwareVendor;
+    CHAR16  *FirmwareVendor  = VendorInfo;
 
 
     if (AboutMenu.EntryCount == 0) {
@@ -1100,7 +1100,12 @@ VOID AboutRefindPlus (
 
         AddMenuInfoLine (
             &AboutMenu,
-            PoolPrint (L"Firmware Vendor: %s", FirmwareVendor)
+            PoolPrint (
+                L"Firmware Vendor: %s %d.%02d",
+                FirmwareVendor,
+                gST->FirmwareRevision >> 16,
+                gST->FirmwareRevision & ((1 << 16) - 1)
+            )
         );
 
         #if defined (EFI32)
@@ -1463,7 +1468,7 @@ LogBasicInfo (
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
 
-    if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
+    if (MyStrStr (VendorInfo, L"Apple") != NULL) {
         Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
         if (EFI_ERROR (Status)) {
             HandleCount = 0;
@@ -1568,6 +1573,18 @@ efi_main (
 
     InitBooterLog();
 
+    if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
+        VendorInfo = StrDuplicate (L"Apple");
+    }
+    else {
+        VendorInfo = PoolPrint (
+            L"%s %d.%02d",
+            gST->FirmwareVendor,
+            gST->FirmwareRevision >> 16,
+            gST->FirmwareRevision & ((1 << 16) - 1)
+        );
+    }
+
     #if REFIT_DEBUG > 0
     CONST CHAR16 *NowDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
@@ -1581,7 +1598,7 @@ efi_main (
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
         REFINDPLUS_VERSION,
-        gST->FirmwareVendor
+        VendorInfo
     );
 
 #if defined(__MAKEWITH_GNUEFI)
@@ -1801,9 +1818,11 @@ efi_main (
     MsgLog (
         "INFO: Loaded RefindPlus v%s on %s Firmware\n\n",
         REFINDPLUS_VERSION,
-        gST->FirmwareVendor
+        VendorInfo
     );
     #endif
+
+    MyFreePool (VendorInfo);
 
     while (MainLoopRunning) {
         NotBoot = TRUE;
@@ -2065,7 +2084,7 @@ efi_main (
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectNVRAM &&
-                        MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
+                        MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
                         AltSetVariable                             = gRT->SetVariable;
