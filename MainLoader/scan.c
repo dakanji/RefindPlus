@@ -144,7 +144,7 @@ static REFIT_MENU_ENTRY MenuEntryShutdown = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
-    L"Toggle Mac SIP Policy",
+    L"Toggle Mac CSR Policy",
     TAG_CSR_ROTATE,
     1, 0, 0,
     NULL, NULL, NULL
@@ -2251,7 +2251,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_CSR_ROTATE:
-                ToolName = StrDuplicate (L"Toggle Mac SIP");
+                ToolName = StrDuplicate (L"Toggle Mac CSR");
                 break;
 
             case TAG_INSTALL:

@@ -79,23 +79,23 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 #define CSR_ALLOW_UNAUTHENTICATED_ROOT         0x0800        // Introduced in Mac OS 11.00 Big Sur
 #define CSR_END_OF_LIST                        0xFFFFFFFF
 
-// Standard SIP "Enabled" Setting
+// SIP/SSV "Enabled" Setting
 #define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010
 
-// Standard SIP "Disabled" Setting (Mac OS 10.11+)
+// SIP "Disabled" Setting (Mac OS 10.11+)
 #define SIP_DISABLED (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
     CSR_ALLOW_TASK_FOR_PID | CSR_ALLOW_APPLE_INTERNAL | \
     CSR_ALLOW_UNRESTRICTED_DTRACE | CSR_ALLOW_UNRESTRICTED_NVRAM)                          // 0x077
 
-// Standard SIP "Disabled" Setting (Mac OS 11.00+)
-#define SIP_DISABLED_EX (SIP_DISABLED | \
+// SSV "Disabled" Settings (Mac OS 11.00+)
+#define SSV_DISABLED (SIP_DISABLED | CSR_ALLOW_UNAUTHENTICATED_ROOT)                       // 0x877
+#define SSV_DISABLED_EX (SIP_DISABLED | \
     CSR_ALLOW_KERNEL_DEBUGGER | CSR_ALLOW_UNAUTHENTICATED_ROOT)                            // 0x87F
 
-// Recognised Custom SIP "Disabled" Settings
-#define SIP_DISABLED_RT (SIP_DISABLED | CSR_ALLOW_UNAUTHENTICATED_ROOT)                    // 0x877
-#define SIP_DISABLED_ANY (SIP_DISABLED_RT | CSR_ALLOW_ANY_RECOVERY_OS)                     // 0x977
-#define SIP_DISABLED_XRCVR (SIP_DISABLED_EX | CSR_ALLOW_ANY_RECOVERY_OS)                   // 0x97F
-#define SIP_DISABLED_KEXT (SIP_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                   // 0xA7F
+// Recognised Custom SSV "Disabled" Settings
+#define SSV_DISABLED_ANY (SSV_DISABLED | CSR_ALLOW_ANY_RECOVERY_OS)                        // 0x977
+#define SSV_DISABLED_XRCVR (SSV_DISABLED_EX | CSR_ALLOW_ANY_RECOVERY_OS)                   // 0x97F
+#define SSV_DISABLED_KEXT (SSV_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                   // 0xA7F
 
 // Max Legal CSR "Disabled" Setting
 #define CSR_MAX_LEGAL_VALUE (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \

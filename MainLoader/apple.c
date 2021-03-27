@@ -88,30 +88,37 @@ VOID RecordgCsrStatus (
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
-        // Standard SIP "Enabled" Setting
+        // SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L"System Integrity Protection Enabled (0x%04x)",
+                L"SIP/SSV Enabled (0x%04x)",
                 CsrStatus
             );
             break;
 
-        // Standard SIP "Disabled" Settings
+        // SIP "Disabled" Settings
         case SIP_DISABLED:
-        case SIP_DISABLED_EX:
             gCsrStatus = PoolPrint (
-                L"System Integrity Protection Disabled (0x%04x)",
+                L"SIP Disabled (0x%04x)",
+                CsrStatus
+            );
+            break;
+
+        // SSV "Disabled" Settings
+        case SSV_DISABLED:
+        case SSV_DISABLED_EX:
+            gCsrStatus = PoolPrint (
+                L"SIP and SSV Disabled (0x%04x)",
                 CsrStatus
             );
             break;
 
         // Recognised Custom SIP "Disabled" Settings
-        case SIP_DISABLED_RT:
-        case SIP_DISABLED_ANY:
-        case SIP_DISABLED_KEXT:
-        case SIP_DISABLED_XRCVR:
+        case SSV_DISABLED_ANY:
+        case SSV_DISABLED_KEXT:
+        case SSV_DISABLED_XRCVR:
             gCsrStatus = PoolPrint (
-                L"System Integrity Protection Disabled (0x%04x - Custom Setting)",
+                L"SIP and SSV Disabled (0x%04x - Custom Setting)",
                 CsrStatus
             );
             break;
@@ -119,7 +126,7 @@ VOID RecordgCsrStatus (
         // Max Legal CSR "Disabled" Setting
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"System Integrity Protection Removed (0x%04x - Caution: All Protection Removed!)",
+                L"SIP and SSV Removed (0x%04x - Caution!)",
                 CsrStatus
             );
             break;
