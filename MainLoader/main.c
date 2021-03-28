@@ -168,6 +168,7 @@ REFIT_CONFIG GlobalConfig = {
     },
     /* BannerScale = */ BANNER_NOSCALE,
     /* ScaleUI = */ 0,
+    /* ActiveCSR = */ 0,
     /* LogLevel = */ 0,
     /* *DiscoveredRoot = */ NULL,
     /* *SelfDevicePath = */ NULL,
@@ -387,6 +388,82 @@ NvramEntryCheck (
 
     return Status;
 }
+
+
+STATIC
+VOID
+ActiveCSR (
+    VOID
+) {
+    UINT32  CsrStatus;
+    BOOLEAN CsrEnabled;
+
+    // Prime 'Status' for logging
+    #if REFIT_DEBUG > 0
+    EFI_STATUS Status = EFI_ALREADY_STARTED;
+    #endif
+
+    if (GlobalConfig.ActiveCSR == 0) {
+        // Early return if not configured to set CSR
+        return;
+    }
+    else {
+        // Try to get current CSR status
+        if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
+            // Record CSR status in the 'gCsrStatus' variable
+            RecordgCsrStatus (CsrStatus, FALSE);
+
+            // Check 'gCsrStatus' variable for 'Enabled' term
+            if (MyStrStr (gCsrStatus, L"Enabled") != NULL) {
+                // 'Enabled' found
+                CsrEnabled = TRUE;
+            }
+            else {
+                // 'Enabled' not found
+                CsrEnabled = FALSE;
+            }
+
+            // If set to always disable
+            if (GlobalConfig.ActiveCSR == -1) {
+                // Seed the log buffer
+                #if REFIT_DEBUG > 0
+                MsgLog ("INFO: Disable SIP/SSV ...");
+                #endif
+
+                if (CsrEnabled) {
+                    // Switch SIP/SSV off as currently enabled
+                    RotateCsrValue ();
+
+                    // Set 'Status' to 'Success'
+                    #if REFIT_DEBUG > 0
+                    Status = EFI_SUCCESS;
+                    #endif
+                }
+            }
+            else {
+                // Seed the log buffer
+                #if REFIT_DEBUG > 0
+                MsgLog ("INFO: Enable SIP/SSV ...");
+                #endif
+
+                if (!CsrEnabled) {
+                    // Switch SIP/SSV on as currently disbled
+                    RotateCsrValue ();
+
+                    // Set 'Status' to 'Success'
+                    #if REFIT_DEBUG > 0
+                    Status = EFI_SUCCESS;
+                    #endif
+                }
+            }
+
+            // Finalise and flush the log buffer
+            #if REFIT_DEBUG > 0
+            MsgLog ("%r\n\n", Status);
+            #endif
+        }
+    }
+} // VOID ActiveCSR()
 
 
 STATIC
@@ -1813,6 +1890,9 @@ efi_main (
             #endif
         }
     }
+
+    // Set CSR if required
+    ActiveCSR();
 
     #if REFIT_DEBUG > 0
     MsgLog (

@@ -42,6 +42,7 @@ RefindPlus-specific funtionality can be activated by adding the tokens below to 
 
 Token| Functionality
 ---- | ----
+active_csr           |Actively enables or disables the CSR Policy on Macs.
 continue_on_warning  |Proceeds as if a key is pressed after screen warnings (for remote login).
 direct_gop_renderer  |Provides a potentially improved GOP instance for certain GPUs.
 disable_amfi         |Disables AMFI Checks on Mac OS if required.

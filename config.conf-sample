@@ -203,6 +203,20 @@
 #
 #scale_ui 1
 
+# This token allows actively enabling or disabling the System Intergrity Protection (SIP)
+# and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
+# token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
+# RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
+# "Toggle Mac CSR" tool after RefindPlus is loaded.
+# The following options are available:
+#  -1    - Always Disable SIP (and SSV, if configured under "csr_values" and on Mac OS 11.x)
+#   0    - Take no Action
+#   1    - Always Enable SIP (and SSV, if on Mac OS 11.x)
+#
+# Takes no action on SIP and SSV when commented out
+#
+#active_csr 1
+
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the boot arguments in Mac OS to the specified string.
 # This setting only applies to Mac OS and accounts for arguments injected by
@@ -795,14 +809,16 @@ write_systemd_vars
 #
 #spoof_osx_version 10.9
 
-# Set the CSR values for Apple's System Integrity Protection (SIP) feature.
+# Set the CSR values for Apple's System Integrity Protection (SIP) and
+# Sealed System Volume (SSV) features that define access levels on Mac OS.
 # Values are hexadecimal numbers that define which specific security features
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
 # to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF, to
-# further open up SIP. This may be useful in running/installing Mac OS v11.0 (Big Sur),
-# or later, on unsupported Macs but should be used with caution.
+# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF.
+# The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
+# commands, added in Mac OS v11.0 (Big Sur), sets values of 10 (ON) and 87F (OFF)
+# respectively when run along with the earlier commands to set SIP and SSV.
 #   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
 #   CSR_ALLOW_UNRESTRICTED_FS               0x0002
 #   CSR_ALLOW_TASK_FOR_PID                  0x0004

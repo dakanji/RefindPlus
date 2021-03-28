@@ -43,6 +43,9 @@
   * Was previously set to 20 seconds and not disabled as documented
 - Fixes Repeated Icon Scaling on HiDPI Monitors
   * Icons on HiDPI monitors were repeatedly scaled up on each return to the main screen
+- Adds "active_csr" config token to allow implementing a CSR policy
+  * Allows ensuring a particular CSR policy is always actively implemented
+  * Previously passively left whatever was previously set unchanged.
 
 
 0.13.1.AB (02 Mar 2021):
@@ -259,7 +262,7 @@
   * Displays actual hex indices to permit consistency with shell tools
 - Changes HiDPI monitor detection threshold to QHD vertical dimension (1601px)
   * Previous threshold of 1921px on the horizontal mistook WQHD for HiDPI
-- Adds ScaleUI config token to allow flexibility in HiDPI detection
+- Adds "scale_ui" config token to allow flexibility in HiDPI detection
   * HiDPI monitor detection can be switched on/off or automatically detected by using this token
 - Embeds Bootscreen and Nvram icons
   * Specfic icons will be displayed instead of a generic icon when activated and actual icons are not found

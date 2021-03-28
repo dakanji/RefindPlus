@@ -1071,6 +1071,9 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
+        else if (MyStriCmp (TokenList[0], L"active_csr")) {
+           HandleInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
+        }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
            HandleInt (TokenList, TokenCount, &i);
            if (i < 1) {
