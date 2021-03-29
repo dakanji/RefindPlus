@@ -2100,12 +2100,6 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
-                    if (DetectedDevices) {
-                        // Re-Map OpenProtocol
-                        // Limit to Units with Devices Detected
-                        ReMapOpenProtocol();
-                    }
-
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -2223,7 +2217,7 @@ efi_main (
                         gRT->SetVariable                           = gRTSetVariableEx;
                         SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
                     }
-                    
+
                     MsgLog (
                         "  - Boot %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
