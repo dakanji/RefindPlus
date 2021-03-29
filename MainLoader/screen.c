@@ -68,7 +68,7 @@ UINTN   ScreenW;
 UINTN   ScreenH;
 
 BOOLEAN AllowGraphicsMode;
-BOOLEAN NotBoot            = TRUE;
+BOOLEAN IsBoot = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -348,13 +348,12 @@ SwitchToText (
     EFI_STATUS     Status;
     STATIC BOOLEAN HaveOverriden = FALSE;
 
-    if (!GlobalConfig.TextRenderer && !HaveOverriden) {
+    if (!GlobalConfig.TextRenderer && !HaveOverriden && !IsBoot) {
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
-        HaveOverriden = TRUE;
+        if (!EFI_ERROR (Status)) {
+            HaveOverriden = TRUE;
 
-        if (!EFI_ERROR (Status) && NotBoot) {
-            // Condition inside to silence 'Dead Store' flags
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
             #endif
@@ -368,7 +367,7 @@ SwitchToText (
     BOOLEAN GraphicsModeOnEntry = egIsGraphicsModeEnabled();
     if ((GraphicsModeOnEntry) &&
         (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-        (NotBoot)
+        (!IsBoot)
     ) {
         MsgLog ("Determine Text Console Size:\n");
     }
@@ -391,7 +390,7 @@ SwitchToText (
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry) &&
             (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-            (NotBoot)
+            (!IsBoot)
         ) {
             MsgLog (
                 "  Could Not Get Text Console Size ...Using Default: %d x %d\n\n",
@@ -405,7 +404,7 @@ SwitchToText (
         #if REFIT_DEBUG > 0
         if ((GraphicsModeOnEntry) &&
             (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-            (NotBoot)
+            (!IsBoot)
         ) {
             MsgLog (
                 "  Text Console Size = %d x %d\n\n",
@@ -418,12 +417,12 @@ SwitchToText (
     PrepareBlankLine();
 
     #if REFIT_DEBUG > 0
-    if (GraphicsModeOnEntry && NotBoot) {
+    if (GraphicsModeOnEntry && !IsBoot) {
         MsgLog ("INFO: Switch to Text Mode ...Success\n\n");
     }
     #endif
 
-    NotBoot = TRUE;
+    IsBoot = FALSE;
 }
 
 EFI_STATUS

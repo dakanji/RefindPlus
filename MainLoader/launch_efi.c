@@ -456,7 +456,7 @@ RebootIntoLoader (
 ) {
     EFI_STATUS Status;
 
-    NotBoot = FALSE;
+    IsBoot = TRUE;
 
     Status = EfivarSetRaw (
         &GlobalGuid,
@@ -511,7 +511,7 @@ static VOID DoEnableAndLockVMX(VOID) {
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     CHAR16 *LoaderPath;
 
-    NotBoot = FALSE;
+    IsBoot = TRUE;
 
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
@@ -537,7 +537,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
 VOID StartTool(IN LOADER_ENTRY *Entry) {
     CHAR16 *LoaderPath;
 
-    NotBoot = FALSE;
+    IsBoot = TRUE;
 
     LoaderPath = Basename(Entry->LoaderPath);
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below

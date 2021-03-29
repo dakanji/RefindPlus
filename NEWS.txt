@@ -48,6 +48,8 @@
   * Previously passively left whatever was previously set unchanged.
 - Always Activates Cert Writes on Windows
   * Cert Write block now always activated on Windows boots even when Legacy and not UEFI Windows was detected
+- Fixes a bug that corrupted the ConsoleOut handle on booting EFI Loaders when running GPUs with Mac EFI
+  * This bug was introduced in v0.12.0.AN (Commit 8d5e4e3)
 
 
 0.13.1.AB (02 Mar 2021):
