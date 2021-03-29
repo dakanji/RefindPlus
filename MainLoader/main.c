@@ -2214,6 +2214,16 @@ efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
+                    if (GlobalConfig.ProtectNVRAM &&
+                        MyStrStr (VendorInfo, L"Apple") != NULL
+                    ) {
+                        // Protect Mac NVRAM from UEFI Windows
+                        AltSetVariable                             = gRT->SetVariable;
+                        RT->SetVariable                            = gRTSetVariableEx;
+                        gRT->SetVariable                           = gRTSetVariableEx;
+                        SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
+                    }
+                    
                     MsgLog (
                         "  - Boot %s from '%s'",
                         ourLegacyEntry->Volume->OSName,

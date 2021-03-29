@@ -46,6 +46,8 @@
 - Adds "active_csr" config token to allow implementing a CSR policy
   * Allows ensuring a particular CSR policy is always actively implemented
   * Previously passively left whatever was previously set unchanged.
+- Always Activates Cert Writes on Windows
+  * Cert Write block now always activated on Windows boots even when Legacy and not UEFI Windows was detected
 
 
 0.13.1.AB (02 Mar 2021):
