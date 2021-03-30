@@ -351,9 +351,10 @@ SwitchToText (
     if (!GlobalConfig.TextRenderer && !HaveOverriden && !IsBoot) {
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
-        if (!EFI_ERROR (Status)) {
-            HaveOverriden = TRUE;
+        HaveOverriden = TRUE;
 
+        if (!EFI_ERROR (Status)) {
+            // Condition inside to silence 'Dead Store' flags
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
             #endif
