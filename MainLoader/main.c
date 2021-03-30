@@ -935,16 +935,15 @@ preBootKicker (
                     if ((Volumes[i]->RootDir != NULL) &&
                         IsValidTool (Volumes[i], FilePath)
                     ) {
-                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-
-                        ourLoaderEntry->me.Title = Description;
-                        ourLoaderEntry->me.Tag = TAG_SHOW_BOOTKICKER;
-                        ourLoaderEntry->me.Row = 1;
-                        ourLoaderEntry->me.ShortcutLetter = 'S';
-                        ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-                        ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
-                        ourLoaderEntry->Volume = Volumes[i];
-                        ourLoaderEntry->UseGraphicsMode = TRUE;
+                        ourLoaderEntry  = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        ourLoaderEntry->me.Title          = Description;
+                        ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
+                        ourLoaderEntry->me.Row            = 1;
+                        ourLoaderEntry->me.ShortcutLetter = '';
+                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume            = Volumes[i];
+                        ourLoaderEntry->UseGraphicsMode   = TRUE;
 
                         FoundTool = TRUE;
                         break;
@@ -968,12 +967,12 @@ preBootKicker (
                 // Run BootKicker
                 StartTool (ourLoaderEntry);
                 #if REFIT_DEBUG > 0
-                MsgLog ("WARN: BootKicker Error ...Return to Main Menu\n\n");
+                MsgLog ("* WARN: BootKicker Error ...Return to Main Menu\n\n");
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
+                MsgLog ("  * WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
                 #endif
             }
 
@@ -1039,11 +1038,7 @@ preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"x64_CleanNvram.efi is distributed with 'MyBootMgr':");
-        AddMenuInfoLine (&CleanNvramMenu, L"https://forums.macrumors.com/threads/thread.2231693");
-        AddMenuInfoLine (&CleanNvramMenu, L"'MyBootMgr' is a preconfigured RefindPlus/Opencore Chainloader");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"You can also get CleanNvram from the OpenCore Project:");
+        AddMenuInfoLine (&CleanNvramMenu, L"You can get CleanNvram from the OpenCore Project:");
         AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
@@ -1086,15 +1081,14 @@ preCleanNvram (
                 for (i = 0; i < VolumesCount; i++) {
                     if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
                         ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-
-                        ourLoaderEntry->me.Title = Description;
-                        ourLoaderEntry->me.Tag = TAG_NVRAMCLEAN;
-                        ourLoaderEntry->me.Row = 1;
-                        ourLoaderEntry->me.ShortcutLetter = 'S';
-                        ourLoaderEntry->me.Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-                        ourLoaderEntry->LoaderPath = StrDuplicate (FilePath);
-                        ourLoaderEntry->Volume = Volumes[i];
-                        ourLoaderEntry->UseGraphicsMode = FALSE;
+                        ourLoaderEntry->me.Title          = Description;
+                        ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
+                        ourLoaderEntry->me.Row            = 1;
+                        ourLoaderEntry->me.ShortcutLetter = '';
+                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume            = Volumes[i];
+                        ourLoaderEntry->UseGraphicsMode   = FALSE;
 
                         FoundTool = TRUE;
                         break;
@@ -1123,7 +1117,7 @@ preCleanNvram (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
+                MsgLog ("  * WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
                 #endif
             }
 
@@ -1593,15 +1587,18 @@ LogBasicInfo (
     MsgLog ("Native Screen Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Text Mode ...%s\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MsgLog ("  - Detected Text Mode           : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    MsgLog ("\n");
     MyFreePool (TempMode);
 
     Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Graphics Mode (UGA) ...%s\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MsgLog ("  - Detected Graphics Mode (UGA) : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    MsgLog ("\n");
     MyFreePool (TempMode);
 
     Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Graphics Mode (GOP) ...%s\n\n", EFI_ERROR (Status) ? L"Not Detected" : L"Detected");
+    MsgLog ("  - Detected Graphics Mode (GOP) : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    MsgLog ("\n\n");
     MyFreePool (TempMode);
 } // VOID LogBasicInfo()
 #endif
