@@ -954,26 +954,32 @@ ReadConfig (
            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
         }
         else if (MyStriCmp (TokenList[0], L"use_graphics_for")) {
-           if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp (TokenList[1], L"+")))) {
-               GlobalConfig.GraphicsFor = 0;
-           }
-           for (i = 1; i < TokenCount; i++) {
-              if (MyStriCmp (TokenList[i], L"osx")) {
-                 GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
-              }
-              else if (MyStriCmp (TokenList[i], L"linux")) {
-                 GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
-              }
-              else if (MyStriCmp (TokenList[i], L"elilo")) {
-                 GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
-              }
-              else if (MyStriCmp (TokenList[i], L"grub")) {
-                 GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
-              }
-              else if (MyStriCmp (TokenList[i], L"windows")) {
-                 GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
-              }
-           } // for (graphics_on tokens)
+            if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp (TokenList[1], L"+")))) {
+                GlobalConfig.GraphicsFor = 0;
+            }
+            for (i = 1; i < TokenCount; i++) {
+                if (MyStriCmp (TokenList[i], L"osx")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
+                }
+                else if (MyStriCmp (TokenList[i], L"linux")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
+                }
+                else if (MyStriCmp (TokenList[i], L"elilo")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
+                }
+                else if (MyStriCmp (TokenList[i], L"grub")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
+                }
+                else if (MyStriCmp (TokenList[i], L"windows")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
+                }
+                else if (MyStriCmp (TokenList[i], L"opencore")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
+                }
+                else if (MyStriCmp (TokenList[i], L"clover")) {
+                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
+                }
+            }
         }
         else if (MyStriCmp (TokenList[0], L"font") && (TokenCount == 2)) {
            egLoadFont (TokenList[1]);

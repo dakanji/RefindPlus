@@ -23,9 +23,10 @@ However, the fixes and enhancements that RefindPlus adds to rEFInd are not limit
   * The release version is kept as an optimised version for day to day use.
 - Fixes inability of rEFInd to print to screen on Macs
   * This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
-- Provides APFS filesystem capability when required.
+- Provides APFS filesystem capability via a built in APFS JumpStart driver if required.
   * Removes the need to add APFS drivers to run recent Mac OS releases on units without APFS support.
   * Additionally, this ensures that matching APFS drivers for specific Mac OS releases are used.
+  * Basically allows working as if APFS is natively supported by the firmware
 - Supports Apple's APFS filesystem requirements
   * This allows booting Mac OS v11.0 (Big Sur) from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
@@ -47,10 +48,10 @@ continue_on_warning  |Proceeds as if a key is pressed after screen warnings (for
 direct_gop_renderer  |Provides a potentially improved GOP instance for certain GPUs.
 disable_amfi         |Disables AMFI Checks on Mac OS if required.
 disable_compat_check |Disables Mac version compatibility checks if required.
-force_trim           |Forces `TRIM` on non-Apple SSDs if required.
+force_trim           |Forces `TRIM` with non-Apple SSDs on Macs if required.
 ignore_previous_boot |Disables saving the last booted loader if not required.
-protect_nvram        |Stops UEFI Windows from saving certificates to Apple NVRAM.
-provide_console_gop  |Fixes issues with GOP on some Legacy Macs.
+protect_nvram        |Prevents UEFI Windows from saving certificates to Apple NVRAM.
+provide_console_gop  |Fixes issues with GOP on some legacy units.
 reinstall_gop        |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
 scale_ui             |Provides control of UI element scaling.
 scan_other_esp       |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
@@ -61,9 +62,11 @@ sync_apfs            |Boot APFS volumes, such as Big Sur and FileVault, directly
 text_renderer        |Provides a text renderer that allows text mode when not otherwise available.
 uga_pass_through     |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
-In addition to the tokens above, two additional tools can be activated using the `showtools` token:
-- `clean_nvram` : This allows resetting nvram directly from RefindPlus.
-- `show_bootscreen` : This allows compatible GPUs to load the Apple Pre Boot Configuration screen.
+In addition to the new functions above, the following upsteam functions have been extended:
+- `use_graphics_for`: OpenCore and Clover added to loaders that can be set to boot in graphics mode.
+- `showtools`: Additional tools added:
+  - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
+  - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
 ## Divergence
 Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:

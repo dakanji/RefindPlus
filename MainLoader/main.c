@@ -2098,6 +2098,10 @@ efi_main (
                 // Use multiple instaces of "User Input Received:"
 
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                    if (!ourLoaderEntry->UseGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
+                    }
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -2108,6 +2112,10 @@ efi_main (
                     #endif
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL) {
+                    if (!ourLoaderEntry->UseGraphicsMode) {
+                        ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
+                    }
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (

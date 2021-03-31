@@ -26,11 +26,11 @@
 # output text. On Macs and some other firmware, this is complicated by
 # the ConsoleControl protocol which determines whether to output text,
 # graphics, or both, and this often results in an inability to display
-# text or run tools such as shell.efi that require text output. A text
-# renderer is added on top of GOP by this option as a workaround. Note
-# that this setting is forced on whenever text output is required, such
-# as when running EFI Shell or whenever RefindPlus is changed to text
-# mode as part of its operations (Typically to handle errors).
+# text or to run tools that require text output, such as EFI Shell. A
+# text renderer is added on top of GOP by this option as a workaround.
+# Note that this setting is forced on whenever text output is required,
+# such as when running EFI Shell or whenever RefindPlus is changed to
+# text mode as part of its operations (Typically to handle errors).
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not use a custom text renderer)
@@ -236,6 +236,26 @@
 ##--------------------------------------------------------------##
 #
 #
+# Launch specified loader in graphics mode. RefindPlus defaults to
+# text mode and displays basic pre-launch information when launching
+# any operating systems except Mac OS. Using graphics mode can provide
+# a more seamless transition, but may not display any information, which
+# can make it difficult to debug problems. However, using graphics mode
+# may prevent crashes in some instances. Specifying an empty list
+# will set RefindPlus to boot all loaders in text mode.
+# Valid options:
+#   linux       - A Linux kernel with EFI stub loader
+#   grub        - The GRUB (Legacy or 2) boot loader
+#   opencore    - The OpenCore boot loader
+#   clover      - The Clover boot loader
+#   elilo       - The ELILO boot loader
+#   windows     - Microsoft Windows
+#   osx         - Mac OS
+#
+# Uses osx (Launches Mac OS in graphics mode) when commented out
+#
+#use_graphics_for osx,linux
+
 # While using NVRAM works with most computers, this can increase wear
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may fail to work and lead to an inability to boot.
@@ -509,25 +529,6 @@
 #
 #mouse_speed 6
 
-# Launch specified operating system in graphics mode. RefindPlus defaults
-# to text mode and displays basic pre-launch information when launching
-# any operating systems except Mac OS. Using graphics mode can provide
-# a more seamless transition, but displays no information, which can
-# make it difficult to debug problems. Also, on at least one known
-# computer, using graphics mode prevents a crash when using the Linux
-# kernel's EFI stub loader. You can specify an empty list to boot all
-# operating systems in text mode.
-# Valid options:
-#   osx     - Mac OS
-#   linux   - A Linux kernel with EFI stub loader
-#   elilo   - The ELILO boot loader
-#   grub    - The GRUB (Legacy or 2) boot loader
-#   windows - Microsoft Windows
-#
-# Uses osx (Launches Mac OS in graphics mode) when commented out
-#
-#use_graphics_for osx,linux
-
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an
 # overabundance of tools, as when you see multiple mok_tool entries
@@ -583,8 +584,8 @@
 # By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
 # devices. However, this sometimes does not detect all the available devices.
 # For these cases, uefi_deep_legacy_scan results in a forced scan and
-# modification of NVRAM variables on each boot. This option has no effect on
-# Macs or when no BIOS-mode options are set via scanfor.
+# modification of NVRAM variables on each boot. This option has no
+# effect on Macs or when no BIOS-mode options are set via scanfor.
 #
 # Inactive when commented out (Does not result in a forced scan)
 #
@@ -592,8 +593,8 @@
 
 # Delay for the specified number of seconds before scanning disks.
 # This can help some users who find that some of their disks
-# (usually external or optical discs) are not detected initially,
-# but are detected after pressing Esc.
+# (usually external or optical discs) are not detected
+# initially, but are detected after pressing "ESC".
 #
 # The default setting is 0
 #
@@ -602,49 +603,47 @@
 # When scanning volumes for EFI boot loaders, RefindPlus always looks for
 # the Mac OS and Microsoft Windows boot loaders in their normal locations,
 # and scans the root directory and every subdirectory of the /EFI directory
-# for additional boot loaders, but it does not recurse into these directories.
-# The also_scan_dirs option adds more directories to the scan list.
-# Directories are specified relative to the volume's root directory. This
-# option applies to ALL the volumes that RefindPlus scans UNLESS you include
-# a volume name and colon before the directory name, as in "myvol:/somedir"
-# to scan the somedir directory only on the filesystem named myvol. If a
-# specified directory does not exist, it is ignored (no error condition
-# results).
+# for additional boot loaders, but does not recurse into these directories.
+# The "also_scan_dirs" option adds more directories to the scan list and
+# directories are specified relative to the volume's root directory. This
+# option applies to ALL the volumes that RefindPlus scans UNLESS a volume
+# name and a colon are included before the directory name (myvol:/somedir)
+# to scan the somedir directory only on the filesystem named "myvol". If a
+# specified directory does not exist, it is ignored (no error message).
 #
-# Scans the "boot" directory and hardcoded directories when commented out
+# Scans the "boot" and hardcoded directories when commented out
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
-# For EFI-mode scans, you normally specify a volume by its label, which you
-# can obtain in an EFI shell by typing "vol", from Linux by typing
+# For "EFI-mode" scans, volumes are typically specified by their labels,
+# which can be obtained in an EFI shell with "vol", from Linux by typing
 # "blkid /dev/{devicename}", or by examining the disk's label in various
-# operating system file browsers. It is also possible to identify partitions
-# by their unique GUIDs (aka its "PARTUUID" in Linux parlance). (Note that this
-# is NOT the partition TYPE CODE GUID.) This identifier can be obtained via
-# "blkid" in Linux or "diskutil info {partition-id}" in Mac OS.
-# For legacy-mode scans, you can specify any subset of the boot loader
-# description shown when you highlight the option in RefindPlus.
+# operating system file browsers. Partitions can alsobe identified by the
+# unique GUIDs ("PARTUUID" in Linux parlance). (Note that this is NOT the
+# partition TYPE CODE GUID.) This identifier can be obtained using "blkid"
+# in Linux or "diskutil info {partition-id}" in Mac OS. For legacy-mode
+# scans, any subset of the boot loader description shown when the option
+# is highlighted in RefindPlus can be used.
 #
 # Set to LRS_ESP when commented out
 #
 #dont_scan_volumes "Recovery HD"
 
 # Directories that should NOT be scanned for boot loaders. By default,
-# RefindPlus does not scan its own directory, the EFI/tools directory, the
-# EFI/memtest directory, the EFI/memtest86 directory, or the
-# com.apple.recovery.boot directory. Using the dont_scan_dirs option
-# enables you to "blacklist" other directories; but be sure to use "+"
-# as the first element if you want to continue blacklisting existing
-# directories. You might use this option to keep EFI/boot/bootx64.efi out
-# of the menu if that is a duplicate of another boot loader or to exclude
-# a directory that holds drivers or non-bootloader utilities provided by
-# a hardware manufacturer. If a directory is listed both here and in
-# also_scan_dirs, dont_scan_dirs takes precedence. Note that this
-# blacklist applies to ALL the filesystems that RefindPlus scans, not just
-# the ESP, unless you precede the directory name by a filesystem name or
-# partition unique GUID, as in "myvol:EFI/somedir" to exclude EFI/somedir
-# from the scan on the myvol volume but not on other volumes.
+# RefindPlus does not scan its own directory, the com.apple.recovery.boot,
+# EFI/tools, EFI/memtest and EFI/memtest86 directories. The "dont_scan_dirs"
+# option enables blocking other directories. However, "+" must be used as the
+# first element to continue blocking existing directories. This option might be
+# used to keep EFI/boot/bootx64.efi out of the menu if that is a duplicate of
+# another boot loader, to exclude directories that hold drivers or to exclude
+# directories with non-bootloader utilities from a hardware manufacturer.
+# This token takes precedence if a directory is listed both here and in
+# "also_scan_dirs". Note that this applies to ALL the filesystems that
+# RefindPlus scans, and not just the ESP, unless the directory name is
+# preceded by a filesystem name or partition unique GUID, such as
+# "myvol:EFI/somedir", to exclude EFI/somedirfrom the scan on the
+# "myvol" volume but not on other volumes.
 #
 # Inactive when commented out (Does not exclude additional directories)
 #

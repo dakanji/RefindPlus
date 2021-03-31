@@ -96,12 +96,14 @@
 
 #define DEFAULT_ICONS_DIR L"icons"
 
-// OS bit codes; used in GlobalConfig.GraphicsOn
+// OS bit codes (Actual Decimal); used in GlobalConfig.GraphicsFor
 #define GRAPHICS_FOR_OSX        1
 #define GRAPHICS_FOR_LINUX      2
 #define GRAPHICS_FOR_ELILO      4
 #define GRAPHICS_FOR_GRUB       8
 #define GRAPHICS_FOR_WINDOWS   16
+#define GRAPHICS_FOR_OPENCORE  32
+#define GRAPHICS_FOR_CLOVER    64
 
 // Type of legacy (BIOS) boot support detected
 #define LEGACY_TYPE_NONE 0
