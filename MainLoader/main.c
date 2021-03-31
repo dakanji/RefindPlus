@@ -939,7 +939,7 @@ preBootKicker (
                         ourLoaderEntry->me.Title          = Description;
                         ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
                         ourLoaderEntry->me.Row            = 1;
-                        ourLoaderEntry->me.ShortcutLetter = '';
+                        ourLoaderEntry->me.ShortcutLetter = 0;
                         ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
                         ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
                         ourLoaderEntry->Volume            = Volumes[i];
@@ -1084,7 +1084,7 @@ preCleanNvram (
                         ourLoaderEntry->me.Title          = Description;
                         ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
                         ourLoaderEntry->me.Row            = 1;
-                        ourLoaderEntry->me.ShortcutLetter = '';
+                        ourLoaderEntry->me.ShortcutLetter = 0;
                         ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
                         ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
                         ourLoaderEntry->Volume            = Volumes[i];
