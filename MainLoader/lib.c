@@ -205,8 +205,8 @@ SplitDeviceString (
     IN OUT CHAR16 *InString
 ) {
     INTN i;
-    CHAR16 *FileName = NULL;
-    BOOLEAN Found = FALSE;
+    CHAR16  *FileName = NULL;
+    BOOLEAN  Found    = FALSE;
 
     if (InString != NULL) {
         i = StrLen (InString) - 1;
@@ -258,8 +258,9 @@ EFI_STATUS
 InitRefitLib (
     IN EFI_HANDLE ImageHandle
 ) {
-    EFI_STATUS  Status;
-    CHAR16      *DevicePathAsString, *Temp = NULL;
+    EFI_STATUS   Status;
+    CHAR16      *Temp = NULL;
+    CHAR16      *DevicePathAsString;
 
     SelfImageHandle = ImageHandle;
     Status = refit_call3_wrapper(
@@ -295,7 +296,7 @@ UninitVolumes (
     VOID
 ) {
     REFIT_VOLUME  *Volume;
-    UINTN         VolumeIndex;
+    UINTN          VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
@@ -315,12 +316,12 @@ VOID
 ReinitVolumes (
     VOID
 ) {
-    EFI_STATUS       Status;
+    EFI_STATUS        Status;
     REFIT_VOLUME     *Volume;
-    UINTN            VolumeIndex;
+    UINTN             VolumeIndex;
     EFI_DEVICE_PATH  *RemainingDevicePath;
-    EFI_HANDLE       DeviceHandle;
-    EFI_HANDLE       WholeDiskHandle;
+    EFI_HANDLE        DeviceHandle;
+    EFI_HANDLE        WholeDiskHandle;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
@@ -485,10 +486,10 @@ EfivarGetRaw (
     OUT CHAR8    **VariableData,
     OUT UINTN     *VariableSize     OPTIONAL
 ) {
-    UINTN       BufferSize    = 0;
-    UINT8       *TmpBuffer    = NULL;
-    BOOLEAN     ReadFromNvram = TRUE;
-    EFI_STATUS  Status        = EFI_LOAD_ERROR;
+    UINTN        BufferSize    = 0;
+    UINT8       *TmpBuffer     = NULL;
+    BOOLEAN      ReadFromNvram = TRUE;
+    EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
@@ -584,11 +585,11 @@ EfivarSetRaw (
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
 ) {
-    UINT32      StorageFlags;
+    UINT32       StorageFlags;
     CHAR8       *OldBuf;
-    UINTN       OldSize;
-    EFI_STATUS  Status   = EFI_ALREADY_STARTED;
-    EFI_STATUS  OldStatus;
+    UINTN        OldSize;
+    EFI_STATUS   Status   = EFI_ALREADY_STARTED;
+    EFI_STATUS   OldStatus;
 
     OldStatus = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
 
@@ -643,9 +644,9 @@ EfivarSetRaw (
 
 VOID
 AddListElement (
-    IN OUT VOID ***ListPtr,
-    IN OUT UINTN *ElementCount,
-    IN VOID *NewElement
+    IN OUT VOID  ***ListPtr,
+    IN OUT UINTN   *ElementCount,
+    IN VOID        *NewElement
 ) {
     UINTN AllocateCount;
 
@@ -673,8 +674,8 @@ AddListElement (
 
 VOID
 FreeList (
-    IN OUT VOID ***ListPtr,
-    IN OUT UINTN *ElementCount
+    IN OUT VOID  ***ListPtr,
+    IN OUT UINTN   *ElementCount
 ) {
     UINTN i;
 
@@ -753,7 +754,7 @@ VOID
 SetFilesystemName (
     REFIT_VOLUME *Volume
 ) {
-    EFI_FILE_SYSTEM_INFO    *FileSystemInfoPtr = NULL;
+    EFI_FILE_SYSTEM_INFO *FileSystemInfoPtr = NULL;
 
     if ((Volume) && (Volume->RootDir != NULL)) {
         FileSystemInfoPtr = LibFileSystemInfo (Volume->RootDir);
@@ -785,11 +786,12 @@ SetFilesystemName (
 static
 VOID
 SetFilesystemData (
-    IN UINT8 *Buffer,
-    IN UINTN BufferSize,
+    IN     UINT8        *Buffer,
+    IN     UINTN         BufferSize,
     IN OUT REFIT_VOLUME *Volume
 ) {
-   UINT32  *Ext2Incompat, *Ext2Compat;
+   UINT32  *Ext2Compat;
+   UINT32  *Ext2Incompat;
    UINT16  *Magic16;
    char    *MagicString;
 
@@ -800,8 +802,9 @@ SetFilesystemData (
        if (BufferSize >= (1024 + 100)) {
            Magic16 = (UINT16*) (Buffer + 1024 + 56);
            if (*Magic16 == EXT2_SUPER_MAGIC) { // ext2/3/4
-               Ext2Compat = (UINT32*) (Buffer + 1024 + 92);
+               Ext2Compat   = (UINT32*) (Buffer + 1024 + 92);
                Ext2Incompat = (UINT32*) (Buffer + 1024 + 96);
+
                if ((*Ext2Incompat & 0x0040) || (*Ext2Incompat & 0x0200)) { // check for extents or flex_bg
                    Volume->FSType = FS_TYPE_EXT4;
                } else if (*Ext2Compat & 0x0004) { // check for journal
@@ -810,6 +813,7 @@ SetFilesystemData (
                    Volume->FSType = FS_TYPE_EXT2;
                }
                CopyMem(&(Volume->VolUuid), Buffer + 1024 + 104, sizeof(EFI_GUID));
+
                return;
            }
        } // search for ext2/3/4 magic
@@ -897,11 +901,11 @@ ScanVolumeBootcode (
     REFIT_VOLUME  *Volume,
     BOOLEAN       *Bootable
 ) {
-    EFI_STATUS          Status;
-    UINT8               Buffer[SAMPLE_SIZE];
-    UINTN               i;
+    EFI_STATUS           Status;
+    UINT8                Buffer[SAMPLE_SIZE];
+    UINTN                i;
     MBR_PARTITION_INFO  *MbrTable;
-    BOOLEAN             MbrTableFound = FALSE;
+    BOOLEAN              MbrTableFound = FALSE;
 
     Volume->HasBootCode = FALSE;
     Volume->OSIconName  = NULL;
@@ -1102,49 +1106,51 @@ VOID
 SetVolumeBadgeIcon (
     REFIT_VOLUME *Volume
 ) {
-   if (Volume == NULL) {
-       return;
-   }
-   if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
-       return;
-   }
+    if (Volume == NULL) {
+        return;
+    }
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+        return;
+    }
 
-   if (Volume->VolBadgeImage == NULL) {
-      Volume->VolBadgeImage = egLoadIconAnyType (
-          Volume->RootDir, L"", L".VolumeBadge",
-          GlobalConfig.IconSizes[ICON_SIZE_BADGE]
-      );
-   }
+    if (Volume->VolBadgeImage == NULL) {
+        Volume->VolBadgeImage = egLoadIconAnyType (
+            Volume->RootDir, L"", L".VolumeBadge",
+            GlobalConfig.IconSizes[ICON_SIZE_BADGE]
+        );
+    }
 
-   if (Volume->VolBadgeImage == NULL) {
-      switch (Volume->DiskKind) {
-          case DISK_KIND_INTERNAL:
-             Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL);
-             break;
-          case DISK_KIND_EXTERNAL:
-             Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL);
-             break;
-          case DISK_KIND_OPTICAL:
-             Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
-             break;
-          case DISK_KIND_NET:
-             Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
-             break;
-      } // switch()
-   }
+    if (Volume->VolBadgeImage == NULL) {
+        switch (Volume->DiskKind) {
+            case DISK_KIND_INTERNAL:
+                Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL);
+                break;
+            case DISK_KIND_EXTERNAL:
+                Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL);
+                break;
+            case DISK_KIND_OPTICAL:
+                Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
+                break;
+            case DISK_KIND_NET:
+                Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
+                break;
+        } // switch()
+    }
 } // VOID SetVolumeBadgeIcon()
 
 // Return a string representing the input size in IEEE-1541 units.
 // The calling function is responsible for freeing the allocated memory.
-static
-CHAR16 *
-SizeInIEEEUnits (
+STATIC
+CHAR16
+*SizeInIEEEUnits (
     UINT64 SizeInBytes
 ) {
-    UINT64 SizeInIeee;
-    UINTN Index = 0, NumPrefixes;
-    CHAR16 *Units = NULL, *Prefixes = L" KMGTPEZ";
+    UINTN   NumPrefixes;
+    UINTN   Index    = 0;
+    CHAR16 *Units    = NULL;
+    CHAR16 *Prefixes = L" KMGTPEZ";
     CHAR16 *TheValue;
+    UINT64  SizeInIeee;
 
     NumPrefixes = StrLen (Prefixes);
     SizeInIeee = SizeInBytes;
@@ -1178,15 +1184,15 @@ CHAR16
 ) {
     CHAR16                *SISize;
     CHAR16                *TypeName;
-    CHAR16                *FoundName          = NULL;
-    EFI_GUID              GuidHFS             = HFS_GUID_VALUE;
-    EFI_GUID              GuidAPFS            = APFS_GUID_VALUE;
-    EFI_GUID              GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
-    EFI_GUID              GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
-    EFI_GUID              GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
-    EFI_GUID              GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
-    EFI_GUID              GuidAppleTvRecovery = APPLE_TV_RECOVERY_GUID;
-    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr  = NULL;
+    CHAR16                *FoundName           = NULL;
+    EFI_GUID               GuidHFS             = HFS_GUID_VALUE;
+    EFI_GUID               GuidAPFS            = APFS_GUID_VALUE;
+    EFI_GUID               GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
+    EFI_GUID               GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
+    EFI_GUID               GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
+    EFI_GUID               GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
+    EFI_GUID               GuidAppleTvRecovery = APPLE_TV_RECOVERY_GUID;
+    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr   = NULL;
 
 
     if ((Volume->FsName) && (StrLen(Volume->FsName) > 0)) {
@@ -1325,14 +1331,14 @@ VOID
 ScanVolume (
     REFIT_VOLUME *Volume
 ) {
-    EFI_STATUS       Status;
+    EFI_STATUS        Status;
     EFI_DEVICE_PATH  *DevicePath;
     EFI_DEVICE_PATH  *NextDevicePath;
     EFI_DEVICE_PATH  *DiskDevicePath;
     EFI_DEVICE_PATH  *RemainingDevicePath;
-    EFI_HANDLE       WholeDiskHandle;
-    UINTN            PartialLength;
-    BOOLEAN          Bootable;
+    EFI_HANDLE        WholeDiskHandle;
+    UINTN             PartialLength;
+    BOOLEAN           Bootable;
     CHAR16           *ShowScreenStr = NULL;
 
     // get device path
@@ -2501,7 +2507,8 @@ FindPath (
          if (FullPath[i] == '\\') {
              LastBackslash = i;
          }
-      } // for
+      }
+
       PathOnly = StrDuplicate (FullPath);
       if (PathOnly != NULL) {
           PathOnly[LastBackslash] = 0;
@@ -2515,9 +2522,9 @@ FindPath (
 // DeviceVolume, and returns that and the filename (*loader).
 VOID
 FindVolumeAndFilename (
-    IN EFI_DEVICE_PATH *loadpath,
-    OUT REFIT_VOLUME **DeviceVolume,
-    OUT CHAR16 **loader
+    IN EFI_DEVICE_PATH  *loadpath,
+    OUT REFIT_VOLUME   **DeviceVolume,
+    OUT CHAR16         **loader
 ) {
     CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
     UINTN i = 0;
@@ -2530,8 +2537,8 @@ FindVolumeAndFilename (
     MyFreePool (*loader);
     MyFreePool (*DeviceVolume);
     *DeviceVolume = NULL;
-    DeviceString = DevicePathToStr (loadpath);
-    *loader = SplitDeviceString (DeviceString);
+    DeviceString  = DevicePathToStr (loadpath);
+    *loader       = SplitDeviceString (DeviceString);
 
     while ((i < VolumesCount) && (!Found)) {
         if (Volumes[i]->DevicePath == NULL) {
@@ -2539,14 +2546,15 @@ FindVolumeAndFilename (
             continue;
         }
         VolumeDeviceString = DevicePathToStr (Volumes[i]->DevicePath);
-        Temp = SplitDeviceString (VolumeDeviceString);
+        Temp               = SplitDeviceString (VolumeDeviceString);
         if (MyStrStr (VolumeDeviceString, DeviceString)) {
-            Found = TRUE;
+            Found         = TRUE;
             *DeviceVolume = Volumes[i];
         }
+        i++;
+
         MyFreePool (Temp);
         MyFreePool (VolumeDeviceString);
-        i++;
     } // while
 
     MyFreePool (DeviceString);
@@ -2578,10 +2586,10 @@ SplitVolumeAndFilename (
     } // while
 
     if (i < Length) {
-        Filename = StrDuplicate ((*Path) + i + 1);
+        Filename   = StrDuplicate ((*Path) + i + 1);
         (*Path)[i] = 0;
-        *VolName = *Path;
-        *Path = Filename;
+        *VolName   = *Path;
+        *Path      = Filename;
 
         return TRUE;
     }
@@ -2598,7 +2606,7 @@ SplitVolumeAndFilename (
 // freeing the allocated memory.
 VOID
 SplitPathName (
-    CHAR16 *InPath,
+    CHAR16  *InPath,
     CHAR16 **VolName,
     CHAR16 **Path,
     CHAR16 **Filename
@@ -2608,13 +2616,14 @@ SplitPathName (
     MyFreePool (*VolName);
     MyFreePool (*Path);
     MyFreePool (*Filename);
-    *VolName = *Path = *Filename = NULL;
 
     Temp = StrDuplicate (InPath);
     SplitVolumeAndFilename (&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
     CleanUpPathNameSlashes (Temp);
-    *Path = FindPath (Temp); // *Path has path (may be 0-length); Temp unchanged.
+
+    *Path     = FindPath (Temp); // *Path has path (may be 0-length); Temp unchanged.
     *Filename = StrDuplicate (Temp + StrLen (*Path));
+
     CleanUpPathNameSlashes (*Filename);
 
     if (StrLen (*Path) == 0) {
@@ -2644,7 +2653,7 @@ FindVolume (
     while ((i < VolumesCount) && (!Found)) {
         if (VolumeMatchesDescription (Volumes[i], Identifier)) {
             *Volume = Volumes[i];
-            Found = TRUE;
+            Found   = TRUE;
         } // if
         i++;
     } // while()
@@ -2657,13 +2666,14 @@ FindVolume (
 BOOLEAN
 VolumeMatchesDescription (
     REFIT_VOLUME *Volume,
-    CHAR16 *Description
+    CHAR16       *Description
 ) {
     EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
 
     if ((Volume == NULL) || (Description == NULL)) {
         return FALSE;
     }
+
     if (IsGuid (Description)) {
         TargetVolGuid = StringAsGuid (Description);
         return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
@@ -2733,12 +2743,12 @@ BOOLEAN
 EjectMedia (
     VOID
 ) {
-    EFI_STATUS                      Status;
-    UINTN                           HandleIndex;
-    UINTN                           HandleCount = 0;
-    UINTN                           Ejected     = 0;
+    EFI_STATUS                       Status;
+    UINTN                            HandleIndex;
+    UINTN                            HandleCount = 0;
+    UINTN                            Ejected     = 0;
     EFI_HANDLE                      *Handles;
-    EFI_HANDLE                      Handle;
+    EFI_HANDLE                       Handle;
     APPLE_REMOVABLE_MEDIA_PROTOCOL  *Ejectable;
 
     Status = LibLocateHandle (

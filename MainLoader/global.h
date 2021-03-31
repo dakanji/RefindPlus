@@ -297,7 +297,6 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
 //
 
 // global types
-
 typedef struct _uint32_list {
     UINT32               Value;
     struct _uint32_list  *Next;
@@ -463,40 +462,37 @@ typedef struct {
 } REFIT_CONFIG;
 
 // Global variables
+extern CHAR16              *SelfDirPath;
+extern CHAR16              *gHiddenTools;
 
-extern EFI_HANDLE        SelfImageHandle;
+extern UINTN                VolumesCount;
+extern UINTN                PreBootVolumesCount;
 
-extern EFI_LOADED_IMAGE  *SelfLoadedImage;
+extern BOOLEAN              IsBoot;
+extern BOOLEAN              TweakSysTable;
+extern BOOLEAN              DetectedDevices;
 
-extern EFI_FILE          *SelfRootDir;
-extern EFI_FILE          *SelfDir;
+extern EFI_FILE            *SelfDir;
+extern EFI_FILE            *SelfRootDir;
 
-extern CHAR16            *SelfDirPath;
-extern CHAR16            *gHiddenTools;
+extern EFI_GUID             GlobalGuid;
+extern EFI_GUID             RefindPlusGuid;
+extern EFI_GUID             gEfiGlobalVariableGuid;
+extern EFI_GUID             gEfiLegacyBootProtocolGuid;
 
-extern REFIT_VOLUME      *SelfVolume;
-extern REFIT_VOLUME      **Volumes;
+extern EFI_HANDLE           SelfImageHandle;
 
-extern REFIT_VOLUME      **PreBootVolumes;
+extern EFI_LOADED_IMAGE    *SelfLoadedImage;
 
-extern REFIT_CONFIG      GlobalConfig;
+extern REFIT_VOLUME        *SelfVolume;
+extern REFIT_VOLUME       **Volumes;
+extern REFIT_VOLUME       **PreBootVolumes;
 
-extern UINTN             VolumesCount;
-extern UINTN             PreBootVolumesCount;
+extern REFIT_CONFIG         GlobalConfig;
 
-extern EFI_GUID          gEfiLegacyBootProtocolGuid;
-extern EFI_GUID          gEfiGlobalVariableGuid;
-extern EFI_GUID          GlobalGuid;
-extern EFI_GUID          RefindPlusGuid;
+extern REFIT_MENU_SCREEN    MainMenu;
 
-extern BOOLEAN           TweakSysTable;
-extern BOOLEAN           DetectedDevices;
-extern BOOLEAN           IsBoot;
-
-extern REFIT_MENU_SCREEN MainMenu;
-
-extern REFIT_MENU_ENTRY  MenuEntryReturn;
-
+extern REFIT_MENU_ENTRY     MenuEntryReturn;
 
 
 VOID AboutRefindPlus(VOID);
