@@ -61,8 +61,8 @@ GetCsrStatus (
                 *CsrStatus = *ReturnValue;
             }
             else {
-                Status = EFI_BAD_BUFFER_SIZE;
-                gCsrStatus = StrDuplicate (L"Unknown System Integrity Protection Version");
+                Status     = EFI_BAD_BUFFER_SIZE;
+                gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
             }
 
             MyFreePool (ReturnValue);
@@ -134,7 +134,7 @@ VOID RecordgCsrStatus (
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (
-                L"System Integrity Protection Status: 0x%04x - Caution: Unknown Custom Setting",
+                L"SIP/SSV Disabled: 0x%04x - Caution: Unknown Custom Setting",
                 CsrStatus
             );
     } // switch
@@ -187,7 +187,7 @@ VOID RotateCsrValue (VOID) {
         else {
             EG_PIXEL BGColor = COLOR_LIGHTBLUE;
             egDisplayMessage (
-                L"Could Not Set SIP Status",
+                L"Could Not Set SIP/SSV Status",
                 &BGColor,
                 CENTER
             );
