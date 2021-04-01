@@ -1628,6 +1628,8 @@ efi_main (
     CHAR16    *SelectionName = NULL;
     CHAR16    *ShowScreenStr = NULL;
 
+    ForceLogging = TRUE;
+
     // bootstrap
     InitializeLib (ImageHandle, SystemTable);
     Status = InitRefitLib (ImageHandle);
@@ -1686,6 +1688,8 @@ efi_main (
     // Log System Details
     LogBasicInfo ();
     #endif
+
+    ForceLogging = FALSE;
 
     // read configuration
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);

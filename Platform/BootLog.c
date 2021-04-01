@@ -15,6 +15,7 @@
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include "../MainLoader/lib.h"
+#include "../MainLoader/mystrings.h"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
@@ -24,6 +25,10 @@ extern  INT16  NowDay;
 extern  INT16  NowHour;
 extern  INT16  NowMinute;
 extern  INT16  NowSecond;
+
+CHAR16  *gLogTemp       = NULL;
+
+BOOLEAN  ForceLogging   = FALSE;
 
 
 CHAR16
@@ -377,25 +382,85 @@ VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
 }
 
 
-// Changed MsgLog(...) it now calls this function
-//  with DebugMode == 0. - apianti
-// DebugMode==0 Prints to msg log, only output to log on SaveBooterLog
-// DebugMode==1 Prints to msg log and ourDebugLog
-// DebugMode==2 Prints to msg log, ourDebugLog and display console
-VOID EFIAPI DebugLog(IN INTN DebugMode, IN CONST CHAR8 *FormatString, ...)
-{
-   VA_LIST Marker;
-   //UINTN offset = 0;
+// Changed MsgLog(...) it now calls this function with DebugMode > 0.
+VOID
+EFIAPI
+DeepLog (
+    IN INTN     DebugMode,
+    IN INTN     level,
+    IN INTN     type,
+    IN CHAR16 **Message
+) {
+    CHAR8   FormatString[255];
+    CHAR16 *FinalMessage = NULL;
 
-   // Make sure the buffer is intact for writing
-   if (FormatString == NULL || DebugMode < 0) {
-     return;
-   }
+    // Make sure the buffer is intact for writing
+    if (DebugMode < 1 ||
+        GlobalConfig.LogLevel < 1 ||
+        GlobalConfig.LogLevel <= level ||
+        !(*Message)
+    ) {
+        if (*Message) {
+            FreePool (*Message);
+            *Message = NULL;
+        }
 
-   // Print message to log buffer
-   VA_START(Marker, FormatString);
-   MemLogVA(TRUE, DebugMode, FormatString, Marker);
-   VA_END(Marker);
+        return;
+    }
+
+    switch (type) {
+        case LOG_LINE_SEPARATOR:
+            FinalMessage = PoolPrint (L"==========[ %s ]==========\n", *Message);
+            break;
+        case LOG_LINE_THIN_SEP:
+            FinalMessage = PoolPrint (L"----------[ %s ]----------\n", *Message);
+            break;
+        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this.... */
+            FinalMessage = PoolPrint (L"%s\n", *Message);
+    } // switch
+
+    if (FinalMessage) {
+        // Enable Forced Logging
+        ForceLogging = TRUE;
+        // Convert Unicode Message String to Ascii
+        MyUnicodeStrToAsciiStr (FinalMessage, FormatString);
+        // Write the Message String
+        DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
+        // Disable Forced Logging
+        ForceLogging = FALSE;
+    }
+    if (*Message) {
+        FreePool (*Message);
+        *Message = NULL;
+    }
+    MyFreePool (FormatString);
+
+}
+
+
+// Changed MsgLog(...) it now calls this function with DebugMode > 0.
+VOID
+EFIAPI
+DebugLog(
+    IN INTN DebugMode,
+    IN CONST CHAR8 *FormatString, ...
+) {
+    VA_LIST Marker;
+
+    // Make sure the buffer is intact for writing
+    if (FormatString == NULL || DebugMode < 0) {
+      return;
+    }
+
+    // Abort on higher log levels if not forcing
+    if (!ForceLogging && GlobalConfig.LogLevel > 0) {
+      return;
+    }
+
+    // Print message to log buffer
+    VA_START(Marker, FormatString);
+    MemLogVA(TRUE, DebugMode, FormatString, Marker);
+    VA_END(Marker);
 }
 
 
@@ -407,12 +472,12 @@ VOID InitBooterLog(VOID)
 
 EFI_STATUS SetupBooterLog(BOOLEAN AllowGrownSize)
 {
-  EFI_STATUS              Status = EFI_SUCCESS;
-  CHAR8                   *MemLogBuffer;
-  UINTN                   MemLogLen;
+  EFI_STATUS   Status = EFI_SUCCESS;
+  CHAR8       *MemLogBuffer;
+  UINTN        MemLogLen;
 
   MemLogBuffer = GetMemLogBuffer();
-  MemLogLen = GetMemLogLen();
+  MemLogLen    = GetMemLogLen();
 
   if (MemLogBuffer == NULL || MemLogLen == 0) {
 		return EFI_NOT_FOUND;
