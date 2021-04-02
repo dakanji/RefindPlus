@@ -43,6 +43,10 @@
  static VOID DeleteESPList (ESP_LIST *AllESPs) {
      ESP_LIST *Temp;
 
+     #if REFIT_DEBUG > 0
+     LOG(3, LOG_LINE_NORMAL, L"Deleting list of ESPs");
+     #endif
+
      while (AllESPs != NULL) {
          Temp = AllESPs;
          AllESPs = AllESPs->NextESP;
@@ -59,6 +63,10 @@
      ESP_LIST *NewESP;
      UINTN VolumeIndex;
      EFI_GUID ESPGuid = ESP_GUID_VALUE;
+
+     #if REFIT_DEBUG > 0
+     LOG(2, LOG_LINE_NORMAL, L"Searching for ESPs");
+     #endif
 
      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
          if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL &&
@@ -103,6 +111,10 @@
                                          L"Select a destination and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
+     #if REFIT_DEBUG > 0
+     LOG(2, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
+     #endif
+
      if (AllowGraphicsMode) {
          Style = GraphicsMenuStyle;
      }
@@ -134,6 +146,10 @@
                  Temp = PoolPrint (L"%s - no name", GuidStr);
              }
 
+             #if REFIT_DEBUG > 0
+             LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to UI list of ESPs");
+             #endif
+
              MyFreePool (&GuidStr);
              MenuEntryItem->Title = Temp;
              MenuEntryItem->Tag = TAG_RETURN;
@@ -157,6 +173,10 @@
      }
      else {
          DisplaySimpleMessage (L"Information", L"No eligible ESPs found");
+
+         #if REFIT_DEBUG > 0
+         LOG(2, LOG_LINE_NORMAL, L"No ESPs found");
+         #endif
      } // if
      MyFreePool (TempMenuEntry);
 
@@ -174,6 +194,10 @@
      EFI_FILE      *FilePtr;
      EFI_FILE_INFO *NewInfo, *Buffer = NULL;
      UINTN         NewInfoSize;
+
+     #if REFIT_DEBUG > 0
+     LOG(3, LOG_LINE_NORMAL, L"Trying to rename '%s' to '%s'", OldName, NewName);
+     #endif
 
      Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FilePtr, OldName,
                                   EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
@@ -213,6 +237,10 @@
  static EFI_STATUS BackupOldFile (IN EFI_FILE *BaseDir, CHAR16 *FileName) {
      EFI_STATUS          Status = EFI_SUCCESS;
      CHAR16              *NewName;
+
+     #if REFIT_DEBUG > 0
+     LOG(3, LOG_LINE_NORMAL, L"Backing up '%s'", FileName);
+     #endif
 
      if ((BaseDir == NULL) || (FileName == NULL))
         return EFI_INVALID_PARAMETER;
@@ -293,6 +321,15 @@
      MyFreePool (DestFile);
      MyFreePool (Buffer);
 
+     #if REFIT_DEBUG > 0
+     if (EFI_ERROR(Status)) {
+         LOG(1, LOG_LINE_NORMAL,
+             L"Error %d when copying '%s' to '%s'",
+             Status, SourceName, DestName
+         );
+     }
+     #endif
+
      return (Status);
  } // EFI_STATUS CopyOneFile()
 
@@ -342,7 +379,21 @@ CopyDrivers (
          DriverCopied[i] = FALSE;
      }
 
+     #if REFIT_DEBUG > 0
+     LOG(3, LOG_LINE_NORMAL,
+         L"Scanning %d volumes for identifiable filesystems",
+         VolumesCount
+     );
+     #endif
+
      for (i = 0; i < VolumesCount; i++) {
+         #if REFIT_DEBUG > 0
+         LOG(1, LOG_LINE_NORMAL,
+             L"Looking for driver for volume # %d, '%s'",
+             i, Volumes[i]->VolName
+         );
+         #endif
+
          DriverName = NULL;
          switch (Volumes[i]->FSType) {
 
@@ -395,7 +446,12 @@ CopyDrivers (
          if (DriverName) {
              SourceFileName = PoolPrint (L"%s\\%s%s", SourceDirName, DriverName, INST_PLATFORM_EXTENSION);
              DestFileName   = PoolPrint (L"%s\\%s%s", DestDirName, DriverName, INST_PLATFORM_EXTENSION);
-             Status         = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
+
+             #if REFIT_DEBUG > 0
+             LOG(1, LOG_LINE_NORMAL, L"Trying to copy driver for %s", DriverName);
+             #endif
+
+             Status = CopyOneFile (SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
              if (EFI_ERROR (Status)) {
                  WorstStatus = Status;
              }
@@ -420,10 +476,14 @@ CopyDrivers (
 
      // Begin by copying RefindPlus itself....
      RefindPlusName = PoolPrint (L"EFI\\refindplus\\%s", INST_REFINDPLUS_NAME);
-     Status = CopyOneFile (SourceVolume->RootDir, SourceFile, TargetDir, RefindPlusName);
+     Status         = CopyOneFile (SourceVolume->RootDir, SourceFile, TargetDir, RefindPlusName);
      MyFreePool (SourceFile);
      MyFreePool (RefindPlusName);
      if (EFI_ERROR (Status)) {
+         #if REFIT_DEBUG > 0
+         LOG(1, LOG_LINE_NORMAL, L"Error copying RefindPlus binary; installation has failed");
+         #endif
+
          Status = WorstStatus = EFI_ABORTED;
      }
 
@@ -462,13 +522,17 @@ CopyDrivers (
 
          // Now copy icons....
          SourceFile = PoolPrint (L"%s\\icons", SourceDir);
-         Status = CopyDirectory (
+         Status     = CopyDirectory (
              SourceVolume->RootDir,
              SourceFile,
              TargetDir,
              L"EFI\\refindplus\\icons"
          );
          if (EFI_ERROR (Status)) {
+             #if REFIT_DEBUG > 0
+             LOG(1, LOG_LINE_NORMAL, L"Error %d copying drivers", Status);
+             #endif
+
              WorstStatus = Status;
          }
          MyFreePool (SourceFile);
@@ -476,7 +540,13 @@ CopyDrivers (
          // Now copy drivers....
          SourceDriversDir = PoolPrint (L"%s\\%s", SourceDir, INST_DRIVERS_SUBDIR);
          TargetDriversDir = PoolPrint (L"EFI\\refindplus\\%s", INST_DRIVERS_SUBDIR);
-         Status = CopyDrivers (SourceVolume->RootDir, SourceDriversDir, TargetDir, TargetDriversDir);
+
+         Status = CopyDrivers (
+             SourceVolume->RootDir,
+             SourceDriversDir,
+             TargetDir,
+             TargetDriversDir
+         );
          if (EFI_ERROR (Status)) {
              WorstStatus = Status;
          }
@@ -508,6 +578,12 @@ CopyDrivers (
          } // if
          MyFreePool (Contents);
      } // if
+
+     #if REFIT_DEBUG > 0
+     if (EFI_ERROR(Status)) {
+         LOG(1, LOG_LINE_NORMAL, L"Error %d when writing BOOT.CSV file", Status);
+     }
+     #endif
  } // VOID CreateFallbackCSV()
 
  static BOOLEAN CopyRefindFiles (IN EFI_FILE *TargetDir) {
@@ -515,9 +591,21 @@ CopyDrivers (
 
      if (FileExists (TargetDir, L"\\EFI\\refindplus\\icons")) {
          Status = BackupOldFile (TargetDir, L"\\EFI\\refindplus\\icons");
+
+         #if REFIT_DEBUG > 0
+         if (EFI_ERROR(Status)) {
+             LOG(1, LOG_LINE_NORMAL, L"Error when backing up icons");
+         }
+         #endif
      }
      if (Status == EFI_SUCCESS) {
          Status = CreateDirectories (TargetDir);
+
+         #if REFIT_DEBUG > 0
+         if (EFI_ERROR(Status)) {
+             LOG(1, LOG_LINE_NORMAL, L"Error when creating target directory");
+         }
+         #endif
      }
      if (Status == EFI_SUCCESS) {
          // Check status and log if it's an error; but do not pass on the
@@ -711,6 +799,10 @@ CopyDrivers (
      REFIT_VOLUME  *SelectedESP; // Do not free
      UINTN         Status;
 
+     #if REFIT_DEBUG > 0
+     LOG(1, LOG_LINE_NORMAL, L"Installing RefindPlus to an ESP");
+     #endif
+
      AllESPs = FindAllESPs();
      SelectedESP = PickOneESP (AllESPs);
      if (SelectedESP) {
@@ -740,6 +832,10 @@ CopyDrivers (
      CHAR16           *VarName = NULL;
      CHAR16           *Contents = NULL;
      BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
+
+     #if REFIT_DEBUG > 0
+     LOG(1, LOG_LINE_NORMAL, L"Finding boot order entries");
+     #endif
 
      Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
      if (Status != EFI_SUCCESS)
@@ -880,6 +976,10 @@ CopyDrivers (
      CHAR8    *Contents;
      CHAR16   *VarName;
 
+     #if REFIT_DEBUG > 0
+     LOG(1, LOG_LINE_NORMAL, L"Deleting invalid boot entries from internal BootOrder list");
+     #endif
+
      Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
      if (Status == EFI_SUCCESS) {
          ListSize = VarSize / sizeof (UINT16);
@@ -906,6 +1006,10 @@ CopyDrivers (
      BOOT_ENTRY_LIST *Entries;
      UINTN           BootNum = 0, Operation;
      CHAR16          *Name, *Message;
+
+     #if REFIT_DEBUG > 0
+     LOG(1, LOG_LINE_NORMAL, L"Managing boot order list");
+     #endif
 
      Entries = FindBootOrderEntries();
      Operation = PickOneBootOption (Entries, &BootNum);

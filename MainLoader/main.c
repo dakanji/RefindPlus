@@ -1149,7 +1149,7 @@ VOID AboutRefindPlus (
     CHAR16  *TempStr         = NULL;
     CHAR16  *FirmwareVendor  = VendorInfo;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
     #endif
 
@@ -1269,7 +1269,7 @@ VOID RescanAll (
     BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Re-scanning all boot loaders");
     #endif
 
@@ -1328,12 +1328,12 @@ STATIC BOOLEAN SecureBootSetup (
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
     #endif
 
     if (secure_mode() && ShimLoaded()) {
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL, L"Secure boot mode detected with loaded Shim; adding MOK extensions");
         #endif
 

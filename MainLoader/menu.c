@@ -348,7 +348,7 @@ AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16 *InfoLine
 ) {
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Adding menu info line: '%s'", InfoLine);
     #endif
 
@@ -570,7 +570,7 @@ RunGenericMenu (
     UINTN          MenuExit;
     UINTN          Item;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
     #endif
 
@@ -614,7 +614,7 @@ RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_THIN_SEP, L"About to enter while() loop in RunGenericMenu()");
     #endif
 
@@ -688,7 +688,7 @@ RunGenericMenu (
         else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
-                #if REFIT_DEBUG > 1
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
                 #endif
 
@@ -739,7 +739,7 @@ RunGenericMenu (
         }
 
         if (!PointerActive) { // react to key press
-            #if REFIT_DEBUG > 1
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)", key.ScanCode);
             #endif
 
@@ -787,7 +787,7 @@ RunGenericMenu (
                     break;
             } // switch()
 
-            #if REFIT_DEBUG > 1
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)", key.UnicodeChar);
             #endif
 
@@ -819,7 +819,7 @@ RunGenericMenu (
             } // switch()
         }
         else { //react to pointer event
-            #if REFIT_DEBUG > 1
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Processing pointer event");
             #endif
 
@@ -877,7 +877,7 @@ RunGenericMenu (
     }
     *DefaultEntryIndex = State.CurrentSelection;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
     #endif
 
@@ -1944,7 +1944,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_THREE_STAR_SEP, L"Entering WaitForInput() ... Timeout = %d", Timeout);
     #endif
 
@@ -2017,7 +2017,7 @@ DisplaySimpleMessage (
     CHAR16* Title,
     CHAR16 *Message
 ) {
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_THREE_STAR_SEP, L"Entering DisplaySimpleMessage()");
     #endif
 
@@ -2044,7 +2044,7 @@ DisplaySimpleMessage (
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
     if (MenuExit == 0) {
         LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
@@ -2148,7 +2148,7 @@ ManageHiddenTags (
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Managing hidden tags");
     #endif
 
@@ -2520,7 +2520,7 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMenu()");
     #endif
 
@@ -2544,7 +2544,7 @@ UINTN RunMainMenu (
     INTN DefaultEntryIndex   = -1;
     INTN DefaultSubmenuIndex = -1;
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMainMenu()");
     #endif
 
@@ -2581,7 +2581,7 @@ UINTN RunMainMenu (
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
-                #if REFIT_DEBUG > 1
+                #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL,
                     L"About to call RunGenericMenu() on subscreen '%s'",
                     MenuTitle
@@ -2595,7 +2595,7 @@ UINTN RunMainMenu (
                     &TempChosenEntry
                 );
 
-                #if REFIT_DEBUG > 1
+                #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"RunGenericMenu() has returned %d", MenuExit);
                 #endif
 

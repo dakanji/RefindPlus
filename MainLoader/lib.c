@@ -2386,13 +2386,13 @@ DirNextEntry (
                 BufferSize = LastBufferSize * 2;
             }
             else {
-                #if REFIT_DEBUG > 1
+                #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL,
                     L"Reallocating buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
 
-                MsgLog (Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
+                MsgLog ("Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
                 #endif
             }
             Buffer         = EfiReallocatePool (Buffer, LastBufferSize, BufferSize);

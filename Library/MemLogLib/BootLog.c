@@ -368,8 +368,9 @@ DeepLoggger (
         case LOG_THREE_STAR_SEP:
             FinalMessage = PoolPrint (L"       ***[ %s\n", *Message);
             break;
-        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this */
-            FinalMessage = PoolPrint (L"%s\n", *Message);
+        default:
+            // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
+            FinalMessage = PoolPrint (L"%s\n\n", *Message);
     } // switch
 
     if (FinalMessage) {

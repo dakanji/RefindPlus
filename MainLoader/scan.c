@@ -330,7 +330,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 (Entry->Title != NULL) ? Entry->Title : FileName, Entry->Volume->VolName
             );
 
-            #if REFIT_DEBUG > 1
+            #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL, L"Creating subscreen '%s'", SubScreen->Title);
             #endif
 
@@ -338,7 +338,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             // default entry
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                #if REFIT_DEBUG > 1
+                #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL, L"Creating loader entry for '%s'", SubScreen->Title);
                 #endif
 
@@ -583,7 +583,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     PathOnly    = FindPath (LoaderPath);
     NoExtension = StripEfiExtension (NameClues);
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Finding loader defaults for '%s'", Entry->me.Title);
     #endif
 
@@ -593,7 +593,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     else {
         // locate a custom icon for the loader
         // Anything found here takes precedence over the "hints" in the OSIconName variable
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Trying to load icon in same directory as loader");
         #endif
 
@@ -611,7 +611,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
 
         // Begin creating icon "hints" by using last part of directory path leading
         // to the loader
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Creating icon hint based on loader path '%s'", LoaderPath);
         #endif
 
@@ -626,20 +626,20 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         // Add every "word" in the filesystem and partition names, delimited by
         // spaces, dashes (-), underscores (_), or colons (:), to the list of
         // hints to be used in searching for OS icons.
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
         #endif
 
         MergeWords(&OSIconName, Volume->FsName, L',');
 
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
         #endif
 
         MergeWords(&OSIconName, Volume->PartName, L',');
     } // if/else network boot
 
-    #if REFIT_DEBUG > 1
+    #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
     #endif
 
@@ -730,7 +730,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
 
     Entry->me.ShortcutLetter = ShortcutLetter;
     if (Entry->me.Image == NULL) {
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Trying to locate an icon based on hints '%s'", OSIconName);
         #endif
 
@@ -773,7 +773,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
         TempStr              = DevicePathToStr(EfiLoaderPath);
 
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL, L"EFI loader path = '%s'", TempStr);
         #endif
 
@@ -841,7 +841,7 @@ static LOADER_ENTRY * AddLoaderEntry (
 
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
-        #if REFIT_DEBUG > 1
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_THREE_STAR_SEP, L"FOUND LOADER");
         LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
         LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);

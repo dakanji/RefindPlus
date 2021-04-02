@@ -276,10 +276,14 @@ static VOID generate_hybrid_mbr(VOID) {
     // First, do FAT and NTFS partitions....
     i = 0;
     do {
+        // (gpt_parts[i].end_lba <= MAX_MBR_LBA)                    = Within MBR limits
+        // (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA) = MS Basic Data GPT type code
+        // (gpt_parts[i].mbr_type != 0x83)                          = Not containing Linux filesystem
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
-            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&                    /* Within MBR limits */
-            (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA) && /* MS Basic Data GPT type code */
-            (gpt_parts[i].mbr_type != 0x83)) {                          /* Not containing Linux filesystem */
+            (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
+            (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA) &&
+            (gpt_parts[i].mbr_type != 0x83)
+        ) {
            copy_gpt_to_new_mbr(i, new_mbr_part_count);
            if (new_mbr_parts[new_mbr_part_count].start_lba < first_used_lba)
               first_used_lba = new_mbr_parts[new_mbr_part_count].start_lba;
@@ -291,10 +295,12 @@ static VOID generate_hybrid_mbr(VOID) {
 
     // Second, do Linux partitions. Note that we start from the END of the
     // partition list, so as to maximize the space covered by the 0xEE
-    // partition if there are several Linux partitions before other hybridized
-    // partitions.
-    i = gpt_part_count - 1; // Note that gpt_part_count can't be 0; filtered by check_gpt()
-    while (i < gpt_part_count && new_mbr_part_count <= 3) { // if too few GPT partitions, i loops around to a huge value
+    // partition if there are several Linux partitions before other hybridized partitions.
+
+    // Note that gpt_part_count can't be 0; filtered by check_gpt()
+    i = gpt_part_count - 1;
+    while (i < gpt_part_count && new_mbr_part_count <= 3) {
+        // if too few GPT partitions, i loops around to a huge value
         if ((gpt_parts[i].start_lba > 0) && (gpt_parts[i].end_lba > 0) &&
             (gpt_parts[i].end_lba <= MAX_MBR_LBA) &&
             ((gpt_parts[i].gpt_parttype->kind == GPT_KIND_DATA) || (gpt_parts[i].gpt_parttype->kind == GPT_KIND_BASIC_DATA)) &&
