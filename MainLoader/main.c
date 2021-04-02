@@ -224,7 +224,9 @@ EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
 EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 
+#if REFIT_DEBUG > 0
 extern VOID InitBooterLog (VOID);
+#endif
 
 extern EFI_STATUS RpApfsConnectDevices (VOID);
 
@@ -1682,8 +1684,6 @@ efi_main (
     NowMinute = Now.Minute;
     NowSecond = Now.Second;
 
-    InitBooterLog();
-
     if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
         VendorInfo = StrDuplicate (L"Apple");
     }
@@ -1697,6 +1697,8 @@ efi_main (
     }
 
     #if REFIT_DEBUG > 0
+    InitBooterLog();
+
     CONST CHAR16 *NowDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear,
