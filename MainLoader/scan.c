@@ -329,10 +329,14 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 L"Boot Options for %s on %s",
                 (Entry->Title != NULL) ? Entry->Title : FileName, Entry->Volume->VolName
             );
+            LOG(2, LOG_LINE_NORMAL, L"Creating subscreen '%s'", SubScreen->Title);
+
             SubScreen->TitleImage = Entry->me.Image;
             // default entry
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
+                LOG(2, LOG_LINE_NORMAL, L"Creating loader entry for '%s'", SubScreen->Title);
+
                 SubEntry->me.Title = StrDuplicate (L"Boot using default options");
                 MainOptions = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
@@ -570,9 +574,11 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     CHAR16      *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
     CHAR16      ShortcutLetter = 0;
 
-    NameClues = Basename (LoaderPath);
-    PathOnly = FindPath (LoaderPath);
+    NameClues   = Basename (LoaderPath);
+    PathOnly    = FindPath (LoaderPath);
     NoExtension = StripEfiExtension (NameClues);
+
+    LOG(3, LOG_LINE_NORMAL, L"Finding loader defaults for '%s'", Entry->me.Title);
 
     if (Volume->DiskKind == DISK_KIND_NET) {
         MergeStrings (&NameClues, Entry->me.Title, L' ');
@@ -580,6 +586,8 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     else {
         // locate a custom icon for the loader
         // Anything found here takes precedence over the "hints" in the OSIconName variable
+        LOG(4, LOG_LINE_NORMAL, L"Trying to load icon in same directory as loader");
+
         if (!Entry->me.Image) {
             Entry->me.Image = egLoadIconAnyType (
                 Volume->RootDir,
@@ -594,6 +602,8 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
 
         // Begin creating icon "hints" by using last part of directory path leading
         // to the loader
+        LOG(4, LOG_LINE_NORMAL, L"Creating icon hint based on loader path '%s'", LoaderPath);
+
         Temp = FindLastDirName (LoaderPath);
         MergeStrings (&OSIconName, Temp, L',');
         MyFreePool (Temp);
@@ -605,9 +615,14 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         // Add every "word" in the filesystem and partition names, delimited by
         // spaces, dashes (-), underscores (_), or colons (:), to the list of
         // hints to be used in searching for OS icons.
+        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
         MergeWords(&OSIconName, Volume->FsName, L',');
+
+        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
         MergeWords(&OSIconName, Volume->PartName, L',');
     } // if/else network boot
+
+    LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
 
     // detect specific loaders
     if (StriSubCmp (L"bzImage", NameClues)
@@ -696,6 +711,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
 
     Entry->me.ShortcutLetter = ShortcutLetter;
     if (Entry->me.Image == NULL) {
+        LOG(4, LOG_LINE_NORMAL, L"Trying to locate an icon based on hints '%s'", OSIconName);
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
     }
 
@@ -716,7 +732,9 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 ) {
     LOADER_ENTRY  *Entry;
     CHAR16        *OSIconName = NULL;
-    CHAR16        *FullTitle = NULL;
+    CHAR16        *FullTitle  = NULL;
+    CHAR16        *TempStr;
+
 
     Entry = InitializeLoaderEntry (NULL);
     if (Entry) {
@@ -726,11 +744,15 @@ LOADER_ENTRY * AddEfiLoaderEntry (
             FullTitle = PoolPrint (L"Reboot to %s", LoaderTitle);
         }
 
-        Entry->me.Title     = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
-        Entry->me.Row       = Row;
-        Entry->me.Tag       = TAG_FIRMWARE_LOADER;
-        Entry->Title        = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
+        Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
+        Entry->me.Row        = Row;
+        Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+        Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
         Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
+        TempStr              = DevicePathToStr(EfiLoaderPath);
+        LOG(2, LOG_LINE_NORMAL, L"EFI loader path = '%s'", TempStr);
+        MyFreePool(TempStr);
+
         Entry->EfiBootNum    = EfiBootNum;
 
         MergeWords (&OSIconName, Entry->me.Title, L',');
@@ -791,8 +813,10 @@ static LOADER_ENTRY * AddLoaderEntry (
             TitleEntry = LoaderTitle;
         }
 
-        Entry->Title    = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
-        Entry->me.Title = AllocateZeroPool (sizeof (CHAR16) * 256);
+        Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+        LOG(1, LOG_THREE_STAR_SEP, L"FOUND LOADER");
+        LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
+        LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
 
         // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
         // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
@@ -826,6 +850,8 @@ static LOADER_ENTRY * AddLoaderEntry (
         SetLoaderDefaults (Entry, LoaderPath, Volume);
         GenerateSubScreen (Entry, Volume, SubScreenReturn);
         AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
+        LOG(3, LOG_LINE_NORMAL, L"Have successfully created menu entry for '%s'", Entry->Title);
 
         #if REFIT_DEBUG > 0
         if (Volume->VolName) {
@@ -887,7 +913,9 @@ static LOADER_ENTRY * AddLoaderEntry (
             MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
         #endif
-
+    }
+    else {
+        LOG(1, LOG_LINE_NORMAL, L"Unable to initialize loader entry in AddLoaderEntry()!");
     }
 
     return (Entry);
@@ -1211,6 +1239,8 @@ ScanLoaderDir (
     LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
     BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
 
+    LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
+
     InSelfPath = MyStriCmp (Path, SelfDirPath);
     if ((!SelfDirPath || !Path ||
         (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
@@ -1315,6 +1345,8 @@ ScanLoaderDir (
        } // if (Status != EFI_NOT_FOUND)
     } // if not scanning a blacklisted directory
 
+    LOG(3, LOG_LINE_NORMAL, L"Done scanning directory '%s' for '%s'", Path, Pattern);
+
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
 
@@ -1359,6 +1391,8 @@ static VOID ScanNetboot() {
     CHAR16        *iPXEFileName = IPXE_NAME;
     CHAR16        *Location;
     REFIT_VOLUME  *NetVolume;
+
+    LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE boot options");
 
     if (FileExists (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         FileExists (SelfVolume->RootDir, IPXE_NAME) &&
@@ -1427,15 +1461,30 @@ ScanMacOsLoader (
 } // VOID ScanMacOsLoader()
 
 static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
-    EFI_STATUS       Status;
-    REFIT_DIR_ITER   EfiDirIter;
+    EFI_STATUS        Status;
+    REFIT_DIR_ITER    EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
     CHAR16           *FileName, *Directory = NULL, *MatchPatterns, *VolName = NULL, *SelfPath, *Temp;
-    UINTN            i, Length;
-    BOOLEAN          ScanFallbackLoader = TRUE;
-    BOOLEAN          FoundBRBackup = FALSE;
+    UINTN             i, Length;
+    BOOLEAN           ScanFallbackLoader = TRUE;
+    BOOLEAN           FoundBRBackup      = FALSE;
 
-    if (Volume && (Volume->RootDir != NULL) && (Volume->VolName != NULL) && (Volume->IsReadable)) {
+    if (MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL &&
+        GlobalConfig.SyncAPFS
+    ) {
+        return;
+    }
+
+    if ((Volume) &&
+        (Volume->RootDir != NULL) &&
+        (Volume->VolName != NULL) &&
+        (Volume->IsReadable)
+    ) {
+        LOG(1, LOG_LINE_NORMAL,
+            L"Scanning EFI files on '%s'",
+            Volume->VolName
+        );
+
         MatchPatterns = StrDuplicate (LOADER_MATCH_PATTERNS);
         if (GlobalConfig.ScanAllLinux) {
             MergeStrings (&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
@@ -1599,7 +1648,10 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
             AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Boot Loader", Volume, TRUE);
         }
         MyFreePool (MatchPatterns);
-    } // if
+    }
+    else {
+        LOG(4, LOG_LINE_NORMAL, L"Called ScanEfiFiles() on an invalid volume");
+    }
 } // static VOID ScanEfiFiles()
 
 // Scan internal disks for valid EFI boot loaders....
@@ -1608,6 +1660,8 @@ ScanInternal (
     VOID
 ) {
     UINTN VolumeIndex;
+
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Internal EFI Mode Boot Loaders");
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL) {
@@ -1623,6 +1677,8 @@ ScanExternal (
 ) {
     UINTN VolumeIndex;
 
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for External EFI Mode Boot Loaders");
+
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_EXTERNAL) {
             ScanEfiFiles (Volumes[VolumeIndex]);
@@ -1636,6 +1692,8 @@ ScanOptical (
     VOID
 ) {
     UINTN VolumeIndex;
+
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Bootable EFI Mode Optical Disks");
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_OPTICAL) {
@@ -1665,12 +1723,22 @@ VOID ScanFirmwareDefined (
     CHAR16          *DontScanFirmware;
     UINTN           i;
 
+    if (Row == 0) {
+        LOG(1, LOG_LINE_THIN_SEP, L"Scanning for EFI firmware-defined boot options");
+    }
+
     DontScanFirmware = ReadHiddenTags (L"HiddenFirmware");
+
+    LOG(2, LOG_LINE_NORMAL, L"GlobalConfig.DontScanFirmware = '%s'", GlobalConfig.DontScanFirmware);
+    LOG(2, LOG_LINE_NORMAL, L"Firmware hidden tags = '%s'", DontScanFirmware);
+
     MergeStrings (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
 
     if (Row == 0) {
+        LOG(2, LOG_LINE_NORMAL, L"Also not scanning for shells");
         MergeStrings(&DontScanFirmware, L"shell", L',');
     }
+    LOG(3, LOG_LINE_NORMAL, L"Merged firmware don't-scan list is '%s'", DontScanFirmware);
 
     BootEntries  = FindBootOrderEntries();
     CurrentEntry = BootEntries;
@@ -1695,6 +1763,8 @@ VOID ScanFirmwareDefined (
         } // if/else
 
         if (ScanIt) {
+            LOG(1, LOG_LINE_NORMAL, L"Adding EFI loader entry for '%s'", CurrentEntry->BootEntry.Label);
+
             AddEfiLoaderEntry (
                 CurrentEntry->BootEntry.DevPath,
                 CurrentEntry->BootEntry.Label,
@@ -1779,6 +1849,8 @@ ScanForBootloaders (
     CHAR16   *OrigDontScanVolumes;
     CHAR16   ShortCutKey;
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Boot Loaders");
+
     ScanningLoaders = TRUE;
 
     #if REFIT_DEBUG > 0
@@ -1786,7 +1858,7 @@ ScanForBootloaders (
     #endif
 
     if (ShowMessage){
-        egDisplayMessage (L"Seeking Boot Loaders. Please Wait....", &BGColor, CENTER);
+        egDisplayMessage (L"Seeking Boot Loaders. Please Wait...", &BGColor, CENTER);
     }
 
     // Determine up-front if we'll be scanning for legacy loaders....
@@ -1848,6 +1920,8 @@ ScanForBootloaders (
                 }
                 MsgLog ("Scan Manual:");
                 #endif
+
+                LOG(1, LOG_LINE_THIN_SEP, L"Scanning for User Configured Boot Stanzas");
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);
                 break;
@@ -1979,6 +2053,7 @@ ScanForBootloaders (
     }
     else {
         // assign shortcut keys
+        LOG(4, LOG_LINE_THIN_SEP, L"Assigning Boot Shortcut Keys");
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
         MsgLog ("Assign Keyboard Shortcut Keys:\n");
@@ -2004,7 +2079,13 @@ ScanForBootloaders (
             }
             MainMenu.Entries[i]->ShortcutDigit = ShortCutKey;
 
+
             #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL,
+                L"Set Key '%d' to %s",
+                k, MainMenu.Entries[i]->Title
+            );
+
             MsgLog ("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
             if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
                 MsgLog ("\n");
@@ -2057,6 +2138,12 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     BOOLEAN retval = TRUE;
     UINTN i = 0;
 
+    LOG(3, LOG_LINE_NORMAL,
+        L"Checking validity of tool '%s' on '%s'",
+        PathName,
+        BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName
+    );
+
     if (gHiddenTools == NULL) {
         DontScanTools = ReadHiddenTags (L"HiddenTools");
         gHiddenTools  = StrDuplicate (DontScanTools);
@@ -2089,6 +2176,12 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     MyFreePool (TestFileName);
     MyFreePool (DontScanTools);
 
+    LOG(4, LOG_LINE_NORMAL,
+        L"Done checking validity of tool '%s' on '%s'",
+        PathName,
+        BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName
+    );
+
     return retval;
 } // BOOLEAN IsValidTool()
 
@@ -2120,6 +2213,12 @@ static BOOLEAN FindTool (
                 if ((Volumes[VolumeIndex]->RootDir != NULL)
                     && (IsValidTool (Volumes[VolumeIndex], PathName))
                 ) {
+                    LOG(1, LOG_LINE_NORMAL,
+                        L"Adding tag for '%s' on '%s'",
+                        FileName,
+                        Volumes[VolumeIndex]->VolName
+                    );
+
                     FoundTool = TRUE;
 //DA-TAG: Commented Out
 //                    FullDescription = PoolPrint (
@@ -2175,6 +2274,8 @@ VOID ScanForTools (VOID) {
     UINT32           CsrValue;
     BOOLEAN          FoundTool;
     CHAR16           *ToolName = NULL;
+
+    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Tools");
 
     #if REFIT_DEBUG > 0
     MsgLog ("Scan for Builtin/External Tools...\n");
@@ -2291,8 +2392,9 @@ VOID ScanForTools (VOID) {
 
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_PRE_NVRAMCLEAN:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryPreCleanNvram);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryPreCleanNvram);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Clean NVRAM tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2302,8 +2404,9 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_PRE_BOOTKICKER:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryPreBootKicker);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryPreBootKicker);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Show Bootscreen tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2313,8 +2416,9 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_SHUTDOWN:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryShutdown);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Shutdown tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2324,8 +2428,9 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_REBOOT:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryReset);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryReset);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Show Reboot tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2335,9 +2440,10 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_ABOUT:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryAbout);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryAbout);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-                AddMenuEntry (&MainMenu, TempMenuEntry);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Info/About tag");
+                AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("              - Added '%s' Tool\n", ToolName);
@@ -2346,9 +2452,10 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_EXIT:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryExit);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_EXIT);
-                AddMenuEntry (&MainMenu, TempMenuEntry);
+                LOG(2, LOG_LINE_NORMAL, L"Adding Exit tag");
+                AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("              - Added '%s' Tool\n", ToolName);
@@ -2359,9 +2466,10 @@ VOID ScanForTools (VOID) {
             case TAG_HIDDEN:
                 if (GlobalConfig.HiddenTags) {
                     FoundTool = TRUE;
-                    TempMenuEntry = CopyMenuEntry (&MenuEntryHiddenTags);
+                    TempMenuEntry        = CopyMenuEntry (&MenuEntryHiddenTags);
                     TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
-                    AddMenuEntry (&MainMenu, TempMenuEntry);
+                    LOG(2, LOG_LINE_NORMAL, L"Adding Hidden tag");
+                    AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
                     MsgLog ("              - Added '%s' Tool\n", ToolName);
@@ -2386,16 +2494,21 @@ VOID ScanForTools (VOID) {
                     osind = (UINT64) *ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
-                        TempMenuEntry = CopyMenuEntry (&MenuEntryFirmware);
+                        TempMenuEntry        = CopyMenuEntry (&MenuEntryFirmware);
                         TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
-                        AddMenuEntry (&MainMenu, TempMenuEntry);
+                        LOG(2, LOG_LINE_NORMAL, L"Adding Reboot-to-Firmware tag");
+                        AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
                         MsgLog ("              - Added '%s' Tool\n", ToolName);
                         #endif
                     } // if
                     MyFreePool (ItemBuffer);
-                } // if
+                }
+                else {
+                    LOG(1, LOG_LINE_NORMAL,
+                        L"Showtools includes firmware, but 'OsIndicationsSupported' is missing");
+                }
 
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
@@ -2409,6 +2522,12 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
+                        LOG(1, LOG_LINE_NORMAL,
+                            L"Adding Shell tag for '%s' on '%s'",
+                            FileName,
+                            SelfVolume->VolName
+                        );
+
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume,
@@ -2440,6 +2559,12 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
+                        LOG(1, LOG_LINE_NORMAL,
+                            L"Adding Hybrid MBR tool tag for '%s' on '%s'",
+                            FileName,
+                            SelfVolume->VolName
+                        );
+
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume,
@@ -2470,6 +2595,12 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited (GDISK_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
+                        LOG(1, LOG_LINE_NORMAL,
+                            L"Adding GPT fdisk tag for '%s' on '%s'",
+                            FileName,
+                            SelfVolume->VolName
+                        );
+
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume,
@@ -2500,6 +2631,12 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
+                        LOG(1, LOG_LINE_NORMAL,
+                            L"Adding Netboot tag for '%s' on '%s'",
+                            FileName,
+                            SelfVolume->VolName
+                        );
+
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume,
@@ -2533,6 +2670,12 @@ VOID ScanForTools (VOID) {
                     ) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL)) {
                             if ((IsValidTool (Volumes[VolumeIndex], FileName))) {
+                                LOG(1, LOG_LINE_NORMAL,
+                                    L"Adding Apple Recovery tag for '%s' on '%s'",
+                                    FileName,
+                                    Volumes[VolumeIndex]->VolName
+                                );
+
                                 FoundTool = TRUE;
                                 Description = PoolPrint (
                                     L"%s on %s",
@@ -2575,6 +2718,11 @@ VOID ScanForTools (VOID) {
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
                             ((VolName == NULL) || MyStriCmp (VolName, Volumes[VolumeIndex]->VolName))
                         ) {
+                            LOG(1, LOG_LINE_NORMAL,
+                                L"Adding Windows Recovery tag for '%s' on '%s'",
+                                FileName, Volumes[VolumeIndex]->VolName
+                            );
+
                             FoundTool = TRUE;
                             Description = PoolPrint (
                                 L"%s on %s",
@@ -2642,9 +2790,10 @@ VOID ScanForTools (VOID) {
 
             case TAG_CSR_ROTATE:
                 if ((GetCsrStatus (&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
-                    FoundTool = TRUE;
-                    TempMenuEntry = CopyMenuEntry (&MenuEntryRotateCsr);
+                    FoundTool            = TRUE;
+                    TempMenuEntry        = CopyMenuEntry (&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
+                    LOG(1, LOG_LINE_NORMAL, L"Adding CSR Rotate tag");
                     AddMenuEntry (&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
@@ -2661,8 +2810,9 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_INSTALL:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryInstall);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+                LOG(1, LOG_LINE_NORMAL, L"Adding Install tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2672,8 +2822,9 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_BOOTORDER:
-                TempMenuEntry = CopyMenuEntry (&MenuEntryBootorder);
+                TempMenuEntry        = CopyMenuEntry (&MenuEntryBootorder);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+                LOG(1, LOG_LINE_NORMAL, L"Adding Boot Order tag");
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2702,5 +2853,4 @@ VOID ScanForTools (VOID) {
     #if REFIT_DEBUG > 0
     MsgLog ("Scanned Tool Types\n\n");
     #endif
-
 } // VOID ScanForTools

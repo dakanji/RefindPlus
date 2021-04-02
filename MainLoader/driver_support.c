@@ -672,6 +672,12 @@ ScanDriverDir (
             Status = EFI_UNSUPPORTED;
         }
         else {
+            #if REFIT_DEBUG > 0
+            if (RunOnce) {
+                LOG(1, LOG_LINE_THIN_SEP, L"NEXT DRIVER");
+            }
+            #endif
+
             Status = StartEFIImage(
                 SelfVolume,
                 FileName,
@@ -737,6 +743,8 @@ LoadDrivers(
     UINTN   i        = 0;
     UINTN   NumFound = 0;
     UINTN   CurFound = 0;
+
+    LOG(1, LOG_LINE_SEPARATOR, L"Loading Drivers");
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.

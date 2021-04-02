@@ -338,9 +338,17 @@
 #
 #timeout 20
 
-# Note: The logging level token below is ignored.
+# Set the logging level. When set to "0", a log file in the native RefindPlus format
+# is produced in the RefindPlus home directory on the ESP, logging information about
+# what RefindPlus is doing. When set to "1" or above, the log file is in the upsteam
+# format instead (a variant of). Higher values, up to the maximum of 4, record more
+# information although the native format includes some information not captured by
+# the logs in the upstream format. NB: This option is only active when running
+# DEBUG builds as the logging process noticeably slows down the application.
 #
-#log_level 0
+# The native format is used when commented out (DEBUG builds only)
+#
+#log_level 3
 
 
 ##--------------------------------------------------------------##
@@ -935,7 +943,7 @@ menuentry "ELILO" {
 
 # Like the ELILO entry, this one offers nothing that auto-detection
 # cannot do; but you might use it if you want to disable auto-detection
-# but still boot Windows....
+# but still boot Windows
 menuentry "Windows 7" {
     loader \EFI\Microsoft\Boot\bootmgfw.efi
     disabled

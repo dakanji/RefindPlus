@@ -3,7 +3,7 @@
  * ReiserFS file system driver code.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * This program is free software; you can redistribute it and/or
@@ -403,7 +403,7 @@ bail:
     fsw_reiserfs_item_release(vol, &item);
     return FSW_VOLUME_CORRUPTED;
 
-    /*    
+    /*
     // check if the following blocks can be aggregated into one extent
     file_bcnt = (fsw_u32)((dno->g.size + vol->g.log_blocksize - 1) & (vol->g.log_blocksize - 1));
     while (path[i]           + extent->log_count < buf_bcnt &&    // indirect block has more block pointers

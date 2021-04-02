@@ -152,7 +152,8 @@
 #define FS_TYPE_XFS            11
 #define FS_TYPE_JFS            12
 #define FS_TYPE_ISO9660        13
-#define NUM_FS_TYPES           14
+#define FS_TYPE_APFS           14
+#define NUM_FS_TYPES           15
 
 // How to scale banner images
 #define BANNER_NOSCALE         0

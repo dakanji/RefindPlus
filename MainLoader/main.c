@@ -1145,7 +1145,7 @@ VOID AboutRefindPlus (
     CHAR16  *TempStr         = NULL;
     CHAR16  *FirmwareVendor  = VendorInfo;
 
-
+    LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
         AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
@@ -1262,6 +1262,7 @@ VOID RescanAll (
     BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
+    LOG(1, LOG_LINE_NORMAL, L"Re-scanning all boot loaders");
     FreeList (
         (VOID ***) &(MainMenu.Entries),
         &MainMenu.EntryCount
@@ -1317,13 +1318,15 @@ STATIC BOOLEAN SecureBootSetup (
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
 
-
+    LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
     if (secure_mode() && ShimLoaded()) {
+        LOG(2, LOG_LINE_NORMAL, L"Secure boot mode detected with loaded Shim; adding MOK extensions");
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
         }
         else {
+            LOG(2, LOG_LINE_NORMAL, L"Secure boot disabled; doing nothing");
             ShowScreenStr = L"Failed to Install MOK Secure Boot Extensions";
 
             #if REFIT_DEBUG > 0
@@ -1470,6 +1473,7 @@ STATIC VOID AdjustDefaultSelection() {
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 
+    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with PreviousBoot values");
     while ((Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp (Element, L"+")) {
             Status = EfivarGetRaw (
@@ -1505,7 +1509,7 @@ LogBasicInfo (
     VOID
 ) {
     EFI_STATUS Status;
-    CHAR16     *TempMode = NULL;
+    CHAR16     *TempStr = NULL;
     UINT64     MaximumVariableSize;
     UINT64     MaximumVariableStorageSize;
     UINT64     RemainingVariableStorageSize;
@@ -1536,8 +1540,27 @@ LogBasicInfo (
         MsgLog ("'Unknown'\n");
     #endif
 
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC:
+            TempStr = StrDuplicate (L"Mac");
+            break;
+        case LEGACY_TYPE_UEFI:
+            TempStr = StrDuplicate (L"UEFI");
+            break;
+        case LEGACY_TYPE_NONE:
+            TempStr = StrDuplicate (L"Unavailable");
+            break;
+        default:
+            // just in case ... should never happen
+            TempStr = StrDuplicate (L"Unknown");
+            break;
+    }
+    MsgLog ("CSM:- '%s'\n", TempStr);
+    MyFreePool (TempStr);
+
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
+
 
     if (MyStrStr (VendorInfo, L"Apple") != NULL) {
         Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
@@ -1583,23 +1606,23 @@ LogBasicInfo (
     }
 
     // Report which video output devices are available. We don't actually
-    // use them, so just use TempMode as a throwaway pointer to the protocol.
+    // use them, so just use TempStr as a throwaway pointer to the protocol.
     MsgLog ("Native Screen Modes:\n");
 
-    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Detected Text Mode           : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
+    MsgLog ("  - Detected Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (TempMode);
+    MyFreePool (TempStr);
 
-    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Detected Graphics Mode (UGA) : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempStr);
+    MsgLog ("  - Detected Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (TempMode);
+    MyFreePool (TempStr);
 
-    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempMode);
-    MsgLog ("  - Detected Graphics Mode (GOP) : '%s'", EFI_ERROR (Status) ? L"No" : L"Yes");
+    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempStr);
+    MsgLog ("  - Detected Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
-    MyFreePool (TempMode);
+    MyFreePool (TempStr);
 } // VOID LogBasicInfo()
 #endif
 
@@ -1682,7 +1705,6 @@ efi_main (
 #else
     MsgLog ("Made With:- 'TianoCore EDK II'\n");
 #endif
-
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
 
     // Log System Details
@@ -1782,6 +1804,7 @@ efi_main (
         #endif
     }
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Initialising Basic Features");
     #if REFIT_DEBUG > 0
     MsgLog ("Initialise Screen...\n");
     #endif
@@ -1789,7 +1812,9 @@ efi_main (
 
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
+
     // disable EFI watchdog timer
+    LOG(4, LOG_LINE_THIN_SEP, L"Setting Watchdog Timer");
     refit_call4_wrapper(
         gBS->SetWatchdogTimer,
         0x0000, 0x0000, 0x0000,
@@ -1808,6 +1833,7 @@ efi_main (
 
     if (GlobalConfig.ScanDelay > 0) {
        if (GlobalConfig.ScanDelay > 1) {
+           LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
            egDisplayMessage (L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
        }
 
@@ -1905,6 +1931,7 @@ efi_main (
 
     MyFreePool (VendorInfo);
 
+    LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
     while (MainLoopRunning) {
         // Set to false as may not be booting
         IsBoot = FALSE;
@@ -1932,6 +1959,7 @@ efi_main (
         switch (ChosenEntry->Tag) {
 
             case TAG_NVRAMCLEAN:    // Clean NVRAM
+                LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -1947,6 +1975,7 @@ efi_main (
                 break;
 
             case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
+                LOG(1, LOG_LINE_THIN_SEP, L"Showing Clean NVRAM Info");
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -1957,6 +1986,8 @@ efi_main (
 
                 // Reboot if CleanNvram was triggered
                 if (ranCleanNvram) {
+                    LOG(1, LOG_LINE_NORMAL, L"Cleaned NVRAM");
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("INFO: Cleaned Nvram\n\n");
                     MsgLog ("Restart Computer...\n");
@@ -1964,6 +1995,7 @@ efi_main (
                     #endif
                     TerminateScreen();
 
+                    LOG(1, LOG_LINE_NORMAL, L"Reseting System");
                     #if REFIT_DEBUG > 0
                     MsgLog ("Reseting System\n---------------\n\n");
                     #endif
@@ -1974,7 +2006,8 @@ efi_main (
                         0, NULL
                     );
 
-                    ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback:.";
+                    LOG(1, LOG_THREE_STAR_SEP, L"System Reset FAILED!");
+                    ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -1990,14 +2023,15 @@ efi_main (
                 break;
 
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
+                LOG(1, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Load Boot Screen\n---------------\n\n");
+                    MsgLog ("  - Load Apple Boot Screen\n---------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Load Boot Screen\n\n");
+                    MsgLog ("  - Load Apple Boot Screen\n\n");
                 }
                 #endif
 
@@ -2008,6 +2042,7 @@ efi_main (
                 break;
 
             case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
+                LOG(1, LOG_LINE_THIN_SEP, L"Showing BootKicker Info");
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -2030,16 +2065,19 @@ efi_main (
                 #endif
 
                 TerminateScreen();
+                LOG(1, LOG_LINE_SEPARATOR, L"Restarting System");
                 refit_call4_wrapper(
                     gRT->ResetSystem,
                     EfiResetCold,
                     EFI_SUCCESS,
                     0, NULL
                 );
+                LOG(1, LOG_THREE_STAR_SEP, L"Restart FAILED!");
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_SHUTDOWN: // Shut Down
+                LOG(1, LOG_LINE_SEPARATOR, L"Shutting System Down");
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -2058,6 +2096,7 @@ efi_main (
                     EFI_SUCCESS,
                     0, NULL
                 );
+                LOG(1, LOG_THREE_STAR_SEP, L"Shutdown FAILED!");
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
@@ -2106,6 +2145,12 @@ efi_main (
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
                     }
 
+                    LOG(1, LOG_LINE_THIN_SEP,
+                        L"Loading OpenCore Instance:- '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -2120,6 +2165,12 @@ efi_main (
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
                     }
 
+                    LOG(1, LOG_LINE_THIN_SEP,
+                        L"Loading Clover Instance:- '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -2133,10 +2184,20 @@ efi_main (
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
+                        LOG(1, LOG_LINE_THIN_SEP,
+                            L"Booting Mac OS from '%s'",
+                            ourLoaderEntry->Volume->VolName
+                        );
+
                         MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
                     }
                     else {
                         MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
+
+                        LOG(1, LOG_LINE_THIN_SEP,
+                            L"Booting Mac OS:- '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
                     #endif
 
@@ -2187,14 +2248,32 @@ efi_main (
                         WinType = L"Legacy";
                     }
                     if (ourLoaderEntry->Volume->VolName) {
+                        LOG(1, LOG_LINE_THIN_SEP,
+                            L"Booting %s Windows from '%s'",
+                            WinType,
+                            ourLoaderEntry->Volume->VolName
+                        );
+
                         MsgLog ("  - Boot %s Windows from '%s'", WinType, ourLoaderEntry->Volume->VolName);
                     }
                     else {
                         MsgLog ("  - Boot %s Windows:- '%s'", WinType, ourLoaderEntry->LoaderPath);
+
+                        LOG(1, LOG_LINE_THIN_SEP,
+                            L"Booting %s Windows:- '%s'",
+                            WinType,
+                            ourLoaderEntry->LoaderPath
+                        );
                     }
                     #endif
                 }
                 else {
+                    LOG(1, LOG_LINE_THIN_SEP,
+                        L"Booting OS via EFI Loader:- '%s%s'",
+                        ourLoaderEntry->Volume->VolName,
+                        ourLoaderEntry->LoaderPath
+                    );
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
@@ -2228,6 +2307,12 @@ efi_main (
                         SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
                     }
 
+                    LOG(1, LOG_LINE_THIN_SEP,
+                        L"Booting %s from '%s'",
+                        ourLegacyEntry->Volume->OSName,
+                        ourLegacyEntry->Volume->VolName
+                    );
+
                     MsgLog (
                         "  - Boot %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
@@ -2235,6 +2320,11 @@ efi_main (
                     );
                 }
                 else {
+                    LOG(1, LOG_LINE_THIN_SEP,
+                        L"Booting Legacy OS:- '%s'",
+                        ourLegacyEntry->Volume->OSName
+                    );
+
                     MsgLog (
                         "  - Boot Legacy OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
@@ -2254,6 +2344,11 @@ efi_main (
 
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
+
+                LOG(1, LOG_LINE_THIN_SEP,
+                    L"Booting Legacy UEFI:- '%s'",
+                    ourLegacyEntry->Volume->OSName
+                );
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -2276,6 +2371,11 @@ efi_main (
 
             case TAG_TOOL:     // Start a EFI tool
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+
+                LOG(1, LOG_LINE_THIN_SEP,
+                    L"Starting EFI Tool:- '%s'",
+                    ourLoaderEntry->LoaderPath
+                );
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -2397,6 +2497,7 @@ efi_main (
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
+    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!");
     #if REFIT_DEBUG > 0
     MsgLog ("Fallback: Restart Computer...\n");
     MsgLog ("Screen Termination:\n");
@@ -2414,6 +2515,7 @@ efi_main (
         EFI_SUCCESS,
         0, NULL
     );
+    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown after main loop exit has FAILED!");
 
     SwitchToText (FALSE);
 

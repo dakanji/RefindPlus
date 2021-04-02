@@ -348,6 +348,7 @@ AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16 *InfoLine
 ) {
+    LOG(3, LOG_LINE_NORMAL, L"Adding menu info line: '%s'", InfoLine);
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
 }
 
@@ -566,6 +567,8 @@ RunGenericMenu (
     UINTN          MenuExit;
     UINTN          Item;
 
+    LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
+
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout      = TRUE;
         TimeoutCountdown = Screen->TimeoutSeconds * 10;
@@ -606,6 +609,7 @@ RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
+    LOG(3, LOG_LINE_THIN_SEP, L"About to enter while() loop in RunGenericMenu()");
     while (!MenuExit) {
         // update the screen
         pdClear();
@@ -676,6 +680,7 @@ RunGenericMenu (
         else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
+                LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             }
@@ -723,6 +728,7 @@ RunGenericMenu (
         }
 
         if (!PointerActive) { // react to key press
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)", key.ScanCode);
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll (&State, SCROLL_LINE_UP);
@@ -767,6 +773,7 @@ RunGenericMenu (
                     break;
             } // switch()
 
+            LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)", key.UnicodeChar);
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
@@ -795,6 +802,7 @@ RunGenericMenu (
             } // switch()
         }
         else { //react to pointer event
+            LOG(3, LOG_LINE_NORMAL, L"Processing pointer event");
             if (StyleFunc != MainMenuStyle) {
                 continue; // nothing to find on submenus
             }
@@ -847,6 +855,8 @@ RunGenericMenu (
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
     }
     *DefaultEntryIndex = State.CurrentSelection;
+
+    LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
 
     return MenuExit;
 } // UINTN RunGenericMenu()
@@ -1911,6 +1921,8 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
 
+    LOG(3, LOG_THREE_STAR_SEP, L"Entering WaitForInput() ... Timeout = %d", Timeout);
+
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
         Length--;
@@ -1980,6 +1992,8 @@ DisplaySimpleMessage (
     CHAR16* Title,
     CHAR16 *Message
 ) {
+    LOG(3, LOG_THREE_STAR_SEP, L"Entering DisplaySimpleMessage()");
+
     if (!Message) {
         return;
     }
@@ -2004,7 +2018,10 @@ DisplaySimpleMessage (
 
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
     if (MenuExit == 0) {
-        return;
+        LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
+    }
+    else {
+        LOG(1, LOG_LINE_NORMAL, L"%s - %s: MenuExit = %d", Title, Message, MenuExit);
     }
 } // VOID DisplaySimpleMessage()
 
@@ -2100,6 +2117,8 @@ ManageHiddenTags (
     REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags Menu", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
+
+    LOG(1, LOG_LINE_SEPARATOR, L"Managing hidden tags");
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode) {
@@ -2469,8 +2488,11 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
-    if (AllowGraphicsMode)
+    LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMenu()");
+
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     return RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 }
@@ -2487,6 +2509,8 @@ UINTN RunMainMenu (
     UINTN MenuExit           = 0;
     INTN DefaultEntryIndex   = -1;
     INTN DefaultSubmenuIndex = -1;
+
+    LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMainMenu()");
 
     // remove any buffered key strokes
     ReadAllKeyStrokes();
@@ -2521,12 +2545,14 @@ UINTN RunMainMenu (
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
+                LOG(3, LOG_LINE_NORMAL, L"About to call RunGenericMenu() on subscreen '%s'", MenuTitle);
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
                     &DefaultSubmenuIndex,
                     &TempChosenEntry
                 );
+                LOG(3, LOG_LINE_NORMAL, L"RunGenericMenu() has returned %d", MenuExit);
 
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                    MenuExit = 0;

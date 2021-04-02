@@ -76,9 +76,13 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     REFIT_DIR_ITER      DirIter;
     EFI_FILE_INFO       *DirEntry;
 
-    FileName = Basename(LoaderPath);
+    LOG(1, LOG_LINE_NORMAL, L"Searching for an initrd to match '%s' on '%s'", LoaderPath, Volume->VolName);
+
+    FileName      = Basename(LoaderPath);
     KernelVersion = FindNumbers(FileName);
-    Path = FindPath(LoaderPath);
+    Path          = FindPath(LoaderPath);
+
+    LOG(3, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
 
     // Add trailing backslash for root directory; necessary on some systems, but must
     // NOT be added to all directories, since on other systems, a trailing backslash on
@@ -139,6 +143,8 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool (KernelVersion);
     MyFreePool (FileName);
     MyFreePool (Path);
+
+    LOG(1, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
 
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
@@ -293,8 +299,10 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     MergeStrings(&NewFile, FullName, 0);
     MergeStrings(&NewFile, L".efi.signed", 0);
     if (NewFile != NULL) {
-        if (FileExists(Volume->RootDir, NewFile))
+        if (FileExists(Volume->RootDir, NewFile)) {
+            LOG(2, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
             retval = TRUE;
+        }
         MyFreePool (NewFile);
     } // if
 

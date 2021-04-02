@@ -102,14 +102,21 @@ VOID
 InitScreen (
     VOID
 ) {
+    LOG(1, LOG_THREE_STAR_SEP, L"Entering InitScreen()");
+
     // initialize libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
+        LOG(2, LOG_LINE_NORMAL, L"Have graphics mode; setting screen size");
+
         egGetScreenSize (&ScreenW, &ScreenH);
         AllowGraphicsMode = TRUE;
+
     }
     else {
+        LOG(2, LOG_LINE_NORMAL, L"No graphics mode detected; setting text mode");
+
         AllowGraphicsMode = FALSE;
         egSetTextMode (GlobalConfig.RequestedTextMode);
         egSetGraphicsModeEnabled (FALSE);   // just to be sure we are in text mode
@@ -151,6 +158,8 @@ SetupScreen (
     STATIC BOOLEAN BannerLoaded = FALSE;
     STATIC BOOLEAN ScaledIcons  = FALSE;
 
+    LOG(2, LOG_LINE_THIN_SEP, L"Setting Screen Resolution and Mode");
+
     #if REFIT_DEBUG > 0
     MsgLog ("Setup Screen...\n");
     #endif
@@ -186,6 +195,11 @@ SetupScreen (
         ScreenH = (ScreenH < GlobalConfig.RequestedScreenHeight)
             ? ScreenH
             : GlobalConfig.RequestedScreenHeight;
+
+            LOG(2, LOG_LINE_NORMAL,
+                L"Recording current resolution as %d x %d",
+                ScreenW, ScreenH
+            );
     }
 
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
@@ -201,9 +215,15 @@ SetupScreen (
             ScreenH = NewHeight;
         }
 
+        LOG(2, LOG_LINE_NORMAL,
+            L"After setting text mode, recording new current resolution as %d x %d",
+            ScreenW, ScreenH
+        );
+
         if ((ScreenW > GlobalConfig.RequestedScreenWidth) ||
             (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
+            LOG(2, LOG_LINE_NORMAL, L"Adjusting requested screen size based on actual screen size");
 
             #if REFIT_DEBUG > 0
             MsgLog ("  - Increase Graphic Mode\n");
@@ -229,6 +249,8 @@ SetupScreen (
     }
 
     if (GlobalConfig.TextOnly) {
+        LOG(2, LOG_LINE_NORMAL, L"Setting text-only mode");
+
         // Set text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText (FALSE);
@@ -245,6 +267,7 @@ SetupScreen (
                 MsgLog ("Prepare Graphics Mode Switch:\n");
             }
             else {
+                LOG(2, LOG_LINE_NORMAL, L"Prepare placeholder display");
                 MsgLog ("Prepare Placeholder Display:\n");
             }
             MsgLog ("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
@@ -252,11 +275,14 @@ SetupScreen (
 
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
+                LOG(2, LOG_LINE_NORMAL, L"UI scaling disabled ...maintaining icon sizes");
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
+                LOG(2, LOG_LINE_NORMAL, L"Doubling icon sizes for HiDPI display");
+
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
                     MsgLog ("    * HiDPI Monitor Detected ...");
@@ -268,6 +294,7 @@ SetupScreen (
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
+                    LOG(2, LOG_LINE_NORMAL, L"Maintain previously scaled icons");
                     MsgLog ("Maintain Previously Scaled Icons)\n\n");
                     #endif
                 }
@@ -286,6 +313,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
+                LOG(2, LOG_LINE_NORMAL, L"Maintaining icon sizes for LoDPI display");
                 MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
                 #endif
             } // if
@@ -310,15 +338,18 @@ SetupScreen (
 
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
+                    LOG(4, LOG_LINE_NORMAL, L"Displayed placeholder");
                     MsgLog ("INFO: Displayed Placeholder\n\n");
                 }
                 else {
+                    LOG(4, LOG_LINE_NORMAL, L"Switched to graphics mode");
                     MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
                 }
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
+                LOG(2, LOG_LINE_NORMAL, L"Configured to start with screensaver");
                 MsgLog ("INFO: Changing to Screensaver Display\n");
                 MsgLog ("      Configured to Start with Screensaver\n\n");
                 #endif
@@ -727,6 +758,8 @@ CheckFatalError (
     PrintUglyText (Temp, NEXTLINE);
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
+
+    LOG(1, LOG_LINE_NORMAL, Temp);
     MyFreePool (Temp);
 
     return TRUE;
@@ -773,6 +806,7 @@ CheckError (
     else {
         haveError = TRUE;
     }
+    LOG(1, LOG_LINE_NORMAL, Temp);
 
     MyFreePool (Temp);
 

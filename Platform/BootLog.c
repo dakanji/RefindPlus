@@ -381,8 +381,6 @@ VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
   }
 }
 
-
-// Changed MsgLog(...) it now calls this function with DebugMode > 0.
 VOID
 EFIAPI
 DeepLog (
@@ -391,10 +389,17 @@ DeepLog (
     IN INTN     type,
     IN CHAR16 **Message
 ) {
+#if REFIT_DEBUG < 1
+    // FreePool and return in RELEASE builds
+    if (*Message) {
+        FreePool (*Message);
+        *Message = NULL;
+    }
+#else
     CHAR8   FormatString[255];
     CHAR16 *FinalMessage = NULL;
 
-    // Make sure the buffer is intact for writing
+    // Make sure we are able to write
     if (DebugMode < 1 ||
         GlobalConfig.LogLevel < 1 ||
         GlobalConfig.LogLevel <= level ||
@@ -413,9 +418,12 @@ DeepLog (
             FinalMessage = PoolPrint (L"==========[ %s ]==========\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint (L"----------[ %s ]----------\n", *Message);
+            FinalMessage = PoolPrint (L"----------[ %s\n", *Message);
             break;
-        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this.... */
+        case LOG_THREE_STAR_SEP:
+            FinalMessage = PoolPrint (L"       ***[ %s\n", *Message);
+            break;
+        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this */
             FinalMessage = PoolPrint (L"%s\n", *Message);
     } // switch
 
@@ -434,17 +442,20 @@ DeepLog (
         *Message = NULL;
     }
     MyFreePool (FormatString);
-
+#endif
 }
 
 
-// Changed MsgLog(...) it now calls this function with DebugMode > 0.
 VOID
 EFIAPI
 DebugLog(
     IN INTN DebugMode,
     IN CONST CHAR8 *FormatString, ...
 ) {
+#if REFIT_DEBUG < 1
+    // Just return in RELEASE builds
+    return;
+#else
     VA_LIST Marker;
 
     // Make sure the buffer is intact for writing
@@ -461,6 +472,7 @@ DebugLog(
     VA_START(Marker, FormatString);
     MemLogVA(TRUE, DebugMode, FormatString, Marker);
     VA_END(Marker);
+#endif
 }
 
 

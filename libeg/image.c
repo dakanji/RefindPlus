@@ -196,7 +196,9 @@ EG_IMAGE * egScaleImage (
     UINTN     Offset = 0;
     UINTN     x_ratio, y_ratio, x_diff, y_diff;
 
+    LOG(3, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), Image is NULL or a size is 0");
         return NULL;
     }
 
@@ -206,6 +208,7 @@ EG_IMAGE * egScaleImage (
 
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), unable to create new image");
         return NULL;
     }
 
@@ -249,6 +252,8 @@ EG_IMAGE * egScaleImage (
                 (d.a) * (x_diff * y_diff)) / (FP_MULTIPLIER * FP_MULTIPLIER);
         } // for (j...)
     } // for (i...)
+
+    LOG(3, LOG_LINE_NORMAL, L"Scaling of image complete");
     return NewImage;
 } // EG_IMAGE * egScaleImage()
 
@@ -259,7 +264,7 @@ egFreeImage (
     if (Image == NULL) {
         return;
     }
-    
+
     MyFreePool (Image->PixelData);
     MyFreePool (Image);
 }
@@ -286,6 +291,7 @@ egLoadFile (
         return EFI_NOT_FOUND;
     }
 
+    LOG(3, LOG_LINE_NORMAL, L"Loading file '%s'", FileName);
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
         return Status;
@@ -483,7 +489,17 @@ EG_IMAGE * egLoadIcon (
         // use scaled image if available
         if (NewImage) {
             egFreeImage (Image);
+            LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon(), have called egFreeImage()");
             Image = NewImage;
+        }
+        else {
+            LOG(1, LOG_LINE_NORMAL,
+                L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
+                Image->Width, Image->Height, IconSize, IconSize, Path
+            );
+            Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
+                Image->Width, Image->Height, IconSize, IconSize, Path
+            );
         }
     }
 
@@ -509,6 +525,8 @@ EG_IMAGE * egLoadIconAnyType (
     while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
+
+        LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
         MyFreePool (Extension);
         MyFreePool (FileName);
     } // while()

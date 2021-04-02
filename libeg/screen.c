@@ -1268,6 +1268,8 @@ egSetScreenSize (
     #endif
 
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize()!");
+
         SwitchToText (FALSE);
 
         ShowScreenStr = L"Invalid Input Resolution in Config File!";
@@ -1312,6 +1314,8 @@ egSetScreenSize (
                     ModeNum
                 ) == EFI_SUCCESS)
             ) {
+                LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
+
                 #if REFIT_DEBUG > 0
                 MsgLog ("  - Mode Set from egGetResFromMode\n\n");
                 #endif
@@ -1349,6 +1353,8 @@ egSetScreenSize (
                         ModeNum
                     ) == EFI_SUCCESS))
                 ) {
+                    LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("  - Mode Set from GOPDraw Query\n\n");
                     #endif
@@ -1380,6 +1386,12 @@ egSetScreenSize (
 
             MyFreePool (ShowScreenStr);
 
+            LOG(1, LOG_LINE_NORMAL,
+                L"Error setting graphics mode %d x %d; using default mode!",
+                *ScreenWidth, *ScreenHeight
+            );
+            LOG(1, LOG_LINE_NORMAL, L"Available modes are:");
+
             ModeNum = 0;
             do {
 
@@ -1408,6 +1420,8 @@ egSetScreenSize (
                     MsgLog ("  - %s", ShowScreenStr);
                     #endif
 
+                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
+
                     if (ModeNum == CurrentModeNum) {
                         egScreenWidth  = Info->HorizontalResolution;
                         egScreenHeight = Info->VerticalResolution;
@@ -1434,7 +1448,7 @@ egSetScreenSize (
             SwitchToGraphicsAndClear (TRUE);
         } // if GOP mode (UEFI)
     }
-    else if (UGADraw != NULL) {
+    else if ((UGADraw != NULL) && (*ScreenHeight > 0)) {
         // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
         // in all cases, but I don't know how to probe for alternatives....
@@ -1443,6 +1457,7 @@ egSetScreenSize (
             &ScreenW, &ScreenH,
             &UGADepth, &UGARefreshRate
         );
+        LOG(1, LOG_LINE_NORMAL, L"Setting UGA Draw mode to %d x %d", *ScreenWidth, *ScreenHeight);
 
         Status = refit_call5_wrapper(
             UGADraw->SetMode, UGADraw,
@@ -1473,6 +1488,8 @@ egSetScreenSize (
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
+            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
+
             MyFreePool (ShowScreenStr);
         } // if/else
     } // if/else if (UGADraw != NULL)
@@ -1498,6 +1515,7 @@ egSetTextMode (
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
     ) {
+        LOG(1, LOG_LINE_NORMAL, L"Setting text mode to %d", RequestedMode);
         Status = refit_call2_wrapper(
             gST->ConOut->SetMode,
             gST->ConOut,
@@ -1509,19 +1527,25 @@ egSetTextMode (
         else {
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"Error Setting Resolution ...Unsupported Mode";
+            ShowScreenStr = StrDuplicate (L"Error Setting Text Mode ...Unsupported Mode");
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
-            ShowScreenStr = L"Seek Available Modes:";
+            MyFreePool (ShowScreenStr);
+
+            ShowScreenStr = StrDuplicate (L"Seek Available Modes:");
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n", ShowScreenStr);
             #endif
+
+            MyFreePool (ShowScreenStr);
+
+            LOG(1, LOG_LINE_NORMAL, L"Error setting text mode %d; available modes are:", RequestedMode);
 
             do {
                 Status = refit_call4_wrapper(
@@ -1540,11 +1564,15 @@ egSetTextMode (
                     MsgLog ("%s\n", ShowScreenStr);
                     #endif
 
+                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
+
                     MyFreePool (ShowScreenStr);
                 }
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+
+            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1988,6 +2016,8 @@ egScreenShot (
 
     Image = egCopyScreen();
     if (Image == NULL) {
+        LOG(1, LOG_LINE_NORMAL, L"Error: Unable to take screen shot (Image is NULL)");
+
         SwitchToText (FALSE);
 
         ShowScreenStr = L"    * Error: Unable to Take Screen Shot";
@@ -2027,6 +2057,8 @@ egScreenShot (
 
     egFreeImage (Image);
     if (EFI_ERROR (Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error: Could Not Encode PNG");
+
         SwitchToText (FALSE);
 
         ShowScreenStr = L"    * Error: Could Not Encode PNG";
