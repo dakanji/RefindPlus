@@ -123,7 +123,8 @@ VOID RecordgCsrStatus (
             );
             break;
 
-        // Max Legal CSR "Disabled" Setting
+        // Wide Open and Max Legal CSR "Disabled" Settings
+        case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
                 L"SIP and SSV Removed (0x%04x - Caution!)",
