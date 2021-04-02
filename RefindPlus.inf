@@ -67,9 +67,11 @@
   libeg/nanojpeg_xtra.c
   libeg/screen.c
   libeg/text.c
-# Added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
-  Platform/DataHubCpu.c
-  Platform/BootLog.c
+# Originally added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
+# Modified by dakanji (sf.net/u/dakanji/profile) as follows:
+# - Removed unused "Platform/DataHubCpu.c"
+# - Moved "Platform/BootLog.c" to "Library/MemLogLib/BootLog.c"
+  Library/MemLogLib/BootLog.c
 
 [Packages]
   MdePkg/MdePkg.dec
