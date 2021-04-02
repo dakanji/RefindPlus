@@ -188,62 +188,6 @@ CHAR16
 }
 
 
-EFI_STATUS
-LogDataHub (
-  EFI_GUID *TypeGuid,
-  CHAR16   *Name,
-  VOID     *Data,
-  UINT32   DataSize
-  );
-
-
-/** Prints Number of bytes in a row (hex and ascii). Row size is MaxNumber. */
-VOID
-PrintBytesRow(IN UINT8 *Bytes, IN UINTN Number, IN UINTN MaxNumber)
-{
-	UINTN	Index;
-
-	// print hex vals
-	for (Index = 0; Index < Number; Index++) {
-		DebugLog(1, "%02x ", Bytes[Index]);
-	}
-
-	// pad to MaxNumber if needed
-	for (; Index < MaxNumber; Index++) {
-		DebugLog(1, "   ");
-	}
-
-	DebugLog(1, "| ");
-
-	// print ASCII
-	for (Index = 0; Index < Number; Index++) {
-		if (Bytes[Index] >= 0x20 && Bytes[Index] <= 0x7e) {
-			DebugLog(1, "%c", (CHAR16)Bytes[Index]);
-		} else {
-			DebugLog(1, "%c", L'.');
-		}
-	}
-
-	DebugLog(1, "\n");
-}
-
-
-/** Prints series of bytes. */
-VOID
-PrintBytes(IN VOID *Bytes, IN UINTN Number)
-{
-	UINTN	Index;
-
-	for (Index = 0; Index < Number; Index += 16) {
-		PrintBytesRow(
-            (UINT8*)Bytes + Index,
-            ((Index + 16 < Number) ? 16 : (Number - Index)),
-            16
-        );
-	}
-}
-
-
 EFI_FILE_PROTOCOL* GetDebugLogFile()
 {
   EFI_STATUS          Status;
@@ -333,20 +277,18 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
 
 VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
 {
-  STATIC BOOLEAN          FirstTimeSave = TRUE;
-//  STATIC UINTN            Position = 0;
+  STATIC BOOLEAN           FirstTimeSave = TRUE;
   CHAR8                   *MemLogBuffer;
-  UINTN                   MemLogLen;
+  UINTN                    MemLogLen;
   CHAR8                   *Text;
-  UINTN                   TextLen;
-  EFI_FILE_HANDLE         LogFile;
+  UINTN                    TextLen;
+  EFI_FILE_HANDLE          LogFile;
 
   MemLogBuffer = GetMemLogBuffer();
-  MemLogLen = GetMemLogLen();
-  Text = LastMessage;
-  TextLen = AsciiStrLen(LastMessage);
-
-  LogFile = GetDebugLogFile();
+  MemLogLen    = GetMemLogLen();
+  Text         = LastMessage;
+  TextLen      = AsciiStrLen(LastMessage);
+  LogFile      = GetDebugLogFile();
 
   // Write to the log file
   if (LogFile != NULL) {
@@ -368,17 +310,20 @@ VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
 }
 
 
-VOID EFIAPI MemLogCallback(IN INTN DebugMode, IN CHAR8 *LastMessage)
-{
-  // Print message to console
-  if (DebugMode >= 2) {
-    AsciiPrint(LastMessage);
-  }
+VOID
+EFIAPI
+MemLogCallback (
+    IN INTN DebugMode,
+    IN CHAR8 *LastMessage
+) {
+    // Print message to console
+    if (DebugMode >= 2) {
+        AsciiPrint (LastMessage);
+    }
 
-  // if ((DebugMode >= 1) && GlobalConfig.DebugLog) {
-  if ( (DebugMode >= 1) ) {
-    SaveMessageToDebugLogFile(LastMessage);
-  }
+    if ( (DebugMode >= 1) ) {
+        SaveMessageToDebugLogFile (LastMessage);
+    }
 }
 
 VOID
@@ -475,52 +420,8 @@ DebugLog(
 #endif
 }
 
-
-VOID InitBooterLog(VOID)
-{
+VOID InitBooterLog(
+    VOID
+) {
   SetMemLogCallback(MemLogCallback);
-}
-
-
-EFI_STATUS SetupBooterLog(BOOLEAN AllowGrownSize)
-{
-  EFI_STATUS   Status = EFI_SUCCESS;
-  CHAR8       *MemLogBuffer;
-  UINTN        MemLogLen;
-
-  MemLogBuffer = GetMemLogBuffer();
-  MemLogLen    = GetMemLogLen();
-
-  if (MemLogBuffer == NULL || MemLogLen == 0) {
-		return EFI_NOT_FOUND;
-  }
-
-  if (MemLogLen > MEM_LOG_INITIAL_SIZE && !AllowGrownSize) {
-    CHAR8 PrevChar = MemLogBuffer[MEM_LOG_INITIAL_SIZE-1];
-    MemLogBuffer[MEM_LOG_INITIAL_SIZE-1] = '\0';
-    Status = LogDataHub(&gEfiMiscSubClassGuid, L"boot-log", MemLogBuffer, MEM_LOG_INITIAL_SIZE);
-    MemLogBuffer[MEM_LOG_INITIAL_SIZE-1] = PrevChar;
-  } else {
-    Status = LogDataHub(&gEfiMiscSubClassGuid, L"boot-log", MemLogBuffer, (UINT32)MemLogLen);
-  }
-
-	return Status;
-}
-
-
-// Made msgbuf and msgCursor private to this source
-// so we need a different way of saving the msg log - apianti
-EFI_STATUS SaveBooterLog(IN EFI_FILE_HANDLE BaseDir OPTIONAL, IN CHAR16 *FileName)
-{
-  CHAR8                   *MemLogBuffer;
-  UINTN                   MemLogLen;
-
-  MemLogBuffer = GetMemLogBuffer();
-  MemLogLen = GetMemLogLen();
-
-  if (MemLogBuffer == NULL || MemLogLen == 0) {
-		return EFI_NOT_FOUND;
-  }
-
-  return egSaveFile(BaseDir, FileName, (UINT8*)MemLogBuffer, MemLogLen);
 }
