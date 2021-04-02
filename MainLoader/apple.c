@@ -28,7 +28,7 @@
 #include "global.h"
 #include "config.h"
 #include "lib.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "apple.h"
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"

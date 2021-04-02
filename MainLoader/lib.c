@@ -49,7 +49,7 @@
 #include "global.h"
 #include "lib.h"
 #include "icns.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/RemovableMedia.h"
 #include "gpt.h"

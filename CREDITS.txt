@@ -46,7 +46,7 @@ Program (C source code and script) files:
   with some improvements to the former by Tom Briden.
 
 * The code for editing boot options (cursor_left(), cursor_right(), and
-  line_edit() in screen.c) is taken from gummiboot
+  line_edit() in screenmgt.c) is taken from gummiboot
   (http://freedesktop.org/wiki/Software/gummiboot).
 
 * Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver

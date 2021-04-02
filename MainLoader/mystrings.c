@@ -17,7 +17,7 @@
 
 #include "mystrings.h"
 #include "lib.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
 

@@ -49,7 +49,7 @@
 
 // July 2020: Extensively modiied by dakanji (sf.net/u/dakanji/profile)
 #include "libegint.h"
-#include "../MainLoader/screen.h"
+#include "../MainLoader/screenmgt.h"
 #include "../MainLoader/global.h"
 #include "../MainLoader/lib.h"
 #include "../MainLoader/mystrings.h"

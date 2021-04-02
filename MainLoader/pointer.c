@@ -27,7 +27,7 @@
 
 #include "pointer.h"
 #include "global.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "icns.h"
 #include "../include/refit_call_wrapper.h"
 

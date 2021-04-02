@@ -72,7 +72,7 @@
 #include "driver_support.h"
 #include "lib.h"
 #include "mystrings.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 

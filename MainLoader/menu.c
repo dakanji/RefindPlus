@@ -47,7 +47,7 @@
  */
 
 #include "global.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "lib.h"
 #include "menu.h"
 #include "config.h"

@@ -27,7 +27,7 @@
 
  #include "gpt.h"
  #include "lib.h"
- #include "screen.h"
+ #include "screenmgt.h"
  #include "crc32.h"
  #include "../include/refit_call_wrapper.h"
 

@@ -53,7 +53,7 @@
 #include "lib.h"
 #include "menu.h"
 #include "../include/refit_call_wrapper.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "../include/syslinux_mbr.h"
 #include "mystrings.h"
 #include "../EfiLib/BdsHelper.h"

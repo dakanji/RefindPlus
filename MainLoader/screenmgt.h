@@ -1,5 +1,5 @@
 /*
- * refit/screen.h
+ * MainLoader/screenmgt.h
  * Screen management header file
  *
  * Copyright (c) 2006-2009 Christoph Pfisterer

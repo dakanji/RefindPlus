@@ -57,7 +57,7 @@
   MainLoader/mystrings.c
   MainLoader/pointer.c
   MainLoader/scan.c
-  MainLoader/screen.c
+  MainLoader/screenmgt.c
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c

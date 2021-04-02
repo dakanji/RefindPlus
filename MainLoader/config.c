@@ -53,7 +53,7 @@
 #include "icns.h"
 #include "menu.h"
 #include "config.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "apple.h"
 #include "mystrings.h"
 #include "scan.h"

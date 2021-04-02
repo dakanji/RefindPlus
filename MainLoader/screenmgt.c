@@ -1,5 +1,5 @@
 /*
- * MainLoader/screen.c
+ * MainLoader/screenmgt.c
  * Screen handling functions
  *
  * Copyright (c) 2006 Christoph Pfisterer
@@ -47,7 +47,7 @@
  */
 
 #include "global.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "config.h"
 #include "libegint.h"
 #include "lib.h"

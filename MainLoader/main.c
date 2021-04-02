@@ -48,7 +48,7 @@
 
 #include "global.h"
 #include "config.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "launch_legacy.h"
 #include "lib.h"
 #include "icns.h"

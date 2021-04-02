@@ -18,7 +18,7 @@
 
  #include "global.h"
  #include "lib.h"
- #include "screen.h"
+ #include "screenmgt.h"
  #include "install.h"
  #include "scan.h"
  #include "menu.h"

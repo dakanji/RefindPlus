@@ -25,7 +25,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "BdsHelper.h"
 #include "legacy.h"
 #include "mystrings.h"
-#include "../MainLoader/screen.h"
+#include "../MainLoader/screenmgt.h"
 #include "../MainLoader/lib.h"
 #include "../include/refit_call_wrapper.h"
 

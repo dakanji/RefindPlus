@@ -34,7 +34,7 @@
  */
 
 #include "global.h"
-#include "screen.h"
+#include "screenmgt.h"
 #include "lib.h"
 #include "../include/refit_call_wrapper.h"
 

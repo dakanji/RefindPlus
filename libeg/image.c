@@ -58,7 +58,7 @@
 #include "libegint.h"
 #include "../MainLoader/global.h"
 #include "../MainLoader/lib.h"
-#include "../MainLoader/screen.h"
+#include "../MainLoader/screenmgt.h"
 #include "../MainLoader/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "lodepng.h"

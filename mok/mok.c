@@ -48,7 +48,7 @@
 #include "mok.h"
 #include "../include/refit_call_wrapper.h"
 #include "../MainLoader/lib.h"
-#include "../MainLoader/screen.h"
+#include "../MainLoader/screenmgt.h"
 
 
 /*
