@@ -1233,12 +1233,17 @@ LOADER_ENTRY * AddStanzaEntries (
 
    // Parse the config file to add options for a single stanza, terminating when the token
    // is "}" or when the end of file is reached.
+   #if REFIT_DEBUG > 0
    LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
+   #endif
+
    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
       if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
          Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
+         #if REFIT_DEBUG > 0
          LOG(1, LOG_LINE_NORMAL, L"Adding manual loader for '%s'", Entry->LoaderPath);
+         #endif
 
          SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
          MyFreePool (Entry->LoadOptions);
@@ -1248,7 +1253,9 @@ LOADER_ENTRY * AddStanzaEntries (
       else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
          PreviousVolume = CurrentVolume;
          if (FindVolume (&CurrentVolume, TokenList[1])) {
-            LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
+             #if REFIT_DEBUG > 0
+             LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
+             #endif
 
             if ((CurrentVolume != NULL) &&
                 (CurrentVolume->IsReadable) &&
@@ -1269,7 +1276,10 @@ LOADER_ENTRY * AddStanzaEntries (
         } // if match found
       }
       else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
-         LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+          #if REFIT_DEBUG > 0
+          LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+          #endif
+
          MyFreePool (Entry->me.Image);
          Entry->me.Image = egLoadIcon (
              CurrentVolume->RootDir,
@@ -1282,31 +1292,49 @@ LOADER_ENTRY * AddStanzaEntries (
          }
       }
       else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
-         LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
+          #if REFIT_DEBUG > 0
+          LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
+          #endif
+
          MyFreePool (Entry->InitrdPath);
          Entry->InitrdPath = StrDuplicate (TokenList[1]);
       }
       else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
-         LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
+          #if REFIT_DEBUG > 0
+          LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
+          #endif
+
          MyFreePool (Entry->LoadOptions);
          Entry->LoadOptions = StrDuplicate (TokenList[1]);
       }
       else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
          if (TokenCount > 1) {
-            LOG(4, LOG_LINE_NORMAL, L"Adding os type for '%s'", Entry->LoaderPath);
+             #if REFIT_DEBUG > 0
+             LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->LoaderPath);
+             #endif
+
             Entry->OSType = TokenList[1][0];
          }
       }
       else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
-         LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
+          #if REFIT_DEBUG > 0
+          LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
+          #endif
+
          Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
       }
       else if (MyStriCmp (TokenList[0], L"disabled")) {
+          #if REFIT_DEBUG > 0
           LOG(1, LOG_LINE_NORMAL, L"Entry is disabled");
+          #endif
+
           Entry->Enabled = FALSE;
       }
       else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+          #if REFIT_DEBUG > 0
           LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum for '%s'", Entry->LoaderPath);
+          #endif
+
           MyFreePool (Entry->me.Title);
           Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
           Entry->EfiLoaderPath = NULL;
@@ -1316,7 +1344,10 @@ LOADER_ENTRY * AddStanzaEntries (
           Entry->me.Tag        = TAG_FIRMWARE_LOADER;
       }
       else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
+          #if REFIT_DEBUG > 0
           LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
+          #endif
+
           AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
           AddedSubmenu = TRUE;
       } // set options to pass to the loader program
@@ -1492,7 +1523,10 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             // File read; locate root fs and create entries
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
+                #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"Read line from /etc/fstab holding %d tokens", TokenCount);
+                #endif
+
                 if (TokenCount > 2) {
                     Root[0] = '\0';
 

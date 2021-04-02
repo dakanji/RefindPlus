@@ -1268,7 +1268,9 @@ egSetScreenSize (
     #endif
 
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize()!");
+        #endif
 
         SwitchToText (FALSE);
 
@@ -1314,9 +1316,8 @@ egSetScreenSize (
                     ModeNum
                 ) == EFI_SUCCESS)
             ) {
-                LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
-
                 #if REFIT_DEBUG > 0
+                LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
                 MsgLog ("  - Mode Set from egGetResFromMode\n\n");
                 #endif
 
@@ -1353,9 +1354,8 @@ egSetScreenSize (
                         ModeNum
                     ) == EFI_SUCCESS))
                 ) {
-                    LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
-
                     #if REFIT_DEBUG > 0
+                    LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
                     MsgLog ("  - Mode Set from GOPDraw Query\n\n");
                     #endif
 
@@ -1381,16 +1381,11 @@ egSetScreenSize (
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
             MsgLog ("%s", ShowScreenStr);
             #endif
 
             MyFreePool (ShowScreenStr);
-
-            LOG(1, LOG_LINE_NORMAL,
-                L"Error setting graphics mode %d x %d; using default mode!",
-                *ScreenWidth, *ScreenHeight
-            );
-            LOG(1, LOG_LINE_NORMAL, L"Available modes are:");
 
             ModeNum = 0;
             do {
@@ -1417,10 +1412,9 @@ egSetScreenSize (
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
                     MsgLog ("  - %s", ShowScreenStr);
                     #endif
-
-                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
 
                     if (ModeNum == CurrentModeNum) {
                         egScreenWidth  = Info->HorizontalResolution;
@@ -1457,7 +1451,10 @@ egSetScreenSize (
             &ScreenW, &ScreenH,
             &UGADepth, &UGARefreshRate
         );
+
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Setting UGA Draw mode to %d x %d", *ScreenWidth, *ScreenHeight);
+        #endif
 
         Status = refit_call5_wrapper(
             UGADraw->SetMode, UGADraw,
@@ -1485,10 +1482,9 @@ egSetScreenSize (
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
             MsgLog ("%s\n", ShowScreenStr);
             #endif
-
-            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
 
             MyFreePool (ShowScreenStr);
         } // if/else
@@ -1515,7 +1511,10 @@ egSetTextMode (
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
     ) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Setting text mode to %d", RequestedMode);
+        #endif
+
         Status = refit_call2_wrapper(
             gST->ConOut->SetMode,
             gST->ConOut,
@@ -1540,12 +1539,14 @@ egSetTextMode (
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL,
+                L"Error setting text mode %d; available modes are:",
+                RequestedMode
+            );
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
             MyFreePool (ShowScreenStr);
-
-            LOG(1, LOG_LINE_NORMAL, L"Error setting text mode %d; available modes are:", RequestedMode);
 
             do {
                 Status = refit_call4_wrapper(
@@ -1561,21 +1562,19 @@ egSetTextMode (
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
                     MsgLog ("%s\n", ShowScreenStr);
                     #endif
-
-                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
 
                     MyFreePool (ShowScreenStr);
                 }
             } while (++i < gST->ConOut->Mode->MaxMode);
 
             ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
-
-            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
             MsgLog ("%s\n", ShowScreenStr);
             #endif
 
@@ -2016,18 +2015,17 @@ egScreenShot (
 
     Image = egCopyScreen();
     if (Image == NULL) {
-        LOG(1, LOG_LINE_NORMAL, L"Error: Unable to take screen shot (Image is NULL)");
-
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"    * Error: Unable to Take Screen Shot";
+        ShowScreenStr = L"Error: Unable to take screen shot (Image is NULL)";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n\n", ShowScreenStr);
+        LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
+        MsgLog ("    * %s\n\n", ShowScreenStr);
         #endif
 
         PauseForKey();
@@ -2057,18 +2055,17 @@ egScreenShot (
 
     egFreeImage (Image);
     if (EFI_ERROR (Status)) {
-        LOG(1, LOG_LINE_NORMAL, L"Error: Could Not Encode PNG");
-
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"    * Error: Could Not Encode PNG";
+        ShowScreenStr = L"Error: Could Not Encode PNG";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n\n", ShowScreenStr);
+        LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
+        MsgLog ("    * %s\n\n", ShowScreenStr);
         #endif
 
         HaltForKey();

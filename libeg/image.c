@@ -196,9 +196,15 @@ EG_IMAGE * egScaleImage (
     UINTN     Offset = 0;
     UINTN     x_ratio, y_ratio, x_diff, y_diff;
 
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
+    #endif
+
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), Image is NULL or a size is 0");
+        #endif
+
         return NULL;
     }
 
@@ -208,7 +214,10 @@ EG_IMAGE * egScaleImage (
 
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), unable to create new image");
+        #endif
+
         return NULL;
     }
 
@@ -253,7 +262,10 @@ EG_IMAGE * egScaleImage (
         } // for (j...)
     } // for (i...)
 
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Scaling of image complete");
+    #endif
+
     return NewImage;
 } // EG_IMAGE * egScaleImage()
 
@@ -291,7 +303,10 @@ egLoadFile (
         return EFI_NOT_FOUND;
     }
 
+    #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Loading file '%s'", FileName);
+    #endif
+
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
         return Status;
@@ -489,14 +504,21 @@ EG_IMAGE * egLoadIcon (
         // use scaled image if available
         if (NewImage) {
             egFreeImage (Image);
+
+            #if REFIT_DEBUG > 0
             LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon(), have called egFreeImage()");
+            #endif
+
             Image = NewImage;
         }
         else {
+            #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
                 L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
                 Image->Width, Image->Height, IconSize, IconSize, Path
             );
+            #endif
+
             Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
                 Image->Width, Image->Height, IconSize, IconSize, Path
             );
@@ -526,7 +548,10 @@ EG_IMAGE * egLoadIconAnyType (
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
 
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
+        #endif
+
         MyFreePool (Extension);
         MyFreePool (FileName);
     } // while()

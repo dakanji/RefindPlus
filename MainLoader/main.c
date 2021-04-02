@@ -1145,7 +1145,10 @@ VOID AboutRefindPlus (
     CHAR16  *TempStr         = NULL;
     CHAR16  *FirmwareVendor  = VendorInfo;
 
+    #if REFIT_DEBUG > 1
     LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
+    #endif
+
     if (AboutMenu.EntryCount == 0) {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
         AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
@@ -1262,7 +1265,10 @@ VOID RescanAll (
     BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
+    #if REFIT_DEBUG > 1
     LOG(1, LOG_LINE_NORMAL, L"Re-scanning all boot loaders");
+    #endif
+
     FreeList (
         (VOID ***) &(MainMenu.Entries),
         &MainMenu.EntryCount
@@ -1318,18 +1324,24 @@ STATIC BOOLEAN SecureBootSetup (
     BOOLEAN     Success         = FALSE;
     CHAR16      *ShowScreenStr  = NULL;
 
+    #if REFIT_DEBUG > 1
     LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
+    #endif
+
     if (secure_mode() && ShimLoaded()) {
+        #if REFIT_DEBUG > 1
         LOG(2, LOG_LINE_NORMAL, L"Secure boot mode detected with loaded Shim; adding MOK extensions");
+        #endif
+
         Status = security_policy_install();
         if (Status == EFI_SUCCESS) {
             Success = TRUE;
         }
         else {
-            LOG(2, LOG_LINE_NORMAL, L"Secure boot disabled; doing nothing");
-            ShowScreenStr = L"Failed to Install MOK Secure Boot Extensions";
+            ShowScreenStr = L"Secure boot disabled ... doing nothing";
 
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, ShowScreenStr)
             MsgLog ("** WARN: %s\n---------------\n\n", ShowScreenStr);
             #endif
 
@@ -1470,10 +1482,10 @@ STATIC VOID AdjustDefaultSelection() {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with PreviousBoot values");
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 
-    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with PreviousBoot values");
     while ((Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)) != NULL) {
         if (MyStriCmp (Element, L"+")) {
             Status = EfivarGetRaw (
@@ -1804,17 +1816,21 @@ efi_main (
         #endif
     }
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Initialising Basic Features");
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_SEPARATOR, L"Initialising Basic Features");
     MsgLog ("Initialise Screen...\n");
     #endif
+
     InitScreen();
 
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 
     // disable EFI watchdog timer
+    #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_THIN_SEP, L"Setting Watchdog Timer");
+    #endif
+
     refit_call4_wrapper(
         gBS->SetWatchdogTimer,
         0x0000, 0x0000, 0x0000,
@@ -1833,7 +1849,10 @@ efi_main (
 
     if (GlobalConfig.ScanDelay > 0) {
        if (GlobalConfig.ScanDelay > 1) {
+           #if REFIT_DEBUG > 0
            LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
+           #endif
+
            egDisplayMessage (L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
        }
 
@@ -1931,7 +1950,10 @@ efi_main (
 
     MyFreePool (VendorInfo);
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
+    #endif
+
     while (MainLoopRunning) {
         // Set to false as may not be booting
         IsBoot = FALSE;
@@ -1959,9 +1981,9 @@ efi_main (
         switch (ChosenEntry->Tag) {
 
             case TAG_NVRAMCLEAN:    // Clean NVRAM
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Clean NVRAM\n---------------\n\n");
@@ -1975,9 +1997,9 @@ efi_main (
                 break;
 
             case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_THIN_SEP, L"Showing Clean NVRAM Info");
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show Clean NVRAM Info\n\n");
                 #endif
@@ -1986,19 +2008,22 @@ efi_main (
 
                 // Reboot if CleanNvram was triggered
                 if (ranCleanNvram) {
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL, L"Cleaned NVRAM");
 
-                    #if REFIT_DEBUG > 0
                     MsgLog ("INFO: Cleaned Nvram\n\n");
                     MsgLog ("Restart Computer...\n");
                     MsgLog ("Terminating Screen:\n");
                     #endif
+
                     TerminateScreen();
 
-                    LOG(1, LOG_LINE_NORMAL, L"Reseting System");
                     #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL, L"Reseting System");
+
                     MsgLog ("Reseting System\n---------------\n\n");
                     #endif
+
                     refit_call4_wrapper(
                         gRT->ResetSystem,
                         EfiResetCold,
@@ -2006,12 +2031,12 @@ efi_main (
                         0, NULL
                     );
 
-                    LOG(1, LOG_THREE_STAR_SEP, L"System Reset FAILED!");
-                    ShowScreenStr = L"INFO: Computer Reboot Failed ...Attempt Fallback";
+                    ShowScreenStr = L"System Reset FAILED!";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("%s\n\n", ShowScreenStr);
+                    LOG(1, LOG_THREE_STAR_SEP, ShowScreenStr);
+                    MsgLog ("INFO: %s\n\n", ShowScreenStr);
                     #endif
 
                     MyFreePool (ShowScreenStr);
@@ -2023,9 +2048,9 @@ efi_main (
                 break;
 
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Load Apple Boot Screen\n---------------\n\n");
@@ -2042,9 +2067,9 @@ efi_main (
                 break;
 
             case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_THIN_SEP, L"Showing BootKicker Info");
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show BootKicker Info\n\n");
                 #endif
@@ -2053,7 +2078,6 @@ efi_main (
                 break;
 
             case TAG_REBOOT:    // Reboot
-
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
@@ -2065,21 +2089,29 @@ efi_main (
                 #endif
 
                 TerminateScreen();
+
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_SEPARATOR, L"Restarting System");
+                #endif
+
                 refit_call4_wrapper(
                     gRT->ResetSystem,
                     EfiResetCold,
                     EFI_SUCCESS,
                     0, NULL
                 );
+
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_THREE_STAR_SEP, L"Restart FAILED!");
+                #endif
+
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_SHUTDOWN: // Shut Down
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_SEPARATOR, L"Shutting System Down");
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("  - Shut Computer Down\n---------------\n\n");
@@ -2090,18 +2122,22 @@ efi_main (
                 #endif
 
                 TerminateScreen();
+
                 refit_call4_wrapper(
                     gRT->ResetSystem,
                     EfiResetShutdown,
                     EFI_SUCCESS,
                     0, NULL
                 );
+
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_THREE_STAR_SEP, L"Shutdown FAILED!");
+                #endif
+
                 MainLoopRunning = FALSE;   // just in case we get this far
                 break;
 
             case TAG_ABOUT:    // About RefindPlus
-
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Show 'About RefindPlus' Page\n\n");
@@ -2145,13 +2181,13 @@ efi_main (
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
                     }
 
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_THIN_SEP,
                         L"Loading OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
 
-                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Load OpenCore Instance:- '%s%s'",
@@ -2165,13 +2201,13 @@ efi_main (
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
                     }
 
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_THIN_SEP,
                         L"Loading Clover Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
 
-                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Load Clover Instance:- '%s%s'",
@@ -2268,13 +2304,13 @@ efi_main (
                     #endif
                 }
                 else {
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_THIN_SEP,
                         L"Booting OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
 
-                    #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     MsgLog (
                         "  - Boot OS via EFI Loader:- '%s%s'",
@@ -2345,12 +2381,12 @@ efi_main (
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_THIN_SEP,
                     L"Booting Legacy UEFI:- '%s'",
                     ourLegacyEntry->Volume->OSName
                 );
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog (
@@ -2372,12 +2408,12 @@ efi_main (
             case TAG_TOOL:     // Start a EFI tool
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_THIN_SEP,
                     L"Starting EFI Tool:- '%s'",
                     ourLoaderEntry->LoaderPath
                 );
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Start EFI Tool:- '%s'\n\n", ourLoaderEntry->LoaderPath);
                 #endif
@@ -2497,8 +2533,9 @@ efi_main (
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
-    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!");
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!");
+
     MsgLog ("Fallback: Restart Computer...\n");
     MsgLog ("Screen Termination:\n");
     #endif
@@ -2515,7 +2552,10 @@ efi_main (
         EFI_SUCCESS,
         0, NULL
     );
+
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Shutdown after main loop exit has FAILED!");
+    #endif
 
     SwitchToText (FALSE);
 

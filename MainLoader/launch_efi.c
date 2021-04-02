@@ -148,10 +148,12 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"'%s' is ASSUMED to be a valid loader",
             FileName
         );
+        #endif
 
         return TRUE;
     } // if
@@ -166,12 +168,11 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     );
 
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"'%s' is NOT a valid loader",
             FileName
         );
-
-        #if REFIT_DEBUG > 0
         MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
         #endif
 
@@ -190,11 +191,13 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
                *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
               (*(UINT32 *)&Header == FAT_ARCH));
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
         L"'%s' %s a valid loader",
         FileName,
         IsValid ? L"is" : L"is NOT"
     );
+    #endif
 #else
     IsValid = TRUE;
 #endif
@@ -235,11 +238,13 @@ StartEFIImage (
         } // if
     } // if (LoadOptions != NULL)
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
     LOG(1, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
     if (IsDriver) {
         LOG(1, LOG_LINE_NORMAL, L"Note: %s is a driver", ImageTitle);
     }
+    #endif
 
     if (Verbose) {
         Print(
@@ -288,7 +293,10 @@ StartEFIImage (
             // NOTE: This doesn't check the return status or handle errors. It could
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Employing Shim LoadImage() hack");
+            #endif
+
             refit_call6_wrapper(
                 gBS->LoadImage,
                 FALSE,
@@ -314,15 +322,21 @@ StartEFIImage (
         PauseSeconds(3);
         SwitchToGraphics();
 
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Invalid loader file!");
+        #endif
+
         ReturnStatus = EFI_LOAD_ERROR;
     }
 
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"Secure boot error while loading '%s'; Status = %d",
             ImageTitle, Status
         );
+        #endif
+
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
@@ -358,10 +372,12 @@ StartEFIImage (
     ) {
         // Tell systemd what ESP RefindPlus used
         EspGUID = GuidAsString(&(SelfVolume->PartGuid));
-        LOG(1, LOG_LINE_NORMAL, L"Setting systemd's LoaderDevicePartUUID variable to %s", EspGUID);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Systemd LoaderDevicePartUUID:- '%s'\n\n", EspGUID);
+        CHAR16 *TmpStr = PoolPrint (L"Systemd LoaderDevicePartUUID:- '%s'", EspGUID);
+        LOG(1, LOG_LINE_NORMAL, TmpStr);
+        MsgLog ("INFO: %s\n\n", TmpStr);
+        MyFreePool (TmpStr);
         #endif
 
         Status = EfivarSetRaw (
@@ -386,7 +402,10 @@ StartEFIImage (
     } // if write systemd EFI variables
 
     // close open file handles
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", ImageTitle);
+    #endif
+
     UninitRefitLib();
 
     Status = refit_call3_wrapper(gBS->StartImage, ChildImageHandle, NULL, NULL);
@@ -405,7 +424,10 @@ StartEFIImage (
 
     // re-open file handles
     ReinitRefitLib();
+
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Program has returned %d", Status);
+    #endif
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
@@ -459,7 +481,10 @@ EFI_STATUS RebootIntoFirmware (VOID) {
         return err;
     }
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the computer's firmware");
+    #endif
+
     UninitRefitLib();
 
     refit_call4_wrapper(
@@ -484,7 +509,10 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     PauseForKey();
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, ShowScreenStr, err);
+    #endif
+
     MyFreePool (ShowScreenStr);
 
     return err;
@@ -497,11 +525,13 @@ RebootIntoLoader (
 ) {
     EFI_STATUS Status;
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR,
         L"Rebooting into EFI loader '%s' (Boot%04x)",
         Entry->Title,
         Entry->EfiBootNum
     );
+    #endif
 
     IsBoot = TRUE;
 
@@ -524,14 +554,18 @@ RebootIntoLoader (
 
     StoreLoaderName(Entry->me.Title);
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Attempting to reboot", Entry->Title, Entry->EfiBootNum);
+    #endif
 
     refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     Print(L"Error calling ResetSystem: %r", Status);
     PauseForKey();
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Error calling ResetSystem: %r", Status);
+    #endif
 } // RebootIntoLoader()
 
 //
@@ -545,7 +579,9 @@ static VOID DoEnableAndLockVMX(VOID) {
     UINT32 msr = 0x3a;
     UINT32 low_bits = 0, high_bits = 0;
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Attempting to enable and lock VMX");
+    #endif
 
     // is VMX active ?
     __asm__ volatile ("rdmsr" : "=a" (low_bits), "=d" (high_bits) : "c" (msr));
@@ -564,7 +600,9 @@ static VOID DoEnableAndLockVMX(VOID) {
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
     CHAR16 *LoaderPath;
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", SelectionName);
+    #endif
 
     IsBoot = TRUE;
 
@@ -592,7 +630,9 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
 VOID StartTool(IN LOADER_ENTRY *Entry) {
     CHAR16 *LoaderPath;
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Starting '%s'", Entry->me.Title);
+    #endif
 
     IsBoot = TRUE;
 

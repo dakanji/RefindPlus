@@ -462,19 +462,26 @@ FindVarsDir (
             EFI_FILE_DIRECTORY
         );
 
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"Create a 'vars' directory on the filesystem to hold variables ...%r",
             Status
         );
+        #endif
 
         if (EFI_ERROR (Status)) {
             Status = egFindESP (&EspRootDir);
+
+            #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Locate an ESP ...%r", Status);
+            #endif
 
             if (EFI_ERROR (Status)) {
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL,
                     L"Could not locate an ESP"
                 );
+                #endif
             }
             else {
                 Status = refit_call5_wrapper(
@@ -484,23 +491,26 @@ FindVarsDir (
                     EFI_FILE_DIRECTORY
                 );
 
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL,
                     L"Create a 'refind-vars' directory on the ESP to hold variables ...%r",
                     Status
                 );
-
                 if (EFI_ERROR (Status)) {
                     LOG(1, LOG_LINE_NORMAL,
                         L"Could not create a 'refind-vars' directory on the ESP"
                     );
                 }
+                #endif
             }
 
+            #if REFIT_DEBUG > 0
             if (EFI_ERROR (Status)) {
                 LOG(1, LOG_LINE_NORMAL,
                     L"Activate 'use_nvram' for RefindPlus to use NVRAM-based storage"
                 );
             }
+            #endif
         }
     }
 
@@ -525,10 +535,12 @@ EfivarGetRaw (
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Getting EFI variable '%s' from Emulated NVRAM",
             VariableName
         );
+        #endif
 
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
@@ -562,10 +574,13 @@ EfivarGetRaw (
     if (GlobalConfig.UseNvram ||
         !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Getting EFI variable '%s' from Hardware NVRAM",
             VariableName
         );
+        #endif
+
         // Pass in a zero-size buffer to find the required buffer size.
         BufferSize = 0;
         Status = refit_call5_wrapper(
@@ -581,11 +596,13 @@ EfivarGetRaw (
             *VariableData = NULL;
             *VariableSize = 0;
 
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"Error getting EFI variable '%s' from Hardware NVRAM:- '%r'",
                 VariableName,
                 Status
             );
+            #endif
 
             return Status;
         }
@@ -598,11 +615,13 @@ EfivarGetRaw (
 
             Status = EFI_OUT_OF_RESOURCES;
 
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"Error getting EFI variable '%s' from Hardware NVRAM:- '%r'",
                 VariableName,
                 Status
             );
+            #endif
 
             return Status;
         }
@@ -627,7 +646,10 @@ EfivarGetRaw (
         }
     }
     else {
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL, L"Error retrieving EFI variable '%s'", VariableName);
+        #endif
+
         MyFreePool (TmpBuffer);
         *VariableData = NULL;
         *VariableSize = 0;
@@ -663,16 +685,19 @@ EfivarSetRaw (
         if (!GlobalConfig.UseNvram &&
             GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"Saving EFI variable '%s' to Emulated NVRAM",
                 VariableName
             );
+            #endif
 
             Status = FindVarsDir();
             if (Status == EFI_SUCCESS) {
                 Status = egSaveFile (gVarsDir, VariableName, (UINT8 *) VariableData, VariableSize);
             }
             else {
+                #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL,
                     L"Could Not Write '%s' to Emulated NVRAM",
                     VariableName
@@ -681,7 +706,6 @@ EfivarSetRaw (
                     L"Activate the 'use_nvram' option to silence this warning"
                 );
 
-                #if REFIT_DEBUG > 0
                 MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", VariableName);
                 MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
                 #endif
@@ -693,10 +717,12 @@ EfivarSetRaw (
         if (GlobalConfig.UseNvram ||
             !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"Saving EFI variable '%s' to Hardware NVRAM",
                 VariableName
             );
+            #endif
 
             StorageFlags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
             if (Persistent) {
@@ -709,6 +735,7 @@ EfivarSetRaw (
                 VariableSize, VariableData
             );
 
+            #if REFIT_DEBUG > 0
             if (EFI_ERROR (Status)) {
                 LOG(3, LOG_LINE_NORMAL,
                     L"Could not Write EFI variable '%s' to Hardware NVRAM: %r",
@@ -716,8 +743,8 @@ EfivarSetRaw (
                     Status
                 );
             }
+            #endif
         }
-
     }
 
     if (OldStatus == EFI_SUCCESS) {
@@ -1028,7 +1055,9 @@ ScanVolumeBootcode (
         Buffer
     );
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Error %d (%r) while reading volume boot sector", Status, Status);
+        #endif
     }
     else {
         SetFilesystemData (Buffer, SAMPLE_SIZE, Volume);
@@ -1167,9 +1196,11 @@ ScanVolumeBootcode (
             }
         }
 
+        #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
             LOG(1, LOG_LINE_NORMAL, L"Detected bootcode on volume below");
         }
+        #endif
 
         // check for MBR partition table
         if (*((UINT16 *)(Buffer + 510)) == 0xaa55) {
@@ -1304,10 +1335,13 @@ CHAR16
         (StrLen (Volume->FsName) > 0)
     ) {
         FoundName = StrDuplicate (Volume->FsName);
+
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Setting volume name to filesystem name: '%s'",
             FoundName
         );
+        #endif
     }
 
     // If no filesystem name, try to use the partition name....
@@ -1317,10 +1351,13 @@ CHAR16
         !IsIn (Volume->PartName, IGNORE_PARTITION_NAMES)
     ) {
         FoundName = StrDuplicate (Volume->PartName);
+
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Setting volume name to partition name: '%s'",
             FoundName
         );
+        #endif
     } // if use partition name
 
         // NOTE: Don't free TypeName; function returns constant
@@ -1334,13 +1371,16 @@ CHAR16
         if (FileSystemInfoPtr != NULL) {
             SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
             FoundName = PoolPrint (L"%s%s volume", SISize, TypeName);
-            MyFreePool (SISize);
-            MyFreePool (FileSystemInfoPtr);
 
+            #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"Setting volume name to filesystem description: '%s'",
                 FoundName
             );
+            #endif
+
+            MyFreePool (SISize);
+            MyFreePool (FileSystemInfoPtr);
         }
     } // if (FoundName == NULL)
 
@@ -1377,10 +1417,13 @@ CHAR16
                 FoundName = StrDuplicate (L"Unknown Volume");
             }
         }
+
+        #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Setting volume name to generic description: '%s'",
             FoundName
         );
+        #endif
     } // if FoundName == NULL
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
@@ -1485,7 +1528,9 @@ ScanVolume (
         (VOID **) &(Volume->BlockIO)
     );
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"Warning: Cannot get BlockIO protocol in ScanVolume()");
+        #endif
 
         Volume->BlockIO = NULL;
 
@@ -1570,7 +1615,9 @@ ScanVolume (
                 );
 
                 if (EFI_ERROR(Status)) {
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL, L"Could not get DiskDevicePath for volume");
+                    #endif
                 }
                 else {
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
@@ -1584,8 +1631,11 @@ ScanVolume (
                     (VOID **) &Volume->WholeDiskBlockIO
                 );
                 if (EFI_ERROR (Status)) {
-                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume");
                     Volume->WholeDiskBlockIO = NULL;
+
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume");
+                    #endif
                 }
                 else {
                     // check the media block size
@@ -1595,7 +1645,9 @@ ScanVolume (
                 }
             }
             else {
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL, L"Could not locate device path for volume");
+                #endif
             }
         }
 
@@ -1603,13 +1655,13 @@ ScanVolume (
     } // while
 
     if (!Bootable) {
+        #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            LOG(2, LOG_LINE_NORMAL, L"Volume considered non-bootable, but boot code is present");
-
-            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Volume Considered Non-Bootable, but Boot Code is Present");
             MsgLog ("** WARN: Volume Considered Non-Bootable, but Boot Code is Present\n");
-            #endif
         }
+        #endif
+
         Volume->HasBootCode = FALSE;
     }
 
@@ -1666,7 +1718,10 @@ ScanExtendedPartition (
             SectorBuffer
         );
         if (EFI_ERROR (Status)) {
+            #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Error %d reading blocks from disk", Status);
+            #endif
+
             break;
         }
         if (*((UINT16 *) (SectorBuffer + 510)) != 0xaa55) {
@@ -1866,9 +1921,9 @@ ScanVolumes (
     CONST CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
     CONST CHAR16 *ITEMVOLB = L"VOLUME GUID";
     CONST CHAR16 *ITEMVOLC = L"VOLUME ID";
-    #endif
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Volumes");
+    #endif
 
     MyFreePool (Volumes);
     VolumesCount = 0;
@@ -1883,20 +1938,23 @@ ScanVolumes (
         &Handles
     );
     if (EFI_ERROR (Status)) {
-        LOG(2, LOG_LINE_NORMAL, L"ERROR: %r While Listing File Systems", Status);
         #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"ERROR: %r While Listing File Systems", Status);
         MsgLog ("** ERROR: %r While Listing File Systems\n\n", Status);
         #endif
 
         return;
     }
+
+    #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL, L"Found handles for %d volumes", HandleCount);
+    #endif
 
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL, L"ERROR: %r While Allocating UuidList", Status);
 
-        #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
         MsgLog ("** ERROR: %r While Allocating UuidList\n\n", Status);
         #endif
@@ -1908,13 +1966,15 @@ ScanVolumes (
     ScannedOnce = FALSE;
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
+        #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         if (Volume == NULL) {
+            #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"ERROR: %r While Allocating Volumes", Status);
 
-            #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
             MsgLog ("** ERROR: %r While Allocating Volumes\n\n", Status);
             #endif
@@ -1925,11 +1985,14 @@ ScanVolumes (
         Volume->DeviceHandle = Handles[HandleIndex];
         AddPartitionTable (Volume);
         ScanVolume (Volume);
+
+        #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"Identified volume '%s' of type '%s'",
             Volume->VolName,
             FSTypeName (Volume->FSType)
         );
+        #endif
 
         UuidList[HandleIndex] = Volume->VolUuid;
         // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
@@ -2199,7 +2262,9 @@ ScanVolumes (
         SetPrebootVolumes();
     }
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Identified %d Volumes", VolumesCount);
+    #endif
 } // VOID ScanVolumes()
 
 VOID
@@ -2209,22 +2274,29 @@ SetVolumeIcons (
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
+    #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_THIN_SEP, L"Setting Volume Icons");
+    #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
         // Set volume icon based on .VolumeBadge icon or disk kind
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Setting volume badge icon for volume %d", VolumeIndex);
+        #endif
+
         SetVolumeBadgeIcon (Volume);
         if (Volume->DiskKind) {
             if (Volume->DiskKind == DISK_KIND_INTERNAL) {
                 // get custom volume icons if present
                 if (!Volume->VolIconImage) {
+                    #if REFIT_DEBUG > 0
                     LOG(2, LOG_LINE_NORMAL,
                         L"Trying to load custom icon image for Volume %d",
                         VolumeIndex
                     );
+                    #endif
 
                     Volume->VolIconImage = egLoadIconAnyType (
                         Volume->RootDir,
@@ -2302,22 +2374,24 @@ DirNextEntry (
             }
 
             if (BufferSize <= LastBufferSize) {
+                #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL,
                     L"FS Driver requests bad buffer size %d (was %d), using %d instead",
                     BufferSize,
                     LastBufferSize,
                     LastBufferSize * 2
                 );
+                #endif
 
                 BufferSize = LastBufferSize * 2;
             }
             else {
+                #if REFIT_DEBUG > 1
                 LOG(3, LOG_LINE_NORMAL,
                     L"Reallocating buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
 
-                #if REFIT_DEBUG > 1
                 MsgLog (Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
                 #endif
             }

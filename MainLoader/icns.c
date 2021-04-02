@@ -135,7 +135,10 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     CHAR16          *CutoutName, *BaseName;
     UINTN           Index = 0;
 
+    #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_SEP, L"Entering LoadOSIcon()");
+    #endif
+
     if (GlobalConfig.TextOnly) {
         // skip loading if it is not used anyway
         return NULL;
@@ -152,7 +155,10 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     // If that fails, try again using the FallbackIconName....
     if (Image == NULL) {
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+
+       #if REFIT_DEBUG > 0
        LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+       #endif
 
        Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (BaseName);
@@ -161,7 +167,10 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
        BaseName = PoolPrint (L"os_%s", FallbackIconName);
+
+       #if REFIT_DEBUG > 0
        LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+       #endif
 
        Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (BaseName);
@@ -169,7 +178,10 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
 
     // If all of these fail, return the dummy image....
     if (Image == NULL) {
+        #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Setting dummy image");
+        #endif
+
         Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 

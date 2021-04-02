@@ -348,7 +348,10 @@ AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16 *InfoLine
 ) {
+    #if REFIT_DEBUG > 1
     LOG(3, LOG_LINE_NORMAL, L"Adding menu info line: '%s'", InfoLine);
+    #endif
+
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
 }
 
@@ -567,7 +570,9 @@ RunGenericMenu (
     UINTN          MenuExit;
     UINTN          Item;
 
+    #if REFIT_DEBUG > 1
     LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
+    #endif
 
     if (Screen->TimeoutSeconds > 0) {
         HaveTimeout      = TRUE;
@@ -609,7 +614,10 @@ RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
+    #if REFIT_DEBUG > 1
     LOG(3, LOG_LINE_THIN_SEP, L"About to enter while() loop in RunGenericMenu()");
+    #endif
+
     while (!MenuExit) {
         // update the screen
         pdClear();
@@ -680,7 +688,10 @@ RunGenericMenu (
         else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
+                #if REFIT_DEBUG > 1
                 LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
+                #endif
+
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             }
@@ -728,7 +739,10 @@ RunGenericMenu (
         }
 
         if (!PointerActive) { // react to key press
+            #if REFIT_DEBUG > 1
             LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)", key.ScanCode);
+            #endif
+
             switch (key.ScanCode) {
                 case SCAN_UP:
                     UpdateScroll (&State, SCROLL_LINE_UP);
@@ -773,7 +787,10 @@ RunGenericMenu (
                     break;
             } // switch()
 
+            #if REFIT_DEBUG > 1
             LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)", key.UnicodeChar);
+            #endif
+
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
@@ -802,10 +819,14 @@ RunGenericMenu (
             } // switch()
         }
         else { //react to pointer event
+            #if REFIT_DEBUG > 1
             LOG(3, LOG_LINE_NORMAL, L"Processing pointer event");
+            #endif
+
             if (StyleFunc != MainMenuStyle) {
                 continue; // nothing to find on submenus
             }
+
             State.PreviousSelection = State.CurrentSelection;
             POINTER_STATE PointerState = pdGetState();
             Item = FindMainMenuItem (Screen, &State, PointerState.X, PointerState.Y);
@@ -856,7 +877,9 @@ RunGenericMenu (
     }
     *DefaultEntryIndex = State.CurrentSelection;
 
+    #if REFIT_DEBUG > 1
     LOG(3, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
+    #endif
 
     return MenuExit;
 } // UINTN RunGenericMenu()
@@ -1921,7 +1944,9 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
 
+    #if REFIT_DEBUG > 1
     LOG(3, LOG_THREE_STAR_SEP, L"Entering WaitForInput() ... Timeout = %d", Timeout);
+    #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
@@ -1992,7 +2017,9 @@ DisplaySimpleMessage (
     CHAR16* Title,
     CHAR16 *Message
 ) {
+    #if REFIT_DEBUG > 1
     LOG(3, LOG_THREE_STAR_SEP, L"Entering DisplaySimpleMessage()");
+    #endif
 
     if (!Message) {
         return;
@@ -2012,10 +2039,12 @@ DisplaySimpleMessage (
     }
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-    HideItemMenu.Title = Title;
+    HideItemMenu.Title      = Title;
+
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
+    #if REFIT_DEBUG > 1
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
     if (MenuExit == 0) {
         LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
@@ -2023,6 +2052,7 @@ DisplaySimpleMessage (
     else {
         LOG(1, LOG_LINE_NORMAL, L"%s - %s: MenuExit = %d", Title, Message, MenuExit);
     }
+    #endif
 } // VOID DisplaySimpleMessage()
 
 // Check each filename in FilenameList to be sure it refers to a valid file. If
@@ -2118,7 +2148,9 @@ ManageHiddenTags (
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
+    #if REFIT_DEBUG > 1
     LOG(1, LOG_LINE_SEPARATOR, L"Managing hidden tags");
+    #endif
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
     if (AllowGraphicsMode) {
@@ -2488,7 +2520,9 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
+    #if REFIT_DEBUG > 1
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMenu()");
+    #endif
 
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
@@ -2510,7 +2544,9 @@ UINTN RunMainMenu (
     INTN DefaultEntryIndex   = -1;
     INTN DefaultSubmenuIndex = -1;
 
+    #if REFIT_DEBUG > 1
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunMainMenu()");
+    #endif
 
     // remove any buffered key strokes
     ReadAllKeyStrokes();
@@ -2545,14 +2581,23 @@ UINTN RunMainMenu (
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
-                LOG(3, LOG_LINE_NORMAL, L"About to call RunGenericMenu() on subscreen '%s'", MenuTitle);
+                #if REFIT_DEBUG > 1
+                LOG(3, LOG_LINE_NORMAL,
+                    L"About to call RunGenericMenu() on subscreen '%s'",
+                    MenuTitle
+                );
+                #endif
+
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
                     &DefaultSubmenuIndex,
                     &TempChosenEntry
                 );
+
+                #if REFIT_DEBUG > 1
                 LOG(3, LOG_LINE_NORMAL, L"RunGenericMenu() has returned %d", MenuExit);
+                #endif
 
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                    MenuExit = 0;

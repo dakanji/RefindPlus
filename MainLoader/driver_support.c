@@ -744,7 +744,9 @@ LoadDrivers(
     UINTN   NumFound = 0;
     UINTN   CurFound = 0;
 
+    #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Loading Drivers");
+    #endif
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
