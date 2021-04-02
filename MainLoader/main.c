@@ -893,8 +893,9 @@ preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"You can get BootKicker from the OpenCore Project:");
+        AddMenuInfoLine (&BootKickerMenu, L"You can get the BootKicker efi file here:");
         AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine (&BootKickerMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/MainLoader");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"");
 
@@ -1040,8 +1041,9 @@ preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"You can get CleanNvram from the OpenCore Project:");
+        AddMenuInfoLine (&CleanNvramMenu, L"You can get the CleanNvram efi file here:");
         AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/MainLoader");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"");
 
