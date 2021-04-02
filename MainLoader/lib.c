@@ -154,7 +154,9 @@ CleanUpPathNameSlashes (
 ) {
     UINTN Source = 0, Dest = 0;
 
-    if ((PathName == NULL) || (PathName[0] == '\0')) {
+    if ((PathName == NULL) ||
+        (PathName[0] == '\0')
+    ) {
         return;
     }
 
@@ -1297,7 +1299,10 @@ CHAR16
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr   = NULL;
 
 
-    if ((Volume->FsName) && (StrLen(Volume->FsName) > 0)) {
+    if ((Volume->FsName != NULL) &&
+        (Volume->FsName[0] != L'\0') &&
+        (StrLen (Volume->FsName) > 0)
+    ) {
         FoundName = StrDuplicate (Volume->FsName);
         LOG(3, LOG_LINE_NORMAL,
             L"Setting volume name to filesystem name: '%s'",
@@ -1726,7 +1731,8 @@ SetPreBootNames (
             )
         ) {
             FoundGUID = TRUE;
-            if (Volume->VolName != L'\0' &&
+            if (Volume->VolName != NULL &&
+                Volume->VolName[0] != L'\0' &&
                 !MyStriCmp (Volume->VolName, L"Recovery") &&
                 !MyStriCmp (Volume->VolName, L"PreBoot") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
@@ -1749,7 +1755,8 @@ SetPreBootNames (
                     &(Volume->PartGuid)
                 )
             ) {
-                if (Volume->VolName != L'\0' &&
+                if (Volume->VolName != NULL &&
+                    Volume->VolName[0] != L'\0' &&
                     !MyStriCmp (Volume->VolName, L"Recovery") &&
                     !MyStriCmp (Volume->VolName, L"PreBoot") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
@@ -1802,7 +1809,9 @@ SetPrebootVolumes (
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
-            if (Volumes[i]->VolName && (Volumes[i]->VolName != L'\0')) {
+            if ((Volumes[i]->VolName != NULL) &&
+                (Volumes[i]->VolName[0] != L'\0')
+            ) {
                 if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL) {
                     SwapName = FALSE;
                 }
