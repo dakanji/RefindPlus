@@ -1665,7 +1665,7 @@ efi_main (
     CHAR16    *SelectionName = NULL;
     CHAR16    *ShowScreenStr = NULL;
 
-    ForceLogging = TRUE;
+    DeepLoggging = TRUE;
 
     // bootstrap
     InitializeLib (ImageHandle, SystemTable);
@@ -1725,7 +1725,7 @@ efi_main (
     LogBasicInfo ();
     #endif
 
-    ForceLogging = FALSE;
+    DeepLoggging = FALSE;
 
     // read configuration
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);

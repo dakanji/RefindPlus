@@ -28,7 +28,7 @@ extern  INT16  NowSecond;
 
 CHAR16  *gLogTemp       = NULL;
 
-BOOLEAN  ForceLogging   = FALSE;
+BOOLEAN  DeepLoggging   = FALSE;
 
 
 CHAR16
@@ -328,7 +328,7 @@ MemLogCallback (
 
 VOID
 EFIAPI
-DeepLog (
+DeepLoggger (
     IN INTN     DebugMode,
     IN INTN     level,
     IN INTN     type,
@@ -374,13 +374,13 @@ DeepLog (
 
     if (FinalMessage) {
         // Enable Forced Logging
-        ForceLogging = TRUE;
+        DeepLoggging = TRUE;
         // Convert Unicode Message String to Ascii
         MyUnicodeStrToAsciiStr (FinalMessage, FormatString);
         // Write the Message String
         DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
         // Disable Forced Logging
-        ForceLogging = FALSE;
+        DeepLoggging = FALSE;
     }
     if (*Message) {
         FreePool (*Message);
@@ -409,7 +409,7 @@ DebugLog(
     }
 
     // Abort on higher log levels if not forcing
-    if (!ForceLogging && GlobalConfig.LogLevel > 0) {
+    if (!DeepLoggging && GlobalConfig.LogLevel > 0) {
       return;
     }
 

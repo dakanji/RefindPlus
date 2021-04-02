@@ -470,7 +470,7 @@ extern UINTN                VolumesCount;
 extern UINTN                PreBootVolumesCount;
 
 extern BOOLEAN              IsBoot;
-extern BOOLEAN              ForceLogging;
+extern BOOLEAN              DeepLoggging;
 extern BOOLEAN              TweakSysTable;
 extern BOOLEAN              DetectedDevices;
 

@@ -2133,14 +2133,14 @@ ScanVolumes (
         SelfVolRun = TRUE;
 
         #if REFIT_DEBUG > 0
-        ForceLogging = TRUE;
+        DeepLoggging = TRUE;
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
         MsgLog (
             "INFO: Self Volume:- '%s::%s'\n\n",
             SelfVolume->VolName, SelfGUID
         );
         MyFreePool (SelfGUID);
-        ForceLogging = FALSE;
+        DeepLoggging = FALSE;
         #endif
 
         return;

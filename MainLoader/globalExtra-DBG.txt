@@ -22,15 +22,15 @@ DebugLog (
 extern CHAR16 *gLogTemp;
 
 VOID
-DeepLog (
+DeepLoggger (
   IN  INTN     DebugMode,
   IN  INTN     level,
   IN  INTN     type,
   IN  CHAR16 **Message
 );
 
-// NB: gLogTemp is freed in DeepLog
+// NB: gLogTemp is freed in DeepLoggger
 #define LOG(level, type, ...) \
         gLogTemp = PoolPrint(__VA_ARGS__); \
-        DeepLog(REFIT_DEBUG, level, type, &gLogTemp);
+        DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp);
 #endif

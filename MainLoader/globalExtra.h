@@ -20,7 +20,7 @@ DebugLog (
 #endif
 
 VOID
-DeepLog (
+DeepLoggger (
   IN  INTN     DebugMode,
   IN  INTN     level,
   IN  INTN     type,
@@ -29,4 +29,4 @@ DeepLog (
 
 #define LOG(level, type, ...) \
         gLogTemp = PoolPrint(__VA_ARGS__); \
-        DeepLog(REFIT_DEBUG, level, type, &gLogTemp);
+        DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp);
