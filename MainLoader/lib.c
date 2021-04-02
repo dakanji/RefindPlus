@@ -1775,7 +1775,6 @@ SetPreBootNames (
 
     if (NameSwap) {
         MyFreePool (PreBootVolumes[PreBootIndex]->VolName);
-        PreBootVolumes[PreBootIndex]->VolName = AllocateZeroPool (256 * sizeof (UINT16));
         PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
     }
 
