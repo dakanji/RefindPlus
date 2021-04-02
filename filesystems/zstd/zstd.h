@@ -20,7 +20,7 @@
 /* ======   Dependency   ======*/
 
 
-/*-*****************************************************************************
+/******************************************************************************
  * Introduction
  *
  * zstd, short for Zstandard, is a fast lossless compression algorithm,
@@ -195,7 +195,7 @@ ZSTD_compressionParameters ZSTD_getCParams(int compressionLevel,
 ZSTD_parameters ZSTD_getParams(int compressionLevel,
 	unsigned long long estimatedSrcSize, size_t dictSize);
 
-/*-**************************
+/***************************
  * Streaming
  ***************************/
 
@@ -226,7 +226,7 @@ typedef struct ZSTD_outBuffer_s {
 } ZSTD_outBuffer;
 
 
-/*-*****************************************************************************
+/******************************************************************************
  * Streaming decompression - HowTo
  *
  * A ZSTD_DStream object is required to track streaming operations.
@@ -360,7 +360,7 @@ static const size_t ZSTD_frameHeaderSize_max = ZSTD_FRAMEHEADERSIZE_MAX;
 static const size_t ZSTD_skippableHeaderSize = 8;
 
 
-/*-*************************************
+/**************************************
  * Compressed size functions
  **************************************/
 
@@ -377,7 +377,7 @@ static const size_t ZSTD_skippableHeaderSize = 8;
  */
 size_t ZSTD_findFrameCompressedSize(const void *src, size_t srcSize);
 
-/*-*************************************
+/**************************************
  * Decompressed size functions
  **************************************/
 /**
@@ -408,7 +408,7 @@ typedef struct {
 size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src,
 	size_t srcSize);
 
-/*-*****************************************************************************
+/******************************************************************************
  * Block functions
  *
  * Block functions produce and decode raw zstd blocks, without frame metadata.

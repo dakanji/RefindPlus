@@ -3,7 +3,7 @@
  * fsw_iso9660.h - ISO9660 file system driver header.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without

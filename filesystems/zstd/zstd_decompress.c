@@ -26,7 +26,7 @@
 #define ZSTD_MAXWINDOWSIZE_DEFAULT ((1 << ZSTD_WINDOWLOG_MAX) + 1) /* defined within zstd.h */
 #endif
 
-/*-*******************************************************
+/********************************************************
 *  Dependencies
 *********************************************************/
 #include "fse.h"
@@ -41,7 +41,7 @@
 **********************************************************/
 static void ZSTD_copy4(void *dst, const void *src) { memcpy(dst, src, 4); }
 
-/*-*************************************************************
+/**************************************************************
 *   Context management
 ***************************************************************/
 typedef enum {
@@ -122,7 +122,7 @@ size_t ZSTD_decompressBegin(ZSTD_DCtx *dctx)
 	return 0;
 }
 
-/*-*************************************************************
+/**************************************************************
 *   Decompression section
 ***************************************************************/
 
@@ -1542,7 +1542,7 @@ static size_t ZSTD_decompressMultiFrame(ZSTD_DCtx *dctx, void *dst, size_t dstCa
 	return (BYTE *)dst - (BYTE *)dststart;
 }
 
-/*-**************************************
+/***************************************
 *   Advanced Streaming Decompression API
 *   Bufferless and synchronous
 ****************************************/

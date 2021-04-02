@@ -153,7 +153,7 @@ size_t FSE_buildDTable_wksp(FSE_DTable *dt, const short *normalizedCounter, unsi
 	return 0;
 }
 
-/*-*******************************************************
+/********************************************************
 *  Decompression (Byte symbols)
 *********************************************************/
 size_t FSE_buildDTable_rle(FSE_DTable *dt, BYTE symbolValue)
@@ -293,7 +293,7 @@ size_t FSE_decompress_wksp(void *dst, size_t dstCapacity, const void *cSrc, size
 	return FSE_decompress_usingDTable(dst, dstCapacity, ip, cSrcSize, dt); /* always return, even if it is an error code */
 }
 
-/*-**************************************************************
+/***************************************************************
 *  FSE NCount encoding-decoding
 ****************************************************************/
 size_t FSE_readNCount(short *normalizedCounter, unsigned *maxSVPtr, unsigned *tableLogPtr, const void *headerBuffer, size_t hbSize)

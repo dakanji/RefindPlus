@@ -40,16 +40,16 @@
 #ifndef FSE_H
 #define FSE_H
 
-/*-*****************************************
+/******************************************
 *  Dependencies
 ******************************************/
 
-/*-*****************************************
+/******************************************
 *  FSE_PUBLIC_API : control library symbols visibility
 ******************************************/
 #define FSE_PUBLIC_API
 
-/*------   Version   ------*/
+/* -----   Version   ------ */
 #define FSE_VERSION_MAJOR 0
 #define FSE_VERSION_MINOR 9
 #define FSE_VERSION_RELEASE 0
@@ -62,7 +62,7 @@
 #define FSE_VERSION_NUMBER (FSE_VERSION_MAJOR * 100 * 100 + FSE_VERSION_MINOR * 100 + FSE_VERSION_RELEASE)
 FSE_PUBLIC_API unsigned FSE_versionNumber(void); /**< library version number; to be used when checking dll version */
 
-/*-*****************************************
+/******************************************
 *  Tool functions
 ******************************************/
 FSE_PUBLIC_API size_t FSE_compressBound(size_t size); /* maximum compressed size */
@@ -70,7 +70,7 @@ FSE_PUBLIC_API size_t FSE_compressBound(size_t size); /* maximum compressed size
 /* Error Management */
 FSE_PUBLIC_API unsigned FSE_isError(size_t code); /* tells if a return value is an error code */
 
-/*-*****************************************
+/******************************************
 *  FSE detailed API
 ******************************************/
 /*!

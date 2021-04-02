@@ -3,7 +3,7 @@
  * fsw_core.c - Core file system wrapper abstraction layer code.
  */
 
-/*-
+/*
  * This code is based on:
  *
  * Copyright (c) 2006 Christoph Pfisterer

@@ -3,7 +3,7 @@
  * ext2 file system driver header.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * This program is free software; you can redistribute it and/or

@@ -3,7 +3,7 @@
  * Test program for the POSIX user space environment.
  */
 
-/*-
+/*
  * Copyright (c) 2012 Stefan Agner
  * Copyright (c) 2006 Christoph Pfisterer
  *

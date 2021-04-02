@@ -47,7 +47,7 @@
 *  these functions are defined into a .h to be included.
 */
 
-/*-****************************************
+/*****************************************
 *  Dependencies
 ******************************************/
 #include "error_private.h" /* error codes and messages */
@@ -61,7 +61,7 @@
 #define STREAM_ACCUMULATOR_MIN ((U32)(ZSTD_32bits() ? STREAM_ACCUMULATOR_MIN_32 : STREAM_ACCUMULATOR_MIN_64))
 
 
-/*-********************************************
+/*********************************************
 *  bitStream decoding API (read backward)
 **********************************************/
 typedef struct {
@@ -98,7 +98,7 @@ ZSTD_STATIC unsigned BIT_endOfDStream(const BIT_DStream_t *bitD);
 ZSTD_STATIC size_t BIT_readBitsFast(BIT_DStream_t *bitD, unsigned nbBits);
 /* faster, but works only if nbBits >= 1 */
 
-/*-**************************************************************
+/***************************************************************
 *  Internal functions
 ****************************************************************/
 ZSTD_STATIC unsigned BIT_highbit32(register U32 val) { return 31 - __builtin_clz(val); }
@@ -110,7 +110,7 @@ static const unsigned BIT_mask[] = {0,       1,       3,       7,	0xF,      0x1F
 
 
 
-/*-********************************************************
+/*********************************************************
 * bitStream decoding
 **********************************************************/
 /*! BIT_initDStream() :

@@ -3,7 +3,7 @@
  * ext4 file system on-disk structures.
  */
 
-/*-
+/*
  * Copyright (c) 2012 Stefan Agner
  * Portions Copyright (c) 2006 Christoph Pfisterer
  * Portions Copyright (c) 1991-2012 by various Linux kernel contributors

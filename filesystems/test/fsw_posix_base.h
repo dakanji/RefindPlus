@@ -3,7 +3,7 @@
  * Base definitions for the POSIX user space host environment.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without

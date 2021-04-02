@@ -57,9 +57,9 @@
 		enum { HUF_static_assert = 1 / (int)(!!(c)) }; \
 	} /* use only *after* variable declarations */
 
-/*-***************************/
+/****************************/
 /*  generic DTableDesc       */
-/*-***************************/
+/****************************/
 
 typedef struct {
 	BYTE maxTableLog;
@@ -75,9 +75,9 @@ static DTableDesc HUF_getDTableDesc(const HUF_DTable *table)
 	return dtd;
 }
 
-/*-***************************/
+/****************************/
 /*  single-symbol decoding   */
-/*-***************************/
+/****************************/
 
 typedef struct {
 	BYTE byte;

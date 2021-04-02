@@ -3,7 +3,7 @@
  * Core file system wrapper library functions.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  *
  * Redistribution and use in source and binary forms, with or without

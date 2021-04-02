@@ -3,7 +3,7 @@
  * ext4 file system driver header.
  */
 
-/*-
+/*
  * Copyright (c) 2012 Stefan Agner
  * Portions Copyright (c) 2006 Christoph Pfisterer
  *

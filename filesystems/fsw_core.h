@@ -3,7 +3,7 @@
  * Core file system wrapper abstraction layer header.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  * Portions Copyright (c) The Regents of the University of California.
  * Portions Copyright (c) UNIX System Laboratories, Inc.

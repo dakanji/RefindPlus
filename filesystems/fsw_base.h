@@ -3,7 +3,7 @@
  * Base definitions switch.
  */
 
-/*-
+/*
  * This code is based on:
  *
  * Copyright (c) 2006 Christoph Pfisterer

@@ -3,7 +3,7 @@
  * ReiserFS file system on-disk structures.
  */
 
-/*-
+/*
  * Copyright (c) 2006 Christoph Pfisterer
  * Portions Copyright (c) 1991-2006 by various Linux kernel contributors
  *

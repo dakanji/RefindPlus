@@ -25,7 +25,7 @@
  * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  */
 
-/*-
+/*
  * This code is based on:
  *
  * Copyright (c) 2006 Christoph Pfisterer

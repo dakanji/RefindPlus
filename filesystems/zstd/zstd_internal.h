@@ -17,13 +17,13 @@
 #ifndef ZSTD_CCOMMON_H_MODULE
 #define ZSTD_CCOMMON_H_MODULE
 
-/*-*******************************************************
+/********************************************************
 *  Compiler specifics
 *********************************************************/
 #define FORCE_INLINE static __always_inline
 #define FORCE_NOINLINE static /*noinline*/
 
-/*-*************************************
+/**************************************
 *  Dependencies
 ***************************************/
 #include "error_private.h"
@@ -31,7 +31,7 @@
 #include "xxhash.h"
 #include "zstd.h"
 
-/*-*************************************
+/**************************************
 *  shared macros
 ***************************************/
 #ifndef MIN
@@ -57,7 +57,7 @@
 		enum { ZSTD_static_assert = 1 / (int)(!!(c)) }; \
 	}
 
-/*-*************************************
+/**************************************
 *  Common constants
 ***************************************/
 #define ZSTD_OPT_NUM (1 << 12)
@@ -114,7 +114,7 @@ static const S16 OF_defaultNorm[MaxOff + 1] = {1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 
 #define OF_DEFAULTNORMLOG 5 /* for static allocation */
 static const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 
-/*-*******************************************
+/********************************************
 *  Shared functions to include for inlining
 *********************************************/
 ZSTD_STATIC void ZSTD_copy8(void *dst, const void *src) {

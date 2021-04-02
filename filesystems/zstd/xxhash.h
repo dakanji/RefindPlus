@@ -88,7 +88,7 @@
  */
 uint64_t xxh64(const void *input, size_t length, uint64_t seed);
 
-/*-****************************
+/*****************************
  * Streaming Hash Functions
  *****************************/
 
@@ -144,7 +144,7 @@ int xxh64_update(struct xxh64_state *state, const void *input, size_t length);
  */
 uint64_t xxh64_digest(const struct xxh64_state *state);
 
-/*-**************************
+/***************************
  * Utils
  ***************************/
 
