@@ -33,7 +33,7 @@ A clear and concise description of what you expected to happen.
 **Log and Config Files**
 Add debug log files and your config file to help with understanding your issue.
 
-Please upload debug log files at log level 0. If additional details are required, a request for a specific log level will be made but you can also upload debug log files at log level 4 **In Addition** to those at log level 0.
+Please upload debug log files at log level 0. If additional details are required, a request for a specific log level will be made but you can also upload debug log files at log level 3 **In Addition** to those at log level 0. Debug log files at log level 4 typically contain too much detail and should only be attached when requested.
 
 Kindly attach the files (you can rename as *.txt or zip them) as opposed to pasting the debug logs or config files directly.
 

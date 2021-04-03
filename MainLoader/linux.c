@@ -88,7 +88,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     Path          = FindPath(LoaderPath);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
+    LOG(4, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
     #endif
 
     // Add trailing backslash for root directory; necessary on some systems, but must

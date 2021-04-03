@@ -294,7 +294,7 @@ StartEFIImage (
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Employing Shim LoadImage() hack");
+            LOG(4, LOG_LINE_NORMAL, L"Employing Shim LoadImage() hack");
             #endif
 
             refit_call6_wrapper(

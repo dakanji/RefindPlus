@@ -536,7 +536,7 @@ EfivarGetRaw (
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(4, LOG_LINE_NORMAL,
             L"Getting EFI variable '%s' from Emulated NVRAM",
             VariableName
         );
@@ -575,7 +575,7 @@ EfivarGetRaw (
         !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(4, LOG_LINE_NORMAL,
             L"Getting EFI variable '%s' from Hardware NVRAM",
             VariableName
         );
@@ -686,7 +686,7 @@ EfivarSetRaw (
             GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(4, LOG_LINE_NORMAL,
                 L"Saving EFI variable '%s' to Emulated NVRAM",
                 VariableName
             );
@@ -718,7 +718,7 @@ EfivarSetRaw (
             !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
         ) {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(4, LOG_LINE_NORMAL,
                 L"Saving EFI variable '%s' to Hardware NVRAM",
                 VariableName
             );
@@ -1967,7 +1967,7 @@ ScanVolumes (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
+        LOG(3, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2387,7 +2387,7 @@ DirNextEntry (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL,
+                LOG(4, LOG_LINE_NORMAL,
                     L"Reallocating buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );

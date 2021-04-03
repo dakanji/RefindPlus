@@ -1524,7 +1524,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Read line from /etc/fstab holding %d tokens", TokenCount);
+                LOG(4, LOG_LINE_NORMAL, L"Read line from /etc/fstab holding %d tokens", TokenCount);
                 #endif
 
                 if (TokenCount > 2) {

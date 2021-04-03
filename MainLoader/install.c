@@ -239,7 +239,7 @@
      CHAR16              *NewName;
 
      #if REFIT_DEBUG > 0
-     LOG(3, LOG_LINE_NORMAL, L"Backing up '%s'", FileName);
+     LOG(4, LOG_LINE_NORMAL, L"Backing up '%s'", FileName);
      #endif
 
      if ((BaseDir == NULL) || (FileName == NULL))

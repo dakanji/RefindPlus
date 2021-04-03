@@ -2143,7 +2143,7 @@ ScanForBootloaders (
 
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(4, LOG_LINE_NORMAL,
                 L"Set Key '%d' to %s",
                 k, MainMenu.Entries[i]->Title
             );
@@ -2201,7 +2201,7 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     UINTN i = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL,
+    LOG(4, LOG_LINE_NORMAL,
         L"Checking validity of tool '%s' on '%s'",
         PathName,
         BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName
