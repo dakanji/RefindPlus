@@ -1,7 +1,8 @@
 name: 'Stale Standard Items'
 on:
+  workflow_dispatch:
   schedule:
-    - cron: '15 */4 * * *'
+    - cron: '15 20 * * *'
 
 jobs:
   stale:
@@ -18,6 +19,6 @@ jobs:
             Thank you for your contribution.
           days-before-stale: 21
           days-before-close: 7
-          exempt-assignees: dakanji
-          stale-issue-label: Stale
-          exempt-issue-labels: Parked
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Stale'
+          exempt-issue-labels: 'Parked'

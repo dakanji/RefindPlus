@@ -3,6 +3,7 @@
 name: 'Lock Threads'
 
 on:
+  workflow_dispatch:
   schedule:
   - cron: '30 18 * * *'
 
@@ -13,16 +14,16 @@ jobs:
     - uses: dessant/lock-threads@v2.0.1
       with:
         github-token: ${{ github.token }}
-        issue-lock-inactive-days: '7'
+        issue-lock-inactive-days: '9'
         issue-exclude-created-before: ''
         issue-exclude-labels: ''
         issue-lock-labels: ''
         issue-lock-comment: ''
-        issue-lock-reason: 'resolved'
-        pr-lock-inactive-days: '7'
+        issue-lock-reason: ''
+        pr-lock-inactive-days: '9'
         pr-exclude-created-before: ''
         pr-exclude-labels: ''
         pr-lock-labels: ''
         pr-lock-comment: ''
-        pr-lock-reason: 'resolved'
-        process-only: ''
+        pr-lock-reason: ''
+        process-only: 'issues'
