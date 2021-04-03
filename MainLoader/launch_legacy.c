@@ -1,6 +1,6 @@
 /*
  * MainLoader/launch_legacy.c
- * Functions related to BIOS/CSM/legacy booting
+ * Functions related to BIOS/CSM/Legacy booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
@@ -450,7 +450,7 @@ StartLegacyImageList (
 
     // close open file handles
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style BIOS/CSM/legacy loader");
+    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style BIOS/CSM/Legacy loader");
     #endif
 
     UninitRefitLib();
@@ -502,7 +502,7 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Starting Mac-style BIOS/CSM/legacy loader '%s'",
+        L"Starting Mac-style BIOS/CSM/Legacy loader '%s'",
         SelectionName
     );
     #endif
@@ -586,7 +586,7 @@ StartLegacyUEFI (
 ) {
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Launching UEFI-style BIOS/CSM/legacy OS '%s'",
+        L"Launching UEFI-style BIOS/CSM/Legacy OS '%s'",
         SelectionName
     );
     #endif
@@ -650,7 +650,7 @@ static LEGACY_ENTRY
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Adding BIOS/CSM/legacy entry for '%s'",
+        L"Adding BIOS/CSM/Legacy entry for '%s'",
         LegacyTitle
     );
     #endif
@@ -741,7 +741,7 @@ static LEGACY_ENTRY
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Adding UEFI-style BIOS/CSM/legacy entry for '%s'",
+        L"Adding UEFI-style BIOS/CSM/Legacy entry for '%s'",
         Entry->me.Title
     );
     #endif
@@ -811,7 +811,7 @@ ScanLegacyUEFI (
     BOOLEAN                   SearchingForUsb = FALSE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Scanning for a UEFI-style BIOS/CSM/legacy OS");
+    LOG(1, LOG_LINE_NORMAL, L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
     #endif
 
     InitializeListHead (&TempList);

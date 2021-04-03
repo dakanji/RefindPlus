@@ -286,13 +286,12 @@ SetupScreen (
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"UI scaling disabled ...maintaining icon sizes");
+                LOG(3, LOG_LINE_NORMAL, L"UI scaling disabled ...maintaining icon sizes");
                 MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Doubling icon sizes for HiDPI display");
                 if (ScreenH >= HIDPI_MIN) {
                     MsgLog ("    * HiDPI Monitor Detected ...");
                 }
@@ -303,12 +302,13 @@ SetupScreen (
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL, L"Maintain previously scaled icons");
+                    LOG(3, LOG_LINE_NORMAL, L"Maintain previously scaled icons on HiDPI display");
                     MsgLog ("Maintain Previously Scaled Icons)\n\n");
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
+                    LOG(3, LOG_LINE_NORMAL, L"Doubling icon sizes on HiDPI display");
                     MsgLog ("Scale Icons Up\n\n");
                     #endif
 
@@ -322,13 +322,14 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Maintaining icon sizes for LoDPI display");
+                LOG(3, LOG_LINE_NORMAL, L"Maintaining icon sizes on LoDPI display");
                 MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
                 #endif
             } // if
 
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Running Graphics Mode Switch");
                 MsgLog ("INFO: Running Graphics Mode Switch\n\n");
                 #endif
 
@@ -338,6 +339,7 @@ SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Loading Placeholder Display");
                 MsgLog ("INFO: Loading Placeholder Display\n\n");
                 #endif
             }
@@ -347,18 +349,18 @@ SetupScreen (
 
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
-                    LOG(4, LOG_LINE_NORMAL, L"Displayed placeholder");
+                    LOG(2, LOG_LINE_NORMAL, L"Displayed placeholder");
                     MsgLog ("INFO: Displayed Placeholder\n\n");
                 }
                 else {
-                    LOG(4, LOG_LINE_NORMAL, L"Switched to graphics mode");
+                    LOG(2, LOG_LINE_NORMAL, L"Switched to graphics screen mode");
                     MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
                 }
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Configured to start with screensaver");
+                LOG(1, LOG_LINE_NORMAL, L"Configured to start with screensaver");
                 MsgLog ("INFO: Changing to Screensaver Display\n");
                 MsgLog ("      Configured to Start with Screensaver\n\n");
                 #endif
@@ -371,6 +373,7 @@ SetupScreen (
     }
     else {
         #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"Invalid Screen Mode ... Switching to Text Mode");
         MsgLog ("WARN: Invalid Screen Mode\n");
         MsgLog ("      Switching to Text Mode\n\n");
         #endif

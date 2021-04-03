@@ -1486,7 +1486,7 @@ STATIC VOID AdjustDefaultSelection() {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with PreviousBoot values");
+    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with 'PreviousBoot' values");
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 

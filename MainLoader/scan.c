@@ -842,7 +842,7 @@ static LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"FOUND LOADER");
+        LOG(1, LOG_THREE_STAR_SEP, L"LOADER BEGIN");
         LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
         LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
         #endif
@@ -948,6 +948,11 @@ static LOADER_ENTRY * AddLoaderEntry (
         LOG(1, LOG_LINE_NORMAL, L"Unable to initialise loader entry in AddLoaderEntry()!");
         #endif
     }
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_SEP, L"LOADER FINISH");
+    LOG(1, LOG_LINE_BLANK_SEP, L"New Line");
+    #endif
 
     return (Entry);
 } // LOADER_ENTRY * AddLoaderEntry()

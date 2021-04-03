@@ -150,7 +150,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"'%s' is ASSUMED to be a valid loader",
+            L"'%s' is ASSUMED to be valid",
             FileName
         );
         #endif
@@ -170,7 +170,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"'%s' is NOT a valid loader",
+            L"'%s' is NOT valid",
             FileName
         );
         MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
@@ -193,7 +193,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"'%s' %s a valid loader",
+        L"'%s' %s valid",
         FileName,
         IsValid ? L"is" : L"is NOT"
     );
@@ -241,9 +241,6 @@ StartEFIImage (
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
     LOG(1, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
-    if (IsDriver) {
-        LOG(1, LOG_LINE_NORMAL, L"Note: %s is a driver", ImageTitle);
-    }
     #endif
 
     if (Verbose) {

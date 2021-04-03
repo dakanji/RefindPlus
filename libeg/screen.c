@@ -429,6 +429,7 @@ GopSetModeAndReconnectTextOut (
     );
 
     #if REFIT_DEBUG > 0
+    LOG(2, LOG_LINE_NORMAL, L"Switch to GOP Mode[%d] ...%r", ModeNumber, Status);
     MsgLog ("  - Switch to GOP Mode[%d] ...%r\n\n", ModeNumber, Status);
     #endif
 
@@ -569,6 +570,7 @@ egSetMaxResolution (
     }
 
     #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL, L"BestMode: GOP Mode[%d] @ %d x %d", BestMode, Width, Height);
     MsgLog ("  - BestMode: GOP Mode[%d] @ %d x %d", BestMode, Width, Height);
     #endif
 
@@ -577,6 +579,7 @@ egSetMaxResolution (
         Status = EFI_SUCCESS;
 
         #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Screen Resolution Already Set");
         MsgLog ("\n\n");
         MsgLog ("INFO: Screen Resolution Already Set\n\n");
         #endif
@@ -599,6 +602,7 @@ egSetMaxResolution (
             Status = egSetGOPMode (1);
 
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Could Not Set BestMode ...Using First Useable Mode");
             MsgLog ("** WARN: Could Not Set BestMode ...Using First Useable Mode\n\n");
             #endif
         }

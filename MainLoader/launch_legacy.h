@@ -1,6 +1,6 @@
 /*
  * MainLoader/launch_legacy.h
- * Functions related to BIOS/CSM/legacy booting
+ * Functions related to BIOS/CSM/Legacy booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.

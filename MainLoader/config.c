@@ -1234,7 +1234,11 @@ LOADER_ENTRY * AddStanzaEntries (
    // Parse the config file to add options for a single stanza, terminating when the token
    // is "}" or when the end of file is reached.
    #if REFIT_DEBUG > 0
-   LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
+   STATIC BOOLEAN FirstCall;
+   if (!FirstCall) {
+       LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
+   }
+   FirstCall = TRUE;
    #endif
 
    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {

@@ -28,6 +28,7 @@ extern  INT16  NowSecond;
 
 CHAR16  *gLogTemp       = NULL;
 
+BOOLEAN  TimeStamp      = TRUE;
 BOOLEAN  DeepLoggging   = FALSE;
 
 
@@ -296,10 +297,10 @@ VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
     EFI_FILE_INFO *Info = EfiLibFileInfo(LogFile);
     if (Info) {
       LogFile->SetPosition(LogFile, Info->FileSize);
-      // If we haven't had root before this write out whole log
+      // Write out whole log if we have not had root before this
       if (FirstTimeSave) {
-        Text = MemLogBuffer;
-        TextLen = MemLogLen;
+        Text          = MemLogBuffer;
+        TextLen       = MemLogLen;
         FirstTimeSave = FALSE;
       }
       // Write out this message
@@ -358,19 +359,27 @@ DeepLoggger (
         return;
     }
 
+    // Disable Timestamp
+    TimeStamp = FALSE;
+
     switch (type) {
         case LOG_LINE_SEPARATOR:
-            FinalMessage = PoolPrint (L"==========[ %s ]==========\n", *Message);
+            FinalMessage = PoolPrint (L"\n==============[  %s  ]==============\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint (L"----------[ %s\n", *Message);
+            FinalMessage = PoolPrint (L"\n--------------[  %s  ]--------------\n", *Message);
+            break;
+        case LOG_LINE_BLANK_SEP:
+            FinalMessage = StrDuplicate (L"\n");
             break;
         case LOG_THREE_STAR_SEP:
-            FinalMessage = PoolPrint (L"       ***[ %s\n", *Message);
+            FinalMessage = PoolPrint (L"\n           ***[  %s  ]***\n", *Message);
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
-            FinalMessage = PoolPrint (L"%s\n\n", *Message);
+            // Enable Timestamp
+            TimeStamp    = TRUE;
+            FinalMessage = PoolPrint (L"%s\n", *Message);
     } // switch
 
     if (FinalMessage) {
@@ -383,11 +392,9 @@ DeepLoggger (
         // Disable Forced Logging
         DeepLoggging = FALSE;
     }
-    if (*Message) {
-        FreePool (*Message);
-        *Message = NULL;
-    }
-    MyFreePool (FormatString);
+
+    MyFreePool (*Message);
+    MyFreePool (FinalMessage);
 #endif
 }
 
@@ -416,8 +423,10 @@ DebugLog(
 
     // Print message to log buffer
     VA_START(Marker, FormatString);
-    MemLogVA(TRUE, DebugMode, FormatString, Marker);
+    MemLogVA(TimeStamp, DebugMode, FormatString, Marker);
     VA_END(Marker);
+
+    TimeStamp = TRUE;
 #endif
 }
 

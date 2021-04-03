@@ -1198,7 +1198,7 @@ ScanVolumeBootcode (
 
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            LOG(1, LOG_LINE_NORMAL, L"Detected bootcode on volume below");
+            LOG(1, LOG_LINE_NORMAL, L"Detected Bootcode on Volume Below");
         }
         #endif
 
@@ -1988,7 +1988,7 @@ ScanVolumes (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Identified volume '%s' of type '%s'",
+            L"Identified Volume: '%s' of Type '%s'",
             Volume->VolName,
             FSTypeName (Volume->FSType)
         );
