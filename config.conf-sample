@@ -136,12 +136,12 @@
 #
 #disable_amfi
 
-# Supply APFS filesystem capability. When this option is active, RefindPlus loads
+# Supply APFS filesystem capability. When this option is activated, RefindPlus loads
 # Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# Mac OS version and this ensures that changes made by Apple to the drivers for different
-# Mac OS versions are accounted for as compared to loading a single APFS driver for every
-# Mac OS versions in use. This setting only applies to Mac OS and only functions if needed.
+# Mac OS version. This ensures that any changes made to APFS drivers for each specific
+# Mac OS version are accounted for, compared to one driver regardless of which specific
+# Mac OS version is installed. This setting only applies to Mac OS and works when needed.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
