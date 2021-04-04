@@ -1355,8 +1355,6 @@ ScanLoaderDir (
                 NewLoader = NewLoader->NextEntry;
             } // while
 
-            // DA-TAG: Removed 'NewLoader != NULL' condition as never met as
-            //         the "While" loop above only terminates when it is NULL
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
             }
