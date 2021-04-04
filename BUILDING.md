@@ -69,35 +69,6 @@ $ brew install qemu
 $ brew upgrade qemu
 ```
 
-## Prepare the Bespoke TianoCore EDK II (UDK2018) Environment
-### Fork the RefindPlusUDK Repository
-
-Navigate to `https://github.com/dakanji/RefindPlusUDK` and fork the repository
-
-### Clone the Forked RefindPlusUDK Repository
-In Terminal, create a `RefindPlus` folder under your `Documents` folder, `cd` to that directory and clone the "RefindPlus Ready" TianoCore EDK II (UDK2018) repository into an `edk2` folder:
-
-```
-$ mkdir ~/Documents/RefindPlus
-$ cd ~/Documents/RefindPlus
-$ git clone https://github.com/YOUR_GITHUB_USERNAME/RefindPlusUDK.git edk2
-$ cd ~/Documents/RefindPlus/edk2
-$ git checkout rudk
-$ git remote add upstream https://github.com/dakanji/RefindPlusUDK.git
-```
-
-**NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
-
-Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
-
-### Build Required BaseTools C Tool Binaries
-
-```
-$ cd ~/Documents/RefindPlus/edk2
-$ make -C BaseTools/Source/C
-```
-
-
 ## Prepare the RefindPlus Environment
 ### Fork the RefindPlus Repository
 
@@ -119,6 +90,27 @@ $ git remote add upstream https://github.com/dakanji/RefindPlus.git
 
 Your local `RefindPlus` repository will be under `Documents/RefindPlus/Working`
 
+
+## Prepare the Bespoke TianoCore EDK II (UDK2018) Environment
+### Fork the RefindPlusUDK Repository
+
+Navigate to `https://github.com/dakanji/RefindPlusUDK` and fork the repository
+
+### Clone the Forked RefindPlusUDK Repository
+In Terminal, create a `RefindPlus` folder under your `Documents` folder, `cd` to that directory and clone the "RefindPlus Ready" TianoCore EDK II (UDK2018) repository into an `edk2` folder:
+
+```
+$ mkdir ~/Documents/RefindPlus
+$ cd ~/Documents/RefindPlus
+$ git clone https://github.com/YOUR_GITHUB_USERNAME/RefindPlusUDK.git edk2
+$ cd ~/Documents/RefindPlus/edk2
+$ git checkout rudk
+$ git remote add upstream https://github.com/dakanji/RefindPlusUDK.git
+```
+
+**NB:** Replace `YOUR_GITHUB_USERNAME` above with your actual GitHub User Name.
+
+Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 
 ## Build RefindPlus
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
