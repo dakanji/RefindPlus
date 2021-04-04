@@ -1198,7 +1198,7 @@ ScanVolumeBootcode (
 
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            LOG(1, LOG_LINE_NORMAL, L"Detected Bootcode on Volume Below");
+            LOG(1, LOG_THREE_STAR_SEP, L"Found Legacy Boot Code on Volume Below");
         }
         #endif
 
@@ -1218,6 +1218,15 @@ ScanVolumeBootcode (
             if (MbrTableFound) {
                 Volume->MbrPartitionTable = AllocatePool (4 * 16);
                 CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
+
+                #if REFIT_DEBUG > 0
+                if (Volume->HasBootCode) {
+                    LOG(1, LOG_LINE_NORMAL, L"Also Found MBR Partition Table on Volume Below");
+                }
+                else {
+                    LOG(1, LOG_THREE_STAR_SEP, L"Found MBR Partition Table on Volume Below");
+                }
+                #endif
             }
         }
     }
