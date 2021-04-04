@@ -1267,13 +1267,17 @@ ScanLoaderDir (
     IN CHAR16       *Path,
     IN CHAR16       *Pattern
 ) {
-    EFI_STATUS              Status;
-    REFIT_DIR_ITER          DirIter;
+    EFI_STATUS               Status;
+    REFIT_DIR_ITER           DirIter;
     EFI_FILE_INFO           *DirEntry;
-    CHAR16                  *Message, *Extension, *FullName;
-    struct LOADER_LIST      *LoaderList  = NULL, *NewLoader;
-    LOADER_ENTRY            *FirstKernel = NULL, *LatestEntry = NULL;
-    BOOLEAN                 FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
+    CHAR16                  *Message;
+    CHAR16                  *Extension;
+    CHAR16                  *FullName;
+    struct LOADER_LIST      *NewLoader;
+    struct LOADER_LIST      *LoaderList  = NULL;
+    LOADER_ENTRY            *FirstKernel = NULL;
+    LOADER_ENTRY            *LatestEntry = NULL;
+    BOOLEAN                  FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
@@ -1284,103 +1288,106 @@ ScanLoaderDir (
         (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
         (!InSelfPath)) && (ShouldScan (Volume, Path))
     ) {
-       // look through contents of the directory
-       DirIterOpen (Volume->RootDir, Path, &DirIter);
+        // look through contents of the directory
+        DirIterOpen (Volume->RootDir, Path, &DirIter);
 
-       while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
-          Extension = FindExtension (DirEntry->FileName);
-          FullName  = StrDuplicate (Path);
+        while (DirIterNext (&DirIter, 2, Pattern, &DirEntry)) {
+            Extension = FindExtension (DirEntry->FileName);
+            FullName  = StrDuplicate (Path);
 
-          MergeStrings (&FullName, DirEntry->FileName, L'\\');
-          CleanUpPathNameSlashes (FullName);
+            MergeStrings (&FullName, DirEntry->FileName, L'\\');
+            CleanUpPathNameSlashes (FullName);
 
-          if (DirEntry->FileName[0] == '.' ||
-              MyStriCmp (Extension, L".icns") ||
-              MyStriCmp (Extension, L".png") ||
-              (MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) && (MyStriCmp (Path, L"EFI\\BOOT"))) ||
-              FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
-              IsSymbolicLink (Volume, FullName, DirEntry) || /* is symbolic link */
-              HasSignedCounterpart (Volume, FullName) || /* a file with same name plus ".efi.signed" is present */
-              FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
-              !IsValidLoader (Volume->RootDir, FullName)
-          ) {
-              continue;   // skip this
-          }
+            // IsSymbolicLink (Volume, FullName, DirEntry) = is symbolic link
+            // HasSignedCounterpart (Volume, FullName) = file with same name plus ".efi.signed" is present
+            if (DirEntry->FileName[0] == '.' ||
+                MyStriCmp (Extension, L".icns") ||
+                MyStriCmp (Extension, L".png") ||
+                (MyStriCmp (DirEntry->FileName, FALLBACK_BASENAME) &&
+                (MyStriCmp (Path, L"EFI\\BOOT"))) ||
+                FilenameIn (Volume, Path, DirEntry->FileName, SHELL_NAMES) ||
+                IsSymbolicLink (Volume, FullName, DirEntry) ||
+                HasSignedCounterpart (Volume, FullName) ||
+                FilenameIn (Volume, Path, DirEntry->FileName, GlobalConfig.DontScanFiles) ||
+                !IsValidLoader (Volume->RootDir, FullName)
+            ) {
+                // skip this
+                continue;
+            }
 
-          NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
-          if (NewLoader != NULL) {
-             NewLoader->FileName  = StrDuplicate (FullName);
-             NewLoader->TimeStamp = DirEntry->ModificationTime;
-             LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
+            NewLoader = AllocateZeroPool (sizeof (struct LOADER_LIST));
+            if (NewLoader != NULL) {
+                NewLoader->FileName  = StrDuplicate (FullName);
+                NewLoader->TimeStamp = DirEntry->ModificationTime;
+                LoaderList           = AddLoaderListEntry (LoaderList, NewLoader);
 
-             if (DuplicatesFallback (Volume, FullName)) {
-                 FoundFallbackDuplicate = TRUE;
-             }
-          } // if
+                if (DuplicatesFallback (Volume, FullName)) {
+                    FoundFallbackDuplicate = TRUE;
+                }
+            }
 
-          MyFreePool (Extension);
-          MyFreePool (FullName);
-       } // while
+            MyFreePool (Extension);
+            MyFreePool (FullName);
+        } // while
 
-       if (LoaderList != NULL) {
-           IsLinux   = FALSE;
-           NewLoader = LoaderList;
-           while (NewLoader != NULL) {
-               IsLinux = (
-                   StriSubCmp (L"bzImage", NewLoader->FileName) ||
-                   StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
-                   StriSubCmp (L"kernel", NewLoader->FileName)
-               );
-               if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
-                   AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
-               }
-               else {
-                   LatestEntry = AddLoaderEntry (
-                       NewLoader->FileName,
-                       NULL, Volume,
-                       !(IsLinux && GlobalConfig.FoldLinuxKernels)
-                   );
-                   if (IsLinux && (FirstKernel == NULL)) {
-                       FirstKernel = LatestEntry;
-                   }
-               }
-               NewLoader = NewLoader->NextEntry;
-           } // while
+        if (LoaderList != NULL) {
+            IsLinux   = FALSE;
+            NewLoader = LoaderList;
+            while (NewLoader != NULL) {
+                IsLinux = (
+                    StriSubCmp (L"bzImage", NewLoader->FileName) ||
+                    StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
+                    StriSubCmp (L"kernel", NewLoader->FileName)
+                );
 
-           // DA-TAG: NewLoader is always NULL here
-           //         While Loop above only terminates when it is NULL
-           //if (NewLoader != NULL) {
-           //   if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
-           //       AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
-           //   }
-           //}
+                if ((FirstKernel != NULL) && IsLinux && GlobalConfig.FoldLinuxKernels) {
+                    AddKernelToSubmenu (FirstKernel, NewLoader->FileName, Volume);
+                }
+                else {
+                    LatestEntry = AddLoaderEntry (
+                        NewLoader->FileName,
+                        NULL, Volume,
+                        !(IsLinux && GlobalConfig.FoldLinuxKernels)
+                    );
+                    if (IsLinux && (FirstKernel == NULL)) {
+                        FirstKernel = LatestEntry;
+                    }
+                }
+                NewLoader = NewLoader->NextEntry;
+            } // while
 
-           CleanUpLoaderList (LoaderList);
-       }
+            // DA-TAG: Removed 'NewLoader != NULL' condition as never met as
+            //         the "While" loop above only terminates when it is NULL
+            if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
+                AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
+            }
 
-       Status = DirIterClose (&DirIter);
-       // NOTE: EFI_INVALID_PARAMETER really is an error that should be reported;
-       // but I've gotten reports from users who are getting this error occasionally
-       // and I can't find anything wrong or reproduce the problem, so I'm putting
-       // it down to buggy EFI implementations and ignoring that particular error....
-       if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-          if (Path) {
-              Message = PoolPrint (
-                  L"While Scanning the '%s' Directory on '%s'",
-                  Path,
-                  Volume->VolName
-              );
-          }
-          else {
-               Message = PoolPrint (
-                   L"While Scanning the Root Directory on '%s'",
-                   Volume->VolName
-               );
-          }
+            CleanUpLoaderList (LoaderList);
+        }
 
-          CheckError (Status, Message);
-          MyFreePool (Message);
-       } // if (Status != EFI_NOT_FOUND)
+        Status = DirIterClose (&DirIter);
+        // NOTE: EFI_INVALID_PARAMETER really is an error that should be reported;
+        // but I've gotten reports from users who are getting this error occasionally
+        // and I can't find anything wrong or reproduce the problem, so I'm putting
+        // it down to buggy EFI implementations and ignoring that particular error.
+        if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
+            if (Path) {
+                Message = PoolPrint (
+                    L"While Scanning the '%s' Directory on '%s'",
+                    Path,
+                    Volume->VolName
+                );
+            }
+            else {
+                Message = PoolPrint (
+                    L"While Scanning the Root Directory on '%s'",
+                    Volume->VolName
+                );
+            }
+
+            CheckError (Status, Message);
+            MyFreePool (Message);
+        } // if Status != EFI_NOT_FOUND
     } // if not scanning a blacklisted directory
 
     #if REFIT_DEBUG > 0
