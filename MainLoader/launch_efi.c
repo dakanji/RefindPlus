@@ -142,7 +142,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
     CHAR8           Header[512];
-    UINTN           Size           = sizeof (Header);
+    UINTN           Size = sizeof (Header);
 
     if ((RootDir == NULL) || (FileName == NULL)) {
         // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
@@ -150,7 +150,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"'%s' is ASSUMED to be valid",
+            L"NOTE: '%s' is ASSUMED to be valid",
             FileName
         );
         #endif
@@ -159,10 +159,8 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     } // if
 
     Status = refit_call5_wrapper(
-        RootDir->Open,
-        RootDir,
-        &FileHandle,
-        FileName,
+        RootDir->Open, RootDir,
+        &FileHandle, FileName,
         EFI_FILE_MODE_READ,
         0
     );
@@ -170,7 +168,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"'%s' is NOT valid",
+            L"NOTE: '%s' is invalid!",
             FileName
         );
         MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
@@ -193,9 +191,9 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"'%s' %s valid",
+        L"NOTE: '%s' is %s",
         FileName,
-        IsValid ? L"is" : L"is NOT"
+        IsValid ? L"valid" : L"invalid!"
     );
     #endif
 #else
@@ -216,17 +214,17 @@ StartEFIImage (
     IN BOOLEAN       Verbose,
     IN BOOLEAN       IsDriver
 ) {
-    EFI_STATUS              Status;
-    EFI_STATUS              ReturnStatus;
-    EFI_HANDLE              ChildImageHandle  = NULL;
-    EFI_HANDLE              ChildImageHandle2 = NULL;
-    EFI_DEVICE_PATH         *DevicePath       = NULL;
-    EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    EFI_GUID                SystemdGuid       = SYSTEMD_GUID_VALUE;
-    CHAR16                  *FullLoadOptions  = NULL;
-    CHAR16                  *ShowScreenStr    = NULL;
-    CHAR16                  *ErrorInfo        = NULL;
-    CHAR16                  *EspGUID          = NULL;
+    EFI_STATUS         Status;
+    EFI_STATUS         ReturnStatus;
+    EFI_HANDLE         ChildImageHandle  = NULL;
+    EFI_HANDLE         ChildImageHandle2 = NULL;
+    EFI_DEVICE_PATH   *DevicePath        = NULL;
+    EFI_LOADED_IMAGE  *ChildLoadedImage  = NULL;
+    CHAR16            *FullLoadOptions   = NULL;
+    CHAR16            *ShowScreenStr     = NULL;
+    CHAR16            *ErrorInfo         = NULL;
+    CHAR16            *EspGUID           = NULL;
+    EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
 
     // set load options
     if (LoadOptions != NULL) {

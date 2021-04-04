@@ -842,7 +842,7 @@ static LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"LOADER BEGIN");
+        LOG(1, LOG_THREE_STAR_SEP, L"PROCESS LOADER: START");
         LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
         LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
         #endif
@@ -950,8 +950,7 @@ static LOADER_ENTRY * AddLoaderEntry (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"LOADER FINISH");
-    LOG(1, LOG_LINE_BLANK_SEP, L"New Line");
+    LOG(1, LOG_THREE_STAR_END, L"PROCESS LOADER: ENDED");
     #endif
 
     return (Entry);
@@ -2341,19 +2340,24 @@ static BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
-    CHAR16           *FileName = NULL;
-    CHAR16           *VolName = NULL;
+    UINTN             i;
+    UINTN             j;
+    UINTN             VolumeIndex;
+    CHAR8            *ItemBuffer = 0;
+    CHAR16           *ToolName   = NULL;
+    CHAR16           *FileName   = NULL;
+    CHAR16           *VolName    = NULL;
     CHAR16           *MokLocations;
     CHAR16           *Description;
+    UINT64            osind;
+    UINT32            CsrValue;
+    BOOLEAN           FoundTool;
     REFIT_MENU_ENTRY *TempMenuEntry;
-    UINTN            i;
-    UINTN            j;
-    UINTN            VolumeIndex;
-    UINT64           osind;
-    CHAR8            *ItemBuffer = 0;
-    UINT32           CsrValue;
-    BOOLEAN          FoundTool;
-    CHAR16           *ToolName = NULL;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *ToolStr = NULL;
+    #endif
+
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Tools");
@@ -2395,7 +2399,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_FIRMWARE:
-                ToolName = StrDuplicate (L"Firmware");
+                ToolName = StrDuplicate (L"Reboot to Firmware");
                 break;
 
             case TAG_SHELL:
@@ -2474,14 +2478,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryPreCleanNvram);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Clean NVRAM tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2490,14 +2493,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryPreBootKicker);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Show Bootscreen tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2506,14 +2508,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryShutdown);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Shutdown tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2522,14 +2523,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryReset);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Show Reboot tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2538,14 +2538,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryAbout);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Info/About tag");
-                #endif
-
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2554,14 +2553,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryExit);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_EXIT);
 
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Adding Exit tag");
-                #endif
-
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s' Tool\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2572,22 +2570,21 @@ VOID ScanForTools (VOID) {
                     TempMenuEntry        = CopyMenuEntry (&MenuEntryHiddenTags);
                     TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
 
-                    #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL, L"Adding Hidden tag");
-                    #endif
-
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - Added '%s' Tool\n", ToolName);
+                    ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                    LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                    MsgLog ("              - %s\n", ToolStr);
+                    MyFreePool (ToolStr);
                     #endif
                 }
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2604,14 +2601,13 @@ VOID ScanForTools (VOID) {
                         TempMenuEntry        = CopyMenuEntry (&MenuEntryFirmware);
                         TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
 
-                        #if REFIT_DEBUG > 0
-                        LOG(2, LOG_LINE_NORMAL, L"Adding Reboot-to-Firmware tag");
-                        #endif
-
                         AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
-                        MsgLog ("              - Added '%s' Tool\n", ToolName);
+                        ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                        LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                        MsgLog ("              - %s\n", ToolStr);
+                        MyFreePool (ToolStr);
                         #endif
                     } // if
                     MyFreePool (ItemBuffer);
@@ -2624,11 +2620,11 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2655,7 +2651,10 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                        LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                        MsgLog ("              - %s\n", ToolStr);
+                        MyFreePool (ToolStr);
                         #endif
                     } // if
                 MyFreePool (FileName);
@@ -2663,11 +2662,11 @@ VOID ScanForTools (VOID) {
 
                 ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2694,18 +2693,21 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                        LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                        MsgLog ("              - %s\n", ToolStr);
+                        MyFreePool (ToolStr);
                         #endif
                     } // if
 
                     MyFreePool (FileName);
                 } // while
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2732,18 +2734,21 @@ VOID ScanForTools (VOID) {
                         );
 
 
-                     #if REFIT_DEBUG > 0
-                     MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
-                     #endif
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                        LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                        MsgLog ("              - %s\n", ToolStr);
+                        MyFreePool (ToolStr);
+                        #endif
                   } // if
                     MyFreePool (FileName);
                 } // while
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2769,18 +2774,21 @@ VOID ScanForTools (VOID) {
                             FALSE
                         );
 
-                     #if REFIT_DEBUG > 0
-                     MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
-                     #endif
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                        LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                        MsgLog ("              - %s\n", ToolStr);
+                        MyFreePool (ToolStr);
+                        #endif
                     } // if
                     MyFreePool (FileName);
                 } // while
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2816,18 +2824,21 @@ VOID ScanForTools (VOID) {
                                 );
 
                                 #if REFIT_DEBUG > 0
-                                MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
+                                ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                                MsgLog ("              - %s\n", ToolStr);
+                                MyFreePool (ToolStr);
                                 #endif
                             } // if
                         } // if
                     } // while
                 } // for
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2866,9 +2877,12 @@ VOID ScanForTools (VOID) {
 
                             MyFreePool (Description);
 
-                             #if REFIT_DEBUG > 0
-                             MsgLog ("              - Added %s:- '%s'\n", ToolName, FileName);
-                             #endif
+                            #if REFIT_DEBUG > 0
+                            ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                            LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                            MsgLog ("              - %s\n", ToolStr);
+                            MyFreePool (ToolStr);
+                            #endif
                         } // if
                     } // for
 
@@ -2876,11 +2890,11 @@ VOID ScanForTools (VOID) {
                     MyFreePool (VolName);
                 } // while
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2892,11 +2906,12 @@ VOID ScanForTools (VOID) {
                     BUILTIN_ICON_TOOL_MOK_TOOL
                 );
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
+
                 break;
 
             case TAG_FWUPDATE_TOOL:
@@ -2907,11 +2922,12 @@ VOID ScanForTools (VOID) {
                     BUILTIN_ICON_TOOL_FWUPDATE
                 );
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
+
                 break;
 
             case TAG_CSR_ROTATE:
@@ -2920,22 +2936,21 @@ VOID ScanForTools (VOID) {
                     TempMenuEntry        = CopyMenuEntry (&MenuEntryRotateCsr);
                     TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
 
-                    #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Adding CSR Rotate tag");
-                    #endif
-
                     AddMenuEntry (&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("              - Added '%s' Tool\n", ToolName);
+                    ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                    LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                    MsgLog ("              - %s\n", ToolStr);
+                    MyFreePool (ToolStr);
                     #endif
                 } // if
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
 
                 break;
 
@@ -2943,14 +2958,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryInstall);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
 
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Adding Install tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s'\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2959,14 +2973,13 @@ VOID ScanForTools (VOID) {
                 TempMenuEntry        = CopyMenuEntry (&MenuEntryBootorder);
                 TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
 
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Adding Boot Order tag");
-                #endif
-
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("              - Added '%s'\n", ToolName);
+                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
+                MsgLog ("              - %s\n", ToolStr);
+                MyFreePool (ToolStr);
                 #endif
 
                 break;
@@ -2979,11 +2992,12 @@ VOID ScanForTools (VOID) {
                     BUILTIN_ICON_TOOL_MEMTEST
                 );
 
+                #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
                     MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
-                    #endif
                 }
+                #endif
+
                 break;
         } // switch()
     } // for

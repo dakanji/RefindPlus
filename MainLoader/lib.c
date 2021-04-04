@@ -464,7 +464,7 @@ FindVarsDir (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Create a 'vars' directory on the filesystem to hold variables ...%r",
+            L"Locate/Create a 'vars' directory on the filesystem to hold variables ...%r",
             Status
         );
         #endif
@@ -493,14 +493,9 @@ FindVarsDir (
 
                 #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL,
-                    L"Create a 'refind-vars' directory on the ESP to hold variables ...%r",
+                    L"Locate/Create a 'refind-vars' directory on the ESP to hold variables ...%r",
                     Status
                 );
-                if (EFI_ERROR (Status)) {
-                    LOG(1, LOG_LINE_NORMAL,
-                        L"Could not create a 'refind-vars' directory on the ESP"
-                    );
-                }
                 #endif
             }
 
@@ -1217,10 +1212,10 @@ ScanVolumeBootcode (
 
                     #if REFIT_DEBUG > 0
                     if (Volume->HasBootCode) {
-                        LOG(1, LOG_LINE_NORMAL, L"Also Found MBR Partition Table on Volume Below");
+                        LOG(4, LOG_LINE_NORMAL, L"Also Found MBR Partition Table on Volume Below");
                     }
                     else {
-                        LOG(1, LOG_THREE_STAR_SEP, L"Found MBR Partition Table on Volume Below");
+                        LOG(4, LOG_THREE_STAR_SEP, L"Found MBR Partition Table on Volume Below");
                     }
                     #endif
                 }
@@ -1952,13 +1947,16 @@ ScanVolumes (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Found handles for %d volumes", HandleCount);
+    LOG(2, LOG_LINE_NORMAL,
+        L"Found handles for %d volumes",
+        HandleCount
+    );
     #endif
 
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"ERROR: %r While Allocating UuidList", Status);
+        LOG(1, LOG_LINE_THIN_SEP, L"ERROR: %r While Allocating UuidList", Status);
 
         Status = EFI_BUFFER_TOO_SMALL;
         MsgLog ("** ERROR: %r While Allocating UuidList\n\n", Status);
@@ -1993,9 +1991,9 @@ ScanVolumes (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Identified Volume: '%s' of Type '%s'",
-            Volume->VolName,
-            FSTypeName (Volume->FSType)
+            L"Identified Volume: Type = '%s' ... Name = '%s'",
+            FSTypeName (Volume->FSType),
+            Volume->VolName
         );
         #endif
 
@@ -2268,7 +2266,7 @@ ScanVolumes (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Identified %d Volumes", VolumesCount);
+    LOG(1, LOG_THREE_STAR_SEP, L"Identified %d Volumes", VolumesCount);
     #endif
 } // VOID ScanVolumes()
 

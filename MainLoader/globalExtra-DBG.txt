@@ -1,10 +1,10 @@
 #define REFIT_DEBUG (1)
 
-#define LOG_LINE_BLANK_SEP   0
 #define LOG_LINE_NORMAL      1
 #define LOG_LINE_SEPARATOR   2
 #define LOG_LINE_THIN_SEP    3
 #define LOG_THREE_STAR_SEP   4
+#define LOG_THREE_STAR_END   5
 
 VOID
 DebugLog (

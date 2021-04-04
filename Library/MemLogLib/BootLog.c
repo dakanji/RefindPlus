@@ -364,16 +364,16 @@ DeepLoggger (
 
     switch (type) {
         case LOG_LINE_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n==============[  %s  ]==============\n", *Message);
+            FinalMessage = PoolPrint (L"\n=================[ %s ]=================\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint (L"\n--------------[  %s  ]--------------\n", *Message);
-            break;
-        case LOG_LINE_BLANK_SEP:
-            FinalMessage = StrDuplicate (L"\n");
+            FinalMessage = PoolPrint (L"\n-----------------[ %s ]-----------------\n", *Message);
             break;
         case LOG_THREE_STAR_SEP:
-            FinalMessage = PoolPrint (L"\n           ***[  %s  ]***\n", *Message);
+            FinalMessage = PoolPrint (L"\n              ***[ %s ]***\n", *Message);
+            break;
+        case LOG_THREE_STAR_END:
+            FinalMessage = PoolPrint (L"              ***[ %s ]***\n\n", *Message);
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors

@@ -111,7 +111,7 @@ InitScreen (
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Have graphics mode; setting screen size");
+        LOG(2, LOG_LINE_NORMAL, L"Graphics mode detected; getting screen size");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -165,7 +165,6 @@ SetupScreen (
     STATIC BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_THIN_SEP, L"Setting Screen Resolution and Mode");
     MsgLog ("Setup Screen...\n");
     #endif
 
