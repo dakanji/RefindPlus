@@ -823,7 +823,7 @@ CheckError (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, Temp);
+    LOG(1, LOG_THREE_STAR_SEP, Temp);
     #endif
 
     MyFreePool (Temp);
