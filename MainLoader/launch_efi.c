@@ -221,7 +221,6 @@ StartEFIImage (
     EFI_DEVICE_PATH   *DevicePath        = NULL;
     EFI_LOADED_IMAGE  *ChildLoadedImage  = NULL;
     CHAR16            *FullLoadOptions   = NULL;
-    CHAR16            *ShowScreenStr     = NULL;
     CHAR16            *ErrorInfo         = NULL;
     CHAR16            *EspGUID           = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
@@ -249,12 +248,13 @@ StartEFIImage (
         );
     }
 
-    // load the image into memory
-    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
-    // Some EFIs crash if attempting to load driver for invalid architecture, so
-    // protect for this condition; but sometimes Volume comes back NULL, so provide
-    // an exception. (TODO: Handle this special condition better.)
-    if (IsValidLoader(Volume->RootDir, Filename)) {
+    if (!Volume) {
+        ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
+        // Some EFIs crash if attempting to load driver for invalid architecture, so
+        // protect for this condition; but sometimes Volume comes back NULL, so provide
+        // an exception. (TODO: Handle this special condition better.)
+    }
+    else if (IsValidLoader(Volume->RootDir, Filename)) {
         DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
         // NOTE: Commented-out line below could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
@@ -304,24 +304,7 @@ StartEFIImage (
         }
     }
     else {
-        SwitchToText (FALSE);
-
-        ShowScreenStr = PoolPrint (L"Invalid Loader File:- '%s'", ImageTitle);
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-        MyFreePool (ShowScreenStr);
-
-        PauseSeconds(3);
-        SwitchToGraphics();
-
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Invalid loader file!");
-        #endif
-
-        ReturnStatus = EFI_LOAD_ERROR;
+        ReturnStatus = Status = EFI_LOAD_ERROR;
     }
 
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
