@@ -1515,16 +1515,19 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     BOOLEAN           ScanFallbackLoader = TRUE;
     BOOLEAN           FoundBRBackup      = FALSE;
 
-    if (MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL &&
-        GlobalConfig.SyncAPFS
+    if (!Volume) {
+        return;
+    }
+
+    if (GlobalConfig.SyncAPFS &&
+        MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
     ) {
         return;
     }
 
-    if ((Volume) &&
-        (Volume->RootDir != NULL) &&
-        (Volume->VolName != NULL) &&
-        (Volume->IsReadable)
+    if (Volume->RootDir != NULL &&
+        Volume->VolName != NULL &&
+        Volume->IsReadable
     ) {
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
