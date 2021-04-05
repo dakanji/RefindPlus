@@ -635,9 +635,6 @@ EfivarGetRaw (
             if (BufferSize) {
                 *VariableSize = BufferSize;
             }
-            else {
-                *VariableSize = 0;
-            }
         }
     }
     else {
@@ -675,7 +672,7 @@ EfivarSetRaw (
 
     if ((EFI_ERROR (OldStatus)) ||
         (VariableSize != OldSize) ||
-        (CompareMem (VariableData, OldBuf, VariableSize) != 0)
+        ((OldBuf) && (CompareMem (VariableData, OldBuf, VariableSize) != 0))
     ) {
         if (!GlobalConfig.UseNvram &&
             GuidsAreEqual (VendorGUID, &RefindPlusGuid)
@@ -742,9 +739,7 @@ EfivarSetRaw (
         }
     }
 
-    if (OldStatus == EFI_SUCCESS) {
-        MyFreePool (OldBuf);
-    }
+    MyFreePool (OldBuf);
 
     return Status;
 } // EFI_STATUS EfivarSetRaw ()

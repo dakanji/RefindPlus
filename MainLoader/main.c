@@ -244,56 +244,6 @@ extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 // misc functions
 //
 
-// Extends RefindPlus' EfivarSetRaw function
-STATIC
-EFI_STATUS
-EfivarSetRawEx (
-    EFI_GUID  *vendor,
-    CHAR16    *name,
-    CHAR8     *buf,
-    UINTN     size,
-    BOOLEAN   persistent
-) {
-    UINT32      flags;
-    CHAR8       *OldBuf;
-    UINTN       OldSize;
-    EFI_STATUS  Status   = EFI_ALREADY_STARTED;
-    EFI_STATUS  OldStatus;
-
-    OldStatus = EfivarGetRaw (vendor, name, &OldBuf, &OldSize);
-    if ((EFI_ERROR (OldStatus)) ||
-        (size != OldSize) ||
-        (CompareMem (buf, OldBuf, size) != 0)
-    ) {
-        if (!GlobalConfig.UseNvram && GuidsAreEqual (vendor, &RefindPlusGuid)) {
-            Status = FindVarsDir();
-            if (Status == EFI_SUCCESS) {
-                Status = egSaveFile (gVarsDir, name, (UINT8 *) buf, size);
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("** WARN: Could Not Write '%s' to Emulated NVRAM\n", name);
-                MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
-                #endif
-            }
-
-            return Status;
-        }
-
-        if (GlobalConfig.UseNvram || !GuidsAreEqual (vendor, &RefindPlusGuid)) {
-            flags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
-            if (persistent) {
-                flags |= EFI_VARIABLE_NON_VOLATILE;
-            }
-
-            Status = AltSetVariable (name, vendor, flags, size, buf);
-        }
-    }
-
-    return Status;
-} // EFI_STATUS EfivarSetRawEx()
-
-
 STATIC
 EFI_STATUS
 EFIAPI
@@ -339,7 +289,7 @@ gRTSetVariableEx (
     );
 
     if (!BlockCert && !BlockPRNG) {
-        Status = EfivarSetRawEx (
+        Status = EfivarSetRaw (
             VendorGuid,
             VariableName,
             (CHAR8 *) &Data,
