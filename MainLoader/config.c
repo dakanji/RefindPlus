@@ -1500,9 +1500,9 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
 ) {
     EFI_STATUS    Status;
     UINTN         TokenCount, i;
-    CHAR16       *Root;
-    CHAR16       *Line;
     CHAR16      **TokenList;
+    CHAR16       *Line;
+    CHAR16       *Root    = NULL;
     REFIT_FILE   *Options = NULL;
     REFIT_FILE   *Fstab   = NULL;
 
@@ -1532,8 +1532,6 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 #endif
 
                 if (TokenCount > 2) {
-                    Root[0] = '\0';
-
                     if (StrCmp (TokenList[1], L"\\") == 0) {
                         Root = PoolPrint (L"%s", TokenList[0]);
                     }
@@ -1557,7 +1555,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                         MyFreePool (Line);
 
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-                    } // if Root && Root[0]
+                    } // if Root
 
                     MyFreePool (Root);
                 } // if
