@@ -1,3 +1,7 @@
+0.13.2.AB (Pre-Release):
+- Pending
+
+
 0.13.2.AA (06 Apr 2021):
 - Syncs with Upstream Post v0.13.2 Updates
   * Minimises Reading of 'HiddenTools' Variable
@@ -15,7 +19,7 @@
   * Users should change earlier versions of these drivers for current ones
   * Copies available after building RefindPlus
   * The versions available upstream after the v0.13.1 releases were also improved
-  * Additional improvements made the these drivers in ReFindPlus as well as to the NTFS driver 
+  * Additional improvements made to these drivers as well as to the NTFS driver in RefindPlus
 - Fixes a bug that corrupted the ConsoleOut handle on booting EFI Loaders when running GPUs with Mac EFI
   * This bug was introduced in v0.12.0.AN (Commit 8d5e4e3)
 - Fixes a bug that caused the option to return from folded Linux kernel submenus not to appear.
@@ -48,7 +52,6 @@
   * 'set_mac_boot_args' to 'set_boot_args'
   * 'protect_mac_nvram' to 'protect_nvram'
   * 'reinforce_apfs' to 'sync_apfs'
-  * 'reinstall_gop' to 'reload_gop'
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
 - Adds "active_csr" config token to allow implementing a CSR policy
@@ -61,7 +64,7 @@
 - Incoporates a Variant of the Upstream Logging
   * Combines an equivalent of the upstream logging feature with the existing logging.
   * The previously disabled "log_level" configuration token can now take a numeric log level
-    (0 to 4), with levels 1 to 3 meaning increasing levels of logging.
+    (0 to 4), with levels 1 to 4 giving increasing levels of detail.
   * Different to the upstream implementation, this feature is only available on DEBUG builds and as such,
     Level 0 does not disable the feature but activates the original logging form (logs some unique items).
 
