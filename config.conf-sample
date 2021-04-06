@@ -59,24 +59,21 @@
 #
 #provide_console_gop
 
-# When GOP drivers, which are UEFI 2.x drivers, are implemented in complinace with
+# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
 # mandate that on installation, compliant GOP drivers should confirm devices are
 # UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
 # do not activate on Classic MacPros for instance, as these are not actually
-# UEFI 2.x devices but EFI 1.x devices to which Apple has added a chunk of, but
-# not all of, the UEFI 2.x capabilities. When this token is activated, RefindPlus
-# will temporarily amend the device EFI Revision to UEFI 2.x, emulate the UEFI 2.x
-# CreateEventEx capability and attempt reinstalling a copy of the GPU's Option ROM
-# whenever it detects that GOP is not available. RefindPlus will revert the changes
-# made after the attempted reinstallation. This process allows running some modern
-# GPUs, notably from Nvidia, on legacy computers such as Classic MacPros when they
-# would otherwise fail to work. This token should be deactivated when using GPUs
-# with UGA graphics mode as they do not benefit from this feature.
+# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
+# all of, the UEFI 2.x capabilities. When this token is active, RefindPlus
+# will temporarily amend the device's EFI Revision to UEFI 2.x and attempt
+# reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
+# is not available. The changes are reverted afterwards and allow running
+# modern GPUs on some legacy units when they would otherwise fail to work.
 #
 # Inactive when commented out (Does not reinstall GOP)
 #
-#reinstall_gop
+#reload_gop
 
 # Use a built-in GOP renderer which may provide better performance
 # and fix rendering issues on some GPU/firmware combinations such as
@@ -140,8 +137,8 @@
 # Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version. This ensures that any changes made to APFS drivers for each specific
-# Mac OS version are accounted for, compared to one driver regardless of which specific
-# Mac OS version is installed. This setting only applies to Mac OS and works when needed.
+# Mac OS version are accomodated, compared to using one driver no matter which specific
+# Mac OS version is being loaded. This setting only applies to Mac OS and only as needed.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)

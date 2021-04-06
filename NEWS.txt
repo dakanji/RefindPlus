@@ -31,6 +31,7 @@
   * 'set_mac_boot_args' to 'set_boot_args'
   * 'protect_mac_nvram' to 'protect_nvram'
   * 'reinforce_apfs' to 'sync_apfs'
+  * 'reinstall_gop' to 'reload_gop'
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
 - Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers

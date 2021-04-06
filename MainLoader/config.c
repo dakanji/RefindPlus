@@ -1041,8 +1041,8 @@ ReadConfig (
         else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
            GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"reinstall_gop")) {
-           GlobalConfig.ReinstallGOP = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"reload_gop")) {
+           GlobalConfig.ReloadGOP = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"direct_gop_renderer")) {
            GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);

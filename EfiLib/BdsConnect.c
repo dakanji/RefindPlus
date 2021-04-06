@@ -671,7 +671,7 @@ BdsLibConnectAllDriversToAllControllers (
     EFI_STATUS Status;
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
-    if (GlobalConfig.ReinstallGOP) {
+    if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
             ReLoaded = TRUE;
             Status   = ApplyGOPFix();
