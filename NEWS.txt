@@ -1,4 +1,4 @@
-0.13.2.AA (PreRelease):
+0.13.2.AA (06 Apr 2021):
 - Syncs with Upstream Post v0.13.2 Updates
   * Minimises Reading of 'HiddenTools' Variable
   * Fixes Menu Keystroke Event
@@ -9,13 +9,30 @@
   * Identifies JFS volumes if a third-party JFS driver is installed
   * Improves separation of filesystem name vs. partition name internally
   * Applies extensive memory management improvements
+- Fixes Ignoring the Upstream 'max' Resolution Setting
+  * The setting was previously not ignored as was intended
+- Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers
+  * Users should change earlier versions of these drivers for current ones
+  * Copies available after building RefindPlus
+  * The versions available upstream after the v0.13.1 releases were also improved
+  * Additional improvements made the these drivers in ReFindPlus as well as to the NTFS driver 
+- Fixes a bug that corrupted the ConsoleOut handle on booting EFI Loaders when running GPUs with Mac EFI
+  * This bug was introduced in v0.12.0.AN (Commit 8d5e4e3)
+- Fixes a bug that caused the option to return from folded Linux kernel submenus not to appear.
+  * This bug was introduced in Upstream v0.9.0
+- Fixes Repeated Icon Scaling on HiDPI Monitors
+  * Icons on HiDPI monitors were repeatedly scaled up on each return to the main screen from external screens
+  * This bug was introduced in Upstream v0.10.3
+- Fixes Multiple Code Quality Issues
+  * Fixes several issues identified by static analysis of the code base
+  * Multiple issues of undetermined provenance and age
+- Corrects Default Timeout Setting
+  * Was previously set to 20 seconds and not disabled as documented
 - Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders such as OpenCore
 - Improves APFS Remapping
   * Previously failed when using the 'ReScanAll' feature or when not running on Apple Firmware
   * Improves volume filtering
-- Fixes Ignoring the Upstream 'max' Resolution Setting
-  * The setting was previously not ignored as was intended
 - Improves Device Handle Connection
   * Now always runs the connection process a minimum of two (2) times
     This is because several links are only revealed after a first pass
@@ -34,16 +51,6 @@
   * 'reinstall_gop' to 'reload_gop'
 - Implements Upstream 'firmware_bootnum' manual stanzas (Skipped in v0.13.1.AA)
   * Misc fixes appear to have resolved previously experienced issues
-- Fixes Potential Memory Corruption Issues in the Ext2, Ext4 and HFS Drivers
-  * Fixes also implemented upstream
-  * Users should change earlier versions of these drivers for current ones
-  * Copies available from upstream post v0.13.1 releases or after building RefindPlus
-- Applies Multiple Code Quality Fixes
-  * Fixes several issues identified by static analysis of the code base
-- Fixes Default Timeout Setting
-  * Was previously set to 20 seconds and not disabled as documented
-- Fixes Repeated Icon Scaling on HiDPI Monitors
-  * Icons on HiDPI monitors were repeatedly scaled up on each return to the main screen from external screens
 - Adds "active_csr" config token to allow implementing a CSR policy
   * Allows ensuring a particular CSR policy is always actively implemented
   * Previously passively left whatever was previously set unchanged.
@@ -57,11 +64,6 @@
     (0 to 4), with levels 1 to 3 meaning increasing levels of logging.
   * Different to the upstream implementation, this feature is only available on DEBUG builds and as such,
     Level 0 does not disable the feature but activates the original logging form (logs some unique items).
-- Fixes a bug that corrupted the ConsoleOut handle on booting EFI Loaders when running GPUs with Mac EFI
-  * This bug was introduced in v0.12.0.AN (Commit 8d5e4e3)
-- Fixes a bug that caused the option to return from folded Linux kernel submenus not to appear.
-  * This bug was introduced in Upstream v0.9.0
-  * The fix has been pushed upstream
 
 
 0.13.1.AB (02 Mar 2021):

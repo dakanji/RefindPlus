@@ -799,10 +799,10 @@
 # work that would not otherwise work. On the other hand, using this option
 # when it is not necessary can cause hardware (such as keyboards and mice)
 # to become inaccessible. Therefore, this option should only be enabled
-# when non-Apple operating systems do not work correctly. It should be
-# enabled only when problems with some hardware devices are experienced.
-# When needed, a value of "10.9" usually works, but other values can be
-# experimented with. This feature has no effect on non-Apple computers.
+# when problems with some hardware devices are experienced on non-Apple
+# operating systems. When needed, a value of "10.9" usually works, but
+# other values can be experimented with. This feature has no effect
+# on non-Apple computers.
 #
 # Inactive when commented out (No Mac OS spoofing is done)
 #
