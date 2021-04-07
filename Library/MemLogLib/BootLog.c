@@ -348,7 +348,7 @@ DeepLoggger (
     // Make sure we are able to write
     if (DebugMode < 1 ||
         GlobalConfig.LogLevel < 1 ||
-        GlobalConfig.LogLevel <= level ||
+        GlobalConfig.LogLevel < level ||
         !(*Message)
     ) {
         if (*Message) {
