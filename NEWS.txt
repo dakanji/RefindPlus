@@ -1,5 +1,6 @@
 0.13.2.AB (Pre-Release):
-- Pending
+- Corrects "fold_linux_kernels" COnfiguration File Notes
+  * The default setting is active and not disabled as was documented
 
 
 0.13.2.AA (06 Apr 2021):

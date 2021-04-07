@@ -707,10 +707,13 @@
 # by default, and its filename will appear in the entry's description.
 # To launch other kernels, the user must press "F2" or "Insert",
 # after which alternate kernels appear as sub-menu options.
+# Settings are:
+#   0    - Combine Linux kernel entries: Off
+#   1    - Combine Linux kernel entries: On
 #
-# Inactive when commented out (Linux kernel entries are not combined)
+# Combines Linux kernel entries when commented out
 #
-#fold_linux_kernels
+#fold_linux_kernels 0
 
 # Comma-delimited list of strings to treat as if they were numbers for the
 # purpose of kernel version number detection. These strings are matched on a
