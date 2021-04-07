@@ -360,6 +360,10 @@ AddMenuEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN REFIT_MENU_ENTRY *Entry
 ) {
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL, L"Adding menu entry: '%s' to %s", Entry->Title, Screen->Title);
+    #endif
+
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
 }
 
@@ -1945,7 +1949,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering WaitForInput() ... Timeout = %d", Timeout);
+    LOG(4, LOG_THREE_STAR_MID, L"Entering WaitForInput() ... Timeout = %d", Timeout);
     #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
@@ -2018,7 +2022,7 @@ DisplaySimpleMessage (
     CHAR16 *Message
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering DisplaySimpleMessage()");
+    LOG(4, LOG_THREE_STAR_MID, L"Entering DisplaySimpleMessage()");
     #endif
 
     if (!Message) {
@@ -2521,7 +2525,7 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunMenu()");
+    LOG(4, LOG_THREE_STAR_MID, L"Entering RunMenu()");
     #endif
 
     if (AllowGraphicsMode) {
@@ -2545,7 +2549,7 @@ UINTN RunMainMenu (
     INTN DefaultSubmenuIndex = -1;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunMainMenu()");
+    LOG(4, LOG_THREE_STAR_MID, L"Entering RunMainMenu()");
     #endif
 
     // remove any buffered key strokes

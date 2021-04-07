@@ -136,7 +136,7 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     UINTN           Index = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering LoadOSIcon()");
+    LOG(4, LOG_THREE_STAR_MID, L"Entering LoadOSIcon()");
     #endif
 
     if (GlobalConfig.TextOnly) {

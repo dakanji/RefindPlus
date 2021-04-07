@@ -193,8 +193,8 @@ CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
 CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
 
-    Options = GetFirstOptionsFromFile(LoaderPath, Volume);
-    InitrdName = FindInitrd(LoaderPath, Volume);
+    Options       = GetFirstOptionsFromFile(LoaderPath, Volume);
+    InitrdName    = FindInitrd(LoaderPath, Volume);
     KernelVersion = FindNumbers(InitrdName);
     ReplaceSubstring(&Options, KERNEL_VERSION, KernelVersion);
     FullOptions = AddInitrdToOptions(Options, InitrdName);
@@ -202,6 +202,7 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool (Options);
     MyFreePool (InitrdName);
     MyFreePool (KernelVersion);
+
     return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
 
@@ -255,13 +256,21 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
     LOADER_ENTRY        *SubEntry;
     UINTN               TokenCount;
 
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_THREE_STAR_MID, L"Add Linux Kernel as SubMenu: START");
+    #endif
+
     File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
     if (File != NULL) {
-        SubScreen = TargetLoader->me.SubScreen;
-        InitrdName = FindInitrd(FileName, Volume);
+        SubScreen     = TargetLoader->me.SubScreen;
+        InitrdName    = FindInitrd(FileName, Volume);
         KernelVersion = FindNumbers(FileName);
 
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"ReadTokenLine() Loop: Start");
+            #endif
+
             ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry (TargetLoader);
 
@@ -269,29 +278,56 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
             if (SubEntry != NULL) {
                 SplitPathName(FileName, &VolName, &Path, &SubmenuName);
                 MergeStrings(&SubmenuName, L": ", '\0');
-                MergeStrings(&SubmenuName, TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"), '\0');
+                MergeStrings(
+                    &SubmenuName,
+                    TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"),
+                    '\0'
+                );
+
+                MyFreePool (SubEntry->LoadOptions);
+                MyFreePool (SubEntry->LoaderPath);
+
                 Title = StrDuplicate(SubmenuName);
                 LimitStringLength(Title, MAX_LINE_LENGTH);
-                SubEntry->me.Title = Title;
-                MyFreePool (SubEntry->LoadOptions);
+                SubEntry->me.Title    = Title;
                 SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
-                MyFreePool (SubEntry->LoaderPath);
-                SubEntry->LoaderPath = StrDuplicate (FileName);
+                SubEntry->LoaderPath  = StrDuplicate (FileName);
                 CleanUpPathNameSlashes(SubEntry->LoaderPath);
                 SubEntry->Volume = Volume;
                 FreeTokenLine(&TokenList, &TokenCount);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+
                 MyFreePool (VolName);
                 MyFreePool (Path);
                 MyFreePool (SubmenuName);
             }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"InitializeLoaderEntry on '%s' is NULL!", TargetLoader);
+                #endif
+
+                break;
+            }
+
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"ReadTokenLine() Loop: Ended");
+            #endif
         } // while
 
         MyFreePool (InitrdName);
         MyFreePool (File);
         MyFreePool (KernelVersion);
-    } // if
+    }
+    else {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!");
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_THREE_STAR_MID, L"Add Linux Kernel as SubMenu: ENDED");
+    #endif
 } // static VOID AddKernelToSubmenu()
 
 // Returns TRUE if a file with the same name as the original but with

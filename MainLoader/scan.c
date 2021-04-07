@@ -295,14 +295,13 @@ LOADER_ENTRY *InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
         NewEntry->EfiBootNum      = 0;
 
         if (Entry != NULL) {
-            NewEntry->LoaderPath      = (Entry->LoaderPath) ? StrDuplicate (Entry->LoaderPath) : NULL;
             NewEntry->Volume          = Entry->Volume;
-            NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
-            NewEntry->LoadOptions     = (Entry->LoadOptions) ? StrDuplicate (Entry->LoadOptions) : NULL;
-            NewEntry->InitrdPath      = (Entry->InitrdPath) ? StrDuplicate (Entry->InitrdPath) : NULL;
-            NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
             NewEntry->EfiBootNum      = Entry->EfiBootNum;
-
+            NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
+            NewEntry->LoaderPath      = (Entry->LoaderPath)    ? StrDuplicate (Entry->LoaderPath)           : NULL;
+            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions)          : NULL;
+            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath)           : NULL;
+            NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
         }
     } // if
 
@@ -322,7 +321,8 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
     LOADER_ENTRY        *SubEntry;
 
     FileName = Basename (Entry->LoaderPath);
-    if (Entry->me.SubScreen == NULL) { // No subscreen yet; initialize default entry....
+    if (Entry->me.SubScreen == NULL) {
+        // No subscreen yet; initialize default entry
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen != NULL) {
             SubScreen->Title = PoolPrint (
@@ -342,8 +342,8 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 LOG(2, LOG_LINE_NORMAL, L"Creating loader entry for '%s'", SubScreen->Title);
                 #endif
 
-                SubEntry->me.Title = StrDuplicate (L"Boot using default options");
-                MainOptions = SubEntry->LoadOptions;
+                SubEntry->me.Title    = StrDuplicate (L"Boot using default options");
+                MainOptions           = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (MainOptions);
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -360,7 +360,9 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
     else { // existing subscreen; less initialization, and just add new entry later....
         SubScreen = Entry->me.SubScreen;
     } // if/else
+
     MyFreePool (FileName);
+
     return SubScreen;
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
 
@@ -448,7 +450,9 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
 
         // check for Apple hardware diagnostics
         StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
-        if (FileExists (Volume->RootDir, DiagsFileName) && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)) {
+        if (FileExists (Volume->RootDir, DiagsFileName) &&
+            !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
+        ) {
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
                 SubEntry->me.Title        = L"Run Apple Hardware Test";
@@ -464,8 +468,8 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
     else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
         File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
         if (File != NULL) {
-            InitrdName =  FindInitrd (Entry->LoaderPath, Volume);
-            TokenCount = ReadTokenLine (File, &TokenList);
+            InitrdName    = FindInitrd (Entry->LoaderPath, Volume);
+            TokenCount    = ReadTokenLine (File, &TokenList);
             KernelVersion = FindNumbers (Entry->LoaderPath);
             ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
 
@@ -825,6 +829,7 @@ static LOADER_ENTRY * AddLoaderEntry (
     CHAR16        *TitleEntry = NULL;
 
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_SEP, L"AddLoaderEntry: START");
     CHAR16 *VolDesc = NULL;
     #endif
 
@@ -842,7 +847,6 @@ static LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"PROCESS LOADER: START");
         LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
         LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
         #endif
@@ -881,8 +885,6 @@ static LOADER_ENTRY * AddLoaderEntry (
         AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Have successfully created menu entry for '%s'", Entry->Title);
-
         if (Volume->VolName) {
             VolDesc = StrDuplicate (Volume->VolName);
 
@@ -941,6 +943,8 @@ static LOADER_ENTRY * AddLoaderEntry (
             MsgLog ("\n");
             MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
+
+        LOG(3, LOG_LINE_NORMAL, L"Have successfully created menu entry for '%s'", Entry->Title);
         #endif
     }
     else {
@@ -950,7 +954,7 @@ static LOADER_ENTRY * AddLoaderEntry (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_END, L"PROCESS LOADER: ENDED");
+    LOG(1, LOG_THREE_STAR_END, L"AddLoaderEntry: ENDED");
     #endif
 
     return (Entry);
@@ -1333,6 +1337,10 @@ ScanLoaderDir (
             IsLinux   = FALSE;
             NewLoader = LoaderList;
             while (NewLoader != NULL) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_THREE_STAR_SEP, L"Looping over Loader List: START");
+                #endif
+
                 IsLinux = (
                     StriSubCmp (L"bzImage", NewLoader->FileName) ||
                     StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
@@ -1354,8 +1362,15 @@ ScanLoaderDir (
                 }
                 NewLoader = NewLoader->NextEntry;
             } // while
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_THREE_STAR_END, L"Looping over Loader List: ENDED");
+            #endif
 
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding Return Entry to Folded Kernel");
+                #endif
+
                 AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
             }
 

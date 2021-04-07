@@ -1184,7 +1184,7 @@ ScanVolumeBootcode (
 
             #if REFIT_DEBUG > 0
             if (Volume->HasBootCode) {
-                LOG(1, LOG_THREE_STAR_SEP, L"Found Legacy Boot Code on Volume Below");
+                LOG(1, LOG_THREE_STAR_MID, L"Found Legacy Boot Code on Volume Below");
             }
             #endif
 
@@ -1210,7 +1210,7 @@ ScanVolumeBootcode (
                         LOG(4, LOG_LINE_NORMAL, L"Also Found MBR Partition Table on Volume Below");
                     }
                     else {
-                        LOG(4, LOG_THREE_STAR_SEP, L"Found MBR Partition Table on Volume Below");
+                        LOG(4, LOG_THREE_STAR_MID, L"Found MBR Partition Table on Volume Below");
                     }
                     #endif
                 }
@@ -1355,8 +1355,8 @@ CHAR16
         #endif
     } // if use partition name
 
-        // NOTE: Don't free TypeName; function returns constant
-        TypeName = FSTypeName (Volume->FSType);
+    // NOTE: Do not free TypeName as FSTypeName returns a constant
+    TypeName = FSTypeName (Volume->FSType);
 
     // No filesystem or acceptable partition name, so use fs type and size
     if (FoundName == NULL) {
@@ -1365,7 +1365,7 @@ CHAR16
         }
         if (FileSystemInfoPtr != NULL) {
             SISize    = SizeInIEEEUnits (FileSystemInfoPtr->VolumeSize);
-            FoundName = PoolPrint (L"%s%s volume", SISize, TypeName);
+            FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
 
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
@@ -1463,8 +1463,8 @@ SetPartGuidAndName (
             } // if (PartInfo exists)
         }
         else {
-            // TODO: Better to assign a random GUID to MBR partitions, but I couldn't
-            // find an EFI function to do this. The below GUID is just one that I
+            // TODO: Better to assign a random GUID to MBR partitions, could not
+            // find an EFI function to do this. The GUID below is just one that I
             // generated in Linux.
             Volume->PartGuid = StringAsGuid (L"92a6c61f-7130-49b9-b05c-8d7e7b039127");
         } // if/else (GPT disk)
@@ -1473,8 +1473,8 @@ SetPartGuidAndName (
 
 // Return TRUE if NTFS boot files are found or if Volume is unreadable,
 // FALSE otherwise. The idea is to weed out non-boot NTFS volumes from
-// BIOS/legacy boot list on Macs. We can't assume NTFS will be readable,
-// so return TRUE if it's unreadable; but if it IS readable, return
+// BIOS/legacy boot list on Macs. We cannot assume NTFS will be readable,
+// so return TRUE if it is unreadable; but if it *IS* readable, return
 // TRUE only if Windows boot files are found.
 BOOLEAN
 HasWindowsBiosBootFiles (
@@ -1483,9 +1483,14 @@ HasWindowsBiosBootFiles (
     BOOLEAN FilesFound = TRUE;
 
     if (Volume->RootDir != NULL) {
-        FilesFound = FileExists (Volume->RootDir, L"NTLDR") ||  // Windows NT/200x/XP boot file
-                     FileExists (Volume->RootDir, L"bootmgr");  // Windows Vista/7/8 boot file
-    } // if
+        // NTLDR   = Windows boot file: NT/200x/XP
+        // bootmgr = Windows boot file: Vista/7/8/10
+        FilesFound = (
+            FileExists (Volume->RootDir, L"NTLDR") ||
+            FileExists (Volume->RootDir, L"bootmgr")
+        );
+    }
+
     return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 

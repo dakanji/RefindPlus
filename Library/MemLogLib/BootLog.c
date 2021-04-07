@@ -372,6 +372,9 @@ DeepLoggger (
         case LOG_THREE_STAR_SEP:
             FinalMessage = PoolPrint (L"\n              ***[ %s ]***\n", *Message);
             break;
+        case LOG_THREE_STAR_MID:
+            FinalMessage = PoolPrint (L"              ***[ %s ]***\n", *Message);
+            break;
         case LOG_THREE_STAR_END:
             FinalMessage = PoolPrint (L"              ***[ %s ]***\n\n", *Message);
             break;
