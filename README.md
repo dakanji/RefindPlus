@@ -1,4 +1,6 @@
-[![Scan Status](https://scan.coverity.com/projects/22695/badge.svg?flat=1)](https://scan.coverity.com/projects/22695)
+| Scan Status  | Latest Release  | Release Date  |
+|:------------:|:---------------:|:-------------:|
+| [![Scan Status](https://scan.coverity.com/projects/22695/badge.svg?flat=1)](https://scan.coverity.com/projects/22695) | [![Latest Release](https://img.shields.io/github/release/dakanji/RefindPlus.svg?flat=1&label=)](https://github.com/dakanji/RefindPlus/releases) | [![Release date](https://img.shields.io/github/release-date/dakanji/RefindPlus.svg?flat=1&color=informational&label=)](https://github.com/dakanji/RefindPlus/releases) |
 
 # RefindPlus
 ## Overview
