@@ -516,7 +516,7 @@ EG_IMAGE * egLoadIcon (
         LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadIcon()", Status, Path);
         #endif
 
-        return Status;
+        return NULL;
     }
 
     #if REFIT_DEBUG > 0
