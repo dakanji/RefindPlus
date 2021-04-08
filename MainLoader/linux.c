@@ -267,10 +267,6 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
         KernelVersion = FindNumbers(FileName);
 
         while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"ReadTokenLine() Loop: Start");
-            #endif
-
             ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry (TargetLoader);
 
@@ -309,10 +305,6 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
 
                 break;
             }
-
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"ReadTokenLine() Loop: Ended");
-            #endif
         } // while
 
         MyFreePool (InitrdName);

@@ -630,17 +630,20 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         // Add every "word" in the filesystem and partition names, delimited by
         // spaces, dashes (-), underscores (_), or colons (:), to the list of
         // hints to be used in searching for OS icons.
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
-        #endif
+        if (Volume->FsName) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
+            #endif
 
-        MergeWords(&OSIconName, Volume->FsName, L',');
+            MergeWords(&OSIconName, Volume->FsName, L',');
+        }
+        if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
+            #endif
 
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
-        #endif
-
-        MergeWords(&OSIconName, Volume->PartName, L',');
+            MergeWords(&OSIconName, Volume->PartName, L',');
+        }
     } // if/else network boot
 
     #if REFIT_DEBUG > 0
@@ -1336,11 +1339,8 @@ ScanLoaderDir (
         if (LoaderList != NULL) {
             IsLinux   = FALSE;
             NewLoader = LoaderList;
-            while (NewLoader != NULL) {
-                #if REFIT_DEBUG > 0
-                LOG(4, LOG_THREE_STAR_SEP, L"Looping over Loader List: START");
-                #endif
 
+            while (NewLoader != NULL) {
                 IsLinux = (
                     StriSubCmp (L"bzImage", NewLoader->FileName) ||
                     StriSubCmp (L"vmlinuz", NewLoader->FileName) ||
@@ -1361,10 +1361,8 @@ ScanLoaderDir (
                     }
                 }
                 NewLoader = NewLoader->NextEntry;
+
             } // while
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_THREE_STAR_END, L"Looping over Loader List: ENDED");
-            #endif
 
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 #if REFIT_DEBUG > 0

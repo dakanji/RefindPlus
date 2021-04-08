@@ -299,23 +299,39 @@ egLoadFile (
     UINTN               BufferSize;
     UINT8               *Buffer;
 
-    if ((BaseDir == NULL) || (FileName == NULL)) {
-        return EFI_NOT_FOUND;
-    }
-
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Loading file '%s'", FileName);
+    LOG(4, LOG_LINE_NORMAL, L"Trying to load '%s' in egLoadFile()", FileName);
     #endif
+
+    if ((BaseDir == NULL) || (FileName == NULL)) {
+        Status = EFI_INVALID_PARAMETER;
+
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadFile()", Status, FileName);
+        #endif
+
+        return Status;
+    }
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to open base dir in egLoadFile()", Status);
+        #endif
+
         return Status;
     }
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
+        Status = EFI_NOT_FOUND;
+
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to get file info in egLoadFile()", Status);
+        #endif
+
         refit_call1_wrapper(FileHandle->Close, FileHandle);
-        return EFI_NOT_FOUND;
+        return Status;
     }
 
     ReadSize = FileInfo->FileSize;
@@ -329,19 +345,33 @@ egLoadFile (
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
+        Status = EFI_OUT_OF_RESOURCES;
+
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to allocate pool in egLoadFile()", Status);
+        #endif
+
         refit_call1_wrapper(FileHandle->Close, FileHandle);
-        return EFI_OUT_OF_RESOURCES;
+        return Status;
     }
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"%r while reading file handle in egLoadFile()", Status);
+        #endif
+
         FreePool (Buffer);
         return Status;
     }
 
     *FileData       = Buffer;
     *FileDataLength = BufferSize;
+
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL, L"Loaded file in egLoadFile()");
+    #endif
 
     return EFI_SUCCESS;
 }
@@ -479,13 +509,27 @@ EG_IMAGE * egLoadIcon (
     EG_IMAGE        *Image, *NewImage;
 
     // return null if unable to get to image
-    if (BaseDir == NULL || Path == NULL) {
-        return NULL;
+    if ((BaseDir == NULL) || (Path == NULL)) {
+        Status = EFI_INVALID_PARAMETER;
+
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadIcon()", Status, Path);
+        #endif
+
+        return Status;
     }
+
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL, L"Trying to load '%s' in egLoadIcon()", Path);
+    #endif
 
     // load file
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR (Status)) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadIcon()", Status, Path);
+        #endif
+
         return NULL;
     }
 
@@ -495,6 +539,10 @@ EG_IMAGE * egLoadIcon (
 
     // return null if unable to decode
     if (Image == NULL) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"unable to decode file data in egLoadIcon()");
+        #endif
+
         return NULL;
     }
 
@@ -548,13 +596,18 @@ EG_IMAGE * egLoadIconAnyType (
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
 
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
-        #endif
-
         MyFreePool (Extension);
         MyFreePool (FileName);
     } // while()
+
+    #if REFIT_DEBUG > 0
+    if (Image == NULL) {
+        LOG(4, LOG_LINE_NORMAL, L"Could not find image in egLoadIconAnyType()");
+    }
+    else {
+        LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
+    }
+    #endif
 
     return Image;
 } // EG_IMAGE *egLoadIconAnyType()

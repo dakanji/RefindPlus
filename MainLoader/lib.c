@@ -1253,7 +1253,7 @@ ScanVolumeBootcode (
 
                     #if REFIT_DEBUG > 0
                     if (Volume->HasBootCode) {
-                        LOG(4, LOG_LINE_NORMAL, L"Also Found MBR Partition Table on Volume Below");
+                        LOG(4, LOG_THREE_STAR_MID, L"Also Found MBR Partition Table on Volume Below");
                     }
                     else {
                         LOG(4, LOG_THREE_STAR_MID, L"Found MBR Partition Table on Volume Below");
