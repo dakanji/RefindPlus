@@ -758,16 +758,8 @@ AddListElement (
     VOID    *TmpListPtr;
     BOOLEAN  Abort = FALSE;
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering AddListElement()");
-    #endif
-
     if (*ListPtr == NULL) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Allocating memory for NULL ListPtr");
-        #endif
-
-        TmpListPtr  = AllocatePool (16 * sizeof (VOID *));
+        TmpListPtr = AllocatePool (16 * sizeof (VOID *));
 
         if (TmpListPtr) {
             *ListPtr = TmpListPtr;
@@ -778,19 +770,10 @@ AddListElement (
     }
     else if ((*ElementCount & 15) == 0) {
         AllocateCount = *ElementCount + 16;
-
         if (*ElementCount == 0) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Allocating memory for ListPtr");
-            #endif
-
             TmpListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
         }
         else {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Reallocating memory for ListPtr");
-            #endif
-
             TmpListPtr = EfiReallocatePool (
                 *ListPtr,
                 *ElementCount * sizeof (VOID *),
@@ -808,20 +791,13 @@ AddListElement (
 
     if (Abort) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Could not allocate memory in AddListElement()");
+        LOG(4, LOG_THREE_STAR_MID, L"Could not allocate memory for list elements");
         #endif
-
-        return;
     }
     else {
         (*ListPtr)[*ElementCount] = NewElement;
         (*ElementCount)++;
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Added list element in AddListElement()");
-        #endif
     }
-
 } // VOID AddListElement()
 
 VOID

@@ -2337,7 +2337,7 @@ static BOOLEAN FindTool (
 
                     #if REFIT_DEBUG > 0
                     MsgLog (
-                        "              - Added '%s' Tool : %s%s\n",
+                        "              - Added '%s' : %s%s\n",
                         Description,
                         StrDuplicate (DirName),
                         StrDuplicate (FileName)
@@ -2499,7 +2499,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2514,7 +2514,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2529,7 +2529,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2544,7 +2544,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2559,7 +2559,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2574,7 +2574,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2591,7 +2591,7 @@ VOID ScanForTools (VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                    ToolStr = PoolPrint (L"Added '%s'", ToolName);
                     LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
                     MyFreePool (ToolStr);
@@ -2622,7 +2622,7 @@ VOID ScanForTools (VOID) {
                         AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                        ToolStr = PoolPrint (L"Added '%s'", ToolName);
                         LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
@@ -2957,7 +2957,7 @@ VOID ScanForTools (VOID) {
                     AddMenuEntry (&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                    ToolStr = PoolPrint (L"Added '%s'", ToolName);
                     LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
                     MyFreePool (ToolStr);
@@ -2979,7 +2979,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
@@ -2994,7 +2994,7 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s' Tool", ToolName);
+                ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(2, LOG_LINE_NORMAL, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);

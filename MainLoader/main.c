@@ -2445,7 +2445,7 @@ efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Toggle Mac SIP\n");
+                MsgLog ("  - Toggle Mac CSR\n");
                 #endif
 
                 RotateCsrValue();
