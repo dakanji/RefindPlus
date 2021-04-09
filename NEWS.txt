@@ -1,10 +1,12 @@
-0.13.2.AB (Pre-Release):
-- Corrects "fold_linux_kernels" COnfiguration File Notes
+0.13.2.AB (09 Apr 2021):
+- Corrects Notes on "fold_linux_kernels" in the Configuration File
   * The default setting is active and not disabled as was documented
 - Fixes bug resulting in the output log level being one step below the configured value
   * This bug was introduced in v0.13.2.AA (Commit eeb00c1)
 - Fixes memory allocation bug resulting in the program hanging
-    * This bug was introduced in v0.13.2.AA (Commit 9307d38)
+  * This bug was introduced in v0.13.2.AA (Commit 9307d38)
+- Other misc fixes
+  * Logging and icon selection improvements
 
 
 0.13.2.AA (06 Apr 2021):
