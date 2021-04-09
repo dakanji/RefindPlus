@@ -1097,7 +1097,7 @@ VOID AboutRefindPlus (
 ) {
     UINT32  CsrStatus;
     CHAR16  *TempStr         = NULL;
-    CHAR16  *FirmwareVendor  = VendorInfo;
+    CHAR16  *FirmwareVendor  = StrDuplicate (VendorInfo);
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
@@ -1901,8 +1901,6 @@ efi_main (
         VendorInfo
     );
     #endif
-
-    MyFreePool (VendorInfo);
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
