@@ -805,7 +805,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
         MyFreePool(TempStr);
 
-        Entry->EfiBootNum    = EfiBootNum;
+        Entry->EfiBootNum = EfiBootNum;
 
         MergeWords (&OSIconName, Entry->me.Title, L',');
         MergeStrings (&OSIconName, L"unknown", L',');
@@ -826,14 +826,15 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
         MyFreePool (OSIconName);
 
-        Entry->LoaderPath = NULL;
-        Entry->Volume = NULL;
+        Entry->LoaderPath  = NULL;
+        Entry->Volume      = NULL;
         Entry->LoadOptions = NULL;
-        Entry->InitrdPath = NULL;
-        Entry->Enabled = TRUE;
+        Entry->InitrdPath  = NULL;
+        Entry->Enabled     = TRUE;
+
+        AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
     } // if (Entry)
 
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
 } // LOADER_ENTRY * AddEfiLoaderEntry()
