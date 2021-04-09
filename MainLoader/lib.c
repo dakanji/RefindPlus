@@ -754,12 +754,12 @@ AddListElement (
     IN OUT UINTN   *ElementCount,
     IN VOID        *NewElement
 ) {
-    UINTN    AllocateCount;
+    UINTN    AllocateCount = *ElementCount + 16;
     VOID    *TmpListPtr;
     BOOLEAN  Abort = FALSE;
 
     if (*ListPtr == NULL) {
-        TmpListPtr = AllocatePool (16 * sizeof (VOID *));
+        TmpListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
 
         if (TmpListPtr) {
             *ListPtr = TmpListPtr;
@@ -769,7 +769,6 @@ AddListElement (
         }
     }
     else if ((*ElementCount & 15) == 0) {
-        AllocateCount = *ElementCount + 16;
         if (*ElementCount == 0) {
             TmpListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
         }
