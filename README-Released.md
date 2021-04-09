@@ -74,7 +74,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 ar
 - `screensaver`: The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - `use_nvram`: RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
 - `log_level`: Controls the native log format and an implementation of the upstream format.
-  * Only active on DEBUG builds. RELEASE builds remain optimised for day today use.
+  * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native format
   * Levels 1 to 4 output logs equivalent to the upstream format
 - rEFInd now scans other ESPs for loaders in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.

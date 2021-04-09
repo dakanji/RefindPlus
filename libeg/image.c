@@ -202,7 +202,7 @@ EG_IMAGE * egScaleImage (
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), Image is NULL or a size is 0");
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, image is NULL or a size is 0");
         #endif
 
         return NULL;
@@ -215,7 +215,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage(), unable to create new image");
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, could not create new image");
         #endif
 
         return NULL;
@@ -263,7 +263,7 @@ EG_IMAGE * egScaleImage (
     } // for (i...)
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Scaling of image complete");
+    LOG(3, LOG_LINE_NORMAL, L"Scaling image completed");
     #endif
 
     return NewImage;
@@ -340,7 +340,7 @@ egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Loaded '%s' in egLoadFile()", FileName);
+    LOG(4, LOG_LINE_NORMAL, L"In egLoadFile, loaded '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -483,7 +483,7 @@ EG_IMAGE * egLoadIcon (
         Status = EFI_INVALID_PARAMETER;
 
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadIcon()", Status, Path);
+        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, '%r' returned while trying to load '%s'", Status, Path);
         #endif
 
         return NULL;
@@ -493,7 +493,7 @@ EG_IMAGE * egLoadIcon (
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadIcon()", Status, Path);
+        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, '%r' returned while trying to load '%s'", Status, Path);
         #endif
 
         return NULL;
@@ -506,7 +506,7 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"unable to decode file data in egLoadIcon()");
+        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, could not decode file data!");
         #endif
 
         return NULL;
@@ -520,7 +520,7 @@ EG_IMAGE * egLoadIcon (
             egFreeImage (Image);
 
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon(), have called egFreeImage()");
+            LOG(4, LOG_LINE_NORMAL, L"Freed image (egLoadIcon)");
             #endif
 
             Image = NewImage;
@@ -568,10 +568,10 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     if (Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Could not find image in egLoadIconAnyType()");
+        LOG(4, LOG_LINE_NORMAL, L"Could not find image (egLoadIconAnyType)");
     }
     else {
-        LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
+        LOG(4, LOG_LINE_NORMAL, L"Loaded image (egLoadIconAnyType)");
     }
     #endif
 

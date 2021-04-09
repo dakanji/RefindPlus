@@ -361,7 +361,7 @@ AddMenuEntry (
     IN REFIT_MENU_ENTRY *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding menu entry: '%s' to %s", Entry->Title, Screen->Title);
+    LOG(4, LOG_LINE_NORMAL, L"Adding menu entry to %s: '%s'", Screen->Title, Entry->Title);
     #endif
 
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
@@ -575,7 +575,7 @@ RunGenericMenu (
     UINTN          Item;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu()");
+    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
     LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
     #endif
 
@@ -620,7 +620,7 @@ RunGenericMenu (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"About to enter while() loop in RunGenericMenu()");
+    LOG(3, LOG_THREE_STAR_MID, L"About to enter 'while' loop in RunGenericMenu");
     #endif
 
     while (!MenuExit) {
@@ -1950,7 +1950,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering WaitForInput() ... Timeout = %d", Timeout);
+    LOG(4, LOG_THREE_STAR_MID, L"Entering WaitForInput ... Timeout = %d", Timeout);
     #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
@@ -2023,7 +2023,7 @@ DisplaySimpleMessage (
     CHAR16 *Message
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering DisplaySimpleMessage()");
+    LOG(4, LOG_THREE_STAR_MID, L"Entering DisplaySimpleMessage");
     #endif
 
     if (!Message) {
@@ -2544,10 +2544,6 @@ UINTN RunMainMenu (
     UINTN MenuExit           = 0;
     INTN DefaultEntryIndex   = -1;
     INTN DefaultSubmenuIndex = -1;
-
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_THIN_SEP, L"Entering RunMainMenu()");
-    #endif
 
     // remove any buffered key strokes
     ReadAllKeyStrokes();

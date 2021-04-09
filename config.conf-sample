@@ -337,11 +337,11 @@
 
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about
-# what RefindPlus is doing. When set to "1" or above, the log file is in the upsteam
+# what RefindPlus is doing. When set to "1" or above, the logging is in the upsteam
 # format instead (a variant of). Higher values, up to the maximum of 4, record more
-# information although the native format includes some information not captured by
-# the logs in the upstream format. NB: This option is only active when running
-# DEBUG builds as the logging process noticeably slows down the application.
+# information (although the native format includes some items that are not captured
+# by the logs in the upstream format). NB: This option is only active when running
+# DEBUG builds as the logging process significantly slows running RefindPlus down.
 #
 # The native format is used when commented out (DEBUG builds only)
 #

@@ -75,7 +75,7 @@ typedef struct {
 #define EG_EICOMPMODE_RLE           (1)
 #define EG_EICOMPMODE_EFICOMPRESS   (2)
 
-#define ICON_EXTENSIONS L"png,icns,jpg,jpeg,bmp"
+#define ICON_EXTENSIONS L"png,jpg,jpeg,icns,bmp"
 
 typedef struct {
     UINTN       Width;

@@ -616,7 +616,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         // Begin creating icon "hints" by using last part of directory path leading
         // to the loader
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Creating icon hint based on loader path '%s'", LoaderPath);
+        LOG(4, LOG_LINE_NORMAL, L"Creating icon hint from loader path: '%s'", LoaderPath);
         #endif
 
         Temp = FindLastDirName (LoaderPath);
@@ -1306,7 +1306,15 @@ ScanLoaderDir (
     BOOLEAN                  FoundFallbackDuplicate = FALSE, IsLinux, InSelfPath;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Beginning to scan directory '%s' for '%s'", Path, Pattern);
+    CHAR16 *PathStr;
+    if (MyStriCmp (Path, L"\\")) {
+        PathStr = StrDuplicate (L"\\");
+    }
+    else {
+        PathStr = PoolPrint (L"%s", Path);
+    }
+    LOG(3, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, PathStr);
+    MyFreePool (PathStr);
     #endif
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
@@ -1423,10 +1431,6 @@ ScanLoaderDir (
             MyFreePool (Message);
         } // if Status != EFI_NOT_FOUND
     } // if not scanning a blacklisted directory
-
-    #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Done scanning directory '%s' for '%s'", Path, Pattern);
-    #endif
 
     return FoundFallbackDuplicate;
 } /* static VOID ScanLoaderDir() */
@@ -1567,8 +1571,8 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         Volume->IsReadable
     ) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
-            L"Scanning EFI files on '%s'",
+        LOG(1, LOG_THREE_STAR_MID,
+            L"Scanning Volume '%s' for EFI loaders",
             Volume->VolName
         );
         #endif

@@ -1436,7 +1436,7 @@ STATIC VOID AdjustDefaultSelection() {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Adjusting default_selection with 'PreviousBoot' values");
+    LOG(1, LOG_LINE_NORMAL, L"Adjusting 'default_selection' with 'PreviousBoot' values");
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 
@@ -1457,10 +1457,12 @@ STATIC VOID AdjustDefaultSelection() {
             else {
                 Element = NULL;
             }
-        } // if
+        }
+
         if (Element && StrLen (Element)) {
             MergeStrings (&NewCommaDelimited, Element, L',');
-        } // if
+        }
+        
         MyFreePool (Element);
     } // while
     MyFreePool (GlobalConfig.DefaultSelection);
@@ -1790,10 +1792,6 @@ efi_main (
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 
     // disable EFI watchdog timer
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_THIN_SEP, L"Setting Watchdog Timer");
-    #endif
-
     refit_call4_wrapper(
         gBS->SetWatchdogTimer,
         0x0000, 0x0000, 0x0000,

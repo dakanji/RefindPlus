@@ -1227,7 +1227,12 @@ ScanVolumeBootcode (
                     CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
 
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Found MBR Partition Table");
+                    if (Volume->HasBootCode) {
+                        LOG(4, LOG_LINE_NORMAL, L"Also found MBR Partition table");
+                    }
+                    else {
+                        LOG(4, LOG_THREE_STAR_MID, L"Found MBR Partition table");
+                    }
                     #endif
                 }
             }
@@ -2294,7 +2299,7 @@ SetVolumeIcons (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_THIN_SEP, L"Setting Volume Icons");
+    LOG(4, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
