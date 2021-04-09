@@ -299,39 +299,19 @@ egLoadFile (
     UINTN               BufferSize;
     UINT8               *Buffer;
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Trying to load '%s' in egLoadFile()", FileName);
-    #endif
-
     if ((BaseDir == NULL) || (FileName == NULL)) {
-        Status = EFI_INVALID_PARAMETER;
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"%r while trying to load '%s' in egLoadFile()", Status, FileName);
-        #endif
-
-        return Status;
+        return EFI_INVALID_PARAMETER;
     }
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
     if (EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to open base dir in egLoadFile()", Status);
-        #endif
-
         return Status;
     }
 
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
-        Status = EFI_NOT_FOUND;
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to get file info in egLoadFile()", Status);
-        #endif
-
         refit_call1_wrapper(FileHandle->Close, FileHandle);
-        return Status;
+        return EFI_NOT_FOUND;
     }
 
     ReadSize = FileInfo->FileSize;
@@ -345,23 +325,13 @@ egLoadFile (
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
     if (Buffer == NULL) {
-        Status = EFI_OUT_OF_RESOURCES;
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Error (%r) while trying to allocate pool in egLoadFile()", Status);
-        #endif
-
         refit_call1_wrapper(FileHandle->Close, FileHandle);
-        return Status;
+        return EFI_OUT_OF_RESOURCES;
     }
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"%r while reading file handle in egLoadFile()", Status);
-        #endif
-
         FreePool (Buffer);
         return Status;
     }
@@ -370,7 +340,7 @@ egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Loaded file in egLoadFile()");
+    LOG(4, LOG_LINE_NORMAL, L"Loaded '%s' in egLoadFile()", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -518,10 +488,6 @@ EG_IMAGE * egLoadIcon (
 
         return NULL;
     }
-
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Trying to load '%s' in egLoadIcon()", Path);
-    #endif
 
     // load file
     Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);

@@ -575,6 +575,7 @@ RunGenericMenu (
     UINTN          Item;
 
     #if REFIT_DEBUG > 0
+    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu()");
     LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
     #endif
 
@@ -619,7 +620,7 @@ RunGenericMenu (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_THIN_SEP, L"About to enter while() loop in RunGenericMenu()");
+    LOG(3, LOG_THREE_STAR_MID, L"About to enter while() loop in RunGenericMenu()");
     #endif
 
     while (!MenuExit) {
@@ -2524,10 +2525,6 @@ UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering RunMenu()");
-    #endif
-
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
     }
@@ -2549,7 +2546,7 @@ UINTN RunMainMenu (
     INTN DefaultSubmenuIndex = -1;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering RunMainMenu()");
+    LOG(4, LOG_LINE_THIN_SEP, L"Entering RunMainMenu()");
     #endif
 
     // remove any buffered key strokes

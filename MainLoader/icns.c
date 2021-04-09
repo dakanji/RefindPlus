@@ -135,10 +135,6 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
     CHAR16          *CutoutName, *BaseName;
     UINTN           Index = 0;
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering LoadOSIcon()");
-    #endif
-
     if (GlobalConfig.TextOnly) {
         // skip loading if it is not used anyway
         return NULL;

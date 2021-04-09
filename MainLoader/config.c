@@ -1281,7 +1281,9 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+          if (Entry->LoaderPath) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+          }
           #endif
 
          MyFreePool (Entry->me.Image);
