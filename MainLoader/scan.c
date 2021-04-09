@@ -1364,6 +1364,9 @@ ScanLoaderDir (
 
             } // while
 
+            /*
+            // DA-TAG: Temporarily disable this pending
+            //         resolution of issues triggered
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 #if REFIT_DEBUG > 0
                 LOG(4, LOG_LINE_NORMAL, L"Adding Return Entry to Folded Kernel");
@@ -1371,6 +1374,7 @@ ScanLoaderDir (
 
                 AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
             }
+            */
 
             CleanUpLoaderList (LoaderList);
         }
