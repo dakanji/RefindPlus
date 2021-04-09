@@ -1527,7 +1527,6 @@ LogBasicInfo (
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
 
-
     if (MyStrStr (VendorInfo, L"Apple") != NULL) {
         Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
         if (EFI_ERROR (Status)) {
@@ -1571,7 +1570,7 @@ LogBasicInfo (
         }
     }
 
-    // Report which video output devices are available. We don't actually
+    // Report which video output devices are available. We do not actually
     // use them, so just use TempStr as a throwaway pointer to the protocol.
     MsgLog ("Native Screen Modes:\n");
 
@@ -1580,12 +1579,22 @@ LogBasicInfo (
     MsgLog ("\n");
     MyFreePool (TempStr);
 
-    Status = LibLocateProtocol (&gEfiUgaDrawProtocolGuid, (VOID **) &TempStr);
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        gST->ConsoleOutHandle,
+        &gEfiUgaDrawProtocolGuid,
+        (VOID **) &TempStr
+    );
     MsgLog ("  - Detected Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
     MyFreePool (TempStr);
 
-    Status = LibLocateProtocol (&gEfiGraphicsOutputProtocolGuid, (VOID **) &TempStr);
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        gST->ConsoleOutHandle,
+        &gEfiGraphicsOutputProtocolGuid,
+        (VOID **) &TempStr
+    );
     MsgLog ("  - Detected Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
     MyFreePool (TempStr);
