@@ -1205,7 +1205,7 @@ ScanVolumeBootcode (
 
             #if REFIT_DEBUG > 0
             if (Volume->HasBootCode) {
-                LOG(1, LOG_THREE_STAR_MID, L"Found Legacy Boot Code");
+                LOG(1, LOG_LINE_NORMAL, L"Found Legacy Boot Code");
             }
             #endif
 
@@ -1227,12 +1227,7 @@ ScanVolumeBootcode (
                     CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
 
                     #if REFIT_DEBUG > 0
-                    if (Volume->HasBootCode) {
-                        LOG(4, LOG_LINE_NORMAL, L"Also found MBR Partition table");
-                    }
-                    else {
-                        LOG(4, LOG_THREE_STAR_MID, L"Found MBR Partition table");
-                    }
+                    LOG(4, LOG_LINE_NORMAL, L"Found MBR Partition table");
                     #endif
                 }
             }
@@ -1960,7 +1955,7 @@ ScanVolumes (
     );
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"ERROR: %r While Listing File Systems", Status);
+        LOG(2, LOG_THREE_STAR_SEP, L"ERROR: %r While Listing File Systems", Status);
         MsgLog ("** ERROR: %r While Listing File Systems\n\n", Status);
         #endif
 
@@ -1977,7 +1972,7 @@ ScanVolumes (
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_THIN_SEP, L"ERROR: %r While Allocating UuidList", Status);
+        LOG(1, LOG_THREE_STAR_SEP, L"ERROR: %r While Allocating UuidList", Status);
 
         Status = EFI_BUFFER_TOO_SMALL;
         MsgLog ("** ERROR: %r While Allocating UuidList\n\n", Status);
@@ -1991,7 +1986,7 @@ ScanVolumes (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_THIN_SEP, L"NEXT VOLUME");
+        LOG(3, LOG_LINE_DASH_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));

@@ -852,7 +852,6 @@ static LOADER_ENTRY * AddLoaderEntry (
     CHAR16        *TitleEntry = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"AddLoaderEntry: START");
     CHAR16 *VolDesc = NULL;
     #endif
 
@@ -967,18 +966,14 @@ static LOADER_ENTRY * AddLoaderEntry (
             MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
 
-        LOG(3, LOG_LINE_NORMAL, L"Have successfully created menu entry for '%s'", Entry->Title);
+        LOG(3, LOG_THREE_STAR_MID, L"Successfully created menu entry for '%s'", Entry->Title);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Unable to initialise loader entry in AddLoaderEntry()!");
+        LOG(1, LOG_THREE_STAR_MID, L"Could not initialise loader entry");
         #endif
     }
-
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_END, L"AddLoaderEntry: ENDED");
-    #endif
 
     return (Entry);
 } // LOADER_ENTRY * AddLoaderEntry()
@@ -1571,7 +1566,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         Volume->IsReadable
     ) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        LOG(1, LOG_LINE_DASH_SEP,
             L"Scanning Volume '%s' for EFI loaders",
             Volume->VolName
         );
@@ -1927,17 +1922,16 @@ static LOADER_ENTRY * AddToolEntry (
     LOADER_ENTRY *Entry;
     CHAR16       *TitleStr = NULL;
 
-    Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-
+    Entry    = AllocateZeroPool (sizeof (LOADER_ENTRY));
     TitleStr = PoolPrint (L"Load %s", LoaderTitle);
-    Entry->me.Title = TitleStr;
-    Entry->me.Tag = TAG_TOOL;
-    Entry->me.Row = 1;
+    Entry->me.Title          = TitleStr;
+    Entry->me.Tag            = TAG_TOOL;
+    Entry->me.Row            = 1;
     Entry->me.ShortcutLetter = ShortcutLetter;
-    Entry->me.Image = Image;
-    Entry->LoaderPath = (LoaderPath) ? StrDuplicate (LoaderPath) : NULL;
-    Entry->Volume = Volume;
-    Entry->UseGraphicsMode = UseGraphicsMode;
+    Entry->me.Image          = Image;
+    Entry->LoaderPath        = (LoaderPath) ? StrDuplicate (LoaderPath) : NULL;
+    Entry->Volume            = Volume;
+    Entry->UseGraphicsMode   = UseGraphicsMode;
 
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
     return Entry;

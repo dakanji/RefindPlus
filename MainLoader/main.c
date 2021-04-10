@@ -888,7 +888,7 @@ preBootKicker (
                     if ((Volumes[i]->RootDir != NULL) &&
                         IsValidTool (Volumes[i], FilePath)
                     ) {
-                        ourLoaderEntry  = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                         ourLoaderEntry->me.Title          = Description;
                         ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
                         ourLoaderEntry->me.Row            = 1;
@@ -1462,7 +1462,7 @@ STATIC VOID AdjustDefaultSelection() {
         if (Element && StrLen (Element)) {
             MergeStrings (&NewCommaDelimited, Element, L',');
         }
-        
+
         MyFreePool (Element);
     } // while
     MyFreePool (GlobalConfig.DefaultSelection);

@@ -619,10 +619,6 @@ RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
-    #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"About to enter 'while' loop in RunGenericMenu");
-    #endif
-
     while (!MenuExit) {
         // update the screen
         pdClear();

@@ -674,7 +674,7 @@ ScanDriverDir (
         else {
             #if REFIT_DEBUG > 0
             if (RunOnce) {
-                LOG(1, LOG_LINE_THIN_SEP, L"NEXT DRIVER");
+                LOG(1, LOG_LINE_DASH_SEP, L"NEXT DRIVER");
             }
             #endif
 

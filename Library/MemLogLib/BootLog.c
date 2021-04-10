@@ -130,7 +130,7 @@ CHAR16
     else if (NowHour == 14) {
         AltHour = L"q";
     }
-    else if (NowHour == 17) {
+    else if (NowHour == 15) {
         AltHour = L"r";
     }
     else if (NowHour == 16) {
@@ -369,8 +369,11 @@ DeepLoggger (
         case LOG_LINE_THIN_SEP:
             FinalMessage = PoolPrint (L"\n-----------------[ %s ]-----------------\n", *Message);
             break;
+        case LOG_LINE_DASH_SEP:
+            FinalMessage = PoolPrint (L"\n- - - - - - - - -[ %s ]- - - - - - - - -\n", *Message);
+            break;
         case LOG_THREE_STAR_SEP:
-            FinalMessage = PoolPrint (L"\n              ***[ %s ]***\n", *Message);
+            FinalMessage = PoolPrint (L"\n. . . . . . . ***[ %s ]*** . . . . . . .\n", *Message);
             break;
         case LOG_THREE_STAR_MID:
             FinalMessage = PoolPrint (L"              ***[ %s ]***\n", *Message);

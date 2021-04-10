@@ -3,9 +3,10 @@
 #define LOG_LINE_NORMAL      1
 #define LOG_LINE_SEPARATOR   2
 #define LOG_LINE_THIN_SEP    3
-#define LOG_THREE_STAR_SEP   4
-#define LOG_THREE_STAR_MID   5
-#define LOG_THREE_STAR_END   6
+#define LOG_LINE_DASH_SEP    4
+#define LOG_THREE_STAR_SEP   5
+#define LOG_THREE_STAR_MID   6
+#define LOG_THREE_STAR_END   7
 
 VOID
 DebugLog (
