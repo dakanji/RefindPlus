@@ -293,10 +293,6 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
                 FreeTokenLine(&TokenList, &TokenCount);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
                 AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-
-                MyFreePool (VolName);
-                MyFreePool (Path);
-                MyFreePool (SubmenuName);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -307,6 +303,9 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
             }
         } // while
 
+        MyFreePool (VolName);
+        MyFreePool (Path);
+        MyFreePool (SubmenuName);
         MyFreePool (InitrdName);
         MyFreePool (File);
         MyFreePool (KernelVersion);

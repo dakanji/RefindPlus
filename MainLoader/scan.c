@@ -1384,20 +1384,15 @@ ScanLoaderDir (
                     }
                 }
                 NewLoader = NewLoader->NextEntry;
-
             } // while
 
-            /*
-            // DA-TAG: Temporarily disable this pending
-            //         resolution of issues triggered
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding Return Entry to Folded Kernel");
+                LOG(4, LOG_LINE_NORMAL, L"Adding 'Return' entry to folded Linux kernels");
                 #endif
 
                 AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
             }
-            */
 
             CleanUpLoaderList (LoaderList);
         }

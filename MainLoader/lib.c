@@ -754,12 +754,13 @@ AddListElement (
     IN OUT UINTN   *ElementCount,
     IN VOID        *NewElement
 ) {
-    UINTN    AllocateCount = *ElementCount + 16;
-    VOID    *TmpListPtr;
-    BOOLEAN  Abort = FALSE;
+    VOID         *TmpListPtr;
+    CONST UINTN   AllocatePointer = sizeof (VOID *) * (*ElementCount + 16);
+    CONST UINTN   ElementPointer  = sizeof (VOID *) * (*ElementCount);
+    BOOLEAN       Abort           = FALSE;
 
     if (*ListPtr == NULL) {
-        TmpListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
+        TmpListPtr = AllocatePool (AllocatePointer);
 
         if (TmpListPtr) {
             *ListPtr = TmpListPtr;
@@ -770,13 +771,15 @@ AddListElement (
     }
     else if ((*ElementCount & 15) == 0) {
         if (*ElementCount == 0) {
-            TmpListPtr = AllocatePool (AllocateCount * sizeof (VOID *));
+            // *ListPtr != NULL && *ElementCount == 0 ???
+            // Should not happen but free *ListPtr just in case
+            MyFreePool (*ListPtr);
+
+            TmpListPtr = AllocatePool (AllocatePointer);
         }
         else {
             TmpListPtr = EfiReallocatePool (
-                *ListPtr,
-                *ElementCount * sizeof (VOID *),
-                AllocateCount * sizeof (VOID *)
+                *ListPtr, ElementPointer, AllocatePointer
             );
         }
 
