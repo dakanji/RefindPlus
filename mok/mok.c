@@ -60,8 +60,15 @@ secure_mode (
 ) {
     EFI_STATUS status;
     EFI_GUID global_var = EFI_GLOBAL_VARIABLE;
-    UINTN charsize = sizeof (char);
+    UINTN charsize      = sizeof (char);
     UINT8 *sb = NULL, *setupmode = NULL;
+
+    STATIC BOOLEAN DoneOnce   = FALSE;
+    STATIC BOOLEAN SecureMode = FALSE;
+
+    if (DoneOnce) {
+        return SecureMode;
+    }
 
     status = EfivarGetRaw (
         &global_var,
@@ -71,16 +78,34 @@ secure_mode (
     );
 
     /* FIXME - more paranoia here? */
-    if (status != EFI_SUCCESS || charsize != sizeof (CHAR8) || *sb != 1) {
-        return FALSE;
+    if (status != EFI_SUCCESS ||
+        charsize != sizeof (CHAR8) ||
+        *sb != 1
+    ) {
+        SecureMode = FALSE;
+    }
+    else {
+        status = EfivarGetRaw (
+            &global_var,
+            L"SetupMode",
+            (CHAR8 **) &setupmode,
+            &charsize
+        );
+
+        if (status == EFI_SUCCESS &&
+            charsize == sizeof (CHAR8) &&
+            *setupmode == 1
+        ) {
+            SecureMode = FALSE;
+        }
+        else {
+            SecureMode = TRUE;
+        }
     }
 
-    status = EfivarGetRaw (&global_var, L"SetupMode", (CHAR8 **) &setupmode, &charsize);
-    if (status == EFI_SUCCESS && charsize == sizeof (CHAR8) && *setupmode == 1) {
-        return FALSE;
-    }
+    DoneOnce = TRUE;
 
-    return TRUE;
+    return SecureMode;
 } // secure_mode()
 
 // Returns TRUE if the shim program is available to verify binaries,
@@ -112,6 +137,7 @@ ShimValidate (
 ) {
     SHIM_LOCK   *shim_lock;
     EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
+
     if ((data != NULL) &&
         (refit_call3_wrapper(
             gBS->LocateProtocol,
@@ -124,7 +150,7 @@ ShimValidate (
             return FALSE;
         }
 
-        if (shim_lock->shim_verify(data, size) == EFI_SUCCESS) {
+        if (shim_lock->shim_verify (data, size) == EFI_SUCCESS) {
             return TRUE;
         }
     }
