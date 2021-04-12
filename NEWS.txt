@@ -1,6 +1,7 @@
 0.13.2.AC (Pre-Release):
-- Pending
-
+- Fixes volume badge icon detection bug
+  * ".VolumeIcon" file were not being detected as menat to be
+  * This bug was introduced in v0.13.2.AA (Commit 4bd2f6c)
 
 0.13.2.AB (09 Apr 2021):
 - Corrects Notes on "fold_linux_kernels" in the Configuration File

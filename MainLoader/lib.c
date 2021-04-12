@@ -2294,7 +2294,7 @@ SetVolumeIcons (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -2302,28 +2302,26 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Setting volume badge icon for volume %d", VolumeIndex);
+        LOG(2, LOG_LINE_NORMAL, L"Setting volume badge icon for volume %d", VolumeIndex);
         #endif
 
         SetVolumeBadgeIcon (Volume);
-        if (Volume->DiskKind) {
-            if (Volume->DiskKind == DISK_KIND_INTERNAL) {
-                // get custom volume icons if present
-                if (!Volume->VolIconImage) {
-                    #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL,
-                        L"Trying to load custom icon image for Volume %d",
-                        VolumeIndex
-                    );
-                    #endif
+        if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+            // get custom volume icons if present
+            if (!Volume->VolIconImage) {
+                #if REFIT_DEBUG > 0
+                LOG(2, LOG_LINE_NORMAL,
+                    L"Trying to load custom icon image for Volume %d",
+                    VolumeIndex
+                );
+                #endif
 
-                    Volume->VolIconImage = egLoadIconAnyType (
-                        Volume->RootDir,
-                        L"",
-                        L".VolumeIcon",
-                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                    );
-                }
+                Volume->VolIconImage = egLoadIconAnyType (
+                    Volume->RootDir,
+                    L"",
+                    L".VolumeIcon",
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
             }
         }
     } // for
