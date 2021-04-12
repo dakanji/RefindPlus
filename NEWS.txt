@@ -1,7 +1,9 @@
 0.13.2.AD (Pre-Release):
-- Pending
+- Fixes HiddenLegacy Handling
+  * HiddenLegacy tags were not being handled when scanning for bootloaders
+  * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
 
-
+0.13.2.AC (12 Apr 2021):
 - Fixes memory allocation bug
   * Progam hangs when 'fold_linux_kernels' is active and Linux instances with multiple kernels are present
   * This bug was introduced in v0.13.2.AA (Commit 68c7af0)

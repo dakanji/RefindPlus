@@ -1945,7 +1945,7 @@ ScanForBootloaders (
     CHAR8    ScanOption;
     BOOLEAN  ScanForLegacy = FALSE;
     EG_PIXEL BGColor       = COLOR_LIGHTBLUE;
-    CHAR16   *HiddenTags;
+    CHAR16   *HiddenTags, *HiddenLegacy;
     CHAR16   *OrigDontScanFiles;
     CHAR16   *OrigDontScanVolumes;
     CHAR16   ShortCutKey;
@@ -2005,11 +2005,13 @@ ScanForBootloaders (
     if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
         MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
+    MyFreePool (HiddenTags);
 
-    HiddenTags = ReadHiddenTags (L"HiddenTags");
-    if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
-        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenTags, L',');
+    HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
+    if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
+        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
     }
+    MyFreePool (HiddenLegacy);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -2144,10 +2146,10 @@ ScanForBootloaders (
         } // switch()
     } // for
 
-    // Restore the backed-up GlobalConfig.DontScan* variables....
+    // Restore the backed-up GlobalConfig.DontScan* variables
     MyFreePool(GlobalConfig.DontScanFiles);
-    GlobalConfig.DontScanFiles = OrigDontScanFiles;
     MyFreePool(GlobalConfig.DontScanVolumes);
+    GlobalConfig.DontScanFiles   = OrigDontScanFiles;
     GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
 
     if (MainMenu.EntryCount < 1) {
