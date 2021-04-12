@@ -11,7 +11,7 @@ The current development focus is on the following units:
 - **XServe2,1**: Early 2008 XServe
 - **XServe3,1**: Early 2009 XServe
 
-However, the fixes and enhancements that RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
+However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
 
 **NB:** This ReadMe reflects the current unreleased code base. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Released.md) for that related to the current release.
 
@@ -64,7 +64,7 @@ text_renderer        |Provides a text renderer that allows text mode when not ot
 uga_pass_through     |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 In addition to the new functions above, the following upsteam functions have been extended:
-- `use_graphics_for`: OpenCore and Clover added to loaders that can be set to boot in graphics mode.
+- `use_graphics_for`: OpenCore and Clover added as options that can be set to boot in graphics mode.
 - `showtools`: Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.

@@ -1,5 +1,5 @@
 # Building RefindPlus on Mac OS
-These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for buidling RefindPlus on Mac OS.
+These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for buidling the RefindPlus boot manager on Mac OS.
 
 These steps have been verified on Mac OS v10.12 (Sierra) and Mac OS v10.14 (Mojave) and should also work on Mac OS v10.13 (High Sierra) and Mac OS v10.15 (Catalina).
 
@@ -21,7 +21,7 @@ $ xcode-select --install
 
 #### Installing HomeBrew
 
-While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all tools required for Tianocore EDK II development.  These tools can be provided in a number of ways, but the two most popular ways come from HomeBrew and MacPorts.  This guide focuses on `HomeBrew` but equivalent steps can be taken in MacPorts.
+While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for Tianocore EDK II development.  These tools can be obtained in a number of ways, but the two most popular ways are by using HomeBrew or MacPorts.  This guide focuses on `HomeBrew` but equivalent steps can be taken in MacPorts.
 
 If you do not have HomeBrew already installed, go to the [HomeBrew Home Page](https://brew.sh) and follow the instructions. Installation involves copying and pasting a one-line code string into Terminal and pressing `Enter`.
 
@@ -38,8 +38,7 @@ $ export PATH=/usr/local/bin:$PATH
 The mtoc utility is required to convert the Mac OS Mach-O image format to the PE/COFF format required by the UEFI specifications.
 
 ```
-$ brew install mtoc
-$ brew upgrade mtoc
+$ brew install mtoc && brew upgrade mtoc
 ```
 
 ### Install the Netwide Assembler (NASM) with HomeBrew
@@ -47,8 +46,7 @@ $ brew upgrade mtoc
 The assembler used for Tianocore EDK II builds is the Netwide Assembler (NASM).
 
 ```
-$ brew install nasm
-$ brew upgrade nasm
+$ brew install nasm && brew upgrade nasm
 ```
 
 ### Install the ACPI Compiler with HomeBrew
@@ -56,8 +54,7 @@ $ brew upgrade nasm
 The ASL compiler is required to build code in ACPI Source Language for Tianocore EDK II firmware builds.
 
 ```
-$ brew install acpica
-$ brew upgrade acpica
+$ brew install acpica && brew upgrade acpica
 ```
 
 ### Install the QEMU Emulator with HomeBrew (Optional)
@@ -65,8 +62,7 @@ $ brew upgrade acpica
 The QEMU emulator from http://www.qemu.org/ is required to enable UEFI support on virtual machines.
 
 ```
-$ brew install qemu
-$ brew upgrade qemu
+$ brew install qemu && brew upgrade qemu
 ```
 
 ## Prepare the RefindPlus Environment
