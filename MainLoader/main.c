@@ -215,10 +215,11 @@ REFIT_CONFIG GlobalConfig = {
 
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
-BOOLEAN                ranCleanNvram        = FALSE;
-BOOLEAN                TweakSysTable        = FALSE;
 BOOLEAN                AptioWarn            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
+BOOLEAN                ranCleanNvram        = FALSE;
+BOOLEAN                TweakSysTable        = FALSE;
+BOOLEAN                ForceNativeLoggging  = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
@@ -1436,7 +1437,6 @@ STATIC VOID AdjustDefaultSelection() {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Adjusting 'default_selection' with 'PreviousBoot' values");
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 

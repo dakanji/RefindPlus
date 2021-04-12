@@ -887,7 +887,7 @@ RunGenericMenu (
     *DefaultEntryIndex = State.CurrentSelection;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Returning %d from RunGenericMenu()", MenuExit);
+    LOG(4, LOG_LINE_NORMAL, L"Returning '%d' from RunGenericMenu", MenuExit);
     #endif
 
     return MenuExit;

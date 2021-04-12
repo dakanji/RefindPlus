@@ -7,13 +7,13 @@
  *  Initial idea from Kabyl
  */
 
-#include <global.h>
 #include "../include/tiano_includes.h"
 #include "../Library/MemLogLib/MemLogLib.h"
 #include <Protocol/SimpleFileSystem.h>
 #include <Protocol/LoadedImage.h>
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include "../MainLoader/global.h"
 #include "../MainLoader/lib.h"
 #include "../MainLoader/mystrings.h"
 
@@ -29,7 +29,7 @@ extern  INT16  NowSecond;
 CHAR16  *gLogTemp       = NULL;
 
 BOOLEAN  TimeStamp             = TRUE;
-BOOLEAN  ForceNativeLoggging   = FALSE;
+BOOLEAN  UseMsgLog             = FALSE;
 
 
 CHAR16
@@ -392,14 +392,14 @@ DeepLoggger (
     } // switch
 
     if (FinalMessage) {
-        // Force Native Logging
-        ForceNativeLoggging = TRUE;
+        // Use Native Logging
+        UseMsgLog = TRUE;
         // Convert Unicode Message String to Ascii
         MyUnicodeStrToAsciiStr (FinalMessage, FormatString);
         // Write the Message String
         DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
-        // Disable Forced Native Logging
-        ForceNativeLoggging = FALSE;
+        // Disable Native Logging
+        UseMsgLog = FALSE;
     }
 
     MyFreePool (*Message);
@@ -426,8 +426,12 @@ DebugLog(
     }
 
     // Abort on higher log levels if not forcing
-    if (!ForceNativeLoggging && GlobalConfig.LogLevel > 0) {
-      return;
+    if (!UseMsgLog) {
+        UseMsgLog = ForceNativeLoggging;
+
+        if (!UseMsgLog && GlobalConfig.LogLevel > 0) {
+          return;
+        }
     }
 
     // Print message to log buffer
