@@ -1,0 +1,21 @@
+name: 'Close Known Issues'
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 16 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v3.0.18
+        with:
+          stale-issue-message: ''
+          close-issue-message: >
+            This issue has been automatically closed as a known issue.
+            Thank you for your contribution.
+          days-before-stale: 1
+          days-before-close: 1
+          exempt-assignees: 'dakanji'
+          stale-issue-label: ''
+          only-issue-labels: 'Duplicate,Known Issue'
