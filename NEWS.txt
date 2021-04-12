@@ -1,4 +1,4 @@
-0.13.2.AC (Pre-Release):
+0.13.2.AC (12 Apr 2021):
 - Fixes memory allocation bug
   * Progam hangs when 'fold_linux_kernels' is active and Linux instances with multiple kernels are present
   * This bug was introduced in v0.13.2.AA (Commit 68c7af0)
@@ -6,7 +6,7 @@
   * ".VolumeIcon" file were not being detected as menat to be
   * This bug was introduced in v0.13.2.AA (Commit 4bd2f6c)
 - Improves Upstream Logging Format and Coverage
-  * Formatted for better readability and incorporates key items from native foramt
+  * Formatted for better readability and incorporates key items from the native format
 
 0.13.2.AB (09 Apr 2021):
 - Corrects Notes on "fold_linux_kernels" in the Configuration File

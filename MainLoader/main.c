@@ -1913,13 +1913,9 @@ efi_main (
     ActiveCSR();
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (
-        L"Loaded RefindPlus v%s on %s Firmware",
-        REFINDPLUS_VERSION,
-        VendorInfo
-    );
+    MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
     LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("INFO: %s\n\n", MsgStr);
+    MsgLog ("INFO: %s on %s Firmware\n\n", MsgStr, VendorInfo);
     MyFreePool (MsgStr);
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
     #endif
