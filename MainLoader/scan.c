@@ -2230,7 +2230,7 @@ ScanForBootloaders (
             LoaderStr
         );
         LOG(4, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-        MsgLog ("INFO: %s\n\n");
+        MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         MyFreePool (keyStr);
         MyFreePool (LoaderStr);

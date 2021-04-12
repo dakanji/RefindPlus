@@ -274,12 +274,16 @@ egDumpGOPVideoModes (
     BOOLEAN    OurValidGOP = FALSE;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
     CHAR16 *PixelFormatDesc;
     #endif
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgLog ("** WARN: Could not Find GOP Instance\n\n");
+        MsgStr = StrDuplicate (L"Could not Find GOP Instance");
+        LOG(4, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
+        MsgLog ("** WARN: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -292,12 +296,15 @@ egDumpGOPVideoModes (
         LoopCount = 0;
 
         #if REFIT_DEBUG > 0
-        MsgLog (
-            "Query GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx):\n",
+        MsgStr = PoolPrint (
+            L"Querying GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx)",
             MaxMode,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
+        LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        MsgLog ("%s:\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         for (Mode = 0; Mode < NumModes; Mode++) {
@@ -399,7 +406,10 @@ egDumpGOPVideoModes (
 
     if (!OurValidGOP) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Could Not Find Usable GOP\n\n");
+        MsgStr = StrDuplicate (L"Could Not Find Usable GOP");
+        LOG(4, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
+        MsgLog ("INFO: %s:\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;

@@ -1729,6 +1729,10 @@ efi_main (
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Log Level:- '%d'\n\n", GlobalConfig.LogLevel);
+    #endif
+
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
@@ -1744,10 +1748,6 @@ efi_main (
         }
         #endif
     }
-    #endif
-
-    #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Log Level:- '%s'\n\n", GlobalConfig.LogLevel);
     #endif
 
     // Disable Forced Native Logging
@@ -1788,13 +1788,18 @@ efi_main (
 
         #if REFIT_DEBUG > 0
         Status = EFI_SUCCESS;
-        MsgLog ("INFO: Restore System Table ...%r\n\n", Status);
+        MsgStr = PoolPrint (L"Restore System Table ...%r", Status);
+        LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Initialising Basic Features");
-    MsgLog ("Initialise Screen...\n");
+    MsgStr = StrDuplicate (L"Initialise Screen");
+    LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    MsgLog ("%s...\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     InitScreen();

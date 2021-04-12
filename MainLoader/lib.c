@@ -1908,7 +1908,7 @@ SetPrebootVolumes (
                     MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
                     LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("\n");
-                    MsgLog ("  - %s");
+                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (MsgStr);
                     #endif
 

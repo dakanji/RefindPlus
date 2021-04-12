@@ -3,7 +3,7 @@
 
 ##--------------------------------------------------------------##
 ##               ADDITIONAL CONFIGURATION ITEMS                 ##
-##             New Features Provided by RefindPlus              ##
+##          New Functionality Provided by RefindPlus            ##
 ##--------------------------------------------------------------##
 #
 #
@@ -710,7 +710,7 @@
 #   0    - Combine Linux kernel entries: Off
 #   1    - Combine Linux kernel entries: On
 #
-# Combines Linux kernel entries when commented out
+# Active when commented out (Combines Linux kernel entries)
 #
 #fold_linux_kernels 0
 
@@ -949,8 +949,8 @@ menuentry "Windows 7" {
 }
 
 # EFI shells are programs just like boot loaders, and can be
-# launched in the same way. You can pass a shell the name of a
-# script that it is to run on the "options" line. The script
+# launched in the same way. You can pass a shell the name of
+# a script that it is to run on the "options" line. The script
 # could initialize hardware and then launch an OS, or it could
 # do something entirely different.
 menuentry "Windows via shell script" {
@@ -973,15 +973,15 @@ menuentry "My Mac OS" {
     disabled
 }
 
-# The firmware_bootnum token takes a HEXADECIMAL value as an option
-# and sets that value using the EFI's "BootNext" variable and then
+# The "firmware_bootnum" token takes a HEXADECIMAL value and
+# sets that value using the EFI's "BootNext" variable and then
 # reboots the computer. This triggers a one-time boot using this
 # boot option. It can be used for various purposes, but one that
 # may be of interest is that some Macs may produce lower-resolution
-# displays with HiDPI monitors when booted via RefindPlus as compared
-# to when booted via the Apple boot manager. Booting with RefindPlus
-# using this option may produce a better resolution. Note that the
-# "loader" option is not used for this type of configuration.
+# displays with HiDPI monitors when booted via RefindPlus compared to
+# when booted via the Apple boot manager. Booting with RefindPlus using
+# this option may produce a better resolution in such cases. Note that the
+# "loader" manual stanza option is not used with this type of configuration.
 menuentry "Mac OS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
