@@ -648,18 +648,18 @@ static LEGACY_ENTRY
 
     LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
-        L"Adding BIOS/CSM/Legacy entry for '%s'",
-        LegacyTitle
-    );
-    #endif
-
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (LegacyTitle);
 
        return NULL;
     } // if
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_MID,
+        L"Adding BIOS/CSM/Legacy entry for '%s'",
+        LegacyTitle
+    );
+    #endif
 
     // prepare the menu entry
     Entry                    = AllocateZeroPool (sizeof (LEGACY_ENTRY));

@@ -1956,6 +1956,7 @@ ScanForBootloaders (
     CHAR16   ShortCutKey;
 
     #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
     LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Boot Loaders");
     #endif
 
@@ -2156,16 +2157,20 @@ ScanForBootloaders (
 
     if (MainMenu.EntryCount < 1) {
         #if REFIT_DEBUG > 0
-        MsgLog ("* WARN: Could Not Find Boot Loaders\n\n");
+        MsgStr = StrDuplicate (L"Could Not Find Boot Loaders");
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        MsgLog ("* WARN: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else {
         // assign shortcut keys
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_THIN_SEP, L"Assigning Boot Shortcut Keys");
-
+        MsgStr = StrDuplicate (L"Assigning Boot Shortcut Keys");
+        LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
-        MsgLog ("Assign Keyboard Shortcut Keys:\n");
+        MsgLog ("%s:\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
@@ -2190,12 +2195,13 @@ ScanForBootloaders (
 
 
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL,
+            MsgStr = PoolPrint (
                 L"Set Key '%d' to %s",
                 k, MainMenu.Entries[i]->Title
             );
-
-            MsgLog ("  - Set Key '%d' to %s", k, MainMenu.Entries[i]->Title);
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s", MsgStr);
+            MyFreePool (MsgStr);
             if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
                 MsgLog ("\n");
             }
@@ -2221,13 +2227,16 @@ ScanForBootloaders (
         else {
             LoaderStr = StrDuplicate (L"Boot Loaders");
         }
-        MsgLog (
-            "INFO: Assigned Keyboard Shortcut %s to %d of %d %s\n\n",
-            keyStr,
-            i,
+
+        MsgStr = PoolPrint (
+            L"Assigned Boot Shortcut %s to %d of %d %s",
+            keyStr, i,
             MainMenu.EntryCount,
             LoaderStr
         );
+        LOG(4, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n");
+        MyFreePool (MsgStr);
         MyFreePool (keyStr);
         MyFreePool (LoaderStr);
         #endif

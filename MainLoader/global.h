@@ -470,9 +470,9 @@ extern UINTN                VolumesCount;
 extern UINTN                PreBootVolumesCount;
 
 extern BOOLEAN              IsBoot;
-extern BOOLEAN              DeepLoggging;
 extern BOOLEAN              TweakSysTable;
 extern BOOLEAN              DetectedDevices;
+extern BOOLEAN              ForceNativeLoggging;
 
 extern EFI_FILE            *SelfDir;
 extern EFI_FILE            *SelfRootDir;

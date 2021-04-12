@@ -46,9 +46,8 @@ AMEND THE TEMPLATE AFTER THE ARROW BELOW
 
 **Log and Config Files**
 <!--
-Add debug log files and your config file to help with understanding your issue.
-Please upload debug log files at log level 0. If additional details are required, a request for a specific log level will be made but you can also upload debug log files at log level 3 **In Addition** to those at log level 0. Debug log files at log level 4 typically contain too much detail and should only be attached when requested.
-Kindly attach the files (you can rename as *.txt or zip them) as opposed to pasting the debug logs or config files directly.
+Add debug log files (Log Level 3 or 4) and your config file to help with understanding your issue.
+Kindly attach the files as opposed to pasting them debug logs or config files directly.
 ENTER AFTER THE ARROW BELOW
 -->
 

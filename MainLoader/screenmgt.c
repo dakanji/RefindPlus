@@ -102,10 +102,6 @@ VOID
 InitScreen (
     VOID
 ) {
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering InitScreen");
-    #endif
-
     // initialize libeg
     egInitScreen();
 

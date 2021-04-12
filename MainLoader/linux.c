@@ -257,7 +257,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
     UINTN               TokenCount;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Add Linux Kernel as SubMenu: START");
+    LOG(4, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
     #endif
 
     File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
@@ -318,7 +318,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
     }
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Add Linux Kernel as SubMenu: ENDED");
+    LOG(4, LOG_THREE_STAR_MID, L"Added Linux Kernel as SubMenu Entry");
     #endif
 } // static VOID AddKernelToSubmenu()
 

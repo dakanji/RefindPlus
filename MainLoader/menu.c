@@ -358,7 +358,7 @@ AddMenuInfoLine (
 VOID
 AddMenuEntry (
     IN REFIT_MENU_SCREEN *Screen,
-    IN REFIT_MENU_ENTRY *Entry
+    IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL, L"Adding menu entry to %s: '%s'", Screen->Title, Entry->Title);
@@ -444,7 +444,12 @@ SaveScreen (
     UINTN retval;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Threshold Exceeded ...Start Screensaver\n");
+    CHAR16 *MsgStr = NULL;
+
+    MsgStr = StrDuplicate (L"Start Screensaver");
+    LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+    MsgLog ("INFO: Threshold Exceeded ...%s\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     EG_PIXEL OUR_COLOUR;
@@ -539,7 +544,10 @@ SaveScreen (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Detected Keypress ...Ending Screensaver\n\n");
+    MsgStr = StrDuplicate (L"Detected Keypress ...Ending Screensaver");
+    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     if (AllowGraphicsMode) {

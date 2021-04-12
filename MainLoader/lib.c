@@ -1862,6 +1862,10 @@ SetPrebootVolumes (
     BOOLEAN SwapName;
     BOOLEAN FoundPreboot = FALSE;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     MyFreePool (PreBootVolumes);
     PreBootVolumes      = NULL;
     PreBootVolumesCount = 0;
@@ -1875,7 +1879,10 @@ SetPrebootVolumes (
 
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
-        MsgLog ("ReMap APFS Volumes:");
+        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
+        LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        MsgLog ("%s:", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
@@ -1891,9 +1898,13 @@ SetPrebootVolumes (
 
                 if (SwapName) {
                     #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
+                    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("\n");
-                    MsgLog ("  - Mapped Volume:- '%s'", Volumes[i]->VolName);
+                    MsgLog ("  - %s");
+                    MyFreePool (MsgStr);
                     #endif
+
                     MyFreePool (Volumes[i]->VolName);
                     Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
                 }
@@ -2152,14 +2163,12 @@ ScanVolumes (
         SelfVolRun = TRUE;
 
         #if REFIT_DEBUG > 0
-        DeepLoggging = TRUE;
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
         MsgLog (
             "INFO: Self Volume:- '%s::%s'\n\n",
             SelfVolume->VolName, SelfGUID
         );
         MyFreePool (SelfGUID);
-        DeepLoggging = FALSE;
         #endif
 
         return;
@@ -2272,7 +2281,10 @@ ScanVolumes (
     } // for
 
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_SEP, L"Identified %d Volumes", VolumesCount);
+
     if (SelfVolRun && GlobalConfig.ScanOtherESP) {
+        LOG(3, LOG_LINE_NORMAL, L"'ScanOtherESP' is active", VolumesCount);
         MsgLog ("INFO: ScanOtherESP:- 'Active'\n\n");
     }
     #endif
@@ -2280,10 +2292,6 @@ ScanVolumes (
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
         SetPrebootVolumes();
     }
-
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Identified %d Volumes", VolumesCount);
-    #endif
 } // VOID ScanVolumes()
 
 VOID

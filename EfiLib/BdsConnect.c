@@ -242,6 +242,7 @@ BdsLibConnectMostlyAllEfi (
     CHAR16 *GopDevicePathStr = NULL;
     CHAR16 *DevicePathStr    = NULL;
     CHAR16 *DeviceData       = NULL;
+    CHAR16 *MsgStr           = NULL;
     #endif
 
     DetectedDevices = FALSE;
@@ -249,10 +250,16 @@ BdsLibConnectMostlyAllEfi (
     #if REFIT_DEBUG > 0
     if (PostConnect) {
         if (ReLoaded) {
-            MsgLog ("Reconnect Device Handles to Controllers...\n");
+            MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
+            LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+            MsgLog ("%s...\n", MsgStr);
+            MyFreePool (MsgStr);
         }
         else {
-            MsgLog ("Link Device Handles to Controllers...\n");
+            MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
+            LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+            MsgLog ("%s...\n", MsgStr);
+            MyFreePool (MsgStr);
         }
     }
     #endif
@@ -274,7 +281,10 @@ BdsLibConnectMostlyAllEfi (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         if (PostConnect) {
-            MsgLog ("** ERROR: Could Not Locate Device Handles\n\n");
+            MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
+            LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            MsgLog ("%s\n\n", MsgStr);
+            MyFreePool (MsgStr);
         }
         #endif
     }
@@ -301,14 +311,20 @@ BdsLibConnectMostlyAllEfi (
             if (EFI_ERROR (XStatus)) {
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
-                    MsgLog ("Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
+                    MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
+                    LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    MsgLog ("%s", MsgStr);
+                    MyFreePool (MsgStr);
                 }
                 #endif
             }
             else if (HandleType == NULL) {
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
-                    MsgLog ("Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
+                    MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
+                    LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    MsgLog ("%s", MsgStr);
+                    MyFreePool (MsgStr);
                 }
                 #endif
             }
@@ -330,7 +346,10 @@ BdsLibConnectMostlyAllEfi (
                 if (!Device) {
                     #if REFIT_DEBUG > 0
                     if (PostConnect) {
-                        MsgLog ("Handle 0x%03X ...Discounted [Other Item]", HexIndex);
+                        MsgStr = PoolPrint (L"Handle 0x%03X ...Discounted [Other Item]", HexIndex);
+                        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        MsgLog ("%s", MsgStr);
+                        MyFreePool (MsgStr);
                     }
                     #endif
                 }
@@ -487,7 +506,13 @@ BdsLibConnectMostlyAllEfi (
                     if (Parent) {
                         #if REFIT_DEBUG > 0
                         if (PostConnect) {
-                            MsgLog ("Handle 0x%03X ...Skipped [Parent Device]%s", HexIndex, DeviceData);
+                            MsgStr = PoolPrint (
+                                L"Handle 0x%03X ...Skipped [Parent Device]%s",
+                                HexIndex, DeviceData
+                            );
+                            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            MsgLog ("%s", MsgStr);
+                            MyFreePool (MsgStr);
                         }
                         #endif
                     }
@@ -496,7 +521,13 @@ BdsLibConnectMostlyAllEfi (
 
                         #if REFIT_DEBUG > 0
                         if (PostConnect) {
-                            MsgLog ("Handle 0x%03X  * %r                %s", HexIndex, XStatus, DeviceData);
+                            MsgStr = PoolPrint (
+                                L"Handle 0x%03X  * %r                %s",
+                                HexIndex, XStatus, DeviceData
+                            );
+                            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            MsgLog ("%s", MsgStr);
+                            MyFreePool (MsgStr);
                         }
                         #endif
                     }
@@ -505,22 +536,46 @@ BdsLibConnectMostlyAllEfi (
 
                         if (XStatus == EFI_NOT_STARTED) {
                             if (PostConnect) {
-                                MsgLog ("Handle 0x%03X ...Declined [Empty Device]%s", HexIndex, DeviceData);
+                                MsgStr = PoolPrint (
+                                    L"Handle 0x%03X ...Declined [Empty Device]%s",
+                                    HexIndex, DeviceData
+                                );
+                                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                                MsgLog ("%s", MsgStr);
+                                MyFreePool (MsgStr);
                             }
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
                             if (PostConnect) {
-                                MsgLog ("Handle 0x%03X ...Bypassed [Not Linkable]%s", HexIndex, DeviceData);
+                                MsgStr = PoolPrint (
+                                    L"Handle 0x%03X ...Bypassed [Not Linkable]%s",
+                                    HexIndex, DeviceData
+                                );
+                                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                                MsgLog ("%s", MsgStr);
+                                MyFreePool (MsgStr);
                             }
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
                             if (PostConnect) {
-                                MsgLog ("Handle 0x%03X - ERROR: Invalid Param%s", HexIndex, DeviceData);
+                                MsgStr = PoolPrint (
+                                    L"Handle 0x%03X - ERROR: Invalid Param%s",
+                                    HexIndex, DeviceData
+                                );
+                                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                                MsgLog ("%s", MsgStr);
+                                MyFreePool (MsgStr);
                             }
                         }
                         else {
                             if (PostConnect) {
-                                MsgLog ("Handle 0x%03X - WARN: %r%s", HexIndex, XStatus, DeviceData);
+                                MsgStr = PoolPrint (
+                                    L"Handle 0x%03X - WARN: %r%s",
+                                    HexIndex, XStatus, DeviceData
+                                );
+                                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                                MsgLog ("%s", MsgStr);
+                                MyFreePool (MsgStr);
                             }
                         }
 
@@ -576,6 +631,10 @@ BdsLibConnectAllDriversToAllControllersEx (
 ) {
     EFI_STATUS  Status;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     // Always position for multiple scan
     PostConnect = FALSE;
 
@@ -605,11 +664,18 @@ BdsLibConnectAllDriversToAllControllersEx (
             }
         }
         else {
-            MsgLog ("INFO: Additional DXE Drivers Revealed ...Relink Handles\n\n");
+            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ...Relink Handles");
+            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
         }
         #endif
 
     } while (!EFI_ERROR (Status));
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_MID, L"Connected handles to controllers");
+    #endif
 
     if (FoundGOP) {
         return EFI_SUCCESS;
@@ -629,21 +695,35 @@ ApplyGOPFix (
 ) {
     EFI_STATUS Status;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     // Update Boot Services to permit reloading GPU ROM
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Amend System Table ...%r\n\n", Status);
+    LOG(3, LOG_LINE_SEPARATOR, L"Reload GOP");
+
+    MsgStr = PoolPrint (L"Amend System Table ...%r", Status);
+    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Acquire GOP on Volatile Storage ...");
         if (Status == EFI_INCOMPATIBLE_VERSION) {
-            MsgLog ("Feature Unavailable\n\n");
+            MsgStr = PoolPrint (L"Acquire GOP on Volatile Storage ...Feature Unavailable");
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
         }
         else {
-            MsgLog ("%r\n\n", Status);
+            MsgStr = PoolPrint (L"Acquire GOP on Volatile Storage ...%r", Status);
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
         }
         #endif
 
@@ -670,6 +750,10 @@ BdsLibConnectAllDriversToAllControllers (
 ) {
     EFI_STATUS Status;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
@@ -677,12 +761,17 @@ BdsLibConnectAllDriversToAllControllers (
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Issue GOP from Volatile Storage ...");
             if (Status == EFI_INCOMPATIBLE_VERSION) {
-                MsgLog ("Feature Unavailable\n\n");
+                MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...Feature Unavailable");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s\n\n", MsgStr);
+                MyFreePool (MsgStr);
             }
             else {
-                MsgLog ("%r\n\n", Status);
+                MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...%r", Status);
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s\n\n", MsgStr);
+                MyFreePool (MsgStr);
             }
             #endif
 

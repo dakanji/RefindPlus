@@ -28,8 +28,8 @@ extern  INT16  NowSecond;
 
 CHAR16  *gLogTemp       = NULL;
 
-BOOLEAN  TimeStamp      = TRUE;
-BOOLEAN  DeepLoggging   = FALSE;
+BOOLEAN  TimeStamp             = TRUE;
+BOOLEAN  ForceNativeLoggging   = FALSE;
 
 
 CHAR16
@@ -363,6 +363,9 @@ DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
+        case LOG_STAR_SEPARATOR:
+            FinalMessage = PoolPrint (L"\n\n** ** *** *** ***[ %s ]*** *** *** ** **\n\n", *Message);
+            break;
         case LOG_LINE_SEPARATOR:
             FinalMessage = PoolPrint (L"\n=================[ %s ]=================\n", *Message);
             break;
@@ -389,14 +392,14 @@ DeepLoggger (
     } // switch
 
     if (FinalMessage) {
-        // Enable Forced Logging
-        DeepLoggging = TRUE;
+        // Force Native Logging
+        ForceNativeLoggging = TRUE;
         // Convert Unicode Message String to Ascii
         MyUnicodeStrToAsciiStr (FinalMessage, FormatString);
         // Write the Message String
         DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
-        // Disable Forced Logging
-        DeepLoggging = FALSE;
+        // Disable Forced Native Logging
+        ForceNativeLoggging = FALSE;
     }
 
     MyFreePool (*Message);
@@ -423,7 +426,7 @@ DebugLog(
     }
 
     // Abort on higher log levels if not forcing
-    if (!DeepLoggging && GlobalConfig.LogLevel > 0) {
+    if (!ForceNativeLoggging && GlobalConfig.LogLevel > 0) {
       return;
     }
 

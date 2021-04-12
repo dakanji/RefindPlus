@@ -1628,7 +1628,12 @@ efi_main (
     CHAR16    *SelectionName = NULL;
     CHAR16    *ShowScreenStr = NULL;
 
-    DeepLoggging = TRUE;
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
+    // Force Native Logging
+    ForceNativeLoggging = TRUE;
 
     // bootstrap
     InitializeLib (ImageHandle, SystemTable);
@@ -1662,7 +1667,7 @@ efi_main (
     #if REFIT_DEBUG > 0
     InitBooterLog();
 
-    CONST CHAR16 *NowDateStr = PoolPrint (
+    CONST CHAR16 *ConstDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear,
         NowMonth,
@@ -1671,6 +1676,7 @@ efi_main (
         NowMinute,
         NowSecond
     );
+
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
         REFINDPLUS_VERSION,
@@ -1682,13 +1688,11 @@ efi_main (
 #else
     MsgLog ("Made With:- 'TianoCore EDK II'\n");
 #endif
-    MsgLog ("Timestamp:- '%s (GMT)'\n\n", NowDateStr);
+    MsgLog ("Timestamp:- '%s (GMT)'\n\n", ConstDateStr);
 
     // Log System Details
     LogBasicInfo ();
     #endif
-
-    DeepLoggging = FALSE;
 
     // read configuration
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
@@ -1741,6 +1745,13 @@ efi_main (
         #endif
     }
     #endif
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("INFO: Log Level:- '%s'\n\n", GlobalConfig.LogLevel);
+    #endif
+
+    // Disable Forced Native Logging
+    ForceNativeLoggging = FALSE;
 
     LoadDrivers();
 
@@ -1902,14 +1913,14 @@ efi_main (
     ActiveCSR();
 
     #if REFIT_DEBUG > 0
-    MsgLog (
-        "INFO: Loaded RefindPlus v%s on %s Firmware\n\n",
+    MsgStr = PoolPrint (
+        L"Loaded RefindPlus v%s on %s Firmware",
         REFINDPLUS_VERSION,
         VendorInfo
     );
-    #endif
-
-    #if REFIT_DEBUG > 0
+    LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n\n", MsgStr);
+    MyFreePool (MsgStr);
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
     #endif
 
