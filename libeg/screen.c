@@ -297,7 +297,7 @@ egDumpGOPVideoModes (
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Querying GOP Modes (Modes=%d, FrameBuffer=0x%lx-0x%lx)",
+            L"Analyse GOP Modes (%d Modes ... 0x%lx-0x%lx FrameBuffer)",
             MaxMode,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
@@ -426,7 +426,11 @@ EFI_STATUS
 GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
-    EFI_STATUS   Status;
+    EFI_STATUS Status;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
 
     if (GOPDraw == NULL) {
         return EFI_UNSUPPORTED;
@@ -439,8 +443,10 @@ GopSetModeAndReconnectTextOut (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Switch to GOP Mode[%d] ...%r", ModeNumber, Status);
-    MsgLog ("  - Switch to GOP Mode[%d] ...%r\n\n", ModeNumber, Status);
+    MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ...%r", ModeNumber, Status);
+    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("  - %s\n\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     return Status;
@@ -459,13 +465,18 @@ egSetGOPMode (
     UINT32       i = 0;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+
     MsgLog ("Set GOP Mode:");
     #endif
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Could not Set GOP Mode");
+        LOG(2, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         MsgLog ("\n\n");
-        MsgLog ("** WARN: Could not Set GOP Mode\n\n");
+        MsgLog ("** WARN: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -479,8 +490,11 @@ egSetGOPMode (
         Status = EFI_UNSUPPORTED;
 
         #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Incompatible GPU");
+        LOG(2, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         MsgLog ("\n\n");
-        MsgLog ("** WARN: Incompatible GPU\n\n");
+        MsgLog ("** WARN: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else {
@@ -534,6 +548,10 @@ egSetMaxResolution (
     UINT32       Mode;
     UINTN        SizeOfInfo;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     if (GOPDraw == NULL) {
         // Cannot do this in text mode or with UGA.
         // So get and set basic data and ignore.
@@ -580,8 +598,12 @@ egSetMaxResolution (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"BestMode: GOP Mode[%d] @ %d x %d", BestMode, Width, Height);
-    MsgLog ("  - BestMode: GOP Mode[%d] @ %d x %d", BestMode, Width, Height);
+    MsgStr = PoolPrint (L"BestMode: GOP Mode[%d] @ %d x %d",
+        BestMode, Width, Height
+    );
+    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("  - %s\n\n", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     // check if requested mode is equal to current mode
@@ -589,9 +611,10 @@ egSetMaxResolution (
         Status = EFI_SUCCESS;
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Screen Resolution Already Set");
-        MsgLog ("\n\n");
-        MsgLog ("INFO: Screen Resolution Already Set\n\n");
+        MsgStr = StrDuplicate (L"Screen Resolution Already Set");
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
@@ -612,8 +635,10 @@ egSetMaxResolution (
             Status = egSetGOPMode (1);
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Could Not Set BestMode ...Using First Useable Mode");
-            MsgLog ("** WARN: Could Not Set BestMode ...Using First Useable Mode\n\n");
+            MsgStr = StrDuplicate (L"Could Not Set BestMode ... Try First Useable Mode");
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("** WARN: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         }
     }

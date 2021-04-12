@@ -1851,7 +1851,7 @@ VOID ScanFirmwareDefined (
                 if (StriSubCmp (OneElement, CurrentEntry->BootEntry.Label) &&
                     !IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)
                 ) {
-                        ScanIt = TRUE;
+                    ScanIt = TRUE;
                 }
                 MyFreePool (OneElement);
             } // while()
@@ -1864,7 +1864,10 @@ VOID ScanFirmwareDefined (
 
         if (ScanIt) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Adding EFI loader entry for '%s'", CurrentEntry->BootEntry.Label);
+            LOG(1, LOG_LINE_NORMAL,
+                L"Adding EFI loader entry for '%s'",
+                CurrentEntry->BootEntry.Label
+            );
             #endif
 
             AddEfiLoaderEntry (
@@ -1899,6 +1902,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
             Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
             break;
     } // switch()
+
     return Badge;
 } // EG_IMAGE * GetDiskBadge()
 
@@ -1929,6 +1933,7 @@ static LOADER_ENTRY * AddToolEntry (
     Entry->UseGraphicsMode   = UseGraphicsMode;
 
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+
     return Entry;
 } /* static LOADER_ENTRY * AddToolEntry() */
 
@@ -1952,28 +1957,27 @@ ScanForBootloaders (
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
-    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Boot Loaders");
     #endif
 
     ScanningLoaders = TRUE;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Seek Boot Loaders...");
+    MsgStr = StrDuplicate (L"Seek Boot Loaders");
+    LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    MsgLog ("%s...", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 
     if (ShowMessage){
         egDisplayMessage (L"Seeking Boot Loaders. Please Wait...", &BGColor, CENTER);
     }
 
-    // Determine up-front if we'll be scanning for legacy loaders....
+    // Determine up-front if we will be scanning for legacy loaders
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
         ScanOption = GlobalConfig.ScanFor[i];
-        if ((ScanOption == 'c') ||
-            (ScanOption == 'C') ||
-            (ScanOption == 'h') ||
-            (ScanOption == 'H') ||
-            (ScanOption == 'b') ||
-            (ScanOption == 'B')
+        if (ScanOption == 'c' || ScanOption == 'C' ||
+            ScanOption == 'h' || ScanOption == 'H' ||
+            ScanOption == 'b' || ScanOption == 'B'
         ) {
             ScanForLegacy = TRUE;
         }
