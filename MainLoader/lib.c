@@ -1270,6 +1270,10 @@ SetVolumeBadgeIcon (
     }
 
     if (Volume->VolBadgeImage == NULL) {
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Could not Set Volume Badge Icon");
+        #endif
+
         switch (Volume->DiskKind) {
             case DISK_KIND_INTERNAL:
                 Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL);
@@ -2313,18 +2317,16 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Setting volume badge icon for volume %d", VolumeIndex);
+        LOG(2, LOG_LINE_NORMAL, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
         #endif
 
         SetVolumeBadgeIcon (Volume);
+
         if (Volume->DiskKind == DISK_KIND_INTERNAL) {
             // get custom volume icons if present
             if (!Volume->VolIconImage) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL,
-                    L"Trying to load custom icon image for Volume %d",
-                    VolumeIndex
-                );
+                LOG(2, LOG_LINE_NORMAL, L"Trying to load custom icon image");
                 #endif
 
                 Volume->VolIconImage = egLoadIconAnyType (

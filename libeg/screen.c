@@ -684,8 +684,9 @@ egInitScreen (
     UINTN                         i;
     BOOLEAN                       thisValidGOP = FALSE;
 
-
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+
     MsgLog ("Check for Graphics:\n");
     #endif
 
@@ -748,12 +749,18 @@ egInitScreen (
         DetectedDevices  = FALSE;
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Console Control ...NOT OK!\n\n");
+        MsgStr = StrDuplicate (L"Assess Console Control ...NOT OK!");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Console Control ...ok\n\n");
+        MsgStr = StrDuplicate (L"Assess Console Control ...ok");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
 
@@ -850,12 +857,18 @@ egInitScreen (
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Universal Graphics Adapter ...NOT OK!\n\n");
+        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...NOT OK!");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Universal Graphics Adapter ...ok\n\n");
+        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...ok");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
 
@@ -969,7 +982,10 @@ egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Graphics Output Protocol ...NOT FOUND!\n\n");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT FOUND!");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
 
@@ -978,7 +994,10 @@ egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Assess Graphics Output Protocol ...ERROR!\n\n");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ERROR!");
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else if (!EFI_ERROR (Status) && XFlag != EFI_ALREADY_STARTED) {
@@ -990,14 +1009,20 @@ egInitScreen (
             GOPDraw = OldGOP;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Assess Graphics Output Protocol ...ok\n\n");
+            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ok");
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         }
         else {
             XFlag = EFI_UNSUPPORTED;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Assess Graphics Output Protocol ...NOT OK!\n\n");
+            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT OK!");
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
 
             #ifdef __MAKEWITH_TIANO
@@ -1025,7 +1050,10 @@ egInitScreen (
     if (XFlag != EFI_NOT_FOUND && XFlag != EFI_UNSUPPORTED && GlobalConfig.UseDirectGop) {
         if (GOPDraw == NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Cannot Implement Direct GOP Renderer\n\n");
+            MsgStr = StrDuplicate (L"Cannot Implement Direct GOP Renderer");
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         }
         else {
@@ -1060,19 +1088,28 @@ egInitScreen (
             }
 
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Implement Direct GOP Renderer ...%r\n\n", Status);
+            MsgStr = PoolPrint (L"Implement Direct GOP Renderer ...%r", Status);
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         }
     }
 
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Implement Graphics Output Protocol ...%r\n\n", XFlag);
+        MsgStr = PoolPrint (L"Graphics Output Protocol ...%r", XFlag);
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
     }
     else if (XFlag == EFI_UNSUPPORTED) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Provide GOP on ConsoleOut Handle ...%r\n\n", Status);
+        MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ...%r", Status);
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         if (!EFI_ERROR (Status)) {
@@ -1087,7 +1124,10 @@ egInitScreen (
 
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: Invalid GOP Instance\n\n");
+            MsgStr = StrDuplicate (L"Invalid GOP Instance");
+            LOG(4, LOG_LINE_NORMAL, L"WARNING: %s!", MsgStr);
+            MsgLog ("** WARN: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
 
             GOPDraw = NULL;
@@ -1109,7 +1149,10 @@ egInitScreen (
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
             if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgLog ("INFO: Implement Graphics Output Protocol ...%r\n\n", Status);
+                MsgStr = PoolPrint (L"Implement Graphics Output Protocol ...%r", Status);
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s\n\n", MsgStr);
+                MyFreePool (MsgStr);
             }
             #endif
         }
@@ -1123,7 +1166,10 @@ egInitScreen (
             Status = OcProvideUgaPassThrough();
 
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Implement UGA Pass Through ...%r\n\n", Status);
+            MsgStr = PoolPrint (L"Implement UGA Pass Through ...%r", Status);
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         }
         #endif
@@ -1138,7 +1184,10 @@ egInitScreen (
 
             if (!EFI_ERROR (Status)) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("INFO: GOP not Available\n");
+                MsgStr = StrDuplicate (L"GOP not Available");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s\n\n", MsgStr);
+                MyFreePool (MsgStr);
                 MsgLog ("      Fall Back on UGA\n\n");
                 #endif
 
@@ -1152,7 +1201,10 @@ egInitScreen (
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("INFO: Graphics not Available\n");
+                MsgStr = StrDuplicate (L"Graphics not Available");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s\n\n", MsgStr);
+                MyFreePool (MsgStr);
                 MsgLog ("      Fall Back on Text Mode\n\n");
                 #endif
             }
@@ -1177,7 +1229,10 @@ egInitScreen (
             Status = OcUseBuiltinTextOutput (ScreenMode);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Implement Text Renderer ...%r\n\n", Status);
+            MsgStr = PoolPrint (L"Implement Text Renderer ...%r", Status);
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
         #endif
     }
