@@ -109,14 +109,14 @@ for filename in sys.argv[1:]:
             planes[2].append(pixeldata)
 
     else:
-        print " Error: Mode not supported!"
+        print " Error: Mode not supported!!"
         continue
 
     # special treatment for fonts
 
     if basename[0:4] == "font":
         if planes[0] != planes[1] or planes[0] != planes[2]:
-            print " Error: Font detected, but it is not greyscale!"
+            print " Error: Font detected, but it is not greyscale!!"
             continue
         print " font detected, encoding as alpha-only"
         # invert greyscale values for use as alpha
@@ -176,4 +176,4 @@ for filename in sys.argv[1:]:
     f.write(output)
     f.close()
 
-print "Done!"
+print "Done!!"

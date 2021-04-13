@@ -1037,6 +1037,7 @@ WarnIfLegacyProblems (
 ) {
     UINTN    i               = 0;
     CHAR16   *ShowScreenStr  = NULL;
+    CHAR16   *TempScreenStr  = NULL;
     BOOLEAN  found           = FALSE;
 
 
@@ -1054,13 +1055,30 @@ WarnIfLegacyProblems (
         if (found) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"BIOS/CSM/Legacy support enabled in RefindPlus but unavailable in EFI!"
+                L"BIOS/CSM/Legacy support enabled in RefindPlus but unavailable in EFI!!"
             );
             #endif
 
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n         (BIOS) boot options; however, this is not possible because your computer lacks\n         the necessary Compatibility Support Module (CSM) support or that support is\n         disabled in your firmware.";
+            TempScreenStr = StrDuplicate (
+                L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n"
+            );
+            ShowScreenStr = PoolPrint (
+                L"%s         (BIOS) boot options; however, this is not possible because your computer lacks\n",
+                TempScreenStr
+            );
+            MyFreePool (TempScreenStr);
+            TempScreenStr = PoolPrint (
+                L"%s         the necessary Compatibility Support Module (CSM) support or that support is\n",
+                ShowScreenStr
+            );
+            MyFreePool (ShowScreenStr);
+            ShowScreenStr = PoolPrint (
+                L"%s         disabled in your firmware.",
+                TempScreenStr
+            );
+            MyFreePool (TempScreenStr);
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);

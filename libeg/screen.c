@@ -347,7 +347,7 @@ egDumpGOPVideoModes (
                         break;
 
                     default:
-                        PixelFormatDesc = L"Invalid!";
+                        PixelFormatDesc = L"Invalid!!";
                         break;
                 }
 

@@ -2132,7 +2132,7 @@ SaveHiddenList(
         TRUE
     );
 
-    CheckError(Status, L"in SaveHiddenList()");
+    CheckError(Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
 
@@ -2217,7 +2217,7 @@ ManageHiddenTags (
                     TRUE
                 );
                 SaveLegacy = TRUE;
-                CheckError (Status, L"in ManageHiddenTags()");
+                CheckError (Status, L"in ManageHiddenTags!!");
             } // if
         } // if
 
@@ -2285,7 +2285,7 @@ static VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
             StrLen (HiddenTags) * 2 + 2,
             TRUE
         );
-        CheckError (Status, L"in AddToHiddenTags()");
+        CheckError (Status, L"in AddToHiddenTags!!");
         MyFreePool (HiddenTags);
     } // if
 } // VOID AddToHiddenTags()

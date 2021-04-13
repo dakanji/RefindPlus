@@ -325,7 +325,7 @@ HiiCreateRamDisk (
           EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
           &Key,
           L"",
-          L"Not enough memory to get the file information!",
+          L"Not enough memory to get the file information!!",
           L"Press ENTER to continue ...",
           L"",
           NULL
@@ -347,7 +347,7 @@ HiiCreateRamDisk (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
         &Key,
         L"",
-        L"The given RAM disk size is too large!",
+        L"The given RAM disk size is too large!!",
         L"Press ENTER to continue ...",
         L"",
         NULL
@@ -379,7 +379,7 @@ HiiCreateRamDisk (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
         &Key,
         L"",
-        L"Not enough memory to create the RAM disk!",
+        L"Not enough memory to create the RAM disk!!",
         L"Press ENTER to continue ...",
         L"",
         NULL
@@ -405,7 +405,7 @@ HiiCreateRamDisk (
           EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
           &Key,
           L"",
-          L"File content read error!",
+          L"File content read error!!",
           L"Press ENTER to continue ...",
           L"",
           NULL
@@ -432,7 +432,7 @@ HiiCreateRamDisk (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
         &Key,
         L"",
-        L"Fail to register the newly created RAM disk!",
+        L"Fail to register the newly created RAM disk!!",
         L"Press ENTER to continue ...",
         L"",
         NULL

@@ -2002,7 +2002,7 @@ efi_main (
                         0, NULL
                     );
 
-                    ShowScreenStr = L"System Reset FAILED!";
+                    ShowScreenStr = L"System Reset FAILED!!";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0

@@ -88,7 +88,7 @@ for filename in sys.argv[1:]:
             rawdata.extend(planes[2])
 
     else:
-        print " Mode not supported!"
+        print " Mode not supported!!"
         continue
 
     rawlen = len(rawdata)
@@ -111,4 +111,4 @@ static BUILTIN_IMAGE image_%s = { NULL, %d, %d, %d, %d, image_%s_compdata, %d };
     f.write(output)
     f.close()
 
-print "Done!"
+print "Done!!"

@@ -36,7 +36,7 @@
 if [[ $# != 4 ]] ; then
    echo "Usage: $0 font-name font-size y-offset bitmap-filename.png"
    echo "   font-name: Name of font (use 'convert -list font | less' to get list)"
-   echo "              NOTE: Font MUST be monospaced!"
+   echo "              NOTE: Font MUST be monospaced!!"
    echo "   font-size: Font size in points"
    echo "   y-offset: pixels font is shifted (may be negative)"
    echo "   bitmap-filename.png: output filename"

@@ -92,7 +92,7 @@ static VOID WarnSecureBootError(
 
     SwitchToText (FALSE);
 
-    ShowScreenStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!", Name);
+    ShowScreenStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!!", Name);
 
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (ShowScreenStrA, NEXTLINE);
