@@ -2073,7 +2073,7 @@ efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP, L"Restart FAILED!");
+                LOG(1, LOG_THREE_STAR_SEP, L"Restart FAILED!!");
                 #endif
 
                 MainLoopRunning = FALSE;   // just in case we get this far
@@ -2102,7 +2102,7 @@ efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP, L"Shutdown FAILED!");
+                LOG(1, LOG_THREE_STAR_SEP, L"Shutdown FAILED!!");
                 #endif
 
                 MainLoopRunning = FALSE;   // just in case we get this far
@@ -2505,7 +2505,7 @@ efi_main (
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!");
+    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!!");
 
     MsgLog ("Fallback: Restart Computer...\n");
     MsgLog ("Screen Termination:\n");
@@ -2525,7 +2525,7 @@ efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown after main loop exit has FAILED!");
+    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown after main loop exit has FAILED!!");
     #endif
 
     SwitchToText (FALSE);

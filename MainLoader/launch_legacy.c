@@ -1,6 +1,6 @@
 /*
  * MainLoader/launch_legacy.c
- * Functions related to BIOS/CSM/Legacy booting
+ * Functions related to BIOS/CSM/Legacy Booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
@@ -450,7 +450,7 @@ StartLegacyImageList (
 
     // close open file handles
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style BIOS/CSM/Legacy loader");
+    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style BIOS/CSM/Legacy Loader");
     #endif
 
     UninitRefitLib();
@@ -502,7 +502,7 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Starting Mac-style BIOS/CSM/Legacy loader '%s'",
+        L"Starting Mac-style BIOS/CSM/Legacy Loader: '%s'",
         SelectionName
     );
     #endif
@@ -655,8 +655,8 @@ static LEGACY_ENTRY
     } // if
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID,
-        L"Adding BIOS/CSM/Legacy entry for '%s'",
+    LOG(1, LOG_BLANK_SEPARATOR,
+        L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
     );
     #endif
@@ -741,7 +741,7 @@ static LEGACY_ENTRY
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Adding UEFI-style BIOS/CSM/Legacy entry for '%s'",
+        L"Adding UEFI-style BIOS/CSM/Legacy Entry for '%s'",
         Entry->me.Title
     );
     #endif

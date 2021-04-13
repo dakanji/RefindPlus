@@ -506,7 +506,7 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, could not decode file data!");
+        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, could not decode file data!!");
         #endif
 
         return NULL;

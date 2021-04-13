@@ -296,7 +296,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"InitializeLoaderEntry on '%s' is NULL!", TargetLoader);
+                LOG(4, LOG_LINE_NORMAL, L"InitializeLoaderEntry on '%s' is NULL!!", TargetLoader);
                 #endif
 
                 break;
@@ -312,7 +312,7 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!");
+        LOG(4, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
         #endif
     }
 

@@ -784,7 +784,7 @@ egInitScreen (
         DetectedDevices  = FALSE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Console Control ...NOT OK!");
+        MsgStr = StrDuplicate (L"Assess Console Control ...NOT OK!!");
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
@@ -892,7 +892,7 @@ egInitScreen (
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...NOT OK!");
+        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...NOT OK!!");
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
@@ -1017,7 +1017,7 @@ egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT FOUND!");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT FOUND!!");
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
@@ -1029,7 +1029,7 @@ egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ERROR!");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ERROR!!");
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
@@ -1054,7 +1054,7 @@ egInitScreen (
             XFlag = EFI_UNSUPPORTED;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT OK!");
+            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT OK!!");
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n\n", MsgStr);
             MyFreePool (MsgStr);
@@ -1160,7 +1160,7 @@ egInitScreen (
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Invalid GOP Instance");
-            LOG(4, LOG_LINE_NORMAL, L"WARNING: %s!", MsgStr);
+            LOG(4, LOG_LINE_NORMAL, L"WARNING: %s!!", MsgStr);
             MsgLog ("** WARN: %s\n\n", MsgStr);
             MyFreePool (MsgStr);
             #endif
@@ -1363,12 +1363,12 @@ egSetScreenSize (
 
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize()!");
+        LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize!!");
         #endif
 
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Invalid Input Resolution in Config File!";
+        ShowScreenStr = L"Invalid Input Resolution in Config File!!";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -2234,7 +2234,7 @@ egScreenShot (
     // save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
     FreePool (FileData);
-    if (CheckError (Status, L"in egSaveFile()")) {
+    if (CheckError (Status, L"in egSaveFile")) {
         goto bailout_wait;
     }
 

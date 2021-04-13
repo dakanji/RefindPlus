@@ -363,6 +363,9 @@ DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
+        case LOG_BLANK_SEPARATOR:
+            FinalMessage = PoolPrint (L"\n                 %s\n", *Message);
+            break;
         case LOG_STAR_SEPARATOR:
             FinalMessage = PoolPrint (L"\n\n** ** *** *** ***[ %s ]*** *** *** ** **\n\n", *Message);
             break;
@@ -386,9 +389,10 @@ DeepLoggger (
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
-            // Enable Timestamp
-            TimeStamp    = TRUE;
             FinalMessage = PoolPrint (L"%s\n", *Message);
+
+            // Also Enable Timestamp
+            TimeStamp = TRUE;
     } // switch
 
     if (FinalMessage) {

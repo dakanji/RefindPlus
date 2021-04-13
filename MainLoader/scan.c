@@ -878,7 +878,7 @@ static LOADER_ENTRY * AddLoaderEntry (
         // Note: Volume->VolName will be NULL for network boot programs.
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
             Entry->me.Title = PoolPrint (
-                L"Boot %s from %s ",
+                L"Boot %s from %s",
                 (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
                 Volume->VolName
             );

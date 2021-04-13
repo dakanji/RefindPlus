@@ -1230,7 +1230,7 @@ ScanVolumeBootcode (
                     CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
 
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Found MBR Partition table");
+                    LOG(4, LOG_LINE_NORMAL, L"Found MBR Partition Table");
                     #endif
                 }
             }
@@ -1552,14 +1552,14 @@ ScanVolume (
     );
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Warning: Cannot get BlockIO protocol in ScanVolume()");
+        LOG(1, LOG_LINE_NORMAL, L"Warning: Cannot get BlockIO protocol in ScanVolume!!");
         #endif
 
         Volume->BlockIO = NULL;
 
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"** WARN: Cannot get BlockIO Protocol in ScanVolume()";
+        ShowScreenStr = L"** WARN: Cannot get BlockIO Protocol in ScanVolume!!";
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -2004,7 +2004,7 @@ ScanVolumes (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_DASH_SEP, L"NEXT VOLUME");
+        LOG(3, LOG_BLANK_SEPARATOR, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2317,7 +2317,7 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
+        LOG(2, LOG_BLANK_SEPARATOR, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
         #endif
 
         SetVolumeBadgeIcon (Volume);
