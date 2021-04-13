@@ -45,7 +45,7 @@ AcquireGOP (
 EFI_STATUS
 ReloadPCIROM (
     VOID          *RomBar,
-    UINTN         RomSize,
+    UINT64         RomSize,
     CONST CHAR16  *FileName
 ) {
     VOID                          *ImageBuffer;
