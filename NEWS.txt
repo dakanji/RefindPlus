@@ -1,9 +1,14 @@
 0.13.2.AD (Pre-Release):
+-----------------------
 - Fixes HiddenLegacy Handling
   * HiddenLegacy tags were not being handled when scanning for bootloaders
   * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
+- Improves Upstream Logging Format and Coverage
+  * Formatted for better readability and incorporates more key items from the native format
+
 
 0.13.2.AC (12 Apr 2021):
+-----------------------
 - Fixes memory allocation bug
   * Progam hangs when 'fold_linux_kernels' is active and Linux instances with multiple kernels are present
   * This bug was introduced in v0.13.2.AA (Commit 68c7af0)
@@ -13,7 +18,9 @@
 - Improves Upstream Logging Format and Coverage
   * Formatted for better readability and incorporates key items from the native format
 
+
 0.13.2.AB (09 Apr 2021):
+-----------------------
 - Corrects Notes on "fold_linux_kernels" in the Configuration File
   * The default setting is active and not disabled as was documented
 - Fixes bug resulting in the output log level being one step below the configured value
@@ -25,6 +32,7 @@
 
 
 0.13.2.AA (06 Apr 2021):
+-----------------------
 - Syncs with Upstream Post v0.13.2 Updates
   * Minimises Reading of 'HiddenTools' Variable
   * Fixes Menu Keystroke Event
@@ -92,6 +100,7 @@
 
 
 0.13.1.AB (02 Mar 2021):
+-----------------------
 - Fixes APFS ReMapping
   * APFS Containers were not excluded as should have been the case
 - Fixes Hour Logging

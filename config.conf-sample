@@ -98,10 +98,10 @@
 
 # Force "TRIM" on non-Apple SSDs. "TRIM", which may improve SSD health,
 # is inactive by default for non-Apple SSDs in Mac OS. When this option
-# is active, RefindPlus will force Mac OS "TRIM" on for all SSDs types
+# is active, RefindPlus will enforce Mac OS "TRIM" on for all SSDs types
 # including on non-Apple SSDs. This setting only applies to Mac OS. Note
 # that this setting will create a Mac OS NVRAM entry the first time it is
-# triggered and that this will stay active until explicitly cleared even
+# triggered and that it will remain active until explicitly cleared even
 # if the setting is subsequently disabled. Also note that forcing "TRIM"
 # may significantly increase boot times and that enabling "TRIM" on
 # non-Apple SSDs may affect the integrity of data on such SSDs.
@@ -115,7 +115,7 @@
 # if not. When this option is active, RefindPlus will set the "-no_compat_check"
 # boot argument which disables this check and allows boot to proceed on otherwise
 # unsupported Macs. This setting only applies to Mac OS. Note that this setting will
-# create a Mac OS boot argument the first time it is triggered and that this will stay
+# create a Mac OS boot argument the first time it is triggered and it will remain
 # active until explicitly cleared even if the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not disable the compatibility check)
@@ -126,7 +126,7 @@
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
 # System Integrity Protection (SIP), restricts access to entitlements by applications.
 # This setting only applies to Mac OS. Note that this setting will create a Mac OS
-# boot argument the first time it is triggered and that this will stay active
+# boot argument the first time it is triggered and that it will remain active
 # until explicitly cleared even if the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not disable AMFI checks)
@@ -214,11 +214,11 @@
 #active_csr 1
 
 # Set arbitrary boot arguments on Mac OS. When this option is active,
-# RefindPlus will change the boot arguments in Mac OS to the specified string.
+# RefindPlus will change the Mac OS boot arguments to the specified string.
 # This setting only applies to Mac OS and accounts for arguments injected by
 # "disable_amfi" and "disable_compat_check" as required. Note that this
 # will create a Mac OS boot argument the first time it is triggered
-# and that this will stay active until explicitly cleared even if
+# and that it will remain active until explicitly cleared even if
 # the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not change boot arguments)
@@ -308,8 +308,8 @@
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
 # Set the screen's display resolution. Pass this option either:
-#    * two values, corresponding to the X and Y resolutions
-#    * one value, corresponding to a GOP (UEFI) video mode
+#    * Two Values (corresponding to the X and Y resolutions)
+#    * One Value (corresponding to a UEFI GOP video mode)
 # Note that not all resolutions are supported. On UEFI 2.x systems,
 # passing an incorrect value results in a message being shown on the
 # screen to that effect, along with a list of supported modes. With
@@ -365,7 +365,7 @@
 #shutdown_after_timeout
 
 # Blank screen and show different solid colours after the specified
-# number of seconds without input. Screen returns after most keypresses
+# number of seconds without input. Screen is restored on keypresses
 # (Excluding modifier keys such as Shift, Control, Alt, and Option).
 # "-1" causes RefindPlus to start up with the screensaver active.
 #
@@ -533,10 +533,9 @@
 # Tool binaries to be excluded from the tools line, even if the
 # general class is specified in showtools. This enables trimming an
 # overabundance of tools, as when you see multiple mok_tool entries
-# after installing multiple Linux distributions.
-# Just as with dont_scan_files, you can specify a filename alone, a
+# after installing multiple Linux distributions. A lone filename, a
 # full pathname, or a volume identifier (filesystem label, partition
-# name, or partition GUID) and a full pathname.
+# name, or partition GUID) and a full pathname can be specified.
 #
 # Has an empty list (nothing is excluded) when commented out
 #
@@ -549,14 +548,14 @@
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
-# Directories in which to search for EFI drivers. These drivers can
+# Directories in which to search for EFI drivers. These drivers
 # provide filesystem support, give access to hard disks on plug-in
-# controllers, etc. In most cases none are needed, but if you add
-# EFI drivers and you want RefindPlus to automatically load them, you
-# should specify one or more paths here. RefindPlus always scans the
-# "drivers" and "drivers_{arch}" subdirectories of its own installation
-# directory (where "{arch}" is your architecture code); this option
-# specifies ADDITIONAL directories to scan.
+# controllers, etc. When such drivers are present and RefindPlus is
+# required to automatically load them, paths to the driver locations
+# should be specified here. When loading, RefindPlus always scans the
+# "{arch}_drivers", "drivers" and "drivers_{arch}" subdirectories of
+# its installation directory (NOTE: {arch} = architecture code).
+# This option specifies *ADDITIONAL* directories to scan.
 #
 # Inactive when commented out (Does not scan additional directories)
 #
@@ -583,10 +582,10 @@
 #scanfor internal,external,optical,manual
 
 # By default, RefindPlus relies on the UEFI firmware to detect BIOS-mode boot
-# devices. However, this sometimes does not detect all the available devices.
-# For these cases, uefi_deep_legacy_scan results in a forced scan and
-# modification of NVRAM variables on each boot. This option has no
-# effect on Macs or when no BIOS-mode options are set via scanfor.
+# devices. However, this does not always detect all available devices and
+# in such cases, this option triggers a forced scan and modification of
+# NVRAM variables on each boot. This option has no effect on Macs or
+# when no BIOS-mode options have been set via the "scanfor" option.
 #
 # Inactive when commented out (Does not result in a forced scan)
 #
@@ -597,7 +596,7 @@
 # (usually external or optical discs) are not detected
 # initially, but are detected after pressing "ESC".
 #
-# The default setting is 0
+# Inactive when commented out (Does not wait before scanning disks)
 #
 #scan_delay 5
 
