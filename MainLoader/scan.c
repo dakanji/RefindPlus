@@ -380,200 +380,205 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
         MyFreePool (Entry->Title);
         Entry->Title = NULL;
     }
+
     SubScreen = InitializeSubScreen (Entry);
 
-    // loader-specific submenu entries
-    if (Entry->OSType == 'M') {          // entries for Mac OS
-#if defined (EFIX64)
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Mac OS with a 64-bit kernel";
-            SubEntry->LoadOptions     = L"arch=x86_64";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        } // if
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Mac OS with a 32-bit kernel";
-            SubEntry->LoadOptions     = L"arch=i386";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        } // if
-#endif
-
-        if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
-            SubEntry = InitializeLoaderEntry (Entry);
-            if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS in verbose mode";
-                SubEntry->UseGraphicsMode = FALSE;
-                SubEntry->LoadOptions     = L"-v";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if
+    // InitializeSubScreen cannot return NULL but guard against this regardless
+    if (SubScreen != NULL) {
+        // loader-specific submenu entries
+        if (Entry->OSType == 'M') {          // entries for Mac OS
 
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS in verbose mode (64-bit)";
-                SubEntry->UseGraphicsMode = FALSE;
-                SubEntry->LoadOptions     = L"-v arch=x86_64";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            }
-
-            SubEntry = InitializeLoaderEntry (Entry);
-            if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS in verbose mode (32-bit)";
-                SubEntry->UseGraphicsMode = FALSE;
-                SubEntry->LoadOptions     = L"-v arch=i386";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            }
-#endif
-
-            SubEntry = InitializeLoaderEntry (Entry);
-            if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS in single user mode";
-                SubEntry->UseGraphicsMode = FALSE;
-                SubEntry->LoadOptions     = L"-v -s";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if
-        } // single-user mode allowed
-
-        if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
-            SubEntry = InitializeLoaderEntry (Entry);
-            if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS in safe mode";
-                SubEntry->UseGraphicsMode = FALSE;
-                SubEntry->LoadOptions     = L"-v -x";
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if
-        } // safe mode allowed
-
-        // check for Apple hardware diagnostics
-        StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
-        if (FileExists (Volume->RootDir, DiagsFileName) &&
-            !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
-        ) {
-            SubEntry = InitializeLoaderEntry (Entry);
-            if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Run Apple Hardware Test";
-                MyFreePool (SubEntry->LoaderPath);
-                SubEntry->LoaderPath      = StrDuplicate (DiagsFileName);
-                SubEntry->Volume          = Volume;
+                SubEntry->me.Title        = L"Boot Mac OS with a 64-bit kernel";
+                SubEntry->LoadOptions     = L"arch=x86_64";
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
-        } // if diagnostics entry found
 
-    }
-    else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
-        File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
-        if (File != NULL) {
-            InitrdName    = FindInitrd (Entry->LoaderPath, Volume);
-            TokenCount    = ReadTokenLine (File, &TokenList);
-            KernelVersion = FindNumbers (Entry->LoaderPath);
-            ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
-
-            // first entry requires special processing, since it was initially set
-            // up with a default title but correct options by InitializeSubScreen(),
-            // earlier....
-            if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
-                MyFreePool (SubScreen->Entries[0]->Title);
-                SubScreen->Entries[0]->Title = TokenList[0]
-                    ? StrDuplicate (TokenList[0])
-                    : StrDuplicate (L"Boot Linux");
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Mac OS with a 32-bit kernel";
+                SubEntry->LoadOptions     = L"arch=i386";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if
+#endif
 
-            FreeTokenLine (&TokenList, &TokenCount);
-            while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
-                ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title = TokenList[0]
-                        ? StrDuplicate (TokenList[0])
-                        : StrDuplicate (L"Boot Linux");
-                    MyFreePool (SubEntry->LoadOptions);
-                    SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
-                    FreeTokenLine (&TokenList, &TokenCount);
-                    SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode";
+                    SubEntry->UseGraphicsMode = FALSE;
+                    SubEntry->LoadOptions     = L"-v";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
                 } // if
-            } // while
 
-            MyFreePool (KernelVersion);
-            MyFreePool (InitrdName);
-            MyFreePool (File);
-        } // if
+#if defined (EFIX64)
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode (64-bit)";
+                    SubEntry->UseGraphicsMode = FALSE;
+                    SubEntry->LoadOptions     = L"-v arch=x86_64";
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                }
 
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode (32-bit)";
+                    SubEntry->UseGraphicsMode = FALSE;
+                    SubEntry->LoadOptions     = L"-v arch=i386";
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                }
+#endif
+
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = L"Boot Mac OS in single user mode";
+                    SubEntry->UseGraphicsMode = FALSE;
+                    SubEntry->LoadOptions     = L"-v -s";
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                } // if
+            } // single-user mode allowed
+
+            if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = L"Boot Mac OS in safe mode";
+                    SubEntry->UseGraphicsMode = FALSE;
+                    SubEntry->LoadOptions     = L"-v -x";
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                } // if
+            } // safe mode allowed
+
+            // check for Apple hardware diagnostics
+            StrCpy (DiagsFileName, L"System\\Library\\CoreServices\\.diagnostics\\diags.efi");
+            if (FileExists (Volume->RootDir, DiagsFileName) &&
+                !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HWTEST)
+            ) {
+                SubEntry = InitializeLoaderEntry (Entry);
+                if (SubEntry != NULL) {
+                    SubEntry->me.Title        = L"Run Apple Hardware Test";
+                    MyFreePool (SubEntry->LoaderPath);
+                    SubEntry->LoaderPath      = StrDuplicate (DiagsFileName);
+                    SubEntry->Volume          = Volume;
+                    SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+                    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                } // if
+            } // if diagnostics entry found
+
+        }
+        else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
+            File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
+            if (File != NULL) {
+                InitrdName    = FindInitrd (Entry->LoaderPath, Volume);
+                TokenCount    = ReadTokenLine (File, &TokenList);
+                KernelVersion = FindNumbers (Entry->LoaderPath);
+                ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+
+                // first entry requires special processing, since it was initially set
+                // up with a default title but correct options by InitializeSubScreen(),
+                // earlier....
+                if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
+                    MyFreePool (SubScreen->Entries[0]->Title);
+                    SubScreen->Entries[0]->Title = TokenList[0]
+                        ? StrDuplicate (TokenList[0])
+                        : StrDuplicate (L"Boot Linux");
+                } // if
+
+                FreeTokenLine (&TokenList, &TokenCount);
+                while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
+                    ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+                    SubEntry = InitializeLoaderEntry (Entry);
+                    if (SubEntry != NULL) {
+                        SubEntry->me.Title = TokenList[0]
+                            ? StrDuplicate (TokenList[0])
+                            : StrDuplicate (L"Boot Linux");
+                        MyFreePool (SubEntry->LoadOptions);
+                        SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+                        FreeTokenLine (&TokenList, &TokenCount);
+                        SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+                        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                    } // if
+                } // while
+
+                MyFreePool (KernelVersion);
+                MyFreePool (InitrdName);
+                MyFreePool (File);
+            } // if
+
+        }
+        else if (Entry->OSType == 'E') {   // entries for ELILO
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Run ELILO in interactive mode";
+                SubEntry->LoadOptions     = L"-p";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Linux for a 17\" iMac or a 15\" MacBook Pro (*)";
+                SubEntry->LoadOptions     = L"-d 0 i17";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Linux for a 20\" iMac (*)";
+                SubEntry->LoadOptions     = L"-d 0 i20";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Linux for a Mac Mini (*)";
+                SubEntry->LoadOptions     = L"-d 0 mini";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            AddMenuInfoLine (SubScreen, L"NOTE: This is an example. Entries");
+            AddMenuInfoLine (SubScreen, L"marked with (*) may not work.");
+
+        }
+        else if (Entry->OSType == 'X') {   // entries for xom.efi
+            // by default, skip the built-in selection and boot from hard disk only
+            Entry->LoadOptions = L"-s -h";
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Windows from Hard Disk";
+                SubEntry->LoadOptions     = L"-s -h";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Boot Windows from CD-ROM";
+                SubEntry->LoadOptions     = L"-s -c";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+
+            SubEntry = InitializeLoaderEntry (Entry);
+            if (SubEntry != NULL) {
+                SubEntry->me.Title        = L"Run XOM in text mode";
+                SubEntry->LoadOptions     = L"-v";
+                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+            }
+        } // entries for xom.efi
+        if (GenerateReturn) {
+            AddMenuEntry (SubScreen, &MenuEntryReturn);
+        }
+        Entry->me.SubScreen = SubScreen;
     }
-    else if (Entry->OSType == 'E') {   // entries for ELILO
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Run ELILO in interactive mode";
-            SubEntry->LoadOptions     = L"-p";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Linux for a 17\" iMac or a 15\" MacBook Pro (*)";
-            SubEntry->LoadOptions     = L"-d 0 i17";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Linux for a 20\" iMac (*)";
-            SubEntry->LoadOptions     = L"-d 0 i20";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Linux for a Mac Mini (*)";
-            SubEntry->LoadOptions     = L"-d 0 mini";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        AddMenuInfoLine (SubScreen, L"NOTE: This is an example. Entries");
-        AddMenuInfoLine (SubScreen, L"marked with (*) may not work.");
-
-    }
-    else if (Entry->OSType == 'X') {   // entries for xom.efi
-        // by default, skip the built-in selection and boot from hard disk only
-        Entry->LoadOptions = L"-s -h";
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Windows from Hard Disk";
-            SubEntry->LoadOptions     = L"-s -h";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Boot Windows from CD-ROM";
-            SubEntry->LoadOptions     = L"-s -c";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-
-        SubEntry = InitializeLoaderEntry (Entry);
-        if (SubEntry != NULL) {
-            SubEntry->me.Title        = L"Run XOM in text mode";
-            SubEntry->LoadOptions     = L"-v";
-            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-        }
-    } // entries for xom.efi
-    if (GenerateReturn) {
-        AddMenuEntry (SubScreen, &MenuEntryReturn);
-    }
-    Entry->me.SubScreen = SubScreen;
 } // VOID GenerateSubScreen()
 
 // Sets a few defaults for a loader entry -- mainly the icon, but also the OS type
