@@ -2406,7 +2406,7 @@ DirNextEntry (
                     LastBufferSize * 2
                 );
                 LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog (L"\n%s", MsgStr);
+                MsgLog ("\n%s", MsgStr);
                 MyFreePool (MsgStr);
                 #endif
 
@@ -2419,7 +2419,7 @@ DirNextEntry (
                     LastBufferSize, BufferSize
                 );
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog (L"\n%s", MsgStr);
+                MsgLog ("\n%s", MsgStr);
                 MyFreePool (MsgStr);
                 #endif
             }
