@@ -1557,14 +1557,10 @@ ScanVolume (
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"Cannot get BlockIO Protocol for '%s' in ScanVolume!!",
-            Volume->VolName
-        );
+        MsgStr = StrDuplicate (L"Cannot get BlockIO Protocol in ScanVolume!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n\n");
+        MsgLog ("\n");
         MsgLog ("** WARN: %s", MsgStr);
-        MsgLog ("\n\n");
         MyFreePool (MsgStr);
         #endif
     }
@@ -1676,9 +1672,8 @@ ScanVolume (
         if (Volume->HasBootCode) {
             MsgStr = PoolPrint (L"Volume Considered Non-Bootable, but Boot Code is Present!!");
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("\n\n");
+            MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
-            MsgLog ("\n\n");
             MyFreePool (MsgStr);
         }
         #endif
@@ -2156,7 +2151,6 @@ ScanVolumes (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
         LOG(1, LOG_BLANK_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("\n\n");
         MsgLog ("** WARN: %s", MsgStr);
         MsgLog ("\n\n");
         MyFreePool (MsgStr);
@@ -2376,6 +2370,10 @@ DirNextEntry (
     UINTN      BufferSize;
     INTN       IterCount;
 
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
+    #endif
+
     for (;;) {
         // free pointer from last call
         MyFreePool (*DirEntry);
@@ -2401,24 +2399,28 @@ DirNextEntry (
 
             if (BufferSize <= LastBufferSize) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL,
+                MsgStr = PoolPrint (
                     L"FS Driver requests bad buffer size %d (was %d), using %d instead",
                     BufferSize,
                     LastBufferSize,
                     LastBufferSize * 2
                 );
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog (L"\n%s", MsgStr);
+                MyFreePool (MsgStr);
                 #endif
 
                 BufferSize = LastBufferSize * 2;
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL,
+                MsgStr = PoolPrint (
                     L"Reallocating buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
-
-                MsgLog ("Reallocating buffer from %d to %d\n", LastBufferSize, BufferSize);
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog (L"\n%s", MsgStr);
+                MyFreePool (MsgStr);
                 #endif
             }
             Buffer         = EfiReallocatePool (Buffer, LastBufferSize, BufferSize);

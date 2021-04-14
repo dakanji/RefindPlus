@@ -712,20 +712,22 @@ ApplyGOPFix (
 
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
-        #if REFIT_DEBUG > 0
         if (Status == EFI_INCOMPATIBLE_VERSION) {
+            #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Acquire GOP on Volatile Storage ...Feature Unavailable");
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (MsgStr);
+            #endif
         }
         else {
+            #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Acquire GOP on Volatile Storage ...%r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (MsgStr);
+            #endif
         }
-        #endif
 
         // connect all devices
         if (!EFI_ERROR (Status)) {
@@ -760,20 +762,22 @@ BdsLibConnectAllDriversToAllControllers (
             ReLoaded = TRUE;
             Status   = ApplyGOPFix();
 
-            #if REFIT_DEBUG > 0
             if (Status == EFI_INCOMPATIBLE_VERSION) {
+                #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...Feature Unavailable");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (MsgStr);
+                #endif
             }
             else {
+                #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...%r", Status);
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (MsgStr);
+                #endif
             }
-            #endif
 
             ReLoaded = FALSE;
         }
