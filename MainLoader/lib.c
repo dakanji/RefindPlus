@@ -1529,7 +1529,10 @@ ScanVolume (
     EFI_HANDLE        WholeDiskHandle;
     UINTN             PartialLength;
     BOOLEAN           Bootable;
-    CHAR16           *ShowScreenStr = NULL;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
 
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
@@ -1551,28 +1554,19 @@ ScanVolume (
         (VOID **) &(Volume->BlockIO)
     );
     if (EFI_ERROR (Status)) {
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Warning: Cannot get BlockIO protocol in ScanVolume!!");
-        #endif
-
         Volume->BlockIO = NULL;
 
-        SwitchToText (FALSE);
-
-        ShowScreenStr = L"** WARN: Cannot get BlockIO Protocol in ScanVolume!!";
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n\n", ShowScreenStr);
+        MsgStr = PoolPrint (
+            L"Cannot get BlockIO Protocol for '%s' in ScanVolume!!",
+            Volume->VolName
+        );
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: %s", MsgStr);
+        MsgLog ("\n\n");
+        MyFreePool (MsgStr);
         #endif
-
-        HaltForKey();
-        SwitchToGraphics();
-        MyFreePool (ShowScreenStr);
-
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
             Volume->DiskKind = DISK_KIND_OPTICAL;
@@ -1592,9 +1586,9 @@ ScanVolume (
         }
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH &&
             (DevicePathSubType (DevicePath) == MSG_USB_DP ||
-            DevicePathSubType (DevicePath) == MSG_USB_CLASS_DP ||
-            DevicePathSubType (DevicePath) == MSG_1394_DP ||
-            DevicePathSubType (DevicePath) == MSG_FIBRECHANNEL_DP)
+            DevicePathSubType (DevicePath)  == MSG_USB_CLASS_DP ||
+            DevicePathSubType (DevicePath)  == MSG_1394_DP ||
+            DevicePathSubType (DevicePath)  == MSG_FIBRECHANNEL_DP)
         ) {
             Volume->DiskKind = DISK_KIND_EXTERNAL;    // USB/FireWire/FC device -> external
         }
@@ -1607,7 +1601,7 @@ ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
-            PartialLength = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
+            PartialLength  = (UINT8 *)NextDevicePath - (UINT8 *)(Volume->DevicePath);
             DiskDevicePath = (EFI_DEVICE_PATH *)AllocatePool (PartialLength +
                 sizeof (EFI_DEVICE_PATH)
             );
@@ -1680,8 +1674,12 @@ ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            LOG(2, LOG_LINE_NORMAL, L"Volume Considered Non-Bootable, but Boot Code is Present");
-            MsgLog ("** WARN: Volume Considered Non-Bootable, but Boot Code is Present\n");
+            MsgStr = PoolPrint (L"Volume Considered Non-Bootable, but Boot Code is Present!!");
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("\n\n");
+            MsgLog ("** WARN: %s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (MsgStr);
         }
         #endif
 
@@ -1941,13 +1939,13 @@ ScanVolumes (
     UINTN               SectorSum, i;
     UINT8              *SectorBuffer1;
     UINT8              *SectorBuffer2;
-    CHAR16             *ShowScreenStr  = NULL;
     EFI_GUID           *UuidList;
-    EFI_GUID            GuidNull       = NULL_GUID_VALUE;
-    EFI_GUID            ESPGuid        = ESP_GUID_VALUE;
+    EFI_GUID            GuidNull = NULL_GUID_VALUE;
+    EFI_GUID            ESPGuid  = ESP_GUID_VALUE;
     BOOLEAN             DupFlag;
 
     #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
     CHAR16  *VolDesc;
     CHAR16  *PartGUID;
     CHAR16  *PartTypeGUID;
@@ -1973,8 +1971,10 @@ ScanVolumes (
     );
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_SEP, L"ERROR: %r While Listing File Systems", Status);
-        MsgLog ("** ERROR: %r While Listing File Systems\n\n", Status);
+        MsgStr = PoolPrint (L"ERROR: %r While Listing File Systems", Status);
+        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        MsgLog ("\n\n%s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         return;
@@ -1990,10 +1990,12 @@ ScanVolumes (
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"ERROR: %r While Allocating UuidList", Status);
-
         Status = EFI_BUFFER_TOO_SMALL;
-        MsgLog ("** ERROR: %r While Allocating UuidList\n\n", Status);
+
+        MsgStr = PoolPrint (L"ERROR: %r While Allocating UuidList", Status);
+        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        MsgLog ("\n\n%s\n\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         return;
@@ -2010,10 +2012,12 @@ ScanVolumes (
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         if (Volume == NULL) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"ERROR: %r While Allocating Volumes", Status);
-
             Status = EFI_BUFFER_TOO_SMALL;
-            MsgLog ("** ERROR: %r While Allocating Volumes\n\n", Status);
+
+            MsgStr = PoolPrint (L"ERROR: %r While Allocating Volumes", Status);
+            LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+            MsgLog ("\n\n%s\n\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
 
             return;
@@ -2149,22 +2153,14 @@ ScanVolumes (
     if (!SelfVolSet) {
         SelfVolRun = TRUE;
 
-        SwitchToText (FALSE);
-
-        ShowScreenStr = StrDuplicate (L"** WARN: Could Not Set Self Volume");
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
         #if REFIT_DEBUG > 0
-        MsgLog ("%s\n\n", ShowScreenStr);
+        MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
+        LOG(1, LOG_BLANK_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: %s", MsgStr);
+        MsgLog ("\n\n");
+        MyFreePool (MsgStr);
         #endif
-
-        MyFreePool (ShowScreenStr);
-
-        PauseForKey();
-        SwitchToGraphics();
     }
     else if (!SelfVolRun) {
         SelfVolRun = TRUE;
