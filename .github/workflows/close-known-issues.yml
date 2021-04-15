@@ -17,5 +17,5 @@ jobs:
           days-before-stale: 1
           days-before-close: 1
           exempt-assignees: 'dakanji'
-          stale-issue-label: ''
+          stale-issue-label: 'Bot Flag'
           only-issue-labels: 'WontFix,Duplicate,Known Issue'
