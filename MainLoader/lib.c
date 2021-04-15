@@ -1242,7 +1242,7 @@ ScanVolumeBootcode (
                     MediaCheck = TRUE;
                 }
                 ScannedOnce = FALSE;
-                    MsgLog ("\n");
+                MsgLog ("\n");
                 CheckError (Status, L"Found While Reading Boot Sector on Volume Below");
             }
             #endif
@@ -1671,7 +1671,7 @@ ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            MsgStr = PoolPrint (L"Volume Considered Non-Bootable, but Boot Code is Present!!");
+            MsgStr = StrDuplicate (L"Volume Considered Non-Bootable, but Boot Code is Present!!");
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
