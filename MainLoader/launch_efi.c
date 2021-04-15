@@ -149,7 +149,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_BLANK_SEPARATOR,
+        LOG(1, LOG_THREE_STAR_MID,
             L"EFI File '%s' is ASSUMED to be valid",
             FileName
         );
@@ -167,7 +167,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_BLANK_SEPARATOR,
+        LOG(1, LOG_THREE_STAR_MID,
             L"EFI File '%s' is invalid!!",
             FileName
         );
@@ -190,7 +190,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
               (*(UINT32 *)&Header == FAT_ARCH));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_BLANK_SEPARATOR,
+    LOG(1, LOG_THREE_STAR_MID,
         L"EFI File '%s' is %s",
         FileName,
         IsValid ? L"valid" : L"invalid!!"

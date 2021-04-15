@@ -1268,10 +1268,15 @@ SetVolumeBadgeIcon (
             GlobalConfig.IconSizes[ICON_SIZE_BADGE]
         );
     }
+    else {
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Already Set Volume Badge Icon");
+        #endif
+    }
 
     if (Volume->VolBadgeImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Could not Set Volume Badge Icon");
+        LOG(2, LOG_LINE_NORMAL, L"Could not Set Volume Badge Icon ... Trying Volume Type Icon");
         #endif
 
         switch (Volume->DiskKind) {
@@ -1557,11 +1562,7 @@ ScanVolume (
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Cannot get BlockIO Protocol in ScanVolume!!");
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("** WARN: %s", MsgStr);
-        MyFreePool (MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"Cannot get BlockIO Protocol in ScanVolume!!");
         #endif
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
@@ -1629,7 +1630,7 @@ ScanVolume (
 
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Could not get DiskDevicePath for volume");
+                    LOG(1, LOG_LINE_NORMAL, L"Could not get DiskDevicePath for volume!!");
                     #endif
                 }
                 else {
@@ -1647,7 +1648,7 @@ ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume");
+                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume!!");
                     #endif
                 }
                 else {
@@ -1659,7 +1660,7 @@ ScanVolume (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Could not locate device path for volume");
+                LOG(1, LOG_LINE_NORMAL, L"Could not locate device path for volume!!");
                 #endif
             }
         }
@@ -2001,7 +2002,7 @@ ScanVolumes (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_BLANK_SEPARATOR, L"NEXT VOLUME");
+        LOG(3, LOG_STAR_HEAD_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2150,7 +2151,7 @@ ScanVolumes (
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
-        LOG(1, LOG_BLANK_SEPARATOR, L"%s", MsgStr);
+        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
         MsgLog ("** WARN: %s", MsgStr);
         MsgLog ("\n\n");
         MyFreePool (MsgStr);
@@ -2307,7 +2308,7 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_BLANK_SEPARATOR, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
+        LOG(2, LOG_STAR_HEAD_SEP, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
         #endif
 
         SetVolumeBadgeIcon (Volume);
@@ -2326,6 +2327,11 @@ SetVolumeIcons (
                     GlobalConfig.IconSizes[ICON_SIZE_BIG]
                 );
             }
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Not an 'Internal' Volume");
+            #endif
         }
     } // for
 } // VOID SetVolumeIcons()

@@ -382,7 +382,11 @@ egDumpGOPVideoModes (
                     ModeLog = Mode;
                 }
 
-                MsgLog ("  - Mode[%d]: %r", ModeLog, Status);
+                MsgStr = PoolPrint (L"Mode[%d]: %r", ModeLog, Status);
+                LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                MsgLog ("  - %s", MsgStr);
+                MyFreePool (MsgStr);
+
                 if (LoopCount < MaxMode) {
                     if (Mode > 99) {
                         MsgLog ( ". NB: Real Mode = %d\n", Mode);
@@ -1221,7 +1225,7 @@ egInitScreen (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"GOP not Available");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n\n", MsgStr);
+                MsgLog ("INFO: %s\n", MsgStr);
                 MyFreePool (MsgStr);
                 MsgLog ("      Fall Back on UGA\n\n");
                 #endif
@@ -1238,7 +1242,7 @@ egInitScreen (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Graphics not Available");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n\n", MsgStr);
+                MsgLog ("INFO: %s\n", MsgStr);
                 MyFreePool (MsgStr);
                 MsgLog ("      Fall Back on Text Mode\n\n");
                 #endif

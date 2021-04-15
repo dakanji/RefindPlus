@@ -655,7 +655,7 @@ static LEGACY_ENTRY
     } // if
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_BLANK_SEPARATOR,
+    LOG(1, LOG_STAR_HEAD_SEP,
         L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
     );

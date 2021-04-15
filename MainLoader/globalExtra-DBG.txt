@@ -1,6 +1,6 @@
 #define REFIT_DEBUG (1)
 
-#define LOG_BLANK_SEPARATOR  0
+#define LOG_STAR_HEAD_SEP  0
 #define LOG_LINE_NORMAL      1
 #define LOG_LINE_SEPARATOR   2
 #define LOG_LINE_THIN_SEP    3

@@ -363,8 +363,8 @@ DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
-        case LOG_BLANK_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n                 %s\n", *Message);
+        case LOG_STAR_HEAD_SEP:
+            FinalMessage = PoolPrint (L"\n              ***[ %s\n", *Message);
             break;
         case LOG_STAR_SEPARATOR:
             FinalMessage = PoolPrint (L"\n\n** ** *** *** ***[ %s ]*** *** *** ** **\n\n", *Message);
@@ -382,7 +382,7 @@ DeepLoggger (
             FinalMessage = PoolPrint (L"\n. . . . . . . ***[ %s ]*** . . . . . . .\n", *Message);
             break;
         case LOG_THREE_STAR_MID:
-            FinalMessage = PoolPrint (L"              ***[ %s ]***\n", *Message);
+            FinalMessage = PoolPrint (L"              ***[ %s\n", *Message);
             break;
         case LOG_THREE_STAR_END:
             FinalMessage = PoolPrint (L"              ***[ %s ]***\n\n", *Message);
