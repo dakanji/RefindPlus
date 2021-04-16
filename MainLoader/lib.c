@@ -1256,9 +1256,18 @@ SetVolumeBadgeIcon (
     REFIT_VOLUME *Volume
 ) {
     if (Volume == NULL) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"NULL Volume!!");
+        #endif
+
         return;
     }
+
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Flag Badge Configured to be Hidden");
+        #endif
+
         return;
     }
 
@@ -1276,7 +1285,7 @@ SetVolumeBadgeIcon (
 
     if (Volume->VolBadgeImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Could not Set Volume Badge Icon ... Trying Volume Type Icon");
+        LOG(2, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
         #endif
 
         switch (Volume->DiskKind) {
@@ -1293,6 +1302,11 @@ SetVolumeBadgeIcon (
                 Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
                 break;
         } // switch()
+    }
+    else {
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Volume Badge Icon Set");
+        #endif
     }
 } // VOID SetVolumeBadgeIcon()
 
@@ -2308,7 +2322,10 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_STAR_HEAD_SEP, L"Setting Volume Badge Icon for Volume %d", VolumeIndex);
+        LOG(2, LOG_STAR_HEAD_SEP,
+            L"Setting Volume Badge Icon for Volume %d",
+            VolumeIndex
+        );
         #endif
 
         SetVolumeBadgeIcon (Volume);

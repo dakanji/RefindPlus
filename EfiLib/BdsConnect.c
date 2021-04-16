@@ -773,7 +773,7 @@ BdsLibConnectAllDriversToAllControllers (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...%r", Status);
-                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (MsgStr);
                 #endif

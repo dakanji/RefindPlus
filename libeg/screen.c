@@ -268,13 +268,13 @@ egDumpGOPVideoModes (
     EFI_STATUS Status;
     UINT32     Mode;
     UINT32     MaxMode;
-    UINT32     NumModes;
     UINT32     LoopCount;
     UINTN      SizeOfInfo;
     BOOLEAN    OurValidGOP = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16 *MsgStr   = NULL;
+    CHAR16 *ModeTxt  = NULL;
     CHAR16 *PixelFormatDesc;
     #endif
 
@@ -292,24 +292,30 @@ egDumpGOPVideoModes (
     // get dump
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
-        NumModes  = (INT32)MaxMode + 1;
-        LoopCount = 0;
-
         #if REFIT_DEBUG > 0
+        if (MaxMode == 1) {
+            ModeTxt = StrDuplicate (L"Mode");
+        }
+        else {
+            ModeTxt = StrDuplicate (L"Modes");
+        }
+
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes (%d Modes ... 0x%lx-0x%lx FrameBuffer)",
-            MaxMode,
+            L"Analyse GOP Modes (%d %s ... 0x%lx-0x%lx FrameBuffer)",
+            MaxMode, ModeTxt,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
         LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (MsgStr);
+        MyFreePool (ModeTxt);
         #endif
 
-        for (Mode = 0; Mode < NumModes; Mode++) {
+        LoopCount = -1;
+        for (Mode = 0; Mode <= MaxMode; Mode++) {
             LoopCount++;
-            if (LoopCount == NumModes) {
+            if (LoopCount == MaxMode) {
                 break;
             }
 
@@ -405,7 +411,7 @@ egDumpGOPVideoModes (
                 }
                 #endif
             } // if Status == EFI_SUCCESS
-        } // for (Mode = 0; Mode < NumModes; Mode++)
+        } // for (Mode = 0; Mode <= MaxMode; Mode++)
     } // if MaxMode > 0
 
     if (!OurValidGOP) {

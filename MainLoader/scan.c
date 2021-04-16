@@ -1738,7 +1738,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Called ScanEfiFiles() on an invalid volume");
+        LOG(4, LOG_LINE_NORMAL, L"Called ScanEfiFiles on an invalid volume!!");
         #endif
     }
 } // static VOID ScanEfiFiles()
@@ -1820,15 +1820,23 @@ VOID ScanFirmwareDefined (
 
     #if REFIT_DEBUG > 0
     if (Row == 0) {
-        LOG(1, LOG_LINE_THIN_SEP, L"Scanning for EFI firmware-defined boot options");
+        LOG(1, LOG_LINE_THIN_SEP,
+            L"Scanning for EFI firmware-defined boot options"
+        );
     }
     #endif
 
     DontScanFirmware = ReadHiddenTags (L"HiddenFirmware");
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"GlobalConfig.DontScanFirmware = '%s'", GlobalConfig.DontScanFirmware);
-    LOG(2, LOG_LINE_NORMAL, L"Firmware hidden tags = '%s'", DontScanFirmware);
+    LOG(2, LOG_LINE_NORMAL,
+        L"GlobalConfig.DontScanFirmware = '%s'",
+        GlobalConfig.DontScanFirmware
+    );
+    LOG(2, LOG_LINE_NORMAL,
+        L"Firmware hidden tags = '%s'",
+        DontScanFirmware
+    );
     #endif
 
     MergeStrings (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
@@ -1842,7 +1850,10 @@ VOID ScanFirmwareDefined (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Merged firmware don't-scan list is '%s'", DontScanFirmware);
+    LOG(3, LOG_LINE_NORMAL,
+        L"Merged firmware don't-scan list is '%s'",
+        DontScanFirmware
+    );
     #endif
 
     BootEntries  = FindBootOrderEntries();
@@ -1940,9 +1951,10 @@ static LOADER_ENTRY * AddToolEntry (
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
     return Entry;
-} /* static LOADER_ENTRY * AddToolEntry() */
+} // static LOADER_ENTRY * AddToolEntry()
 
-// Locates boot loaders. NOTE: This assumes that GlobalConfig.LegacyType is set correctly.
+// Locates boot loaders.
+// NOTE: This assumes that GlobalConfig.LegacyType is correctly set.
 VOID
 ScanForBootloaders (
     BOOLEAN ShowMessage
