@@ -699,10 +699,10 @@ ApplyGOPFix (
     CHAR16 *MsgStr = NULL;
     #endif
 
-    // Update Boot Services to permit reloading GPU ROM
+    // Update Boot Services to permit reloading GPU OptionROM
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_SEPARATOR, L"Reload GOP");
+    LOG(3, LOG_LINE_SEPARATOR, L"Reload OptionROM");
 
     MsgStr = PoolPrint (L"Amend System Table ...%r", Status);
     LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -714,7 +714,7 @@ ApplyGOPFix (
         Status = AcquireGOP();
         if (Status == EFI_INCOMPATIBLE_VERSION) {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Acquire GOP on Volatile Storage ...Feature Unavailable");
+            MsgStr = StrDuplicate (L"Acquire OptionROM on Volatile Storage ...Feature Unavailable");
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (MsgStr);
@@ -722,7 +722,7 @@ ApplyGOPFix (
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Acquire GOP on Volatile Storage ...%r", Status);
+            MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ...%r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (MsgStr);
@@ -764,7 +764,7 @@ BdsLibConnectAllDriversToAllControllers (
 
             if (Status == EFI_INCOMPATIBLE_VERSION) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Issue GOP from Volatile Storage ...Feature Unavailable");
+                MsgStr = StrDuplicate (L"Issue OptionROM from Volatile Storage ...Feature Unavailable");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (MsgStr);
@@ -772,7 +772,7 @@ BdsLibConnectAllDriversToAllControllers (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Issue GOP from Volatile Storage ...%r", Status);
+                MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ...%r", Status);
                 LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (MsgStr);

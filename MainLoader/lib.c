@@ -2294,11 +2294,6 @@ ScanVolumes (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Identified %d Volumes", VolumesCount);
-
-    if (SelfVolRun && GlobalConfig.ScanOtherESP) {
-        LOG(3, LOG_LINE_NORMAL, L"'ScanOtherESP' is active", VolumesCount);
-        MsgLog ("INFO: ScanOtherESP:- 'Active'\n\n");
-    }
     #endif
 
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
@@ -2314,6 +2309,9 @@ SetVolumeIcons (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
+    BOOLEAN  LoopOne = TRUE;
+    CHAR16  *MsgStr  = NULL;
+
     LOG(1, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
     #endif
 
@@ -2322,10 +2320,19 @@ SetVolumeIcons (
 
         // Set volume icon based on .VolumeBadge icon or disk kind
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_STAR_HEAD_SEP,
+        MsgStr  = PoolPrint (
             L"Setting Volume Badge Icon for Volume %d",
             VolumeIndex
         );
+        if (LoopOne) {
+            LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        }
+        else {
+            LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+        }
+        MyFreePool (MsgStr);
+
+        LoopOne = FALSE;
         #endif
 
         SetVolumeBadgeIcon (Volume);
@@ -2343,6 +2350,11 @@ SetVolumeIcons (
                     L".VolumeIcon",
                     GlobalConfig.IconSizes[ICON_SIZE_BIG]
                 );
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(2, LOG_LINE_NORMAL, L"Already processed volume badge icon");
+                #endif
             }
         }
         else {

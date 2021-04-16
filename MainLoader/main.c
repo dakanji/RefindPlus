@@ -216,9 +216,9 @@ REFIT_CONFIG GlobalConfig = {
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                AptioWarn            = FALSE;
+BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
-BOOLEAN                TweakSysTable        = FALSE;
 BOOLEAN                ForceNativeLoggging  = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
@@ -1730,7 +1730,44 @@ efi_main (
     AdjustDefaultSelection();
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Log Level:- '%d'\n\n", GlobalConfig.LogLevel);
+    MsgLog ("INFO: Log Level:- '%d'", GlobalConfig.LogLevel);
+
+    // Show ScanDelay Setting
+    MsgLog ("\n");
+    MsgLog ("      Scan Delay:- '%d'", GlobalConfig.ScanDelay);
+
+    // Show TextOnly Status
+    MsgLog ("\n");
+    MsgLog ("      TextOnly:- ");
+    if (GlobalConfig.TextOnly) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
+    // Show ProtectNVRAM Status
+    MsgLog ("\n");
+    MsgLog ("      ProtectNVRAM:- ");
+    if (GlobalConfig.ProtectNVRAM) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
+    // Show ScanOtherESP Status
+    MsgLog ("\n");
+    MsgLog ("      ScanOtherESP:- ");
+    if (GlobalConfig.ScanOtherESP) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
+    // Clear Lines
+    MsgLog ("\n\n");
     #endif
 
     #ifdef __MAKEWITH_TIANO
@@ -1768,8 +1805,8 @@ efi_main (
         #endif
     }
 
-    // Reset SystemTable if amended in LoadDrivers
-    if (TweakSysTable) {
+    // Reset SystemTable if previously amended
+    if (SetSysTab) {
         gST->Hdr.CRC32 = 0;
         gST = SystemTable;
         gBS->CalculateCrc32 (

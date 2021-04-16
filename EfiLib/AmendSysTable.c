@@ -454,7 +454,7 @@ AmendSysTable (
             );
 
 
-            TweakSysTable       = TRUE;
+            SetSysTab           = TRUE;
             Status              = EFI_SUCCESS;
         }
         else {
