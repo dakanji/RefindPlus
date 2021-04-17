@@ -2321,7 +2321,7 @@ SetVolumeIcons (
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Volume badge icon is hidden");
+        LOG(1, LOG_LINE_NORMAL, L"Volume badge icons are hidden");
         #endif
 
         return;
