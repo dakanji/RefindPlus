@@ -1478,35 +1478,49 @@ LogBasicInfo (
 ) {
     EFI_STATUS Status;
     CHAR16     *TempStr = NULL;
-    UINT64     MaximumVariableSize;
-    UINT64     MaximumVariableStorageSize;
-    UINT64     RemainingVariableStorageSize;
-    UINTN      EfiMajorVersion                    = gST->Hdr.Revision >> 16;
-    UINTN      HandleCount                        = 0;
-    EFI_GUID   ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
-    EFI_GUID   AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
-    EFI_HANDLE *HandleBuffer                      = NULL;
+    UINT64      MaximumVariableSize;
+    UINT64      MaximumVariableStorageSize;
+    UINT64      RemainingVariableStorageSize;
+    UINTN       EfiMajorVersion                    = gST->Hdr.Revision >> 16;
+    UINTN       HandleCount                        = 0;
+    EFI_GUID    ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
+    EFI_GUID    AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
+    EFI_HANDLE *HandleBuffer                       = NULL;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
 
 
     MsgLog ("System Summary...\n");
     MsgLog (
-        "EFI Revision:- '%s %d.%02d'\n",
+        "EFI Revision:- '%s %d.%02d'",
         (EfiMajorVersion == 1) ? L"EFI" : L"UEFI",
         EfiMajorVersion,
         gST->Hdr.Revision & ((1 << 16) - 1)
     );
 
+    if (((gBS->Hdr.Revision >> 16) == EfiMajorVersion) &&
+        ((gRT->Hdr.Revision >> 16) == EfiMajorVersion)
+    ) {
+        MsgLog ("\n");
+    }
+    else {
+        MsgLog ("\n\n");
+        MsgLog ("** WARN: Inconsistent EFI Revisions Detected!!");
+        MsgLog ("\n");
+        MsgLog ("         RefindPlus Behaviour is not Defined!!");
+        MsgLog ("\n\n");
+    }
+
     MsgLog ("Architecture:- ");
     #if defined(EFI32)
-        MsgLog ("'x86 (32 bit)'\n");
+        MsgLog ("'x86 (32 bit)'");
     #elif defined(EFIX64)
-        MsgLog ("'x86_64 (64 bit)'\n");
+        MsgLog ("'x86 (64 bit)'");
     #elif defined(EFIAARCH64)
-        MsgLog ("'ARM (64 bit)'\n");
+        MsgLog ("'ARM (64 bit)'");
     #else
-        MsgLog ("'Unknown'\n");
+        MsgLog ("'Unknown'");
     #endif
+    MsgLog ("\n");
 
     switch (GlobalConfig.LegacyType) {
         case LEGACY_TYPE_MAC:
@@ -1551,7 +1565,7 @@ LogBasicInfo (
         MyFreePool (HandleBuffer);
     }
 
-    if (EfiMajorVersion > 1) {
+    if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
         MsgLog ("EFI Non-Volatile Storage Info:\n");
 
@@ -1563,7 +1577,7 @@ LogBasicInfo (
             &MaximumVariableSize
         );
         if (EFI_ERROR(Status)) {
-            MsgLog ("** WARN: Could not Retrieve on UEFI 2.x\n");
+            MsgLog ("** WARN: Could not Retrieve Info!!\n");
         }
         else {
             MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
