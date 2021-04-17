@@ -15,15 +15,4 @@ jobs:
       with:
         github-token: ${{ github.token }}
         issue-lock-inactive-days: '9'
-        issue-exclude-created-before: ''
-        issue-exclude-labels: ''
-        issue-lock-labels: ''
-        issue-lock-comment: ''
-        issue-lock-reason: ''
-        pr-lock-inactive-days: '9'
-        pr-exclude-created-before: ''
-        pr-exclude-labels: ''
-        pr-lock-labels: ''
-        pr-lock-comment: ''
-        pr-lock-reason: ''
         process-only: 'issues'

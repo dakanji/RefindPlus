@@ -10,12 +10,11 @@ jobs:
     steps:
       - uses: actions/stale@v3.0.18
         with:
-          stale-issue-message: ''
           close-issue-message: >
             This issue has been automatically closed as a known issue.
             Thank you for your contribution.
-          days-before-stale: 1
+          days-before-stale: 0
           days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Bot Flag'
-          only-issue-labels: 'WontFix,Duplicate,Known Issue'
+          any-of-labels: 'WontFix,Duplicate,Known Issue'
