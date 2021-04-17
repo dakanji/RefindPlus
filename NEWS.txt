@@ -5,6 +5,8 @@
   * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
 - Improves Upstream Logging Format and Coverage
   * Formatted for better readability and incorporates more key items from the native format
+- Improves "ReloadGOP" Implementation
+  * Generally updated and optimised
 
 
 0.13.2.AC (12 Apr 2021):

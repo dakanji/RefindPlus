@@ -1,6 +1,6 @@
 /** @file
  * AmendSysTable.c
- * Amends the SystemTable to provide CreateEventEx and a UEFI 2 Revision Number
+ * Amends the SystemTable to provide CreateEventEx and a UEFI 2.x Revision Number
  *
  * Copyright (c) 2020 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2020 Joe van Tunen (joevt@shaw.ca)
@@ -31,6 +31,8 @@ AmendSysTable (
 #include "../../MdeModulePkg/Core/Dxe/Event/Event.h"
 
 #define EFI_FIELD_OFFSET(TYPE, Field) ((UINTN) (&(((TYPE *) 0)->Field)))
+#define MIN_EFI_REVISION   EFI_2_00_SYSTEM_TABLE_REVISION
+#define BASE_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
 
 EFI_CPU_ARCH_PROTOCOL   *gCpu       = NULL;
 EFI_SMM_BASE2_PROTOCOL  *gSmmBase2  = NULL;
@@ -46,12 +48,12 @@ EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
     FALSE, FALSE
 };
 
-UINTN                      gEventPending      = 0;
-EFI_TPL                    gEfiCurrentTpl     = TPL_APPLICATION;
-EFI_LOCK                   gEventQueueLock    = EFI_INITIALIZE_LOCK_VARIABLE (TPL_HIGH_LEVEL);
-EFI_RUNTIME_ARCH_PROTOCOL  *gRuntime          = &gRuntimeTemplate;
-LIST_ENTRY                 gEventSignalQueue  = INITIALIZE_LIST_HEAD_VARIABLE (gEventSignalQueue);
-LIST_ENTRY                 gEventQueue[TPL_HIGH_LEVEL + 1];
+UINTN                       gEventPending      = 0;
+EFI_TPL                     gEfiCurrentTpl     = TPL_APPLICATION;
+EFI_LOCK                    gEventQueueLock    = EFI_INITIALIZE_LOCK_VARIABLE (TPL_HIGH_LEVEL);
+EFI_RUNTIME_ARCH_PROTOCOL  *gRuntime           = &gRuntimeTemplate;
+LIST_ENTRY                  gEventSignalQueue  = INITIALIZE_LIST_HEAD_VARIABLE (gEventSignalQueue);
+LIST_ENTRY                  gEventQueue[TPL_HIGH_LEVEL + 1];
 
 UINT32 mEventTable[] = {
     EVT_TIMER | EVT_NOTIFY_SIGNAL,
@@ -69,9 +71,9 @@ VOID FakeAcquireLock (IN EFI_LOCK  *Lock);
 VOID FakeReleaseLock (IN EFI_LOCK  *Lock);
 EFI_STATUS AmendSysTable (VOID);
 EFI_STATUS FakeCreateEventEx (
-    UINT32            Type,
-    EFI_TPL           NotifyTpl,
-    EFI_EVENT_NOTIFY  NotifyFunction,
+    UINT32             Type,
+    EFI_TPL            NotifyTpl,
+    EFI_EVENT_NOTIFY   NotifyFunction,
     const void        *NotifyContext,
     const EFI_GUID    *EventGroup,
     EFI_EVENT         *Event
@@ -291,16 +293,18 @@ FakeReleaseLock (
 
 EFI_STATUS
 FakeCreateEventEx (
-    UINT32            Type,
-    EFI_TPL           NotifyTpl,
-    EFI_EVENT_NOTIFY  NotifyFunction,
-    const void        *NotifyContext,
-    const EFI_GUID    *EventGroup,
-    EFI_EVENT         *Event
+    IN        UINT32             Type,
+    IN        EFI_TPL            NotifyTpl,
+    IN        EFI_EVENT_NOTIFY   NotifyFunction OPTIONAL,
+    IN  CONST VOID              *NotifyContext  OPTIONAL,
+    IN  CONST EFI_GUID          *EventGroup     OPTIONAL,
+    OUT       EFI_EVENT         *Event
 ) {
-    EFI_STATUS      Status = EFI_SUCCESS;
-    IEVENT          *IEvent;
-    INTN            Index;
+    EFI_STATUS         Status;
+    IEVENT            *IEvent;
+    INTN               Index;
+
+    Status = EFI_SUCCESS;
 
     // Check for invalid NotifyTpl if a notify event type
     if ((Type & (EVT_NOTIFY_WAIT | EVT_NOTIFY_SIGNAL)) != 0) {
@@ -421,48 +425,58 @@ FakeCreateEventEx (
     return EFI_SUCCESS;
 }
 
+/**
+  @retval EFI_SUCCESS               The command completed successfully.
+  @retval EFI_OUT_OF_RESOURCES      Out of memory.
+  @retval EFI_ALREADY_STARTED       Already on UEFI 2.x EFI Revision.
+  @retval EFI_PROTOCOL_ERROR        Unexpected Field Offset.
+  @retval EFI_INVALID_PARAMETER     Command usage error.
+  @retval Other value               Unknown error.
+**/
 EFI_STATUS
 AmendSysTable (
     VOID
 ) {
-    EFI_STATUS        Status;
+    EFI_STATUS         Status;
     EFI_BOOT_SERVICES *uBS;
 
-    if (gST->Hdr.Revision <= 0x1FFFF ||
-        gBS->Hdr.HeaderSize <= EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)
-    ) {
-        uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (*gBS) * 2, gBS);
-        if (uBS) {
-            uBS->CreateEventEx  = FakeCreateEventEx;
-            uBS->Hdr.HeaderSize = sizeof (*gBS);
-
-            gBS                 = uBS;
-            gBS->Hdr.CRC32      = 0;
-            gBS->CalculateCrc32 (
-                gBS,
-                gBS->Hdr.HeaderSize,
-                &gBS->Hdr.CRC32
-            );
-
-            gST->BootServices   = gBS;
-            gST->Hdr.Revision   = 0x0002001E;
-            gST->Hdr.CRC32      = 0;
-            gBS->CalculateCrc32 (
-                (VOID *) gST,
-                sizeof (EFI_SYSTEM_TABLE),
-                &gST->Hdr.CRC32
-            );
-
-
-            SetSysTab           = TRUE;
-            Status              = EFI_SUCCESS;
-        }
-        else {
-            Status = EFI_LOAD_ERROR;
-        }
+    if (gST->Hdr.Revision >= MIN_EFI_REVISION) {
+        Status = EFI_ALREADY_STARTED;
+    }
+    else if (gBS->Hdr.HeaderSize > EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)) {
+        Status = EFI_PROTOCOL_ERROR;
     }
     else {
-        Status = EFI_ALREADY_STARTED;
+        uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (EFI_BOOT_SERVICES), gBS);
+
+        if (uBS == NULL) {
+            Status = EFI_OUT_OF_RESOURCES;
+        }
+        else {
+            uBS->CreateEventEx  = FakeCreateEventEx;
+            uBS->Hdr.HeaderSize = sizeof (EFI_BOOT_SERVICES);
+            uBS->Hdr.Revision   = BASE_EFI_REVISION;
+            uBS->Hdr.CRC32      = 0;
+            uBS->CalculateCrc32 (
+                uBS,
+                uBS->Hdr.HeaderSize,
+                &uBS->Hdr.CRC32
+            );
+
+            gBS       = uBS;
+            SetSysTab = TRUE;
+            Status    = (EFI_STATUS) uBS->CreateEventEx;
+
+            gST->BootServices   = gBS;
+            gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
+            gST->Hdr.Revision   = BASE_EFI_REVISION;
+            gST->Hdr.CRC32      = 0;
+            gST->BootServices->CalculateCrc32 (
+                gST,
+                gST->Hdr.HeaderSize,
+                &gST->Hdr.CRC32
+            );
+        }
     }
 
     return Status;

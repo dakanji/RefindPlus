@@ -1246,7 +1246,7 @@ VOID RescanAll (
 
 #ifdef __MAKEWITH_TIANO
 
-// Minimal initialization function
+// Minimal initialisation function
 STATIC VOID InitializeLib (
     IN EFI_HANDLE        ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
@@ -1805,23 +1805,10 @@ efi_main (
         #endif
     }
 
-    // Reset SystemTable if previously amended
+    // Restore SystemTable if previously amended
     if (SetSysTab) {
-        gST->Hdr.CRC32 = 0;
-        gST = SystemTable;
-        gBS->CalculateCrc32 (
-            (VOID *) gST,
-            sizeof (EFI_SYSTEM_TABLE),
-            &gST->Hdr.CRC32
-        );
-
-        gBS->Hdr.CRC32 = 0;
-        gBS = gST->BootServices;
-        gBS->CalculateCrc32 (
-            gBS,
-            gBS->Hdr.HeaderSize,
-            &gBS->Hdr.CRC32
-        );
+        // Reinitialise
+        InitializeLib (ImageHandle, SystemTable);
 
         #if REFIT_DEBUG > 0
         Status = EFI_SUCCESS;
