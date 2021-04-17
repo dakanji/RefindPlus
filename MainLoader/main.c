@@ -313,6 +313,16 @@ gRTSetVariableEx (
     return Status;
 } // VOID gRTSetVariableEx()
 
+STATIC
+VOID
+MapSetVariable (
+    IN EFI_SYSTEM_TABLE  *SystemTable
+) {
+    AltSetVariable                             = gRT->SetVariable;
+    RT->SetVariable                            = gRTSetVariableEx;
+    gRT->SetVariable                           = gRTSetVariableEx;
+    SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
+} // MapSetVariable()
 
 STATIC
 EFI_STATUS
@@ -2277,10 +2287,7 @@ efi_main (
                         MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
-                        AltSetVariable                             = gRT->SetVariable;
-                        RT->SetVariable                            = gRTSetVariableEx;
-                        gRT->SetVariable                           = gRTSetVariableEx;
-                        SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
+                        MapSetVariable (SystemTable);
                     }
 
                     #if REFIT_DEBUG > 0
@@ -2341,17 +2348,17 @@ efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
+                #endif
+
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectNVRAM &&
                         MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
-                        AltSetVariable                             = gRT->SetVariable;
-                        RT->SetVariable                            = gRTSetVariableEx;
-                        gRT->SetVariable                           = gRTSetVariableEx;
-                        SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
+                        MapSetVariable (SystemTable);
                     }
 
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_THIN_SEP,
                         L"Booting %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
@@ -2363,8 +2370,10 @@ efi_main (
                         ourLegacyEntry->Volume->OSName,
                         ourLegacyEntry->Volume->VolName
                     );
+                    #endif
                 }
                 else {
+                    #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_THIN_SEP,
                         L"Booting Legacy OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
@@ -2374,8 +2383,10 @@ efi_main (
                         "  - Boot Legacy OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
                     );
+                    #endif
                 }
 
+                #if REFIT_DEBUG > 0
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("\n---------------\n\n");
                 }
