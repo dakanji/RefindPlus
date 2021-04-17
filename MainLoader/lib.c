@@ -1265,7 +1265,7 @@ SetVolumeBadgeIcon (
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Flag Badge Configured to be Hidden");
+        LOG(4, LOG_LINE_NORMAL, L"Volume badge icon is hidden");
         #endif
 
         return;
@@ -2315,6 +2315,14 @@ SetVolumeIcons (
     LOG(1, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
     #endif
 
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Volume badge icon is hidden");
+        #endif
+
+        return;
+    }
+
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
@@ -2337,9 +2345,9 @@ SetVolumeIcons (
 
         SetVolumeBadgeIcon (Volume);
 
-        if (Volume->DiskKind == DISK_KIND_INTERNAL) {
-            // get custom volume icons if present
-            if (!Volume->VolIconImage) {
+        if (!Volume->VolIconImage) {
+            if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+                // get custom volume icons if present
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL, L"Trying to load custom icon image");
                 #endif
@@ -2353,13 +2361,13 @@ SetVolumeIcons (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Already processed volume badge icon");
+                LOG(2, LOG_LINE_NORMAL, L"Could not load volume badge icon!!");
                 #endif
             }
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Not an 'Internal' Volume");
+            LOG(2, LOG_LINE_NORMAL, L"Processed volume badge icon");
             #endif
         }
     } // for
