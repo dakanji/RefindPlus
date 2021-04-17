@@ -1819,6 +1819,7 @@ SetPreBootNames (
             FoundGUID = TRUE;
             if (Volume->VolName != NULL &&
                 Volume->VolName[0] != L'\0' &&
+                StrLen (Volume->VolName) != 0 &&
                 !MyStriCmp (Volume->VolName, L"Recovery") &&
                 !MyStriCmp (Volume->VolName, L"PreBoot") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
@@ -1843,6 +1844,7 @@ SetPreBootNames (
             ) {
                 if (Volume->VolName != NULL &&
                     Volume->VolName[0] != L'\0' &&
+                    StrLen (Volume->VolName) != 0 &&
                     !MyStriCmp (Volume->VolName, L"Recovery") &&
                     !MyStriCmp (Volume->VolName, L"PreBoot") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
@@ -1904,7 +1906,9 @@ SetPrebootVolumes (
             if ((Volumes[i]->VolName != NULL) &&
                 (Volumes[i]->VolName[0] != L'\0')
             ) {
-                if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL) {
+                if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL ||
+                    StrLen (Volumes[i]->VolName) == 0
+                ) {
                     SwapName = FALSE;
                 }
                 else {
