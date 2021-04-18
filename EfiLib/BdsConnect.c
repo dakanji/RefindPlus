@@ -674,7 +674,7 @@ BdsLibConnectAllDriversToAllControllersEx (
     } while (!EFI_ERROR (Status));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Connected handles to controllers");
+    LOG(1, LOG_THREE_STAR_END, L"Connected Handles to Controllers");
     #endif
 
     if (FoundGOP) {

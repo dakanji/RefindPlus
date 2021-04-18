@@ -349,7 +349,7 @@ AddMenuInfoLine (
     IN CHAR16 *InfoLine
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding menu info line: '%s'", InfoLine);
+    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Info Line: '%s'", InfoLine);
     #endif
 
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
@@ -361,7 +361,7 @@ AddMenuEntry (
     IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding menu entry to %s: '%s'", Screen->Title, Entry->Title);
+    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Entry to %s: '%s'", Screen->Title, Entry->Title);
     #endif
 
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
@@ -446,6 +446,7 @@ SaveScreen (
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
 
+    LOG(4, LOG_LINE_NORMAL, L"Wait Threshold Exceeded");
     MsgStr = StrDuplicate (L"Start Screensaver");
     LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MsgLog ("INFO: Threshold Exceeded ...%s\n", MsgStr);
@@ -544,9 +545,10 @@ SaveScreen (
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"Detected Keypress ...Ending Screensaver");
-    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("INFO: %s\n\n", MsgStr);
+    LOG(4, LOG_LINE_NORMAL, L"Detected Keypress ", MsgStr);
+    MsgStr = StrDuplicate (L"Ending Screensaver");
+    LOG(4, LOG_THREE_STAR_END, L"%s", MsgStr);
+    MsgLog ("INFO: Detected Keypress ...%s\n\n", MsgStr);
     MyFreePool (MsgStr);
     #endif
 
@@ -583,8 +585,8 @@ RunGenericMenu (
     UINTN          Item;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
-    LOG(2, LOG_LINE_NORMAL, L"Running menu screen: '%s'", Screen->Title);
+    LOG(2, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
+    LOG(2, LOG_LINE_NORMAL, L"Running Menu Screen: '%s'", Screen->Title);
     #endif
 
     if (Screen->TimeoutSeconds > 0) {
@@ -747,9 +749,14 @@ RunGenericMenu (
             }
         }
 
-        if (!PointerActive) { // react to key press
+        if (!PointerActive) {
+            // react to key press
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)", key.ScanCode);
+            LOG(3, LOG_LINE_NORMAL,
+                L"Processing Keystroke: ScanCode = %d ... UnicodeChar = %d",
+                key.ScanCode,
+                key.UnicodeChar
+            );
             #endif
 
             switch (key.ScanCode) {
@@ -796,10 +803,6 @@ RunGenericMenu (
                     break;
             } // switch()
 
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Processing keystroke (UnicodeChar = %d)", key.UnicodeChar);
-            #endif
-
             switch (key.UnicodeChar) {
                 case CHAR_LINEFEED:
                 case CHAR_CARRIAGE_RETURN:
@@ -827,13 +830,15 @@ RunGenericMenu (
                     break;
             } // switch()
         }
-        else { //react to pointer event
+        else {
+            //react to pointer event
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Processing pointer event");
+            LOG(4, LOG_LINE_NORMAL, L"Processing Pointer Event");
             #endif
 
             if (StyleFunc != MainMenuStyle) {
-                continue; // nothing to find on submenus
+                // nothing to find on submenus
+                continue;
             }
 
             State.PreviousSelection = State.CurrentSelection;
@@ -887,7 +892,7 @@ RunGenericMenu (
     *DefaultEntryIndex = State.CurrentSelection;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Returning '%d' from RunGenericMenu", MenuExit);
+    LOG(1, LOG_LINE_NORMAL, L"Returning '%d' from RunGenericMenu", MenuExit);
     #endif
 
     return MenuExit;
@@ -1954,7 +1959,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Entering WaitForInput ... Timeout = %d", Timeout);
+    LOG(4, LOG_THREE_STAR_MID, L"Waiting ... Timeout: %d", Timeout);
     #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);

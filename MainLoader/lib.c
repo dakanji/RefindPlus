@@ -464,45 +464,31 @@ FindVarsDir (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create a 'vars' directory on the filesystem to hold variables ...%r",
+            L"Locate/Create Emulated NVRAM on the filesystem ...%r",
             Status
         );
         #endif
 
         if (EFI_ERROR (Status)) {
             Status = egFindESP (&EspRootDir);
-
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Locate an ESP ...%r", Status);
-            #endif
-
-            if (EFI_ERROR (Status)) {
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL,
-                    L"Could not locate an ESP"
-                );
-                #endif
-            }
-            else {
+            if (!EFI_ERROR (Status)) {
                 Status = refit_call5_wrapper(
                     EspRootDir->Open, EspRootDir,
                     &gVarsDir, L"refind-vars",
                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
                     EFI_FILE_DIRECTORY
                 );
-
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL,
-                    L"Locate/Create a 'refind-vars' directory on the ESP to hold variables ...%r",
-                    Status
-                );
-                #endif
             }
 
             #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL,
+                L"Locate/Create Emulated NVRAM on the ESP ...%r",
+                Status
+            );
+
             if (EFI_ERROR (Status)) {
                 LOG(1, LOG_LINE_NORMAL,
-                    L"Activate 'use_nvram' for RefindPlus to use NVRAM-based storage"
+                    L"Activate 'use_nvram' for RefindPlus to use Hardware NVRAM"
                 );
             }
             #endif
@@ -527,16 +513,13 @@ EfivarGetRaw (
     BOOLEAN      ReadFromNvram = TRUE;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
-            L"Getting EFI variable '%s' from Emulated NVRAM",
-            VariableName
-        );
-        #endif
-
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (
@@ -552,30 +535,39 @@ EfivarGetRaw (
                 MsgLog ("\n");
             }
 
-            LOG(3, LOG_LINE_NORMAL,
+            MsgStr = PoolPrint (
                 L"Could Not Read '%s' from Emulated NVRAM",
                 VariableName
             );
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            MsgLog ("** WARN: %s", MsgStr);
+            MsgLog ("\n");
+            MyFreePool (MsgStr);
+
+            MsgStr = StrDuplicate (
                 L"Activate the 'use_nvram' option to silence this warning"
             );
-
-            MsgLog ("** WARN: Could Not Read '%s' from Emulated NVRAM\n", VariableName);
-            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
+            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            MsgLog ("         %s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (MsgStr);
             #endif
         }
+
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID,
+            L"Get EFI Variable '%s' from Emulated NVRAM ...%r",
+            VariableName,
+            Status
+        );
+        #endif
+
+        return Status;
     }
 
     if (GlobalConfig.UseNvram ||
         !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
-            L"Getting EFI variable '%s' from Hardware NVRAM",
-            VariableName
-        );
-        #endif
-
         // Pass in a zero-size buffer to find the required buffer size.
         BufferSize = 0;
         Status = refit_call5_wrapper(
@@ -587,65 +579,51 @@ EfivarGetRaw (
         // If the variable exists, the status should be EFI_BUFFER_TOO_SMALL and BufferSize updated.
         // Any other status means the variable does not exist.
         if (Status != EFI_BUFFER_TOO_SMALL) {
-            MyFreePool (TmpBuffer);
-            *VariableData = NULL;
-            *VariableSize = 0;
-
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
-                L"Error getting EFI variable '%s' from Hardware NVRAM:- '%r'",
-                VariableName,
-                Status
-            );
-            #endif
-
-            return Status;
+            Status = EFI_NOT_FOUND;
         }
-
-        TmpBuffer = AllocateZeroPool (BufferSize);
-        if (!TmpBuffer) {
-            MyFreePool (TmpBuffer);
-            *VariableData = NULL;
-            *VariableSize = 0;
-
-            Status = EFI_OUT_OF_RESOURCES;
-
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
-                L"Error getting EFI variable '%s' from Hardware NVRAM:- '%r'",
-                VariableName,
-                Status
-            );
-            #endif
-
-            return Status;
-        }
-
-        // Retry with the correct buffer size.
-        Status = refit_call5_wrapper(
-            gRT->GetVariable, VariableName,
-            VendorGUID, NULL,
-            &BufferSize, TmpBuffer
-        );
-    }
-
-    if (EFI_ERROR (Status) == EFI_SUCCESS) {
-        *VariableData = (CHAR8*) TmpBuffer;
-        if (ReadFromNvram) {
-            if (BufferSize) {
-                *VariableSize = BufferSize;
+        else {
+            TmpBuffer = AllocateZeroPool (BufferSize);
+            if (!TmpBuffer) {
+                Status = EFI_OUT_OF_RESOURCES;
+            }
+            else {
+                // Retry with the correct buffer size.
+                Status = refit_call5_wrapper(
+                    gRT->GetVariable, VariableName,
+                    VendorGUID, NULL,
+                    &BufferSize, TmpBuffer
+                );
             }
         }
-    }
-    else {
+
+        if (!EFI_ERROR (Status)) {
+            *VariableData = (CHAR8*) TmpBuffer;
+            if (ReadFromNvram) {
+                if (BufferSize) {
+                    *VariableSize = BufferSize;
+                }
+            }
+        }
+        else {
+            MyFreePool (TmpBuffer);
+            *VariableData = NULL;
+            *VariableSize = 0;
+        }
+
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Error retrieving EFI variable '%s'", VariableName);
+        LOG(4, LOG_THREE_STAR_MID,
+            L"Get EFI Variable '%s' from Hardware NVRAM ...%r",
+            VariableName,
+            Status
+        );
         #endif
 
-        MyFreePool (TmpBuffer);
-        *VariableData = NULL;
-        *VariableSize = 0;
+        return Status;
     }
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_END, L"Program Coding Error Getting EFI Variable from NVRAM!!");
+    #endif
 
     return Status;
 } // EFI_STATUS EfivarGetRaw ()
@@ -670,7 +648,10 @@ EfivarSetRaw (
 
     OldStatus = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
 
-    if ((EFI_ERROR (OldStatus)) ||
+    if (!EFI_ERROR (OldStatus) && MyAsciiStrStr (OldBuf, VariableData) != NULL) {
+        Status = EFI_ALREADY_STARTED;
+    }
+    else if ((EFI_ERROR (OldStatus)) ||
         (VariableSize != OldSize) ||
         ((OldBuf) && (CompareMem (VariableData, OldBuf, VariableSize) != 0))
     ) {
@@ -703,6 +684,8 @@ EfivarSetRaw (
                 #endif
             }
 
+            MyFreePool (OldBuf);
+
             return Status;
         }
 
@@ -711,7 +694,7 @@ EfivarSetRaw (
         ) {
             #if REFIT_DEBUG > 0
             LOG(4, LOG_LINE_NORMAL,
-                L"Saving EFI variable '%s' to Hardware NVRAM",
+                L"Saving EFI Variable '%s' to Hardware NVRAM",
                 VariableName
             );
             #endif
@@ -730,13 +713,16 @@ EfivarSetRaw (
             #if REFIT_DEBUG > 0
             if (EFI_ERROR (Status)) {
                 LOG(3, LOG_LINE_NORMAL,
-                    L"Could not Write EFI variable '%s' to Hardware NVRAM: %r",
+                    L"Could not Write EFI Variable '%s' to Hardware NVRAM: %r",
                     VariableName,
                     Status
                 );
             }
             #endif
         }
+    }
+    else {
+        Status = EFI_ALREADY_STARTED;
     }
 
     MyFreePool (OldBuf);
@@ -1208,7 +1194,7 @@ ScanVolumeBootcode (
 
             #if REFIT_DEBUG > 0
             if (Volume->HasBootCode) {
-                LOG(1, LOG_LINE_NORMAL, L"Found Legacy Boot Code");
+                LOG(3, LOG_LINE_NORMAL, L"Found Legacy Boot Code");
             }
             #endif
 
@@ -1230,7 +1216,7 @@ ScanVolumeBootcode (
                     CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
 
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Found MBR Partition Table");
+                    LOG(3, LOG_LINE_NORMAL, L"Found MBR Partition Table");
                     #endif
                 }
             }
@@ -1255,17 +1241,21 @@ VOID
 SetVolumeBadgeIcon (
     REFIT_VOLUME *Volume
 ) {
-    if (Volume == NULL) {
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Trying to Set Volume Badge Icons");
+    #endif
+
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"NULL Volume!!");
+        LOG(2, LOG_THREE_STAR_END, L"Volume Badge Icon Config Setting is 'Hidden'");
         #endif
 
         return;
     }
 
-    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+    if (Volume == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Volume badge icon is hidden");
+        LOG(2, LOG_THREE_STAR_END, L"NULL Volume!!");
         #endif
 
         return;
@@ -1277,15 +1267,10 @@ SetVolumeBadgeIcon (
             GlobalConfig.IconSizes[ICON_SIZE_BADGE]
         );
     }
-    else {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Already Set Volume Badge Icon");
-        #endif
-    }
 
     if (Volume->VolBadgeImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
+        LOG(3, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
         #endif
 
         switch (Volume->DiskKind) {
@@ -1302,11 +1287,6 @@ SetVolumeBadgeIcon (
                 Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
                 break;
         } // switch()
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Volume Badge Icon Set");
-        #endif
     }
 } // VOID SetVolumeBadgeIcon()
 
@@ -1374,7 +1354,7 @@ CHAR16
         FoundName = StrDuplicate (Volume->FsName);
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(4, LOG_LINE_NORMAL,
             L"Setting volume name to filesystem name: '%s'",
             FoundName
         );
@@ -1390,7 +1370,7 @@ CHAR16
         FoundName = StrDuplicate (Volume->PartName);
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(4, LOG_LINE_NORMAL,
             L"Setting volume name to partition name: '%s'",
             FoundName
         );
@@ -1410,7 +1390,7 @@ CHAR16
             FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(4, LOG_LINE_NORMAL,
                 L"Setting volume name to filesystem description: '%s'",
                 FoundName
             );
@@ -1456,7 +1436,7 @@ CHAR16
         }
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(4, LOG_LINE_NORMAL,
             L"Setting volume name to generic description: '%s'",
             FoundName
         );
@@ -1897,7 +1877,7 @@ SetPrebootVolumes (
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-        LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("%s:", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -1918,7 +1898,7 @@ SetPrebootVolumes (
                 if (SwapName) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
-                    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("\n");
                     MsgLog ("  - %s", MsgStr);
                     MyFreePool (MsgStr);
@@ -1995,8 +1975,8 @@ ScanVolumes (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
-        L"Found handles for %d volumes",
+    LOG(3, LOG_LINE_NORMAL,
+        L"Found Handles for %d Volumes",
         HandleCount
     );
     #endif
@@ -2020,7 +2000,7 @@ ScanVolumes (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_STAR_HEAD_SEP, L"NEXT VOLUME");
+        LOG(3, LOG_THREE_STAR_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2042,7 +2022,7 @@ ScanVolumes (
         ScanVolume (Volume);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        LOG(2, LOG_LINE_NORMAL,
             L"Identified Volume: Type = '%s' ... Name = '%s'",
             FSTypeName (Volume->FSType),
             Volume->VolName
@@ -2181,7 +2161,7 @@ ScanVolumes (
         #if REFIT_DEBUG > 0
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
         MsgLog (
-            "INFO: Self Volume:- '%s::%s'\n\n",
+            "INFO: Self Volume:- '%s:::%s'\n\n",
             SelfVolume->VolName, SelfGUID
         );
         MyFreePool (SelfGUID);
@@ -2305,23 +2285,21 @@ ScanVolumes (
     }
 } // VOID ScanVolumes()
 
+STATIC
 VOID
-SetVolumeIcons (
+GetVolumeBadgeIcons (
     VOID
 ) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    BOOLEAN  LoopOne = TRUE;
-    CHAR16  *MsgStr  = NULL;
-
     LOG(1, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
     #endif
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Volume badge icons are hidden");
+        LOG(1, LOG_LINE_NORMAL, L"Volume Badge Icon Config Setting:- 'Hidden'");
         #endif
 
         return;
@@ -2330,50 +2308,89 @@ SetVolumeIcons (
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        // Set volume icon based on .VolumeBadge icon or disk kind
-        #if REFIT_DEBUG > 0
-        MsgStr  = PoolPrint (
-            L"Setting Volume Badge Icon for Volume %d",
-            VolumeIndex
-        );
-        if (LoopOne) {
-            LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        if (GlobalConfig.SyncAPFS &&
+            MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
+        ) {
+            continue;
         }
-        else {
-            LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+
+        if (Volume->IsReadable) {
+            // Set volume badge icon
+            SetVolumeBadgeIcon (Volume);
+
+            #if REFIT_DEBUG > 0
+            if (Volume->VolBadgeImage == NULL) {
+                LOG(1, LOG_THREE_STAR_END, L"Volume Badge Icon Not Found");
+            }
+            else {
+                LOG(1, LOG_THREE_STAR_END, L"Volume Badge Icon Found");
+            }
+            #endif
+        } // if Volume->IsReadable
+    } // for
+} // VOID SetVolumeIcons()
+
+VOID
+SetVolumeIcons (
+    VOID
+) {
+    UINTN         VolumeIndex;
+    REFIT_VOLUME *Volume;
+
+    // Set volume badge icon
+    GetVolumeBadgeIcons();
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting Custom Volume Icons");
+    #endif
+
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        Volume = Volumes[VolumeIndex];
+
+        if (GlobalConfig.SyncAPFS &&
+            MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
+        ) {
+            continue;
         }
-        MyFreePool (MsgStr);
 
-        LoopOne = FALSE;
-        #endif
+        if (Volume->IsReadable) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Trying to Set Custom Volume Icon for '%s'", Volume->VolName);
+            #endif
 
-        SetVolumeBadgeIcon (Volume);
+            // load custom volume icon for internal disks if present
+            if (!Volume->VolIconImage) {
+                if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+                    Volume->VolIconImage = egLoadIconAnyType (
+                        Volume->RootDir,
+                        L"",
+                        L".VolumeIcon",
+                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                    );
 
-        if (!Volume->VolIconImage) {
-            if (Volume->DiskKind == DISK_KIND_INTERNAL) {
-                // get custom volume icons if present
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Trying to load custom icon image");
-                #endif
-
-                Volume->VolIconImage = egLoadIconAnyType (
-                    Volume->RootDir,
-                    L"",
-                    L".VolumeIcon",
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
+                    #if REFIT_DEBUG > 0
+                    if (Volume->VolIconImage == NULL) {
+                        LOG(1, LOG_THREE_STAR_END, L"Custom Volume Icon Not Found");
+                    }
+                    else {
+                        LOG(1, LOG_THREE_STAR_END, L"Custom Volume Icon Found");
+                    }
+                    #endif
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    LOG(2, LOG_LINE_NORMAL, L"Skipped ... Not Internal Volume");
+                    LOG(1, LOG_THREE_STAR_END, L"Skipped '%s'", Volume->VolName);
+                    #endif
+                }
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Could not load volume badge icon!!");
+                LOG(2, LOG_LINE_NORMAL, L"Skipped ... Icon Already Set");
+                LOG(1, LOG_THREE_STAR_END, L"Skipped '%s'", Volume->VolName);
                 #endif
             }
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Processed volume badge icon");
-            #endif
-        }
+        } // if Volume->IsReadable
     } // for
 } // VOID SetVolumeIcons()
 

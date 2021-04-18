@@ -306,7 +306,7 @@ egDumpGOPVideoModes (
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
-        LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (MsgStr);
         MyFreePool (ModeTxt);
@@ -611,7 +611,7 @@ egSetMaxResolution (
     MsgStr = PoolPrint (L"BestMode: GOP Mode[%d] @ %d x %d",
         BestMode, Width, Height
     );
-    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s\n\n", MsgStr);
     MyFreePool (MsgStr);
     #endif
@@ -795,7 +795,7 @@ egInitScreen (
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Console Control ...NOT OK!!");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -803,7 +803,7 @@ egInitScreen (
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Console Control ...ok");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -903,7 +903,7 @@ egInitScreen (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...NOT OK!!");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -911,7 +911,7 @@ egInitScreen (
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...ok");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -1028,7 +1028,7 @@ egInitScreen (
         // Not Found
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT FOUND!!");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -1040,7 +1040,7 @@ egInitScreen (
         // Not Found
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ERROR!!");
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         #endif
@@ -1055,7 +1055,7 @@ egInitScreen (
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ok");
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n\n", MsgStr);
             MyFreePool (MsgStr);
             #endif
@@ -1065,7 +1065,7 @@ egInitScreen (
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT OK!!");
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n\n", MsgStr);
             MyFreePool (MsgStr);
             #endif
@@ -1212,8 +1212,9 @@ egInitScreen (
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Implement UGA Pass Through ...%r", Status);
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (MsgStr);
             #endif
         }
@@ -1231,9 +1232,15 @@ egInitScreen (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"GOP not Available");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MsgLog ("\n");
                 MyFreePool (MsgStr);
-                MsgLog ("      Fall Back on UGA\n\n");
+
+                MsgStr = StrDuplicate (L"Fall Back on UGA");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("      %s");
+                MsgLog ("\n\n");
+                MyFreePool (MsgStr);
                 #endif
 
                 egHasGraphics  = TRUE;
@@ -1248,9 +1255,15 @@ egInitScreen (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Graphics not Available");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MsgLog ("\n");
                 MyFreePool (MsgStr);
-                MsgLog ("      Fall Back on Text Mode\n\n");
+
+                MsgStr = StrDuplicate (L"Fall Back on Text Mode");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("      %s");
+                MsgLog ("\n\n");
+                MyFreePool (MsgStr);
                 #endif
             }
         }
@@ -1276,36 +1289,24 @@ egInitScreen (
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Implement Text Renderer ...%r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
+            MsgLog ("INFO: %s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (MsgStr);
             #endif
         #endif
     }
 
     #if REFIT_DEBUG > 0
-    CHAR16 *ScreenModeType;
     if (egHasGraphics) {
-        ScreenModeType = StrDuplicate (L"Yes");
+        MsgStr = StrDuplicate (L"Yes");
     }
     else {
-        ScreenModeType = StrDuplicate (L"No");
+        MsgStr = StrDuplicate (L"No");
     }
 
-    MsgLog ("INFO: Graphics Available:- '%s'", ScreenModeType);
-    MyFreePool (ScreenModeType);
-
-    if (egHasGraphics) {
-        MsgLog ("\n\n");
-    }
-    else {
-        MsgLog ("\n");
-        if (GlobalConfig.TextOnly) {
-            MsgLog ("      'TextOnly' Setting:- 'On'\n\n");
-        }
-        else {
-            MsgLog ("      'TextOnly' Setting:- 'Off'\n\n");
-        }
-    }
+    MsgLog ("INFO: Graphics Available:- '%s'", MsgStr);
+    MsgLog ("\n\n");
+    MyFreePool (MsgStr);
     #endif
 }
 
@@ -1365,7 +1366,7 @@ egSetScreenSize (
     UINT32       ScreenH;
     UINT32       UGADepth;
     UINT32       UGARefreshRate;
-    CHAR16       *ShowScreenStr = NULL;
+    CHAR16      *MsgStr = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Set Screen Size Manually. H = %d and W = %d\n", ScreenHeight, ScreenWidth);
@@ -1373,24 +1374,14 @@ egSetScreenSize (
 
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize!!");
+        MsgStr = StrDuplicate (
+            L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize!!"
+        );
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("%s", MsgStr);
+        MsgLog ("\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
-
-        SwitchToText (FALSE);
-
-        ShowScreenStr = L"Invalid Input Resolution in Config File!!";
-
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("%s\n", ShowScreenStr);
-        #endif
-
-        PauseForKey();
-        MyFreePool (ShowScreenStr);
 
         return FALSE;
     }
@@ -1400,7 +1391,14 @@ egSetScreenSize (
         CurrentModeNum = GOPDraw->Mode->Mode;
 
         #if REFIT_DEBUG > 0
-        MsgLog ("  - GOPDraw Object Found ...Current Mode = %d\n", CurrentModeNum);
+        MsgStr = PoolPrint (
+            L"GOPDraw Object Found ...Current Mode = %d",
+            CurrentModeNum
+        );
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s", MsgStr);
+        MsgLog ("\n", MsgStr);
+        MyFreePool (MsgStr);
         #endif
 
         if (*ScreenHeight == 0) {
@@ -1408,7 +1406,11 @@ egSetScreenSize (
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - Mode Set from ScreenWidth\n\n");
+                MsgStr = StrDuplicate (L"Mode Set from ScreenWidth");
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("  - %s", MsgStr);
+                MsgLog ("\n\n", MsgStr);
+                MyFreePool (MsgStr);
                 #endif
 
                 ModeSet = TRUE;
@@ -1421,15 +1423,22 @@ egSetScreenSize (
                 ) == EFI_SUCCESS)
             ) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
-                MsgLog ("  - Mode Set from egGetResFromMode\n\n");
+                MsgStr = PoolPrint (L"Setting GOP mode to %d", ModeNum);
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("  - %s", MsgStr);
+                MsgLog ("\n\n", MsgStr);
+                MyFreePool (MsgStr);
                 #endif
 
                 ModeSet = TRUE;
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  - Could Not Set GOPDraw Mode\n\n");
+                MsgStr = StrDuplicate (L"Could Not Set GOPDraw Mode");
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("  - %s", MsgStr);
+                MsgLog ("\n\n", MsgStr);
+                MyFreePool (MsgStr);
                 #endif
             }
             // User specified width & height; must find mode...
@@ -1459,16 +1468,26 @@ egSetScreenSize (
                     ) == EFI_SUCCESS))
                 ) {
                     #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL, L"Setting GOP mode to %d", ModeNum);
-                    MsgLog ("  - Mode Set from GOPDraw Query\n\n");
+                    MsgStr = PoolPrint (L"Setting GOP mode to %d", ModeNum);
+                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+                    MsgLog ("\n\n", MsgStr);
+                    MyFreePool (MsgStr);
                     #endif
 
                     ModeSet = TRUE;
                 }
                 else {
+                    MsgStr = StrDuplicate (L"Could Not Set GOPDraw Mode");
+
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Could Not Set GOPDraw Mode\n\n");
+                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+                    MsgLog ("\n\n", MsgStr);
                     #endif
+
+                    PrintUglyText (MsgStr, NEXTLINE);
+                    MyFreePool (MsgStr);
                 }
             } while ((++ModeNum < GOPDraw->Mode->MaxMode) && !ModeSet);
         } // if/else
@@ -1478,18 +1497,18 @@ egSetScreenSize (
             egScreenHeight = *ScreenHeight;
         }
         else {
-            // If unsuccessful, display an error message for the user....
-            SwitchToText (FALSE);
-
-            ShowScreenStr = L"Invalid Resolution Setting Provided ...Trying Default Modes:";
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            MsgStr = StrDuplicate (
+                L"Invalid Resolution Setting Provided ...Trying Default Mode"
+            );
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-            MsgLog ("%s", ShowScreenStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("%s:\n", MsgStr);
+            MyFreePool (MsgStr);
             #endif
 
-            MyFreePool (ShowScreenStr);
+            PrintUglyText (MsgStr, NEXTLINE);
+            MyFreePool (MsgStr);
 
             ModeNum = 0;
             do {
@@ -1506,18 +1525,16 @@ egSetScreenSize (
                     &Info
                 );
                 if (!EFI_ERROR (Status) && (Info != NULL)) {
-
-                    ShowScreenStr = PoolPrint (
+                    #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (
                         L"Available Mode: Mode[%02d][%d x %d]",
                         ModeNum,
                         Info->HorizontalResolution,
                         Info->VerticalResolution
                     );
-                    PrintUglyText (ShowScreenStr, NEXTLINE);
-
-                    #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-                    MsgLog ("  - %s", ShowScreenStr);
+                    LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+                    MyFreePool (MsgStr);
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
@@ -1527,23 +1544,21 @@ egSetScreenSize (
 
                 }
                 else {
-                    ShowScreenStr = L"Error : Could Not Query GOPDraw Mode";
-                    PrintUglyText (ShowScreenStr, NEXTLINE);
+                    MsgStr = StrDuplicate (L"Error : Could Not Query GOPDraw Mode");
 
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - %s", ShowScreenStr);
+                    LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    MsgLog ("  - %s", MsgStr);
                     #endif
-                } // if
 
-                MyFreePool (ShowScreenStr);
+                    PrintUglyText (MsgStr, NEXTLINE);
+                    MyFreePool (MsgStr);
+                } // if
             } while (++ModeNum < GOPDraw->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
             MsgLog ("\n\n");
             #endif
-
-            PauseForKey();
-            SwitchToGraphicsAndClear (TRUE);
         } // if GOP mode (UEFI)
     }
     else if ((UGADraw != NULL) && (*ScreenHeight > 0)) {
@@ -1578,19 +1593,20 @@ egSetScreenSize (
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
-            ShowScreenStr = PoolPrint (
+            MsgStr = PoolPrint (
                 L"Error setting %d x %d resolution ...Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-            MsgLog ("%s\n", ShowScreenStr);
+            LOG(1, LOG_LINE_NORMAL, MsgStr);
+            MsgLog ("%s\n", MsgStr);
+
             #endif
 
-            MyFreePool (ShowScreenStr);
+            MyFreePool (MsgStr);
         } // if/else
     } // if/else if (UGADraw != NULL)
 

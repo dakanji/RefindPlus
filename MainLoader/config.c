@@ -1246,7 +1246,7 @@ LOADER_ENTRY * AddStanzaEntries (
          Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
          #if REFIT_DEBUG > 0
-         LOG(1, LOG_LINE_NORMAL, L"Adding manual loader for '%s'", Entry->LoaderPath);
+         LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
          #endif
 
          SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);

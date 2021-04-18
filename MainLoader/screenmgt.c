@@ -107,7 +107,7 @@ InitScreen (
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Graphics mode detected; getting screen size");
+        LOG(4, LOG_LINE_NORMAL, L"Graphics mode detected; getting screen size");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);

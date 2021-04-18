@@ -149,7 +149,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        LOG(4, LOG_THREE_STAR_MID,
             L"EFI File '%s' is ASSUMED to be valid",
             FileName
         );
@@ -167,7 +167,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        LOG(4, LOG_THREE_STAR_MID,
             L"EFI File '%s' is invalid!!",
             FileName
         );
@@ -190,7 +190,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
               (*(UINT32 *)&Header == FAT_ARCH));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID,
+    LOG(4, LOG_THREE_STAR_MID,
         L"EFI File '%s' is %s",
         FileName,
         IsValid ? L"valid" : L"invalid!!"
@@ -236,8 +236,8 @@ StartEFIImage (
     } // if (LoadOptions != NULL)
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
-    LOG(1, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
+    LOG(3, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
+    LOG(4, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
     #endif
 
     if (Verbose) {
@@ -289,7 +289,7 @@ StartEFIImage (
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Employing Shim LoadImage() hack");
+            LOG(4, LOG_LINE_NORMAL, L"Employing Shim 'LoadImage' Hack");
             #endif
 
             refit_call6_wrapper(
@@ -380,18 +380,21 @@ StartEFIImage (
     } // if write systemd EFI variables
 
     // close open file handles
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", ImageTitle);
-    #endif
-
     UninitRefitLib();
 
-    Status = refit_call3_wrapper(gBS->StartImage, ChildImageHandle, NULL, NULL);
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Running %s", ImageTitle);
+    #endif
+
+    Status = refit_call3_wrapper(
+        gBS->StartImage, ChildImageHandle,
+        NULL, NULL
+    );
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
     ErrorInfo = PoolPrint (L"returned from %s", ImageTitle);
-    CheckError (Status, ErrorInfo);
+    CheckError (ReturnStatus, ErrorInfo);
     MyFreePool (ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
@@ -403,12 +406,8 @@ StartEFIImage (
     // re-open file handles
     ReinitRefitLib();
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Program has returned %d", Status);
-    #endif
-
 bailout_unload:
-    // unload the image, we don't care if it works or not...
+    // unload the image, we do not care if it works or not
     if (!IsDriver) {
         refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
     }
@@ -419,8 +418,12 @@ bailout:
         FinishExternalScreen();
     }
 
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Load %s ...%r", ImageTitle, ReturnStatus);
+    #endif
+
     return ReturnStatus;
-} /* EFI_STATUS StartEFIImage() */
+} // EFI_STATUS StartEFIImage()
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
@@ -505,7 +508,7 @@ RebootIntoLoader (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR,
-        L"Rebooting into EFI loader '%s' (Boot%04x)",
+        L"Rebooting into EFI Loader '%s' (Boot%04x)",
         Entry->Title,
         Entry->EfiBootNum
     );
@@ -628,4 +631,4 @@ VOID StartTool(IN LOADER_ENTRY *Entry) {
     );
 
     MyFreePool(LoaderPath);
-} /* VOID StartTool() */
+} // VOID StartTool()

@@ -52,7 +52,7 @@
 # others transparently. On such models, it only works in this way with
 # GPUs with system firmware support. This option replaces GOP on the
 # ConsoleOut Handle with one from a GPU Handle on such models when
-# running compatible GPUs without system firmware support.
+# running capable GPUs but without full system firmware support.
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not provide ConsoleOut GOP)
@@ -719,7 +719,7 @@
 # other way, both vmlinuz-linux and vmlinuz-linux-lts will return with "linux"
 # as the version string, which is not desirable. Also, if the kernel or initrd
 # file includes both a specified string and digits, the version string includes
-# both. "vmlinuz-linux-4.8" would give a "linux-4.8" version string for example.
+# both. For example, "vmlinuz-linux-4.8" produces a "linux-4.8" version string.
 # This option is intended for Arch and other distributions that do not include
 # version numbers in their kernel filenames, but may provide other uniquely
 # identifying strings for multiple kernels. If this feature causes problems

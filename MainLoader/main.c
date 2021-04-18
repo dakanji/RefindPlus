@@ -325,35 +325,6 @@ MapSetVariable (
 } // MapSetVariable()
 
 STATIC
-EFI_STATUS
-NvramEntryCheck (
-    IN  CHAR16  *NameNVRAM,
-    IN  CHAR8   *DataNVRAM
-) {
-    CHAR8       StrNVRAM[255];
-    CHAR16      *VarData;
-    EFI_GUID    AppleGUID = APPLE_GUID;
-    EFI_STATUS  Status;
-
-    Status = EfivarGetRaw (
-        &AppleGUID,
-        NameNVRAM,
-        (CHAR8**) &VarData,
-        NULL
-    );
-
-    MyUnicodeStrToAsciiStr (VarData, StrNVRAM);
-
-    // Test whether boot args are equivalent
-    if (!EFI_ERROR (Status) && MyAsciiStrStr (StrNVRAM, DataNVRAM) != NULL) {
-        Status = EFI_ALREADY_STARTED;
-    }
-
-    return Status;
-}
-
-
-STATIC
 VOID
 ActiveCSR (
     VOID
@@ -441,8 +412,9 @@ SetBootArgs (
     CHAR8       DataNVRAM[255];
 
     #if REFIT_DEBUG > 0
-    BOOLEAN LogDisableAMFI        = FALSE;
-    BOOLEAN LogDisableCompatCheck = FALSE;
+    CHAR16  *MsgStr                = NULL;
+    BOOLEAN  LogDisableAMFI        = FALSE;
+    BOOLEAN  LogDisableCompatCheck = FALSE;
     #endif
 
     if (!GlobalConfig.SetBootArgs || GlobalConfig.SetBootArgs[0] == L'\0') {
@@ -506,31 +478,45 @@ SetBootArgs (
         MyUnicodeStrToAsciiStr  (BootArg, DataNVRAM);
         MyFreePool (BootArg);
 
-        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
-
-        if (Status != EFI_ALREADY_STARTED) {
-            Status = EfivarSetRaw (
-                &AppleGUID,
-                NameNVRAM,
-                DataNVRAM,
-                sizeof (DataNVRAM),
-                TRUE
-            );
-        }
+        Status = EfivarSetRaw (
+            &AppleGUID,
+            NameNVRAM,
+            DataNVRAM,
+            sizeof (DataNVRAM),
+            TRUE
+        );
     }
 
     #if REFIT_DEBUG > 0
     if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
+        MsgStr = PoolPrint (
+            L"Disable AMFI ...%r",
+            Status
+        );
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
-        MsgLog ("    * Disable AMFI ...%r", Status);
+        MsgLog ("    * %s", MsgStr);
+        MyFreePool (MsgStr);
     }
 
+    MsgStr = PoolPrint (
+        L"Reset Boot Args ...%r",
+        Status
+    );
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
-    MsgLog ("    * Reset Boot Args ...%r", Status);
+    MsgLog ("    * %s", MsgStr);
+    MyFreePool (MsgStr);
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
+        MsgStr = PoolPrint (
+            L"Disable Compat Check ...%r",
+            Status
+        );
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
-        MsgLog ("    * Disable Compat Check ...%r", Status);
+        MsgLog ("    * %s", MsgStr);
+        MyFreePool (MsgStr);
     }
     #endif
 } // VOID SetBootArgs()
@@ -544,44 +530,53 @@ DisableAMFI (
     EFI_GUID    AppleGUID   = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
 
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
+    #endif
+
     if (GlobalConfig.DisableCompatCheck) {
         // Combine with DisableCompatCheck
         CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1 -no_compat_check";
 
-        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
-
-        if (Status != EFI_ALREADY_STARTED) {
-            Status = EfivarSetRaw (
-                &AppleGUID,
-                NameNVRAM,
-                DataNVRAM,
-                sizeof (DataNVRAM),
-                TRUE
-            );
-        }
+        Status = EfivarSetRaw (
+            &AppleGUID,
+            NameNVRAM,
+            DataNVRAM,
+            sizeof (DataNVRAM),
+            TRUE
+        );
     }
     else {
         CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1";
 
-        Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
-
-        if (Status != EFI_ALREADY_STARTED) {
-            Status = EfivarSetRaw (
-                &AppleGUID,
-                NameNVRAM,
-                DataNVRAM,
-                sizeof (DataNVRAM),
-                TRUE
-            );
-        }
+        Status = EfivarSetRaw (
+            &AppleGUID,
+            NameNVRAM,
+            DataNVRAM,
+            sizeof (DataNVRAM),
+            TRUE
+        );
     }
 
     #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"Disable AMFI ...%r",
+        Status
+    );
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
-    MsgLog ("    * Disable AMFI ...%r", Status);
+    MsgLog ("    * %s", MsgStr);
+    MyFreePool (MsgStr);
+
     if (GlobalConfig.DisableCompatCheck) {
+        MsgStr = PoolPrint (
+            L"Disable Compat Check ...%r",
+            Status
+        );
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
-        MsgLog ("    * Disable Compat Check ...%r", Status);
+        MsgLog ("    * %s", MsgStr);
+        MyFreePool (MsgStr);
     }
     #endif
 } // VOID DisableAMFI()
@@ -596,21 +591,27 @@ DisableCompatCheck (
     CHAR16      *NameNVRAM   = L"boot-args";
     CHAR8       DataNVRAM[]  = "-no_compat_check";
 
-    Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
+    #endif
 
-    if (Status != EFI_ALREADY_STARTED) {
-        Status = EfivarSetRaw (
-            &AppleGUID,
-            NameNVRAM,
-            DataNVRAM,
-            sizeof (DataNVRAM),
-            TRUE
-        );
-    }
+    Status = EfivarSetRaw (
+        &AppleGUID,
+        NameNVRAM,
+        DataNVRAM,
+        sizeof (DataNVRAM),
+        TRUE
+    );
 
     #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"Disable Compat Check ...%r",
+        Status
+    );
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
-    MsgLog ("    * Disable Compat Check ...%r", Status);
+    MsgLog ("    * %s", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 } // VOID DisableCompatCheck()
 
@@ -624,21 +625,27 @@ ForceTRIM (
     CHAR16      *NameNVRAM    = L"EnableTRIM";
     CHAR8       DataNVRAM[1]  = {0x01};
 
-    Status = NvramEntryCheck (NameNVRAM, (VOID *) DataNVRAM);
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
+    #endif
 
-    if (Status != EFI_ALREADY_STARTED) {
-        Status = EfivarSetRaw (
-            &AppleGUID,
-            NameNVRAM,
-            DataNVRAM,
-            sizeof (DataNVRAM),
-            TRUE
-        );
-    }
+    Status = EfivarSetRaw (
+        &AppleGUID,
+        NameNVRAM,
+        DataNVRAM,
+        sizeof (DataNVRAM),
+        TRUE
+    );
 
     #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"Force TRIM ...%r",
+        Status
+    );
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
-    MsgLog ("    * Enable TRIM ...%r", Status);
+    MsgLog ("    * %s", MsgStr);
+    MyFreePool (MsgStr);
     #endif
 } // VOID ForceTRIM()
 
@@ -1754,11 +1761,21 @@ efi_main (
     AdjustDefaultSelection();
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Log Level:- '%d'", GlobalConfig.LogLevel);
+    MsgLog ("INFO: LogLevel:- '%d'", GlobalConfig.LogLevel);
 
     // Show ScanDelay Setting
     MsgLog ("\n");
-    MsgLog ("      Scan Delay:- '%d'", GlobalConfig.ScanDelay);
+    MsgLog ("      ScanDelay:- '%d'", GlobalConfig.ScanDelay);
+
+    // Show ReloadGOP Status
+    MsgLog ("\n");
+    MsgLog ("      ReloadGOP:- ");
+    if (GlobalConfig.ReloadGOP) {
+        MsgLog ("'YES'");
+    }
+    else {
+        MsgLog ("'NO'");
+    }
 
     // Show TextOnly Status
     MsgLog ("\n");
@@ -2171,7 +2188,7 @@ efi_main (
 
                 break;
 
-            case TAG_LOADER:   // Boot OS via .EFI loader
+            case TAG_LOADER:   // Boot OS via .EFI Loader
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected Mac OS
@@ -2300,39 +2317,38 @@ efi_main (
                         WinType = L"Legacy";
                     }
                     if (ourLoaderEntry->Volume->VolName) {
-                        LOG(1, LOG_LINE_THIN_SEP,
-                            L"Booting %s Windows from '%s'",
+                        MsgStr = PoolPrint (
+                            L"Boot %s Windows from '%s'",
                             WinType,
                             ourLoaderEntry->Volume->VolName
                         );
-
-                        MsgLog ("  - Boot %s Windows from '%s'", WinType, ourLoaderEntry->Volume->VolName);
+                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                        MsgLog ("  - %s");
+                        MyFreePool (MsgStr);
                     }
                     else {
-                        MsgLog ("  - Boot %s Windows:- '%s'", WinType, ourLoaderEntry->LoaderPath);
-
-                        LOG(1, LOG_LINE_THIN_SEP,
-                            L"Booting %s Windows:- '%s'",
+                        MsgStr = PoolPrint (
+                            L"Boot %s Windows:- '%s'",
                             WinType,
                             ourLoaderEntry->LoaderPath
                         );
+                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                        MsgLog ("  - %s");
+                        MyFreePool (MsgStr);
                     }
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_THIN_SEP,
-                        L"Booting OS via EFI Loader:- '%s%s'",
+                    MsgStr = PoolPrint (
+                        L"Boot OS via EFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
-
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("User Input Received:\n");
-                    MsgLog (
-                        "  - Boot OS via EFI Loader:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
-                        ourLoaderEntry->LoaderPath
-                    );
+                    MsgLog ("  - %s");
+                    MyFreePool (MsgStr);
                     #endif
                 }
 
@@ -2359,30 +2375,25 @@ efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_THIN_SEP,
-                        L"Booting %s from '%s'",
+                    MsgStr = PoolPrint (
+                        L"Boot %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
                         ourLegacyEntry->Volume->VolName
                     );
-
-                    MsgLog (
-                        "  - Boot %s from '%s'",
-                        ourLegacyEntry->Volume->OSName,
-                        ourLegacyEntry->Volume->VolName
-                    );
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s");
+                    MyFreePool (MsgStr);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_THIN_SEP,
-                        L"Booting Legacy OS:- '%s'",
+                    MsgStr = PoolPrint (
+                        L"Boot Legacy OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
                     );
-
-                    MsgLog (
-                        "  - Boot Legacy OS:- '%s'",
-                        ourLegacyEntry->Volume->OSName
-                    );
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s");
+                    MyFreePool (MsgStr);
                     #endif
                 }
 
@@ -2402,23 +2413,20 @@ efi_main (
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_THIN_SEP,
-                    L"Booting Legacy UEFI:- '%s'",
+                MsgStr = PoolPrint (
+                    L"Boot Legacy UEFI:- '%s'",
                     ourLegacyEntry->Volume->OSName
                 );
-
+                LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - %s");
+                MyFreePool (MsgStr);
+
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog (
-                        "  - Boot Legacy UEFI:- '%s'\n---------------\n\n",
-                        ourLegacyEntry->Volume->OSName
-                    );
+                    MsgLog ("\n---------------\n\n");
                 }
                 else {
-                    MsgLog (
-                        "  - Boot Legacy UEFI:- '%s'\n\n",
-                        ourLegacyEntry->Volume->OSName
-                    );
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2429,13 +2437,15 @@ efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_THIN_SEP,
-                    L"Starting EFI Tool:- '%s'",
+                MsgStr = PoolPrint (
+                    L"Start EFI Tool:- '%s'",
                     ourLoaderEntry->LoaderPath
                 );
-
+                LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Start EFI Tool:- '%s'\n\n", ourLoaderEntry->LoaderPath);
+                MsgLog ("  - %s");
+                MsgLog ("\n\n");
+                MyFreePool (MsgStr);
                 #endif
 
                 if (MyStrStr (ourLoaderEntry->Title, L"Boot Screen") != NULL) {

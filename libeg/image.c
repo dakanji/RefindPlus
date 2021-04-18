@@ -197,12 +197,12 @@ EG_IMAGE * egScaleImage (
     UINTN     x_ratio, y_ratio, x_diff, y_diff;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
+    LOG(4, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
     #endif
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, image is NULL or a size is 0");
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, image is NULL or a size is 0!!");
         #endif
 
         return NULL;
@@ -215,7 +215,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, could not create new image");
+        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, could not create new image!!");
         #endif
 
         return NULL;
@@ -478,24 +478,21 @@ EG_IMAGE * egLoadIcon (
     UINTN           FileDataLength;
     EG_IMAGE        *Image, *NewImage;
 
-    // return null if unable to get to image
     if ((BaseDir == NULL) || (Path == NULL)) {
+        // set error status if unable to get to image
         Status = EFI_INVALID_PARAMETER;
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, '%r' returned while trying to load '%s'", Status, Path);
-        #endif
-
-        return NULL;
+    }
+    else {
+        // try to load file if able to get to image
+        Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     }
 
-    // load file
-    Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, '%r' returned while trying to load '%s'", Status, Path);
         #endif
 
+        // return null if error
         return NULL;
     }
 
@@ -520,7 +517,7 @@ EG_IMAGE * egLoadIcon (
             egFreeImage (Image);
 
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Freed image (egLoadIcon)");
+            LOG(4, LOG_LINE_NORMAL, L"Freed Image in 'egLoadIcon'");
             #endif
 
             Image = NewImage;
@@ -568,10 +565,10 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     if (Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Could not find image (egLoadIconAnyType)");
+        LOG(4, LOG_LINE_NORMAL, L"Could not load icon in 'egLoadIconAnyType'");
     }
     else {
-        LOG(4, LOG_LINE_NORMAL, L"Loaded image (egLoadIconAnyType)");
+        LOG(4, LOG_LINE_NORMAL, L"Loaded icon in 'egLoadIconAnyType'");
     }
     #endif
 

@@ -339,7 +339,7 @@ REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Creating loader entry for '%s'", SubScreen->Title);
+                LOG(2, LOG_LINE_NORMAL, L"Creating Loader Entry for '%s'", SubScreen->Title);
                 #endif
 
                 SubEntry->me.Title    = StrDuplicate (L"Boot using default options");
@@ -593,7 +593,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
     NoExtension = StripEfiExtension (NameClues);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Finding loader defaults for '%s'", Entry->me.Title);
+    LOG(3, LOG_LINE_NORMAL, L"Finding Loader Defaults for '%s'", Entry->me.Title);
     #endif
 
     if (Volume->DiskKind == DISK_KIND_NET) {
@@ -621,7 +621,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
         // Begin creating icon "hints" by using last part of directory path leading
         // to the loader
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Creating icon hint from loader path: '%s'", LoaderPath);
+        LOG(4, LOG_LINE_NORMAL, L"Creating Icon Hint from Loader Path: '%s'", LoaderPath);
         #endif
 
         Temp = FindLastDirName (LoaderPath);
@@ -805,7 +805,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         TempStr              = DevicePathToStr(EfiLoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"EFI loader path = '%s'", TempStr);
+        LOG(2, LOG_LINE_NORMAL, L"EFI Loader Path:- '%s'", TempStr);
         #endif
 
         MyFreePool(TempStr);
@@ -971,7 +971,7 @@ static LOADER_ENTRY * AddLoaderEntry (
             MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
 
-        LOG(3, LOG_THREE_STAR_MID, L"Successfully created menu entry for '%s'", Entry->Title);
+        LOG(3, LOG_THREE_STAR_MID, L"Successfully Created Menu Entry for '%s'", Entry->Title);
         #endif
     }
     else {
@@ -1567,7 +1567,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     ) {
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_DASH_SEP,
-            L"Scanning Volume '%s' for EFI loaders",
+            L"Scanning Volume '%s' for EFI Loaders",
             Volume->VolName
         );
         #endif
@@ -1738,7 +1738,7 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Called ScanEfiFiles on an invalid volume!!");
+        LOG(4, LOG_LINE_NORMAL, L"Called 'ScanEfiFiles' on Invalid Volume!!");
         #endif
     }
 } // static VOID ScanEfiFiles()
@@ -1881,7 +1881,7 @@ VOID ScanFirmwareDefined (
         if (ScanIt) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Adding EFI loader entry for '%s'",
+                L"Adding EFI Loader Entry for '%s'",
                 CurrentEntry->BootEntry.Label
             );
             #endif
@@ -2185,7 +2185,7 @@ ScanForBootloaders (
         // assign shortcut keys
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assigning Boot Shortcut Keys");
-        LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (MsgStr);
@@ -2217,7 +2217,7 @@ ScanForBootloaders (
                 L"Set Key '%d' to %s",
                 k, MainMenu.Entries[i]->Title
             );
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MyFreePool (MsgStr);
             if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
@@ -2252,7 +2252,7 @@ ScanForBootloaders (
             MainMenu.EntryCount,
             LoaderStr
         );
-        LOG(4, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (MsgStr);
         MyFreePool (keyStr);
@@ -2545,7 +2545,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2560,7 +2560,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2575,7 +2575,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2590,7 +2590,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2605,7 +2605,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2620,7 +2620,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -2637,7 +2637,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                    LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                    LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
                     MyFreePool (ToolStr);
                     #endif
@@ -2668,7 +2668,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                        LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
                         #endif
@@ -2715,7 +2715,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
                         #endif
@@ -2757,7 +2757,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
                         #endif
@@ -2799,7 +2799,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
                         #endif
@@ -2839,7 +2839,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
                         MyFreePool (ToolStr);
                         #endif
@@ -2888,7 +2888,7 @@ VOID ScanForTools (VOID) {
 
                                 #if REFIT_DEBUG > 0
                                 ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                                 MsgLog ("              - %s\n", ToolStr);
                                 MyFreePool (ToolStr);
                                 #endif
@@ -2942,7 +2942,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                            LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                            LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                             MsgLog ("              - %s\n", ToolStr);
                             MyFreePool (ToolStr);
                             #endif
@@ -3003,7 +3003,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                    LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                    LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
                     MyFreePool (ToolStr);
                     #endif
@@ -3025,7 +3025,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
@@ -3040,7 +3040,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
-                LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
                 MyFreePool (ToolStr);
                 #endif
