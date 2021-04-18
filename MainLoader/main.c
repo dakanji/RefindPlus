@@ -1890,33 +1890,33 @@ efi_main (
     pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
-       if (GlobalConfig.ScanDelay > 1) {
-           #if REFIT_DEBUG > 0
-           LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
-           #endif
+        if (GlobalConfig.ScanDelay > 1) {
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
+            #endif
 
-           egDisplayMessage (L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
-       }
+            egDisplayMessage (L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
+        }
 
-       #if REFIT_DEBUG > 0
-       MsgLog ("Pause for Scan Delay:\n");
-       #endif
+        #if REFIT_DEBUG > 0
+        MsgLog ("Pause for Scan Delay:\n");
+        #endif
 
-       for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
+        for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
             refit_call1_wrapper(gBS->Stall, 1000000);
-       }
-       if (i == 1) {
-           #if REFIT_DEBUG > 0
-           MsgLog ("  - Waited %d Second\n", i);
-           #endif
-       }
-       else {
-           #if REFIT_DEBUG > 0
-           MsgLog ("  - Waited %d Seconds\n", i);
-           #endif
-       }
-       RescanAll (GlobalConfig.ScanDelay > 1, TRUE);
-       BltClearScreen (TRUE);
+        }
+        if (i == 1) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Waited %d Second\n", i);
+            #endif
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - Waited %d Seconds\n", i);
+            #endif
+        }
+        RescanAll (GlobalConfig.ScanDelay > 1, TRUE);
+        BltClearScreen (TRUE);
     } // if
 
     if (GlobalConfig.DefaultSelection) {
