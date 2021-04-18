@@ -441,7 +441,8 @@ static VOID
 SaveScreen (
     VOID
 ) {
-    UINTN retval;
+    UINTN  retval;
+    UINT64 TimeWait = 1875;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -496,6 +497,12 @@ SaveScreen (
         ColourIndex = ColourIndex + 1;
         if (ColourIndex < 1 || ColourIndex > 36) {
             ColourIndex = 1;
+
+            TimeWait = TimeWait * 2;
+
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, L"Doubling Timeout");
+            #endif
         }
 
         switch (ColourIndex) {
@@ -538,11 +545,11 @@ SaveScreen (
         }
 
         egClearScreen (&OUR_COLOUR);
-        retval = WaitForInput (10000); // 10 Seconds
+        retval = WaitForInput (TimeWait);
         if (retval == INPUT_KEY || retval == INPUT_TIMER_ERROR) {
             break;
         }
-    }
+    } // for ;;
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL, L"Detected Keypress ", MsgStr);
