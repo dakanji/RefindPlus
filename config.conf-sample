@@ -205,7 +205,7 @@
 # RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
 # "Toggle Mac CSR" tool after RefindPlus is loaded.
 # The following options are available:
-#  -1    - Always Disable SIP (and SSV, if configured under "csr_values" and on Mac OS 11.x)
+#  -1    - Always Disable SIP (and SSV, if on Mac OS 11.x and configured under "csr_values")
 #   0    - Take no Action
 #   1    - Always Enable SIP (and SSV, if on Mac OS 11.x)
 #
@@ -449,8 +449,8 @@
 # the optimal size is specified, it may be scaled in an ugly way.
 #
 # Like the banner option above, these options take a filename of an
-# uncompressed BMP, PNG, JPEG, or ICNS image file with a color depth
-# of 24, 8, 4, or 1 bits. The PNG or ICNS format is required for
+# uncompressed BMP, JPEG, PNG or ICNS image file with a color depth
+# of 24, 8, 4, or 1 bits. PNG or ICNS image files are required for
 # transparency support.
 #
 #selection_big   selection-big.bmp
