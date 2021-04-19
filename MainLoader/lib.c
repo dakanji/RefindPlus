@@ -3069,8 +3069,8 @@ FilenameIn (
 } // BOOLEAN FilenameIn()
 
 // Implement FreePool the way it should have been done to begin with, so that
-// it doesn't throw an ASSERT message if fed a NULL pointer....
-VOID MyFreePool (IN VOID *Pointer) {
+// it does not throw an ASSERT message if fed a NULL pointer
+VOID MyFreePool (IN OUT VOID *Pointer) {
     if (Pointer != NULL) {
         FreePool (Pointer);
         Pointer = NULL;
