@@ -597,7 +597,7 @@
 #
 # Inactive when commented out (Does not wait before scanning disks)
 #
-#scan_delay 5
+#scan_delay 2
 
 # When scanning volumes for EFI boot loaders, RefindPlus always looks for
 # the Mac OS and Microsoft Windows boot loaders in their normal locations,
