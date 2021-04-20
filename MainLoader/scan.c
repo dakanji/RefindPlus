@@ -605,7 +605,7 @@ VOID SetLoaderDefaults (
         // locate a custom icon for the loader
         // Anything found here takes precedence over the "hints" in the OSIconName variable
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Trying to load icon in same directory as loader");
+        LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
         #endif
 
         if (!Entry->me.Image) {

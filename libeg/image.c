@@ -551,13 +551,21 @@ EG_IMAGE * egLoadIconAnyType (
     EG_IMAGE  *Image = NULL;
     CHAR16    *Extension;
     CHAR16    *FileName;
-    UINTN     i = 0;
+    UINTN      i = 0;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *TmpDirName;
+    if (StrLen (SubdirName) != 0) {
+        TmpDirName = StrDuplicate (SubdirName);
+    }
+    else {
+        TmpDirName = StrDuplicate (L"\\");
+    }
     LOG(3, LOG_LINE_NORMAL,
-        L"Trying to load any icon with base name: '%s'",
-        BaseName
+        L"Trying to load any icon in '%s' with base name: '%s'",
+        TmpDirName, BaseName
     );
+    MyFreePool (TmpDirName);
     #endif
 
     while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
