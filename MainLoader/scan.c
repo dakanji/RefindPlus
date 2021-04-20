@@ -775,7 +775,7 @@ VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *V
 } // VOID SetLoaderDefaults()
 
 // Add an NVRAM-based EFI boot loader entry to the menu.
-STATIC
+static
 LOADER_ENTRY * AddEfiLoaderEntry (
     IN EFI_DEVICE_PATH *EfiLoaderPath,
     IN CHAR16 *LoaderTitle,
@@ -1286,7 +1286,7 @@ IsSymbolicLink (
 // up in ScanEfiFiles(). Sorts the entries within the loader directory so that
 // the most recent one appears first in the list.
 // Returns TRUE if a duplicate for FALLBACK_FILENAME was found, FALSE if not.
-STATIC
+static
 BOOLEAN
 ScanLoaderDir (
     IN REFIT_VOLUME *Volume,
@@ -1497,7 +1497,7 @@ static VOID ScanNetboot() {
 // Adds *FullFileName as a Mac OS loader, if it exists.
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
-STATIC
+static
 BOOLEAN
 ScanMacOsLoader (
     REFIT_VOLUME *Volume,
@@ -1805,7 +1805,7 @@ ScanOptical (
 // HiddenFirmware EFI variable.
 // If Icon != NULL, uses the specified icon; otherwise tries to find one to
 // match the label.
-STATIC
+static
 VOID ScanFirmwareDefined (
     IN UINTN Row,
     IN CHAR16 *MatchThis,

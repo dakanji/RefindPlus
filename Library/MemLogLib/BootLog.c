@@ -166,7 +166,7 @@ CHAR16
 *GetDateString(
     VOID
 ) {
-    STATIC CHAR16  *DateStr = NULL;
+    static CHAR16  *DateStr = NULL;
 
     if (DateStr != NULL) {
         return DateStr;
@@ -278,7 +278,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
 
 VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
 {
-  STATIC BOOLEAN           FirstTimeSave = TRUE;
+  static BOOLEAN           FirstTimeSave = TRUE;
   CHAR8                   *MemLogBuffer;
   UINTN                    MemLogLen;
   CHAR8                   *Text;

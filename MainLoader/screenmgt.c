@@ -157,8 +157,8 @@ SetupScreen (
     UINTN          NewWidth;
     UINTN          NewHeight;
     BOOLEAN        gotGraphics;
-    STATIC BOOLEAN BannerLoaded = FALSE;
-    STATIC BOOLEAN ScaledIcons  = FALSE;
+    static BOOLEAN BannerLoaded = FALSE;
+    static BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Setup Screen...\n");
@@ -384,7 +384,7 @@ SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
     EFI_STATUS     Status;
-    STATIC BOOLEAN HaveOverriden = FALSE;
+    static BOOLEAN HaveOverriden = FALSE;
 
     if (!GlobalConfig.TextRenderer && !HaveOverriden && !IsBoot) {
         // Override Text Renderer Setting

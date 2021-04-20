@@ -631,7 +631,7 @@ ConnectFilesystemDriver(
 
 // Scan a directory for drivers.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
-STATIC
+static
 UINTN
 ScanDriverDir (
     IN CHAR16 *Path
@@ -725,7 +725,7 @@ ScanDriverDir (
     }
 
     return (NumFound);
-} // STATIC UINTN ScanDriverDir()
+} // static UINTN ScanDriverDir()
 
 
 // Load all EFI drivers from RefindPlus' "drivers" subdirectory and from the

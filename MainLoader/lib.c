@@ -868,7 +868,7 @@ FSTypeName (
 // Sets the FsName field of Volume, based on data recorded in the partition's
 // filesystem. This field may remain unchanged if there's no known filesystem
 // or if the name field is empty.
-STATIC
+static
 VOID
 SetFilesystemName (
     REFIT_VOLUME *Volume
@@ -1292,7 +1292,7 @@ SetVolumeBadgeIcon (
 
 // Return a string representing the input size in IEEE-1541 units.
 // The calling function is responsible for freeing the allocated memory.
-STATIC
+static
 CHAR16
 *SizeInIEEEUnits (
     UINT64 SizeInBytes
@@ -1781,7 +1781,7 @@ ScanExtendedPartition (
 
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
 // Returns TRUE if a match was found and FALSE if not.
-STATIC
+static
 BOOLEAN
 SetPreBootNames (
     REFIT_VOLUME *Volume
@@ -1850,7 +1850,7 @@ SetPreBootNames (
 } // VOID SetPreBootNames()
 
 // Create a subset of Mac OS 'PreBoot' volumes from the volume collection.
-STATIC
+static
 VOID
 SetPrebootVolumes (
     VOID
@@ -2285,7 +2285,7 @@ ScanVolumes (
     }
 } // VOID ScanVolumes()
 
-STATIC
+static
 VOID
 GetVolumeBadgeIcons (
     VOID

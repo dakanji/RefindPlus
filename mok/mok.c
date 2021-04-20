@@ -63,8 +63,8 @@ secure_mode (
     UINTN charsize      = sizeof (char);
     UINT8 *sb = NULL, *setupmode = NULL;
 
-    STATIC BOOLEAN DoneOnce   = FALSE;
-    STATIC BOOLEAN SecureMode = FALSE;
+    static BOOLEAN DoneOnce   = FALSE;
+    static BOOLEAN SecureMode = FALSE;
 
     if (DoneOnce) {
         return SecureMode;

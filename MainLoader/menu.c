@@ -2126,7 +2126,7 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
 
 // Save a list of items to be hidden to NVRAM or disk, as determined by
 // GlobalConfig.UseNvram.
-STATIC
+static
 VOID
 SaveHiddenList(
     IN CHAR16 *HiddenList,
@@ -2359,7 +2359,7 @@ HideEfiTag (
     return TagHidden;
 } // BOOLEAN HideEfiTag()
 
-STATIC
+static
 BOOLEAN
 HideFirmwareTag(
     LOADER_ENTRY *Loader,
@@ -2400,7 +2400,7 @@ HideFirmwareTag(
 } // BOOLEAN HideFirmwareTag()
 
 
-STATIC
+static
 BOOLEAN
 HideLegacyTag (
     LEGACY_ENTRY *LegacyLoader,

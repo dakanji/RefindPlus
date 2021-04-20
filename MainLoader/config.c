@@ -1234,7 +1234,7 @@ LOADER_ENTRY * AddStanzaEntries (
    // Parse the config file to add options for a single stanza, terminating when the token
    // is "}" or when the end of file is reached.
    #if REFIT_DEBUG > 0
-   STATIC BOOLEAN OtherCall;
+   static BOOLEAN OtherCall;
    if (OtherCall) {
        LOG(1, LOG_STAR_HEAD_SEP, L"NEXT STANZA");
    }

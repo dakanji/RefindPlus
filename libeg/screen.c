@@ -81,7 +81,7 @@ static BOOLEAN egHasGraphics  = FALSE;
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
-STATIC
+static
 EFI_STATUS
 EncodeAsPNG (
   IN  VOID    *RawData,
@@ -109,7 +109,7 @@ EncodeAsPNG (
   return EFI_SUCCESS;
 }
 
-STATIC
+static
 EFI_STATUS
 daCheckAltGop (
     VOID

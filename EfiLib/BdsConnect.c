@@ -33,7 +33,7 @@ extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
 
 
-STATIC
+static
 EFI_STATUS
 EFIAPI
 daConnectController (
@@ -624,7 +624,7 @@ BdsLibConnectMostlyAllEfi (
   the correspoinding controllers if have. And at the same time, make
   sure all the system controllers have driver to manage it if have.
 **/
-STATIC
+static
 EFI_STATUS
 BdsLibConnectAllDriversToAllControllersEx (
     VOID

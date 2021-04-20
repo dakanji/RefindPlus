@@ -25,7 +25,7 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 
 #include "../../include/refit_call_wrapper.h"
 
-STATIC
+static
 UINT64
 ApfsFletcher64 (
   VOID    *Data,
@@ -78,7 +78,7 @@ ApfsFletcher64 (
   return (Sum1 << 32U) | Sum2;
 }
 
-STATIC
+static
 BOOLEAN
 ApfsBlockChecksumVerify (
   APFS_OBJ_PHYS   *Block,
@@ -101,7 +101,7 @@ ApfsBlockChecksumVerify (
   return FALSE;
 }
 
-STATIC
+static
 EFI_STATUS
 ApfsReadJumpStart (
   IN  APFS_PRIVATE_DATA      *PrivateData,
@@ -166,7 +166,7 @@ ApfsReadJumpStart (
   return EFI_SUCCESS;
 }
 
-STATIC
+static
 EFI_STATUS
 ApfsReadDriver (
   IN  APFS_PRIVATE_DATA      *PrivateData,
