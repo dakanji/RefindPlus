@@ -269,8 +269,7 @@ EG_IMAGE * egScaleImage (
     return NewImage;
 } // EG_IMAGE * egScaleImage()
 
-VOID
-egFreeImage (
+VOID egFreeImage (
     IN EG_IMAGE *Image
 ) {
     if (Image == NULL) {
@@ -285,8 +284,7 @@ egFreeImage (
 // Basic file operations
 //
 
-EFI_STATUS
-egLoadFile (
+EFI_STATUS egLoadFile (
     IN EFI_FILE  *BaseDir,
     IN CHAR16    *FileName,
     OUT UINT8    **FileData,
@@ -367,8 +365,7 @@ EFI_STATUS egFindESP (
     return Status;
 }
 
-EFI_STATUS
-egSaveFile (
+EFI_STATUS egSaveFile (
     IN EFI_FILE  *BaseDir OPTIONAL,
     IN CHAR16    *FileName,
     IN UINT8     *FileData,
@@ -416,7 +413,8 @@ egSaveFile (
 // Decode the specified image data. The IconSize parameter is relevant only
 // for ICNS, for which it selects which ICNS sub-image is decoded.
 // Returns a pointer to the resulting EG_IMAGE or NULL if decoding failed.
-static EG_IMAGE * egDecodeAny (
+static
+EG_IMAGE * egDecodeAny (
     IN UINT8    *FileData,
     IN UINTN    FileDataLength,
     IN UINTN    IconSize,
@@ -698,8 +696,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
 // Compositing
 //
 
-VOID
-egRestrictImageArea (
+VOID egRestrictImageArea (
     IN EG_IMAGE   *Image,
     IN UINTN      AreaPosX,
     IN UINTN      AreaPosY,
@@ -722,8 +719,7 @@ egRestrictImageArea (
     }
 }
 
-VOID
-egFillImage (
+VOID egFillImage (
     IN OUT EG_IMAGE  *CompImage,
     IN EG_PIXEL      *Color
 ) {
@@ -744,8 +740,7 @@ egFillImage (
     }
 }
 
-VOID
-egFillImageArea (
+VOID egFillImageArea (
     IN OUT EG_IMAGE  *CompImage,
     IN UINTN         AreaPosX,
     IN UINTN         AreaPosY,
@@ -779,8 +774,7 @@ egFillImageArea (
     }
 }
 
-VOID
-egRawCopy (
+VOID egRawCopy (
     IN OUT EG_PIXEL  *CompBasePtr,
     IN EG_PIXEL      *TopBasePtr,
     IN UINTN         Width,
@@ -807,8 +801,7 @@ egRawCopy (
     }
 }
 
-VOID
-egRawCompose (
+VOID egRawCompose (
     IN OUT EG_PIXEL  *CompBasePtr,
     IN EG_PIXEL      *TopBasePtr,
     IN UINTN         Width,
@@ -847,8 +840,7 @@ egRawCompose (
     }
 }
 
-VOID
-egComposeImage (
+VOID egComposeImage (
     IN OUT EG_IMAGE  *CompImage,
     IN EG_IMAGE      *TopImage,
     IN UINTN         PosX,
@@ -893,8 +885,7 @@ egComposeImage (
 // misc internal functions
 //
 
-VOID
-egInsertPlane (
+VOID egInsertPlane (
     IN UINT8 *SrcDataPtr,
     IN UINT8 *DestPlanePtr,
     IN UINTN PixelCount
@@ -909,8 +900,7 @@ egInsertPlane (
     }
 }
 
-VOID
-egSetPlane (
+VOID egSetPlane (
     IN UINT8 *DestPlanePtr,
     IN UINT8 Value,
     IN UINTN PixelCount
@@ -925,8 +915,7 @@ egSetPlane (
     }
 }
 
-VOID
-egCopyPlane (
+VOID egCopyPlane (
     IN UINT8 *SrcPlanePtr,
     IN UINT8 *DestPlanePtr,
     IN UINTN PixelCount

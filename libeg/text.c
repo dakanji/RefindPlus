@@ -51,7 +51,8 @@ static UINTN FontCellWidth = 7;
 // Text rendering
 //
 
-static VOID egPrepareFont() {
+static
+VOID egPrepareFont() {
     UINTN ScreenW, ScreenH;
 
     egGetScreenSize(&ScreenW, &ScreenH);

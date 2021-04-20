@@ -110,8 +110,7 @@ EncodeAsPNG (
 }
 
 static
-EFI_STATUS
-daCheckAltGop (
+EFI_STATUS daCheckAltGop (
     VOID
 ) {
     EFI_STATUS                    Status;
@@ -259,8 +258,7 @@ daCheckAltGop (
     return EFI_SUCCESS;
 }
 
-EFI_STATUS
-egDumpGOPVideoModes (
+EFI_STATUS egDumpGOPVideoModes (
     VOID
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
@@ -432,8 +430,7 @@ egDumpGOPVideoModes (
 // Sets mode via GOP protocol, and reconnects simple text out drivers
 //
 static
-EFI_STATUS
-GopSetModeAndReconnectTextOut (
+EFI_STATUS GopSetModeAndReconnectTextOut (
     IN UINT32 ModeNumber
 ) {
     EFI_STATUS Status;
@@ -462,8 +459,7 @@ GopSetModeAndReconnectTextOut (
     return Status;
 }
 
-EFI_STATUS
-egSetGOPMode (
+EFI_STATUS egSetGOPMode (
     INT32 Next
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
@@ -544,8 +540,7 @@ egSetGOPMode (
 
 // On GOP systems, set the maximum available resolution.
 // On UGA systems, just record the current resolution.
-EFI_STATUS
-egSetMaxResolution (
+EFI_STATUS egSetMaxResolution (
     VOID
 ) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
@@ -666,8 +661,7 @@ egSetMaxResolution (
 // egScreenHeight, and egHasGraphics. The first two of these will be
 // unchanged if neither GOPDraw nor UGADraw is a valid pointer.
 static
-VOID
-egDetermineScreenSize (
+VOID egDetermineScreenSize (
     VOID
 ) {
     EFI_STATUS Status = EFI_SUCCESS;
@@ -701,8 +695,7 @@ egDetermineScreenSize (
     }
 } // static VOID egDetermineScreenSize()
 
-VOID
-egGetScreenSize (
+VOID egGetScreenSize (
     OUT UINTN *ScreenWidth,
     OUT UINTN *ScreenHeight
 ) {
@@ -717,8 +710,7 @@ egGetScreenSize (
 }
 
 
-VOID
-egInitScreen (
+VOID egInitScreen (
     VOID
 ) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
@@ -1313,8 +1305,7 @@ egInitScreen (
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
 // *ModeWidth and *Height, respectively).
 // Returns TRUE if successful, FALSE if not (invalid mode, typically)
-BOOLEAN
-egGetResFromMode (
+BOOLEAN egGetResFromMode (
     UINTN *ModeWidth,
     UINTN *Height
 ) {
@@ -1350,8 +1341,7 @@ egGetResFromMode (
 // Upon success, returns actual screen resolution in *ScreenWidth and *ScreenHeight.
 // These values are unchanged upon failure.
 // Returns TRUE if successful, FALSE if not.
-BOOLEAN
-egSetScreenSize (
+BOOLEAN egSetScreenSize (
     IN OUT UINTN *ScreenWidth,
     IN OUT UINTN *ScreenHeight
 ) {
@@ -1617,8 +1607,7 @@ egSetScreenSize (
 // Returns TRUE if the mode actually changed, FALSE otherwise.
 // Note that a FALSE return value can mean either an error or no change
 // necessary.
-BOOLEAN
-egSetTextMode (
+BOOLEAN egSetTextMode (
     UINT32 RequestedMode
 ) {
     EFI_STATUS   Status;
@@ -1707,8 +1696,7 @@ egSetTextMode (
     return ChangedIt;
 } // BOOLEAN egSetTextMode()
 
-CHAR16 *
-egScreenDescription (
+CHAR16 * egScreenDescription (
     VOID
 ) {
     CHAR16  *GraphicsInfo  = NULL;
@@ -1752,15 +1740,13 @@ egScreenDescription (
     return GraphicsInfo;
 }
 
-BOOLEAN
-egHasGraphicsMode (
+BOOLEAN egHasGraphicsMode (
     VOID
 ) {
     return egHasGraphics;
 }
 
-BOOLEAN
-egIsGraphicsModeEnabled (
+BOOLEAN egIsGraphicsModeEnabled (
     VOID
 ) {
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
@@ -1779,8 +1765,7 @@ egIsGraphicsModeEnabled (
     return FALSE;
 }
 
-VOID
-egSetGraphicsModeEnabled (
+VOID egSetGraphicsModeEnabled (
     IN BOOLEAN Enable
 ) {
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
@@ -1815,8 +1800,7 @@ egSetGraphicsModeEnabled (
 // Drawing to the screen
 //
 
-VOID
-egClearScreen (
+VOID egClearScreen (
     IN EG_PIXEL *Color
 ) {
     EFI_UGA_PIXEL FillColor;
@@ -1860,8 +1844,7 @@ egClearScreen (
     }
 }
 
-VOID
-egDrawImage (
+VOID egDrawImage (
     IN EG_IMAGE *Image,
     IN UINTN    ScreenPosX,
     IN UINTN    ScreenPosY
@@ -1934,8 +1917,7 @@ egDrawImage (
 // Display an unselected icon on the screen, so that the background image shows
 // through the transparency areas. The BadgeImage may be NULL, in which case
 // it's not composited in.
-VOID
-egDrawImageWithTransparency (
+VOID egDrawImageWithTransparency (
     EG_IMAGE *Image,
     EG_IMAGE *BadgeImage,
     UINTN    XPos,
@@ -1961,8 +1943,7 @@ egDrawImageWithTransparency (
     }
 } // VOID DrawImageWithTransparency()
 
-VOID
-egDrawImageArea (
+VOID egDrawImageArea (
     IN EG_IMAGE *Image,
     IN UINTN    AreaPosX,
     IN UINTN    AreaPosY,
@@ -2012,8 +1993,7 @@ egDrawImageArea (
 // Display a message in the center of the screen, surrounded by a box of the
 // specified color. For the moment, uses graphics calls only. (It still works
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
-VOID
-egDisplayMessage (
+VOID egDisplayMessage (
     IN CHAR16 *Text,
     EG_PIXEL  *BGColor,
     UINTN     PositionCode
@@ -2113,8 +2093,7 @@ EG_IMAGE * egCopyScreenArea (
 // Make a screenshot
 //
 
-VOID
-egScreenShot (
+VOID egScreenShot (
     VOID
 ) {
     EFI_STATUS   Status;

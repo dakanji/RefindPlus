@@ -42,14 +42,18 @@
 // Decompress .icns RLE data
 //
 
-VOID egDecompressIcnsRLE (IN OUT UINT8 **CompData, IN OUT UINTN *CompLen, IN UINT8 *PixelData, IN UINTN PixelCount)
-{
+VOID egDecompressIcnsRLE (
+    IN OUT UINT8 **CompData,
+    IN OUT UINTN  *CompLen,
+    IN UINT8      *PixelData,
+    IN UINTN       PixelCount
+) {
     UINT8 *cp;
     UINT8 *cp_end;
     UINT8 *pp;
-    UINTN pp_left;
-    UINTN len, i;
-    UINT8 value;
+    UINTN  pp_left;
+    UINTN  len, i;
+    UINT8  value;
 
     // setup variables
     cp = *CompData;
