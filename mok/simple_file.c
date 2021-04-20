@@ -14,9 +14,9 @@ static EFI_GUID IMAGE_PROTOCOL = LOADED_IMAGE_PROTOCOL;
 static EFI_GUID SIMPLE_FS_PROTOCOL = SIMPLE_FILE_SYSTEM_PROTOCOL;
 static EFI_GUID FILE_INFO = EFI_FILE_INFO_ID;
 
-EFI_STATUS
-simple_file_open_by_handle(EFI_HANDLE device, CHAR16 *name, EFI_FILE **file, UINT64 mode)
-{
+EFI_STATUS simple_file_open_by_handle(
+    EFI_HANDLE device, CHAR16 *name, EFI_FILE **file, UINT64 mode
+) {
    EFI_STATUS efi_status;
    EFI_FILE_IO_INTERFACE *drive;
    EFI_FILE *root;
@@ -45,9 +45,9 @@ simple_file_open_by_handle(EFI_HANDLE device, CHAR16 *name, EFI_FILE **file, UIN
 
 // generate_path() from shim by Matthew J. Garrett
 static
-EFI_STATUS
-generate_path(CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16 **PathName)
-{
+EFI_STATUS generate_path(
+    CHAR16* name, EFI_LOADED_IMAGE *li, EFI_DEVICE_PATH **path, CHAR16 **PathName
+) {
         unsigned int pathlen;
         EFI_STATUS efi_status = EFI_SUCCESS;
         CHAR16 *devpathstr = DevicePathToStr(li->FilePath),
@@ -94,9 +94,9 @@ error:
         return efi_status;
 } // generate_path()
 
-EFI_STATUS
-simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode)
-{
+EFI_STATUS simple_file_open(
+    EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode
+) {
    EFI_STATUS efi_status;
    EFI_HANDLE device;
    EFI_LOADED_IMAGE *li;
@@ -126,9 +126,9 @@ simple_file_open(EFI_HANDLE image, CHAR16 *name, EFI_FILE **file, UINT64 mode)
    return efi_status;
 }
 
-EFI_STATUS
-simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
-{
+EFI_STATUS simple_file_read_all(
+    EFI_FILE *file, UINTN *size, void **buffer
+) {
    EFI_STATUS efi_status;
    EFI_FILE_INFO *fi;
    char buf[1024];
@@ -156,8 +156,6 @@ simple_file_read_all(EFI_FILE *file, UINTN *size, void **buffer)
    return efi_status;
 }
 
-void
-simple_file_close(EFI_FILE *file)
-{
+VOID simple_file_close(EFI_FILE *file) {
    uefi_call_wrapper(file->Close, 1, file);
 }

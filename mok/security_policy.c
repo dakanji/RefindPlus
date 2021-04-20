@@ -62,15 +62,14 @@ static EFI_SECURITY2_FILE_AUTHENTICATION es2fa = NULL;
 // returned in case of a shim/MOK authentication failure. This is done because
 // the SB failure code seems to vary from one implementation to another, and I
 // don't want to interfere with that at this time.
-static MSABI EFI_STATUS
-security2_policy_authentication (
+static
+MSABI EFI_STATUS security2_policy_authentication (
    const EFI_SECURITY2_PROTOCOL *This,
    const EFI_DEVICE_PATH_PROTOCOL *DevicePath,
    VOID *FileBuffer,
    UINTN FileSize,
    BOOLEAN  BootPolicy
-             )
-{
+) {
    EFI_STATUS Status;
 
    /* Chain original security policy */
@@ -94,13 +93,12 @@ security2_policy_authentication (
 // filesystems. This also has the effect of returning whatever the platform code is for
 // authentication failure, be it EFI_ACCESS_DENIED, EFI_SECURITY_VIOLATION, or something
 // else. (This seems to vary between implementations.)
-static MSABI EFI_STATUS
-security_policy_authentication (
+static
+MSABI EFI_STATUS security_policy_authentication (
    const EFI_SECURITY_PROTOCOL *This,
    UINT32 AuthenticationStatus,
    const EFI_DEVICE_PATH_PROTOCOL *DevicePathConst
-   )
-{
+) {
    EFI_STATUS        Status;
    EFI_DEVICE_PATH   *DevPath, *OrigDevPath;
    EFI_HANDLE        h;
@@ -144,9 +142,7 @@ security_policy_authentication (
    return Status;
 } // EFI_STATUS security_policy_authentication()
 
-EFI_STATUS
-security_policy_install(void)
-{
+EFI_STATUS security_policy_install(void) {
    EFI_SECURITY_PROTOCOL *security_protocol;
    EFI_SECURITY2_PROTOCOL *security2_protocol = NULL;
    EFI_STATUS status;
@@ -176,9 +172,7 @@ security_policy_install(void)
    return EFI_SUCCESS;
 }
 
-EFI_STATUS
-security_policy_uninstall(void)
-{
+EFI_STATUS security_policy_uninstall(void) {
    EFI_STATUS status;
 
    if (esfas) {

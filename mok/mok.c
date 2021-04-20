@@ -54,8 +54,7 @@
 /*
  * Check whether we're in Secure Boot and user mode
  */
-BOOLEAN
-secure_mode (
+BOOLEAN secure_mode (
     VOID
 ) {
     EFI_STATUS status;
@@ -110,8 +109,7 @@ secure_mode (
 
 // Returns TRUE if the shim program is available to verify binaries,
 // FALSE if not
-BOOLEAN
-ShimLoaded (
+BOOLEAN ShimLoaded (
     VOID
 ) {
     SHIM_LOCK   *shim_lock;
@@ -130,8 +128,7 @@ ShimLoaded (
 // The following is based on the grub_linuxefi_secure_validate() function in Fedora's
 // version of GRUB 2.
 // Returns TRUE if the specified data is validated by Shim's MOK, FALSE otherwise
-BOOLEAN
-ShimValidate (
+BOOLEAN ShimValidate (
     VOID *data,
     UINT32 size
 ) {
