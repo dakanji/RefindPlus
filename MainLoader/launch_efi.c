@@ -237,8 +237,8 @@ EFI_STATUS StartEFIImage (
     } // if (LoadOptions != NULL)
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Starting %s", ImageTitle);
-    LOG(4, LOG_LINE_NORMAL, L"Using load options '%s'", FullLoadOptions ? FullLoadOptions : L"");
+    LOG(3, LOG_LINE_NORMAL, L"Starting '%s'", ImageTitle);
+    LOG(4, LOG_LINE_NORMAL, L"Using Load Options:- '%s'", FullLoadOptions ? FullLoadOptions : L"");
     #endif
 
     if (Verbose) {
@@ -384,7 +384,7 @@ EFI_STATUS StartEFIImage (
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Running %s", ImageTitle);
+    LOG(1, LOG_LINE_NORMAL, L"Running '%s'", ImageTitle);
     #endif
 
     Status = refit_call3_wrapper(
@@ -420,7 +420,7 @@ bailout:
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Load %s ...%r", ImageTitle, ReturnStatus);
+    LOG(1, LOG_LINE_NORMAL, L"Load '%s' ...%r", ImageTitle, ReturnStatus);
     #endif
 
     return ReturnStatus;

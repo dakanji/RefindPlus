@@ -700,28 +700,27 @@ EFI_STATUS ApplyGOPFix (
 
     MsgStr = PoolPrint (L"Amend System Table ...%r", Status);
     LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("INFO: %s\n\n", MsgStr);
+    MsgLog ("INFO: %s", MsgStr);
     MyFreePool (MsgStr);
+
+    if (EFI_ERROR (Status)) {
+        MsgLog ("\n\n");
+    }
+    else {
+        MsgLog ("\n");
+    }
     #endif
 
     if (!EFI_ERROR (Status)) {
         Status = AcquireGOP();
-        if (Status == EFI_INCOMPATIBLE_VERSION) {
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Acquire OptionROM on Volatile Storage ...Feature Unavailable");
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (MsgStr);
-            #endif
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ...%r", Status);
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (MsgStr);
-            #endif
-        }
+
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ...%r", Status);
+        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("      %s", MsgStr);
+        MyFreePool (MsgStr);
+        MsgLog ("\n\n");
+        #endif
 
         // connect all devices
         if (!EFI_ERROR (Status)) {
@@ -754,22 +753,13 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             ReLoaded = TRUE;
             Status   = ApplyGOPFix();
 
-            if (Status == EFI_INCOMPATIBLE_VERSION) {
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Issue OptionROM from Volatile Storage ...Feature Unavailable");
-                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n\n", MsgStr);
-                MyFreePool (MsgStr);
-                #endif
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ...%r", Status);
-                LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-                MsgLog ("INFO: %s\n\n", MsgStr);
-                MyFreePool (MsgStr);
-                #endif
-            }
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ...%r", Status);
+            LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            MsgLog ("INFO: %s", MsgStr);
+            MyFreePool (MsgStr);
+            MsgLog ("\n\n");
+            #endif
 
             ReLoaded = FALSE;
         }

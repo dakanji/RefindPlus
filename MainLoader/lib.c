@@ -86,14 +86,18 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define FAT32_SIGNATURE                  "FAT32   "
 
 #if defined (EFIX64)
-EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
+    EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, \
+    { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
 #elif defined (EFI32)
-EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
+    EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, \
+    { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
 #elif defined (EFIAARCH64)
-EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
+    EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, \
+    { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
 #else
-// Below is GUID for ARM32
-EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, { 0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3 }};
+    // Below is GUID for ARM32
+    EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, \
+    { 0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3 }};
 #endif
 
 // variables
@@ -649,7 +653,7 @@ EFI_STATUS EfivarSetRaw (
         ) {
             #if REFIT_DEBUG > 0
             LOG(4, LOG_LINE_NORMAL,
-                L"Saving EFI variable '%s' to Emulated NVRAM",
+                L"Saving EFI Variable '%s' to Emulated NVRAM",
                 VariableName
             );
             #endif
@@ -1335,7 +1339,7 @@ CHAR16 * GetVolumeName (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"Setting volume name to filesystem name: '%s'",
+            L"Set Volume Name to Filesystem Name:- '%s'",
             FoundName
         );
         #endif
@@ -1351,7 +1355,7 @@ CHAR16 * GetVolumeName (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"Setting volume name to partition name: '%s'",
+            L"Set Volume Name to Partition Name:- '%s'",
             FoundName
         );
         #endif
@@ -1371,7 +1375,7 @@ CHAR16 * GetVolumeName (
 
             #if REFIT_DEBUG > 0
             LOG(4, LOG_LINE_NORMAL,
-                L"Setting volume name to filesystem description: '%s'",
+                L"Set Volume Name to Filesystem Description:- '%s'",
                 FoundName
             );
             #endif
@@ -1417,7 +1421,7 @@ CHAR16 * GetVolumeName (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"Setting volume name to generic description: '%s'",
+            L"Set Volume Name to Generic Description:- '%s'",
             FoundName
         );
         #endif
@@ -2271,7 +2275,7 @@ VOID GetVolumeBadgeIcons (
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Volume Badge Icon Config Setting:- 'Hidden'");
+        LOG(1, LOG_LINE_NORMAL, L"Volume Badge Icon Config Setting is 'Hidden'");
         #endif
 
         return;

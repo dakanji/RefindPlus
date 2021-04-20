@@ -499,7 +499,7 @@ VOID SaveScreen (
             TimeWait = TimeWait * 2;
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Doubling Timeout");
+            LOG(1, LOG_LINE_NORMAL, L"Extend Timeout");
             #endif
         }
 
@@ -1953,7 +1953,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Waiting ... Timeout: %d", Timeout);
+    LOG(4, LOG_THREE_STAR_MID, L"Waiting ... Timeout=%d", Timeout);
     #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
