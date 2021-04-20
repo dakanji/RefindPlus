@@ -338,7 +338,7 @@ EFI_STATUS egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"In egLoadFile, loaded '%s'", FileName);
+    LOG(3, LOG_LINE_NORMAL, L"In egLoadFile, loaded '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -553,6 +553,13 @@ EG_IMAGE * egLoadIconAnyType (
     CHAR16    *FileName;
     UINTN     i = 0;
 
+    #if REFIT_DEBUG > 0
+    LOG(3, LOG_LINE_NORMAL,
+        L"Trying to load any icon with base name: '%s'",
+        BaseName
+    );
+    #endif
+
     while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
@@ -563,10 +570,10 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     if (Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Could not load icon in 'egLoadIconAnyType'");
+        LOG(3, LOG_LINE_NORMAL, L"Could not load icon in 'egLoadIconAnyType'");
     }
     else {
-        LOG(4, LOG_LINE_NORMAL, L"Loaded icon in 'egLoadIconAnyType'");
+        LOG(3, LOG_LINE_NORMAL, L"Loaded icon in 'egLoadIconAnyType'");
     }
     #endif
 

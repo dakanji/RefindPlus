@@ -238,7 +238,10 @@ EFI_STATUS StartEFIImage (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Starting '%s'", ImageTitle);
-    LOG(4, LOG_LINE_NORMAL, L"Using Load Options:- '%s'", FullLoadOptions ? FullLoadOptions : L"");
+    LOG(4, LOG_LINE_NORMAL,
+        L"Load Options:- '%s'",
+        FullLoadOptions ? FullLoadOptions : L""
+    );
     #endif
 
     if (Verbose) {

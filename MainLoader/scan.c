@@ -331,7 +331,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             );
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Creating subscreen '%s'", SubScreen->Title);
+            LOG(2, LOG_LINE_NORMAL, L"Create a subscreen: '%s'", SubScreen->Title);
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;
@@ -339,7 +339,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Creating Loader Entry for '%s'", SubScreen->Title);
+                LOG(2, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
                 #endif
 
                 SubEntry->me.Title    = StrDuplicate (L"Boot using default options");
