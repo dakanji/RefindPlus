@@ -62,8 +62,7 @@ EFI_GUID gEfiLegacyBiosProtocolGuid = { 0xdb9a1e3d, 0x45cb, 0x4abb, { 0x85, 0x3b
   @reture Destination
 
 **/
-CHAR8 *
-UnicodeStrToAsciiStr (
+CHAR8 * UnicodeStrToAsciiStr (
   IN      CHAR16              *Source,
   OUT     CHAR8               *Destination
   )
@@ -116,8 +115,7 @@ UnicodeStrToAsciiStr (
   @return The length of String.
 
 **/
-UINTN
-AsciiStrLen (
+UINTN AsciiStrLen (
   IN      CONST CHAR8               *String
   )
 {
@@ -152,13 +150,10 @@ AsciiStrLen (
   @retval FALSE       If PcdMaximumDevicePathNodeCount is not zero, the node
                       count of the DevicePath exceeds PcdMaximumDevicePathNodeCount.
 **/
-BOOLEAN
-EFIAPI
-IsDevicePathValid (
+BOOLEAN EFIAPI IsDevicePathValid (
   IN CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath,
   IN       UINTN                    MaxSize
-  )
-{
+) {
 //  UINTN Count;
   UINTN Size;
   UINTN NodeLength;
@@ -205,9 +200,7 @@ IsDevicePathValid (
   @retval Others      The size of a device path in bytes.
 
 **/
-UINTN
-EFIAPI
-GetDevicePathSize (
+UINTN EFIAPI GetDevicePathSize (
   IN CONST EFI_DEVICE_PATH_PROTOCOL  *DevicePath
   )
 {

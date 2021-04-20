@@ -58,9 +58,9 @@ MyCatPrint (
         StringSize += (StrSize (Str->Str) - sizeof (UINT16));
 
     Str->Str = EfiReallocatePool (
-					Str->Str,		   
+					Str->Str,
                                    StrSize (Str->Str),
-					StringSize                
+					StringSize
                 );
     ASSERT (Str->Str != NULL);
   }
@@ -85,8 +85,7 @@ MyCatPrint (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathPci (
+VOID DevPathPci (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -107,8 +106,7 @@ DevPathPci (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathPccard (
+VOID DevPathPccard (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -129,8 +127,7 @@ DevPathPccard (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathMemMap (
+VOID DevPathMemMap (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -157,8 +154,7 @@ DevPathMemMap (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathController (
+VOID DevPathController (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -177,8 +173,7 @@ DevPathController (
   @param  DevPath  Pointer to vendor device path
 
 **/
-VOID
-DevPathVendor (
+VOID DevPathVendor (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -200,7 +195,7 @@ DevPathVendor (
 
   case MESSAGING_DEVICE_PATH:
     Type = L"Msg";
-/*		  
+/*
     if (CompareGuid (&Vendor->Guid, &gEfiPcAnsiGuid)) {
       MyCatPrint (Str, L"VenPcAnsi()");
       return ;
@@ -303,8 +298,7 @@ DevPathVendor (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathAcpi (
+VOID DevPathAcpi (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -329,14 +323,13 @@ DevPathAcpi (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathExtendedAcpi (
+VOID DevPathExtendedAcpi (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
 {
   ACPI_EXTENDED_HID_DEVICE_PATH   *ExtendedAcpi;
-  
+
   //
   // Index for HID, UID and CID strings, 0 for non-exist
   //
@@ -447,8 +440,7 @@ DevPathExtendedAcpi (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathAdrAcpi (
+VOID DevPathAdrAcpi (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -479,8 +471,7 @@ DevPathAdrAcpi (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathAtapi (
+VOID DevPathAtapi (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -506,8 +497,7 @@ DevPathAtapi (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathScsi (
+VOID DevPathScsi (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -528,8 +518,7 @@ DevPathScsi (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathFibre (
+VOID DevPathFibre (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -550,8 +539,7 @@ DevPathFibre (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPath1394 (
+VOID DevPath1394 (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -572,8 +560,7 @@ DevPath1394 (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathUsb (
+VOID DevPathUsb (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -594,8 +581,7 @@ DevPathUsb (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathUsbWWID (
+VOID DevPathUsbWWID (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -622,8 +608,7 @@ DevPathUsbWWID (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathLogicalUnit (
+VOID DevPathLogicalUnit (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -644,8 +629,7 @@ DevPathLogicalUnit (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathUsbClass (
+VOID DevPathUsbClass (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -674,8 +658,7 @@ DevPathUsbClass (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathSata (
+VOID DevPathSata (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -711,8 +694,7 @@ DevPathSata (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathI2O (
+VOID DevPathI2O (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -733,8 +715,7 @@ DevPathI2O (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathMacAddr (
+VOID DevPathMacAddr (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -769,8 +750,7 @@ DevPathMacAddr (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathIPv4 (
+VOID DevPathIPv4 (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -799,8 +779,7 @@ DevPathIPv4 (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathIPv6 (
+VOID DevPathIPv6 (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -840,8 +819,7 @@ DevPathIPv6 (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathInfiniBand (
+VOID DevPathInfiniBand (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -870,8 +848,7 @@ DevPathInfiniBand (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathUart (
+VOID DevPathUart (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -955,8 +932,7 @@ DevPathUart (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathiSCSI (
+VOID DevPathiSCSI (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -998,8 +974,7 @@ DevPathiSCSI (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathVlan (
+VOID DevPathVlan (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1020,8 +995,7 @@ DevPathVlan (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathHardDrive (
+VOID DevPathHardDrive (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1070,8 +1044,7 @@ DevPathHardDrive (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathCDROM (
+VOID DevPathCDROM (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1092,8 +1065,7 @@ DevPathCDROM (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathFilePath (
+VOID DevPathFilePath (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1114,8 +1086,7 @@ DevPathFilePath (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathMediaProtocol (
+VOID DevPathMediaProtocol (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1136,8 +1107,7 @@ DevPathMediaProtocol (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathFvFilePath (
+VOID DevPathFvFilePath (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1158,8 +1128,7 @@ DevPathFvFilePath (
   @param DevPath         The device path.
 
 **/
-VOID
-MyDevPathRelativeOffsetRange (
+VOID MyDevPathRelativeOffsetRange (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1185,8 +1154,7 @@ MyDevPathRelativeOffsetRange (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathBssBss (
+VOID DevPathBssBss (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1241,8 +1209,7 @@ DevPathBssBss (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathEndInstance (
+VOID DevPathEndInstance (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1260,8 +1227,7 @@ DevPathEndInstance (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathNodeUnknown (
+VOID DevPathNodeUnknown (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )
@@ -1278,8 +1244,7 @@ DevPathNodeUnknown (
   @param DevPath         The device path.
 
 **/
-VOID
-DevPathFvPath (
+VOID DevPathFvPath (
   IN OUT POOL_PRINT       *Str,
   IN VOID                 *DevPath
   )

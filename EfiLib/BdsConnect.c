@@ -34,9 +34,7 @@ extern EFI_STATUS AcquireGOP (VOID);
 
 
 static
-EFI_STATUS
-EFIAPI
-daConnectController (
+EFI_STATUS EFIAPI daConnectController (
     IN  EFI_HANDLE               ControllerHandle,
     IN  EFI_HANDLE               *DriverImageHandle   OPTIONAL,
     IN  EFI_DEVICE_PATH_PROTOCOL *RemainingDevicePath OPTIONAL,
@@ -72,8 +70,7 @@ daConnectController (
     return Status;
 } // EFI_STATUS daConnectController()
 
-EFI_STATUS
-ScanDeviceHandles (
+EFI_STATUS ScanDeviceHandles (
     EFI_HANDLE ControllerHandle,
     UINTN      *HandleCount,
     EFI_HANDLE **HandleBuffer,
@@ -207,8 +204,7 @@ ScanDeviceHandles (
 } // EFI_STATUS ScanDeviceHandles()
 
 
-EFI_STATUS
-BdsLibConnectMostlyAllEfi (
+EFI_STATUS BdsLibConnectMostlyAllEfi (
     VOID
 ) {
     EFI_STATUS           XStatus;
@@ -625,8 +621,7 @@ BdsLibConnectMostlyAllEfi (
   sure all the system controllers have driver to manage it if have.
 **/
 static
-EFI_STATUS
-BdsLibConnectAllDriversToAllControllersEx (
+EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -689,8 +684,7 @@ BdsLibConnectAllDriversToAllControllersEx (
 // to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
 // amends SystemTable Revision information, provides the missing CreateEventEx capability
 // then reloads the GPU's ROM from RAM (If Present) which will install GOP (If Available).
-EFI_STATUS
-ApplyGOPFix (
+EFI_STATUS ApplyGOPFix (
     VOID
 ) {
     EFI_STATUS Status;
@@ -745,9 +739,7 @@ ApplyGOPFix (
   the correspoinding controllers if have. And at the same time, make
   sure all the system controllers have driver to manage it if have.
 **/
-VOID
-EFIAPI
-BdsLibConnectAllDriversToAllControllers (
+VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
     IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS Status;

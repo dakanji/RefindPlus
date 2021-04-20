@@ -15,8 +15,7 @@
 /**
   @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
 **/
-EFI_STATUS
-AmendSysTable (
+EFI_STATUS AmendSysTable (
     VOID
 ) {
     // NOOP if not compiled using EDK II
@@ -83,8 +82,7 @@ EFI_STATUS FakeCreateEventEx (
   Set Interrupt State.
   @param Enable: The state of enable or disable interrupt
 **/
-VOID
-FakeSetInterruptState (
+VOID FakeSetInterruptState (
     IN BOOLEAN  Enable
 ) {
     EFI_STATUS  Status;
@@ -112,8 +110,7 @@ FakeSetInterruptState (
   Dispatches pending events.
   @param Priority: Task priority level of event notifications to dispatch
 **/
-VOID
-FakeDispatchEventNotifies (
+VOID FakeDispatchEventNotifies (
     IN EFI_TPL  Priority
 ) {
     IEVENT        *Event;
@@ -165,9 +162,7 @@ FakeDispatchEventNotifies (
   @param  NewTpl:  New task priority level
   @return The previous task priority level
 **/
-EFI_TPL
-EFIAPI
-FakeRaiseTpl (
+EFI_TPL EFIAPI FakeRaiseTpl (
     IN EFI_TPL  NewTpl
 ) {
     EFI_TPL     OldTpl;
@@ -202,9 +197,7 @@ FakeRaiseTpl (
   priority unmasks events at a higher priority, they are dispatched.
   @param  NewTpl:  New, lower, task priority
 **/
-VOID
-EFIAPI
-FakeRestoreTpl (
+VOID EFIAPI FakeRestoreTpl (
     IN EFI_TPL NewTpl
 ) {
     EFI_TPL    OldTpl;
@@ -258,8 +251,7 @@ FakeRestoreTpl (
   @param  Lock:  The lock to acquire
   @return Lock owned
 **/
-VOID
-FakeAcquireLock (
+VOID FakeAcquireLock (
     IN EFI_LOCK  *Lock
 ) {
     ASSERT (Lock != NULL);
@@ -275,8 +267,7 @@ FakeAcquireLock (
   @param  Lock:  The lock to release
   @return Lock unowned
 **/
-VOID
-FakeReleaseLock (
+VOID FakeReleaseLock (
     IN EFI_LOCK  *Lock
 ) {
     EFI_TPL Tpl;
@@ -291,8 +282,7 @@ FakeReleaseLock (
 }
 
 
-EFI_STATUS
-FakeCreateEventEx (
+EFI_STATUS FakeCreateEventEx (
     IN        UINT32             Type,
     IN        EFI_TPL            NotifyTpl,
     IN        EFI_EVENT_NOTIFY   NotifyFunction OPTIONAL,
@@ -433,8 +423,7 @@ FakeCreateEventEx (
   @retval EFI_INVALID_PARAMETER     Command usage error.
   @retval Other value               Unknown error.
 **/
-EFI_STATUS
-AmendSysTable (
+EFI_STATUS AmendSysTable (
     VOID
 ) {
     EFI_STATUS         Status;

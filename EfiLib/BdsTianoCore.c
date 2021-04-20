@@ -38,8 +38,7 @@ EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39,
                                 node failed
 
 **/
-EFI_STATUS
-BdsLibConnectDevicePath (
+EFI_STATUS BdsLibConnectDevicePath (
   IN EFI_DEVICE_PATH_PROTOCOL  *DevicePathToConnect
   )
 {
@@ -165,8 +164,7 @@ BdsLibConnectDevicePath (
   @retval NULL                  Failed to get the new option
 
 **/
-BDS_COMMON_OPTION *
-BdsLibVariableToOption (
+BDS_COMMON_OPTION * BdsLibVariableToOption (
   IN OUT LIST_ENTRY                   *BdsCommonOptionList,
   IN  CHAR16                          *VariableName
   )
@@ -296,8 +294,7 @@ BdsLibVariableToOption (
   @retval NULL                  Variable was not read
 
 **/
-VOID *
-BdsLibGetVariableAndSize (
+VOID * BdsLibGetVariableAndSize (
   IN  CHAR16              *Name,
   IN  EFI_GUID            *VendorGuid,
   OUT UINTN               *VariableSize

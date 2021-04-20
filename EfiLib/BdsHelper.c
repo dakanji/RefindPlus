@@ -117,8 +117,7 @@ VOID UpdateBbsTable (
     @retval EFI_STATUS          Return the status of LegacyBios->LegacyBoot ().
 
 **/
-EFI_STATUS
-BdsLibDoLegacyBoot (
+EFI_STATUS BdsLibDoLegacyBoot (
     IN  BDS_COMMON_OPTION *Option
 ) {
     EFI_STATUS                Status;
