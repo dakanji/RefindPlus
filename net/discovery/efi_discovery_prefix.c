@@ -40,7 +40,8 @@ FILE_LICENCE ( GPL2_OR_LATER );
  * because there may still be TCP connections in the process of
  * closing.
  */
-static void close_all_netdevs ( void ) {
+static
+void close_all_netdevs ( void ) {
 	struct net_device *netdev;
 
 	for_each_netdev ( netdev ) {
@@ -48,7 +49,8 @@ static void close_all_netdevs ( void ) {
 	}
 }
 
-static struct uri* try_getting_next_server ( struct net_device *netdev ) {
+static
+struct uri * try_getting_next_server ( struct net_device *netdev ) {
 	struct uri *filename;
 
 	/* Close all other network devices */
@@ -73,7 +75,7 @@ static struct uri* try_getting_next_server ( struct net_device *netdev ) {
 		uri_put ( filename );
 		filename = NULL;
 	}
- 
+
 	return filename;
   err_filename:
   err_dhcp:
@@ -82,9 +84,10 @@ static struct uri* try_getting_next_server ( struct net_device *netdev ) {
 }
 
 
-static struct uri* efi_discover ( void ) {
+static
+struct uri * efi_discover ( void ) {
 	struct net_device *netdev;
-  
+
   struct uri* filename = NULL;
 
 	for_each_netdev ( netdev ) {
@@ -101,12 +104,14 @@ static struct uri* efi_discover ( void ) {
  * @v systab		System table
  * @ret efirc		EFI return status code
  */
-EFI_STATUS EFIAPI _efi_discovery_start ( EFI_HANDLE image_handle,
-			       EFI_SYSTEM_TABLE *systab ) {
+EFI_STATUS EFIAPI _efi_discovery_start (
+	EFI_HANDLE image_handle,
+	EFI_SYSTEM_TABLE *systab
+) {
 	EFI_STATUS efirc;
-  struct uri* filename;
-  userptr_t user_buf;
-  wchar_t* exit_buf;
+	struct uri* filename;
+	userptr_t user_buf;
+	wchar_t* exit_buf;
 
 	/* Initialise EFI environment */
 	if ( ( efirc = efi_init ( image_handle, systab ) ) != 0 )
@@ -117,7 +122,7 @@ EFI_STATUS EFIAPI _efi_discovery_start ( EFI_HANDLE image_handle,
      efirc = EFI_OUT_OF_RESOURCES;
      goto err_init;
   }
-  
+
   exit_buf = (wchar_t *)user_to_phys(user_buf,0);
 
   initialise();
@@ -128,11 +133,11 @@ EFI_STATUS EFIAPI _efi_discovery_start ( EFI_HANDLE image_handle,
      efirc = EFI_NOT_FOUND;
      goto err_filename;
   }
-  
+
 	efi_snp_release();
 	efi_loaded_image->Unload ( image_handle );
 	efi_driver_reconnect_all();
- 
+
   efi_snprintf(exit_buf,MAX_EXIT_BUFFER_SIZE,"%s - %s", filename->host, filename->path);
   uri_put(filename);
 
@@ -149,7 +154,8 @@ EFI_STATUS EFIAPI _efi_discovery_start ( EFI_HANDLE image_handle,
  *
  * @v rootdev		EFI root device
  */
-static int efi_probe ( struct root_device *rootdev __unused ) {
+static
+int efi_probe ( struct root_device *rootdev __unused ) {
 
 	return efi_driver_connect_all();
 }
@@ -159,13 +165,15 @@ static int efi_probe ( struct root_device *rootdev __unused ) {
  *
  * @v rootdev		EFI root device
  */
-static void efi_remove ( struct root_device *rootdev __unused ) {
+static
+void efi_remove ( struct root_device *rootdev __unused ) {
 
 	efi_driver_disconnect_all();
 }
 
 /** EFI root device driver */
-static struct root_driver efi_root_driver = {
+static
+struct root_driver efi_root_driver = {
 	.probe = efi_probe,
 	.remove = efi_remove,
 };
