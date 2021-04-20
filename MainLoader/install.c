@@ -40,7 +40,8 @@
   ***********************/
 
  // Delete the linked-list ESP_LIST data structure passed as an argument.
- static VOID DeleteESPList (ESP_LIST *AllESPs) {
+ static
+ VOID DeleteESPList (ESP_LIST *AllESPs) {
      ESP_LIST *Temp;
 
      #if REFIT_DEBUG > 0
@@ -97,7 +98,8 @@
  // REFIT_VOLUME, so if these values are not unique (as, for instance,
  // after some types of disk cloning operations), the returned value may
  // not be accurate.
- static REFIT_VOLUME *PickOneESP (ESP_LIST *AllESPs) {
+ static
+ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
      ESP_LIST            *CurrentESP;
      REFIT_VOLUME        *ChosenVolume = NULL;
      CHAR16              *Temp         = NULL, *GuidStr, *PartName, *FsName, *VolName;
@@ -189,7 +191,8 @@
   *
   ***********************/
 
- static EFI_STATUS RenameFile (IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewName) {
+ static
+ EFI_STATUS RenameFile (IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewName) {
      EFI_STATUS    Status;
      EFI_FILE      *FilePtr;
      EFI_FILE_INFO *NewInfo, *Buffer = NULL;
@@ -234,7 +237,8 @@
  // Rename *FileName to add a "-old" extension, but only if that file doesn't
  // already exist. Called on the icons directory to preserve it in case the
  // user wants icons stored there that have been supplanted by new icons.
- static EFI_STATUS BackupOldFile (IN EFI_FILE *BaseDir, CHAR16 *FileName) {
+ static
+ EFI_STATUS BackupOldFile (IN EFI_FILE *BaseDir, CHAR16 *FileName) {
      EFI_STATUS          Status = EFI_SUCCESS;
      CHAR16              *NewName;
 
@@ -255,7 +259,8 @@
  } // EFI_STATUS BackupOldFile()
 
  // Create directories in which RefindPlus will reside....
- static EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
+ static
+ EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
      CHAR16   *FileName = NULL;
      UINTN    i = 0, Status = EFI_SUCCESS;
      EFI_FILE *TheDir = NULL;
@@ -276,7 +281,8 @@
      return (Status);
  } // CreateDirectories()
 
- static EFI_STATUS CopyOneFile (IN EFI_FILE *SourceDir,
+ static
+ EFI_STATUS CopyOneFile (IN EFI_FILE *SourceDir,
                                IN CHAR16 *SourceName,
                                IN EFI_FILE *DestDir,
                                IN CHAR16 *DestName) {
@@ -334,7 +340,8 @@
  } // EFI_STATUS CopyOneFile()
 
  // Copy a single directory (non-recursively)
- static EFI_STATUS CopyDirectory (IN EFI_FILE *SourceDirPtr,
+ static
+ EFI_STATUS CopyDirectory (IN EFI_FILE *SourceDirPtr,
                               IN CHAR16 *SourceDirName,
                               IN EFI_FILE *DestDirPtr,
                               IN CHAR16 *DestDirName) {
@@ -361,8 +368,7 @@
 // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
 // as a Linux /boot partition. That's weird, but it does work.
 static
-EFI_STATUS
-CopyDrivers (
+EFI_STATUS CopyDrivers (
     IN EFI_FILE *SourceDirPtr,
     IN CHAR16   *SourceDirName,
     IN EFI_FILE *DestDirPtr,
@@ -464,7 +470,8 @@ CopyDrivers (
  } // EFI_STATUS CopyDrivers()
 
  // Copy all the files from the source to *TargetDir
- static EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
+ static
+ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
      REFIT_VOLUME    *SourceVolume = NULL; // Do not free
      CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
      CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindPlusName;
@@ -559,7 +566,8 @@ CopyDrivers (
 
  // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
  // Success isn't critical, so we don't return a Status value.
- static VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
+ static
+ VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
      CHAR16   *Contents = NULL;
      UINTN    FileSize, Status;
      EFI_FILE *FilePtr;
@@ -586,7 +594,8 @@ CopyDrivers (
      #endif
  } // VOID CreateFallbackCSV()
 
- static BOOLEAN CopyRefindFiles (IN EFI_FILE *TargetDir) {
+ static
+ BOOLEAN CopyRefindFiles (IN EFI_FILE *TargetDir) {
      EFI_STATUS Status = EFI_SUCCESS, Status2;
 
      if (FileExists (TargetDir, L"\\EFI\\refindplus\\icons")) {
@@ -662,7 +671,8 @@ CopyDrivers (
  // device path structure. In this case, the function will skip the equivalent-
  // but-not-identical entry and the boot list will end up with two (or more)
  // functionally equivalent entries.
- static UINTN FindBootNum (EFI_DEVICE_PATH *Entry, UINTN Size, BOOLEAN *AlreadyExists) {
+ static
+ UINTN FindBootNum (EFI_DEVICE_PATH *Entry, UINTN Size, BOOLEAN *AlreadyExists) {
      UINTN   i = 0, VarSize, Status;
      CHAR16  *VarName, *Contents = NULL;
 
@@ -688,7 +698,8 @@ CopyDrivers (
  // - The device path data in binary form
  // - Any arguments to be passed to the program. This function does NOT
  //   create arguments.
- static EFI_STATUS ConstructBootEntry (EFI_HANDLE *TargetVolume,
+ static
+ EFI_STATUS ConstructBootEntry (EFI_HANDLE *TargetVolume,
                                       CHAR16 *Loader,
                                       CHAR16 *Label,
                                       CHAR8 **Entry,
@@ -723,7 +734,8 @@ CopyDrivers (
  // Set BootNum as first in the boot order. This function also eliminates any
  // duplicates of BootNum in the boot order list (but NOT duplicates among
  // the Boot#### variables).
- static EFI_STATUS SetBootDefault (UINTN BootNum) {
+ static
+ EFI_STATUS SetBootDefault (UINTN BootNum) {
      UINTN    Status, VarSize, ListSize, i, j;
      UINT16   *BootOrder, *NewBootOrder;
      BOOLEAN  IsAlreadyFirst = FALSE;
@@ -760,7 +772,8 @@ CopyDrivers (
  // (If an entry that's identical to the one this function would create already
  // exists, it may be used instead; see the comments before the FindBootNum()
  // function for details and caveats.)
- static EFI_STATUS CreateNvramEntry (EFI_HANDLE DeviceHandle) {
+ static
+ EFI_STATUS CreateNvramEntry (EFI_HANDLE DeviceHandle) {
      CHAR16           *VarName = NULL, *ProgName;
      UINTN            Status, Size, BootNum = 0;
      EFI_DEVICE_PATH  *Entry;
@@ -876,17 +889,17 @@ CopyDrivers (
      return ListStart;
  } // BOOT_ENTRY_LIST * FindBootOrderEntries()
 
- // Delete a linked-list BOOT_ENTRY_LIST data structure
- VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
-     BOOT_ENTRY_LIST *Current;
+// Delete a linked-list BOOT_ENTRY_LIST data structure
+VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
+    BOOT_ENTRY_LIST *Current;
 
-     while (Entries != NULL) {
-         Current = Entries;
-         MyFreePool (Current->BootEntry.Label);
-         MyFreePool (Current->BootEntry.DevPath);
-         Entries = Entries->NextBootEntry;
-         MyFreePool (Current);
-     }
+    while (Entries != NULL) {
+        Current = Entries;
+        MyFreePool (Current->BootEntry.Label);
+        MyFreePool (Current->BootEntry.DevPath);
+        Entries = Entries->NextBootEntry;
+        MyFreePool (Current);
+    }
  } // VOID DeleteBootOrderEntries()
 
  // Enable the user to pick one boot option to move to the top of the boot
@@ -898,7 +911,8 @@ CopyDrivers (
  // Input variables:
  //  - *Entries: Linked-list set of boot entries. Unmodified.
  //  - *BootOrderNum: Returns the Boot#### number to be promoted or deleted.
- static UINTN PickOneBootOption (IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOrderNum) {
+ static
+ UINTN PickOneBootOption (IN BOOT_ENTRY_LIST *Entries, IN OUT UINTN *BootOrderNum) {
      CHAR16              *Temp          = NULL;
      CHAR16              *Filename      = NULL;
      INTN                 DefaultEntry  = 0;
@@ -970,7 +984,8 @@ CopyDrivers (
      return Operation;
  } // REFIT_VOLUME *PickOneBootOption()
 
- static EFI_STATUS DeleteInvalidBootEntries (VOID) {
+ static
+ EFI_STATUS DeleteInvalidBootEntries (VOID) {
      UINTN    Status, VarSize, ListSize, i, j = 0;
      UINT16   *BootOrder, *NewBootOrder;
      CHAR8    *Contents;

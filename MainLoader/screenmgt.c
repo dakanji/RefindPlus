@@ -98,8 +98,7 @@ PrepareBlankLine (
 // Screen initialization and switching
 //
 
-VOID
-InitScreen (
+VOID InitScreen (
     VOID
 ) {
     // initialize libeg
@@ -150,8 +149,7 @@ InitScreen (
 }
 
 // Set the screen resolution and mode (text vs. graphics).
-VOID
-SetupScreen (
+VOID SetupScreen (
     VOID
 ) {
     UINTN          NewWidth;
@@ -379,8 +377,7 @@ SetupScreen (
     }
 } // VOID SetupScreen()
 
-VOID
-SwitchToText (
+VOID SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
     EFI_STATUS     Status;
@@ -464,8 +461,7 @@ SwitchToText (
     IsBoot = FALSE;
 }
 
-EFI_STATUS
-SwitchToGraphics (
+EFI_STATUS SwitchToGraphics (
     VOID
 ) {
     if (AllowGraphicsMode) {
@@ -485,8 +481,7 @@ SwitchToGraphics (
 //
 // Screen control for running tools
 //
-VOID
-BeginTextScreen (
+VOID BeginTextScreen (
     IN CHAR16 *Title
 ) {
     DrawScreenHeader (Title);
@@ -496,8 +491,7 @@ BeginTextScreen (
     haveError = FALSE;
 }
 
-VOID
-FinishTextScreen (
+VOID FinishTextScreen (
     IN BOOLEAN WaitAlways
 ) {
     if (haveError || WaitAlways) {
@@ -509,8 +503,7 @@ FinishTextScreen (
     haveError = FALSE;
 }
 
-VOID
-BeginExternalScreen (
+VOID BeginExternalScreen (
     IN BOOLEAN UseGraphicsMode,
     IN CHAR16 *Title
 ) {
@@ -532,8 +525,7 @@ BeginExternalScreen (
     haveError = FALSE;
 }
 
-VOID
-FinishExternalScreen (
+VOID FinishExternalScreen (
     VOID
 ) {
     // make sure we clean up later
@@ -551,8 +543,7 @@ FinishExternalScreen (
     haveError = FALSE;
 }
 
-VOID
-TerminateScreen (
+VOID TerminateScreen (
     VOID
 ) {
     // clear text screen
@@ -563,8 +554,7 @@ TerminateScreen (
     refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
 }
 
-VOID
-DrawScreenHeader (
+VOID DrawScreenHeader (
     IN CHAR16 *Title
 ) {
     UINTN y;
@@ -594,8 +584,7 @@ DrawScreenHeader (
 // Keyboard input
 //
 
-BOOLEAN
-ReadAllKeyStrokes (
+BOOLEAN ReadAllKeyStrokes (
     VOID
 ) {
     BOOLEAN       GotKeyStrokes;
@@ -618,8 +607,7 @@ ReadAllKeyStrokes (
 // and rare error messages.
 // Position code is used only in graphics mode.
 // TODO: Improve to handle multi-line text.
-VOID
-PrintUglyText (
+VOID PrintUglyText (
     IN CHAR16 *Text,
     IN UINTN PositionCode
 ) {
@@ -641,8 +629,7 @@ PrintUglyText (
     } // if
 } // VOID PrintUglyText()
 
-VOID
-HaltForKey (
+VOID HaltForKey (
     VOID
 ) {
     UINTN index;
@@ -663,8 +650,7 @@ HaltForKey (
     ReadAllKeyStrokes();        // empty the buffer to protect the menu
 }
 
-VOID
-PauseForKey (
+VOID PauseForKey (
     VOID
 ) {
     UINTN index;
@@ -697,16 +683,14 @@ PauseForKey (
 }
 
 // Pause a specified number of seconds
-VOID
-PauseSeconds (
+VOID PauseSeconds (
     UINTN Seconds
 ) {
     refit_call1_wrapper(gBS->Stall, 1000000 * Seconds);
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
-VOID
-DebugPause (
+VOID DebugPause (
     VOID
 ) {
     // show console and wait for key
@@ -718,8 +702,7 @@ DebugPause (
 }
 #endif
 
-VOID
-EndlessIdleLoop (
+VOID EndlessIdleLoop (
     VOID
 ) {
     UINTN index;
@@ -734,8 +717,7 @@ EndlessIdleLoop (
 // Error handling
 //
 
-BOOLEAN
-CheckFatalError (
+BOOLEAN CheckFatalError (
     IN EFI_STATUS Status,
     IN CHAR16 *where
 ) {
@@ -775,8 +757,7 @@ CheckFatalError (
     return TRUE;
 } // BOOLEAN CheckFatalError()
 
-BOOLEAN
-CheckError (
+BOOLEAN CheckError (
     IN EFI_STATUS Status,
     IN CHAR16 *where
 ) {
@@ -830,8 +811,7 @@ CheckError (
 // Graphics functions
 //
 
-VOID
-SwitchToGraphicsAndClear (
+VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
     EFI_STATUS Status;
@@ -852,8 +832,7 @@ SwitchToGraphicsAndClear (
     #endif
 } // VOID SwitchToGraphicsAndClear()
 
-VOID
-BltClearScreen (
+VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
     static EG_IMAGE *Banner = NULL;
@@ -974,8 +953,7 @@ BltClearScreen (
 } // VOID BltClearScreen()
 
 
-VOID
-BltImage (
+VOID BltImage (
     IN EG_IMAGE *Image,
     IN UINTN XPos,
     IN UINTN YPos
@@ -984,8 +962,7 @@ BltImage (
     GraphicsScreenDirty = TRUE;
 }
 
-VOID
-BltImageAlpha (
+VOID BltImageAlpha (
     IN EG_IMAGE *Image,
     IN UINTN XPos,
     IN UINTN YPos,
@@ -1008,8 +985,7 @@ BltImageAlpha (
     GraphicsScreenDirty = TRUE;
 }
 
-//VOID
-//BltImageComposite (
+//VOID BltImageComposite (
 //    IN EG_IMAGE *BaseImage,
 //    IN EG_IMAGE *TopImage,
 //    IN UINTN XPos,
@@ -1042,8 +1018,7 @@ BltImageAlpha (
 //    GraphicsScreenDirty = TRUE;
 //}
 
-VOID
-BltImageCompositeBadge (
+VOID BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,

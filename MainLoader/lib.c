@@ -148,8 +148,7 @@ BOOLEAN egIsGraphicsModeEnabled (VOID);
 // directory comparisons. A special case: If the PathName refers to root,
 // but is non-empty, return "\", since some firmware implementations flake
 // out if this isn't present.
-VOID
-CleanUpPathNameSlashes (
+VOID CleanUpPathNameSlashes (
     IN OUT CHAR16 *PathName
 ) {
     UINTN Source = 0, Dest = 0;
@@ -202,8 +201,7 @@ CleanUpPathNameSlashes (
 // input value.
 // If InString contains no ")" character, this function leaves the original input string
 // unmodified and also returns that string. If InString is NULL, this function returns NULL.
-CHAR16*
-SplitDeviceString (
+CHAR16 * SplitDeviceString (
     IN OUT CHAR16 *InString
 ) {
     INTN i;
@@ -234,8 +232,7 @@ SplitDeviceString (
 //
 
 static
-EFI_STATUS
-FinishInitRefitLib (
+EFI_STATUS FinishInitRefitLib (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -256,8 +253,7 @@ FinishInitRefitLib (
     return EFI_SUCCESS;
 }
 
-EFI_STATUS
-InitRefitLib (
+EFI_STATUS InitRefitLib (
     IN EFI_HANDLE ImageHandle
 ) {
     EFI_STATUS   Status;
@@ -293,8 +289,7 @@ InitRefitLib (
 }
 
 static
-VOID
-UninitVolumes (
+VOID UninitVolumes (
     VOID
 ) {
     REFIT_VOLUME  *Volume;
@@ -314,8 +309,7 @@ UninitVolumes (
     }
 } // VOID UninitVolumes()
 
-VOID
-ReinitVolumes (
+VOID ReinitVolumes (
     VOID
 ) {
     EFI_STATUS        Status;
@@ -381,8 +375,7 @@ ReinitVolumes (
 } // VOID ReinitVolumes (VOID)
 
 // called before running external programs to close open file handles
-VOID
-UninitRefitLib (
+VOID UninitRefitLib (
     VOID
 ) {
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
@@ -405,8 +398,7 @@ UninitRefitLib (
 } // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
-EFI_STATUS
-ReinitRefitLib (
+EFI_STATUS ReinitRefitLib (
     VOID
 ) {
     EFI_STATUS Status;
@@ -447,8 +439,7 @@ ReinitRefitLib (
 // is on a read-only filesystem, such as HFS+ on a Mac). If neither location can
 // be used, the variable is not stored. Sets the pointer to the directory in the
 // file-global gVarsDir variable and returns the status of the operation.
-EFI_STATUS
-FindVarsDir (
+EFI_STATUS FindVarsDir (
     VOID
 ) {
     EFI_STATUS       Status = EFI_SUCCESS;
@@ -501,8 +492,7 @@ FindVarsDir (
 // Retrieve a raw EFI variable, either from NVRAM or from a disk file under
 // RefindPlus' "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
-EFI_STATUS
-EfivarGetRaw (
+EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
     OUT CHAR8    **VariableData,
@@ -632,8 +622,7 @@ EfivarGetRaw (
 // variables (as determined by the *VendorGUID code) will be saved to a disk file IF
 // GlobalConfig.UseNvram == FALSE.
 // Returns EFI status
-EFI_STATUS
-EfivarSetRaw (
+EFI_STATUS EfivarSetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
     IN  CHAR8     *VariableData,
@@ -734,8 +723,7 @@ EfivarSetRaw (
 // list functions
 //
 
-VOID
-AddListElement (
+VOID AddListElement (
     IN OUT VOID  ***ListPtr,
     IN OUT UINTN   *ElementCount,
     IN VOID        *NewElement
@@ -788,8 +776,7 @@ AddListElement (
     }
 } // VOID AddListElement()
 
-VOID
-FreeList (
+VOID FreeList (
     IN OUT VOID  ***ListPtr,
     IN OUT UINTN   *ElementCount
 ) {
@@ -812,8 +799,7 @@ FreeList (
 // filesystem type is unknown, a blank (but non-null) string is returned.
 // The returned variable is a constant that should NOT be freed.
 static
-CHAR16 *
-FSTypeName (
+CHAR16 * FSTypeName (
     IN UINT32 TypeCode
 ) {
    CHAR16 *retval = NULL;
@@ -869,8 +855,7 @@ FSTypeName (
 // filesystem. This field may remain unchanged if there's no known filesystem
 // or if the name field is empty.
 static
-VOID
-SetFilesystemName (
+VOID SetFilesystemName (
     REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO *FileSystemInfoPtr = NULL;
@@ -903,8 +888,7 @@ SetFilesystemName (
 // GUID/UUID-manipulating functions. (As I write, it's being used merely to
 // detect partitions that are part of a RAID 1 array.)
 static
-VOID
-SetFilesystemData (
+VOID SetFilesystemData (
     IN     UINT8        *Buffer,
     IN     UINTN         BufferSize,
     IN OUT REFIT_VOLUME *Volume
@@ -1021,8 +1005,7 @@ SetFilesystemData (
 } // UINT32 SetFilesystemData()
 
 static
-VOID
-ScanVolumeBootcode (
+VOID ScanVolumeBootcode (
     REFIT_VOLUME  *Volume,
     BOOLEAN       *Bootable
 ) {
@@ -1237,8 +1220,7 @@ ScanVolumeBootcode (
 } // VOID ScanVolumeBootcode()
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
-VOID
-SetVolumeBadgeIcon (
+VOID SetVolumeBadgeIcon (
     REFIT_VOLUME *Volume
 ) {
     #if REFIT_DEBUG > 0
@@ -1293,8 +1275,7 @@ SetVolumeBadgeIcon (
 // Return a string representing the input size in IEEE-1541 units.
 // The calling function is responsible for freeing the allocated memory.
 static
-CHAR16
-*SizeInIEEEUnits (
+CHAR16 * SizeInIEEEUnits (
     UINT64 SizeInBytes
 ) {
     UINTN   NumPrefixes;
@@ -1330,8 +1311,7 @@ CHAR16
 // this information can be extracted.
 // The calling function is responsible for freeing the memory allocated
 // for the name string.
-CHAR16
-*GetVolumeName (
+CHAR16 * GetVolumeName (
     IN REFIT_VOLUME *Volume
 ) {
     CHAR16                *SISize;
@@ -1452,8 +1432,7 @@ CHAR16
 
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
 static
-VOID
-SetPartGuidAndName (
+VOID SetPartGuidAndName (
     REFIT_VOLUME *Volume,
     EFI_DEVICE_PATH_PROTOCOL *DevicePath
 ) {
@@ -1498,8 +1477,7 @@ SetPartGuidAndName (
 // BIOS/legacy boot list on Macs. We cannot assume NTFS will be readable,
 // so return TRUE if it is unreadable; but if it *IS* readable, return
 // TRUE only if Windows boot files are found.
-BOOLEAN
-HasWindowsBiosBootFiles (
+BOOLEAN HasWindowsBiosBootFiles (
     REFIT_VOLUME *Volume
 ) {
     BOOLEAN FilesFound = TRUE;
@@ -1516,8 +1494,7 @@ HasWindowsBiosBootFiles (
     return FilesFound;
 } // static VOID HasWindowsBiosBootFiles()
 
-VOID
-ScanVolume (
+VOID ScanVolume (
     REFIT_VOLUME *Volume
 ) {
     EFI_STATUS        Status;
@@ -1700,8 +1677,7 @@ ScanVolume (
 } // ScanVolume()
 
 static
-VOID
-ScanExtendedPartition (
+VOID ScanExtendedPartition (
     REFIT_VOLUME *WholeDiskVolume,
     MBR_PARTITION_INFO *MbrEntry
 ) {
@@ -1782,8 +1758,7 @@ ScanExtendedPartition (
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
 // Returns TRUE if a match was found and FALSE if not.
 static
-BOOLEAN
-SetPreBootNames (
+BOOLEAN SetPreBootNames (
     REFIT_VOLUME *Volume
 ) {
     UINTN   PreBootIndex;
@@ -1851,8 +1826,7 @@ SetPreBootNames (
 
 // Create a subset of Mac OS 'PreBoot' volumes from the volume collection.
 static
-VOID
-SetPrebootVolumes (
+VOID SetPrebootVolumes (
     VOID
 ) {
     UINTN   i;
@@ -1916,8 +1890,7 @@ SetPrebootVolumes (
     }
 } // VOID SetPrebootVolumes()
 
-VOID
-ScanVolumes (
+VOID ScanVolumes (
     VOID
 ) {
     EFI_STATUS         Status;
@@ -2286,8 +2259,7 @@ ScanVolumes (
 } // VOID ScanVolumes()
 
 static
-VOID
-GetVolumeBadgeIcons (
+VOID GetVolumeBadgeIcons (
     VOID
 ) {
     UINTN         VolumeIndex;
@@ -2330,8 +2302,7 @@ GetVolumeBadgeIcons (
     } // for
 } // VOID SetVolumeIcons()
 
-VOID
-SetVolumeIcons (
+VOID SetVolumeIcons (
     VOID
 ) {
     UINTN         VolumeIndex;
@@ -2398,8 +2369,7 @@ SetVolumeIcons (
 // file and dir functions
 //
 
-BOOLEAN
-FileExists (
+BOOLEAN FileExists (
     IN EFI_FILE *BaseDir,
     IN CHAR16   *RelativePath
 ) {
@@ -2422,8 +2392,7 @@ FileExists (
     return FALSE;
 }
 
-EFI_STATUS
-DirNextEntry (
+EFI_STATUS DirNextEntry (
     IN EFI_FILE *Directory,
     IN OUT EFI_FILE_INFO **DirEntry,
     IN UINTN FilterMode
@@ -2531,8 +2500,7 @@ DirNextEntry (
     return Status;
 }
 
-VOID
-DirIterOpen (
+VOID DirIterOpen (
     IN EFI_FILE *BaseDir,
     IN CHAR16 *RelativePath OPTIONAL,
     OUT REFIT_DIR_ITER *DirIter
@@ -2560,8 +2528,7 @@ DirIterOpen (
 EFI_UNICODE_COLLATION_PROTOCOL *mUnicodeCollation = NULL;
 
 static
-EFI_STATUS
-InitializeUnicodeCollationProtocol (
+EFI_STATUS InitializeUnicodeCollationProtocol (
     VOID
 ) {
    EFI_STATUS  Status;
@@ -2594,8 +2561,7 @@ InitializeUnicodeCollationProtocol (
 }
 
 static
-BOOLEAN
-MetaiMatch (
+BOOLEAN MetaiMatch (
     IN CHAR16 *String,
     IN CHAR16 *Pattern
 ) {
@@ -2611,8 +2577,7 @@ MetaiMatch (
 
 #endif
 
-BOOLEAN
-DirIterNext (
+BOOLEAN DirIterNext (
     IN OUT REFIT_DIR_ITER *DirIter,
     IN UINTN FilterMode,
     IN CHAR16 *FilePattern OPTIONAL,
@@ -2665,8 +2630,7 @@ DirIterNext (
     return TRUE;
 }
 
-EFI_STATUS
-DirIterClose (
+EFI_STATUS DirIterClose (
     IN OUT REFIT_DIR_ITER *DirIter
 ) {
     MyFreePool (DirIter->LastFileInfo);
@@ -2684,8 +2648,7 @@ DirIterClose (
 
 // Returns the filename portion (minus path name) of the
 // specified file
-CHAR16 *
-Basename (
+CHAR16 * Basename (
     IN CHAR16 *Path
 ) {
     CHAR16  *FileName;
@@ -2708,8 +2671,7 @@ Basename (
 // Remove the .efi extension from FileName -- for instance, if FileName is
 // "fred.efi", returns "fred". If the filename contains no .efi extension,
 // returns a copy of the original input.
-CHAR16 *
-StripEfiExtension (
+CHAR16 * StripEfiExtension (
     IN CHAR16 *FileName
 ) {
     UINTN  Length;
@@ -2729,8 +2691,7 @@ StripEfiExtension (
 // memory string search
 //
 
-INTN
-FindMem (
+INTN FindMem (
     IN VOID *Buffer,
     IN UINTN BufferLength,
     IN VOID *SearchString,
@@ -2755,8 +2716,7 @@ FindMem (
 // no dots, or if the input is NULL, returns an empty (but allocated) string.
 // The calling function is responsible for freeing the memory associated with
 // the return value.
-CHAR16 *
-FindExtension (
+CHAR16 * FindExtension (
     IN CHAR16 *Path
 ) {
     CHAR16     *Extension;
@@ -2790,8 +2750,7 @@ FindExtension (
 // of that name. For instance, if the input path is 'EFI\foo\bar.efi', this
 // function returns the string 'foo'.
 // Assumes the pathname is separated with backslashes.
-CHAR16 *
-FindLastDirName (
+CHAR16 * FindLastDirName (
     IN CHAR16 *Path
 ) {
     UINTN i;
@@ -2837,8 +2796,7 @@ FindLastDirName (
 // if FullPath is 'EFI\foo\bar.efi', this function returns the
 // string 'EFI\foo'. The calling function is responsible for
 // freeing the returned string's memory.
-CHAR16 *
-FindPath (
+CHAR16 * FindPath (
     IN CHAR16* FullPath
 ) {
    UINTN i, LastBackslash = 0;
@@ -2862,8 +2820,7 @@ FindPath (
 
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
 // DeviceVolume, and returns that and the filename (*loader).
-VOID
-FindVolumeAndFilename (
+VOID FindVolumeAndFilename (
     IN EFI_DEVICE_PATH  *loadpath,
     OUT REFIT_VOLUME   **DeviceVolume,
     OUT CHAR16         **loader
@@ -2907,8 +2864,7 @@ FindVolumeAndFilename (
 // the filename component in the original *Path variable and the split-off
 // volume component in the *VolName variable.
 // Returns TRUE if both components are found, FALSE otherwise.
-BOOLEAN
-SplitVolumeAndFilename (
+BOOLEAN SplitVolumeAndFilename (
     IN OUT CHAR16 **Path,
     OUT CHAR16 **VolName
 ) {
@@ -2946,8 +2902,7 @@ SplitVolumeAndFilename (
 // of "EFI\ubuntu", and a Filename of "grubx64.efi". If an element is missing,
 // the returned pointer is NULL. The calling function is responsible for
 // freeing the allocated memory.
-VOID
-SplitPathName (
+VOID SplitPathName (
     CHAR16  *InPath,
     CHAR16 **VolName,
     CHAR16 **Path,
@@ -2984,8 +2939,7 @@ SplitPathName (
 // partition name, or a partition GUID). If found, sets *Volume to point
 // to that volume. If not, leaves it unchanged.
 // Returns TRUE if a match was found, FALSE if not.
-BOOLEAN
-FindVolume (
+BOOLEAN FindVolume (
     REFIT_VOLUME **Volume,
     CHAR16 *Identifier
 ) {
@@ -3005,8 +2959,7 @@ FindVolume (
 
 // Returns TRUE if Description matches Volume's VolName, FsName, or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
-BOOLEAN
-VolumeMatchesDescription (
+BOOLEAN VolumeMatchesDescription (
     REFIT_VOLUME *Volume,
     CHAR16       *Description
 ) {
@@ -3032,8 +2985,7 @@ VolumeMatchesDescription (
 // Filename must *NOT* include a volume or path specification (that's part of
 // the Volume variable), but the List elements may. Performs comparison
 // case-insensitively.
-BOOLEAN
-FilenameIn (
+BOOLEAN FilenameIn (
     REFIT_VOLUME *Volume,
     CHAR16 *Directory,
     CHAR16 *Filename,
@@ -3081,8 +3033,7 @@ static EFI_GUID AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
 
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
-BOOLEAN
-EjectMedia (
+BOOLEAN EjectMedia (
     VOID
 ) {
     EFI_STATUS                       Status;
@@ -3126,8 +3077,7 @@ EjectMedia (
 } // VOID EjectMedia()
 
 // Returns TRUE if the two GUIDs are equal, FALSE otherwise
-BOOLEAN
-GuidsAreEqual (
+BOOLEAN GuidsAreEqual (
     EFI_GUID *Guid1,
     EFI_GUID *Guid2
 ) {
@@ -3135,8 +3085,7 @@ GuidsAreEqual (
 } // BOOLEAN GuidsAreEqual()
 
 // Erase linked-list of UINT32 values....
-VOID
-EraseUint32List (
+VOID EraseUint32List (
     UINT32_LIST **TheList
 ) {
     UINT32_LIST *NextItem;

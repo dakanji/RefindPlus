@@ -206,7 +206,7 @@ struct LOADER_LIST {
 
 // Creates a copy of a menu screen.
 // Returns a pointer to the copy of the menu screen.
-static REFIT_MENU_SCREEN* CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
+static REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
     REFIT_MENU_SCREEN *NewEntry;
     UINTN i;
 
@@ -281,7 +281,7 @@ REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry) {
 // is unspecified (NULL).
 // Returns a pointer to the new data structure, or NULL if it
 // couldn't be allocated
-LOADER_ENTRY *InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
+LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
     LOADER_ENTRY *NewEntry = NULL;
 
     NewEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -315,7 +315,7 @@ LOADER_ENTRY *InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
 // it's left unchanged and a pointer to it is returned.
 // Returns a pointer to the new subscreen data structure, or NULL if there
 // were problems allocating memory.
-REFIT_MENU_SCREEN *InitializeSubScreen (IN LOADER_ENTRY *Entry) {
+REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
     CHAR16              *FileName, *MainOptions = NULL;
     REFIT_MENU_SCREEN   *SubScreen = NULL;
     LOADER_ENTRY        *SubEntry;
@@ -584,7 +584,9 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
 // Sets a few defaults for a loader entry -- mainly the icon, but also the OS type
 // code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
-VOID SetLoaderDefaults (LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume) {
+VOID SetLoaderDefaults (
+    LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume
+) {
     CHAR16      *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
     CHAR16      ShortcutLetter = 0;
 
@@ -987,7 +989,8 @@ static LOADER_ENTRY * AddLoaderEntry (
 // (Time1 == Time2). Precision is only to the nearest second; since
 // this is used for sorting boot loader entries, differences smaller
 // than this are likely to be meaningless (and unlikely!).
-static INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
+static
+INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
     INT64 Time1InSeconds, Time2InSeconds;
 
     // Following values are overestimates; I'm assuming 31 days in every month.
@@ -1021,7 +1024,8 @@ static INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
 // since that will make it the default if kernel folding is enabled, so float it to
 // the end.
 // Returns the new first element (the one with the most recent date).
-static struct LOADER_LIST * AddLoaderListEntry (
+static struct
+LOADER_LIST * AddLoaderListEntry (
     struct LOADER_LIST *LoaderList,
     struct LOADER_LIST *NewEntry
 ) {
@@ -1060,7 +1064,8 @@ static struct LOADER_LIST * AddLoaderListEntry (
 } // static VOID AddLoaderListEntry()
 
 // Delete the LOADER_LIST linked list
-static VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
+static
+VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
     struct LOADER_LIST *Temp;
 
     while (LoaderList != NULL) {
@@ -1076,7 +1081,8 @@ static VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
 // other than the one specified by Volume, or if the specified path is SelfDir.
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
-static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
+static
+BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
     UINTN    i            = 0;
     CHAR16   *VolName     = NULL;
     CHAR16   *VolGuid     = NULL;
@@ -1151,7 +1157,8 @@ static BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
 // FALSE if the file is not identical to the fallback file OR if the file
 // IS the fallback file. Intended for use in excluding the fallback boot
 // loader when it's a duplicate of another boot loader.
-static BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
+static
+BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
     CHAR8           *FileContents, *FallbackContents;
     EFI_FILE_HANDLE FileHandle, FallbackHandle;
     EFI_FILE_INFO   *FileInfo, *FallbackInfo;
@@ -1250,8 +1257,7 @@ static BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName)
 // that would be fine, since such boot loaders wouldn't work.)
 // CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())
 static
-BOOLEAN
-IsSymbolicLink (
+BOOLEAN IsSymbolicLink (
     REFIT_VOLUME  *Volume,
     CHAR16        *FullName,
     EFI_FILE_INFO *DirEntry
@@ -1287,8 +1293,7 @@ IsSymbolicLink (
 // the most recent one appears first in the list.
 // Returns TRUE if a duplicate for FALLBACK_FILENAME was found, FALSE if not.
 static
-BOOLEAN
-ScanLoaderDir (
+BOOLEAN ScanLoaderDir (
     IN REFIT_VOLUME *Volume,
     IN CHAR16       *Path,
     IN CHAR16       *Pattern
@@ -1432,7 +1437,8 @@ ScanLoaderDir (
 
 // Run the IPXE_DISCOVER_NAME program, which obtains the IP address of the boot
 // server and the name of the boot file it delivers.
-static CHAR16 *RuniPXEDiscover (EFI_HANDLE Volume) {
+static
+CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
     EFI_STATUS       Status;
     EFI_DEVICE_PATH  *FilePath;
     EFI_HANDLE       iPXEHandle;
@@ -1467,7 +1473,8 @@ static CHAR16 *RuniPXEDiscover (EFI_HANDLE Volume) {
 // of the IPXE_DISCOVER_NAME and IPXE_NAME program files on the volume from
 // which RefindPlus launched. As of December 6, 2014, these tools aren't entirely
 // reliable. See BUILDING.txt for information on building them.
-static VOID ScanNetboot() {
+static
+VOID ScanNetboot() {
     CHAR16        *iPXEFileName = IPXE_NAME;
     CHAR16        *Location;
     REFIT_VOLUME  *NetVolume;
@@ -1498,8 +1505,7 @@ static VOID ScanNetboot() {
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
 static
-BOOLEAN
-ScanMacOsLoader (
+BOOLEAN ScanMacOsLoader (
     REFIT_VOLUME *Volume,
     CHAR16       *FullFileName
 ) {
@@ -1542,7 +1548,8 @@ ScanMacOsLoader (
     return ScanFallbackLoader;
 } // VOID ScanMacOsLoader()
 
-static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
+static
+VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
     EFI_STATUS        Status;
     REFIT_DIR_ITER    EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
@@ -1744,8 +1751,8 @@ static VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
 } // static VOID ScanEfiFiles()
 
 // Scan internal disks for valid EFI boot loaders....
-static VOID
-ScanInternal (
+static
+VOID ScanInternal (
     VOID
 ) {
     UINTN VolumeIndex;
@@ -1762,8 +1769,8 @@ ScanInternal (
 } // static VOID ScanInternal()
 
 // Scan external disks for valid EFI boot loaders....
-static VOID
-ScanExternal (
+static
+VOID ScanExternal (
     VOID
 ) {
     UINTN VolumeIndex;
@@ -1780,8 +1787,8 @@ ScanExternal (
 } // static VOID ScanExternal()
 
 // Scan internal disks for valid EFI boot loaders....
-static VOID
-ScanOptical (
+static
+VOID ScanOptical (
     VOID
 ) {
     UINTN VolumeIndex;
@@ -1926,7 +1933,8 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
 // pre-boot tool functions
 //
 
-static LOADER_ENTRY * AddToolEntry (
+static
+LOADER_ENTRY * AddToolEntry (
     REFIT_VOLUME *Volume,
     IN CHAR16 *LoaderPath,
     IN CHAR16 *LoaderTitle,
@@ -1955,8 +1963,7 @@ static LOADER_ENTRY * AddToolEntry (
 
 // Locates boot loaders.
 // NOTE: This assumes that GlobalConfig.LegacyType is correctly set.
-VOID
-ScanForBootloaders (
+VOID ScanForBootloaders (
     BOOLEAN ShowMessage
 ) {
     #if REFIT_DEBUG > 0
@@ -2268,7 +2275,8 @@ ScanForBootloaders (
 
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
-static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
+static
+BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
     CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
     BOOLEAN retval = TRUE;
@@ -2327,7 +2335,8 @@ static BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
 // Locate a single tool from the specified Locations using one of the
 // specified Names and add it to the menu.
-static BOOLEAN FindTool (
+static
+BOOLEAN FindTool (
     CHAR16 *Locations,
     CHAR16 *Names,
     CHAR16 *Description,

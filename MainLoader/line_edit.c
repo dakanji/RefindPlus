@@ -38,16 +38,16 @@
 #include "lib.h"
 #include "../include/refit_call_wrapper.h"
 
-static void cursor_left (UINTN *cursor, UINTN *first)
-{
+static
+VOID cursor_left (UINTN *cursor, UINTN *first) {
     if ((*cursor) > 0)
         (*cursor)--;
     else if ((*first) > 0)
         (*first)--;
 }
 
-static void cursor_right (UINTN *cursor, UINTN *first, UINTN x_max, UINTN len)
-{
+static
+VOID cursor_right (UINTN *cursor, UINTN *first, UINTN x_max, UINTN len) {
     if ((*cursor)+2 < x_max)
         (*cursor)++;
     else if ((*first) + (*cursor) < len)
@@ -220,4 +220,4 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
     MyFreePool (print);
     MyFreePool (line);
     return enter;
-} /* BOOLEAN line_edit() */
+} // BOOLEAN line_edit()

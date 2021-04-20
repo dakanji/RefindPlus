@@ -94,8 +94,7 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }
 };
 
-EG_IMAGE * BuiltinIcon(IN UINTN Id)
-{
+EG_IMAGE * BuiltinIcon(IN UINTN Id) {
     if (Id >= BUILTIN_ICON_COUNT) {
         return NULL;
     }
@@ -129,8 +128,11 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id)
 // Searches for icons with extensions in the ICON_EXTENSIONS list (via
 // egFindIcon()).
 // Returns image data. On failure, returns an ugly "dummy" icon.
-EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconName, BOOLEAN BootLogo)
-{
+EG_IMAGE * LoadOSIcon(
+    IN CHAR16 *OSIconName OPTIONAL,
+    IN CHAR16 *FallbackIconName,
+    BOOLEAN BootLogo
+) {
     EG_IMAGE        *Image = NULL;
     CHAR16          *CutoutName, *BaseName;
     UINTN           Index = 0;
@@ -185,8 +187,10 @@ EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconNam
 } /* EG_IMAGE * LoadOSIcon() */
 
 
-static EG_PIXEL BlackPixel  = { 0x00, 0x00, 0x00, 0 };
-//static EG_PIXEL YellowPixel = { 0x00, 0xff, 0xff, 0 };
+static
+EG_PIXEL BlackPixel  = { 0x00, 0x00, 0x00, 0 };
+//static
+// EG_PIXEL YellowPixel = { 0x00, 0xff, 0xff, 0 };
 
 EG_IMAGE * DummyImage (
     IN UINTN PixelSize

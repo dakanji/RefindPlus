@@ -81,8 +81,7 @@ BOOLEAN SuppressVerboseAPFS;
 // read a file into a buffer
 //
 
-EFI_STATUS
-RefitReadFile (
+EFI_STATUS RefitReadFile (
     IN EFI_FILE_HANDLE BaseDir,
     IN CHAR16 *FileName,
     IN OUT REFIT_FILE *File,
@@ -176,7 +175,7 @@ RefitReadFile (
 //
 
 static
-CHAR16 *ReadLine (
+CHAR16 * ReadLine (
     REFIT_FILE *File
 ) {
     CHAR16  *Line, *q;
@@ -276,8 +275,7 @@ CHAR16 *ReadLine (
 // Also modifies *p **IF** the first and second characters are both
 // quotes ('"'); it deletes one of them.
 static
-BOOLEAN
-KeepReading (
+BOOLEAN KeepReading (
     IN OUT CHAR16 *p,
     IN OUT BOOLEAN *IsQuoted
 ) {
@@ -316,8 +314,7 @@ KeepReading (
 //
 // get a line of tokens from a file
 //
-UINTN
-ReadTokenLine (
+UINTN ReadTokenLine (
     IN REFIT_FILE *File,
     OUT CHAR16 ***TokenList
 ) {
@@ -371,8 +368,7 @@ ReadTokenLine (
     return (TokenCount);
 } /* ReadTokenLine() */
 
-VOID
-FreeTokenLine (
+VOID FreeTokenLine (
     IN OUT CHAR16 ***TokenList,
     IN OUT UINTN *TokenCount
 ) {
@@ -400,8 +396,7 @@ HandleInt (
 
 // handle a parameter with a single string argument
 static
-VOID
-HandleString (
+VOID HandleString (
     IN CHAR16 **TokenList,
     IN UINTN TokenCount,
     OUT CHAR16 **Target
@@ -418,8 +413,7 @@ HandleString (
 // non-keyword token is "+", the list is added to the existing target string; otherwise,
 // the tokens replace the current string.
 static
-VOID
-HandleStrings (
+VOID HandleStrings (
     IN CHAR16 **TokenList,
     IN UINTN TokenCount,
     OUT CHAR16 **Target
@@ -449,8 +443,7 @@ HandleStrings (
 // added to the existing Target; otherwise, the interpreted tokens replace the current
 // Target.
 static
-VOID
-HandleHexes (
+VOID HandleHexes (
     IN CHAR16 **TokenList,
     IN UINTN TokenCount,
     IN UINTN MaxValue,
@@ -500,8 +493,7 @@ HandleHexes (
 // the input is a number that includes no colon, this function will return the original
 // number in UINTN form.
 static
-UINTN
-HandleTime (
+UINTN HandleTime (
     IN CHAR16 *TimeString
 ) {
    UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
@@ -522,8 +514,7 @@ HandleTime (
 } // BOOLEAN HandleTime()
 
 static
-BOOLEAN
-HandleBoolean (
+BOOLEAN HandleBoolean (
     IN CHAR16 **TokenList,
     IN UINTN TokenCount
 ) {
@@ -541,8 +532,7 @@ HandleBoolean (
 // Sets the default boot loader IF the current time is within the bounds
 // defined by the third and fourth tokens in the TokenList.
 static
-VOID
-SetDefaultByTime (
+VOID SetDefaultByTime (
     IN CHAR16 **TokenList,
     OUT CHAR16 **Default
 ) {
@@ -598,8 +588,7 @@ LOADER_ENTRY * AddPreparedLoaderEntry (
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
 
 // read config file
-VOID
-ReadConfig (
+VOID ReadConfig (
     CHAR16 *FileName
 ) {
     EFI_STATUS        Status;
@@ -1111,8 +1100,7 @@ ReadConfig (
 } // VOID ReadConfig()
 
 static
-VOID
-AddSubmenu (
+VOID AddSubmenu (
     LOADER_ENTRY *Entry,
     REFIT_FILE *File,
     REFIT_VOLUME *Volume,
@@ -1382,8 +1370,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
 // Read the user-configured menu entries from config.conf and add or delete
 // entries based on the contents of that file....
-VOID
-ScanUserConfigured (
+VOID ScanUserConfigured (
     CHAR16 *FileName
 ) {
     EFI_STATUS        Status;

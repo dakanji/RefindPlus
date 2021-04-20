@@ -195,8 +195,7 @@ extern BOOLEAN AptioWarn;
  * The original files are copyright 2006-2011 Intel and BSD-licensed. Minor
  * modifications by Roderick Smith are GPLv3.
  */
-EFI_STATUS
-LibScanHandleDatabase (
+EFI_STATUS LibScanHandleDatabase (
     EFI_HANDLE           DriverBindingHandle,
     OPTIONAL UINT32      *DriverBindingHandleIndex,
     OPTIONAL EFI_HANDLE  ControllerHandle,
@@ -417,8 +416,7 @@ Error:
 #ifdef __MAKEWITH_GNUEFI
 /* Modified from EDK2 function of a similar name; original copyright Intel &
  * BSD-licensed; modifications by Roderick Smith are GPLv3. */
-EFI_STATUS
-ConnectAllDriversToAllControllers(
+EFI_STATUS ConnectAllDriversToAllControllers(
     IN BOOLEAN ResetGOP
 ) {
     EFI_STATUS  Status;
@@ -522,8 +520,7 @@ EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN ResetGOP) {
  * passed to us. This should have no effect on systems unaffected by this EFI
  * bug/quirk.
  */
-VOID
-ConnectFilesystemDriver(
+VOID ConnectFilesystemDriver(
     EFI_HANDLE DriverHandle
 ) {
     EFI_STATUS                            Status;
@@ -632,8 +629,7 @@ ConnectFilesystemDriver(
 // Scan a directory for drivers.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 static
-UINTN
-ScanDriverDir (
+UINTN ScanDriverDir (
     IN CHAR16 *Path
 ) {
     EFI_STATUS      Status;
@@ -733,8 +729,7 @@ ScanDriverDir (
 // file line.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
-BOOLEAN
-LoadDrivers(
+BOOLEAN LoadDrivers(
     VOID
 ) {
     CHAR16  *Directory;

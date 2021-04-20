@@ -70,8 +70,11 @@ extern REFIT_MENU_SCREEN MainMenu;
 
 EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
 
-static EFI_STATUS ActivateMbrPartition (IN EFI_BLOCK_IO *BlockIO, IN UINTN PartitionIndex)
-{
+static
+EFI_STATUS ActivateMbrPartition (
+    IN EFI_BLOCK_IO *BlockIO,
+    IN UINTN PartitionIndex
+) {
     EFI_STATUS          Status;
     UINT8               SectorBuffer[512];
     MBR_PARTITION_INFO  *MbrTable, *EMbrTable;
@@ -200,11 +203,11 @@ static EFI_STATUS ActivateMbrPartition (IN EFI_BLOCK_IO *BlockIO, IN UINTN Parti
     return EFI_SUCCESS;
 } /* static EFI_STATUS ActivateMbrPartition() */
 
-static EFI_GUID
-AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, { 0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82 } };
+static
+EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, { 0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82 } };
 
-static EFI_STATUS
-WriteBootDiskHint (
+static
+EFI_STATUS WriteBootDiskHint (
     IN EFI_DEVICE_PATH *WholeDiskDevicePath
 ){
    EFI_STATUS Status;
@@ -228,15 +231,17 @@ WriteBootDiskHint (
 // firmware device path discovery
 //
 
-static UINT8 LegacyLoaderMediaPathData[] = {
+static
+UINT8 LegacyLoaderMediaPathData[] = {
     0x04, 0x06, 0x14, 0x00, 0xEB, 0x85, 0x05, 0x2B,
     0xB8, 0xD8, 0xA9, 0x49, 0x8B, 0x8C, 0xE2, 0x1B,
     0x01, 0xAE, 0xF2, 0xB7, 0x7F, 0xFF, 0x04, 0x00,
 };
-static EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *)LegacyLoaderMediaPathData;
+static
+EFI_DEVICE_PATH *LegacyLoaderMediaPath = (EFI_DEVICE_PATH *)LegacyLoaderMediaPathData;
 
-static VOID
-ExtractLegacyLoaderPaths (
+static
+VOID ExtractLegacyLoaderPaths (
     EFI_DEVICE_PATH **PathList,
     UINTN MaxPaths,
     EFI_DEVICE_PATH **HardcodedPathList
@@ -379,8 +384,8 @@ static EFI_DEVICE_PATH *LegacyLoaderList[] = {
 #define MAX_DISCOVERED_PATHS (16)
 
 // Launch a BIOS boot loader (Mac mode)
-static EFI_STATUS
-StartLegacyImageList (
+static
+EFI_STATUS StartLegacyImageList (
     IN EFI_DEVICE_PATH **DevicePaths,
     IN CHAR16 *LoadOptions,
     OUT UINTN *ErrorInStep
@@ -484,7 +489,7 @@ bailout:
     MyFreePool (FullLoadOptions);
 
     return ReturnStatus;
-} /* EFI_STATUS StartLegacyImageList() */
+} // EFI_STATUS StartLegacyImageList()
 
 VOID StartLegacy (
     IN LEGACY_ENTRY *Entry,
@@ -576,11 +581,10 @@ VOID StartLegacy (
         }
     }
     FinishExternalScreen();
-} /* static VOID StartLegacy() */
+} // static VOID StartLegacy()
 
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
-VOID
-StartLegacyUEFI (
+VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16 *SelectionName
 ) {
@@ -612,8 +616,8 @@ StartLegacyUEFI (
     FinishExternalScreen();
 } // static VOID StartLegacyUEFI()
 
-static LEGACY_ENTRY
-*AddLegacyEntry (
+static
+LEGACY_ENTRY * AddLegacyEntry (
     IN CHAR16 *LoaderTitle,
     IN REFIT_VOLUME *Volume
 ) {
@@ -709,14 +713,14 @@ static LEGACY_ENTRY
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
-} /* static LEGACY_ENTRY * AddLegacyEntry() */
+} // static LEGACY_ENTRY * AddLegacyEntry()
 
 
 /**
     Create a RefindPlus boot option from a Legacy BIOS protocol option.
 */
-static LEGACY_ENTRY
-* AddLegacyEntryUEFI (
+static
+LEGACY_ENTRY * AddLegacyEntryUEFI (
     BDS_COMMON_OPTION *BdsOption,
     IN UINT16 DiskType
 ) {
@@ -786,7 +790,7 @@ static LEGACY_ENTRY
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
 
     return Entry;
-} /* static LEGACY_ENTRY * AddLegacyEntryUEFI() */
+} // static LEGACY_ENTRY * AddLegacyEntryUEFI()
 
 /**
     Scan for legacy BIOS targets on machines that implement EFI_LEGACY_BIOS_PROTOCOL.
@@ -794,8 +798,8 @@ static LEGACY_ENTRY
     implemented on most UEFI PCs.
     Restricts output to disks of the specified DiskType.
 */
-static VOID
-ScanLegacyUEFI (
+static
+VOID ScanLegacyUEFI (
     IN UINTN DiskType
 ) {
     EFI_STATUS                Status;
@@ -880,10 +884,10 @@ ScanLegacyUEFI (
         } // if (BdsOption != NULL)
         Index++;
     } // while
-} /* static VOID ScanLegacyUEFI() */
+} // static VOID ScanLegacyUEFI()
 
-static VOID
-ScanLegacyVolume (
+static
+VOID ScanLegacyVolume (
     REFIT_VOLUME *Volume,
     UINTN VolumeIndex
 ) {
@@ -922,8 +926,7 @@ ScanLegacyVolume (
 
 // Scan attached optical discs for legacy (BIOS) boot code
 // and add anything found to the list....
-VOID
-ScanLegacyDisc (
+VOID ScanLegacyDisc (
     VOID
 ) {
     UINTN                   VolumeIndex;
@@ -944,12 +947,11 @@ ScanLegacyDisc (
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
         ScanLegacyUEFI (BBS_CDROM);
     }
-} /* VOID ScanLegacyDisc() */
+} // VOID ScanLegacyDisc()
 
 // Scan internal hard disks for legacy (BIOS) boot code
 // and add anything found to the list....
-VOID
-ScanLegacyInternal (
+VOID ScanLegacyInternal (
     VOID
 ) {
     UINTN        VolumeIndex;
@@ -972,12 +974,11 @@ ScanLegacyInternal (
        // a way to differentiate the two....
        ScanLegacyUEFI (BBS_HARDDISK);
     }
-} /* VOID ScanLegacyInternal() */
+} // VOID ScanLegacyInternal()
 
 // Scan external disks for legacy (BIOS) boot code
 // and add anything found to the list....
-VOID
-ScanLegacyExternal (
+VOID ScanLegacyExternal (
     VOID
 ) {
    UINTN                   VolumeIndex;
@@ -1000,7 +1001,7 @@ ScanLegacyExternal (
       // fixing it later....
       ScanLegacyUEFI (BBS_USB);
    }
-} /* VOID ScanLegacyExternal() */
+} // VOID ScanLegacyExternal()
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType (VOID) {
@@ -1031,8 +1032,7 @@ VOID FindLegacyBootType (VOID) {
 } // VOID FindLegacyBootType
 
 // Warn the user if legacy OS scans are enabled but the firmware can't support them....
-VOID
-WarnIfLegacyProblems (
+VOID WarnIfLegacyProblems (
     VOID
 ) {
     UINTN    i               = 0;

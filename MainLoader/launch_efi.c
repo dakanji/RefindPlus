@@ -76,7 +76,8 @@
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
-static VOID WarnSecureBootError(
+static
+VOID WarnSecureBootError(
     CHAR16 *Name,
     BOOLEAN Verbose
 ) {
@@ -137,7 +138,8 @@ static VOID WarnSecureBootError(
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
 BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
-    BOOLEAN         IsValid;
+    BOOLEAN IsValid;
+
 #if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
@@ -204,8 +206,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 } // BOOLEAN IsValidLoader()
 
 // Launch an EFI binary.
-EFI_STATUS
-StartEFIImage (
+EFI_STATUS StartEFIImage (
     IN REFIT_VOLUME  *Volume,
     IN CHAR16        *Filename,
     IN CHAR16        *LoadOptions,
@@ -500,8 +501,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 } // EFI_STATUS RebootIntoFirmware()
 
 // Reboot into a loader defined in the EFI's NVRAM
-VOID
-RebootIntoLoader (
+VOID RebootIntoLoader (
     LOADER_ENTRY *Entry
 ) {
     EFI_STATUS Status;
@@ -555,7 +555,8 @@ RebootIntoLoader (
 
 // See http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 // for information on Intel VMX features
-static VOID DoEnableAndLockVMX(VOID) {
+static
+VOID DoEnableAndLockVMX(VOID) {
 #if defined (EFIX64) | defined (EFI32)
     UINT32 msr = 0x3a;
     UINT32 low_bits = 0, high_bits = 0;
@@ -630,5 +631,5 @@ VOID StartTool(IN LOADER_ENTRY *Entry) {
         FALSE
     );
 
-    MyFreePool(LoaderPath);
+    MyFreePool (LoaderPath);
 } // VOID StartTool()

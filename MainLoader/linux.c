@@ -166,7 +166,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 // of initrd options.
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
-CHAR16 *AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
+CHAR16 * AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
     CHAR16 *NewOptions = NULL;
 
     if (Options != NULL)
@@ -209,7 +209,8 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
 // Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID" tokens to
 // OSIconName list. Intended for adding Linux distribution clues gleaned from
 // /etc/lsb-release and /etc/os-release files.
-static VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileName) {
+static
+VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileName) {
     UINTN       FileSize = 0;
     REFIT_FILE  File;
     CHAR16      **TokenList;

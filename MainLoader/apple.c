@@ -39,8 +39,7 @@ CHAR16 *gCsrStatus = NULL;
 // Protection [SIP], or "rootless") status information. If the variable is not
 // present and the firmware is Apple, fake it and claim it is enabled, since
 // that's how OS X 10.11 treats a system with the variable absent.
-EFI_STATUS
-GetCsrStatus (
+EFI_STATUS GetCsrStatus (
     UINT32 *CsrStatus
 ) {
     UINTN      CsrLength;
@@ -252,8 +251,7 @@ typedef struct EfiAppleSetOsInterface {
 // required to work around problems on some Macs that don't fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
-EFI_STATUS
-SetAppleOSInfo (
+EFI_STATUS SetAppleOSInfo (
     VOID
 ) {
     EFI_STATUS              Status;

@@ -79,8 +79,7 @@ BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
  * Returns:
  *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
  * --*/
-CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
-{
+CHAR16 * MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet) {
     CHAR16 *Src;
     CHAR16 *Sub;
 
@@ -131,7 +130,7 @@ CHAR16* MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet)
                           If the length of SearchString is zero,return String.
 
 **/
-CHAR8* MyAsciiStrStr (
+CHAR8 * MyAsciiStrStr (
     IN CONST CHAR8 *String,
     IN CONST CHAR8 *SearchString
 ) {
@@ -317,7 +316,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
 // variable specifies extra strings that may be treated as numbers. If
 // InString contains no digits or ExtraKernelVersionStrings, the return value
 // is NULL.
-CHAR16 *FindNumbers(IN CHAR16 *InString) {
+CHAR16 * FindNumbers(IN CHAR16 *InString) {
     UINTN i = 0, StartOfElement, EndOfElement = 0, CopyLength;
     CHAR16 *Found = NULL, *ExtraFound = NULL, *LookFor;
 
@@ -374,7 +373,7 @@ UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2) {
 // Returns the found element, or NULL if Index is out of range or InString
 // is NULL. Note that the calling function is responsible for freeing the
 // memory associated with the returned string pointer.
-CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
+CHAR16 * FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
     UINTN    StartPos = 0, CurPos = 0, InLength;
     BOOLEAN  Found = FALSE;
     CHAR16   *FoundString = NULL;
@@ -455,8 +454,7 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
 
 // Returns TRUE if any element of List can be found as a substring of
 // BigString, FALSE otherwise. Performs comparisons case-insensitively.
-BOOLEAN
-IsInSubstring(
+BOOLEAN IsInSubstring(
     IN CHAR16 *BigString,
     IN CHAR16 *List
 ) {
@@ -489,7 +487,9 @@ IsInSubstring(
 // Replace *SearchString in **MainString with *ReplString -- but if *SearchString
 // is preceded by "%", instead remove that character.
 // Returns TRUE if replacement was done, FALSE otherwise.
-BOOLEAN ReplaceSubstring(IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString) {
+BOOLEAN ReplaceSubstring(
+    IN OUT CHAR16 **MainString, IN CHAR16 *SearchString, IN CHAR16 *ReplString
+) {
     BOOLEAN WasReplaced = FALSE;
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
@@ -627,7 +627,7 @@ CHAR16 * GuidAsString(EFI_GUID *GuidData) {
    return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
 
-EFI_GUID StringAsGuid(CHAR16 * InString) {
+EFI_GUID StringAsGuid(CHAR16 *InString) {
     EFI_GUID  Guid = NULL_GUID_VALUE;
 
     if (!IsGuid(InString)) {
@@ -652,7 +652,7 @@ EFI_GUID StringAsGuid(CHAR16 * InString) {
 // Returns the current time as a string in 24-hour format; e.g., 14:03:17.
 // Discards date portion, since for our purposes, we really don't care.
 // Calling function is responsible for releasing returned string.
-CHAR16 *GetTimeString(VOID) {
+CHAR16 * GetTimeString(VOID) {
     CHAR16  *TimeStr = NULL;
     EFI_TIME CurrentTime;
     EFI_STATUS Status = EFI_SUCCESS;
@@ -685,8 +685,7 @@ VOID DeleteStringList(STRING_LIST *StringList) {
 } // VOID DeleteStringList()
 
 // Convert Unicode String To Ascii String
-VOID
-MyUnicodeStrToAsciiStr (
+VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16  *StrCHAR16,
     OUT CHAR8   ArrCHAR8[256]
 ) {

@@ -97,7 +97,7 @@ REFIT_MENU_SCREEN MainMenu = {
     L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh"
 };
 
-static REFIT_MENU_SCREEN AboutMenu = {
+REFIT_MENU_SCREEN AboutMenu = {
     L"About RefindPlus",
     NULL,
     0, NULL, 0,
@@ -246,9 +246,7 @@ extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 //
 
 static
-EFI_STATUS
-EFIAPI
-gRTSetVariableEx (
+EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  CHAR16    *VariableName,
     IN  EFI_GUID  *VendorGuid,
     IN  UINT32    Attributes,
@@ -314,8 +312,7 @@ gRTSetVariableEx (
 } // VOID gRTSetVariableEx()
 
 static
-VOID
-MapSetVariable (
+VOID MapSetVariable (
     IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
     AltSetVariable                             = gRT->SetVariable;
@@ -325,8 +322,7 @@ MapSetVariable (
 } // MapSetVariable()
 
 static
-VOID
-ActiveCSR (
+VOID ActiveCSR (
     VOID
 ) {
     UINT32  CsrStatus;
@@ -401,8 +397,7 @@ ActiveCSR (
 
 
 static
-VOID
-SetBootArgs (
+VOID SetBootArgs (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -522,8 +517,7 @@ SetBootArgs (
 } // VOID SetBootArgs()
 
 
-VOID
-DisableAMFI (
+VOID DisableAMFI (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -582,8 +576,7 @@ DisableAMFI (
 } // VOID DisableAMFI()
 
 
-VOID
-DisableCompatCheck (
+VOID DisableCompatCheck (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -616,8 +609,7 @@ DisableCompatCheck (
 } // VOID DisableCompatCheck()
 
 
-VOID
-ForceTRIM (
+VOID ForceTRIM (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -653,9 +645,7 @@ ForceTRIM (
 // Extended 'OpenProtocol'
 // Ensures GOP Interface for Boot Loading Screen
 static
-EFI_STATUS
-EFIAPI
-OpenProtocolEx (
+EFI_STATUS EFIAPI OpenProtocolEx (
     IN   EFI_HANDLE  Handle,
     IN   EFI_GUID    *Protocol,
     OUT  VOID        **Interface OPTIONAL,
@@ -730,9 +720,7 @@ OpenProtocolEx (
 // Extended 'HandleProtocol'
 // Routes 'HandleProtocol' to 'OpenProtocol'
 static
-EFI_STATUS
-EFIAPI
-HandleProtocolEx (
+EFI_STATUS EFIAPI HandleProtocolEx (
     IN   EFI_HANDLE  Handle,
     IN   EFI_GUID    *Protocol,
     OUT  VOID        **Interface
@@ -753,8 +741,7 @@ HandleProtocolEx (
 } // EFI_STATUS HandleProtocolEx
 
 static
-VOID
-ReMapOpenProtocol (
+VOID ReMapOpenProtocol (
     VOID
 ) {
     // Amend EFI_BOOT_SERVICES.OpenProtocol
@@ -768,8 +755,7 @@ ReMapOpenProtocol (
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
 static
-BOOLEAN
-IsValidTool (
+BOOLEAN IsValidTool (
     IN  REFIT_VOLUME  *BaseVolume,
     IN  CHAR16        *PathName
 ) {
@@ -813,8 +799,7 @@ IsValidTool (
     return retval;
 } // BOOLEAN IsValidTool()
 
-VOID
-preBootKicker (
+VOID preBootKicker (
     VOID
 ) {
     UINTN              MenuExit;
@@ -963,8 +948,7 @@ preBootKicker (
     } // if
 } /* VOID preBootKicker() */
 
-VOID
-preCleanNvram (
+VOID preCleanNvram (
     VOID
 ) {
     UINTN              MenuExit;
@@ -1289,7 +1273,8 @@ static VOID InitializeLib (
 
 // Set up our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
-static BOOLEAN SecureBootSetup (
+static
+BOOLEAN SecureBootSetup (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -1332,7 +1317,8 @@ static BOOLEAN SecureBootSetup (
 
 // Remove our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
-static BOOLEAN SecureBootUninstall (VOID) {
+static
+BOOLEAN SecureBootUninstall (VOID) {
     EFI_STATUS  Status;
     BOOLEAN     Success         = TRUE;
     CHAR16      *ShowScreenStr  = NULL;
@@ -1374,7 +1360,8 @@ static BOOLEAN SecureBootUninstall (VOID) {
 // "-c" command-line option is set, in which case that takes precedence.
 // If an error is encountered, leaves the value alone (it should be set to
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
-static VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
+static
+VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
     EFI_LOADED_IMAGE  *Info;
     EFI_STATUS        Status;
     CHAR16            *Options;
@@ -1448,7 +1435,8 @@ static VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
-static VOID AdjustDefaultSelection() {
+static
+VOID AdjustDefaultSelection() {
     UINTN i = 0;
     CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
     EFI_STATUS Status;
@@ -1489,8 +1477,7 @@ static VOID AdjustDefaultSelection() {
 #if REFIT_DEBUG > 0
 // Log basic information (RefindPlus version, EFI version, etc.) to the log file.
 static
-VOID
-LogBasicInfo (
+VOID LogBasicInfo (
     VOID
 ) {
     EFI_STATUS Status;
@@ -1637,9 +1624,7 @@ LogBasicInfo (
 //
 // main entry point
 //
-EFI_STATUS
-EFIAPI
-efi_main (
+EFI_STATUS EFIAPI efi_main (
     EFI_HANDLE        ImageHandle,
     EFI_SYSTEM_TABLE  *SystemTable
 ) {

@@ -76,7 +76,8 @@
  // little-endian assumptions!
  // Returns TRUE if the GPT protective MBR and header data appear valid,
  // FALSE otherwise.
- static BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
+ static
+ BOOLEAN GptHeaderValid (GPT_DATA *GptData) {
      BOOLEAN IsValid;
      UINT32 CrcValue, StoredCrcValue;
      UINTN HeaderSize = sizeof (GPT_HEADER);

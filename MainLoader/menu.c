@@ -111,8 +111,8 @@ static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NUL
 // Graphics helper functions
 //
 
-static VOID
-InitSelection (
+static
+VOID InitSelection (
     VOID
 ) {
     EG_IMAGE  *TempSmallImage   = NULL;
@@ -166,8 +166,8 @@ InitSelection (
 // Scrolling functions
 //
 
-static VOID
-InitScroll (
+static
+VOID InitScroll (
     OUT SCROLL_STATE *State,
     IN UINTN ItemCount,
     IN UINTN VisibleSpace
@@ -191,8 +191,8 @@ InitScroll (
 
 // Adjust variables relating to the scrolling of tags, for when a selected icon isn't
 // visible given the current scrolling condition....
-static VOID
-AdjustScrollState (
+static
+VOID AdjustScrollState (
     IN SCROLL_STATE *State
 ) {
     // Scroll forward
@@ -214,8 +214,8 @@ AdjustScrollState (
     }
 } // static VOID AdjustScrollState
 
-static VOID
-UpdateScroll (
+static
+VOID UpdateScroll (
     IN OUT SCROLL_STATE  *State,
     IN UINTN             Movement
 ) {
@@ -343,8 +343,7 @@ UpdateScroll (
 // menu helper functions
 //
 
-VOID
-AddMenuInfoLine (
+VOID AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16 *InfoLine
 ) {
@@ -355,8 +354,7 @@ AddMenuInfoLine (
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
 }
 
-VOID
-AddMenuEntry (
+VOID AddMenuEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN REFIT_MENU_ENTRY  *Entry
 ) {
@@ -367,8 +365,8 @@ AddMenuEntry (
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
 }
 
-static INTN
-FindMenuShortcutEntry (
+static
+INTN FindMenuShortcutEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16 *Defaults
 ) {
@@ -409,8 +407,8 @@ FindMenuShortcutEntry (
 // Identify the end of row 0 and the beginning of row 1; store the results in the
 // appropriate fields in State. Also reduce MaxVisible if that value is greater
 // than the total number of row-0 tags and if we're in an icon-based screen
-static VOID
-IdentifyRows (
+static
+VOID IdentifyRows (
     IN SCROLL_STATE *State,
     IN REFIT_MENU_SCREEN *Screen
 ) {
@@ -437,8 +435,8 @@ IdentifyRows (
 // Screen may still require redrawing of text and icons on return.
 // TODO: Support more sophisticated screen savers, such as power-saving
 // mode and dynamic images.
-static VOID
-SaveScreen (
+static
+VOID SaveScreen (
     VOID
 ) {
     UINTN  retval;
@@ -568,8 +566,7 @@ SaveScreen (
 //
 // generic menu function
 //
-UINTN
-RunGenericMenu (
+UINTN RunGenericMenu (
     IN REFIT_MENU_SCREEN  *Screen,
     IN MENU_STYLE_FUNC     StyleFunc,
     IN OUT INTN           *DefaultEntryIndex,
@@ -910,8 +907,8 @@ RunGenericMenu (
 //
 
 // Show information lines in text mode.
-static VOID
-ShowTextInfoLines (
+static
+VOID ShowTextInfoLines (
     IN REFIT_MENU_SCREEN *Screen
 ) {
     INTN i;
@@ -931,8 +928,7 @@ ShowTextInfoLines (
 } // VOID ShowTextInfoLines()
 
 // Do most of the work for text-based menus....
-VOID
-TextMenuStyle (
+VOID TextMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE      *State,
     IN UINTN             Function,
@@ -1119,8 +1115,7 @@ TextMenuStyle (
 //
 
 inline static
-UINTN
-TextLineHeight (
+UINTN TextLineHeight (
     VOID
 ) {
     return egGetFontHeight() + TEXT_YMARGIN * 2;
@@ -1134,8 +1129,7 @@ TextLineHeight (
 // Indents text by one character and placed TEXT_YMARGIN pixels down from the
 // specified XPos and YPos locations.
 static
-VOID
-DrawText (
+VOID DrawText (
     IN CHAR16  *Text,
     IN BOOLEAN Selected,
     IN UINTN   FieldWidth,
@@ -1192,8 +1186,7 @@ DrawText (
 // a single text string's background, this shouldn't be a problem, but it
 // may need addressing if it's applied more broadly....
 static
-UINT8
-AverageBrightness (
+UINT8 AverageBrightness (
     EG_IMAGE *Image
 ) {
     UINTN i;
@@ -1213,8 +1206,7 @@ AverageBrightness (
 // or 0-length, clear the line. Does NOT indent the text or reposition it relative
 // to the specified XPos and YPos values.
 static
-VOID
-DrawTextWithTransparency (
+VOID DrawTextWithTransparency (
     IN CHAR16 *Text,
     IN UINTN XPos,
     IN UINTN YPos
@@ -1261,8 +1253,7 @@ DrawTextWithTransparency (
 
 // Compute the size & position of the window that will hold a subscreen's information.
 static
-VOID
-ComputeSubScreenWindowSize (
+VOID ComputeSubScreenWindowSize (
     REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
     UINTN *XPos,
@@ -1351,8 +1342,7 @@ ComputeSubScreenWindowSize (
 } // VOID ComputeSubScreenWindowSize()
 
 // Displays sub-menus
-VOID
-GraphicsMenuStyle (
+VOID GraphicsMenuStyle (
     IN REFIT_MENU_SCREEN  *Screen,
     IN SCROLL_STATE       *State,
     IN UINTN              Function,
@@ -1501,8 +1491,7 @@ GraphicsMenuStyle (
 //
 
 static
-VOID
-DrawMainMenuEntry (
+VOID DrawMainMenuEntry (
     REFIT_MENU_ENTRY *Entry,
     BOOLEAN selected,
     UINTN XPos,
@@ -1547,8 +1536,7 @@ DrawMainMenuEntry (
 } // VOID DrawMainMenuEntry()
 
 static
-VOID
-PaintAll (
+VOID PaintAll (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
     UINTN *itemPosX,
@@ -1613,8 +1601,7 @@ PaintAll (
 
 // Move the selection to State->CurrentSelection, adjusting icon row if necessary...
 static
-VOID
-PaintSelection (
+VOID PaintSelection (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
     UINTN *itemPosX,
@@ -1685,8 +1672,7 @@ PaintSelection (
 // edge if Alignment == ALIGN_LEFT, and along the right edge if
 // Alignment == ALIGN_RIGHT
 static
-VOID
-PaintIcon (
+VOID PaintIcon (
     IN EG_EMBEDDED_IMAGE *BuiltInIcon,
     IN CHAR16 *ExternalFilename,
     UINTN PosX,
@@ -1716,8 +1702,7 @@ PaintIcon (
     }
 } // static VOID()
 
-UINTN
-ComputeRow0PosY (
+UINTN ComputeRow0PosY (
     VOID
 ) {
     return ((ScreenH / 2) - TileSizes[0] / 2);
@@ -1726,8 +1711,7 @@ ComputeRow0PosY (
 // Display (or erase) the arrow icons to the left and right of an icon's row,
 // as appropriate.
 static
-VOID
-PaintArrows (
+VOID PaintArrows (
     SCROLL_STATE *State,
     UINTN PosX,
     UINTN PosY,
@@ -1769,8 +1753,7 @@ PaintArrows (
 } // VOID PaintArrows()
 
 // Display main menu in graphics mode
-VOID
-MainMenuStyle (
+VOID MainMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
     IN UINTN Function,
@@ -1850,7 +1833,11 @@ MainMenuStyle (
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL)) {
                DrawTextWithTransparency (L"", 0, textPosY + TextLineHeight());
-               DrawTextWithTransparency (ParamText, (ScreenW - egComputeTextWidth (ParamText)) >> 1, textPosY + TextLineHeight());
+               DrawTextWithTransparency (
+                   ParamText,
+                   (ScreenW - egComputeTextWidth (ParamText)) >> 1,
+                   textPosY + TextLineHeight()
+               );
             }
             break;
     }
@@ -2003,7 +1990,8 @@ UINTN WaitForInput (UINTN Timeout) {
 // Enable the user to edit boot loader options.
 // Returns TRUE if the user exited with edited options; FALSE if the user
 // pressed Esc to terminate the edit.
-static BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
+static
+BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
    UINTN x_max, y_max;
    CHAR16 *EditedOptions;
    BOOLEAN retval = FALSE;
@@ -2033,8 +2021,7 @@ static BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
 // user-callable dispatcher functions
 //
 
-VOID
-DisplaySimpleMessage (
+VOID DisplaySimpleMessage (
     CHAR16* Title,
     CHAR16 *Message
 ) {
@@ -2081,7 +2068,8 @@ DisplaySimpleMessage (
 // path, and filename components; if the filename omits the volume, the search
 // is not done and the item is left intact, no matter what.
 // Returns TRUE if any files were deleted, FALSE otherwise.
-static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
+static
+BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
     UINTN i = 0;
     CHAR16 *Filename, *OneElement, *VolName = NULL;
     REFIT_VOLUME *Volume;
@@ -2127,8 +2115,7 @@ static BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
 // Save a list of items to be hidden to NVRAM or disk, as determined by
 // GlobalConfig.UseNvram.
 static
-VOID
-SaveHiddenList(
+VOID SaveHiddenList(
     IN CHAR16 *HiddenList,
     IN CHAR16 *VarName
 ) {
@@ -2147,12 +2134,9 @@ SaveHiddenList(
     CheckError(Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
-
-
 // Present a menu that enables the user to delete hidden tags (that is, to
 // un-hide them).
-VOID
-ManageHiddenTags (
+VOID ManageHiddenTags (
     VOID
 ) {
     EFI_STATUS          Status = EFI_SUCCESS;
@@ -2262,7 +2246,7 @@ ManageHiddenTags (
     MyFreePool (HiddenFirmware);
 } // VOID ManageHiddenTags()
 
-CHAR16* ReadHiddenTags (CHAR16 *VarName) {
+CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
     CHAR8       *Buffer = NULL;
     UINTN       Size;
     EFI_STATUS  Status;
@@ -2283,7 +2267,8 @@ CHAR16* ReadHiddenTags (CHAR16 *VarName) {
 } // CHAR16* ReadHiddenTags()
 
 // Add PathName to the hidden tags variable specified by *VarName.
-static VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
+static
+VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
     CHAR16      *HiddenTags;
     EFI_STATUS  Status;
 
@@ -2307,8 +2292,7 @@ static VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
 // hiding that item.
 // Returns TRUE if item was hidden, FALSE otherwise.
 static
-BOOLEAN
-HideEfiTag (
+BOOLEAN HideEfiTag (
     LOADER_ENTRY *Loader,
     REFIT_MENU_SCREEN *HideItemMenu,
     CHAR16 *VarName
@@ -2360,8 +2344,7 @@ HideEfiTag (
 } // BOOLEAN HideEfiTag()
 
 static
-BOOLEAN
-HideFirmwareTag(
+BOOLEAN HideFirmwareTag(
     LOADER_ENTRY *Loader,
     REFIT_MENU_SCREEN *HideItemMenu
 ) {
@@ -2401,8 +2384,7 @@ HideFirmwareTag(
 
 
 static
-BOOLEAN
-HideLegacyTag (
+BOOLEAN HideLegacyTag (
     LEGACY_ENTRY *LegacyLoader,
     REFIT_MENU_SCREEN *HideItemMenu
 ) {
@@ -2440,8 +2422,7 @@ HideLegacyTag (
 } // BOOLEAN HideLegacyTag()
 
 static
-VOID
-HideTag (
+VOID HideTag (
     REFIT_MENU_ENTRY *ChosenEntry
 ) {
     LOADER_ENTRY       *Loader       = (LOADER_ENTRY *) ChosenEntry;
@@ -2536,8 +2517,9 @@ HideTag (
     } // switch()
 } // VOID HideTag()
 
-UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
-{
+UINTN RunMenu (
+    IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry
+) {
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
@@ -2645,4 +2627,4 @@ UINTN RunMainMenu (
     }
 
     return MenuExit;
-} /* UINTN RunMainMenu() */
+} // UINTN RunMainMenu()
