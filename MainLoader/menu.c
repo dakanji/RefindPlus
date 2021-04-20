@@ -2106,6 +2106,7 @@ BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         MyFreePool (OneElement);
         MyFreePool (Filename);
         MyFreePool (VolName);
+        VolName = NULL;
         DeletedSomething |= DeleteIt;
     } // while()
 
@@ -2258,10 +2259,10 @@ CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
         CheckError (Status, CheckErrMsg);
         MyFreePool (CheckErrMsg);
         #endif
-        MyFreePool (Buffer);
     }
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         MyFreePool (Buffer);
+        Buffer = NULL;
     }
     return (CHAR16 *) Buffer;
 } // CHAR16* ReadHiddenTags()

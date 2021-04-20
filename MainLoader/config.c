@@ -618,7 +618,7 @@ VOID ReadConfig (
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
        MyFreePool (GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
-       MyFreePool(GlobalConfig.DontScanFirmware);
+       MyFreePool (GlobalConfig.DontScanFirmware);
        GlobalConfig.DontScanFirmware = NULL;
        MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
@@ -1547,6 +1547,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                     } // if Root
 
                     MyFreePool (Root);
+                    Root = NULL;
                 } // if
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while
@@ -1559,6 +1560,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             }
             else {
                 MyFreePool (Options);
+                Options = NULL;
             }
 
             MyFreePool (Fstab->Buffer);
@@ -1668,6 +1670,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
 
         MyFreePool (OptionsFilename);
         MyFreePool (FullFilename);
+        OptionsFilename = FullFilename = NULL;
     } while (GoOn);
 
     if (!FileFound) {

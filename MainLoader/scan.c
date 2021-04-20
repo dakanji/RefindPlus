@@ -810,7 +810,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         LOG(2, LOG_LINE_NORMAL, L"EFI Loader Path:- '%s'", TempStr);
         #endif
 
-        MyFreePool(TempStr);
+        MyFreePool (TempStr);
 
         Entry->EfiBootNum = EfiBootNum;
 
@@ -1146,7 +1146,7 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
         MyFreePool (DontScanDir);
         MyFreePool (VolName);
         DontScanDir = NULL;
-        VolName = NULL;
+        VolName     = NULL;
     } // while()
 
     return ScanIt;
@@ -2175,8 +2175,8 @@ VOID ScanForBootloaders (
     } // for
 
     // Restore the backed-up GlobalConfig.DontScan* variables
-    MyFreePool(GlobalConfig.DontScanFiles);
-    MyFreePool(GlobalConfig.DontScanVolumes);
+    MyFreePool (GlobalConfig.DontScanFiles);
+    MyFreePool (GlobalConfig.DontScanVolumes);
     GlobalConfig.DontScanFiles   = OrigDontScanFiles;
     GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
 
@@ -2311,6 +2311,10 @@ BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
                 retval = FALSE;
             } // if
             MyFreePool (DontScanThis);
+            MyFreePool (DontVolName);
+            MyFreePool (DontPathName);
+            MyFreePool (DontFileName);
+            DontVolName = DontPathName = DontFileName = NULL;
         } // while
     }
     else {
@@ -2446,6 +2450,7 @@ VOID ScanForTools (VOID) {
         MyFreePool (FileName);
         MyFreePool (VolName);
         MyFreePool (ToolName);
+        FileName = VolName = ToolName = NULL;
         FoundTool = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -2729,7 +2734,9 @@ VOID ScanForTools (VOID) {
                         MyFreePool (ToolStr);
                         #endif
                     } // if
-                MyFreePool (FileName);
+
+                    MyFreePool (FileName);
+                    FileName = NULL;
                 } // while
 
                 ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
@@ -2773,6 +2780,7 @@ VOID ScanForTools (VOID) {
                     } // if
 
                     MyFreePool (FileName);
+                    FileName = NULL;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -2853,7 +2861,9 @@ VOID ScanForTools (VOID) {
                         MyFreePool (ToolStr);
                         #endif
                     } // if
+
                     MyFreePool (FileName);
+                    FileName = NULL;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -2960,6 +2970,7 @@ VOID ScanForTools (VOID) {
 
                     MyFreePool (FileName);
                     MyFreePool (VolName);
+                    FileName = VolName = NULL;
                 } // while
 
                 #if REFIT_DEBUG > 0

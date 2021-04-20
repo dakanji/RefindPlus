@@ -281,8 +281,9 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
                     '\0'
                 );
 
-                MyFreePool (SubEntry->LoadOptions);
                 MyFreePool (SubEntry->LoaderPath);
+                MyFreePool (SubEntry->LoadOptions);
+                SubEntry->LoadOptions = NULL;
 
                 Title = StrDuplicate(SubmenuName);
                 LimitStringLength(Title, MAX_LINE_LENGTH);

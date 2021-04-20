@@ -1929,6 +1929,7 @@ VOID ScanVolumes (
     #endif
 
     MyFreePool (Volumes);
+    Volumes      = NULL;
     VolumesCount = 0;
     ForgetPartitionTables();
 
@@ -2917,6 +2918,7 @@ VOID SplitPathName (
     MyFreePool (*VolName);
     MyFreePool (*Path);
     MyFreePool (*Filename);
+    *VolName = *Path = *Filename = NULL;
 
     Temp = StrDuplicate (InPath);
     SplitVolumeAndFilename (&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
