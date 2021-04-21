@@ -384,7 +384,7 @@ INTN FindMenuShortcutEntry (
                     if (Screen->Entries[i]->ShortcutDigit == Shortcut[0] ||
                         Screen->Entries[i]->ShortcutLetter == Shortcut[0]
                     ) {
-                        MyFreePool (Shortcut);
+                        MyFreePool (&Shortcut);
                         return i;
                     } // if
                 } // for
@@ -393,12 +393,12 @@ INTN FindMenuShortcutEntry (
         else if (ShortcutLength > 1) {
             for (i = 0; i < Screen->EntryCount; i++) {
                 if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
-                    MyFreePool (Shortcut);
+                    MyFreePool (&Shortcut);
                     return i;
                 } // if
             } // for
         }
-        MyFreePool (Shortcut);
+        MyFreePool (&Shortcut);
         j++;
     } // while()
     return -1;
@@ -449,7 +449,7 @@ VOID SaveScreen (
     MsgStr = StrDuplicate (L"Start Screensaver");
     LOG(4, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MsgLog ("INFO: Threshold Exceeded ...%s\n", MsgStr);
-    MyFreePool (MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     EG_PIXEL OUR_COLOUR;
@@ -554,7 +554,7 @@ VOID SaveScreen (
     MsgStr = StrDuplicate (L"Ending Screensaver");
     LOG(4, LOG_THREE_STAR_END, L"%s", MsgStr);
     MsgLog ("INFO: Detected Keypress ...%s\n\n", MsgStr);
-    MyFreePool (MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     if (AllowGraphicsMode) {
@@ -672,7 +672,7 @@ UINTN RunGenericMenu (
                if (GlobalConfig.ScreensaverTime != -1) {
                    StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
                }
-               MyFreePool (TimeoutMessage);
+               MyFreePool (&TimeoutMessage);
 
                PreviousTime = CurrentTime;
             }
@@ -999,9 +999,9 @@ VOID TextMenuStyle (
         case MENU_FUNCTION_CLEANUP:
             // release temporary memory
             for (i = 0; i <= State->MaxIndex; i++) {
-                MyFreePool (DisplayStrings[i]);
+                MyFreePool (&DisplayStrings[i]);
             }
-            MyFreePool (DisplayStrings);
+            MyFreePool (&DisplayStrings);
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
@@ -1815,7 +1815,7 @@ VOID MainMenuStyle (
             break;
 
         case MENU_FUNCTION_CLEANUP:
-            MyFreePool (itemPosX);
+            MyFreePool (&itemPosX);
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
@@ -1928,7 +1928,7 @@ UINTN FindMainMenuItem (
         } // if/else Screen->Entries[i]->Row
     }
 
-    MyFreePool (itemPosX);
+    MyFreePool (&itemPosX);
 
     return ItemIndex;
 } // VOID FindMainMenuItem()
@@ -2006,7 +2006,7 @@ BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
       SwitchToText (TRUE);
 
    if (line_edit (MenuEntry->LoadOptions, &EditedOptions, x_max)) {
-      MyFreePool (MenuEntry->LoadOptions);
+      MyFreePool (&MenuEntry->LoadOptions);
       MenuEntry->LoadOptions = EditedOptions;
       retval = TRUE;
    } // if
@@ -2103,9 +2103,9 @@ BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         else {
             i++;
         }
-        MyFreePool (OneElement);
-        MyFreePool (Filename);
-        MyFreePool (VolName);
+        MyFreePool (&OneElement);
+        MyFreePool (&Filename);
+        MyFreePool (&VolName);
         VolName = NULL;
         DeletedSomething |= DeleteIt;
     } // while()
@@ -2187,14 +2187,14 @@ VOID ManageHiddenTags (
 
     if ((AllTags) && (StrLen (AllTags) > 0)) {
         AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
-        MyFreePool (MenuInfo);
+        MyFreePool (&MenuInfo);
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);
             MenuEntryItem->Tag   = TAG_RETURN;
             MenuEntryItem->Row   = 1;
             AddMenuEntry (&HideItemMenu, MenuEntryItem);
-            MyFreePool (OneElement);
+            MyFreePool (&OneElement);
         } // while
 
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2226,7 +2226,7 @@ VOID ManageHiddenTags (
         }
         if (SaveTools) {
             SaveHiddenList(HiddenTools, L"HiddenTools");
-            MyFreePool (gHiddenTools);
+            MyFreePool (&gHiddenTools);
             gHiddenTools = NULL;
         }
         if (SaveFirmware) {
@@ -2240,11 +2240,11 @@ VOID ManageHiddenTags (
         DisplaySimpleMessage (L"Information", L"No hidden tags found");
     }
 
-    MyFreePool (AllTags);
-    MyFreePool (HiddenTags);
-    MyFreePool (HiddenTools);
-    MyFreePool (HiddenLegacy);
-    MyFreePool (HiddenFirmware);
+    MyFreePool (&AllTags);
+    MyFreePool (&HiddenTags);
+    MyFreePool (&HiddenTools);
+    MyFreePool (&HiddenLegacy);
+    MyFreePool (&HiddenFirmware);
 } // VOID ManageHiddenTags()
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
@@ -2257,11 +2257,11 @@ CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
         #if REFIT_DEBUG > 0
         CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags ('%s')", VarName);
         CheckError (Status, CheckErrMsg);
-        MyFreePool (CheckErrMsg);
+        MyFreePool (&CheckErrMsg);
         #endif
     }
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
-        MyFreePool (Buffer);
+        MyFreePool (&Buffer);
         Buffer = NULL;
     }
     return (CHAR16 *) Buffer;
@@ -2284,7 +2284,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
             TRUE
         );
         CheckError (Status, L"in AddToHiddenTags!!");
-        MyFreePool (HiddenTags);
+        MyFreePool (&HiddenTags);
     } // if
 } // VOID AddToHiddenTags()
 
@@ -2324,7 +2324,7 @@ BOOLEAN HideEfiTag (
     if (ChosenOption && MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         GuidStr = GuidAsString (&Loader->Volume->PartGuid);
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
-            MyFreePool (FullPath);
+            MyFreePool (&FullPath);
             FullPath = NULL;
             MergeStrings (&FullPath, GuidAsString (&Loader->Volume->PartGuid), L'\0');
             MergeStrings (&FullPath, L":", L'\0');
@@ -2336,10 +2336,10 @@ BOOLEAN HideEfiTag (
         }
         AddToHiddenTags (VarName, FullPath);
         TagHidden = TRUE;
-        MyFreePool (GuidStr);
+        MyFreePool (&GuidStr);
     } // if
 
-    MyFreePool (FullPath);
+    MyFreePool (&FullPath);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()
@@ -2418,7 +2418,7 @@ BOOLEAN HideLegacyTag (
         AddToHiddenTags (L"HiddenLegacy", Name);
         TagHidden = TRUE;
     } // if
-    MyFreePool (Name);
+    MyFreePool (&Name);
     return TagHidden;
 } // BOOLEAN HideLegacyTag()
 
@@ -2505,7 +2505,7 @@ VOID HideTag (
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
-            MyFreePool (gHiddenTools);
+            MyFreePool (&gHiddenTools);
             gHiddenTools = NULL;
 
             #if REFIT_DEBUG > 0
@@ -2573,7 +2573,7 @@ UINTN RunMainMenu (
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
         Screen->TimeoutSeconds = 0;
 
-        MyFreePool (MenuTitle);
+        MyFreePool (&MenuTitle);
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {

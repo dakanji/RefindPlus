@@ -64,7 +64,7 @@ EFI_STATUS GetCsrStatus (
                 gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
             }
 
-            MyFreePool (ReturnValue);
+            MyFreePool (&ReturnValue);
         }
         else if (Status == EFI_NOT_FOUND &&
             StriSubCmp (L"Apple", gST->FirmwareVendor)
@@ -296,7 +296,7 @@ EFI_STATUS SetAppleOSInfo (
                     if (!EFI_ERROR (Status)) {
                         Status = EFI_SUCCESS;
                     }
-                    MyFreePool (AppleOSVersion8);
+                    MyFreePool (&AppleOSVersion8);
                 }
                 else {
                     Status = EFI_OUT_OF_RESOURCES;
@@ -305,7 +305,7 @@ EFI_STATUS SetAppleOSInfo (
                 if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
                     Status = refit_call1_wrapper(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
                 }
-                MyFreePool (AppleOSVersion);
+                MyFreePool (&AppleOSVersion);
             } // if (AppleOSVersion)
         } // if
     }

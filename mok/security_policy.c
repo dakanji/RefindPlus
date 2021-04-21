@@ -120,7 +120,7 @@ MSABI EFI_STATUS security_policy_authentication (
    DevPathStr = DevicePathToStr(DevPath);
 
    Status = simple_file_open_by_handle(h, DevPathStr, &f, EFI_FILE_MODE_READ);
-   MyFreePool (DevPathStr);
+   MyFreePool (&DevPathStr);
    if (Status != EFI_SUCCESS)
       goto out;
 
@@ -138,7 +138,7 @@ MSABI EFI_STATUS security_policy_authentication (
    FreePool(FileBuffer);
 
  out:
-   MyFreePool (OrigDevPath);
+   MyFreePool (&OrigDevPath);
    return Status;
 } // EFI_STATUS security_policy_authentication()
 

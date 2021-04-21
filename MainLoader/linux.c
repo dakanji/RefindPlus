@@ -120,7 +120,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
                     } // if
                 } // if
         } // if
-        MyFreePool (InitrdVersion);
+        MyFreePool (&InitrdVersion);
     } // while
 
     if (InitrdNames) {
@@ -147,9 +147,9 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     } // if
     DeleteStringList(InitrdNames);
 
-    MyFreePool (KernelVersion);
-    MyFreePool (FileName);
-    MyFreePool (Path);
+    MyFreePool (&KernelVersion);
+    MyFreePool (&FileName);
+    MyFreePool (&Path);
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
@@ -177,7 +177,7 @@ CHAR16 * AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
             CHAR16 *InitrdVersion = FindNumbers(InitrdPath);
             ReplaceSubstring(&NewOptions, L"%v", InitrdVersion);
 
-            MyFreePool (InitrdVersion);
+            MyFreePool (&InitrdVersion);
         }
         else if (!StriSubCmp(L"initrd=", Options)) {
             MergeStrings(&NewOptions, L"initrd=", L' ');
@@ -199,9 +199,9 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     ReplaceSubstring(&Options, KERNEL_VERSION, KernelVersion);
     FullOptions = AddInitrdToOptions(Options, InitrdName);
 
-    MyFreePool (Options);
-    MyFreePool (InitrdName);
-    MyFreePool (KernelVersion);
+    MyFreePool (&Options);
+    MyFreePool (&InitrdName);
+    MyFreePool (&KernelVersion);
 
     return (FullOptions);
 } // static CHAR16 * GetMainLinuxOptions()
@@ -230,7 +230,7 @@ VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileNam
             } // if
             FreeTokenLine(&TokenList, &TokenCount);
         } while (TokenCount > 0);
-        MyFreePool (File.Buffer);
+        MyFreePool (&File.Buffer);
     } // if
 } // VOID ParseReleaseFile()
 
@@ -281,8 +281,8 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
                     '\0'
                 );
 
-                MyFreePool (SubEntry->LoaderPath);
-                MyFreePool (SubEntry->LoadOptions);
+                MyFreePool (&SubEntry->LoaderPath);
+                MyFreePool (&SubEntry->LoadOptions);
                 SubEntry->LoadOptions = NULL;
 
                 Title = StrDuplicate(SubmenuName);
@@ -305,12 +305,12 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
             }
         } // while
 
-        MyFreePool (VolName);
-        MyFreePool (Path);
-        MyFreePool (SubmenuName);
-        MyFreePool (InitrdName);
-        MyFreePool (File);
-        MyFreePool (KernelVersion);
+        MyFreePool (&VolName);
+        MyFreePool (&Path);
+        MyFreePool (&SubmenuName);
+        MyFreePool (&InitrdName);
+        MyFreePool (&File);
+        MyFreePool (&KernelVersion);
     }
     else {
         #if REFIT_DEBUG > 0
@@ -344,7 +344,7 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
 
             retval = TRUE;
         }
-        MyFreePool (NewFile);
+        MyFreePool (&NewFile);
     } // if
 
     return retval;

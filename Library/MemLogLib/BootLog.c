@@ -270,7 +270,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
     LogFile = NULL;
   }
 
-  MyFreePool (ourDebugLog);
+  MyFreePool (&ourDebugLog);
 
   return LogFile;
 }
@@ -407,7 +407,7 @@ DeepLoggger (
     }
 
     MyFreePool (*Message);
-    MyFreePool (FinalMessage);
+    MyFreePool (&FinalMessage);
 #endif
 }
 

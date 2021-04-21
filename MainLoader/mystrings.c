@@ -257,7 +257,7 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
                 p++;
             } // while
 
-            MyFreePool (Temp);
+            MyFreePool (&Temp);
         }
         else {
             Print(L"Error! Unable to allocate memory in MergeWords()!\n");
@@ -290,7 +290,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
             TempString = StrDuplicate(&SubString[i]);
             if (TempString != NULL) {
                 StrCpy(&SubString[1], TempString);
-                MyFreePool (TempString);
+                MyFreePool (&TempString);
                 HasChanged = TRUE;
             }
             else {
@@ -331,7 +331,7 @@ CHAR16 * FindNumbers(IN CHAR16 *InString) {
             StartOfElement = ExtraFound - InString;
             EndOfElement = StartOfElement + StrLen(LookFor) - 1;
         } // if
-        MyFreePool (LookFor);
+        MyFreePool (&LookFor);
     } // while
 
     // Find start & end of target element
@@ -446,7 +446,7 @@ BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List) {
          if (MyStriCmp(OneElement, SmallString)) {
              Found = TRUE;
          }
-         MyFreePool (OneElement);
+         MyFreePool (&OneElement);
       } // while
    } // if
    return Found;
@@ -477,7 +477,7 @@ BOOLEAN IsInSubstring(
             ) {
                 Found = TRUE;
             }
-            MyFreePool (OneElement);
+            MyFreePool (&OneElement);
         } // while
     } // if
 
@@ -506,7 +506,7 @@ BOOLEAN ReplaceSubstring(
             StrCpy(NewString, *MainString);
             MergeStrings(&NewString, ReplString, L'\0');
             MergeStrings(&NewString, EndString, L'\0');
-            MyFreePool (MainString);
+            MyFreePool (&MainString);
             *MainString = NewString;
             WasReplaced = TRUE;
         } // if
@@ -677,10 +677,10 @@ VOID DeleteStringList(STRING_LIST *StringList) {
     STRING_LIST *Current = StringList, *Previous;
 
     while (Current != NULL) {
-        MyFreePool (Current->Value);
+        MyFreePool (&Current->Value);
         Previous = Current;
         Current = Current->Next;
-        MyFreePool (Previous);
+        MyFreePool (&Previous);
     }
 } // VOID DeleteStringList()
 

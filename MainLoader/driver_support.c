@@ -393,10 +393,10 @@ EFI_STATUS LibScanHandleDatabase (
                         }
                     }
 
-                    MyFreePool (OpenInfo);
+                    MyFreePool (&OpenInfo);
                 }
             }
-            MyFreePool (ProtocolGuidArray);
+            MyFreePool (&ProtocolGuidArray);
         }
     }
 
@@ -487,12 +487,12 @@ EFI_STATUS ConnectAllDriversToAllControllers(
             } // if !Parent
         } // if Device
 
-        MyFreePool (HandleBuffer);
-        MyFreePool (HandleType);
+        MyFreePool (&HandleBuffer);
+        MyFreePool (&HandleType);
     }
 
 Done:
-    MyFreePool (AllHandleBuffer);
+    MyFreePool (&AllHandleBuffer);
     return Status;
 } /* EFI_STATUS ConnectAllDriversToAllControllers() */
 #else
@@ -655,7 +655,7 @@ UINTN ScanDriverDir (
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
             // skip this
-            MyFreePool (DirEntry);
+            MyFreePool (&DirEntry);
             continue;
         }
 
@@ -685,7 +685,7 @@ UINTN ScanDriverDir (
             );
         }
 
-        MyFreePool (DirEntry);
+        MyFreePool (&DirEntry);
 
         #if REFIT_DEBUG > 0
         if (RunOnce) {
@@ -710,14 +710,14 @@ UINTN ScanDriverDir (
             #endif
         }
 
-        MyFreePool (FileName);
+        MyFreePool (&FileName);
     } // while
 
     Status = DirIterClose(&DirIter);
     if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
         FileName = PoolPrint (L"While Scanning the '%s' Directory", Path);
         CheckError(Status, FileName);
-        MyFreePool (FileName);
+        MyFreePool (&FileName);
     }
 
     return (NumFound);
@@ -753,8 +753,8 @@ BOOLEAN LoadDrivers(
         CleanUpPathNameSlashes(SelfDirectory);
         MergeStrings(&SelfDirectory, Directory, L'\\');
         CurFound = ScanDriverDir(SelfDirectory);
-        MyFreePool (Directory);
-        MyFreePool (SelfDirectory);
+        MyFreePool (&Directory);
+        MyFreePool (&SelfDirectory);
         if (CurFound > 0) {
             NumFound = NumFound + CurFound;
             break;
@@ -786,7 +786,7 @@ BOOLEAN LoadDrivers(
                     ReplaceSubstring(&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
                 CurFound = ScanDriverDir(SelfDirectory);
-                MyFreePool (SelfDirectory);
+                MyFreePool (&SelfDirectory);
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
@@ -796,7 +796,7 @@ BOOLEAN LoadDrivers(
                     #endif
                 }
             } // if
-            MyFreePool (Directory);
+            MyFreePool (&Directory);
         } // while
     }
 

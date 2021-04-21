@@ -85,7 +85,7 @@ PrepareBlankLine (
 ) {
     UINTN i;
 
-    MyFreePool (BlankLine);
+    MyFreePool (&BlankLine);
     // make a buffer for a whole text line
     BlankLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
     for (i = 0; i < ConWidth; i++) {
@@ -752,7 +752,7 @@ BOOLEAN CheckFatalError (
     LOG(1, LOG_LINE_NORMAL, Temp);
     #endif
 
-    MyFreePool (Temp);
+    MyFreePool (&Temp);
 
     return TRUE;
 } // BOOLEAN CheckFatalError()
@@ -802,7 +802,7 @@ BOOLEAN CheckError (
     LOG(1, LOG_THREE_STAR_SEP, Temp);
     #endif
 
-    MyFreePool (Temp);
+    MyFreePool (&Temp);
 
     return haveError;
 } // BOOLEAN CheckError()
@@ -892,7 +892,7 @@ VOID BltClearScreen (
                    egFreeImage (Banner);
                }
                else {
-                   MyFreePool (Banner);
+                   MyFreePool (&Banner);
                }
 
               Banner = NewBanner;
@@ -946,7 +946,7 @@ VOID BltClearScreen (
         egFreeImage (GlobalConfig.ScreenBackground);
     }
     else {
-        MyFreePool (GlobalConfig.ScreenBackground);
+        MyFreePool (&GlobalConfig.ScreenBackground);
     }
 
     GlobalConfig.ScreenBackground = egCopyScreen();

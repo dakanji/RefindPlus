@@ -316,7 +316,7 @@ VOID ExtractLegacyLoaderPaths (
 
         PathList[PathCount++] = AppendDevicePath (DevicePath, LegacyLoaderMediaPath);
     }
-    MyFreePool (Handles);
+    MyFreePool (&Handles);
 
     if (HardcodedPathList) {
         for (HardcodedIndex = 0; HardcodedPathList[HardcodedIndex] && PathCount < MaxPaths; HardcodedIndex++) {
@@ -486,7 +486,7 @@ bailout_unload:
     refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
-    MyFreePool (FullLoadOptions);
+    MyFreePool (&FullLoadOptions);
 
     return ReturnStatus;
 } // EFI_STATUS StartLegacyImageList()
@@ -551,7 +551,7 @@ VOID StartLegacy (
 
             PauseForKey();
             SwitchToGraphics();
-            MyFreePool (ShowScreenStrA);
+            MyFreePool (&ShowScreenStrA);
         }
         else if (ErrorInStep == 3) {
             SwitchToText (FALSE);
@@ -576,8 +576,8 @@ VOID StartLegacy (
 
             PauseForKey();
             SwitchToGraphics();
-            MyFreePool (ShowScreenStrA);
-            MyFreePool (ShowScreenStrB);
+            MyFreePool (&ShowScreenStrA);
+            MyFreePool (&ShowScreenStrB);
         }
     }
     FinishExternalScreen();
@@ -653,7 +653,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
-       MyFreePool (LegacyTitle);
+       MyFreePool (&LegacyTitle);
 
        return NULL;
     } // if
@@ -1068,17 +1068,17 @@ VOID WarnIfLegacyProblems (
                 L"%s         (BIOS) boot options; however, this is not possible because your computer lacks\n",
                 TempScreenStr
             );
-            MyFreePool (TempScreenStr);
+            MyFreePool (&TempScreenStr);
             TempScreenStr = PoolPrint (
                 L"%s         the necessary Compatibility Support Module (CSM) support or that support is\n",
                 ShowScreenStr
             );
-            MyFreePool (ShowScreenStr);
+            MyFreePool (&ShowScreenStr);
             ShowScreenStr = PoolPrint (
                 L"%s         disabled in your firmware.",
                 TempScreenStr
             );
-            MyFreePool (TempScreenStr);
+            MyFreePool (&TempScreenStr);
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -1088,7 +1088,7 @@ VOID WarnIfLegacyProblems (
             MsgLog ("%s\n\n", ShowScreenStr);
             #endif
 
-            MyFreePool (ShowScreenStr);
+            MyFreePool (&ShowScreenStr);
 
             PauseForKey();
         } // if (found)

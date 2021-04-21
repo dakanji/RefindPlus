@@ -129,11 +129,11 @@ VOID WarnSecureBootError(
     PauseForKey();
     SwitchToGraphics();
 
-    MyFreePool (ShowScreenStrA);
-    MyFreePool (ShowScreenStrB);
-    MyFreePool (ShowScreenStrC);
-    MyFreePool (ShowScreenStrD);
-    MyFreePool (ShowScreenStrE);
+    MyFreePool (&ShowScreenStrA);
+    MyFreePool (&ShowScreenStrB);
+    MyFreePool (&ShowScreenStrC);
+    MyFreePool (&ShowScreenStrD);
+    MyFreePool (&ShowScreenStrE);
 } // VOID WarnSecureBootError()
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
@@ -325,10 +325,10 @@ EFI_STATUS StartEFIImage (
 
     ErrorInfo = PoolPrint (L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
-        MyFreePool (ErrorInfo);
+        MyFreePool (&ErrorInfo);
         goto bailout;
     }
-    MyFreePool (ErrorInfo);
+    MyFreePool (&ErrorInfo);
 
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -359,7 +359,7 @@ EFI_STATUS StartEFIImage (
         CHAR16 *TmpStr = PoolPrint (L"Systemd LoaderDevicePartUUID:- '%s'", EspGUID);
         LOG(1, LOG_LINE_NORMAL, TmpStr);
         MsgLog ("INFO: %s\n\n", TmpStr);
-        MyFreePool (TmpStr);
+        MyFreePool (&TmpStr);
         #endif
 
         Status = EfivarSetRaw (
@@ -380,7 +380,7 @@ EFI_STATUS StartEFIImage (
         }
         #endif
 
-        MyFreePool (EspGUID);
+        MyFreePool (&EspGUID);
     } // if write systemd EFI variables
 
     // close open file handles
@@ -399,7 +399,7 @@ EFI_STATUS StartEFIImage (
     // control returns here when the child image calls Exit()
     ErrorInfo = PoolPrint (L"returned from %s", ImageTitle);
     CheckError (ReturnStatus, ErrorInfo);
-    MyFreePool (ErrorInfo);
+    MyFreePool (&ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -417,7 +417,7 @@ bailout_unload:
     }
 
 bailout:
-    MyFreePool (FullLoadOptions);
+    MyFreePool (&FullLoadOptions);
     if (!IsDriver) {
         FinishExternalScreen();
     }
@@ -448,7 +448,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     if (err == EFI_SUCCESS) {
         osind |= (UINT64) *ItemBuffer;
     }
-    MyFreePool (ItemBuffer);
+    MyFreePool (&ItemBuffer);
 
     err = EfivarSetRaw (
         &GlobalGuid,
@@ -498,7 +498,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     LOG(1, LOG_LINE_NORMAL, ShowScreenStr, err);
     #endif
 
-    MyFreePool (ShowScreenStr);
+    MyFreePool (&ShowScreenStr);
 
     return err;
 } // EFI_STATUS RebootIntoFirmware()
@@ -608,7 +608,7 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
         FALSE
     );
 
-    MyFreePool (LoaderPath);
+    MyFreePool (&LoaderPath);
 } // VOID StartLoader()
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
@@ -634,5 +634,5 @@ VOID StartTool(IN LOADER_ENTRY *Entry) {
         FALSE
     );
 
-    MyFreePool (LoaderPath);
+    MyFreePool (&LoaderPath);
 } // VOID StartTool()

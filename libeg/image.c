@@ -276,8 +276,8 @@ VOID egFreeImage (
         return;
     }
 
-    MyFreePool (Image->PixelData);
-    MyFreePool (Image);
+    MyFreePool (&Image->PixelData);
+    MyFreePool (&Image);
 }
 
 //
@@ -318,7 +318,7 @@ EFI_STATUS egLoadFile (
         ReadSize = MAX_FILE_SIZE;
     }
 
-    MyFreePool (FileInfo);
+    MyFreePool (&FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
@@ -359,7 +359,7 @@ EFI_STATUS egFindESP (
         if (*RootDir == NULL) {
             Status = EFI_NOT_FOUND;
         }
-        MyFreePool (Handles);
+        MyFreePool (&Handles);
     }
 
     return Status;
@@ -459,7 +459,7 @@ EG_IMAGE * egLoadImage (
     // decode it
     // '128' can be any arbitrary value
     NewImage = egDecodeAny (FileData, FileDataLength, 128, WantAlpha);
-    MyFreePool (FileData);
+    MyFreePool (&FileData);
 
     return NewImage;
 }
@@ -565,15 +565,15 @@ EG_IMAGE * egLoadIconAnyType (
         L"Trying to load any icon in '%s' with base name: '%s'",
         TmpDirName, BaseName
     );
-    MyFreePool (TmpDirName);
+    MyFreePool (&TmpDirName);
     #endif
 
     while (((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
 
-        MyFreePool (Extension);
-        MyFreePool (FileName);
+        MyFreePool (&Extension);
+        MyFreePool (&FileName);
     } // while()
 
     #if REFIT_DEBUG > 0

@@ -345,7 +345,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 SubEntry->me.Title    = StrDuplicate (L"Boot using default options");
                 MainOptions           = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
-                MyFreePool (MainOptions);
+                MyFreePool (&MainOptions);
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             } // if (SubEntry != NULL)
             SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
@@ -361,7 +361,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
         SubScreen = Entry->me.SubScreen;
     } // if/else
 
-    MyFreePool (FileName);
+    MyFreePool (&FileName);
 
     return SubScreen;
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
@@ -377,7 +377,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
 
     // create the submenu
     if (StrLen (Entry->Title) == 0) {
-        MyFreePool (Entry->Title);
+        MyFreePool (&Entry->Title);
         Entry->Title = NULL;
     }
 
@@ -460,7 +460,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
                     SubEntry->me.Title        = L"Run Apple Hardware Test";
-                    MyFreePool (SubEntry->LoaderPath);
+                    MyFreePool (&SubEntry->LoaderPath);
                     SubEntry->LoaderPath      = StrDuplicate (DiagsFileName);
                     SubEntry->Volume          = Volume;
                     SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
@@ -481,7 +481,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 // up with a default title but correct options by InitializeSubScreen(),
                 // earlier....
                 if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
-                    MyFreePool (SubScreen->Entries[0]->Title);
+                    MyFreePool (&SubScreen->Entries[0]->Title);
                     SubScreen->Entries[0]->Title = TokenList[0]
                         ? StrDuplicate (TokenList[0])
                         : StrDuplicate (L"Boot Linux");
@@ -495,7 +495,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                         SubEntry->me.Title = TokenList[0]
                             ? StrDuplicate (TokenList[0])
                             : StrDuplicate (L"Boot Linux");
-                        MyFreePool (SubEntry->LoadOptions);
+                        MyFreePool (&SubEntry->LoadOptions);
                         SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
                         FreeTokenLine (&TokenList, &TokenCount);
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
@@ -503,9 +503,9 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     } // if
                 } // while
 
-                MyFreePool (KernelVersion);
-                MyFreePool (InitrdName);
-                MyFreePool (File);
+                MyFreePool (&KernelVersion);
+                MyFreePool (&InitrdName);
+                MyFreePool (&File);
             } // if
 
         }
@@ -628,7 +628,7 @@ VOID SetLoaderDefaults (
 
         Temp = FindLastDirName (LoaderPath);
         MergeStrings (&OSIconName, Temp, L',');
-        MyFreePool (Temp);
+        MyFreePool (&Temp);
         Temp = NULL;
         if (OSIconName != NULL) {
             ShortcutLetter = OSIconName[0];
@@ -770,10 +770,10 @@ VOID SetLoaderDefaults (
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
     }
 
-    MyFreePool (PathOnly);
-    MyFreePool (OSIconName);
-    MyFreePool (NoExtension);
-    MyFreePool (NameClues);
+    MyFreePool (&PathOnly);
+    MyFreePool (&OSIconName);
+    MyFreePool (&NoExtension);
+    MyFreePool (&NameClues);
 } // VOID SetLoaderDefaults()
 
 // Add an NVRAM-based EFI boot loader entry to the menu.
@@ -810,7 +810,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         LOG(2, LOG_LINE_NORMAL, L"EFI Loader Path:- '%s'", TempStr);
         #endif
 
-        MyFreePool (TempStr);
+        MyFreePool (&TempStr);
 
         Entry->EfiBootNum = EfiBootNum;
 
@@ -831,7 +831,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
             Entry->me.BadgeImage = NULL;
         }
 
-        MyFreePool (OSIconName);
+        MyFreePool (&OSIconName);
 
         Entry->LoaderPath  = NULL;
         Entry->Volume      = NULL;
@@ -918,51 +918,51 @@ static LOADER_ENTRY * AddLoaderEntry (
             VolDesc = StrDuplicate (Volume->VolName);
 
             if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
             else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Unknown Volume");
             }
             else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"HFS+ Volume");
             }
             else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"NTFS Volume");
             }
             else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"FAT Volume");
             }
             else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext2 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext3 Volume");
             }
             else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext4 Volume");
             }
             else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"ReiserFS Volume");
             }
             else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"BTRFS Volume");
             }
             else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"XFS Volume");
             }
             else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                MyFreePool (VolDesc);
+                MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
             MsgLog ("\n");
@@ -1071,8 +1071,8 @@ VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
     while (LoaderList != NULL) {
         Temp = LoaderList;
         LoaderList = LoaderList->NextEntry;
-        MyFreePool (Temp->FileName);
-        MyFreePool (Temp);
+        MyFreePool (&Temp->FileName);
+        MyFreePool (&Temp);
     } // while
 } // static VOID CleanUpLoaderList()
 
@@ -1105,11 +1105,11 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
             (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
             (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
         ) {
-            MyFreePool (VolGuid);
+            MyFreePool (&VolGuid);
 
             return FALSE;
         }
-        MyFreePool (VolGuid);
+        MyFreePool (&VolGuid);
     }
 
     if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
@@ -1125,8 +1125,8 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
                 ScanIt = FALSE;
         } // if
     } // if Path includes volume specification
-    MyFreePool (PathCopy);
-    MyFreePool (VolName);
+    MyFreePool (&PathCopy);
+    MyFreePool (&VolName);
     VolName = NULL;
 
     // See if Volume is in GlobalConfig.DontScanDirs....
@@ -1143,8 +1143,8 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
                 ScanIt = FALSE;
             }
         }
-        MyFreePool (DontScanDir);
-        MyFreePool (VolName);
+        MyFreePool (&DontScanDir);
+        MyFreePool (&VolName);
         DontScanDir = NULL;
         VolName     = NULL;
     } // while()
@@ -1194,7 +1194,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
     else {
         return FALSE;
     }
-    MyFreePool (FileInfo);
+    MyFreePool (&FileInfo);
 
     Status = refit_call5_wrapper(
         Volume->RootDir->Open,
@@ -1212,7 +1212,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         refit_call1_wrapper(FileHandle->Close, FileHandle);
         return FALSE;
     }
-    MyFreePool (FallbackInfo);
+    MyFreePool (&FallbackInfo);
 
     if (FallbackSize == FileSize) { // could be identical; do full check....
         FileContents = AllocatePool (FileSize);
@@ -1236,8 +1236,8 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
                 AreIdentical = (CompareMem (FileContents, FallbackContents, FileSize) == 0);
             } // if
         } // if
-        MyFreePool (FileContents);
-        MyFreePool (FallbackContents);
+        MyFreePool (&FileContents);
+        MyFreePool (&FallbackContents);
     } // if/else
 
     // BUG ALERT: Some systems (e.g., DUET, some Macs with large displays) crash if the
@@ -1282,7 +1282,7 @@ BOOLEAN IsSymbolicLink (
         }
     }
 
-    MyFreePool (FileInfo);
+    MyFreePool (&FileInfo);
 
     return (DirEntry->FileSize != FileSize2);
 } // BOOLEAN IsSymbolicLink()
@@ -1319,7 +1319,7 @@ BOOLEAN ScanLoaderDir (
         PathStr = PoolPrint (L"%s", Path);
     }
     LOG(3, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, PathStr);
-    MyFreePool (PathStr);
+    MyFreePool (&PathStr);
     #endif
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
@@ -1365,8 +1365,8 @@ BOOLEAN ScanLoaderDir (
                 }
             }
 
-            MyFreePool (Extension);
-            MyFreePool (FullName);
+            MyFreePool (&Extension);
+            MyFreePool (&FullName);
         } // while
 
         if (LoaderList != NULL) {
@@ -1428,7 +1428,7 @@ BOOLEAN ScanLoaderDir (
             }
 
             CheckError (Status, Message);
-            MyFreePool (Message);
+            MyFreePool (&Message);
         } // if Status != EFI_NOT_FOUND
     } // if not scanning a blacklisted directory
 
@@ -1541,9 +1541,9 @@ BOOLEAN ScanMacOsLoader (
             ScanFallbackLoader = FALSE;
         }
     } // if
-    MyFreePool (VolName);
-    MyFreePool (PathName);
-    MyFreePool (FileName);
+    MyFreePool (&VolName);
+    MyFreePool (&PathName);
+    MyFreePool (&FileName);
 
     return ScanFallbackLoader;
 } // VOID ScanMacOsLoader()
@@ -1588,21 +1588,21 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         if (ShouldScan (Volume, MACOSX_LOADER_DIR)) {
             FileName = StrDuplicate (MACOSX_LOADER_PATH);
             ScanFallbackLoader &= ScanMacOsLoader (Volume, FileName);
-            MyFreePool (FileName);
+            MyFreePool (&FileName);
             DirIterOpen (Volume->RootDir, L"\\", &EfiDirIter);
 
             while (DirIterNext (&EfiDirIter, 1, NULL, &EfiDirEntry)) {
                 if (IsGuid (EfiDirEntry->FileName)) {
                     FileName = PoolPrint (L"%s\\%s", EfiDirEntry->FileName, MACOSX_LOADER_PATH);
                     ScanFallbackLoader &= ScanMacOsLoader (Volume, FileName);
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                     FileName = PoolPrint (L"%s\\%s", EfiDirEntry->FileName, L"boot.efi");
 
                     if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
                         MergeStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
                     }
 
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                 } // if
             } // while
             DirIterClose (&EfiDirIter);
@@ -1617,7 +1617,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
-            MyFreePool (FileName);
+            MyFreePool (&FileName);
         } // if should scan Mac directory
 
         // check for Microsoft boot loader/menu
@@ -1637,7 +1637,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
-            MyFreePool (FileName);
+            MyFreePool (&FileName);
 
             FileName = StrDuplicate (L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
             if (FileExists (Volume->RootDir, FileName) &&
@@ -1669,7 +1669,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
             }
-            MyFreePool (FileName);
+            MyFreePool (&FileName);
         } // if
 
         // scan the root directory for EFI executables
@@ -1693,14 +1693,14 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 ScanFallbackLoader = FALSE;
             }
 
-            MyFreePool (FileName);
+            MyFreePool (&FileName);
         } // while()
 
         Status = DirIterClose (&EfiDirIter);
         if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
             Temp = PoolPrint (L"While Scanning the EFI System Partition on '%s'", Volume->VolName);
             CheckError (Status, Temp);
-            MyFreePool (Temp);
+            MyFreePool (&Temp);
         } // if
 
         // Scan user-specified (or additional default) directories....
@@ -1715,10 +1715,10 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                     ScanFallbackLoader = FALSE;
                 }
 
-                MyFreePool (VolName);
+                MyFreePool (&VolName);
             } // if should scan dir
 
-            MyFreePool (Directory);
+            MyFreePool (&Directory);
         } // while
 
         // Don't scan the fallback loader if it's on the same volume and a duplicate of RefindPlus itself....
@@ -1730,7 +1730,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         ) {
             ScanFallbackLoader = FALSE;
         }
-        MyFreePool (SelfPath);
+        MyFreePool (&SelfPath);
 
         // If not a duplicate & if it exists & if it's not us, create an entry
         // for the fallback boot loader
@@ -1741,7 +1741,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         ) {
             AddLoaderEntry (FALLBACK_FULLNAME, L"Fallback Boot Loader", Volume, TRUE);
         }
-        MyFreePool (MatchPatterns);
+        MyFreePool (&MatchPatterns);
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1876,7 +1876,7 @@ VOID ScanFirmwareDefined (
                 ) {
                     ScanIt = TRUE;
                 }
-                MyFreePool (OneElement);
+                MyFreePool (&OneElement);
             } // while()
         }
         else {
@@ -1906,7 +1906,7 @@ VOID ScanFirmwareDefined (
         ScanIt = TRUE; // Assume the next item is to be scanned
     } // while()
 
-    MyFreePool (DontScanFirmware);
+    MyFreePool (&DontScanFirmware);
     DeleteBootOrderEntries (BootEntries);
 } // static VOID ScanFirmwareDefined()
 
@@ -1989,7 +1989,7 @@ VOID ScanForBootloaders (
     MsgStr = StrDuplicate (L"Seek Boot Loaders");
     LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     MsgLog ("%s...", MsgStr);
-    MyFreePool (MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     if (ShowMessage){
@@ -2033,13 +2033,13 @@ VOID ScanForBootloaders (
     if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
         MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
     }
-    MyFreePool (HiddenTags);
+    MyFreePool (&HiddenTags);
 
     HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
     if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
         MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
     }
-    MyFreePool (HiddenLegacy);
+    MyFreePool (&HiddenLegacy);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -2175,8 +2175,8 @@ VOID ScanForBootloaders (
     } // for
 
     // Restore the backed-up GlobalConfig.DontScan* variables
-    MyFreePool (GlobalConfig.DontScanFiles);
-    MyFreePool (GlobalConfig.DontScanVolumes);
+    MyFreePool (&GlobalConfig.DontScanFiles);
+    MyFreePool (&GlobalConfig.DontScanVolumes);
     GlobalConfig.DontScanFiles   = OrigDontScanFiles;
     GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
 
@@ -2185,7 +2185,7 @@ VOID ScanForBootloaders (
         MsgStr = StrDuplicate (L"Could Not Find Boot Loaders");
         LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("* WARN: %s\n\n", MsgStr);
-        MyFreePool (MsgStr);
+        MyFreePool (&MsgStr);
         #endif
     }
     else {
@@ -2195,7 +2195,7 @@ VOID ScanForBootloaders (
         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s:\n", MsgStr);
-        MyFreePool (MsgStr);
+        MyFreePool (&MsgStr);
         #endif
 
         for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
@@ -2226,7 +2226,7 @@ VOID ScanForBootloaders (
             );
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
-            MyFreePool (MsgStr);
+            MyFreePool (&MsgStr);
             if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
                 MsgLog ("\n");
             }
@@ -2261,9 +2261,9 @@ VOID ScanForBootloaders (
         );
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (MsgStr);
-        MyFreePool (keyStr);
-        MyFreePool (LoaderStr);
+        MyFreePool (&MsgStr);
+        MyFreePool (&keyStr);
+        MyFreePool (&LoaderStr);
         #endif
     }
 
@@ -2310,10 +2310,10 @@ BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
             ) {
                 retval = FALSE;
             } // if
-            MyFreePool (DontScanThis);
-            MyFreePool (DontVolName);
-            MyFreePool (DontPathName);
-            MyFreePool (DontFileName);
+            MyFreePool (&DontScanThis);
+            MyFreePool (&DontVolName);
+            MyFreePool (&DontPathName);
+            MyFreePool (&DontFileName);
             DontVolName = DontPathName = DontFileName = NULL;
         } // while
     }
@@ -2321,10 +2321,10 @@ BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
         retval = FALSE;
     } // if
 
-    MyFreePool (TestVolName);
-    MyFreePool (TestPathName);
-    MyFreePool (TestFileName);
-    MyFreePool (DontScanTools);
+    MyFreePool (&TestVolName);
+    MyFreePool (&TestPathName);
+    MyFreePool (&TestFileName);
+    MyFreePool (&DontScanTools);
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL,
@@ -2404,11 +2404,11 @@ BOOLEAN FindTool (
 
                 } // if
             } // for
-            MyFreePool (PathName);
-            MyFreePool (FileName);
+            MyFreePool (&PathName);
+            MyFreePool (&FileName);
         } // while Names
 
-        MyFreePool (DirName);
+        MyFreePool (&DirName);
     } // while Locations
 
     return FoundTool;
@@ -2447,9 +2447,9 @@ VOID ScanForTools (VOID) {
 
     for (i = 0; i < NUM_TOOLS; i++) {
         // Reset Vars
-        MyFreePool (FileName);
-        MyFreePool (VolName);
-        MyFreePool (ToolName);
+        MyFreePool (&FileName);
+        MyFreePool (&VolName);
+        MyFreePool (&ToolName);
         FileName = VolName = ToolName = NULL;
         FoundTool = FALSE;
 
@@ -2561,7 +2561,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2576,7 +2576,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2591,7 +2591,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2606,7 +2606,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2621,7 +2621,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2636,7 +2636,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -2653,7 +2653,7 @@ VOID ScanForTools (VOID) {
                     ToolStr = PoolPrint (L"Added '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
-                    MyFreePool (ToolStr);
+                    MyFreePool (&ToolStr);
                     #endif
                 }
 
@@ -2684,10 +2684,10 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added '%s'", ToolName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
-                        MyFreePool (ToolStr);
+                        MyFreePool (&ToolStr);
                         #endif
                     } // if
-                    MyFreePool (ItemBuffer);
+                    MyFreePool (&ItemBuffer);
                 }
                 else {
                     #if REFIT_DEBUG > 0
@@ -2731,11 +2731,11 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
-                        MyFreePool (ToolStr);
+                        MyFreePool (&ToolStr);
                         #endif
                     } // if
 
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                     FileName = NULL;
                 } // while
 
@@ -2775,11 +2775,11 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
-                        MyFreePool (ToolStr);
+                        MyFreePool (&ToolStr);
                         #endif
                     } // if
 
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                     FileName = NULL;
                 } // while
 
@@ -2818,10 +2818,10 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
-                        MyFreePool (ToolStr);
+                        MyFreePool (&ToolStr);
                         #endif
                   } // if
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -2858,11 +2858,11 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         MsgLog ("              - %s\n", ToolStr);
-                        MyFreePool (ToolStr);
+                        MyFreePool (&ToolStr);
                         #endif
                     } // if
 
-                    MyFreePool (FileName);
+                    MyFreePool (&FileName);
                     FileName = NULL;
                 } // while
 
@@ -2909,7 +2909,7 @@ VOID ScanForTools (VOID) {
                                 ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                                 MsgLog ("              - %s\n", ToolStr);
-                                MyFreePool (ToolStr);
+                                MyFreePool (&ToolStr);
                                 #endif
                             } // if
                         } // if
@@ -2957,19 +2957,19 @@ VOID ScanForTools (VOID) {
                                 TRUE
                             );
 
-                            MyFreePool (Description);
+                            MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                             MsgLog ("              - %s\n", ToolStr);
-                            MyFreePool (ToolStr);
+                            MyFreePool (&ToolStr);
                             #endif
                         } // if
                     } // for
 
-                    MyFreePool (FileName);
-                    MyFreePool (VolName);
+                    MyFreePool (&FileName);
+                    MyFreePool (&VolName);
                     FileName = VolName = NULL;
                 } // while
 
@@ -3025,7 +3025,7 @@ VOID ScanForTools (VOID) {
                     ToolStr = PoolPrint (L"Added '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                     MsgLog ("              - %s\n", ToolStr);
-                    MyFreePool (ToolStr);
+                    MyFreePool (&ToolStr);
                     #endif
                 } // if
 
@@ -3047,7 +3047,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;
@@ -3062,7 +3062,7 @@ VOID ScanForTools (VOID) {
                 ToolStr = PoolPrint (L"Added '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                 MsgLog ("              - %s\n", ToolStr);
-                MyFreePool (ToolStr);
+                MyFreePool (&ToolStr);
                 #endif
 
                 break;

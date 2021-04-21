@@ -105,7 +105,7 @@ EFI_STATUS RefitReadFile (
 
     Message = PoolPrint (L"While Loading File:- '%s'", FileName);
     if (CheckError (Status, Message)) {
-        MyFreePool (Message);
+        MyFreePool (&Message);
 
         return Status;
     }
@@ -131,14 +131,14 @@ EFI_STATUS RefitReadFile (
 
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
     if (CheckError (Status, Message)) {
-        MyFreePool (Message);
-        MyFreePool (File->Buffer);
+        MyFreePool (&Message);
+        MyFreePool (&File->Buffer);
         File->Buffer = NULL;
         refit_call1_wrapper(FileHandle->Close, FileHandle);
 
         return Status;
     }
-    MyFreePool (Message);
+    MyFreePool (&Message);
 
     refit_call1_wrapper(FileHandle->Close, FileHandle);
 
@@ -605,28 +605,28 @@ VOID ReadConfig (
 
     // Set a few defaults only if we are loading the default file.
     if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
-       MyFreePool (GlobalConfig.AlsoScan);
+       MyFreePool (&GlobalConfig.AlsoScan);
        GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
-       MyFreePool (GlobalConfig.DontScanDirs);
+       MyFreePool (&GlobalConfig.DontScanDirs);
        if (SelfVolume) {
            TempStr = GuidAsString (&(SelfVolume->PartGuid));
        }
        MergeStrings (&TempStr, SelfDirPath, L':');
        MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
        GlobalConfig.DontScanDirs = TempStr;
-       MyFreePool (GlobalConfig.DontScanFiles);
+       MyFreePool (&GlobalConfig.DontScanFiles);
        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-       MyFreePool (GlobalConfig.DontScanTools);
+       MyFreePool (&GlobalConfig.DontScanTools);
        GlobalConfig.DontScanTools = NULL;
-       MyFreePool (GlobalConfig.DontScanFirmware);
+       MyFreePool (&GlobalConfig.DontScanFirmware);
        GlobalConfig.DontScanFirmware = NULL;
        MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
        MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
-       MyFreePool (GlobalConfig.DontScanVolumes);
+       MyFreePool (&GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
        GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
-       MyFreePool (GlobalConfig.DefaultSelection);
+       MyFreePool (&GlobalConfig.DefaultSelection);
        GlobalConfig.DefaultSelection = StrDuplicate (L"+");
     } // if
 
@@ -641,7 +641,7 @@ VOID ReadConfig (
         #endif
 
        if (!FileExists (SelfDir, L"icons")) {
-           MyFreePool (ShowScreenStr);
+           MyFreePool (&ShowScreenStr);
            ShowScreenStr = L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode";
            PrintUglyText (ShowScreenStr, NEXTLINE);
 
@@ -654,7 +654,7 @@ VOID ReadConfig (
 
        PauseForKey();
        SwitchToGraphics();
-       MyFreePool (ShowScreenStr);
+       MyFreePool (&ShowScreenStr);
 
        return;
     }
@@ -723,7 +723,7 @@ VOID ReadConfig (
                     #endif
 
                     PauseForKey();
-                    MyFreePool (ShowScreenStr);
+                    MyFreePool (&ShowScreenStr);
                 }
             }
         }
@@ -760,7 +760,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
            // Note: Don't use HandleStrings() because it modifies slashes, which might be present in volume name
-           MyFreePool (GlobalConfig.DontScanVolumes);
+           MyFreePool (&GlobalConfig.DontScanVolumes);
            GlobalConfig.DontScanVolumes = NULL;
            for (i = 1; i < TokenCount; i++) {
               MergeStrings (&GlobalConfig.DontScanVolumes, TokenList[i], L',');
@@ -879,7 +879,7 @@ VOID ReadConfig (
                #endif
 
                PauseForKey();
-               MyFreePool (ShowScreenStr);
+               MyFreePool (&ShowScreenStr);
            } // if/else
         }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {
@@ -1085,7 +1085,7 @@ VOID ReadConfig (
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles)) {
         MergeStrings (&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     }
-    MyFreePool (File.Buffer);
+    MyFreePool (&File.Buffer);
 
     if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0
@@ -1126,7 +1126,7 @@ VOID AddSubmenu (
     ) {
         if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
             // set the boot loader filename
-            MyFreePool (SubEntry->LoaderPath);
+            MyFreePool (&SubEntry->LoaderPath);
             SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
             SubEntry->Volume = Volume;
         }
@@ -1134,7 +1134,7 @@ VOID AddSubmenu (
             if (FindVolume (&Volume, TokenList[1])) {
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                     TitleMenu = Title;
-                    MyFreePool (SubEntry->me.Title);
+                    MyFreePool (&SubEntry->me.Title);
                     SubEntry->me.Title = PoolPrint (
                         L"Boot %s from %s",
                         (TitleMenu != NULL) ? TitleMenu : L"Unknown",
@@ -1146,14 +1146,14 @@ VOID AddSubmenu (
             } // if match found
         }
         else if (MyStriCmp (TokenList[0], L"initrd")) {
-            MyFreePool (SubEntry->InitrdPath);
+            MyFreePool (&SubEntry->InitrdPath);
             SubEntry->InitrdPath = NULL;
             if (TokenCount > 1) {
                 SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
             }
         }
         else if (MyStriCmp (TokenList[0], L"options")) {
-            MyFreePool (SubEntry->LoadOptions);
+            MyFreePool (&SubEntry->LoadOptions);
             SubEntry->LoadOptions = NULL;
             if (TokenCount > 1) {
                 SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
@@ -1176,7 +1176,7 @@ VOID AddSubmenu (
     if (SubEntry->InitrdPath != NULL) {
         MergeStrings (&SubEntry->LoadOptions, L"initrd=", L' ');
         MergeStrings (&SubEntry->LoadOptions, SubEntry->InitrdPath, 0);
-        MyFreePool (SubEntry->InitrdPath);
+        MyFreePool (&SubEntry->InitrdPath);
         SubEntry->InitrdPath = NULL;
     } // if
     if (SubEntry->Enabled) {
@@ -1238,7 +1238,7 @@ LOADER_ENTRY * AddStanzaEntries (
          #endif
 
          SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
-         MyFreePool (Entry->LoadOptions);
+         MyFreePool (&Entry->LoadOptions);
          Entry->LoadOptions = NULL; // Discard default options, if any
          DefaultsSet = TRUE;
       }
@@ -1253,7 +1253,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 (CurrentVolume->IsReadable) &&
                 (CurrentVolume->RootDir)
             ) {
-               MyFreePool (Entry->me.Title);
+               MyFreePool (&Entry->me.Title);
                Entry->me.Title = PoolPrint (
                    L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
                    CurrentVolume->VolName
@@ -1274,7 +1274,7 @@ LOADER_ENTRY * AddStanzaEntries (
           }
           #endif
 
-         MyFreePool (Entry->me.Image);
+         MyFreePool (&Entry->me.Image);
          Entry->me.Image = egLoadIcon (
              CurrentVolume->RootDir,
              TokenList[1],
@@ -1290,7 +1290,7 @@ LOADER_ENTRY * AddStanzaEntries (
           LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
           #endif
 
-         MyFreePool (Entry->InitrdPath);
+         MyFreePool (&Entry->InitrdPath);
          Entry->InitrdPath = StrDuplicate (TokenList[1]);
       }
       else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
@@ -1298,7 +1298,7 @@ LOADER_ENTRY * AddStanzaEntries (
           LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
           #endif
 
-         MyFreePool (Entry->LoadOptions);
+         MyFreePool (&Entry->LoadOptions);
          Entry->LoadOptions = StrDuplicate (TokenList[1]);
       }
       else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
@@ -1329,7 +1329,7 @@ LOADER_ENTRY * AddStanzaEntries (
           LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum for '%s'", Entry->LoaderPath);
           #endif
 
-          MyFreePool (Entry->me.Title);
+          MyFreePool (&Entry->me.Title);
           Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
           Entry->EfiLoaderPath = NULL;
           Entry->LoaderPath    = NULL;
@@ -1356,7 +1356,7 @@ LOADER_ENTRY * AddStanzaEntries (
    if (Entry->InitrdPath) {
       MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
       MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
-      MyFreePool (Entry->InitrdPath);
+      MyFreePool (&Entry->InitrdPath);
       Entry->InitrdPath = NULL;
    } // if
 
@@ -1401,51 +1401,51 @@ VOID ScanUserConfigured (
                         VolDesc = StrDuplicate (Volume->VolName);
 
                         if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Whole Disk Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Unknown Volume");
                         }
                         else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"HFS+ Volume");
                         }
                         else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"NTFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"FAT Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext2 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext3 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext4 Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"ReiserFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"BTRFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"XFS Volume");
                         }
                         else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                            MyFreePool (VolDesc);
+                            MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"ISO-9660 Volume");
                         }
                         MsgLog ("\n");
@@ -1463,7 +1463,7 @@ VOID ScanUserConfigured (
                     AddPreparedLoaderEntry (Entry);
                 }
                 else {
-                    MyFreePool (Entry);
+                    MyFreePool (&Entry);
                 } // if/else
             }
             else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
@@ -1499,16 +1499,16 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         Options = AllocateZeroPool (sizeof (REFIT_FILE));
         Fstab   = AllocateZeroPool (sizeof (REFIT_FILE));
         if (Fstab == NULL || Options == NULL) {
-            MyFreePool (Options);
-            MyFreePool (Fstab);
+            MyFreePool (&Options);
+            MyFreePool (&Fstab);
 
             return NULL;
         }
 
         Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
         if (CheckError (Status, L"while reading /etc/fstab")) {
-            MyFreePool (Options);
-            MyFreePool (Fstab);
+            MyFreePool (&Options);
+            MyFreePool (&Fstab);
 
             return NULL;
         }
@@ -1537,16 +1537,16 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
 
                         Line = PoolPrint (L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
                         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
-                        MyFreePool (Line);
+                        MyFreePool (&Line);
 
                         Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
-                        MyFreePool (Line);
+                        MyFreePool (&Line);
 
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
                     } // if Root
 
-                    MyFreePool (Root);
+                    MyFreePool (&Root);
                     Root = NULL;
                 } // if
                 FreeTokenLine (&TokenList, &TokenCount);
@@ -1559,12 +1559,12 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
             }
             else {
-                MyFreePool (Options);
+                MyFreePool (&Options);
                 Options = NULL;
             }
 
-            MyFreePool (Fstab->Buffer);
-            MyFreePool (Fstab);
+            MyFreePool (&Fstab->Buffer);
+            MyFreePool (&Fstab);
         } // if/else file read error
     } // if /etc/fstab exists
 
@@ -1601,15 +1601,15 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
                     GuidString
                 );
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
-                MyFreePool (Line);
+                MyFreePool (&Line);
                 Line = PoolPrint (
                     L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
                     WriteStatus,
                     GuidString
                 );
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
-                MyFreePool (Line);
-                MyFreePool (GuidString);
+                MyFreePool (&Line);
+                MyFreePool (&GuidString);
             } // if (GuidString)
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
             Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
@@ -1668,8 +1668,8 @@ REFIT_FILE * ReadLinuxOptionsFile (
             GoOn = FALSE;
         } // if/else
 
-        MyFreePool (OptionsFilename);
-        MyFreePool (FullFilename);
+        MyFreePool (&OptionsFilename);
+        MyFreePool (&FullFilename);
         OptionsFilename = FullFilename = NULL;
     } while (GoOn);
 
@@ -1702,7 +1702,7 @@ CHAR16 * GetFirstOptionsFromFile (
             Options = StrDuplicate (TokenList[1]);
         }
         FreeTokenLine (&TokenList, &TokenCount);
-        MyFreePool (File);
+        MyFreePool (&File);
     } // if
 
     return Options;

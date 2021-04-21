@@ -1,7 +1,8 @@
 0.13.2.AD (Pre-Release):
 -----------------------
-- Fixes Misc Memory Management Issues
-  * These bugs were introduced in v0.13.2.AA
+- Fixes Memory Management Issues
+  * Misc issues mainly introduced in v0.13.2.AA
+  * Makes 'MyFreePool' calls by reference to ensure pointers are set to a NULL value
 - Fixes HiddenLegacy Handling
   * HiddenLegacy tags were not being handled when scanning for bootloaders
   * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
