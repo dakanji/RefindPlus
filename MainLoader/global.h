@@ -289,8 +289,8 @@ EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
 EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
 #endif
 
-// DA-TAG: Add Macro
-#define offsetof(st, m) ((UINTN)((char *)&((st *)0)->m - (char *)0))
+/* DA-TAG: Add Macros */
+#define MY_OFFSET_OF(st, m) ((UINTN)((char *)&((st *)0)->m - (char *)0))
 
 
 //
