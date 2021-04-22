@@ -1774,12 +1774,17 @@ EFI_STATUS EFIAPI efi_main (
 
     // Show ProtectNVRAM Status
     MsgLog ("\n");
-    MsgLog ("      ProtectNVRAM:- ");
-    if (GlobalConfig.ProtectNVRAM) {
-        MsgLog ("'Active'");
+    if (MyStrStr (VendorInfo, L"Apple") != NULL) {
+        MsgLog ("      ProtectNVRAM:- 'Disabled'");
     }
     else {
-        MsgLog ("'Inactive'");
+        MsgLog ("      ProtectNVRAM:- ");
+        if (GlobalConfig.ProtectNVRAM) {
+            MsgLog ("'Active'");
+        }
+        else {
+            MsgLog ("'Inactive'");
+        }
     }
 
     // Show ScanOtherESP Status
@@ -1792,8 +1797,6 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Clear Lines
-    MsgLog ("\n\n");
     #endif
 
     #ifdef __MAKEWITH_TIANO
@@ -1802,14 +1805,25 @@ EFI_STATUS EFIAPI efi_main (
         Status = RpApfsConnectDevices();
 
         #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
         MsgLog ("INFO: Supply APFS ...");
         if (Status == EFI_NOT_FOUND) {
-            MsgLog ("Not Required\n\n");
+            MsgLog ("Not Required");
         }
         else {
-            MsgLog ("%r\n\n", Status);
+            MsgLog ("%r", Status);
         }
         #endif
+    }
+    #endif
+
+    #if REFIT_DEBUG > 0
+    // Clear Lines
+    if (GlobalConfig.LogLevel > 0) {
+        MsgLog ("\n");
+    }
+    else {
+        MsgLog ("\n\n");
     }
     #endif
 
