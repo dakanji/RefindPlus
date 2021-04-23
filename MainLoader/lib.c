@@ -459,7 +459,7 @@ EFI_STATUS FindVarsDir (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items in Installation Folder ...%r",
+            L"Locate/Create Emulated NVRAM in Installation Folder for RefindPlus-Specific Items ...%r",
             Status
         );
         #endif
@@ -1227,13 +1227,9 @@ VOID ScanVolumeBootcode (
 VOID SetVolumeBadgeIcon (
     REFIT_VOLUME *Volume
 ) {
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Trying to Set Volume Badge Icons");
-    #endif
-
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_END, L"Volume Badge Icon Config Setting is 'Hidden'");
+        LOG(2, LOG_LINE_NORMAL, L"VolumeBadge Config Setting is 'Hidden'");
         #endif
 
         return;
@@ -1241,7 +1237,7 @@ VOID SetVolumeBadgeIcon (
 
     if (Volume == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_END, L"NULL Volume!!");
+        LOG(2, LOG_LINE_NORMAL, L"NULL Volume!!");
         #endif
 
         return;
@@ -1999,14 +1995,6 @@ VOID ScanVolumes (
         AddPartitionTable (Volume);
         ScanVolume (Volume);
 
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
-            L"Identified Volume: Type = '%s' ... Name = '%s'",
-            FSTypeName (Volume->FSType),
-            Volume->VolName
-        );
-        #endif
-
         UuidList[HandleIndex] = Volume->VolUuid;
         // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
         // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
@@ -2104,6 +2092,13 @@ VOID ScanVolumes (
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
+
+            LOG(2, LOG_LINE_NORMAL,
+                L"Identified Volume: GUID = %s ... Type = %s ... Name = %s",
+                PartGUID,
+                FSTypeName (Volume->FSType),
+                VolDesc
+            );
 
             if (!DoneHeadings) {
                 MsgLog ("%-41s%-41s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
@@ -2271,12 +2266,15 @@ VOID GetVolumeBadgeIcons (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting Volume Badge Icons");
+    CHAR16  *MsgStr   = NULL;
+    BOOLEAN  LoopOnce = FALSE;
+
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeBadges");
     #endif
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Volume Badge Icon Config Setting is 'Hidden'");
+        LOG(1, LOG_LINE_NORMAL, L"VolumeBadge Config Setting is 'Hidden'");
         #endif
 
         return;
@@ -2292,20 +2290,38 @@ VOID GetVolumeBadgeIcons (
         }
 
         if (Volume->IsReadable) {
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (
+                L"Trying to Set VolumeBadge for '%s'",
+                Volume->VolName
+            );
+            if (LoopOnce) {
+                LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+            }
+            else {
+                LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            }
+            MyFreePool (&MsgStr);
+            #endif
+
             // Set volume badge icon
             SetVolumeBadgeIcon (Volume);
 
             #if REFIT_DEBUG > 0
             if (Volume->VolBadgeImage == NULL) {
-                LOG(1, LOG_THREE_STAR_END, L"Volume Badge Icon Not Found");
+                MsgStr = StrDuplicate (L"VolumeBadge Not Found");
             }
             else {
-                LOG(1, LOG_THREE_STAR_END, L"Volume Badge Icon Found");
+                MsgStr = StrDuplicate (L"VolumeBadge Found");
             }
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MyFreePool (&MsgStr);
+
+            LoopOnce = TRUE;
             #endif
         } // if Volume->IsReadable
     } // for
-} // VOID SetVolumeIcons()
+} // VOID GetVolumeBadgeIcons()
 
 VOID SetVolumeIcons (
     VOID
@@ -2313,11 +2329,16 @@ VOID SetVolumeIcons (
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr   = NULL;
+    BOOLEAN  LoopOnce = FALSE;
+    #endif
+
     // Set volume badge icon
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting Custom Volume Icons");
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeIcons");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -2331,7 +2352,16 @@ VOID SetVolumeIcons (
 
         if (Volume->IsReadable) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Trying to Set Custom Volume Icon for '%s'", Volume->VolName);
+            MsgStr = PoolPrint (
+                L"Trying to Set VolumeIcon for '%s'",
+                Volume->VolName
+            );
+            if (LoopOnce) {
+                LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+            }
+            else {
+                LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            }
             #endif
 
             // load custom volume icon for internal disks if present
@@ -2343,29 +2373,22 @@ VOID SetVolumeIcons (
                         L".VolumeIcon",
                         GlobalConfig.IconSizes[ICON_SIZE_BIG]
                     );
-
-                    #if REFIT_DEBUG > 0
-                    if (Volume->VolIconImage == NULL) {
-                        LOG(1, LOG_THREE_STAR_END, L"Custom Volume Icon Not Found");
-                    }
-                    else {
-                        LOG(1, LOG_THREE_STAR_END, L"Custom Volume Icon Found");
-                    }
-                    #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL, L"Skipped ... Not Internal Volume");
-                    LOG(1, LOG_THREE_STAR_END, L"Skipped '%s'", Volume->VolName);
+                    LOG(2, LOG_LINE_NORMAL, L"Skipped '%s' ... Not Internal Volume", Volume->VolName);
                     #endif
                 }
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Skipped ... Icon Already Set");
-                LOG(1, LOG_THREE_STAR_END, L"Skipped '%s'", Volume->VolName);
+                LOG(2, LOG_LINE_NORMAL, L"Skipped '%s' ... Icon Already Set", Volume->VolName);
                 #endif
             }
+
+            #if REFIT_DEBUG > 0
+            LoopOnce = TRUE;
+            #endif
         } // if Volume->IsReadable
     } // for
 } // VOID SetVolumeIcons()

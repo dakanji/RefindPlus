@@ -670,7 +670,7 @@ UINTN ScanDriverDir (
         else {
             #if REFIT_DEBUG > 0
             if (RunOnce) {
-                LOG(1, LOG_STAR_HEAD_SEP, L"NEXT DRIVER");
+                LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
             }
             #endif
 

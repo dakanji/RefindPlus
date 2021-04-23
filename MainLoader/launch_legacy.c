@@ -68,7 +68,10 @@ extern REFIT_MENU_SCREEN MainMenu;
 #define DevicePathProtocol gEfiDevicePathProtocolGuid
 #endif
 
-EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
+EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
+    { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
+
+BOOLEAN FirstLegacyScan = FALSE;
 
 static
 EFI_STATUS ActivateMbrPartition (
@@ -659,10 +662,17 @@ LEGACY_ENTRY * AddLegacyEntry (
     } // if
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_STAR_HEAD_SEP,
+    CHAR16 *MsgStr = PoolPrint (
         L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
     );
+    if (FirstLegacyScan) {
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr );
+    }
+    else {
+        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr );
+    }
+    MyFreePool (&MsgStr);
     #endif
 
     // prepare the menu entry
@@ -815,7 +825,14 @@ VOID ScanLegacyUEFI (
     BOOLEAN                   SearchingForUsb = FALSE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
+    CHAR16 *MsgStr = StrDuplicate (L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
+    if (FirstLegacyScan) {
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr );
+    }
+    else {
+        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr );
+    }
+    MyFreePool (&MsgStr);
     #endif
 
     InitializeListHead (&TempList);
@@ -889,12 +906,12 @@ VOID ScanLegacyUEFI (
 static
 VOID ScanLegacyVolume (
     REFIT_VOLUME *Volume,
-    UINTN VolumeIndex
+    UINTN         VolumeIndex
 ) {
-    UINTN VolumeIndex2;
+    UINTN   VolumeIndex2;
     BOOLEAN ShowVolume, HideIfOthersFound;
 
-    ShowVolume = FALSE;
+    ShowVolume        = FALSE;
     HideIfOthersFound = FALSE;
     if (Volume->HasBootCode) {
         ShowVolume = TRUE;
@@ -918,8 +935,14 @@ VOID ScanLegacyVolume (
     }
 
     if (ShowVolume) {
-        Volume->VolName = GetVolumeName (Volume);
+        if ((Volume->VolName == NULL) ||
+            (StrLen (Volume->VolName) < 1)
+        ) {
+            Volume->VolName = GetVolumeName (Volume);
+        }
+
         AddLegacyEntry (NULL, Volume);
+        FirstLegacyScan = FALSE;
     }
 } // static VOID ScanLegacyVolume()
 
@@ -933,16 +956,17 @@ VOID ScanLegacyDisc (
     REFIT_VOLUME            *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/Legacy Mode Optical Disks");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Disks for BIOS/CSM/Legacy Mode Volumes");
     #endif
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        FirstLegacyScan = TRUE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_OPTICAL) {
                 ScanLegacyVolume (Volume, VolumeIndex);
             }
-        } // for
+         } // for
     }
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
         ScanLegacyUEFI (BBS_CDROM);
@@ -958,22 +982,24 @@ VOID ScanLegacyInternal (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/Legacy Mode Internal Disks");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for BIOS/CSM/Legacy Mode Volumes");
     #endif
 
+    FirstLegacyScan = TRUE;
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-       for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-           Volume = Volumes[VolumeIndex];
-           if (Volume->DiskKind == DISK_KIND_INTERNAL) {
-               ScanLegacyVolume (Volume, VolumeIndex);
-           }
-       } // for
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+                ScanLegacyVolume (Volume, VolumeIndex);
+            }
+        } // for
     }
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
        // TODO: This actually picks up USB flash drives, too; try to find
        // a way to differentiate the two....
        ScanLegacyUEFI (BBS_HARDDISK);
     }
+    FirstLegacyScan = FALSE;
 } // VOID ScanLegacyInternal()
 
 // Scan external disks for legacy (BIOS) boot code
@@ -985,9 +1011,10 @@ VOID ScanLegacyExternal (
    REFIT_VOLUME            *Volume;
 
    #if REFIT_DEBUG > 0
-   LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/Legacy Mode External Disks");
+   LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for BIOS/CSM/Legacy Mode Volumes");
    #endif
 
+   FirstLegacyScan = TRUE;
    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
       for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
          Volume = Volumes[VolumeIndex];
@@ -1001,6 +1028,7 @@ VOID ScanLegacyExternal (
       // fixing it later....
       ScanLegacyUEFI (BBS_USB);
    }
+   FirstLegacyScan = FALSE;
 } // VOID ScanLegacyExternal()
 
 // Determine what (if any) type of legacy (BIOS) boot support is available

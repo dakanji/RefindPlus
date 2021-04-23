@@ -58,8 +58,8 @@
 
 // Console defines and variables
 
-UINTN ConWidth;
-UINTN ConHeight;
+UINTN  ConWidth;
+UINTN  ConHeight;
 CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
@@ -152,9 +152,9 @@ VOID InitScreen (
 VOID SetupScreen (
     VOID
 ) {
-    UINTN          NewWidth;
-    UINTN          NewHeight;
-    BOOLEAN        gotGraphics;
+           UINTN   NewWidth;
+           UINTN   NewHeight;
+           BOOLEAN gotGraphics;
     static BOOLEAN BannerLoaded = FALSE;
     static BOOLEAN ScaledIcons  = FALSE;
 
@@ -380,8 +380,8 @@ VOID SetupScreen (
 VOID SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
-    EFI_STATUS     Status;
-    static BOOLEAN HaveOverriden = FALSE;
+           EFI_STATUS  Status;
+    static BOOLEAN     HaveOverriden = FALSE;
 
     if (!GlobalConfig.TextRenderer && !HaveOverriden && !IsBoot) {
         // Override Text Renderer Setting
@@ -504,8 +504,8 @@ VOID FinishTextScreen (
 }
 
 VOID BeginExternalScreen (
-    IN BOOLEAN UseGraphicsMode,
-    IN CHAR16 *Title
+    IN BOOLEAN  UseGraphicsMode,
+    IN CHAR16  *Title
 ) {
     if (!AllowGraphicsMode) {
         UseGraphicsMode = FALSE;
@@ -600,6 +600,18 @@ BOOLEAN ReadAllKeyStrokes (
         }
         break;
     }
+
+    #if REFIT_DEBUG > 0
+    if (GotKeyStrokes) {
+        Status = EFI_SUCCESS;
+    }
+    else {
+        Status = EFI_ALREADY_STARTED;
+    }
+
+    LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ...%r", Status);
+    #endif
+
     return GotKeyStrokes;
 }
 
@@ -609,7 +621,7 @@ BOOLEAN ReadAllKeyStrokes (
 // TODO: Improve to handle multi-line text.
 VOID PrintUglyText (
     IN CHAR16 *Text,
-    IN UINTN PositionCode
+    IN UINTN    PositionCode
 ) {
     EG_PIXEL BGColor = COLOR_RED;
 
@@ -632,14 +644,21 @@ VOID PrintUglyText (
 VOID HaltForKey (
     VOID
 ) {
-    UINTN index;
+    UINTN   index;
+    BOOLEAN ClearKeystrokes;
 
     Print (L"\n");
 
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"* Halted: Press Any Key to Continue *", NEXTLINE);
 
-    if (ReadAllKeyStrokes()) {  // remove buffered key strokes
+    ClearKeystrokes = ReadAllKeyStrokes();
+    if (ClearKeystrokes) {
+        // remove buffered key strokes
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID, L"Waiting 5 Seconds");
+        #endif
+
         refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
@@ -653,7 +672,8 @@ VOID HaltForKey (
 VOID PauseForKey (
     VOID
 ) {
-    UINTN index;
+    UINTN   index;
+    BOOLEAN ClearKeystrokes;
 
     Print (L"\n");
 
@@ -670,7 +690,13 @@ VOID PauseForKey (
         refit_call1_wrapper(gBS->Stall, 3000000);
     }
     else {
-        if (ReadAllKeyStrokes()) {  // remove buffered key strokes
+        ClearKeystrokes = ReadAllKeyStrokes();
+        if (ClearKeystrokes) {
+            // remove buffered key strokes
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_THREE_STAR_MID, L"Waiting 5 Seconds");
+            #endif
+
             refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
             ReadAllKeyStrokes();    // empty the buffer again
         }
@@ -679,13 +705,18 @@ VOID PauseForKey (
     }
 
     GraphicsScreenDirty = TRUE;
-    ReadAllKeyStrokes();        // empty the buffer to protect the menu
+    // empty the buffer to protect the menu
+    ReadAllKeyStrokes();
 }
 
 // Pause a specified number of seconds
 VOID PauseSeconds (
     UINTN Seconds
 ) {
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
+    #endif
+
     refit_call1_wrapper(gBS->Stall, 1000000 * Seconds);
 } // VOID PauseSeconds()
 
@@ -718,8 +749,8 @@ VOID EndlessIdleLoop (
 //
 
 BOOLEAN CheckFatalError (
-    IN EFI_STATUS Status,
-    IN CHAR16 *where
+    IN EFI_STATUS  Status,
+    IN CHAR16     *where
 ) {
     CHAR16 *Temp = NULL;
 
@@ -758,8 +789,8 @@ BOOLEAN CheckFatalError (
 } // BOOLEAN CheckFatalError()
 
 BOOLEAN CheckError (
-    IN EFI_STATUS Status,
-    IN CHAR16 *where
+    IN EFI_STATUS  Status,
+    IN CHAR16     *where
 ) {
     CHAR16 *Temp = NULL;
 
@@ -955,8 +986,8 @@ VOID BltClearScreen (
 
 VOID BltImage (
     IN EG_IMAGE *Image,
-    IN UINTN XPos,
-    IN UINTN YPos
+    IN UINTN     XPos,
+    IN UINTN     YPos
 ) {
     egDrawImage (Image, XPos, YPos);
     GraphicsScreenDirty = TRUE;
@@ -1022,8 +1053,8 @@ VOID BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,
-    IN UINTN    XPos,
-    IN UINTN    YPos
+    IN UINTN     XPos,
+    IN UINTN     YPos
 ) {
      UINTN    TotalWidth  = 0;
      UINTN    TotalHeight = 0;

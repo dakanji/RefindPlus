@@ -1758,7 +1758,7 @@ VOID ScanInternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Internal EFI Mode Boot Loaders");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for EFI Mode Volumes");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -1776,7 +1776,7 @@ VOID ScanExternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for External EFI Mode Boot Loaders");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for EFI Mode Volumes");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -1794,7 +1794,7 @@ VOID ScanOptical (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Bootable EFI Mode Optical Disks");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Disks for EFI Mode Volumes");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -2054,7 +2054,7 @@ VOID ScanForBootloaders (
                 }
                 MsgLog ("Scan Manual:");
 
-                LOG(1, LOG_LINE_THIN_SEP, L"Scanning for User Configured Boot Stanzas");
+                LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Manually Configured Boot Stanzas");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);

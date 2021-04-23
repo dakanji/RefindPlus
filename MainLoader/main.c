@@ -1884,12 +1884,6 @@ EFI_STATUS EFIAPI efi_main (
     BltClearScreen (TRUE);
     pdInitialize();
 
-    #if REFIT_DEBUG < 1
-    // DA-TAG: Apply a 0.5 sec pause before scanning disks to the RELEASE build
-    //         This is to improve disk detection
-    refit_call1_wrapper(gBS->Stall, 500000);
-    #endif
-
     if (GlobalConfig.ScanDelay > 0) {
         if (GlobalConfig.ScanDelay > 1) {
             #if REFIT_DEBUG > 0
