@@ -459,7 +459,7 @@ EFI_STATUS FindVarsDir (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM on the filesystem ...%r",
+            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items in Installation Folder ...%r",
             Status
         );
         #endif
@@ -477,13 +477,13 @@ EFI_STATUS FindVarsDir (
 
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Locate/Create Emulated NVRAM on the ESP ...%r",
+                L"Locate/Create Emulated NVRAM in any ESP for RefindPlus-Specific Items ...%r",
                 Status
             );
 
             if (EFI_ERROR (Status)) {
                 LOG(1, LOG_LINE_NORMAL,
-                    L"Activate 'use_nvram' for RefindPlus to use Hardware NVRAM"
+                    L"ERROR: Activate 'use_nvram' to Enable Hardware NVRAM for RefindPlus-Specific Items"
                 );
             }
             #endif
