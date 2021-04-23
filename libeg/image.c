@@ -562,7 +562,7 @@ EG_IMAGE * egLoadIconAnyType (
         TmpDirName = StrDuplicate (L"\\");
     }
     LOG(3, LOG_LINE_NORMAL,
-        L"Trying to load any icon in '%s' with base name: '%s'",
+        L"Trying to load icon in '%s' with base name: '%s'",
         TmpDirName, BaseName
     );
     MyFreePool (&TmpDirName);

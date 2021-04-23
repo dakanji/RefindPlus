@@ -1995,9 +1995,6 @@ EFI_STATUS EFIAPI efi_main (
         // Set to false as may not be booting
         IsBoot = FALSE;
 
-        // Get a Clean Slate
-        ReadAllKeyStrokes();
-
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
         // The Escape key triggers a re-scan operation....
