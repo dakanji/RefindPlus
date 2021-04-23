@@ -1774,7 +1774,7 @@ EFI_STATUS EFIAPI efi_main (
 
     // Show ProtectNVRAM Status
     MsgLog ("\n");
-    if (MyStrStr (VendorInfo, L"Apple") != NULL) {
+    if (MyStrStr (VendorInfo, L"Apple") == NULL) {
         MsgLog ("      ProtectNVRAM:- 'Disabled'");
     }
     else {
