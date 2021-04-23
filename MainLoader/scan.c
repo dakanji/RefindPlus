@@ -331,7 +331,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             );
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Create a subscreen: '%s'", SubScreen->Title);
+            LOG(2, LOG_LINE_NORMAL, L"Creating subscreen: '%s'", SubScreen->Title);
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;

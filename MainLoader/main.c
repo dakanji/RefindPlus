@@ -1806,13 +1806,7 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
-        MsgLog ("INFO: Supply APFS ...");
-        if (Status == EFI_NOT_FOUND) {
-            MsgLog ("Not Required");
-        }
-        else {
-            MsgLog ("%r", Status);
-        }
+        MsgLog ("INFO: Supply APFS ...%r", Status);
         #endif
     }
     #endif
@@ -1854,7 +1848,8 @@ EFI_STATUS EFIAPI efi_main (
         Status = EFI_SUCCESS;
         MsgStr = PoolPrint (L"Restore System Table ...%r", Status);
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("INFO: %s\n\n", MsgStr);
+        MsgLog ("INFO: %s", MsgStr);
+        MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
     }
@@ -1862,7 +1857,8 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"Initialise Screen");
     LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("%s...\n", MsgStr);
+    MsgLog ("%s...", MsgStr);
+    MsgLog ("\n");
     MyFreePool (&MsgStr);
     #endif
 
