@@ -82,7 +82,7 @@ typedef struct {
     UINTN       Height;
     UINTN       PixelMode;
     UINTN       CompressMode;
-    const UINT8 *Data;
+    CONST UINT8 *Data;
     UINTN       DataLength;
 } EG_EMBEDDED_IMAGE;
 

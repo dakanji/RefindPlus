@@ -74,7 +74,7 @@ EFI_STATUS FakeCreateEventEx (
     EFI_TPL            NotifyTpl,
     EFI_EVENT_NOTIFY   NotifyFunction,
     const void        *NotifyContext,
-    const EFI_GUID    *EventGroup,
+    CONST EFI_GUID    *EventGroup,
     EFI_EVENT         *Event
 );
 
