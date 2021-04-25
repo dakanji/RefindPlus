@@ -101,7 +101,7 @@
 # is active, RefindPlus will enforce Mac OS "TRIM" on for all SSDs types
 # including on non-Apple SSDs. This setting only applies to Mac OS. Note
 # that this setting will create a Mac OS NVRAM entry the first time it is
-# triggered and that it will remain active until explicitly cleared even
+# triggered and that this will remain active until explicitly cleared even
 # if the setting is subsequently disabled. Also note that forcing "TRIM"
 # may significantly increase boot times and that enabling "TRIM" on
 # non-Apple SSDs may affect the integrity of data on such SSDs.
@@ -126,7 +126,7 @@
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
 # System Integrity Protection (SIP), restricts access to entitlements by applications.
 # This setting only applies to Mac OS. Note that this setting will create a Mac OS
-# boot argument the first time it is triggered and that it will remain active
+# boot argument the first time it is triggered and that this will remain active
 # until explicitly cleared even if the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not disable AMFI checks)
@@ -218,8 +218,8 @@
 # This setting only applies to Mac OS and accounts for arguments injected by
 # "disable_amfi" and "disable_compat_check" as required. Note that this
 # will create a Mac OS boot argument the first time it is triggered
-# and that it will remain active until explicitly cleared even if
-# the setting is subsequently disabled.
+# and that this will remain active until explicitly cleared even
+# if the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not change boot arguments)
 #
@@ -762,14 +762,14 @@
 #    filesystem title).
 # Multiple selectors may be specified by separating them with commas
 # and enclosing the list in quotes (The "+" option is only meaningful
-# in this context). If the selector(s) has two times, in 24-hour format,
+# in this context). If the selector(s) has two times in 24-hour format,
 # the default will apply only between those times. The times are in the
 # motherboard's time standard, whether that is UTC or local time, so if
-# you use UTC, you will need to adjust this from local time manually.
-# Times may span midnight as in "23:30 00:30", which applies to 11:30 PM
-# to 12:30 AM. Multiple "default_selection" lines can be specified, in which
-# case the last one to match takes precedence. Thus, a main option without a
-# time can be set followed by one or more that include times to set different
+# on UTC, adjust this from local time manually. Times may span midnight
+# as in "23:30 00:30", which applies to 11:30 PM to 12:30 AM. Multiple
+# "default_selection" lines can be specified, in which case the last
+# match takes precedence. Thus, a main option without a time can be
+# set followed by one or more that include times to set different
 # defaults for different times of day.
 #
 # Boots the previously booted loader when commented out
@@ -784,6 +784,7 @@
 # Intel Apple computers, the firmware does not lock the MSR 0x3A.
 # The symptom on Windows is "Hyper-V" not working even if the CPU
 # meets the minimum requirements (HW assisted virtualization and SLAT)
+#
 # DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
 # http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
 # for more on this subject.
@@ -884,8 +885,8 @@
 # passing a root= option to a Linux kernel.
 
 # Below are several sample boot stanzas. All are disabled by default.
-# Find one similar to what you need, copy it, remove the "disabled" line,
-# and adjust the entries to suit your needs.
+# Find one similar to what is required, copy it, remove the "disabled"
+# line, and adjust the entries to suit.
 
 # A sample entry for a Linux 3.13 kernel with EFI boot stub support
 # on a partition with a GUID of 904404F8-B481-440C-A1E3-11A5A954E601.
@@ -902,12 +903,12 @@ menuentry Linux {
 }
 
 # Below is a more complex Linux example, specifically for Arch Linux.
-# This example MUST be modified for your specific installation; if nothing
-# else, the PARTUUID code must be changed for your disk. Because Arch Linux
-# does not include version numbers in its kernel and initrd filenames, you
-# may need to use manual boot stanzas when using fallback initrds or
-# multiple kernels with Arch. This example is modified from one in the Arch
-# wiki page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
+# This example MUST be modified for each specific installation. If nothing
+# else, the PARTUUID code must be changed to match the disk in use. As Arch
+# Linux does not include version numbers in its kernel and initrd filenames,
+# manual boot stanzas may be required when using fallback initrds or multiple
+# kernels with Arch Linux. This example is modified from one in the Arch wiki
+# page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
 menuentry "Arch Linux" {
     icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"
@@ -938,9 +939,8 @@ menuentry "ELILO" {
     disabled
 }
 
-# Like the ELILO entry, this one offers nothing that auto-detection
-# cannot do; but you might use it if you want to disable auto-detection
-# but still boot Windows
+# Like the ELILO entry, this one offers nothing additional to auto-detection
+# but may be useful to disable auto-detection yet still boot Windows
 menuentry "Windows 7" {
     loader \EFI\Microsoft\Boot\bootmgfw.efi
     disabled
@@ -959,11 +959,10 @@ menuentry "Windows via shell script" {
 }
 
 # Mac OS is normally detected and run automatically; however,
-# if you want to do something unusual, a manual boot stanza may
-# be the way to do it. This one does nothing very unusual, but
-# it may serve as a starting point. Note that you will almost
-# certainly need to change the "volume" line for this example
-# to work.
+# a manual boot stanza may permit customisation. This example
+# does nothing very unusual, but may serve as a start point.
+# Note that the "volume" line will almost certainly need
+# modification for this example to work.
 menuentry "My Mac OS" {
     icon \EFI\refind\icons\os_mac.png
     volume "Mac OS boot"
