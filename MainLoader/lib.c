@@ -877,6 +877,7 @@ VOID SetFilesystemName (
         }
         Volume->FsName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
     }
+
     MyFreePool (&FileSystemInfoPtr);
 } // VOID *SetFilesystemName()
 
@@ -1382,8 +1383,11 @@ CHAR16 * GetVolumeName (
     } // if (FoundName == NULL)
 
     if (FoundName == NULL) {
-        if (MediaCheck) {
-            FoundName = StrDuplicate (L"Disc/Network Volume (Assumed)");
+        if (Volume->DiskKind == DISK_KIND_OPTICAL) {
+            FoundName = StrDuplicate (L"Optical Disc Drive");
+        }
+        else if (MediaCheck) {
+            FoundName = StrDuplicate (L"Network Volume (Assumed)");
         }
         else {
             if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
@@ -1408,7 +1412,12 @@ CHAR16 * GetVolumeName (
                 FoundName = StrDuplicate (L"Unidentified HFS+ Volume");
             }
             else if (StrLen (TypeName) > 0) {
-                FoundName = PoolPrint (L"%s Volume", TypeName);
+                if (MyStriCmp (TypeName, L"APFS")) {
+                    FoundName = StrDuplicate (L"APFS Volume (Assumed)");
+                }
+                else {
+                    FoundName = PoolPrint (L"%s Volume", TypeName);
+                }
             }
             else {
                 FoundName = StrDuplicate (L"Unknown Volume");

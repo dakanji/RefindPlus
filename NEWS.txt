@@ -10,6 +10,8 @@
   * Formatted for better readability and incorporates more key items from the native format
 - Improves "ReloadGOP" Implementation
   * Generally updated and optimised
+- Improves Volume Type Identification
+  * Optical disc drives identified and assumption for network volumes 
 
 
 0.13.2.AC (12 Apr 2021):
