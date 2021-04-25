@@ -9,6 +9,7 @@
 #define LOG_THREE_STAR_SEP   6
 #define LOG_THREE_STAR_MID   7
 #define LOG_THREE_STAR_END   8
+#define LOG_BLANK_LINE_SEP   9
 
 VOID
 DebugLog (

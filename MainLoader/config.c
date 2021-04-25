@@ -1400,7 +1400,7 @@ VOID ScanUserConfigured (
                     if (Volume->VolName) {
                         VolDesc = StrDuplicate (Volume->VolName);
 
-                        if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
+                        if (MyStrStr (VolDesc, L"Whole Disk Volume") != NULL) {
                             MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Whole Disk Volume");
                         }
@@ -1420,15 +1420,15 @@ VOID ScanUserConfigured (
                             MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"FAT Volume");
                         }
-                        else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
+                        else if (MyStrStr (VolDesc, L"Ext2 Volume") != NULL) {
                             MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext2 Volume");
                         }
-                        else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
+                        else if (MyStrStr (VolDesc, L"Ext3 Volume") != NULL) {
                             MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext3 Volume");
                         }
-                        else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
+                        else if (MyStrStr (VolDesc, L"Ext4 Volume") != NULL) {
                             MyFreePool (&VolDesc);
                             VolDesc = StrDuplicate (L"Ext4 Volume");
                         }

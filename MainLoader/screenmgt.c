@@ -159,6 +159,9 @@ VOID SetupScreen (
     static BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
+    CHAR16 *TmpStr = NULL;
+    CHAR16 *MsgStr = NULL;
+
     MsgLog ("Setup Screen...\n");
     #endif
 
@@ -227,7 +230,7 @@ VOID SetupScreen (
         ) {
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL, L"Adjusting requested screen size based on actual screen size");
-            MsgLog ("  - Increase Graphic Mode\n");
+            MsgLog ("  - Adjust Screen Size\n");
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
@@ -250,16 +253,15 @@ VOID SetupScreen (
     }
 
     if (GlobalConfig.TextOnly) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Setting text-only mode");
-        #endif
-
         // Set text mode if requested
         AllowGraphicsMode = FALSE;
         SwitchToText (FALSE);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Set Screen to Text Mode\n\n");
+        MsgStr = StrDuplicate (L"Screen Set to Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("INFO: %s", MsgStr);
+        MsgLog ("\n\n");
         #endif
     }
     else if (AllowGraphicsMode) {
@@ -267,42 +269,54 @@ VOID SetupScreen (
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
             if (!gotGraphics) {
-                MsgLog ("Prepare Graphics Mode Switch:\n");
+                MsgStr = StrDuplicate (L"Prepare Graphics Mode Switch");
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("%s:", MsgStr);
+                MsgLog ("\n");
             }
             else {
-                LOG(2, LOG_LINE_NORMAL, L"Prepare placeholder display");
-                MsgLog ("Prepare Placeholder Display:\n");
+                MsgStr = StrDuplicate (L"Prepare Placeholder Display");
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("%s:", MsgStr);
+                MsgLog ("\n");
             }
-            MsgLog ("  - Screen Vertical Resolution:- '%dpx'\n", ScreenH);
+            MyFreePool (&MsgStr);
+
+            MsgStr = PoolPrint (L"Screen Vertical Resolution:- '%dpx'", ScreenH);
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s", MsgStr);
+            MsgLog ("\n");
+            MyFreePool (&MsgStr);
             #endif
 
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"UI scaling disabled ...maintaining icon sizes");
-                MsgLog ("    * UI Scaling Disabled ...Maintain Icon Scale\n\n");
+                MsgStr = StrDuplicate (L"UI Scaling Disabled ...Maintain Icon Scale");
+                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("    * %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
-                    MsgLog ("    * HiDPI Monitor Detected ...");
+                    TmpStr = StrDuplicate (L"HiDPI Monitor Detected");
                 }
                 else {
-                    MsgLog ("    * HiDPI Monitor Flagged ...");
+                    TmpStr = StrDuplicate (L"HiDPI Monitor Flagged");
                 }
                 #endif
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL, L"Maintain previously scaled icons on HiDPI display");
-                    MsgLog ("Maintain Previously Scaled Icons)\n\n");
+                    MsgStr = PoolPrint (L"%s ...Maintain Previously Scaled Icons", TmpStr);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL, L"Doubling icon sizes on HiDPI display");
-                    MsgLog ("Scale Icons Up\n\n");
+                    MsgStr = PoolPrint (L"%s ...Scale Icons Up", TmpStr);
                     #endif
 
                     GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -312,18 +326,31 @@ VOID SetupScreen (
 
                     ScaledIcons = TRUE;
                 }
+                #if REFIT_DEBUG > 0
+                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("    * %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&TmpStr);
+                MyFreePool (&MsgStr);
+                #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Maintaining icon sizes on LoDPI display");
-                MsgLog ("    * LoDPI Monitor Detected ...Maintain Icon Scale\n\n");
+                MsgStr = StrDuplicate (L"LoDPI Monitor Detected ...Maintain Icon Scale");
+                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("    * %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
-            } // if
+            } // if GlobalConfig.ScaleUI
 
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Running Graphics Mode Switch");
-                MsgLog ("INFO: Running Graphics Mode Switch\n\n");
+                MsgStr = StrDuplicate (L"Running Graphics Mode Switch");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
 
                 // clear screen and show banner
@@ -332,8 +359,11 @@ VOID SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Loading Placeholder Display");
-                MsgLog ("INFO: Loading Placeholder Display\n\n");
+                MsgStr = StrDuplicate (L"Loading Placeholder Display");
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
             }
 
@@ -342,20 +372,31 @@ VOID SetupScreen (
 
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
-                    LOG(2, LOG_LINE_NORMAL, L"Displayed placeholder");
-                    MsgLog ("INFO: Displayed Placeholder\n\n");
+                    MsgStr = StrDuplicate (L"Displayed Placeholder");
+                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    MsgLog ("INFO: %s", MsgStr);
+                    MsgLog ("\n\n");
+                    MyFreePool (&MsgStr);
                 }
                 else {
-                    LOG(2, LOG_LINE_NORMAL, L"Switched to graphics screen mode");
-                    MsgLog ("INFO: Switch to Graphics Mode ...Success\n\n");
+                    MsgStr = StrDuplicate (L"Switch to Graphics Mode ...Success");
+                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    MsgLog ("INFO: %s", MsgStr);
+                    MsgLog ("\n\n");
+                    MyFreePool (&MsgStr);
                 }
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Configured to start with screensaver");
-                MsgLog ("INFO: Changing to Screensaver Display\n");
-                MsgLog ("      Configured to Start with Screensaver\n\n");
+                MsgLog ("INFO: Changing to Screensaver Display");
+                MsgLog ("\n");
+
+                MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
+                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                MsgLog ("      %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
 
                 // start with screen blanked
@@ -366,9 +407,11 @@ VOID SetupScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Invalid Screen Mode ... Switching to Text Mode");
-        MsgLog ("WARN: Invalid Screen Mode\n");
-        MsgLog ("      Switching to Text Mode\n\n");
+        MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        MsgLog ("WARN: %s", MsgStr);
+        MsgLog ("\n\n");
+        MyFreePool (&MsgStr);
         #endif
 
         AllowGraphicsMode     = FALSE;

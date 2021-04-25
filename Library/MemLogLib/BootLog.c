@@ -26,144 +26,142 @@ extern  INT16  NowHour;
 extern  INT16  NowMinute;
 extern  INT16  NowSecond;
 
-CHAR16  *gLogTemp       = NULL;
+CHAR16  *gLogTemp              = NULL;
 
 BOOLEAN  TimeStamp             = TRUE;
 BOOLEAN  UseMsgLog             = FALSE;
 
 
-CHAR16
-*GetAltMonth(
+CHAR16 * GetAltMonth (
     VOID
 ) {
     CHAR16  *AltMonth = NULL;
 
-    if (NowMonth == 1) {
-        AltMonth = L"b";
-    }
-    else if (NowMonth == 2) {
-        AltMonth = L"d";
-    }
-    else if (NowMonth == 3) {
-        AltMonth = L"f";
-    }
-    else if (NowMonth == 4) {
-        AltMonth = L"h";
-    }
-    else if (NowMonth == 5) {
-        AltMonth = L"j";
-    }
-    else if (NowMonth == 6) {
-        AltMonth = L"k";
-    }
-    else if (NowMonth == 7) {
-        AltMonth = L"n";
-    }
-    else if (NowMonth == 8) {
-        AltMonth = L"p";
-    }
-    else if (NowMonth == 9) {
-        AltMonth = L"r";
-    }
-    else if (NowMonth == 10) {
-        AltMonth = L"t";
-    }
-    else if (NowMonth == 11) {
-        AltMonth = L"v";
-    }
-    else {
-        AltMonth = L"x";
-    }
+    switch (NowMonth) {
+        case 1:
+            AltMonth = L"b";
+            break;
+        case 2:
+            AltMonth = L"d";
+            break;
+        case 3:
+            AltMonth = L"f";
+            break;
+        case 4:
+            AltMonth = L"h";
+            break;
+        case 5:
+            AltMonth = L"j";
+            break;
+        case 6:
+            AltMonth = L"k";
+            break;
+        case 7:
+            AltMonth = L"n";
+            break;
+        case 8:
+            AltMonth = L"p";
+            break;
+        case 9:
+            AltMonth = L"r";
+            break;
+        case 10:
+            AltMonth = L"t";
+            break;
+        case 11:
+            AltMonth = L"v";
+            break;
+        default:
+            AltMonth = L"x";
+    } // switch NowMonth
 
     return AltMonth;
 }
 
 
-CHAR16
-*GetAltHour(
+CHAR16 * GetAltHour (
     VOID
 ) {
     CHAR16  *AltHour = NULL;
 
-    if (NowHour == 0) {
-        AltHour = L"a";
-    }
-    else if (NowHour == 1) {
-        AltHour = L"b";
-    }
-    else if (NowHour == 2) {
-        AltHour = L"c";
-    }
-    else if (NowHour == 3) {
-        AltHour = L"d";
-    }
-    else if (NowHour == 4) {
-        AltHour = L"e";
-    }
-    else if (NowHour == 5) {
-        AltHour = L"f";
-    }
-    else if (NowHour == 6) {
-        AltHour = L"g";
-    }
-    else if (NowHour == 7) {
-        AltHour = L"h";
-    }
-    else if (NowHour == 8) {
-        AltHour = L"i";
-    }
-    else if (NowHour == 9) {
-        AltHour = L"j";
-    }
-    else if (NowHour == 10) {
-        AltHour = L"k";
-    }
-    else if (NowHour == 11) {
-        AltHour = L"m";
-    }
-    else if (NowHour == 12) {
-        AltHour = L"n";
-    }
-    else if (NowHour == 13) {
-        AltHour = L"p";
-    }
-    else if (NowHour == 14) {
-        AltHour = L"q";
-    }
-    else if (NowHour == 15) {
-        AltHour = L"r";
-    }
-    else if (NowHour == 16) {
-        AltHour = L"s";
-    }
-    else if (NowHour == 17) {
-        AltHour = L"t";
-    }
-    else if (NowHour == 18) {
-        AltHour = L"u";
-    }
-    else if (NowHour == 19) {
-        AltHour = L"v";
-    }
-    else if (NowHour == 20) {
-        AltHour = L"w";
-    }
-    else if (NowHour == 21) {
-        AltHour = L"x";
-    }
-    else if (NowHour == 22) {
-        AltHour = L"y";
-    }
-    else {
-        AltHour = L"z";
-    }
+    switch (NowHour) {
+        case 0:
+            AltHour = L"a";
+            break;
+        case 1:
+            AltHour = L"b";
+            break;
+        case 2:
+            AltHour = L"c";
+            break;
+        case 3:
+            AltHour = L"d";
+            break;
+        case 4:
+            AltHour = L"e";
+            break;
+        case 5:
+            AltHour = L"f";
+            break;
+        case 6:
+            AltHour = L"g";
+            break;
+        case 7:
+            AltHour = L"h";
+            break;
+        case 8:
+            AltHour = L"i";
+            break;
+        case 9:
+            AltHour = L"j";
+            break;
+        case 10:
+            AltHour = L"k";
+            break;
+        case 11:
+            AltHour = L"m";
+            break;
+        case 12:
+            AltHour = L"n";
+            break;
+        case 13:
+            AltHour = L"p";
+            break;
+        case 14:
+            AltHour = L"q";
+            break;
+        case 15:
+            AltHour = L"r";
+            break;
+        case 16:
+            AltHour = L"s";
+            break;
+        case 17:
+            AltHour = L"t";
+            break;
+        case 18:
+            AltHour = L"u";
+            break;
+        case 19:
+            AltHour = L"v";
+            break;
+        case 20:
+            AltHour = L"w";
+            break;
+        case 21:
+            AltHour = L"x";
+            break;
+        case 22:
+            AltHour = L"y";
+            break;
+        default:
+            AltHour = L"z";
+    } // switch NowHour
 
     return AltHour;
 }
 
-
-CHAR16
-*GetDateString(
+CHAR16 * GetDateString (
     VOID
 ) {
     static CHAR16  *DateStr = NULL;
@@ -189,8 +187,9 @@ CHAR16
 }
 
 
-EFI_FILE_PROTOCOL* GetDebugLogFile()
-{
+EFI_FILE_PROTOCOL * GetDebugLogFile (
+    VOID
+) {
   EFI_STATUS          Status;
   EFI_LOADED_IMAGE    *LoadedImage;
   EFI_FILE_PROTOCOL   *RootDir;
@@ -276,8 +275,7 @@ EFI_FILE_PROTOCOL* GetDebugLogFile()
 }
 
 
-VOID SaveMessageToDebugLogFile(IN CHAR8 *LastMessage)
-{
+VOID SaveMessageToDebugLogFile (IN CHAR8 *LastMessage) {
   static BOOLEAN           FirstTimeSave = TRUE;
   CHAR8                   *MemLogBuffer;
   UINTN                    MemLogLen;
@@ -335,15 +333,15 @@ DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Message
 ) {
-#if REFIT_DEBUG < 1
-    // FreePool and return in RELEASE builds
-    if (*Message) {
-        FreePool (*Message);
-        *Message = NULL;
-    }
-#else
     CHAR8   FormatString[255];
     CHAR16 *FinalMessage = NULL;
+
+#if REFIT_DEBUG < 1
+    // FreePool and return in RELEASE builds
+    MyFreePool (*Message);
+
+    return;
+#endif
 
     // Make sure we are able to write
     if (DebugMode < 1 ||
@@ -351,10 +349,7 @@ DeepLoggger (
         GlobalConfig.LogLevel < level ||
         !(*Message)
     ) {
-        if (*Message) {
-            FreePool (*Message);
-            *Message = NULL;
-        }
+        MyFreePool (*Message);
 
         return;
     }
@@ -363,6 +358,9 @@ DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
+        case LOG_BLANK_LINE_SEP:
+            FinalMessage = StrDuplicate (L"\n");
+            break;
         case LOG_STAR_HEAD_SEP:
             FinalMessage = PoolPrint (L"\n              ***[ %s\n", *Message);
             break;
@@ -408,7 +406,6 @@ DeepLoggger (
 
     MyFreePool (*Message);
     MyFreePool (&FinalMessage);
-#endif
 }
 
 
@@ -447,7 +444,7 @@ DebugLog(
 #endif
 }
 
-VOID InitBooterLog(
+VOID InitBooterLog (
     VOID
 ) {
   SetMemLogCallback(MemLogCallback);

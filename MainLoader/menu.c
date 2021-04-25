@@ -1967,7 +1967,7 @@ UINTN WaitForInput (UINTN Timeout) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Waiting ... Timeout=%d", Timeout);
+    LOG(4, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
     #endif
 
     Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);

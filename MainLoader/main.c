@@ -1299,7 +1299,7 @@ BOOLEAN SecureBootSetup (
 
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL, ShowScreenStr)
-            MsgLog ("** WARN: %s\n---------------\n\n", ShowScreenStr);
+            MsgLog ("** WARN: %s\n-----------------\n\n", ShowScreenStr);
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -1332,7 +1332,7 @@ BOOLEAN SecureBootUninstall (VOID) {
             ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Shutdown in 9 Seconds";
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+            MsgLog ("%s\n-----------------\n\n", ShowScreenStr);
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -1797,6 +1797,16 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
+    // Show IgnorePreviousBoot Status
+    MsgLog ("\n");
+    MsgLog ("      IgnorePreviousBoot:- ");
+    if (GlobalConfig.IgnorePreviousBoot) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
     #endif
 
     #ifdef __MAKEWITH_TIANO
@@ -2014,7 +2024,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Clean NVRAM\n---------------\n\n");
+                    MsgLog ("  - Clean NVRAM\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Clean NVRAM\n\n");
@@ -2049,7 +2059,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL, L"Reseting System");
 
-                    MsgLog ("Reseting System\n---------------\n\n");
+                    MsgLog ("Reseting System\n-----------------\n\n");
                     #endif
 
                     refit_call4_wrapper(
@@ -2081,7 +2091,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Load Apple Boot Screen\n---------------\n\n");
+                    MsgLog ("  - Load Apple Boot Screen\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Load Apple Boot Screen\n\n");
@@ -2109,7 +2119,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Restart Computer\n---------------\n\n");
+                    MsgLog ("  - Restart Computer\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Restart Computer\n\n");
@@ -2142,7 +2152,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Shut Computer Down\n---------------\n\n");
+                    MsgLog ("  - Shut Computer Down\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Shut Computer Down\n\n");
@@ -2345,7 +2355,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("\n---------------\n\n");
+                MsgLog ("\n-----------------\n\n");
                 #endif
 
                 StartLoader (ourLoaderEntry, SelectionName);
@@ -2391,7 +2401,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("\n---------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("\n\n");
@@ -2415,7 +2425,7 @@ EFI_STATUS EFIAPI efi_main (
                 MyFreePool (&MsgStr);
 
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("\n---------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("\n\n");
@@ -2451,7 +2461,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Reboot into Loader\n---------------\n\n");
+                MsgLog ("  - Reboot into Loader\n-----------------\n\n");
                 #endif
 
                 RebootIntoLoader ((LOADER_ENTRY *) ChosenEntry);
@@ -2478,7 +2488,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Terminate RefindPlus\n---------------\n\n");
+                    MsgLog ("  - Terminate RefindPlus\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Terminate RefindPlus\n\n");
@@ -2499,7 +2509,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Reboot into Firmware\n---------------\n\n");
+                    MsgLog ("  - Reboot into Firmware\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Reboot into Firmware\n\n");
@@ -2524,7 +2534,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Install RefindPlus\n---------------\n\n");
+                    MsgLog ("  - Install RefindPlus\n-----------------\n\n");
                 }
                 else {
                     MsgLog ("  - Install RefindPlus\n\n");
@@ -2596,7 +2606,7 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("%s\n---------------\n\n", ShowScreenStr);
+    MsgLog ("%s\n-----------------\n\n", ShowScreenStr);
     #endif
 
     MyFreePool (&ShowScreenStr);

@@ -117,14 +117,14 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 
 
 ## Syncing Your Repositories with Upstream Repositories
-### Sync with the RepoUpdater Script (Recommended)
+### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
 - Drag the `RepoUpdater.sh` file into Terminal
 - Press `Enter`
 
 **NB:** If you get an error after running the script, try running it again as subsequent runs should realign things. If the script still fails after a fourth attempt, use the manual sync steps outlined below instead.
 
-### Sync Manually
+### OPTION 2: Manual Sync
 #### RefindPlusUDK
 In Terminal, run the following commands:
 

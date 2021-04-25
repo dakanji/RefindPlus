@@ -355,7 +355,7 @@ EFI_STATUS egDumpGOPVideoModes (
                         break;
                 }
 
-                if (LoopCount < MaxMode) {
+                if (LoopCount < MaxMode - 1) {
                     MsgLog (
                         " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
                         Info->HorizontalResolution,
@@ -607,7 +607,7 @@ EFI_STATUS egSetMaxResolution (
         BestMode, Width, Height
     );
     LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("  - %s\n\n", MsgStr);
+    MsgLog ("  - %s\n", MsgStr);
     MyFreePool (&MsgStr);
     #endif
 
@@ -618,7 +618,7 @@ EFI_STATUS egSetMaxResolution (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Screen Resolution Already Set");
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("INFO: %s\n\n", MsgStr);
+        MsgLog ("%s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -626,10 +626,6 @@ EFI_STATUS egSetMaxResolution (
         egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
     }
     else {
-        #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        #endif
-
         Status = GopSetModeAndReconnectTextOut (BestMode);
         if (!EFI_ERROR (Status)) {
             egScreenWidth  = Width;

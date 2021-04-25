@@ -810,7 +810,7 @@ CHAR16 * FSTypeName (
 
    switch (TypeCode) {
       case FS_TYPE_WHOLEDISK:
-         retval = L"whole disk";
+         retval = L"Whole Disk";
          break;
       case FS_TYPE_FAT:
          retval = L"FAT";
@@ -819,13 +819,13 @@ CHAR16 * FSTypeName (
          retval = L"HFS+";
          break;
       case FS_TYPE_EXT2:
-         retval = L"ext2";
+         retval = L"Ext2";
          break;
       case FS_TYPE_EXT3:
-         retval = L"ext3";
+         retval = L"Ext3";
          break;
       case FS_TYPE_EXT4:
-         retval = L"ext4";
+         retval = L"Ext4";
          break;
       case FS_TYPE_REISERFS:
          retval = L"ReiserFS";
@@ -1914,14 +1914,16 @@ VOID ScanVolumes (
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
     CHAR16  *VolDesc;
+    CHAR16  *PartType;
     CHAR16  *PartGUID;
     CHAR16  *PartTypeGUID;
 
     CONST CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
     CONST CHAR16 *ITEMVOLB = L"VOLUME GUID";
-    CONST CHAR16 *ITEMVOLC = L"VOLUME ID";
+    CONST CHAR16 *ITEMVOLC = L"VOLUME TYPE";
+    CONST CHAR16 *ITEMVOLD = L"VOLUME ID";
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Volumes");
+    LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
 
     MyFreePool (&Volumes);
@@ -1941,7 +1943,9 @@ VOID ScanVolumes (
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"ERROR: %r While Listing File Systems", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-        MsgLog ("\n\n%s\n\n", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("%s", MsgStr);
+        MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
 
@@ -1962,7 +1966,9 @@ VOID ScanVolumes (
 
         MsgStr = PoolPrint (L"ERROR: %r While Allocating UuidList", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-        MsgLog ("\n\n%s\n\n", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("%s", MsgStr);
+        MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
 
@@ -1984,7 +1990,9 @@ VOID ScanVolumes (
 
             MsgStr = PoolPrint (L"ERROR: %r While Allocating Volumes", Status);
             LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-            MsgLog ("\n\n%s\n\n", MsgStr);
+            MsgLog ("\n\n");
+            MsgLog ("%s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
 
@@ -2033,6 +2041,10 @@ VOID ScanVolumes (
                 if ((HandleIndex % 5) == 0 &&
                     (HandleCount - HandleIndex) > 2
                 ) {
+                    if (GlobalConfig.LogLevel == 2) {
+                        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+                    }
+
                     MsgLog ("\n\n");
                 }
                 else {
@@ -2044,7 +2056,7 @@ VOID ScanVolumes (
             PartGUID     = GuidAsString (&Volume->PartGuid);
             PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
 
-            if (MyStrStr (VolDesc, L"whole disk Volume") != NULL) {
+            if (MyStrStr (VolDesc, L"Whole Disk Volume") != NULL) {
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Whole Disk Volume");
             }
@@ -2064,15 +2076,15 @@ VOID ScanVolumes (
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"FAT Volume");
             }
-            else if (MyStrStr (VolDesc, L"ext2 Volume") != NULL) {
+            else if (MyStrStr (VolDesc, L"Ext2 Volume") != NULL) {
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext2 Volume");
             }
-            else if (MyStrStr (VolDesc, L"ext3 Volume") != NULL) {
+            else if (MyStrStr (VolDesc, L"Ext3 Volume") != NULL) {
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext3 Volume");
             }
-            else if (MyStrStr (VolDesc, L"ext4 Volume") != NULL) {
+            else if (MyStrStr (VolDesc, L"Ext4 Volume") != NULL) {
                 MyFreePool (&VolDesc);
                 VolDesc = StrDuplicate (L"Ext4 Volume");
             }
@@ -2093,20 +2105,24 @@ VOID ScanVolumes (
                 VolDesc = StrDuplicate (L"ISO-9660 Volume");
             }
 
+            PartType = StrDuplicate (FSTypeName (Volume->FSType));
+            LimitStringLength (PartType, 10);
             LOG(2, LOG_LINE_NORMAL,
-                L"Identified Volume: GUID = %s ... Type = %s ... Name = %s",
-                PartGUID,
-                FSTypeName (Volume->FSType),
-                VolDesc
+                L"Identified Volume:  %s = %s  :  %s = %s  :  %s = %-10s  :  %s = %s",
+                ITEMVOLA, PartTypeGUID,
+                ITEMVOLB, PartGUID,
+                ITEMVOLC, PartType,
+                ITEMVOLD, VolDesc
             );
 
             if (!DoneHeadings) {
-                MsgLog ("%-41s%-41s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC);
+                MsgLog ("%-41s%-41s%-15s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
                 DoneHeadings = TRUE;
             }
-            MsgLog ("%s  :  %s  :  %s", PartTypeGUID, PartGUID, VolDesc);
+            MsgLog ("%s  :  %s  :  %-10s  :  %s", PartTypeGUID, PartGUID, PartType, VolDesc);
 
             MyFreePool (&VolDesc);
+            MyFreePool (&PartType);
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
 
@@ -2145,7 +2161,7 @@ VOID ScanVolumes (
     else {
         #if REFIT_DEBUG > 0
         MsgLog ("\n");
-        MsgLog ("%-41s%-41s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC);
+        MsgLog ("%-41s%-41s%-15s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
         MsgLog ("\n\n");
         #endif
     }

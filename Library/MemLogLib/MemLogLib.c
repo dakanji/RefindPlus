@@ -92,10 +92,10 @@ GetTiming(VOID)
             NULL
         );
 		dTStartSec = DivU64x64Remainder(dTStartMs, 1000, &dTStartMs);
-        // Limit logged value to 999
+        // Limit logged value to 9999
         UINT64 dTStartSecLog;
-        if (dTStartSec > 999) {
-            dTStartSecLog = 999;
+        if (dTStartSec > 9999) {
+            dTStartSecLog = 9999;
         }
         else {
             dTStartSecLog = dTStartSec;
@@ -113,8 +113,8 @@ GetTiming(VOID)
 
         // Limit logged value to 999
         UINT64 dTLastSecLog;
-        if (dTLastSec > 999) {
-            dTLastSecLog = 999;
+        if (dTLastSec > 9999) {
+            dTLastSecLog = 9999;
         }
         else {
             dTLastSecLog = dTLastSec;
@@ -123,7 +123,7 @@ GetTiming(VOID)
 		AsciiSPrint(
             mTimingTxt,
             sizeof (mTimingTxt),
-            "%3ld:%03ld %3ld:%03ld",
+            "%4ld:%03ld %4ld:%03ld",
             dTStartSecLog,
             dTStartMs,
             dTLastSecLog,

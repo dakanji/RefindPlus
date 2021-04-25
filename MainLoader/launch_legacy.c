@@ -662,17 +662,17 @@ LEGACY_ENTRY * AddLegacyEntry (
     } // if
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
+    UINTN LogLineType;
+    if (FirstLegacyScan) {
+        LogLineType = LOG_THREE_STAR_MID;
+    }
+    else {
+        LogLineType = LOG_STAR_HEAD_SEP;
+    }
+    LOG(1, LogLineType,
         L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
     );
-    if (FirstLegacyScan) {
-        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr );
-    }
-    else {
-        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr );
-    }
-    MyFreePool (&MsgStr);
     #endif
 
     // prepare the menu entry
@@ -825,14 +825,14 @@ VOID ScanLegacyUEFI (
     BOOLEAN                   SearchingForUsb = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = StrDuplicate (L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
+    UINTN LogLineType;
     if (FirstLegacyScan) {
-        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr );
+        LogLineType = LOG_THREE_STAR_MID;
     }
     else {
-        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr );
+        LogLineType = LOG_STAR_HEAD_SEP;
     }
-    MyFreePool (&MsgStr);
+    LOG(1, LogLineType, L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
     #endif
 
     InitializeListHead (&TempList);
