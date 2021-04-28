@@ -11,7 +11,9 @@
 - Improves "ReloadGOP" Implementation
   * Generally updated and optimised
 - Improves Volume Type Identification
-  * Optical disc drives identified and assumption for network volumes 
+  * Optical disc drives identified and assumption for network volumes
+- Improves Detection of Previously Set NVRAM Variables
+  * This helps further reduce unnecessary NVRAM writes
 
 
 0.13.2.AC (12 Apr 2021):
