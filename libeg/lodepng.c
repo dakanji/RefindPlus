@@ -4103,15 +4103,15 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h, LodePNGState* state,
   /*read the values given in the header*/
   width  = lodepng_read32bitInt(&in[16]);
   /* Sanitise  width */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (width > 5000) {
+  // DA-TAG: Initial arbitrary large value (8k). Needs review
+  if (width > 7680) {
       CERROR_RETURN_ERROR(state->error, 28);
   }
 
   height = lodepng_read32bitInt(&in[20]);
   /* Sanitise height */
-  // DA-TAG: Initial arbitrary large value. Needs review
-  if (height > 5000) {
+  // DA-TAG: Initial arbitrary large value (8k). Needs review
+  if (height > 7680) {
       CERROR_RETURN_ERROR(state->error, 28);
   }
 
