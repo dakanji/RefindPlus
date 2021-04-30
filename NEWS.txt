@@ -9,6 +9,9 @@
 - Fixes "DisplaySimpleMessage"
   * Messages were not actually being displayed
   * This bug was introduced in v0.13.2.AA (Commit 183e83e)
+- Fixes *.icns Transparency
+  * The Alpha Channel was defaulting to opaque black
+  * This bug was introduced in v0.13.2.AA (Commit de49af5)
 - Improves Upstream Logging Format and Coverage
   * Formatted for better readability and incorporates more key items from the native format
 - Improves "ReloadGOP" Implementation

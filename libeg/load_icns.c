@@ -260,7 +260,7 @@ EG_IMAGE * egDecodeICNS (
     }
 
     // Handle Alpha
-    if (WantAlpha && MaskPtr == NULL && MaskLen >= PixelCount) {
+    if (WantAlpha && MaskPtr != NULL && MaskLen >= PixelCount) {
         // Add Alpha Mask if Available, Valid and Required
         egInsertPlane (MaskPtr, PLPTR(NewImage, a), PixelCount);
     }
