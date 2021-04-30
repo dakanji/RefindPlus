@@ -2063,6 +2063,7 @@ VOID DisplaySimpleMessage (
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     HideItemMenu.Title      = Title;
 
+    AddMenuInfoLine (&HideItemMenu, Message);
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
@@ -2135,16 +2136,23 @@ VOID SaveHiddenList(
     IN CHAR16 *VarName
 ) {
     EFI_STATUS Status;
-    UINTN      i;
-    i = HiddenList ? StrLen(HiddenList) : 0;
+    UINTN      ListLen;
 
-    Status = EfivarSetRaw (
-        &RefindPlusGuid,
-        VarName,
-        (CHAR8 *) HiddenList,
-        i * 2 + 2 * (i > 0),
-        TRUE
-    );
+    if (!HiddenList || !VarName) {
+        // Prevent NULL dererencing
+        Status = EFI_NOT_READY;
+    }
+    else {
+        ListLen = StrLen (HiddenList);
+
+        Status = EfivarSetRaw (
+            &RefindPlusGuid,
+            VarName,
+            (CHAR8 *) HiddenList,
+            ListLen * 2 + 2 * (ListLen > 0),
+            TRUE
+        );
+    }
 
     CheckError(Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()

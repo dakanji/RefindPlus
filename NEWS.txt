@@ -6,6 +6,9 @@
 - Fixes HiddenLegacy Handling
   * HiddenLegacy tags were not being handled when scanning for bootloaders
   * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
+- Fixes "DisplaySimpleMessage"
+  * Messages were not actually being displayed
+  * This bug was introduced in v0.13.2.AA (Commit 183e83e)
 - Improves Upstream Logging Format and Coverage
   * Formatted for better readability and incorporates more key items from the native format
 - Improves "ReloadGOP" Implementation
