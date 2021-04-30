@@ -88,8 +88,9 @@ VOID egRawCompose(
     IN     UINTN    TopLineOffset
 );
 
-#define  PLPTR(imagevar, colorname) ((UINT8 *) &((imagevar)->PixelData->colorname))
-#define PLPTRX(imagevar, colorname) ( ((UINT8 *)((imagevar)->PixelData)) + MY_OFFSET_OF(EG_PIXEL, colorname) )
+// DA-TAG: Modify PLPTR Macro
+//#define  PLPTR(imagevar, colorname) ((UINT8 *) &((imagevar)->PixelData->colorname))
+#define PLPTR(imagevar, colorname) ( ((UINT8 *)((imagevar)->PixelData)) + MY_OFFSET_OF(EG_PIXEL, colorname) )
 
 VOID egDecompressIcnsRLE(
     IN OUT UINT8 **CompData,
