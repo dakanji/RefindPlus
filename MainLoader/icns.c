@@ -129,9 +129,9 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id) {
 // egFindIcon()).
 // Returns image data. On failure, returns an ugly "dummy" icon.
 EG_IMAGE * LoadOSIcon(
-    IN CHAR16 *OSIconName OPTIONAL,
-    IN CHAR16 *FallbackIconName,
-    BOOLEAN BootLogo
+    IN  CHAR16  *OSIconName OPTIONAL,
+    IN  CHAR16  *FallbackIconName,
+    IN  BOOLEAN  BootLogo
 ) {
     EG_IMAGE        *Image = NULL;
     CHAR16          *CutoutName, *BaseName;
@@ -196,7 +196,7 @@ EG_IMAGE * DummyImage (
     IN UINTN PixelSize
 ) {
     EG_IMAGE        *Image;
-    UINTN           x, y, LineOffset;
+    UINTN            x, y, LineOffset;
     CHAR8           *Ptr, *YPtr;
 
     Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BlackPixel);

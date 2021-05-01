@@ -196,24 +196,24 @@ extern BOOLEAN AptioWarn;
  * modifications by Roderick Smith are GPLv3.
  */
 EFI_STATUS LibScanHandleDatabase (
-    EFI_HANDLE           DriverBindingHandle,
+    EFI_HANDLE            DriverBindingHandle,
     OPTIONAL UINT32      *DriverBindingHandleIndex,
-    OPTIONAL EFI_HANDLE  ControllerHandle,
+    OPTIONAL EFI_HANDLE   ControllerHandle,
     OPTIONAL UINT32      *ControllerHandleIndex,
     OPTIONAL UINTN       *HandleCount,
     EFI_HANDLE           **HandleBuffer,
     UINT32               **HandleType
 ) {
-    EFI_STATUS                          Status;
-    UINTN                               HandleIndex;
-    EFI_GUID                            **ProtocolGuidArray;
-    UINTN                               ArrayCount;
-    UINTN                               ProtocolIndex;
-    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY *OpenInfo;
-    UINTN                               OpenInfoCount;
-    UINTN                               OpenInfoIndex;
-    UINTN                               ChildIndex;
-    BOOLEAN                             DriverBindingHandleIndexValid;
+    EFI_STATUS                             Status;
+    UINTN                                  HandleIndex;
+    EFI_GUID                             **ProtocolGuidArray;
+    UINTN                                  ArrayCount;
+    UINTN                                  ProtocolIndex;
+    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
+    UINTN                                  OpenInfoCount;
+    UINTN                                  OpenInfoIndex;
+    UINTN                                  ChildIndex;
+    BOOLEAN                                DriverBindingHandleIndexValid;
 
     DriverBindingHandleIndexValid = FALSE;
     if (DriverBindingHandleIndex != NULL) {
@@ -419,16 +419,16 @@ Error:
 EFI_STATUS ConnectAllDriversToAllControllers(
     IN BOOLEAN ResetGOP
 ) {
-    EFI_STATUS  Status;
-    UINTN       AllHandleCount;
+    EFI_STATUS   Status;
+    UINTN        AllHandleCount;
     EFI_HANDLE  *AllHandleBuffer;
-    UINTN       Index;
-    UINTN       HandleCount;
+    UINTN        Index;
+    UINTN        HandleCount;
     EFI_HANDLE  *HandleBuffer;
     UINT32      *HandleType;
-    UINTN       HandleIndex;
-    BOOLEAN     Parent;
-    BOOLEAN     Device;
+    UINTN        HandleIndex;
+    BOOLEAN      Parent;
+    BOOLEAN      Device;
 
     Status = LibLocateHandle(
         AllHandles,
@@ -523,16 +523,16 @@ EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN ResetGOP) {
 VOID ConnectFilesystemDriver(
     EFI_HANDLE DriverHandle
 ) {
-    EFI_STATUS                            Status;
-    UINTN                                 HandleCount = 0;
-    UINTN                                 Index;
-    UINTN                                 OpenInfoIndex;
+    EFI_STATUS                             Status;
+    UINTN                                  HandleCount = 0;
+    UINTN                                  Index;
+    UINTN                                  OpenInfoIndex;
     EFI_HANDLE                            *Handles = NULL;
     MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *Fs;
     MY_EFI_BLOCK_IO_PROTOCOL              *BlockIo;
     EFI_OPEN_PROTOCOL_INFORMATION_ENTRY   *OpenInfo;
-    UINTN                                 OpenInfoCount;
-    EFI_HANDLE                            DriverHandleList[2];
+    UINTN                                  OpenInfoCount;
+    EFI_HANDLE                             DriverHandleList[2];
 
     //
     // Get all DiskIo handles
@@ -632,11 +632,11 @@ static
 UINTN ScanDriverDir (
     IN CHAR16 *Path
 ) {
-    EFI_STATUS      Status;
-    REFIT_DIR_ITER  DirIter;
+    EFI_STATUS       Status;
+    REFIT_DIR_ITER   DirIter;
     EFI_FILE_INFO   *DirEntry;
     CHAR16          *FileName;
-    UINTN           NumFound  = 0;
+    UINTN            NumFound  = 0;
 
     CleanUpPathNameSlashes(Path);
 
@@ -734,10 +734,10 @@ BOOLEAN LoadDrivers(
 ) {
     CHAR16  *Directory;
     CHAR16  *SelfDirectory;
-    UINTN   Length;
-    UINTN   i        = 0;
-    UINTN   NumFound = 0;
-    UINTN   CurFound = 0;
+    UINTN    Length;
+    UINTN    i        = 0;
+    UINTN    NumFound = 0;
+    UINTN    CurFound = 0;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Loading Drivers");

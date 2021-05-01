@@ -1,13 +1,13 @@
 /*++
 
-Copyright (c) 2004, Intel Corporation                                                         
-All rights reserved. This program and the accompanying materials                          
-are licensed and made available under the terms and conditions of the BSD License         
-which accompanies this distribution.  The full text of the license may be found at        
-http://opensource.org/licenses/bsd-license.php                                            
+Copyright (c) 2004, Intel Corporation
+All rights reserved. This program and the accompanying materials
+are licensed and made available under the terms and conditions of the BSD License
+which accompanies this distribution.  The full text of the license may be found at
+http://opensource.org/licenses/bsd-license.php
 
-THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,                     
-WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.             
+THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 Module Name:
 
@@ -55,7 +55,7 @@ RefreshRate           - Current video refresh rate in Hz.
 
 Returns:
 EFI_SUCCESS     - Mode information returned.
-EFI_NOT_STARTED - Video display is not initialized. Call SetMode () 
+EFI_NOT_STARTED - Video display is not initialized. Call SetMode ()
 EFI_INVALID_PARAMETER - One of the input args was NULL.
 
 --*/
@@ -84,7 +84,7 @@ RefreshRate           - Current video refresh rate in Hz.
 
 Returns:
 EFI_SUCCESS     - Mode information returned.
-EFI_NOT_STARTED - Video display is not initialized. Call SetMode () 
+EFI_NOT_STARTED - Video display is not initialized. Call SetMode ()
 
 --*/
 ;
@@ -128,30 +128,30 @@ EFI_STATUS
 
 Routine Description:
 The following table defines actions for BltOperations:
-EfiUgaVideoFill - Write data from the  BltBuffer pixel (SourceX, SourceY) 
-directly to every pixel of the video display rectangle 
-(DestinationX, DestinationY) (DestinationX + Width, DestinationY + Height). 
+EfiUgaVideoFill - Write data from the  BltBuffer pixel (SourceX, SourceY)
+directly to every pixel of the video display rectangle
+(DestinationX, DestinationY) (DestinationX + Width, DestinationY + Height).
 Only one pixel will be used from the BltBuffer. Delta is NOT used.
-EfiUgaVideoToBltBuffer - Read data from the video display rectangle 
-(SourceX, SourceY) (SourceX + Width, SourceY + Height) and place it in 
-the BltBuffer rectangle (DestinationX, DestinationY ) 
-(DestinationX + Width, DestinationY + Height). If DestinationX or 
-DestinationY is not zero then Delta must be set to the length in bytes 
+EfiUgaVideoToBltBuffer - Read data from the video display rectangle
+(SourceX, SourceY) (SourceX + Width, SourceY + Height) and place it in
+the BltBuffer rectangle (DestinationX, DestinationY )
+(DestinationX + Width, DestinationY + Height). If DestinationX or
+DestinationY is not zero then Delta must be set to the length in bytes
 of a row in the BltBuffer.
-EfiUgaBltBufferToVideo - Write data from the  BltBuffer rectangle 
-(SourceX, SourceY) (SourceX + Width, SourceY + Height) directly to the 
-video display rectangle (DestinationX, DestinationY) 
-(DestinationX + Width, DestinationY + Height). If SourceX or SourceY is 
-not zero then Delta must be set to the length in bytes of a row in the 
+EfiUgaBltBufferToVideo - Write data from the  BltBuffer rectangle
+(SourceX, SourceY) (SourceX + Width, SourceY + Height) directly to the
+video display rectangle (DestinationX, DestinationY)
+(DestinationX + Width, DestinationY + Height). If SourceX or SourceY is
+not zero then Delta must be set to the length in bytes of a row in the
 BltBuffer.
 EfiUgaVideoToVideo - Copy from the video display rectangle (SourceX, SourceY)
-(SourceX + Width, SourceY + Height) .to the video display rectangle 
-(DestinationX, DestinationY) (DestinationX + Width, DestinationY + Height). 
+(SourceX + Width, SourceY + Height) .to the video display rectangle
+(DestinationX, DestinationY) (DestinationX + Width, DestinationY + Height).
 The BltBuffer and Delta  are not used in this mode.
 
 Arguments:
 This          - Protocol instance pointer.
-BltBuffer     - Buffer containing data to blit into video buffer. This 
+BltBuffer     - Buffer containing data to blit into video buffer. This
 buffer has a size of Width*Height*sizeof (EFI_UGA_PIXEL)
 BltOperation  - Operation to perform on BlitBuffer and video memory
 SourceX       - X coordinate of source for the BltBuffer.
@@ -165,7 +165,7 @@ Delta         -
 Returns:
 EFI_SUCCESS           - The Blt operation completed.
 EFI_INVALID_PARAMETER - BltOperation is not valid.
-EFI_DEVICE_ERROR      - A hardware error occured writting to the video 
+EFI_DEVICE_ERROR      - A hardware error occured writting to the video
 buffer.
 
 --*/

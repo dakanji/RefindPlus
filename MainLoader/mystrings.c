@@ -614,17 +614,21 @@ BOOLEAN IsGuid(CHAR16 *UnknownString) {
 // Return the GUID as a string, suitable for display to the user. Note that the calling
 // function is responsible for freeing the allocated memory.
 CHAR16 * GuidAsString(EFI_GUID *GuidData) {
-   CHAR16 *TheString;
+    CHAR16 *TheString;
 
-   TheString = AllocateZeroPool(42 * sizeof (CHAR16));
-   if (GuidData && (TheString != 0)) {
-      SPrint (TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-              (UINTN)GuidData->Data1, (UINTN)GuidData->Data2, (UINTN)GuidData->Data3,
-              (UINTN)GuidData->Data4[0], (UINTN)GuidData->Data4[1], (UINTN)GuidData->Data4[2],
-              (UINTN)GuidData->Data4[3], (UINTN)GuidData->Data4[4], (UINTN)GuidData->Data4[5],
-              (UINTN)GuidData->Data4[6], (UINTN)GuidData->Data4[7]);
-   }
-   return TheString;
+    TheString = AllocateZeroPool(42 * sizeof (CHAR16));
+
+    if (GuidData && (TheString != 0)) {
+        SPrint (
+            TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+            (UINTN) GuidData->Data1,    (UINTN) GuidData->Data2,    (UINTN) GuidData->Data3,
+            (UINTN) GuidData->Data4[0], (UINTN) GuidData->Data4[1], (UINTN )GuidData->Data4[2],
+            (UINTN) GuidData->Data4[3], (UINTN) GuidData->Data4[4], (UINTN) GuidData->Data4[5],
+            (UINTN) GuidData->Data4[6], (UINTN) GuidData->Data4[7]
+        );
+    }
+
+    return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
 
 EFI_GUID StringAsGuid(CHAR16 *InString) {
@@ -634,17 +638,17 @@ EFI_GUID StringAsGuid(CHAR16 *InString) {
         return Guid;
     }
 
-    Guid.Data1 = (UINT32) StrToHex(InString, 0, 8);
-    Guid.Data2 = (UINT16) StrToHex(InString, 9, 4);
-    Guid.Data3 = (UINT16) StrToHex(InString, 14, 4);
-    Guid.Data4[0] = (UINT8) StrToHex(InString, 19, 2);
-    Guid.Data4[1] = (UINT8) StrToHex(InString, 21, 2);
-    Guid.Data4[2] = (UINT8) StrToHex(InString, 23, 2);
-    Guid.Data4[3] = (UINT8) StrToHex(InString, 26, 2);
-    Guid.Data4[4] = (UINT8) StrToHex(InString, 28, 2);
-    Guid.Data4[5] = (UINT8) StrToHex(InString, 30, 2);
-    Guid.Data4[6] = (UINT8) StrToHex(InString, 32, 2);
-    Guid.Data4[7] = (UINT8) StrToHex(InString, 34, 2);
+    Guid.Data1    = (UINT32) StrToHex(InString,  0, 8);
+    Guid.Data2    = (UINT16) StrToHex(InString,  9, 4);
+    Guid.Data3    = (UINT16) StrToHex(InString, 14, 4);
+    Guid.Data4[0] =  (UINT8) StrToHex(InString, 19, 2);
+    Guid.Data4[1] =  (UINT8) StrToHex(InString, 21, 2);
+    Guid.Data4[2] =  (UINT8) StrToHex(InString, 23, 2);
+    Guid.Data4[3] =  (UINT8) StrToHex(InString, 26, 2);
+    Guid.Data4[4] =  (UINT8) StrToHex(InString, 28, 2);
+    Guid.Data4[5] =  (UINT8) StrToHex(InString, 30, 2);
+    Guid.Data4[6] =  (UINT8) StrToHex(InString, 32, 2);
+    Guid.Data4[7] =  (UINT8) StrToHex(InString, 34, 2);
 
     return Guid;
 } // EFI_GUID StringAsGuid()
@@ -653,9 +657,9 @@ EFI_GUID StringAsGuid(CHAR16 *InString) {
 // Discards date portion, since for our purposes, we really don't care.
 // Calling function is responsible for releasing returned string.
 CHAR16 * GetTimeString(VOID) {
-    CHAR16  *TimeStr = NULL;
-    EFI_TIME CurrentTime;
-    EFI_STATUS Status = EFI_SUCCESS;
+    CHAR16     *TimeStr = NULL;
+    EFI_TIME    CurrentTime;
+    EFI_STATUS  Status = EFI_SUCCESS;
 
     Status = refit_call2_wrapper(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
     if (EFI_ERROR(Status)) {
@@ -677,9 +681,9 @@ VOID DeleteStringList(STRING_LIST *StringList) {
     STRING_LIST *Current = StringList, *Previous;
 
     while (Current != NULL) {
-        MyFreePool (&Current->Value);
+        MyFreePool (&(Current->Value));
         Previous = Current;
-        Current = Current->Next;
+        Current  = Current->Next;
         MyFreePool (&Previous);
     }
 } // VOID DeleteStringList()
@@ -687,7 +691,7 @@ VOID DeleteStringList(STRING_LIST *StringList) {
 // Convert Unicode String To Ascii String
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16  *StrCHAR16,
-    OUT CHAR8   ArrCHAR8[256]
+    OUT CHAR8    ArrCHAR8[256]
 ) {
     UINTN k = -1;
     UINTN i = -1;

@@ -42,10 +42,10 @@ CHAR16 *gCsrStatus = NULL;
 EFI_STATUS GetCsrStatus (
     UINT32 *CsrStatus
 ) {
-    UINTN      CsrLength;
-    UINT32     *ReturnValue = NULL;
-    EFI_GUID   CsrGuid      = APPLE_GUID;
-    EFI_STATUS Status       = EFI_INVALID_PARAMETER;
+    UINTN       CsrLength;
+    UINT32     *ReturnValue  = NULL;
+    EFI_GUID    CsrGuid      = APPLE_GUID;
+    EFI_STATUS  Status       = EFI_INVALID_PARAMETER;
 
     if (CsrStatus) {
         Status = EfivarGetRaw (
@@ -81,7 +81,7 @@ EFI_STATUS GetCsrStatus (
 // on the Info page. If DisplayMessage is TRUE, displays the new value of
 // gCsrStatus on the screen for four seconds.
 VOID RecordgCsrStatus (
-    UINT32 CsrStatus,
+    UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
     EG_PIXEL BGColor = COLOR_LIGHTBLUE;
@@ -153,10 +153,10 @@ VOID RecordgCsrStatus (
 // GlobalConfig.CsrValues list, or to the first value if the current
 // value is not on the list.
 VOID RotateCsrValue (VOID) {
-    UINT32       CurrentValue, TargetCsr;
+    EFI_STATUS    Status;
+    UINT32        CurrentValue, TargetCsr;
     UINT32_LIST  *ListItem;
-    EFI_GUID     CsrGuid = APPLE_GUID;
-    EFI_STATUS   Status;
+    EFI_GUID      CsrGuid = APPLE_GUID;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Rotating CSR Value");
@@ -254,11 +254,11 @@ typedef struct EfiAppleSetOsInterface {
 EFI_STATUS SetAppleOSInfo (
     VOID
 ) {
-    EFI_STATUS              Status;
-    EFI_GUID                apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
-    CHAR16                  *AppleOSVersion    = NULL;
-    CHAR8                   *AppleOSVersion8   = NULL;
-    EfiAppleSetOsInterface  *SetOs             = NULL;
+    EFI_STATUS               Status;
+    EFI_GUID                 apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
+    CHAR16                  *AppleOSVersion     = NULL;
+    CHAR8                   *AppleOSVersion8    = NULL;
+    EfiAppleSetOsInterface  *SetOs              = NULL;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Setting Apple OS information, if applicable");

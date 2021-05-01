@@ -69,47 +69,130 @@
 // constants
 
 #if defined (EFIX64)
-#define SHELL_NAMES L"\\EFI\\BOOT\\x64_tools\\x64_Shell.efi,\\EFI\\BOOT\\x64_tools\\shell_x64.efi,\\EFI\\BOOT\\x64_tools\\shell.efi,\\EFI\\tools_x64\\x64_Shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\\EFI\\tools_x64\\shell.efi,\\EFI\\tools\\x64_Shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\tools\\shell.efi,\\EFI\\x64_Shell.efi,\\EFI\\shell_x64.efi,\\EFI\\shell.efi,\\x64_Shell.efi,\\shell_x64.efi,\\shell.efi"
-#define GPTSYNC_NAMES L"\\EFI\\BOOT\\x64_tools\\gptsync.efi,\\EFI\\BOOT\\x64_tools\\gptsync_x64.efi,\\EFI\\tools_x64\\gptsync.efi,\\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
-#define GDISK_NAMES L"\\EFI\\BOOT\\x64_tools\\gdisk.efi,\\EFI\\BOOT\\x64_tools\\gdisk_x64.efi,\\EFI\\tools_x64\\gdisk.efi,\\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
-#define NETBOOT_NAMES L"\\EFI\\BOOT\\x64_tools\\ipxe.efi,\\EFI\\BOOT\\x64_tools\\ipxe_x64.efi,\\EFI\\tools_x64\\ipxe.efi,\\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
-#define MEMTEST_NAMES L"\\EFI\\BOOT\\x64_tools\\memtest.efi,\\EFI\\BOOT\\x64_tools\\memtest_x64.efi,\\EFI\\tools_x64\\memtest.efi,\\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\\EFI\\BOOT\\x64_tools\\memtest86.efi,\\EFI\\BOOT\\x64_tools\\memtest86_x64.efi,\\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\\memtest86.efi,\\memtest86_x64.efi"
-#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\Bx64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
-#define NVRAMCLEAN_NAMES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
-#define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
-#define FALLBACK_BASENAME       L"bootx64.efi"
+    #define SHELL_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\x64_Shell.efi,\\EFI\\BOOT\\x64_tools\\shell_x64.efi,\
+    \\EFI\\BOOT\\x64_tools\\shell.efi,\\EFI\\tools_x64\\x64_Shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\
+    \\EFI\\tools_x64\\shell.efi,\\EFI\\tools\\x64_Shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\tools\\shell.efi,\
+    \\EFI\\x64_Shell.efi,\\EFI\\shell_x64.efi,\\EFI\\shell.efi,\\x64_Shell.efi,\\shell_x64.efi,\\shell.efi"
+    #define GPTSYNC_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\gptsync.efi,\\EFI\\BOOT\\x64_tools\\gptsync_x64.efi,\\EFI\\tools_x64\\gptsync.efi,\
+    \\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\
+    \\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
+    #define GDISK_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\gdisk.efi,\\EFI\\BOOT\\x64_tools\\gdisk_x64.efi,\\EFI\\tools_x64\\gdisk.efi,\
+    \\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\
+    \\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
+    #define NETBOOT_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\ipxe.efi,\\EFI\\BOOT\\x64_tools\\ipxe_x64.efi,\\EFI\\tools_x64\\ipxe.efi,\
+    \\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\\EFI\\ipxe.efi,\
+    \\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
+    #define MEMTEST_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\memtest.efi,\\EFI\\BOOT\\x64_tools\\memtest_x64.efi,\\EFI\\tools_x64\\memtest.efi,\
+    \\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\
+    \\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\\EFI\\BOOT\\x64_tools\\memtest86.efi,\
+    \\EFI\\BOOT\\x64_tools\\memtest86_x64.efi,\\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\
+    \\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\
+    \\memtest86.efi,\\memtest86_x64.efi"
+    #define BOOTKICKER_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\
+    \\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\
+    \\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\
+    \\EFI\\tools\\x64_BootKicker.efi\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\
+    \\EFI\\Bx64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\
+    \\BootKicker_x64.efi,\\BootKicker.efi"
+    #define NVRAMCLEAN_NAMES \
+    L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\
+    \\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\
+    \\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\
+    \\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\
+    \\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
+    #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
+    #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
-#define SHELL_NAMES L"\\EFI\\BOOT\\tools_ia32\\shell.efi,\\EFI\\BOOT\\tools_ia32\\shell_ia32.efi,\\EFI\\tools_ia32\\shell.efi,\\EFI\\tools_ia32\\shell_ia32.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_ia32.efi,\\EFI\\shell.efi,\\EFI\\shell_ia32.efi,\\shell.efi,\\shell_ia32.efi"
-#define GPTSYNC_NAMES L"\\EFI\\BOOT\\tools_ia32\\gptsync.efi,\\EFI\\BOOT\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools_ia32\\gptsync.efi,\\EFI\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_ia32.efi,\\gptsync.efi,\\gptsync_ia32.efi"
-#define GDISK_NAMES L"\\EFI\\BOOT\\tools_ia32\\gdisk.efi,\\EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools_ia32\\gdisk.efi,\\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
-#define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_ia32\\ipxe.efi,\\EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools_ia32\\ipxe.efi,\\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
-#define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_ia32\\memtest.efi,\\EFI\\BOOT\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_ia32.efi,\\EFI\\memtest.efi,\\EFI\\memtest_ia32.efi,\\memtest.efi,\\memtest_ia32.efi,\\EFI\\BOOT\\tools_ia32\\memtest86.efi,\\EFI\\BOOT\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools_ia32\\memtest86.efi,\\EFI\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_ia32.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_ia32.efi,\\memtest86.efi,\\memtest86_ia32.efi"
-#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\BOOT\\tools_ia32\\BootKicker.efi,\\EFI\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\tools_ia32\\BootKicker.efi,\\EFI\\tools\\BootKicker_ia32.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_ia32.efi,\\EFI\\BootKicker.efi,\\BootKicker_ia32.efi,\\BootKicker.efi"
-#define NVRAMCLEAN_NAMES L"\\EFI\\BOOT\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\BOOT\\tools_ia32\\CleanNvram.efi,\\EFI\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\tools_ia32\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_ia32.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_ia32.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_ia32.efi,\\CleanNvram.efi"
-#define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
-#define FALLBACK_BASENAME       L"bootia32.efi"
+    #define SHELL_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\shell.efi,\\EFI\\BOOT\\tools_ia32\\shell_ia32.efi,\\EFI\\tools_ia32\\shell.efi,\
+    \\EFI\\tools_ia32\\shell_ia32.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_ia32.efi,\\EFI\\shell.efi,\
+    \\EFI\\shell_ia32.efi,\\shell.efi,\\shell_ia32.efi"
+    #define GPTSYNC_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\gptsync.efi,\\EFI\\BOOT\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools_ia32\\gptsync.efi,\
+    \\EFI\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi,\\EFI\\gptsync.efi,\
+    \\EFI\\gptsync_ia32.efi,\\gptsync.efi,\\gptsync_ia32.efi"
+    #define GDISK_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\gdisk.efi,\\EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools_ia32\\gdisk.efi,\
+    \\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\
+    \\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
+    #define NETBOOT_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\ipxe.efi,\\EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools_ia32\\ipxe.efi,\
+    \\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\
+    \\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
+    #define MEMTEST_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\memtest.efi,\\EFI\\BOOT\\tools_ia32\\memtest_ia32.efi,\
+    \\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\
+    \\EFI\\tools\\memtest_ia32.efi,\\EFI\\memtest.efi,\\EFI\\memtest_ia32.efi,\\memtest.efi,\\memtest_ia32.efi,\
+    \\EFI\\BOOT\\tools_ia32\\memtest86.efi,\\EFI\\BOOT\\tools_ia32\\memtest86_ia32.efi,\
+    \\EFI\\tools_ia32\\memtest86.efi,\\EFI\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools\\memtest86.efi,\
+    \\EFI\\tools\\memtest86_ia32.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_ia32.efi,\\memtest86.efi,\
+    \\memtest86_ia32.efi"
+    #define BOOTKICKER_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\BOOT\\tools_ia32\\BootKicker.efi,\
+    \\EFI\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\tools_ia32\\BootKicker.efi,\\EFI\\tools\\BootKicker_ia32.efi,\
+    \\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_ia32.efi,\\EFI\\BootKicker.efi,\\BootKicker_ia32.efi,\
+    \\BootKicker.efi"
+    #define NVRAMCLEAN_NAMES \
+    L"\\EFI\\BOOT\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\BOOT\\tools_ia32\\CleanNvram.efi,\
+    \\EFI\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\tools_ia32\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_ia32.efi,\
+    \\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_ia32.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_ia32.efi,\
+    \\CleanNvram.efi"
+    #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
+    #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
-#define SHELL_NAMES L"\\EFI\\BOOT\\tools_aa64\\shell.efi,\\EFI\\BOOT\\tools_aa64\\shell_aa64.efi,\\EFI\\tools_aa64\\shell.efi,\\EFI\\tools_aa64\\shell_aa64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_aa64.efi,\\EFI\\shell.efi,\\EFI\\shell_aa64.efi,\\shell.efi,\\shell_aa64.efi"
-#define GPTSYNC_NAMES L"\\EFI\\BOOT\\tools_aa64\\gptsync.efi,\\EFI\\BOOT\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools_aa64\\gptsync.efi,\\EFI\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_aa64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_aa64.efi,\\gptsync.efi,\\gptsync_aa64.efi"
-#define GDISK_NAMES L"\\EFI\\BOOT\\tools_aa64\\gdisk.efi,\\EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools_aa64\\gdisk.efi,\\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
-#define NETBOOT_NAMES L"\\EFI\\BOOT\\tools_aa64\\ipxe.efi,\\EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools_aa64\\ipxe.efi,\\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
-#define MEMTEST_NAMES L"\\EFI\\BOOT\\tools_aa64\\memtest.efi,\\EFI\\BOOT\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_aa64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_aa64.efi,\\memtest.efi,\\memtest_aa64.efi,\\EFI\\BOOT\\tools_aa64\\memtest86.efi,\\EFI\\BOOT\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools_aa64\\memtest86.efi,\\EFI\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\\memtest86.efi,\\memtest86_aa64.efi"
-#define BOOTKICKER_NAMES L"\\EFI\\BOOT\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\BOOT\\tools_aa64\\BootKicker.efi,\\EFI\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\tools_aa64\\BootKicker.efi,\\EFI\\tools\\BootKicker_aa64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_aa64.efi,\\EFI\\BootKicker.efi,\\BootKicker_aa64.efi,\\BootKicker.efi"
-#define NVRAMCLEAN_NAMES L"\\EFI\\BOOT\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\BOOT\\tools_aa64\\CleanNvram.efi,\\EFI\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\tools_aa64\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_aa64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_aa64.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_aa64.efi,\\CleanNvram.efi"
-#define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
-#define FALLBACK_BASENAME       L"bootaa64.efi"
+    #define SHELL_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\shell.efi,\\EFI\\BOOT\\tools_aa64\\shell_aa64.efi,\\EFI\\tools_aa64\\shell.efi,\
+    \\EFI\\tools_aa64\\shell_aa64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_aa64.efi,\\EFI\\shell.efi,\
+    \\EFI\\shell_aa64.efi,\\shell.efi,\\shell_aa64.efi"
+    #define GPTSYNC_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\gptsync.efi,\\EFI\\BOOT\\tools_aa64\\gptsync_aa64.efi,\
+    \\EFI\\tools_aa64\\gptsync.efi,\\EFI\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools\\gptsync.efi,\
+    \\EFI\\tools\\gptsync_aa64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_aa64.efi,\\gptsync.efi,\\gptsync_aa64.efi"
+    #define GDISK_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\gdisk.efi,\\EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools_aa64\\gdisk.efi,\
+    \\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\
+    \\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
+    #define NETBOOT_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\ipxe.efi,\\EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools_aa64\\ipxe.efi,\
+    \\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\
+    \\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
+    #define MEMTEST_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\memtest.efi,\\EFI\\BOOT\\tools_aa64\\memtest_aa64.efi,\
+    \\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\
+    \\EFI\\tools\\memtest_aa64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_aa64.efi,\\memtest.efi,\\memtest_aa64.efi,\
+    \\EFI\\BOOT\\tools_aa64\\memtest86.efi,\\EFI\\BOOT\\tools_aa64\\memtest86_aa64.efi,\
+    \\EFI\\tools_aa64\\memtest86.efi,\\EFI\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools\\memtest86.efi,\
+    \\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\
+    \\memtest86.efi,\\memtest86_aa64.efi"
+    #define BOOTKICKER_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\BOOT\\tools_aa64\\BootKicker.efi,\
+    \\EFI\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\tools_aa64\\BootKicker.efi,\\EFI\\tools\\BootKicker_aa64.efi,\
+    \\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_aa64.efi,\\EFI\\BootKicker.efi,\\BootKicker_aa64.efi,\
+    \\BootKicker.efi"
+    #define NVRAMCLEAN_NAMES \
+    L"\\EFI\\BOOT\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\BOOT\\tools_aa64\\CleanNvram.efi,\
+    \\EFI\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\tools_aa64\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_aa64.efi,\
+    \\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_aa64.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_aa64.efi,\
+    \\CleanNvram.efi"
+    #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
+    #define FALLBACK_BASENAME       L"bootaa64.efi"
 #else
-#define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
-#define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
-#define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi"
-#define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
-#define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi"
-#define BOOTKICKER_NAMES        L"\\BootKicker.efi"
-#define NVRAMCLEAN_NAMES        L"\\CleanNvram.efi"
-#define DRIVER_DIRS             L"drivers"
-#define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" /* Not really correct */
-#define FALLBACK_BASENAME       L"boot.efi"            /* Not really correct */
-
+    #define SHELL_NAMES             L"\\EFI\\tools\\shell.efi,\\shell.efi"
+    #define GPTSYNC_NAMES           L"\\EFI\\tools\\gptsync.efi"
+    #define GDISK_NAMES             L"\\EFI\\tools\\gdisk.efi"
+    #define NETBOOT_NAMES           L"\\EFI\\tools\\ipxe.efi"
+    #define MEMTEST_NAMES           L"\\memtest.efi,\\memtest86.efi"
+    #define BOOTKICKER_NAMES        L"\\BootKicker.efi"
+    #define NVRAMCLEAN_NAMES        L"\\CleanNvram.efi"
+    #define DRIVER_DIRS             L"drivers"
+    #define FALLBACK_FULLNAME       L"EFI\\BOOT\\boot.efi" // Not really correct
+    #define FALLBACK_BASENAME       L"boot.efi"            // Not really correct
 #endif
 
 #define IPXE_DISCOVER_NAME      L"\\efi\\tools\\ipxe_discover.efi"
@@ -209,7 +292,7 @@ struct LOADER_LIST {
 // Returns a pointer to the copy of the menu screen.
 static REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
     REFIT_MENU_SCREEN *NewEntry;
-    UINTN i;
+    UINTN              i;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
 
@@ -371,10 +454,10 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
     REFIT_MENU_SCREEN  *SubScreen;
     LOADER_ENTRY       *SubEntry;
     CHAR16             *InitrdName, *KernelVersion = NULL;
-    CHAR16             DiagsFileName[256];
+    CHAR16              DiagsFileName[256];
     REFIT_FILE         *File;
-    UINTN              TokenCount;
-    CHAR16             **TokenList;
+    UINTN               TokenCount;
+    CHAR16            **TokenList;
 
     // create the submenu
     if (StrLen (Entry->Title) == 0) {
@@ -588,12 +671,11 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
 VOID SetLoaderDefaults (
     LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume
 ) {
-    CHAR16      *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
-    CHAR16      ShortcutLetter = 0;
+    CHAR16 *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
+    CHAR16  ShortcutLetter = 0;
 
-    NameClues   = Basename (LoaderPath);
-    PathOnly    = FindPath (LoaderPath);
-    NoExtension = StripEfiExtension (NameClues);
+    NameClues = Basename (LoaderPath);
+    PathOnly  = FindPath (LoaderPath);
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"Finding Loader Defaults for '%s'", Entry->me.Title);
@@ -603,22 +685,25 @@ VOID SetLoaderDefaults (
         MergeStrings (&NameClues, Entry->me.Title, L' ');
     }
     else {
-        // locate a custom icon for the loader
-        // Anything found here takes precedence over the "hints" in the OSIconName variable
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
-        #endif
+        NoExtension = StripEfiExtension (NameClues);
+        if (NoExtension != NULL) {
+            // locate a custom icon for the loader
+            // Anything found here takes precedence over the "hints" in the OSIconName variable
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
+            #endif
 
-        if (!Entry->me.Image) {
-            Entry->me.Image = egLoadIconAnyType (
-                Volume->RootDir,
-                PathOnly,
-                NoExtension,
-                GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
-        }
-        if (!Entry->me.Image) {
-            Entry->me.Image = egCopyImage (Volume->VolIconImage);
+            if (!Entry->me.Image) {
+                Entry->me.Image = egLoadIconAnyType (
+                    Volume->RootDir,
+                    PathOnly,
+                    NoExtension,
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
+            }
+            if (!Entry->me.Image) {
+                Entry->me.Image = egCopyImage (Volume->VolIconImage);
+            }
         }
 
         // Begin creating icon "hints" by using last part of directory path leading
@@ -678,9 +763,9 @@ VOID SetLoaderDefaults (
     #endif
 
     // detect specific loaders
-    if (StriSubCmp (L"bzImage", NameClues)
-        || StriSubCmp (L"vmlinuz", NameClues)
-        || StriSubCmp (L"kernel", NameClues)
+    if (StriSubCmp (L"bzImage", NameClues) ||
+        StriSubCmp (L"vmlinuz", NameClues) ||
+        StriSubCmp (L"kernel", NameClues)
     ) {
         if (Volume->DiskKind != DISK_KIND_NET) {
             GuessLinuxDistribution (&OSIconName, Volume, LoaderPath);
@@ -721,9 +806,9 @@ VOID SetLoaderDefaults (
     else if (MyStriCmp (NameClues, L"diags.efi")) {
         MergeStrings (&OSIconName, L"hwtest", L',');
     }
-    else if (MyStriCmp (NameClues, L"e.efi")
-        || MyStriCmp (NameClues, L"elilo.efi")
-        || StriSubCmp (L"elilo", NameClues)
+    else if (MyStriCmp (NameClues, L"e.efi") ||
+        MyStriCmp (NameClues, L"elilo.efi")  ||
+        StriSubCmp (L"elilo", NameClues)
     ) {
         MergeStrings (&OSIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
@@ -738,9 +823,10 @@ VOID SetLoaderDefaults (
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
     }
     else if (MyStriCmp (NameClues, L"cdboot.efi") ||
-               MyStriCmp (NameClues, L"bootmgr.efi") ||
-               MyStriCmp (NameClues, L"bootmgfw.efi") ||
-               MyStriCmp (NameClues, L"bkpbootmgfw.efi")) {
+        MyStriCmp (NameClues, L"bootmgr.efi")  ||
+        MyStriCmp (NameClues, L"bootmgfw.efi") ||
+        MyStriCmp (NameClues, L"bkpbootmgfw.efi")
+    ) {
         MergeStrings (&OSIconName, L"win8", L',');
         Entry->OSType = 'W';
         ShortcutLetter = 'W';
@@ -781,16 +867,15 @@ VOID SetLoaderDefaults (
 static
 LOADER_ENTRY * AddEfiLoaderEntry (
     IN EFI_DEVICE_PATH *EfiLoaderPath,
-    IN CHAR16 *LoaderTitle,
-    IN UINT16 EfiBootNum,
-    IN UINTN Row,
-    EG_IMAGE *Icon
+    IN CHAR16          *LoaderTitle,
+    IN UINT16           EfiBootNum,
+    IN UINTN            Row,
+    IN EG_IMAGE        *Icon
 ) {
-    LOADER_ENTRY  *Entry;
-    CHAR16        *OSIconName = NULL;
-    CHAR16        *FullTitle  = NULL;
     CHAR16        *TempStr;
-
+    CHAR16        *FullTitle  = NULL;
+    CHAR16        *OSIconName = NULL;
+    LOADER_ENTRY  *Entry;
 
     Entry = InitializeLoaderEntry (NULL);
     if (Entry) {
@@ -834,8 +919,8 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
         MyFreePool (&OSIconName);
 
-        Entry->LoaderPath  = NULL;
         Entry->Volume      = NULL;
+        Entry->LoaderPath  = NULL;
         Entry->LoadOptions = NULL;
         Entry->InitrdPath  = NULL;
         Entry->Enabled     = TRUE;
@@ -850,11 +935,12 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
 // Add a specified EFI boot loader to the list, using automatic settings
 // for icons, options, etc.
-static LOADER_ENTRY * AddLoaderEntry (
+static
+LOADER_ENTRY * AddLoaderEntry (
     IN CHAR16       *LoaderPath,
     IN CHAR16       *LoaderTitle,
     IN REFIT_VOLUME *Volume,
-    IN BOOLEAN      SubScreenReturn
+    IN BOOLEAN       SubScreenReturn
 ) {
     LOADER_ENTRY  *Entry;
     CHAR16        *TitleEntry = NULL;
@@ -1263,10 +1349,10 @@ BOOLEAN IsSymbolicLink (
     CHAR16        *FullName,
     EFI_FILE_INFO *DirEntry
 ) {
-    EFI_FILE_HANDLE FileHandle;
+    EFI_FILE_HANDLE  FileHandle;
     EFI_FILE_INFO   *FileInfo = NULL;
-    EFI_STATUS      Status;
-    UINTN           FileSize2 = 0;
+    EFI_STATUS       Status;
+    UINTN            FileSize2 = 0;
 
     Status = refit_call5_wrapper(
         Volume->RootDir->Open,
@@ -1440,11 +1526,11 @@ BOOLEAN ScanLoaderDir (
 // server and the name of the boot file it delivers.
 static
 CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
-    EFI_STATUS       Status;
+    EFI_STATUS        Status;
     EFI_DEVICE_PATH  *FilePath;
-    EFI_HANDLE       iPXEHandle;
+    EFI_HANDLE        iPXEHandle;
     CHAR16           *boot_info = NULL;
-    UINTN            boot_info_size = 0;
+    UINTN             boot_info_size = 0;
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
     Status = refit_call6_wrapper(
@@ -1510,11 +1596,11 @@ BOOLEAN ScanMacOsLoader (
     REFIT_VOLUME *Volume,
     CHAR16       *FullFileName
 ) {
-    BOOLEAN  AddThisEntry       = TRUE;
-    BOOLEAN  ScanFallbackLoader = TRUE;
-    CHAR16   *VolName           = NULL;
-    CHAR16   *PathName          = NULL;
-    CHAR16   *FileName          = NULL;
+    BOOLEAN   AddThisEntry       = TRUE;
+    BOOLEAN   ScanFallbackLoader = TRUE;
+    CHAR16   *VolName            = NULL;
+    CHAR16   *PathName           = NULL;
+    CHAR16   *FileName           = NULL;
 
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
@@ -1816,7 +1902,7 @@ VOID ScanOptical (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Disks for EFI Mode Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Optical Discs with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1845,10 +1931,10 @@ VOID ScanFirmwareDefined (
 ) {
     BOOT_ENTRY_LIST *BootEntries;
     BOOT_ENTRY_LIST *CurrentEntry;
-    BOOLEAN         ScanIt      = TRUE;
-    CHAR16          *OneElement = NULL;
+    BOOLEAN          ScanIt      = TRUE;
+    CHAR16          *OneElement  = NULL;
     CHAR16          *DontScanFirmware;
-    UINTN           i;
+    UINTN            i;
 
     #if REFIT_DEBUG > 0
     if (Row == 0) {
@@ -1960,12 +2046,12 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
 
 static
 LOADER_ENTRY * AddToolEntry (
-    REFIT_VOLUME *Volume,
-    IN CHAR16 *LoaderPath,
-    IN CHAR16 *LoaderTitle,
-    IN EG_IMAGE *Image,
-    IN CHAR16 ShortcutLetter,
-    IN BOOLEAN UseGraphicsMode
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *LoaderPath,
+    IN CHAR16       *LoaderTitle,
+    IN EG_IMAGE     *Image,
+    IN CHAR16        ShortcutLetter,
+    IN BOOLEAN       UseGraphicsMode
 ) {
     LOADER_ENTRY *Entry;
     CHAR16       *TitleStr = NULL;
@@ -1995,14 +2081,14 @@ VOID ScanForBootloaders (
     UINTN    k;
     #endif
 
-    UINTN    i;
-    CHAR8    ScanOption;
-    BOOLEAN  ScanForLegacy = FALSE;
-    EG_PIXEL BGColor       = COLOR_LIGHTBLUE;
+    UINTN     i;
+    CHAR8     ScanOption;
+    BOOLEAN   ScanForLegacy = FALSE;
+    EG_PIXEL  BGColor       = COLOR_LIGHTBLUE;
     CHAR16   *HiddenTags, *HiddenLegacy;
     CHAR16   *OrigDontScanFiles;
     CHAR16   *OrigDontScanVolumes;
-    CHAR16   ShortCutKey;
+    CHAR16    ShortCutKey;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -2163,7 +2249,7 @@ VOID ScanForBootloaders (
                 else {
                     LogNewLine = TRUE;
                 }
-                MsgLog ("Scan Disc (Legacy):");
+                MsgLog ("Scan Optical (Legacy):");
                 #endif
 
                 ScanLegacyDisc();
@@ -2302,10 +2388,10 @@ VOID ScanForBootloaders (
 // Returns TRUE if it passes all tests, FALSE otherwise
 static
 BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
-    CHAR16 *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
-    CHAR16 *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
-    BOOLEAN retval = TRUE;
-    UINTN i = 0;
+    CHAR16  *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis;
+    CHAR16  *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools;
+    BOOLEAN  retval = TRUE;
+    UINTN    i      = 0;
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL,
@@ -2369,15 +2455,15 @@ BOOLEAN FindTool (
     CHAR16 *Locations,
     CHAR16 *Names,
     CHAR16 *Description,
-    UINTN  Icon
+    UINTN   Icon
 ) {
-    UINTN   j = 0;
-    UINTN   k;
-    UINTN   VolumeIndex;
+    UINTN    j = 0;
+    UINTN    k;
+    UINTN    VolumeIndex;
     CHAR16  *DirName;
     CHAR16  *FileName;
     CHAR16  *PathName;
-    BOOLEAN FoundTool = FALSE;
+    BOOLEAN  FoundTool = FALSE;
 
 //DA-TAG: Commented Out
 //    CHAR16 FullDescription;

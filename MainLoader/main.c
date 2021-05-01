@@ -209,9 +209,17 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define BOOTKICKER_FILES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
+#define BOOTKICKER_FILES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\
+\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
+\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\
+\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\
+\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
-#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
+#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\
+\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
+\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
+\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
+\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
@@ -631,7 +639,7 @@ VOID ForceTRIM (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Force TRIM ...%r",
+        L"Forcibly Enable TRIM ...%r",
         Status
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -721,9 +729,9 @@ EFI_STATUS EFIAPI OpenProtocolEx (
 // Routes 'HandleProtocol' to 'OpenProtocol'
 static
 EFI_STATUS EFIAPI HandleProtocolEx (
-    IN   EFI_HANDLE  Handle,
+    IN   EFI_HANDLE   Handle,
     IN   EFI_GUID    *Protocol,
-    OUT  VOID        **Interface
+    OUT  VOID       **Interface
 ) {
     EFI_STATUS Status;
 
@@ -870,10 +878,11 @@ VOID preBootKicker (
         ) {
             UINTN        i = 0;
             UINTN        k = 0;
+
             CHAR16       *Names          = BOOTKICKER_FILES;
             CHAR16       *FilePath       = NULL;
             CHAR16       *Description    = ChosenEntry->Title;
-            BOOLEAN      FoundTool       = FALSE;
+            BOOLEAN       FoundTool      = FALSE;
             LOADER_ENTRY *ourLoaderEntry = NULL;
 
             #if REFIT_DEBUG > 0
@@ -1019,7 +1028,7 @@ VOID preCleanNvram (
             CHAR16        *Names           = NVRAMCLEAN_FILES;
             CHAR16        *FilePath        = NULL;
             CHAR16        *Description     = ChosenEntry->Title;
-            BOOLEAN       FoundTool        = FALSE;
+            BOOLEAN        FoundTool       = FALSE;
             LOADER_ENTRY  *ourLoaderEntry  = NULL;
 
             #if REFIT_DEBUG > 0
@@ -1097,7 +1106,7 @@ VOID preCleanNvram (
 VOID AboutRefindPlus (
     VOID
 ) {
-    UINT32  CsrStatus;
+    UINT32   CsrStatus;
     CHAR16  *TempStr         = NULL;
     CHAR16  *FirmwareVendor  = StrDuplicate (VendorInfo);
 
@@ -1249,7 +1258,7 @@ VOID RescanAll (
 
 // Minimal initialisation function
 static VOID InitializeLib (
-    IN EFI_HANDLE        ImageHandle,
+    IN EFI_HANDLE         ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
     gImageHandle  = ImageHandle;
@@ -1278,8 +1287,8 @@ BOOLEAN SecureBootSetup (
     VOID
 ) {
     EFI_STATUS  Status;
-    BOOLEAN     Success         = FALSE;
-    CHAR16      *ShowScreenStr  = NULL;
+    BOOLEAN     Success        = FALSE;
+    CHAR16     *ShowScreenStr  = NULL;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
@@ -1320,8 +1329,8 @@ BOOLEAN SecureBootSetup (
 static
 BOOLEAN SecureBootUninstall (VOID) {
     EFI_STATUS  Status;
-    BOOLEAN     Success         = TRUE;
-    CHAR16      *ShowScreenStr  = NULL;
+    BOOLEAN     Success        = TRUE;
+    CHAR16     *ShowScreenStr  = NULL;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -1362,12 +1371,12 @@ BOOLEAN SecureBootUninstall (VOID) {
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
 static
 VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
-    EFI_LOADED_IMAGE  *Info;
-    EFI_STATUS        Status;
+    EFI_STATUS         Status;
     CHAR16            *Options;
     CHAR16            *FileName;
     CHAR16            *SubString;
     CHAR16            *ShowScreenStr = NULL;
+    EFI_LOADED_IMAGE  *Info;
 
     Status = refit_call3_wrapper(
         gBS->HandleProtocol,
@@ -1437,9 +1446,11 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
 static
 VOID AdjustDefaultSelection() {
-    UINTN i = 0;
-    CHAR16 *Element = NULL, *NewCommaDelimited = NULL, *PreviousBoot = NULL;
-    EFI_STATUS Status;
+    EFI_STATUS  Status;
+    UINTN       i                 = 0;
+    CHAR16     *Element           = NULL;
+    CHAR16     *NewCommaDelimited = NULL;
+    CHAR16     *PreviousBoot      = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("Adjust Default Selection...\n\n");
@@ -1625,7 +1636,7 @@ VOID LogBasicInfo (
 // main entry point
 //
 EFI_STATUS EFIAPI efi_main (
-    EFI_HANDLE        ImageHandle,
+    EFI_HANDLE         ImageHandle,
     EFI_SYSTEM_TABLE  *SystemTable
 ) {
     EFI_STATUS  Status;
@@ -1761,6 +1772,17 @@ EFI_STATUS EFIAPI efi_main (
     else {
         MsgLog ("'NO'");
     }
+
+    // Show SyncAPFS Status
+    MsgLog ("\n");
+    MsgLog ("      SyncAPFS:- ");
+    if (GlobalConfig.SyncAPFS) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
 
     // Show TextOnly Status
     MsgLog ("\n");

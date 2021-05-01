@@ -393,10 +393,10 @@ EFI_STATUS StartLegacyImageList (
     IN CHAR16 *LoadOptions,
     OUT UINTN *ErrorInStep
 ) {
-    EFI_STATUS              Status, ReturnStatus;
-    EFI_HANDLE              ChildImageHandle;
+    EFI_STATUS               Status, ReturnStatus;
+    EFI_HANDLE               ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    UINTN                   DevicePathIndex;
+    UINTN                    DevicePathIndex;
     CHAR16                  *FullLoadOptions = NULL;
 
     if (ErrorInStep != NULL) {
@@ -498,9 +498,9 @@ VOID StartLegacy (
     IN LEGACY_ENTRY *Entry,
     IN CHAR16 *SelectionName
 ) {
-    EFI_STATUS      Status;
+    EFI_STATUS       Status;
     EG_IMAGE        *BootLogoImage;
-    UINTN           ErrorInStep = 0;
+    UINTN            ErrorInStep = 0;
     EFI_DEVICE_PATH *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
     CHAR16 *ShowScreenStrA = NULL;
@@ -589,7 +589,7 @@ VOID StartLegacy (
 // Start a device on a non-Mac using the EFI_LEGACY_BIOS_PROTOCOL
 VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
-    CHAR16 *SelectionName
+    CHAR16       *SelectionName
 ) {
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
@@ -629,7 +629,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     REFIT_MENU_SCREEN *SubScreen;
     CHAR16            *VolDesc;
     CHAR16            *LegacyTitle;
-    CHAR16            ShortcutLetter = 0;
+    CHAR16             ShortcutLetter = 0;
 
     if (LoaderTitle == NULL) {
         if (Volume->OSName != NULL) {
@@ -732,12 +732,12 @@ LEGACY_ENTRY * AddLegacyEntry (
 static
 LEGACY_ENTRY * AddLegacyEntryUEFI (
     BDS_COMMON_OPTION *BdsOption,
-    IN UINT16 DiskType
+    IN UINT16          DiskType
 ) {
     LEGACY_ENTRY      *Entry;
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
-    CHAR16            ShortcutLetter = 0;
+    CHAR16             ShortcutLetter    = 0;
     CHAR16            *LegacyDescription = StrDuplicate (BdsOption->Description);
 
     if (IsInSubstring (LegacyDescription, GlobalConfig.DontScanVolumes)) {
@@ -812,17 +812,17 @@ static
 VOID ScanLegacyUEFI (
     IN UINTN DiskType
 ) {
-    EFI_STATUS                Status;
-    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
-    UINT16                    *BootOrder = NULL;
-    UINTN                     Index = 0;
-    CHAR16                    BootOption[10];
-    UINTN                     BootOrderSize = 0;
-    CHAR16                    Buffer[20];
+    EFI_STATUS                 Status;
+    UINT16                    *BootOrder       = NULL;
+    UINTN                      Index           = 0;
+    UINTN                      BootOrderSize   = 0;
+    CHAR16                     Buffer[20];
+    CHAR16                     BootOption[10];
+    BOOLEAN                    SearchingForUsb = FALSE;
+    LIST_ENTRY                 TempList;
     BDS_COMMON_OPTION         *BdsOption;
-    LIST_ENTRY                TempList;
-    BBS_BBS_DEVICE_PATH       *BbsDevicePath = NULL;
-    BOOLEAN                   SearchingForUsb = FALSE;
+    BBS_BBS_DEVICE_PATH       *BbsDevicePath   = NULL;
+    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     #if REFIT_DEBUG > 0
     UINTN LogLineType;
@@ -952,11 +952,11 @@ VOID ScanLegacyVolume (
 VOID ScanLegacyDisc (
     VOID
 ) {
-    UINTN                   VolumeIndex;
-    REFIT_VOLUME            *Volume;
+    UINTN         VolumeIndex;
+    REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Disks for BIOS/CSM/Legacy Mode Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Optical Discs with Mode:- 'BIOS/CSM/Legacy'");
     #endif
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
@@ -978,7 +978,7 @@ VOID ScanLegacyDisc (
 VOID ScanLegacyInternal (
     VOID
 ) {
-    UINTN        VolumeIndex;
+    UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -1007,8 +1007,8 @@ VOID ScanLegacyInternal (
 VOID ScanLegacyExternal (
     VOID
 ) {
-   UINTN                   VolumeIndex;
-   REFIT_VOLUME            *Volume;
+    UINTN         VolumeIndex;
+    REFIT_VOLUME *Volume;
 
    #if REFIT_DEBUG > 0
    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for BIOS/CSM/Legacy Mode Volumes");
@@ -1063,10 +1063,10 @@ VOID FindLegacyBootType (VOID) {
 VOID WarnIfLegacyProblems (
     VOID
 ) {
-    UINTN    i               = 0;
+    UINTN     i              = 0;
     CHAR16   *ShowScreenStr  = NULL;
     CHAR16   *TempScreenStr  = NULL;
-    BOOLEAN  found           = FALSE;
+    BOOLEAN   found          = FALSE;
 
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {

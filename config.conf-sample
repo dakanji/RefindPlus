@@ -393,14 +393,14 @@
 
 # Set the name of a subdirectory in which icons are stored. Icons must
 # have the same names they have in the standard directory. The directory
-# name is specified relative to the main RefindPlus binary's directory. If
-# an icon cannot be found in the specified directory, an attempt is made
-# to load it from the default directory; thus, you can replace just some
-# icons in your own directory and rely on the default for others. Icon
-# files may be in any supported format -- ICNS (*.icns), BMP (*.bmp),
-# PNG (*.png), or JPEG (*.jpg or *.jpeg); however, RefindPlus' BMP
-# and JPEG implementations do not support transparency, which is
-# highly desirable in icons.
+# name is specified relative to the main RefindPlus binary's directory.
+# if an icon cannot be found in the specified directory, an attempt is
+# made to load it from the default directory. Therefore, icons can be
+# replaced in a directory and the default relied on for others. Icon
+# files may be in any supported format ICNS (*.icns), BMP (*.bmp),
+# PNG (*.png), or JPEG (*.jpg or *.jpeg). However, RefindPlus'
+# BMP and JPEG  implementations do not support transparency,
+# which is highly desirable in icons.
 #
 # Loads icons from the "icons" folder when commented out
 #
@@ -453,7 +453,7 @@
 # of 24, 8, 4, or 1 bits. PNG or ICNS image files are required for
 # transparency support.
 #
-#selection_big   selection-big.bmp
+#selection_big selection-big.bmp
 #selection_small selection-small.bmp
 
 # Set the font to be used for all textual displays in graphics mode.
@@ -532,10 +532,11 @@
 
 # Tool binaries to be excluded from the tools line, even when the
 # general class is specified in showtools. This enables trimming an
-# overabundance of tools, as when you see multiple mok_tool entries
-# after installing multiple Linux distributions. A lone filename, a
-# full pathname, or a volume identifier (filesystem label, partition
-# name, or partition GUID) and a full pathname can be specified.
+# overabundance of tools, such as when there are multiple mok_tool
+# entries after installing multiple Linux distributions. A single
+# filename, a full pathname, or a volume identifier (filesystem
+# label, partition name, or partition GUID) and a full pathname
+# can be specified.
 #
 # Has an empty list (nothing is excluded) when commented out
 #
@@ -607,8 +608,8 @@
 # directories are specified relative to the volume's root directory. This
 # option applies to ALL the volumes that RefindPlus scans UNLESS a volume
 # name and a colon are included before the directory name (myvol:/somedir)
-# to scan the somedir directory only on the filesystem named "myvol". If a
-# specified directory does not exist, it is ignored (no error message).
+# to scan the "somedir" directory only on the filesystem named "myvol". If
+# a specified directory does not exist, it is ignored (no error message).
 #
 # Scans the "boot" and hardcoded directories when commented out
 #
@@ -649,19 +650,19 @@
 #dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
 # Files that should NOT be included as EFI boot loaders (on the
-# first line of the display). To be used when using a boot loader
-# that relies on support programs or drivers that are installed
-# alongside the main binary or to block certain loaders by name
-# rather than by location. Note that this will NOT prevent some
-# binaries from showing up in the second-row set of tools. Most
-# notably, various Secure Boot and recovery tools are present in
-# this list, but may appear as second-row items. The file may be
-# specified as a bare name (e.g., "notme.efi"), as a full pathname
-# (e.g., "/EFI/somedir/notme.efi"), or as a complete pathname with
-# volume (e.g., "SOMEDISK:/EFI/somedir/notme.efi" or
-# 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi").
-# OS tags hidden via the "Delete" or "-" key in the RefindPlus
-# menu are added to this list, but stored in NVRAM.
+# first line of the display). To be used with boot loaders that
+# rely on support programs or drivers that are installed along
+# with the main binary or to block certain loaders by name and
+# not by location. Note however, that this setting does *NOT*
+# prevent certain binaries from showing up in the second-row
+# set of tools. Notably, some Secure Boot and recovery tools
+# are present in this list but may appear as second-row items.
+# Files may be specified as a bare name (e.g., "notme.efi"), as
+# a full pathname (e.g., "/EFI/somedir/notme.efi"), or as a full
+# pathname with volume, such as "SOMEDISK:/EFI/somedir/notme.efi"
+# or 2C17D5ED-850D-4F76-BA31-47A561740082:/EFI/somedir/notme.efi".
+# OS tags hidden via the "Delete" or "-" key in the RefindPlus menu
+# are added to this list, but stored in NVRAM.
 #
 # The default setting is shim.efi,shim-fedora.efi,shimx64.efi,PreLoader.efi,
 # TextMode.efi,ebounce.efi,GraphicsConsole.efi,MokManager.efi,HashTool.efi,
@@ -717,8 +718,8 @@
 # first-found basis; that is, to treat both "linux-lts" and "linux" as version
 # strings, they MUST be specified as "linux-lts,linux", since if specified the
 # other way, both vmlinuz-linux and vmlinuz-linux-lts will return with "linux"
-# as the version string, which is not desirable. Also, if the kernel or initrd
-# file includes both a specified string and digits, the version string includes
+# as the version string, which is not desirable. Whenever the kernel or initrd
+# file include both a specified string and digits, the version string includes
 # both. For example, "vmlinuz-linux-4.8" produces a "linux-4.8" version string.
 # This option is intended for Arch and other distributions that do not include
 # version numbers in their kernel filenames, but may provide other uniquely
@@ -750,9 +751,8 @@
 #
 #max_tags 0
 
-# Set the default menu selection.  The available arguments match the
-# keyboard accelerators available within RefindPlus.  You may select the
-# default loader using:
+# Set the default menu selection. The available arguments match the keyboard
+# accelerators available within RefindPlus. Select the default loader using:
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
 #    will be the default.
 #  - A "+" symbol at the start of the string, which refers to the most
@@ -815,7 +815,7 @@
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
 # to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that you can go beyond this, to values such as 87F, 97F ... up to FFF.
+# setting and that users can go beyond this, to values such as 87F, 97F ... up to FFF.
 # The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
 # commands, added in Mac OS v11.0 (Big Sur), sets values of 10 (ON) and 87F (OFF)
 # respectively when run along with the earlier commands to set SIP and SSV.
@@ -846,16 +846,16 @@
 #
 #include manual.conf
 
-# Sample manual configuration stanzas. Each begins with the "menuentry"
-# keyword followed by a name that is to appear in the menu (use quotes
-# if you want the name to contain a space) and an open curly brace
-# ("{"). Each entry ends with a close curly brace ("}"). Common
-# keywords within each stanza include:
+# Sample manual configuration stanzas. Each begins with a "menuentry"
+# keyword followed by a name that is to appear in the menu (use
+# quotes if the name contains spaces) and an open curly brace,
+# ("{"). Each entry ends with a close curly brace ("}").
+# Common keywords in stanza are:
 #
 #  volume    - identifies the filesystem from which subsequent files
-#              are loaded. You can specify the volume by filesystem
+#              are loaded. The volume can be specified by filesystem
 #              label, by partition label, or by partition GUID number
-#              (but NOT yet by filesystem UUID number).
+#              (but *NOT* yet by filesystem UUID number).
 #  loader    - identifies the boot loader file
 #  initrd    - Specifies an initial RAM disk file
 #  icon      - specifies a custom boot loader icon
@@ -872,17 +872,16 @@
 #              by RefindPlus parsing procedures (=, /, #, or tab).
 #  disabled  - use alone or set to "yes" to disable this entry.
 #
-# Note that you can use either DOS/Windows/EFI-style backslashes (\)
-# or Unix-style forward slashes (/) as directory separators. Either
-# way, all file references are on the ESP from which RefindPlus was
-# launched.
-# Use of quotes around parameters causes them to be interpreted as
-# one keyword, and for parsing of special characters (spaces, =, /,
-# and #) to be disabled. This is useful mainly with the "options"
-# keyword. Use of quotes around parameters that specify filenames is
-# permissible, but you must then use backslashes instead of slashes,
-# except when you must pass a forward slash to the loader, as when
-# passing a root= option to a Linux kernel.
+# Note that either DOS/Windows/EFI-style backslashes (\) or Unix-style
+# forward slashes (/) can be used as directory separators. Either way,
+# all file references are on the ESP from which RefindPlus is launched.
+# Use of quotes around parameters causes them to be interpreted as one
+# keyword, and for parsing of special characters (spaces, =, /, and #)
+# to be disabled. This is useful mainly with the "options" keyword.
+# Use of quotes around parameters that specify filenames is allowed
+# but backslashes must be used instead of slashes in such cases
+# except when a forward slash must be passed to the loader,
+# such as when passing a root= option to a Linux kernel.
 
 # Below are several sample boot stanzas. All are disabled by default.
 # Find one similar to what is required, copy it, remove the "disabled"
@@ -947,7 +946,7 @@ menuentry "Windows 7" {
 }
 
 # EFI shells are programs just like boot loaders, and can be
-# launched in the same way. You can pass a shell the name of
+# launched in the same way. A shell can be passed the name of
 # a script that it is to run on the "options" line. The script
 # could initialize hardware and then launch an OS, or it could
 # do something entirely different.

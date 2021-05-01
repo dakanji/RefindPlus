@@ -78,8 +78,8 @@
 
 static
 VOID WarnSecureBootError(
-    CHAR16 *Name,
-    BOOLEAN Verbose
+    CHAR16  *Name,
+    BOOLEAN  Verbose
 ) {
     CHAR16 *ShowScreenStrA = NULL;
     CHAR16 *ShowScreenStrB = NULL;
@@ -211,9 +211,9 @@ EFI_STATUS StartEFIImage (
     IN CHAR16        *Filename,
     IN CHAR16        *LoadOptions,
     IN CHAR16        *ImageTitle,
-    IN CHAR8         OSType,
-    IN BOOLEAN       Verbose,
-    IN BOOLEAN       IsDriver
+    IN CHAR8          OSType,
+    IN BOOLEAN        Verbose,
+    IN BOOLEAN        IsDriver
 ) {
     EFI_STATUS         Status;
     EFI_STATUS         ReturnStatus;

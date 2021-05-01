@@ -63,70 +63,70 @@
 #include "globalExtra.h"
 
 // Tag classifications; used in various ways.
-#define TAG_ABOUT            (1)
-#define TAG_REBOOT           (2)
-#define TAG_SHUTDOWN         (3)
-#define TAG_TOOL             (4)
-#define TAG_LOADER           (5)
-#define TAG_LEGACY           (6)
-#define TAG_FIRMWARE_LOADER  (7)
-#define TAG_EXIT             (8)
-#define TAG_SHELL            (9)
-#define TAG_GPTSYNC          (10)
-#define TAG_LEGACY_UEFI      (11)
-#define TAG_APPLE_RECOVERY   (12)
-#define TAG_WINDOWS_RECOVERY (13)
-#define TAG_MOK_TOOL         (14)
-#define TAG_FIRMWARE         (15)
-#define TAG_MEMTEST          (16)
-#define TAG_GDISK            (17)
-#define TAG_NETBOOT          (18)
-#define TAG_CSR_ROTATE       (19)
-#define TAG_FWUPDATE_TOOL    (20)
-#define TAG_HIDDEN           (21)
-#define TAG_INSTALL          (22)
-#define TAG_BOOTORDER        (23)
-#define TAG_PRE_BOOTKICKER   (24)
-#define TAG_SHOW_BOOTKICKER  (25)
-#define TAG_PRE_NVRAMCLEAN   (26)
-#define TAG_NVRAMCLEAN       (27)
-#define NUM_TOOLS            (28)
+#define TAG_ABOUT               (1)
+#define TAG_REBOOT              (2)
+#define TAG_SHUTDOWN            (3)
+#define TAG_TOOL                (4)
+#define TAG_LOADER              (5)
+#define TAG_LEGACY              (6)
+#define TAG_FIRMWARE_LOADER     (7)
+#define TAG_EXIT                (8)
+#define TAG_SHELL               (9)
+#define TAG_GPTSYNC            (10)
+#define TAG_LEGACY_UEFI        (11)
+#define TAG_APPLE_RECOVERY     (12)
+#define TAG_WINDOWS_RECOVERY   (13)
+#define TAG_MOK_TOOL           (14)
+#define TAG_FIRMWARE           (15)
+#define TAG_MEMTEST            (16)
+#define TAG_GDISK              (17)
+#define TAG_NETBOOT            (18)
+#define TAG_CSR_ROTATE         (19)
+#define TAG_FWUPDATE_TOOL      (20)
+#define TAG_HIDDEN             (21)
+#define TAG_INSTALL            (22)
+#define TAG_BOOTORDER          (23)
+#define TAG_PRE_BOOTKICKER     (24)
+#define TAG_SHOW_BOOTKICKER    (25)
+#define TAG_PRE_NVRAMCLEAN     (26)
+#define TAG_NVRAMCLEAN         (27)
+#define NUM_TOOLS              (28)
 
 #define NUM_SCAN_OPTIONS 11
 
 #define DEFAULT_ICONS_DIR L"icons"
 
 // OS bit codes (Actual Decimal); used in GlobalConfig.GraphicsFor
-#define GRAPHICS_FOR_OSX        1
-#define GRAPHICS_FOR_LINUX      2
-#define GRAPHICS_FOR_ELILO      4
-#define GRAPHICS_FOR_GRUB       8
-#define GRAPHICS_FOR_WINDOWS   16
-#define GRAPHICS_FOR_OPENCORE  32
-#define GRAPHICS_FOR_CLOVER    64
+#define GRAPHICS_FOR_OSX         1
+#define GRAPHICS_FOR_LINUX       2
+#define GRAPHICS_FOR_ELILO       4
+#define GRAPHICS_FOR_GRUB        8
+#define GRAPHICS_FOR_WINDOWS    16
+#define GRAPHICS_FOR_OPENCORE   32
+#define GRAPHICS_FOR_CLOVER     64
 
 // Type of legacy (BIOS) boot support detected
-#define LEGACY_TYPE_NONE 0
-#define LEGACY_TYPE_MAC  1
-#define LEGACY_TYPE_UEFI 2
+#define LEGACY_TYPE_NONE         0
+#define LEGACY_TYPE_MAC          1
+#define LEGACY_TYPE_UEFI         2
 
 // How was a loader added to the menu?
-#define DISCOVERY_TYPE_UNKNOWN  0
-#define DISCOVERY_TYPE_AUTO     1
-#define DISCOVERY_TYPE_MANUAL   2
+#define DISCOVERY_TYPE_UNKNOWN   0
+#define DISCOVERY_TYPE_AUTO      1
+#define DISCOVERY_TYPE_MANUAL    2
 
 #ifdef __MAKEWITH_GNUEFI
 //
 // define BBS Device Types
 //
-#define BBS_FLOPPY        0x01
-#define BBS_HARDDISK      0x02
-#define BBS_CDROM         0x03
-#define BBS_PCMCIA        0x04
-#define BBS_USB           0x05
-#define BBS_EMBED_NETWORK 0x06
-#define BBS_BEV_DEVICE    0x80
-#define BBS_UNKNOWN       0xff
+#define BBS_FLOPPY             0x01
+#define BBS_HARDDISK           0x02
+#define BBS_CDROM              0x03
+#define BBS_PCMCIA             0x04
+#define BBS_USB                0x05
+#define BBS_EMBED_NETWORK      0x06
+#define BBS_BEV_DEVICE         0x80
+#define BBS_UNKNOWN            0xff
 #endif
 
 // BIOS Boot Specification (BBS) device types, as returned in DevicePath->Type field
@@ -138,37 +138,37 @@
 #define DEVICE_TYPE_END        0x75 /* end of path */
 
 // Filesystem type identifiers. Not all are yet used....
-#define FS_TYPE_UNKNOWN        0
-#define FS_TYPE_WHOLEDISK      1
-#define FS_TYPE_FAT            2
-#define FS_TYPE_EXFAT          3
-#define FS_TYPE_NTFS           4
-#define FS_TYPE_EXT2           5
-#define FS_TYPE_EXT3           6
-#define FS_TYPE_EXT4           7
-#define FS_TYPE_HFSPLUS        8
-#define FS_TYPE_REISERFS       9
-#define FS_TYPE_BTRFS          10
-#define FS_TYPE_XFS            11
-#define FS_TYPE_JFS            12
-#define FS_TYPE_ISO9660        13
-#define FS_TYPE_APFS           14
-#define NUM_FS_TYPES           15
+#define FS_TYPE_UNKNOWN           0
+#define FS_TYPE_WHOLEDISK         1
+#define FS_TYPE_FAT               2
+#define FS_TYPE_EXFAT             3
+#define FS_TYPE_NTFS              4
+#define FS_TYPE_EXT2              5
+#define FS_TYPE_EXT3              6
+#define FS_TYPE_EXT4              7
+#define FS_TYPE_HFSPLUS           8
+#define FS_TYPE_REISERFS          9
+#define FS_TYPE_BTRFS            10
+#define FS_TYPE_XFS              11
+#define FS_TYPE_JFS              12
+#define FS_TYPE_ISO9660          13
+#define FS_TYPE_APFS             14
+#define NUM_FS_TYPES             15
 
 // How to scale banner images
-#define BANNER_NOSCALE         0
-#define BANNER_FILLSCREEN      1
+#define BANNER_NOSCALE            0
+#define BANNER_FILLSCREEN         1
 
 // Sizes of the default icons; badges are 1/4 the big icon size
-#define DEFAULT_SMALL_ICON_SIZE 48
+#define DEFAULT_SMALL_ICON_SIZE  48
 #define DEFAULT_BIG_ICON_SIZE   128
-#define DEFAULT_MOUSE_SIZE      16
+#define DEFAULT_MOUSE_SIZE       16
 
 // Codes for types of icon sizes; used for indexing into GlobalConfig.IconSizes[]
-#define ICON_SIZE_BADGE 0
-#define ICON_SIZE_SMALL 1
-#define ICON_SIZE_BIG   2
-#define ICON_SIZE_MOUSE 3
+#define ICON_SIZE_BADGE           0
+#define ICON_SIZE_SMALL           1
+#define ICON_SIZE_BIG             2
+#define ICON_SIZE_MOUSE           3
 
 // Minimum vertical resolution for a screen to be considered High-DPI
 #define HIDPI_MIN 1601
@@ -179,13 +179,17 @@
 
 // Names of binaries that can manage MOKs....
 #if defined (EFIX64)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+    KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
 #elif defined(EFI32)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+    KeyTool.efi,KeyTool-signed.efi,mmia32.efi"
 #elif defined(EFIAARCH64)
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+    KeyTool.efi,KeyTool-signed.efi,mmaa64.efi"
 #else
-    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
+    #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,\
+    KeyTool.efi,KeyTool-signed.efi"
 #endif
 
 // Names of binaries that can update firmware....
@@ -201,15 +205,22 @@
 
 // Directories to search for these MOK-managing programs. Note that SelfDir is
 // searched in addition to these locations....
-#define MOK_LOCATIONS           L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
+#define MOK_LOCATIONS \
+L"\\,EFI\\tools,EFI\\fedora,EFI\\redhat,EFI\\ubuntu,EFI\\suse,EFI\\opensuse,EFI\\altlinux"
 // Directories to search for memtest86....
-#define MEMTEST_LOCATIONS       L"EFI\\BOOT\\x64_tools,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
+#define MEMTEST_LOCATIONS \
+L"EFI\\BOOT\\x64_tools,EFI\\tools_x64,EFI\\tools,EFI\\tools\\memtest86,\
+EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Directories to search for BootKicker....
-#define BOOTKICKER_LOCATIONS       L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+#define BOOTKICKER_LOCATIONS \
+L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Directories to search for CleanNvram....
-#define NVRAMCLEAN_LOCATIONS       L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+#define NVRAMCLEAN_LOCATIONS \
+L"\\EFI\\BOOT\\x64_tools,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 // Files that may be Windows recovery files
-#define WINDOWS_RECOVERY_FILES  L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+#define WINDOWS_RECOVERY_FILES \
+L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\
+Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // Files that may be Mac OS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 #define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
@@ -280,9 +291,10 @@
 #define KERNEL_VERSION L"%v"
 #define MAX_RES_CODE 2147483647 /* 2^31 - 1 */
 
+
 #ifdef __MAKEWITH_TIANO
-// DA-TAG: Limit to TianoCore
-// Forward Declaration for OpenCore Integration
+// DA-TAG: Forward Declaration for OpenCore Integration
+//         Limit to TianoCore Builds
 EFI_STATUS OcProvideConsoleGop (IN BOOLEAN Route);
 EFI_STATUS OcProvideUgaPassThrough (VOID);
 EFI_STATUS OcUseDirectGop (IN INT32 CacheType);
@@ -304,138 +316,138 @@ typedef struct _uint32_list {
 } UINT32_LIST;
 
 typedef struct {
-   UINT8 Flags;
-   UINT8 StartCHS1;
-   UINT8 StartCHS2;
-   UINT8 StartCHS3;
-   UINT8 Type;
-   UINT8 EndCHS1;
-   UINT8 EndCHS2;
-   UINT8 EndCHS3;
+   UINT8  Flags;
+   UINT8  StartCHS1;
+   UINT8  StartCHS2;
+   UINT8  StartCHS3;
+   UINT8  Type;
+   UINT8  EndCHS1;
+   UINT8  EndCHS2;
+   UINT8  EndCHS3;
    UINT32 StartLBA;
    UINT32 Size;
 } MBR_PARTITION_INFO;
 
 typedef struct {
    EFI_DEVICE_PATH     *DevicePath;
-   EFI_HANDLE          DeviceHandle;
+   EFI_HANDLE           DeviceHandle;
    EFI_FILE            *RootDir;
    CHAR16              *PartName;
    CHAR16              *FsName;   // Filesystem name
    CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
-   EFI_GUID            VolUuid;
-   EFI_GUID            PartGuid;
-   EFI_GUID            PartTypeGuid;
-   BOOLEAN             IsMarkedReadOnly;
+   EFI_GUID             VolUuid;
+   EFI_GUID             PartGuid;
+   EFI_GUID             PartTypeGuid;
+   BOOLEAN              IsMarkedReadOnly;
    EG_IMAGE            *VolIconImage;
    EG_IMAGE            *VolBadgeImage;
-   UINTN               DiskKind;
-   BOOLEAN             HasBootCode;
+   UINTN                DiskKind;
+   BOOLEAN              HasBootCode;
    CHAR16              *OSIconName;
    CHAR16              *OSName;
-   BOOLEAN             IsMbrPartition;
-   UINTN               MbrPartitionIndex;
+   BOOLEAN              IsMbrPartition;
+   UINTN                MbrPartitionIndex;
    EFI_BLOCK_IO        *BlockIO;
-   UINT64              BlockIOOffset;
+   UINT64               BlockIOOffset;
    EFI_BLOCK_IO        *WholeDiskBlockIO;
    EFI_DEVICE_PATH     *WholeDiskDevicePath;
    MBR_PARTITION_INFO  *MbrPartitionTable;
-   BOOLEAN             IsReadable;
-   UINT32              FSType;
+   BOOLEAN              IsReadable;
+   UINT32               FSType;
 } REFIT_VOLUME;
 
 typedef struct _refit_menu_entry {
    CHAR16      *Title;
-   UINTN       Tag;
-   UINTN       Row;
-   CHAR16      ShortcutDigit;
-   CHAR16      ShortcutLetter;
+   UINTN        Tag;
+   UINTN        Row;
+   CHAR16       ShortcutDigit;
+   CHAR16       ShortcutLetter;
    EG_IMAGE    *Image;
    EG_IMAGE    *BadgeImage;
    struct _refit_menu_screen *SubScreen;
 } REFIT_MENU_ENTRY;
 
 typedef struct _refit_menu_screen {
-   CHAR16      *Title; // For EFI firmware entry, this includes "Reboot to" prefix
-   EG_IMAGE    *TitleImage;
-   UINTN       InfoLineCount;
-   CHAR16      **InfoLines;
-   UINTN       EntryCount;     // total number of entries registered
+   CHAR16            *Title;          // For EFI firmware entry, this includes "Reboot to" prefix
+   EG_IMAGE          *TitleImage;
+   UINTN              InfoLineCount;
+   CHAR16           **InfoLines;
+   UINTN              EntryCount;     // total number of entries registered
    REFIT_MENU_ENTRY **Entries;
-   UINTN       TimeoutSeconds;
-   CHAR16      *TimeoutText;
-   CHAR16      *Hint1;
-   CHAR16      *Hint2;
+   UINTN              TimeoutSeconds;
+   CHAR16            *TimeoutText;
+   CHAR16            *Hint1;
+   CHAR16            *Hint2;
 } REFIT_MENU_SCREEN;
 
 typedef struct {
-   REFIT_MENU_ENTRY me;
-   CHAR16           *Title; // For EFI firmware entry, this is "raw" title
+   REFIT_MENU_ENTRY  me;
+   CHAR16           *Title;            // For EFI firmware entry, this is "raw" title
    CHAR16           *LoaderPath;
    REFIT_VOLUME     *Volume;
-   BOOLEAN          UseGraphicsMode;
-   BOOLEAN          Enabled;
+   BOOLEAN           UseGraphicsMode;
+   BOOLEAN           Enabled;
    CHAR16           *LoadOptions;
-   CHAR16           *InitrdPath; // Linux stub loader only
-   CHAR8            OSType;
-   UINTN            DiscoveryType;
-   EFI_DEVICE_PATH  *EfiLoaderPath; // path to NVRAM-defined loader
-   UINT16           EfiBootNum; // Boot#### number for NVRAM-defined loader
+   CHAR16           *InitrdPath;       // Linux stub loader only
+   CHAR8             OSType;
+   UINTN             DiscoveryType;
+   EFI_DEVICE_PATH  *EfiLoaderPath;    // path to NVRAM-defined loader
+   UINT16            EfiBootNum;       // Boot#### number for NVRAM-defined loader
 } LOADER_ENTRY;
 
 typedef struct {
-   REFIT_MENU_ENTRY  me;
+   REFIT_MENU_ENTRY   me;
    REFIT_VOLUME      *Volume;
    BDS_COMMON_OPTION *BdsOption;
    CHAR16            *LoadOptions;
-   BOOLEAN           Enabled;
+   BOOLEAN            Enabled;
 } LEGACY_ENTRY;
 
 typedef struct {
-   BOOLEAN          TextOnly;
-   BOOLEAN          ScanAllLinux;
-   BOOLEAN          DeepLegacyScan;
-   BOOLEAN          EnableAndLockVMX;
-   BOOLEAN          FoldLinuxKernels;
-   BOOLEAN          EnableMouse;
-   BOOLEAN          EnableTouch;
-   BOOLEAN          HiddenTags;
-   BOOLEAN          UseNvram;
-   BOOLEAN          IgnorePreviousBoot;
-   BOOLEAN          TextRenderer;
-   BOOLEAN          UgaPassThrough;
-   BOOLEAN          ProvideConsoleGOP;
-   BOOLEAN          ReloadGOP;
-   BOOLEAN          UseDirectGop;
-   BOOLEAN          ContinueOnWarning;
-   BOOLEAN          ForceTRIM;
-   BOOLEAN          DisableCompatCheck;
-   BOOLEAN          DisableAMFI;
-   BOOLEAN          SupplyAPFS;
-   BOOLEAN          SuppressVerboseAPFS;
-   BOOLEAN          SyncAPFS;
-   BOOLEAN          ProtectNVRAM;
-   BOOLEAN          ScanOtherESP;
-   BOOLEAN          ShutdownAfterTimeout;
-   BOOLEAN          Install;
-   BOOLEAN          WriteSystemdVars;
-   UINTN            RequestedScreenWidth;
-   UINTN            RequestedScreenHeight;
-   UINTN            BannerBottomEdge;
-   UINTN            RequestedTextMode;
-   UINTN            Timeout;
-   UINTN            HideUIFlags;
-   UINTN            MaxTags;     // max. number of OS entries to show simultaneously in graphics mode
-   UINTN            GraphicsFor;
-   UINTN            LegacyType;
-   UINTN            ScanDelay;
-   UINTN            ScreensaverTime;
-   UINTN            MouseSpeed;
-   UINTN            IconSizes[4];
-   UINTN            BannerScale;
-   UINTN            ScaleUI;
-   UINTN            ActiveCSR;
-   UINTN            LogLevel;
+   BOOLEAN           TextOnly;
+   BOOLEAN           ScanAllLinux;
+   BOOLEAN           DeepLegacyScan;
+   BOOLEAN           EnableAndLockVMX;
+   BOOLEAN           FoldLinuxKernels;
+   BOOLEAN           EnableMouse;
+   BOOLEAN           EnableTouch;
+   BOOLEAN           HiddenTags;
+   BOOLEAN           UseNvram;
+   BOOLEAN           IgnorePreviousBoot;
+   BOOLEAN           TextRenderer;
+   BOOLEAN           UgaPassThrough;
+   BOOLEAN           ProvideConsoleGOP;
+   BOOLEAN           ReloadGOP;
+   BOOLEAN           UseDirectGop;
+   BOOLEAN           ContinueOnWarning;
+   BOOLEAN           ForceTRIM;
+   BOOLEAN           DisableCompatCheck;
+   BOOLEAN           DisableAMFI;
+   BOOLEAN           SupplyAPFS;
+   BOOLEAN           SuppressVerboseAPFS;
+   BOOLEAN           SyncAPFS;
+   BOOLEAN           ProtectNVRAM;
+   BOOLEAN           ScanOtherESP;
+   BOOLEAN           ShutdownAfterTimeout;
+   BOOLEAN           Install;
+   BOOLEAN           WriteSystemdVars;
+   UINTN             RequestedScreenWidth;
+   UINTN             RequestedScreenHeight;
+   UINTN             BannerBottomEdge;
+   UINTN             RequestedTextMode;
+   UINTN             Timeout;
+   UINTN             HideUIFlags;
+   UINTN             MaxTags;
+   UINTN             GraphicsFor;
+   UINTN             LegacyType;
+   UINTN             ScanDelay;
+   UINTN             ScreensaverTime;
+   UINTN             MouseSpeed;
+   UINTN             IconSizes[4];
+   UINTN             BannerScale;
+   UINTN             ScaleUI;
+   UINTN             ActiveCSR;
+   UINTN             LogLevel;
    REFIT_VOLUME     *DiscoveredRoot;
    EFI_DEVICE_PATH  *SelfDevicePath;
    CHAR16           *BannerFileName;
@@ -458,8 +470,8 @@ typedef struct {
    CHAR16           *ExtraKernelVersionStrings;
    CHAR16           *SpoofOSXVersion;
    UINT32_LIST      *CsrValues;
-   UINTN            ShowTools[NUM_TOOLS];
-   CHAR8            ScanFor[NUM_SCAN_OPTIONS]; // codes of types of loaders for which to scan
+   UINTN             ShowTools[NUM_TOOLS];
+   CHAR8             ScanFor[NUM_SCAN_OPTIONS];
 } REFIT_CONFIG;
 
 // Global variables
@@ -497,11 +509,13 @@ extern REFIT_MENU_SCREEN    MainMenu;
 extern REFIT_MENU_ENTRY     MenuEntryReturn;
 
 
-VOID AboutRefindPlus(VOID);
-EG_IMAGE * GetDiskBadge(IN UINTN DiskType);
-LOADER_ENTRY * MakeGenericLoaderEntry(VOID);
-VOID StoreLoaderName(IN CHAR16 *Name);
-VOID RescanAll(BOOLEAN DisplayMessage, BOOLEAN Reconnect);
+VOID AboutRefindPlus (VOID);
+VOID StoreLoaderName (IN CHAR16 *Name);
+VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect);
+
+EG_IMAGE * GetDiskBadge (IN UINTN DiskType);
+
+LOADER_ENTRY * MakeGenericLoaderEntry (VOID);
 
 #endif
 

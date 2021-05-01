@@ -82,16 +82,16 @@ BOOLEAN SuppressVerboseAPFS;
 //
 
 EFI_STATUS RefitReadFile (
-    IN EFI_FILE_HANDLE BaseDir,
-    IN CHAR16 *FileName,
-    IN OUT REFIT_FILE *File,
-    OUT UINTN *size
+    IN EFI_FILE_HANDLE  BaseDir,
+    IN CHAR16          *FileName,
+    IN OUT REFIT_FILE  *File,
+    OUT UINTN          *size
 ) {
-    EFI_STATUS      Status;
-    EFI_FILE_HANDLE FileHandle;
+    EFI_STATUS       Status;
+    EFI_FILE_HANDLE  FileHandle;
     EFI_FILE_INFO   *FileInfo;
-    UINT64          ReadSize;
     CHAR16          *Message;
+    UINT64           ReadSize;
 
     File->Buffer     = NULL;
     File->BufferSize = 0;
@@ -276,7 +276,7 @@ CHAR16 * ReadLine (
 // quotes ('"'); it deletes one of them.
 static
 BOOLEAN KeepReading (
-    IN OUT CHAR16 *p,
+    IN OUT CHAR16  *p,
     IN OUT BOOLEAN *IsQuoted
 ) {
    BOOLEAN MoreToRead = FALSE;
@@ -315,12 +315,12 @@ BOOLEAN KeepReading (
 // get a line of tokens from a file
 //
 UINTN ReadTokenLine (
-    IN REFIT_FILE *File,
-    OUT CHAR16 ***TokenList
+    IN REFIT_FILE   *File,
+    OUT CHAR16    ***TokenList
 ) {
-    BOOLEAN         LineFinished, IsQuoted = FALSE;
+    BOOLEAN          LineFinished, IsQuoted = FALSE;
     CHAR16          *Line, *Token, *p;
-    UINTN           TokenCount = 0;
+    UINTN            TokenCount = 0;
 
     *TokenList = NULL;
 
@@ -370,10 +370,10 @@ UINTN ReadTokenLine (
 
 VOID FreeTokenLine (
     IN OUT CHAR16 ***TokenList,
-    IN OUT UINTN *TokenCount
+    IN OUT UINTN    *TokenCount
 ) {
     // TODO: also free the items
-    FreeList ((VOID ***)TokenList, TokenCount);
+    FreeList ((VOID ***) TokenList, TokenCount);
 }
 
 // handle a parameter with a single integer argument
@@ -397,9 +397,9 @@ HandleInt (
 // handle a parameter with a single string argument
 static
 VOID HandleString (
-    IN CHAR16 **TokenList,
-    IN UINTN TokenCount,
-    OUT CHAR16 **Target
+    IN  CHAR16  **TokenList,
+    IN  UINTN     TokenCount,
+    OUT CHAR16  **Target
 ) {
     if ((TokenCount == 2) && Target) {
         MyFreePool (*Target);
@@ -414,11 +414,11 @@ VOID HandleString (
 // the tokens replace the current string.
 static
 VOID HandleStrings (
-    IN CHAR16 **TokenList,
-    IN UINTN TokenCount,
+    IN  CHAR16 **TokenList,
+    IN  UINTN    TokenCount,
     OUT CHAR16 **Target
 ) {
-   UINTN i;
+   UINTN   i;
    BOOLEAN AddMode = FALSE;
 
    if ((TokenCount > 2) && (StrCmp (TokenList[1], L"+") == 0)) {
@@ -444,14 +444,14 @@ VOID HandleStrings (
 // Target.
 static
 VOID HandleHexes (
-    IN CHAR16 **TokenList,
-    IN UINTN TokenCount,
-    IN UINTN MaxValue,
-    OUT UINT32_LIST **Target
+    IN  CHAR16       **TokenList,
+    IN  UINTN          TokenCount,
+    IN  UINTN          MaxValue,
+    OUT UINT32_LIST  **Target
 ) {
-    UINTN       InputIndex = 1, i;
-    UINT32      Value;
-    UINT32_LIST *EndOfList = NULL;
+    UINTN        InputIndex = 1, i;
+    UINT32       Value;
+    UINT32_LIST *EndOfList  = NULL;
     UINT32_LIST *NewEntry;
 
     if ((TokenCount > 2) && (StrCmp (TokenList[1], L"+") == 0)) {
@@ -516,7 +516,7 @@ UINTN HandleTime (
 static
 BOOLEAN HandleBoolean (
     IN CHAR16 **TokenList,
-    IN UINTN TokenCount
+    IN UINTN    TokenCount
 ) {
    BOOLEAN TruthValue = TRUE;
 
@@ -533,7 +533,7 @@ BOOLEAN HandleBoolean (
 // defined by the third and fourth tokens in the TokenList.
 static
 VOID SetDefaultByTime (
-    IN CHAR16 **TokenList,
+    IN  CHAR16 **TokenList,
     OUT CHAR16 **Default
 ) {
    EFI_STATUS            Status;
@@ -1102,15 +1102,15 @@ VOID ReadConfig (
 static
 VOID AddSubmenu (
     LOADER_ENTRY *Entry,
-    REFIT_FILE *File,
+    REFIT_FILE   *File,
     REFIT_VOLUME *Volume,
-    CHAR16 *Title
+    CHAR16       *Title
 ) {
-    REFIT_MENU_SCREEN  *SubScreen;
-    LOADER_ENTRY       *SubEntry;
-    UINTN              TokenCount;
+    REFIT_MENU_SCREEN   *SubScreen;
+    LOADER_ENTRY        *SubEntry;
+    UINTN                TokenCount;
     CHAR16             **TokenList;
-    CHAR16             *TitleMenu = NULL;
+    CHAR16              *TitleMenu = NULL;
 
     SubScreen = InitializeSubScreen (Entry);
     // Set defaults for the new entry; will be modified based on lines read from the config. file....
@@ -1190,16 +1190,16 @@ VOID AddSubmenu (
 // list of entries.
 static
 LOADER_ENTRY * AddStanzaEntries (
-    REFIT_FILE *File,
+    REFIT_FILE   *File,
     REFIT_VOLUME *Volume,
-    CHAR16 *Title
+    CHAR16       *Title
 ) {
     CHAR16        **TokenList;
-    UINTN         TokenCount;
-    BOOLEAN       DefaultsSet    = FALSE;
-    BOOLEAN       AddedSubmenu   = FALSE;
+    UINTN          TokenCount;
+    BOOLEAN        DefaultsSet    = FALSE;
+    BOOLEAN        AddedSubmenu   = FALSE;
     LOADER_ENTRY  *Entry;
-    REFIT_VOLUME  *CurrentVolume = Volume;
+    REFIT_VOLUME  *CurrentVolume  = Volume;
     REFIT_VOLUME  *PreviousVolume;
 
    // prepare the menu entry
@@ -1224,7 +1224,7 @@ LOADER_ENTRY * AddStanzaEntries (
    #if REFIT_DEBUG > 0
    static BOOLEAN OtherCall;
    if (OtherCall) {
-       LOG(1, LOG_STAR_HEAD_SEP, L"NEXT STANZA");
+       LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
    }
    OtherCall = TRUE;
    #endif
@@ -1373,11 +1373,11 @@ LOADER_ENTRY * AddStanzaEntries (
 VOID ScanUserConfigured (
     CHAR16 *FileName
 ) {
-    EFI_STATUS        Status;
-    REFIT_FILE        File;
+    EFI_STATUS         Status;
+    REFIT_FILE         File;
     REFIT_VOLUME      *Volume;
-    CHAR16            **TokenList;
-    UINTN             TokenCount, size;
+    CHAR16           **TokenList;
+    UINTN              TokenCount, size;
     LOADER_ENTRY      *Entry;
 
     #if REFIT_DEBUG > 0
@@ -1690,9 +1690,9 @@ CHAR16 * GetFirstOptionsFromFile (
     IN CHAR16 *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
-    UINTN        TokenCount;
+    UINTN         TokenCount;
     CHAR16       *Options = NULL;
-    CHAR16       **TokenList;
+    CHAR16      **TokenList;
     REFIT_FILE   *File;
 
     File = ReadLinuxOptionsFile (LoaderPath, Volume);

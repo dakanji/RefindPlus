@@ -47,7 +47,6 @@
  * Modifications distributed under the preceding terms.
  */
 
-// July 2020: Extensively modiied by dakanji (sf.net/u/dakanji/profile)
 #include "libegint.h"
 #include "../MainLoader/screenmgt.h"
 #include "../MainLoader/global.h"

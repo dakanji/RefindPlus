@@ -40,7 +40,7 @@ While RefindPlus will function with the rEFInd configuration file, `refind.conf`
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
 
 ## Additional Configurable Functionality
-RefindPlus-specific funtionality can be activated by adding the tokens below to a rEFInd configuration file.
+RefindPlus-Specific funtionality can be activated by adding the tokens below to a rEFInd configuration file.
 
 Token | Functionality
 :----: | :----:
@@ -78,7 +78,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 ar
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format
   * Levels 1 to 4 output logs equivalent to the detailed upstream format
-- rEFInd now scans other ESPs for loaders in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-specific `scan_other_esp` configuration token.
+- rEFInd now scans other ESPs for loaders in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).

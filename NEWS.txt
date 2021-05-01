@@ -2,7 +2,7 @@
 -----------------------
 - Fixes Memory Management Issues
   * Misc issues mainly introduced in v0.13.2.AA
-  * Makes 'MyFreePool' calls by reference to ensure pointers are set to a NULL value
+  * Passes 'MyFreePool' pointer params by reference to ensure they can be set to a NULL value
 - Fixes HiddenLegacy Handling
   * HiddenLegacy tags were not being handled when scanning for bootloaders
   * This bug was introduced in v0.13.2.AA (Commit bda56bf8)
@@ -28,7 +28,7 @@
   * Progam hangs when 'fold_linux_kernels' is active and Linux instances with multiple kernels are present
   * This bug was introduced in v0.13.2.AA (Commit 68c7af0)
 - Fixes volume badge icon detection bug
-  * ".VolumeIcon" file were not being detected as meant to be
+  * ".VolumeIcon" files were not being detected as meant to be
   * This bug was introduced in v0.13.2.AA (Commit 4bd2f6c)
 - Improves Upstream Logging Format and Coverage
   * Formatted for better readability and incorporates key items from the native format
@@ -106,12 +106,68 @@
   * Now always activated on Windows boot regardless of whether Legacy or UEFI Windows is detected
 - Adds OpenCore and Clover to "use_graphics_for"
   * The default screen mode on booting these boot loaders can now be set to graphics mode.
-- Incoporates a Variant of the Upstream Logging
+- Incorporates a Variant of the Upstream Logging
   * Combines an equivalent of the upstream logging feature with the existing logging.
   * The previously disabled "log_level" configuration token can now take a numeric log level
     (0 to 4), with levels 1 to 4 giving increasing levels of detail.
   * Different to the upstream implementation, this feature is only available on DEBUG builds and as such,
     Level 0 does not disable the feature but activates the original logging form (logs some unique items).
+
+
+0.13.2 (13 Mar 2021): UPSTREAM RELEASE
+--------------------------------------
+- Fixed memory management bugs that could cause rEFInd to hang under
+  certain unpredictable circumstances.
+- Fixed potential memory management bugs that could cause HFS+, ext2fs, and
+  ext4fs drivers to misbehave.
+- Fixed bug (introduced with version 0.13.1) that caused rEFInd to fail to
+  load properly signed EFI drivers when Secure Boot was enabled and used via
+  Shim.
+- Fixed bug in mvrefind that would cause it to fail to create a new
+  NVRAM entry to point to the moved rEFInd.
+- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur").
+- Improved Secure Boot support in refind-install script: The script can now
+  install a Secure Boot key using mokutil, which can slightly simplify the
+  MOK setup. It also now creates a backup NVRAM entry to boot directly,
+  rather than via a Shim, if installed with the --shim option. This should
+  help on systems with custom Secure Boot key sets that don't rely on Shim,
+  but with a stray Shim binary present on the ESP that a package script will
+  detect and pass as a --shim option to rEFInd. If this configuration causes
+  a Secure Boot failure on launching Shim, then it should fail over to the
+  direct boot and be fine. (Some EFIs will hang rather than fail over to the
+  next entry, though, and this change won't help with them.)
+- More logging improvements, including bumping the maximum log_level from 3
+  to 4.
+- Improved separation of filesystem name vs. partition name internally. This
+  can make for more accurate OS icon choices in some situations, such as if
+  both names are set but only the partition name contains useful
+  information.
+- Previously, when setting "use_nvram false", rEFInd would use the "vars"
+  subdirectory of its own directory; and if that was unwritable (say, if it
+  was on an HFS+ volume), then rEFInd would not store its own variables,
+  such as PreviousBoot and HiddenTags. With this version, rEFInd will now
+  use the "vars" subdirectory of rEFInd's own directory; if that's not
+  available, it will use a directory called "refind-vars" in the root
+  directory of the first ESP that rEFInd can locate; and if neither is
+  available, rEFInd will use NVRAM storage instead, as if "use_nvram true"
+  had been set.
+- Made rEFInd's self-install code less finicky about the success of
+  copying configuration, icons, and driver files. Previously it reported a
+  failure and did not modify NVRAM if any of these failed to copy. Now it
+  should register itself, although it does complain on screen and log
+  details (if logging is enabled). This can help if installing from a source
+  that lacks drivers for a detectable Linux filesystem (ext2/3/4fs,
+  ReiserFS, Btrfs, or HFS+).
+- Adjusted reporting of SIP values; added back 0x77 as an interpreted value
+  for on-screen notification when rotating through values.
+- rEFInd can now identify JFS volumes as such, if a third-party JFS driver
+  is installed.
+- Added support for Booster initrd files, which are named "booster*", rather
+  than "init*". See https://github.com/anatol/booster and/or
+  https://wiki.archlinux.org/index.php/Booster for more on Booster.
+- Added icon for Manjaro Linux.
+- Swapped out expired CentOS Secure Boot keys for new ones.
+- Fixed build problem with GNU-EFI 3.0.13.
 
 
 0.13.1.AB (02 Mar 2021):
@@ -140,7 +196,7 @@
   * Selected resolutions larger than screen size reported as possibility upstream have not been observed so far
   * To be borne in mind for changes if such reports are received
   * Still accepts upstream config files including the new 'Max' resolution option (which is disregarded)
-  * All other upstream options incoporated including rebooting into firmware efi and the new manual stanza options
+  * All other upstream options incorporated including rebooting into firmware efi and the new manual stanza options
   * Does not implement 'firmware_bootnum' manual stanzas dues to reliability issues
 - Fixes Potential GNU-EFI Build Failure (Partial)
   * The feature that provides Strict UEFI 2.x GOP has only ever worked on versions compiled with Tianocore.

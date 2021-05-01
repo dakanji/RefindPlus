@@ -105,32 +105,31 @@ EG_IMAGE * egDecodeICNS (
     IN BOOLEAN  WantAlpha
 ) {
     EG_IMAGE            *NewImage;
-    UINT8               *Ptr, *BufferEnd, *DataPtr, *MaskPtr;
     UINT32               BlockLen, DataLen, MaskLen;
-    UINTN                PixelCount, i;
-    UINT8               *CompData;
     UINTN                CompLen;
-    UINT8               *SrcPtr;
-    EG_PIXEL            *DestPtr;
-    UINTN                SizesToTry[MAX_ICNS_SIZES + 1] = {IconSize, 128, 48, 32, 16};
+    UINTN                i, PixelCount;
     UINTN                SizeToTry = 0;
+    UINTN                SizesToTry[MAX_ICNS_SIZES + 1] = {IconSize, 128, 48, 32, 16};
+    UINT8               *Ptr, *SrcPtr, *DataPtr, *MaskPtr;
+    UINT8               *CompData, *BufferEnd;
+    EG_PIXEL            *DestPtr;
 
     if (FileDataLength < 8 || FileData   == NULL ||
         FileData[0] != 'i' || FileData[1] != 'c' ||
         FileData[2] != 'n' || FileData[3] != 's'
     ) {
-        // not an icns file...
+        // not an icns file
         return NULL;
     }
 
-    DataPtr = NULL;
     DataLen = 0;
-    MaskPtr = NULL;
     MaskLen = 0;
+    DataPtr = NULL;
+    MaskPtr = NULL;
 
     do {
-        IconSize  = SizesToTry[SizeToTry];
         Ptr       = FileData + 8;
+        IconSize  = SizesToTry[SizeToTry];
         BufferEnd = FileData + FileDataLength;
 
         // iterate over tagged blocks in the file
@@ -153,7 +152,7 @@ EG_IMAGE * egDecodeICNS (
                         Ptr[10] == 0 &&
                         Ptr[11] == 0
                     ) {
-                        DataPtr = Ptr + 12;
+                        DataPtr =      Ptr + 12;
                         DataLen = BlockLen - 12;
                     }
                 }
@@ -162,7 +161,7 @@ EG_IMAGE * egDecodeICNS (
                         Ptr[2]  == 'm' &&
                         Ptr[3]  == 'k'
                 ) {
-                    MaskPtr = Ptr + 8;
+                    MaskPtr =      Ptr + 8;
                     MaskLen = BlockLen - 8;
                 }
             }
@@ -172,7 +171,7 @@ EG_IMAGE * egDecodeICNS (
                     Ptr[2] == '3' &&
                     Ptr[3] == '2'
                 ) {
-                    DataPtr = Ptr + 8;
+                    DataPtr =      Ptr + 8;
                     DataLen = BlockLen - 8;
                 }
                 else if (Ptr[0] == 'h' &&
@@ -180,7 +179,7 @@ EG_IMAGE * egDecodeICNS (
                         Ptr[2]  == 'm' &&
                         Ptr[3]  == 'k'
                 ) {
-                    MaskPtr = Ptr + 8;
+                    MaskPtr =      Ptr + 8;
                     MaskLen = BlockLen - 8;
                 }
             }
@@ -190,7 +189,7 @@ EG_IMAGE * egDecodeICNS (
                     Ptr[2] == '3' &&
                     Ptr[3] == '2'
                 ) {
-                    DataPtr = Ptr + 8;
+                    DataPtr =      Ptr + 8;
                     DataLen = BlockLen - 8;
                 }
                 else if (Ptr[0] == 'l' &&
@@ -198,7 +197,7 @@ EG_IMAGE * egDecodeICNS (
                         Ptr[2]  == 'm' &&
                         Ptr[3]  == 'k'
                 ) {
-                    MaskPtr = Ptr + 8;
+                    MaskPtr =      Ptr + 8;
                     MaskLen = BlockLen - 8;
                 }
             }
@@ -208,7 +207,7 @@ EG_IMAGE * egDecodeICNS (
                     Ptr[2] == '3' &&
                     Ptr[3] == '2'
                 ) {
-                    DataPtr = Ptr + 8;
+                    DataPtr =      Ptr + 8;
                     DataLen = BlockLen - 8;
                 }
                 else if (Ptr[0] == 's' &&
@@ -216,7 +215,7 @@ EG_IMAGE * egDecodeICNS (
                         Ptr[2]  == 'm' &&
                         Ptr[3]  == 'k'
                 ) {
-                    MaskPtr = Ptr + 8;
+                    MaskPtr =      Ptr + 8;
                     MaskLen = BlockLen - 8;
                 }
             }

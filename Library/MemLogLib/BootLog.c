@@ -362,28 +362,28 @@ DeepLoggger (
             FinalMessage = StrDuplicate (L"\n");
             break;
         case LOG_STAR_HEAD_SEP:
-            FinalMessage = PoolPrint (L"\n              ***[ %s\n", *Message);
+            FinalMessage = PoolPrint (L"\n                ***[ %s\n", *Message);
             break;
         case LOG_STAR_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n\n** ** *** *** ***[ %s ]*** *** *** ** **\n\n", *Message);
+            FinalMessage = PoolPrint (L"\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
             break;
         case LOG_LINE_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n=================[ %s ]=================\n", *Message);
+            FinalMessage = PoolPrint (L"\n===================[ %s ]===================\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint (L"\n-----------------[ %s ]-----------------\n", *Message);
+            FinalMessage = PoolPrint (L"\n-------------------[ %s ]-------------------\n", *Message);
             break;
         case LOG_LINE_DASH_SEP:
-            FinalMessage = PoolPrint (L"\n- - - - - - - - -[ %s ]- - - - - - - - -\n", *Message);
+            FinalMessage = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
             break;
         case LOG_THREE_STAR_SEP:
-            FinalMessage = PoolPrint (L"\n. . . . . . . ***[ %s ]*** . . . . . . .\n", *Message);
+            FinalMessage = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
             break;
         case LOG_THREE_STAR_MID:
-            FinalMessage = PoolPrint (L"              ***[ %s\n", *Message);
+            FinalMessage = PoolPrint (L"                ***[ %s\n", *Message);
             break;
         case LOG_THREE_STAR_END:
-            FinalMessage = PoolPrint (L"              ***[ %s ]***\n\n", *Message);
+            FinalMessage = PoolPrint (L"                ***[ %s ]***\n\n", *Message);
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors

@@ -13,14 +13,14 @@
 
 VOID
 DebugLog (
-  IN        INTN  DebugMode,
-  IN  CONST CHAR8 *FormatString, ...
+    IN        INTN  DebugMode,
+    IN  CONST CHAR8 *FormatString, ...
 );
 
 #if REFIT_DEBUG == 0
-  #define MsgLog(...)
+    #define MsgLog(...)
 #else
-  #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
+    #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
 #endif
 
 #if REFIT_DEBUG > 0
@@ -34,7 +34,7 @@ DeepLoggger (
   IN  CHAR16 **Message
 );
 
-// NB: gLogTemp is freed in DeepLoggger
+// NB: 'gLogTemp' is freed in DeepLoggger
 #define LOG(level, type, ...) \
         gLogTemp = PoolPrint(__VA_ARGS__); \
         DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp);
