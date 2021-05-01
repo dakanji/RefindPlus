@@ -1860,7 +1860,7 @@ VOID ScanInternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for EFI Mode Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for Volumes with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1881,7 +1881,7 @@ VOID ScanExternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for EFI Mode Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for Volumes with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1939,7 +1939,7 @@ VOID ScanFirmwareDefined (
     #if REFIT_DEBUG > 0
     if (Row == 0) {
         LOG(1, LOG_LINE_THIN_SEP,
-            L"Scanning for EFI firmware-defined boot options"
+            L"Scanning for EFI Firmware-Defined Boot Options"
         );
     }
     #endif
@@ -1969,7 +1969,7 @@ VOID ScanFirmwareDefined (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
-        L"Merged firmware don't-scan list is '%s'",
+        L"Merged firmware dont-scan list is '%s'",
         DontScanFirmware
     );
     #endif

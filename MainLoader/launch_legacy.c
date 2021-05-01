@@ -982,7 +982,7 @@ VOID ScanLegacyInternal (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for BIOS/CSM/Legacy Mode Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for Volumes with Mode:- 'BIOS/CSM/Legacy'");
     #endif
 
     FirstLegacyScan = TRUE;
@@ -1011,7 +1011,7 @@ VOID ScanLegacyExternal (
     REFIT_VOLUME *Volume;
 
    #if REFIT_DEBUG > 0
-   LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for BIOS/CSM/Legacy Mode Volumes");
+   LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for Volumes with Mode:- 'BIOS/CSM/Legacy'");
    #endif
 
    FirstLegacyScan = TRUE;
