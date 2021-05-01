@@ -20,6 +20,8 @@
   * Optical disc drives identified and assumption for network volumes
 - Improves Detection of Previously Set NVRAM Variables
   * This helps further reduce unnecessary NVRAM writes
+- Adds 'IgnoreVolumeICNS' Feature
+  * Speeds booting up by not scanning for '.VolumeIcons.icns' files (not typically used)
 
 
 0.13.2.AC (12 Apr 2021):

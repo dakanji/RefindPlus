@@ -2406,8 +2406,16 @@ VOID SetVolumeIcons (
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeIcons for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting '.VolumeIcon' icns for Internal Volumes");
     #endif
+
+    if (GlobalConfig.IgnoreVolumeICNS) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"'IgnoreVolumeICNS' Config Setting is Active");
+        #endif
+
+        return;
+    }
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];

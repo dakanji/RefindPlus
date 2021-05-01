@@ -7,6 +7,17 @@
 ##--------------------------------------------------------------##
 #
 #
+# RefindPlus defaults to scanning for ".VolumeIcon" icns files; which
+# if found, these will be used as the icons for internal volumes. However,
+# most RefindPlus setups do not include these files and most of those that may
+# do, typically Apple Macs, do not require the files as their icons in Refindplus.
+# Hence, scanning for the files typically just slows down the RefindPlus boot process.
+# This setting allows speeding booting RefindPlus up by skipping scanning for these files.
+#
+# Always scans for ".VolumeIcon" icns files when commented out
+#
+#ignore_volume_icns
+
 # RefindPlus defaults to storing the name of the last booted loader in
 # a "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus

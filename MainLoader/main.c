@@ -131,6 +131,7 @@ REFIT_CONFIG GlobalConfig = {
     /* HiddenTags = */ TRUE,
     /* UseNvram = */ FALSE,
     /* IgnorePreviousBoot = */ FALSE,
+    /* IgnoreVolumeICNS = */ FALSE,
     /* TextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,
     /* ProvideConsoleGOP = */ FALSE,

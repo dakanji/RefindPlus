@@ -1021,6 +1021,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"ignore_previous_boot")) {
            GlobalConfig.IgnorePreviousBoot = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"ignore_volume_icns")) {
+           GlobalConfig.IgnoreVolumeICNS = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"text_renderer")) {
            GlobalConfig.TextRenderer = HandleBoolean (TokenList, TokenCount);
         }

@@ -51,6 +51,7 @@ disable_amfi         |Disables AMFI Checks on Mac OS if required.
 disable_compat_check |Disables Mac version compatibility checks if required.
 force_trim           |Forces `TRIM` with non-Apple SSDs on Macs if required.
 ignore_previous_boot |Disables saving the last booted loader if not required.
+ignore_volume_icns   |Disables scanning for `.VolumeIcon` icns files if not required.
 protect_nvram        |Prevents UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop  |Fixes issues with GOP on some legacy units.
 reinstall_gop        |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
