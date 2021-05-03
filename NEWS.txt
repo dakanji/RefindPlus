@@ -1,4 +1,4 @@
-0.13.2.AD (Pre-Release):
+0.13.2.AD (04 May 2021):
 -----------------------
 - Fixes Memory Management Issues
   * Misc issues mainly introduced in v0.13.2.AA

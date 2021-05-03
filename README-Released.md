@@ -11,7 +11,7 @@ The current development focus is on the following units:
 - **XServe2,1**: Early 2008 XServe
 - **XServe3,1**: Early 2009 XServe
 
-However, the fixes and enhancements that RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
+However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
 
 **NB:** This ReadMe reflects the current unreleased code base. [CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Released.md) for that related to the current release.
 
@@ -33,7 +33,7 @@ However, the fixes and enhancements that RefindPlus adds to rEFInd are not limit
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
 
 ## Installation
-[MyBootMgr](https://www.dakanji.com/creations/index.html), an automated preconfigured implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on XServe3,1. However, the RefindPlus efi file can work as a drop-in replacement for the rEFInd efi file. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name). This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd.
+[MyBootMgr](https://www.dakanji.com/creations/index.html), an automated implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on XServe2,1 and XServe3,1. However, the RefindPlus efi file can work as a drop-in replacement for the rEFInd efi file in a rEFInd installation. Hence, you can get the [rEFInd package](https://www.rodsbooks.com/refind/getting.html) and [install this](https://www.rodsbooks.com/refind/installing.html) first. Once rEFInd is installed, replace the rEFInd efi file with the RefindPlus efi file. (Ensure that you rename the RefindPlus efi file to match the rEFInd efi file name). This permits implementing RefindPlus on other Mac types as well as on other operating systems supported by rEFInd.
 
 While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
@@ -51,6 +51,7 @@ disable_amfi         |Disables AMFI Checks on Mac OS if required.
 disable_compat_check |Disables Mac version compatibility checks if required.
 force_trim           |Forces `TRIM` with non-Apple SSDs on Macs if required.
 ignore_previous_boot |Disables saving the last booted loader if not required.
+ignore_volume_icns   |Disables scanning for `.VolumeIcon` icns files if not required.
 protect_nvram        |Prevents UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop  |Fixes issues with GOP on some legacy units.
 reinstall_gop        |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
@@ -64,7 +65,7 @@ text_renderer        |Provides a text renderer that allows text mode when not ot
 uga_pass_through     |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 In addition to the new functions above, the following upsteam functions have been extended:
-- `use_graphics_for`: OpenCore and Clover added to loaders that can be set to boot in graphics mode.
+- `use_graphics_for`: OpenCore and Clover added as options that can be set to boot in graphics mode.
 - `showtools`: Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
