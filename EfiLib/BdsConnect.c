@@ -35,12 +35,12 @@ extern EFI_STATUS AcquireGOP (VOID);
 
 static
 EFI_STATUS EFIAPI daConnectController (
-    IN  EFI_HANDLE               ControllerHandle,
+    IN  EFI_HANDLE                ControllerHandle,
     IN  EFI_HANDLE               *DriverImageHandle   OPTIONAL,
     IN  EFI_DEVICE_PATH_PROTOCOL *RemainingDevicePath OPTIONAL,
-    IN  BOOLEAN                  Recursive
+    IN  BOOLEAN                   Recursive
 ) {
-    EFI_STATUS  Status;
+    EFI_STATUS   Status;
     VOID        *DevicePath;
 
     if (ControllerHandle == NULL) {
@@ -71,20 +71,20 @@ EFI_STATUS EFIAPI daConnectController (
 } // EFI_STATUS daConnectController()
 
 EFI_STATUS ScanDeviceHandles (
-    EFI_HANDLE ControllerHandle,
-    UINTN      *HandleCount,
+    EFI_HANDLE   ControllerHandle,
+    UINTN       *HandleCount,
     EFI_HANDLE **HandleBuffer,
     UINT32     **HandleType
 ) {
-    EFI_STATUS                          Status;
+    EFI_STATUS                            Status;
     EFI_GUID                            **ProtocolGuidArray;
-    UINTN                               k;
-    UINTN                               ArrayCount;
-    UINTN                               ProtocolIndex;
-    UINTN                               OpenInfoCount;
-    UINTN                               OpenInfoIndex;
-    UINTN                               ChildIndex;
-    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY *OpenInfo;
+    UINTN                                 k;
+    UINTN                                 ArrayCount;
+    UINTN                                 ProtocolIndex;
+    UINTN                                 OpenInfoCount;
+    UINTN                                 OpenInfoIndex;
+    UINTN                                 ChildIndex;
+    EFI_OPEN_PROTOCOL_INFORMATION_ENTRY  *OpenInfo;
 
     *HandleCount  = 0;
     *HandleBuffer = NULL;
@@ -207,23 +207,23 @@ EFI_STATUS ScanDeviceHandles (
 EFI_STATUS BdsLibConnectMostlyAllEfi (
     VOID
 ) {
-    EFI_STATUS           XStatus;
-    EFI_STATUS           Status           = EFI_SUCCESS;
+    EFI_STATUS            XStatus;
+    EFI_STATUS            Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
     EFI_HANDLE           *HandleBuffer    = NULL;
-    UINTN                i;
-    UINTN                k;
-    UINTN                HandleCount;
-    UINTN                AllHandleCount;
+    UINTN                 i;
+    UINTN                 k;
+    UINTN                 HandleCount;
+    UINTN                 AllHandleCount;
     UINT32               *HandleType = NULL;
-    BOOLEAN              Parent;
-    BOOLEAN              Device;
-    BOOLEAN              DevTag;
-    BOOLEAN              MakeConnection;
-    PCI_TYPE00           Pci;
-    EFI_PCI_IO_PROTOCOL* PciIo;
+    BOOLEAN               Parent;
+    BOOLEAN               Device;
+    BOOLEAN               DevTag;
+    BOOLEAN               MakeConnection;
+    PCI_TYPE00            Pci;
+    EFI_PCI_IO_PROTOCOL *PciIo;
 
-    UINTN      GOPCount;
+    UINTN       GOPCount;
     EFI_HANDLE *GOPArray         = NULL;
 
     UINTN  SegmentPCI;
@@ -234,7 +234,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
 
 
     #if REFIT_DEBUG > 0
-    UINTN  HexIndex          = 0;
+    UINTN   HexIndex         = 0;
     CHAR16 *GopDevicePathStr = NULL;
     CHAR16 *DevicePathStr    = NULL;
     CHAR16 *DeviceData       = NULL;
@@ -669,7 +669,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     } while (!EFI_ERROR (Status));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_END, L"Connected Handles to Controllers");
+    LOG(1, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
     #endif
 
     if (FoundGOP) {

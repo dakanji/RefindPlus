@@ -71,7 +71,7 @@ extern REFIT_MENU_SCREEN MainMenu;
 EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
     { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
 
-BOOLEAN FirstLegacyScan = FALSE;
+BOOLEAN FirstLegacyScan = TRUE;
 
 static
 EFI_STATUS ActivateMbrPartition (
@@ -667,13 +667,15 @@ LEGACY_ENTRY * AddLegacyEntry (
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
-        LogLineType = LOG_STAR_HEAD_SEP;
+        LogLineType = LOG_THREE_STAR_SEP;
     }
     LOG(1, LogLineType,
         L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
     );
     #endif
+
+    FirstLegacyScan = FALSE;
 
     // prepare the menu entry
     Entry                    = AllocateZeroPool (sizeof (LEGACY_ENTRY));
@@ -830,10 +832,12 @@ VOID ScanLegacyUEFI (
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
-        LogLineType = LOG_STAR_HEAD_SEP;
+        LogLineType = LOG_THREE_STAR_SEP;
     }
     LOG(1, LogLineType, L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
     #endif
+
+    FirstLegacyScan = FALSE;
 
     InitializeListHead (&TempList);
     ZeroMem (Buffer, sizeof (Buffer));
@@ -942,7 +946,6 @@ VOID ScanLegacyVolume (
         }
 
         AddLegacyEntry (NULL, Volume);
-        FirstLegacyScan = FALSE;
     }
 } // static VOID ScanLegacyVolume()
 
@@ -956,11 +959,11 @@ VOID ScanLegacyDisc (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Optical Discs with Mode:- 'BIOS/CSM/Legacy'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Discs with Mode:- 'BIOS/CSM/Legacy'");
     #endif
 
+    FirstLegacyScan = TRUE;
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        FirstLegacyScan = TRUE;
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_OPTICAL) {
@@ -971,6 +974,7 @@ VOID ScanLegacyDisc (
     else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
         ScanLegacyUEFI (BBS_CDROM);
     }
+    FirstLegacyScan = FALSE;
 } // VOID ScanLegacyDisc()
 
 // Scan internal hard disks for legacy (BIOS) boot code
@@ -982,7 +986,7 @@ VOID ScanLegacyInternal (
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for Volumes with Mode:- 'BIOS/CSM/Legacy'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disk Volumes with Mode:- 'BIOS/CSM/Legacy'");
     #endif
 
     FirstLegacyScan = TRUE;
@@ -1011,7 +1015,7 @@ VOID ScanLegacyExternal (
     REFIT_VOLUME *Volume;
 
    #if REFIT_DEBUG > 0
-   LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for Volumes with Mode:- 'BIOS/CSM/Legacy'");
+   LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disk Volumes with Mode:- 'BIOS/CSM/Legacy'");
    #endif
 
    FirstLegacyScan = TRUE;

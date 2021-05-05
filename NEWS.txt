@@ -1,5 +1,7 @@
 0.13.2.AE (Pre-Release):
 -----------------------
+- Improves Upstream Logging Format and Coverage
+  * Formatted for clarity
 
 
 0.13.2.AD (04 May 2021):

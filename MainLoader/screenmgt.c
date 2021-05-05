@@ -373,14 +373,14 @@ VOID SetupScreen (
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
                     MsgStr = StrDuplicate (L"Displayed Placeholder");
-                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     MsgLog ("INFO: %s", MsgStr);
                     MsgLog ("\n\n");
                     MyFreePool (&MsgStr);
                 }
                 else {
                     MsgStr = StrDuplicate (L"Switch to Graphics Mode ...Success");
-                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     MsgLog ("INFO: %s", MsgStr);
                     MsgLog ("\n\n");
                     MyFreePool (&MsgStr);

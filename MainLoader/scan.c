@@ -1675,7 +1675,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
-        LogLineType = LOG_STAR_HEAD_SEP;
+        LogLineType = LOG_THREE_STAR_SEP;
     }
     LOG(1, LogLineType,
         L"Scanning Volume '%s' for EFI Loaders",
@@ -1860,7 +1860,7 @@ VOID ScanInternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disks for Volumes with Mode:- 'EFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disk Volumes with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1881,7 +1881,7 @@ VOID ScanExternal (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disks for Volumes with Mode:- 'EFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disk Volumes with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1902,7 +1902,7 @@ VOID ScanOptical (
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for Optical Discs with Mode:- 'EFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Discs with Mode:- 'EFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -2303,7 +2303,7 @@ VOID ScanForBootloaders (
         // assign shortcut keys
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assigning Boot Shortcut Keys");
-        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -2358,14 +2358,14 @@ VOID ScanForBootloaders (
             keyStr = StrDuplicate (L"Keys");
         }
         if (MainMenu.EntryCount == 1) {
-            LoaderStr = StrDuplicate (L"Boot Loader");
+            LoaderStr = StrDuplicate (L"Loader");
         }
         else {
-            LoaderStr = StrDuplicate (L"Boot Loaders");
+            LoaderStr = StrDuplicate (L"Loaders");
         }
 
         MsgStr = PoolPrint (
-            L"Assigned Boot Shortcut %s to %d of %d %s",
+            L"Assigned Shortcut %s to %d of %d %s",
             keyStr, i,
             MainMenu.EntryCount,
             LoaderStr
