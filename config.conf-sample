@@ -168,8 +168,8 @@
 #suppress_verbose_apfs
 
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
-# of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.0 (Big Sur) when
-# SIP is enabled. Attempts to run the Mac OS 11.0 Boot Loader directly with SIP enabled result
+# of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.x (Big Sur) when
+# SIP is enabled. Attempts to run the Mac OS 11.x Boot Loader directly with SIP enabled result
 # in kernel panics. When this option is activated, RefindPlus will map APFS volumes to their
 # respective "PreBoot" partitions which will be used to boot such Mac OS instances and the
 # associated "PreBoot" partitions will be hidden from view. This option also allows direct
@@ -828,7 +828,7 @@
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
 # setting and that users can go beyond this, to values such as 87F, 97F ... up to FFF.
 # The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
-# commands, added in Mac OS v11.0 (Big Sur), sets values of 10 (ON) and 87F (OFF)
+# commands, added in Mac OS v11.x (Big Sur), sets values of 10 (ON) and 87F (OFF)
 # respectively when run along with the earlier commands to set SIP and SSV.
 #   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
 #   CSR_ALLOW_UNRESTRICTED_FS               0x0002

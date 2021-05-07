@@ -1,6 +1,6 @@
 0.13.2.AE (Pre-Release):
 -----------------------
-- Improves Upstream Logging Format and Coverage
+- Improves Upstream Logging Format
   * Formatted for clarity
 - Improves Handling of Manual Stanza Icons
   * Optimises search for associated icons to speed loading times up
@@ -140,7 +140,7 @@
   Shim.
 - Fixed bug in mvrefind that would cause it to fail to create a new
   NVRAM entry to point to the moved rEFInd.
-- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur").
+- Fixed bug that caused mountesp script to fail in macOS 11.x ("Big Sur").
 - Improved Secure Boot support in refind-install script: The script can now
   install a Secure Boot key using mokutil, which can slightly simplify the
   MOK setup. It also now creates a backup NVRAM entry to boot directly,
@@ -526,7 +526,7 @@
   * This allows running EFI Shell on such units.
 - Includes all Mac OS SIP Values for CSR Rotation (Thanks, Github User @startergo)
   * This implements the actual Mac OS default value of 877 in place of the previously defined value of 77.
-  * This allows disabling SIP on, and booting with caveats, pre-release versions of Mac OS v11.0 (Big Sur)
+  * This allows disabling SIP on, and booting with caveats, pre-release versions of Mac OS v11.x (Big Sur)
 - Expands Debug Logging
 - Improves Boot Speed
 
