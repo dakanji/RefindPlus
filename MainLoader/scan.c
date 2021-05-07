@@ -685,31 +685,35 @@ VOID SetLoaderDefaults (
         MergeStrings (&NameClues, Entry->me.Title, L' ');
     }
     else {
-        NoExtension = StripEfiExtension (NameClues);
-        if (NoExtension != NULL) {
-            // locate a custom icon for the loader
-            // Anything found here takes precedence over the "hints" in the OSIconName variable
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
-            #endif
+        if (Entry->me.Image == NULL) {
+            NoExtension = StripEfiExtension (NameClues);
+            if (NoExtension != NULL) {
+                // locate a custom icon for the loader
+                // Anything found here takes precedence over the "hints" in the OSIconName variable
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
+                #endif
 
-            if (!Entry->me.Image) {
-                Entry->me.Image = egLoadIconAnyType (
-                    Volume->RootDir,
-                    PathOnly,
-                    NoExtension,
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
-            }
-            if (!Entry->me.Image) {
-                Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                if (!Entry->me.Image) {
+                    Entry->me.Image = egLoadIconAnyType (
+                        Volume->RootDir,
+                        PathOnly,
+                        NoExtension,
+                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                    );
+                }
+                if (!Entry->me.Image) {
+                    Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                }
             }
         }
 
         // Begin creating icon "hints" by using last part of directory path leading
         // to the loader
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Creating Icon Hint from Loader Path: '%s'", LoaderPath);
+        if (Entry->me.Image == NULL) {
+            LOG(4, LOG_LINE_NORMAL, L"Creating Icon Hint from Loader Path: '%s'", LoaderPath);
+        }
         #endif
 
         Temp = FindLastDirName (LoaderPath);
@@ -734,7 +738,9 @@ VOID SetLoaderDefaults (
 
             if (MergeFsName) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
+                if (Entry->me.Image == NULL) {
+                    LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
+                }
                 #endif
 
                 MergeWords(&OSIconName, Volume->FsName, L',');
@@ -742,7 +748,9 @@ VOID SetLoaderDefaults (
             else {
                 if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Merging hints based on volume name ('%s')", Volume->VolName);
+                    if (Entry->me.Image == NULL) {
+                        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on volume name ('%s')", Volume->VolName);
+                    }
                     #endif
 
                     MergeWords(&OSIconName, Volume->VolName, L',');
@@ -751,7 +759,9 @@ VOID SetLoaderDefaults (
         }
         if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
+            if (Entry->me.Image == NULL) {
+                LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
+            }
             #endif
 
             MergeWords(&OSIconName, Volume->PartName, L',');
@@ -759,7 +769,9 @@ VOID SetLoaderDefaults (
     } // if/else network boot
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
+    if (Entry->me.Image == NULL) {
+        LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
+    }
     #endif
 
     // detect specific loaders
@@ -812,8 +824,9 @@ VOID SetLoaderDefaults (
     ) {
         MergeStrings (&OSIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
-        if (ShortcutLetter == 0)
+        if (ShortcutLetter == 0) {
             ShortcutLetter = 'L';
+        }
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
     }
     else if (StriSubCmp (L"grub", NameClues)) {
@@ -837,6 +850,14 @@ VOID SetLoaderDefaults (
         Entry->OSType = 'X';
         ShortcutLetter = 'W';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+    }
+    else if (MyStriCmp (NameClues, L"opencore")) {
+        MergeStrings (&OSIconName, L"opencore", L',');
+        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
+    }
+    else if (MyStriCmp (NameClues, L"clover")) {
+        MergeStrings (&OSIconName, L"clover", L',');
+        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
     }
     else if (StriSubCmp (L"ipxe", NameClues)) {
         Entry->OSType = 'N';

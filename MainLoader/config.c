@@ -1197,13 +1197,15 @@ LOADER_ENTRY * AddStanzaEntries (
     REFIT_VOLUME *Volume,
     CHAR16       *Title
 ) {
+    UINTN           TokenCount;
     CHAR16        **TokenList;
-    UINTN          TokenCount;
-    BOOLEAN        DefaultsSet    = FALSE;
-    BOOLEAN        AddedSubmenu   = FALSE;
-    LOADER_ENTRY  *Entry;
-    REFIT_VOLUME  *CurrentVolume  = Volume;
-    REFIT_VOLUME  *PreviousVolume;
+    CHAR16         *TmpLoaderPath;
+    BOOLEAN         DefaultsSet       = FALSE;
+    BOOLEAN         AddedSubmenu      = FALSE;
+    BOOLEAN         RunLoaderDefault  = FALSE;
+    REFIT_VOLUME   *CurrentVolume     = Volume;
+    REFIT_VOLUME   *PreviousVolume;
+    LOADER_ENTRY   *Entry;
 
    // prepare the menu entry
    Entry = InitializeLoaderEntry (NULL);
@@ -1240,7 +1242,6 @@ LOADER_ENTRY * AddStanzaEntries (
          LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
          #endif
 
-         SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
          MyFreePool (&Entry->LoadOptions);
          Entry->LoadOptions = NULL; // Discard default options, if any
          DefaultsSet = TRUE;
@@ -1285,7 +1286,12 @@ LOADER_ENTRY * AddStanzaEntries (
          );
 
          if (Entry->me.Image == NULL) {
-            Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+            SetLoaderDefaults (Entry, Entry->LoaderPath, CurrentVolume);
+            RunLoaderDefault = TRUE;
+
+            if (Entry->me.Image == NULL) {
+               Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+            }
          }
       }
       else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
@@ -1363,9 +1369,26 @@ LOADER_ENTRY * AddStanzaEntries (
       Entry->InitrdPath = NULL;
    } // if
 
+   if (DefaultsSet && Entry->me.Image == NULL) {
+       // user included no "icon" line
+       SetLoaderDefaults (Entry, Entry->LoaderPath, CurrentVolume);
+       RunLoaderDefault = TRUE;
+   }
+
    if (!DefaultsSet) {
        // user included no "loader" line; use bogus one
        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+       RunLoaderDefault = TRUE;
+   }
+
+   if (!RunLoaderDefault) {
+       // Set defaults if not yet set
+       TmpLoaderPath = Entry->LoaderPath
+            ? StrDuplicate (Entry->LoaderPath)
+            : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
+
+       SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
+       MyFreePool (&TmpLoaderPath);
    }
 
    return (Entry);
