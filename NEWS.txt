@@ -6,7 +6,9 @@
   * Optimises search for associated icons to speed loading times up
   * Only undertakes a second search scan when required
 - Improves Selection Image Handling
-  * Only calls scaling function when required 
+  * Only calls scaling function when required
+- Updates Default Banner Background Colour
+  * Now set at 200,200,200 RGB to better match default grey
 
 
 0.13.2.AD (04 May 2021):
