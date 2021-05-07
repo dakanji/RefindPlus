@@ -1602,12 +1602,12 @@ VOID LogBasicInfo (
         }
     }
 
-    // Report which video output devices are available. We do not actually
+    // Report which video output devices are natively available. We do not actually
     // use them, so just use TempStr as a throwaway pointer to the protocol.
-    MsgLog ("Native Screen Modes:\n");
+    MsgLog ("Default Screen Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
-    MsgLog ("  - Detected Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Native Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
     MyFreePool (&TempStr);
 
@@ -1617,7 +1617,7 @@ VOID LogBasicInfo (
         &gEfiUgaDrawProtocolGuid,
         (VOID **) &TempStr
     );
-    MsgLog ("  - Detected Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Native Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
     MyFreePool (&TempStr);
 
@@ -1627,7 +1627,7 @@ VOID LogBasicInfo (
         &gEfiGraphicsOutputProtocolGuid,
         (VOID **) &TempStr
     );
-    MsgLog ("  - Detected Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Native Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
     MyFreePool (&TempStr);
 } // VOID LogBasicInfo()

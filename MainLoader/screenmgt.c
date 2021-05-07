@@ -910,9 +910,15 @@ VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
     static EG_IMAGE *Banner = NULL;
-    EG_IMAGE *NewBanner = NULL;
+    EG_IMAGE *NewBanner     = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
+
+    #if REFIT_DEBUG > 0
+    static BOOLEAN LoggedBanner;
+    CHAR16 *MsgStr = NULL;
+    #endif
+
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         #if REFIT_DEBUG > 0
@@ -930,13 +936,25 @@ VOID BltClearScreen (
 
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * Default Title Banner\n");
+                MsgStr = StrDuplicate (L"Default Title Banner");
+                MsgLog ("    * %s\n", MsgStr);
+                if (!LoggedBanner) {
+                    LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    LoggedBanner = TRUE;
+                }
+                MyFreePool (&MsgStr);
                 #endif
                 Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner, FALSE);
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("    * Custom Title Banner\n");
+                MsgStr = StrDuplicate (L"Custom Title Banner");
+                MsgLog ("    * %s\n", MsgStr);
+                if (!LoggedBanner) {
+                    LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    LoggedBanner = TRUE;
+                }
+                MyFreePool (&MsgStr);
                 #endif
             }
         }

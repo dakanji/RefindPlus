@@ -2527,7 +2527,7 @@ BOOLEAN FindTool (
 
                     #if REFIT_DEBUG > 0
                     MsgLog (
-                        "              - Added '%s' : %s%s\n",
+                        "Added:- '%s' : %s%s",
                         Description,
                         StrDuplicate (DirName),
                         StrDuplicate (FileName)
@@ -2548,8 +2548,7 @@ BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
-    UINTN             i;
-    UINTN             j;
+    UINTN             i, j;
     UINTN             VolumeIndex;
     CHAR8            *ItemBuffer = 0;
     CHAR16           *ToolName   = NULL;
@@ -2563,13 +2562,14 @@ VOID ScanForTools (VOID) {
     REFIT_MENU_ENTRY *TempMenuEntry;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *ToolStr = NULL;
+    CHAR16 *ToolStr   = NULL;
+    UINTN   ToolTotal = 0;
     #endif
 
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Tools");
-    MsgLog ("Scan for Builtin/External Tools...\n");
+    MsgLog ("Scan for Builtin/External Tools...");
     #endif
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);
@@ -2678,7 +2678,9 @@ VOID ScanForTools (VOID) {
         if (MyStrStr (ToolName, L"Skipped") != NULL) {
             continue;
         }
-        MsgLog ("Tool Type %02d ...%s:\n", i + 1, ToolName);
+        ToolTotal = i + 1;
+        MsgLog ("\n");
+        MsgLog ("Tool Type %02d ... ", ToolTotal);
         #endif
 
 
@@ -2690,9 +2692,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2705,9 +2707,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2720,9 +2722,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2735,9 +2737,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2750,9 +2752,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2765,9 +2767,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry(&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -2782,16 +2784,16 @@ VOID ScanForTools (VOID) {
                     AddMenuEntry(&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                    MsgLog ("              - %s\n", ToolStr);
+                    MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
                 }
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -2813,9 +2815,9 @@ VOID ScanForTools (VOID) {
                         AddMenuEntry(&MainMenu, TempMenuEntry);
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                        ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                        MsgLog ("              - %s\n", ToolStr);
+                        MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
                     } // if
@@ -2831,7 +2833,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -2862,7 +2864,10 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                        MsgLog ("              - %s\n", ToolStr);
+                        if (j > 0) {
+                            MsgLog ("\n                 ");
+                        }
+                        MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
                     } // if
@@ -2875,7 +2880,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -2906,7 +2911,10 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                        MsgLog ("              - %s\n", ToolStr);
+                        if (j > 0) {
+                            MsgLog ("\n                 ");
+                        }
+                        MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
                     } // if
@@ -2917,7 +2925,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -2949,7 +2957,10 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                        MsgLog ("              - %s\n", ToolStr);
+                        if (j > 0) {
+                            MsgLog ("\n                 ");
+                        }
+                        MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
                   } // if
@@ -2958,7 +2969,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -2989,7 +3000,10 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                        MsgLog ("              - %s\n", ToolStr);
+                        if (j > 0) {
+                            MsgLog ("\n                 ");
+                        }
+                        MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
                     } // if
@@ -3000,7 +3014,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3040,7 +3054,10 @@ VOID ScanForTools (VOID) {
                                 #if REFIT_DEBUG > 0
                                 ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                                MsgLog ("              - %s\n", ToolStr);
+                                if (j > 0) {
+                                    MsgLog ("\n                 ");
+                                }
+                                MsgLog ("%s", ToolStr);
                                 MyFreePool (&ToolStr);
                                 #endif
                             } // if
@@ -3050,7 +3067,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3094,7 +3111,10 @@ VOID ScanForTools (VOID) {
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                            MsgLog ("              - %s\n", ToolStr);
+                            if (j > 0) {
+                                MsgLog ("\n                 ");
+                            }
+                            MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
                             #endif
                         } // if
@@ -3107,7 +3127,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s'\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3123,7 +3143,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3139,7 +3159,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3154,16 +3174,16 @@ VOID ScanForTools (VOID) {
                     AddMenuEntry (&MainMenu, TempMenuEntry);
 
                     #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                    MsgLog ("              - %s\n", ToolStr);
+                    MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
                 } // if
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3176,9 +3196,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -3191,9 +3211,9 @@ VOID ScanForTools (VOID) {
                 AddMenuEntry (&MainMenu, TempMenuEntry);
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added '%s'", ToolName);
+                ToolStr = PoolPrint (L"Added:- '%s'", ToolName);
                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
-                MsgLog ("              - %s\n", ToolStr);
+                MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
 
@@ -3209,7 +3229,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    MsgLog ("              * WARN: Could Not Find '%s' Tool\n", ToolName);
+                    MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
                 #endif
 
@@ -3218,6 +3238,8 @@ VOID ScanForTools (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Scanned Tool Types\n\n");
+    MsgLog ("\n\n");
+    MsgLog ("INFO: Processed %d Tool Types", ToolTotal);
+    MsgLog ("\n\n");
     #endif
 } // VOID ScanForTools
