@@ -134,7 +134,13 @@ VOID InitSelection (
     else {
         LoadedSmallImage = TRUE;
     }
-    SelectionImages[1] = egScaleImage (TempSmallImage, TileSizes[1], TileSizes[1]);
+
+    if ((TempSmallImage->Width != TileSizes[1]) || (TempSmallImage->Height != TileSizes[1])) {
+        SelectionImages[1] = egScaleImage (TempSmallImage, TileSizes[1], TileSizes[1]);
+    }
+    else {
+        SelectionImages[1] = egCopyImage (TempSmallImage);
+    }
 
     // load big selection image
     if (GlobalConfig.SelectionBigFileName != NULL) {
@@ -152,7 +158,13 @@ VOID InitSelection (
            TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE);
         }
     }
-    SelectionImages[0] = egScaleImage (TempBigImage, TileSizes[0], TileSizes[0]);
+
+    if ((TempBigImage->Width != TileSizes[0]) || (TempBigImage->Height != TileSizes[0])) {
+        SelectionImages[0] = egScaleImage (TempBigImage, TileSizes[0], TileSizes[0]);
+    }
+    else {
+        SelectionImages[0] = egCopyImage (TempBigImage);
+    }
 
     if (TempSmallImage) {
         egFreeImage (TempSmallImage);

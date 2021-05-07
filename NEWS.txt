@@ -5,6 +5,8 @@
 - Improves Handling of Manual Stanza Icons
   * Optimises search for associated icons to speed loading times up
   * Only undertakes a second search scan when required
+- Improves Selection Image Handling
+  * Only calls scaling function when required 
 
 
 0.13.2.AD (04 May 2021):
