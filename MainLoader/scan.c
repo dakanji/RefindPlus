@@ -678,7 +678,7 @@ VOID SetLoaderDefaults (
     PathOnly  = FindPath (LoaderPath);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Finding Loader Defaults for '%s'", Entry->me.Title);
+    LOG(3, LOG_LINE_NORMAL, L"Get Default Loader Settings for '%s'", Entry->me.Title);
     #endif
 
     if (Volume->DiskKind == DISK_KIND_NET) {

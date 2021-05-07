@@ -927,6 +927,7 @@ VOID BltClearScreen (
             if (GlobalConfig.BannerFileName) {
                 Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
+
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Default Title Banner\n");
@@ -946,11 +947,11 @@ VOID BltClearScreen (
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-              if ((Banner->Height != ScreenH) || (Banner->Width != ScreenW)) {
+              if (Banner->Width != ScreenW || Banner->Height != ScreenH) {
                  NewBanner = egScaleImage (Banner, ScreenW, ScreenH);
               }
            }
-           else if ((Banner->Width > ScreenW) || (Banner->Height > ScreenH)) {
+           else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
               NewBanner = egCropImage (
                   Banner, 0, 0,
                   (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
@@ -958,7 +959,7 @@ VOID BltClearScreen (
               );
           } // if GlobalConfig.BannerScale else if Banner->Width
 
-           if (NewBanner) {
+           if (NewBanner != NULL) {
                // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
                //         Apparent Memory Conflict ... Needs Investigation.
                //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/

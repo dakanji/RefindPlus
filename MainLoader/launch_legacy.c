@@ -117,7 +117,7 @@ EFI_STATUS ActivateMbrPartition (
         if (i == PartitionIndex) {
             MbrTable[i].Flags = 0x80;
         }
-        else if (PartitionIndex >= 4 && IS_EXTENDED_PART_TYPE (MbrTable[i].Type)) {
+        else if (PartitionIndex >= 4 && IS_EXTENDED_PART_TYPE(MbrTable[i].Type)) {
             MbrTable[i].Flags = 0x80;
             ExtBase = MbrTable[i].StartLBA;
         }
@@ -170,7 +170,7 @@ EFI_STATUS ActivateMbrPartition (
                 if (EMbrTable[i].StartLBA == 0 || EMbrTable[i].Size == 0) {
                     break;
                 }
-                if (IS_EXTENDED_PART_TYPE (EMbrTable[i].Type)) {
+                if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
                     // link to next EMBR
                     NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
                     EMbrTable[i].Flags = (PartitionIndex >= LogicalPartitionIndex) ? 0x80 : 0x00;

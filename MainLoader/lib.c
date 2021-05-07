@@ -554,9 +554,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"Get EFI Variable '%s' from Emulated NVRAM ...%r",
-            VariableName,
-            Status
+            L"'%r' When Getting EFI Variable from Emulated NVRAM:- '%s'",
+            Status, VariableName
         );
         #endif
 
@@ -610,9 +609,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"Get EFI Variable '%s' from Hardware NVRAM ...%r",
-            VariableName,
-            Status
+            L"'%r' When Getting EFI Variable from Hardware NVRAM:- '%s'",
+            Status, VariableName
         );
         #endif
 
@@ -1778,7 +1776,7 @@ VOID ScanExtendedPartition (
             ) {
                 break;
             }
-            if (IS_EXTENDED_PART_TYPE (EMbrTable[i].Type)) {
+            if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
                 // set next ExtCurrent
                 NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
                 break;
@@ -2228,7 +2226,7 @@ VOID ScanVolumes (
         ) {
             MbrTable = Volume->MbrPartitionTable;
             for (PartitionIndex = 0; PartitionIndex < 4; PartitionIndex++) {
-                if (IS_EXTENDED_PART_TYPE (MbrTable[PartitionIndex].Type)) {
+                if (IS_EXTENDED_PART_TYPE(MbrTable[PartitionIndex].Type)) {
                    ScanExtendedPartition (Volume, MbrTable + PartitionIndex);
                 }
             }
