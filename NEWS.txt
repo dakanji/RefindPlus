@@ -9,7 +9,10 @@
   * Only calls scaling function when required
 - Updates Default Banner Background Colour
   * Now set at 200,200,200 RGB to better match default grey
-- Align Driver and Tools Folders with Upstream
+- Improves Embedded Image Creation Script
+  * Previously updated for Python 3
+  * Now updated to be run from any directory
+- Aligns Driver and Tools Folders with Upstream
   * Drops '{ARCH}_drivers' and '{ARCH}_tools' Folders for upstream consistency
 
 
