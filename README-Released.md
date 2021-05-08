@@ -54,7 +54,7 @@ ignore_previous_boot |Disables saving the last booted loader if not required.
 ignore_volume_icns   |Disables scanning for `.VolumeIcon` icns files if not required.
 protect_nvram        |Prevents UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop  |Fixes issues with GOP on some legacy units.
-reinstall_gop        |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
+reload_gop           |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
 scale_ui             |Provides control of UI element scaling.
 scan_other_esp       |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
 set_boot_args        |Allows arbitrary Mac OS boot argument strings.
