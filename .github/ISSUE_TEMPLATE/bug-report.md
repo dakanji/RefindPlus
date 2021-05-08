@@ -8,16 +8,11 @@ assignees: ''
 ---
 
 **Describe the Bug:**
-<!--
-A clear and concise description of what the bug is.
-ENTER AFTER THE ARROW BELOW
--->
+<!-- ADD A CLEAR AND CONCISE DESCRIPTION OF THE BUG AFTER THIS LINE -->
 
 
 **To Reproduce:**
-<!--
-AMEND EXAMPLE AFTER THE ARROW BELOW
--->
+<!-- AMEND THE EXAMPLE BELOW -->
 1. Go to '...'
 2. Click on '...'
 3. Scroll down to '...'
@@ -25,16 +20,11 @@ AMEND EXAMPLE AFTER THE ARROW BELOW
 
 
 **Expected Behaviour:**
-<!--
-A clear and concise description of what you expected to happen.
-ENTER AFTER THE ARROW BELOW
--->
+<!-- ADD A CLEAR AND CONCISE DESCRIPTION OF WHAT YOU EXPECTED AFTER THIS LINE -->
 
 
 **Environment:**
-<!--
-AMEND THE TEMPLATE AFTER THE ARROW BELOW
--->
+<!-- AMEND THE TEMPLATE BELOW -->
  - RefindPlus Version : [e.g. v0.12.0.AN]
  - Hardware
    * Computer         : [e.g. MacPro 3,1 or Toshiba XYZ Laptop or ...]
@@ -44,11 +34,11 @@ AMEND THE TEMPLATE AFTER THE ARROW BELOW
    * GPU Flash        : [e.g. YES-MacVidCards or YES-Self or NO or ...]
  - Affected OS        : [e.g. Mac OS Catalina or Windows 10 (Legacy) or Ubuntu or OpenCore or Clover or ...]
 
-**Log and Config Files**
+**Log Files**
 <!--
-Add debug log files (Log Level 3 or 4) and your config file to help with understanding your issue.
-Kindly attach the files as opposed to pasting them debug logs or config files directly.
-ENTER AFTER THE ARROW BELOW
+Add Debug Log Level 0 file (higher level will be requested if required).
+Kindly attach the file as opposed to pasting the contents directly.
+ATTACH THE FILE AFTER THE ARROW BELOW
 -->
 
 
@@ -56,12 +46,9 @@ ENTER AFTER THE ARROW BELOW
 <!--
 If applicable, add screenshots to help explain your problem.
 You can save a screenshot by using the F10 key
-ENTER AFTER THE ARROW BELOW
+ATTACH THE SCREENSHOTS AFTER THE ARROW BELOW
 -->
 
 
 **Additional Context:**
-<!--
-Add any other relevant information about the problem here.
-ENTER AFTER THE ARROW BELOW
--->
+<!-- ADD ANY OTHER RELEVANT INFORMATION AFTER THIS LINE -->

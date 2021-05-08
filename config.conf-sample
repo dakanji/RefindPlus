@@ -464,6 +464,8 @@
 # of 24, 8, 4, or 1 bits. PNG or ICNS image files are required for
 # transparency support.
 #
+# Inactive when commented out (no selection background)
+#
 #selection_big selection-big.bmp
 #selection_small selection-small.bmp
 
@@ -527,7 +529,8 @@
 #
 #enable_mouse
 
-# Size of the mouse pointer, in pixels, per side.
+# Size of the mouse pointer,
+# in pixels, per side.
 #
 # Uses a mouse size of 16 when commented out
 #
@@ -641,7 +644,7 @@
 #
 #dont_scan_volumes "Recovery HD"
 
-# Directories that should NOT be scanned for boot loaders. By default,
+# Directories that should *NOT* be scanned for boot loaders. By default,
 # RefindPlus does not scan its own directory, the com.apple.recovery.boot,
 # EFI/tools, EFI/memtest and EFI/memtest86 directories. The "dont_scan_dirs"
 # option enables blocking other directories. However, "+" must be used as the

@@ -1604,7 +1604,7 @@ VOID LogBasicInfo (
 
     // Report which video output devices are natively available. We do not actually
     // use them, so just use TempStr as a throwaway pointer to the protocol.
-    MsgLog ("Default Screen Modes:\n");
+    MsgLog ("Screen Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
     MsgLog ("  - Native Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
