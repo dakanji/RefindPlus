@@ -2649,21 +2649,13 @@ VOID ScanForTools (VOID) {
                 break;
 
             default:
-                ToolName = StrDuplicate (L"Skipped");
+                continue;
         }
 
-        if (!GlobalConfig.ShowTools[i]) {
-            ToolName = StrDuplicate (L"Skipped");
-        }
-
-        if (MyStrStr (ToolName, L"Skipped") != NULL) {
-            continue;
-        }
-        ToolTotal = i + 1;
+        ToolTotal = ToolTotal + 1;
         MsgLog ("\n");
-        MsgLog ("Tool Type %02d ... ", ToolTotal);
+        MsgLog ("Type %02d ... ", ToolTotal);
         #endif
-
 
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_PRE_NVRAMCLEAN:
@@ -2846,7 +2838,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (j > 0) {
-                            MsgLog ("\n                 ");
+                            MsgLog ("\n            ");
                         }
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
@@ -2893,7 +2885,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (j > 0) {
-                            MsgLog ("\n                 ");
+                            MsgLog ("\n            ");
                         }
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
@@ -2939,7 +2931,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (j > 0) {
-                            MsgLog ("\n                 ");
+                            MsgLog ("\n            ");
                         }
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
@@ -2982,7 +2974,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (j > 0) {
-                            MsgLog ("\n                 ");
+                            MsgLog ("\n            ");
                         }
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
@@ -3036,7 +3028,7 @@ VOID ScanForTools (VOID) {
                                 ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                                 LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                                 if (j > 0) {
-                                    MsgLog ("\n                 ");
+                                    MsgLog ("\n            ");
                                 }
                                 MsgLog ("%s", ToolStr);
                                 MyFreePool (&ToolStr);
@@ -3093,7 +3085,7 @@ VOID ScanForTools (VOID) {
                             ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                             if (j > 0) {
-                                MsgLog ("\n                 ");
+                                MsgLog ("\n            ");
                             }
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
