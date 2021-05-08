@@ -247,13 +247,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     if (PostConnect) {
         if (ReLoaded) {
             MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
-            LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+            LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
             MyFreePool (&MsgStr);
         }
         else {
             MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
-            LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+            LOG(3, LOG_LINE_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -278,7 +278,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         #if REFIT_DEBUG > 0
         if (PostConnect) {
             MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
-            LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("%s\n\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -669,7 +669,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     } while (!EFI_ERROR (Status));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
+    LOG(3, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
     #endif
 
     if (FoundGOP) {

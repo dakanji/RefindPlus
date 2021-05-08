@@ -1229,7 +1229,7 @@ LOADER_ENTRY * AddStanzaEntries (
    #if REFIT_DEBUG > 0
    static BOOLEAN OtherCall;
    if (OtherCall) {
-       LOG(1, LOG_THREE_STAR_SEP, L"NEXT STANZA");
+       LOG(3, LOG_THREE_STAR_SEP, L"NEXT STANZA");
    }
    OtherCall = TRUE;
    #endif

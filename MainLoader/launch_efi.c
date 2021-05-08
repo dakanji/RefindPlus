@@ -387,7 +387,7 @@ EFI_STATUS StartEFIImage (
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Running '%s'", ImageTitle);
+    LOG(3, LOG_LINE_NORMAL, L"Running '%s'", ImageTitle);
     #endif
 
     Status = refit_call3_wrapper(
