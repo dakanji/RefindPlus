@@ -210,14 +210,12 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define BOOTKICKER_FILES L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\
-\\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
+#define BOOTKICKER_FILES L"\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
 \\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\
 \\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\
 \\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
-#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\
-\\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
+#define NVRAMCLEAN_FILES L"\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
 \\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
@@ -837,10 +835,7 @@ VOID preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
-        AddMenuInfoLine (&BootKickerMenu, L"You must have at least one of the files below:");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\x64_tools\\BootKicker.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\x64_BootKicker.efi");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker.efi");
@@ -985,10 +980,7 @@ VOID preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
-        AddMenuInfoLine (&CleanNvramMenu, L"You must have at least one of the files below:");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\x64_tools\\CleanNvram.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\x64_CleanNvram.efi");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram_x64.efi");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram.efi");

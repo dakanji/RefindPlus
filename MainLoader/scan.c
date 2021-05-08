@@ -70,116 +70,97 @@
 
 #if defined (EFIX64)
     #define SHELL_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\x64_Shell.efi,\\EFI\\BOOT\\x64_tools\\shell_x64.efi,\
-    \\EFI\\BOOT\\x64_tools\\shell.efi,\\EFI\\tools_x64\\x64_Shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\
-    \\EFI\\tools_x64\\shell.efi,\\EFI\\tools\\x64_Shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\tools\\shell.efi,\
+    L"\\EFI\\tools_x64\\x64_Shell.efi,\\EFI\\tools_x64\\shell_x64.efi,\\EFI\\tools_x64\\shell.efi,\
+    \\EFI\\tools\\x64_Shell.efi,\\EFI\\tools\\shell_x64.efi,\\EFI\\tools\\shell.efi,\
     \\EFI\\x64_Shell.efi,\\EFI\\shell_x64.efi,\\EFI\\shell.efi,\\x64_Shell.efi,\\shell_x64.efi,\\shell.efi"
     #define GPTSYNC_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\gptsync.efi,\\EFI\\BOOT\\x64_tools\\gptsync_x64.efi,\\EFI\\tools_x64\\gptsync.efi,\
-    \\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\
-    \\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
+    L"\\EFI\\tools_x64\\gptsync.efi,\\EFI\\tools_x64\\gptsync_x64.efi,\\EFI\\tools\\gptsync.efi,\
+    \\EFI\\tools\\gptsync_x64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_x64.efi,\\gptsync.efi,\\gptsync_x64.efi"
     #define GDISK_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\gdisk.efi,\\EFI\\BOOT\\x64_tools\\gdisk_x64.efi,\\EFI\\tools_x64\\gdisk.efi,\
-    \\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\
-    \\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
+    L"\\EFI\\tools_x64\\gdisk.efi,\\EFI\\tools_x64\\gdisk_x64.efi,\\EFI\\tools\\gdisk.efi,\
+    \\EFI\\tools\\gdisk_x64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_x64.efi,\\gdisk.efi,\\gdisk_x64.efi"
     #define NETBOOT_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\ipxe.efi,\\EFI\\BOOT\\x64_tools\\ipxe_x64.efi,\\EFI\\tools_x64\\ipxe.efi,\
-    \\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\\EFI\\ipxe.efi,\
-    \\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
+    L"\\EFI\\tools_x64\\ipxe.efi,\\EFI\\tools_x64\\ipxe_x64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_x64.efi,\
+    \\EFI\\ipxe.efi,\\EFI\\ipxe_x64.efi,\\ipxe.efi,\\ipxe_x64.efi"
     #define MEMTEST_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\memtest.efi,\\EFI\\BOOT\\x64_tools\\memtest_x64.efi,\\EFI\\tools_x64\\memtest.efi,\
-    \\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\
-    \\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\\EFI\\BOOT\\x64_tools\\memtest86.efi,\
-    \\EFI\\BOOT\\x64_tools\\memtest86_x64.efi,\\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\
-    \\EFI\\tools\\memtest86.efi,\\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\
-    \\memtest86.efi,\\memtest86_x64.efi"
+    L"\\EFI\\tools_x64\\memtest.efi,\\EFI\\tools_x64\\memtest_x64.efi,\\EFI\\tools\\memtest.efi,\
+    \\EFI\\tools\\memtest_x64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_x64.efi,\\memtest.efi,\\memtest_x64.efi,\
+    \\EFI\\tools_x64\\memtest86.efi,\\EFI\\tools_x64\\memtest86_x64.efi,\\EFI\\tools\\memtest86.efi,\
+    \\EFI\\tools\\memtest86_x64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_x64.efi,\\memtest86.efi,\\memtest86_x64.efi"
     #define BOOTKICKER_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\x64_BootKicker.efi,\\EFI\\BOOT\\x64_tools\\BootKicker_x64.efi,\
-    \\EFI\\BOOT\\x64_tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\
-    \\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\
+    L"\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\\EFI\\tools_x64\\BootKicker.efi,\
     \\EFI\\tools\\x64_BootKicker.efi\\EFI\\tools\\BootKicker_x64.efi,\\EFI\\tools\\BootKicker.efi,\
     \\EFI\\Bx64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\\x64_BootKicker.efi,\
     \\BootKicker_x64.efi,\\BootKicker.efi"
     #define NVRAMCLEAN_NAMES \
-    L"\\EFI\\BOOT\\x64_tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\x64_tools\\CleanNvram_x64.efi,\
-    \\EFI\\BOOT\\x64_tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\
-    \\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\
-    \\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\
-    \\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
+    L"\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\\EFI\\tools_x64\\CleanNvram.efi,\
+    \\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\\EFI\\tools\\CleanNvram.efi,\
+    \\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\\x64_CleanNvram.efi,\
+    \\CleanNvram_x64.efi,\\CleanNvram.efi"
     #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootx64.efi"
     #define FALLBACK_BASENAME       L"bootx64.efi"
 #elif defined (EFI32)
     #define SHELL_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\shell.efi,\\EFI\\BOOT\\tools_ia32\\shell_ia32.efi,\\EFI\\tools_ia32\\shell.efi,\
-    \\EFI\\tools_ia32\\shell_ia32.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_ia32.efi,\\EFI\\shell.efi,\
-    \\EFI\\shell_ia32.efi,\\shell.efi,\\shell_ia32.efi"
+    L"\\EFI\\tools_ia32\\ia32_Shell.efi,\\EFI\\tools_ia32\\shell_ia32.efi,\\EFI\\tools_ia32\\shell.efi,\
+    \\EFI\\tools\\ia32_Shell.efi,\\EFI\\tools\\shell_ia32.efi,\\EFI\\tools\\shell.efi,\
+    \\EFI\\ia32_Shell.efi,\\EFI\\shell_ia32.efi,\\EFI\\shell.efi,\\ia32_Shell.efi,\\shell_ia32.efi,\\shell.efi"
     #define GPTSYNC_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\gptsync.efi,\\EFI\\BOOT\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools_ia32\\gptsync.efi,\
-    \\EFI\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools\\gptsync.efi,\\EFI\\tools\\gptsync_ia32.efi,\\EFI\\gptsync.efi,\
-    \\EFI\\gptsync_ia32.efi,\\gptsync.efi,\\gptsync_ia32.efi"
+    L"\\EFI\\tools_ia32\\gptsync.efi,\\EFI\\tools_ia32\\gptsync_ia32.efi,\\EFI\\tools\\gptsync.efi,\
+    \\EFI\\tools\\gptsync_ia32.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_ia32.efi,\\gptsync.efi,\\gptsync_ia32.efi"
     #define GDISK_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\gdisk.efi,\\EFI\\BOOT\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools_ia32\\gdisk.efi,\
-    \\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\
-    \\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
+    L"\\EFI\\tools_ia32\\gdisk.efi,\\EFI\\tools_ia32\\gdisk_ia32.efi,\\EFI\\tools\\gdisk.efi,\
+    \\EFI\\tools\\gdisk_ia32.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_ia32.efi,\\gdisk.efi,\\gdisk_ia32.efi"
     #define NETBOOT_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\ipxe.efi,\\EFI\\BOOT\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools_ia32\\ipxe.efi,\
-    \\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\
-    \\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
+    L"\\EFI\\tools_ia32\\ipxe.efi,\\EFI\\tools_ia32\\ipxe_ia32.efi,\\EFI\\tools\\ipxe.efi,\
+    \\EFI\\tools\\ipxe_ia32.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_ia32.efi,\\ipxe.efi,\\ipxe_ia32.efi"
     #define MEMTEST_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\memtest.efi,\\EFI\\BOOT\\tools_ia32\\memtest_ia32.efi,\
-    \\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\
+    L"\\EFI\\tools_ia32\\memtest.efi,\\EFI\\tools_ia32\\memtest_ia32.efi,\\EFI\\tools\\memtest.efi,\
     \\EFI\\tools\\memtest_ia32.efi,\\EFI\\memtest.efi,\\EFI\\memtest_ia32.efi,\\memtest.efi,\\memtest_ia32.efi,\
-    \\EFI\\BOOT\\tools_ia32\\memtest86.efi,\\EFI\\BOOT\\tools_ia32\\memtest86_ia32.efi,\
     \\EFI\\tools_ia32\\memtest86.efi,\\EFI\\tools_ia32\\memtest86_ia32.efi,\\EFI\\tools\\memtest86.efi,\
     \\EFI\\tools\\memtest86_ia32.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_ia32.efi,\\memtest86.efi,\
     \\memtest86_ia32.efi"
     #define BOOTKICKER_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\BOOT\\tools_ia32\\BootKicker.efi,\
-    \\EFI\\tools_ia32\\BootKicker_ia32.efi,\\EFI\\tools_ia32\\BootKicker.efi,\\EFI\\tools\\BootKicker_ia32.efi,\
-    \\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_ia32.efi,\\EFI\\BootKicker.efi,\\BootKicker_ia32.efi,\
-    \\BootKicker.efi"
+    L"\\EFI\\tools_ia32\\ia32_BootKicker.efi,\\EFI\\tools_ia32\\BootKicker_ia32.efi,\
+    \\EFI\\tools_ia32\\BootKicker.efi,\\EFI\\tools\\ia32_BootKicker.efi\\EFI\\tools\\BootKicker_ia32.efi,\
+    \\EFI\\tools\\BootKicker.efi,\\EFI\\Bia32_BootKicker.efi,\\EFI\\BootKicker_ia32.efi,\\EFI\\BootKicker.efi,\
+    \\ia32_BootKicker.efi,\\BootKicker_ia32.efi,\\BootKicker.efi"
     #define NVRAMCLEAN_NAMES \
-    L"\\EFI\\BOOT\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\BOOT\\tools_ia32\\CleanNvram.efi,\
-    \\EFI\\tools_ia32\\CleanNvram_ia32.efi,\\EFI\\tools_ia32\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_ia32.efi,\
-    \\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_ia32.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_ia32.efi,\
-    \\CleanNvram.efi"
+    L"\\EFI\\tools_ia32\\ia32_CleanNvram.efi,\\EFI\\tools_ia32\\CleanNvram_ia32.efi,\
+    \\EFI\\tools_ia32\\CleanNvram.efi,\\EFI\\tools\\ia32_CleanNvram.efi,\\EFI\\tools\\CleanNvram_ia32.efi,\
+    \\EFI\\tools\\CleanNvram.efi,\\EFI\\ia32_CleanNvram.efi,\\EFI\\CleanNvram_ia32.efi,\\EFI\\CleanNvram.efi,\
+    \\ia32_CleanNvram.efi,\\CleanNvram_ia32.efi,\\CleanNvram.efi"
     #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootia32.efi"
     #define FALLBACK_BASENAME       L"bootia32.efi"
 #elif defined (EFIAARCH64)
     #define SHELL_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\shell.efi,\\EFI\\BOOT\\tools_aa64\\shell_aa64.efi,\\EFI\\tools_aa64\\shell.efi,\
-    \\EFI\\tools_aa64\\shell_aa64.efi,\\EFI\\tools\\shell.efi,\\EFI\\tools\\shell_aa64.efi,\\EFI\\shell.efi,\
-    \\EFI\\shell_aa64.efi,\\shell.efi,\\shell_aa64.efi"
+    L"\\EFI\\tools_aa64\\aa64_Shell.efi,\\EFI\\tools_aa64\\shell_aa64.efi,\\EFI\\tools_aa64\\shell.efi,\
+    \\EFI\\tools\\aa64_Shell.efi,\\EFI\\tools\\shell_aa64.efi,\\EFI\\tools\\shell.efi,\
+    \\EFI\\aa64_Shell.efi,\\EFI\\shell_aa64.efi,\\EFI\\shell.efi,\\aa64_Shell.efi,\\shell_aa64.efi,\\shell.efi"
     #define GPTSYNC_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\gptsync.efi,\\EFI\\BOOT\\tools_aa64\\gptsync_aa64.efi,\
-    \\EFI\\tools_aa64\\gptsync.efi,\\EFI\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools\\gptsync.efi,\
+    L"\\EFI\\tools_aa64\\gptsync.efi,\\EFI\\tools_aa64\\gptsync_aa64.efi,\\EFI\\tools\\gptsync.efi,\
     \\EFI\\tools\\gptsync_aa64.efi,\\EFI\\gptsync.efi,\\EFI\\gptsync_aa64.efi,\\gptsync.efi,\\gptsync_aa64.efi"
     #define GDISK_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\gdisk.efi,\\EFI\\BOOT\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools_aa64\\gdisk.efi,\
-    \\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\
-    \\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
+    L"\\EFI\\tools_aa64\\gdisk.efi,\\EFI\\tools_aa64\\gdisk_aa64.efi,\\EFI\\tools\\gdisk.efi,\
+    \\EFI\\tools\\gdisk_aa64.efi,\\EFI\\gdisk.efi,\\EFI\\gdisk_aa64.efi,\\gdisk.efi,\\gdisk_aa64.efi"
     #define NETBOOT_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\ipxe.efi,\\EFI\\BOOT\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools_aa64\\ipxe.efi,\
-    \\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\
-    \\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
+    L"\\EFI\\tools_aa64\\ipxe.efi,\\EFI\\tools_aa64\\ipxe_aa64.efi,\\EFI\\tools\\ipxe.efi,\
+    \\EFI\\tools\\ipxe_aa64.efi,\\EFI\\ipxe.efi,\\EFI\\ipxe_aa64.efi,\\ipxe.efi,\\ipxe_aa64.efi"
     #define MEMTEST_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\memtest.efi,\\EFI\\BOOT\\tools_aa64\\memtest_aa64.efi,\
-    \\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\
+    L"\\EFI\\tools_aa64\\memtest.efi,\\EFI\\tools_aa64\\memtest_aa64.efi,\\EFI\\tools\\memtest.efi,\
     \\EFI\\tools\\memtest_aa64.efi,\\EFI\\memtest.efi,\\EFI\\memtest_aa64.efi,\\memtest.efi,\\memtest_aa64.efi,\
-    \\EFI\\BOOT\\tools_aa64\\memtest86.efi,\\EFI\\BOOT\\tools_aa64\\memtest86_aa64.efi,\
     \\EFI\\tools_aa64\\memtest86.efi,\\EFI\\tools_aa64\\memtest86_aa64.efi,\\EFI\\tools\\memtest86.efi,\
-    \\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\
-    \\memtest86.efi,\\memtest86_aa64.efi"
+    \\EFI\\tools\\memtest86_aa64.efi,\\EFI\\memtest86.efi,\\EFI\\memtest86_aa64.efi,\\memtest86.efi,\
+    \\memtest86_aa64.efi"
     #define BOOTKICKER_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\BOOT\\tools_aa64\\BootKicker.efi,\
-    \\EFI\\tools_aa64\\BootKicker_aa64.efi,\\EFI\\tools_aa64\\BootKicker.efi,\\EFI\\tools\\BootKicker_aa64.efi,\
-    \\EFI\\tools\\BootKicker.efi,\\EFI\\BootKicker_aa64.efi,\\EFI\\BootKicker.efi,\\BootKicker_aa64.efi,\
-    \\BootKicker.efi"
+    L"\\EFI\\tools_aa64\\aa64_BootKicker.efi,\\EFI\\tools_aa64\\BootKicker_aa64.efi,\
+    \\EFI\\tools_aa64\\BootKicker.efi,\\EFI\\tools\\aa64_BootKicker.efi\\EFI\\tools\\BootKicker_aa64.efi,\
+    \\EFI\\tools\\BootKicker.efi,\\EFI\\Baa64_BootKicker.efi,\\EFI\\BootKicker_aa64.efi,\\EFI\\BootKicker.efi,\
+    \\aa64_BootKicker.efi,\\BootKicker_aa64.efi,\\BootKicker.efi"
     #define NVRAMCLEAN_NAMES \
-    L"\\EFI\\BOOT\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\BOOT\\tools_aa64\\CleanNvram.efi,\
-    \\EFI\\tools_aa64\\CleanNvram_aa64.efi,\\EFI\\tools_aa64\\CleanNvram.efi,\\EFI\\tools\\CleanNvram_aa64.efi,\
-    \\EFI\\tools\\CleanNvram.efi,\\EFI\\CleanNvram_aa64.efi,\\EFI\\CleanNvram.efi,\\CleanNvram_aa64.efi,\
-    \\CleanNvram.efi"
+    L"\\EFI\\tools_aa64\\aa64_CleanNvram.efi,\\EFI\\tools_aa64\\CleanNvram_aa64.efi,\
+    \\EFI\\tools_aa64\\CleanNvram.efi,\\EFI\\tools\\aa64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_aa64.efi,\
+    \\EFI\\tools\\CleanNvram.efi,\\EFI\\aa64_CleanNvram.efi,\\EFI\\CleanNvram_aa64.efi,\\EFI\\CleanNvram.efi,\
+    \\aa64_CleanNvram.efi,\\CleanNvram_aa64.efi,\\CleanNvram.efi"
     #define FALLBACK_FULLNAME       L"EFI\\BOOT\\bootaa64.efi"
     #define FALLBACK_BASENAME       L"bootaa64.efi"
 #else

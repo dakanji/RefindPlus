@@ -567,10 +567,10 @@
 # provide filesystem support, give access to hard disks on plug-in
 # controllers, etc. When such drivers are present and RefindPlus is
 # required to automatically load them, paths to the driver locations
-# should be specified here. When loading, RefindPlus always scans the
-# "{arch}_drivers", "drivers" and "drivers_{arch}" subdirectories of
-# its installation directory (NOTE: {arch} = architecture code).
-# This option specifies *ADDITIONAL* directories to scan.
+# should be specified here. RefindPlus always scans the "drivers" and
+# and "drivers_{arch}" subdirectories of its installation directory
+# (NOTE: {arch} = architecture code). This option specifies
+# *ADDITIONAL* directories to scan (seperate from these).
 #
 # Inactive when commented out (Does not scan additional directories)
 #
