@@ -2065,16 +2065,16 @@ EFI_STATUS EFIAPI efi_main (
                     LOG(1, LOG_LINE_NORMAL, L"Cleaned NVRAM");
 
                     MsgLog ("INFO: Cleaned Nvram\n\n");
-                    MsgLog ("Restart Computer...\n");
                     MsgLog ("Terminating Screen:\n");
+                    MsgLog ("System Restart...\n");
                     #endif
 
                     TerminateScreen();
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Reseting System");
+                    LOG(1, LOG_LINE_NORMAL, L"System Restart");
 
-                    MsgLog ("Reseting System\n-----------------\n\n");
+                    MsgLog ("System Restarting\n-----------------\n\n");
                     #endif
 
                     refit_call4_wrapper(
@@ -2084,7 +2084,7 @@ EFI_STATUS EFIAPI efi_main (
                         0, NULL
                     );
 
-                    ShowScreenStr = L"System Reset FAILED!!";
+                    ShowScreenStr = L"System Restart FAILED!!";
                     PrintUglyText (ShowScreenStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
@@ -2134,10 +2134,10 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Restart Computer\n-----------------\n\n");
+                    MsgLog ("  - System Restart\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Restart Computer\n\n");
+                    MsgLog ("  - System Restart\n\n");
                 }
                 #endif
 
@@ -2167,10 +2167,10 @@ EFI_STATUS EFIAPI efi_main (
 
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Shut Computer Down\n-----------------\n\n");
+                    MsgLog ("  - System Shutdown\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Shut Computer Down\n\n");
+                    MsgLog ("  - System Shutdown\n\n");
                 }
                 #endif
 
@@ -2583,7 +2583,7 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!!");
 
-    MsgLog ("Fallback: Restart Computer...\n");
+    MsgLog ("Fallback: System Restart...\n");
     MsgLog ("Screen Termination:\n");
     #endif
 
