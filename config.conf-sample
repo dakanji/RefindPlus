@@ -7,12 +7,13 @@
 ##--------------------------------------------------------------##
 #
 #
-# RefindPlus defaults to scanning for ".VolumeIcon" icns files; which
-# if found, these will be used as the icons for internal volumes. However,
-# most RefindPlus setups do not include these files and most of those that may
-# do, typically Apple Macs, do not require the files as their icons in Refindplus.
-# Hence, scanning for the files typically just slows down the RefindPlus boot process.
-# This setting allows speeding booting RefindPlus up by skipping scanning for these files.
+# RefindPlus defaults to scanning for ".VolumeIcon" icns files. If
+# found, these sre used as the icons for internal volumes. However, most
+# RefindPlus setups do not include these files and most of those that may
+# do, typically Apple Macs, do not require the files as their icons in
+# Refindplus. Hence, scanning for the files typically just slows the
+# RefindPlus boot process down. This setting speeds booting
+# RefindPlus up by skipping scanning for these files.
 #
 # Always scans for ".VolumeIcon" icns files when commented out
 #
@@ -319,8 +320,8 @@
 #showtools shell,bootorder,gdisk,memtest,mok_tool,apple_recovery,windows_recovery,about,hidden_tags,reboot,exit
 
 # Set the screen's display resolution. Pass this option either:
-#    * Two Values (corresponding to the X and Y resolutions)
-#    * One Value (corresponding to a UEFI GOP video mode)
+#         * One Value (corresponding to one UEFI GOP video mode)
+#         * Two Values (corresponding to the X and Y resolutions)
 # Note that not all resolutions are supported. On UEFI 2.x systems,
 # passing an incorrect value results in a message being shown on the
 # screen to that effect, along with a list of supported modes. With
@@ -569,8 +570,8 @@
 # required to automatically load them, paths to the driver locations
 # should be specified here. RefindPlus always scans the "drivers" and
 # and "drivers_{arch}" subdirectories of its installation directory
-# (NOTE: {arch} = architecture code). This option specifies
-# *ADDITIONAL* directories to scan (seperate from these).
+# (NOTE: {arch} = architecture code). This option specifies other
+# *ADDITIONAL* directories to scan along with these defaults.
 #
 # Inactive when commented out (Does not scan additional directories)
 #
@@ -696,9 +697,9 @@
 # list presented here contains strings that are matched against the
 # description field -- if a value here is a case-insensitive substring
 # of the boot option description, then it will be excluded from the
-# boot list. To specify a string that includes a space, enclose it
-# in quotes. Specifying "shell" will counteract the automatic
-# inclusion of built-in EFI shells.
+# boot list. To specify a string that includes a space, enclose
+# it in quotes. Specifying "shell" will counteract the
+# automatic inclusion of built-in EFI shells.
 #
 #dont_scan_firmware HARDDISK,shell,"Removable Device"
 
@@ -734,13 +735,12 @@
 # other way, both vmlinuz-linux and vmlinuz-linux-lts will return with "linux"
 # as the version string, which is not desirable. Whenever the kernel or initrd
 # file include both a specified string and digits, the version string includes
-# both. For example, "vmlinuz-linux-4.8" produces a "linux-4.8" version string.
+# both. For example, "vmlinuz-linux-4.8" outputs a "linux-4.8" version string.
 # This option is intended for Arch and other distributions that do not include
 # version numbers in their kernel filenames, but may provide other uniquely
 # identifying strings for multiple kernels. If this feature causes problems
 # (say, the kernel filename includes "linux" but the initrd filename does
-# not), set the to an empty string (extra_kernel_version_strings "")
-# or comment out the option to disable it.
+# not), set the option to an empty string (or comment out) to disable.
 #
 # Inactive when commented out (No extra version strings are used)
 #
@@ -898,8 +898,8 @@
 # such as when passing a root= option to a Linux kernel.
 
 # Below are several sample boot stanzas. All are disabled by default.
-# Find one similar to what is required, copy it, remove the "disabled"
-# line, and adjust the entries to suit.
+# Find one similar to what is required, copy it, remove the
+# "disabled" line, and adjust the entries to suit.
 
 # A sample entry for a Linux 3.13 kernel with EFI boot stub support
 # on a partition with a GUID of 904404F8-B481-440C-A1E3-11A5A954E601.
@@ -945,15 +945,15 @@ menuentry Ubuntu {
     disabled
 }
 
-# A minimal ELILO entry, which probably offers nothing that
-# auto-detection cannot accomplish.
+# A minimal ELILO entry. Probably offers nothing
+# that auto-detection cannot accomplish.
 menuentry "ELILO" {
     loader \EFI\elilo\elilo.efi
     disabled
 }
 
-# Like the ELILO entry, this one offers nothing additional to auto-detection
-# but may be useful to disable auto-detection yet still boot Windows
+# This, like the ELILO entry, offers nothing additional to auto-detection
+# but may help with disabling auto-detection but still booting Windows
 menuentry "Windows 7" {
     loader \EFI\Microsoft\Boot\bootmgfw.efi
     disabled
