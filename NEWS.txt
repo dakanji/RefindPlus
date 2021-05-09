@@ -8,7 +8,7 @@
 - Improves Selection Image Handling
   * Only calls scaling function when required
 - Updates Default Banner Background Colour
-  * Now set at 200,200,200 RGB to better match default grey
+  * Now set at 191,191,191 RGB to better match the default grey
 - Improves Embedded Image Creation Script
   * Previously updated for Python 3
   * Now updated to be run from any directory
