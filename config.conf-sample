@@ -7,8 +7,8 @@
 ##--------------------------------------------------------------##
 #
 #
-# RefindPlus defaults to scanning for ".VolumeIcon" icns files. If
-# found, these sre used as the icons for internal volumes. However, most
+# RefindPlus defaults to scanning volumes for ".VolumeIcon" icns files. If
+# found, these are used as display icons for internal volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
 # do, typically Apple Macs, do not require the files as their icons in
 # Refindplus. Hence, scanning for the files typically just slows the
@@ -20,27 +20,27 @@
 #ignore_volume_icns
 
 # RefindPlus defaults to storing the name of the last booted loader in
-# a "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
+# the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
 # is loaded. This can however increase wear and tear on the NVRAM and disabling
 # the "use_nvram" token allows writing to the filesystem instead to reduce this.
 # On some setups however, such as when the "default_selection" token is set,
-# such writes are not required at all and when this option is active,
-# RefindPlus will not exexute such writes at all.
+# such writes are not required at all and when this setting is active,
+# RefindPlus will not execute such writes in the first place.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
 #ignore_previous_boot
 
-# The SimpleText protocol on the ConsoleOut handle is normally used to
-# output text. On Macs and some other firmware, this is complicated by
+# The SimpleText protocol on the ConsoleOut handle is usually used for
+# text output. On Macs and some other firmware, this is complicated by
 # the ConsoleControl protocol which determines whether to output text,
 # graphics, or both, and this often results in an inability to display
-# text or to run tools that require text output, such as EFI Shell. A
+# text, or use tools needing text output (such as EFI Shell). A custom
 # text renderer is added on top of GOP by this option as a workaround.
-# Note that this setting is forced on whenever text output is required,
-# such as when running EFI Shell or whenever RefindPlus is changed to
-# text mode as part of its operations (Typically to handle errors).
+# Note that this option is forced on whenever text output is required,
+# such as when running EFI Shell or, whenever RefindPlus is changed to
+# text mode as part of its operations (mainly to show error messages).
 # NB: This functionality is only available on TianoCore Builds
 #
 # Inactive when commented out (Does not use a custom text renderer)
