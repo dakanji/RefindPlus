@@ -325,7 +325,16 @@ EFI_STATUS egDumpGOPVideoModes (
             );
 
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Mode[%02d] ...%r", Mode, Status);
+            UINT32 ModeLog;
+            // Limit logged value to 99
+            if (Mode > 99) {
+                ModeLog = 99;
+            }
+            else {
+                ModeLog = Mode;
+            }
+
+            MsgLog ("  - Mode[%02d]", ModeLog);
             #endif
 
             if (!EFI_ERROR (Status)) {
@@ -356,39 +365,28 @@ EFI_STATUS egDumpGOPVideoModes (
 
                 if (LoopCount < MaxMode - 1) {
                     MsgLog (
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ...%r\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
-                        PixelFormatDesc
+                        PixelFormatDesc, Status
                     );
                 }
                 else {
                     MsgLog (
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format )\n\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ...%r\n\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
-                        PixelFormatDesc
+                        PixelFormatDesc, Status
                     );
                 }
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                UINT32 ModeLog;
-                // Limit logged value to 99
-                if (Mode > 99) {
-                    ModeLog = 99;
-                }
-                else {
-                    ModeLog = Mode;
-                }
-
-                MsgStr = PoolPrint (L"Mode[%d]: %r", ModeLog, Status);
-                LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MsgLog ("  - %s", MsgStr);
-                MyFreePool (&MsgStr);
+                LOG(4, LOG_THREE_STAR_MID, L"Mode[%d]: %r", ModeLog, Status);
+                MsgLog (" ...%r", MsgStr);
 
                 if (LoopCount < MaxMode) {
                     if (Mode > 99) {
