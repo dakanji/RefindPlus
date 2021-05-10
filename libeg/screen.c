@@ -365,7 +365,7 @@ EFI_STATUS egDumpGOPVideoModes (
 
                 if (LoopCount < MaxMode - 1) {
                     MsgLog (
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ...%r\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
@@ -374,7 +374,7 @@ EFI_STATUS egDumpGOPVideoModes (
                 }
                 else {
                     MsgLog (
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ...%r\n\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r\n\n",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
@@ -386,7 +386,7 @@ EFI_STATUS egDumpGOPVideoModes (
             else {
                 #if REFIT_DEBUG > 0
                 LOG(4, LOG_THREE_STAR_MID, L"Mode[%d]: %r", ModeLog, Status);
-                MsgLog (" ...%r", MsgStr);
+                MsgLog (" ... %r", MsgStr);
 
                 if (LoopCount < MaxMode) {
                     if (Mode > 99) {
@@ -447,7 +447,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     );
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ...%r", ModeNumber, Status);
+    MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ... %r", ModeNumber, Status);
     LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s\n\n", MsgStr);
     MyFreePool (&MsgStr);
@@ -516,7 +516,7 @@ EFI_STATUS egSetGOPMode (
 
             #if REFIT_DEBUG > 0
             MsgLog ("\n");
-            MsgLog ("  - Mode[%02d] ...%r\n", Mode, Status);
+            MsgLog ("  - Mode[%02d] ... %r\n", Mode, Status);
             #endif
 
             if (!EFI_ERROR (Status)) {
@@ -736,7 +736,7 @@ VOID egInitScreen (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("    * Seek on ConsoleOut Handle ...%r\n", Status);
+    MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
     if (EFI_ERROR (Status) || ConsoleControl == NULL) {
@@ -751,7 +751,7 @@ VOID egInitScreen (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("    * Seek on Handle Buffer ...%r\n", Status);
+        MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
         if (!EFI_ERROR (Status)) {
@@ -764,7 +764,7 @@ VOID egInitScreen (
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("    ** Evaluate on Handle[%02d] ...%r\n", i, Status);
+                MsgLog ("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -787,7 +787,7 @@ VOID egInitScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Console Control ...ok");
+        MsgStr = StrDuplicate (L"Assess Console Control ... ok");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -810,7 +810,7 @@ VOID egInitScreen (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("    * Seek on ConsoleOut Handle ...%r\n", Status);
+    MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
     if (EFI_ERROR (Status)) {
@@ -825,7 +825,7 @@ VOID egInitScreen (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("    * Seek on Handle Buffer ...%r\n", Status);
+        MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
         if (!EFI_ERROR (Status)) {
@@ -846,7 +846,7 @@ VOID egInitScreen (
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("    ** Examine Handle[%02d] ...%r\n", i, Status);
+                MsgLog ("    ** Examine Handle[%02d] ... %r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -887,7 +887,7 @@ VOID egInitScreen (
 
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...NOT OK!!");
+        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ... NOT OK!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -895,7 +895,7 @@ VOID egInitScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ...ok");
+        MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ... ok");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -918,7 +918,7 @@ VOID egInitScreen (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("    * Seek on ConsoleOut Handle ...%r\n", Status);
+    MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
     if (EFI_ERROR (Status)) {
@@ -933,7 +933,7 @@ VOID egInitScreen (
         );
 
         #if REFIT_DEBUG > 0
-        MsgLog ("    * Seek on Handle Buffer ...%r\n", Status);
+        MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
         if (!EFI_ERROR (Status)) {
@@ -954,7 +954,7 @@ VOID egInitScreen (
                 );
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("    ** Evaluate on Handle[%02d] ...%r\n", i, Status);
+                MsgLog ("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
                 #endif
 
                 if (!EFI_ERROR (Status)) {
@@ -1012,7 +1012,7 @@ VOID egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT FOUND!!");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT FOUND!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1024,7 +1024,7 @@ VOID egInitScreen (
 
         // Not Found
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ERROR!!");
+        MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ERROR!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1039,7 +1039,7 @@ VOID egInitScreen (
             GOPDraw = OldGOP;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...ok");
+            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
             LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
@@ -1118,7 +1118,7 @@ VOID egInitScreen (
             }
 
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Implement Direct GOP Renderer ...%r", Status);
+            MsgStr = PoolPrint (L"Implement Direct GOP Renderer ... %r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
@@ -1128,7 +1128,7 @@ VOID egInitScreen (
 
     if (XFlag == EFI_NOT_FOUND || XFlag == EFI_LOAD_ERROR) {
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Graphics Output Protocol ...%r", XFlag);
+        MsgStr = PoolPrint (L"Graphics Output Protocol ... %r", XFlag);
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1136,7 +1136,7 @@ VOID egInitScreen (
     }
     else if (XFlag == EFI_UNSUPPORTED) {
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ...%r", Status);
+        MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1179,7 +1179,7 @@ VOID egInitScreen (
             #if REFIT_DEBUG > 0
             // Only log this if GOPFix or Direct Renderer attempted
             if (XFlag == EFI_UNSUPPORTED || XFlag == EFI_ALREADY_STARTED) {
-                MsgStr = PoolPrint (L"Implement Graphics Output Protocol ...%r", Status);
+                MsgStr = PoolPrint (L"Implement Graphics Output Protocol ... %r", Status);
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
                 MyFreePool (&MsgStr);
@@ -1196,7 +1196,7 @@ VOID egInitScreen (
             Status = OcProvideUgaPassThrough();
 
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Implement UGA Pass Through ...%r", Status);
+            MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
             MsgLog ("\n\n");
@@ -1272,7 +1272,7 @@ VOID egInitScreen (
             Status = OcUseBuiltinTextOutput (ScreenMode);
 
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Implement Text Renderer ...%r", Status);
+            MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
             MsgLog ("\n\n");
@@ -1375,7 +1375,7 @@ BOOLEAN egSetScreenSize (
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"GOPDraw Object Found ...Current Mode = %d",
+            L"GOPDraw Object Found ... Current Mode = %d",
             CurrentModeNum
         );
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1481,7 +1481,7 @@ BOOLEAN egSetScreenSize (
         }
         else {
             MsgStr = StrDuplicate (
-                L"Invalid Resolution Setting Provided ...Trying Default Mode"
+                L"Invalid Resolution Setting Provided ... Trying Default Mode"
             );
 
             #if REFIT_DEBUG > 0
@@ -1577,7 +1577,7 @@ BOOLEAN egSetScreenSize (
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done....
             MsgStr = PoolPrint (
-                L"Error setting %d x %d resolution ...Unsupported Mode",
+                L"Error setting %d x %d resolution ... Unsupported Mode",
                 *ScreenWidth,
                 *ScreenHeight
             );
@@ -1628,7 +1628,7 @@ BOOLEAN egSetTextMode (
         else {
             SwitchToText (FALSE);
 
-            ShowScreenStr = StrDuplicate (L"Error Setting Text Mode ...Unsupported Mode");
+            ShowScreenStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode");
             PrintUglyText (ShowScreenStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0

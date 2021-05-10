@@ -305,7 +305,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Write '%s' to NVRAM ...%r", VariableName, Status);
+    MsgLog ("INFO: Write '%s' to NVRAM ... %r", VariableName, Status);
     if (BlockCert || BlockPRNG) {
         MsgLog ("\n\n");
         MsgLog ("** WARN: Prevented Microsoft Secure Boot NVRAM Write Attempt");
@@ -492,7 +492,7 @@ VOID SetBootArgs (
     #if REFIT_DEBUG > 0
     if (LogDisableAMFI || GlobalConfig.DisableAMFI) {
         MsgStr = PoolPrint (
-            L"Disable AMFI ...%r",
+            L"Disable AMFI ... %r",
             Status
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -502,7 +502,7 @@ VOID SetBootArgs (
     }
 
     MsgStr = PoolPrint (
-        L"Reset Boot Args ...%r",
+        L"Reset Boot Args ... %r",
         Status
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -512,7 +512,7 @@ VOID SetBootArgs (
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
         MsgStr = PoolPrint (
-            L"Disable Compat Check ...%r",
+            L"Disable Compat Check ... %r",
             Status
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -561,7 +561,7 @@ VOID DisableAMFI (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Disable AMFI ...%r",
+        L"Disable AMFI ... %r",
         Status
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -571,7 +571,7 @@ VOID DisableAMFI (
 
     if (GlobalConfig.DisableCompatCheck) {
         MsgStr = PoolPrint (
-            L"Disable Compat Check ...%r",
+            L"Disable Compat Check ... %r",
             Status
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -605,7 +605,7 @@ VOID DisableCompatCheck (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Disable Compat Check ...%r",
+        L"Disable Compat Check ... %r",
         Status
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -638,7 +638,7 @@ VOID ForceTRIM (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Forcibly Enable TRIM ...%r",
+        L"Forcibly Enable TRIM ... %r",
         Status
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -928,12 +928,12 @@ VOID preBootKicker (
                 // Run BootKicker
                 StartTool (ourLoaderEntry);
                 #if REFIT_DEBUG > 0
-                MsgLog ("* WARN: BootKicker Error ...Return to Main Menu\n\n");
+                MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  * WARN: Could Not Find BootKicker ...Return to Main Menu\n\n");
+                MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
                 #endif
             }
 
@@ -948,7 +948,7 @@ VOID preBootKicker (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
+        MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preBootKicker() */
@@ -1075,7 +1075,7 @@ VOID preCleanNvram (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("  * WARN: Could Not Find CleanNvram ...Return to Main Menu\n\n");
+                MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
                 #endif
             }
 
@@ -1090,7 +1090,7 @@ VOID preCleanNvram (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could Not Get User Input  ...Reload Main Menu\n\n");
+        MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
         #endif
     } // if
 } /* VOID preCleanNvram() */
@@ -1331,7 +1331,7 @@ BOOLEAN SecureBootUninstall (VOID) {
             Success = FALSE;
             BeginTextScreen (L"Secure Boot Policy Failure");
 
-            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ...Forcing Shutdown in 9 Seconds";
+            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds";
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n-----------------\n\n", ShowScreenStr);
@@ -1831,7 +1831,7 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
-        MsgLog ("INFO: Supply APFS ...%r", Status);
+        MsgLog ("INFO: Supply APFS ... %r", Status);
         #endif
     }
     #endif
@@ -1860,7 +1860,7 @@ EFI_STATUS EFIAPI efi_main (
         Status = SetAppleOSInfo();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Spoof Mac OS Version ...%r\n\n", Status);
+        MsgLog ("INFO: Spoof Mac OS Version ... %r\n\n", Status);
         #endif
     }
 
@@ -1871,7 +1871,7 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         Status = EFI_SUCCESS;
-        MsgStr = PoolPrint (L"Restore System Table ...%r", Status);
+        MsgStr = PoolPrint (L"Restore System Table ... %r", Status);
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MsgLog ("\n\n");
@@ -2020,7 +2020,7 @@ EFI_STATUS EFIAPI efi_main (
         if (MenuExit == MENU_EXIT_ESCAPE) {
             #if REFIT_DEBUG > 0
             MsgLog ("User Input Received:\n");
-            MsgLog ("  - Escape Key Pressed ...Rescan All\n\n");
+            MsgLog ("  - Escape Key Pressed ... Rescan All\n\n");
             #endif
 
             RescanAll (TRUE, TRUE);
@@ -2606,7 +2606,7 @@ EFI_STATUS EFIAPI efi_main (
 
     SwitchToText (FALSE);
 
-    ShowScreenStr = L"INFO: Reboot Failed ...Entering Endless Idle Loop";
+    ShowScreenStr = L"INFO: Reboot Failed ... Entering Endless Idle Loop";
 
     refit_call2_wrapper(
         gST->ConOut->SetAttribute,

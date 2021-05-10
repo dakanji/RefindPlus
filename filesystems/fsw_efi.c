@@ -1287,7 +1287,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
         // TODO: wind back the directory in this case
 
 #if DEBUG_LEVEL
-        Print(L"...BUFFER TOO SMALL\n");
+        Print(L"... BUFFER TOO SMALL\n");
 #endif
         *BufferSize = RequiredSize;
         return EFI_BUFFER_TOO_SMALL;
@@ -1314,7 +1314,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
     // prepare for return
     *BufferSize = RequiredSize;
 #if DEBUG_LEVEL
-    Print(L"...returning '%s'\n", FileInfo->FileName);
+    Print(L"... returning '%s'\n", FileInfo->FileName);
 #endif
     return EFI_SUCCESS;
 }

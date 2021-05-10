@@ -693,7 +693,7 @@ UINTN ScanDriverDir (
         }
         RunOnce = TRUE;
 
-        MsgLog ("  - Load '%s' ...%r", FileName, Status);
+        MsgLog ("  - Load '%s' ... %r", FileName, Status);
         #endif
 
         if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&

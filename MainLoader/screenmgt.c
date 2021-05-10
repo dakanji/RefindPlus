@@ -292,7 +292,7 @@ VOID SetupScreen (
             // scale icons up for HiDPI monitors if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"UI Scaling Disabled ...Maintain Icon Scale");
+                MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
@@ -311,12 +311,12 @@ VOID SetupScreen (
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ...Maintain Previously Scaled Icons", TmpStr);
+                    MsgStr = PoolPrint (L"%s ... Maintain Previously Scaled Icons", TmpStr);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ...Scale Icons Up", TmpStr);
+                    MsgStr = PoolPrint (L"%s ... Scale Icons Up", TmpStr);
                     #endif
 
                     GlobalConfig.IconSizes[ICON_SIZE_BADGE] *= 2;
@@ -336,7 +336,7 @@ VOID SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"LoDPI Monitor Detected ...Maintain Icon Scale");
+                MsgStr = StrDuplicate (L"LoDPI Monitor Detected ... Maintain Icon Scale");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
@@ -379,7 +379,7 @@ VOID SetupScreen (
                     MyFreePool (&MsgStr);
                 }
                 else {
-                    MsgStr = StrDuplicate (L"Switch to Graphics Mode ...Success");
+                    MsgStr = StrDuplicate (L"Switch to Graphics Mode ... Success");
                     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
                     MsgLog ("INFO: %s", MsgStr);
                     MsgLog ("\n\n");
@@ -472,7 +472,7 @@ VOID SwitchToText (
             (!IsBoot)
         ) {
             MsgLog (
-                "  Could Not Get Text Console Size ...Using Default: %d x %d\n\n",
+                "  Could Not Get Text Console Size ... Using Default: %d x %d\n\n",
                 ConHeight,
                 ConWidth
             );
@@ -497,7 +497,7 @@ VOID SwitchToText (
 
     #if REFIT_DEBUG > 0
     if (GraphicsModeOnEntry && !IsBoot) {
-        MsgLog ("INFO: Switch to Text Mode ...Success\n\n");
+        MsgLog ("INFO: Switch to Text Mode ... Success\n\n");
     }
     #endif
 
@@ -652,7 +652,7 @@ BOOLEAN ReadAllKeyStrokes (
         Status = EFI_ALREADY_STARTED;
     }
 
-    LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ...%r", Status);
+    LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ... %r", Status);
     #endif
 
     return GotKeyStrokes;
@@ -901,7 +901,7 @@ VOID SwitchToGraphicsAndClear (
 
     #if REFIT_DEBUG > 0
     if (!gotGraphics) {
-        MsgLog ("INFO: Restore Graphics Mode ...%r\n\n", Status);
+        MsgLog ("INFO: Restore Graphics Mode ... %r\n\n", Status);
     }
     #endif
 } // VOID SwitchToGraphicsAndClear()

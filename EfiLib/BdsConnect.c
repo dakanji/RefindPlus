@@ -342,7 +342,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 if (!Device) {
                     #if REFIT_DEBUG > 0
                     if (PostConnect) {
-                        MsgStr = PoolPrint (L"Handle 0x%03X ...Discounted [Other Item]", HexIndex);
+                        MsgStr = PoolPrint (L"Handle 0x%03X ... Discounted [Other Item]", HexIndex);
                         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                         MsgLog ("%s", MsgStr);
                         MyFreePool (&MsgStr);
@@ -503,7 +503,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         #if REFIT_DEBUG > 0
                         if (PostConnect) {
                             MsgStr = PoolPrint (
-                                L"Handle 0x%03X ...Skipped [Parent Device]%s",
+                                L"Handle 0x%03X ... Skipped [Parent Device]%s",
                                 HexIndex, DeviceData
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -518,7 +518,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         #if REFIT_DEBUG > 0
                         if (PostConnect) {
                             MsgStr = PoolPrint (
-                                L"Handle 0x%03X  * %r                %s",
+                                L"Handle 0x%03X   * %r                %s",
                                 HexIndex, XStatus, DeviceData
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -533,7 +533,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         if (XStatus == EFI_NOT_STARTED) {
                             if (PostConnect) {
                                 MsgStr = PoolPrint (
-                                    L"Handle 0x%03X ...Declined [Empty Device]%s",
+                                    L"Handle 0x%03X ... Declined [Empty Device]%s",
                                     HexIndex, DeviceData
                                 );
                                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -544,7 +544,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         else if (XStatus == EFI_NOT_FOUND) {
                             if (PostConnect) {
                                 MsgStr = PoolPrint (
-                                    L"Handle 0x%03X ...Bypassed [Not Linkable]%s",
+                                    L"Handle 0x%03X ... Bypassed [Not Linkable]%s",
                                     HexIndex, DeviceData
                                 );
                                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -659,7 +659,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
             }
         }
         else {
-            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ...Relink Handles");
+            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
@@ -698,7 +698,7 @@ EFI_STATUS ApplyGOPFix (
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_SEPARATOR, L"Reload OptionROM");
 
-    MsgStr = PoolPrint (L"Amend System Table ...%r", Status);
+    MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
     LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
@@ -715,7 +715,7 @@ EFI_STATUS ApplyGOPFix (
         Status = AcquireGOP();
 
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ...%r", Status);
+        MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
         LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("      %s", MsgStr);
         MyFreePool (&MsgStr);
@@ -754,7 +754,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ...%r", Status);
+            MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
             LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
             MyFreePool (&MsgStr);

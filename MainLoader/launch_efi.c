@@ -173,7 +173,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
             L"EFI File '%s' is invalid!!",
             FileName
         );
-        MsgLog ("** WARN: Read Loader File ...%r\n\n", Status);
+        MsgLog ("** WARN: Read Loader File ... %r\n\n", Status);
         #endif
 
         return FALSE;
@@ -376,7 +376,7 @@ EFI_STATUS StartEFIImage (
                 L"Error %d when trying to set LoaderDevicePartUUID EFI variable",
                 Status
             );
-            MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ...%r\n\n", Status);
+            MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ... %r\n\n", Status);
         }
         #endif
 
@@ -423,7 +423,7 @@ bailout:
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Load '%s' ...%r", ImageTitle, ReturnStatus);
+    LOG(1, LOG_LINE_NORMAL, L"Load '%s' ... %r", ImageTitle, ReturnStatus);
     #endif
 
     return ReturnStatus;
@@ -459,7 +459,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot Into Firmware ...%r\n\n", err);
+    MsgLog ("INFO: Reboot Into Firmware ... %r\n\n", err);
     #endif
 
     if (err != EFI_SUCCESS) {
@@ -482,7 +482,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     ReinitRefitLib();
 
-    ShowScreenStr = PoolPrint (L"Error calling ResetSystem ...%r", err);
+    ShowScreenStr = PoolPrint (L"Error calling ResetSystem ... %r", err);
 
     refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (ShowScreenStr, NEXTLINE);
@@ -528,7 +528,7 @@ VOID RebootIntoLoader (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot Into EFI Loader ...%r\n\n", Status);
+    MsgLog ("INFO: Reboot Into EFI Loader ... %r\n\n", Status);
     #endif
 
     if (EFI_ERROR(Status)) {

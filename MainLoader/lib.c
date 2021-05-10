@@ -463,7 +463,7 @@ EFI_STATUS FindVarsDir (
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM in Installation Folder for RefindPlus-Specific Items ...%r",
+            L"Locate/Create Emulated NVRAM in Installation Folder for RefindPlus-Specific Items ... %r",
             Status
         );
         #endif
@@ -481,7 +481,7 @@ EFI_STATUS FindVarsDir (
 
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Locate/Create Emulated NVRAM in any ESP for RefindPlus-Specific Items ...%r",
+                L"Locate/Create Emulated NVRAM in any ESP for RefindPlus-Specific Items ... %r",
                 Status
             );
 
