@@ -37,32 +37,32 @@ However, the enhancements RefindPlus adds to rEFInd are not limited in scope to 
 
 While RefindPlus will function with the rEFInd configuration file, `refind.conf`, this should be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
-Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required.
+Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined in the `Divergence` section below.
 
 ## Additional Configurable Functionality
 RefindPlus-Specific funtionality can be activated by adding the tokens below to a rEFInd configuration file.
 
 Token | Functionality
 :----: | :----:
-active_csr           |Actively enables or disables the CSR Policy on Macs.
-continue_on_warning  |Proceeds as if a key is pressed after screen warnings (for remote login).
-direct_gop_renderer  |Provides a potentially improved GOP instance for certain GPUs.
-disable_amfi         |Disables AMFI Checks on Mac OS if required.
-disable_compat_check |Disables Mac version compatibility checks if required.
-force_trim           |Forces `TRIM` with non-Apple SSDs on Macs if required.
-ignore_previous_boot |Disables saving the last booted loader if not required.
-ignore_volume_icns   |Disables scanning for `.VolumeIcon` icns files if not required.
-protect_nvram        |Prevents UEFI Windows from saving certificates to Apple NVRAM.
-provide_console_gop  |Fixes issues with GOP on some legacy units.
-reload_gop           |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
-scale_ui             |Provides control of UI element scaling.
-scan_other_esp       |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
-set_boot_args        |Allows arbitrary Mac OS boot argument strings.
-supply_apfs          |Provides APFS file system capability if required (built in APFS driver).
-suppress_verbose_apfs|Supresses verbose APFS text on boot (if required with `supply_apfs`).
-sync_apfs            |Boot APFS volumes, such as Big Sur and FileVault, directly (without PreBoot).
-text_renderer        |Provides a text renderer that allows text mode when not otherwise available.
-uga_pass_through     |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
+active_csr            |Actively enables or disables the CSR Policy on Macs.
+continue_on_warning   |Proceeds as if a key is pressed after screen warnings (for remote login).
+direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs.
+disable_amfi          |Disables AMFI Checks on Mac OS if required.
+disable_compat_check  |Disables Mac version compatibility checks if required.
+force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required.
+ignore_previous_boot  |Disables saving the last booted loader if not required.
+ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required.
+protect_nvram         |Prevents UEFI Windows from saving certificates to Apple NVRAM.
+provide_console_gop   |Fixes issues with GOP on some legacy units.
+reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
+scale_ui              |Provides control of UI element scaling.
+scan_other_esp        |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
+set_boot_args         |Allows arbitrary Mac OS boot argument strings.
+supply_apfs           |Provides APFS file system capability if required (built in APFS driver).
+suppress_verbose_apfs |Supresses verbose APFS text on boot (if required with `supply_apfs`).
+sync_apfs             |Boot APFS volumes, such as Big Sur and FileVault, directly (without PreBoot).
+text_renderer         |Provides a text renderer that allows text mode when not otherwise available.
+uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 In addition to the new functions above, the following upsteam functions have been extended:
 - `use_graphics_for` : OpenCore and Clover added as options that can be set to boot in graphics mode.
