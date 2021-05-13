@@ -302,16 +302,16 @@ VOID SetupScreen (
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
                 if (ScreenH >= HIDPI_MIN) {
-                    TmpStr = StrDuplicate (L"HiDPI Monitor Detected");
+                    TmpStr = StrDuplicate (L"HiDPI Monitor");
                 }
                 else {
-                    TmpStr = StrDuplicate (L"HiDPI Monitor Flagged");
+                    TmpStr = StrDuplicate (L"HiDPI Flag");
                 }
                 #endif
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ... Maintain Previously Scaled Icons", TmpStr);
+                    MsgStr = PoolPrint (L"%s ... Maintain Scaled Icons", TmpStr);
                     #endif
                 }
                 else {
@@ -336,7 +336,7 @@ VOID SetupScreen (
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"LoDPI Monitor Detected ... Maintain Icon Scale");
+                MsgStr = StrDuplicate (L"LoDPI Monitor ... Maintain Icon Scale");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");

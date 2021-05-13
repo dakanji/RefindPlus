@@ -715,7 +715,8 @@ VOID egInitScreen (
     BOOLEAN                       thisValidGOP = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16  *MsgStr   = NULL;
+    BOOLEAN  PrevFlag = FALSE;
 
     MsgLog ("Check for Graphics:\n");
     #endif
@@ -1199,7 +1200,15 @@ VOID egInitScreen (
             MsgStr = PoolPrint (L"Implement UGA Pass Through ... %r", Status);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
-            MsgLog ("\n\n");
+            if ((GOPDraw != NULL) &&
+                (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
+            ) {
+                PrevFlag = TRUE;
+                MsgLog ("\n");
+            }
+            else {
+                MsgLog ("\n\n");
+            }
             MyFreePool (&MsgStr);
             #endif
         }
@@ -1274,9 +1283,16 @@ VOID egInitScreen (
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s", MsgStr);
-            MsgLog ("\n\n");
+            if (PrevFlag) {
+                MsgLog ("      ");
+            }
+            else {
+                MsgLog ("INFO: ");
+            }
+            MsgLog ("%s", MsgStr);
+            MsgLog ("\n");
             MyFreePool (&MsgStr);
+            PrevFlag = TRUE;
             #endif
         #endif
     }
@@ -1289,7 +1305,13 @@ VOID egInitScreen (
         MsgStr = StrDuplicate (L"No");
     }
 
-    MsgLog ("INFO: Graphics Available:- '%s'", MsgStr);
+    if (PrevFlag) {
+        MsgLog ("      ");
+    }
+    else {
+        MsgLog ("INFO: ");
+    }
+    MsgLog ("Graphics Available:- '%s'", MsgStr);
     MsgLog ("\n\n");
     MyFreePool (&MsgStr);
     #endif
