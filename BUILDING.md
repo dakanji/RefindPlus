@@ -136,18 +136,6 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 If the script still fails after a third attempt, try the manual sync steps outlined below instead.
 
 ### OPTION 2: Manual Sync
-#### RefindPlusUDK
-In Terminal, run the following commands:
-
-```
-$ cd ~/Documents/RefindPlus/edk2
-$ git checkout rudk
-$ git reset --hard a94082b4e5e42a1cfdcbab0516f9ecdbb596d201
-$ git push origin HEAD -f
-$ git pull upstream rudk
-$ git push
-```
-
 #### RefindPlus
 In Terminal, run the following commands:
 
@@ -157,5 +145,17 @@ $ git checkout GOPFix
 $ git reset --hard a2cc87f019c4de3a1237e2dc23f432c27cec5ec6
 $ git push origin HEAD -f
 $ git pull upstream GOPFix
+$ git push
+```
+
+#### RefindPlusUDK
+In Terminal, run the following commands:
+
+```
+$ cd ~/Documents/RefindPlus/edk2
+$ git checkout rudk
+$ git reset --hard a94082b4e5e42a1cfdcbab0516f9ecdbb596d201
+$ git push origin HEAD -f
+$ git pull upstream rudk
 $ git push
 ```
