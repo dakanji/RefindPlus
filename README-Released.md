@@ -79,6 +79,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 ar
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format
   * Levels 1 to 4 output logs equivalent to the detailed upstream format
+- The `max` resolution setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.  
 - WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` token is set to the default option of automatic detection.
 - rEFInd now scans other ESPs for loaders in addition to the ESP containing the rEFInd loader. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
 
