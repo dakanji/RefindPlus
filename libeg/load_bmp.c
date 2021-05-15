@@ -75,10 +75,10 @@ typedef struct {
 //
 
 EG_IMAGE * egDecodeBMP(
-    IN UINT8 *FileData,
-    IN UINTN FileDataLength,
-    IN UINTN IconSize,
-    IN BOOLEAN WantAlpha
+    IN UINT8   *FileData,
+    IN UINTN    FileDataLength,
+    IN UINTN    IconSize,
+    IN BOOLEAN  WantAlpha
 ) {
     EG_IMAGE            *NewImage;
     BMP_IMAGE_HEADER    *BmpHeader;
@@ -216,12 +216,12 @@ VOID egEncodeBMP(
 ) {
     BMP_IMAGE_HEADER    *BmpHeader;
     UINT8               *FileData;
-    UINTN               FileDataLength;
+    UINTN                FileDataLength;
     UINT8               *ImagePtr;
     UINT8               *ImagePtrBase;
-    UINTN               ImageLineOffset;
+    UINTN                ImageLineOffset;
     EG_PIXEL            *PixelPtr;
-    UINTN               x, y;
+    UINTN                x, y;
 
     ImageLineOffset = Image->Width * 3;
     if ((ImageLineOffset % 4) != 0)

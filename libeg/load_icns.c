@@ -56,10 +56,10 @@ VOID egDecompressIcnsRLE (
     UINT8  value;
 
     // setup variables
-    cp = *CompData;
-    cp_end = cp + *CompLen;
-    pp = PixelData;
-    pp_left = PixelCount;
+    cp      = *CompData;
+    cp_end  =  cp + *CompLen;
+    pp      =  PixelData;
+    pp_left =  PixelCount;
 
     // decode
     while (cp + 1 < cp_end && pp_left > 0) {

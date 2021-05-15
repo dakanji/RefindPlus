@@ -433,8 +433,8 @@ bailout:
 EFI_STATUS RebootIntoFirmware (VOID) {
     CHAR8      *ItemBuffer;
     CHAR16     *ShowScreenStr = NULL;
-    UINT64     osind;
-    EFI_STATUS err;
+    UINT64      osind;
+    EFI_STATUS  err;
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
@@ -561,8 +561,9 @@ VOID RebootIntoLoader (
 static
 VOID DoEnableAndLockVMX(VOID) {
 #if defined (EFIX64) | defined (EFI32)
-    UINT32 msr = 0x3a;
-    UINT32 low_bits = 0, high_bits = 0;
+    UINT32 msr       = 0x3a;
+    UINT32 low_bits  = 0;
+    UINT32 high_bits = 0;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Attempting to enable and lock VMX");

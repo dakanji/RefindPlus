@@ -135,7 +135,7 @@ EG_IMAGE * LoadOSIcon(
 ) {
     EG_IMAGE        *Image = NULL;
     CHAR16          *CutoutName, *BaseName;
-    UINTN           Index = 0;
+    UINTN            Index = 0;
 
     if (GlobalConfig.TextOnly) {
         // skip loading if it is not used anyway

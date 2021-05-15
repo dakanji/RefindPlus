@@ -382,7 +382,7 @@ INTN FindMenuShortcutEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16            *Defaults
 ) {
-    UINTN i, j = 0, ShortcutLength;
+    UINTN   i, j = 0, ShortcutLength;
     CHAR16 *Shortcut;
 
     while ((Shortcut = FindCommaDelimited (Defaults, j)) != NULL) {
@@ -957,7 +957,7 @@ VOID ShowTextInfoLines (
 VOID TextMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE      *State,
-    IN UINTN             Function,
+    IN UINTN              Function,
     IN CHAR16            *ParamText
 ) {
     INTN  i;
@@ -1161,7 +1161,7 @@ VOID DrawText (
     IN UINTN    YPos
 ) {
     EG_IMAGE *TextBuffer;
-    EG_PIXEL Bg;
+    EG_PIXEL  Bg;
 
     TextBuffer = egCreateFilledImage (
         FieldWidth,
@@ -1369,7 +1369,7 @@ VOID ComputeSubScreenWindowSize (
 VOID GraphicsMenuStyle (
     IN REFIT_MENU_SCREEN  *Screen,
     IN SCROLL_STATE       *State,
-    IN UINTN              Function,
+    IN UINTN               Function,
     IN CHAR16             *ParamText
 ) {
            INTN      i;
@@ -1874,12 +1874,12 @@ UINTN FindMainMenuItem (
     IN UINTN              PosX,
     IN UINTN              PosY
 ) {
-           UINTN i;
-           UINTN itemRow;
-           UINTN row0Count, row1Count, row1PosX, row1PosXRunning;
-    static UINTN row0PosX, row0PosXRunning, row1PosY, row0Loaders;
+           UINTN  i;
+           UINTN  itemRow;
+           UINTN  row0Count, row1Count, row1PosX, row1PosXRunning;
+    static UINTN  row0PosX, row0PosXRunning, row1PosY, row0Loaders;
     static UINTN *itemPosX;
-    static UINTN row0PosY;
+    static UINTN  row0PosY;
 
     row0Count = 0;
     row1Count = 0;
@@ -2046,7 +2046,7 @@ BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
 //
 
 VOID DisplaySimpleMessage (
-    CHAR16* Title,
+    CHAR16 *Title,
     CHAR16 *Message
 ) {
     #if REFIT_DEBUG > 0
@@ -2438,10 +2438,10 @@ BOOLEAN HideLegacyTag (
 ) {
     MENU_STYLE_FUNC    Style = TextMenuStyle;
     REFIT_MENU_ENTRY   *ChosenOption;
-    INTN               DefaultEntry = 1;
-    UINTN              MenuExit;
-    CHAR16             *Name = NULL;
-    BOOLEAN            TagHidden = FALSE;
+    INTN                DefaultEntry = 1;
+    UINTN               MenuExit;
+    CHAR16             *Name      = NULL;
+    BOOLEAN             TagHidden = FALSE;
 
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;

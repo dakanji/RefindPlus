@@ -23,10 +23,10 @@
 # the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
 # provides a default option to be selected on the main screen when RefindPlus
 # is loaded. This can however increase wear and tear on the NVRAM and disabling
-# the "use_nvram" token allows writing to the filesystem instead to reduce this.
-# On some setups however, such as when the "default_selection" token is set,
-# such writes are not required at all and when this setting is active,
-# RefindPlus will not execute such writes in the first place.
+# the "use_nvram" token writes variables to the filesystem instead, limiting this.
+# On some setups however, such as when the "default_selection" token is set, such
+# writes are not required to start with. When the "ignore_previous_boot" setting
+# is active, RefindPlus will not save the "PreviousBoot" variable to the NVRAM.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
@@ -249,8 +249,8 @@
 # any operating systems except Mac OS. Using graphics mode can provide
 # a more seamless transition, but may not display any information, which
 # can make it difficult to debug problems. However, using graphics mode
-# may prevent crashes in some instances. Specifying an empty list
-# will set RefindPlus to boot all loaders in text mode.
+# may prevent crashes in some instances. Specifying an empty list will
+# set RefindPlus up to boot all types of loaders in text mode.
 # Valid options:
 #   linux       - A Linux kernel with EFI stub loader
 #   grub        - The GRUB (Legacy or 2) boot loader
@@ -435,8 +435,8 @@
 #banner icons/snowy/banner-snowy.png
 
 # How to handle banners that are not the same size as the screen size:
-#  noscale     - Crop if too big or show with border if too small
-#  fillscreen  - Fill the screen
+#     noscale     - Crop if too big or show with border if too small
+#     fillscreen  - Fill the screen
 #
 # Crops if too big or shows with border if too small when commented out
 #
@@ -453,7 +453,7 @@
 #small_icon_size 96
 #big_icon_size 256
 
-# Custom images for the selection background. There is a big one (144 x 144)
+# Custom background image for selected item. There is a big one (144 x 144)
 # for the OS icons, and a small one (64 x 64) for the function icons in the
 # second row. If only a small image is given, that one is also used for the
 # big icons by stretching it in the middle. If only a big one is given, the
@@ -478,7 +478,7 @@
 # fonts are supported. Fonts may be of any size, although large fonts can
 # produce display irregularities.
 #
-# Uses the built-in font (Luxi Mono Regular 12 point) when commented out
+# Uses the built-in font, Luxi Mono Regular 12 point, when commented out
 #
 #font myfont.png
 
@@ -538,8 +538,8 @@
 #mouse_size 18
 
 # Speed of mouse tracking. Higher numbers equate to faster
-# mouse movement. This option requires that enable_mouse be
-# uncommented. Valid values are 1 to 32.
+# mouse movement. This option requires "enable_mouse" to
+# be uncommented. Valid values are 1 to 32 (inclusive).
 #
 # Uses a mouse speed of 4 when commented out
 #
@@ -626,7 +626,7 @@
 # to scan the "somedir" directory only on the filesystem named "myvol". If
 # a specified directory does not exist, it is ignored (no error message).
 #
-# Scans the "boot" and hardcoded directories when commented out
+# Scans hardcoded and the "boot" directories when commented out
 #
 #also_scan_dirs boot,ESP2:EFI/linux/kernels
 

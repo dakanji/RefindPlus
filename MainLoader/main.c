@@ -256,8 +256,8 @@ static
 EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  CHAR16    *VariableName,
     IN  EFI_GUID  *VendorGuid,
-    IN  UINT32    Attributes,
-    IN  UINTN     DataSize,
+    IN  UINT32     Attributes,
+    IN  UINTN      DataSize,
     IN  VOID      *Data
 ) {
     EFI_STATUS   Status                 = EFI_SECURITY_VIOLATION;
@@ -305,12 +305,12 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Write '%s' to NVRAM ... %r", VariableName, Status);
+    MsgLog ("INFO: Write to NVRAM:- '%s' ... %r", VariableName, Status);
     if (BlockCert || BlockPRNG) {
-        MsgLog ("\n\n");
-        MsgLog ("** WARN: Prevented Microsoft Secure Boot NVRAM Write Attempt");
         MsgLog ("\n");
-        MsgLog ("         Successful NVRAM Write May Result in BootROM Damage");
+        MsgLog ("      * Prevented Microsoft Secure Boot NVRAM Write Attempt");
+        MsgLog ("\n");
+        MsgLog ("        Successful NVRAM Write May Result in BootROM Damage");
     }
     MsgLog ("\n\n");
     #endif
@@ -407,11 +407,11 @@ static
 VOID SetBootArgs (
     VOID
 ) {
-    EFI_STATUS  Status;
-    EFI_GUID    AppleGUID   = APPLE_GUID;
+    EFI_STATUS   Status;
+    EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *BootArg;
-    CHAR8       DataNVRAM[255];
+    CHAR8        DataNVRAM[255];
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr                = NULL;
@@ -527,8 +527,8 @@ VOID SetBootArgs (
 VOID DisableAMFI (
     VOID
 ) {
-    EFI_STATUS  Status;
-    EFI_GUID    AppleGUID   = APPLE_GUID;
+    EFI_STATUS   Status;
+    EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
 
     #if REFIT_DEBUG > 0
@@ -586,10 +586,10 @@ VOID DisableAMFI (
 VOID DisableCompatCheck (
     VOID
 ) {
-    EFI_STATUS  Status;
-    EFI_GUID    AppleGUID    = APPLE_GUID;
-    CHAR16      *NameNVRAM   = L"boot-args";
-    CHAR8       DataNVRAM[]  = "-no_compat_check";
+    EFI_STATUS   Status;
+    EFI_GUID     AppleGUID    = APPLE_GUID;
+    CHAR16      *NameNVRAM    = L"boot-args";
+    CHAR8        DataNVRAM[]  = "-no_compat_check";
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -619,10 +619,10 @@ VOID DisableCompatCheck (
 VOID ForceTRIM (
     VOID
 ) {
-    EFI_STATUS  Status;
-    EFI_GUID    AppleGUID     = APPLE_GUID;
-    CHAR16      *NameNVRAM    = L"EnableTRIM";
-    CHAR8       DataNVRAM[1]  = {0x01};
+    EFI_STATUS   Status;
+    EFI_GUID     AppleGUID     = APPLE_GUID;
+    CHAR16      *NameNVRAM     = L"EnableTRIM";
+    CHAR8        DataNVRAM[1]  = {0x01};
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -653,17 +653,17 @@ VOID ForceTRIM (
 // Ensures GOP Interface for Boot Loading Screen
 static
 EFI_STATUS EFIAPI OpenProtocolEx (
-    IN   EFI_HANDLE  Handle,
-    IN   EFI_GUID    *Protocol,
+    IN   EFI_HANDLE    Handle,
+    IN   EFI_GUID     *Protocol,
     OUT  VOID        **Interface OPTIONAL,
-    IN   EFI_HANDLE  AgentHandle,
-    IN   EFI_HANDLE  ControllerHandle,
-    IN   UINT32      Attributes
+    IN   EFI_HANDLE    AgentHandle,
+    IN   EFI_HANDLE    ControllerHandle,
+    IN   UINT32        Attributes
 ) {
-    EFI_STATUS  Status;
-    UINTN       i              = 0;
-    UINTN       HandleCount    = 0;
-    EFI_HANDLE  *HandleBuffer  = NULL;
+    EFI_STATUS   Status;
+    UINTN        i              = 0;
+    UINTN        HandleCount    = 0;
+    EFI_HANDLE  *HandleBuffer   = NULL;
 
     Status = OrigOpenProtocol (
         Handle,
@@ -721,7 +721,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
     } // if Status == EFI_UNSUPPORTED
 
     return Status;
-} // EFI_STATUS OpenProtocolEx
+} // EFI_STATUS OpenProtocolEx()
 
 
 // Extended 'HandleProtocol'
@@ -745,7 +745,7 @@ EFI_STATUS EFIAPI HandleProtocolEx (
     );
 
     return Status;
-} // EFI_STATUS HandleProtocolEx
+} // EFI_STATUS HandleProtocolEx()
 
 static
 VOID ReMapOpenProtocol (
@@ -951,7 +951,7 @@ VOID preBootKicker (
         MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
         #endif
     } // if
-} /* VOID preBootKicker() */
+} // VOID preBootKicker()
 
 VOID preCleanNvram (
     VOID
@@ -1093,7 +1093,7 @@ VOID preCleanNvram (
         MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
         #endif
     } // if
-} /* VOID preCleanNvram() */
+} // VOID preCleanNvram()
 
 
 VOID AboutRefindPlus (
@@ -1269,7 +1269,7 @@ static VOID InitializeLib (
     gBS->HandleProtocol  = HandleProtocolEx;
     gBS->Hdr.CRC32       = 0;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
-}
+} // VOID InitializeLib()
 
 #endif
 
@@ -1356,7 +1356,7 @@ BOOLEAN SecureBootUninstall (VOID) {
     }
 
     return Success;
-} // VOID SecureBootUninstall
+} // BOOLEAN SecureBootUninstall()
 
 // Sets the global configuration filename; will be CONFIG_FILE_NAME unless the
 // "-c" command-line option is set, in which case that takes precedence.
@@ -1484,7 +1484,7 @@ static
 VOID LogBasicInfo (
     VOID
 ) {
-    EFI_STATUS Status;
+    EFI_STATUS  Status;
     CHAR16     *TempStr = NULL;
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
@@ -2630,4 +2630,4 @@ EFI_STATUS EFIAPI efi_main (
     EndlessIdleLoop();
 
     return EFI_SUCCESS;
-} /* efi_main() */
+} // EFI_STATUS EFIAPI efi_main()
