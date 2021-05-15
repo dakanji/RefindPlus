@@ -366,7 +366,7 @@
 #
 #
 # RefindPlus defaults to booting the item indicated by "default_selection"
-# after the timeout period has passed. When this option is uncommented,
+# after the timeout period has passed. When this option is activated,
 # RefindPlus will instead attempt to shut down the computer.
 #
 # CAUTION: MANY COMPUTERS WILL HANG OR REBOOT INSTEAD! Macs and more
@@ -490,9 +490,9 @@
 #textonly
 
 # Set the EFI text mode to be used for textual displays. This option
-# takes a single digit that refers to a mode number. Mode 0 is normally
+# takes a single digit that refers to a mode number. Mode 0 is usually
 # 80x25, 1 is sometimes 80x50, and higher numbers are system-specific
-# modes. Mode 1024 is a special code that tells RefindPlus to not
+# modes. Mode 1024 is a special code that tells RefindPlus not to
 # set text mode; it uses whatever was in use when the program
 # was launched. If an invalid mode is specified, RefindPlus
 # pauses booting to display information on valid modes.
@@ -616,8 +616,8 @@
 #scan_delay 2
 
 # When scanning volumes for EFI boot loaders, RefindPlus always looks for
-# the Mac OS and Microsoft Windows boot loaders in their normal locations,
-# and scans the root directory and every subdirectory of the "EFI" folder
+# the Mac OS and Microsoft Windows bootloaders in their normal locations,
+# and scans the root directory and all sub folders under the "EFI" folder
 # for additional boot loaders, but does not recurse into these locations.
 # The "also_scan_dirs" option adds more directories to the scan list and
 # directories are specified relative to the volume's root directory. This
@@ -632,14 +632,15 @@
 
 # Partitions (or whole disks, for legacy-mode boots) to omit from scans.
 # For "EFI-mode" scans, volumes are typically specified by their labels,
-# which can be obtained in an EFI shell with "vol", from Linux by typing
-# "blkid /dev/{devicename}", or by examining the disk's label in various
-# operating system file browsers. Partitions can alsobe identified by the
-# unique GUIDs ("PARTUUID" in Linux parlance). (Note that this is NOT the
-# partition TYPE CODE GUID.) The identifier can be obtained by using the
-# "blkid" command in Linux or "diskutil info {partition-id}" in Mac OS.
-# Any subset of the boot loader description shown when the option is
-# highlighted in RefindPlus can be used for legacy-mode scans.
+# which can be obtained in an EFI shell with "vol" from Linux by typing
+# "blkid /dev/{devicename}", or by examining the disk label in various
+# operating system file browsers. Partitions can also be identified by
+# the unique GUIDs ("PARTUUID" in Linux parlance). (Note that this is
+# not the partition TYPE CODE GUID). The identifier can be obtained
+# by using the "diskutil info {partition-id}" command in Mac OS or
+# the "blkid" command in Linux. Any sub-string of the boot loader
+# description (displayed when the option is highlighted) can be
+# used for legacy-mode scans.
 #
 # Set to LRS_ESP when commented out
 #
@@ -649,7 +650,7 @@
 # RefindPlus does not scan its own directory, the com.apple.recovery.boot,
 # EFI/tools, EFI/memtest and EFI/memtest86 directories. The "dont_scan_dirs"
 # option enables blocking other directories. However, "+" must be used as the
-# first element to continue blocking existing directories. This option might be
+# first element to continue blocking existing directories. This option can be
 # used to keep EFI/boot/bootx64.efi out of the menu if that is a duplicate of
 # another boot loader, to exclude directories holding drivers or to exclude
 # directories with non-bootloader utilities from a hardware manufacturer.
@@ -695,11 +696,11 @@
 # "Boot####" variables that should NOT be offered as loaders
 # when "firmware" is an option to "scanfor". The comma-separated
 # list presented here contains strings that are matched against the
-# description field -- if a value here is a case-insensitive substring
-# of the boot option description, then it will be excluded from the
-# boot list. To specify a string that includes a space, enclose
-# it in quotes. Specifying "shell" will counteract the
-# automatic inclusion of built-in EFI shells.
+# description field. If a value here is a case-insensitive substring
+# of the boot option description, it will be excluded from the boot
+# list. Strings that includes spaces must be enclosed in quotes.
+# Specifying "shell" will override the automatic inclusion of
+# built-in EFI shells.
 #
 #dont_scan_firmware HARDDISK,shell,"Removable Device"
 
@@ -707,22 +708,23 @@
 # is useful for better integration with Linux distributions that provide
 # kernels with EFI stub loaders but that do not give those kernels filenames
 # that end in ".efi", particularly if the kernels are stored on a filesystem
-# that the EFI can read. When active, this option causes all files in scanned
+# that the EFI can read. When active, this option makes all files in scanned
 # directories with names that begin with "vmlinuz", "bzImage", or "kernel"
-# to be included as loaders, even if they lack ".efi" extensions.
+# be included as loaders (even if they do not have ".efi" extensions).
 #
 # Inactive when commented out (Only scans for kernels with ".efi" extensions)
 #
 #scan_all_linux_kernels
 
 # Combine all Linux kernels in a given directory into a single entry.
-# When active, the kernel with the most recent time stamp will be launched
+# When active, the kernel with the most recent timestamp will be loaded
 # by default, and its filename will appear in the entry's description.
 # To launch other kernels, the user must press "F2" or "Insert",
 # after which alternate kernels appear as sub-menu options.
+#
 # Settings are:
-#   0    - Combine Linux kernel entries: Off
-#   1    - Combine Linux kernel entries: On
+#       0    - Combine Linux kernel entries: Off
+#       1    - Combine Linux kernel entries: On
 #
 # Active when commented out (Combines Linux kernel entries)
 #
@@ -819,7 +821,7 @@
 # other values can be experimented with. This feature has no effect
 # on non-Apple computers.
 #
-# Inactive when commented out (No Mac OS spoofing is done)
+# Inactive when commented out (No Mac OS version spoofing)
 #
 #spoof_osx_version 10.9
 
@@ -906,6 +908,7 @@
 # This entry includes Linux-specific boot options and specification
 # of an initial RAM disk. Note uses of Linux-style forward slashes.
 # Also note that a leading slash is optional in file specifications.
+#
 menuentry Linux {
     icon EFI/refind/icons/os_linux.png
     volume 904404F8-B481-440C-A1E3-11A5A954E601
@@ -922,6 +925,7 @@ menuentry Linux {
 # manual boot stanzas may be required when using fallback initrds or multiple
 # kernels with Arch Linux. This example is modified from one in the Arch wiki
 # page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
+#
 menuentry "Arch Linux" {
     icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"
@@ -939,6 +943,7 @@ menuentry "Arch Linux" {
 
 # A sample entry for loading Ubuntu using its standard name for
 # its GRUB 2 boot loader. Note uses of Linux-style forward slashes
+#
 menuentry Ubuntu {
     loader /EFI/ubuntu/grubx64.efi
     icon /EFI/refind/icons/os_linux.png
@@ -947,6 +952,7 @@ menuentry Ubuntu {
 
 # A minimal ELILO entry. Probably offers nothing
 # that auto-detection cannot accomplish.
+#
 menuentry "ELILO" {
     loader \EFI\elilo\elilo.efi
     disabled
@@ -954,6 +960,7 @@ menuentry "ELILO" {
 
 # This, like the ELILO entry, offers nothing additional to auto-detection
 # but may help with disabling auto-detection but still booting Windows
+#
 menuentry "Windows 7" {
     loader \EFI\Microsoft\Boot\bootmgfw.efi
     disabled
@@ -964,6 +971,7 @@ menuentry "Windows 7" {
 # a script that it is to run on the "options" line. The script
 # could initialize hardware and then launch an OS, or it could
 # do something entirely different.
+#
 menuentry "Windows via shell script" {
     icon \EFI\refind\icons\os_win.png
     loader \EFI\tools\shell.efi
@@ -976,6 +984,7 @@ menuentry "Windows via shell script" {
 # does nothing very unusual, but may serve as a start point.
 # Note that the "volume" line will almost certainly need
 # modification for this example to work.
+#
 menuentry "My Mac OS" {
     icon \EFI\refind\icons\os_mac.png
     volume "Mac OS boot"
@@ -992,6 +1001,7 @@ menuentry "My Mac OS" {
 # when booted via the Apple boot manager. Booting with RefindPlus using
 # this option may produce a better resolution in such cases. Note that the
 # "loader" manual stanza option is not used with this type of configuration.
+#
 menuentry "Mac OS via BootNext" {
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
