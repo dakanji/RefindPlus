@@ -425,7 +425,7 @@ typedef struct {
    BOOLEAN           DisableCompatCheck;
    BOOLEAN           DisableAMFI;
    BOOLEAN           SupplyAPFS;
-   BOOLEAN           SuppressVerboseAPFS;
+   BOOLEAN           SilenceAPFS;
    BOOLEAN           SyncAPFS;
    BOOLEAN           ProtectNVRAM;
    BOOLEAN           ScanOtherESP;

@@ -33,7 +33,7 @@
 
 #include "../../include/refit_call_wrapper.h"
 
-extern BOOLEAN SuppressVerboseAPFS;
+extern BOOLEAN SilenceAPFS;
 
 LIST_ENTRY               mApfsPrivateDataList = INITIALIZE_LIST_HEAD_VARIABLE (mApfsPrivateDataList);
 static EFI_SYSTEM_TABLE  *mNullSystemTable;
@@ -126,7 +126,7 @@ ApfsStartDriver (
     }
 
     // Disable APFS verbose mode.
-    if (SuppressVerboseAPFS) {
+    if (SilenceAPFS) {
         Status = refit_call3_wrapper(
             gBS->HandleProtocol,
             ImageHandle,

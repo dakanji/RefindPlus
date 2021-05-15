@@ -58,7 +58,7 @@ reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPU
 scale_ui              |Provides control of UI element scaling.
 scan_other_esp        |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
 set_boot_args         |Allows arbitrary Mac OS boot argument strings.
-supply_apfs           |Provides APFS file system capability if required (built in APFS driver).
+supply_apfs           |Provides APFS file system capability without requiring an APFS driver.
 suppress_verbose_apfs |Supresses verbose APFS text on boot (if required with `supply_apfs`).
 sync_apfs             |Boot APFS volumes, such as Big Sur and FileVault, directly (without PreBoot).
 text_renderer         |Provides a text renderer that allows text mode when not otherwise available.

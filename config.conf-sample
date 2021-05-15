@@ -166,7 +166,7 @@
 #
 # Inactive when commented out (Does not suppress verbose APFS text)
 #
-#suppress_verbose_apfs
+#silence_apfs
 
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
 # of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.x (Big Sur) when

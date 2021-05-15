@@ -72,7 +72,7 @@
 #define GetTime gST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
-BOOLEAN SuppressVerboseAPFS;
+BOOLEAN SilenceAPFS;
 
 // extern REFIT_MENU_ENTRY MenuEntryReturn;
 //static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
@@ -1054,8 +1054,8 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"supply_apfs")) {
           GlobalConfig.SupplyAPFS = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"suppress_verbose_apfs")) {
-          GlobalConfig.SuppressVerboseAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"silence_apfs")) {
+          GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"sync_apfs")) {
           GlobalConfig.SyncAPFS = HandleBoolean (TokenList, TokenCount);
@@ -1099,7 +1099,7 @@ VOID ReadConfig (
        GlobalConfig.TextOnly = TRUE;
     }
 
-    SuppressVerboseAPFS = GlobalConfig.SuppressVerboseAPFS;
+    SilenceAPFS = GlobalConfig.SilenceAPFS;
 } // VOID ReadConfig()
 
 static
@@ -1713,7 +1713,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
 
 // Retrieve a single line of options from a Linux kernel options file
 CHAR16 * GetFirstOptionsFromFile (
-    IN CHAR16 *LoaderPath,
+    IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
 ) {
     UINTN         TokenCount;
