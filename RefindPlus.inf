@@ -27,6 +27,24 @@
 #
 
 [Sources]
+  BootMaster/apple.c
+  BootMaster/config.c
+  BootMaster/crc32.c
+  BootMaster/driver_support.c
+  BootMaster/gpt.c
+  BootMaster/icns.c
+  BootMaster/install.c
+  BootMaster/launch_efi.c
+  BootMaster/launch_legacy.c
+  BootMaster/lib.c
+  BootMaster/line_edit.c
+  BootMaster/linux.c
+  BootMaster/main.c
+  BootMaster/menu.c
+  BootMaster/mystrings.c
+  BootMaster/pointer.c
+  BootMaster/scan.c
+  BootMaster/screenmgt.c
   EfiLib/AcquireGOP.c
   EfiLib/AmendSysTable.c
   EfiLib/BmLib.c
@@ -36,28 +54,6 @@
   EfiLib/BdsConnect.c #included into GenericBdsLib
   EfiLib/GenericBdsLib.h
   EfiLib/legacy.c
-  mok/mok.c
-  mok/guid.c
-  mok/security_policy.c
-  mok/simple_file.c
-  MainLoader/apple.c
-  MainLoader/config.c
-  MainLoader/crc32.c
-  MainLoader/driver_support.c
-  MainLoader/gpt.c
-  MainLoader/icns.c
-  MainLoader/install.c
-  MainLoader/launch_efi.c
-  MainLoader/launch_legacy.c
-  MainLoader/lib.c
-  MainLoader/line_edit.c
-  MainLoader/linux.c
-  MainLoader/main.c
-  MainLoader/menu.c
-  MainLoader/mystrings.c
-  MainLoader/pointer.c
-  MainLoader/scan.c
-  MainLoader/screenmgt.c
   libeg/image.c
   libeg/load_bmp.c
   libeg/load_icns.c
@@ -67,6 +63,10 @@
   libeg/nanojpeg_xtra.c
   libeg/screen.c
   libeg/text.c
+  mok/mok.c
+  mok/guid.c
+  mok/security_policy.c
+  mok/simple_file.c
 # Originally added by Jief_Machak (https://sourceforge.net/u/jief7/profile) from Clover
 # Modified by dakanji (sf.net/u/dakanji/profile) as follows:
 # - Removed unused "Platform/DataHubCpu.c"

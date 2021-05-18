@@ -25,8 +25,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "BdsHelper.h"
 #include "legacy.h"
 #include "mystrings.h"
-#include "../MainLoader/screenmgt.h"
-#include "../MainLoader/lib.h"
+#include "../BootMaster/screenmgt.h"
+#include "../BootMaster/lib.h"
 #include "../include/refit_call_wrapper.h"
 
 EFI_GUID gEfiLegacyBootProtocolGuid = {0xdb9a1e3d, 0x45cb, 0x4abb, {0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d}};

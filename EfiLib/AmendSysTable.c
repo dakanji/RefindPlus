@@ -24,7 +24,7 @@ EFI_STATUS AmendSysTable (
 
 #else
 
-#include "../MainLoader/global.h"
+#include "../BootMaster/global.h"
 #include "../include/refit_call_wrapper.h"
 #include "../../MdeModulePkg/Core/Dxe/DxeMain.h"
 #include "../../MdeModulePkg/Core/Dxe/Event/Event.h"

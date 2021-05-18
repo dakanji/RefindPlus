@@ -35,7 +35,7 @@
  */
 
 #include "libegint.h"
-#include "../MainLoader/global.h"
+#include "../BootMaster/global.h"
 
 #include "egemb_font.h"
 #include "egemb_font_large.h"

@@ -13,9 +13,9 @@
 #include <Protocol/LoadedImage.h>
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include "../MainLoader/global.h"
-#include "../MainLoader/lib.h"
-#include "../MainLoader/mystrings.h"
+#include "../BootMaster/global.h"
+#include "../BootMaster/lib.h"
+#include "../BootMaster/mystrings.h"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 

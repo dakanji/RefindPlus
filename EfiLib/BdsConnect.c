@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
 #include "Platform.h"
-#include "../MainLoader/lib.h"
-#include "../MainLoader/mystrings.h"
-#include "../MainLoader/launch_efi.h"
+#include "../BootMaster/lib.h"
+#include "../BootMaster/mystrings.h"
+#include "../BootMaster/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
 
 #if REFIT_DEBUG > 0

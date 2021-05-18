@@ -48,10 +48,10 @@
  */
 
 #include "libegint.h"
-#include "../MainLoader/screenmgt.h"
-#include "../MainLoader/global.h"
-#include "../MainLoader/lib.h"
-#include "../MainLoader/mystrings.h"
+#include "../BootMaster/screenmgt.h"
+#include "../BootMaster/global.h"
+#include "../BootMaster/lib.h"
+#include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"
 #include "libeg.h"
 #include "lodepng.h"

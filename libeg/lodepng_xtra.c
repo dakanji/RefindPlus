@@ -30,7 +30,7 @@
  */
 
 #include "global.h"
-#include "../MainLoader/screenmgt.h"
+#include "../BootMaster/screenmgt.h"
 #include "lodepng.h"
 
 // EFI's equivalent of realloc requires the original buffer's size as an
