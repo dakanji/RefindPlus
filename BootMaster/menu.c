@@ -921,10 +921,6 @@ UINTN RunGenericMenu (
     }
     *DefaultEntryIndex = State.CurrentSelection;
 
-    #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"MenuExit:- '%d'", MenuExit);
-    #endif
-
     return MenuExit;
 } // UINTN RunGenericMenu()
 
@@ -2079,8 +2075,8 @@ VOID DisplaySimpleMessage (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Called 'RunGenericMenu' on '%s' in 'DisplaySimpleMessage'",
-        ChosenOption->Title
+        L"Returned '%d' from RunGenericMenu call on '%s' in 'DisplaySimpleMessage'",
+        MenuExit, ChosenOption->Title
     );
 
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
@@ -2247,8 +2243,8 @@ VOID ManageHiddenTags (
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Called 'RunGenericMenu' on '%s' in 'ManageHiddenTags'",
-            ChosenOption->Title
+            L"Returned '%d' from RunGenericMenu call on '%s' in 'ManageHiddenTags'",
+            MenuExit, ChosenOption->Title
         );
         #endif
 
@@ -2392,8 +2388,8 @@ BOOLEAN HideEfiTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Called 'RunGenericMenu' on '%s' in 'HideEfiTag'",
-        ChosenOption->Title
+        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideEfiTag'",
+        MenuExit, ChosenOption->Title
     );
     #endif
 
@@ -2448,8 +2444,8 @@ BOOLEAN HideFirmwareTag(
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Called 'RunGenericMenu' on '%s' in 'HideFirmwareTag'",
-        ChosenOption->Title
+        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideFirmwareTag'",
+        MenuExit, ChosenOption->Title
     );
     #endif
 
@@ -2497,8 +2493,8 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Called 'RunGenericMenu' on '%s' in 'HideLegacyTag'",
-        ChosenOption->Title
+        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideLegacyTag'",
+        MenuExit, ChosenOption->Title
     );
     #endif
 
@@ -2623,8 +2619,8 @@ UINTN RunMenu (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Called 'RunGenericMenu' on '%s' in 'RunMenu'",
-        Screen->Title
+        L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMenu'",
+        MenuExit, Screen->Title
     );
     #endif
 
@@ -2674,8 +2670,8 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Called 'RunGenericMenu' on '%s' in 'RunMainMenu'",
-            TempChosenEntry->Title
+            L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
+            MenuExit, TempChosenEntry->Title
         );
         #endif
 
@@ -2694,8 +2690,8 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Called 'RunGenericMenu' on '%s' in 'RunMainMenu'",
-                    TempChosenEntry->SubScreen->Title
+                    L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
+                    MenuExit, TempChosenEntry->SubScreen->Title
                 );
                 #endif
 
