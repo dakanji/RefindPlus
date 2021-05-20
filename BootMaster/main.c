@@ -863,6 +863,12 @@ VOID preBootKicker (
     }
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
+    #if REFIT_DEBUG > 0
+    LOG(2, LOG_LINE_NORMAL,
+        L"Called 'RunGenericMenu' on '%s' in 'preBootKicker'",
+        ChosenEntry->Title
+    );
+    #endif
 
     if (ChosenEntry) {
         #if REFIT_DEBUG > 0
@@ -1008,6 +1014,12 @@ VOID preCleanNvram (
     }
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
+    #if REFIT_DEBUG > 0
+    LOG(2, LOG_LINE_NORMAL,
+        L"Called 'RunGenericMenu' on '%s' in 'preCleanNvram'",
+        ChosenEntry->Title
+    );
+    #endif
 
     if (ChosenEntry) {
         #if REFIT_DEBUG > 0

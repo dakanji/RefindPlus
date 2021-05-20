@@ -159,8 +159,16 @@
              AddMenuEntry (&InstallMenu, MenuEntryItem);
              CurrentESP = CurrentESP->NextESP;
          } // while
-
          MenuExit = RunGenericMenu (&InstallMenu, Style, &DefaultEntry, &ChosenOption);
+
+         #if REFIT_DEBUG > 0
+         LOG(2, LOG_LINE_NORMAL,
+             L"Called 'RunGenericMenu' on '%s' in 'PickOneESP'",
+             ChosenOption->Title
+         );
+         #endif
+
+
          if (MenuExit == MENU_EXIT_ENTER) {
              CurrentESP = AllESPs;
              while (CurrentESP != NULL) {
@@ -967,6 +975,13 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
          } // while
 
          MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
+         #if REFIT_DEBUG > 0
+         LOG(2, LOG_LINE_NORMAL,
+             L"Called 'RunGenericMenu' on '%s' in 'PickOneBootOption'",
+             ChosenOption->Title
+         );
+         #endif
+
          if (MenuExit == MENU_EXIT_ENTER) {
              Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
              *BootOrderNum = ChosenOption->Row;

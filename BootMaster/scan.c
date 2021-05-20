@@ -209,7 +209,7 @@ static REFIT_MENU_ENTRY MenuEntryShutdown = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
-    L"Toggle Mac CSR Policy",
+    L"Toggle CSR Policy",
     TAG_CSR_ROTATE,
     1, 0, 0,
     NULL, NULL, NULL
@@ -221,19 +221,19 @@ static REFIT_MENU_ENTRY MenuEntryFirmware = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryHiddenTags = {
-    L"Manage Hidden Tags Menu",
+    L"Manage Hidden Tags",
     TAG_HIDDEN,
     1, 0, 0, NULL,
     NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryInstall = {
-    L"Install RefindPlus to Disk",
+    L"Install RefindPlus",
     TAG_INSTALL,
     1, 0, 0,
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryBootorder = {
-    L"Manage EFI Boot Order",
+    L"Manage Boot Order",
     TAG_BOOTORDER,
     1, 0, 0,
     NULL, NULL, NULL
@@ -245,13 +245,13 @@ static REFIT_MENU_ENTRY MenuEntryExit = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
-    L"Show Mac Bootscreen",
+    L"Show Bootscreen",
     TAG_PRE_BOOTKICKER,
     1, 0, 0,
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
-    L"Clean Mac NVRAM",
+    L"Clean NVRAM",
     TAG_PRE_NVRAMCLEAN,
     1, 0, 0,
     NULL, NULL, NULL
@@ -1211,7 +1211,7 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
         if (VolName && (!MyStriCmp (VolName, Volume->FsName) ||
             !MyStriCmp(VolName, Volume->PartName))
         ) {
-                ScanIt = FALSE;
+            ScanIt = FALSE;
         } // if
     } // if Path includes volume specification
     MyFreePool (&PathCopy);
