@@ -1236,7 +1236,8 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Re-scanning all boot loaders");
+    LOG(1, LOG_LINE_NORMAL, L"Re-scanning Tools and Loaders");
+    MsgLog ("INFO: Re-scanning Tools and Loaders\n\n");
     #endif
 
     FreeList (
