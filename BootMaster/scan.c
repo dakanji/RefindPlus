@@ -2607,7 +2607,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_FIRMWARE:
-                ToolName = StrDuplicate (L"Reboot to Firmware");
+                ToolName = StrDuplicate (L"Firmware Reboot");
                 break;
 
             case TAG_SHELL:
@@ -2635,7 +2635,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_MOK_TOOL:
-                ToolName = StrDuplicate (L"MOK");
+                ToolName = StrDuplicate (L"MOK Protocol");
                 break;
 
             case TAG_FWUPDATE_TOOL:
@@ -2643,7 +2643,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_CSR_ROTATE:
-                ToolName = StrDuplicate (L"Toggle Mac CSR");
+                ToolName = StrDuplicate (L"Toggle CSR");
                 break;
 
             case TAG_INSTALL:
@@ -2651,15 +2651,15 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_BOOTORDER:
-                ToolName = StrDuplicate (L"Manage Boot Order");
+                ToolName = StrDuplicate (L"Boot Order");
                 break;
 
             case TAG_PRE_BOOTKICKER:
-                ToolName = StrDuplicate (L"Mac BootKicker");
+                ToolName = StrDuplicate (L"Show Bootscreen");
                 break;
 
             case TAG_PRE_NVRAMCLEAN:
-                ToolName = StrDuplicate (L"Clean Mac Nvram");
+                ToolName = StrDuplicate (L"Clean Nvram");
                 break;
 
             case TAG_MEMTEST:

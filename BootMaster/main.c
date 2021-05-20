@@ -970,7 +970,7 @@ VOID preCleanNvram (
     TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
     CHAR16            *MenuInfo       = L"A Tool to Clean/Reset Nvram on Macs";
     REFIT_MENU_SCREEN  CleanNvramMenu = {
-        L"Clean Mac NVRAM",
+        L"Clean NVRAM",
         NULL, 0, &MenuInfo,
         0, &TempMenuEntry,
         0, NULL,
@@ -980,7 +980,7 @@ VOID preCleanNvram (
 
     if (CleanNvramMenu.EntryCount == 0) {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-        CleanNvramMenu.Title = L"Clean Mac NVRAM";
+        CleanNvramMenu.Title = L"Clean NVRAM";
         AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
         MyFreePool (&MenuInfo);
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
