@@ -508,7 +508,6 @@ EFI_STATUS EfivarGetRaw (
 ) {
     UINTN        BufferSize    = 0;
     UINT8       *TmpBuffer     = NULL;
-    BOOLEAN      ReadFromNvram = TRUE;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
     #if REFIT_DEBUG > 0
@@ -522,9 +521,8 @@ EFI_STATUS EfivarGetRaw (
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (
                 gVarsDir, VariableName,
-                &TmpBuffer, VariableSize
+                &TmpBuffer, &BufferSize
             );
-            ReadFromNvram = FALSE;
         }
         else if (Status != EFI_NOT_FOUND) {
             #if REFIT_DEBUG > 0
@@ -558,6 +556,21 @@ EFI_STATUS EfivarGetRaw (
             Status, VariableName
         );
         #endif
+
+        if (!EFI_ERROR (Status)) {
+            *VariableData = (CHAR8*) TmpBuffer;
+            if (BufferSize) {
+                *VariableSize = BufferSize;
+            }
+            else {
+                *VariableSize = 0;
+            }
+        }
+        else {
+            MyFreePool (&TmpBuffer);
+            *VariableData = NULL;
+            *VariableSize = 0;
+        }
 
         return Status;
     }
@@ -595,10 +608,11 @@ EFI_STATUS EfivarGetRaw (
 
         if (!EFI_ERROR (Status)) {
             *VariableData = (CHAR8*) TmpBuffer;
-            if (ReadFromNvram) {
-                if (BufferSize) {
-                    *VariableSize = BufferSize;
-                }
+            if (BufferSize) {
+                *VariableSize = BufferSize;
+            }
+            else {
+                *VariableSize = 0;
             }
         }
         else {
@@ -641,36 +655,6 @@ EFI_STATUS EfivarSetRaw (
     CHAR8       *OldBuf;
     UINTN        OldSize;
 
-
-    OldStatus = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
-
-    if (!EFI_ERROR (OldStatus)) {
-        BOOLEAN SettingMatch;
-
-        // First check for setting match (compare mem as per upstream)
-        SettingMatch = (
-            VariableSize == OldSize &&
-            CompareMem (VariableData, OldBuf, VariableSize) == 0
-        );
-        if (SettingMatch) {
-            // Return if settings match
-            return EFI_ALREADY_STARTED;
-        }
-
-        // Alternative check for setting match (compare Ascii string)
-        SettingMatch = (
-            MyAsciiStrStr (
-                (CONST CHAR8 *) OldBuf,
-                (CONST CHAR8 *) VariableData
-            ) != NULL
-        );
-        if (SettingMatch) {
-            // Return if settings match
-            return EFI_ALREADY_STARTED;
-        }
-    }
-
-    // Proceed ... settings do not match
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
@@ -708,6 +692,38 @@ EFI_STATUS EfivarSetRaw (
         return Status;
     }
 
+    // Check for previous match if not hidden item
+    if (!MyStriCmp (VariableName, L"Hidden")) {
+        OldStatus = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
+
+        if (!EFI_ERROR (OldStatus)) {
+            BOOLEAN SettingMatch;
+
+            // First check for setting match (compare mem as per upstream)
+            SettingMatch = (
+                VariableSize == OldSize &&
+                CompareMem (VariableData, OldBuf, VariableSize) == 0
+            );
+            if (SettingMatch) {
+                // Return if settings match
+                return EFI_ALREADY_STARTED;
+            }
+
+            // Alternative check for setting match (compare Ascii string)
+            SettingMatch = (
+                MyAsciiStrStr (
+                    (CONST CHAR8 *) OldBuf,
+                    (CONST CHAR8 *) VariableData
+                ) != NULL
+            );
+            if (SettingMatch) {
+                // Return if settings match
+                return EFI_ALREADY_STARTED;
+            }
+        }
+    }
+
+    // Proceed ... settings do not match or not to be filtered on match
     if (GlobalConfig.UseNvram ||
         !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {

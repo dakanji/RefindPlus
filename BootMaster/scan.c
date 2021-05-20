@@ -2129,30 +2129,46 @@ VOID ScanForBootloaders (
         BdsAddNonExistingLegacyBootOptions();
     } // if
 
-    // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
-    // to include contents of EFI HiddenTags and HiddenLegacy variables so that we don't
-    // have to re-load these EFI variables in several functions called from this one.
-    // To do this, we must be able to restore the original contents, so back them up
-    // first.
-    // We do *NOT* do this with GlobalConfig.DontScanFirmware and
-    // GlobalConfig.DontScanTools variables because they're used in only one function
-    // each, so it's easier to create a temporary variable for the merged contents
-    // there and not modify the global variable.
-    OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
-    OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
+    if (GlobalConfig.HiddenTags) {
+        // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
+        // to include contents of EFI HiddenTags and HiddenLegacy variables so that we don't
+        // have to re-load these EFI variables in several functions called from this one.
+        // To do this, we must be able to restore the original contents, so back them up
+        // first.
+        // We do *NOT* do this with GlobalConfig.DontScanFirmware and
+        // GlobalConfig.DontScanTools variables because they're used in only one function
+        // each, so it's easier to create a temporary variable for the merged contents
+        // there and not modify the global variable.
+        OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
+        OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
 
-    // Add hidden tags to two GlobalConfig.DontScan* variables....
-    HiddenTags = ReadHiddenTags (L"HiddenTags");
-    if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
-        MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
-    }
-    MyFreePool (&HiddenTags);
+        // Add hidden tags to two GlobalConfig.DontScan* variables....
+        HiddenTags = ReadHiddenTags (L"HiddenTags");
+        if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL,
+                L"Merging to 'Dont Scan Files':- '%s'",
+                HiddenTags
+            );
+            #endif
 
-    HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-    if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
-        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
+            MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
+        }
+        MyFreePool (&HiddenTags);
+
+        HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
+        if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL,
+                L"Merging to 'Dont Scan Volumes':- '%s'",
+                HiddenLegacy
+            );
+            #endif
+
+            MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
+        }
+        MyFreePool (&HiddenLegacy);
     }
-    MyFreePool (&HiddenLegacy);
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -2287,11 +2303,13 @@ VOID ScanForBootloaders (
         } // switch()
     } // for
 
-    // Restore the backed-up GlobalConfig.DontScan* variables
-    MyFreePool (&GlobalConfig.DontScanFiles);
-    MyFreePool (&GlobalConfig.DontScanVolumes);
-    GlobalConfig.DontScanFiles   = OrigDontScanFiles;
-    GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
+    if (GlobalConfig.HiddenTags) {
+        // Restore the backed-up GlobalConfig.DontScan* variables
+        MyFreePool (&GlobalConfig.DontScanFiles);
+        MyFreePool (&GlobalConfig.DontScanVolumes);
+        GlobalConfig.DontScanFiles   = OrigDontScanFiles;
+        GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
+    }
 
     if (MainMenu.EntryCount < 1) {
         #if REFIT_DEBUG > 0

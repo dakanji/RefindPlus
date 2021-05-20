@@ -1,5 +1,8 @@
 0.13.2.AE (Pre-Release):
 -----------------------
+- Fixes HiddenItem Handling
+  * Hidden items could not be created or managed
+  * This bug was introduced in cummulative commits affecting NVRAM storage handling
 - Improves Upstream Logging Format
   * Formatted for clarity
 - Improves Handling of Manual Stanza Icons

@@ -2337,18 +2337,19 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
         HiddenTags = ReadHiddenTags (VarName);
         if (!HiddenTags) {
             // Prevent NULL dererencing
-            Status = EFI_NOT_READY;
+            HiddenTags = StrDuplicate (Pathname);
         }
         else {
             MergeStrings (&HiddenTags, Pathname, L',');
-            Status = EfivarSetRaw (
-                &RefindPlusGuid,
-                VarName,
-                (CHAR8 *) HiddenTags,
-                StrLen (HiddenTags) * 2 + 2,
-                TRUE
-            );
         }
+
+        Status = EfivarSetRaw (
+            &RefindPlusGuid,
+            VarName,
+            (CHAR8 *) HiddenTags,
+            StrLen (HiddenTags) * 2 + 2,
+            TRUE
+        );
 
         CheckError (Status, L"in AddToHiddenTags!!");
         MyFreePool (&HiddenTags);
