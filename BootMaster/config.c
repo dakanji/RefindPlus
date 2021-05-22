@@ -1207,46 +1207,50 @@ LOADER_ENTRY * AddStanzaEntries (
     REFIT_VOLUME   *PreviousVolume;
     LOADER_ENTRY   *Entry;
 
-   // prepare the menu entry
-   Entry = InitializeLoaderEntry (NULL);
-   if (Entry == NULL) {
-       return NULL;
-   }
+    // prepare the menu entry
+    Entry = InitializeLoaderEntry (NULL);
+    if (Entry == NULL) {
+        return NULL;
+    }
 
-   Entry->Title           = StrDuplicate (Title);
-   Entry->me.Title        = PoolPrint (
-       L"Boot %s from %s",
-       (Title != NULL) ? Title : L"Unknown",
-       CurrentVolume->VolName
-   );
-   Entry->me.Row          = 0;
-   Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
-   Entry->Volume          = CurrentVolume;
-   Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
+    Entry->Title = (Title != NULL)
+        ? StrDuplicate (Title)
+        : StrDuplicate (L"Unknown");
+    Entry->me.Title = PoolPrint (
+        L"Boot %s from %s",
+        (Title != NULL) ? Title : L"Unknown",
+        CurrentVolume->VolName
+    );
+    Entry->me.Row          = 0;
+    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
+    Entry->Volume          = CurrentVolume;
+    Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
-   // Parse the config file to add options for a single stanza, terminating when the token
-   // is "}" or when the end of file is reached.
-   #if REFIT_DEBUG > 0
-   static BOOLEAN OtherCall;
-   if (OtherCall) {
-       LOG(3, LOG_THREE_STAR_SEP, L"NEXT STANZA");
-   }
-   OtherCall = TRUE;
-   #endif
+    // Parse the config file to add options for a single stanza, terminating when the token
+    // is "}" or when the end of file is reached.
+    #if REFIT_DEBUG > 0
+    static BOOLEAN OtherCall;
+    if (OtherCall) {
+        LOG(3, LOG_THREE_STAR_SEP, L"NEXT STANZA");
+    }
+    OtherCall = TRUE;
+
+    BOOLEAN HasPath   = (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0));
+    if (HasPath) {
+        LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
+    }
+    #endif
 
    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
       if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) { // set the boot loader filename
          Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
          #if REFIT_DEBUG > 0
-         if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+         if (HasPath) {
              LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
          }
-         else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
-         }
          else {
-             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader");
+             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
          }
          #endif
 
@@ -1258,14 +1262,11 @@ LOADER_ENTRY * AddStanzaEntries (
          PreviousVolume = CurrentVolume;
          if (FindVolume (&CurrentVolume, TokenList[1])) {
              #if REFIT_DEBUG > 0
-             if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+             if (HasPath) {
                  LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
              }
-             else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-                 LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->me.Title);
-             }
              else {
-                 LOG(4, LOG_LINE_NORMAL, L"Adding volume");
+                 LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->me.Title);
              }
              #endif
 
@@ -1289,14 +1290,11 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+          if (HasPath) {
               LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
           }
-          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->me.Title);
-          }
           else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding icon");
+              LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->me.Title);
           }
           #endif
 
@@ -1318,14 +1316,11 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+          if (HasPath) {
               LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
           }
-          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->me.Title);
-          }
           else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding initrd");
+              LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->me.Title);
           }
           #endif
 
@@ -1334,14 +1329,11 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+          if (HasPath) {
               LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
           }
-          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->me.Title);
-          }
           else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding options");
+              LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->me.Title);
           }
           #endif
 
@@ -1351,14 +1343,11 @@ LOADER_ENTRY * AddStanzaEntries (
       else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
          if (TokenCount > 1) {
              #if REFIT_DEBUG > 0
-             if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+             if (HasPath) {
                  LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->LoaderPath);
              }
-             else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->me.Title);
-             }
              else {
-                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type");
+                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->me.Title);
              }
              #endif
 
@@ -1367,14 +1356,11 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+          if (HasPath) {
               LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
           }
-          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->me.Title);
-          }
           else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode");
+              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->me.Title);
           }
           #endif
 
@@ -1392,29 +1378,21 @@ LOADER_ENTRY * AddStanzaEntries (
           Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
           Entry->EfiLoaderPath = NULL;
           Entry->LoaderPath    = NULL;
-          Entry->me.Title      = StrDuplicate (Title);
+          Entry->me.Title      = StrDuplicate (Entry->Title);
           Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
           Entry->me.Tag        = TAG_FIRMWARE_LOADER;
 
           #if REFIT_DEBUG > 0
-          if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->me.Title);
-          }
-          else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry");
-          }
+          LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->me.Title);
           #endif
       }
       else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+          if (HasPath) {
               LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
           }
-          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
-              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->me.Title);
-          }
           else {
-              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry");
+              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->me.Title);
           }
           #endif
 
