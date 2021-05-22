@@ -1239,7 +1239,15 @@ LOADER_ENTRY * AddStanzaEntries (
          Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
          #if REFIT_DEBUG > 0
-         LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
+         if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
+         }
+         else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
+         }
+         else {
+             LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader");
+         }
          #endif
 
          MyFreePool (&Entry->LoadOptions);
@@ -1250,7 +1258,15 @@ LOADER_ENTRY * AddStanzaEntries (
          PreviousVolume = CurrentVolume;
          if (FindVolume (&CurrentVolume, TokenList[1])) {
              #if REFIT_DEBUG > 0
-             LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
+             if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
+             }
+             else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->me.Title);
+             }
+             else {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding volume");
+             }
              #endif
 
             if ((CurrentVolume != NULL) &&
@@ -1273,8 +1289,14 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          if (Entry->LoaderPath) {
+          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
               LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+          }
+          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding icon");
           }
           #endif
 
@@ -1296,7 +1318,15 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
+          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
+          }
+          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding initrd");
+          }
           #endif
 
          MyFreePool (&Entry->InitrdPath);
@@ -1304,7 +1334,15 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
+          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
+          }
+          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding options");
+          }
           #endif
 
          MyFreePool (&Entry->LoadOptions);
@@ -1313,7 +1351,15 @@ LOADER_ENTRY * AddStanzaEntries (
       else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
          if (TokenCount > 1) {
              #if REFIT_DEBUG > 0
-             LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->LoaderPath);
+             if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->LoaderPath);
+             }
+             else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->me.Title);
+             }
+             else {
+                 LOG(4, LOG_LINE_NORMAL, L"Adding OS type");
+             }
              #endif
 
             Entry->OSType = TokenList[1][0];
@@ -1321,7 +1367,15 @@ LOADER_ENTRY * AddStanzaEntries (
       }
       else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
+          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
+          }
+          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode");
+          }
           #endif
 
          Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
@@ -1334,10 +1388,6 @@ LOADER_ENTRY * AddStanzaEntries (
           Entry->Enabled = FALSE;
       }
       else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
-          #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum for '%s'", Entry->LoaderPath);
-          #endif
-
           MyFreePool (&Entry->me.Title);
           Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
           Entry->EfiLoaderPath = NULL;
@@ -1345,10 +1395,27 @@ LOADER_ENTRY * AddStanzaEntries (
           Entry->me.Title      = StrDuplicate (Title);
           Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
           Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+
+          #if REFIT_DEBUG > 0
+          if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry");
+          }
+          #endif
       }
       else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
           #if REFIT_DEBUG > 0
-          LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
+          if (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
+          }
+          else if (Entry->me.Title && StrLen (Entry->me.Title > 0)) {
+              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->me.Title);
+          }
+          else {
+              LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry");
+          }
           #endif
 
           AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);

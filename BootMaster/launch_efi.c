@@ -163,8 +163,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     Status = refit_call5_wrapper(
         RootDir->Open, RootDir,
         &FileHandle, FileName,
-        EFI_FILE_MODE_READ,
-        0
+        EFI_FILE_MODE_READ, 0
     );
 
     if (EFI_ERROR (Status)) {
@@ -226,6 +225,26 @@ EFI_STATUS StartEFIImage (
     CHAR16            *EspGUID           = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
 
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
+
+    if (!Volume) {
+        ReturnStatus = EFI_INVALID_PARAMETER;
+
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"'%r' while starting EFI image!!",
+            ReturnStatus
+        );
+        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MyFreePool (&MsgStr);
+        #endif
+
+        return ReturnStatus;
+    }
+
     // set load options
     if (LoadOptions != NULL) {
         FullLoadOptions = StrDuplicate(LoadOptions);
@@ -252,13 +271,11 @@ EFI_STATUS StartEFIImage (
         );
     }
 
-    if (!Volume) {
-        ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
-        // Some EFIs crash if attempting to load driver for invalid architecture, so
-        // protect for this condition; but sometimes Volume comes back NULL, so provide
-        // an exception. (TODO: Handle this special condition better.)
-    }
-    else if (IsValidLoader(Volume->RootDir, Filename)) {
+    ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
+    // Some EFIs crash if attempting to load driver for invalid architecture, so
+    // protect for this condition; but sometimes Volume comes back NULL, so provide
+    // an exception. (TODO: Handle this special condition better.)
+    if (IsValidLoader(Volume->RootDir, Filename)) {
         DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
         // NOTE: Commented-out line below could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
@@ -269,12 +286,9 @@ EFI_STATUS StartEFIImage (
         //                              ImageData, ImageSize, &ChildImageHandle);
         // ReturnStatus = Status;
         Status = refit_call6_wrapper(
-            gBS->LoadImage,
-            FALSE,
-            SelfImageHandle,
-            DevicePath,
-            NULL,
-            0,
+            gBS->LoadImage, FALSE,
+            SelfImageHandle, DevicePath,
+            NULL, 0,
             &ChildImageHandle
         );
         ReturnStatus = Status;
@@ -293,7 +307,10 @@ EFI_STATUS StartEFIImage (
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Employing Shim 'LoadImage' Hack");
+            MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr)
+            MyFreePool (&MsgStr);
             #endif
 
             refit_call6_wrapper(
@@ -308,15 +325,23 @@ EFI_STATUS StartEFIImage (
         }
     }
     else {
-        ReturnStatus = Status = EFI_LOAD_ERROR;
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Invalid Loader!!");
+        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MyFreePool (&MsgStr);
+        #endif
     }
 
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
-            L"Secure boot error while loading '%s'; Status = %d",
-            ImageTitle, Status
+        MsgStr = PoolPrint (
+            L"'%r' returned by secure boot while loading %s!!",
+            Status, ImageTitle
         );
+        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MyFreePool (&MsgStr);
         #endif
 
         WarnSecureBootError(ImageTitle, Verbose);
@@ -356,10 +381,13 @@ EFI_STATUS StartEFIImage (
         EspGUID = GuidAsString(&(SelfVolume->PartGuid));
 
         #if REFIT_DEBUG > 0
-        CHAR16 *TmpStr = PoolPrint (L"Systemd LoaderDevicePartUUID:- '%s'", EspGUID);
-        LOG(1, LOG_LINE_NORMAL, TmpStr);
-        MsgLog ("INFO: %s\n\n", TmpStr);
-        MyFreePool (&TmpStr);
+        MsgStr = PoolPrint (
+            L"Systemd LoaderDevicePartUUID:- '%s'",
+            EspGUID
+        );
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (&MsgStr);
         #endif
 
         Status = EfivarSetRaw (
@@ -372,11 +400,13 @@ EFI_STATUS StartEFIImage (
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
-            LOG(1, LOG_LINE_NORMAL,
-                L"Error %d when trying to set LoaderDevicePartUUID EFI variable",
+            MsgStr = PoolPrint (
+                L"'%r' when trying to set LoaderDevicePartUUID EFI variable!!",
                 Status
             );
-            MsgLog ("INFO: Set Systemd LoaderDevicePartUUID ... %r\n\n", Status);
+            LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+            MsgLog ("* ERROR: %s\n\n", MsgStr);
+            MyFreePool (&MsgStr);
         }
         #endif
 
