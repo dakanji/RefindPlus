@@ -419,14 +419,14 @@
 #icons_dir myicons
 #icons_dir icons/snowy
 
-# Use a custom title banner instead of the default embedded banner. The
+# Use a custom title banner and not the default (embedded) banner. The
 # file path is relative to the directory where the RefindPlus binary is
 # located. The colour in the top left corner of the image is used for the
-# background colour for the menu screens. Currently uncompressed BMP files
+# background colour for the menu screens. Currently, uncompressed BMP files
 # with colour depths of 24, 8, 4 or 1 bits are supported, as well as PNG and
 # JPEG files. ICNS files can also be used but have limitations that make them
 # poor choices for this purpose. Some PNG and JPEG features are not supported
-# and some files, such as progressive JPEG files, cannot be used.
+# and some file formats, such as "progressive" JPEG files, are not supported.
 #
 # Uses the default title banner when commented out
 #
