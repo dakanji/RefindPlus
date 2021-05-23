@@ -238,7 +238,7 @@ EFI_STATUS StartEFIImage (
             ReturnStatus
         );
         LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -309,7 +309,7 @@ EFI_STATUS StartEFIImage (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
             LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr)
+            MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
             #endif
 
@@ -328,7 +328,7 @@ EFI_STATUS StartEFIImage (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Invalid Loader!!");
         LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
     }
@@ -340,7 +340,7 @@ EFI_STATUS StartEFIImage (
             Status, ImageTitle
         );
         LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr)
+        MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 

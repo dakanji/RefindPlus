@@ -1235,7 +1235,7 @@ LOADER_ENTRY * AddStanzaEntries (
     }
     OtherCall = TRUE;
 
-    BOOLEAN HasPath   = (Entry->LoaderPath && StrLen (Entry->LoaderPath > 0));
+    BOOLEAN HasPath   = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
     if (HasPath) {
         LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
     }
