@@ -1248,10 +1248,10 @@ LOADER_ENTRY * AddStanzaEntries (
 
             #if REFIT_DEBUG > 0
             if (HasPath) {
-                LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
+                LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path for '%s'", Entry->LoaderPath);
             }
             else {
-                LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
+                LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path for '%s'", Entry->me.Title);
             }
             #endif
 
