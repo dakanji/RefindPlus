@@ -152,7 +152,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"EFI File '%s' is ASSUMED to be valid",
+            L"EFI File is *ASSUMED* to be valid:- '%s'",
             FileName
         );
         #endif
@@ -169,7 +169,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"EFI File '%s' is invalid!!",
+            L"EFI File is invalid:- '%s'",
             FileName
         );
         MsgLog ("** WARN: Read Loader File ... %r\n\n", Status);
@@ -192,9 +192,9 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID,
-        L"EFI File '%s' is %s",
-        FileName,
-        IsValid ? L"valid" : L"invalid!!"
+        L"EFI File is %s:- '%s'",
+        IsValid ? L"valid" : L"invalid",
+        FileName
     );
     #endif
 #else
