@@ -355,9 +355,14 @@ LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
         NewEntry->me.Tag          = TAG_LOADER;
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
-        NewEntry->OSType          = 0;
         NewEntry->EfiLoaderPath   = NULL;
+        NewEntry->OSType          = 0;
         NewEntry->EfiBootNum      = 0;
+        // DA-TAG: Added
+        NewEntry->Volume          = NULL;
+        NewEntry->InitrdPath      = NULL;
+        NewEntry->LoaderPath      = NULL;
+        NewEntry->LoadOptions     = NULL;
 
         if (Entry != NULL) {
             NewEntry->Volume          = Entry->Volume;

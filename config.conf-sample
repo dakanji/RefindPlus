@@ -910,12 +910,12 @@
 # Also note that a leading slash is optional in file specifications.
 #
 menuentry Linux {
+    disabled
     icon EFI/refind/icons/os_linux.png
     volume 904404F8-B481-440C-A1E3-11A5A954E601
     loader bzImage-3.3.0-rc7
     initrd initrd-3.3.0.img
     options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
-    disabled
 }
 
 # Below is a more complex Linux example, specifically for Arch Linux.
@@ -927,6 +927,7 @@ menuentry Linux {
 # page on rEFInd (https://wiki.archlinux.org/index.php/rEFInd).
 #
 menuentry "Arch Linux" {
+    disabled
     icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"
     loader   /boot/vmlinuz-linux
@@ -938,32 +939,31 @@ menuentry "Arch Linux" {
     submenuentry "Boot to terminal" {
         add_options "systemd.unit=multi-user.target"
     }
-    disabled
 }
 
 # A sample entry for loading Ubuntu using its standard name for
 # its GRUB 2 boot loader. Note uses of Linux-style forward slashes
 #
 menuentry Ubuntu {
+    disabled
     loader /EFI/ubuntu/grubx64.efi
     icon /EFI/refind/icons/os_linux.png
-    disabled
 }
 
 # A minimal ELILO entry. Probably offers nothing
 # that auto-detection cannot accomplish.
 #
 menuentry "ELILO" {
-    loader \EFI\elilo\elilo.efi
     disabled
+    loader \EFI\elilo\elilo.efi
 }
 
 # This, like the ELILO entry, offers nothing additional to auto-detection
 # but may help with disabling auto-detection but still booting Windows
 #
 menuentry "Windows 7" {
-    loader \EFI\Microsoft\Boot\bootmgfw.efi
     disabled
+    loader \EFI\Microsoft\Boot\bootmgfw.efi
 }
 
 # EFI shells are programs just like boot loaders, and can be
@@ -973,10 +973,10 @@ menuentry "Windows 7" {
 # do something entirely different.
 #
 menuentry "Windows via shell script" {
+    disabled
     icon \EFI\refind\icons\os_win.png
     loader \EFI\tools\shell.efi
     options "fs0:\EFI\tools\launch_windows.nsh"
-    disabled
 }
 
 # Mac OS is normally detected and run automatically; however,
@@ -986,10 +986,10 @@ menuentry "Windows via shell script" {
 # modification for this example to work.
 #
 menuentry "My Mac OS" {
+    disabled
     icon \EFI\refind\icons\os_mac.png
     volume "Mac OS boot"
     loader \System\Library\CoreServices\boot.efi
-    disabled
 }
 
 # The "firmware_bootnum" token takes a HEXADECIMAL value and
@@ -1003,7 +1003,7 @@ menuentry "My Mac OS" {
 # "loader" manual stanza option is not used with this type of configuration.
 #
 menuentry "Mac OS via BootNext" {
+    disabled
     icon /EFI/refind/icons/os_mac.png
     firmware_bootnum 80
-    disabled
 }

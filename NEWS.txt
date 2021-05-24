@@ -1,8 +1,9 @@
 0.13.2.AE (Pre-Release):
 -----------------------
+- Fixes Manual Stanza Handling
+  * Linux and "Firmware Reboot" stanzas were not handled properly
 - Fixes HiddenItem Handling
   * Hidden items could not be created or managed
-  * This bug was introduced in cummulative commits affecting NVRAM storage handling
 - Improves Upstream Logging Format
   * Formatted for clarity
 - Improves Handling of Manual Stanza Icons

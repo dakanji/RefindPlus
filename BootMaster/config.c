@@ -1200,8 +1200,10 @@ LOADER_ENTRY * AddStanzaEntries (
     UINTN           TokenCount;
     CHAR16        **TokenList;
     CHAR16         *TmpLoaderPath;
+    BOOLEAN         HasPath           = FALSE;
     BOOLEAN         DefaultsSet       = FALSE;
     BOOLEAN         AddedSubmenu      = FALSE;
+    BOOLEAN         DisabledEntry     = FALSE;
     BOOLEAN         RunLoaderDefault  = FALSE;
     REFIT_VOLUME   *CurrentVolume     = Volume;
     REFIT_VOLUME   *PreviousVolume;
@@ -1222,55 +1224,58 @@ LOADER_ENTRY * AddStanzaEntries (
         CurrentVolume->VolName
     );
     Entry->me.Row          = 0;
-    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
+    Entry->Enabled         = TRUE;
     Entry->Volume          = CurrentVolume;
+    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
     Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
     // Parse the config file to add options for a single stanza, terminating when the token
     // is "}" or when the end of file is reached.
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr;
+
     static BOOLEAN OtherCall;
     if (OtherCall) {
         LOG(3, LOG_THREE_STAR_SEP, L"NEXT STANZA");
     }
     OtherCall = TRUE;
 
-    BOOLEAN HasPath   = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
-    if (HasPath) {
-        LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->LoaderPath);
-    }
+    LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
     #endif
 
-    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
+    while (Entry->Enabled &&
+        ((TokenCount = ReadTokenLine (File, &TokenList)) > 0) &&
+        (StrCmp (TokenList[0], L"}") != 0)
+    ) {
         if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
             // set the boot loader filename
             Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
-            #if REFIT_DEBUG > 0
+            HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
             if (HasPath) {
-                LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path for '%s'", Entry->LoaderPath);
-            }
-            else {
-                LOG(1, LOG_LINE_NORMAL, L"Adding Loader Path for '%s'", Entry->me.Title);
-            }
-            #endif
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                #endif
 
-            MyFreePool (&Entry->LoadOptions);
-            DefaultsSet = TRUE;
+                SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
 
-            // Discard default options, if any
-            Entry->LoadOptions = NULL;
+                // Discard default options, if any
+                MyFreePool (&Entry->LoadOptions);
+                Entry->LoadOptions = NULL;
+
+                DefaultsSet = TRUE;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
             PreviousVolume = CurrentVolume;
-            if (FindVolume (&CurrentVolume, TokenList[1])) {
+            if (!FindVolume (&CurrentVolume, TokenList[1])) {
                 #if REFIT_DEBUG > 0
-                if (HasPath) {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->LoaderPath);
-                }
-                else {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->me.Title);
-                }
+                LOG(1, LOG_THREE_STAR_MID, L"* WARN: Could not find volume for '%s'!!", Entry->Title);
+                #endif
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->Title);
                 #endif
 
                 if ((CurrentVolume != NULL) &&
@@ -1282,8 +1287,8 @@ LOADER_ENTRY * AddStanzaEntries (
                         L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
                         CurrentVolume->VolName
                     );
-                    Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
                     Entry->Volume        = CurrentVolume;
+                    Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
                 }
                 else {
                     // Will not work out ... reset to previous working volume
@@ -1293,12 +1298,14 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            if (HasPath) {
-                LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->LoaderPath);
+            if (Entry->me.Image == NULL) {
+                MsgStr = PoolPrint (L"Adding icon for '%s'", Entry->Title);
             }
             else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding icon for '%s'", Entry->me.Title);
+                MsgStr = PoolPrint (L"Overriding previously set icon for '%s'", Entry->Title);
             }
+            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MyFreePool (&MsgStr);
             #endif
 
             MyFreePool (&Entry->me.Image);
@@ -1309,22 +1316,25 @@ LOADER_ENTRY * AddStanzaEntries (
             );
 
             if (Entry->me.Image == NULL) {
-                SetLoaderDefaults (Entry, Entry->LoaderPath, CurrentVolume);
-                RunLoaderDefault = TRUE;
+                if (!DefaultsSet) {
+                    // Set defaults if not yet set
+                    TmpLoaderPath = Entry->LoaderPath
+                        ? StrDuplicate (Entry->LoaderPath)
+                        : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
+
+                    SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
+                    RunLoaderDefault = TRUE;
+                }
 
                 if (Entry->me.Image == NULL) {
+                    // Set dummy image if icon was not found
                     Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
                 }
             }
         }
         else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            if (HasPath) {
-                LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->LoaderPath);
-            }
-            else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->me.Title);
-            }
+            LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->Title);
             #endif
 
             MyFreePool (&Entry->InitrdPath);
@@ -1332,12 +1342,7 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
-            if (HasPath) {
-                LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->LoaderPath);
-            }
-            else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->me.Title);
-            }
+            LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->Title);
             #endif
 
             MyFreePool (&Entry->LoadOptions);
@@ -1346,12 +1351,7 @@ LOADER_ENTRY * AddStanzaEntries (
         else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
             if (TokenCount > 1) {
                 #if REFIT_DEBUG > 0
-                if (HasPath) {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->LoaderPath);
-                }
-                else {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->me.Title);
-                }
+                LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->Title);
                 #endif
 
                 Entry->OSType = TokenList[1][0];
@@ -1363,7 +1363,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
             }
             else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->me.Title);
+                LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->Title);
             }
             #endif
 
@@ -1377,17 +1377,30 @@ LOADER_ENTRY * AddStanzaEntries (
             Entry->Enabled = FALSE;
         }
         else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->Title);
+            #endif
+
+            MyFreePool (&Entry->LoaderPath);
+            MyFreePool (&Entry->EfiLoaderPath);
             MyFreePool (&Entry->me.Title);
+            MyFreePool (&Entry->LoadOptions);
+            MyFreePool (&Entry->InitrdPath);
             Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
-            Entry->EfiLoaderPath = NULL;
+            Entry->InitrdPath    = NULL;
+            Entry->LoadOptions   = NULL;
             Entry->LoaderPath    = NULL;
+            Entry->EfiLoaderPath = NULL;
             Entry->me.Title      = StrDuplicate (Entry->Title);
             Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
             Entry->me.Tag        = TAG_FIRMWARE_LOADER;
 
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->me.Title);
-            #endif
+            if (Entry->me.BadgeImage == NULL) {
+                // Set dummy image if badge was not found
+                Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
+            }
+
+            DefaultsSet = TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
             #if REFIT_DEBUG > 0
@@ -1395,7 +1408,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
             }
             else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->me.Title);
+                LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->Title);
             }
             #endif
 
@@ -1406,38 +1419,50 @@ LOADER_ENTRY * AddStanzaEntries (
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
 
+    if (!Entry->Enabled) {
+        return NULL;
+    }
+
     if (AddedSubmenu) {
         AddMenuEntry (Entry->me.SubScreen, &MenuEntryReturn);
     }
 
-    if (Entry->InitrdPath) {
-        MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
-        MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+    if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {
+        if (Entry->LoadOptions && StrLen (Entry->LoadOptions) > 0) {
+            MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
+            MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+        }
+        else {
+            Entry->LoadOptions = PoolPrint (
+                L"initrd=%s",
+                Entry->InitrdPath
+            );
+        }
         MyFreePool (&Entry->InitrdPath);
         Entry->InitrdPath = NULL;
     }
 
     if (DefaultsSet && Entry->me.Image == NULL) {
-        // user included no "icon" line
-        SetLoaderDefaults (Entry, Entry->LoaderPath, CurrentVolume);
-        RunLoaderDefault = TRUE;
-    }
-
-    if (!DefaultsSet) {
-        // No "loader" line ... use bogus one
-        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
-        RunLoaderDefault = TRUE;
-    }
-
-    if (!RunLoaderDefault) {
-        // Set defaults if not yet set
+        // No "icon" line ... find one
         TmpLoaderPath = Entry->LoaderPath
             ? StrDuplicate (Entry->LoaderPath)
             : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
 
         SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
-        MyFreePool (&TmpLoaderPath);
+        RunLoaderDefault = TRUE;
+
+        if (Entry->me.Image == NULL) {
+            // Set dummy image if icon was not found
+            Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        }
     }
+
+    if (!DefaultsSet && !RunLoaderDefault) {
+        // No "loader" line ... use bogus one
+        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+    }
+
+    MyFreePool (&TmpLoaderPath);
 
     return (Entry);
 } // static VOID AddStanzaEntries()
