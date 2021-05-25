@@ -65,24 +65,24 @@ text_renderer         |Provides a text renderer that allows text mode when not o
 uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
 
 In addition to the new functions above, the following upsteam functions have been extended:
-- `use_graphics_for` : OpenCore and Clover added as options that can be set to boot in graphics mode.
-- `showtools` : Additional tools added:
+- **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
+- **"showtools" Token:** Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 
 ## Divergence
 Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:
-- `timeout` : The default is no timeout unless explicitly set.
-- `screensaver` : The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
-- `use_nvram` : RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
-- `log_level` : Controls the native log format and an implementation of the upstream format.
+- **"timeout" Token:** The default is no timeout unless explicitly set.
+- **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
+- **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
+- **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format
   * Levels 1 to 4 output logs equivalent to the detailed upstream format
-- The `max` resolution setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
-- WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` token is set to the default option of automatic detection.
-- ESPs other than that containing the rEFInd efi file are now also scaned for loaders by rEFInd. The earlier behaviour, where other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. Users are however provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
-- When user configured boot stanzas are disabled using a `Disabled` token, rEFInd continues to process any other tokens within the stanza and fully builds the `Entry` object which is then discarded later. In RefindPlus, processing of a user configured boot stanza is halted once a `Disabled` token is encountered and a NULL `Entry` object is returned immediately. The outcome is the same when running rEFInd (which returns a fully built object to be subsequently discarded) and RefindPlus (which immediately returns a NULL object to be discarded) but the different processing approach allows users to optimise loading RefindPlus by placing any `Disabled` tokens in user configured boot stanzas immediately after the `menuentry` line (as in the config.conf-sample file).
+- **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
+- **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` token is set to the default option of automatic detection.
+- **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, Users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
+- **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and a NULL `Entry` object returned immediately. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which immediately returns a NULL object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample) file).
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
