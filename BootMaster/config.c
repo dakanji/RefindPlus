@@ -1243,178 +1243,177 @@ LOADER_ENTRY * AddStanzaEntries (
     LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->me.Title);
     #endif
 
-    while (Entry->Enabled &&
-        ((TokenCount = ReadTokenLine (File, &TokenList)) > 0) &&
-        (StrCmp (TokenList[0], L"}") != 0)
-    ) {
-        if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
-            // set the boot loader filename
-            Entry->LoaderPath = StrDuplicate (TokenList[1]);
+    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
+        if (Entry->Enabled) {
+            if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
+                // set the boot loader filename
+                Entry->LoaderPath = StrDuplicate (TokenList[1]);
 
-            HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
-            if (HasPath) {
+                HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
+                if (HasPath) {
+                    #if REFIT_DEBUG > 0
+                    LOG(4, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                    #endif
+
+                    SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
+
+                    // Discard default options, if any
+                    MyFreePool (&Entry->LoadOptions);
+                    Entry->LoadOptions = NULL;
+
+                    DefaultsSet = TRUE;
+                }
+            }
+            else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
+                PreviousVolume = CurrentVolume;
+                if (!FindVolume (&CurrentVolume, TokenList[1])) {
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_THREE_STAR_MID, L"* WARN: Could not find volume for '%s'!!", Entry->Title);
+                    #endif
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->Title);
+                    #endif
+
+                    if ((CurrentVolume != NULL) &&
+                        (CurrentVolume->IsReadable) &&
+                        (CurrentVolume->RootDir)
+                    ) {
+                        MyFreePool (&Entry->me.Title);
+                        Entry->me.Title = PoolPrint (
+                            L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
+                            CurrentVolume->VolName
+                        );
+                        Entry->Volume        = CurrentVolume;
+                        Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
+                    }
+                    else {
+                        // Will not work out ... reset to previous working volume
+                        CurrentVolume = PreviousVolume;
+                    } // if/else volume is readable
+                } // if match found
+            }
+            else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                if (Entry->me.Image == NULL) {
+                    MsgStr = PoolPrint (L"Adding icon for '%s'", Entry->Title);
+                }
+                else {
+                    MsgStr = PoolPrint (L"Overriding previously set icon for '%s'", Entry->Title);
+                }
+                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MyFreePool (&MsgStr);
                 #endif
 
-                SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
+                MyFreePool (&Entry->me.Image);
+                Entry->me.Image = egLoadIcon (
+                    CurrentVolume->RootDir,
+                    TokenList[1],
+                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                );
 
-                // Discard default options, if any
+                if (Entry->me.Image == NULL) {
+                    if (!DefaultsSet) {
+                        // Set defaults if not yet set
+                        TmpLoaderPath = Entry->LoaderPath
+                            ? StrDuplicate (Entry->LoaderPath)
+                            : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
+
+                        SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
+                        RunLoaderDefault = TRUE;
+                    }
+
+                    if (Entry->me.Image == NULL) {
+                        // Set dummy image if icon was not found
+                        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+                    }
+                }
+            }
+            else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->Title);
+                #endif
+
+                MyFreePool (&Entry->InitrdPath);
+                Entry->InitrdPath = StrDuplicate (TokenList[1]);
+            }
+            else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->Title);
+                #endif
+
                 MyFreePool (&Entry->LoadOptions);
-                Entry->LoadOptions = NULL;
+                Entry->LoadOptions = StrDuplicate (TokenList[1]);
+            }
+            else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
+                if (TokenCount > 1) {
+                    #if REFIT_DEBUG > 0
+                    LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->Title);
+                    #endif
+
+                    Entry->OSType = TokenList[1][0];
+                }
+            }
+            else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
+                #if REFIT_DEBUG > 0
+                if (HasPath) {
+                    LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
+                }
+                else {
+                    LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->Title);
+                }
+                #endif
+
+                Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
+            }
+            else if (MyStriCmp (TokenList[0], L"disabled")) {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"Entry is disabled");
+                #endif
+
+                Entry->Enabled = FALSE;
+            }
+            else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->Title);
+                #endif
+
+                MyFreePool (&Entry->LoaderPath);
+                MyFreePool (&Entry->EfiLoaderPath);
+                MyFreePool (&Entry->me.Title);
+                MyFreePool (&Entry->LoadOptions);
+                MyFreePool (&Entry->InitrdPath);
+                Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
+                Entry->InitrdPath    = NULL;
+                Entry->LoadOptions   = NULL;
+                Entry->LoaderPath    = NULL;
+                Entry->EfiLoaderPath = NULL;
+                Entry->me.Title      = StrDuplicate (Entry->Title);
+                Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
+                Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+
+                if (Entry->me.BadgeImage == NULL) {
+                    // Set dummy image if badge was not found
+                    Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
+                }
 
                 DefaultsSet = TRUE;
             }
-        }
-        else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
-            PreviousVolume = CurrentVolume;
-            if (!FindVolume (&CurrentVolume, TokenList[1])) {
+            else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_MID, L"* WARN: Could not find volume for '%s'!!", Entry->Title);
-                #endif
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->Title);
-                #endif
-
-                if ((CurrentVolume != NULL) &&
-                    (CurrentVolume->IsReadable) &&
-                    (CurrentVolume->RootDir)
-                ) {
-                    MyFreePool (&Entry->me.Title);
-                    Entry->me.Title = PoolPrint (
-                        L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
-                        CurrentVolume->VolName
-                    );
-                    Entry->Volume        = CurrentVolume;
-                    Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
+                if (HasPath) {
+                    LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
                 }
                 else {
-                    // Will not work out ... reset to previous working volume
-                    CurrentVolume = PreviousVolume;
-                } // if/else volume is readable
-            } // if match found
-        }
-        else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            if (Entry->me.Image == NULL) {
-                MsgStr = PoolPrint (L"Adding icon for '%s'", Entry->Title);
-            }
-            else {
-                MsgStr = PoolPrint (L"Overriding previously set icon for '%s'", Entry->Title);
-            }
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MyFreePool (&MsgStr);
-            #endif
-
-            MyFreePool (&Entry->me.Image);
-            Entry->me.Image = egLoadIcon (
-                CurrentVolume->RootDir,
-                TokenList[1],
-                GlobalConfig.IconSizes[ICON_SIZE_BIG]
-            );
-
-            if (Entry->me.Image == NULL) {
-                if (!DefaultsSet) {
-                    // Set defaults if not yet set
-                    TmpLoaderPath = Entry->LoaderPath
-                        ? StrDuplicate (Entry->LoaderPath)
-                        : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
-
-                    SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
-                    RunLoaderDefault = TRUE;
+                    LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->Title);
                 }
-
-                if (Entry->me.Image == NULL) {
-                    // Set dummy image if icon was not found
-                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-                }
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->Title);
-            #endif
-
-            MyFreePool (&Entry->InitrdPath);
-            Entry->InitrdPath = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->Title);
-            #endif
-
-            MyFreePool (&Entry->LoadOptions);
-            Entry->LoadOptions = StrDuplicate (TokenList[1]);
-        }
-        else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
-            if (TokenCount > 1) {
-                #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->Title);
                 #endif
 
-                Entry->OSType = TokenList[1][0];
-            }
-        }
-        else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            if (HasPath) {
-                LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
-            }
-            else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->Title);
-            }
-            #endif
-
-            Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
-        }
-        else if (MyStriCmp (TokenList[0], L"disabled")) {
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Entry is disabled");
-            #endif
-
-            Entry->Enabled = FALSE;
-        }
-        else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->Title);
-            #endif
-
-            MyFreePool (&Entry->LoaderPath);
-            MyFreePool (&Entry->EfiLoaderPath);
-            MyFreePool (&Entry->me.Title);
-            MyFreePool (&Entry->LoadOptions);
-            MyFreePool (&Entry->InitrdPath);
-            Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
-            Entry->InitrdPath    = NULL;
-            Entry->LoadOptions   = NULL;
-            Entry->LoaderPath    = NULL;
-            Entry->EfiLoaderPath = NULL;
-            Entry->me.Title      = StrDuplicate (Entry->Title);
-            Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
-            Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-
-            if (Entry->me.BadgeImage == NULL) {
-                // Set dummy image if badge was not found
-                Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
-            }
-
-            DefaultsSet = TRUE;
-        }
-        else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
-            #if REFIT_DEBUG > 0
-            if (HasPath) {
-                LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
-            }
-            else {
-                LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->Title);
-            }
-            #endif
-
-            AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
-            AddedSubmenu = TRUE;
-        } // set options to pass to the loader program
+                AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
+                AddedSubmenu = TRUE;
+            } // set options to pass to the loader program
+        } // if Entry->Enabled
 
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
@@ -1443,7 +1442,7 @@ LOADER_ENTRY * AddStanzaEntries (
     }
 
     if (DefaultsSet && Entry->me.Image == NULL) {
-        // No "icon" line ... find one
+        // No "icon" line ... find icon
         TmpLoaderPath = Entry->LoaderPath
             ? StrDuplicate (Entry->LoaderPath)
             : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
