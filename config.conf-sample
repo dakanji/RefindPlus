@@ -869,17 +869,6 @@
 # Common keywords in stanza are:
 #
 #  disabled  - use alone or set to "yes" to disable this entry.
-#  icon      - specifies a custom boot loader icon
-#  loader    - identifies the boot loader file
-#  volume    - identifies the filesystem from which subsequent files
-#              are loaded. The volume can be specified by filesystem
-#              label, by partition label, or by partition GUID number
-#              (but *NOT* yet by filesystem UUID number).
-#  initrd    - Specifies an initial RAM disk file
-#  options   - sets options to be passed to the boot loader; use
-#              quotes if more than one option should be passed or
-#              if any options use characters that might be changed
-#              by RefindPlus parsing procedures (=, /, #, or tab).
 #  ostype    - OS type code to determine boot options available by
 #              pressing Insert. Valid values are "MacOS", "Linux",
 #              "Windows", and "XOM". Case-sensitive.
@@ -887,11 +876,22 @@
 #              mainly for MacOS) or "off" for text-mode boot.
 #              The default setting is auto-detected from the
 #              loader filename.
+#  icon      - specifies a custom boot loader icon
+#  volume    - identifies the filesystem from which subsequent files
+#              are loaded. The volume can be specified by filesystem
+#              label, by partition label, or by partition GUID number
+#              (but *NOT* yet by filesystem UUID number).
+#  loader    - identifies the boot loader file
+#  initrd    - Specifies an initial RAM disk file
+#  options   - sets options to be passed to the boot loader; use
+#              quotes if more than one option should be passed or
+#              if any options use characters that might be changed
+#              by RefindPlus' parsing procedures (=, /, #, or tab).
 #
 # Note that you can use either DOS/Windows/EFI-style backslashes (\)
 # or Unix-style forward slashes (/) as directory separators. Either
 # way, all file references are on the ESP from which RefindPlus was
-# launched.
+# launched. The order of tokens above optimises loading RefindPlus.
 # Use of quotes around parameters causes them to be interpreted as
 # one keyword, and for parsing of special characters (spaces, =, /,
 # and #) to be disabled. This is useful mainly with the "options"
@@ -916,8 +916,8 @@
 menuentry Linux {
     disabled
     icon EFI/refind/icons/os_linux.png
-    loader bzImage-3.3.0-rc7
     volume 904404F8-B481-440C-A1E3-11A5A954E601
+    loader bzImage-3.3.0-rc7
     initrd initrd-3.3.0.img
     options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
 }
@@ -933,8 +933,8 @@ menuentry Linux {
 menuentry "Arch Linux" {
     disabled
     icon     /EFI/refind/icons/os_arch.png
-    loader   /boot/vmlinuz-linux
     volume   "Arch Linux"
+    loader   /boot/vmlinuz-linux
     initrd   /boot/initramfs-linux.img
     options  "root=PARTUUID=5028fa50-0079-4c40-b240-abfaf28693ea rw add_efi_memmap"
     submenuentry "Boot using fallback initramfs" {
@@ -992,8 +992,8 @@ menuentry "Windows via shell script" {
 menuentry "My Mac OS" {
     disabled
     icon \EFI\refind\icons\os_mac.png
-    loader \System\Library\CoreServices\boot.efi
     volume "Mac OS boot"
+    loader \System\Library\CoreServices\boot.efi
 }
 
 # The "firmware_bootnum" token takes a HEXADECIMAL value and
