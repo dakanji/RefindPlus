@@ -1322,6 +1322,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
                         SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
                         RunLoaderDefault = TRUE;
+                        MyFreePool (&TmpLoaderPath);
                     }
 
                     if (Entry->me.Image == NULL) {
@@ -1449,6 +1450,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
         SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
         RunLoaderDefault = TRUE;
+        MyFreePool (&TmpLoaderPath);
 
         if (Entry->me.Image == NULL) {
             // Set dummy image if icon was not found
@@ -1460,8 +1462,6 @@ LOADER_ENTRY * AddStanzaEntries (
         // No "loader" line ... use bogus one
         SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
     }
-
-    MyFreePool (&TmpLoaderPath);
 
     return (Entry);
 } // static VOID AddStanzaEntries()
