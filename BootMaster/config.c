@@ -1204,7 +1204,6 @@ LOADER_ENTRY * AddStanzaEntries (
     BOOLEAN         DefaultsSet       = FALSE;
     BOOLEAN         AddedSubmenu      = FALSE;
     BOOLEAN         DisabledEntry     = FALSE;
-    BOOLEAN         RunLoaderDefault  = FALSE;
     REFIT_VOLUME   *CurrentVolume     = Volume;
     REFIT_VOLUME   *PreviousVolume;
     LOADER_ENTRY   *Entry;
@@ -1314,21 +1313,8 @@ LOADER_ENTRY * AddStanzaEntries (
                 );
 
                 if (Entry->me.Image == NULL) {
-                    if (!DefaultsSet) {
-                        // Set defaults if not yet set
-                        TmpLoaderPath = Entry->LoaderPath
-                            ? StrDuplicate (Entry->LoaderPath)
-                            : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
-
-                        SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
-                        RunLoaderDefault = TRUE;
-                        MyFreePool (&TmpLoaderPath);
-                    }
-
-                    if (Entry->me.Image == NULL) {
-                        // Set dummy image if icon was not found
-                        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-                    }
+                    // Set dummy image if icon was not found
+                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
                 }
             }
             else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
@@ -1442,25 +1428,14 @@ LOADER_ENTRY * AddStanzaEntries (
         Entry->InitrdPath = NULL;
     }
 
-    if (DefaultsSet && Entry->me.Image == NULL) {
-        // No "icon" line ... find icon
-        TmpLoaderPath = Entry->LoaderPath
-            ? StrDuplicate (Entry->LoaderPath)
-            : StrDuplicate (L"\\EFI\\BOOT\\nemo.efi");
-
-        SetLoaderDefaults (Entry, TmpLoaderPath, CurrentVolume);
-        RunLoaderDefault = TRUE;
-        MyFreePool (&TmpLoaderPath);
-
-        if (Entry->me.Image == NULL) {
-            // Set dummy image if icon was not found
-            Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-        }
-    }
-
-    if (!DefaultsSet && !RunLoaderDefault) {
+    if (!DefaultsSet) {
         // No "loader" line ... use bogus one
         SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+    }
+
+    if (Entry->me.Image == NULL) {
+        // Still no icon ... set dummy image
+        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     return (Entry);
