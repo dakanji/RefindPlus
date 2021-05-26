@@ -876,11 +876,11 @@
 #              mainly for MacOS) or "off" for text-mode boot.
 #              The default setting is auto-detected from the
 #              loader filename.
-#  icon      - specifies a custom boot loader icon
 #  volume    - identifies the filesystem from which subsequent files
 #              are loaded. The volume can be specified by filesystem
 #              label, by partition label, or by partition GUID number
 #              (but *NOT* yet by filesystem UUID number).
+#  icon      - specifies a custom boot loader icon
 #  loader    - identifies the boot loader file
 #  initrd    - Specifies an initial RAM disk file
 #  options   - sets options to be passed to the boot loader; use
@@ -915,8 +915,8 @@
 #
 menuentry Linux {
     disabled
-    icon EFI/refind/icons/os_linux.png
     volume 904404F8-B481-440C-A1E3-11A5A954E601
+    icon EFI/refind/icons/os_linux.png
     loader bzImage-3.3.0-rc7
     initrd initrd-3.3.0.img
     options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
@@ -932,8 +932,8 @@ menuentry Linux {
 #
 menuentry "Arch Linux" {
     disabled
-    icon     /EFI/refind/icons/os_arch.png
     volume   "Arch Linux"
+    icon     /EFI/refind/icons/os_arch.png
     loader   /boot/vmlinuz-linux
     initrd   /boot/initramfs-linux.img
     options  "root=PARTUUID=5028fa50-0079-4c40-b240-abfaf28693ea rw add_efi_memmap"
@@ -991,8 +991,8 @@ menuentry "Windows via shell script" {
 #
 menuentry "My Mac OS" {
     disabled
-    icon \EFI\refind\icons\os_mac.png
     volume "Mac OS boot"
+    icon \EFI\refind\icons\os_mac.png
     loader \System\Library\CoreServices\boot.efi
 }
 
