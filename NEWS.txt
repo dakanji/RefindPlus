@@ -1,5 +1,8 @@
 0.13.2.AE (Pre-Release):
 -----------------------
+- Fixes Windows Boot EFI Variable Handling
+  * Windows Boot EFI Variables were not handled properly on Apple firmware
+  * This resulted in an inability to boot into Windows on Macs
 - Fixes Manual Stanza Handling
   * Linux and "Firmware Reboot" stanzas were not handled properly
 - Fixes HiddenItem Handling

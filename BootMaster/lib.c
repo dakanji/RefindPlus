@@ -708,20 +708,22 @@ EFI_STATUS EfivarSetRaw (
                 (UINT8 *) VariableData, VariableSize
             );
         }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
-                L"Could Not Save to Emulated NVRAM:- '%s'",
-                VariableName
-            );
-            LOG(3, LOG_LINE_NORMAL,
+
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL,
+            L"Save '%s' to Emulated NVRAM ... %r",
+            VariableName, Status
+        );
+
+        if (EFI_ERROR (Status)) {
+            LOG(3, LOG_THREE_STAR_MID,
                 L"Activate the 'use_nvram' option to silence this warning"
             );
 
             MsgLog ("** WARN: Could Not Save to Emulated NVRAM:- '%s'\n", VariableName);
             MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
-            #endif
         }
+        #endif
     }
     else {
         // GlobalConfig.UseNvram || !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
@@ -733,7 +735,8 @@ EFI_STATUS EfivarSetRaw (
         );
         #endif
 
-        StorageFlags = EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS;
+        StorageFlags  = EFI_VARIABLE_BOOTSERVICE_ACCESS;
+        StorageFlags |= EFI_VARIABLE_RUNTIME_ACCESS;
         if (Persistent) {
             StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
         }
@@ -745,12 +748,10 @@ EFI_STATUS EfivarSetRaw (
         );
 
         #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
-            LOG(3, LOG_LINE_NORMAL,
-                L"Could Not Save to Hardware NVRAM:- '%s'",
-                VariableName
-            );
-        }
+        LOG(3, LOG_LINE_NORMAL,
+            L"Save '%s' to Hardware NVRAM ... %r",
+            VariableName, Status
+        );
         #endif
     }
 
