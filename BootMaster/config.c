@@ -1199,11 +1199,9 @@ LOADER_ENTRY * AddStanzaEntries (
 ) {
     UINTN           TokenCount;
     CHAR16        **TokenList;
-    CHAR16         *TmpLoaderPath;
     BOOLEAN         HasPath           = FALSE;
     BOOLEAN         DefaultsSet       = FALSE;
     BOOLEAN         AddedSubmenu      = FALSE;
-    BOOLEAN         DisabledEntry     = FALSE;
     REFIT_VOLUME   *CurrentVolume     = Volume;
     REFIT_VOLUME   *PreviousVolume;
     LOADER_ENTRY   *Entry;
