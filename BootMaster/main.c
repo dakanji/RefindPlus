@@ -222,7 +222,6 @@ REFIT_CONFIG GlobalConfig = {
 
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
-BOOLEAN                AptioWarn            = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
@@ -1945,7 +1944,10 @@ EFI_STATUS EFIAPI efi_main (
             LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
             #endif
 
-            egDisplayMessage (L"Pausing before disc scan. Please wait....", &BGColor, CENTER);
+            egDisplayMessage (
+                L"Pausing before disc scan. Please wait....",
+                &BGColor, CENTER
+            );
         }
 
         #if REFIT_DEBUG > 0
@@ -1976,8 +1978,8 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu.TimeoutText = L"Shutdown";
     }
 
-    // show misc warnings
-    if (AptioWarn || ConfigWarn) {
+    // show config mismatch warning
+    if (ConfigWarn) {
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: Displaying User Warning\n\n");
         #endif
@@ -1986,19 +1988,14 @@ EFI_STATUS EFIAPI efi_main (
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         if (ConfigWarn) {
-            PrintUglyText (L"                                                                          ", NEXTLINE);
-            PrintUglyText (L" WARN: Could Not Find RefindPlus Configuration File                       ", NEXTLINE);
-            PrintUglyText (L"       Trying rEFInd's Configuration File:- 'refind.conf'                 ", NEXTLINE);
-            PrintUglyText (L"       Provide 'config.conf' file to silence this warning                 ", NEXTLINE);
-            PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'                 ", NEXTLINE);
-            PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens                  ", NEXTLINE);
-            PrintUglyText (L"                                                                          ", NEXTLINE);
-        }
-        if (AptioWarn) {
-            PrintUglyText (L"                                                                          ", NEXTLINE);
-            PrintUglyText (L" WARN: Aptio 'Memory Fix' drivers are not compatible with Apple Firmware  ", NEXTLINE);
-            PrintUglyText (L"       Remove any such drivers to silence this warning on Apple Firmware  ", NEXTLINE);
-            PrintUglyText (L"                                                                          ", NEXTLINE);
+            PrintUglyText (L"                                                           ", NEXTLINE);
+            PrintUglyText (L" WARN: Could Not Find RefindPlus Configuration File        ", NEXTLINE);
+            PrintUglyText (L"                                                           ", NEXTLINE);
+            PrintUglyText (L"       Trying rEFInd's Configuration File:- 'refind.conf'  ", NEXTLINE);
+            PrintUglyText (L"       Provide 'config.conf' file to silence this warning  ", NEXTLINE);
+            PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'  ", NEXTLINE);
+            PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens   ", NEXTLINE);
+            PrintUglyText (L"                                                           ", NEXTLINE);
         }
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 

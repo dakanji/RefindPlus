@@ -730,7 +730,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s on %s",
-         LoaderTitle, VolDesc
+        LoaderTitle, VolDesc
      );
 
     SubScreen->TitleImage = Entry->me.Image;

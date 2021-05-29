@@ -1229,7 +1229,7 @@ LOADER_ENTRY * AddStanzaEntries (
     // Parse the config file to add options for a single stanza, terminating when the token
     // is "}" or when the end of file is reached.
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr;
+    CHAR16 *MsgStr = NULL;
 
     static BOOLEAN OtherCall;
     if (OtherCall) {
