@@ -1,5 +1,8 @@
 0.13.2.AE (Pre-Release):
 -----------------------
+- Fixes Fix Default Opaque Setting
+  * Images meant to default to "opaque" were set to "transparent" instead.
+  * This bug was introduced in v0.13.2.AD (Commit 0edf341)
 - Fixes Windows Boot EFI Variable Handling
   * Windows Boot EFI Variables were not handled properly on Apple firmware
   * This resulted in an inability to boot into Windows on Macs
@@ -23,7 +26,6 @@
   * Drops '{ARCH}_drivers' and '{ARCH}_tools' Folders for upstream consistency
 - Changes Token Name for Internal Consistency
   * 'suppress_verbose_apfs' to 'silence_apfs'
-
 
 
 0.13.2.AD (04 May 2021):
