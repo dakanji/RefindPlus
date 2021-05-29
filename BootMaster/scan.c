@@ -2689,7 +2689,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2704,7 +2704,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2719,7 +2719,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2734,7 +2734,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2749,7 +2749,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2764,7 +2764,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2781,7 +2781,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
@@ -2812,7 +2812,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
@@ -2859,7 +2859,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n            ");
                         }
@@ -2906,7 +2906,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n            ");
                         }
@@ -2952,7 +2952,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n            ");
                         }
@@ -2995,7 +2995,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n            ");
                         }
@@ -3049,7 +3049,7 @@ VOID ScanForTools (VOID) {
 
                                 #if REFIT_DEBUG > 0
                                 ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                                 if (j > 0) {
                                     MsgLog ("\n            ");
                                 }
@@ -3106,7 +3106,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
-                            LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (j > 0) {
                                 MsgLog ("\n            ");
                             }
@@ -3171,7 +3171,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
@@ -3193,7 +3193,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -3208,7 +3208,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif

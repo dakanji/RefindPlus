@@ -1346,7 +1346,7 @@ BOOLEAN SecureBootSetup (
     return Success;
 } // VOID SecureBootSetup()
 
-// Remove our own Secure Boot extensions....
+// Remove our own Secure Boot extensions.
 // Returns TRUE on success, FALSE otherwise
 static
 BOOLEAN SecureBootUninstall (VOID) {
@@ -1716,18 +1716,14 @@ EFI_STATUS EFIAPI efi_main (
 
     CONST CHAR16 *ConstDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
-        NowYear,
-        NowMonth,
-        NowDay,
-        NowHour,
-        NowMinute,
-        NowSecond
+        NowYear, NowMonth,
+        NowDay, NowHour,
+        NowMinute, NowSecond
     );
 
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
-        REFINDPLUS_VERSION,
-        VendorInfo
+        REFINDPLUS_VERSION, VendorInfo
     );
 
 #if defined(__MAKEWITH_GNUEFI)

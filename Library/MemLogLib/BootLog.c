@@ -365,7 +365,7 @@ DeepLoggger (
             FinalMessage = PoolPrint (L"\n                ***[ %s\n", *Message);
             break;
         case LOG_STAR_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
+            FinalMessage = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
             break;
         case LOG_LINE_SEPARATOR:
             FinalMessage = PoolPrint (L"\n===================[ %s ]===================\n", *Message);

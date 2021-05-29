@@ -1088,31 +1088,30 @@ VOID ScanLegacyExternal (
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType (VOID) {
-   EFI_STATUS                Status;
-   EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
+    EFI_STATUS                Status;
+    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-   GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
+    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
-   // UEFI-style legacy BIOS support is available only with some EFI implementations
-   Status = refit_call3_wrapper(
-       gBS->LocateProtocol,
-       &gEfiLegacyBootProtocolGuid,
-       NULL,
-       (VOID **) &LegacyBios
-   );
-   if (!EFI_ERROR (Status)) {
-       GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
-   }
+    // UEFI-style legacy BIOS support is only available with some EFI implementations
+    Status = refit_call3_wrapper(
+        gBS->LocateProtocol,
+        &gEfiLegacyBootProtocolGuid,
+        NULL,
+        (VOID **) &LegacyBios
+    );
+    if (!EFI_ERROR (Status)) {
+        GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
+    }
 
-   // Macs have their own system. If the firmware vendor code contains the
-   // string "Apple", assume it's available. Note that this overrides the
-   // UEFI type, and might yield false positives if the vendor string
-   // contains "Apple" as part of something bigger, so this isn't 100%
-   // perfect.
-   if (StriSubCmp (L"Apple", gST->FirmwareVendor)) {
-       GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
-   }
-} // VOID FindLegacyBootType
+    // Macs have their own system. If the firmware vendor code contains the
+    // string "Apple", assume it is available. Note that this overrides the
+    // UEFI type, and might yield false positives if the vendor string
+    // contains "Apple" as part of something bigger, so this is not perfect.
+    if (StriSubCmp (L"Apple", gST->FirmwareVendor)) {
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
+    }
+} // VOID FindLegacyBootType()
 
 // Warn the user if legacy OS scans are enabled but the firmware can't support them
 VOID WarnIfLegacyProblems (

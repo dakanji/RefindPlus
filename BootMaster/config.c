@@ -1237,7 +1237,7 @@ LOADER_ENTRY * AddStanzaEntries (
     }
     OtherCall = TRUE;
 
-    LOG(1, LOG_LINE_NORMAL, L"Adding Manual Loader for '%s'", Entry->Title);
+    LOG(1, LOG_LINE_NORMAL, L"Adding Manually Configured Loader:- '%s'", Entry->Title);
     #endif
 
     while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
