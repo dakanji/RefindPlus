@@ -458,7 +458,7 @@
 # second row. If only a small image is given, that one is also used for the
 # big icons by stretching it in the middle. If only a big one is given, the
 # built-in default will be used for the small icons. If an image other than
-# the optimal size is specified, it may be scaled in an ugly way.
+# an optimally sized one is specified, it may be scaled in an ugly way.
 #
 # Like the banner option above, these options take a filename of an
 # uncompressed BMP, JPEG, PNG or ICNS image file with a color depth
@@ -467,8 +467,8 @@
 #
 # Inactive when commented out (no selection background)
 #
-#selection_big selection-big.bmp
-#selection_small selection-small.bmp
+#selection_big icons/selection-big.png
+#selection_small icons/selection-small.png
 
 # Set the font to be used for all textual displays in graphics mode.
 # For the best results, fonts used should be in PNG format with alpha
