@@ -264,8 +264,8 @@ EG_IMAGE * egDecodeICNS (
         egInsertPlane (MaskPtr, PLPTR(NewImage, a), PixelCount);
     }
     else {
-        // Default to 'Opaque' if Alpha is Unavailable, Invalid or Not Required
-        egSetPlane (PLPTR(NewImage, a), 255, PixelCount);
+        // Default to 'Opaque' if Alpha is Unavailable or to Zero if Not Required
+        egSetPlane (PLPTR(NewImage, a), WantAlpha ? 255 : 0, PixelCount);
     }
 
     // FUTURE: scale to originally requested size if we had to load another size

@@ -717,8 +717,8 @@ EG_IMAGE * egPrepareEmbeddedImage (
         }
     }
     else {
-        // Default to 'Opaque' if Alpha is Unavailable or Not Required
-        egSetPlane (PLPTR(NewImage, a), 255, PixelCount);
+        // Default to 'Opaque' if Alpha is Unavailable or to Zero if Not Required
+        egSetPlane (PLPTR(NewImage, a), WantAlpha ? 255 : 0, PixelCount);
     }
 
     return NewImage;
