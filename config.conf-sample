@@ -830,12 +830,12 @@
 # Sealed System Volume (SSV) features that define access levels on Mac OS.
 # Values are hexadecimal numbers that define which specific security features
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
-# to set new values. Apple's "csrutil enable" and "csrutil disable" commands typically
+# to set new values. Apple's "csrutil enable" and "csrutil disable" commands usually
 # set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that users can go beyond this, to values such as 87F, 97F ... up to FFF.
+# setting and that users can go beyond this, to values such as 87F, 97F ...up to FFF.
 # The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
-# commands, added in Mac OS v11.x (Big Sur), sets values of 10 (ON) and 87F (OFF)
-# respectively when run along with the earlier commands to set SIP and SSV.
+# commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
+# respectively, when run along with the "csrutil enable / disable" commands.
 #   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
 #   CSR_ALLOW_UNRESTRICTED_FS               0x0002
 #   CSR_ALLOW_TASK_FOR_PID                  0x0004
