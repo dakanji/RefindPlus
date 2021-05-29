@@ -1309,8 +1309,8 @@ BOOLEAN SecureBootSetup (
     VOID
 ) {
     EFI_STATUS  Status;
-    BOOLEAN     Success        = FALSE;
-    CHAR16     *ShowScreenStr  = NULL;
+    BOOLEAN     Success = FALSE;
+    CHAR16     *MsgStr  = NULL;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
@@ -1326,18 +1326,18 @@ BOOLEAN SecureBootSetup (
             Success = TRUE;
         }
         else {
-            ShowScreenStr = L"Secure boot disabled ... doing nothing";
+            MsgStr = StrDuplicate (L"Secure boot disabled ... doing nothing");
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, ShowScreenStr)
-            MsgLog ("** WARN: %s\n-----------------\n\n", ShowScreenStr);
+            LOG(2, LOG_LINE_NORMAL, MsgStr)
+            MsgLog ("** WARN: %s\n-----------------\n\n", MsgStr);
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
             PauseForKey();
         }
@@ -1351,8 +1351,8 @@ BOOLEAN SecureBootSetup (
 static
 BOOLEAN SecureBootUninstall (VOID) {
     EFI_STATUS  Status;
-    BOOLEAN     Success        = TRUE;
-    CHAR16     *ShowScreenStr  = NULL;
+    BOOLEAN     Success = TRUE;
+    CHAR16     *MsgStr  = NULL;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -1360,17 +1360,19 @@ BOOLEAN SecureBootUninstall (VOID) {
             Success = FALSE;
             BeginTextScreen (L"Secure Boot Policy Failure");
 
-            ShowScreenStr = L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds";
+            MsgStr = StrDuplicate (
+                L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds"
+            );
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n-----------------\n\n", ShowScreenStr);
+            MsgLog ("%s\n-----------------\n\n", MsgStr);
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
             PauseSeconds(9);
 
@@ -1397,7 +1399,7 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
     CHAR16            *Options;
     CHAR16            *FileName;
     CHAR16            *SubString;
-    CHAR16            *ShowScreenStr = NULL;
+    CHAR16            *MsgStr = NULL;
     EFI_LOADED_IMAGE  *Info;
 
     Status = refit_call3_wrapper(
@@ -1427,39 +1429,39 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
                 #endif
             }
             else {
-                ShowScreenStr = L"Specified Config File Not Found";
+                MsgStr = StrDuplicate (L"Specified Config File Not Found");
                 #if REFIT_DEBUG > 0
-                MsgLog ("** WARN: %s\n", ShowScreenStr);
+                MsgLog ("** WARN: %s\n", MsgStr);
                 #endif
-                PrintUglyText (ShowScreenStr, NEXTLINE);
+                PrintUglyText (MsgStr, NEXTLINE);
 
-                MyFreePool (&ShowScreenStr);
+                MyFreePool (&MsgStr);
 
-                ShowScreenStr = L"Try Default:- 'config.conf / refind.conf'";
-                PrintUglyText (ShowScreenStr, NEXTLINE);
+                MsgStr = StrDuplicate (L"Try Default:- 'config.conf / refind.conf'");
+                PrintUglyText (MsgStr, NEXTLINE);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("         %s\n\n", ShowScreenStr);
+                MsgLog ("         %s\n\n", MsgStr);
                 #endif
 
-                PrintUglyText (ShowScreenStr, NEXTLINE);
+                PrintUglyText (MsgStr, NEXTLINE);
 
                 HaltForKey();
-                MyFreePool (&ShowScreenStr);
+                MyFreePool (&MsgStr);
             } // if/else
 
             MyFreePool (&FileName);
         } // if
         else {
-            ShowScreenStr = L"Invalid Load Option";
+            MsgStr = StrDuplicate (L"Invalid Load Option");
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n", ShowScreenStr);
+            MsgLog ("** WARN: %s\n", MsgStr);
             #endif
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
 
             HaltForKey();
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
         }
     } // if
 } // VOID SetConfigFilename()
@@ -1674,12 +1676,8 @@ EFI_STATUS EFIAPI efi_main (
     UINTN  MenuExit = 0;
 
     EG_PIXEL  BGColor        = COLOR_LIGHTBLUE;
+    CHAR16    *MsgStr        = NULL;
     CHAR16    *SelectionName = NULL;
-    CHAR16    *ShowScreenStr = NULL;
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    #endif
 
     // Force Native Logging
     ForceNativeLoggging = TRUE;
@@ -2111,15 +2109,15 @@ EFI_STATUS EFIAPI efi_main (
                         0, NULL
                     );
 
-                    ShowScreenStr = L"System Restart FAILED!!";
-                    PrintUglyText (ShowScreenStr, NEXTLINE);
+                    MsgStr = StrDuplicate (L"System Restart FAILED!!");
+                    PrintUglyText (MsgStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_SEP, ShowScreenStr);
-                    MsgLog ("INFO: %s\n\n", ShowScreenStr);
+                    LOG(1, LOG_THREE_STAR_SEP, MsgStr);
+                    MsgLog ("INFO: %s\n\n", MsgStr);
                     #endif
 
-                    MyFreePool (&ShowScreenStr);
+                    MyFreePool (&MsgStr);
 
                     PauseForKey();
 
@@ -2633,14 +2631,14 @@ EFI_STATUS EFIAPI efi_main (
 
     SwitchToText (FALSE);
 
-    ShowScreenStr = L"INFO: Reboot Failed ... Entering Endless Idle Loop";
+    MsgStr = StrDuplicate (L"INFO: Reboot Failed ... Entering Endless Idle Loop");
 
     refit_call2_wrapper(
         gST->ConOut->SetAttribute,
         gST->ConOut,
         ATTR_ERROR
     );
-    PrintUglyText (ShowScreenStr, NEXTLINE);
+    PrintUglyText (MsgStr, NEXTLINE);
     refit_call2_wrapper(
         gST->ConOut->SetAttribute,
         gST->ConOut,
@@ -2648,10 +2646,10 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("%s\n-----------------\n\n", ShowScreenStr);
+    MsgLog ("%s\n-----------------\n\n", MsgStr);
     #endif
 
-    MyFreePool (&ShowScreenStr);
+    MyFreePool (&MsgStr);
 
     PauseForKey();
     EndlessIdleLoop();

@@ -1630,7 +1630,7 @@ BOOLEAN egSetTextMode (
     UINTN        i = 0;
     UINTN        Width;
     UINTN        Height;
-    CHAR16       *ShowScreenStr     = NULL;
+    CHAR16       *MsgStr     = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
@@ -1650,27 +1650,27 @@ BOOLEAN egSetTextMode (
         else {
             SwitchToText (FALSE);
 
-            ShowScreenStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode");
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode");
+            PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n", ShowScreenStr);
+            MsgLog ("%s\n", MsgStr);
             #endif
 
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
-            ShowScreenStr = StrDuplicate (L"Seek Available Modes:");
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            MsgStr = StrDuplicate (L"Seek Available Modes:");
+            PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
                 L"Error setting text mode %d; available modes are:",
                 RequestedMode
             );
-            MsgLog ("%s\n", ShowScreenStr);
+            MsgLog ("%s\n", MsgStr);
             #endif
 
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
             do {
                 Status = refit_call4_wrapper(
@@ -1682,29 +1682,29 @@ BOOLEAN egSetTextMode (
                 );
 
                 if (!EFI_ERROR (Status)) {
-                    ShowScreenStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
-                    PrintUglyText (ShowScreenStr, NEXTLINE);
+                    MsgStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
+                    PrintUglyText (MsgStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-                    MsgLog ("%s\n", ShowScreenStr);
+                    LOG(1, LOG_LINE_NORMAL, MsgStr);
+                    MsgLog ("%s\n", MsgStr);
                     #endif
 
-                    MyFreePool (&ShowScreenStr);
+                    MyFreePool (&MsgStr);
                 }
             } while (++i < gST->ConOut->Mode->MaxMode);
 
-            ShowScreenStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            MsgStr = PoolPrint (L"Use Default Mode[%d]:", DONT_CHANGE_TEXT_MODE);
+            PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-            MsgLog ("%s\n", ShowScreenStr);
+            LOG(1, LOG_LINE_NORMAL, MsgStr);
+            MsgLog ("%s\n", MsgStr);
             #endif
 
             PauseForKey();
             SwitchToGraphicsAndClear (TRUE);
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
         } // if/else successful change
     } // if need to change mode
 
@@ -2120,7 +2120,7 @@ VOID egScreenShot (
     UINTN        FileDataSize;         ///< Size in bytes
     UINTN        FilePixelSize;        ///< Size in pixels
     CHAR16       *FileName       = NULL;
-    CHAR16       *ShowScreenStr  = NULL;
+    CHAR16       *MsgStr         = NULL;
 
     #if REFIT_DEBUG > 0
     MsgLog ("User Input Received:\n");
@@ -2131,20 +2131,20 @@ VOID egScreenShot (
     if (Image == NULL) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Error: Unable to take screen shot (Image is NULL)";
+        MsgStr = StrDuplicate (L"Error: Unable to take screen shot (Image is NULL)");
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
+        PrintUglyText (MsgStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-        MsgLog ("    * %s\n\n", ShowScreenStr);
+        LOG(1, LOG_LINE_NORMAL, MsgStr);
+        MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
         PauseForKey();
         SwitchToGraphics();
-        MyFreePool (&ShowScreenStr);
+        MyFreePool (&MsgStr);
 
        goto bailout_wait;
     }
@@ -2171,20 +2171,20 @@ VOID egScreenShot (
     if (EFI_ERROR (Status)) {
         SwitchToText (FALSE);
 
-        ShowScreenStr = L"Error: Could Not Encode PNG";
+        MsgStr = StrDuplicate (L"Error: Could Not Encode PNG");
 
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (ShowScreenStr, NEXTLINE);
+        PrintUglyText (MsgStr, NEXTLINE);
         refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, ShowScreenStr);
-        MsgLog ("    * %s\n\n", ShowScreenStr);
+        LOG(1, LOG_LINE_NORMAL, MsgStr);
+        MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
         HaltForKey();
         SwitchToGraphics();
-        MyFreePool (&ShowScreenStr);
+        MyFreePool (&MsgStr);
 
         return;
     }
@@ -2197,19 +2197,19 @@ VOID egScreenShot (
         if (EFI_ERROR (Status)) {
             SwitchToText (FALSE);
 
-            ShowScreenStr = L"    * Error: Could Not Save Screenshot";
+            MsgStr = StrDuplicate (L"    * Error: Could Not Save Screenshot");
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n\n", ShowScreenStr);
+            MsgLog ("%s\n\n", MsgStr);
             #endif
 
             HaltForKey();
             SwitchToGraphics();
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
             return;
         }
@@ -2225,19 +2225,19 @@ VOID egScreenShot (
             if (EFI_ERROR (Status)) {
                 SwitchToText (FALSE);
 
-                ShowScreenStr = L"    * Error: Could Not Find ESP for Screenshot";
+                MsgStr = StrDuplicate (L"    * Error: Could Not Find ESP for Screenshot");
 
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-                PrintUglyText (ShowScreenStr, NEXTLINE);
+                PrintUglyText (MsgStr, NEXTLINE);
                 refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
                 #if REFIT_DEBUG > 0
-                MsgLog ("%s\n\n", ShowScreenStr);
+                MsgLog ("%s\n\n", MsgStr);
                 #endif
 
                 HaltForKey();
                 SwitchToGraphics();
-                MyFreePool (&ShowScreenStr);
+                MyFreePool (&MsgStr);
 
                 return;
             }

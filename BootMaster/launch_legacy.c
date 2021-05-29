@@ -519,8 +519,8 @@ VOID StartLegacy (
     UINTN            ErrorInStep = 0;
     EFI_DEVICE_PATH *DiscoveredPathList[MAX_DISCOVERED_PATHS];
 
-    CHAR16 *ShowScreenStrA = NULL;
-    CHAR16 *ShowScreenStrB = NULL;
+    CHAR16 *MsgStrA = NULL;
+    CHAR16 *MsgStrB = NULL;
 
     IsBoot = TRUE;
 
@@ -572,44 +572,50 @@ VOID StartLegacy (
         if (ErrorInStep == 1) {
             SwitchToText (FALSE);
 
-            ShowScreenStrA = L"Please make sure you have the latest firmware update installed.";
+            MsgStrA = StrDuplicate (
+                L"Please make sure you have the latest firmware update installed"
+            );
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStrA, NEXTLINE);
+            PrintUglyText (MsgStrA, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n\n", ShowScreenStrA);
+            MsgLog ("** WARN: %s\n\n", MsgStrA);
             #endif
 
             PauseForKey();
             SwitchToGraphics();
-            MyFreePool (&ShowScreenStrA);
+            MyFreePool (&MsgStrA);
         }
         else if (ErrorInStep == 3) {
             SwitchToText (FALSE);
 
-            ShowScreenStrA = L"The firmware refused to boot from the selected volume.";
+            MsgStrA = StrDuplicate (
+                L"The firmware refused to boot from the selected volume"
+            );
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStrA, NEXTLINE);
+            PrintUglyText (MsgStrA, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n", ShowScreenStrA);
+            MsgLog ("** WARN: %s\n", MsgStrA);
             #endif
 
-            ShowScreenStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting.";
+            MsgStrB = StrDuplicate (
+                L"NB: External drives are not well-supported by Apple firmware for legacy booting"
+            );
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStrB, NEXTLINE);
+            PrintUglyText (MsgStrB, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("         %s\n\n", ShowScreenStrB);
+            MsgLog ("         %s\n\n", MsgStrB);
             #endif
 
             PauseForKey();
             SwitchToGraphics();
-            MyFreePool (&ShowScreenStrA);
-            MyFreePool (&ShowScreenStrB);
+            MyFreePool (&MsgStrA);
+            MyFreePool (&MsgStrB);
         }
     }
 
@@ -1112,10 +1118,10 @@ VOID FindLegacyBootType (VOID) {
 VOID WarnIfLegacyProblems (
     VOID
 ) {
-    UINTN     i              = 0;
-    CHAR16   *ShowScreenStr  = NULL;
-    CHAR16   *TempScreenStr  = NULL;
-    BOOLEAN   found          = FALSE;
+    UINTN     i          = 0;
+    CHAR16   *MsgStr     = NULL;
+    CHAR16   *TmpMsgStr  = NULL;
+    BOOLEAN   found      = FALSE;
 
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
@@ -1138,34 +1144,34 @@ VOID WarnIfLegacyProblems (
 
             SwitchToText (FALSE);
 
-            TempScreenStr = StrDuplicate (
+            TmpMsgStr = StrDuplicate (
                 L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n"
             );
-            ShowScreenStr = PoolPrint (
+            MsgStr = PoolPrint (
                 L"%s         (BIOS) boot options; however, this is not possible because your computer lacks\n",
-                TempScreenStr
+                TmpMsgStr
             );
-            MyFreePool (&TempScreenStr);
-            TempScreenStr = PoolPrint (
+            MyFreePool (&TmpMsgStr);
+            TmpMsgStr = PoolPrint (
                 L"%s         the necessary Compatibility Support Module (CSM) support or that support is\n",
-                ShowScreenStr
+                MsgStr
             );
-            MyFreePool (&ShowScreenStr);
-            ShowScreenStr = PoolPrint (
+            MyFreePool (&MsgStr);
+            MsgStr = PoolPrint (
                 L"%s         disabled in your firmware.",
-                TempScreenStr
+                TmpMsgStr
             );
-            MyFreePool (&TempScreenStr);
+            MyFreePool (&TmpMsgStr);
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (ShowScreenStr, NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n\n", ShowScreenStr);
+            MsgLog ("%s\n\n", MsgStr);
             #endif
 
-            MyFreePool (&ShowScreenStr);
+            MyFreePool (&MsgStr);
 
             PauseForKey();
         } // if (found)
