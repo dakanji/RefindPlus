@@ -443,7 +443,7 @@
 # transparency support. As with the "banner" setting below, paths
 # are relative to the directory containing the RefindPlus efi.
 #
-# Inactive when commented out (no selection background)
+# Uses default selection background images when commented out
 #
 #selection_big icons/selection-big.png
 #selection_small icons/selection-small.png
