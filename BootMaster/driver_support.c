@@ -53,18 +53,10 @@
  *
  */
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Modifications distributed under the preceding terms.
  */
 
 #include "driver_support.h"
@@ -192,11 +184,11 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
  * modifications by Roderick Smith are GPLv3.
  */
 EFI_STATUS LibScanHandleDatabase (
-    EFI_HANDLE            DriverBindingHandle,
-    OPTIONAL UINT32      *DriverBindingHandleIndex,
-    OPTIONAL EFI_HANDLE   ControllerHandle,
-    OPTIONAL UINT32      *ControllerHandleIndex,
-    OPTIONAL UINTN       *HandleCount,
+    EFI_HANDLE             DriverBindingHandle,
+    OPTIONAL UINT32       *DriverBindingHandleIndex,
+    OPTIONAL EFI_HANDLE    ControllerHandle,
+    OPTIONAL UINT32       *ControllerHandleIndex,
+    OPTIONAL UINTN        *HandleCount,
     EFI_HANDLE           **HandleBuffer,
     UINT32               **HandleType
 ) {
@@ -658,28 +650,17 @@ UINTN ScanDriverDir (
         NumFound++;
         FileName = PoolPrint (L"%s\\%s", Path, DirEntry->FileName);
 
-        if (MyStrStr (FileName, L"OsxAptioFix") != NULL &&
-            MyStrStr (gST->FirmwareVendor, L"Apple") != NULL
-        ) {
-            Status = EFI_UNSUPPORTED;
+        #if REFIT_DEBUG > 0
+        if (RunOnce) {
+            LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
         }
-        else {
-            #if REFIT_DEBUG > 0
-            if (RunOnce) {
-                LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
-            }
-            #endif
+        #endif
 
-            Status = StartEFIImage(
-                SelfVolume,
-                FileName,
-                L"",
-                DirEntry->FileName,
-                0,
-                FALSE,
-                TRUE
-            );
-        }
+        Status = StartEFIImage (
+            SelfVolume, FileName, L"",
+            DirEntry->FileName, 0,
+            FALSE, TRUE
+        );
 
         MyFreePool (&DirEntry);
 
@@ -695,10 +676,10 @@ UINTN ScanDriverDir (
         MyFreePool (&FileName);
     } // while
 
-    Status = DirIterClose(&DirIter);
+    Status = DirIterClose (&DirIter);
     if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
         FileName = PoolPrint (L"While Scanning the '%s' Directory", Path);
-        CheckError(Status, FileName);
+        CheckError (Status, FileName);
         MyFreePool (&FileName);
     }
 
