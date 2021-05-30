@@ -467,7 +467,7 @@
 #     noscale     - Crop if too big or show with border if too small
 #     fillscreen  - Fill the screen
 #
-# Crops if too big or shows with border if too small when commented out
+# Uses "noscale" when commented out
 #
 #banner_scale fillscreen
 
