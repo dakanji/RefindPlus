@@ -624,6 +624,7 @@ UINTN ScanDriverDir (
     REFIT_DIR_ITER   DirIter;
     EFI_FILE_INFO   *DirEntry;
     CHAR16          *FileName;
+    CHAR16          *ErrMsg;
     UINTN            NumFound  = 0;
 
     CleanUpPathNameSlashes(Path);
@@ -677,10 +678,10 @@ UINTN ScanDriverDir (
     } // while
 
     Status = DirIterClose (&DirIter);
-    if (Status != EFI_NOT_FOUND && Status != EFI_INVALID_PARAMETER) {
-        FileName = PoolPrint (L"While Scanning the '%s' Directory", Path);
-        CheckError (Status, FileName);
-        MyFreePool (&FileName);
+    if (Status != EFI_NOT_FOUND) {
+        ErrMsg = PoolPrint (L"While Scanning the '%s' Directory", Path);
+        CheckError (Status, ErrMsg);
+        MyFreePool (&ErrMsg);
     }
 
     return (NumFound);
