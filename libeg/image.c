@@ -335,7 +335,7 @@ EFI_STATUS egLoadFile (
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     refit_call1_wrapper(FileHandle->Close, FileHandle);
     if (EFI_ERROR (Status)) {
-        FreePool (Buffer);
+        MyFreePool (&Buffer);
 
         return Status;
     }

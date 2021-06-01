@@ -117,7 +117,7 @@ EFI_STATUS RefitReadFile (
         return EFI_LOAD_ERROR;
     }
     ReadSize = FileInfo->FileSize;
-    FreePool (FileInfo);
+    MyFreePool (&FileInfo);
 
     File->BufferSize = (UINTN) ReadSize;
     File->Buffer = AllocatePool (File->BufferSize);
@@ -298,7 +298,7 @@ BOOLEAN KeepReading (
          Temp = StrDuplicate (&p[1]);
          if (Temp != NULL) {
             StrCpy (p, Temp);
-            FreePool (Temp);
+            MyFreePool (&Temp);
          }
          MoreToRead = TRUE;
       }
@@ -363,7 +363,7 @@ UINTN ReadTokenLine (
             AddListElement ((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate (Token));
         }
 
-        FreePool (Line);
+        MyFreePool (&Line);
     }
     return (TokenCount);
 } /* ReadTokenLine() */
@@ -426,7 +426,7 @@ VOID HandleStrings (
    }
 
    if ((*Target != NULL) && !AddMode) {
-      FreePool (*Target);
+      MyFreePool (*Target);
       *Target = NULL;
    } // if
    for (i = 1; i < TokenCount; i++) {

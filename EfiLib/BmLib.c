@@ -11,6 +11,12 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifdef __MAKEWITH_TIANO
 #include "Platform.h"
@@ -18,6 +24,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "gnuefi-helper.h"
 #endif
 #include "../include/refit_call_wrapper.h"
+
+extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 /**
 
@@ -201,7 +209,7 @@ EfiReallocatePool (
       CopyMem (NewPool, OldPool, OldSize < NewSize ? OldSize : NewSize);
     }
 
-    FreePool (OldPool);
+    MyFreePool (&OldPool);
   }
 
   return NewPool;

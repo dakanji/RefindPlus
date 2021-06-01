@@ -1496,7 +1496,7 @@ CHAR16 * GetVolumeName (
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
 static
 VOID SetPartGuidAndName (
-    REFIT_VOLUME *Volume,
+    REFIT_VOLUME             *Volume,
     EFI_DEVICE_PATH_PROTOCOL *DevicePath
 ) {
     HARDDRIVE_DEVICE_PATH    *HdDevicePath;
@@ -1747,7 +1747,7 @@ VOID ScanExtendedPartition (
     MBR_PARTITION_INFO *MbrEntry
 ) {
     EFI_STATUS          Status;
-    REFIT_VOLUME        *Volume;
+    REFIT_VOLUME       *Volume;
     UINT32              ExtBase;
     UINT32              ExtCurrent;
     UINT32              NextExtCurrent;
@@ -1755,7 +1755,7 @@ VOID ScanExtendedPartition (
     UINTN               LogicalPartitionIndex = 4;
     UINT8               SectorBuffer[512];
     BOOLEAN             Bootable;
-    MBR_PARTITION_INFO  *EMbrTable;
+    MBR_PARTITION_INFO *EMbrTable;
 
     ExtBase = MbrEntry->StartLBA;
 
@@ -2514,15 +2514,15 @@ BOOLEAN FileExists (
 }
 
 EFI_STATUS DirNextEntry (
-    IN EFI_FILE *Directory,
+    IN EFI_FILE           *Directory,
     IN OUT EFI_FILE_INFO **DirEntry,
-    IN UINTN FilterMode
+    IN UINTN               FilterMode
 ) {
-    EFI_STATUS Status = EFI_BAD_BUFFER_SIZE;
+    EFI_STATUS  Status = EFI_BAD_BUFFER_SIZE;
     VOID       *Buffer;
-    UINTN      LastBufferSize;
-    UINTN      BufferSize;
-    INTN       IterCount;
+    UINTN       LastBufferSize;
+    UINTN       BufferSize;
+    INTN        IterCount;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -2624,13 +2624,13 @@ EFI_STATUS DirNextEntry (
 }
 
 VOID DirIterOpen (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16 *RelativePath OPTIONAL,
+    IN EFI_FILE        *BaseDir,
+    IN CHAR16          *RelativePath OPTIONAL,
     OUT REFIT_DIR_ITER *DirIter
 ) {
     if (RelativePath == NULL) {
-        DirIter->LastStatus = EFI_SUCCESS;
-        DirIter->DirHandle = BaseDir;
+        DirIter->LastStatus     = EFI_SUCCESS;
+        DirIter->DirHandle      = BaseDir;
         DirIter->CloseDirHandle = FALSE;
     }
     else {
@@ -2700,12 +2700,12 @@ BOOLEAN MetaiMatch (
 
 BOOLEAN DirIterNext (
     IN OUT REFIT_DIR_ITER *DirIter,
-    IN UINTN FilterMode,
-    IN CHAR16 *FilePattern OPTIONAL,
-    OUT EFI_FILE_INFO **DirEntry
+    IN UINTN               FilterMode,
+    IN CHAR16             *FilePattern OPTIONAL,
+    OUT EFI_FILE_INFO    **DirEntry
 ) {
-    BOOLEAN KeepGoing = TRUE;
-    UINTN   i;
+    BOOLEAN  KeepGoing = TRUE;
+    UINTN    i;
     CHAR16  *OnePattern;
 
     MyFreePool (&DirIter->LastFileInfo);
@@ -2774,7 +2774,7 @@ CHAR16 * Basename (
     IN CHAR16 *Path
 ) {
     CHAR16  *FileName;
-    UINTN   i;
+    UINTN    i;
 
     FileName = Path;
 
@@ -2796,7 +2796,7 @@ CHAR16 * Basename (
 CHAR16 * StripEfiExtension (
     IN CHAR16 *FileName
 ) {
-    UINTN  Length;
+    UINTN   Length;
     CHAR16 *Copy = NULL;
 
     if ((FileName != NULL) && ((Copy = StrDuplicate (FileName)) != NULL)) {
@@ -2814,10 +2814,10 @@ CHAR16 * StripEfiExtension (
 //
 
 INTN FindMem (
-    IN VOID *Buffer,
-    IN UINTN BufferLength,
-    IN VOID *SearchString,
-    IN UINTN SearchStringLength
+    IN VOID  *Buffer,
+    IN UINTN  BufferLength,
+    IN VOID  *SearchString,
+    IN UINTN  SearchStringLength
 ) {
     UINT8 *BufferPtr;
     UINTN Offset;
@@ -2875,12 +2875,12 @@ CHAR16 * FindExtension (
 CHAR16 * FindLastDirName (
     IN CHAR16 *Path
 ) {
-    UINTN i;
-    UINTN PathLength;
-    UINTN CopyLength;
-    UINTN EndOfElement   = 0;
-    UINTN StartOfElement = 0;
-    CHAR16 *Found        = NULL;
+    UINTN   i;
+    UINTN   PathLength;
+    UINTN   CopyLength;
+    UINTN   EndOfElement   = 0;
+    UINTN   StartOfElement = 0;
+    CHAR16 *Found          = NULL;
 
     if (Path == NULL) {
         return NULL;
@@ -2919,7 +2919,7 @@ CHAR16 * FindLastDirName (
 // string 'EFI\foo'. The calling function is responsible for
 // freeing the returned string's memory.
 CHAR16 * FindPath (
-    IN CHAR16* FullPath
+    IN CHAR16 *FullPath
 ) {
    UINTN i, LastBackslash = 0;
    CHAR16 *PathOnly = NULL;
@@ -2988,7 +2988,7 @@ VOID FindVolumeAndFilename (
 // Returns TRUE if both components are found, FALSE otherwise.
 BOOLEAN SplitVolumeAndFilename (
     IN OUT CHAR16 **Path,
-    OUT CHAR16 **VolName
+    OUT CHAR16    **VolName
 ) {
     UINTN i = 0, Length;
     CHAR16 *Filename;
@@ -3047,12 +3047,12 @@ VOID SplitPathName (
     CleanUpPathNameSlashes (*Filename);
 
     if (StrLen (*Path) == 0) {
-        FreePool (*Path);
+        MyFreePool (*Path);
         *Path = NULL;
     }
 
     if (StrLen (*Filename) == 0) {
-        FreePool (*Filename);
+        MyFreePool (*Filename);
         *Filename = NULL;
     }
     MyFreePool (&Temp);
@@ -3064,7 +3064,7 @@ VOID SplitPathName (
 // Returns TRUE if a match was found, FALSE if not.
 BOOLEAN FindVolume (
     REFIT_VOLUME **Volume,
-    CHAR16 *Identifier
+    CHAR16        *Identifier
 ) {
     UINTN     i = 0;
     BOOLEAN   Found = FALSE;
@@ -3110,17 +3110,17 @@ BOOLEAN VolumeMatchesDescription (
 // case-insensitively.
 BOOLEAN FilenameIn (
     REFIT_VOLUME *Volume,
-    CHAR16 *Directory,
-    CHAR16 *Filename,
-    CHAR16 *List
+    CHAR16       *Directory,
+    CHAR16       *Filename,
+    CHAR16       *List
 ) {
 
     CHAR16    *OneElement;
     CHAR16    *TargetVolName   = NULL;
     CHAR16    *TargetPath      = NULL;
     CHAR16    *TargetFilename  = NULL;
-    UINTN     i                = 0;
-    BOOLEAN   Found            = FALSE;
+    UINTN      i               = 0;
+    BOOLEAN    Found           = FALSE;
 
     if (Filename && List) {
         while (!Found && (OneElement = FindCommaDelimited (List, i++))) {

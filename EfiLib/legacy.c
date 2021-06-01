@@ -39,10 +39,15 @@
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping     = NULL;
 UINTN                    mBootOptionBbsMappingCount = 0;
 
+extern VOID MyFreePool (IN OUT VOID *Pointer);
+
 extern EFI_DEVICE_PATH EndDevicePath[];
-extern EFI_GUID gEfiLegacyBiosProtocolGuid;
-EFI_GUID gEfiLegacyDevOrderVariableGuid     = { 0xa56074db, 0x65fe, 0x45f7, {0xbd, 0x21, 0x2d, 0x2b, 0xdd, 0x8e, 0x96, 0x52 }};
-static EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
+extern EFI_GUID        gEfiLegacyBiosProtocolGuid;
+
+EFI_GUID gEfiLegacyDevOrderVariableGuid = { 0xa56074db, 0x65fe, 0x45f7, \
+    {0xbd, 0x21, 0x2d, 0x2b, 0xdd, 0x8e, 0x96, 0x52 } };
+static EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
+    { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C } };
 
 /**
 
@@ -60,7 +65,7 @@ static EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x
 VOID
 AsciiToUnicodeSize (
   IN UINT8              *AStr,
-  IN UINTN              Size,
+  IN UINTN               Size,
   OUT UINT16            *UStr
   )
 {
@@ -89,16 +94,16 @@ AsciiToUnicodeSize (
 **/
 VOID
 BdsBuildLegacyDevNameString (
-  IN  BBS_TABLE                 *CurBBSEntry,
+  IN  BBS_TABLE                *CurBBSEntry,
   IN  UINTN                     Index,
   IN  UINTN                     BufSize,
-  OUT CHAR16                    *BootString
+  OUT CHAR16                   *BootString
   )
 {
   CHAR16  *Fmt;
   CHAR16  *Type;
   UINT8   *StringDesc;
-  CHAR16  Temp[80];
+  CHAR16   Temp[80];
 
   switch (Index) {
   //
@@ -208,14 +213,14 @@ BdsBuildLegacyDevNameString (
 BOOLEAN
 BdsIsLegacyBootOption (
   IN UINT8                 *BootOptionVar,
-  OUT BBS_TABLE            **BbsEntry,
+  OUT BBS_TABLE           **BbsEntry,
   OUT UINT16               *BbsIndex
   )
 {
   UINT8                     *Ptr;
   EFI_DEVICE_PATH_PROTOCOL  *DevicePath;
-  BOOLEAN                   Ret;
-  UINT16                    DevPathLen;
+  BOOLEAN                    Ret;
+  UINT16                     DevPathLen;
 
   Ptr = BootOptionVar;
   Ptr += sizeof (UINT32);
@@ -256,20 +261,20 @@ BdsIsLegacyBootOption (
 BOOLEAN
 BdsFindLegacyBootOptionByDevTypeAndName (
   IN UINT16                 *BootOrder,
-  IN UINTN                  BootOptionNum,
-  IN UINT16                 DevType,
+  IN UINTN                   BootOptionNum,
+  IN UINT16                  DevType,
   IN CHAR16                 *DevName,
   OUT UINT32                *Attribute,
   OUT UINT16                *BbsIndex,
   OUT UINT16                *OptionNumber
   )
 {
-  UINTN     Index;
-  CHAR16    BootOption[10];
-  UINTN     BootOptionSize;
+  UINTN      Index;
+  CHAR16     BootOption[10];
+  UINTN      BootOptionSize;
   UINT8     *BootOptionVar;
   BBS_TABLE *BbsEntry;
-  BOOLEAN   Found;
+  BOOLEAN    Found;
 
   BbsEntry  = NULL;
   Found     = FALSE;
@@ -296,21 +301,21 @@ BdsFindLegacyBootOptionByDevTypeAndName (
     // Skip Non-legacy boot option
     //
     if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, BbsIndex)) {
-      FreePool (BootOptionVar);
+      MyFreePool (&BootOptionVar);
       continue;
     }
 
     if ((BbsEntry->DeviceType != DevType) ||
         (StrCmp (DevName, (CHAR16*)(BootOptionVar + sizeof (UINT32) + sizeof (UINT16))) != 0)
        ) {
-      FreePool (BootOptionVar);
+      MyFreePool (&BootOptionVar);
       continue;
     }
 
     *Attribute    = *(UINT32 *) BootOptionVar;
     *OptionNumber = BootOrder[Index];
     Found         = TRUE;
-    FreePool (BootOptionVar);
+    MyFreePool (&BootOptionVar);
     break;
   }
 
@@ -340,11 +345,11 @@ BdsFindLegacyBootOptionByDevTypeAndName (
 **/
 EFI_STATUS
 BdsCreateLegacyBootOption (
-  IN BBS_TABLE                        *CurrentBbsEntry,
-  IN EFI_DEVICE_PATH_PROTOCOL         *CurrentBbsDevPath,
+  IN BBS_TABLE                       *CurrentBbsEntry,
+  IN EFI_DEVICE_PATH_PROTOCOL        *CurrentBbsDevPath,
   IN UINTN                            Index,
-  IN OUT UINT16                       **BootOrderList,
-  IN OUT UINTN                        *BootOrderListSize
+  IN OUT UINT16                     **BootOrderList,
+  IN OUT UINTN                       *BootOrderListSize
   )
 {
   EFI_STATUS           Status;
@@ -352,17 +357,17 @@ BdsCreateLegacyBootOption (
   UINT16               BootString[10];
   CHAR16               BootDesc[100];
   CHAR8                HelpString[100];
-  UINT16               *NewBootOrderList;
+  UINT16              *NewBootOrderList;
   UINTN                BufferSize;
   UINTN                StringLen;
-  VOID                 *Buffer;
-  UINT8                *Ptr;
+  VOID                *Buffer;
+  UINT8               *Ptr;
   UINT16               CurrentBbsDevPathSize;
   UINTN                BootOrderIndex;
   UINTN                BootOrderLastIndex;
   UINTN                ArrayIndex;
   BOOLEAN              IndexNotFound;
-  BBS_BBS_DEVICE_PATH  *NewBbsDevPathNode;
+  BBS_BBS_DEVICE_PATH *NewBbsDevPathNode;
 
   if ((*BootOrderList) == NULL) {
     CurrentBootOptionNo = 0;
@@ -419,7 +424,7 @@ BdsCreateLegacyBootOption (
                         (EFI_DEVICE_PATH_PROTOCOL *) NewBbsDevPathNode
                         );
    if (CurrentBbsDevPath == NULL) {
-    FreePool (NewBbsDevPathNode);
+    MyFreePool (&NewBbsDevPathNode);
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -434,8 +439,8 @@ BdsCreateLegacyBootOption (
 
   Buffer = AllocateZeroPool (BufferSize);
   if (Buffer == NULL) {
-    FreePool (NewBbsDevPathNode);
-    FreePool (CurrentBbsDevPath);
+    MyFreePool (&NewBbsDevPathNode);
+    MyFreePool (&CurrentBbsDevPath);
     return EFI_OUT_OF_RESOURCES;
   }
 
@@ -479,20 +484,20 @@ BdsCreateLegacyBootOption (
       Buffer
   );
 
-  FreePool (Buffer);
+  MyFreePool (&Buffer);
 
   Buffer = NULL;
 
   NewBootOrderList = AllocateZeroPool (*BootOrderListSize + sizeof (UINT16));
   if (NULL == NewBootOrderList) {
-    FreePool (NewBbsDevPathNode);
-    FreePool (CurrentBbsDevPath);
+    MyFreePool (&NewBbsDevPathNode);
+    MyFreePool (&CurrentBbsDevPath);
     return EFI_OUT_OF_RESOURCES;
   }
 
   if (*BootOrderList != NULL) {
     CopyMem (NewBootOrderList, *BootOrderList, *BootOrderListSize);
-    FreePool (*BootOrderList);
+    MyFreePool (*BootOrderList);
   }
 
   BootOrderLastIndex                    = (UINTN) (*BootOrderListSize / sizeof (UINT16));
@@ -500,8 +505,8 @@ BdsCreateLegacyBootOption (
   *BootOrderListSize += sizeof (UINT16);
   *BootOrderList = NewBootOrderList;
 
-  FreePool (NewBbsDevPathNode);
-  FreePool (CurrentBbsDevPath);
+  MyFreePool (&NewBbsDevPathNode);
+  MyFreePool (&CurrentBbsDevPath);
   return Status;
 }
 
@@ -520,15 +525,15 @@ BdsCreateLegacyBootOption (
 **/
 EFI_STATUS
 BdsCreateOneLegacyBootOption (
-  IN BBS_TABLE              *BbsItem,
+  IN BBS_TABLE             *BbsItem,
   IN UINTN                  Index,
-  IN OUT UINT16             **BootOrderList,
-  IN OUT UINTN              *BootOrderListSize
+  IN OUT UINT16           **BootOrderList,
+  IN OUT UINTN             *BootOrderListSize
   )
 {
   BBS_BBS_DEVICE_PATH       BbsDevPathNode;
   EFI_STATUS                Status;
-  EFI_DEVICE_PATH_PROTOCOL  *DevPath;
+  EFI_DEVICE_PATH_PROTOCOL *DevPath;
 
   DevPath                       = NULL;
 
@@ -558,7 +563,7 @@ BdsCreateOneLegacyBootOption (
             );
   BbsItem->BootPriority = 0x00;
 
-  FreePool (DevPath);
+  MyFreePool (&DevPath);
 
   return Status;
 }
@@ -583,14 +588,14 @@ BdsCreateOneLegacyBootOption (
 **/
 VOID
 GroupMultipleLegacyBootOption4SameType (
-  UINT16                   *BootOption,
+  UINT16                  *BootOption,
   UINTN                    BootOptionCount
   )
 {
   UINTN                    DeviceTypeIndex[7];
   UINTN                    Index;
   UINTN                    MappingIndex;
-  UINTN                    *NextIndex;
+  UINTN                   *NextIndex;
   UINT16                   OptionNumber;
   UINTN                    DeviceIndex;
 
@@ -686,7 +691,7 @@ EfiLibDeleteVariable (
   )
 {
   VOID        *VarBuf;
-  EFI_STATUS  Status;
+  EFI_STATUS   Status;
 
   VarBuf  = EfiLibGetVariable (VarName, VarGuid);
   Status  = EFI_NOT_FOUND;
@@ -697,7 +702,7 @@ EfiLibDeleteVariable (
     //
     Status = refit_call5_wrapper(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
     ASSERT (!EFI_ERROR (Status));
-    FreePool (VarBuf);
+    MyFreePool (&VarBuf);
   }
 
   return Status;
@@ -717,16 +722,16 @@ BdsAddNonExistingLegacyBootOptions (
   VOID
   )
 {
-  UINT16                    *BootOrder;
+  UINT16                   *BootOrder;
   UINTN                     BootOrderSize;
   EFI_STATUS                Status;
   CHAR16                    Desc[100];
   UINT16                    HddCount;
   UINT16                    BbsCount;
-  HDD_INFO                  *LocalHddInfo;
-  BBS_TABLE                 *LocalBbsTable;
+  HDD_INFO                 *LocalHddInfo;
+  BBS_TABLE                *LocalBbsTable;
   UINT16                    BbsIndex;
-  EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
+  EFI_LEGACY_BIOS_PROTOCOL *LegacyBios;
   UINT16                    Index;
   UINT32                    Attribute;
   UINT16                    OptionNumber;
@@ -743,7 +748,7 @@ BdsAddNonExistingLegacyBootOptions (
   }
 
   if (mBootOptionBbsMapping != NULL) {
-    FreePool (mBootOptionBbsMapping);
+    MyFreePool (&mBootOptionBbsMapping);
 
     mBootOptionBbsMapping      = NULL;
     mBootOptionBbsMappingCount = 0;
@@ -842,7 +847,7 @@ BdsAddNonExistingLegacyBootOptions (
   }
 
   if (BootOrder != NULL) {
-    FreePool (BootOrder);
+    MyFreePool (&BootOrder);
   }
 
   return Status;
@@ -862,7 +867,7 @@ BdsAddNonExistingLegacyBootOptions (
 **/
 EFI_STATUS
 BdsDeleteBootOption (
-  IN UINTN                       OptionNumber,
+  IN UINTN                        OptionNumber,
   IN OUT UINT16                  *BootOrder,
   IN OUT UINTN                   *BootOrderSize
   )
@@ -913,18 +918,18 @@ BdsDeleteAllInvalidLegacyBootOptions (
   VOID
   )
 {
-  UINT16                    *BootOrder;
-  UINT8                     *BootOptionVar;
+  UINT16                   *BootOrder;
+  UINT8                    *BootOptionVar;
   UINTN                     BootOrderSize;
   UINTN                     BootOptionSize;
   EFI_STATUS                Status;
   UINT16                    HddCount;
   UINT16                    BbsCount;
-  HDD_INFO                  *LocalHddInfo;
-  BBS_TABLE                 *LocalBbsTable;
-  BBS_TABLE                 *BbsEntry;
+  HDD_INFO                 *LocalHddInfo;
+  BBS_TABLE                *LocalBbsTable;
+  BBS_TABLE                *BbsEntry;
   UINT16                    BbsIndex;
-  EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
+  EFI_LEGACY_BIOS_PROTOCOL *LegacyBios;
   UINTN                     Index;
   UINT16                    BootOption[10];
   UINT16                    BootDesc[100];
@@ -991,7 +996,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
         continue;
       }
       else {
-        FreePool (BootOrder);
+        MyFreePool (&BootOrder);
         return EFI_OUT_OF_RESOURCES;
       }
     }
@@ -1001,7 +1006,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     //
     if (!BdsIsLegacyBootOption (BootOptionVar, &BbsEntry, &BbsIndex)) {
       if (BootOptionVar!= NULL) {
-        FreePool (BootOptionVar);
+        MyFreePool (&BootOptionVar);
       }
       Index++;
       continue;
@@ -1033,7 +1038,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
     }
 
     if (BootOptionVar != NULL) {
-      FreePool (BootOptionVar);
+      MyFreePool (&BootOptionVar);
     }
     //
     // should delete
@@ -1063,7 +1068,7 @@ BdsDeleteAllInvalidLegacyBootOptions (
   }
 
   if (BootOrder != NULL) {
-    FreePool (BootOrder);
+    MyFreePool (&BootOrder);
   }
 
   return Status;
@@ -1082,10 +1087,10 @@ BdsDeleteAllInvalidLegacyBootOptions (
 **/
 UINT16 *
 BdsFillDevOrderBuf (
-  IN BBS_TABLE                    *BbsTable,
+  IN BBS_TABLE                   *BbsTable,
   IN BBS_TYPE                     BbsType,
   IN UINTN                        BbsCount,
-  OUT UINT16                      *Buf
+  OUT UINT16                     *Buf
   )
 {
   UINTN Index;

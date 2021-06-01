@@ -239,7 +239,7 @@ EFI_STATUS daCheckAltGop (
             } // if HandleBuffer[i]
         } // for
 
-        FreePool (HandleBuffer);
+        MyFreePool (&HandleBuffer);
 
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
@@ -772,7 +772,7 @@ VOID egInitScreen (
                     break;
                 }
             }
-            FreePool (HandleBuffer);
+            MyFreePool (&HandleBuffer);
         }
     }
 
@@ -882,7 +882,7 @@ VOID egInitScreen (
                     }
                 }
             }
-            FreePool (HandleBuffer);
+            MyFreePool (&HandleBuffer);
         }
     }
 
@@ -2253,7 +2253,7 @@ VOID egScreenShot (
 
     // save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
-    FreePool (FileData);
+    MyFreePool (&FileData);
     if (CheckError (Status, L"in egSaveFile")) {
         goto bailout_wait;
     }

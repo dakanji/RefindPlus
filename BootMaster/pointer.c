@@ -31,15 +31,16 @@
 #include "icns.h"
 #include "../include/refit_call_wrapper.h"
 
-EFI_HANDLE* APointerHandles = NULL;
-EFI_ABSOLUTE_POINTER_PROTOCOL** APointerProtocol = NULL;
-EFI_GUID APointerGuid = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
-UINTN NumAPointerDevices = 0;
+extern VOID MyFreePool (IN OUT VOID *Pointer);
 
-EFI_HANDLE* SPointerHandles = NULL;
-EFI_SIMPLE_POINTER_PROTOCOL** SPointerProtocol = NULL;
-EFI_GUID SPointerGuid = EFI_SIMPLE_POINTER_PROTOCOL_GUID;
-UINTN NumSPointerDevices = 0;
+UINTN                           NumAPointerDevices = 0;
+UINTN                           NumSPointerDevices = 0;
+EFI_HANDLE                     *APointerHandles    = NULL;
+EFI_HANDLE                     *SPointerHandles    = NULL;
+EFI_GUID                        APointerGuid       = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
+EFI_GUID                        SPointerGuid       = EFI_SIMPLE_POINTER_PROTOCOL_GUID;
+EFI_ABSOLUTE_POINTER_PROTOCOL **APointerProtocol   = NULL;
+EFI_SIMPLE_POINTER_PROTOCOL   **SPointerProtocol   = NULL;
 
 BOOLEAN PointerAvailable = FALSE;
 
@@ -185,11 +186,11 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        FreePool (APointerHandles);
+        MyFreePool (&APointerHandles);
         APointerHandles = NULL;
     }
     if (APointerProtocol) {
-        FreePool (APointerProtocol);
+        MyFreePool (&APointerProtocol);
         APointerProtocol = NULL;
     }
     if (SPointerHandles) {
@@ -203,11 +204,11 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        FreePool (SPointerHandles);
+        MyFreePool (&SPointerHandles);
         SPointerHandles = NULL;
     }
     if (SPointerProtocol) {
-        FreePool (SPointerProtocol);
+        MyFreePool (&SPointerProtocol);
         SPointerProtocol = NULL;
     }
     if (MouseImage) {

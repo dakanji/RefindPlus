@@ -11,6 +11,12 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifdef __MAKEWITH_TIANO
 #include "../include/tiano_includes.h"
@@ -19,6 +25,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "gnuefi-helper.h"
 #endif
 #include "../include/refit_call_wrapper.h"
+
+extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
 
@@ -71,7 +79,7 @@ EFI_STATUS BdsLibConnectDevicePath (
     //
     Instance  = GetNextDevicePathInstance (&DevicePath, &Size);
     if (Instance == NULL) {
-      FreePool (CopyOfDevicePath);
+      MyFreePool (&CopyOfDevicePath);
       return EFI_OUT_OF_RESOURCES;
     }
 
@@ -143,7 +151,7 @@ EFI_STATUS BdsLibConnectDevicePath (
   } while (DevicePath != NULL);
 
   if (CopyOfDevicePath != NULL) {
-    FreePool (CopyOfDevicePath);
+    MyFreePool (&CopyOfDevicePath);
   }
   //
   // All handle with DevicePath exists in the handle database
@@ -270,12 +278,12 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
   //
   if ((Option->Attribute & LOAD_OPTION_ACTIVE) == LOAD_OPTION_ACTIVE) {
     InsertTailList (BdsCommonOptionList, &Option->Link);
-    FreePool (Variable);
+    MyFreePool (&Variable);
     return Option;
   }
 
-  FreePool (Variable);
-  FreePool (Option);
+  MyFreePool (&Variable);
+  MyFreePool (&Option);
   return NULL;
 
 }
