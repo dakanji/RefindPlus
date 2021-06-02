@@ -1404,6 +1404,8 @@ LOADER_ENTRY * AddStanzaEntries (
     } // while()
 
     if (!Entry->Enabled) {
+        MyFreePool (&Entry);
+
         return NULL;
     }
 
