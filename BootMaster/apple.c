@@ -97,6 +97,8 @@ VOID RecordgCsrStatus (
 
         // SIP "Disabled" Settings
         case SIP_DISABLED:
+        case SIP_DISABLED_EX:
+        case SIP_DISABLED_KXT:
             gCsrStatus = PoolPrint (
                 L"SIP Disabled (0x%04x)",
                 CsrStatus
