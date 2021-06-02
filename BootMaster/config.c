@@ -1303,7 +1303,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 MyFreePool (&MsgStr);
                 #endif
 
-                MyFreePool (&Entry->me.Image);
+                egFreeImage (Entry->me.Image);
                 Entry->me.Image = egLoadIcon (
                     CurrentVolume->RootDir,
                     TokenList[1],
@@ -1404,6 +1404,13 @@ LOADER_ENTRY * AddStanzaEntries (
     } // while()
 
     if (!Entry->Enabled) {
+        egFreeImage (Entry->me.Image);
+        MyFreePool (&Entry->EfiLoaderPath);
+        MyFreePool (&Entry->LoadOptions);
+        MyFreePool (&Entry->InitrdPath);
+        MyFreePool (&Entry->LoaderPath);
+        MyFreePool (&Entry->me.Title);
+        MyFreePool (&Entry->Title);
         MyFreePool (&Entry);
 
         return NULL;
@@ -1536,6 +1543,13 @@ VOID ScanUserConfigured (
                     AddPreparedLoaderEntry (Entry);
                 }
                 else {
+                    egFreeImage (Entry->me.Image);
+                    MyFreePool (&Entry->EfiLoaderPath);
+                    MyFreePool (&Entry->LoadOptions);
+                    MyFreePool (&Entry->InitrdPath);
+                    MyFreePool (&Entry->LoaderPath);
+                    MyFreePool (&Entry->me.Title);
+                    MyFreePool (&Entry->Title);
                     MyFreePool (&Entry);
                 } // if/else
             }
