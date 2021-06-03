@@ -1199,6 +1199,7 @@ LOADER_ENTRY * AddStanzaEntries (
 ) {
     UINTN           TokenCount;
     CHAR16        **TokenList;
+    CHAR16         *LoadOptions       = NULL;
     BOOLEAN         HasPath           = FALSE;
     BOOLEAN         DefaultsSet       = FALSE;
     BOOLEAN         AddedSubmenu      = FALSE;
@@ -1328,8 +1329,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->Title);
                 #endif
 
-                MyFreePool (&Entry->LoadOptions);
-                Entry->LoadOptions = StrDuplicate (TokenList[1]);
+                LoadOptions = StrDuplicate (TokenList[1]);
             }
             else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
                 if (TokenCount > 1) {
@@ -1405,6 +1405,13 @@ LOADER_ENTRY * AddStanzaEntries (
 
     // Diabled entries are returned "as is" as will be discarded later
     if (Entry->Enabled) {
+        // Set load options, if any
+        if (LoadOptions && StrLen (LoadOptions) > 0) {
+            MyFreePool (&Entry->LoadOptions);
+            Entry->LoadOptions = StrDuplicate (LoadOptions);
+            MyFreePool (&LoadOptions);
+        }
+
         if (AddedSubmenu) {
             AddMenuEntry (Entry->me.SubScreen, &MenuEntryReturn);
         }
