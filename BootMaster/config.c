@@ -1403,47 +1403,37 @@ LOADER_ENTRY * AddStanzaEntries (
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
 
-    if (!Entry->Enabled) {
-        egFreeImage (Entry->me.Image);
-        MyFreePool (&Entry->EfiLoaderPath);
-        MyFreePool (&Entry->LoadOptions);
-        MyFreePool (&Entry->InitrdPath);
-        MyFreePool (&Entry->LoaderPath);
-        MyFreePool (&Entry->me.Title);
-        MyFreePool (&Entry->Title);
-        MyFreePool (&Entry);
-
-        return NULL;
-    }
-
-    if (AddedSubmenu) {
-        AddMenuEntry (Entry->me.SubScreen, &MenuEntryReturn);
-    }
-
-    if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {
-        if (Entry->LoadOptions && StrLen (Entry->LoadOptions) > 0) {
-            MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
-            MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+    // Diabled entries are returned "as is" as will be discarded later
+    if (Entry->Enabled) {
+        if (AddedSubmenu) {
+            AddMenuEntry (Entry->me.SubScreen, &MenuEntryReturn);
         }
-        else {
-            Entry->LoadOptions = PoolPrint (
-                L"initrd=%s",
-                Entry->InitrdPath
-            );
+
+        if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {
+            if (Entry->LoadOptions && StrLen (Entry->LoadOptions) > 0) {
+                MergeStrings (&Entry->LoadOptions, L"initrd=", L' ');
+                MergeStrings (&Entry->LoadOptions, Entry->InitrdPath, 0);
+            }
+            else {
+                Entry->LoadOptions = PoolPrint (
+                    L"initrd=%s",
+                    Entry->InitrdPath
+                );
+            }
+            MyFreePool (&Entry->InitrdPath);
+            Entry->InitrdPath = NULL;
         }
-        MyFreePool (&Entry->InitrdPath);
-        Entry->InitrdPath = NULL;
-    }
 
-    if (!DefaultsSet) {
-        // No "loader" line ... use bogus one
-        SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
-    }
+        if (!DefaultsSet) {
+            // No "loader" line ... use bogus one
+            SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
+        }
 
-    if (Entry->me.Image == NULL) {
-        // Still no icon ... set dummy image
-        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-    }
+        if (Entry->me.Image == NULL) {
+            // Still no icon ... set dummy image
+            Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        }
+    } // if Entry->Enabled
 
     return (Entry);
 } // static VOID AddStanzaEntries()
