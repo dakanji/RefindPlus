@@ -359,6 +359,41 @@
 #log_level 3
 
 
+# Set the CSR values for Apple's System Integrity Protection (SIP) and
+# Sealed System Volume (SSV) features that define access levels on Mac OS.
+# Values are hexadecimal numbers that define which specific security features
+# are enabled. Below are the codes for what the values mean. Add them up (in hex)
+# to set new values. Apple's "csrutil enable" and "csrutil disable" commands usually
+# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
+# setting and that users can go beyond this, to values such as 87F, 97F ...up to FFF.
+# The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
+# commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
+# respectively, when run along with the "csrutil enable / disable" commands.
+#
+# As of Mac OS v11.x (Big Sur), the previous default settting of 10 (ON)
+# may leave Macs not able to receive "Over The Air" (OTA) updates from
+# Apple, and the reliable setting being enabling SIP/SSV by clearing
+# the stored CSR value in the NVRAM. RefindPlus can clear the CSR
+# value when "0" is used in place of "10" for the "OFF" value.
+# This setting is also valid on earlier versions of Mac OS.
+#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
+#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
+#   CSR_ALLOW_TASK_FOR_PID                  0x0004
+#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
+#   CSR_ALLOW_APPLE_INTERNAL                0x0010
+#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
+#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
+#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
+#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
+#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
+#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
+#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
+#
+# Inactive when commented out (CSR values for SIP/SSV cannot be set)
+#
+#csr_values 0,77
+
+
 ##--------------------------------------------------------------##
 ##                STANDARD CONFIGURATION ITEMS                  ##
 ##                  Standard rEFInd Features                    ##
@@ -825,33 +860,6 @@
 # Inactive when commented out (No Mac OS version spoofing)
 #
 #spoof_osx_version 10.9
-
-# Set the CSR values for Apple's System Integrity Protection (SIP) and
-# Sealed System Volume (SSV) features that define access levels on Mac OS.
-# Values are hexadecimal numbers that define which specific security features
-# are enabled. Below are the codes for what the values mean. Add them up (in hex)
-# to set new values. Apple's "csrutil enable" and "csrutil disable" commands usually
-# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that users can go beyond this, to values such as 87F, 97F ...up to FFF.
-# The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
-# commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
-# respectively, when run along with the "csrutil enable / disable" commands.
-#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
-#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
-#   CSR_ALLOW_TASK_FOR_PID                  0x0004
-#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
-#   CSR_ALLOW_APPLE_INTERNAL                0x0010
-#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
-#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
-#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
-#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
-#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
-#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
-#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
-#
-# Inactive when commented out (CSR values for SIP cannot be set)
-#
-#csr_values 10,77
 
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"

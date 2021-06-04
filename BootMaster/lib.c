@@ -655,7 +655,9 @@ EFI_STATUS EfivarSetRaw (
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
 
-    if (!MyStriCmp (VariableName, L"HiddenTags") &&
+    if (VariableSize > 0 &&
+        VariableData != NULL &&
+        !MyStriCmp (VariableName, L"HiddenTags") &&
         !MyStriCmp (VariableName, L"HiddenTools") &&
         !MyStriCmp (VariableName, L"HiddenLegacy") &&
         !MyStriCmp (VariableName, L"HiddenFirmware")
@@ -726,8 +728,6 @@ EFI_STATUS EfivarSetRaw (
         #endif
     }
     else {
-        // GlobalConfig.UseNvram || !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
-
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
             L"Saving to Hardware NVRAM:- '%s'",

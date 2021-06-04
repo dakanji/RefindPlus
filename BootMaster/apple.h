@@ -64,6 +64,9 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 // Apple's NVRAM ACCESS FLAGS
 #define APPLE_FLAGS EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
 
+// Clear CSR for Mac OS 11.00 Big Sur
+#define CSR_CLEAR_SETTING (0)
+
 // These codes are returned with the csr-active-config NVRAM variable
 #define CSR_ALLOW_UNTRUSTED_KEXTS              0x0001        // Introduced in Mac OS 10.11 El Capitan
 #define CSR_ALLOW_UNRESTRICTED_FS              0x0002        //               Ditto
@@ -80,6 +83,7 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 #define CSR_END_OF_LIST                        0xFFFFFFFF
 
 // SIP/SSV "Enabled" Setting
+#define SIP_ENABLED_EX (CSR_CLEAR_SETTING)                                                 // 0x000
 #define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010
 
 // SIP "Disabled" Setting (Mac OS 10.11+)
@@ -91,7 +95,9 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 #define SIP_DISABLED_EX (CSR_ALLOW_UNTRUSTED_KEXTS | CSR_ALLOW_UNRESTRICTED_FS | \
     CSR_ALLOW_TASK_FOR_PID | CSR_ALLOW_UNRESTRICTED_DTRACE | \
     CSR_ALLOW_UNRESTRICTED_NVRAM)                                                          // 0x067
-#define SIP_DISABLED_KXT (SIP_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                    // 0x267
+#define SIP_DISABLED_DBG (SIP_DISABLED_EX | CSR_ALLOW_KERNEL_DEBUGGER)                     // 0x06F
+#define SIP_DISABLED_KEXT (SIP_DISABLED_EX | CSR_ALLOW_UNAPPROVED_KEXTS)                   // 0x267
+#define SIP_DISABLED_EXTRA (SIP_DISABLED_KEXT | CSR_ALLOW_KERNEL_DEBUGGER)                 // 0x26F
 
 // SSV "Disabled" Settings (Mac OS 11.00+)
 #define SSV_DISABLED (SIP_DISABLED | CSR_ALLOW_UNAUTHENTICATED_ROOT)                       // 0x877
@@ -120,7 +126,7 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 extern CHAR16 *gCsrStatus;
 
 EFI_STATUS SetAppleOSInfo();
-EFI_STATUS GetCsrStatus (UINT32 *CsrValue);
+EFI_STATUS GetCsrStatus (IN OUT UINT32 *CsrValue);
 
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue (VOID);

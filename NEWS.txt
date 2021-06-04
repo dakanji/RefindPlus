@@ -12,6 +12,10 @@
   * Hidden items could not be created or managed
 - Improves Upstream Logging Format
   * Formatted for clarity
+- Improves Handling of CSR Policy Toggling
+  * Adds option to clear CSR to facilitate "Over The Air" updates on Mac OS v11.x (Big Sur)
+  * Activated by entering "0" in place of "10" for the option to enable SIP
+  * This setting is also valid when used on earlier versions of Mac OS
 - Improves Handling of Manual Stanza Icons
   * Optimises search for associated icons to speed loading times up
   * Only undertakes a second search scan when required
