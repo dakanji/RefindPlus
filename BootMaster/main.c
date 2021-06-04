@@ -841,7 +841,12 @@ VOID preBootKicker (
         L""
     };
 
-    if (BootKickerMenu.EntryCount == 0) {
+    if (BootKickerMenu.EntryCount > 0) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
+        #endif
+    }
+    else {
         BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
         AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
@@ -994,7 +999,12 @@ VOID preCleanNvram (
         L""
     };
 
-    if (CleanNvramMenu.EntryCount == 0) {
+    if (CleanNvramMenu.EntryCount > 0) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
+        #endif
+    }
+    else {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         CleanNvramMenu.Title = L"Clean NVRAM";
         AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
@@ -1135,7 +1145,12 @@ VOID AboutRefindPlus (
     LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
     #endif
 
-    if (AboutMenu.EntryCount == 0) {
+    if (AboutMenu.EntryCount > 0) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen (Not Updated)");
+        #endif
+    }
+    else {
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
         AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
         AddMenuInfoLine (&AboutMenu, L"");
