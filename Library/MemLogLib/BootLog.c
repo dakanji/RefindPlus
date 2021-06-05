@@ -347,6 +347,7 @@ DeepLoggger (
     if (DebugMode < 1 ||
         GlobalConfig.LogLevel < 1 ||
         GlobalConfig.LogLevel < level ||
+        MuteLogger ||
         !(*Message)
     ) {
         MyFreePool (*Message);
@@ -419,7 +420,10 @@ DebugLog(
     // Just return in RELEASE builds
     return;
 #else
-    VA_LIST Marker;
+    // Make sure logging is not muted
+    if (MuteLogger) {
+        return;
+    }
 
     // Make sure the buffer is intact for writing
     if (FormatString == NULL || DebugMode < 0) {
@@ -436,6 +440,7 @@ DebugLog(
     }
 
     // Print message to log buffer
+    VA_LIST Marker;
     VA_START(Marker, FormatString);
     MemLogVA(TimeStamp, DebugMode, FormatString, Marker);
     VA_END(Marker);
