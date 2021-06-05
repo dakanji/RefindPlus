@@ -349,7 +349,8 @@ VOID ActiveCSR (
     VOID
 ) {
     UINT32  CsrStatus;
-    BOOLEAN CsrEnabled;
+    BOOLEAN CsrEnabled = FALSE;
+    BOOLEAN RotateCsr  = FALSE;
 
     // Prime 'Status' for logging
     #if REFIT_DEBUG > 0
@@ -385,15 +386,10 @@ VOID ActiveCSR (
 
                 if (CsrEnabled) {
                     // Switch SIP/SSV off as currently enabled
-                    RotateCsrValue ();
-
-                    // Set 'Status' to 'Success'
-                    #if REFIT_DEBUG > 0
-                    Status = EFI_SUCCESS;
-                    #endif
+                    RotateCsr = TRUE;
                 }
             }
-            else {
+            else if (GlobalConfig.ActiveCSR == 1) {
                 // Seed the log buffer
                 #if REFIT_DEBUG > 0
                 MsgLog ("INFO: Enable SIP/SSV ...");
@@ -401,13 +397,22 @@ VOID ActiveCSR (
 
                 if (!CsrEnabled) {
                     // Switch SIP/SSV on as currently disbled
-                    RotateCsrValue ();
-
-                    // Set 'Status' to 'Success'
-                    #if REFIT_DEBUG > 0
-                    Status = EFI_SUCCESS;
-                    #endif
+                    RotateCsr = TRUE;
                 }
+            }
+            else {
+                // Should never get here
+                return;
+            }
+
+            if (RotateCsr) {
+                // Switch SIP/SSV off as currently enabled
+                RotateCsrValue ();
+
+                // Set 'Status' to 'Success'
+                #if REFIT_DEBUG > 0
+                Status = EFI_SUCCESS;
+                #endif
             }
 
             // Finalise and flush the log buffer
