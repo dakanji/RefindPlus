@@ -52,6 +52,7 @@ disable_compat_check  |Disables Mac version compatibility checks if required.
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required.
 ignore_previous_boot  |Disables saving the last booted loader if not required.
 ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required.
+normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates.
 protect_nvram         |Prevents UEFI Windows from saving certificates to Apple NVRAM.
 provide_console_gop   |Fixes issues with GOP on some legacy units.
 reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
@@ -80,7 +81,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 ar
   * Level 0 does not switch logging off but activates the native summary format
   * Levels 1 to 4 output logs equivalent to the detailed upstream format
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
-- **"csr_values" Token:** A value of `0` is accepted to ensure "Over The Air" (OTA) upadates from Apple when running Mac OS v11.x (Big Sur) with SIP enabled as RefindPlus will clear the CSR value set in the NVRAM as required. This  `0` setting is not required on earlier versions of Mac OS but is equally valid and should be adopted instead of the the previous default setting of enable SIP of `10`.  
+- **"csr_values" Token:** A value of `0` is accepted to ensure "Over The Air" (OTA) upadates from Apple when running Mac OS v11.x (Big Sur) with SIP enabled as RefindPlus will clear the CSR value set in the NVRAM as required. This  `0` setting is not required on earlier versions of Mac OS but is equally valid and should be adopted instead of the the previous default setting of enable SIP of `10`.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` token is set to the default option of automatic detection.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, Users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample) file).

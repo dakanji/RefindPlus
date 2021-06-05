@@ -1066,6 +1066,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
           GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
+          GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }

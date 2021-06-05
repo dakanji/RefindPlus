@@ -662,7 +662,9 @@ EFI_STATUS EfivarSetRaw (
         !MyStriCmp (VariableName, L"HiddenLegacy") &&
         !MyStriCmp (VariableName, L"HiddenFirmware")
     ) {
-        Status = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
+        MuteLogger = TRUE;
+        Status     = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
+        MuteLogger = FALSE;
 
         if (!EFI_ERROR (Status)) {
             // First check for setting match (compare mem as per upstream)

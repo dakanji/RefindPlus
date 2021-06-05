@@ -7,13 +7,13 @@
 ##--------------------------------------------------------------##
 #
 #
-# RefindPlus defaults to scanning volumes for ".VolumeIcon" icns files. If
+# RefindPlus defaults to scanning volumes for ".VolumeIcon" icns files and if
 # found, these are used as display icons for internal volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
 # do, typically Apple Macs, do not require the files as their icons in
 # Refindplus. Hence, scanning for the files typically just slows the
-# RefindPlus boot process down. This setting speeds booting
-# RefindPlus up by skipping scanning for these files.
+# RefindPlus boot process down. When active, this speeds booting
+# RefindPlus up by skipping scanning volumes for these files.
 #
 # Always scans for ".VolumeIcon" icns files when commented out
 #
@@ -225,6 +225,22 @@
 #
 #active_csr 1
 
+# As of Mac OS v11.x (Big Sur), the previous default SIP/SSV setttings which had all included
+# the "CSR_ALLOW_APPLE_INTERNAL" bit may leave Macs not able to receive "Over The Air" (OTA)
+# updates from Apple. Mac OS v11.x (Big Sur) removes this bit on boot if detected but this
+# attempted removal may fail when booting into Mac OS via non-standard path ways such as
+# RefindPlus. It is also possible that Apple will remove this remediation feature once
+# Mac models supporting Mac OS v10.15 (Catalina) are deemed by Apple to be obsolete.
+# When this token is set, RefindPlus will remove this bit from the saved CSR bits
+# when booting into Mac OS, OpenCore or Clover similar to the process undertaken
+# in Mac OS v11.x (Big Sur). This token should be activated whenever Mac OS is
+# required, either directly via RefindPlus or indirectly via other tools such
+# as OpenCore and Clover, even when Mac OS v11.x (Big Sur) is not required.
+#
+# Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
+#
+#normalise_csr
+
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the Mac OS boot arguments to the specified string.
 # This setting only applies to Mac OS and accounts for arguments injected by
@@ -358,40 +374,42 @@
 #
 #log_level 3
 
-
 # Set the CSR values for Apple's System Integrity Protection (SIP) and
 # Sealed System Volume (SSV) features that define access levels on Mac OS.
 # Values are hexadecimal numbers that define which specific security features
 # are enabled. Below are the codes for what the values mean. Add them up (in hex)
 # to set new values. Apple's "csrutil enable" and "csrutil disable" commands usually
-# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default "OFF"
-# setting and that users can go beyond this, to values such as 87F, 97F ...up to FFF.
+# set values of 10 (ON) and 77 (OFF) respectively. Note that 77 is just a default OFF
+# setting and that users can go beyond this, to values such as 87F, 97F - up to FFF.
 # The "csrutil authenticated-root enable" and "csrutil authenticated-root disable"
 # commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
 # respectively, when run along with the "csrutil enable / disable" commands.
 #
 # As of Mac OS v11.x (Big Sur), the previous default settting of 10 (ON)
 # may leave Macs not able to receive "Over The Air" (OTA) updates from
-# Apple, and the reliable setting being enabling SIP/SSV by clearing
-# the stored CSR value in the NVRAM. RefindPlus can clear the CSR
-# value when "0" is used in place of "10" for the "OFF" value.
-# This setting is also valid on earlier versions of Mac OS.
-#   CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
-#   CSR_ALLOW_UNRESTRICTED_FS               0x0002
-#   CSR_ALLOW_TASK_FOR_PID                  0x0004
-#   CSR_ALLOW_KERNEL_DEBUGGER               0x0008
-#   CSR_ALLOW_APPLE_INTERNAL                0x0010
-#   CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
-#   CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
-#   CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
-#   CSR_ALLOW_ANY_RECOVERY_OS               0x0100
-#   CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
-#   CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
-#   CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
+# Apple with the reliable setting being enabling SIP/SSV by clearing
+# the stored CSR value in the NVRAM. RefindPlus will clear the CSR
+# setting when "0" is used in place of "10" for the "OFF" value.
+# This setting is also valid on earlier versions of Mac OS. It
+# is recommended however, to keep the default "OFF" setting
+# of "10" in place, and to use the "normalise_csr" token
+# instead to better achieve the same end (both values).
+#      CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
+#      CSR_ALLOW_UNRESTRICTED_FS               0x0002
+#      CSR_ALLOW_TASK_FOR_PID                  0x0004
+#      CSR_ALLOW_KERNEL_DEBUGGER               0x0008
+#      CSR_ALLOW_APPLE_INTERNAL                0x0010
+#      CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
+#      CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
+#      CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
+#      CSR_ALLOW_ANY_RECOVERY_OS               0x0100
+#      CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
+#      CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
+#      CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
 #
 # Inactive when commented out (CSR values for SIP/SSV cannot be set)
 #
-#csr_values 0,77
+#csr_values 10,77
 
 
 ##--------------------------------------------------------------##

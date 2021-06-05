@@ -33,8 +33,9 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16    *gCsrStatus  = NULL;
-BOOLEAN    MuteLogger  = FALSE;
+CHAR16    *gCsrStatus     = NULL;
+BOOLEAN    MuteLogger     = FALSE;
+BOOLEAN    MsgNormalised  = FALSE;
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
@@ -51,7 +52,7 @@ EFI_STATUS GetCsrStatus (
     Status = EfivarGetRaw (
         &CsrGuid,
         L"csr-active-config",
-        (CHAR8**) &ReturnValue,
+        (CHAR8 **) &ReturnValue,
         &CsrLength
     );
 
@@ -87,18 +88,20 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
-    EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+    UINTN     WaitSeconds = 3;
+    CHAR16   *MsgStr      = NULL;
+    EG_PIXEL  BGColor     = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
         // SIP "Cleared" Setting
         case SIP_ENABLED_EX:
-            gCsrStatus = PoolPrint (L"SIP/SSV Enabled (Cleared/Empty)");
+            gCsrStatus = PoolPrint (L"SIP Enabled (Cleared/Empty)");
             break;
 
         // SIP "Enabled" Setting
         case SIP_ENABLED:
             gCsrStatus = PoolPrint (
-                L"SIP/SSV Enabled (0x%04x)",
+                L"SIP Enabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -119,7 +122,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED:
         case SSV_DISABLED_EX:
             gCsrStatus = PoolPrint (
-                L"SIP and SSV Disabled (0x%04x)",
+                L"SIP/SSV Disabled (0x%04x)",
                 CsrStatus
             );
             break;
@@ -129,7 +132,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_KEXT:
         case SSV_DISABLED_ANY_EX:
             gCsrStatus = PoolPrint (
-                L"SIP and SSV Disabled (0x%04x - Custom Setting)",
+                L"SIP/SSV Disabled (0x%04x - Custom Setting)",
                 CsrStatus
             );
             break;
@@ -138,7 +141,7 @@ VOID RecordgCsrStatus (
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
             gCsrStatus = PoolPrint (
-                L"SIP and SSV Removed (0x%04x - Caution!)",
+                L"SIP/SSV Removed (0x%04x - Caution!)",
                 CsrStatus
             );
             break;
@@ -152,13 +155,23 @@ VOID RecordgCsrStatus (
     } // switch
 
     if (DisplayMessage) {
+        if (MsgNormalised) {
+            WaitSeconds = 6;
+            MsgStr = PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus);
+        }
+        else {
+            MsgStr = PoolPrint (L"%s", gCsrStatus);
+        }
+
+        egDisplayMessage (MsgStr, &BGColor, CENTER);
+        PauseSeconds (WaitSeconds);
+
         #if REFIT_DEBUG > 0
-        MsgLog ("    * %s\n\n", gCsrStatus);
+        MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
-        egDisplayMessage (gCsrStatus, &BGColor, CENTER);
-        PauseSeconds (3);
-    } // if
+        MyFreePool (&MsgStr);
+    }
 } // VOID RecordgCsrStatus()
 
 // Find the current CSR status and reset it to the next one in the
@@ -274,6 +287,42 @@ VOID RotateCsrValue (VOID) {
         PauseSeconds (4);
     } // if/else
 } // VOID RotateCsrValue()
+
+
+EFI_STATUS NormaliseCSR (VOID) {
+    EFI_STATUS  Status;
+    UINT32      OurCSR;
+
+    // Mute logging if active
+    MuteLogger = TRUE;
+
+    // Get csr-active-config value
+    Status = GetCsrStatus (&OurCSR);
+
+    if (Status == EFI_NOT_FOUND) {
+        // csr-active-config not found ... Proceed as 'OK'
+        Status = EFI_ALREADY_STARTED;
+    }
+    else if (Status == EFI_SUCCESS) {
+        if ((OurCSR & CSR_ALLOW_APPLE_INTERNAL) == 0) {
+            // 'CSR_ALLOW_APPLE_INTERNAL' bit not present ... Proceed as 'OK'
+            Status = EFI_ALREADY_STARTED;
+        }
+        else {
+            // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
+            OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
+
+            MsgNormalised = TRUE;
+            RecordgCsrStatus (OurCSR, TRUE);
+            MsgNormalised = FALSE;
+        }
+    }
+
+    // Restore logging if previously active
+    MuteLogger = FALSE;
+
+    return Status;
+} // EFI_STATUS NormaliseCSR()
 
 
 /*
