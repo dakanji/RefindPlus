@@ -65,7 +65,9 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 #define APPLE_FLAGS EFI_VARIABLE_BOOTSERVICE_ACCESS|EFI_VARIABLE_RUNTIME_ACCESS|EFI_VARIABLE_NON_VOLATILE;
 
 // Clear CSR for Mac OS 11.00 Big Sur
-#define CSR_CLEAR_SETTING (0)
+#define CSR_CLEAR_SETTING                      0x0000
+#define SIP_ENABLED_EX (CSR_CLEAR_SETTING)               // 0x000
+
 
 // These codes are returned with the csr-active-config NVRAM variable
 #define CSR_ALLOW_UNTRUSTED_KEXTS              0x0001        // Introduced in Mac OS 10.11 El Capitan
@@ -83,7 +85,6 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
 #define CSR_END_OF_LIST                        0xFFFFFFFF
 
 // SIP/SSV "Enabled" Setting
-#define SIP_ENABLED_EX (CSR_CLEAR_SETTING)                                                 // 0x000
 #define SIP_ENABLED  (CSR_ALLOW_APPLE_INTERNAL)                                            // 0x010
 
 // SIP "Disabled" Setting (Mac OS 10.11+)
