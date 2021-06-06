@@ -156,7 +156,7 @@ VOID RecordgCsrStatus (
 
     if (DisplayMessage) {
         if (MsgNormalised) {
-            WaitSeconds = 6;
+            WaitSeconds = 4;
             MsgStr = PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus);
         }
         else {
