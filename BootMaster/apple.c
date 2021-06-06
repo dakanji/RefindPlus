@@ -182,8 +182,9 @@ VOID RecordgCsrStatus (
 VOID RotateCsrValue (VOID) {
     EFI_STATUS    Status;
     UINT32        CurrentValue, TargetCsr;
+    UINT32        StorageFlags = APPLE_FLAGS;
+    EFI_GUID      CsrGuid      = APPLE_GUID;
     UINT32_LIST  *ListItem;
-    EFI_GUID      CsrGuid = APPLE_GUID;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Rotating CSR Value");
@@ -241,9 +242,6 @@ VOID RotateCsrValue (VOID) {
             );
             #endif
 
-            UINT32 StorageFlags   = EFI_VARIABLE_BOOTSERVICE_ACCESS;
-            StorageFlags         |= EFI_VARIABLE_RUNTIME_ACCESS;
-            StorageFlags         |= EFI_VARIABLE_NON_VOLATILE;
             Status = refit_call5_wrapper(
                 gRT->SetVariable, L"csr-active-config",
                 &CsrGuid, StorageFlags, 0, NULL
