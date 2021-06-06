@@ -209,19 +209,19 @@ VOID RotateCsrValue (VOID) {
         if (TargetCsr == 0) {
             // Set target CSR value to NULL
             LOG(1, LOG_LINE_NORMAL,
-                L"CSR value was 0x%04x; setting to NULL",
+                L"Clearing CSR to 'NULL' from '0x%04x'",
                 CurrentValue
             );
         }
         else if (CurrentValue == 0) {
             LOG(1, LOG_LINE_NORMAL,
-                L"CSR value was NULL; setting to 0x%04x",
+                L"Setting CSR to '0x%04x' from 'NULL'",
                 TargetCsr
             );
         }
         else {
             LOG(1, LOG_LINE_NORMAL,
-                L"CSR value was 0x%04x; setting to 0x%04x",
+                L"Setting CSR to '0x%04x' from '0x%04x'",
                 CurrentValue, TargetCsr
             );
         }
@@ -229,19 +229,11 @@ VOID RotateCsrValue (VOID) {
 
         if (TargetCsr != 0) {
             Status = EfivarSetRaw (
-                &CsrGuid,
-                L"csr-active-config",
-                (CHAR8 *) &TargetCsr,
-                4, TRUE
+                &CsrGuid, L"csr-active-config",
+                (CHAR8 *) &TargetCsr, 4, TRUE
             );
         }
         else {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL,
-                L"Clearing from Hardware NVRAM:- 'csr-active-config'"
-            );
-            #endif
-
             Status = refit_call5_wrapper(
                 gRT->SetVariable, L"csr-active-config",
                 &CsrGuid, StorageFlags, 0, NULL
@@ -252,7 +244,10 @@ VOID RotateCsrValue (VOID) {
             RecordgCsrStatus (TargetCsr, TRUE);
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Successfully Set SIP/SSV:- '0x%04x'", TargetCsr);
+            LOG(2, LOG_LINE_NORMAL,
+                L"Successfully Set SIP/SSV:- '0x%04x'",
+                TargetCsr
+            );
             #endif
         }
         else {
@@ -353,7 +348,9 @@ EFI_STATUS SetAppleOSInfo (
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Setting Apple OS information, if applicable");
+    LOG(1, LOG_LINE_NORMAL,
+        L"Setting Apple OS information, if applicable"
+    );
     #endif
 
     Status = refit_call3_wrapper(
@@ -366,7 +363,9 @@ EFI_STATUS SetAppleOSInfo (
     // If not a Mac, ignore the call....
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Not a Mac; not setting Apple OS information");
+        LOG(2, LOG_LINE_NORMAL,
+            L"Not a Mac; not setting Apple OS information"
+        );
         #endif
 
         Status = EFI_SUCCESS;
@@ -378,13 +377,20 @@ EFI_STATUS SetAppleOSInfo (
 
             if (AppleOSVersion) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Setting Apple OS information to '%s'", AppleOSVersion);
+                LOG(2, LOG_LINE_NORMAL,
+                    L"Setting Apple OS information to '%s'",
+                    AppleOSVersion
+                );
                 #endif
 
-                AppleOSVersion8 = AllocateZeroPool ((StrLen (AppleOSVersion) + 1) * sizeof (CHAR8));
+                AppleOSVersion8 = AllocateZeroPool (
+                    (StrLen (AppleOSVersion) + 1) * sizeof (CHAR8)
+                );
                 if (AppleOSVersion8) {
                     UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
-                    Status = refit_call1_wrapper(SetOs->SetOsVersion, AppleOSVersion8);
+                    Status = refit_call1_wrapper(
+                        SetOs->SetOsVersion, AppleOSVersion8
+                    );
                     if (!EFI_ERROR (Status)) {
                         Status = EFI_SUCCESS;
                     }
@@ -395,7 +401,9 @@ EFI_STATUS SetAppleOSInfo (
                 }
 
                 if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
-                    Status = refit_call1_wrapper(SetOs->SetOsVendor, (CHAR8 *) "Apple Inc.");
+                    Status = refit_call1_wrapper(
+                        SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
+                    );
                 }
                 MyFreePool (&AppleOSVersion);
             } // if (AppleOSVersion)

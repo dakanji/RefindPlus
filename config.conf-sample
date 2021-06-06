@@ -81,16 +81,16 @@
 # will temporarily amend the device's EFI Revision to UEFI 2.x and attempt
 # reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
 # is not available. The changes are reverted afterwards and allow running
-# modern GPUs on some legacy units when they would otherwise fail to work.
+# modern GPUs on some legacy units where they would usually fail to work.
 #
 # Inactive when commented out (Does not reinstall GOP)
 #
 #reload_gop
 
-# Use a built-in GOP renderer which may provide better performance
+# Enable a built-in GOP renderer which may provide better performance
 # and fix rendering issues on some GPU/firmware combinations such as
-# the Radeon VII and some versions of the Radeon 5700 XT. However,
-# this should only be used when there is an obvious benefit as it
+# the AMD Radeon VII and some AMD Radeon RX 5700 XT units. However,
+# this should only be used when there is an obvious benefit; as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response on booting into the operating system.
 # NB: This functionality is only available on TianoCore Builds
@@ -233,9 +233,7 @@
 # Mac models supporting Mac OS v10.15 (Catalina) are deemed by Apple to be obsolete.
 # When this token is set, RefindPlus will remove this bit from the saved CSR bits
 # when booting into Mac OS, OpenCore or Clover similar to the process undertaken
-# in Mac OS v11.x (Big Sur). This token should be activated whenever Mac OS is
-# required, either directly via RefindPlus or indirectly via other tools such
-# as OpenCore and Clover, even when Mac OS v11.x (Big Sur) is not required.
+# in Mac OS v11.x (Big Sur). This setting can also be used with older versions.
 #
 # Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
 #
@@ -544,12 +542,12 @@
 #textonly
 
 # Set the EFI text mode to be used for textual displays. This option
-# takes a single digit that refers to a mode number. Mode 0 is usually
-# 80x25, 1 is sometimes 80x50, and higher numbers are system-specific
-# modes. Mode 1024 is a special code that tells RefindPlus not to
-# set text mode; it uses whatever was in use when the program
-# was launched. If an invalid mode is specified, RefindPlus
-# pauses booting to display information on valid modes.
+# takes a single digit that refers to a mode number. Mode "0" is usually
+# 80x25, "1" is sometimes 80x50, and higher numbers are system-specific
+# modes. Mode "1024" is a special code that sets RefindPlus not to use
+# text mode spcifically but instead use whatever mode was in use when
+# it was launched. If an invalid mode is specified, RefindPlus will
+# pause booting to display information on valid modes instead.
 #
 # CAUTION: On VirtualBox, and perhaps on some real computers, specifying
 # a text mode and uncommenting the "textonly" option without specifying
@@ -565,8 +563,8 @@
 # may not always work. If it does work, an OS or tool can be launched by
 # touching it. In a submenu, touching anywhere launches the current item
 # selected. There is currently no way to select a specific submenu item.
-# This feature is mutually exclusive with the "enable_mouse" feature.
-# If both are active, the most recently read one takes precedence.
+# This option is mutually exclusive with the "enable_mouse" feature. The
+# most recently read one takes precedence when both features are active.
 #
 # Inactive when commented out (Does not enable touch screen support)
 #
@@ -578,7 +576,7 @@
 # not always work. If it does work, an OS or tool can be launched
 # by clicking it with the computer's mouse. Note that this feature
 # is mutually exclusive with "enable_touch" feature and that if both
-# are active, the most recently read one takes precedence.
+# are active, the most recently read one of the two takes precedence.
 #
 # Inactive when commented out (Does not enable mouse support)
 #
@@ -604,8 +602,8 @@
 # overabundance of tools, such as when there are multiple mok_tool
 # entries after installing multiple Linux distributions. A single
 # filename, a full pathname, or a volume identifier (filesystem
-# label, partition name, or partition GUID) and a full pathname
-# can be specified.
+# label, partition name, or partition GUID) along with a full
+# pathname can be specified.
 #
 # Has an empty list (nothing is excluded) when commented out
 #
@@ -864,7 +862,7 @@
 #enable_and_lock_vmx
 
 # Tell a Mac's EFI that Mac OS is about to be launched, even when it is not.
-# This option causes some Macs to initialize their hardware differently than
+# This option causes some Macs to initialise their hardware differently from
 # when a third-party OS is launched normally. In some cases (particularly on
 # Macs with multiple video cards), using this option can cause hardware to
 # work that would not otherwise work. On the other hand, using this option
@@ -1000,7 +998,7 @@ menuentry "Windows 7" {
 # EFI shells are programs just like boot loaders, and can be
 # launched in the same way. A shell can be passed the name of
 # a script that it is to run on the "options" line. The script
-# could initialize hardware and then launch an OS, or it could
+# could initialise hardware and then launch an OS, or it could
 # do something entirely different.
 #
 menuentry "Windows via shell script" {

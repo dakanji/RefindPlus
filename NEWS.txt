@@ -1,25 +1,25 @@
 0.13.2.AE (Pre-Release):
 -----------------------
 - Adds 'NormaliseCSR' Feature
-  * Filters out 'CSR_ALLOW_APPLE_INTERNAL' CSR bit on Macs (for consumer use)
-  * This allows "Over The Air" (OTA) updates on Macs in Mac OS v11.x (Big Sur)
+  * Filters out the 'CSR_ALLOW_APPLE_INTERNAL' bit on Macs (for consumer use)
+  * This allows "Over The Air" (OTA) updates on Macs running Mac OS v11.x (Big Sur)
   * This filtering works on earlier versions of Mac OS which function as usual
-- Improves Upstream Logging Format
-  * Formatted for clarity
 - Improves Handling of CSR Policy Toggling
   * Adds option to clear CSR to facilitate "Over The Air" updates on Mac OS v11.x (Big Sur)
   * Activated by entering "0" in place of "10" for the option to enable SIP
   * This setting is also valid when used on earlier versions of Mac OS
+- Improves Upstream Logging Format
+  * Formatted for clarity
 - Improves Handling of Manual Stanza Icons
   * Optimises search for associated icons to speed loading times up
   * Only undertakes a second search scan when required
 - Improves Selection Image Handling
   * Only calls scaling function when required
-- Updates Default Banner Background Colour
-  * Now set at 191,191,191 RGB to better match the default grey
 - Improves Embedded Image Creation Script
   * Previously updated for Python 3
   * Now updated to be run from any directory
+- Updates Default Banner Background Colour
+  * Now set at 191,191,191 RGB to better match the default grey
 - Aligns Driver and Tools Folders with Upstream
   * Drops '{ARCH}_drivers' and '{ARCH}_tools' Folders for upstream consistency
 - Fixes Fix Default Opaque Setting
