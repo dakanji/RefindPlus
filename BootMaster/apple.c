@@ -347,12 +347,6 @@ EFI_STATUS SetAppleOSInfo (
     CHAR8                   *AppleOSVersion8    = NULL;
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
-        L"Setting Apple OS information, if applicable"
-    );
-    #endif
-
     Status = refit_call3_wrapper(
         gBS->LocateProtocol,
         &apple_set_os_guid,
@@ -364,51 +358,61 @@ EFI_STATUS SetAppleOSInfo (
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Not a Mac; not setting Apple OS information"
+            L"Not a Mac ... Not setting Apple OS information"
         );
         #endif
 
         Status = EFI_SUCCESS;
     }
-    else {
-        if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
-            AppleOSVersion = L"Mac OS";
-            MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
+    else if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL,
+            L"Setting Apple OS information"
+        );
+        #endif
 
-            if (AppleOSVersion) {
+        AppleOSVersion = L"Mac OS";
+        MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
+
+        if (AppleOSVersion) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL,
+                L"Setting Apple OS information to '%s'",
+                AppleOSVersion
+            );
+            #endif
+
+            AppleOSVersion8 = AllocateZeroPool (
+                (StrLen (AppleOSVersion) + 1) * sizeof (CHAR8)
+            );
+            if (!AppleOSVersion8) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL,
-                    L"Setting Apple OS information to '%s'",
-                    AppleOSVersion
+                LOG(1, LOG_THREE_STAR_SEP,
+                    L"Memory Error!!"
                 );
                 #endif
 
-                AppleOSVersion8 = AllocateZeroPool (
-                    (StrLen (AppleOSVersion) + 1) * sizeof (CHAR8)
+                Status = EFI_OUT_OF_RESOURCES;
+            }
+            else {
+                UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
+                Status = refit_call1_wrapper(
+                    SetOs->SetOsVersion, AppleOSVersion8
                 );
-                if (AppleOSVersion8) {
-                    UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
-                    Status = refit_call1_wrapper(
-                        SetOs->SetOsVersion, AppleOSVersion8
-                    );
-                    if (!EFI_ERROR (Status)) {
-                        Status = EFI_SUCCESS;
-                    }
-                    MyFreePool (&AppleOSVersion8);
+                if (!EFI_ERROR (Status)) {
+                    Status = EFI_SUCCESS;
                 }
-                else {
-                    Status = EFI_OUT_OF_RESOURCES;
-                }
+                MyFreePool (&AppleOSVersion8);
+            }
 
-                if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
-                    Status = refit_call1_wrapper(
-                        SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
-                    );
-                }
-                MyFreePool (&AppleOSVersion);
-            } // if (AppleOSVersion)
-        } // if
-    }
+            if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
+                Status = refit_call1_wrapper(
+                    SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
+                );
+            }
+            MyFreePool (&AppleOSVersion);
+        } // if (AppleOSVersion)
+    } // if/else
 
     return Status;
 } // EFI_STATUS SetAppleOSInfo()
