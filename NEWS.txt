@@ -1,4 +1,4 @@
-0.13.2.AE (Pre-Release):
+0.13.2.AE (08 Jun 2021):
 -----------------------
 - Adds 'NormaliseCSR' Feature
   * Filters out the 'CSR_ALLOW_APPLE_INTERNAL' bit on Macs (for consumer use)
