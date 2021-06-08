@@ -1851,16 +1851,6 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show NormaliseCSR Status
-    MsgLog ("\n");
-    MsgLog ("      NormaliseCSR:- ");
-    if (GlobalConfig.NormaliseCSR) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
     // Show ProtectNVRAM Status
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
@@ -1874,6 +1864,16 @@ EFI_STATUS EFIAPI efi_main (
         else {
             MsgLog ("'Inactive'");
         }
+    }
+
+    // Show NormaliseCSR Status
+    MsgLog ("\n");
+    MsgLog ("      NormaliseCSR:- ");
+    if (GlobalConfig.NormaliseCSR) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
     }
 
     // Show ScanOtherESP Status
@@ -2351,21 +2351,22 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
-                        LOG(1, LOG_LINE_THIN_SEP,
-                            L"Booting Mac OS from '%s'",
+                        MsgStr = PoolPrint (
+                            L"Boot Mac OS from '%s'",
                             ourLoaderEntry->Volume->VolName
                         );
-
-                        MsgLog ("  - Boot Mac OS from '%s'", ourLoaderEntry->Volume->VolName);
+                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                        MsgLog ("  - %s", MsgStr);
                     }
                     else {
-                        MsgLog ("  - Boot Mac OS:- '%s'", ourLoaderEntry->LoaderPath);
-
-                        LOG(1, LOG_LINE_THIN_SEP,
-                            L"Booting Mac OS:- '%s'",
+                        MsgStr = PoolPrint (
+                            L"Boot Mac OS:- '%s'",
                             ourLoaderEntry->LoaderPath
                         );
+                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                        MsgLog ("  - %s", MsgStr);
                     }
+                    MyFreePool (&MsgStr);
                     #endif
 
                     // Enable TRIM on non-Apple SSDs if configured to
@@ -2406,14 +2407,15 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    CHAR16 *WinType;
+                    CHAR16 *WinType = NULL;
                     MsgLog ("User Input Received:\n");
                     if (MyStrStr (ourLoaderEntry->Title, L"UEFI") != NULL) {
-                        WinType = L"UEFI";
+                        WinType = StrDuplicate (L"UEFI");
                     }
                     else {
-                        WinType = L"Legacy";
+                        WinType = StrDuplicate (L"Legacy");
                     }
+
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgStr = PoolPrint (
                             L"Boot %s Windows from '%s'",
@@ -2421,8 +2423,7 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry->Volume->VolName
                         );
                         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s");
-                        MyFreePool (&MsgStr);
+                        MsgLog ("  - %s", MsgStr);
                     }
                     else {
                         MsgStr = PoolPrint (
@@ -2431,9 +2432,10 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry->LoaderPath
                         );
                         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s");
-                        MyFreePool (&MsgStr);
+                        MsgLog ("  - %s", MsgStr);
                     }
+                    MyFreePool (&MsgStr);
+                    MyFreePool (&WinType);
                     #endif
                 }
                 else {
@@ -2445,7 +2447,7 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("User Input Received:\n");
-                    MsgLog ("  - %s");
+                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (&MsgStr);
                     #endif
                 }
@@ -2479,7 +2481,7 @@ EFI_STATUS EFIAPI efi_main (
                         ourLegacyEntry->Volume->VolName
                     );
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("  - %s");
+                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (&MsgStr);
                     #endif
                 }
@@ -2490,7 +2492,7 @@ EFI_STATUS EFIAPI efi_main (
                         ourLegacyEntry->Volume->OSName
                     );
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("  - %s");
+                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (&MsgStr);
                     #endif
                 }
@@ -2517,7 +2519,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - %s");
+                MsgLog ("  - %s", MsgStr);
                 MyFreePool (&MsgStr);
 
                 if (egIsGraphicsModeEnabled()) {
@@ -2541,7 +2543,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - %s");
+                MsgLog ("  - %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
