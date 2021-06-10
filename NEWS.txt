@@ -1,5 +1,8 @@
 0.13.2.AF (Pre-Release):
 -----------------------
+- Fixes Tool Path Definitions
+  * Styling had introduced unwanted whitespace into tool paths
+  * This bug was introduced in v0.13.2.AD (Commit 75d8357)
 - Fixes Fix Manual Stanza Handling
   * Linux and "Firmware Reboot" stanzas were not handled properly
   * Fix applied to v0.13.2.AE did not fully resolve the issue
@@ -7,7 +10,7 @@
   * These tools were not loaded when located in some valid directories
   * This bug was introduced in v0.13.2.AE (Commit af1150d)
 - Reverts HiddenItem Fix for Upstream Consistency
-  * Prioritising consistency for interoperability
+  * Prioritising consistency for upstream interoperability
 
 
 0.13.2.AE (08 Jun 2021):
