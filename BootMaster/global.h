@@ -213,10 +213,10 @@ L"EFI\\tools,EFI\\tools_x64,EFI\\tools\\memtest86,\
 EFI\\tools\\memtest,EFI\\memtest86,EFI\\memtest"
 // Directories to search for BootKicker....
 #define BOOTKICKER_LOCATIONS \
-L"\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
+L"\\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
 // Directories to search for CleanNvram....
 #define NVRAMCLEAN_LOCATIONS \
-L"\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
+L"\\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
 // Files that may be Windows recovery files
 #define WINDOWS_RECOVERY_FILES \
 L"EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\

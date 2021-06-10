@@ -1,6 +1,8 @@
 0.13.2.AF (Pre-Release):
 -----------------------
-- PENDING
+- Fixes BootKicker and CleanNvram Tool Loading
+  * These tools were not loaded when located in some valid directories
+  * This bug was introduced in v0.13.2.AE (Commit af1150d)
 
 
 0.13.2.AE (08 Jun 2021):
@@ -27,7 +29,7 @@
   * Now set at 191,191,191 RGB to better match the default grey
 - Aligns Driver and Tools Folders with Upstream
   * Drops '{ARCH}_drivers' and '{ARCH}_tools' folders for upstream consistency
-- Fixes Fix Default Opaque Setting
+- Fixes Default Opaque Setting
   * Images meant to default to "opaque" were set to "transparent" instead.
   * This bug was introduced in v0.13.2.AD (Commit 0edf341)
 - Fixes Windows Boot EFI Variable Handling

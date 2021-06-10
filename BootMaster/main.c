@@ -211,14 +211,18 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define BOOTKICKER_FILES L"\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
-\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\
-\\EFI\\tools\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\
+#define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi,\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\
+\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\BOOT\\tools\\x64_BootKicker.efi,\\EFI\\BOOT\\tools\\BootKicker_x64.efi,\
+\\EFI\\BOOT\\tools\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\
+\\EFI\\tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
+\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\
 \\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
 
-#define NVRAMCLEAN_FILES L"\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
-\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
-\\EFI\\tools\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
+#define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\
+\\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\BOOT\\tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools\\CleanNvram_x64.efi,\
+\\EFI\\BOOT\\tools\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
+\\EFI\\tools\\CleanNvram.efi,\\EFI\\tools_x64\\x64_CleanNvram.efi,\\EFI\\tools_x64\\CleanNvram_x64.efi,\
+\\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
 CHAR16                *VendorInfo           = NULL;
@@ -884,6 +888,12 @@ VOID preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\x64_BootKicker.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\BootKicker_x64.efi");
+        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\BootKicker.efi");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\x64_BootKicker.efi");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
         AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker.efi");
@@ -1040,6 +1050,12 @@ VOID preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\x64_CleanNvram.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\CleanNvram_x64.efi");
+        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\CleanNvram.efi");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\x64_CleanNvram.efi");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram_x64.efi");
         AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram.efi");
