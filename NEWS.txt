@@ -6,6 +6,8 @@
 - Fixes BootKicker and CleanNvram Tool Loading
   * These tools were not loaded when located in some valid directories
   * This bug was introduced in v0.13.2.AE (Commit af1150d)
+- Reverts HiddenItem Fix for Upstream Consistency
+  * Prioritising consistency for interoperability
 
 
 0.13.2.AE (08 Jun 2021):
