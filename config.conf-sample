@@ -893,25 +893,29 @@
 # ("{"). Each entry ends with a close curly brace ("}").
 # Common keywords in stanza are:
 #
-#  disabled  - use alone or set to "yes" to disable this entry.
-#  ostype    - OS type code to determine boot options available by
-#              pressing Insert. Valid values are "MacOS", "Linux",
-#              "Windows", and "XOM". Case-sensitive.
-#  graphics  - set to "on" to enable graphics-mode boot (useful
-#              mainly for MacOS) or "off" for text-mode boot.
-#              The default setting is auto-detected from the
-#              loader filename.
-#  volume    - identifies the filesystem from which subsequent files
-#              are loaded. The volume can be specified by filesystem
-#              label, by partition label, or by partition GUID number
-#              (but *NOT* yet by filesystem UUID number).
-#  icon      - specifies a custom boot loader icon
-#  loader    - identifies the boot loader file
-#  initrd    - Specifies an initial RAM disk file
-#  options   - sets options to be passed to the boot loader; use
-#              quotes if more than one option should be passed or
-#              if any options use characters that might be changed
-#              by RefindPlus' parsing procedures (=, /, #, or tab).
+#  disabled    - use alone or set to "yes" to disable this entry.
+#  ostype      - OS type code to determine boot options available by
+#                pressing Insert. Valid values are "MacOS", "Linux",
+#                "Windows", and "XOM". Case-sensitive.
+#  graphics    - set to "on" to enable graphics-mode boot (useful
+#                mainly for MacOS) or "off" for text-mode boot.
+#                The default setting is auto-detected from the
+#                loader filename.
+#  volume      - identifies the filesystem from which subsequent files
+#                are loaded. The volume can be specified by filesystem
+#                label, by partition label, or by partition GUID number
+#                (but *NOT* yet by filesystem UUID number).
+#  icon        - specifies a custom boot loader icon
+#  loader      - identifies the boot loader file
+#  initrd      - Specifies an initial RAM disk file
+#  options     - sets options to be passed to the boot loader; use
+#                quotes if more than one option should be passed or
+#                if any options use characters that might be changed
+#                by RefindPlus' parsing procedures (=, /, #, or tab).
+#
+#  add_options - As "options" above but only applicable when under a
+#                "submenuentry" keyword. It adds the options to those
+#                set for the main "menuentry" keyword.
 #
 # Note that you can use either DOS/Windows/EFI-style backslashes (\)
 # or Unix-style forward slashes (/) as directory separators. Either
