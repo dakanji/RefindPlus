@@ -1,4 +1,4 @@
-0.13.2.AF (Pre-Release):
+0.13.2.AF (10 Jun 2021):
 -----------------------
 - Fixes Tool Path Definitions
   * Styling had introduced unwanted whitespace into tool paths
