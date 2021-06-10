@@ -324,7 +324,7 @@ MemLogVA (
   if ((UINTN)(mMemLog->Cursor - mMemLog->Buffer) + MEM_LOG_MAX_LINE_SIZE > mMemLog->BufferSize) {
       UINTN Offset;
       // not enough place for max line - make buffer bigger
-      // but not too big (if something gets out of controll)
+      // but not too big (if something gets out of control)
       if (mMemLog->BufferSize + MEM_LOG_INITIAL_SIZE > MEM_LOG_MAX_SIZE) {
       // Out of resources!
         return;

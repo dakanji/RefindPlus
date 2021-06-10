@@ -923,7 +923,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
-                // Set to 0 to ignore 'max' setting
+                // DA_TAG: has been set to 0 so as to ignore the 'max' setting
                 //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
                 //GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
                 GlobalConfig.RequestedScreenWidth  = 0;
@@ -1119,7 +1119,9 @@ VOID AddSubmenu (
     CHAR16              *TitleMenu = NULL;
 
     SubScreen = InitializeSubScreen (Entry);
-    // Set defaults for the new entry; will be modified based on lines read from the config. file....
+
+    // Set defaults for the new entry
+    // Will be modified based on lines read from the config file
     SubEntry = InitializeLoaderEntry (Entry);
 
     if ((SubEntry == NULL) || (SubScreen == NULL)) {
