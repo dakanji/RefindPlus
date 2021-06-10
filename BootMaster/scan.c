@@ -355,25 +355,19 @@ LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
         NewEntry->me.Tag          = TAG_LOADER;
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
-        NewEntry->EfiLoaderPath   = NULL;
         NewEntry->OSType          = 0;
+        NewEntry->EfiLoaderPath   = NULL;
         NewEntry->EfiBootNum      = 0;
-        // DA-TAG: Added
-        NewEntry->Volume          = NULL;
-        NewEntry->InitrdPath      = NULL;
-        NewEntry->LoaderPath      = NULL;
-        NewEntry->LoadOptions     = NULL;
-
         if (Entry != NULL) {
+            NewEntry->LoaderPath      = (Entry->LoaderPath)   ? StrDuplicate (Entry->LoaderPath) : NULL;
             NewEntry->Volume          = Entry->Volume;
-            NewEntry->EfiBootNum      = Entry->EfiBootNum;
             NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
-            NewEntry->LoaderPath      = (Entry->LoaderPath)    ? StrDuplicate (Entry->LoaderPath)           : NULL;
-            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions)          : NULL;
-            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath)           : NULL;
+            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions) : NULL;
+            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath) : NULL;
             NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
+            NewEntry->EfiBootNum      = Entry->EfiBootNum;
         }
-    } // if
+    }
 
     return (NewEntry);
 } // LOADER_ENTRY *InitializeLoaderEntry()

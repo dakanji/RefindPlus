@@ -1204,6 +1204,7 @@ LOADER_ENTRY * AddStanzaEntries (
     CHAR16        **TokenList;
     CHAR16         *LoadOptions       = NULL;
     BOOLEAN         HasPath           = FALSE;
+    BOOLEAN         FirmwareBootNum   = FALSE;
     BOOLEAN         DefaultsSet       = FALSE;
     BOOLEAN         AddedSubmenu      = FALSE;
     REFIT_VOLUME   *CurrentVolume     = Volume;
@@ -1219,11 +1220,6 @@ LOADER_ENTRY * AddStanzaEntries (
     Entry->Title = (Title != NULL)
         ? StrDuplicate (Title)
         : StrDuplicate (L"Unknown");
-    Entry->me.Title = PoolPrint (
-        L"Boot %s from %s",
-        (Title != NULL) ? Title : L"Unknown",
-        CurrentVolume->VolName
-    );
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
     Entry->Volume          = CurrentVolume;
@@ -1260,8 +1256,6 @@ LOADER_ENTRY * AddStanzaEntries (
 
                     // Discard default options, if any
                     MyFreePool (&Entry->LoadOptions);
-                    Entry->LoadOptions = NULL;
-
                     DefaultsSet = TRUE;
                 }
             }
@@ -1281,11 +1275,6 @@ LOADER_ENTRY * AddStanzaEntries (
                         (CurrentVolume->IsReadable) &&
                         (CurrentVolume->RootDir)
                     ) {
-                        MyFreePool (&Entry->me.Title);
-                        Entry->me.Title = PoolPrint (
-                            L"Boot %s from %s", (Title != NULL) ? Title : L"Unknown",
-                            CurrentVolume->VolName
-                        );
                         Entry->Volume        = CurrentVolume;
                         Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
                     }
@@ -1369,15 +1358,10 @@ LOADER_ENTRY * AddStanzaEntries (
 
                 MyFreePool (&Entry->LoaderPath);
                 MyFreePool (&Entry->EfiLoaderPath);
-                MyFreePool (&Entry->me.Title);
                 MyFreePool (&Entry->LoadOptions);
                 MyFreePool (&Entry->InitrdPath);
+
                 Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
-                Entry->InitrdPath    = NULL;
-                Entry->LoadOptions   = NULL;
-                Entry->LoaderPath    = NULL;
-                Entry->EfiLoaderPath = NULL;
-                Entry->me.Title      = StrDuplicate (Entry->Title);
                 Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
                 Entry->me.Tag        = TAG_FIRMWARE_LOADER;
 
@@ -1386,7 +1370,8 @@ LOADER_ENTRY * AddStanzaEntries (
                     Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
                 }
 
-                DefaultsSet = TRUE;
+                DefaultsSet     = TRUE;
+                FirmwareBootNum = TRUE;
             }
             else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
@@ -1406,8 +1391,28 @@ LOADER_ENTRY * AddStanzaEntries (
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
 
+    // Free the last token lne (Closing Brace)
+    if (StrCmp (TokenList[0], L"}") == 0) {
+        FreeTokenLine (&TokenList, &TokenCount);
+    }
+
     // Diabled entries are returned "as is" as will be discarded later
     if (Entry->Enabled) {
+        // Set Screen Title
+        if (!FirmwareBootNum && Entry->Volume->VolName) {
+            Entry->me.Title = PoolPrint (
+                L"Boot %s from %s",
+                (Title != NULL) ? Title : L"Unknown",
+                Entry->Volume->VolName
+            );
+        }
+        else {
+            Entry->me.Title = PoolPrint (
+                L"Boot %s",
+                (Title != NULL) ? Title : L"Unknown"
+            );
+        }
+
         // Set load options, if any
         if (LoadOptions && StrLen (LoadOptions) > 0) {
             MyFreePool (&Entry->LoadOptions);
