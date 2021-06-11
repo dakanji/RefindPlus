@@ -1281,6 +1281,7 @@ LOADER_ENTRY * AddStanzaEntries (
     CHAR16       *Title
 ) {
     UINTN           TokenCount;
+    CHAR16         *OurEfiBootNumber;
     CHAR16        **TokenList;
     CHAR16         *LoadOptions       = NULL;
     BOOLEAN         HasPath           = FALSE;
@@ -1436,13 +1437,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->Title);
                 #endif
 
-                MyFreePool (&Entry->LoaderPath);
-                MyFreePool (&Entry->EfiLoaderPath);
-                MyFreePool (&Entry->LoadOptions);
-                MyFreePool (&Entry->InitrdPath);
-
                 Entry->me.Tag        = TAG_FIRMWARE_LOADER;
-                Entry->EfiBootNum    = StrToHex (TokenList[1], 0, 16);
                 Entry->me.BadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_EFI);
 
                 if (Entry->me.BadgeImage == NULL) {
@@ -1450,8 +1445,9 @@ LOADER_ENTRY * AddStanzaEntries (
                     Entry->me.BadgeImage = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BADGE]);
                 }
 
-                DefaultsSet     = TRUE;
-                FirmwareBootNum = TRUE;
+                DefaultsSet      = TRUE;
+                FirmwareBootNum  = TRUE;
+                OurEfiBootNumber = StrDuplicate (TokenList[1]);
             }
             else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
@@ -1488,10 +1484,19 @@ LOADER_ENTRY * AddStanzaEntries (
         }
         else {
             if (FirmwareBootNum) {
+                // Clear potentially wrongly set items
+                MyFreePool (&Entry->LoaderPath);
+                MyFreePool (&Entry->EfiLoaderPath);
+                MyFreePool (&Entry->LoadOptions);
+                MyFreePool (&Entry->InitrdPath);
+
                 Entry->me.Title = PoolPrint (
                     L"Boot %s via Firmware Boot Number",
                     (Title != NULL) ? Title : L"Unknown"
                 );
+
+                Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
+                MyFreePool (&OurEfiBootNumber);
             }
             else {
                 Entry->me.Title = PoolPrint (
