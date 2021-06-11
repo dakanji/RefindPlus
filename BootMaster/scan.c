@@ -2515,7 +2515,8 @@ VOID ScanForTools (VOID) {
     CHAR16           *Description;
     UINT64            osind;
     UINT32            CsrValue;
-    BOOLEAN           FoundTool;
+    BOOLEAN           FoundTool = FALSE;
+    BOOLEAN           OtherFind = FALSE;
     REFIT_MENU_ENTRY *TempMenuEntry;
 
     #if REFIT_DEBUG > 0
@@ -2790,6 +2791,7 @@ VOID ScanForTools (VOID) {
 
             case TAG_SHELL:
                 j = 0;
+                OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
                     if (FileExists (SelfVolume->RootDir, FileName)) {
                         if (IsValidTool (SelfVolume, FileName)) {
@@ -2812,14 +2814,16 @@ VOID ScanForTools (VOID) {
                             );
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            if (j > 0) {
-                                MsgLog ("\n            ");
+                            if (OtherFind) {
+                                MsgLog ("\n                               ");
                             }
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
                             #endif
+
+                            OtherFind = TRUE;
                         } // if IsValidTool
                     }
 
@@ -2861,10 +2865,10 @@ VOID ScanForTools (VOID) {
                             );
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (j > 0) {
-                                MsgLog ("\n            ");
+                                MsgLog ("\n                               ");
                             }
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
@@ -2886,6 +2890,7 @@ VOID ScanForTools (VOID) {
 
             case TAG_GDISK:
                 j = 0;
+                OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (GDISK_NAMES, j++)) != NULL) {
                     if (FileExists (SelfVolume->RootDir, FileName)) {
                         if (IsValidTool (SelfVolume, FileName)) {
@@ -2909,14 +2914,16 @@ VOID ScanForTools (VOID) {
 
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            if (j > 0) {
-                                MsgLog ("\n            ");
+                            if (OtherFind) {
+                                MsgLog ("\n                               ");
                             }
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
                             #endif
+
+                            OtherFind = TRUE;
                         } // if IsValidTool
                     } // if FileExists
 
@@ -2933,6 +2940,7 @@ VOID ScanForTools (VOID) {
 
             case TAG_NETBOOT:
                 j = 0;
+                OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
@@ -2954,14 +2962,16 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (j > 0) {
-                            MsgLog ("\n            ");
+                        if (OtherFind) {
+                            MsgLog ("\n                               ");
                         }
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
+
+                        OtherFind = TRUE;
                     } // if IsValidTool
 
                     MyFreePool (&FileName);
@@ -2977,6 +2987,7 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_APPLE_RECOVERY:
+                OtherFind = FALSE;
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     j = 0;
                     while (
@@ -3006,14 +3017,16 @@ VOID ScanForTools (VOID) {
                                 );
 
                                 #if REFIT_DEBUG > 0
-                                ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                                ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                                 LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                                if (j > 0) {
-                                    MsgLog ("\n            ");
+                                if (OtherFind) {
+                                    MsgLog ("\n                               ");
                                 }
                                 MsgLog ("%s", ToolStr);
                                 MyFreePool (&ToolStr);
                                 #endif
+
+                                OtherFind = TRUE;
                             } // if IsValidTool
                         } // if Volumes[VolumeIndex]
                     } // while
@@ -3029,6 +3042,7 @@ VOID ScanForTools (VOID) {
 
             case TAG_WINDOWS_RECOVERY:
                 j = 0;
+                OtherFind = FALSE;
                 while (
                     (FileName = FindCommaDelimited (GlobalConfig.WindowsRecoveryFiles, j++)) != NULL
                 ) {
@@ -3063,15 +3077,17 @@ VOID ScanForTools (VOID) {
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added %s:- '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            if (j > 0) {
-                                MsgLog ("\n            ");
+                            if (OtherFind) {
+                                MsgLog ("\n                               ");
                             }
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
                             #endif
-                        } // if
+
+                            OtherFind = TRUE;
+                        } // if Volumes[VolumeIndex]->RootDir
                     } // for
 
                     MyFreePool (&FileName);
