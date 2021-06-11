@@ -1,6 +1,9 @@
 0.13.2.AG (Pre-Release):
 -----------------------
-- PENDING
+- Improves Tool Path Definitions
+  * Extends fixes applied in v0.13.2.AF
+- Extends Manual Stanza Handling Fixes
+  * Enhancements to "menuentry" sections applied to "submenuentry" sections
 
 
 0.13.2.AF (10 Jun 2021):
