@@ -1066,6 +1066,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
           GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"disable_tag_help")) {
+          GlobalConfig.DisableTagHelp = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
           GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }
@@ -1088,6 +1091,56 @@ VOID ReadConfig (
 
         FreeTokenLine (&TokenList, &TokenCount);
     }
+
+    // "TagHelp" is active
+    if (!GlobalConfig.DisableTagHelp) {
+        // "TagHelp" feature is active ... Set "found" flag to false
+        BOOLEAN HiddenTagsFlag = FALSE;
+        // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
+        for (i = 0; i < NUM_TOOLS; i++) {
+            switch (GlobalConfig.ShowTools[i]) {
+                case TAG_SHUTDOWN:
+                case TAG_REBOOT:
+                case TAG_ABOUT:
+                case TAG_EXIT:
+                case TAG_FIRMWARE:
+                case TAG_SHELL:
+                case TAG_GPTSYNC:
+                case TAG_GDISK:
+                case TAG_NETBOOT:
+                case TAG_APPLE_RECOVERY:
+                case TAG_WINDOWS_RECOVERY:
+                case TAG_MOK_TOOL:
+                case TAG_FWUPDATE_TOOL:
+                case TAG_CSR_ROTATE:
+                case TAG_INSTALL:
+                case TAG_BOOTORDER:
+                case TAG_PRE_BOOTKICKER:
+                case TAG_PRE_NVRAMCLEAN:
+                case TAG_MEMTEST:
+                    // Continue checking
+                    break;
+                case TAG_HIDDEN:
+                    // Tag to end search ... "hidden_tags" tool is already set
+                    HiddenTagsFlag = TRUE;
+                    break;
+                default:
+                    // Setup help needed ... "hidden_tags" tool is not set
+                    GlobalConfig.ShowTools[i] = TAG_HIDDEN;
+                    GlobalConfig.HiddenTags   = TRUE;
+
+                    // Tag to end search ... "hidden_tags" tool is now set
+                    HiddenTagsFlag = TRUE;
+                    break;
+            }
+
+            if (HiddenTagsFlag) {
+                // Halt search loop
+                break;
+            }
+        }
+    }
+
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles)) {
         MergeStrings (&(GlobalConfig.DontScanFiles), GlobalConfig.WindowsRecoveryFiles, L',');
     }

@@ -2077,51 +2077,46 @@ VOID ScanForBootloaders (
         BdsAddNonExistingLegacyBootOptions();
     } // if
 
+    if (GlobalConfig.HiddenTags) {
+        // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
+        // to include contents of EFI HiddenTags and HiddenLegacy variables so that we do not
+        // have to re-load these EFI variables in several functions called from this one. To
+        // do this, we must be able to restore the original contents, so back them up first.
+        // We do *NOT* do this with the GlobalConfig.DontScanFirmware and
+        // GlobalConfig.DontScanTools variables because they are used in only one function
+        // each, so it is easier to create a temporary variable for the merged contents
+        // there and not modify the global variable.
+        OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
+        OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
 
-    // Code below should really be wrapped in a conditional so that hidden items can be unhidden
-    // But rEFInd has worked without this for so long it is unlikely to change
-    //if (GlobalConfig.HiddenTags) {
+        // Add hidden tags to two GlobalConfig.DontScan* variables....
+        HiddenTags = ReadHiddenTags (L"HiddenTags");
+        if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL,
+                L"Merging to 'Dont Scan Files':- '%s'",
+                HiddenTags
+            );
+            #endif
 
-    // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
-    // to include contents of EFI HiddenTags and HiddenLegacy variables so that we don't
-    // have to re-load these EFI variables in several functions called from this one.
-    // To do this, we must be able to restore the original contents, so back them up
-    // first.
-    // We do *NOT* do this with GlobalConfig.DontScanFirmware and
-    // GlobalConfig.DontScanTools variables because they're used in only one function
-    // each, so it's easier to create a temporary variable for the merged contents
-    // there and not modify the global variable.
-    OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
-    OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
+            MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
+        }
+        MyFreePool (&HiddenTags);
 
-    // Add hidden tags to two GlobalConfig.DontScan* variables....
-    HiddenTags = ReadHiddenTags (L"HiddenTags");
-    if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
-            L"Merging to 'Dont Scan Files':- '%s'",
-            HiddenTags
-        );
-        #endif
+        HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
+        if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL,
+                L"Merging to 'Dont Scan Volumes':- '%s'",
+                HiddenLegacy
+            );
+            #endif
 
-        MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
-    }
-    MyFreePool (&HiddenTags);
+            MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
+        }
 
-    HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
-    if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
-            L"Merging to 'Dont Scan Volumes':- '%s'",
-            HiddenLegacy
-        );
-        #endif
-
-        MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
-    }
-    MyFreePool (&HiddenLegacy);
-
-    //} // if GlobalConfig.HiddenTags
+        MyFreePool (&HiddenLegacy);
+    } // if GlobalConfig.HiddenTags
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {

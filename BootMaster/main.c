@@ -146,6 +146,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SyncAPFS = */ FALSE,
     /* ProtectNVRAM = */ FALSE,
     /* ScanOtherESP = */ FALSE,
+    /* DisableTagHelp = */ FALSE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,

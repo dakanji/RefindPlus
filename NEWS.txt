@@ -1,5 +1,8 @@
 0.13.2.AG (Pre-Release):
 -----------------------
+- Adds 'TagHelp' Feature
+  * Ensures HiddenTags can always be unhidden
+  * Active by default but can be disabled with the "disable_tag_help" token
 - Improves Tool Path Definitions
   * Extends fixes applied in v0.13.2.AF
 - Extends Manual Stanza Handling Fixes

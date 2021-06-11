@@ -49,6 +49,7 @@ continue_on_warning   |Proceeds as if a key is pressed after screen warnings (fo
 direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs.
 disable_amfi          |Disables AMFI Checks on Mac OS if required.
 disable_compat_check  |Disables Mac version compatibility checks if required.
+disable_tag_help      |Disables feature that ensures hidden tags can always be unhidden.
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required.
 ignore_previous_boot  |Disables saving the last booted loader if not required.
 ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required.
@@ -84,6 +85,7 @@ Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 ar
 - **"csr_values" Token:** A value of `0` can be set to ensure "Over The Air" (OTA) updates from Apple when running Mac OS v11.x (Big Sur) with SIP enabled.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` token is set to automatic detection.
+- **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to have this feature can activate the RefindPlus-Specific `disable_tag_help` token.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `scan_other_esp` configuration token.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to "submenuentry" items which can be enabled or disabled separately.
 
