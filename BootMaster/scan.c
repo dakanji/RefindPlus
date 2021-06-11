@@ -587,13 +587,21 @@ VOID SetLoaderDefaults (
     LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume
 ) {
     CHAR16 *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
+    CHAR16 *MsgStr = NULL;
     CHAR16  ShortcutLetter = 0;
 
     NameClues = Basename (LoaderPath);
     PathOnly  = FindPath (LoaderPath);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Get Default Loader Settings for '%s'", Entry->me.Title);
+    if (Entry->me.Title) {
+        MsgStr = StrDuplicate (Entry->me.Title);
+    }
+    else {
+        MsgStr = StrDuplicate (Entry->Title);
+    }
+    LOG(3, LOG_LINE_NORMAL, L"Get Default Loader Settings for '%s'", MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     if (Volume->DiskKind == DISK_KIND_NET) {

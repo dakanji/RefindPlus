@@ -1491,7 +1491,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 MyFreePool (&Entry->InitrdPath);
 
                 Entry->me.Title = PoolPrint (
-                    L"Boot %s via Firmware Boot Number",
+                    L"Boot %s (Firmware Boot Number)",
                     (Title != NULL) ? Title : L"Unknown"
                 );
 
