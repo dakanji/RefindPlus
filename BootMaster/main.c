@@ -2233,7 +2233,7 @@ EFI_STATUS EFIAPI efi_main (
                 TerminateScreen();
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_SEPARATOR, L"Restarting System");
+                LOG(1, LOG_STAR_SEPARATOR, L"Restarting System");
                 #endif
 
                 refit_call4_wrapper(
@@ -2244,7 +2244,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP, L"Restart FAILED!!");
+                LOG(1, LOG_LINE_NORMAL, L"Restart FAILED!!");
                 #endif
 
                 MainLoopRunning = FALSE;   // just in case we get this far
@@ -2252,7 +2252,7 @@ EFI_STATUS EFIAPI efi_main (
 
             case TAG_SHUTDOWN: // Shut Down
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_SEPARATOR, L"Shutting System Down");
+                LOG(1, LOG_STAR_SEPARATOR, L"Shutting System Down");
 
                 MsgLog ("User Input Received:\n");
                 if (egIsGraphicsModeEnabled()) {
@@ -2273,7 +2273,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP, L"Shutdown FAILED!!");
+                LOG(1, LOG_LINE_NORMAL, L"Shutdown FAILED!!");
                 #endif
 
                 MainLoopRunning = FALSE;   // just in case we get this far

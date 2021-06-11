@@ -1004,7 +1004,7 @@ LOADER_ENTRY * AddLoaderEntry (
             MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
         }
 
-        LOG(3, LOG_THREE_STAR_MID, L"Successfully Created Menu Entry for '%s'", Entry->Title);
+        LOG(3, LOG_THREE_STAR_MID, L"Successfully Created Menu Entry for %s", Entry->Title);
         #endif
     }
     else {
@@ -2371,9 +2371,8 @@ BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL,
-        L"Checking validity of tool '%s' on '%s'",
-        PathName,
-        BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName
+        L"Checking tool validity:- '%s'",
+        PathName
     );
     #endif
 
@@ -2417,14 +2416,6 @@ BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
     MyFreePool (&TestPathName);
     MyFreePool (&TestFileName);
     MyFreePool (&DontScanTools);
-
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL,
-        L"Done checking validity of tool '%s' on '%s'",
-        PathName,
-        BaseVolume->PartName ? BaseVolume->PartName : BaseVolume->VolName
-    );
-    #endif
 
     return retval;
 } // BOOLEAN IsValidTool()
@@ -2818,7 +2809,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
-                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");
                             }
@@ -2840,6 +2831,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     MsgLog ("WARN: Could Not Find Tool:- '%s'", ToolName);
                 }
+                LOG(1, LOG_THREE_STAR_END, L"Scanned Firmware Defined Shell Options");
                 #endif
 
                 break;
