@@ -41,7 +41,7 @@
 # Note that this option is forced on whenever text output is required,
 # such as when running EFI Shell or, whenever RefindPlus is changed to
 # text mode as part of its operations (mainly to show error messages).
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not use a custom text renderer)
 #
@@ -49,7 +49,7 @@
 
 # Adds the UGA Protocol to GOP when absent. This option allows the RefindPlus
 # screen when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not add UGA to GOP)
 #
@@ -65,7 +65,7 @@
 # GPUs with system firmware support. This option replaces GOP on the
 # ConsoleOut Handle with one from a GPU Handle on such models when
 # running capable GPUs but without full system firmware support.
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not provide ConsoleOut GOP)
 #
@@ -87,13 +87,13 @@
 #
 #reload_gop
 
-# Enable a built-in GOP renderer which may provide better performance
-# and fix rendering issues on some GPU/firmware combinations such as
-# the AMD Radeon VII and some AMD Radeon RX 5700 XT units. However,
-# this should only be used when there is an obvious benefit; as it
+# Use a built-in GOP renderer which may provide enhanced performance
+# and fix rendering issues on certain specific GPU models including
+# the Radeon VII and some versions of the Radeon 5700 XT. However,
+# this should only be used when there is an obvious benefit as it
 # may result in glitches in the pre-boot configuration screen or
 # slow scrolling response on booting into the operating system.
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not use the built-in GOP)
 #
@@ -151,7 +151,7 @@
 # Mac OS version. This ensures that any changes made to APFS drivers for each specific
 # Mac OS version are accomodated, compared to using one driver no matter which specific
 # Mac OS version is being loaded. This setting only applies to Mac OS and only as needed.
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
 #
@@ -162,7 +162,7 @@
 # This option only acts on apfs drivers loaded by RefindPlus using "supply_apfs".
 # This option may impact other text output and should be disabled if such
 # negative effects are observed. This setting only applies to Mac OS.
-# NB: This functionality is only available on TianoCore Builds
+# NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not suppress verbose APFS text)
 #
