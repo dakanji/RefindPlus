@@ -2105,7 +2105,7 @@ VOID ScanForBootloaders (
         if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL,
-                L"Merging to 'Dont Scan Files':- '%s'",
+                L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
                 HiddenTags
             );
             #endif
@@ -2118,7 +2118,7 @@ VOID ScanForBootloaders (
         if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL,
-                L"Merging to 'Dont Scan Volumes':- '%s'",
+                L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
                 HiddenLegacy
             );
             #endif
