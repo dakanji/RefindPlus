@@ -26,7 +26,7 @@
 # the "use_nvram" token writes variables to the filesystem instead, limiting this.
 # On some setups however, such as when the "default_selection" token is set, such
 # writes are not required to start with. When the "ignore_previous_boot" setting
-# is active, RefindPlus will not save the "PreviousBoot" variable to the NVRAM.
+# is active, RefindPlus will not store the "PreviousBoot" variable anywhere.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
@@ -169,8 +169,8 @@
 #silence_apfs
 
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
-# of APFS volumes by requiring this to run the Mac OS Boot Loader in Mac OS v11.x (Big Sur) when
-# SIP is enabled. Attempts to run the Mac OS 11.x Boot Loader directly with SIP enabled result
+# of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
+# SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
 # in kernel panics. When this option is activated, RefindPlus will map APFS volumes to their
 # respective "PreBoot" partitions which will be used to boot such Mac OS instances and the
 # associated "PreBoot" partitions will be hidden from view. This option also allows direct
@@ -238,13 +238,13 @@
 
 # As of Mac OS v11.x (Big Sur), the previous default SIP/SSV setttings which had all included
 # the "CSR_ALLOW_APPLE_INTERNAL" bit may leave Macs not able to receive "Over The Air" (OTA)
-# updates from Apple. Mac OS v11.x (Big Sur) removes this bit on boot if detected but this
+# updates from Apple. Mac OS v11.x (and later) remove this bit on boot if detected but the
 # attempted removal may fail when booting into Mac OS via non-standard path ways such as
 # RefindPlus. It is also possible that Apple will remove this remediation feature once
 # Mac models supporting Mac OS v10.15 (Catalina) are deemed by Apple to be obsolete.
 # When this token is set, RefindPlus will remove this bit from the saved CSR bits
 # when booting into Mac OS, OpenCore or Clover similar to the process undertaken
-# in Mac OS v11.x (Big Sur). This setting can also be used with older versions.
+# in Mac OS v11.x and later. This setting can also be used with older versions.
 #
 # Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
 #
