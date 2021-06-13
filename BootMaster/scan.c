@@ -587,8 +587,11 @@ VOID SetLoaderDefaults (
     LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume
 ) {
     CHAR16 *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
-    CHAR16 *MsgStr = NULL;
     CHAR16  ShortcutLetter = 0;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
+    #endif
 
     NameClues = Basename (LoaderPath);
     PathOnly  = FindPath (LoaderPath);
