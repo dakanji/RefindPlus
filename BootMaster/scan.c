@@ -577,9 +577,13 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
 // code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
 // that will (with luck) work fairly automatically.
 VOID SetLoaderDefaults (
-    LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume
+    LOADER_ENTRY *Entry,
+    CHAR16       *LoaderPath,
+    REFIT_VOLUME *Volume
 ) {
-    CHAR16 *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
+    CHAR16 *PathOnly;
+    CHAR16 *NameClues;
+    CHAR16 *OSIconName     = NULL;
     CHAR16  ShortcutLetter = 0;
 
     #if REFIT_DEBUG > 0
@@ -605,7 +609,7 @@ VOID SetLoaderDefaults (
     }
     else {
         if (Entry->me.Image == NULL) {
-            NoExtension = StripEfiExtension (NameClues);
+            CHAR16 *NoExtension = StripEfiExtension (NameClues);
             if (NoExtension != NULL) {
                 // locate a custom icon for the loader
                 // Anything found here takes precedence over the "hints" in the OSIconName variable
@@ -624,6 +628,7 @@ VOID SetLoaderDefaults (
                 if (!Entry->me.Image) {
                     Entry->me.Image = egCopyImage (Volume->VolIconImage);
                 }
+                MyFreePool (&NoExtension);
             }
         }
 
@@ -635,7 +640,7 @@ VOID SetLoaderDefaults (
         }
         #endif
 
-        Temp = FindLastDirName (LoaderPath);
+        CHAR16 *Temp = FindLastDirName (LoaderPath);
         MergeStrings (&OSIconName, Temp, L',');
         MyFreePool (&Temp);
         Temp = NULL;
@@ -662,7 +667,7 @@ VOID SetLoaderDefaults (
                 }
                 #endif
 
-                MergeWords(&OSIconName, Volume->FsName, L',');
+                MergeWords (&OSIconName, Volume->FsName, L',');
             }
             else {
                 if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
@@ -672,10 +677,11 @@ VOID SetLoaderDefaults (
                     }
                     #endif
 
-                    MergeWords(&OSIconName, Volume->VolName, L',');
+                    MergeWords (&OSIconName, Volume->VolName, L',');
                 }
             }
         }
+
         if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
             #if REFIT_DEBUG > 0
             if (Entry->me.Image == NULL) {
@@ -683,7 +689,7 @@ VOID SetLoaderDefaults (
             }
             #endif
 
-            MergeWords(&OSIconName, Volume->PartName, L',');
+            MergeWords (&OSIconName, Volume->PartName, L',');
         }
     } // if/else network boot
 
@@ -799,7 +805,6 @@ VOID SetLoaderDefaults (
 
     MyFreePool (&PathOnly);
     MyFreePool (&OSIconName);
-    MyFreePool (&NoExtension);
     MyFreePool (&NameClues);
 } // VOID SetLoaderDefaults()
 
