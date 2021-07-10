@@ -624,7 +624,9 @@ VOID ReadConfig (
        MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
        MyFreePool (&GlobalConfig.DontScanVolumes);
        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
+       MyFreePool (&GlobalConfig.WindowsRecoveryFiles);
        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
+       MyFreePool (&GlobalConfig.MacOSRecoveryFiles);
        GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
        MyFreePool (&GlobalConfig.DefaultSelection);
        GlobalConfig.DefaultSelection = StrDuplicate (L"+");
@@ -1090,7 +1092,8 @@ VOID ReadConfig (
         }
 
         FreeTokenLine (&TokenList, &TokenCount);
-    }
+    } // for
+    FreeTokenLine (&TokenList, &TokenCount);
 
     // "TagHelp" is active
     if (!GlobalConfig.DisableTagHelp) {
@@ -1229,11 +1232,7 @@ VOID AddSubmenu (
 
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
-
-    // Free the last token lne (Closing Brace)
-    if (StrCmp (TokenList[0], L"}") == 0) {
-        FreeTokenLine (&TokenList, &TokenCount);
-    }
+    FreeTokenLine (&TokenList, &TokenCount);
 
     if (!SubEntry->Enabled) {
         egFreeImage (SubEntry->me.Image);
@@ -1466,11 +1465,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
         FreeTokenLine (&TokenList, &TokenCount);
     } // while()
-
-    // Free the last token lne (Closing Brace)
-    if (StrCmp (TokenList[0], L"}") == 0) {
-        FreeTokenLine (&TokenList, &TokenCount);
-    }
+    FreeTokenLine (&TokenList, &TokenCount);
 
     // Diabled entries are returned "as is" as will be discarded later
     if (Entry->Enabled) {
@@ -1663,6 +1658,8 @@ VOID ScanUserConfigured (
 
             FreeTokenLine (&TokenList, &TokenCount);
         } // while()
+        FreeTokenLine (&TokenList, &TokenCount);
+
     } // if()
 } // VOID ScanUserConfigured()
 
@@ -1738,6 +1735,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 } // if
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while
+            FreeTokenLine (&TokenList, &TokenCount);
 
             if (Options->Buffer) {
                 Options->Current8Ptr  = (CHAR8 *)Options->Buffer;

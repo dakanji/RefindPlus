@@ -218,27 +218,38 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
 // OSIconName list. Intended for adding Linux distribution clues gleaned from
 // /etc/lsb-release and /etc/os-release files.
 static
-VOID ParseReleaseFile(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *FileName) {
-    UINTN       FileSize = 0;
-    REFIT_FILE  File;
+VOID ParseReleaseFile (
+    CHAR16       **OSIconName,
+    REFIT_VOLUME  *Volume,
+    CHAR16        *FileName
+) {
+    UINTN         FileSize   = 0;
+    UINTN         TokenCount = 0;
     CHAR16      **TokenList;
-    UINTN       TokenCount = 0;
+    REFIT_FILE    File;
 
-    if ((Volume == NULL) || (FileName == NULL) || (OSIconName == NULL) || (*OSIconName == NULL))
+    if ((Volume == NULL) || (FileName == NULL) ||
+        (OSIconName == NULL) || (*OSIconName == NULL)
+    ) {
         return;
+    }
 
-    if (FileExists(Volume->RootDir, FileName) &&
-        (RefitReadFile(Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
+    if (FileExists (Volume->RootDir, FileName) &&
+        (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
         do {
-            TokenCount = ReadTokenLine(&File, &TokenList);
-            if ((TokenCount > 1) && (MyStriCmp(TokenList[0], L"ID") ||
-                                     MyStriCmp(TokenList[0], L"NAME") ||
-                                     MyStriCmp(TokenList[0], L"DISTRIB_ID"))) {
-                MergeWords(OSIconName, TokenList[1], L',');
-            } // if
-            FreeTokenLine(&TokenList, &TokenCount);
+            TokenCount = ReadTokenLine (&File, &TokenList);
+            if ((TokenCount > 1) &&
+                (MyStriCmp (TokenList[0], L"ID") ||
+                MyStriCmp (TokenList[0], L"NAME") ||
+                MyStriCmp (TokenList[0], L"DISTRIB_ID"))
+            ) {
+                MergeWords (OSIconName, TokenList[1], L',');
+            }
+
+            FreeTokenLine (&TokenList, &TokenCount);
         } while (TokenCount > 0);
         MyFreePool (&File.Buffer);
+
     } // if
 } // VOID ParseReleaseFile()
 
@@ -257,35 +268,39 @@ VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *L
 } // VOID GuessLinuxDistribution()
 
 // Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
-VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOLUME *Volume) {
+VOID AddKernelToSubmenu (
+    LOADER_ENTRY *TargetLoader,
+    CHAR16       *FileName,
+    REFIT_VOLUME *Volume
+) {
     REFIT_FILE          *File;
-    CHAR16              **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
+    CHAR16             **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
     CHAR16              *Path = NULL, *Title, *KernelVersion;
     REFIT_MENU_SCREEN   *SubScreen;
     LOADER_ENTRY        *SubEntry;
-    UINTN               TokenCount;
+    UINTN                TokenCount;
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
     #endif
 
-    File = ReadLinuxOptionsFile(TargetLoader->LoaderPath, Volume);
+    File = ReadLinuxOptionsFile (TargetLoader->LoaderPath, Volume);
     if (File != NULL) {
         SubScreen     = TargetLoader->me.SubScreen;
-        InitrdName    = FindInitrd(FileName, Volume);
-        KernelVersion = FindNumbers(FileName);
+        InitrdName    = FindInitrd (FileName, Volume);
+        KernelVersion = FindNumbers (FileName);
 
-        while ((TokenCount = ReadTokenLine(File, &TokenList)) > 1) {
-            ReplaceSubstring(&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+        while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
+            ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry (TargetLoader);
 
             // DA_TAG: InitializeLoaderEntry can return NULL
             if (SubEntry != NULL) {
-                SplitPathName(FileName, &VolName, &Path, &SubmenuName);
-                MergeStrings(&SubmenuName, L": ", '\0');
-                MergeStrings(
+                SplitPathName (FileName, &VolName, &Path, &SubmenuName);
+                MergeStrings (&SubmenuName, L": ", '\0');
+                MergeStrings (
                     &SubmenuName,
-                    TokenList[0] ? StrDuplicate(TokenList[0]) : StrDuplicate(L"Boot Linux"),
+                    TokenList[0] ? StrDuplicate (TokenList[0]) : StrDuplicate (L"Boot Linux"),
                     '\0'
                 );
 
@@ -293,16 +308,15 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
                 MyFreePool (&SubEntry->LoadOptions);
                 SubEntry->LoadOptions = NULL;
 
-                Title = StrDuplicate(SubmenuName);
-                LimitStringLength(Title, MAX_LINE_LENGTH);
+                Title = StrDuplicate (SubmenuName);
+                LimitStringLength (Title, MAX_LINE_LENGTH);
                 SubEntry->me.Title    = Title;
-                SubEntry->LoadOptions = AddInitrdToOptions(TokenList[1], InitrdName);
+                SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
                 SubEntry->LoaderPath  = StrDuplicate (FileName);
-                CleanUpPathNameSlashes(SubEntry->LoaderPath);
+                CleanUpPathNameSlashes (SubEntry->LoaderPath);
                 SubEntry->Volume = Volume;
-                FreeTokenLine(&TokenList, &TokenCount);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-                AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -311,7 +325,10 @@ VOID AddKernelToSubmenu(LOADER_ENTRY * TargetLoader, CHAR16 *FileName, REFIT_VOL
 
                 break;
             }
+
+            FreeTokenLine (&TokenList, &TokenCount);
         } // while
+        FreeTokenLine (&TokenList, &TokenCount);
 
         MyFreePool (&VolName);
         MyFreePool (&Path);

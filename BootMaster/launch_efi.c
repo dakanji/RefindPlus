@@ -290,6 +290,7 @@ EFI_STATUS StartEFIImage (
             NULL, 0,
             &ChildImageHandle
         );
+        MyFreePool (&DevicePath);
         ReturnStatus = Status;
 
         if (secure_mode() && ShimLoaded()) {

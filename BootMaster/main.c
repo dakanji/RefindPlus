@@ -833,6 +833,10 @@ BOOLEAN IsValidTool (
     MyFreePool (&TestPathName);
     MyFreePool (&TestFileName);
 
+    MyFreePool (&DontVolName);
+    MyFreePool (&DontPathName);
+    MyFreePool (&DontFileName);
+
     return retval;
 } // BOOLEAN IsValidTool()
 
@@ -1367,15 +1371,13 @@ BOOLEAN SecureBootSetup (
             Success = TRUE;
         }
         else {
-            MsgStr = StrDuplicate (L"Secure boot disabled ... doing nothing");
-
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL, MsgStr)
-            MsgLog ("** WARN: %s\n-----------------\n\n", MsgStr);
+            MsgLog ("** WARN: Secure boot disabled ... doing nothing\n-----------------\n\n");
             #endif
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (MsgStr, NEXTLINE);
+            PrintUglyText (L"Secure boot disabled ... doing nothing", NEXTLINE);
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             MyFreePool (&MsgStr);
@@ -1530,13 +1532,9 @@ VOID AdjustDefaultSelection() {
                 NULL
             );
 
+            MyFreePool (&Element);
             if (Status == EFI_SUCCESS) {
-                MyFreePool (&Element);
                 Element = PreviousBoot;
-                MyFreePool (&PreviousBoot);
-            }
-            else {
-                Element = NULL;
             }
         }
 
@@ -1546,6 +1544,7 @@ VOID AdjustDefaultSelection() {
 
         MyFreePool (&Element);
     } // while
+
     MyFreePool (&GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()

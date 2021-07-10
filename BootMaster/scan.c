@@ -496,11 +496,12 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                             : StrDuplicate (L"Boot Linux");
                         MyFreePool (&SubEntry->LoadOptions);
                         SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
-                        FreeTokenLine (&TokenList, &TokenCount);
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
                         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
                     } // if
+                    FreeTokenLine (&TokenList, &TokenCount);
                 } // while
+                FreeTokenLine (&TokenList, &TokenCount);
 
                 MyFreePool (&KernelVersion);
                 MyFreePool (&InitrdName);

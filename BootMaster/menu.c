@@ -2230,7 +2230,6 @@ VOID ManageHiddenTags (
 
     if ((AllTags) && (StrLen (AllTags) > 0)) {
         AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
-        MyFreePool (&MenuInfo);
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);
