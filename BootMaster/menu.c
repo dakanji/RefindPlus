@@ -2370,11 +2370,13 @@ BOOLEAN HideEfiTag (
     MENU_STYLE_FUNC    Style        = TextMenuStyle;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if ((!Loader) || (!(Loader->Volume)) || (!(Loader->LoaderPath)) || (!HideItemMenu) || (!VarName))
+    if ((!Loader) || (!(Loader->Volume)) || (!(Loader->LoaderPath)) || (!HideItemMenu) || (!VarName)) {
         return FALSE;
+    }
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     if (Loader->Volume->VolName && (StrLen (Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->VolName);
@@ -2397,7 +2399,7 @@ BOOLEAN HideEfiTag (
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
             MyFreePool (&FullPath);
             FullPath = NULL;
-            MergeStrings (&FullPath, GuidAsString (&Loader->Volume->PartGuid), L'\0');
+            MergeStrings (&FullPath, GuidStr, L'\0');
             MergeStrings (&FullPath, L":", L'\0');
             MergeStrings (
                 &FullPath,

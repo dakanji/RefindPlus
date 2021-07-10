@@ -880,21 +880,14 @@ VOID preBootKicker (
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools_x64\\BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BOOT\\tools\\BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools_x64\\BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\tools\\BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\x64_BootKicker.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BootKicker_x64.efi");
-        AddMenuInfoLine (&BootKickerMenu, L"\\EFI\\BootKicker.efi");
+
+        UINTN   k        = 0;
+        CHAR16 *FilePath = NULL;
+        while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
+            AddMenuInfoLine (&BootKickerMenu, FilePath);
+            MyFreePool (&FilePath);
+        }
+
         AddMenuInfoLine (&BootKickerMenu, L"");
         AddMenuInfoLine (&BootKickerMenu, L"The first file found in the order listed will be used");
         AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
@@ -931,7 +924,6 @@ VOID preBootKicker (
             UINTN        i = 0;
             UINTN        k = 0;
 
-            CHAR16       *Names          = BOOTKICKER_FILES;
             CHAR16       *FilePath       = NULL;
             CHAR16       *Description    = ChosenEntry->Title;
             BOOLEAN       FoundTool      = FALSE;
@@ -943,7 +935,7 @@ VOID preBootKicker (
             #endif
 
             k = 0;
-            while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
+            while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Seek %s:\n", FilePath);
                 #endif
@@ -973,7 +965,7 @@ VOID preBootKicker (
                 else {
                     MyFreePool (&FilePath);
                 }
-            } // while Names
+            } // while
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0
@@ -1042,21 +1034,14 @@ VOID preCleanNvram (
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools_x64\\CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\BOOT\\tools\\CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools_x64\\CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\tools\\CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\x64_CleanNvram.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\CleanNvram_x64.efi");
-        AddMenuInfoLine (&CleanNvramMenu, L"\\EFI\\CleanNvram.efi");
+
+        UINTN   k        = 0;
+        CHAR16 *FilePath = NULL;
+        while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+            AddMenuInfoLine (&CleanNvramMenu, FilePath);
+            MyFreePool (&FilePath);
+        }
+
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"The first file found in the order listed will be used");
         AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
@@ -1091,7 +1076,6 @@ VOID preCleanNvram (
             UINTN        i = 0;
             UINTN        k = 0;
 
-            CHAR16        *Names           = NVRAMCLEAN_FILES;
             CHAR16        *FilePath        = NULL;
             CHAR16        *Description     = ChosenEntry->Title;
             BOOLEAN        FoundTool       = FALSE;
@@ -1103,7 +1087,7 @@ VOID preCleanNvram (
             #endif
 
             k = 0;
-            while ((FilePath = FindCommaDelimited (Names, k++)) != NULL) {
+            while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("    * Seek %s:\n", FilePath);
@@ -1132,7 +1116,7 @@ VOID preCleanNvram (
                 else {
                     MyFreePool (&FilePath);
                 }
-            } // while Names
+            } // while
 
             if (FoundTool) {
                 #if REFIT_DEBUG > 0

@@ -418,23 +418,28 @@ VOID HandleStrings (
     IN  UINTN    TokenCount,
     OUT CHAR16 **Target
 ) {
-   UINTN   i;
-   BOOLEAN AddMode = FALSE;
+    UINTN   i;
+    BOOLEAN AddMode = FALSE;
 
-   if ((TokenCount > 2) && (StrCmp (TokenList[1], L"+") == 0)) {
-      AddMode = TRUE;
-   }
+    if (!Target) {
+        return;
+    }
 
-   if ((*Target != NULL) && !AddMode) {
-      MyFreePool (*Target);
-      *Target = NULL;
-   } // if
-   for (i = 1; i < TokenCount; i++) {
-      if ((i != 1) || !AddMode) {
-         CleanUpPathNameSlashes (TokenList[i]);
-         MergeStrings (Target, TokenList[i], L',');
-      } // if
-   } // for
+    if ((TokenCount > 2) && (StrCmp (TokenList[1], L"+") == 0)) {
+        AddMode = TRUE;
+    }
+
+    if ((*Target != NULL) && !AddMode) {
+        MyFreePool (*Target);
+        *Target = NULL;
+    }
+
+    for (i = 1; i < TokenCount; i++) {
+        if ((i != 1) || !AddMode) {
+            CleanUpPathNameSlashes (TokenList[i]);
+            MergeStrings (Target, TokenList[i], L',');
+        }
+    }
 } // static VOID HandleStrings()
 
 // Handle a parameter with a series of hexadecimal arguments, to replace or be added to a
@@ -1446,6 +1451,7 @@ LOADER_ENTRY * AddStanzaEntries (
 
                 DefaultsSet      = TRUE;
                 FirmwareBootNum  = TRUE;
+                MyFreePool (&OurEfiBootNumber);
                 OurEfiBootNumber = StrDuplicate (TokenList[1]);
             }
             else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
@@ -1491,7 +1497,6 @@ LOADER_ENTRY * AddStanzaEntries (
                 );
 
                 Entry->EfiBootNum = StrToHex (OurEfiBootNumber, 0, 16);
-                MyFreePool (&OurEfiBootNumber);
             }
             else {
                 Entry->me.Title = PoolPrint (
@@ -1507,7 +1512,6 @@ LOADER_ENTRY * AddStanzaEntries (
         if (LoadOptions && StrLen (LoadOptions) > 0) {
             MyFreePool (&Entry->LoadOptions);
             Entry->LoadOptions = StrDuplicate (LoadOptions);
-            MyFreePool (&LoadOptions);
         }
 
         if (AddedSubmenu) {
@@ -1539,6 +1543,9 @@ LOADER_ENTRY * AddStanzaEntries (
             Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
         }
     } // if Entry->Enabled
+
+    MyFreePool (&OurEfiBootNumber);
+    MyFreePool (&LoadOptions);
 
     return (Entry);
 } // static VOID AddStanzaEntries()
