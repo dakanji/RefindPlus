@@ -265,7 +265,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  UINTN      VariableSize,
     IN  VOID      *VariableData
 ) {
-    EFI_STATUS   Status                 = EFI_SUCCESS;
+    EFI_STATUS   Status                 = EFI_SUCCESS; // Always Report Success
     EFI_GUID     WinGuid                = MICROSOFT_VENDOR_GUID;
     EFI_GUID     X509Guid               = X509_GUID;
     EFI_GUID     PKCS7Guid              = PKCS7_GUID;
