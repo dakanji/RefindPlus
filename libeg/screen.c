@@ -382,6 +382,8 @@ EFI_STATUS egDumpGOPVideoModes (
                     );
                 }
                 #endif
+
+                MyFreePool (Info);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -596,6 +598,8 @@ EFI_STATUS egSetMaxResolution (
             BestMode = Mode;
             Width    = Info->HorizontalResolution;
             Height   = Info->VerticalResolution;
+
+            MyFreePool (Info);
         }
     }
 
@@ -2185,6 +2189,7 @@ VOID egScreenShot (
         HaltForKey();
         SwitchToGraphics();
         MyFreePool (&MsgStr);
+        MyFreePool (&FileData);
 
         return;
     }
@@ -2210,6 +2215,7 @@ VOID egScreenShot (
             HaltForKey();
             SwitchToGraphics();
             MyFreePool (&MsgStr);
+            MyFreePool (&FileData);
 
             return;
         }
@@ -2238,6 +2244,7 @@ VOID egScreenShot (
                 HaltForKey();
                 SwitchToGraphics();
                 MyFreePool (&MsgStr);
+                MyFreePool (&FileData);
 
                 return;
             }
@@ -2253,7 +2260,9 @@ VOID egScreenShot (
 
     // save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
+
     MyFreePool (&FileData);
+
     if (CheckError (Status, L"in egSaveFile")) {
         goto bailout_wait;
     }
