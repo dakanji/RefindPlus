@@ -265,7 +265,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  UINTN      VariableSize,
     IN  VOID      *VariableData
 ) {
-    EFI_STATUS   Status                 = EFI_SUCCESS; // Always Report Success
+    EFI_STATUS   Status;
     EFI_GUID     WinGuid                = MICROSOFT_VENDOR_GUID;
     EFI_GUID     X509Guid               = X509_GUID;
     EFI_GUID     PKCS7Guid              = PKCS7_GUID;
@@ -307,6 +307,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             VariableSize,
             VariableData
         );
+    }
+    else {
+        // DA_TAG: Report 'Success' when blocked
+        //         Windows expects this
+        Status = EFI_SUCCESS;
     }
 
 
