@@ -103,13 +103,13 @@ EFI_STATUS DirIterClose (IN OUT REFIT_DIR_ITER *DirIter);
 EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    OUT CHAR8    **VariableData,
+    OUT VOID     **VariableData,
     OUT UINTN     *VariableSize     OPTIONAL
 );
 EFI_STATUS EfivarSetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    IN  CHAR8     *VariableData,
+    IN  VOID      *VariableData,
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
 );
