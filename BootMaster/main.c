@@ -298,12 +298,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         (GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid))) &&
         (MyStrStr (VendorInfo, L"Apple") != NULL)
     );
-    BOOLEAN BlockPRNG = (
-        (MyStriCmp (VariableName, L"UnlockID") || MyStriCmp (VariableName, L"UnlockIDCopy")) &&
-        MyStrStr (VendorInfo, L"Apple") != NULL
-    );
 
-    if (!BlockCert && !BlockPRNG) {
+    if (!BlockCert) {
         Status = AltSetVariable (
             VariableName,
             VendorGuid,
@@ -320,7 +316,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
 
-    if (BlockCert || BlockPRNG) {
+    if (BlockCert) {
         MsgStr = StrDuplicate (L"Prevented Microsoft Secure Boot NVRAM Write Attempt");
         LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("\n");
