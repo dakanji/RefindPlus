@@ -1448,8 +1448,7 @@ BOOLEAN ScanLoaderDir (
             if (Path) {
                 Message = PoolPrint (
                     L"While Scanning the '%s' Directory on '%s'",
-                    Path,
-                    Volume->VolName
+                    Path, Volume->VolName
                 );
             }
             else {
@@ -1479,12 +1478,9 @@ CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
     Status = refit_call6_wrapper(
-        gBS->LoadImage,
-        FALSE,
-        SelfImageHandle,
-        FilePath,
-        NULL,
-        0,
+        gBS->LoadImage, FALSE,
+        SelfImageHandle, FilePath,
+        NULL, 0,
         &iPXEHandle
     );
     if (Status != 0) {
@@ -1524,11 +1520,11 @@ VOID ScanNetboot() {
             if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
                 NetVolume = AllocatePool (sizeof (REFIT_VOLUME));
                 CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
-                NetVolume->DiskKind = DISK_KIND_NET;
+                NetVolume->DiskKind      = DISK_KIND_NET;
                 NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
-                NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
+                NetVolume->PartName      = NetVolume->VolName = NetVolume->FsName = NULL;
                 AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
-            } // if support files exist and are valid
+            }
     }
 } // VOID ScanNetboot()
 
@@ -2431,7 +2427,7 @@ BOOLEAN FindTool (
     UINTN   Icon
 ) {
     UINTN    j = 0;
-    UINTN    k;
+    UINTN    k = 0;
     UINTN    VolumeIndex;
     CHAR16  *DirName;
     CHAR16  *FileName;
@@ -2453,8 +2449,7 @@ BOOLEAN FindTool (
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL,
                         L"Adding tag for '%s' on '%s'",
-                        FileName,
-                        Volumes[VolumeIndex]->VolName
+                        FileName, Volumes[VolumeIndex]->VolName
                     );
                     #endif
 
@@ -2470,24 +2465,21 @@ BOOLEAN FindTool (
 //DA-TAG: Changed "FullDescription" to "Description" below
                     AddToolEntry (
                         Volumes[VolumeIndex],
-                        PathName,
-                        Description,
+                        PathName, Description,
                         BuiltinIcon (Icon),
-                        'S',
-                        FALSE
+                        'S', FALSE
                     );
 
                     #if REFIT_DEBUG > 0
                     MsgLog (
                         "Added Tool:- '%s' : %s%s",
-                        Description,
-                        StrDuplicate (DirName),
-                        StrDuplicate (FileName)
+                        Description, DirName, FileName
                     );
                     #endif
 
                 } // if
             } // for
+
             MyFreePool (&PathName);
             MyFreePool (&FileName);
         } // while Names
@@ -2535,6 +2527,7 @@ VOID ScanForTools (VOID) {
         MyFreePool (&FileName);
         MyFreePool (&VolName);
         MyFreePool (&ToolName);
+
         FileName = VolName = ToolName = NULL;
         FoundTool = FALSE;
 
@@ -3033,6 +3026,7 @@ VOID ScanForTools (VOID) {
                                     BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
                                     'R', TRUE
                                 );
+                                MyFreePool (&Description);
 
                                 #if REFIT_DEBUG > 0
                                 ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
@@ -3094,7 +3088,6 @@ VOID ScanForTools (VOID) {
                                 'R',
                                 TRUE
                             );
-
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
