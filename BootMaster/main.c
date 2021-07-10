@@ -278,7 +278,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID     RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
     EFI_GUID     RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID     TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
-    UINT32       StorageFlags;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -305,15 +304,12 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     );
 
     if (!BlockCert && !BlockPRNG) {
-        StorageFlags  = EFI_VARIABLE_BOOTSERVICE_ACCESS;
-        StorageFlags |= EFI_VARIABLE_RUNTIME_ACCESS;
-        StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
         Status = AltSetVariable (
             VariableName,
             VendorGuid,
-            StorageFlags,
+            Attributes,
             VariableSize,
-            (CHAR8 *) &VariableData
+            VariableData
         );
     }
 
@@ -339,16 +335,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     return Status;
 } // VOID gRTSetVariableEx()
-
-static
-VOID MapSetVariable (
-    IN EFI_SYSTEM_TABLE  *SystemTable
-) {
-    AltSetVariable                             = gRT->SetVariable;
-    RT->SetVariable                            = gRTSetVariableEx;
-    gRT->SetVariable                           = gRTSetVariableEx;
-    SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
-} // static VOID MapSetVariable()
 
 static
 VOID FilterCSR (VOID) {
@@ -2420,7 +2406,10 @@ EFI_STATUS EFIAPI efi_main (
                         MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
                         // Protect Mac NVRAM from UEFI Windows
-                        MapSetVariable (SystemTable);
+                        AltSetVariable                             = gRT->SetVariable;
+                        RT->SetVariable                            = gRTSetVariableEx;
+                        gRT->SetVariable                           = gRTSetVariableEx;
+                        SystemTable->RuntimeServices->SetVariable  = gRTSetVariableEx;
                     }
 
                     #if REFIT_DEBUG > 0
@@ -2484,13 +2473,6 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
-                    if (GlobalConfig.ProtectNVRAM &&
-                        MyStrStr (VendorInfo, L"Apple") != NULL
-                    ) {
-                        // Protect Mac NVRAM from UEFI Windows
-                        MapSetVariable (SystemTable);
-                    }
-
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
                         L"Boot %s from '%s'",
