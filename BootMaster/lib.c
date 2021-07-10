@@ -503,11 +503,11 @@ EFI_STATUS FindVarsDir (
 EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    OUT VOID     **VariableData,
+    OUT CHAR8    **VariableData,
     OUT UINTN     *VariableSize     OPTIONAL
 ) {
     UINTN        BufferSize    = 0;
-    VOID        *TmpBuffer     = NULL;
+    UINT8       *TmpBuffer     = NULL;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
     #if REFIT_DEBUG > 0
@@ -521,7 +521,7 @@ EFI_STATUS EfivarGetRaw (
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (
                 gVarsDir, VariableName,
-                (UINT8**) &TmpBuffer, &BufferSize
+                &TmpBuffer, &BufferSize
             );
         }
         else if (Status != EFI_NOT_FOUND) {
@@ -645,13 +645,13 @@ EFI_STATUS EfivarGetRaw (
 EFI_STATUS EfivarSetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    IN  VOID      *VariableData,
+    IN  CHAR8     *VariableData,
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
 ) {
     EFI_STATUS   Status;
     UINT32       StorageFlags;
-    VOID        *OldBuf = NULL;
+    CHAR8       *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
 
