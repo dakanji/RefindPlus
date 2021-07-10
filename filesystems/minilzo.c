@@ -2095,7 +2095,7 @@ LZO_COMPILE_TIME_ASSERT_HEADER(sizeof (lzo_uintptr_t) >= sizeof (lzo_voidp))
 #define LZO_MAX3(a,b,c)     ((a) >= (b) ? LZO_MAX(a,c) : LZO_MAX(b,c))
 #define LZO_MIN3(a,b,c)     ((a) <= (b) ? LZO_MIN(a,c) : LZO_MIN(b,c))
 
-#define lzo_sizeof (type)    ((lzo_uint) (sizeof (type)))
+#define lzo_sizeof(type)    ((lzo_uint) (sizeof (type)))
 
 #define LZO_HIGH(array)     ((lzo_uint) (sizeof (array)/sizeof (*(array))))
 
@@ -4564,4 +4564,3 @@ lookbehind_overrun:
 #endif
 
 /***** End of minilzo.c *****/
-
