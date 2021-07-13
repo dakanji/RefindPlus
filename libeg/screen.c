@@ -1236,7 +1236,7 @@ VOID egInitScreen (
 
                 MsgStr = StrDuplicate (L"Fall Back on UGA");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("      %s");
+                MsgLog ("      %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
@@ -1259,7 +1259,7 @@ VOID egInitScreen (
 
                 MsgStr = StrDuplicate (L"Fall Back on Text Mode");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("      %s");
+                MsgLog ("      %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
