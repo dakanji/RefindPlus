@@ -2350,7 +2350,7 @@ VOID GetVolumeBadgeIcons (
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeBadges for Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeBadges for Internal Volumes");
     #endif
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {

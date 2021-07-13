@@ -1980,6 +1980,14 @@ VOID ScanFirmwareDefined (
 EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
     EG_IMAGE * Badge = NULL;
 
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID, L"'HideUI Badges' Config Setting is Active");
+        #endif
+
+        return NULL;
+    }
+
     switch (DiskType) {
         case BBS_HARDDISK:
             Badge = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL);
@@ -1990,7 +1998,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
         case BBS_CDROM:
             Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
             break;
-    } // switch()
+    }
 
     return Badge;
 } // EG_IMAGE * GetDiskBadge()
