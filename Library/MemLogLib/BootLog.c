@@ -333,7 +333,9 @@ DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Message
 ) {
-    CHAR16 *FinalMessage = NULL;
+          CHAR16 *TmpMsg      = NULL;
+          CHAR16 *FinalMsg    = NULL;
+    const CHAR16 *PadString   = L"                ";
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
@@ -354,60 +356,100 @@ DeepLoggger (
         return;
     }
 
+    // Flag Padding and StartLineBreak
+    BOOLEAN LnBrk  = TRUE;
+    BOOLEAN StrPad = FALSE;
+
     // Disable Timestamp
     TimeStamp = FALSE;
 
     switch (type) {
         case LOG_BLANK_LINE_SEP:
-            FinalMessage = StrDuplicate (L"\n");
+            LnBrk  = FALSE;
+            TmpMsg = StrDuplicate (L"\n");
             break;
         case LOG_STAR_HEAD_SEP:
-            FinalMessage = PoolPrint (L"\n                ***[ %s\n", *Message);
+            StrPad = TRUE;
+            TmpMsg = PoolPrint (L"***[ %s\n", *Message);
             break;
         case LOG_STAR_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
+            TmpMsg = PoolPrint (L"* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
             break;
         case LOG_LINE_SEPARATOR:
-            FinalMessage = PoolPrint (L"\n===================[ %s ]===================\n", *Message);
+            TmpMsg = PoolPrint (L"===================[ %s ]===================\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint (L"\n-------------------[ %s ]-------------------\n", *Message);
+            TmpMsg = PoolPrint (L"-------------------[ %s ]-------------------\n", *Message);
             break;
         case LOG_LINE_DASH_SEP:
-            FinalMessage = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
+            TmpMsg = PoolPrint (L"- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
             break;
         case LOG_THREE_STAR_SEP:
-            FinalMessage = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
+            TmpMsg = PoolPrint (L". . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
             break;
         case LOG_THREE_STAR_MID:
-            FinalMessage = PoolPrint (L"                ***[ %s\n", *Message);
+            LnBrk  = FALSE;
+            StrPad = TRUE;
+            TmpMsg = PoolPrint (L"***[ %s\n", *Message);
             break;
         case LOG_THREE_STAR_END:
-            FinalMessage = PoolPrint (L"                ***[ %s ]***\n\n", *Message);
+            LnBrk  = FALSE;
+            StrPad = TRUE;
+            TmpMsg = PoolPrint (L"***[ %s ]***\n\n", *Message);
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
-            FinalMessage = PoolPrint (L"%s\n", *Message);
+            TmpMsg = PoolPrint (L"%s\n", *Message);
 
-            // Also Enable Timestamp
+            // Also Enable Timestamp and exclude StartLineBreak
+            LnBrk     = FALSE;
             TimeStamp = TRUE;
     } // switch
 
-    if (FinalMessage) {
+    if (TmpMsg) {
         // Use Native Logging
         UseMsgLog = TRUE;
 
-        // Convert Unicode Message String to Ascii ... Control size/len first
+        // Convert Unicode Message String to Ascii ... Control Size/Len First
         UINTN   Limit;
-        BOOLEAN CheckLen = LimitStringLength (FinalMessage, 510);
-        if (CheckLen) {
+        UINTN   RawLimit = 510;
+        BOOLEAN LongStr  = FALSE;
+
+        if (StrPad) {
+            Limit = RawLimit - StrLen (PadString);
+        }
+        else {
+            Limit = RawLimit;
+        }
+
+        LongStr = LimitStringLength (TmpMsg, Limit);
+
+        if (StrPad) {
+            if (LnBrk) {
+                FinalMsg = PoolPrint (L"\n%s%s", PadString, TmpMsg);
+            }
+            else {
+                FinalMsg = PoolPrint (L"%s%s", PadString, TmpMsg);
+            }
+        }
+        else {
+            if (LnBrk) {
+                FinalMsg = PoolPrint (L"\n%s", TmpMsg);
+            }
+            else {
+                FinalMsg = PoolPrint (L"%s", TmpMsg);
+            }
+        }
+
+        if (LongStr) {
             Limit = 511;
         }
         else {
-            Limit = StrLen (FinalMessage) + 1;
+            Limit = StrLen (FinalMsg) + 1;
         }
+
         CHAR8 FormatString[Limit];
-        MyUnicodeStrToAsciiStr (FinalMessage, FormatString);
+        MyUnicodeStrToAsciiStr (FinalMsg, FormatString);
 
         // Write the Message String
         DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
@@ -417,7 +459,8 @@ DeepLoggger (
     }
 
     MyFreePool (*Message);
-    MyFreePool (&FinalMessage);
+    MyFreePool (&FinalMsg);
+    MyFreePool (&TmpMsg);
 }
 
 
