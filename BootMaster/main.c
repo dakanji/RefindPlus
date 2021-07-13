@@ -1440,15 +1440,17 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
         &LoadedImageProtocol,
         (VOID **) &Info
     );
-    if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Set Config Filename from Command Line Option:\n");
-        #endif
 
-        Options = (CHAR16 *) Info->LoadOptions;
+    if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
+        Options   = (CHAR16 *) Info->LoadOptions;
         SubString = MyStrStr (Options, L" -c ");
         if (SubString) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Set Config Filename from Command Line Option:\n");
+            #endif
+
             FileName = StrDuplicate (&SubString[4]);
+
             if (FileName) {
                 LimitStringLength (FileName, 256);
             }
@@ -1480,23 +1482,12 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 
                 HaltForKey();
                 MyFreePool (&MsgStr);
-            } // if/else
+            } // if/else FileExists (SelfDir, FileName
 
             MyFreePool (&FileName);
-        } // if
-        else {
-            MsgStr = StrDuplicate (L"Invalid Load Option");
-
-            #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n", MsgStr);
-            #endif
-            PrintUglyText (MsgStr, NEXTLINE);
-
-            HaltForKey();
-            MyFreePool (&MsgStr);
-        }
-    } // if
-} // VOID SetConfigFilename()
+        } // if SubString
+    } // if (Status == EFI_SUCCESS) && Info->LoadOptionsSize
+} // static VOID SetConfigFilename()
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
