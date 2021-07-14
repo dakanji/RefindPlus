@@ -784,7 +784,7 @@ VOID egInitScreen (
         DetectedDevices  = FALSE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assess Console Control ...NOT OK!!");
+        MsgStr = StrDuplicate (L"Assess Console Control ... NOT OK!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1054,7 +1054,7 @@ VOID egInitScreen (
             XFlag = EFI_UNSUPPORTED;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ...NOT OK!!");
+            MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
             LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n\n", MsgStr);
             MyFreePool (&MsgStr);

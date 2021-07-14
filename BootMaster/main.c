@@ -741,7 +741,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                             if (!EFI_ERROR (Status)) {
                                 break;
                             }
-                        } // if HandleBuffer[i]
+                        }
                     } // for
 
                 } // if !EFI_ERROR Status
@@ -824,7 +824,7 @@ BOOLEAN IsValidTool (
                 ((DontVolName == NULL) || (VolumeMatchesDescription (BaseVolume, DontVolName)))
             ) {
                 retval = FALSE;
-            } // if
+            }
 
             MyFreePool (&DontScanThis);
         } // while
@@ -956,7 +956,7 @@ VOID preBootKicker (
 
                         FoundTool = TRUE;
                         break;
-                    } // if
+                    }
                 } // for
 
                 if (FoundTool) {
@@ -1829,6 +1829,16 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
+    // Show TextRenderer Status
+    MsgLog ("\n");
+    MsgLog ("      TextRenderer:- ");
+    if (GlobalConfig.TextRenderer) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
     // Show ProtectNVRAM Status
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
@@ -2066,7 +2076,7 @@ EFI_STATUS EFIAPI efi_main (
 
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
-        // The Escape key triggers a re-scan operation....
+        // The Escape key triggers a re-scan operation
         if (MenuExit == MENU_EXIT_ESCAPE) {
             #if REFIT_DEBUG > 0
             MsgLog ("User Input Received:\n");
@@ -2302,7 +2312,9 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL) {
+                else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL ||
+                    MyStrStr (ourLoaderEntry->LoaderPath, L"CLOVER") != NULL
+                ) {
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
                     }
@@ -2333,17 +2345,16 @@ EFI_STATUS EFIAPI efi_main (
                             L"Boot Mac OS from '%s'",
                             ourLoaderEntry->Volume->VolName
                         );
-                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s", MsgStr);
                     }
                     else {
                         MsgStr = PoolPrint (
                             L"Boot Mac OS:- '%s'",
                             ourLoaderEntry->LoaderPath
                         );
-                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s", MsgStr);
                     }
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+
                     MyFreePool (&MsgStr);
                     #endif
 
@@ -2388,35 +2399,44 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    CHAR16 *WinType = NULL;
                     MsgLog ("User Input Received:\n");
-                    if (MyStrStr (ourLoaderEntry->Title, L"UEFI") != NULL) {
-                        WinType = StrDuplicate (L"UEFI");
-                    }
-                    else {
-                        WinType = StrDuplicate (L"Legacy");
-                    }
-
                     if (ourLoaderEntry->Volume->VolName) {
                         MsgStr = PoolPrint (
-                            L"Boot %s Windows from '%s'",
-                            WinType,
+                            L"Boot UEFI Windows from '%s'",
                             ourLoaderEntry->Volume->VolName
                         );
-                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s", MsgStr);
                     }
                     else {
                         MsgStr = PoolPrint (
-                            L"Boot %s Windows:- '%s'",
-                            WinType,
+                            L"Boot UEFI Windows:- '%s'",
                             ourLoaderEntry->LoaderPath
                         );
-                        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                        MsgLog ("  - %s", MsgStr);
                     }
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+
                     MyFreePool (&MsgStr);
-                    MyFreePool (&WinType);
+                    #endif
+                }
+                else if (MyStrStr (ourLoaderEntry->Title, L"Linux") != NULL) {
+                    #if REFIT_DEBUG > 0
+                    MsgLog ("User Input Received:\n");
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgStr = PoolPrint (
+                            L"Boot Linux Flavour from '%s'",
+                            ourLoaderEntry->Volume->VolName
+                        );
+                    }
+                    else {
+                        MsgStr = PoolPrint (
+                            L"Load Linux Flavour:- '%s'",
+                            ourLoaderEntry->LoaderPath
+                        );
+                    }
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+
+                    MyFreePool (&MsgStr);
                     #endif
                 }
                 else {

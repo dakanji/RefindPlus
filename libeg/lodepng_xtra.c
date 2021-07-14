@@ -92,6 +92,7 @@ int MyStrlen(const char *InString) {
 } // int MyStrlen()
 
 VOID *MyMemSet(VOID *s, int c, size_t n) {
+    // DA-TAG: Changed order of params
     SetMem(s, n, c);
     return s;
 }

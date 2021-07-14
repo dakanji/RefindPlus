@@ -456,6 +456,13 @@ EFI_STATUS AmendSysTable (
             SetSysTab = TRUE;
             Status    = (EFI_STATUS) uBS->CreateEventEx;
 
+            if (EFI_ERROR (Status)) {
+                Status = EFI_INVALID_PARAMETER;
+            }
+            else {
+                Status = EFI_SUCCESS;
+            }
+
             gST->BootServices   = gBS;
             gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
             gST->Hdr.Revision   = BASE_EFI_REVISION;
