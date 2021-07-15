@@ -422,6 +422,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                     // DA-TAG: Currently unable to detect GFX Device
                                     //         Revisit Clover implementation later
                                     //         Not currently missed but may allow new options
+                                    // UPDATE: Actually works on a Non-Mac Firmware Laptop
+                                    //         Is this because it is a laptop or Non-Mac Firmware?
                                     DeviceData = StrDuplicate (L" - GraphicsFX Card");
                                 }
                                 else {
@@ -495,7 +497,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
 
                     #if REFIT_DEBUG > 0
                     if (DeviceData == NULL) {
-                        DeviceData = L"";
+                        DeviceData = StrDuplicate (L"");
                     }
                     #endif
 
