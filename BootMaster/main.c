@@ -519,7 +519,7 @@ VOID SetBootArgs (
             &AppleGUID,
             NameNVRAM,
             DataNVRAM,
-            sizeof (DataNVRAM),
+            AsciiStrSize (DataNVRAM),
             TRUE
         );
     }
@@ -572,24 +572,24 @@ VOID DisableAMFI (
 
     if (GlobalConfig.DisableCompatCheck) {
         // Combine with DisableCompatCheck
-        CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1 -no_compat_check";
+        CHAR8 *DataNVRAM = "amfi_get_out_of_my_way=1 -no_compat_check";
 
         Status = EfivarSetRaw (
             &AppleGUID,
             NameNVRAM,
             DataNVRAM,
-            sizeof (DataNVRAM),
+            AsciiStrSize (DataNVRAM),
             TRUE
         );
     }
     else {
-        CHAR8 DataNVRAM[] = "amfi_get_out_of_my_way=1";
+        CHAR8 *DataNVRAM = "amfi_get_out_of_my_way=1";
 
         Status = EfivarSetRaw (
             &AppleGUID,
             NameNVRAM,
             DataNVRAM,
-            sizeof (DataNVRAM),
+            AsciiStrSize (DataNVRAM),
             TRUE
         );
     }
@@ -622,9 +622,9 @@ VOID DisableCompatCheck (
     VOID
 ) {
     EFI_STATUS   Status;
-    EFI_GUID     AppleGUID    = APPLE_GUID;
-    CHAR16      *NameNVRAM    = L"boot-args";
-    CHAR8        DataNVRAM[]  = "-no_compat_check";
+    EFI_GUID     AppleGUID  = APPLE_GUID;
+    CHAR16      *NameNVRAM  = L"boot-args";
+    CHAR8       *DataNVRAM  = "-no_compat_check";
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr = NULL;
@@ -634,7 +634,7 @@ VOID DisableCompatCheck (
         &AppleGUID,
         NameNVRAM,
         DataNVRAM,
-        sizeof (DataNVRAM),
+        AsciiStrSize (DataNVRAM),
         TRUE
     );
 
