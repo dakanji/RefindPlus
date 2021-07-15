@@ -41,20 +41,20 @@ extern VOID MyFreePool (IN OUT VOID *Pointer);
   @retval  EFI_NOT_FOUND    No protocol instances were found that match ProtocolGuid
 
 **/
-EFI_STATUS
-EfiLibLocateProtocol (
-  IN  EFI_GUID    *ProtocolGuid,
-  OUT VOID        **Interface
-  )
-{
-  EFI_STATUS  Status;
+EFI_STATUS EfiLibLocateProtocol (
+    IN  EFI_GUID  *ProtocolGuid,
+    OUT VOID     **Interface
+) {
+    EFI_STATUS  Status;
 
-  Status = refit_call3_wrapper(gBS->LocateProtocol,
-                  ProtocolGuid,
-                  NULL,
-                  (VOID **) Interface
-                  );
-  return Status;
+    Status = refit_call3_wrapper(
+        gBS->LocateProtocol,
+        ProtocolGuid,
+        NULL,
+        (VOID **) Interface
+    );
+
+    return Status;
 }
 
 /**
@@ -66,39 +66,39 @@ EfiLibLocateProtocol (
   @return A valid file handle or NULL is returned
 
 **/
-EFI_FILE_HANDLE
-EfiLibOpenRoot (
-  IN EFI_HANDLE                   DeviceHandle
-  )
-{
-  EFI_STATUS                      Status;
-  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *Volume;
-  EFI_FILE_HANDLE                 File;
+EFI_FILE_HANDLE EfiLibOpenRoot (
+    IN EFI_HANDLE DeviceHandle
+) {
+    EFI_STATUS                       Status;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *Volume;
+    EFI_FILE_HANDLE                  File;
 
-  File = NULL;
+    File = NULL;
 
-  //
-  // File the file system interface to the device
-  //
-  Status = refit_call3_wrapper(gBS->HandleProtocol,
-                  DeviceHandle,
-                  &gEfiSimpleFileSystemProtocolGuid,
-                  (VOID **) &Volume
-                  );
+    //
+    // File the file system interface to the device
+    //
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        DeviceHandle,
+        &gEfiSimpleFileSystemProtocolGuid,
+        (VOID **) &Volume
+    );
 
-  //
-  // Open the root directory of the volume
-  //
-  if (!EFI_ERROR (Status)) {
-    Status = Volume->OpenVolume (
-                      Volume,
-                      &File
-                      );
-  }
-  //
-  // Done
-  //
-  return EFI_ERROR (Status) ? NULL : File;
+    //
+    // Open the root directory of the volume
+    //
+    if (!EFI_ERROR (Status)) {
+        Status = Volume->OpenVolume (
+            Volume,
+            &File
+        );
+    }
+
+    //
+    // Done
+    //
+    return EFI_ERROR (Status) ? NULL : File;
 }
 
 /**
@@ -110,26 +110,24 @@ EfiLibOpenRoot (
   @retval NULL If there is not enough memory.
 
 **/
-CHAR16 *
-EfiStrDuplicate (
-  IN CHAR16   *Src
-				 )
-{
-  CHAR16  *Dest;
-  UINTN   Size;
+CHAR16 * EfiStrDuplicate (
+    IN CHAR16   *Src
+) {
+    CHAR16 *Dest;
+    UINTN   Size;
 
-  // Do not deference Null pointers
-  if (Src == NULL) {
-      return NULL;
-  }
+    // Do not deference Null pointers
+    if (Src == NULL) {
+        return NULL;
+    }
 
-  Size  = StrSize (Src); //at least 2bytes
-  Dest  = AllocateZeroPool (Size);
-  if (Dest != NULL) {
-    CopyMem (Dest, Src, Size);
-  }
+    Size  = StrSize (Src); //at least 2bytes
+    Dest  = AllocateZeroPool (Size);
+    if (Dest != NULL) {
+        CopyMem (Dest, Src, Size);
+    }
 
-  return Dest;
+    return Dest;
 }
 
 /**
@@ -142,40 +140,36 @@ EfiStrDuplicate (
   @return                A pointer to a buffer with file information or NULL is returned
 
 **/
-EFI_FILE_INFO *
-EfiLibFileInfo (
-  IN EFI_FILE_HANDLE      FHand
-  )
-{
-  EFI_STATUS    Status;
-  EFI_FILE_INFO *FileInfo = NULL;
-  UINTN         Size = 0;
+EFI_FILE_INFO * EfiLibFileInfo (
+    IN EFI_FILE_HANDLE      FHand
+) {
+    EFI_STATUS     Status;
+    EFI_FILE_INFO *FileInfo = NULL;
+    UINTN          Size     = 0;
 
-  Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
-  if (Status == EFI_BUFFER_TOO_SMALL) {
-    FileInfo = AllocateZeroPool (Size);
     Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
-  }
+    if (Status == EFI_BUFFER_TOO_SMALL) {
+        FileInfo = AllocateZeroPool (Size);
+        Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
+    }
 
-  return EFI_ERROR (Status) ? NULL : FileInfo;
+    return EFI_ERROR (Status) ? NULL : FileInfo;
 }
 
-EFI_FILE_SYSTEM_INFO *
-EfiLibFileSystemInfo (
-                IN EFI_FILE_HANDLE      FHand
-                )
-{
-  EFI_STATUS    Status;
-  EFI_FILE_SYSTEM_INFO *FileSystemInfo = NULL;
-  UINTN         Size = 0;
+EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (
+    IN EFI_FILE_HANDLE      FHand
+) {
+    EFI_STATUS            Status;
+    EFI_FILE_SYSTEM_INFO *FileSystemInfo = NULL;
+    UINTN                 Size = 0;
 
-  Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
-  if (Status == EFI_BUFFER_TOO_SMALL) {
-    FileSystemInfo = AllocateZeroPool (Size);
     Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
-  }
+    if (Status == EFI_BUFFER_TOO_SMALL) {
+        FileSystemInfo = AllocateZeroPool (Size);
+        Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
+    }
 
-  return EFI_ERROR (Status) ? NULL : FileSystemInfo;
+    return EFI_ERROR (Status) ? NULL : FileSystemInfo;
 }
 
 /**
@@ -190,27 +184,25 @@ EfiLibFileSystemInfo (
   @retval   NULL  Allocation failed.
 
 **/
-VOID *
-EfiReallocatePool (
-  IN VOID                 *OldPool,
-  IN UINTN                OldSize,
-  IN UINTN                NewSize
-  )
-{
-  VOID  *NewPool;
+VOID * EfiReallocatePool (
+    IN VOID  *OldPool,
+    IN UINTN  OldSize,
+    IN UINTN  NewSize
+) {
+    VOID  *NewPool;
 
-  NewPool = NULL;
-  if (NewSize != 0) {
-    NewPool = AllocateZeroPool (NewSize);
-  }
-
-  if (OldPool != NULL) {
-    if (NewPool != NULL) {
-      CopyMem (NewPool, OldPool, OldSize < NewSize ? OldSize : NewSize);
+    NewPool = NULL;
+    if (NewSize != 0) {
+        NewPool = AllocateZeroPool (NewSize);
     }
 
-    MyFreePool (&OldPool);
-  }
+    if (OldPool != NULL) {
+        if (NewPool != NULL) {
+            CopyMem (NewPool, OldPool, OldSize < NewSize ? OldSize : NewSize);
+        }
 
-  return NewPool;
+        MyFreePool (&OldPool);
+    }
+
+    return NewPool;
 }
