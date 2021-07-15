@@ -687,69 +687,137 @@ VOID PrintUglyText (
 VOID HaltForKey (
     VOID
 ) {
-    UINTN   index;
-    BOOLEAN ClearKeystrokes;
+    UINTN   WaitOut;
+    BOOLEAN Breakout = FALSE;
 
     Print (L"\n");
 
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"* Halted: Press Any Key to Continue *", NEXTLINE);
 
-    ClearKeystrokes = ReadAllKeyStrokes();
-    if (ClearKeystrokes) {
-        // remove buffered key strokes
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Waiting 5 Seconds");
-        #endif
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL, L"Halted for Error/Warning ... Requires Keypress");
+    #endif
 
-        refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
-        ReadAllKeyStrokes();    // empty the buffer again
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+
+    for (;;) {
+        ReadAllKeyStrokes();
+        WaitOut = WaitForInput (1000);
+        if (WaitOut == INPUT_KEY) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Halt Terminated by User Keypress");
+            #endif
+
+            Breakout = TRUE;
+        }
+        else if (WaitOut == INPUT_TIMER_ERROR) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Halt Terminated by Timer Error!!");
+            #endif
+
+            Breakout = TRUE;
+        }
+
+        if (Breakout) {
+            break;
+        }
     }
 
-    refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
-
     GraphicsScreenDirty = TRUE;
-    ReadAllKeyStrokes();        // empty the buffer to protect the menu
+
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
 }
 
 VOID PauseForKey (
     VOID
 ) {
-    UINTN   index;
-    BOOLEAN ClearKeystrokes;
+    UINTN   i;
+    UINTN   WaitOut;
+    BOOLEAN Breakout = FALSE;
+
 
     Print (L"\n");
 
     if (GlobalConfig.ContinueOnWarning) {
         PrintUglyText (L"", NEXTLINE);
-        PrintUglyText (L"* Paused for Error/Warning. Wait 3 Seconds *", NEXTLINE);
+        PrintUglyText (L"* Paused for Error/Warning ... Waiting 3 Seconds *", NEXTLINE);
     }
     else {
         PrintUglyText (L"", NEXTLINE);
         PrintUglyText (L"* Paused: Press Any Key to Continue *", NEXTLINE);
     }
 
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+
     if (GlobalConfig.ContinueOnWarning) {
-        refit_call1_wrapper(gBS->Stall, 3000000);
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 3 Seconds");
+        #endif
+
+        for (i = -1; i < 3; ++i) {
+            ReadAllKeyStrokes();
+            WaitOut = WaitForInput (1000);
+            if (WaitOut == INPUT_KEY) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by User Keypress");
+                #endif
+
+                Breakout = TRUE;
+            }
+            else if (WaitOut == INPUT_TIMER_ERROR) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                #endif
+
+                Breakout = TRUE;
+            }
+
+            if (Breakout) {
+                break;
+            }
+        }
     }
     else {
-        ClearKeystrokes = ReadAllKeyStrokes();
-        if (ClearKeystrokes) {
-            // remove buffered key strokes
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_THREE_STAR_MID, L"Waiting 5 Seconds");
-            #endif
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Requires Keypress");
+        #endif
 
-            refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
-            ReadAllKeyStrokes();    // empty the buffer again
+        for (;;) {
+            ReadAllKeyStrokes();
+            WaitOut = WaitForInput (1000);
+            if (WaitOut == INPUT_KEY) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by User Keypress");
+                #endif
+
+                Breakout = TRUE;
+            }
+            else if (WaitOut == INPUT_TIMER_ERROR) {
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                #endif
+
+                Breakout = TRUE;
+            }
+
+            if (Breakout) {
+                break;
+            }
         }
-
-        refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
 
     GraphicsScreenDirty = TRUE;
-    // empty the buffer to protect the menu
+
+    // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Proceeding after pause");
+    #endif
 }
 
 // Pause a specified number of seconds
@@ -760,7 +828,10 @@ VOID PauseSeconds (
     LOG(4, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
     #endif
 
-    refit_call1_wrapper(gBS->Stall, 1000000 * Seconds);
+    WaitForInput (1000 * Seconds);
+
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
