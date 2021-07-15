@@ -889,6 +889,7 @@ CHAR16 * FSTypeName (
          retval = L"Unknown";
          break;
    } // switch
+
    return retval;
 } // CHAR16 *FSTypeName()
 
@@ -1056,10 +1057,31 @@ VOID SetFilesystemData (
             return;
         }
 
+        // If no other filesystem is identified, assume APFS if on partition with APFS GUID
+        // DA-TAG: Needs Activation
+        //         Volume->PartTypeGuid is not yet available
+        //         Needs code sequence restructuring
+        //         'SetPartGuidAndName' must be run before this
+        EFI_GUID GuidAPFS = APFS_GUID_VALUE;
+        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+            Volume->FSType = FS_TYPE_APFS;
+            return;
+        }
+
+        // If no other filesystem is identified, assume HFS+ if on partition with HFS+ GUID
+        // DA-TAG: Needs Activation
+        //         Volume->PartTypeGuid is not yet available
+        //         Needs code sequence restructuring
+        //         'SetPartGuidAndName' must be run before this
+        EFI_GUID GuidHFS = HFS_GUID_VALUE;
+        if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+            Volume->FSType = FS_TYPE_HFSPLUS;
+            return;
+        }
+
         // If no other filesystem is identified, assume APFS if on Apple Firmware
         if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
             Volume->FSType = FS_TYPE_APFS;
-
             return;
         }
     } // if ((Buffer != NULL) && (Volume != NULL))
