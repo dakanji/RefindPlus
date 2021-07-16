@@ -655,6 +655,16 @@ BOOLEAN ReadAllKeyStrokes (
     LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ... %r", Status);
     #endif
 
+    // Wait 100ms and quietly repeat flushing
+    gBS->Stall(100000);
+    for (;;) {
+        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        if (Status == EFI_SUCCESS) {
+            continue;
+        }
+        break;
+    }
+
     return GotKeyStrokes;
 }
 
