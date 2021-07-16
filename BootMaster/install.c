@@ -17,6 +17,7 @@
  */
 
  #include "global.h"
+ #include "icns.h"
  #include "lib.h"
  #include "screenmgt.h"
  #include "install.h"
@@ -108,6 +109,7 @@
      REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
 
      REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
+     TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
      CHAR16 *MenuInfo = L"Select a partition and press Enter to install RefindPlus";
      REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                          L"Select a destination and press Enter or",
@@ -932,6 +934,7 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
      REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
      REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
+     TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
      CHAR16 *MenuInfo = L"Select an option and press Enter to make it the default or '-' to delete it";
      REFIT_MENU_SCREEN    Menu = { L"Manage EFI Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                   L"Select an option and press Enter to make it the default, press '-' or",
