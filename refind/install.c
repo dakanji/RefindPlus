@@ -88,7 +88,7 @@ static ESP_LIST * FindAllESPs(VOID) {
 static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
     ESP_LIST            *CurrentESP;
     REFIT_VOLUME        *ChosenVolume = NULL;
-    CHAR16              *Temp = NULL, *GuidStr, *PartName, *VolName;
+    CHAR16              *Temp = NULL, *GuidStr, *PartName, *FsName, *VolName;
     INTN                DefaultEntry = 0, MenuExit = MENU_EXIT_ESCAPE, i = 1;
     MENU_STYLE_FUNC     Style = TextMenuStyle;
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
@@ -107,10 +107,15 @@ static REFIT_VOLUME *PickOneESP(ESP_LIST *AllESPs) {
             MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
             GuidStr = GuidAsString(&(CurrentESP->Volume->PartGuid));
             PartName = CurrentESP->Volume->PartName;
+            FsName = CurrentESP->Volume->FsName;
             VolName = CurrentESP->Volume->VolName;
-            if (PartName && (StrLen(PartName) > 0) && VolName && (StrLen(VolName) > 0) &&
-                !MyStriCmp(VolName, PartName)) {
-                Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, VolName);
+            if (PartName && (StrLen(PartName) > 0) && FsName && (StrLen(FsName) > 0) &&
+                !MyStriCmp(FsName, PartName)) {
+                Temp = PoolPrint(L"%s - '%s', aka '%s'", GuidStr, PartName, FsName);
+            } else if (FsName && (StrLen(FsName) > 0)) {
+                Temp = PoolPrint(L"%s - '%s'", GuidStr, FsName);
+            } else if (PartName && (StrLen(PartName) > 0)) {
+                Temp = PoolPrint(L"%s - '%s'", GuidStr, PartName);
             } else if (VolName && (StrLen(VolName) > 0)) {
                 Temp = PoolPrint(L"%s - '%s'", GuidStr, VolName);
             } else {
@@ -155,6 +160,7 @@ static EFI_STATUS RenameFile(IN EFI_FILE *BaseDir, CHAR16 *OldName, CHAR16 *NewN
     EFI_FILE_INFO *NewInfo, *Buffer = NULL;
     UINTN         NewInfoSize;
 
+    LOG(3, LOG_LINE_NORMAL, L"Trying to rename '%s' to '%s'", OldName, NewName);
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FilePtr, OldName,
                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
     if (Status == EFI_SUCCESS) {
@@ -194,6 +200,7 @@ static EFI_STATUS BackupOldFile(IN EFI_FILE *BaseDir, CHAR16 *FileName) {
     EFI_STATUS          Status = EFI_SUCCESS;
     CHAR16              *NewName;
 
+    LOG(3, LOG_LINE_NORMAL, L"Backing up '%s'", FileName);
     if ((BaseDir == NULL) || (FileName == NULL))
        return EFI_INVALID_PARAMETER;
 
@@ -267,6 +274,9 @@ static EFI_STATUS CopyOneFile(IN EFI_FILE *SourceDir,
     MyFreePool(DestFile);
     MyFreePool(Buffer);
 
+    if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error %d when copying '%s' to '%s'", Status, SourceName, DestName);
+    }
     return (Status);
 } // EFI_STATUS CopyOneFile()
 
@@ -298,19 +308,22 @@ static EFI_STATUS CopyDirectory(IN EFI_FILE *SourceDirPtr,
 // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
 // as a Linux /boot partition. That's weird, but it does work.
 static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
-                             IN CHAR16 *SourceDirName,
-                             IN EFI_FILE *DestDirPtr,
-                             IN CHAR16 *DestDirName) {
+                              IN CHAR16 *SourceDirName,
+                              IN EFI_FILE *DestDirPtr,
+                              IN CHAR16 *DestDirName) {
     CHAR16          *DestFileName = NULL, *SourceFileName = NULL;
     CHAR16          *DriverName = NULL; // Note: Assign to string constants; do not free.
     EFI_STATUS      Status = EFI_SUCCESS;
+    EFI_STATUS      WorstStatus = EFI_SUCCESS;
     BOOLEAN         DriverCopied[NUM_FS_TYPES];
     UINTN           i;
 
     for (i = 0; i < NUM_FS_TYPES; i++)
         DriverCopied[i] = FALSE;
 
-    for (i = 0; (i < VolumesCount) && (Status == EFI_SUCCESS); i++) {
+    LOG(3, LOG_LINE_NORMAL, L"Scanning %d volumes for identifiable filesystems", VolumesCount);
+    for (i = 0; i < VolumesCount; i++) {
+        LOG(1, LOG_LINE_NORMAL, L"Looking for driver for volume # %d, '%s'", i, Volumes[i]->VolName);
         DriverName = NULL;
         switch (Volumes[i]->FSType) {
 
@@ -362,13 +375,16 @@ static EFI_STATUS CopyDrivers(IN EFI_FILE *SourceDirPtr,
         if (DriverName) {
             SourceFileName = PoolPrint(L"%s\\%s%s", SourceDirName, DriverName, INST_PLATFORM_EXTENSION);
             DestFileName = PoolPrint(L"%s\\%s%s", DestDirName, DriverName, INST_PLATFORM_EXTENSION);
+            LOG(1, LOG_LINE_NORMAL, L"Trying to copy driver for %s", DriverName);
             Status = CopyOneFile(SourceDirPtr, SourceFileName, DestDirPtr, DestFileName);
+            if (EFI_ERROR(Status))
+                WorstStatus = Status;
             MyFreePool(SourceFileName);
             MyFreePool(DestFileName);
         } // if
     } // for
 
-    return (Status);
+    return (WorstStatus);
 } // EFI_STATUS CopyDrivers()
 
 // Copy all the files from the source to *TargetDir
@@ -376,7 +392,8 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
     REFIT_VOLUME    *SourceVolume = NULL; // Do not free
     CHAR16          *SourceFile = NULL, *SourceDir, *ConfFile;
     CHAR16          *SourceDriversDir, *TargetDriversDir, *RefindName;
-    UINTN           Status;
+    EFI_STATUS      Status;
+    EFI_STATUS      WorstStatus = EFI_SUCCESS;
 
     FindVolumeAndFilename(GlobalConfig.SelfDevicePath, &SourceVolume, &SourceFile);
     SourceDir = FindPath(SourceFile);
@@ -386,13 +403,17 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
     Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, RefindName);
     MyFreePool(SourceFile);
     MyFreePool(RefindName);
+    if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error copying rEFInd binary; installation has failed");
+        Status = WorstStatus = EFI_ABORTED;
+    }
 
-    // Now copy the config file -- but:
-    //  - Copy refind.conf-sample, not refind.conf, if it's available, to
-    //    avoid picking up live-disk-specific customizations.
-    //  - Do not overwrite an existing refind.conf at the target; instead,
-    //    copy to refind.conf-sample if refind.conf is present.
     if (Status == EFI_SUCCESS) {
+        // Now copy the config file -- but:
+        //  - Copy refind.conf-sample, not refind.conf, if it's available, to
+        //    avoid picking up live-disk-specific customizations.
+        //  - Do not overwrite an existing refind.conf at the target; instead,
+        //    copy to refind.conf-sample if refind.conf is present.
         ConfFile = PoolPrint(L"%s\\refind.conf-sample", SourceDir);
         if (FileExists(SourceVolume->RootDir, ConfFile)) {
             StrCpy(SourceFile, ConfFile);
@@ -400,31 +421,38 @@ static EFI_STATUS CopyFiles(IN EFI_FILE *TargetDir) {
             SourceFile = PoolPrint(L"%s\\refind.conf", SourceDir);
         }
         MyFreePool(ConfFile);
+        // Note: CopyOneFile() logs errors if they occur
         if (FileExists(TargetDir, L"\\EFI\\refind\\refind.conf")) {
             Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\refind.conf-sample");
         } else {
             Status = CopyOneFile(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\refind.conf");
         }
+        if (EFI_ERROR(Status))
+            WorstStatus = Status;
         MyFreePool(SourceFile);
-    }
 
-    // Now copy icons....
-    if (Status == EFI_SUCCESS) {
+        // Now copy icons....
         SourceFile = PoolPrint(L"%s\\icons", SourceDir);
         Status = CopyDirectory(SourceVolume->RootDir, SourceFile, TargetDir, L"EFI\\refind\\icons");
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error %d copying icons directory", Status);
+            WorstStatus = Status;
+        }
         MyFreePool(SourceFile);
-    }
 
-    // Now copy drivers....
-    if (Status == EFI_SUCCESS) {
+        // Now copy drivers....
         SourceDriversDir = PoolPrint(L"%s\\%s", SourceDir, INST_DRIVERS_SUBDIR);
         TargetDriversDir = PoolPrint(L"EFI\\refind\\%s", INST_DRIVERS_SUBDIR);
         Status = CopyDrivers(SourceVolume->RootDir, SourceDriversDir, TargetDir, TargetDriversDir);
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error %d copying drivers", Status);
+            WorstStatus = Status;
+        }
         MyFreePool(SourceDriversDir);
         MyFreePool(TargetDriversDir);
     }
     MyFreePool(SourceDir);
-    return (Status);
+    return (WorstStatus);
 } // EFI_STATUS CopyFiles()
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
@@ -448,19 +476,40 @@ static VOID CreateFallbackCSV(IN EFI_FILE *TargetDir) {
         } // if
         MyFreePool(Contents);
     } // if
+    if (EFI_ERROR(Status)) {
+        LOG(1, LOG_LINE_NORMAL, L"Error %d when writing BOOT.CSV file", Status);
+    }
 } // VOID CreateFallbackCSV()
 
 static BOOLEAN CopyRefindFiles(IN EFI_FILE *TargetDir) {
-    EFI_STATUS Status = EFI_SUCCESS;
+    EFI_STATUS Status = EFI_SUCCESS, Status2;
 
-    if (FileExists(TargetDir, L"\\EFI\\refind\\icons"))
+    if (FileExists(TargetDir, L"\\EFI\\refind\\icons")) {
         Status = BackupOldFile(TargetDir, L"\\EFI\\refind\\icons");
-    if (Status == EFI_SUCCESS)
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error when backing up icons");
+        }
+    }
+    if (Status == EFI_SUCCESS) {
         Status = CreateDirectories(TargetDir);
-    if (Status == EFI_SUCCESS)
-        Status = CopyFiles(TargetDir);
-    if (Status == EFI_SUCCESS)
-        CreateFallbackCSV(TargetDir);
+        if (EFI_ERROR(Status)) {
+            LOG(1, LOG_LINE_NORMAL, L"Error when creating target directory");
+        }
+    }
+    if (Status == EFI_SUCCESS) {
+        // Check status and log if it's an error; but do not pass on the
+        // result code unless it's EFI_ABORTED, since it may not be a
+        // critical error.
+        Status2 = CopyFiles(TargetDir);
+        if (EFI_ERROR(Status2)) {
+            if (Status2 == EFI_ABORTED) {
+                Status = EFI_ABORTED;
+            } else {
+                DisplaySimpleMessage(L"Warning", L"Error copying some files");
+            }
+        }
+    }
+    CreateFallbackCSV(TargetDir);
 
     return Status;
 } // BOOLEAN CopyRefindFiles()

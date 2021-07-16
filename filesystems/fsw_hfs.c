@@ -328,8 +328,9 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
 
         /* set default/fallback volume name */
         s.type = FSW_STRING_TYPE_ISO88591;
-        s.size = s.len = kHFSMaxVolumeNameChars;
-        s.data = "HFS+ volume";
+        #define kHFSVolumeNameFallback "HFS+ volume"
+        s.size = s.len = (sizeof(kHFSVolumeNameFallback) - 1);
+        s.data = kHFSVolumeNameFallback;
         status = fsw_strdup_coerce(&vol->g.label, vol->g.host_string_type, &s);
         CHECK(status);
 

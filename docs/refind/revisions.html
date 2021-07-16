@@ -16,7 +16,7 @@
 <p class="subhead">by Roderick W. Smith, <a
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
-<p>Last Web page update: 2/24/2021</p>
+<p>Last Web page update: 3/13/2021</p>
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
 
@@ -126,6 +126,95 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
+<li><b>0.13.2 (3/13/2021)</b>&mdash;I've fixed a number of bugs and added a few new features with this version:
+
+<ul>
+
+    <li>This version fixes a memory management bugs that could cause rEFInd
+	to hang under certain unpredictable circumstances.</li>
+
+    <li>I've also fixed potential memory management bugs that could cause
+	HFS+, ext2fs, and ext4fs drivers to misbehave.</li>
+
+    <li>Version 0.13.1 introduced a bug that caused rEFInd to fail to load
+	properly signed EFI drivers when Secure Boot was enabled and used
+	via Shim. This is now fixed.</li>
+
+    <li>The <tt>mvrefind</tt> script has long had an unnoticed bug that
+	caused it to fail to create a new NVRAM entry to point to the moved
+	rEFInd.</li>
+
+    <li>MacOS 11 ("Big Sur") changed something in its <tt>sed</tt> utility
+	that caused the <tt>mountesp</tt> script to fail in that version of
+	macOS. This problem has been fixed.</li>
+
+    <li>I've improved Secure Boot support in the <tt>refind-install</tt>
+	script when run from Linux: The script can now install a Secure Boot
+	key using <tt>mokutil</tt>, which can slightly simplify the MOK
+	setup. It also now creates a backup NVRAM entry to boot directly,
+	rather than via a Shim, if installed with the <tt>--shim</tt>
+	option. This should help on systems with custom Secure Boot key sets
+	that don't rely on Shim, but with a stray Shim binary present on the
+	ESP that a package script will detect and pass as a <tt>--shim</tt>
+	option to rEFInd. If this configuration causes a Secure Boot failure
+	on launching Shim, then it should fail over to the direct boot and
+	be fine. (Some EFIs will hang rather than fail over to the next
+	entry, though, and this change won't help with them.)</li>
+
+    <li>This version implements more logging improvements, including bumping
+	the maximum <tt>log_level</tt> from <tt>3</tt> to <tt>4</tt>.</li>
+
+    <li>This version improves the separation of filesystem vs. partition
+	names internally. This change can make for more accurate OS icon
+	choices in some situations, such as if both names are set but only
+	the partition name contains useful information.</li>
+
+    <li>Previously, when setting <tt>use_nvram false</tt>, rEFInd would use
+	the <tt>vars</tt> subdirectory of its own directory; and if that was
+	unwritable (say, if it was on an HFS+ volume), then rEFInd would not
+	store its own variables, such as <tt>PreviousBoot</tt> and
+	<tt>HiddenTags</tt>. With this version, rEFInd will now use the
+	<tt>vars</tt> subdirectory of rEFInd's own directory (as before);
+	but if that's not available, it will use a directory called
+	<tt>refind-vars</tt> in the root directory of the first ESP that
+	rEFInd can locate; and if neither is available, rEFInd will use
+	NVRAM storage instead, as if <tt>use_nvram true</tt> had been
+	set.</li>
+
+    <li>I've made rEFInd's self-install code less finicky about the success
+	of copying configuration, icons, and driver files. Previously it
+	reported a failure and did not modify NVRAM if any of these failed
+	to copy. Now it should register itself, although it does complain on
+	screen and log details (if logging is enabled). This can help if
+	installing from a source that lacks drivers for a detectable Linux
+	filesystem (ext2/3/4fs, ReiserFS, Btrfs, or HFS+).</li>
+
+    <li>I've adjusted reporting of SIP values by adding back 0x77 as an
+	interpreted value for on-screen notification when rotating through
+	values.</li>
+
+    <li>rEFInd can now identify JFS volumes as such, if a third-party JFS
+	driver is installed.</li>
+
+    <li>This version adds support for Booster initrd files, which are named
+	<tt>booster*</tt>, rather than <tt>init*</tt>. See <a
+	href="https://github.com/anatol/booster">https://github.com/anatol/booster</a>
+	and/or <a
+	href="https://wiki.archlinux.org/index.php/Booster">https://wiki.archlinux.org/index.php/Booster</a>
+	for more on Booster.</li>
+
+    <li>I've added an icon for Manjaro Linux.</li>
+
+    <li>I've swapped out expired CentOS Secure Boot keys for new ones.</li>
+
+    <li>GNU-EFI 3.0.13 made changes to its header files that caused rEFInd
+        build failures. These are now fixed.</li>
+
+</ul></li>
+
+</ul>
+
+<ul>
 <li><b>0.13.1 (2/24/2021)</b>&mdash;This release adds a couple of new features that won't impact most people (although one is a fairly major addition) and several small bug fixes and minor changes:
 
 <ul>

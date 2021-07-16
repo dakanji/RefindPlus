@@ -224,7 +224,6 @@ CreateBootCsvFile() {
       echo "$Target,rEFInd boot manager,,This is the boot entry for rEFInd" | \
            $IConv -t UCS-2 > "$TargetDir/BOOT.CSV"
    fi
-   exit
 } # CreateBootCsvFile()
 
 # If necessary, create a new NVRAM entry for the new location

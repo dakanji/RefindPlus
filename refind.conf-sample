@@ -15,7 +15,7 @@ timeout 20
 # Set the logging level. When set to 0, rEFInd does not log its actions.
 # When set to 1 or above, rEFInd creates a file called refind.log in
 # its home directory on the ESP and records information about what it's
-# doing. Higher values record more information, up to a maximum of 3.
+# doing. Higher values record more information, up to a maximum of 4.
 # This token should be left at the default of 0 except when debugging
 # problems.
 # Default value is 0
@@ -542,7 +542,8 @@ use_nvram false
 # define which specific security features are enabled. Below are the codes
 # for what the values mean. Add them up (in hexadecimal!) to set new values.
 # Apple's "csrutil enable" and "csrutil disable" commands set values of 10
-# and 877, respectively.
+# and 877, respectively. (Prior to OS 11, 77 was used rather than 877; 877
+# is required for OS 11, and should work for OS X 10.x, too.)
 #   CSR_ALLOW_UNTRUSTED_KEXTS            0x0001
 #   CSR_ALLOW_UNRESTRICTED_FS            0x0002
 #   CSR_ALLOW_TASK_FOR_PID               0x0004

@@ -536,7 +536,7 @@ static fsw_status_t fsw_ext2_readlink(struct fsw_ext2_volume *vol, struct fsw_ex
     int             ea_blocks;
     struct fsw_string s;
 
-    if (dno->g.size > FSW_PATH_MAX)
+    if ((dno->g.size > FSW_PATH_MAX) || (dno->g.size > sizeof(dno->raw->i_block)))
         return FSW_VOLUME_CORRUPTED;
 
     ea_blocks = dno->raw->i_file_acl ? (vol->g.log_blocksize >> 9) : 0;

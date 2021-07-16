@@ -157,7 +157,7 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     EFI_HANDLE              ChildImageHandle, ChildImageHandle2;
     EFI_DEVICE_PATH         *DevicePath;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
-    CHAR16                  ErrorInfo[256];
+    CHAR16                  *ErrorInfo;
     CHAR16                  *FullLoadOptions = NULL;
     CHAR16                  *EspGUID;
     EFI_GUID                SystemdGuid = SYSTEMD_GUID_VALUE;
@@ -217,12 +217,13 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
         ReturnStatus = EFI_LOAD_ERROR;
     }
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
-        LOG(1, LOG_LINE_NORMAL, L"Secure boot error while loading '%s'", ImageTitle);
+        LOG(1, LOG_LINE_NORMAL, L"Secure boot error while loading '%s'; Status = %d", ImageTitle, Status);
         WarnSecureBootError(ImageTitle, Verbose);
         goto bailout;
     }
-    SPrint(ErrorInfo, 255, L"while loading %s", ImageTitle);
+    ErrorInfo = PoolPrint(L"while loading %s", ImageTitle);
     if (CheckError(Status, ErrorInfo)) {
+        MyFreePool(ErrorInfo);
         goto bailout;
     }
 
@@ -257,8 +258,9 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
     ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
-    SPrint(ErrorInfo, 255, L"returned from %s", ImageTitle);
+    ErrorInfo = PoolPrint(L"returned from %s", ImageTitle);
     CheckError(Status, ErrorInfo);
+    MyFreePool(ErrorInfo);
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
@@ -361,22 +363,30 @@ static VOID DoEnableAndLockVMX(VOID) {
 
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
+    CHAR16 *LoaderPath;
+
     LOG(1, LOG_LINE_SEPARATOR, L"Launching '%s'", SelectionName);
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
     }
 
+    LoaderPath = Basename(Entry->LoaderPath);
     BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
     StoreLoaderName(SelectionName);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
-                  Basename(Entry->LoaderPath), Entry->OSType, !Entry->UseGraphicsMode, FALSE);
+                  LoaderPath, Entry->OSType, !Entry->UseGraphicsMode, FALSE);
+    MyFreePool(LoaderPath);
 } // VOID StartLoader()
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
 VOID StartTool(IN LOADER_ENTRY *Entry) {
+    CHAR16 *LoaderPath;
+
     LOG(1, LOG_LINE_SEPARATOR, L"Starting '%s'", Entry->me.Title);
     BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
     StoreLoaderName(Entry->me.Title);
+    LoaderPath = Basename(Entry->LoaderPath);
     StartEFIImage(Entry->Volume, Entry->LoaderPath, Entry->LoadOptions,
-                  Basename(Entry->LoaderPath), Entry->OSType, TRUE, FALSE);
+                  LoaderPath, Entry->OSType, TRUE, FALSE);
+    MyFreePool(LoaderPath);
 } /* VOID StartTool() */

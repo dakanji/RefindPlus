@@ -69,6 +69,8 @@
 
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateProtocol EfiLibLocateProtocol
+#else
+#include <efilib.h>
 #endif
 
 // Console defines and variables
@@ -385,29 +387,24 @@ BOOLEAN egSetTextMode(UINT32 RequestedMode) {
 
 CHAR16 * egScreenDescription(VOID)
 {
-    CHAR16 *GraphicsInfo, *TextInfo;
-
-    GraphicsInfo = AllocateZeroPool(256 * sizeof(CHAR16));
-    if (GraphicsInfo == NULL)
-        return StrDuplicate(L"memory allocation error");
+    CHAR16 *GraphicsInfo = NULL, *TextInfo;
 
     if (egHasGraphics) {
         if (GraphicsOutput != NULL) {
-            SPrint(GraphicsInfo, 255, L"Graphics Output (UEFI), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint(L"Graphics Output (UEFI), %dx%d", egScreenWidth, egScreenHeight);
         } else if (UgaDraw != NULL) {
-            SPrint(GraphicsInfo, 255, L"UGA Draw (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
+            GraphicsInfo = PoolPrint(L"UGA Draw (EFI 1.10), %dx%d", egScreenWidth, egScreenHeight);
         } else {
             MyFreePool(GraphicsInfo);
             return StrDuplicate(L"Internal Error");
         }
         if (!AllowGraphicsMode) { // graphics-capable HW, but in text mode
-            TextInfo = AllocateZeroPool(256 * sizeof(CHAR16));
-            SPrint(TextInfo, 255, L"(in %dx%d text mode)", ConWidth, ConHeight);
+            TextInfo = PoolPrint(L"(in %dx%d text mode)", ConWidth, ConHeight);
             MergeStrings(&GraphicsInfo, TextInfo, L' ');
             MyFreePool(TextInfo);
         }
     } else {
-        SPrint(GraphicsInfo, 255, L"Text-only console, %dx%d", ConWidth, ConHeight);
+        GraphicsInfo = PoolPrint(L"Text-only console, %dx%d", ConWidth, ConHeight);
     }
     return GraphicsInfo;
 }
@@ -484,16 +481,19 @@ VOID egDrawImage(IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY)
     // NOTE: Weird seemingly redundant tests because some placement code can "wrap around" and
     // send "negative" values, which of course become very large unsigned ints that can then
     // wrap around AGAIN if values are added to them.....
-    if (!egHasGraphics || ((ScreenPosX + Image->Width) > egScreenWidth) || ((ScreenPosY + Image->Height) > egScreenHeight) ||
+    if (!egHasGraphics || ((ScreenPosX + Image->Width) > egScreenWidth) ||
+        ((ScreenPosY + Image->Height) > egScreenHeight) ||
         (ScreenPosX > egScreenWidth) || (ScreenPosY > egScreenHeight))
-        return;
+            return;
 
-    if ((GlobalConfig.ScreenBackground == NULL) || ((Image->Width == egScreenWidth) && (Image->Height == egScreenHeight))) {
+    if ((GlobalConfig.ScreenBackground == NULL) || ((Image->Width == egScreenWidth) &&
+        (Image->Height == egScreenHeight))) {
        CompImage = Image;
     } else if (GlobalConfig.ScreenBackground == Image) {
        CompImage = GlobalConfig.ScreenBackground;
     } else {
-       CompImage = egCropImage(GlobalConfig.ScreenBackground, ScreenPosX, ScreenPosY, Image->Width, Image->Height);
+       CompImage = egCropImage(GlobalConfig.ScreenBackground, ScreenPosX, ScreenPosY,
+                               Image->Width, Image->Height);
        if (CompImage == NULL) {
           Print(L"Error! Can't crop image in egDrawImage()!\n");
           return;
@@ -502,11 +502,14 @@ VOID egDrawImage(IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY)
     }
 
     if (GraphicsOutput != NULL) {
-       refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
-                            EfiBltBufferToVideo, 0, 0, ScreenPosX, ScreenPosY, CompImage->Width, CompImage->Height, 0);
+       refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput,
+                            (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)CompImage->PixelData,
+                            EfiBltBufferToVideo, 0, 0, ScreenPosX, ScreenPosY, CompImage->Width,
+                            CompImage->Height, 0);
     } else if (UgaDraw != NULL) {
-       refit_call10_wrapper(UgaDraw->Blt, UgaDraw, (EFI_UGA_PIXEL *)CompImage->PixelData, EfiUgaBltBufferToVideo,
-                            0, 0, ScreenPosX, ScreenPosY, CompImage->Width, CompImage->Height, 0);
+       refit_call10_wrapper(UgaDraw->Blt, UgaDraw, (EFI_UGA_PIXEL *)CompImage->PixelData,
+                            EfiUgaBltBufferToVideo, 0, 0, ScreenPosX, ScreenPosY,
+                            CompImage->Width, CompImage->Height, 0);
     }
     if ((CompImage != GlobalConfig.ScreenBackground) && (CompImage != Image))
        egFreeImage(CompImage);
@@ -515,14 +518,15 @@ VOID egDrawImage(IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY)
 // Display an unselected icon on the screen, so that the background image shows
 // through the transparency areas. The BadgeImage may be NULL, in which case
 // it's not composited in.
-VOID egDrawImageWithTransparency(EG_IMAGE *Image, EG_IMAGE *BadgeImage, UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
-   EG_IMAGE *Background;
+VOID egDrawImageWithTransparency(EG_IMAGE *Image, EG_IMAGE *BadgeImage,
+                                 UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
+    EG_IMAGE *Background;
 
-   Background = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos, Width, Height);
-   if (Background != NULL) {
-      BltImageCompositeBadge(Background, Image, BadgeImage, XPos, YPos);
-      egFreeImage(Background);
-   }
+    Background = egCropImage(GlobalConfig.ScreenBackground, XPos, YPos, Width, Height);
+    if (Background != NULL) {
+        BltImageCompositeBadge(Background, Image, BadgeImage, XPos, YPos);
+        egFreeImage(Background);
+    }
 } // VOID DrawImageWithTransparency()
 
 VOID egDrawImageArea(IN EG_IMAGE *Image,
@@ -551,67 +555,70 @@ VOID egDrawImageArea(IN EG_IMAGE *Image,
 // specified color. For the moment, uses graphics calls only. (It still works
 // in text mode on GOP/UEFI systems, but not on UGA/EFI 1.x systems.)
 VOID egDisplayMessage(IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode) {
-   UINTN BoxWidth, BoxHeight;
-   static UINTN Position = 1;
-   EG_IMAGE *Box;
+    UINTN BoxWidth, BoxHeight;
+    static UINTN Position = 1;
+    EG_IMAGE *Box;
 
-   if ((Text != NULL) && (BGColor != NULL)) {
-      egMeasureText(Text, &BoxWidth, &BoxHeight);
-      BoxWidth += 14;
-      BoxHeight *= 2;
-      if (BoxWidth > egScreenWidth)
-         BoxWidth = egScreenWidth;
-      Box = egCreateFilledImage(BoxWidth, BoxHeight, FALSE, BGColor);
-      egRenderText(Text, Box, 7, BoxHeight / 4, (BGColor->r + BGColor->g + BGColor->b) / 3);
-      switch (PositionCode) {
-          case CENTER:
-              Position = (egScreenHeight - BoxHeight) / 2;
-              break;
-          case BOTTOM:
-              Position = egScreenHeight - (BoxHeight * 2);
-              break;
-          case TOP:
-              Position = 1;
-              break;
-          default: // NEXTLINE
-              Position += BoxHeight + (BoxHeight / 10);
-              break;
-      } // switch()
-      egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, Position);
-      if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5)))
-          Position = 1;
-   } // if non-NULL inputs
+    if ((Text != NULL) && (BGColor != NULL)) {
+        egMeasureText(Text, &BoxWidth, &BoxHeight);
+        BoxWidth += 14;
+        BoxHeight *= 2;
+        if (BoxWidth > egScreenWidth)
+            BoxWidth = egScreenWidth;
+        Box = egCreateFilledImage(BoxWidth, BoxHeight, FALSE, BGColor);
+        egRenderText(Text, Box, 7, BoxHeight / 4, (BGColor->r + BGColor->g + BGColor->b) / 3);
+        switch (PositionCode) {
+             case CENTER:
+                 Position = (egScreenHeight - BoxHeight) / 2;
+                 break;
+             case BOTTOM:
+                 Position = egScreenHeight - (BoxHeight * 2);
+                 break;
+             case TOP:
+                 Position = 1;
+                 break;
+             default: // NEXTLINE
+                 Position += BoxHeight + (BoxHeight / 10);
+                 break;
+        } // switch()
+        egDrawImage(Box, (egScreenWidth - BoxWidth) / 2, Position);
+        if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5)))
+            Position = 1;
+    } // if non-NULL inputs
 } // VOID egDisplayMessage()
 
 // Copy the current contents of the display into an EG_IMAGE....
 // Returns pointer if successful, NULL if not.
 EG_IMAGE * egCopyScreen(VOID) {
-   return egCopyScreenArea(0, 0, egScreenWidth, egScreenHeight);
+    return egCopyScreenArea(0, 0, egScreenWidth, egScreenHeight);
 } // EG_IMAGE * egCopyScreen()
 
 // Copy the current contents of the specified display area into an EG_IMAGE....
 // Returns pointer if successful, NULL if not.
 EG_IMAGE * egCopyScreenArea(UINTN XPos, UINTN YPos, UINTN Width, UINTN Height) {
-   EG_IMAGE *Image = NULL;
+    EG_IMAGE *Image = NULL;
 
-   if (!egHasGraphics)
-      return NULL;
+    if (!egHasGraphics)
+        return NULL;
 
-   // allocate a buffer for the screen area
-   Image = egCreateImage(Width, Height, FALSE);
-   if (Image == NULL) {
-      return NULL;
-   }
+    // allocate a buffer for the screen area
+    Image = egCreateImage(Width, Height, FALSE);
+    if (Image == NULL) {
+        return NULL;
+    }
 
-   // get full screen image
-   if (GraphicsOutput != NULL) {
-      refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput, (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
-                           EfiBltVideoToBltBuffer, XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
-   } else if (UgaDraw != NULL) {
-      refit_call10_wrapper(UgaDraw->Blt, UgaDraw, (EFI_UGA_PIXEL *)Image->PixelData, EfiUgaVideoToBltBuffer,
-                           XPos, YPos, 0, 0, Image->Width, Image->Height, 0);
-   }
-   return Image;
+    // get full screen image
+    if (GraphicsOutput != NULL) {
+        refit_call10_wrapper(GraphicsOutput->Blt, GraphicsOutput,
+                             (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)Image->PixelData,
+                             EfiBltVideoToBltBuffer, XPos, YPos, 0, 0,
+                             Image->Width, Image->Height, 0);
+    } else if (UgaDraw != NULL) {
+        refit_call10_wrapper(UgaDraw->Blt, UgaDraw, (EFI_UGA_PIXEL *)Image->PixelData,
+                             EfiUgaVideoToBltBuffer, XPos, YPos, 0, 0, Image->Width,
+                             Image->Height, 0);
+    }
+    return Image;
 } // EG_IMAGE * egCopyScreenArea()
 
 //

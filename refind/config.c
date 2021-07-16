@@ -94,16 +94,18 @@ EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFI
     EFI_FILE_HANDLE FileHandle;
     EFI_FILE_INFO   *FileInfo;
     UINT64          ReadSize;
-    CHAR16          Message[256];
+    CHAR16          *Message;
 
     File->Buffer = NULL;
     File->BufferSize = 0;
 
     // read the file, allocating a buffer on the way
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
-    SPrint(Message, 255, L"while loading the file '%s'", FileName);
-    if (CheckError(Status, Message))
+    Message = PoolPrint(L"while loading the file '%s'", FileName);
+    if (CheckError(Status, Message)) {
+        MyFreePool(Message);
         return Status;
+    }
 
     FileInfo = LibFileInfo(FileHandle);
     if (FileInfo == NULL) {
@@ -125,6 +127,7 @@ EFI_STATUS ReadFile(IN EFI_FILE_HANDLE BaseDir, IN CHAR16 *FileName, IN OUT REFI
     Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
     if (CheckError(Status, Message)) {
         MyFreePool(File->Buffer);
+        MyFreePool(Message);
         File->Buffer = NULL;
         refit_call1_wrapper(FileHandle->Close, FileHandle);
         return Status;
@@ -860,11 +863,11 @@ static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volu
             if (FindVolume(&Volume, TokenList[1])) {
                 if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                     MyFreePool(SubEntry->me.Title);
-                    SubEntry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-                    SPrint(SubEntry->me.Title, 255, L"Boot %s from %s",
-                           (Title != NULL) ? Title : L"Unknown", Volume->VolName);
-                    SubEntry->me.BadgeImage   = Volume->VolBadgeImage;
-                    SubEntry->Volume          = Volume;
+                    SubEntry->me.Title      = PoolPrint(L"Boot %s from %s",
+                                                        (Title != NULL) ? Title : L"Unknown",
+                                                        Volume->VolName);
+                    SubEntry->me.BadgeImage = Volume->VolBadgeImage;
+                    SubEntry->Volume        = Volume;
                 } // if volume is readable
             } // if match found
 
@@ -924,8 +927,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
 
     Entry->Title           = StrDuplicate(Title);
     Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(Entry->me.Title, 255, L"Boot %s from %s",
-           (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
+    Entry->me.Title        = PoolPrint(L"Boot %s from %s",
+                                       (Title != NULL) ? Title : L"Unknown",
+                                       CurrentVolume->VolName);
     Entry->me.Row          = 0;
     Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
     Entry->Volume          = CurrentVolume;
@@ -947,9 +951,9 @@ static LOADER_ENTRY * AddStanzaEntries(REFIT_FILE *File, REFIT_VOLUME *Volume, C
             if (FindVolume(&CurrentVolume, TokenList[1])) {
                 if ((CurrentVolume != NULL) && (CurrentVolume->IsReadable) && (CurrentVolume->RootDir)) {
                     MyFreePool(Entry->me.Title);
-                    Entry->me.Title        = AllocateZeroPool(256 * sizeof(CHAR16));
-                    SPrint(Entry->me.Title, 255, L"Boot %s from %s",
-                           (Title != NULL) ? Title : L"Unknown", CurrentVolume->VolName);
+                    Entry->me.Title        = PoolPrint(L"Boot %s from %s",
+                                                       (Title != NULL) ? Title : L"Unknown",
+                                                       CurrentVolume->VolName);
                     Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
                     Entry->Volume          = CurrentVolume;
                 } else { // It won't work out; reset to previous working volume....
@@ -1069,7 +1073,7 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
     UINTN        TokenCount, i;
     REFIT_FILE   *Options = NULL, *Fstab = NULL;
     EFI_STATUS   Status;
-    CHAR16       **TokenList, *Line, Root[100];
+    CHAR16       **TokenList, *Line, *Root = NULL;
 
     if (FileExists(Volume->RootDir, L"\\etc\\fstab")) {
         Options = AllocateZeroPool(sizeof(REFIT_FILE));
@@ -1085,14 +1089,14 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
         } else { // File read; locate root fs and create entries
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine(Fstab, &TokenList)) > 0) {
+                LOG(3, LOG_LINE_NORMAL, L"Read line from /etc/fstab holding %d tokens", TokenCount);
                 if (TokenCount > 2) {
-                    Root[0] = '\0';
                     if (StrCmp(TokenList[1], L"\\") == 0) {
-                        SPrint(Root, 99, L"%s", TokenList[0]);
+                        Root = PoolPrint(L"%s", TokenList[0]);
                     } else if (StrCmp(TokenList[2], L"\\") == 0) {
-                        SPrint(Root, 99, L"%s=%s", TokenList[0], TokenList[1]);
+                        Root = PoolPrint(L"%s=%s", TokenList[0], TokenList[1]);
                     } // if/elseif/elseif
-                    if (Root[0] != L'\0') {
+                    if (Root && (Root[0] != L'\0')) {
                         for (i = 0; i < StrLen(Root); i++)
                             if (Root[i] == '\\')
                                 Root[i] = '/';
@@ -1104,6 +1108,8 @@ static REFIT_FILE * GenerateOptionsFromEtcFstab(REFIT_VOLUME *Volume) {
                         MyFreePool(Line);
                         Options->BufferSize = StrLen((CHAR16*) Options->Buffer) * sizeof(CHAR16);
                     } // if
+                    MyFreePool(Root);
+                    Root = NULL;
                  } // if
                  FreeTokenLine(&TokenList, &TokenCount);
             } // while

@@ -37,6 +37,7 @@
 #include "global.h"
 #include "lib.h"
 #include "icns.h"
+#include "log.h"
 #include "config.h"
 #include "mystrings.h"
 #include "../refind/screen.h"
@@ -103,34 +104,43 @@ EG_IMAGE * BuiltinIcon(IN UINTN Id)
 EG_IMAGE * LoadOSIcon(IN CHAR16 *OSIconName OPTIONAL, IN CHAR16 *FallbackIconName, BOOLEAN BootLogo)
 {
     EG_IMAGE        *Image = NULL;
-    CHAR16          *CutoutName, BaseName[256];
+    CHAR16          *CutoutName, *BaseName;
     UINTN           Index = 0;
 
+    LOG(4, LOG_LINE_NORMAL, L"Entering LoadOSIcon()");
     if (GlobalConfig.TextOnly)      // skip loading if it's not used anyway
         return NULL;
 
+    LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", OSIconName);
     // First, try to find an icon from the OSIconName list....
     while (((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL) && (Image == NULL)) {
-       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
+       BaseName = PoolPrint(L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
        Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool(CutoutName);
+       MyFreePool(BaseName);
     }
 
     // If that fails, try again using the FallbackIconName....
     if (Image == NULL) {
-       SPrint(BaseName, 255, L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+       BaseName = PoolPrint(L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+       LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
        Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       MyFreePool(BaseName);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name....
     if (BootLogo && (Image == NULL)) {
-       SPrint(BaseName, 255, L"os_%s", FallbackIconName);
+       BaseName = PoolPrint(L"os_%s", FallbackIconName);
+       LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
        Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       MyFreePool(BaseName);
     }
 
     // If all of these fail, return the dummy image....
-    if (Image == NULL)
+    if (Image == NULL) {
+       LOG(4, LOG_LINE_NORMAL, L"Setting dummy image");
        Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+    }
 
     return Image;
 } /* EG_IMAGE * LoadOSIcon() */

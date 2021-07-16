@@ -38,6 +38,8 @@
 
 # Revision history:
 #
+# 0.13.2  -- Add installation of rEFInd Secure Boot key as MOK; if installing
+#            with Shim, add backup direct boot NVRAM option
 # 0.12.0  -- Improve code to find ESPs; should help with NVMe drives. Also
 #            activate install and bootorder features when using --usedefault
 #            option.
@@ -886,7 +888,7 @@ SetupMacHfs() {
         <key>ProductName</key>
         <string>rEFInd</string>
         <key>ProductVersion</key>
-        <string>0.13.1</string>
+        <string>0.13.2</string>
 </dict>
 </plist>
 ENDOFHERE
@@ -1274,6 +1276,7 @@ AddBootEntry() {
    local KeepExistingEntry=0
    local ExistingEntryBootNum
    local FirstBoot
+   local RealRefindBinary
 
    Efibootmgr="$(command -v efibootmgr 2> /dev/null)"
    if [[ "$Efibootmgr" ]] ; then
@@ -1314,11 +1317,26 @@ AddBootEntry() {
 
       if [[ "$KeepExistingEntry" == 0 ]] ; then
          echo "Creating new NVRAM entry"
+         # If this is a Shim-based installation, then also create a direct
+         # entry to rEFInd's own binary as a fallback. This is helpful in
+         # case of package scripts that tend to pass --shim even when the
+         # system is configured with custom SB variables, making use of Shim
+         # inappropriate.
+         if [[ $Refind == *"shim"* ]]; then
+             if [[ "$KeepName" == 1 ]] ; then
+                 RealRefindBinary="$TargetDir/refind_$Platform.efi"
+             else
+                 RealRefindBinary="$TargetDir/grub$Platform.efi"
+             fi
+             "$Efibootmgr" -c -l "$RealRefindBinary" -L "rEFInd Boot Manager (direct)" \
+                           -d $InstallDisk -p $PartNum &> /dev/null
+         fi
          if [[ "$KeepName" == 0 ]] ; then
-             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum &> /dev/null
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk \
+                           -p $PartNum &> /dev/null
          else
-             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk -p $PartNum \
-                           -u "$TargetShim $TargetX64" &> /dev/null
+             "$Efibootmgr" -c -l "$EfiEntryFilename" -L "rEFInd Boot Manager" -d $InstallDisk \
+                           -p $PartNum -u "$TargetShim $TargetX64" &> /dev/null
          fi
       else
          echo "Keeping existing NVRAM entry"
@@ -1381,6 +1399,45 @@ GenerateRefindLinuxConf() {
    fi
 }
 
+# Install a Secure Boot key as a MOK
+InstallSBKey() {
+    local UsedDerKey
+    if [ "$LocalKeys" == "1" ] ; then
+        UsedDerKey="$DerKey"
+    else
+        UsedDerKey="$ThisDir/keys/refind.cer"
+    fi
+    if command -v mokutil &>/dev/null ; then
+       if mokutil --test-key "$UsedDerKey" &> /dev/null ; then
+            echo "rEFInd requires a Secure Boot key to be used with Secure Boot active. This"
+            echo "script can install the key as a Machine Owner Key (MOK) for use with Shim."
+            echo "If you've taken full control of Secure Boot on your computer and are NOT"
+            echo "using Shim, you will instead need to add the key with efi-updatevar in"
+            echo "Linux, KeyTool in the UEFI, or the firmware's built-in key maintenance"
+            echo "tools."
+            echo ""
+            echo -n "Do you want to add the key as a MOK for use with Shim? (Y/N) "
+            ReadYesNo
+            echo ""
+            if [[ "$YesNo" == "Y" || "$YesNo" == "y" ]] ; then
+                echo "You will now be asked to enter a password twice. When you reboot, a blue"
+                echo "screen should appear asking if you want to press a key to manage MOKs. Do"
+                echo "so, and then select the option to 'Enroll MOK'. After you confirm the"
+                echo "enrollment, you will be asked to enter the password you're about to type."
+                mokutil -i "$UsedDerKey"
+                if [[ $? != 0 ]] ; then
+                    echo "Problem detected installing MOK!"
+                    Problems=1
+                fi
+            fi
+            echo "For more on rEFInd and Secure Boot, see:"
+            echo "https://www.rodsbooks.com/refind/secureboot.html"
+        else
+            echo "The appropriate Secure Boot key is already enrolled."
+        fi
+    fi
+} # InstallSBKey()
+
 # Controls rEFInd installation under Linux.
 # Sets Problems=1 if something goes wrong.
 InstallOnLinux() {
@@ -1406,6 +1463,14 @@ InstallOnLinux() {
    if [[ "$TargetDir" != "/EFI/BOOT" && "$TargetDir" != "/EFI/Microsoft/Boot" ]] ; then
       AddBootEntry
       GenerateRefindLinuxConf
+   fi
+   # Note that InstallSBKey may require the user to enter a password, so
+   # it must NOT be called if --yes is passed to the script, since that
+   # parameter is intended to eliminate user interaction. The user will
+   # just have to enroll any necessary Secure Boot key manually in this
+   # case.
+   if [[ "$IsSecureBoot" == "1" && "$AlwaysYes" == "0" ]] ; then
+      InstallSBKey
    fi
 } # InstallOnLinux()
 

@@ -544,7 +544,7 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
     REFIT_DIR_ITER          DirIter;
     UINTN                   NumFound = 0;
     EFI_FILE_INFO           *DirEntry;
-    CHAR16                  FileName[256];
+    CHAR16                  *FileName;
 
     CleanUpPathNameSlashes(Path);
     // look through contents of the directory
@@ -553,15 +553,17 @@ static UINTN ScanDriverDir(IN CHAR16 *Path)
         if (DirEntry->FileName[0] == '.')
             continue;   // skip this
 
-        SPrint(FileName, 255, L"%s\\%s", Path, DirEntry->FileName);
+        FileName = PoolPrint(L"%s\\%s", Path, DirEntry->FileName);
         NumFound++;
         Status = StartEFIImage(SelfVolume, FileName, L"", DirEntry->FileName, 0, FALSE, TRUE);
         MyFreePool(DirEntry);
+        MyFreePool(FileName);
     } // while
     Status = DirIterClose(&DirIter);
     if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
-        SPrint(FileName, 255, L"while scanning the %s directory", Path);
+        FileName = PoolPrint(L"while scanning the %s directory", Path);
         CheckError(Status, FileName);
+        MyFreePool(FileName);
     }
     return (NumFound);
 } // static UINTN ScanDriverDir()

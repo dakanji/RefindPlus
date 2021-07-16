@@ -164,7 +164,7 @@ VOID AboutrEFInd(VOID)
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"rEFInd Version %s", REFIND_VERSION));
         AddMenuInfoLine(&AboutMenu, L"");
         AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2006-2010 Christoph Pfisterer");
-        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2020 Roderick W. Smith");
+        AddMenuInfoLine(&AboutMenu, L"Copyright (c) 2012-2021 Roderick W. Smith");
         AddMenuInfoLine(&AboutMenu, L"Portions Copyright (c) Intel Corporation and others");
         AddMenuInfoLine(&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
         AddMenuInfoLine(&AboutMenu, L"");
@@ -379,6 +379,8 @@ VOID LogBasicInfo(VOID) {
 #else
     LOG(1, LOG_LINE_NORMAL, L"Platform: unknown");
 #endif
+    LOG(1, LOG_LINE_NORMAL, L"Log level is %d", GlobalConfig.LogLevel);
+    LOG(1, LOG_LINE_NORMAL, L"Menu timeout is %d", GlobalConfig.Timeout);
     LOG(1, LOG_LINE_NORMAL, L"Firmware: %s %d.%02d", ST->FirmwareVendor,
         ST->FirmwareRevision >> 16, ST->FirmwareRevision & ((1 << 16) - 1));
     LOG(1, LOG_LINE_NORMAL, L"EFI Revision %d.%02d", EfiMajorVersion,
@@ -393,7 +395,7 @@ VOID LogBasicInfo(VOID) {
             TempStr = L"CSM type: UEFI";
             break;
         case LEGACY_TYPE_NONE:
-            TempStr = L"CSM is unavailable";
+            TempStr = L"CSM is not available";
             break;
         default: // should never happen; just in case....
             TempStr = L"CSM type: unknown";
@@ -471,12 +473,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         StartLogging(FALSE);
         LogBasicInfo();
     }
+    MokProtocol = SecureBootSetup();
     if (LoadDrivers())
         ScanVolumes();
 
     LOG(1, LOG_LINE_SEPARATOR, L"Initializing basic features");
     AdjustDefaultSelection();
-    MokProtocol = SecureBootSetup();
 
     if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0')
         SetAppleOSInfo();

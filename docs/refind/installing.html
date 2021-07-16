@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/24/2021, referencing rEFInd 0.13.1</p>
+3/13/2021, referencing rEFInd 0.13.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -218,13 +218,13 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>I provide RPM and Debian package files for rEFInd; and I maintain an Ubuntu PPA for rEFInd. If you have a working RPM-based or Debian-based Linux installation that boots in EFI mode, using one of these files is likely to be the easiest way to install rEFInd: You need only download the file and issue an appropriate installation command. In some cases, double-clicking the package in your file manager will install it. If that doesn't work, a command like the following will install the RPM on an RPM-based system:</p>
 
-<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.13.1-1.x86_64.rpm</tt></pre>
+<pre class="listing"># <tt class="userinput">rpm -Uvh refind-0.13.2-1.x86_64.rpm</tt></pre>
 
 <p>On a Debian-based system, the equivalent command is:</p>
 
-<pre class="listing"># <tt class="userinput">dpkg -i refind_0.13.1-1_amd64.deb</tt></pre>
+<pre class="listing"># <tt class="userinput">dpkg -i refind_0.13.2-1_amd64.deb</tt></pre>
 
-<p class="sidebar"><b>Warning:</b> The initial release of Ubuntu 16.04's <tt>sbsigntool</tt> package had a bug that caused the <tt>sbsign</tt> utility to crash randomly. (See <a href="https://bugs.launchpad.net/ubuntu/+source/sbsigntool/+bug/1574372">this bug report</a> for details.) This bug would cause rEFInd installation to fail. It's been fixed with <tt>sbsigntool</tt> version 0.6-0ubuntu10.1, so be sure your <tt>sbsigntool</tt> is up-to-date before installing rEFInd!</p>
+<p class="sidebar"><b>Tip:</b> If you're installing on a system with your own custom Secure Boot keys, as described <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">here,</a> and if you're not using Shim, then you should delete all copies of Shim from your ESP before installing a rEFInd package. The package scripts try to find Shim on the ESP and tell <tt>refind-install</tt> about it; but if that Shim is unnecessary, then its use to boot rEFInd may result in a Secure Boot failure. Depending on the UEFI implementation, this failure might be unnoticeable, a minor warning message, or a complete system hang or shutdown. Removing unnecessary Shim binaries from the ESP will eliminate this failure condition.</p>
 
 <p>Either command produces output similar to that described for <a href="#installsh">using the <tt>refind-install</tt> script,</a> so you can check it for error messages and other signs of trouble. The package file installs rEFInd and registers it with the EFI to be the default boot loader. The script that runs as part of the installation process tries to determine if you're using Secure Boot, and if so it will try to configure rEFInd to launch using shim; however, this won't work correctly on all systems. Since version 0.11.0, <tt>refind-install</tt> supports storing Secure Boot private keys in an encrypted form. If you set up rEFInd in this way, the RPM or Debian package will fail to install, since it assumes an unencrypted Secure Boot key.</p>
 
@@ -248,11 +248,23 @@ $ <tt class="userinput">sudo apt-get install refind</tt></pre></pre>
 
 <p class="sidebar"><b>Warning:</b> ARM-based Macs (introduced in late 2020) are as yet <i>untested</i> with rEFInd, and it's likely that the <tt>refind-install</tt> script will fail with this CPU type under macOS. I strongly suggest testing rEFInd using a USB flash drive before installing it; and if the test succeeds, you should perform a manual install or install using the automated installation feature from the rEFInd USB drive.</p>
 
-<p>If you're using Linux or macOS, and if you can't or don't want to use a distribution package file, the easiest way to install rEFInd is to use the <tt>refind-install</tt> script. This script automatically copies rEFInd's files to your ESP or other target location and makes changes to your firmware's NVRAM settings so that rEFInd will start the next time you boot. If you've booted to macOS or in non-Secure-Boot EFI mode to Linux on a UEFI-based PC, <tt>refind-install</tt> will probably do the right thing, so you can get by with the quick instructions. If your setup is unusual, if your computer uses Secure Boot, or if you want to create a USB flash drive with rEFInd on it, you should read the <a href="refind-install.html">man page</a> for this utility.</p>
+<p>If you're using Linux or macOS, and if you can't or don't want to use a distribution package file, the easiest way to install rEFInd is to use the <tt>refind-install</tt> script. This script automatically copies rEFInd's files to your ESP or other target location and makes changes to your firmware's NVRAM settings so that rEFInd will start the next time you boot. If you've booted to macOS or in non-Secure-Boot EFI mode to Linux on a UEFI-based PC, <tt>refind-install</tt> will probably do the right thing, so you can get by with the quick instructions on this page. If your setup is unusual, if your computer uses Secure Boot, or if you want to create a USB flash drive with rEFInd on it, you should read the <a href="refind-install.html">man page</a> for this utility. A few highlights of changes you might want to include are:</p>
+
+<ul>
+
+<li>The <tt>--shim <i>shimfile</i></tt> option points to a Shim binary, for use with a Secure Boot installation. If you're currently booting with Secure Boot active, you can point to a working Shim file with this option, as in <tt class="userinput">refind-install --shim /boot/efi/EFI/fedora/shimx64.efi</tt> to use Fedora's <tt>shimx64.efi</tt> file. The <tt>refind-install</tt> script will then make a copy of this file in rEFInd's own installation directory and make other necessary changes. This option, and the next two, are valid only in Linux. Note that this option is <i>not</i> necessary if you've taken complete control of Secure Boot on your computer, as described <a href="https://www.rodsbooks.com/efi-bootloaders/controlling-sb.html">here.</a></li>
+
+<li>The <tt>--localkeys</tt> option tells rEFInd to re-sign (or sign) its binaries with keys that <tt>refind-install</tt> generates itself, or that it generated on a previous run of the program. (These keys are stored in <tt>/etc/refind.d/keys</tt>.) This option is necessary when using Secure Boot with unsigned binaries, such as if you built the program yourself from source code. If you're using my binary <tt>.zip</tt> file, then the binaries are signed with my own key, and this option is unnecessary&mdash;but if you prefer to use your own keys, you can use this option.</li>
+
+<li>The <tt>--encryptkeys</tt> option causes rEFInd's local keys stored in <tt>/etc/refind.d/keys</tt> to be encrypted. If you use local keys, use of this option is highly desirable.</li>
+
+<li>The <tt>--ownhfs <i>device-file</i></tt> option is a macOS-specific option that causes rEFInd to install itself to an HFS+ volume that you specify by device filename, as in <tt class="userinput">./refind-install --ownhfs /dev/disk2s4</tt>. In principle, this type of installation permits selecting between a direct macOS boot and a boot through rEFInd using Apple's own boot manager or macOS's Startup Disk tool. In practice, though, this feature has not been well maintained and so I can't promise it will work. Also, installing to an HFS+ volume will require commenting out the <tt>use_nvram false</tt> line in <tt>refind.conf</tt> if you want to hide boot tags or rely on rEFInd's ability to remember its last-booted OS.</li>
+
+</ul>
 
 <p class="sidebar"><b>Warning:</b> MacOS 10.11 ("El Capitan") implements a new feature called System Integrity Protection (SIP; aka "rootless" or "CSR"). When enabled, SIP prevents the final step of rEFInd installation&mdash;registering the boot loader with the firmware. Thus, to install rEFInd, you must either disable SIP or perform the installation from something other than your regular macOS installation. The <a href="sip.html">rEFInd and System Integrity Protection</a> page of this document describes the options.</p>
 
-<p>By default, the <tt>refind-install</tt> script installs rEFInd to your disk's ESP. Under macOS, you can instead install rEFInd to your current macOS boot partition by passing the script the <tt>--notesp</tt> option, or to a non-boot HFS+ partition by using the <tt>--ownhfs <tt class="variable">devicefile</tt></tt> option. Under either OS, you can install to something other than the currently-running OS by using the <tt>--root <tt class="variable">/mountpoint</tt></tt> option.</p>
+<p>By default, the <tt>refind-install</tt> script installs rEFInd to your disk's ESP. Under macOS, you can instead install rEFInd to your current macOS boot partition by passing the script the <tt>--notesp</tt> option. Under either OS, you can install to something other than the currently-running OS by using the <tt>--root <tt class="variable">/mountpoint</tt></tt> option.</p>
 
 <p>Under Linux, <tt>refind-install</tt> will be most reliable if your ESP is already mounted at <tt>/boot</tt>, <tt>/boot/efi</tt>, or <tt>/efi</tt>, as described in more detail in the <a href="#linux">Installing rEFInd Manually Using Linux</a> section. (If you installed Linux in EFI mode, chances are your ESP is properly mounted.) If your ESP is not so mounted, <tt>refind-install</tt> will attempt to locate and mount an ESP, but this action is not guaranteed to work correctly. If you run <tt>refind-install</tt> from a BIOS/legacy-mode boot, particularly on a computer that also runs Windows, you should be aware that the tricks the script uses to install itself from BIOS mode are rather delicate. You can convert to a more conventional configuration using the <a href="#mvrefind"><tt>mvrefind</tt> script</a> after you've booted in EFI mode.</p>
 

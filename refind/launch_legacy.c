@@ -180,15 +180,15 @@ static EFI_GUID AppleVariableVendorID = { 0x7C436110, 0xAB2A, 0x4BBB, { 0xA8, 0x
 
 static EFI_STATUS WriteBootDiskHint(IN EFI_DEVICE_PATH *WholeDiskDevicePath)
 {
-   EFI_STATUS          Status;
+    EFI_STATUS          Status;
 
-   Status = EfivarSetRaw(&AppleVariableVendorID, L"BootCampHD",
-                         (CHAR8*) WholeDiskDevicePath,
-                         GetDevicePathSize(WholeDiskDevicePath), TRUE);
-   if (EFI_ERROR(Status))
-      return Status;
+    Status = EfivarSetRaw(&AppleVariableVendorID, L"BootCampHD",
+                          (CHAR8*) WholeDiskDevicePath,
+                          GetDevicePathSize(WholeDiskDevicePath), TRUE);
+    if (EFI_ERROR(Status))
+        return Status;
 
-   return EFI_SUCCESS;
+    return EFI_SUCCESS;
 }
 
 //
@@ -333,7 +333,6 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
     EFI_HANDLE              ChildImageHandle;
     EFI_LOADED_IMAGE        *ChildLoadedImage = NULL;
     UINTN                   DevicePathIndex;
-    CHAR16                  ErrorInfo[256];
     CHAR16                  *FullLoadOptions = NULL;
 
     if (ErrorInStep != NULL)
@@ -354,8 +353,7 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
             break;
         }
     } // for
-    SPrint(ErrorInfo, 255, L"while loading legacy loader");
-    if (CheckError(Status, ErrorInfo)) {
+    if (CheckError(Status, L"while loading legacy loader")) {
         if (ErrorInStep != NULL)
             *ErrorInStep = 1;
         goto bailout;
@@ -379,9 +377,8 @@ static EFI_STATUS StartLegacyImageList(IN EFI_DEVICE_PATH **DevicePaths,
     ReturnStatus = Status = refit_call3_wrapper(BS->StartImage, ChildImageHandle, NULL, NULL);
 
     // control returns here when the child image calls Exit()
-    SPrint(ErrorInfo, 255, L"returned from legacy loader");
-    if (CheckError(Status, ErrorInfo)) {
-        LOG(1, LOG_LINE_NORMAL, ErrorInfo);
+    if (CheckError(Status, L"returned from legacy loader")) {
+        LOG(1, LOG_LINE_NORMAL, L"returned from legacy loader");
         if (ErrorInStep != NULL)
             *ErrorInStep = 3;
     }
@@ -475,47 +472,43 @@ static LEGACY_ENTRY * AddLegacyEntry(IN CHAR16 *LoaderTitle, IN REFIT_VOLUME *Vo
     else
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
 
-    LegacyTitle = AllocateZeroPool(256 * sizeof(CHAR16));
-    if (LegacyTitle != NULL)
-       SPrint(LegacyTitle, 255, L"Boot %s from %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint(L"Boot %s from %s", LoaderTitle, VolDesc);
     LOG(1, LOG_LINE_NORMAL, L"Adding BIOS/CSM/legacy entry for '%s'", LegacyTitle);
     if (IsInSubstring(LegacyTitle, GlobalConfig.DontScanVolumes)) {
-       MyFreePool(LegacyTitle);
-       return NULL;
+        MyFreePool(LegacyTitle);
+        return NULL;
     } // if
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = LegacyTitle;
-    Entry->me.Tag          = TAG_LEGACY;
-    Entry->me.Row          = 0;
+    Entry->me.Title          = LegacyTitle;
+    Entry->me.Tag            = TAG_LEGACY;
+    Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
-    Entry->me.Image        = LoadOSIcon(Volume->OSIconName, L"legacy", FALSE);
-    Entry->me.BadgeImage   = Volume->VolBadgeImage;
-    Entry->Volume          = Volume;
-    Entry->LoadOptions     = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" :
-                              ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
-    Entry->Enabled         = TRUE;
+    Entry->me.Image          = LoadOSIcon(Volume->OSIconName, L"legacy", FALSE);
+    Entry->me.BadgeImage     = Volume->VolBadgeImage;
+    Entry->Volume            = Volume;
+    Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" :
+                                ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
+    Entry->Enabled           = TRUE;
 
     // create the submenu
-    SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubScreen->Title, 255, L"Boot Options for %s on %s", LoaderTitle, VolDesc);
+    SubScreen             = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
+    SubScreen->Title      = PoolPrint(L"Boot Options for %s on %s", LoaderTitle, VolDesc);
     SubScreen->TitleImage = Entry->me.Image;
-    SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
+    SubScreen->Hint1      = StrDuplicate(SUBSCREEN_HINT1);
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-       SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
+        SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
     } else {
-       SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2);
+        SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2);
     } // if/else
 
     // default entry
-    SubEntry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubEntry->me.Title, 255, L"Boot %s", LoaderTitle);
-    SubEntry->me.Tag          = TAG_LEGACY;
-    SubEntry->Volume          = Entry->Volume;
-    SubEntry->LoadOptions     = Entry->LoadOptions;
+    SubEntry              = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    SubEntry->me.Title    = PoolPrint(L"Boot %s", LoaderTitle);
+    SubEntry->me.Tag      = TAG_LEGACY;
+    SubEntry->Volume      = Entry->Volume;
+    SubEntry->LoadOptions = Entry->LoadOptions;
     AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
     AddMenuEntry(SubScreen, &MenuEntryReturn);
@@ -536,7 +529,7 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
     CHAR16 *LegacyDescription = StrDuplicate(BdsOption->Description);
 
     if (IsInSubstring(LegacyDescription, GlobalConfig.DontScanVolumes))
-       return NULL;
+        return NULL;
 
     // Remove stray spaces, since many EFIs produce descriptions with lots of
     // extra spaces, especially at the end; this throws off centering of the
@@ -545,35 +538,32 @@ static LEGACY_ENTRY * AddLegacyEntryUEFI(BDS_COMMON_OPTION *BdsOption, IN UINT16
 
     // prepare the menu entry
     Entry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    Entry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(Entry->me.Title, 255, L"Boot legacy OS from %s", LegacyDescription);
+    Entry->me.Title          = PoolPrint(L"Boot legacy OS from %s", LegacyDescription);
     LOG(1, LOG_LINE_NORMAL, L"Adding UEFI-style BIOS/CSM/legacy entry for '%s'", Entry->me.Title);
-    Entry->me.Tag          = TAG_LEGACY_UEFI;
-    Entry->me.Row          = 0;
+    Entry->me.Tag            = TAG_LEGACY_UEFI;
+    Entry->me.Row            = 0;
     Entry->me.ShortcutLetter = ShortcutLetter;
-    Entry->me.Image        = LoadOSIcon(L"legacy", L"legacy", TRUE);
-    Entry->LoadOptions     = (DiskType == BBS_CDROM) ? L"CD" :
-                             ((DiskType == BBS_USB) ? L"USB" : L"HD");
-    Entry->me.BadgeImage   = GetDiskBadge(DiskType);
-    Entry->BdsOption       = BdsOption;
-    Entry->Enabled         = TRUE;
+    Entry->me.Image          = LoadOSIcon(L"legacy", L"legacy", TRUE);
+    Entry->LoadOptions       = (DiskType == BBS_CDROM) ? L"CD" :
+                               ((DiskType == BBS_USB) ? L"USB" : L"HD");
+    Entry->me.BadgeImage     = GetDiskBadge(DiskType);
+    Entry->BdsOption         = BdsOption;
+    Entry->Enabled           = TRUE;
 
     // create the submenu
     SubScreen = AllocateZeroPool(sizeof(REFIT_MENU_SCREEN));
-    SubScreen->Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubScreen->Title, 255, L"No boot options for legacy target");
+    SubScreen->Title = StrDuplicate(L"No boot options for legacy target");
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1 = StrDuplicate(SUBSCREEN_HINT1);
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-       SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
+        SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2_NO_EDITOR);
     } else {
-       SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2);
+        SubScreen->Hint2 = StrDuplicate(SUBSCREEN_HINT2);
     } // if/else
 
     // default entry
-    SubEntry = AllocateZeroPool(sizeof(LEGACY_ENTRY));
-    SubEntry->me.Title = AllocateZeroPool(256 * sizeof(CHAR16));
-    SPrint(SubEntry->me.Title, 255, L"Boot %s", LegacyDescription);
+    SubEntry                  = AllocateZeroPool(sizeof(LEGACY_ENTRY));
+    SubEntry->me.Title        = PoolPrint(L"Boot %s", LegacyDescription);
     SubEntry->me.Tag          = TAG_LEGACY_UEFI;
     Entry->BdsOption          = BdsOption; 
     AddMenuEntry(SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -610,16 +600,17 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
 
     // If LegacyBios protocol is not implemented on this platform, then
     //we do not support this type of legacy boot on this machine.
-    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
+    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
+                                 NULL, (VOID **) &LegacyBios);
     if (EFI_ERROR (Status))
-       return;
+        return;
 
     // EFI calls USB drives BBS_HARDDRIVE, but we want to distinguish them,
     // so we set DiskType inappropriately elsewhere in the program and
     // "translate" it here.
     if (DiskType == BBS_USB) {
-       DiskType = BBS_HARDDISK;
-       SearchingForUsb = TRUE;
+        DiskType = BBS_HARDDISK;
+        SearchingForUsb = TRUE;
     } // if
 
     // Grab the boot order
@@ -633,78 +624,80 @@ static VOID ScanLegacyUEFI(IN UINTN DiskType)
     {
         // Grab each boot option variable from the boot order, and convert
         // the variable into a BDS boot option
-        UnicodeSPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
+        SPrint(BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {
-           BbsDevicePath = (BBS_BBS_DEVICE_PATH *)BdsOption->DevicePath;
-           // Only add the entry if it is of a requested type (e.g. USB, HD)
-           // Two checks necessary because some systems return EFI boot loaders
-           // with a DeviceType value that would inappropriately include them
-           // as legacy loaders....
-           if ((BbsDevicePath->DeviceType == DiskType) && (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)) {
-              // USB flash drives appear as hard disks with certain media flags set.
-              // Look for this, and if present, pass it on with the (technically
-              // incorrect, but internally useful) BBS_TYPE_USB flag set.
-              if (DiskType == BBS_HARDDISK) {
-                 if (SearchingForUsb && (BbsDevicePath->StatusFlag & (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
-                    AddLegacyEntryUEFI(BdsOption, BBS_USB);
-                 } else if (!SearchingForUsb && !(BbsDevicePath->StatusFlag & (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
+            BbsDevicePath = (BBS_BBS_DEVICE_PATH *)BdsOption->DevicePath;
+            // Only add the entry if it is of a requested type (e.g. USB, HD)
+            // Two checks necessary because some systems return EFI boot loaders
+            // with a DeviceType value that would inappropriately include them
+            // as legacy loaders....
+            if ((BbsDevicePath->DeviceType == DiskType) && (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)) {
+                // USB flash drives appear as hard disks with certain media flags set.
+                // Look for this, and if present, pass it on with the (technically
+                // incorrect, but internally useful) BBS_TYPE_USB flag set.
+                if (DiskType == BBS_HARDDISK) {
+                    if (SearchingForUsb && (BbsDevicePath->StatusFlag &
+                        (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
+                            AddLegacyEntryUEFI(BdsOption, BBS_USB);
+                    } else if (!SearchingForUsb && !(BbsDevicePath->StatusFlag &
+                               (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))) {
+                        AddLegacyEntryUEFI(BdsOption, DiskType);
+                    }
+                } else {
                     AddLegacyEntryUEFI(BdsOption, DiskType);
-                 }
-              } else {
-                 AddLegacyEntryUEFI(BdsOption, DiskType);
-              } // if/else
-           } // if
+                } // if/else
+            } // if
         } // if (BdsOption != NULL)
         Index++;
     } // while
 } /* static VOID ScanLegacyUEFI() */
 
 static VOID ScanLegacyVolume(REFIT_VOLUME *Volume, UINTN VolumeIndex) {
-   UINTN VolumeIndex2;
-   BOOLEAN ShowVolume, HideIfOthersFound;
+    UINTN VolumeIndex2;
+    BOOLEAN ShowVolume, HideIfOthersFound;
 
-   ShowVolume = FALSE;
-   HideIfOthersFound = FALSE;
-   if (Volume->HasBootCode) {
-      ShowVolume = TRUE;
-      if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
-          Volume->BlockIOOffset == 0 &&
-          Volume->OSName == NULL)
-         // this is a whole disk (MBR) entry; hide if we have entries for partitions
-         HideIfOthersFound = TRUE;
-   }
-   if (HideIfOthersFound) {
-      // check for other bootable entries on the same disk
-      for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
-         if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
-             Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO)
-            ShowVolume = FALSE;
-      }
-   }
+    ShowVolume = FALSE;
+    HideIfOthersFound = FALSE;
+    if (Volume->HasBootCode) {
+        ShowVolume = TRUE;
+        if (Volume->BlockIO == Volume->WholeDiskBlockIO &&
+             Volume->BlockIOOffset == 0 &&
+             Volume->OSName == NULL)
+            // this is a whole disk (MBR) entry; hide if we have entries for partitions
+            HideIfOthersFound = TRUE;
+    }
+    if (HideIfOthersFound) {
+        // check for other bootable entries on the same disk
+        for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
+           if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
+               Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO)
+                   ShowVolume = FALSE;
+        }
+    }
 
-   if (ShowVolume)
-      AddLegacyEntry(NULL, Volume);
+    if (ShowVolume)
+        AddLegacyEntry(NULL, Volume);
 } // static VOID ScanLegacyVolume()
 
 // Scan attached optical discs for legacy (BIOS) boot code
 // and add anything found to the list....
 VOID ScanLegacyDisc(VOID)
 {
-   UINTN                   VolumeIndex;
-   REFIT_VOLUME            *Volume;
+    UINTN                   VolumeIndex;
+    REFIT_VOLUME            *Volume;
 
-   LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/legacy-mode optical discs");
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-         Volume = Volumes[VolumeIndex];
-         if (Volume->DiskKind == DISK_KIND_OPTICAL)
-            ScanLegacyVolume(Volume, VolumeIndex);
-      } // for
-   } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      ScanLegacyUEFI(BBS_CDROM);
-   }
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/legacy-mode optical discs");
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_OPTICAL)
+                ScanLegacyVolume(Volume, VolumeIndex);
+        } // for
+    } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        ScanLegacyUEFI(BBS_CDROM);
+    }
 } /* VOID ScanLegacyDisc() */
 
 // Scan internal hard disks for legacy (BIOS) boot code
@@ -732,65 +725,67 @@ VOID ScanLegacyInternal(VOID)
 // and add anything found to the list....
 VOID ScanLegacyExternal(VOID)
 {
-   UINTN                   VolumeIndex;
-   REFIT_VOLUME            *Volume;
+    UINTN                   VolumeIndex;
+    REFIT_VOLUME            *Volume;
 
-   LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/legacy-mode external disks");
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-      for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-         Volume = Volumes[VolumeIndex];
-         if (Volume->DiskKind == DISK_KIND_EXTERNAL)
-            ScanLegacyVolume(Volume, VolumeIndex);
-      } // for
-   } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      // TODO: This actually doesn't do anything useful; leaving in hopes of
-      // fixing it later....
-      ScanLegacyUEFI(BBS_USB);
-   }
+    LOG(1, LOG_LINE_THIN_SEP, L"Scanning for BIOS/CSM/legacy-mode external disks");
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+            Volume = Volumes[VolumeIndex];
+            if (Volume->DiskKind == DISK_KIND_EXTERNAL)
+                ScanLegacyVolume(Volume, VolumeIndex);
+        } // for
+    } else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        // TODO: This actually doesn't do anything useful; leaving in hopes of
+        // fixing it later....
+        ScanLegacyUEFI(BBS_USB);
+    }
 } /* VOID ScanLegacyExternal() */
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType(VOID) {
-   EFI_STATUS                Status;
-   EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
+    EFI_STATUS                Status;
+    EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-   GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
+    GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
-   // UEFI-style legacy BIOS support is available only with some EFI implementations....
-   Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid, NULL, (VOID **) &LegacyBios);
-   if (!EFI_ERROR (Status))
-      GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
+    // UEFI-style legacy BIOS support is available only with some EFI implementations....
+    Status = refit_call3_wrapper(gBS->LocateProtocol, &gEfiLegacyBootProtocolGuid,
+                                 NULL, (VOID **) &LegacyBios);
+    if (!EFI_ERROR (Status))
+        GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
 
-   // Macs have their own system. If the firmware vendor code contains the
-   // string "Apple", assume it's available. Note that this overrides the
-   // UEFI type, and might yield false positives if the vendor string
-   // contains "Apple" as part of something bigger, so this isn't 100%
-   // perfect.
-   if (StriSubCmp(L"Apple", ST->FirmwareVendor))
-      GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
+    // Macs have their own system. If the firmware vendor code contains the
+    // string "Apple", assume it's available. Note that this overrides the
+    // UEFI type, and might yield false positives if the vendor string
+    // contains "Apple" as part of something bigger, so this isn't 100%
+    // perfect.
+    if (StriSubCmp(L"Apple", ST->FirmwareVendor))
+        GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
 } // VOID FindLegacyBootType
 
 // Warn the user if legacy OS scans are enabled but the firmware can't support them....
 VOID WarnIfLegacyProblems(VOID) {
-   BOOLEAN  found = FALSE;
-   UINTN    i = 0;
+    BOOLEAN  found = FALSE;
+    UINTN    i = 0;
 
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
-      do {
-         if (GlobalConfig.ScanFor[i] == 'h' || GlobalConfig.ScanFor[i] == 'b' || GlobalConfig.ScanFor[i] == 'c' ||
-             GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'C')
-            found = TRUE;
-         i++;
-      } while ((i < NUM_SCAN_OPTIONS) && (!found));
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
+        do {
+            if (GlobalConfig.ScanFor[i] == 'H' || GlobalConfig.ScanFor[i] == 'h' ||
+                GlobalConfig.ScanFor[i] == 'C' || GlobalConfig.ScanFor[i] == 'c' ||
+                GlobalConfig.ScanFor[i] == 'B' || GlobalConfig.ScanFor[i] == 'b')
+               found = TRUE;
+            i++;
+        } while ((i < NUM_SCAN_OPTIONS) && (!found));
 
-      if (found) {
-         LOG(1, LOG_LINE_NORMAL, L"BIOS/CSM/legacy support enabled in rEFInd but unavailable in EFI!");
-         Print(L"NOTE: refind.conf's 'scanfor' line specifies scanning for one or more legacy\n");
-         Print(L"(BIOS) boot options; however, this is not possible because your computer lacks\n");
-         Print(L"the necessary Compatibility Support Module (CSM) support or that support is\n");
-         Print(L"disabled in your firmware.\n");
-         PauseForKey();
-      } // if (found)
-   } // if no legacy support
+        if (found) {
+            LOG(1, LOG_LINE_NORMAL, L"BIOS/CSM/legacy support enabled in rEFInd but unavailable in EFI!");
+            Print(L"NOTE: refind.conf's 'scanfor' line specifies scanning for one or more legacy\n");
+            Print(L"(BIOS) boot options; however, this is not possible because your computer lacks\n");
+            Print(L"the necessary Compatibility Support Module (CSM) support or that support is\n");
+            Print(L"disabled in your firmware.\n");
+            PauseForKey();
+        } // if (found)
+    } // if no legacy support
 } // VOID WarnIfLegacyProblems()
 

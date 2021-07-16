@@ -25,7 +25,7 @@
 
 EFI_FILE_HANDLE  gLogHandle;
 CHAR16           *gLogTemp = NULL;
-// UINTN            gBufferSize;
+BOOLEAN          gLogActive = FALSE;
 
 // Open the logging file (refind.log).
 // Sets the global gLogHandle variable to point to the file.
@@ -78,11 +78,13 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
                 Utf16[1] = 0xFE;
                 BufferSize = 2;
                 refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, Utf16);
+                gLogActive = TRUE;
                 LOG(1, LOG_LINE_SEPARATOR, L"Beginning logging");
             } // if/else
             if (Restart) {
                 refit_call2_wrapper(gLogHandle->SetPosition, gLogHandle, 0xFFFFFFFFFFFFFFFF);
             }
+            gLogActive = TRUE;
         } // if/else
     } // if
     return Status;
@@ -91,38 +93,44 @@ EFI_STATUS StartLogging(BOOLEAN Restart) {
 VOID StopLogging(VOID) {
     if (GlobalConfig.LogLevel > 0)
         refit_call1_wrapper(gLogHandle->Close, gLogHandle); // close logging file
+    gLogActive = FALSE;
 } // VOID StopLogging()
 
 // Write a message (*Message) to the log file. (This pointer is freed
-// and set to NUL by this function, the point being to keep these
+// and set to NULL by this function, the point being to keep these
 // operations outside of the macro that calls this function.)
 // LogLineType specifies the type of the log line, as specified by the
 // LOG_LINE_* constants defined in log.h.
 VOID WriteToLog(CHAR16 **Message, UINTN LogLineType) {
-    CHAR16   *TimeStr = NULL;
+    CHAR16   *TimeStr;
     CHAR16   *FinalMessage = NULL;
     UINTN    BufferSize;
 
-    switch (LogLineType) {
-        case LOG_LINE_SEPARATOR:
-            FinalMessage = PoolPrint(L"\n==========%s==========\n", *Message);
-            break;
-        case LOG_LINE_THIN_SEP:
-            FinalMessage = PoolPrint(L"\n----------%s----------\n", *Message);
-            break;
-        default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this.... */
-            TimeStr = GetTimeString();
-            FinalMessage = PoolPrint(L"%s - %s\n", TimeStr, *Message);
-            MyFreePool(TimeStr);
-            break;
-    } // switch
+    if (gLogActive) {
+        switch (LogLineType) {
+            case LOG_LINE_SEPARATOR:
+                FinalMessage = PoolPrint(L"\n==========%s==========\n", *Message);
+                break;
+            case LOG_LINE_THIN_SEP:
+                FinalMessage = PoolPrint(L"\n----------%s----------\n", *Message);
+                break;
+            default: /* Normally LOG_LINE_NORMAL, but if there's a coding error, use this.... */
+                TimeStr = GetTimeString();
+                FinalMessage = PoolPrint(L"%s - %s\n", TimeStr, *Message);
+                if (TimeStr)
+                    FreePool(TimeStr);
+                break;
+        } // switch
 
-    if (FinalMessage) {
-        BufferSize = StrLen(FinalMessage) * 2;
-        refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, FinalMessage);
-        refit_call1_wrapper(gLogHandle->Flush, gLogHandle);
-        MyFreePool(FinalMessage);
+        if (FinalMessage) {
+            BufferSize = StrLen(FinalMessage) * 2;
+            refit_call3_wrapper(gLogHandle->Write, gLogHandle, &BufferSize, FinalMessage);
+            refit_call1_wrapper(gLogHandle->Flush, gLogHandle);
+            FreePool(FinalMessage);
+        }
     }
-    MyFreePool(*Message);
-    *Message = NULL;
+    if (*Message) {
+        FreePool(*Message);
+        *Message = NULL;
+    }
 } // VOID WriteToLog()

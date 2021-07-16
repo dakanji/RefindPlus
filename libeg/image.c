@@ -319,7 +319,7 @@ EFI_STATUS egSaveFile(IN EFI_FILE* BaseDir OPTIONAL, IN CHAR16 *FileName,
     }
 
     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FileHandle, FileName,
-                                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
+                                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
     if (EFI_ERROR(Status))
         return Status;
 
@@ -344,13 +344,13 @@ static EG_IMAGE * egDecodeAny(IN UINT8 *FileData, IN UINTN FileDataLength, IN UI
 {
    EG_IMAGE        *NewImage = NULL;
 
-   NewImage = egDecodeICNS(FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL)
-      NewImage = egDecodePNG(FileData, FileDataLength, IconSize, WantAlpha);
+   NewImage = egDecodePNG(FileData, FileDataLength, IconSize, WantAlpha);
    if (NewImage == NULL)
       NewImage = egDecodeJPEG(FileData, FileDataLength, IconSize, WantAlpha);
    if (NewImage == NULL)
       NewImage = egDecodeBMP(FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL)
+      NewImage = egDecodeICNS(FileData, FileDataLength, IconSize, WantAlpha);
 
    return NewImage;
 }
@@ -392,22 +392,23 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
     // load file
     Status = egLoadFile(BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR(Status))
-       return NULL;
+        return NULL;
 
     // decode it
     Image = egDecodeAny(FileData, FileDataLength, IconSize, TRUE);
     FreePool(FileData);
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
-       NewImage = egScaleImage(Image, IconSize, IconSize);
-       if (!NewImage) {
-          LOG(1, LOG_LINE_NORMAL, L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
-              Image->Width, Image->Height, IconSize, IconSize, Path);
-          Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
+        NewImage = egScaleImage(Image, IconSize, IconSize);
+        if (NewImage) {
+            egFreeImage(Image);
+            LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon(), have called egFreeImage()");
+            Image = NewImage;
+        } else {
+            LOG(1, LOG_LINE_NORMAL, L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
                 Image->Width, Image->Height, IconSize, IconSize, Path);
-       } else {
-         egFreeImage(Image);
-         Image = NewImage;
-       }
+            Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
+                  Image->Width, Image->Height, IconSize, IconSize, Path);
+        }
     }
 
     return Image;
@@ -419,18 +420,20 @@ EG_IMAGE * egLoadIcon(IN EFI_FILE* BaseDir, IN CHAR16 *Path, IN UINTN IconSize)
 // an image based on "myicons/os_linux.icns" or "myicons/os_linux.png", in that
 // order of preference. Returns NULL if no such file is a valid icon file.
 EG_IMAGE * egLoadIconAnyType(IN EFI_FILE *BaseDir, IN CHAR16 *SubdirName, IN CHAR16 *BaseName, IN UINTN IconSize) {
-   EG_IMAGE *Image = NULL;
-   CHAR16 *Extension;
-   CHAR16 FileName[256];
-   UINTN i = 0;
+    EG_IMAGE *Image = NULL;
+    CHAR16 *Extension;
+    CHAR16 *FileName;
+    UINTN i = 0;
 
-   while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
-      SPrint(FileName, 255, L"%s\\%s.%s", SubdirName, BaseName, Extension);
-      Image = egLoadIcon(BaseDir, FileName, IconSize);
-      MyFreePool(Extension);
-   } // while()
+    while (((Extension = FindCommaDelimited(ICON_EXTENSIONS, i++)) != NULL) && (Image == NULL)) {
+        FileName = PoolPrint(L"%s\\%s.%s", SubdirName, BaseName, Extension);
+        Image = egLoadIcon(BaseDir, FileName, IconSize);
+        LOG(4, LOG_LINE_NORMAL, L"Have loaded Image in egLoadIconAnyType()");
+        MyFreePool(Extension);
+        MyFreePool(FileName);
+    } // while()
 
-   return Image;
+    return Image;
 } // EG_IMAGE *egLoadIconAnyType()
 
 // Returns an icon with any extension in ICON_EXTENSIONS from either the directory
@@ -461,6 +464,9 @@ EG_IMAGE * egPrepareEmbeddedImage(IN EG_EMBEDDED_IMAGE *EmbeddedImage, IN BOOLEA
     UINT8               *CompData;
     UINTN               CompLen;
     UINTN               PixelCount;
+
+    if (EmbeddedImage == NULL)
+        return NULL;
 
     // sanity check
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
@@ -544,16 +550,18 @@ VOID egRestrictImageArea(IN EG_IMAGE *Image,
                          IN UINTN AreaPosX, IN UINTN AreaPosY,
                          IN OUT UINTN *AreaWidth, IN OUT UINTN *AreaHeight)
 {
-    if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
-        // out of bounds, operation has no effect
-        *AreaWidth  = 0;
-        *AreaHeight = 0;
-    } else {
-        // calculate affected area
-        if (*AreaWidth > Image->Width - AreaPosX)
-            *AreaWidth = Image->Width - AreaPosX;
-        if (*AreaHeight > Image->Height - AreaPosY)
-            *AreaHeight = Image->Height - AreaPosY;
+    if (Image && AreaWidth && AreaHeight) {
+        if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
+            // out of bounds, operation has no effect
+            *AreaWidth  = 0;
+            *AreaHeight = 0;
+        } else {
+            // calculate affected area
+            if (*AreaWidth > Image->Width - AreaPosX)
+                *AreaWidth = Image->Width - AreaPosX;
+            if (*AreaHeight > Image->Height - AreaPosY)
+                *AreaHeight = Image->Height - AreaPosY;
+        }
     }
 }
 
@@ -563,13 +571,15 @@ VOID egFillImage(IN OUT EG_IMAGE *CompImage, IN EG_PIXEL *Color)
     EG_PIXEL    FillColor;
     EG_PIXEL    *PixelPtr;
 
-    FillColor = *Color;
-    if (!CompImage->HasAlpha)
-        FillColor.a = 0;
+    if (CompImage && Color) {
+        FillColor = *Color;
+        if (!CompImage->HasAlpha)
+            FillColor.a = 0;
 
-    PixelPtr = CompImage->PixelData;
-    for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++)
-        *PixelPtr = FillColor;
+        PixelPtr = CompImage->PixelData;
+        for (i = 0; i < CompImage->Width * CompImage->Height; i++, PixelPtr++)
+            *PixelPtr = FillColor;
+    }
 }
 
 VOID egFillImageArea(IN OUT EG_IMAGE *CompImage,
@@ -582,19 +592,21 @@ VOID egFillImageArea(IN OUT EG_IMAGE *CompImage,
     EG_PIXEL    *PixelPtr;
     EG_PIXEL    *PixelBasePtr;
 
-    egRestrictImageArea(CompImage, AreaPosX, AreaPosY, &AreaWidth, &AreaHeight);
+    if (CompImage && Color) {
+        egRestrictImageArea(CompImage, AreaPosX, AreaPosY, &AreaWidth, &AreaHeight);
 
-    if (AreaWidth > 0) {
-        FillColor = *Color;
-        if (!CompImage->HasAlpha)
-            FillColor.a = 0;
+        if (AreaWidth > 0) {
+            FillColor = *Color;
+            if (!CompImage->HasAlpha)
+                FillColor.a = 0;
 
-        PixelBasePtr = CompImage->PixelData + AreaPosY * CompImage->Width + AreaPosX;
-        for (y = 0; y < AreaHeight; y++) {
-            PixelPtr = PixelBasePtr;
-            for (x = 0; x < AreaWidth; x++, PixelPtr++)
-                *PixelPtr = FillColor;
-            PixelBasePtr += CompImage->Width;
+            PixelBasePtr = CompImage->PixelData + AreaPosY * CompImage->Width + AreaPosX;
+            for (y = 0; y < AreaHeight; y++) {
+                PixelPtr = PixelBasePtr;
+                for (x = 0; x < AreaWidth; x++, PixelPtr++)
+                    *PixelPtr = FillColor;
+                PixelBasePtr += CompImage->Width;
+            }
         }
     }
 }
@@ -606,15 +618,17 @@ VOID egRawCopy(IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
     UINTN       x, y;
     EG_PIXEL    *TopPtr, *CompPtr;
 
-    for (y = 0; y < Height; y++) {
-        TopPtr = TopBasePtr;
-        CompPtr = CompBasePtr;
-        for (x = 0; x < Width; x++) {
-            *CompPtr = *TopPtr;
-            TopPtr++, CompPtr++;
+    if (CompBasePtr && TopBasePtr) {
+        for (y = 0; y < Height; y++) {
+            TopPtr = TopBasePtr;
+            CompPtr = CompBasePtr;
+            for (x = 0; x < Width; x++) {
+                *CompPtr = *TopPtr;
+                TopPtr++, CompPtr++;
+            }
+            TopBasePtr += TopLineOffset;
+            CompBasePtr += CompLineOffset;
         }
-        TopBasePtr += TopLineOffset;
-        CompBasePtr += CompLineOffset;
     }
 }
 
@@ -628,27 +642,24 @@ VOID egRawCompose(IN OUT EG_PIXEL *CompBasePtr, IN EG_PIXEL *TopBasePtr,
     UINTN       RevAlpha;
     UINTN       Temp;
 
-    for (y = 0; y < Height; y++) {
-        TopPtr = TopBasePtr;
-        CompPtr = CompBasePtr;
-        for (x = 0; x < Width; x++) {
-            Alpha = TopPtr->a;
-            RevAlpha = 255 - Alpha;
-            Temp = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
-            CompPtr->b = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
-            CompPtr->g = (Temp + (Temp >> 8)) >> 8;
-            Temp = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
-            CompPtr->r = (Temp + (Temp >> 8)) >> 8;
-            /*
-            CompPtr->b = ((UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha) / 255;
-            CompPtr->g = ((UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha) / 255;
-            CompPtr->r = ((UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha) / 255;
-            */
-            TopPtr++, CompPtr++;
+    if (CompBasePtr && TopBasePtr) {
+        for (y = 0; y < Height; y++) {
+            TopPtr = TopBasePtr;
+            CompPtr = CompBasePtr;
+            for (x = 0; x < Width; x++) {
+                Alpha = TopPtr->a;
+                RevAlpha = 255 - Alpha;
+                Temp = (UINTN)CompPtr->b * RevAlpha + (UINTN)TopPtr->b * Alpha + 0x80;
+                CompPtr->b = (Temp + (Temp >> 8)) >> 8;
+                Temp = (UINTN)CompPtr->g * RevAlpha + (UINTN)TopPtr->g * Alpha + 0x80;
+                CompPtr->g = (Temp + (Temp >> 8)) >> 8;
+                Temp = (UINTN)CompPtr->r * RevAlpha + (UINTN)TopPtr->r * Alpha + 0x80;
+                CompPtr->r = (Temp + (Temp >> 8)) >> 8;
+                TopPtr++, CompPtr++;
+            }
+            TopBasePtr += TopLineOffset;
+            CompBasePtr += CompLineOffset;
         }
-        TopBasePtr += TopLineOffset;
-        CompBasePtr += CompLineOffset;
     }
 }
 
@@ -656,18 +667,20 @@ VOID egComposeImage(IN OUT EG_IMAGE *CompImage, IN EG_IMAGE *TopImage, IN UINTN 
 {
     UINTN       CompWidth, CompHeight;
 
-    CompWidth  = TopImage->Width;
-    CompHeight = TopImage->Height;
-    egRestrictImageArea(CompImage, PosX, PosY, &CompWidth, &CompHeight);
+    if (CompImage && TopImage) {
+        CompWidth  = TopImage->Width;
+        CompHeight = TopImage->Height;
+        egRestrictImageArea(CompImage, PosX, PosY, &CompWidth, &CompHeight);
 
-    // compose
-    if (CompWidth > 0) {
-        if (TopImage->HasAlpha) {
-            egRawCompose(CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
-                         CompWidth, CompHeight, CompImage->Width, TopImage->Width);
-        } else {
-            egRawCopy(CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
-                      CompWidth, CompHeight, CompImage->Width, TopImage->Width);
+        // compose
+        if (CompWidth > 0) {
+            if (TopImage->HasAlpha) {
+                egRawCompose(CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
+                            CompWidth, CompHeight, CompImage->Width, TopImage->Width);
+            } else {
+                egRawCopy(CompImage->PixelData + PosY * CompImage->Width + PosX, TopImage->PixelData,
+                        CompWidth, CompHeight, CompImage->Width, TopImage->Width);
+            }
         }
     }
 } /* VOID egComposeImage() */
@@ -680,9 +693,11 @@ VOID egInsertPlane(IN UINT8 *SrcDataPtr, IN UINT8 *DestPlanePtr, IN UINTN PixelC
 {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = *SrcDataPtr++;
-        DestPlanePtr += 4;
+    if (SrcDataPtr && DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = *SrcDataPtr++;
+            DestPlanePtr += 4;
+        }
     }
 }
 
@@ -690,9 +705,11 @@ VOID egSetPlane(IN UINT8 *DestPlanePtr, IN UINT8 Value, IN UINTN PixelCount)
 {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = Value;
-        DestPlanePtr += 4;
+    if (DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = Value;
+            DestPlanePtr += 4;
+        }
     }
 }
 
@@ -700,9 +717,11 @@ VOID egCopyPlane(IN UINT8 *SrcPlanePtr, IN UINT8 *DestPlanePtr, IN UINTN PixelCo
 {
     UINTN i;
 
-    for (i = 0; i < PixelCount; i++) {
-        *DestPlanePtr = *SrcPlanePtr;
-        DestPlanePtr += 4, SrcPlanePtr += 4;
+    if (SrcPlanePtr && DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = *SrcPlanePtr;
+            DestPlanePtr += 4, SrcPlanePtr += 4;
+        }
     }
 }
 

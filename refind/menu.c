@@ -1463,6 +1463,7 @@ VOID DisplaySimpleMessage(CHAR16* Title, CHAR16 *Message) {
     REFIT_MENU_SCREEN   HideItemMenu = { NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
                                          L"Press Enter to return to main menu", L"" };
 
+    LOG(3, LOG_LINE_NORMAL, L"Entering DisplaySimpleMessage()");
     if (!Message)
         return;
 
@@ -1473,6 +1474,7 @@ VOID DisplaySimpleMessage(CHAR16* Title, CHAR16 *Message) {
     AddMenuInfoLine(&HideItemMenu, Message);
     AddMenuEntry(&HideItemMenu, &MenuEntryReturn);
     RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+    LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
 } // VOID DisplaySimpleMessage()
 
 // Check each filename in FilenameList to be sure it refers to a valid file. If
@@ -1510,6 +1512,7 @@ static BOOLEAN RemoveInvalidFilenames(CHAR16 *FilenameList, CHAR16 *VarName) {
         MyFreePool(OneElement);
         MyFreePool(Filename);
         MyFreePool(VolName);
+        VolName = NULL;
         DeletedSomething |= DeleteIt;
     } // while()
     return DeletedSomething;
@@ -1562,11 +1565,12 @@ VOID ManageHiddenTags(VOID) {
     if ((AllTags) && (StrLen(AllTags) > 0)) {
         AddMenuInfoLine(&HideItemMenu, L"Select a tag and press Enter to restore it");
         while ((OneElement = FindCommaDelimited(AllTags, i++)) != NULL) {
-            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY));
+            MenuEntryItem = AllocateZeroPool(sizeof(REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate(OneElement);
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = 1;
             AddMenuEntry(&HideItemMenu, MenuEntryItem);
+            MyFreePool(OneElement);
         } // while
         MenuExit = RunGenericMenu(&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         if (MenuExit == MENU_EXIT_ENTER) {
@@ -1593,8 +1597,6 @@ VOID ManageHiddenTags(VOID) {
     MyFreePool(HiddenTools);
     MyFreePool(HiddenLegacy);
     MyFreePool(HiddenFirmware);
-    MyFreePool(OneElement);
-    MyFreePool(MenuEntryItem);
 } // VOID ManageHiddenTags()
 
 CHAR16* ReadHiddenTags(CHAR16 *VarName) {
@@ -1647,8 +1649,6 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
 
     if (Loader->Volume->VolName && (StrLen(Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate(Loader->Volume->VolName);
-    } else if (Loader->Volume->PartName && (StrLen(Loader->Volume->PartName) > 0)) {
-        FullPath = StrDuplicate(Loader->Volume->PartName);
     }
     MergeStrings(&FullPath, Loader->LoaderPath, L':');
     AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide %s?", FullPath));
@@ -1667,10 +1667,10 @@ static BOOLEAN HideEfiTag(LOADER_ENTRY *Loader, REFIT_MENU_SCREEN *HideItemMenu,
         }
         AddToHiddenTags(VarName, FullPath);
         TagHidden = TRUE;
+        MyFreePool(GuidStr);
     } // if
 
     MyFreePool(FullPath);
-    MyFreePool(GuidStr);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()
@@ -1790,6 +1790,7 @@ UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry)
     INTN            DefaultEntry = -1;
     MENU_STYLE_FUNC Style = TextMenuStyle;
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering RunMenu()");
     if (AllowGraphicsMode)
         Style = GraphicsMenuStyle;
 
@@ -1806,6 +1807,7 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
     INTN DefaultEntryIndex = -1;
     INTN DefaultSubmenuIndex = -1;
 
+    LOG(2, LOG_LINE_NORMAL, L"Entering RunMainMenu()");
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
@@ -1833,10 +1835,12 @@ UINTN RunMainMenu(REFIT_MENU_SCREEN *Screen, CHAR16** DefaultSelection, REFIT_ME
         MenuTitle = StrDuplicate(TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (TempChosenEntry->SubScreen != NULL) {
+               LOG(3, LOG_LINE_NORMAL, L"About to call RunGenericMenu() on subscreen '%s'", MenuTitle);
                MenuExit = RunGenericMenu(TempChosenEntry->SubScreen,
                                          Style,
                                          &DefaultSubmenuIndex,
                                          &TempChosenEntry);
+               LOG(3, LOG_LINE_NORMAL, L"RunGenericMenu() has returned %d", MenuExit);
                if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN)
                    MenuExit = 0;
                if (MenuExit == MENU_EXIT_DETAILS) {

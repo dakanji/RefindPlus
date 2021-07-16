@@ -392,6 +392,11 @@ Files: icons/os_elementary.png
 Copyright: 2008 Dan Rabbit
 License: GPL-2
 
+Files: icons/os_manjaro.png
+License: public-domain
+ Claimed as public domain by source
+ (https://commons.wikimedia.org/wiki/File:Manjaro-logo.svg)
+
 Files: icons/os_void.png
 License: public-domain
  Claimed as public domain by source

@@ -28,7 +28,7 @@
 #include "mystrings.h"
 #include "../include/refit_call_wrapper.h"
 
-CHAR16 gCsrStatus[256];
+CHAR16 gCsrStatus[512];
 
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
@@ -68,7 +68,11 @@ VOID RecordgCsrStatus(UINT32 CsrStatus, BOOLEAN DisplayMessage) {
         case SIP_ENABLED:
             SPrint(gCsrStatus, 255, L" System Integrity Protection is enabled (0x%02x)", CsrStatus);
             break;
-        case SIP_DISABLED:
+        case SIP_DISABLED_10:
+            SPrint(gCsrStatus, 255, L" System Integrity Protection is disabled for OS X 10.x (0x%02x)",
+                   CsrStatus);
+            break;
+        case SIP_DISABLED_11:
             SPrint(gCsrStatus, 255, L" System Integrity Protection is disabled (0x%02x)", CsrStatus);
             break;
         default:
@@ -102,10 +106,13 @@ VOID RotateCsrValue(VOID) {
         }
         LOG(1, LOG_LINE_NORMAL, L"CSR value was 0x%04x; setting to 0x%04x", CurrentValue, TargetCsr);
         Status = EfivarSetRaw(&CsrGuid, L"csr-active-config", (CHAR8 *) &TargetCsr, 4, TRUE);
-        if (Status == EFI_SUCCESS)
+        if (Status == EFI_SUCCESS) {
             RecordgCsrStatus(TargetCsr, TRUE);
-        else
+            LOG(2, LOG_LINE_NORMAL, L"Successful setting of CSR value of 0x%04x", TargetCsr);
+        } else {
             SPrint(gCsrStatus, 255, L" Error setting System Integrity Protection code.");
+            LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+        }
     } else {
         LOG(1, LOG_LINE_NORMAL, L"Could not retrieve CSR value or csr_values not set");
     } // if/else

@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 3/14/2012; last Web page update:
-2/24/2021, referencing rEFInd 0.13.1</p>
+3/13/2021, referencing rEFInd 0.13.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -160,7 +160,12 @@ href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <ul>
 
-<p class="sidebar"><b>Note:</b> Beginning with rEFInd 0.13.1, the default configuration file causes rEFInd to store its dynamic tags on disk. This works fine in most cases, but if you installed rEFInd on an HFS+ volume, you'll have to comment out the <tt>use_nvram false</tt> option in <tt>refind.conf</tt> or set it to <tt>true</tt> in order to use dynamic tag hiding. If you make this change, be aware that NVRAM is a limited resource, so it's possible to exhaust it, at which point the computer can begin behaving strangely.</p>
+<p class="sidebar"><b>Note:</b> Beginning with rEFInd 0.13.1, the default
+configuration file causes rEFInd to store its dynamic tags on disk. This
+works fine in most cases, but beginning with version 0.13.2, if your ESP is
+read-only, rEFInd will fall back to NVRAM-based variable storage. Be aware
+that NVRAM is a limited resource, so it's possible to exhaust it, at which
+point the computer can begin behaving strangely.</p>
 
 <li><b>Hiding entries dynamically</b>&mdash;rEFInd 0.11.0 introduced a dynamic tag hiding feature. To use it, highlight a tag and hit the Delete (on PCs) or minus (<tt>-</tt>) key. (The Delete key on Macs is the Backspace key on PCs, and will not work for this; however, some Mac keyboards have a key marked Del that will do the job.) rEFInd will ask for confirmation. If you give it, the OS or external tool tag will disappear, and should remain hidden indefinitely. (Note that you cannot hide built-in tools, such as the About/Info display and the reboot-to-firmware option, in this way.) rEFInd stores the list of EFI OS tags so hidden in NVRAM or on disk (as determined by the <tt>use_nvram</tt> token in <tt>refind.conf</tt>) using the <tt>HiddenTags</tt> variable, BIOS/CSM/legacy OS tags as <tt>HiddenLegacy</tt>, hidden firmware reboot tags using the <tt>HiddenFirmware</tt> variable, and tool tags as <tt>HiddenTools</tt>. If you want to recover a tag you've hidden, you can do so by using the hidden tag maintenance function, which appears on the second row of the rEFInd menu as a recycling symbol. You can disable both the ability to hide tags and to recover them by uncommenting the <tt>showtools</tt> item in <tt>refind.conf</tt> and ensuring that <tt>hidden_tags</tt> is <i>not</i> among the options. (Even if you disable this feature, rEFInd continues to honor tags it finds in NVRAM or on disk.)</li>
 
@@ -264,13 +269,13 @@ timeout 20
 </tr>
 <tr>
    <td><tt>log_level</tt></td>
-   <td>numeric value (<tt>0</tt> to <tt>3</tt>)</td>
+   <td>numeric value (<tt>0</tt> to <tt>4</tt>)</td>
    <td>Sets the logging level. The default level of <tt>0</tt> performs no logging. Higher values cause rEFInd to log information on its activity to the <tt>refind.log</tt> file, which resides in the directory from which rEFInd launched; or in the root of the first ESP that rEFInd can locate, if rEFInd's launch directory is read-only (as when rEFInd is launched from an HFS+ volume). The resulting log file is in UTF-16 format, so you'll need to read it with a text editor or other tool that can parse UTF-16. This feature is intended to help with debugging problems; the log level should be kept at <tt>0</tt> in normal operation. Increasing the log level, especially above <tt>1</tt>, can degrade rEFInd's performance.</td>
 </tr>
 <tr>
    <td><tt>use_nvram</tt></td>
    <td>none or one of <tt>true</tt>, <tt>on</tt>, <tt>1</tt>, <tt>false</tt>, <tt>off</tt>, or <tt>0</tt></td>
-   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory, if possible. (Read-only filesystems obviously make this option impossible.) Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk). The internal default is <tt>true</tt>; however, <tt>use_nvram false</tt> is set in the default <tt>refind.conf</tt> file, so rEFInd will use disk storage by default on a fresh installation.</td>
+   <td>If set to <tt>true</tt>, <tt>on</tt>, or <tt>1</tt>, stores rEFInd-specific variables in NVRAM. If set to <tt>false</tt>, <tt>off</tt>, or <tt>0</tt>, stores these variables in the <tt>vars</tt> subdirectory of rEFInd's home directory; in the <tt>refind-vars</tt> directory on the first ESP that rEFInd can identify, if rEFInd's own directory cannot be modified (for instance, if it's an HFS+ volume); or in NVRAM, if both disk storage options fail. Using NVRAM ties rEFInd's variables to a specific computer and increases wear on the NVRAM, whereas storing them on disk makes the variables move with rEFInd (which is potentially useful on a rEFInd installation on a removable disk). The internal default is <tt>true</tt>; however, <tt>use_nvram false</tt> is set in the default <tt>refind.conf</tt> file, so rEFInd will use disk storage by default on a fresh installation. This option has no effect on storage of non-rEFInd-specific variables, such as <tt>LoaderDevicePartUUID</tt> (if <tt>write_systemd_vars</tt> is enabled) or <tt>BootNext</tt> (used by the loaders that reboot to EFI-defined boot programs).</td>
 </tr>
 <tr>
    <td><tt>screensaver</tt></td>
@@ -760,7 +765,7 @@ menuentry Arch {
 
 <li><b>Auto-scanning</b> &mdash; One method is to set <tt>firmware</tt> as an option to the <tt>scanfor</tt> line. This method causes rEFInd to display most or all of the available EFI boot entries (as revealed by Linux's <tt>efibootmgr</tt>, among other methods) as first-line boot options. (One exception is described shortly, and in some cases some options may be omitted.)</li>
 
-<li><b>Manual boot stanzas</b> &mdash; The <tt>firmware-bootnum</tt> token in a manual boot stanza creates an entry that launches the specified <tt>Boot####</tt> entry. This token takes a single hexadecimal number as an option, so you can copy the number specified by <tt>efibootmgr</tt> to create an entry. This is a good way to use this feature if you want to access just one boot option in this way.</li>
+<li><b>Manual boot stanzas</b> &mdash; The <tt>firmware_bootnum</tt> token in a manual boot stanza creates an entry that launches the specified <tt>Boot####</tt> entry. This token takes a single hexadecimal number as an option, so you can copy the number specified by <tt>efibootmgr</tt> to create an entry. This is a good way to use this feature if you want to access just one boot option in this way.</li>
 
 <li><b>Built-in EFI shells</b> &mdash; If an option contains the string <tt>shell</tt> (case-insensitive) in its description, it is added to the list of available EFI shell programs and is displayed on the second line of the rEFInd options list, but is <i>omitted</i> from the first line of OS loaders. This second-row option is created only if <tt>shell</tt> is an option to <tt>showtools</tt>, and whether or not you've set <tt>firmware</tt> as an option to <tt>scanfor</tt>. Note that most desktop and laptop computers lack a built-in EFI shell, although they do exist on a few. This feature is more common on server computers.</li>
 

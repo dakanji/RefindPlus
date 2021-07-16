@@ -1,3 +1,74 @@
+0.13.2 (3/13/2021):
+-------------------
+
+- Fixed memory management bugs that could cause rEFInd to hang under
+  certain unpredictable circumstances.
+
+- Fixed potential memory management bugs that could cause HFS+, ext2fs, and
+  ext4fs drivers to misbehave.
+
+- Fixed bug (introduced with version 0.13.1) that caused rEFInd to fail to
+  load properly signed EFI drivers when Secure Boot was enabled and used via
+  Shim.
+
+- Fixed bug in mvrefind that would cause it to fail to create a new
+  NVRAM entry to point to the moved rEFInd.
+
+- Fixed bug that caused mountesp script to fail in macOS 11.0 ("Big Sur").
+
+- Improved Secure Boot support in refind-install script: The script can now
+  install a Secure Boot key using mokutil, which can slightly simplify the
+  MOK setup. It also now creates a backup NVRAM entry to boot directly,
+  rather than via a Shim, if installed with the --shim option. This should
+  help on systems with custom Secure Boot key sets that don't rely on Shim,
+  but with a stray Shim binary present on the ESP that a package script will
+  detect and pass as a --shim option to rEFInd. If this configuration causes
+  a Secure Boot failure on launching Shim, then it should fail over to the
+  direct boot and be fine. (Some EFIs will hang rather than fail over to the
+  next entry, though, and this change won't help with them.)
+
+- More logging improvements, including bumping the maximum log_level from 3
+  to 4.
+
+- Improved separation of filesystem name vs. partition name internally. This
+  can make for more accurate OS icon choices in some situations, such as if
+  both names are set but only the partition name contains useful
+  information.
+
+- Previously, when setting "use_nvram false", rEFInd would use the "vars"
+  subdirectory of its own directory; and if that was unwritable (say, if it
+  was on an HFS+ volume), then rEFInd would not store its own variables,
+  such as PreviousBoot and HiddenTags. With this version, rEFInd will now
+  use the "vars" subdirectory of rEFInd's own directory; if that's not
+  available, it will use a directory called "refind-vars" in the root
+  directory of the first ESP that rEFInd can locate; and if neither is
+  available, rEFInd will use NVRAM storage instead, as if "use_nvram true"
+  had been set.
+
+- Made rEFInd's self-install code less finicky about the success of
+  copying configuration, icons, and driver files. Previously it reported a
+  failure and did not modify NVRAM if any of these failed to copy. Now it
+  should register itself, although it does complain on screen and log
+  details (if logging is enabled). This can help if installing from a source
+  that lacks drivers for a detectable Linux filesystem (ext2/3/4fs,
+  ReiserFS, Btrfs, or HFS+).
+
+- Adjusted reporting of SIP values; added back 0x77 as an interpreted value
+  for on-screen notification when rotating through values.
+
+- rEFInd can now identify JFS volumes as such, if a third-party JFS driver
+  is installed.
+
+- Added support for Booster initrd files, which are named "booster*", rather
+  than "init*". See https://github.com/anatol/booster and/or
+  https://wiki.archlinux.org/index.php/Booster for more on Booster.
+
+- Added icon for Manjaro Linux.
+
+- Swapped out expired CentOS Secure Boot keys for new ones.
+
+- Fixed build problem with GNU-EFI 3.0.13.
+
 0.13.1 (2/24/2021):
 -------------------
 

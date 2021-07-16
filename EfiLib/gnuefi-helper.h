@@ -25,7 +25,6 @@
 #include "efilib.h"
 
 #define EFI_DEVICE_PATH_PROTOCOL EFI_DEVICE_PATH
-#define UnicodeSPrint SPrint
 #define gRT RT
 #define gBS BS
 #ifndef CONST

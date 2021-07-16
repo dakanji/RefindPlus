@@ -139,8 +139,9 @@
 #define FS_TYPE_REISERFS       9
 #define FS_TYPE_BTRFS          10
 #define FS_TYPE_XFS            11
-#define FS_TYPE_ISO9660        12
-#define NUM_FS_TYPES           13
+#define FS_TYPE_JFS            12
+#define FS_TYPE_ISO9660        13
+#define NUM_FS_TYPES           14
 
 // How to scale banner images
 #define BANNER_NOSCALE         0
@@ -257,8 +258,9 @@ typedef struct {
    EFI_DEVICE_PATH     *DevicePath;
    EFI_HANDLE          DeviceHandle;
    EFI_FILE            *RootDir;
-   CHAR16              *VolName;
-   CHAR16              *PartName;
+   CHAR16              *PartName; // GPT partition name
+   CHAR16              *FsName;   // Filesystem name
+   CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
    EFI_GUID            VolUuid;
    EFI_GUID            PartGuid;
    EFI_GUID            PartTypeGuid;

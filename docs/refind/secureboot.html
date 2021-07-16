@@ -17,7 +17,7 @@
 href="mailto:rodsmith@rodsbooks.com">rodsmith@rodsbooks.com</a></p>
 
 <p>Originally written: 11/13/2012; last Web page update:
-2/24/2021, referencing rEFInd 0.13.1</p>
+3/13/2021, referencing rEFInd 0.13.2</p>
 
 
 <p>This Web page is provided free of charge and with no annoying outside ads; however, I did take time to prepare it, and Web hosting does cost money. If you find this Web page useful, please consider making a small donation to help keep this site up and running. Thanks!</p>
@@ -222,6 +222,8 @@ Windows 8 or later, this isn't an option for it. Unfortunately, the PreLoader pr
 
 <p>All three key types are the same in form&mdash;Shim's built-in keys and MOKs are both generated using the same tools used to generate Secure Boot keys. The keys can be generated with the common <tt>openssl</tt> program, but signing EFI binaries requires either of two rarer programs: <tt>sbsign</tt> or <tt>pesign</tt>. If you use Shim with a distribution that doesn't support Secure Boot, you'll need to either sign the kernels yourself, which can be a hassle, or launch the kernels by way of a boot loader that doesn't check for signatures, such as ELILO. (Note, however, that many Linux distributions have begun to enforce a chain of trust beyond the boot loader and kernel. This means that if you try to boot using ELILO or some other tool that doesn't enforce Secure Boot, subsequent parts of the boot process may fail.)</p>
 
+<p>Both Secure Boot and Shim support a sort of anti-authorization key or hash. These keys or hashes identify binaries that must not be launched &mdash; typically, they're known malware, or at least they're known to contain bugs that could be exploited to create security problems.</p>
+
 <p>PreLoader and recent versions of Shim are easier to set up on a distribution that doesn't support Secure Boot because these tools don't require the use of keys; instead, you can tell them which binaries you trust and they will let you launch them. This works well on a system with boot managers, boot loaders, and kernels that seldom change. It's not a good solution for distribution maintainers, though, because it requires that users manually add binaries to the MOK's list of approved binaries when the OS is installed and every time those binaries change. Also, PreLoader relies on a helper program, HashTool, to enroll hashes. ("Hash" is Geek for "tell the computer that a binary is OK.") Unfortunately, the initial (and, as far as I know, only signed) HashTool can enroll hashes only from the partition from which it was launched, so if you want to use rEFInd to launch Linux kernels directly, it's easiest if you mount your EFI System Partition (ESP) at <tt>/boot</tt> in Linux or copy your kernels to the ESP. Another approach is to copy <tt>HashTool.efi</tt> to the partition that holds your kernel and rename it to almost anything else. rEFInd will then treat it like an OS boot loader and create a menu entry for it, enabling you to launch it as needed. Recent versions of Shim's key- and hash-management tool, MokManager, support reading keys and binaries from any partition that the EFI can read.</p>
 
 <p>rEFInd can communicate with the Shim system to authenticate boot loaders. If a boot loader has been signed by a valid UEFI Secure Boot key, a valid Shim key, or a valid MOK, rEFInd will launch it. rEFInd will also launch unsigned boot loaders or those with invalid signatures <i>if</i> Secure Boot is disabled in or unsupported by the firmware. (If that's your situation, you needn't bother reading this page.) PreLoader is designed in such a way that it requires no explicit support in rEFInd to work.</p>
@@ -299,42 +301,81 @@ Windows 8 or later, this isn't an option for it. Unfortunately, the PreLoader pr
     ideally to a location with few other files. (The rEFInd installation
     directory should work fine.)</li>
 
-<li>Reboot. With any luck, you'll see a simple text-mode user interface
-    with a label of <tt>Shim UEFI key management</tt>. This is the
-    MokManager program, which Shim launched when rEFInd failed verification
-    because its key is not yet enrolled.</li>
+<li>Optionally, type <tt class="userinput">mokutil -i refind.cer</tt>,
+    adding whatever directory components are needed to access
+    <tt>refind.cer</tt>; or you can substitute your own key file if you
+    re-sign the rEFInd binaries, as described later, in <a
+    href="#mok">Managing Your MOKs.</a> You will be asked to enter a
+    password, which is for temporary use only and need not match your user
+    or <tt>root</tt> password. This action will store the rEFInd public key
+    to the NVRAM, enabling MokManager to access it more easily. In theory,
+    this step obviates the previous one; but it's generally a good idea to
+    have rEFInd's Secure Boot public key on the boot disk so that it can be
+    re-enrolled manually, if necessary.</li>
 
-<li>Press your down arrow key and press Enter to select <tt>Enroll key from
-    disk</tt>. The screen will clear and prompt you to select a key, as
-    shown here:
+<li>Reboot. With any luck, you'll see a simple text-mode user interface with
+    a label of <tt>Shim UEFI key management</tt>. This is the MokManager
+    program, which Shim launched when rEFInd failed verification because its
+    key is not yet enrolled. You may be prompted to press a key to begin MOK
+    management. You have only ten seconds to do so, or the boot will
+    continue without enrolling the MOK, and rEFInd will probably not launch.
+    What happens when you begin MOK management depends of whether you used
+    <tt>mokutil</tt> to install the MOK....</li>
 
-    <br /><img src="MokManager2.png" align="CENTER" width="800"
-    height="345" alt="Recent versions of MokManager provide a somewhat more
-    user-friendly user interface." border=2> <br /> </li>
+<li>If you did <i>not</i> use <tt>mokutil</tt>, then you must locate and
+    enroll the rEFInd key file as follows:
 
-    (Early versions of MokManager used a more primitive user interface with
-    white and yellow text on a black background. If this is what you see,
-    some details will differ, but the program should still work. You might
-    want to find more recent programs for the better user interface and
-    other updated features, though.)
+<ol>
 
-<li>Each of the lines with a long awkward string represents a disk
-    partition. Select one and you'll see a list of files. Continue selecting
-    subdirectories until you find the <tt>refind.cer</tt> or
-    <tt>refind_local.cer</tt> file you copied to the ESP earlier. (Note that
-    in the early user interface the long lines can wrap and hide valid
-    entries on the next line, so you may need to select a disk whose entry
-    is masked by another one!)</li>
+  <li>Press your down arrow key and press Enter to select <tt>Enroll key
+      from disk</tt>; or if you used <tt>mokutil</tt> earlier, instead
+      select <tt>Enroll MOK</tt>. The screen will clear and, if you did
+      <i>not</i> use <tt>mokutil</tt> to install the key, prompt you to
+      select a key, as shown here:
 
-<li>Select <tt>refind.cer</tt> or <tt>refind_local.cer</tt>. You can type
-    <tt class="userinput">1</tt> to view the certificate's details if you
-    like, or skip that and type <tt class="userinput">0</tt> to enroll the
-    key.</li>
+      <br /><img src="MokManager2.png" align="CENTER" width="800"
+      height="345" alt="Recent versions of MokManager provide a somewhat
+      more user-friendly user interface." border=2> <br /> </li>
 
-<li>Back out of any directories you entered and return to the MokManager
-    main menu.</li>
+      (Early versions of MokManager used a more primitive user interface
+      with white and yellow text on a black background. If this is what you
+      see, some details will differ, but the program should still work. You
+      might want to find more recent programs for the better user interface
+      and other updated features, though.)
 
-<li>Select <tt>Continue boot</tt> at the main menu.</li>
+  <li>Each of the lines with a long awkward string represents a disk
+      partition. Select one and you'll see a list of files. Continue
+      selecting subdirectories until you find the <tt>refind.cer</tt> or
+      <tt>refind_local.cer</tt> file you copied to the ESP earlier. (Note
+      that in the early user interface the long lines can wrap and hide
+      valid entries on the next line, so you may need to select a disk whose
+      entry is masked by another one!)</li>
+
+  <li>Select <tt>refind.cer</tt> or <tt>refind_local.cer</tt>. You can type
+      <tt class="userinput">1</tt> to view the certificate's details if you
+      like, or skip that and type <tt class="userinput">0</tt> to enroll the
+      key.</li>
+
+  <li>Back out of any directories you entered and return to the MokManager
+      main menu.</li>
+
+  </ol></li>
+
+<li>If you used <tt>mokutil</tt>, the task is slightly simplified:
+
+  <ol>
+
+  <li>Select <tt>Enroll MOK</tt> from the main menu.</li>
+
+  <li>You may optionally view the key, but to enroll it, you must select
+      <tt>Continue</tt>.</li>
+
+  <li>MokManager will now ask for verification, and then for a password.
+      Enter the password you specified when you used <tt>mokutil</tt>.</li>
+
+  </ol></li>
+
+<li>Select <tt>Reboot</tt> at the main menu.</li>
 
 </ol>
 
@@ -536,6 +577,24 @@ $ <tt class="userinput">openssl x509 -in refind_local.crt -out refind_local.cer 
     on anything. <a
     href="https://www.rodsbooks.com/efi-bootloaders/secureboot.html#disable">Disabling
     Secure Boot</a> may be the best solution to such problems.</li>
+
+<li>In 2020, a bug in GRUB 2, known as <a
+    href="https://www.zdnet.com/article/boothole-attack-impacts-windows-and-linux-systems-using-grub2-and-secure-boot/">Boot
+    Hole,</a> was discovered. This bug could theoretically enable an
+    attacker to run malicious code in the pre-boot environment. <a
+    href="https://ubuntu.com/blog/grub2-secure-boot-bypass-2021">Subsequent
+    analyses</a> discovered several other potential security bugs in GRUB 2.
+    Because there are so many signed GRUB 2 binaries in distribution, these
+    flaws threatened to overrun the standard Secure Boot storage for
+    forbidden binaries, known as the dbx. (The dbx is held in NVRAM, which
+    is severely limited in size.) Thus, Linux distribution maintainers
+    agreed to implement a dbx-like mechanism within Shim, and Microsoft
+    would add earlier Shim binaries to the UEFI dbx. The upshot of this is
+    that, if you installed rEFInd prior to these events, the Shim binary
+    that it uses may be added to your computer's dbx by Windows updates, and
+    rEFInd may stop working. The solution is to update the
+    <tt>shimx64.efi</tt> file in rEFInd's directory with the latest
+    version.</li>
 
 </ul>
 

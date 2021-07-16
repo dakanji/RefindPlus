@@ -723,7 +723,7 @@ static fsw_status_t fsw_ext4_readlink(struct fsw_ext4_volume *vol, struct fsw_ex
     int             ea_blocks;
     struct fsw_string s;
 
-    if (dno->g.size > FSW_PATH_MAX)
+    if ((dno->g.size > FSW_PATH_MAX) || (dno->g.size > sizeof(dno->raw->i_block)))
         return FSW_VOLUME_CORRUPTED;
 
     /* Linux kernels ext4_inode_is_fast_symlink... */

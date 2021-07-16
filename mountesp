@@ -15,6 +15,7 @@
 #
 # Revision history:
 #
+# 0.13.2  -- Fixed bug that caused failure with macOS 11.0 ("Big Sur")
 # 0.9.3   -- Initial release (with rEFInd 0.9.3)
 
 # Mount the ESP at /Volumes/ESP or determine its current mount
@@ -22,7 +23,7 @@
 MountOSXESP() {
     # Identify the ESP. Note: This returns the FIRST ESP found;
     # if the system has multiple disks, this could be wrong!
-    Temp=$(mount | sed -n -E "/^(\/dev\/disk[0-9]+s[0-9]+) on \/ \(.*$/s//\1/p")
+    Temp=$(mount | sed -n -E "/^(\/dev\/disk.*) on \/ \(.*$/s//\1/p")
     if [ $Temp ]; then
         Temp=$(diskutil list | grep " EFI " | grep -o 'disk.*' | head -n 1)
         if [ -z $Temp ]; then
