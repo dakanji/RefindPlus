@@ -1602,27 +1602,24 @@ VOID LogBasicInfo (
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
 
-    if (MyStrStr (VendorInfo, L"Apple") != NULL) {
-        Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
+    Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
+    if (EFI_ERROR (Status)) {
+        HandleCount = 0;
+    }
+    else {
+        Status = gBS->LocateHandleBuffer (
+            ByProtocol,
+            &AppleFramebufferInfoProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
         if (EFI_ERROR (Status)) {
             HandleCount = 0;
         }
-        else {
-            Status = gBS->LocateHandleBuffer (
-                ByProtocol,
-                &AppleFramebufferInfoProtocolGuid,
-                NULL,
-                &HandleCount,
-                &HandleBuffer
-            );
-            if (EFI_ERROR (Status)) {
-                HandleCount = 0;
-            }
-
-        }
-        MsgLog ("Apple Framebuffers:- '%d'\n", HandleCount);
-        MyFreePool (&HandleBuffer);
     }
+    MsgLog ("Apple Framebuffers:- '%d'\n", HandleCount);
+    MyFreePool (&HandleBuffer);
 
     if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
