@@ -148,7 +148,7 @@ for filename in sys.argv[1:]:
 
     # generate compilable header file
 
-    output = "static CONST UINT8 egemb_%s_data[%d] = {\n" % (identname, len(imagedata))
+    output = "static const UINT8 egemb_%s_data[%d] = {\n" % (identname, len(imagedata))
     for i in range(0, len(imagedata)):
         output = output + " 0x%02x," % imagedata[i]
         if (i % 12) == 11:

@@ -115,8 +115,8 @@ LibCreateNewFile (
 EFI_STATUS
 EFIAPI
 LibExtractConfig (
-  IN  CONST EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
-  IN  CONST EFI_STRING                       Request,
+  IN  const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
+  IN  const EFI_STRING                       Request,
   OUT EFI_STRING                             *Progress,
   OUT EFI_STRING                             *Results
   )
@@ -147,8 +147,8 @@ LibExtractConfig (
 EFI_STATUS
 EFIAPI
 LibRouteConfig (
-  IN  CONST EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
-  IN  CONST EFI_STRING                       Configuration,
+  IN  const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
+  IN  const EFI_STRING                       Configuration,
   OUT EFI_STRING                             *Progress
   )
 {
@@ -183,7 +183,7 @@ LibRouteConfig (
 EFI_STATUS
 EFIAPI
 LibCallback (
-  IN  CONST EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
+  IN  const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
   IN  EFI_BROWSER_ACTION                     Action,
   IN  EFI_QUESTION_ID                        QuestionId,
   IN  UINT8                                  Type,

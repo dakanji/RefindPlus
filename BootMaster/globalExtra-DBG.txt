@@ -14,7 +14,7 @@
 VOID
 DebugLog (
     IN        INTN  DebugMode,
-    IN  CONST CHAR8 *FormatString, ...
+    IN  const CHAR8 *FormatString, ...
 );
 
 #if REFIT_DEBUG == 0

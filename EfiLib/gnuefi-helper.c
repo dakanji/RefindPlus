@@ -116,7 +116,7 @@ CHAR8 * UnicodeStrToAsciiStr (
 
 **/
 UINTN AsciiStrLen (
-  IN      CONST CHAR8               *String
+  IN      const CHAR8               *String
   )
 {
   UINTN                             Length;
@@ -151,7 +151,7 @@ UINTN AsciiStrLen (
                       count of the DevicePath exceeds PcdMaximumDevicePathNodeCount.
 **/
 BOOLEAN EFIAPI IsDevicePathValid (
-  IN CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath,
+  IN const EFI_DEVICE_PATH_PROTOCOL *DevicePath,
   IN       UINTN                    MaxSize
 ) {
 //  UINTN Count;
@@ -201,10 +201,10 @@ BOOLEAN EFIAPI IsDevicePathValid (
 
 **/
 UINTN EFIAPI GetDevicePathSize (
-  IN CONST EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+  IN const EFI_DEVICE_PATH_PROTOCOL  *DevicePath
   )
 {
-  CONST EFI_DEVICE_PATH_PROTOCOL  *Start;
+  const EFI_DEVICE_PATH_PROTOCOL  *Start;
 
   if (DevicePath == NULL) {
     return 0;

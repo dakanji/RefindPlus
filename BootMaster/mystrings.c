@@ -52,7 +52,7 @@ BOOLEAN StriSubCmp(IN CHAR16 *SmallStr, IN CHAR16 *BigStr) {
 // because some EFIs have buggy StriCmp() functions that actually perform
 // case-sensitive comparisons.
 // Returns TRUE if strings are identical, FALSE otherwise.
-BOOLEAN MyStriCmp(IN CONST CHAR16 *FirstString, IN CONST CHAR16 *SecondString) {
+BOOLEAN MyStriCmp(IN const CHAR16 *FirstString, IN const CHAR16 *SecondString) {
     if (FirstString && SecondString) {
         while ((*FirstString != L'\0') && ((*FirstString & ~0x20) == (*SecondString & ~0x20))) {
                 FirstString++;
@@ -131,11 +131,11 @@ CHAR16 * MyStrStr (IN CHAR16  *String, IN CHAR16  *StrCharSet) {
 
 **/
 CHAR8 * MyAsciiStrStr (
-    IN CONST CHAR8 *String,
-    IN CONST CHAR8 *SearchString
+    IN const CHAR8 *String,
+    IN const CHAR8 *SearchString
 ) {
-    CONST CHAR8 *FirstMatch;
-    CONST CHAR8 *SearchStringTmp;
+    const CHAR8 *FirstMatch;
+    const CHAR8 *SearchStringTmp;
 
     //
     // ASSERT both strings are less long than PcdMaximumAsciiStringLength

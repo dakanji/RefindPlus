@@ -91,9 +91,9 @@ static UINT32 crc32_tab[] = {
    0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-UINT32 crc32refit (UINT32 crc, CONST VOID *buf, UINTN size)
+UINT32 crc32refit (UINT32 crc, const VOID *buf, UINTN size)
 {
-   CONST UINT8 *p;
+   const UINT8 *p;
 
    p = buf;
    crc = crc ^ ~0U;

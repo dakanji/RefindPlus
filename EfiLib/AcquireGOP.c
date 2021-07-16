@@ -45,7 +45,7 @@ EFI_STATUS AcquireGOP (
 EFI_STATUS ReloadOptionROM (
     IN       VOID    *RomBar,
     IN       UINT64   RomSize,
-    IN CONST CHAR16  *FileName
+    IN const CHAR16  *FileName
 ) {
     VOID                          *ImageBuffer;
     VOID                          *DecompressedImageBuffer;
@@ -279,7 +279,7 @@ EFI_STATUS AcquireGOP (
                         Status = ReloadOptionROM (
                             PciIo->RomImage,
                             PciIo->RomSize,
-                            (CONST CHAR16 *) RomFileName
+                            (const CHAR16 *) RomFileName
                         );
 
                         MyFreePool (&RomFileName);

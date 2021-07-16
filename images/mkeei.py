@@ -53,7 +53,7 @@ def encode_plane(rawdata, identname, planename):
     complen = len(compdata)
     print "  plane %s: compressed %d to %d (%.1f%%)" % (planename, rawlen, complen, float(complen) / float(rawlen) * 100.0)
 
-    output = """static CONST UINT8 eei_%s_planedata_%s[%d] = {
+    output = """static const UINT8 eei_%s_planedata_%s[%d] = {
 """ % (identname, planename, complen)
     for i in range(0, len(compdata)):
         output = output + " 0x%02x," % compdata[i]

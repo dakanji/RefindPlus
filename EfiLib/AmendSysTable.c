@@ -74,7 +74,7 @@ EFI_STATUS FakeCreateEventEx (
     EFI_TPL            NotifyTpl,
     EFI_EVENT_NOTIFY   NotifyFunction,
     const void        *NotifyContext,
-    CONST EFI_GUID    *EventGroup,
+    const EFI_GUID    *EventGroup,
     EFI_EVENT         *Event
 );
 
@@ -286,8 +286,8 @@ EFI_STATUS FakeCreateEventEx (
     IN        UINT32             Type,
     IN        EFI_TPL            NotifyTpl,
     IN        EFI_EVENT_NOTIFY   NotifyFunction OPTIONAL,
-    IN  CONST VOID              *NotifyContext  OPTIONAL,
-    IN  CONST EFI_GUID          *EventGroup     OPTIONAL,
+    IN  const VOID              *NotifyContext  OPTIONAL,
+    IN  const EFI_GUID          *EventGroup     OPTIONAL,
     OUT       EFI_EVENT         *Event
 ) {
     EFI_STATUS         Status;

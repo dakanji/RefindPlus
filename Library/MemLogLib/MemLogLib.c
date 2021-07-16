@@ -300,9 +300,9 @@ if (InitError[0] != '\0') {
 VOID
 EFIAPI
 MemLogVA (
-  IN  CONST BOOLEAN Timing,
-  IN  CONST INTN    DebugMode,
-  IN  CONST CHAR8   *Format,
+  IN  const BOOLEAN Timing,
+  IN  const INTN    DebugMode,
+  IN  const CHAR8   *Format,
   IN  VA_LIST       Marker
   )
 {
@@ -388,9 +388,9 @@ MemLogVA (
 VOID
 EFIAPI
 MemLog (
-  IN  CONST BOOLEAN Timing,
-  IN  CONST INTN    DebugMode,
-  IN  CONST CHAR8   *Format,
+  IN  const BOOLEAN Timing,
+  IN  const INTN    DebugMode,
+  IN  const CHAR8   *Format,
   ...
   )
 {

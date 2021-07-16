@@ -1734,13 +1734,6 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     InitBooterLog();
 
-    CONST CHAR16 *ConstDateStr = PoolPrint (
-        L"%d-%02d-%02d %02d:%02d:%02d",
-        NowYear, NowMonth,
-        NowDay, NowHour,
-        NowMinute, NowSecond
-    );
-
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
         REFINDPLUS_VERSION, VendorInfo
@@ -1751,7 +1744,15 @@ EFI_STATUS EFIAPI efi_main (
 #else
     MsgLog ("Made With:- 'TianoCore EDK II'\n");
 #endif
-    MsgLog ("Timestamp:- '%s (GMT)'\n\n", ConstDateStr);
+
+    CHAR16 *OurDateStr = PoolPrint (
+        L"%d-%02d-%02d %02d:%02d:%02d",
+        NowYear, NowMonth,
+        NowDay, NowHour,
+        NowMinute, NowSecond
+    );
+    MsgLog ("Timestamp:- '%s (GMT)'\n\n", OurDateStr);
+    MyFreePool (OurDateStr);
 
     // Log System Details
     LogBasicInfo ();

@@ -32,13 +32,13 @@ typedef struct _EFI_SECURITY_PROTOCOL EFI_SECURITY_PROTOCOL;
 #endif
 
 typedef EFI_STATUS (MSABI *EFI_SECURITY_FILE_AUTHENTICATION_STATE) (
-         CONST EFI_SECURITY_PROTOCOL *This,
+         const EFI_SECURITY_PROTOCOL *This,
          UINT32 AuthenticationStatus,
-         CONST EFI_DEVICE_PATH_PROTOCOL *File
+         const EFI_DEVICE_PATH_PROTOCOL *File
                              );
 typedef EFI_STATUS (MSABI *EFI_SECURITY2_FILE_AUTHENTICATION) (
-         CONST EFI_SECURITY2_PROTOCOL *This,
-         CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath,
+         const EFI_SECURITY2_PROTOCOL *This,
+         const EFI_DEVICE_PATH_PROTOCOL *DevicePath,
          VOID *FileBuffer,
          UINTN FileSize,
          BOOLEAN  BootPolicy
@@ -64,8 +64,8 @@ static EFI_SECURITY2_FILE_AUTHENTICATION es2fa = NULL;
 // don't want to interfere with that at this time.
 static
 MSABI EFI_STATUS security2_policy_authentication (
-   CONST EFI_SECURITY2_PROTOCOL *This,
-   CONST EFI_DEVICE_PATH_PROTOCOL *DevicePath,
+   const EFI_SECURITY2_PROTOCOL *This,
+   const EFI_DEVICE_PATH_PROTOCOL *DevicePath,
    VOID *FileBuffer,
    UINTN FileSize,
    BOOLEAN  BootPolicy
@@ -95,9 +95,9 @@ MSABI EFI_STATUS security2_policy_authentication (
 // else. (This seems to vary between implementations.)
 static
 MSABI EFI_STATUS security_policy_authentication (
-   CONST EFI_SECURITY_PROTOCOL *This,
+   const EFI_SECURITY_PROTOCOL *This,
    UINT32 AuthenticationStatus,
-   CONST EFI_DEVICE_PATH_PROTOCOL *DevicePathConst
+   const EFI_DEVICE_PATH_PROTOCOL *DevicePathConst
 ) {
    EFI_STATUS        Status;
    EFI_DEVICE_PATH   *DevPath, *OrigDevPath;

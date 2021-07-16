@@ -40,13 +40,13 @@ UnicodeStrToAsciiStr (
 
 UINTN
 AsciiStrLen (
-   IN      CONST CHAR8               *String
+   IN      const CHAR8               *String
 );
 
 UINTN
 EFIAPI
 GetDevicePathSize (
-   IN CONST EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+   IN const EFI_DEVICE_PATH_PROTOCOL  *DevicePath
 );
 
 EFI_DEVICE_PATH_PROTOCOL *

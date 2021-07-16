@@ -681,8 +681,8 @@ EFI_STATUS EfivarSetRaw (
             // Alternative check for setting match (compare Ascii string)
             SettingMatch = (
                 MyAsciiStrStr (
-                    (CONST CHAR8 *) OldBuf,
-                    (CONST CHAR8 *) VariableData
+                    (const CHAR8 *) OldBuf,
+                    (const CHAR8 *) VariableData
                 ) != NULL
             );
             if (SettingMatch) {
@@ -769,10 +769,10 @@ VOID AddListElement (
     IN OUT UINTN   *ElementCount,
     IN VOID        *NewElement
 ) {
-    VOID         *TmpListPtr;
-    CONST UINTN   AllocatePointer = sizeof (VOID *) * (*ElementCount + 16);
-    CONST UINTN   ElementPointer  = sizeof (VOID *) * (*ElementCount);
-    BOOLEAN       Abort           = FALSE;
+          VOID    *TmpListPtr;
+    const UINTN    AllocatePointer = sizeof (VOID *) * (*ElementCount + 16);
+    const UINTN    ElementPointer  = sizeof (VOID *) * (*ElementCount);
+          BOOLEAN  Abort           = FALSE;
 
     if (*ListPtr == NULL) {
         TmpListPtr = AllocatePool (AllocatePointer);
@@ -1898,7 +1898,7 @@ BOOLEAN SetPreBootNames (
                 ) {
                     NameSwap = TRUE;
                     break;
-                } // if Volume->VolName != NULL
+                }
             } // if GuidsAreEqual
         } // for
     } // if !NameSwap
@@ -2005,10 +2005,10 @@ VOID ScanVolumes (
     CHAR16  *PartGUID;
     CHAR16  *PartTypeGUID;
 
-    CONST CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
-    CONST CHAR16 *ITEMVOLB = L"VOLUME GUID";
-    CONST CHAR16 *ITEMVOLC = L"VOLUME TYPE";
-    CONST CHAR16 *ITEMVOLD = L"VOLUME ID";
+    const CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
+    const CHAR16 *ITEMVOLB = L"VOLUME GUID";
+    const CHAR16 *ITEMVOLC = L"VOLUME TYPE";
+    const CHAR16 *ITEMVOLD = L"VOLUME ID";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif

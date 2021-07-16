@@ -30,9 +30,9 @@ typedef VOID (EFIAPI *MEM_LOG_CALLBACK) (IN INTN DebugMode, IN CHAR8 *LastMessag
 VOID
 EFIAPI
 MemLogVA (
-  IN  CONST BOOLEAN Timing,
-  IN  CONST INTN    DebugMode,
-  IN  CONST CHAR8   *Format,
+  IN  const BOOLEAN Timing,
+  IN  const INTN    DebugMode,
+  IN  const CHAR8   *Format,
   IN  VA_LIST       Marker
   );
 
@@ -51,9 +51,9 @@ MemLogVA (
 VOID
 EFIAPI
 MemLog (
-  IN  CONST BOOLEAN Timing,
-  IN  CONST INTN    DebugMode,
-  IN  CONST CHAR8   *Format,
+  IN  const BOOLEAN Timing,
+  IN  const INTN    DebugMode,
+  IN  const CHAR8   *Format,
   ...
   );
 

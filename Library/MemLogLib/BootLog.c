@@ -452,7 +452,7 @@ DeepLoggger (
         MyUnicodeStrToAsciiStr (FinalMsg, FormatString);
 
         // Write the Message String
-        DebugLog (DebugMode, (CONST CHAR8 *) FormatString);
+        DebugLog (DebugMode, (const CHAR8 *) FormatString);
 
         // Disable Native Logging
         UseMsgLog = FALSE;
@@ -468,7 +468,7 @@ VOID
 EFIAPI
 DebugLog(
     IN INTN DebugMode,
-    IN CONST CHAR8 *FormatString, ...
+    IN const CHAR8 *FormatString, ...
 ) {
 #if REFIT_DEBUG < 1
     // Just return in RELEASE builds

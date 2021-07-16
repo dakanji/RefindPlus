@@ -42,7 +42,7 @@ typedef struct _string_list {
 // DA_TAG: See here for more if needed:
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
-BOOLEAN MyStriCmp(IN CONST CHAR16 *String1, IN CONST CHAR16 *String2);
+BOOLEAN MyStriCmp(IN const CHAR16 *String1, IN const CHAR16 *String2);
 BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
@@ -61,7 +61,7 @@ CHAR16 *FindNumbers(IN CHAR16 *InString);
 CHAR16 * GuidAsString(EFI_GUID *GuidData);
 CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
 
-CHAR8 *MyAsciiStrStr (IN CONST CHAR8 *String, IN CONST CHAR8 *SearchString);
+CHAR8 *MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
 
 VOID ToLower(CHAR16 * MyString);
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
