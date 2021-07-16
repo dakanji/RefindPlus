@@ -7,7 +7,12 @@
   * Extends fixes applied in v0.13.2.AF
 - Extends Manual Stanza Handling Fixes
   * Enhancements to "menuentry" sections applied to "submenuentry" sections
-
+- Improves Handling of "FirmwareBootNum" Entries
+  * These were not loaded as expected
+- Adopts Multiple Fixes and Enhancements from a Fork by "joevt"
+  * Mainly related to memory management
+- Reverts Extension of Windows Certificate Filtering to Legacy Windows
+  * This appears to have been linked to negative impacts on some Macs
 
 0.13.2.AF (10 Jun 2021):
 -----------------------
