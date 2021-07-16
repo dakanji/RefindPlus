@@ -29,7 +29,7 @@ However, the enhancements RefindPlus adds to rEFInd are not limited in scope to 
   * Additionally, this ensures that matching APFS drivers for specific Mac OS releases are used.
   * Basically allows working as if APFS is natively supported by the firmware
 - Supports Apple's APFS filesystem requirements
-  * This allows booting Mac OS v11.x (Big Sur) from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
+  * This allows booting Mac OS v11.x (Big Sur), or later, from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
 
 ## Installation
