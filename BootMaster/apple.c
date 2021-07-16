@@ -234,7 +234,7 @@ VOID RotateCsrValue (VOID) {
             );
         }
         else {
-            Status = refit_call5_wrapper(
+            Status = REFIT_CALL_5_WRAPPER(
                 gRT->SetVariable, L"csr-active-config",
                 &CsrGuid, StorageFlags, 0, NULL
             );
@@ -347,7 +347,7 @@ EFI_STATUS SetAppleOSInfo (
     CHAR8                   *AppleOSVersion8    = NULL;
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &apple_set_os_guid,
         NULL,
@@ -396,7 +396,7 @@ EFI_STATUS SetAppleOSInfo (
             }
             else {
                 UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
-                Status = refit_call1_wrapper(
+                Status = REFIT_CALL_1_WRAPPER(
                     SetOs->SetOsVersion, AppleOSVersion8
                 );
                 if (!EFI_ERROR (Status)) {
@@ -406,7 +406,7 @@ EFI_STATUS SetAppleOSInfo (
             }
 
             if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
-                Status = refit_call1_wrapper(
+                Status = REFIT_CALL_1_WRAPPER(
                     SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
                 );
             }

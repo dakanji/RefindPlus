@@ -128,7 +128,7 @@ ApfsReadJumpStart (
   BlockIo = InternalApfsTranslateBlock (PrivateData, PrivateData->EfiJumpStart, &Lba);
 
   // Read jump start and abort on failure.
-  Status = refit_call5_wrapper(
+  Status = REFIT_CALL_5_WRAPPER(
       BlockIo->ReadBlocks,
       BlockIo,
       BlockIo->Media->MediaId,
@@ -269,7 +269,7 @@ InternalApfsReadSuperBlock (
     }
 
     // Read super block and abort on failure.
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         BlockIo->ReadBlocks,
         BlockIo,
         BlockIo->Media->MediaId,

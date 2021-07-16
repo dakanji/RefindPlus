@@ -212,12 +212,12 @@
      LOG(3, LOG_LINE_NORMAL, L"Trying to rename '%s' to '%s'", OldName, NewName);
      #endif
 
-     Status = refit_call5_wrapper(BaseDir->Open, BaseDir, &FilePtr, OldName,
+     Status = REFIT_CALL_5_WRAPPER(BaseDir->Open, BaseDir, &FilePtr, OldName,
                                   EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
      if (Status == EFI_SUCCESS) {
          Buffer = LibFileInfo (FilePtr);
          if (Buffer == NULL) {
-             refit_call1_wrapper(FilePtr->Close, FilePtr);
+             REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
              return FALSE;
          }
      } // if
@@ -228,7 +228,7 @@
              CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
              NewInfo->FileName[0] = 0;
              StrCat (NewInfo->FileName, NewName);
-             Status = refit_call4_wrapper(BaseDir->SetInfo,
+             Status = REFIT_CALL_4_WRAPPER(BaseDir->SetInfo,
                                           FilePtr,
                                           &gEfiFileInfoGuid,
                                           NewInfoSize,
@@ -240,7 +240,7 @@
              Status = EFI_BUFFER_TOO_SMALL;
          }
      } // if
-     refit_call1_wrapper(FilePtr->Close, FilePtr);
+     REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
      return Status;
  } // EFI_STATUS RenameFile()
 
@@ -276,7 +276,7 @@
      EFI_FILE *TheDir = NULL;
 
      while ((FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
-         refit_call5_wrapper(
+         REFIT_CALL_5_WRAPPER(
              BaseDir->Open,
              BaseDir,
              &TheDir,
@@ -284,7 +284,7 @@
              EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
              EFI_FILE_DIRECTORY
          );
-         Status = refit_call1_wrapper(TheDir->Close, TheDir);
+         Status = REFIT_CALL_1_WRAPPER(TheDir->Close, TheDir);
          MyFreePool (&FileName);
          MyFreePool (&TheDir);
      } // while()
@@ -302,12 +302,12 @@
      UINTN              *Buffer = NULL;
 
      // Read the original file....
-     Status = refit_call5_wrapper(SourceDir->Open, SourceDir, &SourceFile, SourceName,
+     Status = REFIT_CALL_5_WRAPPER(SourceDir->Open, SourceDir, &SourceFile, SourceName,
                                   EFI_FILE_MODE_READ, 0);
      if (Status == EFI_SUCCESS) {
          FileInfo = LibFileInfo (SourceFile);
          if (FileInfo == NULL) {
-             refit_call1_wrapper(SourceFile->Close, SourceFile);
+             REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
              return EFI_NO_RESPONSE;
          }
          FileSize = FileInfo->FileSize;
@@ -319,19 +319,19 @@
              Status = EFI_OUT_OF_RESOURCES;
      } // if
      if (Status == EFI_SUCCESS)
-         Status = refit_call3_wrapper(SourceFile->Read, SourceFile, &FileSize, Buffer);
+         Status = REFIT_CALL_3_WRAPPER(SourceFile->Read, SourceFile, &FileSize, Buffer);
      if (Status == EFI_SUCCESS)
-         refit_call1_wrapper(SourceFile->Close, SourceFile);
+         REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
 
      // Write the file to a new location....
      if (Status == EFI_SUCCESS) {
-         Status = refit_call5_wrapper(DestDir->Open, DestDir, &DestFile, DestName,
+         Status = REFIT_CALL_5_WRAPPER(DestDir->Open, DestDir, &DestFile, DestName,
                                       EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
      }
      if (Status == EFI_SUCCESS)
-         Status = refit_call3_wrapper(DestFile->Write, DestFile, &FileSize, Buffer);
+         Status = REFIT_CALL_3_WRAPPER(DestFile->Write, DestFile, &FileSize, Buffer);
      if (Status == EFI_SUCCESS)
-         Status = refit_call1_wrapper(DestFile->Close, DestFile);
+         Status = REFIT_CALL_1_WRAPPER(DestFile->Close, DestFile);
 
      MyFreePool (&SourceFile);
      MyFreePool (&DestFile);
@@ -582,16 +582,16 @@ EFI_STATUS CopyDrivers (
      UINTN    FileSize, Status;
      EFI_FILE *FilePtr;
 
-     Status = refit_call5_wrapper(TargetDir->Open, TargetDir, &FilePtr, L"\\EFI\\refindplus\\BOOT.CSV",
+     Status = REFIT_CALL_5_WRAPPER(TargetDir->Open, TargetDir, &FilePtr, L"\\EFI\\refindplus\\BOOT.CSV",
                                   EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
      if (Status == EFI_SUCCESS) {
          Contents = PoolPrint (L"%s,RefindPlus Boot Manager,,This is the boot entry for RefindPlus\n",
                               INST_REFINDPLUS_NAME);
          if (Contents) {
              FileSize = StrSize (Contents);
-             Status = refit_call3_wrapper(FilePtr->Write, FilePtr, &FileSize, Contents);
+             Status = REFIT_CALL_3_WRAPPER(FilePtr->Write, FilePtr, &FileSize, Contents);
              if (Status == EFI_SUCCESS)
-                 refit_call1_wrapper(FilePtr->Close, FilePtr);
+                 REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
              MyFreePool (&FilePtr);
          } // if
          MyFreePool (&Contents);

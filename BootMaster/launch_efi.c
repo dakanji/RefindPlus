@@ -95,9 +95,9 @@ VOID WarnSecureBootError(
 
     MsgStrA = PoolPrint (L"Secure Boot Validation Failure While Loading %s!!", Name);
 
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStrA, NEXTLINE);
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     if (Verbose && secure_mode()) {
         MsgStrB = PoolPrint (
@@ -160,7 +160,7 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         return TRUE;
     } // if
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         RootDir->Open, RootDir,
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
@@ -177,8 +177,8 @@ BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName) {
         return FALSE;
     }
 
-    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &Size, Header);
-    refit_call1_wrapper(FileHandle->Close, FileHandle);
+    Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &Size, Header);
+    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
     IsValid = !EFI_ERROR (Status) &&
               Size == sizeof (Header) &&
@@ -281,10 +281,10 @@ EFI_STATUS StartEFIImage (
         // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
         // kernel returns a "Failed to handle fs_proto" error message.
         // TODO: Track down the cause of this error and fix it, if possible.
-        // Status = refit_call6_wrapper(gBS->LoadImage, FALSE, SelfImageHandle, DevicePath,
+        // Status = REFIT_CALL_6_WRAPPER(gBS->LoadImage, FALSE, SelfImageHandle, DevicePath,
         //                              ImageData, ImageSize, &ChildImageHandle);
         // ReturnStatus = Status;
-        Status = refit_call6_wrapper(
+        Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePath,
             NULL, 0,
@@ -313,7 +313,7 @@ EFI_STATUS StartEFIImage (
             MyFreePool (&MsgStr);
             #endif
 
-            refit_call6_wrapper(
+            REFIT_CALL_6_WRAPPER(
                 gBS->LoadImage,
                 FALSE,
                 SelfImageHandle,
@@ -355,7 +355,7 @@ EFI_STATUS StartEFIImage (
     }
     MyFreePool (&ErrorInfo);
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         ChildImageHandle,
         &LoadedImageProtocol,
@@ -420,7 +420,7 @@ EFI_STATUS StartEFIImage (
     LOG(3, LOG_LINE_NORMAL, L"Running '%s'", ImageTitle);
     #endif
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
         NULL, NULL
     );
@@ -443,7 +443,7 @@ EFI_STATUS StartEFIImage (
 bailout_unload:
     // unload the image, we do not care if it works or not
     if (!IsDriver) {
-        refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
+        REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
     }
 
 bailout:
@@ -502,7 +502,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     UninitRefitLib();
 
-    refit_call4_wrapper(
+    REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem,
         EfiResetCold,
         EFI_SUCCESS,
@@ -514,9 +514,9 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     MsgStr = PoolPrint (L"Error calling ResetSystem ... %r", err);
 
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** WARN: %s\n\n", MsgStr);
@@ -572,7 +572,7 @@ VOID RebootIntoLoader (
     LOG(1, LOG_LINE_NORMAL, L"Attempting to reboot", Entry->Title, Entry->EfiBootNum);
     #endif
 
-    refit_call4_wrapper(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    REFIT_CALL_4_WRAPPER(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
     Print(L"Error calling ResetSystem: %r", Status);
     PauseForKey();

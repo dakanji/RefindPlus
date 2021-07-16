@@ -113,7 +113,7 @@ MSABI EFI_STATUS security_policy_authentication (
       DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
    }
 
-   Status = refit_call3_wrapper(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
+   Status = REFIT_CALL_3_WRAPPER(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
    if (Status != EFI_SUCCESS)
       goto out;
 

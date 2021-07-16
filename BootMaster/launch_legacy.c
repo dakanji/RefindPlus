@@ -87,7 +87,7 @@ EFI_STATUS ActivateMbrPartition (
     BOOLEAN             HaveBootCode;
 
     // read MBR
-    Status = refit_call5_wrapper(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
+    Status = REFIT_CALL_5_WRAPPER(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
     if (EFI_ERROR (Status))
         return Status;
     if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55)
@@ -127,7 +127,7 @@ EFI_STATUS ActivateMbrPartition (
     }
 
     // write MBR
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         BlockIO->WriteBlocks,
         BlockIO,
         BlockIO->Media->MediaId,
@@ -145,7 +145,7 @@ EFI_STATUS ActivateMbrPartition (
         // NOTE: ExtBase was set above while looking at the MBR table
         for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
             // read current EMBR
-            Status = refit_call5_wrapper(
+            Status = REFIT_CALL_5_WRAPPER(
                 BlockIO->ReadBlocks,
                 BlockIO,
                 BlockIO->Media->MediaId,
@@ -184,7 +184,7 @@ EFI_STATUS ActivateMbrPartition (
             }
 
             // write current EMBR
-            Status = refit_call5_wrapper(
+            Status = REFIT_CALL_5_WRAPPER(
                 BlockIO->WriteBlocks,
                 BlockIO,
                 BlockIO->Media->MediaId,
@@ -281,7 +281,7 @@ VOID ExtractLegacyLoaderPaths (
     for (HandleIndex = 0; HandleIndex < HandleCount && PathCount < MaxPaths; HandleIndex++) {
         Handle = Handles[HandleIndex];
 
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handle,
             &LoadedImageProtocol,
@@ -292,7 +292,7 @@ VOID ExtractLegacyLoaderPaths (
             continue;
         }
 
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             LoadedImage->DeviceHandle,
             &DevicePathProtocol,
@@ -428,7 +428,7 @@ EFI_STATUS StartLegacyImageList (
     // load the image into memory
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
-        Status = refit_call6_wrapper(
+        Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage,
             FALSE,
             SelfImageHandle,
@@ -450,7 +450,7 @@ EFI_STATUS StartLegacyImageList (
         goto bailout;
     }
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         ChildImageHandle,
         &LoadedImageProtocol,
@@ -479,7 +479,7 @@ EFI_STATUS StartLegacyImageList (
 
     UninitRefitLib();
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage,
         ChildImageHandle,
         NULL, NULL
@@ -502,7 +502,7 @@ EFI_STATUS StartLegacyImageList (
 
 bailout_unload:
     // unload the image, we don't care if it works or not...
-    refit_call1_wrapper(gBS->UnloadImage, ChildImageHandle);
+    REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
 
 bailout:
     MyFreePool (&FullLoadOptions);
@@ -575,9 +575,9 @@ VOID StartLegacy (
             MsgStrA = StrDuplicate (
                 L"Please make sure you have the latest firmware update installed"
             );
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: %s\n\n", MsgStrA);
@@ -593,9 +593,9 @@ VOID StartLegacy (
             MsgStrA = StrDuplicate (
                 L"The firmware refused to boot from the selected volume"
             );
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("** WARN: %s\n", MsgStrA);
@@ -604,9 +604,9 @@ VOID StartLegacy (
             MsgStrB = StrDuplicate (
                 L"NB: External drives are not well-supported by Apple firmware for legacy booting"
             );
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrB, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("         %s\n\n", MsgStrB);
@@ -883,7 +883,7 @@ VOID ScanLegacyUEFI (
 
     // If LegacyBios protocol is not implemented on this platform, then
     //we do not support this type of legacy boot on this machine.
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiLegacyBootProtocolGuid,
         NULL,
@@ -1094,7 +1094,7 @@ VOID FindLegacyBootType (VOID) {
     GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
 
     // UEFI-style legacy BIOS support is only available with some EFI implementations
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiLegacyBootProtocolGuid,
         NULL,
@@ -1147,9 +1147,9 @@ VOID WarnIfLegacyProblems (
                 L"         lacks the necessary Compatibility Support Module (CSM) support or that support\n"
                 L"         is disabled in your firmware.";
 
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n\n", MsgStr);

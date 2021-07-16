@@ -102,7 +102,7 @@ EFI_STATUS BdsLibConnectDevicePath (
       //
       RemainingDevicePath = Instance;
 
-      Status = refit_call3_wrapper(
+      Status = REFIT_CALL_3_WRAPPER(
           gBS->LocateDevicePath,
           &EfiDevicePathProtocolGuid,
           &RemainingDevicePath,
@@ -140,7 +140,7 @@ EFI_STATUS BdsLibConnectDevicePath (
           //    change, then avoid the dispatch, we have chance to continue the
           //    next connection
           //
-          refit_call4_wrapper(gBS->ConnectController, Handle, NULL, RemainingDevicePath, FALSE);
+          REFIT_CALL_4_WRAPPER(gBS->ConnectController, Handle, NULL, RemainingDevicePath, FALSE);
         }
       }
       //
@@ -318,7 +318,7 @@ VOID * BdsLibGetVariableAndSize (
   // Pass in a zero size buffer to find the required buffer size.
   //
   BufferSize  = 0;
-  Status      = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
+  Status      = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
   if (Status == EFI_BUFFER_TOO_SMALL) {
     //
     // Allocate the buffer to return
@@ -330,7 +330,7 @@ VOID * BdsLibGetVariableAndSize (
     //
     // Read variable into the allocated buffer.
     //
-    Status = refit_call5_wrapper(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
+    Status = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
     if (EFI_ERROR (Status)) {
       BufferSize = 0;
     }

@@ -1211,7 +1211,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         return FALSE;
     }
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         Volume->RootDir->Open,
         Volume->RootDir,
         &FileHandle,
@@ -1228,7 +1228,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
     }
     MyFreePool (&FileInfo);
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         Volume->RootDir->Open,
         Volume->RootDir,
         &FallbackHandle,
@@ -1241,7 +1241,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         FallbackSize = FallbackInfo->FileSize;
     }
     else {
-        refit_call1_wrapper(FileHandle->Close, FileHandle);
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         return FALSE;
     }
     MyFreePool (&FallbackInfo);
@@ -1250,14 +1250,14 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         FileContents = AllocatePool (FileSize);
         FallbackContents = AllocatePool (FallbackSize);
         if (FileContents && FallbackContents) {
-            Status = refit_call3_wrapper(
+            Status = REFIT_CALL_3_WRAPPER(
                 FileHandle->Read,
                 FileHandle,
                 &FileSize,
                 FileContents
             );
             if (Status == EFI_SUCCESS) {
-                Status = refit_call3_wrapper
+                Status = REFIT_CALL_3_WRAPPER
                 (FallbackHandle->Read,
                     FallbackHandle,
                     &FallbackSize,
@@ -1274,8 +1274,8 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
 
     // BUG ALERT: Some systems (e.g., DUET, some Macs with large displays) crash if the
     // following two calls are reversed. Go figure....
-    refit_call1_wrapper(FileHandle->Close, FallbackHandle);
-    refit_call1_wrapper(FileHandle->Close, FileHandle);
+    REFIT_CALL_1_WRAPPER(FileHandle->Close, FallbackHandle);
+    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
     return AreIdentical;
 } // BOOLEAN DuplicatesFallback()
 
@@ -1299,7 +1299,7 @@ BOOLEAN IsSymbolicLink (
     EFI_STATUS       Status;
     UINTN            FileSize2 = 0;
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         Volume->RootDir->Open,
         Volume->RootDir,
         &FileHandle,
@@ -1477,7 +1477,7 @@ CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
     UINTN             boot_info_size = 0;
 
     FilePath = FileDevicePath (Volume, IPXE_DISCOVER_NAME);
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->LoadImage, FALSE,
         SelfImageHandle, FilePath,
         NULL, 0,
@@ -1487,7 +1487,7 @@ CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
         return NULL;
     }
 
-    refit_call3_wrapper(
+    REFIT_CALL_3_WRAPPER(
         gBS->StartImage,
         iPXEHandle,
         &boot_info_size,

@@ -38,7 +38,7 @@ RpApfsConnectParentDevice (
   UINTN            Index;
 
   HandleCount = 0;
-  Status = refit_call5_wrapper(
+  Status = REFIT_CALL_5_WRAPPER(
       gBS->LocateHandleBuffer,
       ByProtocol,
       &gEfiBlockIoProtocolGuid,
@@ -73,7 +73,7 @@ RpApfsConnectDevices (
     VOID        *PartitionInfoInterface;
 
 
-    refit_call3_wrapper(
+    REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiPartitionInfoProtocolGuid,
         NULL,

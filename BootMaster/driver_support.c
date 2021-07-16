@@ -220,7 +220,7 @@ EFI_STATUS LibScanHandleDatabase (
     // Retrieve the list of all handles from the handle database
     //
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer,
         AllHandles,
         NULL, NULL,
@@ -262,7 +262,7 @@ EFI_STATUS LibScanHandleDatabase (
         //
         // Retrieve the list of all the protocols on each handle
         //
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->ProtocolsPerHandle,
             (*HandleBuffer)[HandleIndex],
             &ProtocolGuidArray,
@@ -293,7 +293,7 @@ EFI_STATUS LibScanHandleDatabase (
                 //
                 // Retrieve the list of agents that have opened each protocol
                 //
-                Status = refit_call4_wrapper(
+                Status = REFIT_CALL_4_WRAPPER(
                     gBS->OpenProtocolInformation,
                     (*HandleBuffer)[HandleIndex],
                     ProtocolGuidArray[ProtocolIndex],
@@ -459,7 +459,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
 
             if (!Parent) {
                 if (HandleType[Index] & EFI_HANDLE_TYPE_DEVICE_HANDLE) {
-                   Status = refit_call4_wrapper(
+                   Status = REFIT_CALL_4_WRAPPER(
                        gBS->ConnectController,
                        AllHandleBuffer[Index],
                        NULL, NULL, TRUE
@@ -518,7 +518,7 @@ VOID ConnectFilesystemDriver(
     //
     // Get all DiskIo handles
     //
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer,
         ByProtocol,
         &gMyEfiDiskIoProtocolGuid,
@@ -540,7 +540,7 @@ VOID ConnectFilesystemDriver(
         // should be opened here BY_DRIVER by Partition driver
         // to produce partition volumes.
         //
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[Index],
             &gMyEfiBlockIoProtocolGuid,
@@ -556,7 +556,7 @@ VOID ConnectFilesystemDriver(
         //
         // If SimpleFileSystem is already produced - skip it, this is ok
         //
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[Index],
             &gMyEfiSimpleFileSystemProtocolGuid,
@@ -570,7 +570,7 @@ VOID ConnectFilesystemDriver(
         // If no SimpleFileSystem on this handle but DiskIo is opened BY_DRIVER
         // then disconnect this connection and try to connect our driver to it
         //
-        Status = refit_call4_wrapper(
+        Status = REFIT_CALL_4_WRAPPER(
             gBS->OpenProtocolInformation,
             Handles[Index],
             &gMyEfiDiskIoProtocolGuid,
@@ -584,13 +584,13 @@ VOID ConnectFilesystemDriver(
         DriverHandleList[1] = NULL;
         for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
             if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER) {
-                Status = refit_call3_wrapper(
+                Status = REFIT_CALL_3_WRAPPER(
                     gBS->DisconnectController, Handles[Index],
                     OpenInfo[OpenInfoIndex].AgentHandle, NULL
                 );
                 if (!(EFI_ERROR (Status))) {
                     DriverHandleList[0] = DriverHandle;
-                    refit_call4_wrapper(
+                    REFIT_CALL_4_WRAPPER(
                         gBS->ConnectController, Handles[Index],
                         DriverHandleList, NULL, FALSE
                     );

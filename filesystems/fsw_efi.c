@@ -268,7 +268,7 @@ EFI_STATUS EFIAPI fsw_efi_main(
     fsw_efi_DriverBinding_table.ImageHandle          = ImageHandle;
     fsw_efi_DriverBinding_table.DriverBindingHandle  = ImageHandle;
     // install Driver Binding protocol
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gBS->InstallProtocolInterface,
         &fsw_efi_DriverBinding_table.DriverBindingHandle,
         &gMyEfiDriverBindingProtocolGuid,
@@ -281,7 +281,7 @@ EFI_STATUS EFIAPI fsw_efi_main(
     }
 
     // install Component Name protocol
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gBS->InstallProtocolInterface,
         &fsw_efi_DriverBinding_table.DriverBindingHandle,
         &gMyEfiComponentNameProtocolGuid,
@@ -318,7 +318,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
     // we check for both DiskIO and BlockIO protocols
 
     // first, open DiskIO
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
         &gMyEfiDiskIoProtocolGuid,
@@ -332,7 +332,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
     }
 
     // we were just checking, close it again
-    refit_call4_wrapper(
+    REFIT_CALL_4_WRAPPER(
         gBS->CloseProtocol,
         ControllerHandle,
         &gMyEfiDiskIoProtocolGuid,
@@ -341,7 +341,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
     );
 
     // next, check BlockIO without actually opening it
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
         &gMyEfiBlockIoProtocolGuid,
@@ -384,7 +384,7 @@ fsw_efi_DriverBinding_Start(
 #endif
 
     // open consumed protocols
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
         &gMyEfiBlockIoProtocolGuid,
@@ -397,7 +397,7 @@ fsw_efi_DriverBinding_Start(
         return Status;
     }
 
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
         &gMyEfiDiskIoProtocolGuid,
@@ -436,7 +436,7 @@ fsw_efi_DriverBinding_Start(
         Volume->FileSystem.Revision     = EFI_FILE_IO_INTERFACE_REVISION;
         Volume->FileSystem.OpenVolume   = fsw_efi_FileSystem_OpenVolume;
 
-        Status = refit_call4_wrapper(
+        Status = REFIT_CALL_4_WRAPPER(
             gBS->InstallMultipleProtocolInterfaces,
             &ControllerHandle,
             &gMyEfiSimpleFileSystemProtocolGuid,
@@ -452,7 +452,7 @@ fsw_efi_DriverBinding_Start(
         }
         FreePool(Volume);
 
-        refit_call4_wrapper(
+        REFIT_CALL_4_WRAPPER(
             gBS->CloseProtocol,
             ControllerHandle,
             &gMyEfiDiskIoProtocolGuid,
@@ -488,7 +488,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
 #endif
 
     // get the installed SimpleFileSystem interface
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
         &gMyEfiSimpleFileSystemProtocolGuid,
@@ -505,7 +505,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
     Volume = FSW_VOLUME_FROM_FILE_SYSTEM(FileSystem);
 
     // uninstall Simple File System protocol
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gBS->UninstallMultipleProtocolInterfaces,
         ControllerHandle,
         &gMyEfiSimpleFileSystemProtocolGuid,
@@ -527,7 +527,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
     FreePool(Volume);
 
     // close the consumed protocols
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gBS->CloseProtocol,
         ControllerHandle,
         &gMyEfiDiskIoProtocolGuid,
@@ -652,12 +652,12 @@ fsw_status_t EFIAPI fsw_efi_read_block(
          // compiled with Tianocore. Further clue: Omitting "Status =" avoids the
          // hang but produces a failure to mount the filesystem, even when the same
          // change is made to later similar call. Calling Volume->DiskIo->ReadDisk()
-         // directly (without refit_call5_wrapper()) changes nothing. Placing Print()
+         // directly (without REFIT_CALL_5_WRAPPER()) changes nothing. Placing Print()
          // statements at the start and end of the function, and before and after the
          // ReadDisk() call, suggests that when it fails, the program is executing
          // code starting mid-function, so there seems to be something messed up in
          // the way the function is being called. FIGURE THIS OUT!
-         Status = refit_call5_wrapper(
+         Status = REFIT_CALL_5_WRAPPER(
              Volume->DiskIo->ReadDisk,
              Volume->DiskIo,
              Volume->MediaId,
@@ -685,7 +685,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(
    }
 
    if (ReadOneBlock) { // Something's failed, so try a simple disk read of one block....
-      Status = refit_call5_wrapper(
+      Status = REFIT_CALL_5_WRAPPER(
           Volume->DiskIo->ReadDisk,
           Volume->DiskIo,
           Volume->MediaId,
@@ -795,7 +795,7 @@ EFI_STATUS EFIAPI fsw_efi_FileHandle_Close(IN EFI_FILE *This) {
 EFI_STATUS EFIAPI fsw_efi_FileHandle_Delete(IN EFI_FILE *This) {
     EFI_STATUS          Status;
 
-    Status = refit_call1_wrapper(This->Close, This);
+    Status = REFIT_CALL_1_WRAPPER(This->Close, This);
     if (Status == EFI_SUCCESS) {
         // this driver is read-only
         Status = EFI_WARN_DELETE_FAILURE;

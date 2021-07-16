@@ -60,7 +60,7 @@ VOID UpdateBbsTable (
     BBS_BBS_DEVICE_PATH       *OptionBBS;
     CHAR16                     Desc[100];
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiLegacyBootProtocolGuid,
         NULL,
@@ -71,7 +71,7 @@ VOID UpdateBbsTable (
     }
 
     OptionBBS = (BBS_BBS_DEVICE_PATH *) Option->DevicePath;
-    refit_call5_wrapper(
+    REFIT_CALL_5_WRAPPER(
         LegacyBios->GetBbsInfo,
         LegacyBios,
         &HddCount,
@@ -123,7 +123,7 @@ EFI_STATUS BdsLibDoLegacyBoot (
     EFI_STATUS                Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiLegacyBootProtocolGuid,
         NULL,
@@ -135,7 +135,7 @@ EFI_STATUS BdsLibDoLegacyBoot (
 
     UpdateBbsTable(Option);
 
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         LegacyBios->LegacyBoot,
         LegacyBios,
         (BBS_BBS_DEVICE_PATH *) Option->DevicePath,

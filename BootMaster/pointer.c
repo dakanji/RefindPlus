@@ -68,7 +68,7 @@ VOID pdInitialize() {
     else {
         // Get all handles that support absolute pointer protocol (usually touchscreens, but sometimes mice)
         UINTN NumPointerHandles = 0;
-        EFI_STATUS handlestatus = refit_call5_wrapper(
+        EFI_STATUS handlestatus = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &APointerGuid,
@@ -82,7 +82,7 @@ VOID pdInitialize() {
             UINTN Index;
             for (Index = 0; Index < NumPointerHandles; Index++) {
                 // Open the protocol on the handle
-                EFI_STATUS status = refit_call6_wrapper(
+                EFI_STATUS status = REFIT_CALL_6_WRAPPER(
                     gBS->OpenProtocol,
                     APointerHandles[Index],
                     &APointerGuid,
@@ -110,7 +110,7 @@ VOID pdInitialize() {
 
         // Get all handles that support simple pointer protocol (mice)
         NumPointerHandles = 0;
-        handlestatus = refit_call5_wrapper(
+        handlestatus = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer,
             ByProtocol,
             &SPointerGuid,
@@ -124,7 +124,7 @@ VOID pdInitialize() {
             UINTN Index;
             for (Index = 0; Index < NumPointerHandles; Index++) {
                 // Open the protocol on the handle
-                EFI_STATUS status = refit_call6_wrapper(
+                EFI_STATUS status = REFIT_CALL_6_WRAPPER(
                     gBS->OpenProtocol,
                     SPointerHandles[Index],
                     &SPointerGuid,
@@ -178,7 +178,7 @@ VOID pdCleanup() {
     if (APointerHandles) {
         UINTN Index;
         for (Index = 0; Index < NumAPointerDevices; Index++) {
-            refit_call4_wrapper(
+            REFIT_CALL_4_WRAPPER(
                 gBS->CloseProtocol,
                 APointerHandles[Index],
                 &APointerGuid,
@@ -196,7 +196,7 @@ VOID pdCleanup() {
     if (SPointerHandles) {
         UINTN Index;
         for (Index = 0; Index < NumSPointerDevices; Index++) {
-            refit_call4_wrapper(
+            REFIT_CALL_4_WRAPPER(
                 gBS->CloseProtocol,
                 SPointerHandles[Index],
                 &SPointerGuid,
@@ -274,7 +274,7 @@ EFI_STATUS pdUpdateState() {
 
     UINTN Index;
     for (Index = 0; Index < NumAPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(
+        EFI_STATUS PointerStatus = REFIT_CALL_2_WRAPPER(
             APointerProtocol[Index]->GetState,
             APointerProtocol[Index],
             &APointerState
@@ -294,7 +294,7 @@ EFI_STATUS pdUpdateState() {
         }
     }
     for (Index = 0; Index < NumSPointerDevices; Index++) {
-        EFI_STATUS PointerStatus = refit_call2_wrapper(
+        EFI_STATUS PointerStatus = REFIT_CALL_2_WRAPPER(
             SPointerProtocol[Index]->GetState,
             SPointerProtocol[Index],
             &SPointerState

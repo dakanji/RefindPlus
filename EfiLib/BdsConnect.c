@@ -375,7 +375,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                     XStatus = EFI_SUCCESS;
 
                     if (DevTag) {
-                        XStatus = refit_call3_wrapper(
+                        XStatus = REFIT_CALL_3_WRAPPER(
                             gBS->HandleProtocol,
                             AllHandleBuffer[i],
                             &gEfiPciIoProtocolGuid,
@@ -442,7 +442,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                     } // if DevTag
 
                     if (!FoundGOP) {
-                        XStatus = refit_call5_wrapper(
+                        XStatus = REFIT_CALL_5_WRAPPER(
                             gBS->LocateHandleBuffer,
                             ByProtocol,
                             &gEfiGraphicsOutputProtocolGuid,

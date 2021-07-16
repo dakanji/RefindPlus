@@ -249,7 +249,7 @@ EFI_STATUS FinishInitRefitLib (
         }
     }
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         SelfRootDir->Open, SelfRootDir,
         &SelfDir, SelfDirPath,
         EFI_FILE_MODE_READ, 0
@@ -269,7 +269,7 @@ EFI_STATUS InitRefitLib (
     CHAR16      *DevicePathAsString;
 
     SelfImageHandle = ImageHandle;
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         SelfImageHandle,
         &LoadedImageProtocol,
@@ -307,7 +307,7 @@ VOID UninitVolumes (
         Volume = Volumes[VolumeIndex];
 
         if (Volume->RootDir != NULL) {
-            refit_call1_wrapper(Volume->RootDir->Close, Volume->RootDir);
+            REFIT_CALL_1_WRAPPER(Volume->RootDir->Close, Volume->RootDir);
             Volume->RootDir = NULL;
         }
 
@@ -333,7 +333,7 @@ VOID ReinitVolumes (
         if (Volume->DevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->DevicePath;
-            Status = refit_call3_wrapper(
+            Status = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
                 &RemainingDevicePath,
@@ -355,7 +355,7 @@ VOID ReinitVolumes (
         if (Volume->WholeDiskDevicePath != NULL) {
             // get the handle for that path
             RemainingDevicePath = Volume->WholeDiskDevicePath;
-            Status = refit_call3_wrapper(
+            Status = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
                 &RemainingDevicePath,
@@ -364,7 +364,7 @@ VOID ReinitVolumes (
 
             if (!EFI_ERROR (Status)) {
                 // get the BlockIO protocol
-                Status = refit_call3_wrapper(
+                Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     WholeDiskHandle,
                     &BlockIoProtocol,
@@ -395,12 +395,12 @@ VOID UninitRefitLib (
     UninitVolumes();
 
     if (SelfDir != NULL) {
-        refit_call1_wrapper(SelfDir->Close, SelfDir);
+        REFIT_CALL_1_WRAPPER(SelfDir->Close, SelfDir);
         SelfDir = NULL;
     }
 
     if (SelfRootDir != NULL) {
-       refit_call1_wrapper(SelfRootDir->Close, SelfRootDir);
+       REFIT_CALL_1_WRAPPER(SelfRootDir->Close, SelfRootDir);
        SelfRootDir = NULL;
     }
 } // VOID UninitRefitLib()
@@ -454,7 +454,7 @@ EFI_STATUS FindVarsDir (
     EFI_FILE_HANDLE  EspRootDir;
 
     if (gVarsDir == NULL) {
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             SelfDir->Open, SelfDir,
             &gVarsDir, L"vars",
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
@@ -471,7 +471,7 @@ EFI_STATUS FindVarsDir (
         if (EFI_ERROR (Status)) {
             Status = egFindESP (&EspRootDir);
             if (!EFI_ERROR (Status)) {
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     EspRootDir->Open, EspRootDir,
                     &gVarsDir, L"refind-vars",
                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
@@ -580,7 +580,7 @@ EFI_STATUS EfivarGetRaw (
     ) {
         // Pass in a zero-size buffer to find the required buffer size.
         BufferSize = 0;
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             gRT->GetVariable, VariableName,
             VendorGUID, NULL,
             &BufferSize, TmpBuffer
@@ -598,7 +598,7 @@ EFI_STATUS EfivarGetRaw (
             }
             else {
                 // Retry with the correct buffer size.
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     gRT->GetVariable, VariableName,
                     VendorGUID, NULL,
                     &BufferSize, TmpBuffer
@@ -743,7 +743,7 @@ EFI_STATUS EfivarSetRaw (
             StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
             VendorGUID, StorageFlags,
             VariableSize, VariableData
@@ -1113,7 +1113,7 @@ VOID ScanVolumeBootcode (
     }
 
     // look at the boot sector (this is used for both hard disks and El Torito images!)
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         Volume->BlockIO->ReadBlocks,
         Volume->BlockIO,
         Volume->BlockIO->Media->MediaId,
@@ -1610,7 +1610,7 @@ VOID ScanVolume (
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
     // get block i/o
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Volume->DeviceHandle,
         &BlockIoProtocol,
@@ -1671,7 +1671,7 @@ VOID ScanVolume (
 
             // get the handle for that path
             RemainingDevicePath = DiskDevicePath;
-            Status = refit_call3_wrapper(
+            Status = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath,
                 &BlockIoProtocol,
                 &RemainingDevicePath,
@@ -1681,7 +1681,7 @@ VOID ScanVolume (
 
             if (!EFI_ERROR (Status)) {
                 // get the device path for later
-                Status = refit_call3_wrapper(
+                Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     WholeDiskHandle,
                     &DevicePathProtocol,
@@ -1698,7 +1698,7 @@ VOID ScanVolume (
                 }
 
                 // look at the BlockIO protocol
-                Status = refit_call3_wrapper(
+                Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     WholeDiskHandle,
                     &BlockIoProtocol,
@@ -1785,7 +1785,7 @@ VOID ScanExtendedPartition (
 
     for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
         // read current EMBR
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             WholeDiskVolume->BlockIO->ReadBlocks,
             WholeDiskVolume->BlockIO,
             WholeDiskVolume->BlockIO->Media->MediaId,
@@ -2299,7 +2299,7 @@ VOID ScanVolumes (
                 }
 
                 // compare boot sector read through offset vs. directly
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     Volume->BlockIO->ReadBlocks,
                     Volume->BlockIO,
                     Volume->BlockIO->Media->MediaId,
@@ -2310,7 +2310,7 @@ VOID ScanVolumes (
                 if (EFI_ERROR (Status)) {
                     break;
                 }
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     Volume->WholeDiskBlockIO->ReadBlocks,
                     Volume->WholeDiskBlockIO,
                     Volume->WholeDiskBlockIO->Media->MediaId,
@@ -2522,7 +2522,7 @@ BOOLEAN FileExists (
     EFI_FILE_HANDLE TestFile;
 
     if (BaseDir != NULL) {
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
             &TestFile,
             RelativePath,
@@ -2530,7 +2530,7 @@ BOOLEAN FileExists (
             0
         );
         if (Status == EFI_SUCCESS) {
-            refit_call1_wrapper(TestFile->Close, TestFile);
+            REFIT_CALL_1_WRAPPER(TestFile->Close, TestFile);
             return TRUE;
         }
     }
@@ -2565,7 +2565,7 @@ EFI_STATUS DirNextEntry (
         }
 
         for (IterCount = 0; ; IterCount++) {
-            Status = refit_call3_wrapper(
+            Status = REFIT_CALL_3_WRAPPER(
                 Directory->Read, Directory,
                 &BufferSize,
                 Buffer
@@ -2658,7 +2658,7 @@ VOID DirIterOpen (
         DirIter->CloseDirHandle = FALSE;
     }
     else {
-        DirIter->LastStatus = refit_call5_wrapper(
+        DirIter->LastStatus = REFIT_CALL_5_WRAPPER(
             BaseDir->Open, BaseDir,
             &(DirIter->DirHandle), RelativePath,
             EFI_FILE_MODE_READ, 0
@@ -2686,14 +2686,14 @@ EFI_STATUS InitializeUnicodeCollationProtocol (
    // instances first and then select one which support English language.
    // Current implementation just pick the first instance.
    //
-   Status = refit_call3_wrapper(
+   Status = REFIT_CALL_3_WRAPPER(
        gBS->LocateProtocol,
        &gEfiUnicodeCollation2ProtocolGuid,
        NULL,
        (VOID **) &mUnicodeCollation
    );
    if (EFI_ERROR (Status)) {
-       Status = refit_call3_wrapper(
+       Status = REFIT_CALL_3_WRAPPER(
            gBS->LocateProtocol,
            &gEfiUnicodeCollationProtocolGuid,
            NULL,
@@ -2782,7 +2782,7 @@ EFI_STATUS DirIterClose (
     MyFreePool (&DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
-        refit_call1_wrapper(DirIter->DirHandle->Close, DirIter->DirHandle);
+        REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
     }
 
     return DirIter->LastStatus;
@@ -3204,7 +3204,7 @@ BOOLEAN EjectMedia (
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         Handle = Handles[HandleIndex];
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handle,
             &AppleRemovableMediaGuid,
@@ -3213,7 +3213,7 @@ BOOLEAN EjectMedia (
         if (EFI_ERROR (Status)) {
             continue;
         }
-        Status = refit_call1_wrapper(Ejectable->Eject, Ejectable);
+        Status = REFIT_CALL_1_WRAPPER(Ejectable->Eject, Ejectable);
         if (!EFI_ERROR (Status)) {
             Ejected++;
         }

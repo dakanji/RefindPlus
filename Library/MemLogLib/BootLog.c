@@ -198,7 +198,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
     CHAR16              *ourDebugLog = NULL;
 
     // get RootDir from device we are loaded from
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         gImageHandle,
         &gEfiLoadedImageProtocolGuid,
@@ -219,7 +219,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
     ourDebugLog     = PoolPrint (L"EFI\\%s.log", DateStr);
 
     // Open log file from current root
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         RootDir->Open,
         RootDir,
         &LogFile,
@@ -230,7 +230,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
 
     // If the log file is not found try to create it
     if (Status == EFI_NOT_FOUND) {
-        Status = refit_call5_wrapper(
+        Status = REFIT_CALL_5_WRAPPER(
             RootDir->Open,
             RootDir,
             &LogFile,
@@ -240,14 +240,14 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
         );
     }
 
-    Status = refit_call1_wrapper(RootDir->Close, RootDir);
+    Status = REFIT_CALL_1_WRAPPER(RootDir->Close, RootDir);
     RootDir = NULL;
 
     if (EFI_ERROR (Status)) {
         // try on first EFI partition
         Status = egFindESP (&RootDir);
         if (!EFI_ERROR (Status)) {
-            Status = refit_call5_wrapper(
+            Status = REFIT_CALL_5_WRAPPER(
                 RootDir->Open,
                 RootDir,
                 &LogFile,
@@ -258,7 +258,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
 
             // If the log file is not found try to create it
             if (Status == EFI_NOT_FOUND) {
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     RootDir->Open,
                     RootDir,
                     &LogFile,
@@ -268,7 +268,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (
                 );
             }
 
-            Status = refit_call1_wrapper(RootDir->Close, RootDir);
+            Status = REFIT_CALL_1_WRAPPER(RootDir->Close, RootDir);
             RootDir = NULL;
         }
     }

@@ -132,7 +132,7 @@
 
      // get block i/o
      if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
-         Status = refit_call3_wrapper(BS->HandleProtocol, Volume->DeviceHandle,
+         Status = REFIT_CALL_3_WRAPPER(BS->HandleProtocol, Volume->DeviceHandle,
                                       &BlockIoProtocol, (VOID **) &(Volume->BlockIO));
          if (EFI_ERROR (Status)) {
              Volume->BlockIO = NULL;
@@ -154,14 +154,14 @@
 
      // Read the MBR and store it in GptData->ProtectiveMBR.
      if (Status == EFI_SUCCESS) {
-         Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+         Status = REFIT_CALL_5_WRAPPER(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
                                       Volume->BlockIO->Media->MediaId, 0,
                                       sizeof (MBR_RECORD), (VOID*) GptData->ProtectiveMBR);
      }
 
      // Read the GPT header and store it in GptData->Header.
      if (Status == EFI_SUCCESS) {
-         Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+         Status = REFIT_CALL_5_WRAPPER(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
                                       Volume->BlockIO->Media->MediaId, 1,
                                       sizeof (GPT_HEADER), GptData->Header);
      }
@@ -176,7 +176,7 @@
                  Status = EFI_OUT_OF_RESOURCES;
 
              if (Status == EFI_SUCCESS)
-                 Status = refit_call5_wrapper(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
+                 Status = REFIT_CALL_5_WRAPPER(Volume->BlockIO->ReadBlocks, Volume->BlockIO,
                                               Volume->BlockIO->Media->MediaId,
                                               GptData->Header->entry_lba, BufferSize,
                                               GptData->Entries);

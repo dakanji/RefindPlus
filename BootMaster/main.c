@@ -716,7 +716,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                 *Interface = GOPDraw;
             }
             else {
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     gBS->LocateHandleBuffer,
                     ByProtocol,
                     &gEfiGraphicsOutputProtocolGuid,
@@ -728,7 +728,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                 if (!EFI_ERROR (Status)) {
                     for (i = 0; i < HandleCount; i++) {
                         if (HandleBuffer[i] != gST->ConsoleOutHandle) {
-                            Status = refit_call6_wrapper(
+                            Status = REFIT_CALL_6_WRAPPER(
                                 OrigOpenProtocol,
                                 HandleBuffer[i],
                                 &gEfiGraphicsOutputProtocolGuid,
@@ -769,7 +769,7 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 ) {
     EFI_STATUS Status;
 
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         Handle,
         Protocol,
@@ -1365,9 +1365,9 @@ BOOLEAN SecureBootSetup (
             MsgLog ("** WARN: Secure boot disabled ... doing nothing\n-----------------\n\n");
             #endif
 
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (L"Secure boot disabled ... doing nothing", NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             MyFreePool (&MsgStr);
 
@@ -1400,15 +1400,15 @@ BOOLEAN SecureBootUninstall (VOID) {
             MsgLog ("%s\n-----------------\n\n", MsgStr);
             #endif
 
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
-            refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             MyFreePool (&MsgStr);
 
             PauseSeconds(9);
 
-            refit_call4_wrapper(
+            REFIT_CALL_4_WRAPPER(
                 gRT->ResetSystem,
                 EfiResetShutdown,
                 EFI_SUCCESS,
@@ -1434,7 +1434,7 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
     CHAR16            *MsgStr = NULL;
     EFI_LOADED_IMAGE  *Info;
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         ImageHandle,
         &LoadedImageProtocol,
@@ -1628,7 +1628,7 @@ VOID LogBasicInfo (
         // NB: QueryVariableInfo() is not supported by EFI 1.x
         MsgLog ("EFI Non-Volatile Storage Info:\n");
 
-        Status = refit_call4_wrapper(
+        Status = REFIT_CALL_4_WRAPPER(
             gRT->QueryVariableInfo,
             EFI_VARIABLE_NON_VOLATILE,
             &MaximumVariableStorageSize,
@@ -1654,7 +1654,7 @@ VOID LogBasicInfo (
     MsgLog ("\n");
     MyFreePool (&TempStr);
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiUgaDrawProtocolGuid,
@@ -1664,7 +1664,7 @@ VOID LogBasicInfo (
     MsgLog ("\n");
     MyFreePool (&TempStr);
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid,
@@ -1956,7 +1956,7 @@ EFI_STATUS EFIAPI efi_main (
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 
     // disable EFI watchdog timer
-    refit_call4_wrapper(
+    REFIT_CALL_4_WRAPPER(
         gBS->SetWatchdogTimer,
         0x0000, 0x0000, 0x0000,
         NULL
@@ -1989,7 +1989,7 @@ EFI_STATUS EFIAPI efi_main (
         #endif
 
         for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
-            refit_call1_wrapper(gBS->Stall, 1000000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 1000000);
         }
         if (i == 1) {
             #if REFIT_DEBUG > 0
@@ -2020,7 +2020,7 @@ EFI_STATUS EFIAPI efi_main (
 
         SwitchToText (FALSE);
 
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         if (ConfigWarn) {
             PrintUglyText (L"                                                           ", NEXTLINE);
             PrintUglyText (L" WARN: Could Not Find RefindPlus Configuration File        ", NEXTLINE);
@@ -2031,7 +2031,7 @@ EFI_STATUS EFIAPI efi_main (
             PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens   ", NEXTLINE);
             PrintUglyText (L"                                                           ", NEXTLINE);
         }
-        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         PauseSeconds(6);
 
@@ -2138,7 +2138,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgLog ("System Restarting\n-----------------\n\n");
                     #endif
 
-                    refit_call4_wrapper(
+                    REFIT_CALL_4_WRAPPER(
                         gRT->ResetSystem,
                         EfiResetCold,
                         EFI_SUCCESS,
@@ -2208,7 +2208,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG(1, LOG_STAR_SEPARATOR, L"Restarting System");
                 #endif
 
-                refit_call4_wrapper(
+                REFIT_CALL_4_WRAPPER(
                     gRT->ResetSystem,
                     EfiResetCold,
                     EFI_SUCCESS,
@@ -2237,7 +2237,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 TerminateScreen();
 
-                refit_call4_wrapper(
+                REFIT_CALL_4_WRAPPER(
                     gRT->ResetSystem,
                     EfiResetShutdown,
                     EFI_SUCCESS,
@@ -2671,7 +2671,7 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("System Reset:\n\n");
     #endif
 
-    refit_call4_wrapper(
+    REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem,
         EfiResetCold,
         EFI_SUCCESS,
@@ -2686,13 +2686,13 @@ EFI_STATUS EFIAPI efi_main (
 
     MsgStr = StrDuplicate (L"INFO: Reboot Failed ... Entering Endless Idle Loop");
 
-    refit_call2_wrapper(
+    REFIT_CALL_2_WRAPPER(
         gST->ConOut->SetAttribute,
         gST->ConOut,
         ATTR_ERROR
     );
     PrintUglyText (MsgStr, NEXTLINE);
-    refit_call2_wrapper(
+    REFIT_CALL_2_WRAPPER(
         gST->ConOut->SetAttribute,
         gST->ConOut,
         ATTR_BASIC

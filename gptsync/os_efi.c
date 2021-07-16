@@ -58,7 +58,7 @@ UINTN read_sector(UINT64 lba, UINT8 *buffer)
 {
     EFI_STATUS          Status;
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         BlockIO->ReadBlocks,
         BlockIO,
         BlockIO->Media->MediaId,
@@ -77,7 +77,7 @@ UINTN write_sector(UINT64 lba, UINT8 *buffer)
 {
     EFI_STATUS          Status;
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         BlockIO->WriteBlocks,
         BlockIO,
         BlockIO->Media->MediaId,
@@ -104,7 +104,7 @@ static BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = refit_call2_wrapper(
+        Status = REFIT_CALL_2_WRAPPER(
             gST->ConIn->ReadKeyStroke,
             gST->ConIn,
             &Key
@@ -125,11 +125,11 @@ static VOID PauseForKey(VOID)
     Print(L"\n* Hit any key to continue *");
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
-        refit_call1_wrapper(gBS->Stall, 5000000);     // 5 seconds delay
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 5000000);     // 5 seconds delay
         ReadAllKeyStrokes();    // empty the buffer again
     }
 
-    refit_call3_wrapper(
+    REFIT_CALL_3_WRAPPER(
         gBS->WaitForEvent,
         1,
         &gST->ConIn->WaitForKey,
@@ -150,13 +150,13 @@ UINTN input_boolean(CHARN *prompt, BOOLEAN *bool_out)
 
     ReadAllKeyStrokes(); // Remove buffered key strokes
     do {
-        refit_call3_wrapper(
+        REFIT_CALL_3_WRAPPER(
             gBS->WaitForEvent,
             1,
             &gST->ConIn->WaitForKey,
             &Index
         );
-        Status = refit_call2_wrapper(
+        Status = REFIT_CALL_2_WRAPPER(
             gST->ConIn->ReadKeyStroke,
             gST->ConIn,
             &Key
@@ -253,7 +253,7 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
 
     InitializeLib(ImageHandle, SystemTable);
 
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer,
         ByProtocol,
         &BlockIoProtocol,
@@ -293,7 +293,7 @@ efi_main    (IN EFI_HANDLE           ImageHandle,
         if (!Usable)
             continue;
 
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             DeviceHandle,
             &BlockIoProtocol,

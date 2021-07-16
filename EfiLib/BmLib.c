@@ -47,7 +47,7 @@ EFI_STATUS EfiLibLocateProtocol (
 ) {
     EFI_STATUS  Status;
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         ProtocolGuid,
         NULL,
@@ -78,7 +78,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
     //
     // File the file system interface to the device
     //
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         DeviceHandle,
         &gEfiSimpleFileSystemProtocolGuid,

@@ -102,7 +102,7 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     Print(L" ");
 #endif
     DPRINT(L"Scanning disks\n");
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer,
         ByProtocol,
         &gMyEfiDiskIoProtocolGuid,
@@ -117,7 +117,7 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     for (i = 0; i < HandleCount; i++) {
         EFI_DISK_IO *diskio;
         EFI_BLOCK_IO *blockio;
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[i],
             &gMyEfiDiskIoProtocolGuid,
@@ -126,7 +126,7 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
         if (Status != 0) {
             continue;
         }
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[i],
             &gMyEfiBlockIoProtocolGuid,

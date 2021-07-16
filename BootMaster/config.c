@@ -97,7 +97,7 @@ EFI_STATUS RefitReadFile (
     File->BufferSize = 0;
 
     // read the file, allocating a buffer on the way
-    Status = refit_call5_wrapper(
+    Status = REFIT_CALL_5_WRAPPER(
         BaseDir->Open, BaseDir,
         &FileHandle, FileName,
         EFI_FILE_MODE_READ, 0
@@ -113,7 +113,7 @@ EFI_STATUS RefitReadFile (
     FileInfo = LibFileInfo (FileHandle);
     if (FileInfo == NULL) {
         // TODO: print and register the error
-        refit_call1_wrapper(FileHandle->Close, FileHandle);
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         return EFI_LOAD_ERROR;
     }
     ReadSize = FileInfo->FileSize;
@@ -129,18 +129,18 @@ EFI_STATUS RefitReadFile (
        *size = File->BufferSize;
     } // if/else
 
-    Status = refit_call3_wrapper(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
+    Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &File->BufferSize, File->Buffer);
     if (CheckError (Status, Message)) {
         MyFreePool (&Message);
         MyFreePool (&File->Buffer);
         File->Buffer = NULL;
-        refit_call1_wrapper(FileHandle->Close, FileHandle);
+        REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
         return Status;
     }
     MyFreePool (&Message);
 
-    refit_call1_wrapper(FileHandle->Close, FileHandle);
+    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
     // setup for reading
     File->Current8Ptr  = (CHAR8 *)File->Buffer;
@@ -550,7 +550,7 @@ VOID SetDefaultByTime (
    EndTime   = HandleTime (TokenList[3]);
 
    if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
-      Status = refit_call2_wrapper(GetTime, &CurrentTime, NULL);
+      Status = REFIT_CALL_2_WRAPPER(GetTime, &CurrentTime, NULL);
       if (Status != EFI_SUCCESS) {
           return;
       }

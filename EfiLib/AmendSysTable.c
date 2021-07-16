@@ -122,14 +122,14 @@ VOID FakeDispatchEventNotifies (
 
     // Dispatch pending notifications
     while (!IsListEmpty (Head)) {
-        Event = refit_call4_wrapper(
+        Event = REFIT_CALL_4_WRAPPER(
             CR,
             Head->ForwardLink,
             IEVENT,
             NotifyLink,
             EVENT_SIGNATURE
         );
-        refit_call1_wrapper(RemoveEntryList, &Event->NotifyLink);
+        REFIT_CALL_1_WRAPPER(RemoveEntryList, &Event->NotifyLink);
         Event->NotifyLink.ForwardLink = NULL;
 
         // Only clear the SIGNAL status if it is a SIGNAL type event.
@@ -142,7 +142,7 @@ VOID FakeDispatchEventNotifies (
 
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
-        refit_call2_wrapper(
+        REFIT_CALL_2_WRAPPER(
             Event->NotifyFunction,
             Event,
             Event->NotifyContext

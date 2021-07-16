@@ -116,7 +116,7 @@ BOOLEAN ShimLoaded (
     EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
     return (
-        refit_call3_wrapper(
+        REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol,
             &ShimLockGuid,
             NULL,
@@ -136,7 +136,7 @@ BOOLEAN ShimValidate (
     EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
     if ((data != NULL) &&
-        (refit_call3_wrapper(
+        (REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol,
             &ShimLockGuid,
             NULL,

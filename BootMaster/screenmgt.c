@@ -125,10 +125,10 @@ VOID InitScreen (
     GraphicsScreenDirty = TRUE;
 
     // disable cursor
-    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, FALSE);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, FALSE);
 
     // get size of text console
-    if (refit_call4_wrapper(
+    if (REFIT_CALL_4_WRAPPER(
         gST->ConOut->QueryMode,
         gST->ConOut,
         gST->ConOut->Mode->Mode,
@@ -440,7 +440,7 @@ VOID SwitchToText (
     }
 
     egSetGraphicsModeEnabled (FALSE);
-    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
     BOOLEAN GraphicsModeOnEntry = egIsGraphicsModeEnabled();
@@ -453,7 +453,7 @@ VOID SwitchToText (
     #endif
 
     // get size of text console
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gST->ConOut->QueryMode,
         gST->ConOut,
         gST->ConOut->Mode->Mode,
@@ -590,11 +590,11 @@ VOID TerminateScreen (
     VOID
 ) {
     // clear text screen
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-    refit_call1_wrapper(gST->ConOut->ClearScreen,  gST->ConOut);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut);
 
     // enable cursor
-    refit_call2_wrapper(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
 }
 
 VOID DrawScreenHeader (
@@ -604,23 +604,23 @@ VOID DrawScreenHeader (
 
     // clear to black background
     egClearScreen (&DarkBackgroundPixel); // first clear in graphics mode
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-    refit_call1_wrapper(gST->ConOut->ClearScreen,  gST->ConOut); // then clear in text mode
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut); // then clear in text mode
 
     // paint header background
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
     for (y = 0; y < 3; y++) {
-        refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, y);
+        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, y);
         Print (BlankLine);
     }
 
     // print header text
-    refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
+    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 1);
     Print (L"RefindPlus - %s", Title);
 
     // reposition cursor
-    refit_call2_wrapper(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
-    refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
 }
 
 //
@@ -636,7 +636,7 @@ BOOLEAN ReadAllKeyStrokes (
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
@@ -658,7 +658,7 @@ BOOLEAN ReadAllKeyStrokes (
     // Wait 100ms and quietly repeat flushing
     gBS->Stall(100000);
     for (;;) {
-        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
             continue;
         }
@@ -864,7 +864,7 @@ VOID EndlessIdleLoop (
 
     for (;;) {
         ReadAllKeyStrokes();
-        refit_call3_wrapper(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
+        REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
 }
 
@@ -898,9 +898,9 @@ BOOLEAN CheckFatalError (
     MsgLog ("** FATAL ERROR: %r %s\n", Status, where);
     #endif
 #endif
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (Temp, NEXTLINE);
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     haveError = TRUE;
 
     #if REFIT_DEBUG > 0
@@ -939,9 +939,9 @@ BOOLEAN CheckError (
     #endif
 #endif
 
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (Temp, NEXTLINE);
-    refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a key to continue" in debug mode
     if (MyStrStr (where, L"While Reading Boot Sector") != NULL ||

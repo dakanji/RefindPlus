@@ -661,7 +661,7 @@ CHAR16 * GetTimeString(VOID) {
     EFI_TIME    CurrentTime;
     EFI_STATUS  Status = EFI_SUCCESS;
 
-    Status = refit_call2_wrapper(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
+    Status = REFIT_CALL_2_WRAPPER(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
     if (EFI_ERROR(Status)) {
         TimeStr = PoolPrint(L"unknown time");
     }

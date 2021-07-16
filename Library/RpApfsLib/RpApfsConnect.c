@@ -67,7 +67,7 @@ ApfsRegisterPartition (
 
     // Install boot record information.
     // Guaranties we never register twice.
-    Status = refit_call4_wrapper(
+    Status = REFIT_CALL_4_WRAPPER(
         gBS->InstallMultipleProtocolInterfaces,
         &PrivateData->LocationInfo.ControllerHandle,
         &gApfsEfiBootRecordInfoProtocolGuid,
@@ -99,7 +99,7 @@ ApfsStartDriver (
     EFI_HANDLE                 ImageHandle;
     EFI_LOADED_IMAGE_PROTOCOL  *LoadedImage;
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         PrivateData->LocationInfo.ControllerHandle,
         &gEfiDevicePathProtocolGuid,
@@ -111,7 +111,7 @@ ApfsStartDriver (
     }
 
     ImageHandle = NULL;
-    Status = refit_call6_wrapper(
+    Status = REFIT_CALL_6_WRAPPER(
         gBS->LoadImage,
         FALSE,
         gImageHandle,
@@ -127,7 +127,7 @@ ApfsStartDriver (
 
     // Disable APFS verbose mode.
     if (SilenceAPFS) {
-        Status = refit_call3_wrapper(
+        Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             ImageHandle,
             &gEfiLoadedImageProtocolGuid,
@@ -144,7 +144,7 @@ ApfsStartDriver (
         }
     }
 
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage,
         ImageHandle,
         NULL,
@@ -166,7 +166,7 @@ ApfsStartDriver (
     // Recursively connect controller to get apfs.efi loaded.
     // We cannot use apfs.efi handle as it apparently creates new handles.
     // This follows ApfsJumpStart driver implementation.
-    refit_call4_wrapper(
+    REFIT_CALL_4_WRAPPER(
         gBS->ConnectController,
         PrivateData->LocationInfo.ControllerHandle,
         NULL,
@@ -229,7 +229,7 @@ RpApfsConnectHandle (
 
     // We have a filesystem driver afer successful APFS or other connection.
     // Skip if the device is already connected.
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Handle,
         &gEfiSimpleFileSystemProtocolGuid,
@@ -242,7 +242,7 @@ RpApfsConnectHandle (
 
     // Obtain Block I/O.
     // Ignore the 2nd revision as apfs.efi does not use it.
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Handle,
         &gEfiBlockIoProtocolGuid,
@@ -269,7 +269,7 @@ RpApfsConnectHandle (
 
     // If the handle is marked as unsupported, we should respect this.
     // TODO: Install this protocol on failure (not in ApfsJumpStart)?
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Handle,
         &gApfsUnsupportedBdsProtocolGuid,
@@ -282,7 +282,7 @@ RpApfsConnectHandle (
 
     // If we installed APFS EFI boot record, then this handle is already
     // handled, though potentially not connected.
-    Status = refit_call3_wrapper(
+    Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Handle,
         &gApfsEfiBootRecordInfoProtocolGuid,

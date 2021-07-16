@@ -636,7 +636,7 @@ UINTN RunGenericMenu (
     }
 
     if (Screen->TimeoutSeconds == -1) {
-        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_NOT_READY) {
             MenuExit = MENU_EXIT_TIMEOUT;
         }
@@ -673,15 +673,15 @@ UINTN RunGenericMenu (
         pdDraw();
 
         if (WaitForRelease) {
-            Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
             if (Status == EFI_SUCCESS) {
                 // reset, because otherwise the buffer gets queued with keystrokes
-                refit_call2_wrapper(gST->ConIn->Reset, gST->ConIn, FALSE);
-                refit_call1_wrapper(gBS->Stall, 100000);
+                REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, FALSE);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 100000);
             }
             else {
                 WaitForRelease = FALSE;
-                refit_call2_wrapper(gST->ConIn->Reset, gST->ConIn, TRUE);
+                REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, TRUE);
             }
             continue;
         }
@@ -708,7 +708,7 @@ UINTN RunGenericMenu (
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = refit_call2_wrapper(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
 
         if (Status == EFI_SUCCESS) {
             PointerActive      = FALSE;
@@ -937,14 +937,14 @@ VOID ShowTextInfoLines (
 
     BeginTextScreen (Screen->Title);
     if (Screen->InfoLineCount > 0) {
-        refit_call2_wrapper(
+        REFIT_CALL_2_WRAPPER(
             gST->ConOut->SetAttribute,
             gST->ConOut,
             ATTR_BASIC
         );
         for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
-            refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
-            refit_call2_wrapper(gST->ConOut->OutputString,      gST->ConOut, Screen->InfoLines[i]);
+            REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->InfoLines[i]);
         }
     }
 } // VOID ShowTextInfoLines()
@@ -1032,25 +1032,25 @@ VOID TextMenuStyle (
             ShowTextInfoLines (Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
-                    refit_call3_wrapper(
+                    REFIT_CALL_3_WRAPPER(
                         gST->ConOut->SetCursorPosition,
                         gST->ConOut,
                         2,
                         MenuPosY + (i - State->FirstVisible)
                     );
                     if (i == State->CurrentSelection) {
-                        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
+                        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
                     }
                     else if (DisplayStrings[i]) {
-                        refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_BASIC);
-                        refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, DisplayStrings[i]);
+                        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_BASIC);
+                        REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, DisplayStrings[i]);
                     }
                 }
             }
 
             // scrolling indicators
-            refit_call2_wrapper(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_SCROLLARROW);
-            refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, MenuPosY);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_SCROLLARROW);
+            REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, MenuPosY);
 
             if (State->FirstVisible > 0) {
                 gST->ConOut->OutputString (gST->ConOut, ArrowUp);
@@ -1060,53 +1060,53 @@ VOID TextMenuStyle (
             }
             gST->ConOut->SetCursorPosition (gST->ConOut, 0, MenuPosY + State->MaxVisible);
             if (State->LastVisible < State->MaxIndex) {
-                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, ArrowDown);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, ArrowDown);
             }
             else {
-                refit_call2_wrapper(gST->ConOut->OutputString, gST->ConOut, L" ");
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, L" ");
             }
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
-                   refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 2);
-                   refit_call2_wrapper(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint1);
+                   REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 2);
+                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint1);
                }
                if (Screen->Hint2 != NULL) {
-                   refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 1);
-                   refit_call2_wrapper(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint2);
+                   REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 1);
+                   REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint2);
                }
             }
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
             // redraw selection cursor
-            refit_call3_wrapper(
+            REFIT_CALL_3_WRAPPER(
                 gST->ConOut->SetCursorPosition,
                 gST->ConOut, 2,
                 MenuPosY + (State->PreviousSelection - State->FirstVisible)
             );
-            refit_call2_wrapper(
+            REFIT_CALL_2_WRAPPER(
                 gST->ConOut->SetAttribute,
                 gST->ConOut,
                 ATTR_CHOICE_BASIC
             );
             if (DisplayStrings[State->PreviousSelection] != NULL) {
-                refit_call2_wrapper(
+                REFIT_CALL_2_WRAPPER(
                     gST->ConOut->OutputString,
                     gST->ConOut,
                     DisplayStrings[State->PreviousSelection]
                 );
             }
-            refit_call3_wrapper(
+            REFIT_CALL_3_WRAPPER(
                 gST->ConOut->SetCursorPosition,
                 gST->ConOut, 2,
                 MenuPosY + (State->CurrentSelection - State->FirstVisible)
             );
-            refit_call2_wrapper(
+            REFIT_CALL_2_WRAPPER(
                 gST->ConOut->SetAttribute,
                 gST->ConOut,
                 ATTR_CHOICE_CURRENT
             );
-            refit_call2_wrapper(
+            REFIT_CALL_2_WRAPPER(
                 gST->ConOut->OutputString,
                 gST->ConOut,
                 DisplayStrings[State->CurrentSelection]
@@ -1116,15 +1116,15 @@ VOID TextMenuStyle (
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // clear message
-                refit_call2_wrapper(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
-                refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 3);
-                refit_call2_wrapper(gST->ConOut->OutputString,      gST->ConOut, BlankLine + 1);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
+                REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 3);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, BlankLine + 1);
             }
             else {
                 // paint or update message
-                refit_call2_wrapper(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_ERROR);
-                refit_call3_wrapper(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
-                refit_call2_wrapper(gST->ConOut->OutputString,      gST->ConOut, ParamText);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_ERROR);
+                REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, ParamText);
             }
             break;
     }
@@ -1976,26 +1976,26 @@ UINTN WaitForInput (UINTN Timeout) {
     LOG(4, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
     #endif
 
-    Status = refit_call5_wrapper(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
+    Status = REFIT_CALL_5_WRAPPER(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
         Length--;
     }
     else {
         if (EFI_ERROR (Status)) {
-            refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
         }
         else {
-            refit_call3_wrapper(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
+            REFIT_CALL_3_WRAPPER(gBS->SetTimer, TimerEvent, TimerRelative, Timeout * 10000);
             WaitList[Length - 1] = TimerEvent;
         }
     }
 
-    Status = refit_call3_wrapper(gBS->WaitForEvent, Length, WaitList, &Index);
-    refit_call1_wrapper(gBS->CloseEvent, TimerEvent);
+    Status = REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, Length, WaitList, &Index);
+    REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
 
     if (EFI_ERROR (Status)) {
-        refit_call1_wrapper(gBS->Stall, 100000); // Pause for 100 ms
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     }
     else if (Index == 0) {
@@ -2020,7 +2020,7 @@ BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
       return FALSE;
    }
 
-   refit_call4_wrapper(gST->ConOut->QueryMode, gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
+   REFIT_CALL_4_WRAPPER(gST->ConOut->QueryMode, gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
 
    if (!GlobalConfig.TextOnly)
       SwitchToText (TRUE);
@@ -2109,14 +2109,14 @@ BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         if (SplitVolumeAndFilename (&Filename, &VolName)) {
             DeleteIt = TRUE;
             if (FindVolume (&Volume, VolName) && Volume->RootDir) {
-                Status = refit_call5_wrapper(
+                Status = REFIT_CALL_5_WRAPPER(
                     Volume->RootDir->Open, Volume->RootDir,
                     &FileHandle, Filename,
                     EFI_FILE_MODE_READ, 0
                 );
                 if (Status == EFI_SUCCESS) {
                     DeleteIt = FALSE;
-                    refit_call1_wrapper(FileHandle->Close, FileHandle);
+                    REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
                 } // if file exists
             } // if volume exists
         } // if list item includes volume
