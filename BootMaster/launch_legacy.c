@@ -1113,14 +1113,12 @@ VOID FindLegacyBootType (VOID) {
     }
 } // VOID FindLegacyBootType()
 
-// Warn the user if legacy OS scans are enabled but the firmware can't support them
+// Warn the user if legacy OS scans are enabled but the firmware does not support them
 VOID WarnIfLegacyProblems (
     VOID
 ) {
-    UINTN     i          = 0;
-    CHAR16   *MsgStr     = NULL;
-    CHAR16   *TmpMsgStr  = NULL;
-    BOOLEAN   found      = FALSE;
+    UINTN     i     = 0;
+    BOOLEAN   found = FALSE;
 
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
@@ -1143,24 +1141,11 @@ VOID WarnIfLegacyProblems (
 
             SwitchToText (FALSE);
 
-            TmpMsgStr = StrDuplicate (
+            CHAR16 *MsgStr =
                 L"** WARN: Your 'scanfor' config line specifies scanning for one or more legacy\n"
-            );
-            MsgStr = PoolPrint (
-                L"%s         (BIOS) boot options; however, this is not possible because your computer lacks\n",
-                TmpMsgStr
-            );
-            MyFreePool (&TmpMsgStr);
-            TmpMsgStr = PoolPrint (
-                L"%s         the necessary Compatibility Support Module (CSM) support or that support is\n",
-                MsgStr
-            );
-            MyFreePool (&MsgStr);
-            MsgStr = PoolPrint (
-                L"%s         disabled in your firmware.",
-                TmpMsgStr
-            );
-            MyFreePool (&TmpMsgStr);
+                L"         (BIOS) boot options; however, this is not possible because your computer\n"
+                L"         lacks the necessary Compatibility Support Module (CSM) support or that support\n"
+                L"         is disabled in your firmware.";
 
             refit_call2_wrapper(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
@@ -1170,9 +1155,7 @@ VOID WarnIfLegacyProblems (
             MsgLog ("%s\n\n", MsgStr);
             #endif
 
-            MyFreePool (&MsgStr);
-
             PauseForKey();
-        } // if (found)
-    } // if no legacy support
+        }
+    }
 } // VOID WarnIfLegacyProblems()
