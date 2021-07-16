@@ -16,6 +16,7 @@
 #include "../BootMaster/global.h"
 #include "../BootMaster/lib.h"
 #include "../BootMaster/mystrings.h"
+#include "../include/refit_call_wrapper.h"
 
 extern  EFI_GUID  gEfiMiscSubClassGuid;
 
@@ -190,128 +191,135 @@ CHAR16 * GetDateString (
 EFI_FILE_PROTOCOL * GetDebugLogFile (
     VOID
 ) {
-  EFI_STATUS          Status;
-  EFI_LOADED_IMAGE    *LoadedImage;
-  EFI_FILE_PROTOCOL   *RootDir;
-  EFI_FILE_PROTOCOL   *LogFile;
-  CHAR16              *ourDebugLog = NULL;
+    EFI_STATUS          Status;
+    EFI_LOADED_IMAGE    *LoadedImage;
+    EFI_FILE_PROTOCOL   *RootDir;
+    EFI_FILE_PROTOCOL   *LogFile;
+    CHAR16              *ourDebugLog = NULL;
 
-  // get RootDir from device we are loaded from
-  Status = gBS->HandleProtocol(
-      gImageHandle,
-      &gEfiLoadedImageProtocolGuid,
-      (VOID **) &LoadedImage
-  );
-  if (EFI_ERROR (Status)) {
-    return NULL;
-  }
-  RootDir = EfiLibOpenRoot(LoadedImage->DeviceHandle);
-  if (RootDir == NULL) {
-    return NULL;
-  }
+    // get RootDir from device we are loaded from
+    Status = refit_call3_wrapper(
+        gBS->HandleProtocol,
+        gImageHandle,
+        &gEfiLoadedImageProtocolGuid,
+        (VOID **) &LoadedImage
+    );
 
-  CHAR16 *DateStr = GetDateString();
+    if (EFI_ERROR (Status)) {
+        return NULL;
+    }
 
-  ourDebugLog = PoolPrint(
-      L"EFI\\%s.log",
-      DateStr
-  );
+    RootDir = EfiLibOpenRoot (LoadedImage->DeviceHandle);
 
-  // Open log file from current root
-  Status = RootDir->Open(
-      RootDir,
-      &LogFile,
-      ourDebugLog,
-      EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
-      0
-  );
+    if (RootDir == NULL) {
+        return NULL;
+    }
 
-  // If the log file is not found try to create it
-  if (Status == EFI_NOT_FOUND) {
-    Status = RootDir->Open(
+    CHAR16 *DateStr = GetDateString();
+    ourDebugLog     = PoolPrint (L"EFI\\%s.log", DateStr);
+
+    // Open log file from current root
+    Status = refit_call5_wrapper(
+        RootDir->Open,
         RootDir,
         &LogFile,
         ourDebugLog,
-        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
         0
     );
-  }
-  RootDir->Close(RootDir);
-  RootDir = NULL;
 
-  if (EFI_ERROR (Status)) {
-    // try on first EFI partition
-    Status = egFindESP(&RootDir);
-    if (!EFI_ERROR (Status)) {
-      Status = RootDir->Open(
-          RootDir,
-          &LogFile,
-          ourDebugLog,
-          EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
-          0
-      );
-      // If the log file is not found try to create it
-      if (Status == EFI_NOT_FOUND) {
-        Status = RootDir->Open(
+    // If the log file is not found try to create it
+    if (Status == EFI_NOT_FOUND) {
+        Status = refit_call5_wrapper(
+            RootDir->Open,
             RootDir,
             &LogFile,
             ourDebugLog,
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
             0
         );
-      }
-      RootDir->Close(RootDir);
-      RootDir = NULL;
     }
-  }
 
-  if (EFI_ERROR (Status)) {
-    LogFile = NULL;
-  }
+    Status = refit_call1_wrapper(RootDir->Close, RootDir);
+    RootDir = NULL;
 
-  MyFreePool (&ourDebugLog);
+    if (EFI_ERROR (Status)) {
+        // try on first EFI partition
+        Status = egFindESP (&RootDir);
+        if (!EFI_ERROR (Status)) {
+            Status = refit_call5_wrapper(
+                RootDir->Open,
+                RootDir,
+                &LogFile,
+                ourDebugLog,
+                EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE,
+                0
+            );
 
-  return LogFile;
+            // If the log file is not found try to create it
+            if (Status == EFI_NOT_FOUND) {
+                Status = refit_call5_wrapper(
+                    RootDir->Open,
+                    RootDir,
+                    &LogFile,
+                    ourDebugLog,
+                    EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
+                    0
+                );
+            }
+
+            Status = refit_call1_wrapper(RootDir->Close, RootDir);
+            RootDir = NULL;
+        }
+    }
+
+    if (EFI_ERROR (Status)) {
+        LogFile = NULL;
+    }
+
+    MyFreePool (&ourDebugLog);
+
+    return LogFile;
 }
 
 
 VOID SaveMessageToDebugLogFile (IN CHAR8 *LastMessage) {
-  static BOOLEAN           FirstTimeSave = TRUE;
-  CHAR8                   *MemLogBuffer;
-  UINTN                    MemLogLen;
-  CHAR8                   *Text;
-  UINTN                    TextLen;
-  EFI_FILE_HANDLE          LogFile;
+    static BOOLEAN           FirstTimeSave = TRUE;
+           CHAR8            *MemLogBuffer;
+           UINTN             MemLogLen;
+           CHAR8            *Text;
+           UINTN             TextLen;
+           EFI_FILE_HANDLE   LogFile;
 
-  MemLogBuffer = GetMemLogBuffer();
-  MemLogLen    = GetMemLogLen();
-  Text         = LastMessage;
-  TextLen      = AsciiStrLen(LastMessage);
-  LogFile      = GetDebugLogFile();
+    MemLogBuffer = GetMemLogBuffer();
+    MemLogLen    = GetMemLogLen();
+    Text         = LastMessage;
+    TextLen      = AsciiStrLen (LastMessage);
+    LogFile      = GetDebugLogFile();
 
-  // Write to the log file
-  if (LogFile != NULL) {
-    // Advance to the EOF so we append
-    EFI_FILE_INFO *Info = EfiLibFileInfo(LogFile);
-    if (Info) {
-      LogFile->SetPosition(LogFile, Info->FileSize);
-      // Write out whole log if we have not had root before this
-      if (FirstTimeSave) {
-        Text          = MemLogBuffer;
-        TextLen       = MemLogLen;
-        FirstTimeSave = FALSE;
-      }
-      // Write out this message
-      LogFile->Write(LogFile, &TextLen, Text);
+    // Write to the log file
+    if (LogFile != NULL) {
+        // Advance to the EOF so we append
+        EFI_FILE_INFO *Info = EfiLibFileInfo (LogFile);
+        if (Info) {
+            LogFile->SetPosition (LogFile, Info->FileSize);
+            // Write out whole log if we have not had root before this
+            if (FirstTimeSave) {
+                Text          = MemLogBuffer;
+                TextLen       = MemLogLen;
+                FirstTimeSave = FALSE;
+            }
+
+            // Write out this message
+            LogFile->Write (LogFile, &TextLen, Text);
+        }
+
+        LogFile->Close (LogFile);
     }
-    LogFile->Close(LogFile);
-  }
 }
 
 
-VOID
-EFIAPI
-MemLogCallback (
+VOID EFIAPI MemLogCallback (
     IN INTN DebugMode,
     IN CHAR8 *LastMessage
 ) {
@@ -325,9 +333,7 @@ MemLogCallback (
     }
 }
 
-VOID
-EFIAPI
-DeepLoggger (
+VOID EFIAPI DeepLoggger (
     IN INTN     DebugMode,
     IN INTN     level,
     IN INTN     type,
@@ -464,9 +470,7 @@ DeepLoggger (
 }
 
 
-VOID
-EFIAPI
-DebugLog(
+VOID EFIAPI DebugLog(
     IN INTN DebugMode,
     IN const CHAR8 *FormatString, ...
 ) {
@@ -496,7 +500,7 @@ DebugLog(
     // Print message to log buffer
     VA_LIST Marker;
     VA_START(Marker, FormatString);
-    MemLogVA(TimeStamp, DebugMode, FormatString, Marker);
+    MemLogVA (TimeStamp, DebugMode, FormatString, Marker);
     VA_END(Marker);
 
     TimeStamp = TRUE;
@@ -506,5 +510,5 @@ DebugLog(
 VOID InitBooterLog (
     VOID
 ) {
-  SetMemLogCallback(MemLogCallback);
+    SetMemLogCallback (MemLogCallback);
 }
