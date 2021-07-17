@@ -39,7 +39,12 @@
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
+ */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
  *
+ * Modifications distributed under the preceding terms.
  */
 
 #ifndef __REFINDPLUS_MENU_H_
@@ -114,6 +119,7 @@ typedef VOID (*MENU_STYLE_FUNC)(
     IN CHAR16 *ParamText
 );
 
+VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry);
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);

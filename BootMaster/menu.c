@@ -2731,3 +2731,14 @@ UINTN RunMainMenu (
 
     return MenuExit;
 } // UINTN RunMainMenu()
+
+VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry) {
+    egFreeImage (Entry->me.Image);
+    MyFreePool (&Entry->EfiLoaderPath);
+    MyFreePool (&Entry->LoadOptions);
+    MyFreePool (&Entry->InitrdPath);
+    MyFreePool (&Entry->LoaderPath);
+    MyFreePool (&Entry->me.Title);
+    MyFreePool (&Entry->Title);
+    MyFreePool (&Entry);
+}

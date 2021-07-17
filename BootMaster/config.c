@@ -1240,14 +1240,7 @@ VOID AddSubmenu (
     FreeTokenLine (&TokenList, &TokenCount);
 
     if (!SubEntry->Enabled) {
-        egFreeImage (SubEntry->me.Image);
-        MyFreePool (&SubEntry->EfiLoaderPath);
-        MyFreePool (&SubEntry->LoadOptions);
-        MyFreePool (&SubEntry->InitrdPath);
-        MyFreePool (&SubEntry->LoaderPath);
-        MyFreePool (&SubEntry->me.Title);
-        MyFreePool (&SubEntry->Title);
-        MyFreePool (&SubEntry);
+        FreeLoaderEntry (SubEntry);
 
         return;
     }
@@ -1577,7 +1570,7 @@ VOID ScanUserConfigured (
         while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
             if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
-                if ((Entry) && (Entry->Enabled)) {
+                if (Entry && Entry->Enabled) {
                     #if REFIT_DEBUG > 0
                     if (Volume->VolName) {
                         VolDesc = StrDuplicate (Volume->VolName);
@@ -1645,15 +1638,8 @@ VOID ScanUserConfigured (
                     AddPreparedLoaderEntry (Entry);
                 }
                 else {
-                    egFreeImage (Entry->me.Image);
-                    MyFreePool (&Entry->EfiLoaderPath);
-                    MyFreePool (&Entry->LoadOptions);
-                    MyFreePool (&Entry->InitrdPath);
-                    MyFreePool (&Entry->LoaderPath);
-                    MyFreePool (&Entry->me.Title);
-                    MyFreePool (&Entry->Title);
-                    MyFreePool (&Entry);
-                } // if/else
+                    FreeLoaderEntry (Entry);
+                } // if/else Entry->Enabled
             }
             else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
                 MyStriCmp (FileName, GlobalConfig.ConfigFilename)
