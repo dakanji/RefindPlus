@@ -35,11 +35,11 @@
  */
 /*
  * Modifications copyright (c) 2012 Roderick W. Smith
- * 
+ *
  * Modifications distributed under the terms of the GNU General Public
  * License (GPL) version 3 (GPLv3), a copy of which must be distributed
  * with this source code or binaries made from it.
- * 
+ *
  */
 
 #ifndef __REFINDPLUS_MENU_H_
@@ -107,32 +107,45 @@ typedef struct {
 
 struct _refit_menu_screen;
 
-typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
+typedef VOID (*MENU_STYLE_FUNC)(
+    IN REFIT_MENU_SCREEN *Screen,
+    IN SCROLL_STATE *State,
+    IN UINTN Function,
+    IN CHAR16 *ParamText
+);
 
 VOID AddMenuInfoLine(IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry(IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
-UINTN ComputeRow0PosY(VOID);
 VOID MainMenuStyle(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
-UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
 VOID DisplaySimpleMessage(CHAR16 *Title, CHAR16 *Message);
-VOID TextMenuStyle(IN REFIT_MENU_SCREEN *Screen,
-                   IN SCROLL_STATE *State,
-                   IN UINTN Function,
-                   IN CHAR16 *ParamText);
-VOID GraphicsMenuStyle(IN REFIT_MENU_SCREEN *Screen,
-                       IN SCROLL_STATE *State,
-                       IN UINTN Function,
-                       IN CHAR16 *ParamText);
-UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
-                     IN MENU_STYLE_FUNC StyleFunc,
-                     IN OUT INTN *DefaultEntryIndex,
-                     OUT REFIT_MENU_ENTRY **ChosenEntry);
 VOID ManageHiddenTags(VOID);
-CHAR16* ReadHiddenTags(CHAR16 *VarName);
+VOID GenerateWaitList();
+VOID TextMenuStyle(
+    IN REFIT_MENU_SCREEN *Screen,
+    IN SCROLL_STATE *State,
+    IN UINTN Function,
+    IN CHAR16 *ParamText
+);
+VOID GraphicsMenuStyle(
+    IN REFIT_MENU_SCREEN *Screen,
+    IN SCROLL_STATE *State,
+    IN UINTN Function,
+    IN CHAR16 *ParamText
+);
+UINTN RunGenericMenu(
+    IN REFIT_MENU_SCREEN *Screen,
+    IN MENU_STYLE_FUNC StyleFunc,
+    IN OUT INTN *DefaultEntryIndex,
+    OUT REFIT_MENU_ENTRY **ChosenEntry
+);
+
+UINTN ComputeRow0PosY(VOID);
+UINTN RunMenu(IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
 UINTN RunMainMenu(IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
 UINTN FindMainMenuItem(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN PosX, IN UINTN PosY);
-VOID GenerateWaitList();
 UINTN WaitForInput(IN UINTN Timeout);
+
+CHAR16 * ReadHiddenTags(CHAR16 *VarName);
 
 #endif
 

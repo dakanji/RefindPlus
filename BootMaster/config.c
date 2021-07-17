@@ -1661,10 +1661,11 @@ VOID ScanUserConfigured (
                 if (!MyStriCmp (TokenList[1], FileName)) {
                     ScanUserConfigured (TokenList[1]);
                 }
-            } // if/else if...
+            } // if/else if MyStriCmp TokenList
 
             FreeTokenLine (&TokenList, &TokenCount);
         } // while()
+
         FreeTokenLine (&TokenList, &TokenCount);
 
     } // if()
