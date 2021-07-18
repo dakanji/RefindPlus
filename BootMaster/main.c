@@ -2074,6 +2074,9 @@ EFI_STATUS EFIAPI efi_main (
 
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
+        // Clear Keystrokes
+        ReadAllKeyStrokes();
+
         // The Escape key triggers a re-scan operation
         if (MenuExit == MENU_EXIT_ESCAPE) {
             #if REFIT_DEBUG > 0
