@@ -832,6 +832,21 @@ VOID FreeList (
     }
 } // VOID FreeList()
 
+VOID FreeVolumesList (
+    IN OUT VOID  ***ListVolumes,
+    IN OUT UINTN   *ListCount
+) {
+    UINTN i;
+
+    if ((*ListCount > 0) && (**ListVolumes != NULL)) {
+        for (i = 0; i < *ListCount; i++) {
+            FreeVolume ((*ListVolumes)[i]);
+        }
+        MyFreePool (*ListVolumes);
+        *ListCount = 0;
+    }
+} // VOID FreeVolumesList()
+
 //
 // volume functions
 //
@@ -2036,7 +2051,7 @@ VOID ScanVolumes (
 
     if (SelfVolRun) {
         // Clear Volumes List if not Scanning for Self Volume
-        MyFreePool (&Volumes);
+        FreeVolumesList ((VOID ***) Volumes, &VolumesCount);
         Volumes      = NULL;
         VolumesCount = 0;
         ForgetPartitionTables();
