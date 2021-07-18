@@ -836,6 +836,27 @@ VOID FreeList (
 // volume functions
 //
 
+VOID FreeVolume (
+    IN REFIT_VOLUME *Volume
+) {
+    if (Volume) {
+        // Free elements
+        MyFreePool (&(Volume->DevicePath));
+        MyFreePool (&(Volume->PartName));
+        MyFreePool (&(Volume->FsName));
+        MyFreePool (&(Volume->VolName));
+        egFreeImage (Volume->VolIconImage);
+        egFreeImage (Volume->VolBadgeImage);
+        MyFreePool (&(Volume->OSIconName));
+        MyFreePool (&(Volume->OSName));
+        MyFreePool (&(Volume->WholeDiskDevicePath));
+        MyFreePool (&(Volume->MbrPartitionTable));
+
+        // Free whole volume
+        MyFreePool (&Volume);
+    }
+} // VOID FreeVolume()
+
 // Return a pointer to a string containing a filesystem type name. If the
 // filesystem type is unknown, a blank (but non-null) string is returned.
 // The returned variable is a constant that should NOT be freed.
