@@ -2034,10 +2034,13 @@ VOID ScanVolumes (
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
 
-    MyFreePool (&Volumes);
-    Volumes      = NULL;
-    VolumesCount = 0;
-    ForgetPartitionTables();
+    if (SelfVolRun) {
+        // Clear Volumes List if not Scanning for Self Volume
+        MyFreePool (&Volumes);
+        Volumes      = NULL;
+        VolumesCount = 0;
+        ForgetPartitionTables();
+    }
 
     // get all filesystem handles
     Status = LibLocateHandle (
@@ -2136,7 +2139,10 @@ VOID ScanVolumes (
             } // if
         } // for
 
-        AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
+        if (SelfVolRun) {
+            // Update/Create Volumes List if not Scanning for Self Volume
+            AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
+        }
 
         if (Volume->DeviceHandle == SelfLoadedImage->DeviceHandle) {
             SelfVolSet = TRUE;
@@ -2242,8 +2248,6 @@ VOID ScanVolumes (
     MyFreePool (&Handles);
 
     if (!SelfVolSet) {
-        SelfVolRun = TRUE;
-
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
         LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
@@ -2251,10 +2255,13 @@ VOID ScanVolumes (
         MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
+
+        SelfVolRun = TRUE;
+        FreeVolume (Volume);
+
+        return;
     }
     else if (!SelfVolRun) {
-        SelfVolRun = TRUE;
-
         #if REFIT_DEBUG > 0
         CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
         MsgLog (
@@ -2263,6 +2270,9 @@ VOID ScanVolumes (
         );
         MyFreePool (&SelfGUID);
         #endif
+
+        SelfVolRun = TRUE;
+        FreeVolume (Volume);
 
         return;
     }
