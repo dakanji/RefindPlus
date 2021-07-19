@@ -360,7 +360,7 @@ VOID AddMenuInfoLine (
     IN CHAR16            *InfoLine
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Info Line: '%s'", InfoLine);
+    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
     #endif
 
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
@@ -371,7 +371,7 @@ VOID AddMenuEntry (
     IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Entry to %s: '%s'", Screen->Title, Entry->Title);
+    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Entry to %s:- '%s'", Screen->Title, Entry->Title);
     #endif
 
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
@@ -616,7 +616,7 @@ UINTN RunGenericMenu (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
-    LOG(2, LOG_LINE_NORMAL, L"Running Menu Screen: '%s'", Screen->Title);
+    LOG(2, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
     #endif
 
     if (Screen->TimeoutSeconds > 0) {

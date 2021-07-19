@@ -79,10 +79,8 @@ static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
 
 
-static VOID
-PrepareBlankLine (
-    VOID
-) {
+static
+VOID PrepareBlankLine (VOID) {
     UINTN i;
 
     MyFreePool (&BlankLine);
@@ -98,15 +96,13 @@ PrepareBlankLine (
 // Screen initialization and switching
 //
 
-VOID InitScreen (
-    VOID
-) {
+VOID InitScreen (VOID) {
     // initialize libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Graphics mode detected; getting screen size");
+        LOG(4, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Screen Size");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -115,7 +111,7 @@ VOID InitScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"No graphics mode detected; setting text mode");
+        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode Not Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -149,9 +145,7 @@ VOID InitScreen (
 }
 
 // Set the screen resolution and mode (text vs. graphics).
-VOID SetupScreen (
-    VOID
-) {
+VOID SetupScreen (VOID) {
            UINTN   NewWidth;
            UINTN   NewHeight;
            BOOLEAN gotGraphics;
@@ -432,7 +426,8 @@ VOID SwitchToText (
         HaveOverriden = TRUE;
 
         if (!EFI_ERROR (Status)) {
-            // Condition inside to silence 'Dead Store' flags
+            // DA-TAG: Condition outside Debug tag to silence static analysis
+            //         'Dead Store' notices in Release builds
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
             #endif
@@ -504,9 +499,7 @@ VOID SwitchToText (
     IsBoot = FALSE;
 }
 
-EFI_STATUS SwitchToGraphics (
-    VOID
-) {
+EFI_STATUS SwitchToGraphics (VOID) {
     if (AllowGraphicsMode) {
         if (!egIsGraphicsModeEnabled()) {
             egSetGraphicsModeEnabled (TRUE);
@@ -568,9 +561,7 @@ VOID BeginExternalScreen (
     haveError = FALSE;
 }
 
-VOID FinishExternalScreen (
-    VOID
-) {
+VOID FinishExternalScreen (VOID) {
     // make sure we clean up later
     GraphicsScreenDirty = TRUE;
 
@@ -586,9 +577,7 @@ VOID FinishExternalScreen (
     haveError = FALSE;
 }
 
-VOID TerminateScreen (
-    VOID
-) {
+VOID TerminateScreen (VOID) {
     // clear text screen
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
     REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut);
@@ -627,9 +616,7 @@ VOID DrawScreenHeader (
 // Keyboard input
 //
 
-BOOLEAN ReadAllKeyStrokes (
-    VOID
-) {
+BOOLEAN ReadAllKeyStrokes (VOID) {
     BOOLEAN       GotKeyStrokes;
     EFI_STATUS    Status;
     EFI_INPUT_KEY key;
@@ -694,9 +681,7 @@ VOID PrintUglyText (
     } // if
 } // VOID PrintUglyText()
 
-VOID HaltForKey (
-    VOID
-) {
+VOID HaltForKey (VOID) {
     UINTN   WaitOut;
     BOOLEAN Breakout = FALSE;
 
@@ -741,9 +726,7 @@ VOID HaltForKey (
     ReadAllKeyStrokes();
 }
 
-VOID PauseForKey (
-    VOID
-) {
+VOID PauseForKey (VOID) {
     UINTN   i;
     UINTN   WaitOut;
     BOOLEAN Breakout = FALSE;
@@ -845,9 +828,7 @@ VOID PauseSeconds (
 } // VOID PauseSeconds()
 
 #if REFIT_DEBUG > 0
-VOID DebugPause (
-    VOID
-) {
+VOID DebugPause (VOID) {
     // show console and wait for key
     SwitchToText (FALSE);
     PauseForKey();
@@ -857,9 +838,7 @@ VOID DebugPause (
 }
 #endif
 
-VOID EndlessIdleLoop (
-    VOID
-) {
+VOID EndlessIdleLoop (VOID) {
     UINTN index;
 
     for (;;) {

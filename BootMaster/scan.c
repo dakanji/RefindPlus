@@ -198,7 +198,10 @@ struct LOADER_LIST {
 
 // Creates a copy of a menu screen.
 // Returns a pointer to the copy of the menu screen.
-static REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
+static
+REFIT_MENU_SCREEN * CopyMenuScreen (
+    REFIT_MENU_SCREEN *Entry
+) {
     REFIT_MENU_SCREEN *NewEntry;
     UINTN              i;
 
@@ -242,7 +245,9 @@ static REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry) {
 // to the heap. This enables easier deletion of the whole set of menu
 // entries when re-scanning.
 // Returns a pointer to the copy of the menu entry.
-REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry) {
+REFIT_MENU_ENTRY * CopyMenuEntry (
+    REFIT_MENU_ENTRY *Entry
+) {
     REFIT_MENU_ENTRY *NewEntry;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
@@ -273,7 +278,9 @@ REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry) {
 // is unspecified (NULL).
 // Returns a pointer to the new data structure, or NULL if it
 // couldn't be allocated
-LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
+LOADER_ENTRY * InitializeLoaderEntry (
+    IN LOADER_ENTRY *Entry
+) {
     LOADER_ENTRY *NewEntry = NULL;
 
     NewEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -306,7 +313,9 @@ LOADER_ENTRY * InitializeLoaderEntry (IN LOADER_ENTRY *Entry) {
 // it's left unchanged and a pointer to it is returned.
 // Returns a pointer to the new subscreen data structure, or NULL if there
 // were problems allocating memory.
-REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
+REFIT_MENU_SCREEN * InitializeSubScreen (
+    IN LOADER_ENTRY *Entry
+) {
     CHAR16              *FileName, *MainOptions = NULL;
     REFIT_MENU_SCREEN   *SubScreen = NULL;
     LOADER_ENTRY        *SubEntry;
@@ -362,7 +371,11 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
     return SubScreen;
 } // REFIT_MENU_SCREEN *InitializeSubScreen()
 
-VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn) {
+VOID GenerateSubScreen (
+    IN OUT LOADER_ENTRY *Entry,
+    IN     REFIT_VOLUME *Volume,
+    IN     BOOLEAN       GenerateReturn
+) {
     REFIT_MENU_SCREEN  *SubScreen;
     LOADER_ENTRY       *SubEntry;
     CHAR16             *InitrdName, *KernelVersion = NULL;
@@ -1033,7 +1046,10 @@ LOADER_ENTRY * AddLoaderEntry (
 // this is used for sorting boot loader entries, differences smaller
 // than this are likely to be meaningless (and unlikely!).
 static
-INTN TimeComp (IN EFI_TIME *Time1, IN EFI_TIME *Time2) {
+INTN TimeComp (
+    IN EFI_TIME *Time1,
+    IN EFI_TIME *Time2
+) {
     INT64 Time1InSeconds, Time2InSeconds;
 
     // Following values are overestimates; I'm assuming 31 days in every month.
@@ -1109,7 +1125,9 @@ LOADER_LIST * AddLoaderListEntry (
 
 // Delete the LOADER_LIST linked list
 static
-VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
+VOID CleanUpLoaderList (
+    struct LOADER_LIST *LoaderList
+) {
     struct LOADER_LIST *Temp;
 
     while (LoaderList != NULL) {
@@ -1126,7 +1144,10 @@ VOID CleanUpLoaderList (struct LOADER_LIST *LoaderList) {
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
 static
-BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
+BOOLEAN ShouldScan (
+    REFIT_VOLUME *Volume,
+    CHAR16       *Path
+) {
     UINTN    i            = 0;
     CHAR16   *VolName     = NULL;
     CHAR16   *VolGuid     = NULL;
@@ -1204,7 +1225,10 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
 // IS the fallback file. Intended for use in excluding the fallback boot
 // loader when it's a duplicate of another boot loader.
 static
-BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
+BOOLEAN DuplicatesFallback (
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16 *FileName
+) {
     CHAR8           *FileContents, *FallbackContents;
     EFI_FILE_HANDLE FileHandle, FallbackHandle;
     EFI_FILE_INFO   *FileInfo, *FallbackInfo;
@@ -1495,7 +1519,9 @@ BOOLEAN ScanLoaderDir (
 // Run the IPXE_DISCOVER_NAME program, which obtains the IP address of the boot
 // server and the name of the boot file it delivers.
 static
-CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
+CHAR16 * RuniPXEDiscover (
+    EFI_HANDLE Volume
+) {
     EFI_STATUS        Status;
     EFI_DEVICE_PATH  *FilePath;
     EFI_HANDLE        iPXEHandle;
@@ -1528,7 +1554,7 @@ CHAR16 * RuniPXEDiscover (EFI_HANDLE Volume) {
 // which RefindPlus launched. As of December 6, 2014, these tools aren't entirely
 // reliable. See BUILDING.txt for information on building them.
 static
-VOID ScanNetboot() {
+VOID ScanNetboot(VOID) {
     CHAR16        *iPXEFileName = IPXE_NAME;
     CHAR16        *Location;
     REFIT_VOLUME  *NetVolume;
@@ -1622,7 +1648,9 @@ BOOLEAN ScanMacOsLoader (
 } // VOID ScanMacOsLoader()
 
 static
-VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
+VOID ScanEfiFiles (
+    REFIT_VOLUME *Volume
+) {
     EFI_STATUS        Status;
     REFIT_DIR_ITER    EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
@@ -1842,9 +1870,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
 
 // Scan internal disks for valid EFI boot loaders....
 static
-VOID ScanInternal (
-    VOID
-) {
+VOID ScanInternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
@@ -1863,9 +1889,7 @@ VOID ScanInternal (
 
 // Scan external disks for valid EFI boot loaders....
 static
-VOID ScanExternal (
-    VOID
-) {
+VOID ScanExternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
@@ -1885,9 +1909,7 @@ VOID ScanExternal (
 
 // Scan internal disks for valid EFI boot loaders....
 static
-VOID ScanOptical (
-    VOID
-) {
+VOID ScanOptical (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
@@ -2416,7 +2438,10 @@ VOID ScanForBootloaders (
 // Checks to see if a specified file seems to be a valid tool.
 // Returns TRUE if it passes all tests, FALSE otherwise
 static
-BOOLEAN IsValidTool (IN REFIT_VOLUME *BaseVolume, CHAR16 *PathName) {
+BOOLEAN IsValidTool (
+    REFIT_VOLUME *BaseVolume,
+    CHAR16       *PathName
+) {
     CHAR16  *DontVolName = NULL, *DontPathName = NULL, *DontFileName = NULL, *DontScanThis  = NULL;
     CHAR16  *TestVolName = NULL, *TestPathName = NULL, *TestFileName = NULL, *DontScanTools = NULL;
     BOOLEAN  retval = TRUE;

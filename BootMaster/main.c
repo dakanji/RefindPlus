@@ -359,9 +359,7 @@ VOID FilterCSR (VOID) {
 } // static VOID FilterCSR()
 
 static
-VOID ActiveCSR (
-    VOID
-) {
+VOID ActiveCSR (VOID) {
     UINT32  CsrStatus;
     BOOLEAN CsrEnabled = FALSE;
     BOOLEAN RotateCsr  = FALSE;
@@ -439,9 +437,7 @@ VOID ActiveCSR (
 
 
 static
-VOID SetBootArgs (
-    VOID
-) {
+VOID SetBootArgs (VOID) {
     EFI_STATUS   Status;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
@@ -559,9 +555,7 @@ VOID SetBootArgs (
 } // static VOID SetBootArgs()
 
 
-VOID DisableAMFI (
-    VOID
-) {
+VOID DisableAMFI (VOID) {
     EFI_STATUS   Status;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
@@ -618,9 +612,7 @@ VOID DisableAMFI (
 } // VOID DisableAMFI()
 
 
-VOID DisableCompatCheck (
-    VOID
-) {
+VOID DisableCompatCheck (VOID) {
     EFI_STATUS   Status;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
@@ -651,9 +643,7 @@ VOID DisableCompatCheck (
 } // VOID DisableCompatCheck()
 
 
-VOID ForceTRIM (
-    VOID
-) {
+VOID ForceTRIM (VOID) {
     EFI_STATUS   Status;
     EFI_GUID     AppleGUID     = APPLE_GUID;
     CHAR16      *NameNVRAM     = L"EnableTRIM";
@@ -783,9 +773,7 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 } // EFI_STATUS HandleProtocolEx()
 
 static
-VOID ReMapOpenProtocol (
-    VOID
-) {
+VOID ReMapOpenProtocol (VOID) {
     // Amend EFI_BOOT_SERVICES.OpenProtocol
     OrigOpenProtocol    = gBS->OpenProtocol;
     gBS->OpenProtocol   = OpenProtocolEx;
@@ -845,9 +833,7 @@ BOOLEAN IsValidTool (
     return retval;
 } // BOOLEAN IsValidTool()
 
-VOID preBootKicker (
-    VOID
-) {
+VOID preBootKicker (VOID) {
     UINTN              MenuExit;
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
@@ -1001,9 +987,7 @@ VOID preBootKicker (
     } // if
 } // VOID preBootKicker()
 
-VOID preCleanNvram (
-    VOID
-) {
+VOID preCleanNvram (VOID) {
     UINTN              MenuExit;
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
@@ -1153,9 +1137,7 @@ VOID preCleanNvram (
 } // VOID preCleanNvram()
 
 
-VOID AboutRefindPlus (
-    VOID
-) {
+VOID AboutRefindPlus (VOID) {
     UINT32   CsrStatus;
     CHAR16  *TempStr         = NULL;
     CHAR16  *FirmwareVendor  = StrDuplicate (VendorInfo);
@@ -1339,9 +1321,7 @@ static VOID InitializeLib (
 // Set up our own Secure Boot extensions....
 // Returns TRUE on success, FALSE otherwise
 static
-BOOLEAN SecureBootSetup (
-    VOID
-) {
+BOOLEAN SecureBootSetup (VOID) {
     EFI_STATUS  Status;
     BOOLEAN     Success = FALSE;
     CHAR16     *MsgStr  = NULL;
@@ -1426,7 +1406,9 @@ BOOLEAN SecureBootUninstall (VOID) {
 // If an error is encountered, leaves the value alone (it should be set to
 // CONFIG_FILE_NAME when GlobalConfig is initialized).
 static
-VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
+VOID SetConfigFilename (
+    EFI_HANDLE ImageHandle
+) {
     EFI_STATUS         Status;
     CHAR16            *Options;
     CHAR16            *FileName;
@@ -1492,7 +1474,7 @@ VOID SetConfigFilename (EFI_HANDLE ImageHandle) {
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
 static
-VOID AdjustDefaultSelection() {
+VOID AdjustDefaultSelection(VOID) {
     EFI_STATUS  Status;
     UINTN       i                 = 0;
     CHAR16     *Element           = NULL;
@@ -1532,9 +1514,7 @@ VOID AdjustDefaultSelection() {
 #if REFIT_DEBUG > 0
 // Log basic information (RefindPlus version, EFI version, etc.) to the log file.
 static
-VOID LogBasicInfo (
-    VOID
-) {
+VOID LogBasicInfo (VOID) {
     EFI_STATUS  Status;
     CHAR16     *TempStr = NULL;
     UINT64      MaximumVariableSize;
