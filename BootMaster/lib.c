@@ -878,8 +878,11 @@ REFIT_VOLUME * CopyVolume (
             }
 
             if (VolumeToCopy->MbrPartitionTable) {
-                Volume->MbrPartitionTable = AllocatePool (4 * 16);
-                CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, 4 * 16);
+                UINTN SizeMBR = 4 * 16;
+                Volume->MbrPartitionTable = AllocatePool (SizeMBR);
+                if (Volume->MbrPartitionTable) {
+                    CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, SizeMBR);
+                }
             }
         }
 
