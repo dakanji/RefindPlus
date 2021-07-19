@@ -90,10 +90,10 @@ typedef struct {
 extern EFI_GUID gFreedesktopRootGuid;
 
 INTN FindMem (
-    IN VOID *Buffer,
-    IN UINTN BufferLength,
-    IN VOID *SearchString,
-    IN UINTN SearchStringLength
+    IN VOID  *Buffer,
+    IN UINTN  BufferLength,
+    IN VOID  *SearchString,
+    IN UINTN  SearchStringLength
 );
 
 EFI_STATUS FindVarsDir (VOID);
@@ -104,7 +104,7 @@ EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
     OUT CHAR8    **VariableData,
-    OUT UINTN     *VariableSize     OPTIONAL
+    OUT UINTN     *VariableSize  OPTIONAL
 );
 EFI_STATUS EfivarSetRaw (
     IN  EFI_GUID  *VendorGUID,
@@ -114,9 +114,9 @@ EFI_STATUS EfivarSetRaw (
     IN  BOOLEAN    Persistent
 );
 EFI_STATUS DirNextEntry (
-    IN EFI_FILE *Directory,
+    IN     EFI_FILE       *Directory,
     IN OUT EFI_FILE_INFO **DirEntry,
-    IN UINTN FilterMode
+    IN     UINTN           FilterMode
 );
 
 VOID ScanVolumes (VOID);
@@ -124,53 +124,61 @@ VOID ReinitVolumes (VOID);
 VOID UninitRefitLib (VOID);
 VOID SetVolumeIcons (VOID);
 VOID MyFreePool (IN OUT VOID *Pointer);
-VOID EraseUint32List (UINT32_LIST **TheList);
-VOID SetVolumeBadgeIcon (REFIT_VOLUME *Volume);
+VOID EraseUint32List (IN UINT32_LIST **TheList);
+VOID SetVolumeBadgeIcon (IN OUT REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
 VOID FreeList (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
 VOID FreeVolumesList (IN OUT VOID ***ListVolumes, IN OUT UINTN *ListCount);
-VOID FreeVolume (IN REFIT_VOLUME *Volume);
-VOID SplitPathName (CHAR16 *InPath, CHAR16 **VolName, CHAR16 **Path, CHAR16 **Filename);
-VOID CreateList (OUT VOID ***ListPtr, OUT UINTN *ElementCount, IN UINTN InitialElementCount);
-VOID AddListElement (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount, IN VOID *NewElement);
+VOID FreeVolume (IN OUT REFIT_VOLUME *Volume);
+VOID AddListElement (
+    IN OUT VOID  ***ListPtr,
+    IN OUT UINTN   *ElementCount,
+    IN     VOID    *NewElement
+);
+VOID SplitPathName (
+    IN     CHAR16  *InPath,
+    IN OUT CHAR16 **VolName,
+    IN OUT CHAR16 **Path,
+    IN OUT CHAR16 **Filename
+);
 VOID DirIterOpen (
-    IN EFI_FILE *BaseDir,
-    IN CHAR16 *RelativePath OPTIONAL,
+    IN  EFI_FILE       *BaseDir,
+    IN  CHAR16         *RelativePath OPTIONAL,
     OUT REFIT_DIR_ITER *DirIter
 );
 VOID FindVolumeAndFilename (
-    IN EFI_DEVICE_PATH *loadpath,
-    OUT REFIT_VOLUME **DeviceVolume,
-    OUT CHAR16 **loader
+    IN  EFI_DEVICE_PATH  *loadpath,
+    OUT REFIT_VOLUME    **DeviceVolume,
+    OUT CHAR16          **loader
 );
 
 CHAR16 * Basename (IN CHAR16 *Path);
 CHAR16 * FindPath (IN CHAR16* FullPath);
 CHAR16 * FindExtension (IN CHAR16 *Path);
 CHAR16 * FindLastDirName (IN CHAR16 *Path);
-CHAR16 * StripEfiExtension (CHAR16 *FileName);
+CHAR16 * StripEfiExtension (IN CHAR16 *FileName);
 CHAR16 * GetVolumeName (IN REFIT_VOLUME *Volume);
 CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
 
 BOOLEAN EjectMedia (VOID);
-BOOLEAN HasWindowsBiosBootFiles (REFIT_VOLUME *Volume);
-BOOLEAN GuidsAreEqual (EFI_GUID *Guid1, EFI_GUID *Guid2);
-BOOLEAN FindVolume (REFIT_VOLUME **Volume, CHAR16 *Identifier);
+BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
+BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);
+BOOLEAN FindVolume (IN REFIT_VOLUME **Volume, IN CHAR16 *Identifier);
 BOOLEAN FileExists (IN EFI_FILE *BaseDir, IN CHAR16 *RelativePath);
 BOOLEAN SplitVolumeAndFilename (IN OUT CHAR16 **Path, OUT CHAR16 **VolName);
-BOOLEAN VolumeMatchesDescription (REFIT_VOLUME *Volume, CHAR16 *Description);
+BOOLEAN VolumeMatchesDescription (IN REFIT_VOLUME *Volume, IN CHAR16 *Description);
 BOOLEAN FilenameIn (
     IN REFIT_VOLUME *Volume,
-    IN CHAR16 *Directory,
-    IN CHAR16 *Filename,
-    IN CHAR16 *List
+    IN CHAR16       *Directory,
+    IN CHAR16       *Filename,
+    IN CHAR16       *List
 );
 BOOLEAN DirIterNext (
-    IN OUT REFIT_DIR_ITER *DirIter,
-    IN UINTN FilterMode,
-    IN CHAR16 *FilePattern OPTIONAL,
-    OUT EFI_FILE_INFO **DirEntry
+    IN  OUT REFIT_DIR_ITER  *DirIter,
+    IN      UINTN            FilterMode,
+    IN      CHAR16          *FilePattern OPTIONAL,
+        OUT EFI_FILE_INFO  **DirEntry
 );
 
-REFIT_VOLUME * CopyVolume (REFIT_VOLUME *VolumeToCopy);
+REFIT_VOLUME * CopyVolume (IN REFIT_VOLUME *VolumeToCopy);
 #endif

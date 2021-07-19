@@ -236,9 +236,7 @@ CHAR16 * SplitDeviceString (
 //
 
 static
-EFI_STATUS FinishInitRefitLib (
-    VOID
-) {
+EFI_STATUS FinishInitRefitLib (VOID) {
     EFI_STATUS  Status;
 
     if (SelfRootDir == NULL) {
@@ -298,7 +296,7 @@ EFI_STATUS InitRefitLib (
 
 static
 VOID UninitVolume (
-    REFIT_VOLUME  *Volume
+    IN OUT REFIT_VOLUME  *Volume
 ) {
     if (Volume->RootDir != NULL) {
         REFIT_CALL_1_WRAPPER(Volume->RootDir->Close, Volume->RootDir);
@@ -312,9 +310,7 @@ VOID UninitVolume (
 
 
 static
-VOID UninitVolumes (
-    VOID
-) {
+VOID UninitVolumes (VOID) {
     UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -324,7 +320,7 @@ VOID UninitVolumes (
 
 static
 VOID ReinitVolume (
-    REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME *Volume
 ) {
     EFI_STATUS        Status;
     EFI_DEVICE_PATH  *RemainingDevicePath;
@@ -382,9 +378,7 @@ VOID ReinitVolume (
     }
 } // static VOID ReinitVolume()
 
-VOID ReinitVolumes (
-    VOID
-) {
+VOID ReinitVolumes (VOID) {
     UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -393,9 +387,7 @@ VOID ReinitVolumes (
 } // VOID ReinitVolumes()
 
 // called before running external programs to close open file handles
-VOID UninitRefitLib (
-    VOID
-) {
+VOID UninitRefitLib (VOID) {
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
     if (SelfRootDir == SelfVolume->RootDir) {
@@ -416,9 +408,7 @@ VOID UninitRefitLib (
 } // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
-EFI_STATUS ReinitRefitLib (
-    VOID
-) {
+EFI_STATUS ReinitRefitLib (VOID) {
     EFI_STATUS Status;
 
     ReinitVolumes();
@@ -457,9 +447,7 @@ EFI_STATUS ReinitRefitLib (
 // is on a read-only filesystem, such as HFS+ on a Mac). If neither location can
 // be used, the variable is not stored. Sets the pointer to the directory in the
 // file-global gVarsDir variable and returns the status of the operation.
-EFI_STATUS FindVarsDir (
-    VOID
-) {
+EFI_STATUS FindVarsDir (VOID) {
     EFI_STATUS       Status = EFI_SUCCESS;
     EFI_FILE_HANDLE  EspRootDir;
 
@@ -514,7 +502,7 @@ EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
     OUT CHAR8    **VariableData,
-    OUT UINTN     *VariableSize     OPTIONAL
+    OUT UINTN     *VariableSize  OPTIONAL
 ) {
     UINTN        BufferSize    = 0;
     UINT8       *TmpBuffer     = NULL;
@@ -777,7 +765,7 @@ EFI_STATUS EfivarSetRaw (
 VOID AddListElement (
     IN OUT VOID  ***ListPtr,
     IN OUT UINTN   *ElementCount,
-    IN VOID        *NewElement
+    IN     VOID    *NewElement
 ) {
           VOID    *TmpListPtr;
     const UINTN    AllocatePointer = sizeof (VOID *) * (*ElementCount + 16);
@@ -862,7 +850,7 @@ VOID FreeVolumesList (
 //
 
 REFIT_VOLUME * CopyVolume (
-    REFIT_VOLUME *VolumeToCopy
+    IN REFIT_VOLUME *VolumeToCopy
 ) {
     REFIT_VOLUME *Volume = NULL;
 
@@ -904,23 +892,25 @@ REFIT_VOLUME * CopyVolume (
 } // REFIT_VOLUME * CopyVolume()
 
 VOID FreeVolume (
-    IN REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME *Volume
 ) {
     if (Volume) {
         // 'UnInit' Volume
         UninitVolume (Volume);
 
-        // Free elements
-        MyFreePool (&(Volume->DevicePath));
-        MyFreePool (&(Volume->PartName));
+        // Free pool elements
         MyFreePool (&(Volume->FsName));
+        MyFreePool (&(Volume->OSName));
         MyFreePool (&(Volume->VolName));
+        MyFreePool (&(Volume->PartName));
+        MyFreePool (&(Volume->OSIconName));
+        MyFreePool (&(Volume->DevicePath));
+        MyFreePool (&(Volume->MbrPartitionTable));
+        MyFreePool (&(Volume->WholeDiskDevicePath));
+
+        // Free image elements
         egFreeImage (Volume->VolIconImage);
         egFreeImage (Volume->VolBadgeImage);
-        MyFreePool (&(Volume->OSIconName));
-        MyFreePool (&(Volume->OSName));
-        MyFreePool (&(Volume->WholeDiskDevicePath));
-        MyFreePool (&(Volume->MbrPartitionTable));
 
         // Free whole volume
         MyFreePool (&Volume);
@@ -989,7 +979,7 @@ CHAR16 * FSTypeName (
 // or if the name field is empty.
 static
 VOID SetFilesystemName (
-    REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME *Volume
 ) {
     EFI_FILE_SYSTEM_INFO *FileSystemInfoPtr = NULL;
 
@@ -1180,8 +1170,8 @@ VOID SetFilesystemData (
 
 static
 VOID ScanVolumeBootcode (
-    REFIT_VOLUME  *Volume,
-    BOOLEAN       *Bootable
+    IN OUT REFIT_VOLUME  *Volume,
+    IN     BOOLEAN       *Bootable
 ) {
     EFI_STATUS           Status;
     UINT8                Buffer[SAMPLE_SIZE];
@@ -1395,7 +1385,7 @@ VOID ScanVolumeBootcode (
 
 // Set default volume badge icon based on /.VolumeBadge.{icns|png} file or disk kind
 VOID SetVolumeBadgeIcon (
-    REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME *Volume
 ) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
@@ -1446,7 +1436,7 @@ VOID SetVolumeBadgeIcon (
 // The calling function is responsible for freeing the allocated memory.
 static
 CHAR16 * SizeInIEEEUnits (
-    UINT64 SizeInBytes
+    IN UINT64 SizeInBytes
 ) {
     UINTN   NumPrefixes;
     UINTN   Index    = 0;
@@ -1611,8 +1601,8 @@ CHAR16 * GetVolumeName (
 // Determine the unique GUID, type code GUID, and name of the volume and store them.
 static
 VOID SetPartGuidAndName (
-    REFIT_VOLUME             *Volume,
-    EFI_DEVICE_PATH_PROTOCOL *DevicePath
+    IN OUT REFIT_VOLUME             *Volume,
+    IN OUT EFI_DEVICE_PATH_PROTOCOL *DevicePath
 ) {
     HARDDRIVE_DEVICE_PATH    *HdDevicePath;
     GPT_ENTRY                *PartInfo;
@@ -1656,7 +1646,7 @@ VOID SetPartGuidAndName (
 // so return TRUE if it is unreadable; but if it *IS* readable, return
 // TRUE only if Windows boot files are found.
 BOOLEAN HasWindowsBiosBootFiles (
-    REFIT_VOLUME *Volume
+    IN REFIT_VOLUME *Volume
 ) {
     BOOLEAN FilesFound = TRUE;
 
@@ -1673,7 +1663,7 @@ BOOLEAN HasWindowsBiosBootFiles (
 } // static VOID HasWindowsBiosBootFiles()
 
 VOID ScanVolume (
-    REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME *Volume
 ) {
     EFI_STATUS        Status;
     EFI_DEVICE_PATH  *DevicePath;
@@ -1858,8 +1848,8 @@ VOID ScanVolume (
 
 static
 VOID ScanExtendedPartition (
-    REFIT_VOLUME       *WholeDiskVolume,
-    MBR_PARTITION_INFO *MbrEntry
+    IN OUT REFIT_VOLUME       *WholeDiskVolume,
+    IN     MBR_PARTITION_INFO *MbrEntry
 ) {
     EFI_STATUS          Status;
     REFIT_VOLUME       *Volume;
@@ -1939,7 +1929,7 @@ VOID ScanExtendedPartition (
 // Returns TRUE if a match was found and FALSE if not.
 static
 BOOLEAN SetPreBootNames (
-    REFIT_VOLUME *Volume
+    IN REFIT_VOLUME *Volume
 ) {
     UINTN   PreBootIndex;
     BOOLEAN NameSwap  = FALSE;
@@ -2004,9 +1994,7 @@ BOOLEAN SetPreBootNames (
 
 // Create a subset of Mac OS 'PreBoot' volumes from the volume collection.
 static
-VOID SetPrebootVolumes (
-    VOID
-) {
+VOID SetPrebootVolumes (VOID) {
     UINTN         i;
     BOOLEAN       SwapName;
     BOOLEAN       FoundPreboot = FALSE;
@@ -2070,9 +2058,7 @@ VOID SetPrebootVolumes (
     }
 } // VOID SetPrebootVolumes()
 
-VOID ScanVolumes (
-    VOID
-) {
+VOID ScanVolumes (VOID) {
     EFI_STATUS         Status;
     EFI_HANDLE         *Handles;
     REFIT_VOLUME       *Volume = NULL;
@@ -2465,9 +2451,7 @@ VOID ScanVolumes (
 } // VOID ScanVolumes()
 
 static
-VOID GetVolumeBadgeIcons (
-    VOID
-) {
+VOID GetVolumeBadgeIcons (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
@@ -2529,9 +2513,7 @@ VOID GetVolumeBadgeIcons (
     } // for
 } // VOID GetVolumeBadgeIcons()
 
-VOID SetVolumeIcons (
-    VOID
-) {
+VOID SetVolumeIcons (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
@@ -2641,9 +2623,9 @@ BOOLEAN FileExists (
 }
 
 EFI_STATUS DirNextEntry (
-    IN EFI_FILE           *Directory,
+    IN     EFI_FILE       *Directory,
     IN OUT EFI_FILE_INFO **DirEntry,
-    IN UINTN               FilterMode
+    IN     UINTN           FilterMode
 ) {
     EFI_STATUS  Status = EFI_BAD_BUFFER_SIZE;
     VOID       *Buffer;
@@ -2751,9 +2733,9 @@ EFI_STATUS DirNextEntry (
 }
 
 VOID DirIterOpen (
-    IN EFI_FILE        *BaseDir,
-    IN CHAR16          *RelativePath OPTIONAL,
-    OUT REFIT_DIR_ITER *DirIter
+    IN  EFI_FILE        *BaseDir,
+    IN  CHAR16          *RelativePath OPTIONAL,
+    OUT REFIT_DIR_ITER  *DirIter
 ) {
     if (RelativePath == NULL) {
         DirIter->LastStatus     = EFI_SUCCESS;
@@ -2826,10 +2808,10 @@ BOOLEAN MetaiMatch (
 #endif
 
 BOOLEAN DirIterNext (
-    IN OUT REFIT_DIR_ITER *DirIter,
-    IN UINTN               FilterMode,
-    IN CHAR16             *FilePattern OPTIONAL,
-    OUT EFI_FILE_INFO    **DirEntry
+    IN  OUT REFIT_DIR_ITER  *DirIter,
+    IN      UINTN            FilterMode,
+    IN      CHAR16          *FilePattern OPTIONAL,
+        OUT EFI_FILE_INFO  **DirEntry
 ) {
     BOOLEAN  KeepGoing = TRUE;
     UINTN    i;
@@ -3070,9 +3052,9 @@ CHAR16 * FindPath (
 // Takes an input loadpath, splits it into disk and filename components, finds a matching
 // DeviceVolume, and returns that and the filename (*loader).
 VOID FindVolumeAndFilename (
-    IN EFI_DEVICE_PATH  *loadpath,
-    OUT REFIT_VOLUME   **DeviceVolume,
-    OUT CHAR16         **loader
+    IN  EFI_DEVICE_PATH  *loadpath,
+    OUT REFIT_VOLUME    **DeviceVolume,
+    OUT CHAR16          **loader
 ) {
     CHAR16 *DeviceString, *VolumeDeviceString, *Temp;
     UINTN i = 0;
@@ -3114,8 +3096,8 @@ VOID FindVolumeAndFilename (
 // volume component in the *VolName variable.
 // Returns TRUE if both components are found, FALSE otherwise.
 BOOLEAN SplitVolumeAndFilename (
-    IN OUT CHAR16 **Path,
-    OUT CHAR16    **VolName
+    IN  OUT CHAR16 **Path,
+    OUT CHAR16     **VolName
 ) {
     UINTN i = 0, Length;
     CHAR16 *Filename;
@@ -3152,10 +3134,10 @@ BOOLEAN SplitVolumeAndFilename (
 // the returned pointer is NULL. The calling function is responsible for
 // freeing the allocated memory.
 VOID SplitPathName (
-    CHAR16  *InPath,
-    CHAR16 **VolName,
-    CHAR16 **Path,
-    CHAR16 **Filename
+    IN     CHAR16  *InPath,
+    IN OUT CHAR16 **VolName,
+    IN OUT CHAR16 **Path,
+    IN OUT CHAR16 **Filename
 ) {
     CHAR16 *Temp = NULL;
 
@@ -3190,8 +3172,8 @@ VOID SplitPathName (
 // to that volume. If not, leaves it unchanged.
 // Returns TRUE if a match was found, FALSE if not.
 BOOLEAN FindVolume (
-    REFIT_VOLUME **Volume,
-    CHAR16        *Identifier
+    IN REFIT_VOLUME **Volume,
+    IN CHAR16        *Identifier
 ) {
     UINTN     i = 0;
     BOOLEAN   Found = FALSE;
@@ -3210,8 +3192,8 @@ BOOLEAN FindVolume (
 // Returns TRUE if Description matches Volume's VolName, FsName, or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)
 BOOLEAN VolumeMatchesDescription (
-    REFIT_VOLUME *Volume,
-    CHAR16       *Description
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *Description
 ) {
     EFI_GUID TargetVolGuid = NULL_GUID_VALUE;
 
@@ -3236,10 +3218,10 @@ BOOLEAN VolumeMatchesDescription (
 // the Volume variable), but the List elements may. Performs comparison
 // case-insensitively.
 BOOLEAN FilenameIn (
-    REFIT_VOLUME *Volume,
-    CHAR16       *Directory,
-    CHAR16       *Filename,
-    CHAR16       *List
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *Directory,
+    IN CHAR16       *Filename,
+    IN CHAR16       *List
 ) {
 
     CHAR16    *OneElement;
@@ -3272,7 +3254,9 @@ BOOLEAN FilenameIn (
 
 // Implement FreePool the way it should have been done to begin with, so that
 // it does not throw an ASSERT message if fed a NULL pointer
-VOID MyFreePool (IN OUT VOID *Pointer) {
+VOID MyFreePool (
+    IN OUT VOID *Pointer
+) {
     if (Pointer != NULL) {
         FreePool (Pointer);
         Pointer = NULL;
@@ -3281,9 +3265,7 @@ VOID MyFreePool (IN OUT VOID *Pointer) {
 
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
-BOOLEAN EjectMedia (
-    VOID
-) {
+BOOLEAN EjectMedia (VOID) {
     EFI_STATUS                       Status;
     UINTN                            HandleIndex;
     UINTN                            HandleCount             = 0;
@@ -3328,15 +3310,15 @@ BOOLEAN EjectMedia (
 
 // Returns TRUE if the two GUIDs are equal, FALSE otherwise
 BOOLEAN GuidsAreEqual (
-    EFI_GUID *Guid1,
-    EFI_GUID *Guid2
+    IN EFI_GUID *Guid1,
+    IN EFI_GUID *Guid2
 ) {
     return (CompareMem (Guid1, Guid2, 16) == 0);
 } // BOOLEAN GuidsAreEqual()
 
 // Erase linked-list of UINT32 values
 VOID EraseUint32List (
-    UINT32_LIST **TheList
+    IN UINT32_LIST **TheList
 ) {
     UINT32_LIST *NextItem;
 
