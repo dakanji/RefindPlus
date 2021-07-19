@@ -895,7 +895,7 @@ REFIT_VOLUME * CopyVolume (
             }
         }
 
-        // 'ReInit' Volumes
+        // 'ReInit' both volumes
         ReinitVolume (Volume);
         ReinitVolume (VolumeToCopy);
     }
@@ -2007,22 +2007,24 @@ static
 VOID SetPrebootVolumes (
     VOID
 ) {
-    UINTN   i;
-    BOOLEAN SwapName;
-    BOOLEAN FoundPreboot = FALSE;
+    UINTN         i;
+    BOOLEAN       SwapName;
+    BOOLEAN       FoundPreboot = FALSE;
+    REFIT_VOLUME *OurPreBoot;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
     #endif
 
-    MyFreePool (&PreBootVolumes);
+    FreeVolumesList ((VOID ***) PreBootVolumes, &PreBootVolumesCount);
     PreBootVolumes      = NULL;
     PreBootVolumesCount = 0;
 
     for (i = 0; i < VolumesCount; i++) {
         if (MyStriCmp (Volumes[i]->VolName, L"PreBoot")) {
             FoundPreboot = TRUE;
-            AddListElement ((VOID ***) &PreBootVolumes, &PreBootVolumesCount, Volumes[i]);
+            OurPreBoot   = CopyVolume (Volumes[i]);
+            AddListElement ((VOID ***) &PreBootVolumes, &PreBootVolumesCount, OurPreBoot);
         }
     }
 
