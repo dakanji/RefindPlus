@@ -326,8 +326,10 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;
+
             // default entry
             SubEntry = InitializeLoaderEntry (Entry);
+
             if (SubEntry != NULL) {
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
@@ -338,17 +340,20 @@ REFIT_MENU_SCREEN * InitializeSubScreen (IN LOADER_ENTRY *Entry) {
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (&MainOptions);
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if (SubEntry != NULL)
+            }
+
             SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
+
             if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
                 SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
             }
             else {
                 SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
-            } // if/else
+            }
         } // if (SubScreen != NULL)
     }
-    else { // existing subscreen; less initialization, and just add new entry later....
+    else {
+        // existing subscreen; less initialization, and just add new entry later....
         SubScreen = Entry->me.SubScreen;
     } // if/else
 
@@ -386,7 +391,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->LoadOptions     = L"arch=x86_64";
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if
+            }
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
@@ -394,7 +399,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 SubEntry->LoadOptions     = L"arch=i386";
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-            } // if
+            }
 #endif
 
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
@@ -404,7 +409,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-                } // if
+                }
 
 #if defined (EFIX64)
                 SubEntry = InitializeLoaderEntry (Entry);
@@ -430,7 +435,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v -s";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-                } // if
+                }
             } // single-user mode allowed
 
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
@@ -440,7 +445,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v -x";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-                } // if
+                }
             } // safe mode allowed
 
             // check for Apple hardware diagnostics
@@ -456,7 +461,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     SubEntry->Volume          = Volume;
                     SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-                } // if
+                }
             } // if diagnostics entry found
 
         }
@@ -476,7 +481,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                     SubScreen->Entries[0]->Title = TokenList[0]
                         ? StrDuplicate (TokenList[0])
                         : StrDuplicate (L"Boot Linux");
-                } // if
+                }
 
                 FreeTokenLine (&TokenList, &TokenCount);
                 while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
@@ -490,7 +495,8 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                         SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
                         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
-                    } // if
+                    }
+
                     FreeTokenLine (&TokenList, &TokenCount);
                 } // while
                 FreeTokenLine (&TokenList, &TokenCount);
@@ -566,6 +572,7 @@ VOID GenerateSubScreen (LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
             }
         } // entries for xom.efi
+
         if (GenerateReturn) {
             AddMenuEntry (SubScreen, &MenuEntryReturn);
         }
@@ -625,9 +632,11 @@ VOID SetLoaderDefaults (
                         GlobalConfig.IconSizes[ICON_SIZE_BIG]
                     );
                 }
+
                 if (!Entry->me.Image) {
                     Entry->me.Image = egCopyImage (Volume->VolIconImage);
                 }
+
                 MyFreePool (&NoExtension);
             }
         }
@@ -644,6 +653,7 @@ VOID SetLoaderDefaults (
         MergeStrings (&OSIconName, Temp, L',');
         MyFreePool (&Temp);
         Temp = NULL;
+
         if (OSIconName != NULL) {
             ShortcutLetter = OSIconName[0];
         }
@@ -708,6 +718,7 @@ VOID SetLoaderDefaults (
             GuessLinuxDistribution (&OSIconName, Volume, LoaderPath);
             Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
         }
+
         MergeStrings (&OSIconName, L"linux", L',');
         Entry->OSType = 'L';
         if (ShortcutLetter == 0) {
@@ -1084,6 +1095,7 @@ LOADER_LIST * AddLoaderListEntry (
         } // while
 
         NewEntry->NextEntry = CurrentEntry;
+
         if (PrevEntry == NULL) {
             LatestEntry = NewEntry;
         }
@@ -1155,8 +1167,9 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
             !MyStriCmp(VolName, Volume->PartName))
         ) {
             ScanIt = FALSE;
-        } // if
-    } // if Path includes volume specification
+        }
+    }
+
     MyFreePool (&PathCopy);
     MyFreePool (&VolName);
     VolName = NULL;
@@ -1175,11 +1188,12 @@ BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path) {
                 ScanIt = FALSE;
             }
         }
+
         MyFreePool (&DontScanDir);
         MyFreePool (&VolName);
         DontScanDir = NULL;
         VolName     = NULL;
-    } // while()
+    } // while
 
     return ScanIt;
 } // BOOLEAN ShouldScan()
@@ -1219,6 +1233,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         EFI_FILE_MODE_READ,
         0
     );
+
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo (FileHandle);
         FileSize = FileInfo->FileSize;
@@ -1226,6 +1241,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
     else {
         return FALSE;
     }
+
     MyFreePool (&FileInfo);
 
     Status = REFIT_CALL_5_WRAPPER(
@@ -1236,6 +1252,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         EFI_FILE_MODE_READ,
         0
     );
+
     if (Status == EFI_SUCCESS) {
         FallbackInfo = LibFileInfo (FallbackHandle);
         FallbackSize = FallbackInfo->FileSize;
@@ -1244,6 +1261,7 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
         return FALSE;
     }
+
     MyFreePool (&FallbackInfo);
 
     if (FallbackSize == FileSize) { // could be identical; do full check....
@@ -1266,16 +1284,18 @@ BOOLEAN DuplicatesFallback (IN REFIT_VOLUME *Volume, IN CHAR16 *FileName) {
             }
             if (Status == EFI_SUCCESS) {
                 AreIdentical = (CompareMem (FileContents, FallbackContents, FileSize) == 0);
-            } // if
-        } // if
+            }
+        }
+
         MyFreePool (&FileContents);
         MyFreePool (&FallbackContents);
     } // if/else
 
     // BUG ALERT: Some systems (e.g., DUET, some Macs with large displays) crash if the
-    // following two calls are reversed. Go figure....
+    // following two calls are reversed.
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FallbackHandle);
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
+
     return AreIdentical;
 } // BOOLEAN DuplicatesFallback()
 
@@ -1307,6 +1327,7 @@ BOOLEAN IsSymbolicLink (
         EFI_FILE_MODE_READ,
         0
     );
+
     if (Status == EFI_SUCCESS) {
         FileInfo = LibFileInfo (FileHandle);
         if (FileInfo != NULL) {
@@ -1344,17 +1365,21 @@ BOOLEAN ScanLoaderDir (
 
     #if REFIT_DEBUG > 0
     CHAR16 *PathStr;
+
     if (MyStriCmp (Path, L"\\")) {
         PathStr = StrDuplicate (L"\\");
     }
     else {
         PathStr = PoolPrint (L"%s", Path);
     }
+
     LOG(3, LOG_LINE_NORMAL, L"Scanning for '%s' in '%s'", Pattern, PathStr);
+
     MyFreePool (&PathStr);
     #endif
 
     InSelfPath = MyStriCmp (Path, SelfDirPath);
+
     if ((!SelfDirPath || !Path ||
         (InSelfPath && (Volume->DeviceHandle != SelfVolume->DeviceHandle)) ||
         (!InSelfPath)) && (ShouldScan (Volume, Path))
@@ -1425,6 +1450,7 @@ BOOLEAN ScanLoaderDir (
                         FirstKernel = LatestEntry;
                     }
                 }
+
                 NewLoader = NewLoader->NextEntry;
             } // while
 
@@ -1516,15 +1542,15 @@ VOID ScanNetboot() {
         IsValidLoader (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         IsValidLoader (SelfVolume->RootDir, IPXE_NAME)
     ) {
-            Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
-            if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
-                NetVolume = AllocatePool (sizeof (REFIT_VOLUME));
-                CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
-                NetVolume->DiskKind      = DISK_KIND_NET;
-                NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
-                NetVolume->PartName      = NetVolume->VolName = NetVolume->FsName = NULL;
-                AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
-            }
+        Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
+        if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
+            NetVolume = AllocatePool (sizeof (REFIT_VOLUME));
+            CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
+            NetVolume->DiskKind      = DISK_KIND_NET;
+            NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
+            NetVolume->PartName      = NetVolume->VolName = NetVolume->FsName = NULL;
+            AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
+        }
     }
 } // VOID ScanNetboot()
 
@@ -1569,6 +1595,7 @@ BOOLEAN ScanMacOsLoader (
             ScanFallbackLoader = FALSE;
         }
     } // if
+
     MyFreePool (&VolName);
     MyFreePool (&PathName);
     MyFreePool (&FileName);
@@ -1650,7 +1677,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 }
 
                 MyFreePool (&FileName);
-            } // if
+            }
         } // while
         DirIterClose (&EfiDirIter);
 
@@ -1664,6 +1691,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 ScanFallbackLoader = FALSE;
             }
         }
+
         MyFreePool (&FileName);
     } // if should scan Mac directory
 
@@ -1684,6 +1712,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
                 ScanFallbackLoader = FALSE;
             }
         }
+
         MyFreePool (&FileName);
 
         FileName = StrDuplicate (L"EFI\\Microsoft\\Boot\\bootmgfw.efi");
@@ -1742,7 +1771,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
         }
 
         MyFreePool (&FileName);
-    } // while()
+    } // while
 
     Status = DirIterClose (&EfiDirIter);
     if ((Status != EFI_NOT_FOUND) && (Status != EFI_INVALID_PARAMETER)) {
@@ -1764,7 +1793,7 @@ VOID ScanEfiFiles (REFIT_VOLUME *Volume) {
             }
 
             MyFreePool (&VolName);
-        } // if should scan dir
+        }
 
         MyFreePool (&Directory);
     } // while
@@ -1810,8 +1839,8 @@ VOID ScanInternal (
             ScanEfiFiles (Volumes[VolumeIndex]);
         }
     } // for
-    FirstLoaderScan = FALSE;
 
+    FirstLoaderScan = FALSE;
 } // static VOID ScanInternal()
 
 // Scan external disks for valid EFI boot loaders....
@@ -1831,6 +1860,7 @@ VOID ScanExternal (
             ScanEfiFiles (Volumes[VolumeIndex]);
         }
     } // for
+
     FirstLoaderScan = FALSE;
 
 } // static VOID ScanExternal()
@@ -1943,7 +1973,7 @@ VOID ScanFirmwareDefined (
                     ScanIt = TRUE;
                 }
                 MyFreePool (&OneElement);
-            } // while()
+            } // while
         }
         else {
             if (IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)) {
@@ -1970,7 +2000,7 @@ VOID ScanFirmwareDefined (
 
         CurrentEntry = CurrentEntry->NextBootEntry;
         ScanIt = TRUE; // Assume the next item is to be scanned
-    } // while()
+    } // while
 
     MyFreePool (&DontScanFirmware);
     DeleteBootOrderEntries (BootEntries);
@@ -2088,7 +2118,7 @@ VOID ScanForBootloaders (
     ) {
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();
-    } // if
+    }
 
     if (GlobalConfig.HiddenTags) {
         // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes

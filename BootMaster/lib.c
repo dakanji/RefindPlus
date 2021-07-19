@@ -184,7 +184,7 @@ VOID CleanUpPathNameSlashes (
             Source++;
             Dest++;
         } // if/else
-    } // while()
+    } // while
     if ((Dest > 0) && (PathName[Dest - 1] == L'\\')) {
         Dest--;
     }

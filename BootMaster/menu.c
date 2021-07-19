@@ -412,7 +412,7 @@ INTN FindMenuShortcutEntry (
         }
         MyFreePool (&Shortcut);
         j++;
-    } // while()
+    } // while
     return -1;
 } // static INTN FindMenuShortcutEntry()
 
@@ -911,7 +911,7 @@ UINTN RunGenericMenu (
                     break;
             } // switch()
         } // if/else
-    } // while()
+    } // while
 
     pdClear();
     StyleFunc (Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
@@ -2135,7 +2135,7 @@ BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
         VolName = NULL;
 
         DeletedSomething |= DeleteIt;
-    } // while()
+    } // while
 
     return DeletedSomething;
 } // BOOLEAN RemoveInvalidFilenames()

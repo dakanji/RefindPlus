@@ -287,7 +287,7 @@
          Status = REFIT_CALL_1_WRAPPER(TheDir->Close, TheDir);
          MyFreePool (&FileName);
          MyFreePool (&TheDir);
-     } // while()
+     } // while
      return (Status);
  } // CreateDirectories()
 

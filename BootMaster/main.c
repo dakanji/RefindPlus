@@ -2653,7 +2653,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 break;
         } // switch()
-    } // while()
+    } // while
     MyFreePool (&SelectionName);
 
     // If we end up here, things have gone wrong. Try to reboot, and if that

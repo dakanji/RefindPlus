@@ -564,7 +564,7 @@ UINT64 StrToHex(CHAR16 *Input, UINTN Pos, UINTN NumChars) {
             NumDone++;
         }
         Pos++;
-    } // while()
+    } // while
     return retval;
 } // StrToHex()
 

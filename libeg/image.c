@@ -591,7 +591,7 @@ EG_IMAGE * egLoadIconAnyType (
 
         MyFreePool (&Extension);
         MyFreePool (&FileName);
-    } // while()
+    } // while
 
     #if REFIT_DEBUG > 0
     if (Image == NULL) {

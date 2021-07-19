@@ -1236,7 +1236,7 @@ VOID AddSubmenu (
         } // if SubEntry->Enabled
 
         FreeTokenLine (&TokenList, &TokenCount);
-    } // while()
+    } // while
     FreeTokenLine (&TokenList, &TokenCount);
 
     if (!SubEntry->Enabled) {
@@ -1463,7 +1463,7 @@ LOADER_ENTRY * AddStanzaEntries (
         } // if Entry->Enabled
 
         FreeTokenLine (&TokenList, &TokenCount);
-    } // while()
+    } // while
     FreeTokenLine (&TokenList, &TokenCount);
 
     // Diabled entries are returned "as is" as will be discarded later
@@ -1650,7 +1650,7 @@ VOID ScanUserConfigured (
             } // if/else if MyStriCmp TokenList
 
             FreeTokenLine (&TokenList, &TokenCount);
-        } // while()
+        } // while
 
         FreeTokenLine (&TokenList, &TokenCount);
 
