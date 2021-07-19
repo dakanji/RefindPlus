@@ -171,4 +171,6 @@ BOOLEAN DirIterNext (
     IN CHAR16 *FilePattern OPTIONAL,
     OUT EFI_FILE_INFO **DirEntry
 );
+
+REFIT_VOLUME * CopyVolume (REFIT_VOLUME *VolumeToCopy);
 #endif

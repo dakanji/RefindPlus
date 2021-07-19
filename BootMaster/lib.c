@@ -861,10 +861,55 @@ VOID FreeVolumesList (
 // volume functions
 //
 
+REFIT_VOLUME * CopyVolume (
+    REFIT_VOLUME *VolumeToCopy
+) {
+    REFIT_VOLUME *Volume = NULL;
+
+    if (VolumeToCopy) {
+        // 'UnInit' VolumeToCopy
+        UninitVolume (VolumeToCopy);
+
+        // Create New Volume based on VolumeToCopy (in 'UnInit' state)
+        Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), VolumeToCopy);
+        if (Volume) {
+            Volume->FsName        = StrDuplicate (VolumeToCopy->FsName);
+            Volume->OSName        = StrDuplicate (VolumeToCopy->OSName);
+            Volume->VolName       = StrDuplicate (VolumeToCopy->VolName);
+            Volume->PartName      = StrDuplicate (VolumeToCopy->PartName);
+            Volume->OSIconName    = StrDuplicate (VolumeToCopy->OSIconName);
+            Volume->VolIconImage  = egCopyImage (VolumeToCopy->VolIconImage);
+            Volume->VolBadgeImage = egCopyImage (VolumeToCopy->VolBadgeImage);
+
+            if (VolumeToCopy->DevicePath != NULL) {
+                Volume->DevicePath = DuplicateDevicePath (VolumeToCopy->DevicePath);
+            }
+
+            if (VolumeToCopy->WholeDiskDevicePath != NULL) {
+                Volume->WholeDiskDevicePath = DuplicateDevicePath (VolumeToCopy->WholeDiskDevicePath);
+            }
+
+            if (VolumeToCopy->MbrPartitionTable) {
+                Volume->MbrPartitionTable = AllocatePool (4 * 16);
+                CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, 4 * 16);
+            }
+        }
+
+        // 'ReInit' Volumes
+        ReinitVolume (Volume);
+        ReinitVolume (VolumeToCopy);
+    }
+
+    return Volume;
+} // REFIT_VOLUME * CopyVolume()
+
 VOID FreeVolume (
     IN REFIT_VOLUME *Volume
 ) {
     if (Volume) {
+        // 'UnInit' Volume
+        UninitVolume (Volume);
+
         // Free elements
         MyFreePool (&(Volume->DevicePath));
         MyFreePool (&(Volume->PartName));
