@@ -1568,6 +1568,7 @@ BOOLEAN ScanMacOsLoader (
     CHAR16   *VolName            = NULL;
     CHAR16   *PathName           = NULL;
     CHAR16   *FileName           = NULL;
+    UINTN     PreBootIndex;
 
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
@@ -1587,6 +1588,23 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
+                if ((Volume->VolName) &&
+                    (GlobalConfig.SyncAPFS) &&
+                    (MyStriCmp (Volume->VolName, L"PreBoot"))
+                ) {
+                    for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                        if (GuidsAreEqual (
+                                &(PreBootVolumes[PreBootIndex]->PartGuid),
+                                &(Volume->PartGuid)
+                            )
+                        ) {
+                            MyFreePool (&Volume->VolName);
+                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+                            break;
+                        }
+                    } // for
+                }
+
                 AddLoaderEntry (FullFileName, L"Mac OS", Volume, TRUE);
             }
         }
