@@ -297,90 +297,100 @@ EFI_STATUS InitRefitLib (
 }
 
 static
+VOID UninitVolume (
+    REFIT_VOLUME  *Volume
+) {
+    if (Volume->RootDir != NULL) {
+        REFIT_CALL_1_WRAPPER(Volume->RootDir->Close, Volume->RootDir);
+        Volume->RootDir = NULL;
+    }
+
+    Volume->DeviceHandle     = NULL;
+    Volume->BlockIO          = NULL;
+    Volume->WholeDiskBlockIO = NULL;
+} // static VOID UninitVolume()
+
+
+static
 VOID UninitVolumes (
     VOID
 ) {
-    REFIT_VOLUME  *Volume;
-    UINTN          VolumeIndex;
+    UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
-
-        if (Volume->RootDir != NULL) {
-            REFIT_CALL_1_WRAPPER(Volume->RootDir->Close, Volume->RootDir);
-            Volume->RootDir = NULL;
-        }
-
-        Volume->DeviceHandle     = NULL;
-        Volume->BlockIO          = NULL;
-        Volume->WholeDiskBlockIO = NULL;
+        UninitVolume (Volumes[VolumeIndex]);
     }
-} // VOID UninitVolumes()
+} // static VOID UninitVolumes()
 
-VOID ReinitVolumes (
-    VOID
+static
+VOID ReinitVolume (
+    REFIT_VOLUME *Volume
 ) {
     EFI_STATUS        Status;
-    REFIT_VOLUME     *Volume;
-    UINTN             VolumeIndex;
     EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE        DeviceHandle;
     EFI_HANDLE        WholeDiskHandle;
 
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        Volume = Volumes[VolumeIndex];
+    if (Volume->DevicePath != NULL) {
+        // get the handle for that path
+        RemainingDevicePath = Volume->DevicePath;
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->LocateDevicePath,
+            &BlockIoProtocol,
+            &RemainingDevicePath,
+            &DeviceHandle
+        );
 
-        if (Volume->DevicePath != NULL) {
-            // get the handle for that path
-            RemainingDevicePath = Volume->DevicePath;
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath,
-                &BlockIoProtocol,
-                &RemainingDevicePath,
-                &DeviceHandle
-            );
+        if (!EFI_ERROR (Status)) {
+            Volume->DeviceHandle = DeviceHandle;
 
-            if (!EFI_ERROR (Status)) {
-                Volume->DeviceHandle = DeviceHandle;
+            // get the root directory
+            Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
 
-                // get the root directory
-                Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
-
-            }
-            else {
-                CheckError (Status, L"from LocateDevicePath");
-            }
         }
-
-        if (Volume->WholeDiskDevicePath != NULL) {
-            // get the handle for that path
-            RemainingDevicePath = Volume->WholeDiskDevicePath;
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->LocateDevicePath,
-                &BlockIoProtocol,
-                &RemainingDevicePath,
-                &WholeDiskHandle
-            );
-
-            if (!EFI_ERROR (Status)) {
-                // get the BlockIO protocol
-                Status = REFIT_CALL_3_WRAPPER(
-                    gBS->HandleProtocol,
-                    WholeDiskHandle,
-                    &BlockIoProtocol,
-                    (VOID **) &Volume->WholeDiskBlockIO
-                );
-                if (EFI_ERROR (Status)) {
-                    Volume->WholeDiskBlockIO = NULL;
-                    CheckError (Status, L"from HandleProtocol");
-                }
-            }
-            else {
-                CheckError (Status, L"from LocateDevicePath");
-            }
+        else {
+            CheckError (Status, L"from LocateDevicePath");
         }
     }
-} // VOID ReinitVolumes (VOID)
+
+    if (Volume->WholeDiskDevicePath != NULL) {
+        // get the handle for that path
+        RemainingDevicePath = Volume->WholeDiskDevicePath;
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->LocateDevicePath,
+            &BlockIoProtocol,
+            &RemainingDevicePath,
+            &WholeDiskHandle
+        );
+
+        if (!EFI_ERROR (Status)) {
+            // get the BlockIO protocol
+            Status = REFIT_CALL_3_WRAPPER(
+                gBS->HandleProtocol,
+                WholeDiskHandle,
+                &BlockIoProtocol,
+                (VOID **) &Volume->WholeDiskBlockIO
+            );
+            if (EFI_ERROR (Status)) {
+                Volume->WholeDiskBlockIO = NULL;
+                CheckError (Status, L"from HandleProtocol");
+            }
+        }
+        else {
+            CheckError (Status, L"from LocateDevicePath");
+        }
+    }
+} // static VOID ReinitVolume()
+
+VOID ReinitVolumes (
+    VOID
+) {
+    UINTN VolumeIndex;
+
+    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+        ReinitVolume (Volumes[VolumeIndex]);
+    }
+} // VOID ReinitVolumes()
 
 // called before running external programs to close open file handles
 VOID UninitRefitLib (
