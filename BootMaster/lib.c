@@ -2305,31 +2305,27 @@ VOID ScanVolumes (VOID) {
         }
         #endif
     } // for: first pass
+
     MyFreePool (&UuidList);
     MyFreePool (&Handles);
 
-    if (!SelfVolSet) {
+    if (!SelfVolSet || !SelfVolRun) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
-        LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-        MsgLog ("** WARN: %s", MsgStr);
-        MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
-        #endif
-
-        SelfVolRun = TRUE;
-        FreeVolume (Volume);
-
-        return;
-    }
-    else if (!SelfVolRun) {
-        #if REFIT_DEBUG > 0
-        CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-        MsgLog (
-            "INFO: Self Volume:- '%s:::%s'\n\n",
-            SelfVolume->VolName, SelfGUID
-        );
-        MyFreePool (&SelfGUID);
+        if (!SelfVolSet) {
+            MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
+            LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+            MsgLog ("** WARN: %s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (&MsgStr);
+        }
+        else {
+            CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
+            MsgLog (
+                "INFO: Self Volume:- '%s:::%s'\n\n",
+                SelfVolume->VolName, SelfGUID
+            );
+            MyFreePool (&SelfGUID);
+        }
         #endif
 
         SelfVolRun = TRUE;
