@@ -414,7 +414,7 @@ EFI_STATUS ReinitRefitLib (VOID) {
     ReinitVolumes();
 
     if ((gST->Hdr.Revision >> 16) == 1) {
-       // Below two lines were in rEFIt, but seem to cause system crashes or
+       // The two lines below were in rEFIt but seem to cause crashes and/or
        // reboots when launching OSes after returning from programs on most
        // systems. OTOH, my Mac Mini produces errors about "(re)opening our
        // installation volume" (see the next function) when returning from
@@ -425,8 +425,8 @@ EFI_STATUS ReinitRefitLib (VOID) {
        // (which Macs have) and not with 2 (which UEFI PCs have). My selection
        // of hardware on which to test is limited, though, so this may be the
        // wrong test, or there may be a better way to fix this problem.
-       // TODO: Figure out cause of above weirdness and fix it more
-       // reliably!
+       //
+       // TODO: Figure out cause of the issue and fix it more reliably!
        if (SelfVolume != NULL && SelfVolume->RootDir != NULL) {
            SelfRootDir = SelfVolume->RootDir;
        }
