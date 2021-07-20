@@ -883,6 +883,13 @@ REFIT_VOLUME * CopyVolume (
                 if (Volume->MbrPartitionTable) {
                     CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, SizeMBR);
                 }
+                else {
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL,
+                        L"In 'CopyVolume', Out of Resources While Allocating MbrPartitionTable!!"
+                    );
+                    #endif
+                }
             }
 
             // ReInit 'Volume'
@@ -1358,14 +1365,26 @@ VOID ScanVolumeBootcode (
                         MbrTableFound = TRUE;
                     }
                 }
+
                 for (i = 0; i < 4; i++) {
                     if (MbrTable[i].Flags != 0x00 && MbrTable[i].Flags != 0x80) {
                         MbrTableFound = FALSE;
                     }
                 }
+
                 if (MbrTableFound) {
-                    Volume->MbrPartitionTable = AllocatePool (4 * 16);
-                    CopyMem (Volume->MbrPartitionTable, MbrTable, 4 * 16);
+                    UINTN SizeMBR = 4 * 16;
+                    Volume->MbrPartitionTable = AllocatePool (SizeMBR);
+                    if (Volume->MbrPartitionTable) {
+                        CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
+                    }
+                    else {
+                        #if REFIT_DEBUG > 0
+                        LOG(1, LOG_LINE_NORMAL,
+                            L"In 'ScanVolumeBootcode', Out of Resources While Allocating MbrPartitionTable!!"
+                        );
+                        #endif
+                    }
 
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL, L"Found MBR Partition Table");
