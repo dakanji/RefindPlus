@@ -679,7 +679,7 @@ LEGACY_ENTRY * AddLegacyEntry (
         }
     }
     if (Volume->VolName != NULL) {
-        VolDesc = StrDuplicate (Volume->VolName);
+        VolDesc = Volume->VolName;
     }
     else {
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
@@ -782,6 +782,8 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     CHAR16            *LegacyDescription = StrDuplicate (BdsOption->Description);
 
     if (IsInSubstring (LegacyDescription, GlobalConfig.DontScanVolumes)) {
+        MyFreePool (&LegacyDescription);
+
         return NULL;
     }
 
@@ -810,7 +812,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
                                 : ((DiskType == BBS_USB)
                                     ? L"USB" : L"HD");
     Entry->me.BadgeImage     = GetDiskBadge (DiskType);
-    Entry->BdsOption         = BdsOption;
+    Entry->BdsOption         = CopyBdsOption (BdsOption);
     Entry->Enabled           = TRUE;
 
     // create the submenu
@@ -832,13 +834,15 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     SubEntry->me.Title = PoolPrint (L"Boot %s", LegacyDescription);
 
     SubEntry->me.Tag = TAG_LEGACY_UEFI;
-    Entry->BdsOption = BdsOption;
+    SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
 
     AddMenuEntry (SubScreen, &MenuEntryReturn);
     Entry->me.SubScreen = SubScreen;
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+
+    MyFreePool (&LegacyDescription);
 
     return Entry;
 } // static LEGACY_ENTRY * AddLegacyEntryUEFI()

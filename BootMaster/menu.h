@@ -153,6 +153,8 @@ UINTN WaitForInput(IN UINTN Timeout);
 
 CHAR16 * ReadHiddenTags(CHAR16 *VarName);
 
+BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
+
 #endif
 
 /* EOF */

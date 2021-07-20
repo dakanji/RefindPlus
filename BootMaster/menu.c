@@ -2711,3 +2711,47 @@ VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry) {
     MyFreePool (&Entry->Title);
     MyFreePool (&Entry);
 }
+
+BDS_COMMON_OPTION * CopyBdsOption (
+    BDS_COMMON_OPTION *BdsOption
+) {
+    BDS_COMMON_OPTION *NewBdsOption = NULL;
+
+    if (BdsOption) {
+        NewBdsOption = AllocateCopyPool (sizeof (*BdsOption), BdsOption);
+        if (NewBdsOption) {
+            if (BdsOption->DevicePath) {
+                NewBdsOption->DevicePath = AllocateCopyPool (
+                    GetDevicePathSize (BdsOption->DevicePath),
+                    BdsOption->DevicePath
+                );
+            }
+            if (BdsOption->OptionName) {
+                NewBdsOption->OptionName = AllocateCopyPool (
+                    StrSize (BdsOption->OptionName),
+                    BdsOption->OptionName
+                );
+            }
+            if (BdsOption->Description) {
+                NewBdsOption->Description = AllocateCopyPool (
+                    StrSize (BdsOption->Description),
+                    BdsOption->Description
+                );
+            }
+            if (BdsOption->LoadOptions) {
+                NewBdsOption->LoadOptions = AllocateCopyPool (
+                    BdsOption->LoadOptionsSize,
+                    BdsOption->LoadOptions
+                );
+            }
+            if (BdsOption->StatusString) {
+                NewBdsOption->StatusString = AllocateCopyPool (
+                    StrSize (BdsOption->StatusString),
+                    BdsOption->StatusString
+                );
+            }
+        }
+    }
+
+    return NewBdsOption;
+}
