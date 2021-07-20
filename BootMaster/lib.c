@@ -855,7 +855,7 @@ REFIT_VOLUME * CopyVolume (
     REFIT_VOLUME *Volume = NULL;
 
     if (VolumeToCopy) {
-        // 'UnInit' VolumeToCopy
+        // UnInit 'VolumeToCopy'
         UninitVolume (VolumeToCopy);
 
         // Create New Volume based on VolumeToCopy (in 'UnInit' state)
@@ -884,10 +884,12 @@ REFIT_VOLUME * CopyVolume (
                     CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, SizeMBR);
                 }
             }
+
+            // ReInit 'Volume'
+            ReinitVolume (Volume);
         }
 
-        // 'ReInit' both volumes
-        ReinitVolume (Volume);
+        // ReInit 'VolumeToCopy'
         ReinitVolume (VolumeToCopy);
     }
 
@@ -898,7 +900,7 @@ VOID FreeVolume (
     IN OUT REFIT_VOLUME *Volume
 ) {
     if (Volume) {
-        // 'UnInit' Volume
+        // UnInit 'Volume'
         UninitVolume (Volume);
 
         // Free pool elements
