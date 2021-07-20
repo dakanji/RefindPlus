@@ -2632,7 +2632,7 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 break;
-        } // switch()
+        } // switch
     } // while
     MyFreePool (&SelectionName);
 

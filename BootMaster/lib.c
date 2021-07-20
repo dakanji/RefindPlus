@@ -1452,7 +1452,7 @@ VOID SetVolumeBadgeIcon (
             case DISK_KIND_NET:
                 Volume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
                 break;
-        } // switch()
+        } // switch
     }
 } // VOID SetVolumeBadgeIcon()
 

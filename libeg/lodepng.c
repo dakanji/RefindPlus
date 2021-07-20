@@ -882,7 +882,7 @@ static unsigned HuffmanTree_makeTable(HuffmanTree* tree) {
 }
 
 /*
-Second step for the ...makeFromLengths and ...makeFromFrequencies functions.
+Second step for the 'makeFromLengths' and 'makeFromFrequencies' functions.
 numcodes, lengths and maxbitlen must already be filled in correctly. return
 value is error.
 */

@@ -2331,7 +2331,7 @@ VOID ScanForBootloaders (
 
                 ScanFirmwareDefined(0, NULL, NULL);
                 break;
-        } // switch()
+        } // switch
     } // for
 
     if (GlobalConfig.HiddenTags) {
@@ -3314,7 +3314,7 @@ VOID ScanForTools (VOID) {
                 #endif
 
                 break;
-        } // switch()
+        } // switch
     } // for
 
     #if REFIT_DEBUG > 0

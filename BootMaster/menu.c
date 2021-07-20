@@ -338,7 +338,7 @@ VOID UpdateScroll (
 
         case SCROLL_NONE:
             break;
-    } // switch()
+    } // switch
 
     if (State->ScrollMode == SCROLL_MODE_TEXT) {
         AdjustScrollState (State);
@@ -790,65 +790,34 @@ UINTN RunGenericMenu (
             #endif
 
             switch (key.ScanCode) {
-                case SCAN_UP:
-                    UpdateScroll (&State, SCROLL_LINE_UP);
-                    break;
-                case SCAN_LEFT:
-                    UpdateScroll (&State, SCROLL_LINE_LEFT);
-                    break;
-                case SCAN_DOWN:
-                    UpdateScroll (&State, SCROLL_LINE_DOWN);
-                    break;
-                case SCAN_RIGHT:
-                    UpdateScroll (&State, SCROLL_LINE_RIGHT);
-                    break;
-                case SCAN_HOME:
-                    UpdateScroll (&State, SCROLL_FIRST);
-                    break;
-                case SCAN_END:
-                    UpdateScroll (&State, SCROLL_LAST);
-                    break;
-                case SCAN_PAGE_UP:
-                    UpdateScroll (&State, SCROLL_PAGE_UP);
-                    break;
-                case SCAN_PAGE_DOWN:
-                    UpdateScroll (&State, SCROLL_PAGE_DOWN);
-                    break;
-                case SCAN_ESC:
-                    MenuExit = MENU_EXIT_ESCAPE;
-                    break;
+                case SCAN_END:       UpdateScroll (&State, SCROLL_LAST);       break;
+                case SCAN_HOME:      UpdateScroll (&State, SCROLL_FIRST);      break;
+                case SCAN_PAGE_UP:   UpdateScroll (&State, SCROLL_PAGE_UP);    break;
+                case SCAN_PAGE_DOWN: UpdateScroll (&State, SCROLL_PAGE_DOWN);  break;
+                case SCAN_UP:        UpdateScroll (&State, SCROLL_LINE_UP);    break;
+                case SCAN_LEFT:      UpdateScroll (&State, SCROLL_LINE_LEFT);  break;
+                case SCAN_DOWN:      UpdateScroll (&State, SCROLL_LINE_DOWN);  break;
+                case SCAN_RIGHT:     UpdateScroll (&State, SCROLL_LINE_RIGHT); break;
                 case SCAN_INSERT:
-                case SCAN_F2:
-                    MenuExit = MENU_EXIT_DETAILS;
-                    break;
-                case SCAN_DELETE:
-                    MenuExit = MENU_EXIT_HIDE;
-                    break;
-                case SCAN_F10:
-                    egScreenShot();
-                    break;
+                case SCAN_F2:        MenuExit = MENU_EXIT_DETAILS;             break;
+                case SCAN_ESC:       MenuExit = MENU_EXIT_ESCAPE;              break;
+                case SCAN_DELETE:    MenuExit = MENU_EXIT_HIDE;                break;
+                case SCAN_F10:       egScreenShot();                           break;
                 case 0x0016: // F12
-                    if (EjectMedia())
+                    if (EjectMedia()) {
                         MenuExit = MENU_EXIT_ESCAPE;
+                    }
                     break;
-            } // switch()
+            } // switch
 
             switch (key.UnicodeChar) {
-                case CHAR_LINEFEED:
-                case CHAR_CARRIAGE_RETURN:
                 case ' ':
-                    MenuExit = MENU_EXIT_ENTER;
-                    break;
-                case CHAR_BACKSPACE:
-                    MenuExit = MENU_EXIT_ESCAPE;
-                    break;
+                case CHAR_LINEFEED:
+                case CHAR_CARRIAGE_RETURN: MenuExit = MENU_EXIT_ENTER;   break;
+                case CHAR_BACKSPACE:       MenuExit = MENU_EXIT_ESCAPE;  break;
                 case '+':
-                case CHAR_TAB:
-                    MenuExit = MENU_EXIT_DETAILS;
-                    break;
-                case '-':
-                    MenuExit = MENU_EXIT_HIDE;
-                    break;
+                case CHAR_TAB:             MenuExit = MENU_EXIT_DETAILS; break;
+                case '-':                  MenuExit = MENU_EXIT_HIDE;    break;
                 default:
                     KeyAsString[0] = key.UnicodeChar;
                     KeyAsString[1] = 0;
@@ -858,7 +827,7 @@ UINTN RunGenericMenu (
                         MenuExit = MENU_EXIT_ENTER;
                     }
                     break;
-            } // switch()
+            } // switch
         }
         else {
             //react to pointer event
@@ -909,7 +878,7 @@ UINTN RunGenericMenu (
                         MenuExit = MENU_EXIT_ENTER;
                     }
                     break;
-            } // switch()
+            } // switch
         } // if/else
     } // while
 
@@ -2601,7 +2570,7 @@ VOID HideTag (
 
             RescanAll (FALSE, FALSE);
             break;
-    } // switch()
+    } // switch
 } // VOID HideTag()
 
 UINTN RunMenu (

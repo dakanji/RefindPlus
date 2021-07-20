@@ -2050,7 +2050,7 @@ VOID egDisplayMessage (
           default: // NEXTLINE
               Position += BoxHeight + (BoxHeight / 10);
               break;
-      } // switch()
+      } // switch
 
       egDrawImage (Box, (egScreenWidth - BoxWidth) / 2, Position);
       if ((PositionCode == CENTER) || (Position >= egScreenHeight - (BoxHeight * 5))) {

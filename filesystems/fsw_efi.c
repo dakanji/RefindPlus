@@ -1098,7 +1098,7 @@ EFI_STATUS fsw_efi_dir_read(
         // end of directory
         *BufferSize = 0;
 #if DEBUG_LEVEL
-        Print(L"...no more entries\n");
+        Print(L"... no more entries\n");
 #endif
         return EFI_SUCCESS;
     }
