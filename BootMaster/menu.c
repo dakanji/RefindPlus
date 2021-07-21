@@ -2454,7 +2454,7 @@ BOOLEAN HideLegacyTag (
         Name = StrDuplicate (LegacyLoader->BdsOption->Description);
     }
     if (!Name) {
-        Name = StrDuplicate (L"Legacy OS");
+        Name = StrDuplicate (L"Legacy (BIOS) OS");
     }
     AddMenuInfoLine (HideItemMenu, PoolPrint (L"Are you sure you want to hide '%s'?", Name));
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
@@ -2525,7 +2525,7 @@ VOID HideTag (
 
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:
-            HideItemMenu.Title = L"Hide Legacy OS Tag";
+            HideItemMenu.Title = L"Hide Legacy (BIOS) OS Tag";
             if (HideLegacyTag (LegacyLoader, &HideItemMenu)) {
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");

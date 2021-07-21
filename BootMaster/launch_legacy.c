@@ -551,12 +551,12 @@ VOID StartLegacy (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Starting Mac-style BIOS/CSM/Legacy Loader:- '%s'",
+        L"Starting 'Mac-style' Legacy (BIOS) OS:- '%s'",
         SelectionName
     );
     #endif
 
-    BeginExternalScreen (TRUE, L"Booting Legacy OS (Mac mode)");
+    BeginExternalScreen (TRUE, L"Booting 'Mac-style' Legacy (BIOS) OS");
 
     BootLogoImage = LoadOSIcon (Entry->Volume->OSIconName, L"legacy", TRUE);
     if (BootLogoImage != NULL) {
@@ -655,14 +655,14 @@ VOID StartLegacyUEFI (
 ) {
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Launching UEFI-style BIOS/CSM/Legacy OS '%s'",
+        L"Launching 'UEFI-style' Legacy (BIOS) OS:- '%s'",
         SelectionName
     );
     #endif
 
     IsBoot = TRUE;
 
-    BeginExternalScreen (TRUE, L"Booting Legacy OS (UEFI Mode)");
+    BeginExternalScreen (TRUE, L"Booting 'UEFI-style' Legacy (BIOS) OS");
     StoreLoaderName (SelectionName);
 
     UninitRefitLib();

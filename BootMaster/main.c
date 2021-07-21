@@ -2464,7 +2464,7 @@ EFI_STATUS EFIAPI efi_main (
                 else {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Boot Legacy OS:- '%s'",
+                        L"Boot Legacy (BIOS) OS:- '%s'",
                         ourLegacyEntry->Volume->OSName
                     );
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
