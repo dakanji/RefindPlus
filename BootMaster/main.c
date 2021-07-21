@@ -1557,16 +1557,22 @@ VOID LogBasicInfo (VOID) {
     #elif defined(EFIAARCH64)
         MsgLog ("'ARM (64 bit)'");
     #else
-        MsgLog ("'Unknown'");
+        MsgLog ("'Not Kknown'");
     #endif
     MsgLog ("\n");
 
+    // Set Legacy Boot Type
+    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
+    FindLegacyBootType();
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
+    }
     switch (GlobalConfig.LegacyType) {
         case LEGACY_TYPE_MAC:
-            TempStr = StrDuplicate (L"Mac");
+            TempStr = StrDuplicate (L"Mac-Style");
             break;
         case LEGACY_TYPE_UEFI:
-            TempStr = StrDuplicate (L"UEFI");
+            TempStr = StrDuplicate (L"UEFI-Style");
             break;
         case LEGACY_TYPE_NONE:
             TempStr = StrDuplicate (L"Unavailable");
@@ -1576,7 +1582,7 @@ VOID LogBasicInfo (VOID) {
             TempStr = StrDuplicate (L"Unknown");
             break;
     }
-    MsgLog ("CSM:- '%s'\n", TempStr);
+    MsgLog ("Compatibility Support Module:- '%s'\n", TempStr);
     MyFreePool (&TempStr);
 
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
@@ -1736,11 +1742,6 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     // read configuration
-    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
-    FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
-    }
     SetConfigFilename (ImageHandle);
 
     // Set Secure Boot Up
