@@ -830,6 +830,10 @@ VOID FreeList (
     }
 } // VOID FreeList()
 
+//
+// volume functions
+//
+
 VOID FreeVolumesList (
     IN OUT VOID  ***ListVolumes,
     IN OUT UINTN   *ListCount
@@ -844,10 +848,6 @@ VOID FreeVolumesList (
         *ListCount = 0;
     }
 } // VOID FreeVolumesList()
-
-//
-// volume functions
-//
 
 REFIT_VOLUME * CopyVolume (
     IN REFIT_VOLUME *VolumeToCopy
@@ -2022,21 +2022,24 @@ VOID SetPrebootVolumes (VOID) {
     UINTN         i;
     BOOLEAN       SwapName;
     BOOLEAN       FoundPreboot = FALSE;
-    REFIT_VOLUME *OurPreBoot;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
     #endif
 
-    FreeVolumesList ((VOID ***) PreBootVolumes, &PreBootVolumesCount);
-    PreBootVolumes      = NULL;
-    PreBootVolumesCount = 0;
+    FreeVolumesList (
+        (VOID ***) PreBootVolumes,
+        &PreBootVolumesCount
+    );
 
     for (i = 0; i < VolumesCount; i++) {
         if (MyStriCmp (Volumes[i]->VolName, L"PreBoot")) {
             FoundPreboot = TRUE;
-            OurPreBoot   = CopyVolume (Volumes[i]);
-            AddListElement ((VOID ***) &PreBootVolumes, &PreBootVolumesCount, OurPreBoot);
+            AddListElement (
+                (VOID ***) &PreBootVolumes,
+                &PreBootVolumesCount,
+                CopyVolume (Volumes[i])
+            );
         }
     }
 
@@ -2118,9 +2121,10 @@ VOID ScanVolumes (VOID) {
 
     if (SelfVolRun) {
         // Clear Volumes List if not Scanning for Self Volume
-        FreeVolumesList ((VOID ***) Volumes, &VolumesCount);
-        Volumes      = NULL;
-        VolumesCount = 0;
+        FreeVolumesList (
+            (VOID ***) Volumes,
+            &VolumesCount
+        );
         ForgetPartitionTables();
     }
 
