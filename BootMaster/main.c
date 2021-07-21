@@ -1139,7 +1139,7 @@ VOID preCleanNvram (VOID) {
 
 VOID AboutRefindPlus (VOID) {
     UINT32   CsrStatus;
-    CHAR16  *TempStr         = NULL;
+    CHAR16  *MsgStr          = NULL;
     CHAR16  *FirmwareVendor  = StrDuplicate (VendorInfo);
 
     #if REFIT_DEBUG > 0
@@ -1195,21 +1195,21 @@ VOID AboutRefindPlus (VOID) {
         #endif
 
         if ((gST->Hdr.Revision >> 16) == 1) {
-            TempStr = L"EFI";
+            MsgStr = L"EFI";
         }
         else {
-            TempStr = L"UEFI";
+            MsgStr = L"UEFI";
         }
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
                 L"EFI Revision: %s %d.%02d",
-                TempStr,
+                MsgStr,
                 gST->Hdr.Revision >> 16,
                 gST->Hdr.Revision & ((1 << 16) - 1)
             )
         );
-        MyFreePool (&TempStr);
+        MyFreePool (&MsgStr);
 
         AddMenuInfoLine (
             &AboutMenu,
@@ -1224,9 +1224,9 @@ VOID AboutRefindPlus (VOID) {
             AddMenuInfoLine (&AboutMenu, gCsrStatus);
         }
 
-        TempStr = egScreenDescription();
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", TempStr));
-        MyFreePool (&TempStr);
+        MsgStr = egScreenDescription();
+        AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", MsgStr));
+        MyFreePool (&MsgStr);
 
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
@@ -1516,7 +1516,7 @@ VOID AdjustDefaultSelection(VOID) {
 static
 VOID LogBasicInfo (VOID) {
     EFI_STATUS  Status;
-    CHAR16     *TempStr = NULL;
+    CHAR16     *MsgStr = NULL;
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
@@ -1569,21 +1569,21 @@ VOID LogBasicInfo (VOID) {
     }
     switch (GlobalConfig.LegacyType) {
         case LEGACY_TYPE_MAC:
-            TempStr = StrDuplicate (L"Mac-Style");
+            MsgStr = StrDuplicate (L"Mac-Style");
             break;
         case LEGACY_TYPE_UEFI:
-            TempStr = StrDuplicate (L"UEFI-Style");
+            MsgStr = StrDuplicate (L"UEFI-Style");
             break;
         case LEGACY_TYPE_NONE:
-            TempStr = StrDuplicate (L"Unavailable");
+            MsgStr = StrDuplicate (L"Unavailable");
             break;
         default:
             // just in case ... should never happen
-            TempStr = StrDuplicate (L"Unknown");
+            MsgStr = StrDuplicate (L"Unknown");
             break;
     }
-    MsgLog ("Compatibility Support Module:- '%s'\n", TempStr);
-    MyFreePool (&TempStr);
+    MsgLog ("Compatibility Support Module:- '%s'\n", MsgStr);
+    MyFreePool (&MsgStr);
 
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
@@ -1629,33 +1629,33 @@ VOID LogBasicInfo (VOID) {
     }
 
     // Report which video output devices are natively available. We do not actually
-    // use them, so just use TempStr as a throwaway pointer to the protocol.
+    // use them, so just use MsgStr as a throwaway pointer to the protocol.
     MsgLog ("ConsoleOut Modes:\n");
 
-    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &TempStr);
+    Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
     MsgLog ("  - Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (&TempStr);
+    MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiUgaDrawProtocolGuid,
-        (VOID **) &TempStr
+        (VOID **) &MsgStr
     );
     MsgLog ("  - Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (&TempStr);
+    MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         gST->ConsoleOutHandle,
         &gEfiGraphicsOutputProtocolGuid,
-        (VOID **) &TempStr
+        (VOID **) &MsgStr
     );
     MsgLog ("  - Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
-    MyFreePool (&TempStr);
+    MyFreePool (&MsgStr);
 } // VOID LogBasicInfo()
 #endif
 
