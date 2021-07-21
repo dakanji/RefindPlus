@@ -966,6 +966,22 @@ VOID SwitchToGraphicsAndClear (
     #endif
 } // VOID SwitchToGraphicsAndClear()
 
+// DA_TAG: Permit Image->PixelData Memory Leak on Qemu
+//         Apparent Memory Conflict ... Needs Investigation.
+//         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
+//         Temporary ... Eliminate when no longer required
+static
+VOID egFreeImageQEMU (
+    EG_IMAGE *Image
+) {
+    if (DetectedDevices) {
+        egFreeImage (Image);
+    }
+    else {
+        MyFreePool (&Image);
+    }
+}
+
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
@@ -1038,16 +1054,10 @@ VOID BltClearScreen (
           } // if GlobalConfig.BannerScale else if Banner->Width
 
            if (NewBanner != NULL) {
-               // DA_TAG: Permit Banner->PixelData Memory Leak on Qemu
-               //         Apparent Memory Conflict ... Needs Investigation.
-               //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
-               if (DetectedDevices) {
-                   egFreeImage (Banner);
-               }
-               else {
-                   MyFreePool (&Banner);
-               }
-
+              // DA_TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
+              //         See notes in 'egFreeImageQEMU'
+              //         Revert when no longer required
+              egFreeImageQEMU (Banner);
               Banner = NewBanner;
            } // if NewBanner
 
@@ -1092,16 +1102,10 @@ VOID BltClearScreen (
 
     GraphicsScreenDirty = FALSE;
 
-    // DA_TAG: Permit ScreenBackground->PixelData Memory Leak on items without Devices Detected
-    //         Apparent Memory Conflict ... Needs Investigation.
-    //         Likely related to Qemu Specific Issue.
-    if (DetectedDevices) {
-        egFreeImage (GlobalConfig.ScreenBackground);
-    }
-    else {
-        MyFreePool (&GlobalConfig.ScreenBackground);
-    }
-
+    // DA_TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
+    //         See notes in 'egFreeImageQEMU'
+    //         Revert when no longer required
+    egFreeImageQEMU (GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
 } // VOID BltClearScreen()
 
