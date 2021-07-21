@@ -76,22 +76,26 @@ BOOLEAN FirstLegacyScan = TRUE;
 static
 EFI_STATUS ActivateMbrPartition (
     IN EFI_BLOCK_IO *BlockIO,
-    IN UINTN PartitionIndex
+    IN UINTN         PartitionIndex
 ) {
-    EFI_STATUS          Status;
-    UINT8               SectorBuffer[512];
+    EFI_STATUS           Status;
+    UINT8                SectorBuffer[512];
     MBR_PARTITION_INFO  *MbrTable, *EMbrTable;
-    UINT32              ExtBase, ExtCurrent, NextExtCurrent;
-    UINTN               LogicalPartitionIndex = 4;
-    UINTN               i;
-    BOOLEAN             HaveBootCode;
+    UINT32               ExtBase, ExtCurrent, NextExtCurrent;
+    UINTN                LogicalPartitionIndex = 4;
+    UINTN                i;
+    BOOLEAN              HaveBootCode;
 
     // read MBR
     Status = REFIT_CALL_5_WRAPPER(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR (Status)) {
         return Status;
-    if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55)
-        return EFI_NOT_FOUND;  // safety measure #1
+    }
+
+    if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
+        // safety measure #1
+        return EFI_NOT_FOUND;
+    }
 
     // add boot code if necessary
     HaveBootCode = FALSE;
@@ -207,12 +211,11 @@ EFI_STATUS ActivateMbrPartition (
             if (PartitionIndex < LogicalPartitionIndex) {
                 break;  // stop the loop, no need to touch further EMBRs
             }
-        }
-
-    }
+        } // for
+    } // if PartitionIndex
 
     return EFI_SUCCESS;
-} /* static EFI_STATUS ActivateMbrPartition() */
+} // static EFI_STATUS ActivateMbrPartition()
 
 static
 EFI_GUID AppleVariableVendorID = {0x7C436110, 0xAB2A, 0x4BBB, {0xA8, 0x80, 0xFE, 0x41, 0x99, 0x5C, 0x9F, 0x82}};
@@ -330,6 +333,7 @@ VOID ExtractLegacyLoaderPaths (
             if (DevicePathNodeLength (DevicePath) != DevicePathNodeLength (PathList[PathIndex])) {
                 continue;
             }
+
             if (CompareMem (
                     DevicePath, PathList[PathIndex],
                     DevicePathNodeLength (DevicePath)
@@ -354,7 +358,7 @@ VOID ExtractLegacyLoaderPaths (
         }
     }
     PathList[PathCount] = NULL;
-} /* VOID ExtractLegacyLoaderPaths() */
+} // VOID ExtractLegacyLoaderPaths()
 
 // early 2006 Core Duo / Core Solo models
 static UINT8 LegacyLoaderDevicePath1Data[] = {
@@ -420,9 +424,9 @@ static EFI_DEVICE_PATH *LegacyLoaderList[] = {
 // Launch a BIOS boot loader (Mac mode)
 static
 EFI_STATUS StartLegacyImageList (
-    IN EFI_DEVICE_PATH **DevicePaths,
-    IN CHAR16 *LoadOptions,
-    OUT UINTN *ErrorInStep
+    IN  EFI_DEVICE_PATH **DevicePaths,
+    IN  CHAR16           *LoadOptions,
+    OUT UINTN            *ErrorInStep
 ) {
     EFI_STATUS               Status, ReturnStatus;
     EFI_HANDLE               ChildImageHandle;
@@ -457,6 +461,7 @@ EFI_STATUS StartLegacyImageList (
             &ChildImageHandle
         );
         ReturnStatus = Status;
+
         if (ReturnStatus != EFI_NOT_FOUND) {
             break;
         }
@@ -466,6 +471,7 @@ EFI_STATUS StartLegacyImageList (
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
+
         goto bailout;
     }
 
@@ -636,7 +642,7 @@ VOID StartLegacy (
             SwitchToGraphics();
             MyFreePool (&MsgStrA);
             MyFreePool (&MsgStrB);
-        }
+        } // if ErrorInStep
     } // if Status == EFI_NOT_FOUND
 
     FinishExternalScreen();
@@ -656,28 +662,28 @@ VOID StartLegacyUEFI (
 
     IsBoot = TRUE;
 
-    BeginExternalScreen (TRUE, L"Booting Legacy OS (UEFI mode)");
+    BeginExternalScreen (TRUE, L"Booting Legacy OS (UEFI Mode)");
     StoreLoaderName (SelectionName);
 
     UninitRefitLib();
     BdsLibConnectDevicePath (Entry->BdsOption->DevicePath);
     BdsLibDoLegacyBoot (Entry->BdsOption);
 
-    // If we get here, it means that there was a failure....
+    // If we get here, it means there was a failure.
     ReinitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Failure booting legacy (BIOS) OS.");
+    LOG(1, LOG_LINE_NORMAL, L"Failure booting Legacy (BIOS) OS");
     #endif
 
-    Print(L"Failure booting legacy (BIOS) OS.");
+    Print(L"Failure booting Legacy (BIOS) OS");
     PauseForKey();
     FinishExternalScreen();
 } // static VOID StartLegacyUEFI()
 
 static
 LEGACY_ENTRY * AddLegacyEntry (
-    IN CHAR16 *LoaderTitle,
+    IN CHAR16       *LoaderTitle,
     IN REFIT_VOLUME *Volume
 ) {
     LEGACY_ENTRY      *Entry;
@@ -695,7 +701,7 @@ LEGACY_ENTRY * AddLegacyEntry (
             }
         }
         else {
-            LoaderTitle = L"Legacy OS";
+            LoaderTitle = L"Legacy (BIOS) OS";
         }
     }
 
@@ -720,12 +726,14 @@ LEGACY_ENTRY * AddLegacyEntry (
 
     #if REFIT_DEBUG > 0
     UINTN LogLineType;
+
     if (FirstLegacyScan) {
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
+
     LOG(1, LogLineType,
         L"Adding BIOS/CSM/Legacy Entry for '%s'",
         LegacyTitle
@@ -815,7 +823,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     // prepare the menu entry
     Entry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    Entry->me.Title = PoolPrint (L"Boot Legacy OS from %s", LegacyDescription);
+    Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", LegacyDescription);
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
@@ -865,7 +873,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("  - Found 'Legacy OS' on '%s'", LegacyDescription);
+    MsgLog ("  - Found 'Legacy (BIOS) OS' on '%s'", LegacyDescription);
     #endif
 
     MyFreePool (&LegacyDescription);
@@ -919,6 +927,7 @@ VOID ScanLegacyUEFI (
         NULL,
         (VOID **) &LegacyBios
     );
+
     if (EFI_ERROR (Status)) {
         return;
     }
@@ -937,12 +946,12 @@ VOID ScanLegacyUEFI (
         &EfiGlobalVariableGuid,
         &BootOrderSize
     );
+
     if (BootOrder == NULL) {
         BootOrderSize = 0;
     }
 
     Index = 0;
-
     while (Index < BootOrderSize / sizeof (UINT16)) {
         // Grab each boot option variable from the boot order, and convert
         // the variable into a BDS boot option
@@ -1028,9 +1037,7 @@ VOID ScanLegacyVolume (
 
 // Scan attached optical discs for legacy (BIOS) boot code
 //   and add anything found to the list.
-VOID ScanLegacyDisc (
-    VOID
-) {
+VOID ScanLegacyDisc (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
@@ -1057,9 +1064,7 @@ VOID ScanLegacyDisc (
 
 // Scan internal hard disks for legacy (BIOS) boot code
 //   and add anything found to the list.
-VOID ScanLegacyInternal (
-    VOID
-) {
+VOID ScanLegacyInternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
@@ -1088,9 +1093,7 @@ VOID ScanLegacyInternal (
 
 // Scan external disks for legacy (BIOS) boot code
 //   and add anything found to the list.
-VOID ScanLegacyExternal (
-    VOID
-) {
+VOID ScanLegacyExternal (VOID) {
     UINTN         VolumeIndex;
     REFIT_VOLUME *Volume;
 
@@ -1119,7 +1122,7 @@ VOID ScanLegacyExternal (
 
 // Determine what (if any) type of legacy (BIOS) boot support is available
 VOID FindLegacyBootType (VOID) {
-    EFI_STATUS                Status;
+    EFI_STATUS                 Status;
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     GlobalConfig.LegacyType = LEGACY_TYPE_NONE;
@@ -1145,9 +1148,7 @@ VOID FindLegacyBootType (VOID) {
 } // VOID FindLegacyBootType()
 
 // Warn the user if legacy OS scans are enabled but the firmware does not support them
-VOID WarnIfLegacyProblems (
-    VOID
-) {
+VOID WarnIfLegacyProblems (VOID) {
     UINTN     i     = 0;
     BOOLEAN   found = FALSE;
 
