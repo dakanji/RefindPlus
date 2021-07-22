@@ -1611,8 +1611,6 @@ BOOLEAN ScanMacOsLoader (
     CHAR16   *VolName            = NULL;
     CHAR16   *PathName           = NULL;
     CHAR16   *FileName           = NULL;
-    UINTN     PreBootIndex;
-
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
     if (FileExists (Volume->RootDir, FullFileName) &&
