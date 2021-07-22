@@ -204,7 +204,7 @@ EG_IMAGE * egScaleImage (
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, image is NULL or a size is 0!!");
+        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage': image is NULL or a size is 0!!");
         #endif
 
         return NULL;
@@ -217,7 +217,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage, could not create new image!!");
+        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage': could not create new image!!");
         #endif
 
         return NULL;
@@ -344,7 +344,7 @@ EFI_STATUS egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"In egLoadFile, Loaded:- '%s'", FileName);
+    LOG(3, LOG_THREE_STAR_MID, L"In 'egLoadFile': Loaded:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -455,7 +455,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, requirements not met!!");
+        LOG(4, LOG_LINE_NORMAL, L"In 'egLoadIcon': requirements not met!!");
         #endif
 
         return NULL;
@@ -466,7 +466,7 @@ EG_IMAGE * egLoadImage (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In egLoadIcon, '%r' returned while attempting to load file!!",
+            L"In 'egLoadIcon': '%r' returned while attempting to load file!!",
             Status
         );
         #endif
@@ -507,7 +507,7 @@ EG_IMAGE * egLoadIcon (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In egLoadIcon, '%r' returned while trying to load '%s'",
+            L"In 'egLoadIcon': '%r' returned while trying to load '%s'!!",
             Status, Path
         );
         #endif
@@ -523,7 +523,7 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egLoadIcon, could not decode file data!!");
+        LOG(4, LOG_LINE_NORMAL, L"In 'egLoadIcon': could not decode file data!!");
         #endif
 
         return NULL;

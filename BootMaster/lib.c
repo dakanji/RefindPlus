@@ -886,7 +886,7 @@ REFIT_VOLUME * CopyVolume (
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL,
-                        L"In 'CopyVolume', Out of Resources While Allocating MbrPartitionTable!!"
+                        L"In 'CopyVolume': Out of Resources While Allocating MbrPartitionTable!!"
                     );
                     #endif
                 }
@@ -1381,7 +1381,7 @@ VOID ScanVolumeBootcode (
                     else {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
-                            L"In 'ScanVolumeBootcode', Out of Resources While Allocating MbrPartitionTable!!"
+                            L"In 'ScanVolumeBootcode': Out of Resources While Allocating MbrPartitionTable!!"
                         );
                         #endif
                     }
@@ -2161,7 +2161,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
 
-        MsgStr = PoolPrint (L"ERROR: %r While Allocating UuidList", Status);
+        MsgStr = PoolPrint (L"In 'ScanVolumes': %r While Allocating UuidList!!", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s", MsgStr);
@@ -2185,7 +2185,7 @@ VOID ScanVolumes (VOID) {
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
 
-            MsgStr = PoolPrint (L"ERROR: %r While Allocating Volumes", Status);
+            MsgStr = PoolPrint (L"In 'ScanVolumes': %r While Allocating Volumes!!", Status);
             LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
             MsgLog ("\n\n");
             MsgLog ("%s", MsgStr);
