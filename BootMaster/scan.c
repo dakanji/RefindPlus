@@ -1823,7 +1823,7 @@ VOID ScanEfiFiles (
         Temp = PoolPrint (L"While Scanning the EFI System Partition on '%s'", Volume->VolName);
         CheckError (Status, Temp);
         MyFreePool (&Temp);
-    } // if
+    }
 
     // Scan user-specified (or additional default) directories....
     i = 0;
@@ -2018,7 +2018,7 @@ VOID ScanFirmwareDefined (
             if (IsInSubstring (CurrentEntry->BootEntry.Label, DontScanFirmware)) {
                 ScanIt = FALSE;
             }
-        } // if/else
+        }
 
         if (ScanIt) {
             #if REFIT_DEBUG > 0
@@ -2067,7 +2067,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
         case BBS_CDROM:
             Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
             break;
-    }
+    } // switch
 
     return Badge;
 } // EG_IMAGE * GetDiskBadge()
@@ -2477,17 +2477,17 @@ BOOLEAN IsValidTool (
                 ((DontVolName == NULL) || (VolumeMatchesDescription (BaseVolume, DontVolName)))
             ) {
                 retval = FALSE;
-            } // if
+            }
+
             MyFreePool (&DontScanThis);
             MyFreePool (&DontVolName);
             MyFreePool (&DontPathName);
             MyFreePool (&DontFileName);
-            DontVolName = DontPathName = DontFileName = NULL;
         } // while
     }
     else {
         retval = FALSE;
-    } // if
+    }
 
     MyFreePool (&TestVolName);
     MyFreePool (&TestPathName);
@@ -2557,7 +2557,7 @@ BOOLEAN FindTool (
                     );
                     #endif
 
-                } // if
+                } // if Volumes[VolumeIndex]->RootDir
             } // for
 
             MyFreePool (&PathName);
