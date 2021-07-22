@@ -1151,28 +1151,36 @@ BOOLEAN ShouldScan (
     CHAR16  *PathCopy     = NULL;
     CHAR16  *DontScanDir  = NULL;
     BOOLEAN  ScanIt       = TRUE;
-    BOOLEAN  FilerScan    = TRUE;
+    UINTN    PreBootIndex;
 
-    // Skip initial scan filter for 'PreBoot' volumes when 'SyncAPFS' is active
-    // DA-TAG: Review Requirement
-    if ((MyStriCmp (L"PreBoot", Volume->VolName) || MyStriCmp (L"PreBoot", Volume->PartName)) &&
-        (GlobalConfig.SyncAPFS)
+    if ((Volume->VolName) &&
+        (GlobalConfig.SyncAPFS) &&
+        (MyStriCmp (Volume->VolName, L"PreBoot"))
     ) {
-        FilerScan = FALSE;
+        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+            if (GuidsAreEqual (
+                    &(PreBootVolumes[PreBootIndex]->PartGuid),
+                    &(Volume->PartGuid)
+                )
+            ) {
+                MyFreePool (&Volume->VolName);
+                Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+                break;
+            }
+        } // for
     }
 
-    if (FilerScan) {
-        VolGuid = GuidAsString (&(Volume->PartGuid));
-        if ((IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)) ||
-            (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
-            (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
-        ) {
-            MyFreePool (&VolGuid);
-
-            return FALSE;
-        }
+    VolGuid = GuidAsString (&(Volume->PartGuid));
+    if ((IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)) ||
+        (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) ||
+        (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
+        (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
+    ) {
         MyFreePool (&VolGuid);
+
+        return FALSE;
     }
+    MyFreePool (&VolGuid);
 
     if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
         return FALSE;
@@ -1611,23 +1619,6 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                if ((Volume->VolName) &&
-                    (GlobalConfig.SyncAPFS) &&
-                    (MyStriCmp (Volume->VolName, L"PreBoot"))
-                ) {
-                    for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                        if (GuidsAreEqual (
-                                &(PreBootVolumes[PreBootIndex]->PartGuid),
-                                &(Volume->PartGuid)
-                            )
-                        ) {
-                            MyFreePool (&Volume->VolName);
-                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
-                            break;
-                        }
-                    } // for
-                }
-
                 AddLoaderEntry (FullFileName, L"Mac OS", Volume, TRUE);
             }
         }
