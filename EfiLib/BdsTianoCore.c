@@ -188,7 +188,8 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
   UINT32                    LoadOptionsSize;
   CHAR16                    *Description;
   UINT8                     NumOff;
-  EFI_GUID EfiGlobalVariableGuid     = { 0x8BE4DF61, 0x93CA, 0x11D2, { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
+  EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
+      { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
 
   //
   // Read the variable. We will never free this data.

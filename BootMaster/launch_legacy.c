@@ -959,7 +959,7 @@ VOID ScanLegacyUEFI (
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {
-            BbsDevicePath = (BBS_BBS_DEVICE_PATH *)BdsOption->DevicePath;
+            BbsDevicePath = (BBS_BBS_DEVICE_PATH *) BdsOption->DevicePath;
             // Only add the entry if it is of a requested type (e.g. USB, HD)
             // Two checks necessary because some systems return EFI boot loaders
             // with a DeviceType value that would inappropriately include them

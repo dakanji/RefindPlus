@@ -936,9 +936,6 @@ LOADER_ENTRY * AddLoaderEntry (
         LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
         #endif
 
-        // Extra space at end of Entry->me.Title enables searching on Volume->VolName even if another volume
-        // name is identical except for something added to the end (e.g., VolB1 vs. VolB12).
-        // Note: Volume->VolName will be NULL for network boot programs.
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
             Entry->me.Title = PoolPrint (
                 L"Boot %s from %s",
@@ -1149,10 +1146,10 @@ BOOLEAN ShouldScan (
     CHAR16       *Path
 ) {
     UINTN    i            = 0;
-    CHAR16   *VolName     = NULL;
-    CHAR16   *VolGuid     = NULL;
-    CHAR16   *PathCopy    = NULL;
-    CHAR16   *DontScanDir = NULL;
+    CHAR16  *VolName      = NULL;
+    CHAR16  *VolGuid      = NULL;
+    CHAR16  *PathCopy     = NULL;
+    CHAR16  *DontScanDir  = NULL;
     BOOLEAN  ScanIt       = TRUE;
     BOOLEAN  FilerScan    = TRUE;
 
@@ -1752,7 +1749,8 @@ VOID ScanEfiFiles (
                 GlobalConfig.DontScanFiles
             )
         ) {
-            AddLoaderEntry (FileName, L"Windows (UEFI - Boot Repair Backup)", Volume, TRUE);
+            // Boot Repair Backup
+            AddLoaderEntry (FileName, L"UEFI Windows (BRBackup)", Volume, TRUE);
             FoundBRBackup = TRUE;
             if (DuplicatesFallback (Volume, FileName)) {
                 ScanFallbackLoader = FALSE;
@@ -1773,17 +1771,15 @@ VOID ScanEfiFiles (
             if (FoundBRBackup) {
                 AddLoaderEntry (
                     FileName,
-                    L"Assumed Windows (UEFI - Probably GRUB)",
-                    Volume,
-                    TRUE
+                    L"Assumed UEFI Windows (Potentially GRUB)",
+                    Volume, TRUE
                 );
             }
             else {
                 AddLoaderEntry (
                     FileName,
                     L"Windows (UEFI)",
-                    Volume,
-                    TRUE
+                    Volume, TRUE
                 );
             }
 
