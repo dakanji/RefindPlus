@@ -1556,10 +1556,10 @@ CHAR16 * RuniPXEDiscover (
 
 // Scan for network (PXE) boot servers. This function relies on the presence
 // of the IPXE_DISCOVER_NAME and IPXE_NAME program files on the volume from
-// which RefindPlus launched. As of December 6, 2014, these tools aren't entirely
-// reliable. See BUILDING.txt for information on building them.
+// which RefindPlus launched. As of December 6, 2014, these tools are not
+// entirely reliable. See BUILDING.txt for information on building them.
 static
-VOID ScanNetboot(VOID) {
+VOID ScanNetboot (VOID) {
     CHAR16        *iPXEFileName = IPXE_NAME;
     CHAR16        *Location;
     REFIT_VOLUME  *NetVolume;
@@ -1576,11 +1576,23 @@ VOID ScanNetboot(VOID) {
         Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
         if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
             NetVolume = AllocatePool (sizeof (REFIT_VOLUME));
-            CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
-            NetVolume->DiskKind      = DISK_KIND_NET;
-            NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
-            NetVolume->PartName      = NetVolume->VolName = NetVolume->FsName = NULL;
-            AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
+            if (NetVolume) {
+                CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
+
+                NetVolume->DiskKind      = DISK_KIND_NET;
+                NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
+
+                NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
+
+                AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL,
+                    L"In 'ScanNetboot', Out of Resources While Allocating NetVolume!!"
+                );
+                #endif
+            }
         }
     }
 } // VOID ScanNetboot()
