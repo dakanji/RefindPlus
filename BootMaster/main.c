@@ -1511,10 +1511,13 @@ VOID AdjustDefaultSelection(VOID) {
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
-#if REFIT_DEBUG > 0
 // Log basic information (RefindPlus version, EFI version, etc.) to the log file.
 static
 VOID LogBasicInfo (VOID) {
+#if REFIT_DEBUG == 0
+    // NOOP on RELEASE Builds
+    return;
+#else
     EFI_STATUS  Status;
     CHAR16     *MsgStr = NULL;
     UINT64      MaximumVariableSize;
@@ -1561,51 +1564,8 @@ VOID LogBasicInfo (VOID) {
     #endif
     MsgLog ("\n");
 
-    // Set Legacy Boot Type
-    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
-    FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
-    }
-    switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC:
-            MsgStr = StrDuplicate (L"Mac-Style");
-            break;
-        case LEGACY_TYPE_UEFI:
-            MsgStr = StrDuplicate (L"UEFI-Style");
-            break;
-        case LEGACY_TYPE_NONE:
-            MsgStr = StrDuplicate (L"Unavailable");
-            break;
-        default:
-            // just in case ... should never happen
-            MsgStr = StrDuplicate (L"Unknown");
-            break;
-    }
-    MsgLog ("Compatibility Support Module:- '%s'\n", MsgStr);
-    MyFreePool (&MsgStr);
-
     MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
-
-    Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
-    if (EFI_ERROR (Status)) {
-        HandleCount = 0;
-    }
-    else {
-        Status = gBS->LocateHandleBuffer (
-            ByProtocol,
-            &AppleFramebufferInfoProtocolGuid,
-            NULL,
-            &HandleCount,
-            &HandleBuffer
-        );
-        if (EFI_ERROR (Status)) {
-            HandleCount = 0;
-        }
-    }
-    MsgLog ("Apple Framebuffers:- '%d'\n", HandleCount);
-    MyFreePool (&HandleBuffer);
 
     if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
@@ -1633,8 +1593,7 @@ VOID LogBasicInfo (VOID) {
     MsgLog ("ConsoleOut Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
-    MsgLog ("  - Text Mode           : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
-    MsgLog ("\n");
+    MsgLog ("  - Text Mode           : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1643,8 +1602,7 @@ VOID LogBasicInfo (VOID) {
         &gEfiUgaDrawProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (UGA) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
-    MsgLog ("\n");
+    MsgLog ("  - Graphics Mode (UGA) : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1653,11 +1611,53 @@ VOID LogBasicInfo (VOID) {
         &gEfiGraphicsOutputProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (GOP) : %s", EFI_ERROR (Status) ? L" NO" : L"YES");
-    MsgLog ("\n\n");
+    MsgLog ("  - Graphics Mode (GOP) : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
-} // VOID LogBasicInfo()
+
+    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
+    FindLegacyBootType();
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
+    }
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC:
+            MsgStr = StrDuplicate (L"Mac-Style");
+            break;
+        case LEGACY_TYPE_UEFI:
+            MsgStr = StrDuplicate (L"UEFI-Style");
+            break;
+        case LEGACY_TYPE_NONE:
+            MsgStr = StrDuplicate (L"None");
+            break;
+        default:
+            // just in case ... should never happen
+            MsgStr = StrDuplicate (L"Unknown");
+            break;
+    }
+    MsgLog ("Compat Support Module:- '%s'\n", MsgStr);
+    MyFreePool (&MsgStr);
+
+    Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
+    if (EFI_ERROR (Status)) {
+        HandleCount = 0;
+    }
+    else {
+        Status = gBS->LocateHandleBuffer (
+            ByProtocol,
+            &AppleFramebufferInfoProtocolGuid,
+            NULL,
+            &HandleCount,
+            &HandleBuffer
+        );
+        if (EFI_ERROR (Status)) {
+            HandleCount = 0;
+        }
+    }
+    MsgLog ("Apple Framebuffers:- '%d'", HandleCount);
+    MsgLog ("\n\n");
+    MyFreePool (&HandleBuffer);
 #endif
+} // VOID LogBasicInfo()
 
 //
 // main entry point
@@ -1736,10 +1736,17 @@ EFI_STATUS EFIAPI efi_main (
     );
     MsgLog ("Timestamp:- '%s (GMT)'\n\n", OurDateStr);
     MyFreePool (OurDateStr);
+    #endif
+
+    // Set Legacy Boot Type
+    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
+    FindLegacyBootType();
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
+    }
 
     // Log System Details
     LogBasicInfo ();
-    #endif
 
     // read configuration
     SetConfigFilename (ImageHandle);
