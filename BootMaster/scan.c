@@ -2107,10 +2107,6 @@ LOADER_ENTRY * AddToolEntry (
 VOID ScanForBootloaders (
     BOOLEAN ShowMessage
 ) {
-    #if REFIT_DEBUG > 0
-    UINTN    k;
-    #endif
-
     UINTN     i;
     CHAR8     ScanOption;
     BOOLEAN   ScanForLegacy = FALSE;
@@ -2355,12 +2351,14 @@ VOID ScanForBootloaders (
         MsgLog ("\n\n");
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (&MsgStr);
+
+        UINTN KeyNum = 0;
         #endif
 
         for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
             if (i < 9) {
                 #if REFIT_DEBUG > 0
-                k = i + 1;
+                KeyNum = i + 1;
                 #endif
 
                 ShortCutKey = (CHAR16) ('1' + i);
@@ -2369,7 +2367,7 @@ VOID ScanForBootloaders (
                 ShortCutKey = (CHAR16) ('9' - i);
 
                 #if REFIT_DEBUG > 0
-                k = 0;
+                KeyNum = 0;
                 #endif
             }
             else {
@@ -2381,12 +2379,13 @@ VOID ScanForBootloaders (
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"Set Key '%d' to %s",
-                k, MainMenu.Entries[i]->Title
+                KeyNum, MainMenu.Entries[i]->Title
             );
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MyFreePool (&MsgStr);
-            if (k < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && k != 0) {
+
+            if (KeyNum < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && KeyNum != 0) {
                 MsgLog ("\n");
             }
             else {
@@ -2400,16 +2399,17 @@ VOID ScanForBootloaders (
         CHAR16   *LoaderStr;
 
         if (i == 1) {
-            keyStr = StrDuplicate (L"Key");
+            keyStr = L"Key";
         }
         else {
-            keyStr = StrDuplicate (L"Keys");
+            keyStr = L"Keys";
         }
+
         if (MainMenu.EntryCount == 1) {
-            LoaderStr = StrDuplicate (L"Loader");
+            LoaderStr = L"Loader";
         }
         else {
-            LoaderStr = StrDuplicate (L"Loaders");
+            LoaderStr = L"Loaders";
         }
 
         MsgStr = PoolPrint (
@@ -2421,8 +2421,6 @@ VOID ScanForBootloaders (
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
-        MyFreePool (&keyStr);
-        MyFreePool (&LoaderStr);
         #endif
     }
 
