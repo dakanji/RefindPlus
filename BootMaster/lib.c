@@ -126,6 +126,15 @@ BOOLEAN            SelfVolRun          = FALSE;
 BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScanMBR             = FALSE;
 
+EFI_GUID           GuidHFS             = HFS_GUID_VALUE;
+EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
+EFI_GUID           GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
+EFI_GUID           GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
+EFI_GUID           GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
+EFI_GUID           GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
+EFI_GUID           GuidAppleTvRecovery = APPLE_TV_RECOVERY_GUID;
+
+
 extern EFI_GUID RefindPlusGuid;
 
 extern BOOLEAN  LogNewLine;
@@ -1506,13 +1515,6 @@ CHAR16 * GetVolumeName (
     CHAR16                *SISize;
     CHAR16                *TypeName;
     CHAR16                *FoundName           = NULL;
-    EFI_GUID               GuidHFS             = HFS_GUID_VALUE;
-    EFI_GUID               GuidAPFS            = APFS_GUID_VALUE;
-    EFI_GUID               GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
-    EFI_GUID               GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
-    EFI_GUID               GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
-    EFI_GUID               GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
-    EFI_GUID               GuidAppleTvRecovery = APPLE_TV_RECOVERY_GUID;
     EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr   = NULL;
 
 
@@ -2094,7 +2096,7 @@ VOID SetPrebootVolumes (VOID) {
 } // VOID SetPrebootVolumes()
 
 VOID ScanVolumes (VOID) {
-    EFI_STATUS         Status;
+    EFI_STATUS          Status;
     EFI_HANDLE         *Handles;
     REFIT_VOLUME       *Volume = NULL;
     REFIT_VOLUME       *WholeDiskVolume;
@@ -2314,7 +2316,39 @@ VOID ScanVolumes (VOID) {
             }
 
             PartType = StrDuplicate (FSTypeName (Volume->FSType));
+
+            // Improve Apple Volume Id on Non-Mac Firmware
+            if ((MyStriCmp (PartType, L"Unknown")) &&
+                !MyStriCmp (gST->FirmwareVendor, L"Apple")
+            ) {
+                if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"APFS");
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"HFS+");
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"Mac Raid");
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"Mac Raid");
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"APFS/HFS+");
+                }
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
+                    MyFreePool (&PartType);
+                    PartType = StrDuplicate (L"AppleTV");
+                }
+            }
+
             LimitStringLength (PartType, 10);
+
             LOG(2, LOG_LINE_NORMAL,
                 L"Identified Volume:  %s = %s  :  %s = %s  :  %s = %-10s  :  %s = %s",
                 ITEMVOLA, PartTypeGUID,
