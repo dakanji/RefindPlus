@@ -895,7 +895,7 @@ REFIT_VOLUME * CopyVolume (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL,
+                    LOG(1, LOG_THREE_STAR_SEP,
                         L"In 'CopyVolume': Out of Resources While Allocating MbrPartitionTable!!"
                     );
                     #endif
@@ -1390,7 +1390,7 @@ VOID ScanVolumeBootcode (
                     }
                     else {
                         #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
+                        LOG(1, LOG_THREE_STAR_SEP,
                             L"In 'ScanVolumeBootcode': Out of Resources While Allocating MbrPartitionTable!!"
                         );
                         #endif

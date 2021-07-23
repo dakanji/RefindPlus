@@ -1588,7 +1588,7 @@ VOID ScanNetboot (VOID) {
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL,
+                LOG(1, LOG_THREE_STAR_SEP,
                     L"In 'ScanNetboot': Out of Resources While Allocating NetVolume!!"
                 );
                 #endif
