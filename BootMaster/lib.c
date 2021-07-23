@@ -124,6 +124,7 @@ BOOLEAN            ScannedOnce         = FALSE;
 BOOLEAN            SelfVolSet          = FALSE;
 BOOLEAN            SelfVolRun          = FALSE;
 BOOLEAN            DoneHeadings        = FALSE;
+BOOLEAN            ScanMBR             = FALSE;
 
 extern EFI_GUID RefindPlusGuid;
 
@@ -1183,7 +1184,7 @@ VOID SetFilesystemData (
 static
 VOID ScanVolumeBootcode (
     IN OUT REFIT_VOLUME  *Volume,
-    IN     BOOLEAN       *Bootable
+    IN OUT BOOLEAN       *Bootable
 ) {
     EFI_STATUS           Status;
     UINT8                Buffer[SAMPLE_SIZE];
@@ -1394,13 +1395,17 @@ VOID ScanVolumeBootcode (
         }
         else {
             #if REFIT_DEBUG > 0
-            if (SelfVolRun) {
+            if (SelfVolRun && ScanMBR) {
                 if (Status == EFI_NO_MEDIA) {
                     MediaCheck = TRUE;
                 }
                 ScannedOnce = FALSE;
+                CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector on Volume Below");
+                MsgLog ("\n\n");
+                MsgLog ("** WARN: '%r' %s", Status, MsgStr);
                 MsgLog ("\n");
-                CheckError (Status, L"Found While Reading Boot Sector on Volume Below");
+                CheckError (Status, MsgStr);
+                MyFreePool (&MsgStr);
             }
             #endif
         }
@@ -1918,6 +1923,7 @@ VOID ScanExtendedPartition (
             ) {
                 break;
             }
+
             if (IS_EXTENDED_PART_TYPE(EMbrTable[i].Type)) {
                 // set next ExtCurrent
                 NextExtCurrent = ExtBase + EMbrTable[i].StartLBA;
@@ -1937,16 +1943,18 @@ VOID ScanExtendedPartition (
                 Volume->BlockIOOffset    = ExtCurrent + EMbrTable[i].StartLBA;
                 Volume->WholeDiskBlockIO = WholeDiskVolume->BlockIO;
 
+                ScanMBR  = TRUE;
                 Bootable = FALSE;
                 ScanVolumeBootcode (Volume, &Bootable);
                 if (!Bootable) {
                     Volume->HasBootCode = FALSE;
                 }
+                ScanMBR = FALSE;
                 SetVolumeBadgeIcon (Volume);
                 AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
-            } // if/else
-        } // for
-    } // for
+            }
+        } // for i
+    } // for ExtCurrent = ExtBase
 } // VOID ScanExtendedPartition()
 
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
@@ -2325,10 +2333,10 @@ VOID ScanVolumes (VOID) {
             MyFreePool (&PartType);
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
-
-            ScannedOnce = TRUE;
         }
         #endif
+
+        ScannedOnce = TRUE;
     } // for: first pass
 
     MyFreePool (&UuidList);
@@ -2377,7 +2385,7 @@ VOID ScanVolumes (VOID) {
             MbrTable = Volume->MbrPartitionTable;
             for (PartitionIndex = 0; PartitionIndex < 4; PartitionIndex++) {
                 if (IS_EXTENDED_PART_TYPE(MbrTable[PartitionIndex].Type)) {
-                   ScanExtendedPartition (Volume, MbrTable + PartitionIndex);
+                    ScanExtendedPartition (Volume, MbrTable + PartitionIndex);
                 }
             }
         }
