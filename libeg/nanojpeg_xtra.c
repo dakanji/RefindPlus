@@ -33,7 +33,7 @@
 #include "global.h"
 #include "../BootMaster/screenmgt.h"
 // nanojpeg.c is weird; it doubles as both a header file and a .c file,
-// depending on whether _NJ_INCLUDE_HEADER_ONLY is defined....
+// depending on whether _NJ_INCLUDE_HEADER_ONLY is defined.
 #define _NJ_INCLUDE_HEADER_ONLY
 #include "nanojpeg.c"
 
@@ -68,12 +68,12 @@ EG_IMAGE * egDecodeJPEG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
         JpegData = (jpeg_color *) njGetImage();
 
         // Annoyingly, EFI and NanoJPEG use different ordering of RGB values in
-        // their pixel data representations, so we've got to adjust them....
+        // their pixel data representations, so we've got to adjust them.
         for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
             NewImage->PixelData[i].r = JpegData[i].red;
             NewImage->PixelData[i].g = JpegData[i].green;
             NewImage->PixelData[i].b = JpegData[i].blue;
-            // Note: AFAIK, NanoJPEG doesn't support alpha/transparency, so if we're
+            // Note: AFAIK, NanoJPEG doesn't support alpha/transparency, so if we are
             // asked to do this, set it to be fully opaque.
             if (WantAlpha)
                 NewImage->PixelData[i].a = 255;

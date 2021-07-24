@@ -79,7 +79,7 @@ INT16 NowMinute = 0;
 INT16 NowSecond = 0;
 
 //
-// Some built-in menu definitions....
+// Some built-in menu definitions.
 
 REFIT_MENU_ENTRY MenuEntryReturn = {
     L"Return to Main Menu",
@@ -869,7 +869,7 @@ VOID preBootKicker (VOID) {
         AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
 
-        UINTN   k        = 0;
+        UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
             AddMenuInfoLine (&BootKickerMenu, FilePath);
@@ -1021,7 +1021,7 @@ VOID preCleanNvram (VOID) {
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
         AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
 
-        UINTN   k        = 0;
+        UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
             AddMenuInfoLine (&CleanNvramMenu, FilePath);
@@ -1059,8 +1059,8 @@ VOID preCleanNvram (VOID) {
         #endif
 
         if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
-            UINTN        i = 0;
-            UINTN        k = 0;
+            UINTN i = 0;
+            UINTN k = 0;
 
             CHAR16        *FilePath        = NULL;
             CHAR16        *Description     = ChosenEntry->Title;
@@ -1093,7 +1093,7 @@ VOID preCleanNvram (VOID) {
 
                         FoundTool = TRUE;
                         break;
-                    } // if
+                    }
                 } // for
 
                 if (FoundTool) {
@@ -1129,13 +1129,13 @@ VOID preCleanNvram (VOID) {
             // Log Return to Main Screen
             MsgLog ("  - %s\n\n", ChosenEntry->Title);
             #endif
-        } // if
+        } // if MyStriCmp ChosenEntry->Title
     }
     else {
         #if REFIT_DEBUG > 0
         MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
         #endif
-    } // if
+    } // if ChosenEntry
 } // VOID preCleanNvram()
 
 
@@ -1261,7 +1261,7 @@ VOID StoreLoaderName (
             StrLen (Name) * 2 + 2,
             TRUE
         );
-    } // if
+    }
 } // VOID StoreLoaderName()
 
 // Rescan for boot loaders
@@ -1282,7 +1282,7 @@ VOID RescanAll (
     MainMenu.EntryCount  = 0;
 
     // ConnectAllDriversToAllControllers() can cause system hangs with some
-    // buggy filesystem drivers, so do it only if necessary....
+    // buggy filesystem drivers, so do it only if necessary.
     if (Reconnect) {
         ConnectAllDriversToAllControllers(FALSE);
         ScanVolumes();
@@ -1320,7 +1320,7 @@ static VOID InitializeLib (
 
 #endif
 
-// Set up our own Secure Boot extensions....
+// Set up our own Secure Boot extensions.
 // Returns TRUE on success, FALSE otherwise
 static
 BOOLEAN SecureBootSetup (VOID) {
@@ -1967,7 +1967,7 @@ EFI_STATUS EFIAPI efi_main (
             #endif
 
             egDisplayMessage (
-                L"Pausing before disc scan. Please wait....",
+                L"Pausing before disc scan. Please wait.",
                 &BGColor, CENTER
             );
         }
@@ -1996,6 +1996,7 @@ EFI_STATUS EFIAPI efi_main (
     if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
+
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
     }

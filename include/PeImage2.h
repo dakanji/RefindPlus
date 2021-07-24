@@ -21,7 +21,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 /*
  * Stripped down because the original file was flaking out on me and I just
- * needed the one definition....
+ * needed the one definition.
  *
  */
 

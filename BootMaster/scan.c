@@ -362,7 +362,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         } // if (SubScreen != NULL)
     }
     else {
-        // existing subscreen; less initialization, and just add new entry later....
+        // existing subscreen; less initialization, and just add new entry later.
         SubScreen = Entry->me.SubScreen;
     } // if/else
 
@@ -488,7 +488,7 @@ VOID GenerateSubScreen (
 
                 // first entry requires special processing, since it was initially set
                 // up with a default title but correct options by InitializeSubScreen(),
-                // earlier....
+                // earlier.
                 if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
                     MyFreePool (&SubScreen->Entries[0]->Title);
                     SubScreen->Entries[0]->Title = TokenList[0]
@@ -1139,7 +1139,7 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    // See if Path includes an explicit volume declaration that's NOT Volume....
+    // See if Path includes an explicit volume declaration that's NOT Volume.
     PathCopy = StrDuplicate (Path);
     if (SplitVolumeAndFilename (&PathCopy, &VolName)) {
         if (VolName && (!MyStriCmp (VolName, Volume->FsName) ||
@@ -1153,7 +1153,7 @@ BOOLEAN ShouldScan (
     MyFreePool (&VolName);
     VolName = NULL;
 
-    // See if Volume is in GlobalConfig.DontScanDirs....
+    // See if Volume is in GlobalConfig.DontScanDirs.
     while (ScanIt && (DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))) {
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
@@ -1246,7 +1246,7 @@ BOOLEAN DuplicatesFallback (
 
     MyFreePool (&FallbackInfo);
 
-    if (FallbackSize == FileSize) { // could be identical; do full check....
+    if (FallbackSize == FileSize) { // could be identical; do full check.
         FileContents = AllocatePool (FileSize);
         FallbackContents = AllocatePool (FallbackSize);
         if (FileContents && FallbackContents) {
@@ -1776,7 +1776,7 @@ VOID ScanEfiFiles (
         MyFreePool (&Temp);
     }
 
-    // Scan user-specified (or additional default) directories....
+    // Scan user-specified (or additional default) directories.
     i = 0;
     while ((Directory = FindCommaDelimited (GlobalConfig.AlsoScan, i++)) != NULL) {
         if (ShouldScan (Volume, Directory)) {
@@ -1794,7 +1794,7 @@ VOID ScanEfiFiles (
         MyFreePool (&Directory);
     } // while
 
-    // Don't scan the fallback loader if it's on the same volume and a duplicate of RefindPlus itself....
+    // Don't scan the fallback loader if it's on the same volume and a duplicate of RefindPlus itself.
     SelfPath = DevicePathToStr (SelfLoadedImage->FilePath);
     CleanUpPathNameSlashes (SelfPath);
 
@@ -1818,7 +1818,7 @@ VOID ScanEfiFiles (
     MyFreePool (&MatchPatterns);
 } // static VOID ScanEfiFiles()
 
-// Scan internal disks for valid EFI boot loaders....
+// Scan internal disks for valid EFI boot loaders.
 static
 VOID ScanInternal (VOID) {
     UINTN VolumeIndex;
@@ -1837,7 +1837,7 @@ VOID ScanInternal (VOID) {
     FirstLoaderScan = FALSE;
 } // static VOID ScanInternal()
 
-// Scan external disks for valid EFI boot loaders....
+// Scan external disks for valid EFI boot loaders.
 static
 VOID ScanExternal (VOID) {
     UINTN VolumeIndex;
@@ -1857,7 +1857,7 @@ VOID ScanExternal (VOID) {
 
 } // static VOID ScanExternal()
 
-// Scan internal disks for valid EFI boot loaders....
+// Scan internal disks for valid EFI boot loaders.
 static
 VOID ScanOptical (VOID) {
     UINTN VolumeIndex;
@@ -2118,7 +2118,7 @@ VOID ScanForBootloaders (
         OrigDontScanFiles   = StrDuplicate (GlobalConfig.DontScanFiles);
         OrigDontScanVolumes = StrDuplicate (GlobalConfig.DontScanVolumes);
 
-        // Add hidden tags to two GlobalConfig.DontScan* variables....
+        // Add hidden tags to two GlobalConfig.DontScan* variables.
         HiddenTags = ReadHiddenTags (L"HiddenTags");
         if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
             #if REFIT_DEBUG > 0

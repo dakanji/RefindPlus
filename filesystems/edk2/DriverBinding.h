@@ -48,7 +48,7 @@ Revision History
 
 EFI_FORWARD_DECLARATION (REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL);
 
-// Begin included from DevicePath.h....
+// Begin included from DevicePath.h.
 
 ///
 /// Device Path guid definition for backward-compatible with EFI1.1.

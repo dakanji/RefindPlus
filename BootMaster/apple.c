@@ -354,7 +354,7 @@ EFI_STATUS SetAppleOSInfo (
         (VOID**) &SetOs
     );
 
-    // If not a Mac, ignore the call....
+    // If not a Mac, ignore the call.
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,

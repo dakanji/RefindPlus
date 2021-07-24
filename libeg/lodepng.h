@@ -1766,8 +1766,8 @@ state.decoder.read_text_chunks: whether to read in text metadata chunks
 state.decoder.remember_unknown_chunks: whether to read in unknown chunks
 state.info_raw.colortype: desired color type for decoded image
 state.info_raw.bitdepth: desired bit depth for decoded image
-state.info_raw....: more color settings, see struct LodePNGColorMode
-state.info_png....: no settings for decoder but ouput, see struct LodePNGInfo
+state.info_raw.: more color settings, see struct LodePNGColorMode
+state.info_png.: no settings for decoder but ouput, see struct LodePNGInfo
 
 For encoding:
 
@@ -1789,8 +1789,8 @@ state.info_raw.bitdepth: bit depth of raw input image you provide
 state.info_raw: more color settings, see struct LodePNGColorMode
 state.info_png.color.colortype: desired color type if auto_convert is false
 state.info_png.color.bitdepth: desired bit depth if auto_convert is false
-state.info_png.color....: more color settings, see struct LodePNGColorMode
-state.info_png....: more PNG related settings, see struct LodePNGInfo
+state.info_png.color.: more color settings, see struct LodePNGColorMode
+state.info_png.: more PNG related settings, see struct LodePNGInfo
 
 
 12. changes

@@ -132,7 +132,7 @@ MSABI EFI_STATUS security_policy_authentication (
    if (ShimValidate(FileBuffer, FileSize)) {
       Status = EFI_SUCCESS;
    } else {
-      // Try using the platform's native policy....
+      // Try using the platform's native policy.
       Status = uefi_call_wrapper(esfas, 3, This, AuthenticationStatus, DevicePathConst);
    }
    FreePool(FileBuffer);

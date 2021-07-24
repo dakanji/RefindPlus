@@ -386,7 +386,7 @@ fsw_status_t fsw_posix_read_block(struct fsw_volume *vol, fsw_u32 phys_bno, void
 /**
  * Time mapping callback for the fsw_dnode_stat call. This function converts
  * a Posix style timestamp into an EFI_TIME structure and writes it to the
- * appropriate member of the EFI_FILE_INFO structure that we're filling.
+ * appropriate member of the EFI_FILE_INFO structure that we are filling.
  */
 
 /*
@@ -406,7 +406,7 @@ static void fsw_posix_store_time_posix(struct fsw_dnode_stat *sb, int which, fsw
 /**
  * Mode mapping callback for the fsw_dnode_stat call. This function looks at
  * the Posix mode passed by the file system driver and makes appropriate
- * adjustments to the EFI_FILE_INFO structure that we're filling.
+ * adjustments to the EFI_FILE_INFO structure that we are filling.
  */
 
 /*

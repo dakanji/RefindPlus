@@ -1471,7 +1471,7 @@ BOOLEAN egSetScreenSize (
         }
         else {
             // Do a loop through the modes to see if the specified one is available;
-            // and if so, switch to it....
+            // and if so, switch to it.
             do {
                 Status = REFIT_CALL_4_WRAPPER(
                     GOPDraw->QueryMode,
@@ -1590,7 +1590,7 @@ BOOLEAN egSetScreenSize (
     else if ((UGADraw != NULL) && (*ScreenHeight > 0)) {
         // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
-        // in all cases, but I don't know how to probe for alternatives....
+        // in all cases, but I don't know how to probe for alternatives.
         REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &ScreenW, &ScreenH,
@@ -1618,7 +1618,7 @@ BOOLEAN egSetScreenSize (
         else {
             // TODO: Find a list of supported modes and display it.
             // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
-            // This is just a placeholder until something better can be done....
+            // This is just a placeholder until something better can be done.
             MsgStr = PoolPrint (
                 L"Error setting %d x %d resolution ... Unsupported Mode",
                 *ScreenWidth,
@@ -1888,8 +1888,8 @@ VOID egDrawImage (
     EG_IMAGE *CompImage = NULL;
 
     // NOTE: Weird seemingly redundant tests because some placement code can "wrap around" and
-    // send "negative" values, which of course become very large unsigned ints that can then
-    // wrap around AGAIN if values are added to them.....
+    //   send "negative" values, which of course become very large unsigned ints that can then
+    //   wrap around AGAIN if values are added to them.
     if ((!egHasGraphics) ||
         ((ScreenPosX + Image->Width)  > egScreenWidth) ||
         ((ScreenPosY + Image->Height) > egScreenHeight) ||
@@ -2076,13 +2076,13 @@ VOID egDisplayMessage (
    } // if non-NULL inputs
 } // VOID egDisplayMessage()
 
-// Copy the current contents of the display into an EG_IMAGE....
+// Copy the current contents of the display into an EG_IMAGE.
 // Returns pointer if successful, NULL if not.
 EG_IMAGE * egCopyScreen (VOID) {
    return egCopyScreenArea (0, 0, egScreenWidth, egScreenHeight);
 } // EG_IMAGE * egCopyScreen()
 
-// Copy the current contents of the specified display area into an EG_IMAGE....
+// Copy the current contents of the specified display area into an EG_IMAGE.
 // Returns pointer if successful, NULL if not.
 EG_IMAGE * egCopyScreenArea (
     UINTN XPos,  UINTN YPos,

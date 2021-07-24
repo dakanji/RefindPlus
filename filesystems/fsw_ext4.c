@@ -174,7 +174,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     if (status)
         return status;
 
-    // size of group descriptor depends on feature....
+    // size of group descriptor depends on feature.
     if (!(vol->sb->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)) {
         // Default minimal group descriptor size... (this might not be set in old ext2 filesystems, therefor set it!)
         vol->sb->s_desc_size = EXT4_MIN_DESC_SIZE;

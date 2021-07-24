@@ -101,7 +101,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     DirIterOpen(Volume->RootDir, Path, &DirIter);
 
     // Now add a trailing backslash if it was NOT added earlier, for consistency in
-    // building the InitrdName later....
+    // building the InitrdName later.
     if ((StrLen(Path) > 0) && (Path[StrLen(Path) - 1] != L'\\')) {
         MergeStrings(&Path, L"\\", 0);
     }
@@ -256,11 +256,11 @@ VOID ParseReleaseFile (
 // Try to guess the name of the Linux distribution & add that name to
 // OSIconName list.
 VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath) {
-    // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues....
+    // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.
     ParseReleaseFile(OSIconName, Volume, L"etc\\lsb-release");
     ParseReleaseFile(OSIconName, Volume, L"etc\\os-release");
 
-    // Search for clues in the kernel's filename....
+    // Search for clues in the kernel's filename.
     if (StriSubCmp(L".fc", LoaderPath))
         MergeStrings(OSIconName, L"fedora", L',');
     if (StriSubCmp(L".el", LoaderPath))

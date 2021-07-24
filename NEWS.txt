@@ -743,7 +743,7 @@
   support for the shutdown option.
 
 - Fixed bug that caused portions of the "Pausing before disk scan; please
-  wait...." message displayed when scan_delay is set to a value over 1 to
+  wait" message displayed when scan_delay is set to a value over 1 to
   remain on screen.
 
 - Added support for JPEG images. These are most useful as background
@@ -2177,7 +2177,7 @@
 --------------------------------------
 - Inclusion of a sample refind.spec file for the benefit of RPM
   distribution maintainers who might want to include rEFInd. It's a bit
-  rough, but it gets you a good chunk of the way there....
+  rough, but it gets you a good chunk of the way there.
 
 - The EFI filesystem drivers can now be built with the GNU-EFI toolkit as
   well as with the TianoCore EDK2. See the BUILDING.txt file for details on
@@ -2753,7 +2753,7 @@
   .VolumeBadge.icns. Although undocumented, rEFInd formerly loaded custom
   volume badges from .VolumeIcon.icns. This carryover from rEFIt was a
   confusing name, given the next (new) feature, so I've changed and
-  documented the name....
+  documented the name.
 
 - Added ability to set a default icon for a loader stored in the root
   directory of a volume: The icon is stored in .VolumeIcon.icns. This icon

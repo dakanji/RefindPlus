@@ -1,6 +1,6 @@
 /*
  * BootMaster/driver_support.c
- * Functions related to drivers. Original copyright notices below....
+ * Functions related to drivers. Original copyright notices below.
  */
 /*
  * Copyright (c) 2006 - 2011, Intel Corporation. All rights reserved.<BR>
@@ -76,7 +76,7 @@
     #define DRIVER_DIRS             L"drivers"
 #endif
 
-// Following "global" constants are from EDK2's AutoGen.c....
+// Following "global" constants are from EDK2's AutoGen.c.
 EFI_GUID gMyEfiLoadedImageProtocolGuid = {
     0x5B1B31A1,
     0x9562,
@@ -718,7 +718,7 @@ BOOLEAN LoadDrivers(
         }
     }
 
-    // Scan additional user-specified driver directories....
+    // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");

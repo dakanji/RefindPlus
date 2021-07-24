@@ -199,10 +199,10 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
         );
     }
 
-    // If it looks like a valid protective MBR & GPT header, try to do more with it....
+    // If it looks like a valid protective MBR & GPT header, try to do more with it.
     if (Status == EFI_SUCCESS) {
         if (GptHeaderValid (GptData)) {
-            // Load actual GPT table....
+            // Load actual GPT table.
             BufferSize       = (UINT64) (GptData->Header->entry_count) * 128;
             GptData->Entries = AllocatePool (BufferSize);
 
@@ -231,7 +231,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
                 Status = EFI_CRC_ERROR;
             }
 
-            // Now, ensure that every name is null-terminated....
+            // Now, ensure that every name is null-terminated.
             if (Status == EFI_SUCCESS) {
                 for (i = 0; i < GptData->Header->entry_count; i++) {
                     GptData->Entries[i].name[35] = '\0';

@@ -1544,7 +1544,7 @@ LOADER_ENTRY * AddStanzaEntries (
 } // static VOID AddStanzaEntries()
 
 // Read the user-configured menu entries from config.conf and add or delete
-// entries based on the contents of that file....
+// entries based on the contents of that file.
 VOID ScanUserConfigured (
     CHAR16 *FileName
 ) {

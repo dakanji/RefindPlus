@@ -3,7 +3,7 @@
 #
 # Most of the functionality is in Make.tiano, Make.gnuefi, and
 # Make.unix; this Makefile just dispatches based on options
-# passed to it....
+# passed to it.
 
 TEXTFILES = gptsync.txt
 
@@ -17,7 +17,7 @@ gnuefi:
 tiano:
 	+make -f Make.tiano
 
-# TODO: Fix Make.unix; currently broken....
+# TODO: Fix Make.unix; currently broken.
 unix:
 	+make -f Make.unix
 

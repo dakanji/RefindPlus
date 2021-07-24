@@ -90,7 +90,7 @@ VOID UpdateBbsTable (
         // Set devices of a particular type to BootPriority of 0 or 1. 0 is the highest priority.
         if (LocalBbsTable[Idx].DeviceType == OptionBBS->DeviceType) {
             if (MyStriCmp(Desc, Option->Description)) {
-                // This entry exactly matches what we're looking for; make it highest priority
+                // This entry exactly matches what we are looking for; make it highest priority
                 LocalBbsTable[Idx].BootPriority = 0;
             }
             else {
@@ -101,7 +101,7 @@ VOID UpdateBbsTable (
         }
         else if (LocalBbsTable[Idx].BootPriority <= 1) {
             // Something has got a high enough boot priority to interfere with booting
-            // our chosen entry, so bump it down a bit....
+            // our chosen entry, so bump it down a bit.
             LocalBbsTable[Idx].BootPriority = 2;
         } // if/else if
     } // for

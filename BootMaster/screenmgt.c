@@ -570,7 +570,7 @@ VOID FinishExternalScreen (VOID) {
         PauseForKey();
     }
 
-    // Reset the screen resolution, in case external program changed it....
+    // Reset the screen resolution, in case external program changed it.
     SetupScreen();
 
     // reset error flag

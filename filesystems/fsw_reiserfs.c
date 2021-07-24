@@ -467,7 +467,7 @@ static fsw_status_t fsw_reiserfs_dir_lookup(struct fsw_reiserfs_volume *vol, str
 
             // compare name
             if (fsw_streq(lookup_name, &entry_name)) {
-                // found the entry we're looking for!
+                // found the entry we are looking for!
 
                 // setup a dnode for the child item
                 status = fsw_dnode_create(dno, dhead->deh_objectid, FSW_DNODE_TYPE_UNKNOWN, &entry_name, child_dno_out);

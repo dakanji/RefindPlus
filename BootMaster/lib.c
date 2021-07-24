@@ -186,19 +186,22 @@ VOID CleanUpPathNameSlashes (
                     Source++;
                 } while ((PathName[Source] == L'/') || (PathName[Source] == L'\\'));
                 Dest++;
-            } // if/else
+            }
         }
         else {
-            // Regular character; copy it straight....
+            // Regular character; copy it straight.
             PathName[Dest] = PathName[Source];
             Source++;
             Dest++;
-        } // if/else
+        }
     } // while
+
     if ((Dest > 0) && (PathName[Dest - 1] == L'\\')) {
         Dest--;
     }
+
     PathName[Dest]   = L'\0';
+
     if (PathName[0] == L'\0') {
         PathName[0]  = L'\\';
         PathName[1]  = L'\0';
@@ -1921,7 +1924,7 @@ VOID ScanVolume (
             Volume->HasBootCode
         ) {
             // VBR boot code found on NTFS, but volume is not actually bootable
-            // unless there are actual boot file, so check for them....
+            // unless there are actual boot file, so check for them.
             Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
         }
     } // if/else

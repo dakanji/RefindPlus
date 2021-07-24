@@ -620,12 +620,12 @@ fsw_status_t EFIAPI fsw_efi_read_block(
    if (buffer == NULL)
       return (fsw_status_t) EFI_BAD_BUFFER_SIZE;
 
-   // Initialize static data structures, if necessary....
+   // Initialize static data structures, if necessary.
    if (LastRead < 0) {
       fsw_efi_clear_cache();
    } // if
 
-   // Look for a cache hit on the current query....
+   // Look for a cache hit on the current query.
    i = 0;
    do {
       if ((Caches[i].Volume == Volume) &&
@@ -637,7 +637,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(
       i++;
    } while ((i < NUM_CACHES) && (ReadCache < 0));
 
-   // No cache hit found; load new cache and pass it on....
+   // No cache hit found; load new cache and pass it on.
    if (ReadCache < 0) {
       if (LastRead == -1)
          LastRead = 1;
@@ -684,7 +684,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(
       ReadOneBlock = TRUE;
    }
 
-   if (ReadOneBlock) { // Something's failed, so try a simple disk read of one block....
+   if (ReadOneBlock) { // Something's failed, so try a simple disk read of one block.
       Status = REFIT_CALL_5_WRAPPER(
           Volume->DiskIo->ReadDisk,
           Volume->DiskIo,
@@ -1216,7 +1216,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(
 /**
  * Time mapping callback for the fsw_dnode_stat call. This function converts
  * a Posix style timestamp into an EFI_TIME structure and writes it to the
- * appropriate member of the EFI_FILE_INFO structure that we're filling.
+ * appropriate member of the EFI_FILE_INFO structure that we are filling.
  */
 
 void fsw_store_time_posix(
@@ -1237,7 +1237,7 @@ void fsw_store_time_posix(
 /**
  * Mode mapping callback for the fsw_dnode_stat call. This function looks at
  * the Posix mode passed by the file system driver and makes appropriate
- * adjustments to the EFI_FILE_INFO structure that we're filling.
+ * adjustments to the EFI_FILE_INFO structure that we are filling.
  */
 
 void fsw_store_attr_posix(

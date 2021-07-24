@@ -731,7 +731,7 @@ init_fixed_block (grub_gzio_t gzio)
       return;
     }
 
-  /* indicate we're now working on a block */
+  /* indicate we are now working on a block */
   gzio->code_state = 0;
   gzio->block_len++;
 }
@@ -873,7 +873,7 @@ init_dynamic_block (grub_gzio_t gzio)
       return;
     }
 
-  /* indicate we're now working on a block */
+  /* indicate we are now working on a block */
   gzio->code_state = 0;
   gzio->block_len++;
 }

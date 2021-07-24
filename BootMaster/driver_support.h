@@ -41,7 +41,7 @@
 #define EFI_HANDLE_TYPE_CHILD_HANDLE                0x400
 
 // Below is from http://git.etherboot.org/?p=mirror/efi/shell/.git;a=commitdiff;h=b1b0c63423cac54dc964c2930e04aebb46a946ec;
-// Seems to have been replaced by ParseHandleDatabaseByRelationshipWithType(), but the latter isn't working for me....
+// Seems to have been replaced by ParseHandleDatabaseByRelationshipWithType(), but the latter isn't working for me.
 EFI_STATUS
 LibScanHandleDatabase (
   EFI_HANDLE  DriverBindingHandle, OPTIONAL

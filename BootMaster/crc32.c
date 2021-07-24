@@ -12,7 +12,7 @@
  *  the MSB being 1
  *
  *  Note that the usual hardware shift register implementation, which
- *  is what we're using (we're merely optimizing it by doing eight-bit
+ *  is what we are using (we are merely optimizing it by doing eight-bit
  *  chunks at a time) shifts bits into the lowest-order term.  In our
  *  implementation, that means shifting towards the right.  Why do we
  *  do it this way?  Because the calculated CRC must be transmitted in

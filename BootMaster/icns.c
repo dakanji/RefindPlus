@@ -142,7 +142,7 @@ EG_IMAGE * LoadOSIcon(
         return NULL;
     }
 
-    // First, try to find an icon from the OSIconName list....
+    // First, try to find an icon from the OSIconName list.
     while ((Image == NULL) && ((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL)) {
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
        Image    = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -150,7 +150,7 @@ EG_IMAGE * LoadOSIcon(
        MyFreePool (&BaseName);
     }
 
-    // If that fails, try again using the FallbackIconName....
+    // If that fails, try again using the FallbackIconName.
     if (Image == NULL) {
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
 
@@ -162,7 +162,7 @@ EG_IMAGE * LoadOSIcon(
        MyFreePool (&BaseName);
     }
 
-    // If that fails and if BootLogo was set, try again using the "os_" start of the name....
+    // If that fails and if BootLogo was set, try again using the "os_" start of the name.
     if (BootLogo && (Image == NULL)) {
        BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
@@ -174,7 +174,7 @@ EG_IMAGE * LoadOSIcon(
        MyFreePool (&BaseName);
     }
 
-    // If all of these fail, return the dummy image....
+    // If all of these fail, return the dummy image.
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Setting dummy image");

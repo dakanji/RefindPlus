@@ -79,7 +79,7 @@ static CHAR16 ArrowUp[2]   = { ARROW_UP, 0 };
 static CHAR16 ArrowDown[2] = { ARROW_DOWN, 0 };
 static UINTN  TileSizes[2] = { 144, 64 };
 
-// Text and icon spacing constants....
+// Text and icon spacing constants.
 #define TEXT_YMARGIN       (2)
 #define TITLEICON_SPACING (16)
 
@@ -202,7 +202,7 @@ VOID InitScroll (
 }
 
 // Adjust variables relating to the scrolling of tags, for when a selected icon isn't
-// visible given the current scrolling condition....
+// visible given the current scrolling condition.
 static
 VOID AdjustScrollState (
     IN SCROLL_STATE *State
@@ -418,7 +418,7 @@ INTN FindMenuShortcutEntry (
 
 // Identify the end of row 0 and the beginning of row 1; store the results in the
 // appropriate fields in State. Also reduce MaxVisible if that value is greater
-// than the total number of row-0 tags and if we're in an icon-based screen
+// than the total number of row-0 tags and if we are in an icon-based screen
 static
 VOID IdentifyRows (
     IN SCROLL_STATE      *State,
@@ -918,7 +918,7 @@ VOID ShowTextInfoLines (
     }
 } // VOID ShowTextInfoLines()
 
-// Do most of the work for text-based menus....
+// Do most of the work for text-based menus.
 VOID TextMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE      *State,
@@ -1173,7 +1173,7 @@ VOID DrawText (
 // Using UINT64 instead is unworkable, since the code won't compile
 // on a 32-bit system. As the intended use for this function is to handle
 // a single text string's background, this shouldn't be a problem, but it
-// may need addressing if it's applied more broadly....
+// may need addressing if it's applied more broadly.
 static
 UINT8 AverageBrightness (
     EG_IMAGE *Image
@@ -2630,7 +2630,7 @@ UINTN RunMainMenu (
     }
 
     // Generate this now and keep it around forever, since it's likely to be
-    // used after this function terminates....
+    // used after this function terminates.
     GenerateWaitList();
     MenuTitle       = StrDuplicate (L"Unknown");
     TempChosenEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));

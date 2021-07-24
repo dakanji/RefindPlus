@@ -193,7 +193,7 @@ VOID ToLower(CHAR16 * MyString) {
 // MergeStrings allocates memory that's the correct size for the
 // new merged string, so it can take a NULL *First and it cleans
 // up the old memory. It should *NOT* be used with a constant
-// *First, though....
+// *First, though.
 VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
@@ -301,7 +301,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
         SubString = MyStrStr(TheString, L"  ");
     } // while
 
-    // If the string is still too long, truncate it....
+    // If the string is still too long, truncate it.
     if (StrLen(TheString) > Limit) {
         TheString[Limit] = '\0';
         HasChanged = TRUE;
@@ -419,7 +419,7 @@ BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List) {
             if (Found == List) { // Found is ONLY element
                 List[0] = L'\0';
             }
-            else { // Delete the comma preceding Found....
+            else { // Delete the comma preceding Found.
                 Found--;
                 Found[0] = L'\0';
             } // if/else

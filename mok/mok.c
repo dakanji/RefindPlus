@@ -52,7 +52,7 @@
 
 
 /*
- * Check whether we're in Secure Boot and user mode
+ * Check whether we are in Secure Boot and user mode
  */
 BOOLEAN secure_mode (
     VOID

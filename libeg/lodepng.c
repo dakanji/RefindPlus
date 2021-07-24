@@ -1035,7 +1035,7 @@ static void boundaryPM(BPMLists* lists, BPMNode* leaves, size_t numpresent, int 
     }
     lists->chains1[c] = bpmnode_create(lists, sum, lastindex, lists->chains1[c - 1]);
     /*in the end we are only interested in the chain of the last list, so no
-    need to recurse if we're at the last one (this gives measurable speedup)*/
+    need to recurse if we are at the last one (this gives measurable speedup)*/
     if(num + 1 < (int)(2 * numpresent - 2)) {
       boundaryPM(lists, leaves, numpresent, c - 1, num);
       boundaryPM(lists, leaves, numpresent, c - 1, num);
@@ -1256,7 +1256,7 @@ static unsigned getTreeInflateDynamic(HuffmanTree* tree_ll, HuffmanTree* tree_d,
     lodepng_memset(bitlen_ll, 0, NUM_DEFLATE_CODE_SYMBOLS * sizeof (*bitlen_ll));
     lodepng_memset(bitlen_d, 0, NUM_DISTANCE_SYMBOLS * sizeof (*bitlen_d));
 
-    /*i is the current symbol we're reading in the part that contains the code lengths of lit/len and dist codes*/
+    /*i is the current symbol we are reading in the part that contains the code lengths of lit/len and dist codes*/
     i = 0;
     while(i < HLIT + HDIST) {
       unsigned code;
@@ -6099,7 +6099,7 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
       unsigned already_added_id_text = 0;
       for(i = 0; i != info.text_num; ++i) {
         const char* k = info.text_keys[i];
-        /* Could use strcmp, but we're not calling or reimplementing this C library function for this use only */
+        /* Could use strcmp, but we are not calling or reimplementing this C library function for this use only */
         if(k[0] == 'L' && k[1] == 'o' && k[2] == 'd' && k[3] == 'e' &&
            k[4] == 'P' && k[5] == 'N' && k[6] == 'G' && k[7] == '\0') {
           already_added_id_text = 1;

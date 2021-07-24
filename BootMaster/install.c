@@ -36,7 +36,7 @@
 
  /***********************
   *
-  * Functions related to management of ESP data....
+  * Functions related to management of ESP data.
   *
   ***********************/
 
@@ -88,7 +88,7 @@
 
  /***********************
   *
-  * Functions related to user interaction....
+  * Functions related to user interaction.
   *
   ***********************/
 
@@ -197,7 +197,7 @@
 
  /***********************
   *
-  * Functions related to manipulation files on disk....
+  * Functions related to manipulation files on disk.
   *
   ***********************/
 
@@ -268,7 +268,7 @@
      return (Status);
  } // EFI_STATUS BackupOldFile()
 
- // Create directories in which RefindPlus will reside....
+ // Create directories in which RefindPlus will reside.
  static
  EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
      CHAR16   *FileName = NULL;
@@ -301,7 +301,7 @@
      EFI_FILE_INFO      *FileInfo = NULL;
      UINTN              *Buffer = NULL;
 
-     // Read the original file....
+     // Read the original file.
      Status = REFIT_CALL_5_WRAPPER(SourceDir->Open, SourceDir, &SourceFile, SourceName,
                                   EFI_FILE_MODE_READ, 0);
      if (Status == EFI_SUCCESS) {
@@ -323,7 +323,7 @@
      if (Status == EFI_SUCCESS)
          REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
 
-     // Write the file to a new location....
+     // Write the file to a new location.
      if (Status == EFI_SUCCESS) {
          Status = REFIT_CALL_5_WRAPPER(DestDir->Open, DestDir, &DestFile, DestName,
                                       EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0);
@@ -491,7 +491,7 @@ EFI_STATUS CopyDrivers (
      FindVolumeAndFilename (GlobalConfig.SelfDevicePath, &SourceVolume, &SourceFile);
      SourceDir = FindPath (SourceFile);
 
-     // Begin by copying RefindPlus itself....
+     // Begin by copying RefindPlus itself.
      RefindPlusName = PoolPrint (L"EFI\\refindplus\\%s", INST_REFINDPLUS_NAME);
      Status         = CopyOneFile (SourceVolume->RootDir, SourceFile, TargetDir, RefindPlusName);
      MyFreePool (&SourceFile);
@@ -537,7 +537,7 @@ EFI_STATUS CopyDrivers (
              WorstStatus = Status;
          MyFreePool (&SourceFile);
 
-         // Now copy icons....
+         // Now copy icons.
          SourceFile = PoolPrint (L"%s\\icons", SourceDir);
          Status     = CopyDirectory (
              SourceVolume->RootDir,
@@ -554,7 +554,7 @@ EFI_STATUS CopyDrivers (
          }
          MyFreePool (&SourceFile);
 
-         // Now copy drivers....
+         // Now copy drivers.
          SourceDriversDir = PoolPrint (L"%s\\%s", SourceDir, INST_DRIVERS_SUBDIR);
          TargetDriversDir = PoolPrint (L"EFI\\refindplus\\%s", INST_DRIVERS_SUBDIR);
 
@@ -646,7 +646,7 @@ EFI_STATUS CopyDrivers (
 
  /***********************
   *
-  * Functions related to manipulation of EFI NVRAM boot variables....
+  * Functions related to manipulation of EFI NVRAM boot variables.
   *
   ***********************/
 
@@ -811,7 +811,7 @@ EFI_STATUS CopyDrivers (
 
  /***********************
   *
-  * The main RefindPlus-installation function....
+  * The main RefindPlus-installation function.
   *
   ***********************/
 
@@ -843,7 +843,7 @@ EFI_STATUS CopyDrivers (
 
  /***********************
   *
-  * Functions related to the management of the boot order....
+  * Functions related to the management of the boot order.
   *
   ***********************/
 

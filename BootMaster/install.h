@@ -58,7 +58,7 @@ typedef struct {
 } EFI_BOOT_ENTRY;
 
 // A linked-list data structure intended to hold a list of all the EFI boot
-// entries on the computer....
+// entries on the computer.
 typedef struct _boot_entry_list {
     EFI_BOOT_ENTRY           BootEntry;
     struct _boot_entry_list  *NextBootEntry;

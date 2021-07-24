@@ -17,7 +17,7 @@ FILESYSTEMS = ext2 ext4 reiserfs iso9660 hfs btrfs
 FILESYSTEMS_GNUEFI = ext2_gnuefi ext4_gnuefi reiserfs_gnuefi iso9660_gnuefi hfs_gnuefi btrfs_gnuefi
 TEXTFILES = $(FILESYSTEMS:=*.txt)
 
-# Build the drivers with TianoCore EDK2.....
+# Build the drivers with TianoCore EDK2
 
 all:	$(FILESYSTEMS)
 
@@ -49,7 +49,7 @@ ntfs:
 	rm -f fsw_efi.obj
 	+make DRIVERNAME=ntfs -f Make.tiano
 
-# Build the drivers with GNU-EFI....
+# Build the drivers with GNU-EFI.
 
 gnuefi: $(FILESYSTEMS_GNUEFI)
 

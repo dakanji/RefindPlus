@@ -137,7 +137,7 @@
 #define DEVICE_TYPE_BIOS       0x05 /* returned by legacy (BIOS) boot loaders */
 #define DEVICE_TYPE_END        0x75 /* end of path */
 
-// Filesystem type identifiers. Not all are yet used....
+// Filesystem type identifiers. Not all are yet used.
 #define FS_TYPE_UNKNOWN           0
 #define FS_TYPE_WHOLEDISK         1
 #define FS_TYPE_FAT               2
@@ -177,7 +177,7 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
 #endif
 
-// Names of binaries that can manage MOKs....
+// Names of binaries that can manage MOKs.
 #if defined (EFIX64)
     #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi,mmx64.efi"
 #elif defined(EFI32)
@@ -188,7 +188,7 @@
     #define MOK_NAMES L"MokManager.efi,HashTool.efi,HashTool-signed.efi,KeyTool.efi,KeyTool-signed.efi"
 #endif
 
-// Names of binaries that can update firmware....
+// Names of binaries that can update firmware.
 #if defined (EFIX64)
     #define FWUPDATE_NAMES          L"fwupx64.efi"
 #elif defined(EFI32)
@@ -200,18 +200,18 @@
 #endif
 
 // Directories to search for these MOK-managing programs. Note that SelfDir is
-// searched in addition to these locations....
+// searched in addition to these locations.
 #define MOK_LOCATIONS \
 L"\\EFI\\tools,\\EFI\\fedora,\\EFI\\redhat,\\EFI\\ubuntu,\\EFI\\suse,\\EFI\\opensuse,\\EFI\\altlinux"
-// Directories to search for memtest86....
+// Directories to search for memtest86.
 #define MEMTEST_LOCATIONS \
 L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest\
 \\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 
-// Directories to search for BootKicker....
+// Directories to search for BootKicker.
 #define BOOTKICKER_LOCATIONS \
 L"\\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
-// Directories to search for CleanNvram....
+// Directories to search for CleanNvram.
 #define NVRAMCLEAN_LOCATIONS \
 L"\\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools,\\EFI\\tools_x64,\\EFI"
 // Files that may be Windows recovery files
@@ -228,7 +228,7 @@ Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
 // comparison when it should do a case-insensitive comparison, so I'm doubling this up. It does
 // no harm on other computers, AFAIK. In theory, every case variation should be done for
-// completeness, but that's ridiculous....
+// completeness, but that's ridiculous.
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
 // Definitions for the "hideui" option in config.conf

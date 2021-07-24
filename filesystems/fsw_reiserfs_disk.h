@@ -437,7 +437,7 @@ struct item_head {
 
 /* these operate on indirect items, where you've got an array of ints
 ** at a possibly unaligned location.  These are a noop on ia32
-** 
+**
 ** p is the array of __u32, i is the index into the array, v is the value
 ** to store there.
 */
@@ -582,7 +582,7 @@ static inline void cpu_key_k_offset_dec(struct cpu_key *key)
 #define REISERFS_ROOT_OBJECTID 2
 #define REISERFS_ROOT_PARENT_OBJECTID 1
 
-/* 
+/*
  * Picture represents a leaf of the S+tree
  *  ______________________________________________________
  * |      |  Array of     |                   |           |
@@ -786,7 +786,7 @@ struct stat_data {
 /***************************************************************************/
 /*                      DIRECTORY STRUCTURE                                */
 /***************************************************************************/
-/* 
+/*
    Picture represents the structure of directory items
    ________________________________________________
    |  Array of     |   |     |        |       |   |
@@ -809,12 +809,12 @@ struct stat_data {
 #define FIRST_ITEM_OFFSET 1
 
 /*
-   Q: How to get key of object pointed to by entry from entry?  
+   Q: How to get key of object pointed to by entry from entry?
 
    A: Each directory entry has its header. This header has deh_dir_id and deh_objectid fields, those are key
       of object, entry points to */
 
-/* NOT IMPLEMENTED:   
+/* NOT IMPLEMENTED:
    Directory will someday contain stat data of object */
 
 struct reiserfs_de_head {
@@ -1042,9 +1042,9 @@ struct path_element {
    invalid, and this means we must check it when using it to see if it
    is still valid. You'll need to read search_by_key and the comments
    in it, especially about decrement_counters_in_path(), to understand
-   this structure.  
+   this structure.
 
-Paths make the code so much harder to work with and debug.... An
+Paths make the code so much harder to work with and debug. An
 enormous number of bugs are due to them, and trying to write or modify
 code that uses them just makes my head hurt.  They are based on an
 excessive effort to avoid disturbing the precious VFS code.:-( The
@@ -1326,19 +1326,19 @@ struct buffer_info {
 };
 
 /* there are 4 types of items: stat data, directory item, indirect, direct.
-+-------------------+------------+--------------+------------+
-|	            |  k_offset  | k_uniqueness | mergeable? |
-+-------------------+------------+--------------+------------+
-|     stat data     |	0        |      0       |   no       |
-+-------------------+------------+--------------+------------+
-| 1st directory item| DOT_OFFSET |DIRENTRY_UNIQUENESS|   no       | 
-| non 1st directory | hash value |              |   yes      |
-|     item          |            |              |            |
-+-------------------+------------+--------------+------------+
-| indirect item     | offset + 1 |TYPE_INDIRECT |   if this is not the first indirect item of the object
-+-------------------+------------+--------------+------------+
-| direct item       | offset + 1 |TYPE_DIRECT   | if not this is not the first direct item of the object
-+-------------------+------------+--------------+------------+
++-------------------+------------+-------------------+------------+
+|	                |  k_offset  | k_uniqueness      | mergeable? |
++-------------------+------------+-------------------+------------+
+|     stat data     |	0        |      0            |   no       |
++-------------------+------------+-------------------+------------+
+| 1st directory item| DOT_OFFSET |DIRENTRY_UNIQUENESS|   no       |
+| non 1st directory | hash value |                   |   yes      |
+|     item          |            |                   |            |
++-------------------+------------+-------------------+------------+
+| indirect item     | offset + 1 |TYPE_INDIRECT      |   if this is not the first indirect item of the object
++-------------------+------------+-------------------+------------+
+| direct item       | offset + 1 |TYPE_DIRECT        | if not this is not the first direct item of the object
++-------------------+------------+-------------------+------------+
 */
 
 struct item_operations {
@@ -1496,8 +1496,8 @@ struct reiserfs_journal_header {
 
 /* both of these can be as low as 1, or as high as you want.  The min is the
 ** number of 4k bitmap nodes preallocated on mount. New nodes are allocated
-** as needed, and released when transactions are committed.  On release, if 
-** the current number of nodes is > max, the node is freed, otherwise, 
+** as needed, and released when transactions are committed.  On release, if
+** the current number of nodes is > max, the node is freed, otherwise,
 ** it is put on a free list for faster use later.
 */
 #define REISERFS_MIN_BITMAP_NODES 10
