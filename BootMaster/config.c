@@ -1566,33 +1566,35 @@ VOID ScanUserConfigured (
         while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
             if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
-                if (Entry && Entry->Enabled) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("\n");
-                    if (Volume->VolName) {
-                        MsgLog (
-                            "  - Found '%s' on '%s'",
-                            Entry->Title,
-                            SanitiseVolumeName (Volume)
-                        );
+                if (Entry) {
+                    if (Entry->Enabled) {
+                        #if REFIT_DEBUG > 0
+                        MsgLog ("\n");
+                        if (Volume->VolName) {
+                            MsgLog (
+                                "  - Found '%s' on '%s'",
+                                Entry->Title,
+                                SanitiseVolumeName (Volume)
+                            );
+                        }
+                        else {
+                            MsgLog (
+                                "  - Found '%s' :: '%s'",
+                                Entry->Title,
+                                Entry->LoaderPath
+                            );
+                        }
+                        #endif
+
+                        if (Entry->me.SubScreen == NULL) {
+                            GenerateSubScreen (Entry, Volume, TRUE);
+                        }
+                        AddPreparedLoaderEntry (Entry);
                     }
                     else {
-                        MsgLog (
-                            "  - Found '%s' :: '%s'",
-                            Entry->Title,
-                            Entry->LoaderPath
-                        );
-                    }
-                    #endif
-
-                    if (Entry->me.SubScreen == NULL) {
-                        GenerateSubScreen (Entry, Volume, TRUE);
-                    }
-                    AddPreparedLoaderEntry (Entry);
+                        FreeLoaderEntry (Entry);
+                    } // if/else Entry->Enabled
                 }
-                else {
-                    FreeLoaderEntry (Entry);
-                } // if/else Entry->Enabled
             }
             else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
                 MyStriCmp (FileName, GlobalConfig.ConfigFilename)
