@@ -366,74 +366,74 @@ VOID ActiveCSR (VOID) {
     BOOLEAN CsrEnabled = FALSE;
     BOOLEAN RotateCsr  = FALSE;
 
+    if ((GlobalConfig.ActiveCSR == 0) ||
+        (GlobalConfig.ActiveCSR != -1 && GlobalConfig.ActiveCSR != 1)
+    ) {
+        // Early return if improperly set or configured not to set CSR
+        return;
+    }
+
     // Prime 'Status' for logging
     #if REFIT_DEBUG > 0
     EFI_STATUS Status = EFI_ALREADY_STARTED;
     #endif
 
-    if (GlobalConfig.ActiveCSR == 0) {
-        // Early return if not configured to set CSR
-        return;
-    }
-    else {
-        // Try to get current CSR status
-        if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
-            // Record CSR status in the 'gCsrStatus' variable
-            RecordgCsrStatus (CsrStatus, FALSE);
+    // Try to get current CSR status
+    if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
+        // Record CSR status in the 'gCsrStatus' variable
+        RecordgCsrStatus (CsrStatus, FALSE);
 
-            // Check 'gCsrStatus' variable for 'Enabled' term
-            if (MyStrStr (gCsrStatus, L"Enabled") != NULL) {
-                // 'Enabled' found
-                CsrEnabled = TRUE;
-            }
-            else {
-                // 'Enabled' not found
-                CsrEnabled = FALSE;
-            }
+        // Check 'gCsrStatus' variable for 'Enabled' term
+        if (MyStrStr (gCsrStatus, L"Enabled") != NULL) {
+            // 'Enabled' found
+            CsrEnabled = TRUE;
+        }
+        else {
+            // 'Enabled' not found
+            CsrEnabled = FALSE;
+        }
 
-            // If set to always disable
-            if (GlobalConfig.ActiveCSR == -1) {
-                // Seed the log buffer
-                #if REFIT_DEBUG > 0
-                MsgLog ("INFO: Disable SIP/SSV ...");
-                #endif
-
-                if (CsrEnabled) {
-                    // Switch SIP/SSV off as currently enabled
-                    RotateCsr = TRUE;
-                }
-            }
-            else if (GlobalConfig.ActiveCSR == 1) {
-                // Seed the log buffer
-                #if REFIT_DEBUG > 0
-                MsgLog ("INFO: Enable SIP/SSV ...");
-                #endif
-
-                if (!CsrEnabled) {
-                    // Switch SIP/SSV on as currently disbled
-                    RotateCsr = TRUE;
-                }
-            }
-            else {
-                // Should never get here
-                return;
-            }
-
-            if (RotateCsr) {
-                // Switch SIP/SSV off as currently enabled
-                RotateCsrValue ();
-
-                // Set 'Status' to 'Success'
-                #if REFIT_DEBUG > 0
-                Status = EFI_SUCCESS;
-                #endif
-            }
-
-            // Finalise and flush the log buffer
+        if (GlobalConfig.ActiveCSR == -1) {
+            // Set to always disable
+            //
+            // Seed the log buffer
             #if REFIT_DEBUG > 0
-            MsgLog ("%r\n\n", Status);
+            MsgLog ("INFO: Disable SIP/SSV ...");
+            #endif
+
+            if (CsrEnabled) {
+                // Switch SIP/SSV off as currently enabled
+                RotateCsr = TRUE;
+            }
+        }
+        else {
+            // Set to always enable ... GlobalConfig.ActiveCSR == 1
+            //
+            // Seed the log buffer
+            #if REFIT_DEBUG > 0
+            MsgLog ("INFO: Enable SIP/SSV ...");
+            #endif
+
+            if (!CsrEnabled) {
+                // Switch SIP/SSV on as currently disbled
+                RotateCsr = TRUE;
+            }
+        }
+
+        if (RotateCsr) {
+            // Toggle SIP/SSV from current setting
+            RotateCsrValue ();
+
+            // Set 'Status' to 'Success'
+            #if REFIT_DEBUG > 0
+            Status = EFI_SUCCESS;
             #endif
         }
+
+        // Finalise and flush the log buffer
+        #if REFIT_DEBUG > 0
+        MsgLog ("%r\n\n", Status);
+        #endif
     }
 } // static VOID ActiveCSR()
 
