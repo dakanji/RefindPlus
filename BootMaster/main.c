@@ -899,94 +899,84 @@ VOID preBootKicker (VOID) {
         L"Returned '%d' from RunGenericMenu call on '%s' in 'preBootKicker'",
         MenuExit, ChosenEntry->Title
     );
+    MsgLog ("User Input Received:\n");
     #endif
 
-    if (ChosenEntry) {
+    if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") &&
+        MenuExit == MENU_EXIT_ENTER
+    ) {
+        UINTN        i = 0;
+        UINTN        k = 0;
+
+        CHAR16       *FilePath       = NULL;
+        CHAR16       *Description    = ChosenEntry->Title;
+        BOOLEAN       FoundTool      = FALSE;
+        LOADER_ENTRY *ourLoaderEntry = NULL;
+
         #if REFIT_DEBUG > 0
-        MsgLog ("User Input Received:\n");
+        // Log Load BootKicker
+        MsgLog ("  - Seek BootKicker\n");
         #endif
 
-        if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") &&
-            MenuExit == MENU_EXIT_ENTER
-        ) {
-            UINTN        i = 0;
-            UINTN        k = 0;
-
-            CHAR16       *FilePath       = NULL;
-            CHAR16       *Description    = ChosenEntry->Title;
-            BOOLEAN       FoundTool      = FALSE;
-            LOADER_ENTRY *ourLoaderEntry = NULL;
-
+        k = 0;
+        while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
             #if REFIT_DEBUG > 0
-            // Log Load BootKicker
-            MsgLog ("  - Seek BootKicker\n");
+            MsgLog ("    * Seek %s:\n", FilePath);
             #endif
 
-            k = 0;
-            while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * Seek %s:\n", FilePath);
-                #endif
+            for (i = 0; i < VolumesCount; i++) {
+                if ((Volumes[i]->RootDir != NULL) &&
+                    IsValidTool (Volumes[i], FilePath)
+                ) {
+                    ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                    ourLoaderEntry->me.Title          = Description;
+                    ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
+                    ourLoaderEntry->me.Row            = 1;
+                    ourLoaderEntry->me.ShortcutLetter = 0;
+                    ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+                    ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                    ourLoaderEntry->Volume            = Volumes[i];
+                    ourLoaderEntry->UseGraphicsMode   = TRUE;
 
-                for (i = 0; i < VolumesCount; i++) {
-                    if ((Volumes[i]->RootDir != NULL) &&
-                        IsValidTool (Volumes[i], FilePath)
-                    ) {
-                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                        ourLoaderEntry->me.Title          = Description;
-                        ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
-                        ourLoaderEntry->me.Row            = 1;
-                        ourLoaderEntry->me.ShortcutLetter = 0;
-                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                        ourLoaderEntry->Volume            = Volumes[i];
-                        ourLoaderEntry->UseGraphicsMode   = TRUE;
-
-                        FoundTool = TRUE;
-                        break;
-                    }
-                } // for
-
-                if (FoundTool) {
+                    FoundTool = TRUE;
                     break;
                 }
-                else {
-                    MyFreePool (&FilePath);
-                }
-            } // while
+            } // for
 
             if (FoundTool) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("    ** Success: Found %s\n", FilePath);
-                MsgLog ("  - Load BootKicker\n\n");
-                #endif
-
-                // Run BootKicker
-                StartTool (ourLoaderEntry);
-                #if REFIT_DEBUG > 0
-                MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
-                #endif
+                break;
             }
             else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
-                #endif
+                MyFreePool (&FilePath);
             }
+        } // while
 
-            MyFreePool (&FilePath);
+        if (FoundTool) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("    ** Success: Found %s\n", FilePath);
+            MsgLog ("  - Load BootKicker\n\n");
+            #endif
+
+            // Run BootKicker
+            StartTool (ourLoaderEntry);
+            #if REFIT_DEBUG > 0
+            MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
+            #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            // Log Return to Main Screen
-            MsgLog ("  - %s\n\n", ChosenEntry->Title);
+            MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
-        } // if
+        }
+
+        MyFreePool (&FilePath);
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
+        // Log Return to Main Screen
+        MsgLog ("  - %s\n\n", ChosenEntry->Title);
         #endif
-    } // if
+    }
 } // VOID preBootKicker()
 
 VOID preCleanNvram (VOID) {
