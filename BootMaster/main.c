@@ -238,6 +238,8 @@ EFI_OPEN_PROTOCOL      OrigOpenProtocol;
 EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 
 #if REFIT_DEBUG > 0
+UINTN  AppleFramebuffers = 0;
+
 extern VOID InitBooterLog (VOID);
 #endif
 
@@ -1653,7 +1655,8 @@ VOID LogBasicInfo (VOID) {
             HandleCount = 0;
         }
     }
-    MsgLog ("Apple Framebuffers:- '%d'", HandleCount);
+    AppleFramebuffers = HandleCount;
+    MsgLog ("Apple Framebuffers:- '%d'", AppleFramebuffers);
     MsgLog ("\n\n");
     MyFreePool (&HandleBuffer);
 #endif

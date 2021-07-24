@@ -67,6 +67,10 @@
 #include <efilib.h>
 #endif
 
+#if REFIT_DEBUG > 0
+extern UINTN AppleFramebuffers;
+#endif
+
 // Console defines and variables
 static EFI_GUID ConsoleControlProtocolGuid = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
 static EFI_GUID UgaDrawProtocolGuid        = EFI_UGA_DRAW_PROTOCOL_GUID;
@@ -83,11 +87,11 @@ static UINTN   egScreenHeight = 600;
 static
 EFI_STATUS
 EncodeAsPNG (
-  IN  VOID    *RawData,
-  IN  UINT32  Width,
-  IN  UINT32  Height,
+  IN  VOID     *RawData,
+  IN  UINT32    Width,
+  IN  UINT32    Height,
   OUT VOID    **Buffer,
-  OUT UINTN   *BufferSize
+  OUT UINTN    *BufferSize
   )
 {
   unsigned ErrorCode;
@@ -112,9 +116,9 @@ static
 EFI_STATUS daCheckAltGop (
     VOID
 ) {
-    EFI_STATUS                    Status;
-    UINTN                         i;
-    UINTN                         HandleCount;
+    EFI_STATUS                     Status;
+    UINTN                          i;
+    UINTN                          HandleCount;
     EFI_HANDLE                    *HandleBuffer;
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OrigGop;
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *Gop;
@@ -298,7 +302,7 @@ EFI_STATUS egDumpGOPVideoModes (
         }
 
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes (%d %s ... 0x%lx-0x%lx FrameBuffer)",
+            L"Analyse GOP Modes (%d %s ... 0x%lx-0x%lx Framebuffer)",
             MaxMode, ModeTxt,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
@@ -710,17 +714,18 @@ VOID egGetScreenSize (
 VOID egInitScreen (
     VOID
 ) {
-    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP = NULL;
-    EFI_STATUS                    Status  = EFI_SUCCESS;
-    EFI_STATUS                    XFlag;
-    UINTN                         HandleCount;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP  = NULL;
+    EFI_STATUS                     Status  = EFI_SUCCESS;
+    EFI_STATUS                     XFlag;
+    UINTN                          HandleCount;
     EFI_HANDLE                    *HandleBuffer;
-    UINTN                         i;
-    BOOLEAN                       thisValidGOP = FALSE;
+    UINTN                          i;
+    BOOLEAN                        thisValidGOP = FALSE;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  PrevFlag = FALSE;
+    BOOLEAN  FlagUGA  = FALSE;
 
     MsgLog ("Check for Graphics:\n");
     #endif
@@ -834,13 +839,13 @@ VOID egInitScreen (
         #endif
 
         if (!EFI_ERROR (Status)) {
-            EFI_UGA_DRAW_PROTOCOL *TmpUGA   = NULL;
-            UINT32                UGAWidth  = 0;
-            UINT32                UGAHeight = 0;
-            UINT32                Width;
-            UINT32                Height;
-            UINT32                Depth;
-            UINT32                RefreshRate;
+            EFI_UGA_DRAW_PROTOCOL *TmpUGA    = NULL;
+            UINT32                 UGAWidth  = 0;
+            UINT32                 UGAHeight = 0;
+            UINT32                 Width;
+            UINT32                 Height;
+            UINT32                 Depth;
+            UINT32                 RefreshRate;
 
             for (i = 0; i < HandleCount; i++) {
                 Status = REFIT_CALL_3_WRAPPER(
@@ -1239,6 +1244,8 @@ VOID egInitScreen (
                 MsgLog ("      %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
+
+                FlagUGA = TRUE;
                 #endif
 
                 egHasGraphics  = TRUE;
@@ -1302,11 +1309,21 @@ VOID egInitScreen (
     }
 
     #if REFIT_DEBUG > 0
-    if (egHasGraphics) {
-        MsgStr = StrDuplicate (L"Yes");
+    if (!egHasGraphics) {
+        MsgStr = StrDuplicate (L"No");
     }
     else {
-        MsgStr = StrDuplicate (L"No");
+        if (FlagUGA) {
+            if (MyStriCmp (gST->FirmwareVendor, L"Apple") && AppleFramebuffers == 0) {
+                MsgStr = StrDuplicate (L"Yes (Without Display ... Apple Framebuffers are Absent)");
+            }
+            else {
+                MsgStr = StrDuplicate (L"Yes");
+            }
+        }
+        else {
+            MsgStr = StrDuplicate (L"Yes");
+        }
     }
 
     if (PrevFlag) {
@@ -1328,8 +1345,8 @@ BOOLEAN egGetResFromMode (
     UINTN *ModeWidth,
     UINTN *Height
 ) {
-   UINTN                                 Size;
-   EFI_STATUS                            Status;
+   UINTN                                  Size;
+   EFI_STATUS                             Status;
    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
    if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
@@ -1634,7 +1651,7 @@ BOOLEAN egSetTextMode (
     UINTN        i = 0;
     UINTN        Width;
     UINTN        Height;
-    CHAR16       *MsgStr     = NULL;
+    CHAR16      *MsgStr = NULL;
 
     if ((RequestedMode != DONT_CHANGE_TEXT_MODE) &&
         (RequestedMode != gST->ConOut->Mode->Mode)
@@ -1865,8 +1882,8 @@ VOID egClearScreen (
 
 VOID egDrawImage (
     IN EG_IMAGE *Image,
-    IN UINTN    ScreenPosX,
-    IN UINTN    ScreenPosY
+    IN UINTN     ScreenPosX,
+    IN UINTN     ScreenPosY
 ) {
     EG_IMAGE *CompImage = NULL;
 
@@ -1939,10 +1956,10 @@ VOID egDrawImage (
 VOID egDrawImageWithTransparency (
     EG_IMAGE *Image,
     EG_IMAGE *BadgeImage,
-    UINTN    XPos,
-    UINTN    YPos,
-    UINTN    Width,
-    UINTN    Height
+    UINTN     XPos,
+    UINTN     YPos,
+    UINTN     Width,
+    UINTN     Height
 ) {
     EG_IMAGE *Background;
 
@@ -1964,12 +1981,12 @@ VOID egDrawImageWithTransparency (
 
 VOID egDrawImageArea (
     IN EG_IMAGE *Image,
-    IN UINTN    AreaPosX,
-    IN UINTN    AreaPosY,
-    IN UINTN    AreaWidth,
-    IN UINTN    AreaHeight,
-    IN UINTN    ScreenPosX,
-    IN UINTN    ScreenPosY
+    IN UINTN     AreaPosX,
+    IN UINTN     AreaPosY,
+    IN UINTN     AreaWidth,
+    IN UINTN     AreaHeight,
+    IN UINTN     ScreenPosX,
+    IN UINTN     ScreenPosY
 ) {
     if (!egHasGraphics) {
         return;
@@ -2015,7 +2032,7 @@ VOID egDrawImageArea (
 VOID egDisplayMessage (
     IN CHAR16 *Text,
     EG_PIXEL  *BGColor,
-    UINTN     PositionCode
+    UINTN      PositionCode
 ) {
    UINTN BoxWidth, BoxHeight;
    static UINTN Position = 1;
@@ -2115,14 +2132,14 @@ EG_IMAGE * egCopyScreenArea (
 VOID egScreenShot (
     VOID
 ) {
-    EFI_STATUS   Status;
+    EFI_STATUS    Status;
     EFI_FILE     *BaseDir;
     EG_IMAGE     *Image;
     UINT8        *FileData;
-    UINT8        Temp;
-    UINTN        i = 0;
-    UINTN        FileDataSize;         ///< Size in bytes
-    UINTN        FilePixelSize;        ///< Size in pixels
+    UINT8         Temp;
+    UINTN         i = 0;
+    UINTN         FileDataSize;         ///< Size in bytes
+    UINTN         FilePixelSize;        ///< Size in pixels
     CHAR16       *FileName       = NULL;
     CHAR16       *MsgStr         = NULL;
 
