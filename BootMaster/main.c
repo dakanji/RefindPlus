@@ -1043,89 +1043,81 @@ VOID preCleanNvram (VOID) {
     );
     #endif
 
-    if (ChosenEntry) {
+    #if REFIT_DEBUG > 0
+    MsgLog ("User Input Received:\n");
+    #endif
+
+    if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
+        UINTN i = 0;
+        UINTN k = 0;
+
+        CHAR16        *FilePath        = NULL;
+        CHAR16        *Description     = ChosenEntry->Title;
+        BOOLEAN        FoundTool       = FALSE;
+        LOADER_ENTRY  *ourLoaderEntry  = NULL;
+
         #if REFIT_DEBUG > 0
-        MsgLog ("User Input Received:\n");
+        // Log Load CleanNvram
+        MsgLog ("  - Seek CleanNvram\n");
         #endif
 
-        if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
-            UINTN i = 0;
-            UINTN k = 0;
-
-            CHAR16        *FilePath        = NULL;
-            CHAR16        *Description     = ChosenEntry->Title;
-            BOOLEAN        FoundTool       = FALSE;
-            LOADER_ENTRY  *ourLoaderEntry  = NULL;
+        k = 0;
+        while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
 
             #if REFIT_DEBUG > 0
-            // Log Load CleanNvram
-            MsgLog ("  - Seek CleanNvram\n");
+            MsgLog ("    * Seek %s:\n", FilePath);
             #endif
 
-            k = 0;
-            while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+            for (i = 0; i < VolumesCount; i++) {
+                if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
+                    ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                    ourLoaderEntry->me.Title          = Description;
+                    ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
+                    ourLoaderEntry->me.Row            = 1;
+                    ourLoaderEntry->me.ShortcutLetter = 0;
+                    ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                    ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                    ourLoaderEntry->Volume            = Volumes[i];
+                    ourLoaderEntry->UseGraphicsMode   = FALSE;
 
-                #if REFIT_DEBUG > 0
-                MsgLog ("    * Seek %s:\n", FilePath);
-                #endif
-
-                for (i = 0; i < VolumesCount; i++) {
-                    if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
-                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                        ourLoaderEntry->me.Title          = Description;
-                        ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
-                        ourLoaderEntry->me.Row            = 1;
-                        ourLoaderEntry->me.ShortcutLetter = 0;
-                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                        ourLoaderEntry->Volume            = Volumes[i];
-                        ourLoaderEntry->UseGraphicsMode   = FALSE;
-
-                        FoundTool = TRUE;
-                        break;
-                    }
-                } // for
-
-                if (FoundTool) {
+                    FoundTool = TRUE;
                     break;
                 }
-                else {
-                    MyFreePool (&FilePath);
-                }
-            } // while
+            } // for
 
             if (FoundTool) {
-                #if REFIT_DEBUG > 0
-                MsgLog ("    ** Success: Found %s\n", FilePath);
-                MsgLog ("  - Load CleanNvram\n\n");
-                #endif
-
-                ranCleanNvram = TRUE;
-
-                // Run CleanNvram
-                StartTool (ourLoaderEntry);
-
+                break;
             }
             else {
-                #if REFIT_DEBUG > 0
-                MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
-                #endif
+                MyFreePool (&FilePath);
             }
+        } // while
 
-            MyFreePool (&FilePath);
+        if (FoundTool) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("    ** Success: Found %s\n", FilePath);
+            MsgLog ("  - Load CleanNvram\n\n");
+            #endif
+
+            ranCleanNvram = TRUE;
+
+            // Run CleanNvram
+            StartTool (ourLoaderEntry);
         }
         else {
             #if REFIT_DEBUG > 0
-            // Log Return to Main Screen
-            MsgLog ("  - %s\n\n", ChosenEntry->Title);
+            MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
             #endif
-        } // if MyStriCmp ChosenEntry->Title
+        }
+
+        MyFreePool (&FilePath);
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("WARN: Could Not Get User Input  ... Reload Main Menu\n\n");
+        // Log Return to Main Screen
+        MsgLog ("  - %s\n\n", ChosenEntry->Title);
         #endif
-    } // if ChosenEntry
+    } // if MyStriCmp ChosenEntry->Title
 } // VOID preCleanNvram()
 
 
