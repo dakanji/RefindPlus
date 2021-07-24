@@ -1958,9 +1958,10 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("Pause for Scan Delay:\n");
         #endif
 
-        for (i = -1; i < GlobalConfig.ScanDelay; ++i) {
+        for (i = 0; i < GlobalConfig.ScanDelay; ++i) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 1000000);
         }
+
         if (i == 1) {
             #if REFIT_DEBUG > 0
             MsgLog ("  - Waited %d Second\n", i);

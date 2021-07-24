@@ -751,7 +751,7 @@ VOID PauseForKey (VOID) {
         LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 3 Seconds");
         #endif
 
-        for (i = -1; i < 3; ++i) {
+        for (i = 0; i < 3; ++i) {
             ReadAllKeyStrokes();
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
