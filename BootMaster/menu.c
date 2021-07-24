@@ -2363,7 +2363,7 @@ BOOLEAN HideEfiTag (
     );
     #endif
 
-    if (ChosenOption && MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
+    if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         GuidStr = GuidAsString (&Loader->Volume->PartGuid);
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
             MyFreePool (&FullPath);
