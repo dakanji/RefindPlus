@@ -166,12 +166,8 @@ VOID InitSelection (
         SelectionImages[0] = egCopyImage (TempBigImage);
     }
 
-    if (TempSmallImage) {
-        egFreeImage (TempSmallImage);
-    }
-    if (TempBigImage) {
-        egFreeImage (TempBigImage);
-    }
+    egFreeImage (TempSmallImage);
+    egFreeImage (TempBigImage);
 } // VOID InitSelection()
 
 //
