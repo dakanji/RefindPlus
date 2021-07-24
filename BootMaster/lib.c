@@ -318,7 +318,6 @@ VOID UninitVolume (
     Volume->WholeDiskBlockIO = NULL;
 } // static VOID UninitVolume()
 
-
 static
 VOID UninitVolumes (VOID) {
     UINTN VolumeIndex;
@@ -843,6 +842,57 @@ VOID FreeList (
 //
 // volume functions
 //
+#if REFIT_DEBUG > 0
+CHAR16 * SanitiseVolumeName (
+    IN REFIT_VOLUME *Volume
+) {
+    CHAR16 *VolumeName = NULL;
+
+    if (Volume->VolName) {
+        if (MyStrStr (Volume->VolName, L"Whole Disk Volume") != NULL) {
+            VolumeName = L"Whole Disk Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"Unknown Volume") != NULL) {
+            VolumeName = L"Unknown Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"HFS+ Volume") != NULL) {
+            VolumeName = L"HFS+ Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"NTFS Volume") != NULL) {
+            VolumeName = L"NTFS Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"FAT Volume") != NULL) {
+            VolumeName = L"FAT Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"Ext2 Volume") != NULL) {
+            VolumeName = L"Ext2 Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"Ext3 Volume") != NULL) {
+            VolumeName = L"Ext3 Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"Ext4 Volume") != NULL) {
+            VolumeName = L"Ext4 Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"ReiserFS Volume") != NULL) {
+            VolumeName = L"ReiserFS Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"Btrfs Volume") != NULL) {
+            VolumeName = L"BTRFS Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"XFS Volume") != NULL) {
+            VolumeName = L"XFS Volume";
+        }
+        else if (MyStrStr (Volume->VolName, L"ISO-9660 Volume") != NULL) {
+            VolumeName = L"ISO-9660 Volume";
+        }
+        else {
+            VolumeName = Volume->VolName;
+        }
+    }
+
+    return VolumeName;
+} // CHAR16 * SanitiseVolumeName ()
+#endif
 
 VOID FreeVolumesList (
     IN OUT VOID  ***ListVolumes,
@@ -2115,11 +2165,11 @@ VOID ScanVolumes (VOID) {
     BOOLEAN             DupFlag;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr = NULL;
-    CHAR16  *VolDesc;
-    CHAR16  *PartType;
-    CHAR16  *PartGUID;
-    CHAR16  *PartTypeGUID;
+    CHAR16  *MsgStr       = NULL;
+    CHAR16  *VolDesc      = NULL;
+    CHAR16  *PartType     = NULL;
+    CHAR16  *PartGUID     = NULL;
+    CHAR16  *PartTypeGUID = NULL;
 
     const CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
     const CHAR16 *ITEMVOLB = L"VOLUME GUID";
@@ -2232,7 +2282,7 @@ VOID ScanVolumes (VOID) {
             if (DupFlag) {
                 // This is a duplicate filesystem item
                 Volume->IsReadable = FALSE;
-            } // if
+            }
         } // for
 
         if (SelfVolRun) {
@@ -2262,92 +2312,39 @@ VOID ScanVolumes (VOID) {
                 }
             }
 
-            VolDesc      = StrDuplicate (Volume->VolName);
-            PartGUID     = GuidAsString (&Volume->PartGuid);
-            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
-
-            if (MyStrStr (VolDesc, L"Whole Disk Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Whole Disk Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Unknown Volume");
-            }
-            else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"HFS+ Volume");
-            }
-            else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"NTFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"FAT Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext2 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext2 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext3 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext3 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext4 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext4 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"ReiserFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"BTRFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"XFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"ISO-9660 Volume");
-            }
-
-            PartType = StrDuplicate (FSTypeName (Volume->FSType));
+            // Do not free this!
+            PartType = FSTypeName (Volume->FSType);
 
             // Improve Apple Volume Id on Non-Mac Firmware
             if ((MyStriCmp (PartType, L"Unknown")) &&
                 !MyStriCmp (gST->FirmwareVendor, L"Apple")
             ) {
                 if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"APFS");
+                    PartType = L"APFS";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"HFS+");
+                    PartType = L"HFS+";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"Mac Raid");
+                    PartType = L"Mac Raid";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"Mac Raid");
+                    PartType = L"Mac Raid";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"APFS/HFS+");
+                    PartType = L"APFS/HFS+";
                 }
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRecovery)) {
-                    MyFreePool (&PartType);
-                    PartType = StrDuplicate (L"AppleTV");
+                    PartType = L"AppleTV";
                 }
             }
-
             LimitStringLength (PartType, 10);
+
+            PartGUID     = GuidAsString (&Volume->PartGuid);
+            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
+
+            // Do not free this!
+            VolDesc = SanitiseVolumeName (Volume);
 
             LOG(2, LOG_LINE_NORMAL,
                 L"Identified Volume:  %s = %s  :  %s = %s  :  %s = %-10s  :  %s = %s",
@@ -2363,8 +2360,6 @@ VOID ScanVolumes (VOID) {
             }
             MsgLog ("%s  :  %s  :  %-10s  :  %s", PartTypeGUID, PartGUID, PartType, VolDesc);
 
-            MyFreePool (&VolDesc);
-            MyFreePool (&PartType);
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
         }

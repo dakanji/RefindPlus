@@ -160,6 +160,10 @@ CHAR16 * StripEfiExtension (IN CHAR16 *FileName);
 CHAR16 * GetVolumeName (IN REFIT_VOLUME *Volume);
 CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
 
+#if REFIT_DEBUG > 0
+CHAR16 * SanitiseVolumeName (IN REFIT_VOLUME *Volume);
+#endif
+
 BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);
 BOOLEAN GuidsAreEqual (IN EFI_GUID *Guid1, IN EFI_GUID *Guid2);

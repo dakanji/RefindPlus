@@ -914,10 +914,6 @@ LOADER_ENTRY * AddLoaderEntry (
     LOADER_ENTRY  *Entry;
     CHAR16        *TitleEntry = NULL;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *VolDesc = NULL;
-    #endif
-
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
     if (Entry != NULL) {
@@ -967,63 +963,20 @@ LOADER_ENTRY * AddLoaderEntry (
         AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
         #if REFIT_DEBUG > 0
+        MsgLog ("\n");
         if (Volume->VolName) {
-            VolDesc = StrDuplicate (Volume->VolName);
-
-            if (MyStrStr (VolDesc, L"Whole Disk Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Whole Disk Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Unknown Volume");
-            }
-            else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"HFS+ Volume");
-            }
-            else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"NTFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"FAT Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext2 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext2 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext3 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext3 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Ext4 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"Ext4 Volume");
-            }
-            else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"ReiserFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"BTRFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"XFS Volume");
-            }
-            else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                MyFreePool (&VolDesc);
-                VolDesc = StrDuplicate (L"ISO-9660 Volume");
-            }
-            MsgLog ("\n");
-            MsgLog ("  - Found '%s' on '%s'", TitleEntry, VolDesc);
+            MsgLog (
+                "  - Found '%s' on '%s'",
+                TitleEntry,
+                SanitiseVolumeName (Volume)
+            );
         }
         else {
-            MsgLog ("\n");
-            MsgLog ("  - Found %s:- '%s'", TitleEntry, Entry->LoaderPath);
+            MsgLog (
+                "  - Found %s:- '%s'",
+                TitleEntry,
+                Entry->LoaderPath
+            );
         }
 
         LOG(3, LOG_THREE_STAR_MID, L"Successfully Created Menu Entry for %s", Entry->Title);
@@ -2395,8 +2348,8 @@ VOID ScanForBootloaders (
         }  // for
 
         #if REFIT_DEBUG > 0
-        CHAR16   *keyStr;
-        CHAR16   *LoaderStr;
+        const CHAR16 *keyStr    = NULL;
+        const CHAR16 *LoaderStr = NULL;
 
         if (i == 1) {
             keyStr = L"Key";

@@ -1555,10 +1555,6 @@ VOID ScanUserConfigured (
     UINTN              TokenCount, size;
     LOADER_ENTRY      *Entry;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *VolDesc = NULL;
-    #endif
-
     if (FileExists (SelfDir, FileName)) {
         Status = RefitReadFile (SelfDir, FileName, &File, &size);
         if (EFI_ERROR (Status)) {
@@ -1572,63 +1568,20 @@ VOID ScanUserConfigured (
                 Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
                 if (Entry && Entry->Enabled) {
                     #if REFIT_DEBUG > 0
+                    MsgLog ("\n");
                     if (Volume->VolName) {
-                        VolDesc = StrDuplicate (Volume->VolName);
-
-                        if (MyStrStr (VolDesc, L"Whole Disk Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"Whole Disk Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"Unknown Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"Unknown Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"HFS+ Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"HFS+ Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"NTFS Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"NTFS Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"FAT Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"FAT Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"Ext2 Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"Ext2 Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"Ext3 Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"Ext3 Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"Ext4 Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"Ext4 Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"ReiserFS Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"ReiserFS Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"Btrfs Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"BTRFS Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"XFS Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"XFS Volume");
-                        }
-                        else if (MyStrStr (VolDesc, L"ISO-9660 Volume") != NULL) {
-                            MyFreePool (&VolDesc);
-                            VolDesc = StrDuplicate (L"ISO-9660 Volume");
-                        }
-                        MsgLog ("\n");
-                        MsgLog ("  - Found '%s' on '%s'", Entry->Title, VolDesc);
+                        MsgLog (
+                            "  - Found '%s' on '%s'",
+                            Entry->Title,
+                            SanitiseVolumeName (Volume)
+                        );
                     }
                     else {
-                        MsgLog ("\n");
-                        MsgLog ("  - Found '%s' :: '%s'", Entry->Title, Entry->LoaderPath);
+                        MsgLog (
+                            "  - Found '%s' :: '%s'",
+                            Entry->Title,
+                            Entry->LoaderPath
+                        );
                     }
                     #endif
 

@@ -686,12 +686,12 @@ LEGACY_ENTRY * AddLegacyEntry (
     IN CHAR16       *LoaderTitle,
     IN REFIT_VOLUME *Volume
 ) {
-    LEGACY_ENTRY      *Entry;
-    LEGACY_ENTRY      *SubEntry;
-    REFIT_MENU_SCREEN *SubScreen;
-    CHAR16            *VolDesc;
-    CHAR16            *LegacyTitle;
-    CHAR16             ShortcutLetter = 0;
+          LEGACY_ENTRY      *Entry;
+          LEGACY_ENTRY      *SubEntry;
+          REFIT_MENU_SCREEN *SubScreen;
+    const CHAR16            *VolDesc = NULL;
+          CHAR16            *LegacyTitle;
+          CHAR16             ShortcutLetter = 0;
 
     if (LoaderTitle == NULL) {
         if (Volume->OSName != NULL) {
@@ -706,14 +706,15 @@ LEGACY_ENTRY * AddLegacyEntry (
     }
 
     if (Volume->VolName != NULL) {
-        VolDesc = Volume->VolName;
+        if (MyStrStr (Volume->VolName, L"NTFS volume") != NULL) {
+            VolDesc = L"NTFS Volume";
+        }
+        else {
+            VolDesc = Volume->VolName;
+        }
     }
     else {
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
-    }
-
-    if (MyStrStr (VolDesc, L"NTFS volume") != NULL) {
-        VolDesc = L"NTFS Volume";
     }
 
     LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
@@ -817,8 +818,8 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     }
 
     // Remove stray spaces, since many EFIs produce descriptions with lots of
-    // extra spaces, especially at the end; this throws off centering of the
-    // description on the screen....
+    //   extra spaces, especially at the end; this throws off centering of the
+    //   description on the screen.
     LimitStringLength (LegacyDescription, 100);
 
     // prepare the menu entry
@@ -883,9 +884,8 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
 /**
     Scan for legacy BIOS targets on machines that implement EFI_LEGACY_BIOS_PROTOCOL.
-    In testing, protocol has not been implemented on Macs but has been
-    implemented on most UEFI PCs.
-    Restricts output to disks of the specified DiskType.
+    In testing, protocol has not been implemented on Macs but has been implemented on
+      most UEFI PCs. Restricts output to disks of the specified DiskType.
 */
 static
 VOID ScanLegacyUEFI (
@@ -920,7 +920,7 @@ VOID ScanLegacyUEFI (
     ZeroMem (Buffer, sizeof (Buffer));
 
     // If LegacyBios protocol is not implemented on this platform, then
-    //we do not support this type of legacy boot on this machine.
+    //   we do not support this type of legacy boot on this machine.
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &gEfiLegacyBootProtocolGuid,
@@ -933,8 +933,8 @@ VOID ScanLegacyUEFI (
     }
 
     // EFI calls USB drives BBS_HARDDRIVE, but we want to distinguish them,
-    // so we set DiskType inappropriately elsewhere in the program and
-    // "translate" it here.
+    //   so we set DiskType inappropriately elsewhere in the program and
+    //   "translate" it here.
     if (DiskType == BBS_USB) {
        DiskType = BBS_HARDDISK;
        SearchingForUsb = TRUE;
@@ -954,22 +954,22 @@ VOID ScanLegacyUEFI (
     Index = 0;
     while (Index < BootOrderSize / sizeof (UINT16)) {
         // Grab each boot option variable from the boot order, and convert
-        // the variable into a BDS boot option
+        //   the variable into a BDS boot option
         SPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {
             BbsDevicePath = (BBS_BBS_DEVICE_PATH *) BdsOption->DevicePath;
-            // Only add the entry if it is of a requested type (e.g. USB, HD)
+            // Only add the entry if it is of a requested type (e.g. USB, HD).
             // Two checks necessary because some systems return EFI boot loaders
-            // with a DeviceType value that would inappropriately include them
-            // as legacy loaders.
+            //   with a DeviceType value that would inappropriately include them
+            //   as legacy loaders.
             if ((BbsDevicePath->DeviceType == DiskType) &&
                 (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)
             ) {
                 // USB flash drives appear as hard disks with certain media flags set.
                 // Look for this, and if present, pass it on with the (technically
-                // incorrect, but internally useful) BBS_TYPE_USB flag set.
+                //   incorrect, but internally useful) BBS_TYPE_USB flag set.
                 if (DiskType == BBS_HARDDISK) {
                     if (SearchingForUsb && (BbsDevicePath->StatusFlag &
                         (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
@@ -986,7 +986,7 @@ VOID ScanLegacyUEFI (
                     AddLegacyEntryUEFI (BdsOption, DiskType);
                 }
             }
-        } // if (BdsOption != NULL)
+        } // if BdsOption != NULL
 
         Index++;
     } // while
@@ -1008,12 +1008,12 @@ VOID ScanLegacyVolume (
             Volume->BlockIOOffset == 0 &&
             Volume->OSName == NULL
         ) {
-            // this is a whole disk (MBR) entry; hide if we have entries for partitions
+            // Whole disk (MBR) entry ... Hide if we have entries for partitions
             HideIfOthersFound = TRUE;
         }
     }
     if (HideIfOthersFound) {
-        // check for other bootable entries on the same disk
+        // Check for other bootable entries on the same disk
         for (VolumeIndex2 = 0; VolumeIndex2 < VolumesCount; VolumeIndex2++) {
             if (VolumeIndex2 != VolumeIndex && Volumes[VolumeIndex2]->HasBootCode &&
                 Volumes[VolumeIndex2]->WholeDiskBlockIO == Volume->WholeDiskBlockIO
@@ -1139,15 +1139,15 @@ VOID FindLegacyBootType (VOID) {
     }
 
     // Macs have their own system. If the firmware vendor code contains the
-    // string "Apple", assume it is available. Note that this overrides the
-    // UEFI type, and might yield false positives if the vendor string
-    // contains "Apple" as part of something bigger, so this is not perfect.
+    //   string "Apple", assume it is available. Note that this overrides the
+    //   UEFI type, and might yield false positives if the vendor string
+    //   contains "Apple" as part of something bigger, so this is not perfect.
     if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
         GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
     }
 } // VOID FindLegacyBootType()
 
-// Warn the user if legacy OS scans are enabled but the firmware does not support them
+// Warn user if legacy OS scans are enabled but the firmware does not support them
 VOID WarnIfLegacyProblems (VOID) {
     UINTN     i     = 0;
     BOOLEAN   found = FALSE;
