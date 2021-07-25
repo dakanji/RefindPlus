@@ -598,9 +598,7 @@ VOID StartLegacy (
         if (ErrorInStep == 1) {
             SwitchToText (FALSE);
 
-            MsgStrA = StrDuplicate (
-                L"Please make sure you have the latest firmware update installed"
-            );
+            MsgStrA = L"Please make sure you have the latest firmware update installed";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -616,9 +614,7 @@ VOID StartLegacy (
         else if (ErrorInStep == 3) {
             SwitchToText (FALSE);
 
-            MsgStrA = StrDuplicate (
-                L"The firmware refused to boot from the selected volume"
-            );
+            MsgStrA = L"The firmware refused to boot from the selected volume";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrA, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -627,9 +623,7 @@ VOID StartLegacy (
             MsgLog ("** WARN: %s\n", MsgStrA);
             #endif
 
-            MsgStrB = StrDuplicate (
-                L"NB: External drives are not well-supported by Apple firmware for legacy booting"
-            );
+            MsgStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting";
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStrB, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
@@ -640,8 +634,6 @@ VOID StartLegacy (
 
             PauseForKey();
             SwitchToGraphics();
-            MyFreePool (&MsgStrA);
-            MyFreePool (&MsgStrB);
         } // if ErrorInStep
     } // if Status == EFI_NOT_FOUND
 
