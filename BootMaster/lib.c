@@ -2349,19 +2349,19 @@ VOID ScanVolumes (VOID) {
             // Do not free this!
             VolDesc = SanitiseVolumeName (Volume);
 
-            LOG(2, LOG_LINE_NORMAL,
-                L"Identified Volume:  %s = %s  :  %s = %s  :  %s = %-10s  :  %s = %s",
-                ITEMVOLA, PartTypeGUID,
-                ITEMVOLB, PartGUID,
-                ITEMVOLC, PartType,
-                ITEMVOLD, VolDesc
-            );
-
             if (!DoneHeadings) {
                 MsgLog ("%-41s%-41s%-15s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
                 DoneHeadings = TRUE;
             }
-            MsgLog ("%s  :  %s  :  %-10s  :  %s", PartTypeGUID, PartGUID, PartType, VolDesc);
+
+            MsgStr = PoolPrint (
+                L"%s  :  %s  :  %-10s  :  %s",
+                PartTypeGUID, PartGUID,
+                PartType, VolDesc
+            );
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("%s", MsgStr);
+            MyFreePool (&MsgStr);
 
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
