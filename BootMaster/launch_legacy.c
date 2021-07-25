@@ -1,6 +1,6 @@
 /*
  * BootMaster/launch_legacy.c
- * Functions related to BIOS/CSM/Legacy Booting
+ * Functions related to Legacy (BIOS) Booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
@@ -499,7 +499,7 @@ EFI_STATUS StartLegacyImageList (
 
     // close open file handles
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style BIOS/CSM/Legacy Loader");
+    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style Legacy (BIOS) Loader");
     #endif
 
     UninitRefitLib();
@@ -736,7 +736,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     }
 
     LOG(1, LogLineType,
-        L"Adding BIOS/CSM/Legacy Entry for '%s'",
+        L"Adding Legacy (BIOS) Entry for '%s'",
         LegacyTitle
     );
     #endif
@@ -828,7 +828,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_MID,
-        L"Adding UEFI-style BIOS/CSM/Legacy Entry for '%s'",
+        L"Adding UEFI-style Legacy (BIOS) Entry for '%s'",
         Entry->me.Title
     );
     #endif
@@ -874,7 +874,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("  - Found 'Legacy (BIOS) OS' on '%s'", LegacyDescription);
+    MsgLog ("  - Found 'UEFI-Style Legacy (BIOS) OS' on '%s'", LegacyDescription);
     #endif
 
     MyFreePool (&LegacyDescription);
@@ -911,12 +911,11 @@ VOID ScanLegacyUEFI (
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
-    LOG(1, LogLineType, L"Scanning for a UEFI-style BIOS/CSM/Legacy OS");
+    LOG(1, LogLineType, L"Scanning for a UEFI-style Legacy (BIOS) OS");
     #endif
 
     FirstLegacyScan = FALSE;
 
-    InitializeListHead (&TempList);
     ZeroMem (Buffer, sizeof (Buffer));
 
     // If LegacyBios protocol is not implemented on this platform, then
@@ -1049,7 +1048,7 @@ VOID ScanLegacyDisc (VOID) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP,
-        L"Scanning Optical Discs with Mode:- 'BIOS/CSM/Legacy'"
+        L"Scanning Optical Discs with Mode:- 'Legacy (BIOS)'"
     );
     #endif
 
@@ -1076,7 +1075,7 @@ VOID ScanLegacyInternal (VOID) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP,
-        L"Scanning Internal Disk Volumes with Mode:- 'BIOS/CSM/Legacy'"
+        L"Scanning Internal Disk Volumes with Mode:- 'Legacy (BIOS)'"
     );
     #endif
 
@@ -1105,7 +1104,7 @@ VOID ScanLegacyExternal (VOID) {
 
    #if REFIT_DEBUG > 0
    LOG(1, LOG_LINE_THIN_SEP,
-       L"Scanning External Disk Volumes with Mode:- 'BIOS/CSM/Legacy'"
+       L"Scanning External Disk Volumes with Mode:- 'Legacy (BIOS)'"
    );
    #endif
 
@@ -1173,7 +1172,7 @@ VOID WarnIfLegacyProblems (VOID) {
         if (found) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"BIOS/CSM/Legacy support enabled in RefindPlus but unavailable in EFI!!"
+                L"Legacy (BIOS) support enabled in RefindPlus but unavailable in EFI!!"
             );
             #endif
 

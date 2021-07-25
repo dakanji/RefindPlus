@@ -1,6 +1,6 @@
 /*
  * BootMaster/launch_legacy.h
- * Functions related to BIOS/CSM/Legacy booting
+ * Functions related to Legacy (BIOS) booting
  *
  * Copyright (c) 2006 Christoph Pfisterer
  * All rights reserved.
