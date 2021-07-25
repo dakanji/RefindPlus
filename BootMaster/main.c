@@ -925,7 +925,8 @@ VOID preBootKicker (VOID) {
             #endif
 
             for (i = 0; i < VolumesCount; i++) {
-                if ((Volumes[i]->RootDir != NULL) &&
+                if (Volumes[i]->RootDir != NULL &&
+                    FileExists (Volumes[i]->RootDir, FilePath) &&
                     IsValidTool (Volumes[i], FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -1069,7 +1070,10 @@ VOID preCleanNvram (VOID) {
             #endif
 
             for (i = 0; i < VolumesCount; i++) {
-                if ((Volumes[i]->RootDir != NULL) && (IsValidTool (Volumes[i], FilePath))) {
+                if (Volumes[i]->RootDir != NULL &&
+                    FileExists (Volumes[i]->RootDir, FilePath) &&
+                    IsValidTool (Volumes[i], FilePath)
+                ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                     ourLoaderEntry->me.Title          = Description;
                     ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;

@@ -2472,8 +2472,9 @@ BOOLEAN FindTool (
             PathName = StrDuplicate (DirName);
             MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-                if ((Volumes[VolumeIndex]->RootDir != NULL)
-                    && (IsValidTool (Volumes[VolumeIndex], PathName))
+                if (Volumes[VolumeIndex]->RootDir != NULL &&
+                    FileExists (Volumes[VolumeIndex]->RootDir, PathName) &&
+                    IsValidTool (Volumes[VolumeIndex], PathName)
                 ) {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL,
@@ -2847,8 +2848,8 @@ VOID ScanForTools (VOID) {
                             #endif
 
                             OtherFind = TRUE;
-                        } // if IsValidTool
-                    }
+                        }
+                    } // if FileExists
 
                     MyFreePool (&FileName);
                     FileName = NULL;
@@ -2904,7 +2905,7 @@ VOID ScanForTools (VOID) {
                             MsgLog ("%s", ToolStr);
                             MyFreePool (&ToolStr);
                             #endif
-                        } // if IsValidTool
+                        }
                     } // if FileExists
 
                     MyFreePool (&FileName);
@@ -2958,7 +2959,7 @@ VOID ScanForTools (VOID) {
                             #endif
 
                             OtherFind = TRUE;
-                        } // if IsValidTool
+                        }
                     } // if FileExists
 
                     MyFreePool (&FileName);
@@ -2979,37 +2980,39 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
-                    if (IsValidTool (SelfVolume, FileName)) {
-                        #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
-                            L"Adding Netboot tag for '%s' on '%s'",
-                            FileName,
-                            SelfVolume->VolName
-                        );
-                        #endif
+                    if (FileExists (SelfVolume->RootDir, FileName)) {
+                        if (IsValidTool (SelfVolume, FileName)) {
+                            #if REFIT_DEBUG > 0
+                            LOG(1, LOG_LINE_NORMAL,
+                                L"Adding Netboot tag for '%s' on '%s'",
+                                FileName,
+                                SelfVolume->VolName
+                            );
+                            #endif
 
-                        FoundTool = TRUE;
-                        AddToolEntry (
-                            SelfVolume,
-                            FileName,
-                            L"Netboot",
-                            BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
-                            'N',
-                            FALSE
-                        );
+                            FoundTool = TRUE;
+                            AddToolEntry (
+                                SelfVolume,
+                                FileName,
+                                L"Netboot",
+                                BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
+                                'N',
+                                FALSE
+                            );
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        if (OtherFind) {
-                            MsgLog ("\n                               ");
+                            #if REFIT_DEBUG > 0
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            if (OtherFind) {
+                                MsgLog ("\n                               ");
+                            }
+                            MsgLog ("%s", ToolStr);
+                            MyFreePool (&ToolStr);
+                            #endif
+
+                            OtherFind = TRUE;
                         }
-                        MsgLog ("%s", ToolStr);
-                        MyFreePool (&ToolStr);
-                        #endif
-
-                        OtherFind = TRUE;
-                    } // if IsValidTool
+                    } // if FileExists
 
                     MyFreePool (&FileName);
                     FileName = NULL;
@@ -3034,41 +3037,40 @@ VOID ScanForTools (VOID) {
                         (FileName = FindCommaDelimited (GlobalConfig.MacOSRecoveryFiles, j++)) != NULL
                     ) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                            FileExists (Volumes[VolumeIndex]->RootDir, FileName)
+                            FileExists (Volumes[VolumeIndex]->RootDir, FileName) &&
+                            (IsValidTool (Volumes[VolumeIndex], FileName))
                         ) {
-                            if ((IsValidTool (Volumes[VolumeIndex], FileName))) {
-                                #if REFIT_DEBUG > 0
-                                LOG(1, LOG_LINE_NORMAL,
-                                    L"Adding Apple Recovery tag for '%s' on '%s'",
-                                    FileName, Volumes[VolumeIndex]->VolName
-                                );
-                                #endif
+                            #if REFIT_DEBUG > 0
+                            LOG(1, LOG_LINE_NORMAL,
+                                L"Adding Apple Recovery tag for '%s' on '%s'",
+                                FileName, Volumes[VolumeIndex]->VolName
+                            );
+                            #endif
 
-                                FoundTool = TRUE;
-                                Description = PoolPrint (
-                                    L"%s on %s",
-                                    ToolName, Volumes[VolumeIndex]->VolName
-                                );
-                                AddToolEntry (
-                                    Volumes[VolumeIndex],
-                                    FileName, Description,
-                                    BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                                    'R', TRUE
-                                );
-                                MyFreePool (&Description);
+                            FoundTool = TRUE;
+                            Description = PoolPrint (
+                                L"%s on %s",
+                                ToolName, Volumes[VolumeIndex]->VolName
+                            );
+                            AddToolEntry (
+                                Volumes[VolumeIndex],
+                                FileName, Description,
+                                BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
+                                'R', TRUE
+                            );
+                            MyFreePool (&Description);
 
-                                #if REFIT_DEBUG > 0
-                                ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
-                                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                                if (OtherFind) {
-                                    MsgLog ("\n                               ");
-                                }
-                                MsgLog ("%s", ToolStr);
-                                MyFreePool (&ToolStr);
-                                #endif
+                            #if REFIT_DEBUG > 0
+                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            if (OtherFind) {
+                                MsgLog ("\n                               ");
+                            }
+                            MsgLog ("%s", ToolStr);
+                            MyFreePool (&ToolStr);
+                            #endif
 
-                                OtherFind = TRUE;
-                            } // if IsValidTool
+                            OtherFind = TRUE;
                         } // if Volumes[VolumeIndex]
                     } // while
                 } // for
@@ -3093,6 +3095,7 @@ VOID ScanForTools (VOID) {
                     SplitVolumeAndFilename (&FileName, &VolName);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
+                            (FileExists (Volumes[VolumeIndex]->RootDir, FileName)) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
                             ((VolName == NULL) || MyStriCmp (VolName, Volumes[VolumeIndex]->VolName))
                         ) {

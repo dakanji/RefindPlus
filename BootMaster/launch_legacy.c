@@ -827,7 +827,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", LegacyDescription);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    LOG(1, LOG_THREE_STAR_MID,
         L"Adding UEFI-style BIOS/CSM/Legacy Entry for '%s'",
         Entry->me.Title
     );
@@ -967,6 +967,12 @@ VOID ScanLegacyUEFI (
             if ((BbsDevicePath->DeviceType == DiskType) &&
                 (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)
             ) {
+                #if REFIT_DEBUG > 0
+                if (Index > 0) {
+                    LOG(4, LOG_BLANK_LINE_SEP, L"X");
+                }
+                #endif
+
                 // USB flash drives appear as hard disks with certain media flags set.
                 // Look for this, and if present, pass it on with the (technically
                 //   incorrect, but internally useful) BBS_TYPE_USB flag set.
