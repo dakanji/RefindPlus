@@ -2099,8 +2099,7 @@ VOID ScanForBootloaders (
 
     // If UEFI & scanning for legacy loaders & deep legacy scan, update NVRAM boot manager list
     if ((GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) &&
-        ScanForLegacy &&
-        GlobalConfig.DeepLegacyScan
+        ScanForLegacy && GlobalConfig.DeepLegacyScan
     ) {
         BdsDeleteAllInvalidLegacyBootOptions();
         BdsAddNonExistingLegacyBootOptions();

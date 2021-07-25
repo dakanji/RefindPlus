@@ -2599,8 +2599,8 @@ UINTN RunMainMenu (
     REFIT_MENU_ENTRY  **ChosenEntry
 ) {
     REFIT_MENU_ENTRY   *TempChosenEntry;
-    MENU_STYLE_FUNC     Style              = TextMenuStyle;
-    MENU_STYLE_FUNC     MainStyle          = TextMenuStyle;
+    MENU_STYLE_FUNC     Style               = TextMenuStyle;
+    MENU_STYLE_FUNC     MainStyle           = TextMenuStyle;
     CHAR16             *MenuTitle;
     UINTN               MenuExit            = 0;
     INTN                DefaultEntryIndex   = -1;
@@ -2675,14 +2675,14 @@ UINTN RunMainMenu (
                 // no sub-screen; ignore keypress
                MenuExit = 0;
             }
-        } // Enter sub-screen
+        } // if MenuExit == MENU_EXIT_DETAILS
 
         if (MenuExit == MENU_EXIT_HIDE) {
             if (GlobalConfig.HiddenTags) {
                 HideTag (TempChosenEntry);
             }
             MenuExit = 0;
-        } // Hide launcher
+        }
     } // while
 
     if (ChosenEntry) {

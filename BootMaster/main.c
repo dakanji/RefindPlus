@@ -2488,8 +2488,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Boot Legacy UEFI:- '%s'",
-                    ourLegacyEntry->Volume->OSName
+                    L"Boot UEFI-Style Legacy (BIOS) OS:- '%s'",
+                    ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
