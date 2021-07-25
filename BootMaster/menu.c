@@ -1918,7 +1918,7 @@ UINTN FindMainMenuItem (
     return ItemIndex;
 } // VOID FindMainMenuItem()
 
-VOID GenerateWaitList() {
+VOID GenerateWaitList(VOID) {
     UINTN PointerCount = pdCount();
 
     WaitListLength = 2 + PointerCount;
