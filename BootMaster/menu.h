@@ -120,6 +120,7 @@ typedef VOID (*MENU_STYLE_FUNC)(
 );
 
 VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry);
+VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 VOID DisplaySimpleMessage (CHAR16 *Title, CHAR16 *Message);

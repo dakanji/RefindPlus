@@ -2751,3 +2751,16 @@ BDS_COMMON_OPTION * CopyBdsOption (
 
     return NewBdsOption;
 }
+
+VOID FreeBdsOption (
+    BDS_COMMON_OPTION **BdsOption
+) {
+    if (BdsOption && *BdsOption) {
+        MyFreePool (&(*BdsOption)->DevicePath);
+        MyFreePool (&(*BdsOption)->OptionName);
+        MyFreePool (&(*BdsOption)->Description);
+        MyFreePool (&(*BdsOption)->LoadOptions);
+        MyFreePool (&(*BdsOption)->StatusString);
+        MyFreePool (BdsOption);
+    }
+}
