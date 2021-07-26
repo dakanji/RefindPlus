@@ -565,6 +565,9 @@ EFI_STATUS EfivarGetRaw (
             L"'%r' When Getting EFI Variable from Emulated NVRAM:- '%s'",
             Status, VariableName
         );
+        if (MyStriCmp (VariableName, L"PreviousBoot")) {
+            LOG(4, LOG_BLANK_LINE_SEP, L"X");
+        }
         #endif
 
         if (!EFI_ERROR (Status)) {
