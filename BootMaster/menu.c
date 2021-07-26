@@ -2598,7 +2598,7 @@ UINTN RunMainMenu (
     CHAR16            **DefaultSelection,
     REFIT_MENU_ENTRY  **ChosenEntry
 ) {
-    REFIT_MENU_ENTRY   *TempChosenEntry;
+    REFIT_MENU_ENTRY   *TempChosenEntry     = NULL;
     MENU_STYLE_FUNC     Style               = TextMenuStyle;
     MENU_STYLE_FUNC     MainStyle           = TextMenuStyle;
     CHAR16             *MenuTitle;
@@ -2628,15 +2628,14 @@ UINTN RunMainMenu (
     // Generate this now and keep it around forever, since it's likely to be
     // used after this function terminates.
     GenerateWaitList();
-    MenuTitle       = StrDuplicate (L"Unknown");
-    TempChosenEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+    MenuTitle = StrDuplicate (L"Unknown");
 
     while (!MenuExit) {
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
+            L"Returned '%d' from RunGenericMenu Call 'A' on '%s' in 'RunMainMenu'",
             MenuExit, TempChosenEntry->Title
         );
         #endif
@@ -2656,7 +2655,7 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
+                    L"Returned '%d' from RunGenericMenu Call 'B' on '%s' in 'RunMainMenu'",
                     MenuExit, TempChosenEntry->SubScreen->Title
                 );
                 #endif

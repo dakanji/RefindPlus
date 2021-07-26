@@ -947,6 +947,8 @@ VOID ScanLegacyUEFI (
         // Grab each boot option variable from the boot order, and convert
         //   the variable into a BDS boot option
         SPrint (BootOption, sizeof (BootOption), L"Boot%04x", BootOrder[Index]);
+        // We are not building a list of boot options so init the head each time
+        InitializeListHead (&TempList);
         BdsOption = BdsLibVariableToOption (&TempList, BootOption);
 
         if (BdsOption != NULL) {
@@ -982,11 +984,15 @@ VOID ScanLegacyUEFI (
                 else {
                     AddLegacyEntryUEFI (BdsOption, DiskType);
                 }
-            }
+            } // if BbsDevicePath->DeviceType
+
+            FreeBdsOption (&BdsOption);
         } // if BdsOption != NULL
 
         Index++;
     } // while
+
+    MyFreePool (&BootOrder);
 } // static VOID ScanLegacyUEFI()
 
 static
