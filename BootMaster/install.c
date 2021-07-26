@@ -60,7 +60,8 @@
  // for the current ESP. ESPs are identified by GUID type codes, which means
  // that non-FAT partitions marked as ESPs may be returned as valid; and FAT
  // partitions that are not marked as ESPs will not be returned.
- static ESP_LIST * FindAllESPs (VOID) {
+ static
+ ESP_LIST * FindAllESPs (VOID) {
      ESP_LIST *AllESPs = NULL;
      ESP_LIST *NewESP;
      UINTN VolumeIndex;

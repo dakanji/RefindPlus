@@ -1948,7 +1948,7 @@ VOID egDrawImage (
     if ((CompImage != GlobalConfig.ScreenBackground) && (CompImage != Image)) {
         egFreeImage (CompImage);
     }
-} /* VOID egDrawImage() */
+} // VOID egDrawImage()
 
 // Display an unselected icon on the screen, so that the background image shows
 // through the transparency areas. The BadgeImage may be NULL, in which case

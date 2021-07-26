@@ -1283,7 +1283,8 @@ VOID RescanAll (
 #ifdef __MAKEWITH_TIANO
 
 // Minimal initialisation function
-static VOID InitializeLib (
+static
+VOID InitializeLib (
     IN EFI_HANDLE         ImageHandle,
     IN EFI_SYSTEM_TABLE  *SystemTable
 ) {
@@ -1608,19 +1609,10 @@ VOID LogBasicInfo (VOID) {
         CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     }
     switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC:
-            MsgStr = StrDuplicate (L"Mac-Style");
-            break;
-        case LEGACY_TYPE_UEFI:
-            MsgStr = StrDuplicate (L"UEFI-Style");
-            break;
-        case LEGACY_TYPE_NONE:
-            MsgStr = StrDuplicate (L"None");
-            break;
-        default:
-            // just in case ... should never happen
-            MsgStr = StrDuplicate (L"Unknown");
-            break;
+        case LEGACY_TYPE_MAC:  MsgStr = StrDuplicate (L"Mac-Style");  break;
+        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"); break;
+        case LEGACY_TYPE_NONE: MsgStr = StrDuplicate (L"Absent");     break;
+        default:               MsgStr = StrDuplicate (L"Unknown");    break; // just in case
     }
     MsgLog ("Compat Support Module:- '%s'\n", MsgStr);
     MyFreePool (&MsgStr);
@@ -1717,14 +1709,14 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("Made With:- 'TianoCore EDK II'\n");
 #endif
 
-    CHAR16 *OurDateStr = PoolPrint (
+    CHAR16 *CurDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear, NowMonth,
         NowDay, NowHour,
         NowMinute, NowSecond
     );
-    MsgLog ("Timestamp:- '%s (GMT)'\n\n", OurDateStr);
-    MyFreePool (OurDateStr);
+    MsgLog ("Timestamp:- '%s (GMT)'\n\n", CurDateStr);
+    MyFreePool (CurDateStr);
     #endif
 
     // Set Legacy Boot Type
@@ -1978,7 +1970,7 @@ EFI_STATUS EFIAPI efi_main (
         }
         RescanAll (GlobalConfig.ScanDelay > 1, TRUE);
         BltClearScreen (TRUE);
-    } // if
+    } // if GlobalConfig.ScanDelay
 
     if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
@@ -2136,7 +2128,8 @@ EFI_STATUS EFIAPI efi_main (
 
                     PauseForKey();
 
-                    MainLoopRunning = FALSE;   // just in case we get this far
+                    // just in case we get this far
+                    MainLoopRunning = FALSE;
                 }
                 break;
 
@@ -2198,7 +2191,8 @@ EFI_STATUS EFIAPI efi_main (
                 LOG(1, LOG_LINE_NORMAL, L"Restart FAILED!!");
                 #endif
 
-                MainLoopRunning = FALSE;   // just in case we get this far
+                // just in case we get this far
+                MainLoopRunning = FALSE;
                 break;
 
             case TAG_SHUTDOWN: // Shut Down
@@ -2227,7 +2221,8 @@ EFI_STATUS EFIAPI efi_main (
                 LOG(1, LOG_LINE_NORMAL, L"Shutdown FAILED!!");
                 #endif
 
-                MainLoopRunning = FALSE;   // just in case we get this far
+                // just in case we get this far
+                MainLoopRunning = FALSE;
                 break;
 
             case TAG_ABOUT:    // About RefindPlus
@@ -2275,18 +2270,15 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_THIN_SEP,
-                        L"Loading OpenCore Instance:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
-                        ourLoaderEntry->LoaderPath
-                    );
-
                     MsgLog ("User Input Received:\n");
-                    MsgLog (
-                        "  - Load OpenCore Instance:- '%s%s'",
+                    MsgStr = PoolPrint (
+                        L"Load OpenCore Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+                    MyFreePool (&MsgStr);
                     #endif
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
@@ -2300,18 +2292,15 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_THIN_SEP,
-                        L"Loading Clover Instance:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
-                        ourLoaderEntry->LoaderPath
-                    );
-
                     MsgLog ("User Input Received:\n");
-                    MsgLog (
-                        "  - Load Clover Instance:- '%s%s'",
+                    MsgStr = PoolPrint (
+                        L"Load Clover Instance:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("  - %s", MsgStr);
+                    MyFreePool (&MsgStr);
                     #endif
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
@@ -2568,7 +2557,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
-                   MainLoopRunning = FALSE;   // just in case we get this far
+                    // just in case we get this far
+                    MainLoopRunning = FALSE;
                 }
                 else {
                    BeginTextScreen (L" ");

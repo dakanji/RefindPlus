@@ -397,14 +397,18 @@ Error:
     *HandleType   = NULL;
 
     return Status;
-} /* EFI_STATUS LibScanHandleDatabase() */
+} // EFI_STATUS LibScanHandleDatabase()
 
-#ifdef __MAKEWITH_GNUEFI
 /* Modified from EDK2 function of a similar name; original copyright Intel &
- * BSD-licensed; modifications by Roderick Smith are GPLv3. */
+ * BSD-licensed; modifications by Roderick Smith are GPLv3.
+ */
 EFI_STATUS ConnectAllDriversToAllControllers (
     IN BOOLEAN ResetGOP
 ) {
+#ifndef __MAKEWITH_GNUEFI
+    BdsLibConnectAllDriversToAllControllers (ResetGOP);
+    return 0;
+#else
     EFI_STATUS   Status;
     UINTN        AllHandleCount;
     EFI_HANDLE  *AllHandleBuffer;
@@ -422,6 +426,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
         &AllHandleCount,
         &AllHandleBuffer
     );
+
     if (EFI_ERROR (Status)) {
         return Status;
     }
@@ -435,6 +440,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
             &HandleBuffer,
             &HandleType
         );
+
         if (EFI_ERROR (Status)) {
             goto Done;
         }
@@ -464,9 +470,9 @@ EFI_STATUS ConnectAllDriversToAllControllers (
                        AllHandleBuffer[Index],
                        NULL, NULL, TRUE
                    );
-               } // if HandleType[Index]
-            } // if !Parent
-        } // if Device
+               }
+            }
+        }
 
         MyFreePool (&HandleBuffer);
         MyFreePool (&HandleType);
@@ -475,13 +481,8 @@ EFI_STATUS ConnectAllDriversToAllControllers (
 Done:
     MyFreePool (&AllHandleBuffer);
     return Status;
-} /* EFI_STATUS ConnectAllDriversToAllControllers() */
-#else
-EFI_STATUS ConnectAllDriversToAllControllers (IN BOOLEAN ResetGOP) {
-    BdsLibConnectAllDriversToAllControllers (ResetGOP);
-    return 0;
-}
 #endif
+} // EFI_STATUS ConnectAllDriversToAllControllers()
 
 /*
  * ConnectFilesystemDriver() is modified from DisconnectInvalidDiskIoChildDrivers()
@@ -519,13 +520,11 @@ VOID ConnectFilesystemDriver(
     // Get all DiskIo handles
     //
     Status = REFIT_CALL_5_WRAPPER(
-        gBS->LocateHandleBuffer,
-        ByProtocol,
-        &gMyEfiDiskIoProtocolGuid,
-        NULL,
-        &HandleCount,
-        &Handles
+        gBS->LocateHandleBuffer, ByProtocol,
+        &gMyEfiDiskIoProtocolGuid, NULL,
+        &HandleCount, &Handles
     );
+
     if (EFI_ERROR (Status) || HandleCount == 0) {
         return;
     }
@@ -546,9 +545,11 @@ VOID ConnectFilesystemDriver(
             &gMyEfiBlockIoProtocolGuid,
             (VOID **) &BlockIo
         );
+
         if (EFI_ERROR (Status)) {
             continue;
         }
+
         if (BlockIo->Media == NULL || !BlockIo->Media->LogicalPartition) {
             continue;
         }
@@ -562,6 +563,7 @@ VOID ConnectFilesystemDriver(
             &gMyEfiSimpleFileSystemProtocolGuid,
             (VOID **) &Fs
         );
+
         if (Status == EFI_SUCCESS) {
             continue;
         }
@@ -577,6 +579,7 @@ VOID ConnectFilesystemDriver(
             &OpenInfo,
             &OpenInfoCount
         );
+
         if (EFI_ERROR (Status)) {
             continue;
         }
@@ -588,17 +591,20 @@ VOID ConnectFilesystemDriver(
                     gBS->DisconnectController, Handles[Index],
                     OpenInfo[OpenInfoIndex].AgentHandle, NULL
                 );
+
                 if (!(EFI_ERROR (Status))) {
                     DriverHandleList[0] = DriverHandle;
                     REFIT_CALL_4_WRAPPER(
                         gBS->ConnectController, Handles[Index],
                         DriverHandleList, NULL, FALSE
                     );
-                } // if
-            } // if
+                }
+            }
         } // for
+
         MyFreePool (&OpenInfo);
     }
+
     MyFreePool (&Handles);
 } // VOID ConnectFilesystemDriver()
 
@@ -657,6 +663,7 @@ UINTN ScanDriverDir (
         if (RunOnce) {
             MsgLog ("\n");
         }
+
         RunOnce = TRUE;
 
         MsgLog ("  - Load '%s' ... %r", FileName, Status);
@@ -707,6 +714,7 @@ BOOLEAN LoadDrivers(
         CurFound = ScanDriverDir(SelfDirectory);
         MyFreePool (&Directory);
         MyFreePool (&SelfDirectory);
+
         if (CurFound > 0) {
             NumFound = NumFound + CurFound;
             break;
@@ -733,12 +741,15 @@ BOOLEAN LoadDrivers(
                 SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
                 CleanUpPathNameSlashes (SelfDirectory);
                 MergeStrings (&SelfDirectory, Directory, L'\\');
+
                 if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
                     ReplaceSubstring (&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
                     ReplaceSubstring (&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
                 }
+
                 CurFound = ScanDriverDir (SelfDirectory);
                 MyFreePool (&SelfDirectory);
+
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
@@ -747,7 +758,8 @@ BOOLEAN LoadDrivers(
                     MsgLog ("  - Not Found or Empty");
                     #endif
                 }
-            } // if
+            }
+
             MyFreePool (&Directory);
         } // while
     }
@@ -761,4 +773,4 @@ BOOLEAN LoadDrivers(
     ConnectAllDriversToAllControllers (TRUE);
 
     return (NumFound > 0);
-} /* BOOLEAN LoadDrivers() */
+} // BOOLEAN LoadDrivers()

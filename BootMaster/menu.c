@@ -128,6 +128,7 @@ VOID InitSelection (
     if (GlobalConfig.SelectionSmallFileName != NULL) {
         TempSmallImage = egLoadImage (SelfDir, GlobalConfig.SelectionSmallFileName, TRUE);
     }
+
     if (TempSmallImage == NULL) {
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE);
     }
@@ -146,10 +147,12 @@ VOID InitSelection (
     if (GlobalConfig.SelectionBigFileName != NULL) {
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
     }
+
     if (TempBigImage == NULL) {
         if (TempSmallImage->Width > 128 || TempSmallImage->Height > 128) {
             TaintFree = FALSE;
         }
+
         if (TaintFree && LoadedSmallImage) {
            // calculate big selection image from small one
            TempBigImage = egCopyImage (TempSmallImage);
@@ -183,15 +186,18 @@ VOID InitScroll (
     State->PreviousSelection = State->CurrentSelection = 0;
     State->MaxIndex = (INTN)ItemCount - 1;
     State->FirstVisible = 0;
+
     if (AllowGraphicsMode) {
         State->MaxVisible = ScreenW / (TileSizes[0] + TILE_XSPACING) - 1;
     }
     else {
         State->MaxVisible = ConHeight - 4;
     }
+
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible)) {
         State->MaxVisible = (INTN)VisibleSpace;
     }
+
     State->PaintAll        = TRUE;
     State->PaintSelection  = FALSE;
     State->LastVisible     = State->FirstVisible + State->MaxVisible - 1;
@@ -208,7 +214,7 @@ VOID AdjustScrollState (
         State->LastVisible   = State->CurrentSelection;
         State->FirstVisible  = 1 + State->CurrentSelection - State->MaxVisible;
         if (State->FirstVisible < 0) {
-            // should not happen, but just in case...
+            // should not happen, but just in case.
             State->FirstVisible = 0;
         }
         State->PaintAll = TRUE;
@@ -234,12 +240,14 @@ VOID UpdateScroll (
             if (State->CurrentSelection > 0) {
                 State->CurrentSelection --;
             }
+
             break;
 
         case SCROLL_LINE_RIGHT:
             if (State->CurrentSelection < State->MaxIndex) {
                 State->CurrentSelection ++;
             }
+
             break;
 
         case SCROLL_LINE_UP:
@@ -254,14 +262,15 @@ VOID UpdateScroll (
                     }
                     else {
                         State->CurrentSelection = State->FirstVisible;
-                    } // if/else
-                } // if in second row
+                    }
+                }
             }
             else {
                 if (State->CurrentSelection > 0) {
                     State->CurrentSelection--;
                 }
-            } // if/else
+            }
+
             break;
 
         case SCROLL_LINE_DOWN:
@@ -276,13 +285,14 @@ VOID UpdateScroll (
                     }
                     else {
                         State->CurrentSelection = State->InitialRow1;
-                    } // if/else
-                } // if in first row
+                    }
+                }
             }
             else {
                 if (State->CurrentSelection < State->MaxIndex)
                 State->CurrentSelection++;
-            } // if/else
+            }
+
             break;
 
         case SCROLL_PAGE_UP:
@@ -295,9 +305,11 @@ VOID UpdateScroll (
             else {
                 State->CurrentSelection = State->InitialRow1;
             }
+
             if (State->CurrentSelection < 0) {
                 State->CurrentSelection = 0;
             }
+
             break;
 
         case SCROLL_FIRST:
@@ -305,6 +317,7 @@ VOID UpdateScroll (
                 State->PaintAll = TRUE;
                 State->CurrentSelection = 0;
             }
+
             break;
 
         case SCROLL_PAGE_DOWN:
@@ -320,9 +333,11 @@ VOID UpdateScroll (
             else {
                 State->CurrentSelection = State->MaxIndex;
             }
+
             if (State->CurrentSelection > State->MaxIndex) {
                 State->CurrentSelection = State->MaxIndex;
             }
+
             break;
 
         case SCROLL_LAST:
@@ -330,6 +345,7 @@ VOID UpdateScroll (
                 State->PaintAll = TRUE;
                 State->CurrentSelection = State->MaxIndex;
             }
+
             break;
 
         case SCROLL_NONE:
@@ -387,6 +403,7 @@ INTN FindMenuShortcutEntry (
             if (Shortcut[0] >= 'a' && Shortcut[0] <= 'z') {
                 Shortcut[0] -= ('a' - 'A');
             }
+
             if (Shortcut[0]) {
                 for (i = 0; i < Screen->EntryCount; i++) {
                     if (Screen->Entries[i]->ShortcutDigit  == Shortcut[0] ||
@@ -394,21 +411,23 @@ INTN FindMenuShortcutEntry (
                     ) {
                         MyFreePool (&Shortcut);
                         return i;
-                    } // if
+                    }
                 } // for
-            } // if
+            }
         }
         else if (ShortcutLength > 1) {
             for (i = 0; i < Screen->EntryCount; i++) {
                 if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
                     MyFreePool (&Shortcut);
                     return i;
-                } // if
+                }
             } // for
         }
+
         MyFreePool (&Shortcut);
         j++;
     } // while
+
     return -1;
 } // static INTN FindMenuShortcutEntry()
 
@@ -430,8 +449,9 @@ VOID IdentifyRows (
         }
         else if ((Screen->Entries[i]->Row == 1) && (State->InitialRow1 > i)) {
             State->InitialRow1 = i;
-        } // if/else
+        }
     } // for
+
     if ((State->ScrollMode == SCROLL_MODE_ICONS) &&
         (State->MaxVisible > (State->FinalRow0 + 1))
     ) {
@@ -582,6 +602,7 @@ VOID SaveScreen (
     if (AllowGraphicsMode) {
         SwitchToGraphicsAndClear (TRUE);
     }
+
     ReadAllKeyStrokes();
 } // VOID SaveScreen()
 
@@ -755,13 +776,14 @@ UINTN RunGenericMenu (
                     SaveScreen();
                     State.PaintAll     = TRUE;
                     TimeSinceKeystroke = 0;
-                } // if
+                }
             }
             else {
                 WaitForInput (0);
-            }
+            } // if/else HaveTimeout
+
             continue;
-        } // if/else !read keystroke
+        } // if/else Status == EFI_SUCCESS
 
         if (HaveTimeout) {
             // the user pressed a key, cancel the timeout
@@ -803,6 +825,7 @@ UINTN RunGenericMenu (
                     if (EjectMedia()) {
                         MenuExit = MENU_EXIT_ESCAPE;
                     }
+
                     break;
             } // switch
 
@@ -818,10 +841,12 @@ UINTN RunGenericMenu (
                     KeyAsString[0] = key.UnicodeChar;
                     KeyAsString[1] = 0;
                     ShortcutEntry  = FindMenuShortcutEntry (Screen, KeyAsString);
+
                     if (ShortcutEntry >= 0) {
                         State.CurrentSelection = ShortcutEntry;
                         MenuExit = MENU_EXIT_ENTER;
                     }
+
                     break;
             } // switch
         }
@@ -845,24 +870,29 @@ UINTN RunGenericMenu (
                         DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
+
                     break;
                 case POINTER_LEFT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_UP);
                     }
+
                     if (DrawSelection) {
                         DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
+
                     break;
                 case POINTER_RIGHT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_DOWN);
                     }
+
                     if (DrawSelection) {
                         DrawSelection        = FALSE;
                         State.PaintSelection = TRUE;
                     }
+
                     break;
                 default:
                     if (!DrawSelection || Item != State.CurrentSelection) {
@@ -870,12 +900,14 @@ UINTN RunGenericMenu (
                         State.PaintSelection   = TRUE;
                         State.CurrentSelection = Item;
                     }
+
                     if (PointerState.Press) {
                         MenuExit = MENU_EXIT_ENTER;
                     }
+
                     break;
             } // switch
-        } // if/else
+        } // if/else !PointerActive
     } // while
 
     pdClear();
@@ -907,6 +939,7 @@ VOID ShowTextInfoLines (
             gST->ConOut,
             ATTR_BASIC
         );
+
         for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
             REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, 4 + i);
             REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->InfoLines[i]);
@@ -989,6 +1022,7 @@ VOID TextMenuStyle (
                 MyFreePool (&DisplayStrings[i]);
             }
             MyFreePool (&DisplayStrings);
+
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
@@ -1003,6 +1037,7 @@ VOID TextMenuStyle (
                         2,
                         MenuPosY + (i - State->FirstVisible)
                     );
+
                     if (i == State->CurrentSelection) {
                         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_CHOICE_CURRENT);
                     }
@@ -1023,23 +1058,28 @@ VOID TextMenuStyle (
             else {
                 gST->ConOut->OutputString (gST->ConOut, L" ");
             }
+
             gST->ConOut->SetCursorPosition (gST->ConOut, 0, MenuPosY + State->MaxVisible);
+
             if (State->LastVisible < State->MaxIndex) {
                 REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, ArrowDown);
             }
             else {
                 REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString, gST->ConOut, L" ");
             }
+
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_HINTS)) {
                if (Screen->Hint1 != NULL) {
                    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 2);
                    REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint1);
                }
+
                if (Screen->Hint2 != NULL) {
                    REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 1);
                    REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, Screen->Hint2);
                }
             }
+
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
@@ -1076,6 +1116,7 @@ VOID TextMenuStyle (
                 gST->ConOut,
                 DisplayStrings[State->CurrentSelection]
             );
+
             break;
 
         case MENU_FUNCTION_PAINT_TIMEOUT:
@@ -1091,6 +1132,7 @@ VOID TextMenuStyle (
                 REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, ParamText);
             }
+
             break;
     }
 }
@@ -1100,9 +1142,7 @@ VOID TextMenuStyle (
 //
 
 inline static
-UINTN TextLineHeight (
-    VOID
-) {
+UINTN TextLineHeight (VOID) {
     return egGetFontHeight() + TEXT_YMARGIN * 2;
 } // UINTN TextLineHeight()
 
@@ -1153,15 +1193,17 @@ VOID DrawText (
             TEXT_YMARGIN,
             (Bg.r + Bg.g + Bg.b) / 3
         );
+
         egDrawImageWithTransparency (
             TextBuffer, NULL,
             XPos, YPos,
             TextBuffer->Width,
             TextBuffer->Height
         );
+
         egFreeImage (TextBuffer);
     }
-} /* VOID DrawText() */
+} // VOID DrawText()
 
 // Finds the average brightness of the input Image.
 // NOTE: Passing an Image that covers the whole screen can strain the
@@ -1182,7 +1224,7 @@ UINT8 AverageBrightness (
             Sum += (Image->PixelData[i].r + Image->PixelData[i].g + Image->PixelData[i].b);
         }
         Sum /= (Image->Width * Image->Height * 3);
-    } // if
+    }
 
     return (UINT8) Sum;
 } // UINT8 AverageBrightness()
@@ -1204,6 +1246,7 @@ VOID DrawTextWithTransparency (
     }
 
     egMeasureText (Text, &TextWidth, NULL);
+
     if (TextWidth == 0) {
        TextWidth = ScreenW;
        XPos      = 0;
@@ -1227,6 +1270,7 @@ VOID DrawTextWithTransparency (
         0, 0,
         AverageBrightness (TextBuffer)
     );
+
     egDrawImageWithTransparency (
         TextBuffer, NULL,
         XPos, YPos,
@@ -1257,17 +1301,21 @@ VOID ComputeSubScreenWindowSize (
 
     for (i = 0; i < Screen->InfoLineCount; i++) {
         ItemWidth = StrLen (Screen->InfoLines[i]);
+
         if (*Width < ItemWidth) {
             *Width = ItemWidth;
         }
+
         (*Height)++;
     }
 
     for (i = 0; i <= State->MaxIndex; i++) {
         ItemWidth = StrLen (Screen->Entries[i]->Title);
+
         if (*Width < ItemWidth) {
             *Width = ItemWidth;
         }
+
         (*Height)++;
     }
 
@@ -1310,9 +1358,11 @@ VOID ComputeSubScreenWindowSize (
     else {
         BannerBottomEdge = GlobalConfig.BannerBottomEdge;
     }
+
     if (*Height > (HintTop - BannerBottomEdge - FontCellHeight * 2)) {
         BannerBottomEdge = 0;
     }
+
     if (*Height > (HintTop - BannerBottomEdge - FontCellHeight * 2)) {
         // TODO: Implement scrolling in text screen.
         *Height = (HintTop - BannerBottomEdge - FontCellHeight * 2);
@@ -1375,8 +1425,8 @@ VOID GraphicsMenuStyle (
                   if (i > 0) {
                       Screen->Title[i] = 0;
                   }
-               } // if
-            } // if/else
+               }
+            }
             break;
 
         case MENU_FUNCTION_CLEANUP:
@@ -1390,6 +1440,7 @@ VOID GraphicsMenuStyle (
                 &MenuWidth, &MenuHeight,
                 &LineWidth
             );
+
             DrawText (
                 Screen->Title,
                 FALSE,
@@ -1397,6 +1448,7 @@ VOID GraphicsMenuStyle (
                 TitlePosX,
                 EntriesPosY += TextLineHeight()
             );
+
             if (Screen->TitleImage) {
                 BltImageAlpha (
                     Screen->TitleImage,
@@ -1415,8 +1467,10 @@ VOID GraphicsMenuStyle (
                         FALSE, LineWidth,
                         EntriesPosX, EntriesPosY
                     );
+
                     EntriesPosY += TextLineHeight();
                 }
+
                 // also add a blank line
                 EntriesPosY += TextLineHeight();
             }
@@ -1446,7 +1500,7 @@ VOID GraphicsMenuStyle (
                         ScreenH - (egGetFontHeight() * 2)
                     );
                 }
-            } // if
+            }
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
@@ -1484,8 +1538,18 @@ VOID DrawMainMenuEntry (
 ) {
     EG_IMAGE *Background;
 
-    // if using pointer, don't draw selection image when not hovering
-    if (selected && DrawSelection) {
+    // if using pointer ... do not draw selection image when not hovering
+    if (!selected || !DrawSelection) {
+        // Image not selected ... copy background
+        egDrawImageWithTransparency (
+            Entry->Image,
+            Entry->BadgeImage,
+            XPos, YPos,
+            SelectionImages[Entry->Row]->Width,
+            SelectionImages[Entry->Row]->Height
+        );
+    }
+    else {
         Background = egCropImage (
             GlobalConfig.ScreenBackground,
             XPos, YPos,
@@ -1506,18 +1570,8 @@ VOID DrawMainMenuEntry (
                 XPos, YPos
             );
             egFreeImage (Background);
-        } // if
-    }
-    else {
-        // Image not selected; copy background
-        egDrawImageWithTransparency (
-            Entry->Image,
-            Entry->BadgeImage,
-            XPos, YPos,
-            SelectionImages[Entry->Row]->Width,
-            SelectionImages[Entry->Row]->Height
-        );
-    } // if/else
+        }
+    } // if/else !selected
 } // VOID DrawMainMenuEntry()
 
 static
@@ -1544,7 +1598,7 @@ VOID PaintAll (
                     itemPosX[i - State->FirstVisible],
                     row0PosY
                 );
-            } // if
+            }
         }
         else {
             DrawMainMenuEntry (
@@ -1576,12 +1630,13 @@ VOID PaintAll (
             (ScreenW - egComputeTextWidth (Screen->Hint1)) / 2,
             ScreenH - (egGetFontHeight() * 3)
         );
+
         DrawTextWithTransparency (
             Screen->Hint2,
             (ScreenW - egComputeTextWidth (Screen->Hint2)) / 2,
             ScreenH - (egGetFontHeight() * 2)
         );
-    } // if
+    }
 } // static VOID PaintAll()
 
 // Move the selection to State->CurrentSelection, adjusting icon row if necessary...
@@ -1607,7 +1662,7 @@ VOID PaintSelection (
         else {
             XSelectPrev = State->PreviousSelection;
             YPosPrev = row1PosY;
-        } // if/else
+        }
 
         if (Screen->Entries[State->CurrentSelection]->Row == 0) {
             XSelectCur = State->CurrentSelection - State->FirstVisible;
@@ -1616,7 +1671,7 @@ VOID PaintSelection (
         else {
             XSelectCur = State->CurrentSelection;
             YPosCur = row1PosY;
-        } // if/else
+        }
 
         DrawMainMenuEntry (
             Screen->Entries[State->PreviousSelection],
@@ -1624,12 +1679,14 @@ VOID PaintSelection (
             itemPosX[XSelectPrev],
             YPosPrev
         );
+
         DrawMainMenuEntry (
             Screen->Entries[State->CurrentSelection],
             TRUE,
             itemPosX[XSelectCur],
             YPosCur
         );
+
         if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_LABEL) &&
             (!PointerActive || (PointerActive && DrawSelection))
         ) {
@@ -1675,6 +1732,7 @@ VOID PaintIcon (
         if (Alignment == ALIGN_RIGHT) {
             PosX -= Icon->Width;
         }
+
         egDrawImageWithTransparency (
             Icon,
             NULL,
@@ -1683,13 +1741,12 @@ VOID PaintIcon (
             Icon->Width,
             Icon->Height
         );
+
         egFreeImage (Icon);
     }
 } // static VOID()
 
-UINTN ComputeRow0PosY (
-    VOID
-) {
+UINTN ComputeRow0PosY (VOID) {
     return ((ScreenH / 2) - TileSizes[0] / 2);
 } // UINTN ComputeRow0PosY()
 
@@ -1706,15 +1763,15 @@ VOID PaintArrows (
     UINTN Width, Height, RightX, AdjPosY;
 
     // NOTE: Assume that left and right arrows are of the same size...
-     Width   = egemb_arrow_left.Width;
-     Height  = egemb_arrow_left.Height;
-     RightX  = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
-     AdjPosY = PosY - (Height / 2);
+    Width   = egemb_arrow_left.Width;
+    Height  = egemb_arrow_left.Height;
+    RightX  = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+    AdjPosY = PosY - (Height / 2);
 
-     // For PaintIcon() calls, the starting Y position is moved to the midpoint
-     // of the surrounding row; PaintIcon() adjusts this back up by half the
-     // icon's height to properly center it.
-     if ((State->FirstVisible > 0) &&
+    // For PaintIcon() calls, the starting Y position is moved to the midpoint
+    // of the surrounding row; PaintIcon() adjusts this back up by half the
+    // icon's height to properly center it.
+    if ((State->FirstVisible > 0) &&
         (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))
     ) {
         PaintIcon (&egemb_arrow_left, L"arrow_left", PosX, PosY, ALIGN_RIGHT);
@@ -1723,7 +1780,7 @@ VOID PaintArrows (
         TempImage = egCropImage (GlobalConfig.ScreenBackground, PosX - Width, AdjPosY, Width, Height);
         BltImage (TempImage, PosX - Width, AdjPosY);
         egFreeImage (TempImage);
-    } // if/else
+    }
 
     if ((State->LastVisible < (row0Loaders - 1)) &&
         (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))
@@ -1734,7 +1791,7 @@ VOID PaintArrows (
         TempImage = egCropImage (GlobalConfig.ScreenBackground, RightX, AdjPosY, Width, Height);
         BltImage (TempImage, RightX, AdjPosY);
         egFreeImage (TempImage);
-    } // if/else
+    }
 } // VOID PaintArrows()
 
 // Display main menu in graphics mode
@@ -1903,14 +1960,14 @@ UINTN FindMainMenuItem (
                     ItemIndex = i;
                     break;
                 }
-            } // if i <= State->LastVisible
+            }
         }
         else if (Screen->Entries[i]->Row == 1 && itemRow == 1) {
             if (PosX >= itemPosX[i] && PosX <= itemPosX[i] + TileSizes[1]) {
                 ItemIndex = i;
                 break;
             }
-        } // if/else Screen->Entries[i]->Row
+        }
     }
 
     MyFreePool (&itemPosX);
@@ -1931,7 +1988,9 @@ VOID GenerateWaitList(VOID) {
     }
 } // VOID GenerateWaitList()
 
-UINTN WaitForInput (UINTN Timeout) {
+UINTN WaitForInput (
+    UINTN Timeout
+) {
     UINTN       Index      = INPUT_TIMEOUT;
     UINTN       Length     = WaitListLength;
     EFI_EVENT   TimerEvent = NULL;
@@ -1976,30 +2035,38 @@ UINTN WaitForInput (UINTN Timeout) {
 // Returns TRUE if the user exited with edited options; FALSE if the user
 // pressed Esc to terminate the edit.
 static
-BOOLEAN EditOptions (LOADER_ENTRY *MenuEntry) {
-   UINTN    x_max, y_max;
-   CHAR16  *EditedOptions;
-   BOOLEAN  retval = FALSE;
+BOOLEAN EditOptions (
+    LOADER_ENTRY *MenuEntry
+) {
+    UINTN    x_max, y_max;
+    CHAR16  *EditedOptions;
+    BOOLEAN  retval = FALSE;
 
-   if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-      return FALSE;
-   }
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
+        return FALSE;
+    }
 
-   REFIT_CALL_4_WRAPPER(gST->ConOut->QueryMode, gST->ConOut, gST->ConOut->Mode->Mode, &x_max, &y_max);
+    REFIT_CALL_4_WRAPPER(
+        gST->ConOut->QueryMode, gST->ConOut,
+        gST->ConOut->Mode->Mode,
+        &x_max, &y_max
+    );
 
-   if (!GlobalConfig.TextOnly)
-      SwitchToText (TRUE);
+    if (!GlobalConfig.TextOnly) {
+        SwitchToText (TRUE);
+    }
 
-   if (line_edit (MenuEntry->LoadOptions, &EditedOptions, x_max)) {
-      MyFreePool (&MenuEntry->LoadOptions);
-      MenuEntry->LoadOptions = EditedOptions;
-      retval = TRUE;
-   } // if
-   if (!GlobalConfig.TextOnly) {
-       SwitchToGraphics();
-   }
+    if (line_edit (MenuEntry->LoadOptions, &EditedOptions, x_max)) {
+        MyFreePool (&MenuEntry->LoadOptions);
+        MenuEntry->LoadOptions = EditedOptions;
+        retval = TRUE;
+    }
 
-   return retval;
+    if (!GlobalConfig.TextOnly) {
+        SwitchToGraphics();
+    }
+
+    return retval;
 } // VOID EditOptions()
 
 //
@@ -2071,20 +2138,23 @@ BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
     while ((OneElement = FindCommaDelimited (FilenameList, i)) != NULL) {
         DeleteIt = FALSE;
         Filename = StrDuplicate (OneElement);
+
         if (SplitVolumeAndFilename (&Filename, &VolName)) {
             DeleteIt = TRUE;
+
             if (FindVolume (&Volume, VolName) && Volume->RootDir) {
                 Status = REFIT_CALL_5_WRAPPER(
                     Volume->RootDir->Open, Volume->RootDir,
                     &FileHandle, Filename,
                     EFI_FILE_MODE_READ, 0
                 );
+
                 if (Status == EFI_SUCCESS) {
                     DeleteIt = FALSE;
                     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-                } // if file exists
-            } // if volume exists
-        } // if list item includes volume
+                }
+            }
+        }
 
         if (DeleteIt) {
             DeleteItemFromCsvList (OneElement, FilenameList);
@@ -2134,8 +2204,8 @@ VOID SaveHiddenList (
     CheckError(Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
-// Present a menu that enables the user to delete hidden tags (that is, to
-// un-hide them).
+// Present a menu that enables the user to delete hidden tags
+//   that is, to un-hide them.
 VOID ManageHiddenTags (
     VOID
 ) {
@@ -2193,7 +2263,10 @@ VOID ManageHiddenTags (
         MergeStrings (&AllTags, HiddenFirmware, L',');
     }
 
-    if ((AllTags) && (StrLen (AllTags) > 0)) {
+    if (!AllTags || StrLen (AllTags) < 1) {
+        DisplaySimpleMessage (L"Information", L"No hidden tags found");
+    }
+    else {
         AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
@@ -2229,30 +2302,31 @@ VOID ManageHiddenTags (
                 );
                 SaveLegacy = TRUE;
                 CheckError (Status, L"in ManageHiddenTags!!");
-            } // if
-        } // if
+            }
+        }
 
         if (SaveTags) {
             SaveHiddenList (HiddenTags, L"HiddenTags");
         }
+
         if (SaveLegacy) {
             SaveHiddenList (HiddenLegacy, L"HiddenLegacy");
         }
+
         if (SaveTools) {
             SaveHiddenList (HiddenTools, L"HiddenTools");
             MyFreePool (&gHiddenTools);
             gHiddenTools = NULL;
         }
+
         if (SaveFirmware) {
             SaveHiddenList (HiddenFirmware, L"HiddenFirmware");
         }
+
         if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
             RescanAll (FALSE, FALSE);
         }
-    }
-    else {
-        DisplaySimpleMessage (L"Information", L"No hidden tags found");
-    }
+    } // if !AllTags
 
     MyFreePool (&AllTags);
     MyFreePool (&HiddenTags);
@@ -2274,6 +2348,7 @@ CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
         MyFreePool (&CheckErrMsg);
         #endif
     }
+
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
@@ -2284,6 +2359,7 @@ CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
         MyFreePool (&Buffer);
         Buffer = NULL;
     }
+
     return (CHAR16 *) Buffer;
 } // CHAR16* ReadHiddenTags()
 
@@ -2313,7 +2389,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
 
         CheckError (Status, L"in AddToHiddenTags!!");
         MyFreePool (&HiddenTags);
-    } // if
+    }
 } // VOID AddToHiddenTags()
 
 // Adds a filename, specified by the *Loader variable, to the *VarName EFI variable,
@@ -2346,6 +2422,7 @@ BOOLEAN HideEfiTag (
     if (Loader->Volume->VolName && (StrLen (Loader->Volume->VolName) > 0)) {
         FullPath = StrDuplicate (Loader->Volume->VolName);
     }
+
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
     AddMenuInfoLine (HideItemMenu, PoolPrint (L"Are you sure you want to hide %s?", FullPath));
     AddMenuEntry (HideItemMenu, &MenuEntryYes);
@@ -2375,7 +2452,7 @@ BOOLEAN HideEfiTag (
         AddToHiddenTags (VarName, FullPath);
         TagHidden = TRUE;
         MyFreePool (&GuidStr);
-    } // if
+    }
 
     MyFreePool (&FullPath);
 
@@ -2591,7 +2668,7 @@ UINTN RunMenu (
     #endif
 
     return MenuExit;
-}
+} // UINTN RunMenu()
 
 UINTN RunMainMenu (
     REFIT_MENU_SCREEN  *Screen,
@@ -2635,7 +2712,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' from RunGenericMenu Call 'A' on '%s' in 'RunMainMenu'",
+            L"Returned '%d' from RunGenericMenu 'Call A' on '%s' in 'RunMainMenu'",
             MenuExit, TempChosenEntry->Title
         );
         #endif
@@ -2655,7 +2732,7 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Returned '%d' from RunGenericMenu Call 'B' on '%s' in 'RunMainMenu'",
+                    L"Returned '%d' from RunGenericMenu 'Call B' on '%s' in 'RunMainMenu'",
                     MenuExit, TempChosenEntry->SubScreen->Title
                 );
                 #endif
@@ -2705,7 +2782,7 @@ VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry) {
     MyFreePool (&Entry->me.Title);
     MyFreePool (&Entry->Title);
     MyFreePool (&Entry);
-}
+} // VOID FreeLoaderEntry()
 
 BDS_COMMON_OPTION * CopyBdsOption (
     BDS_COMMON_OPTION *BdsOption
@@ -2721,24 +2798,28 @@ BDS_COMMON_OPTION * CopyBdsOption (
                     BdsOption->DevicePath
                 );
             }
+
             if (BdsOption->OptionName) {
                 NewBdsOption->OptionName = AllocateCopyPool (
                     StrSize (BdsOption->OptionName),
                     BdsOption->OptionName
                 );
             }
+
             if (BdsOption->Description) {
                 NewBdsOption->Description = AllocateCopyPool (
                     StrSize (BdsOption->Description),
                     BdsOption->Description
                 );
             }
+
             if (BdsOption->LoadOptions) {
                 NewBdsOption->LoadOptions = AllocateCopyPool (
                     BdsOption->LoadOptionsSize,
                     BdsOption->LoadOptions
                 );
             }
+
             if (BdsOption->StatusString) {
                 NewBdsOption->StatusString = AllocateCopyPool (
                     StrSize (BdsOption->StatusString),
@@ -2746,10 +2827,10 @@ BDS_COMMON_OPTION * CopyBdsOption (
                 );
             }
         }
-    }
+    } // if NewBdsOption()
 
     return NewBdsOption;
-}
+} // BDS_COMMON_OPTION * CopyBdsOption()
 
 VOID FreeBdsOption (
     BDS_COMMON_OPTION **BdsOption
@@ -2762,4 +2843,4 @@ VOID FreeBdsOption (
         MyFreePool (&(*BdsOption)->StatusString);
         MyFreePool (BdsOption);
     }
-}
+} // VOID FreeBdsOption()

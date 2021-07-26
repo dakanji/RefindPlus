@@ -11,6 +11,12 @@ THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "Platform.h"
 #include "../BootMaster/lib.h"
@@ -128,21 +134,27 @@ EFI_STATUS ScanDeviceHandles (
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentName2ProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
+
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
                 }
@@ -169,6 +181,7 @@ EFI_STATUS ScanDeviceHandles (
                                     }
                                 }
                             }
+
                             if ((OpenInfo[OpenInfoIndex].Attributes &
                                 EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                             ) {
@@ -180,15 +193,15 @@ EFI_STATUS ScanDeviceHandles (
                                 }
                             }
                         }
-                    }
+                    } // for OpenInfoIndex = 0
 
                     MyFreePool (&OpenInfo);
                 }
-            }
+            } // for for ProtocolIndex = 0
 
             MyFreePool (&ProtocolGuidArray);
-        }
-    }
+        } // if !EFI_ERROR Status
+    } // for k = 0
 
     return EFI_SUCCESS;
 

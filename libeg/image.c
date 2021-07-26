@@ -913,7 +913,7 @@ VOID egComposeImage (
             }
         }
     }
-} /* VOID egComposeImage() */
+} // VOID egComposeImage()
 
 //
 // misc internal functions
