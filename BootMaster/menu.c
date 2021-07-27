@@ -2712,7 +2712,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' from RunGenericMenu 'Call A' on '%s' in 'RunMainMenu'",
+            L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
             MenuExit, TempChosenEntry->Title
         );
         #endif
@@ -2732,8 +2732,8 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Returned '%d' from RunGenericMenu 'Call B' on '%s' in 'RunMainMenu'",
-                    MenuExit, TempChosenEntry->SubScreen->Title
+                    L"Returned '%d' from RunGenericMenu call on SubScreen in 'RunMainMenu'",
+                    MenuExit
                 );
                 #endif
 
