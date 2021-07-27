@@ -206,8 +206,8 @@ EFI_STATUS ScanDeviceHandles (
     return EFI_SUCCESS;
 
     Error:
-    MyFreePool (*HandleType);
-    MyFreePool (*HandleBuffer);
+    ReleasePtr (*HandleType);
+    ReleasePtr (*HandleBuffer);
 
     *HandleCount  = 0;
     *HandleBuffer = NULL;

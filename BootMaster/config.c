@@ -402,7 +402,7 @@ VOID HandleString (
     OUT CHAR16  **Target
 ) {
     if ((TokenCount == 2) && Target) {
-        MyFreePool (*Target);
+        ReleasePtr (*Target);
         *Target = StrDuplicate (TokenList[1]);
     } // if
 } // static VOID HandleString()
@@ -430,7 +430,7 @@ VOID HandleStrings (
     }
 
     if ((*Target != NULL) && !AddMode) {
-        MyFreePool (*Target);
+        ReleasePtr (*Target);
         *Target = NULL;
     }
 
@@ -577,7 +577,7 @@ VOID SetDefaultByTime (
       } // if/else time range crosses midnight
 
       if (SetIt) {
-         MyFreePool (*Default);
+         ReleasePtr (*Default);
          *Default = StrDuplicate (TokenList[1]);
       } // if (SetIt)
    } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))

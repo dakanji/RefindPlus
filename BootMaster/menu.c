@@ -2765,7 +2765,7 @@ UINTN RunMainMenu (
     }
 
     if (DefaultSelection) {
-       MyFreePool (*DefaultSelection);
+       ReleasePtr (*DefaultSelection);
        *DefaultSelection = MenuTitle;
     }
 

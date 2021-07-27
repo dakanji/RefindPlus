@@ -255,7 +255,7 @@ VOID EFIAPI DeepLoggger (
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
-    MyFreePool (*Message);
+    ReleasePtr (*Message);
 
     return;
 #endif
@@ -267,7 +267,7 @@ VOID EFIAPI DeepLoggger (
         MuteLogger ||
         !(*Message)
     ) {
-        MyFreePool (*Message);
+        ReleasePtr (*Message);
 
         return;
     }
@@ -374,7 +374,7 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = FALSE;
     }
 
-    MyFreePool (*Message);
+    ReleasePtr (*Message);
     MyFreePool (&FinalMsg);
     MyFreePool (&TmpMsg);
 }

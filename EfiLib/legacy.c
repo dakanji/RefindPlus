@@ -40,6 +40,7 @@ BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping     = NULL;
 UINTN                    mBootOptionBbsMappingCount = 0;
 
 extern VOID MyFreePool (IN OUT VOID *Pointer);
+extern VOID ReleasePtr (IN OUT VOID *Pointer);
 
 extern EFI_DEVICE_PATH EndDevicePath[];
 extern EFI_GUID        gEfiLegacyBiosProtocolGuid;
@@ -497,7 +498,7 @@ BdsCreateLegacyBootOption (
 
   if (*BootOrderList != NULL) {
     CopyMem (NewBootOrderList, *BootOrderList, *BootOrderListSize);
-    MyFreePool (*BootOrderList);
+    ReleasePtr (*BootOrderList);
   }
 
   BootOrderLastIndex                    = (UINTN) (*BootOrderListSize / sizeof (UINT16));

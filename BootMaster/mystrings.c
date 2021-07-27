@@ -205,7 +205,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
     NewString = AllocatePool(sizeof (CHAR16) * (Length1 + Length2 + 2));
     if (NewString != NULL) {
         if ((*First != NULL) && (Length1 == 0)) {
-            MyFreePool (*First);
+            ReleasePtr (*First);
             *First = NULL;
         }
 
@@ -222,7 +222,7 @@ VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar) {
         if (Second != NULL) {
             StrCat(NewString, Second);
         }
-        MyFreePool (*First);
+        ReleasePtr (*First);
         *First = NewString;
     }
     else {

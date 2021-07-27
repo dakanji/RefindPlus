@@ -802,7 +802,7 @@ VOID AddListElement (
         if (*ElementCount == 0) {
             // *ListPtr != NULL && *ElementCount == 0 ???
             // Should not happen but free *ListPtr just in case
-            MyFreePool (*ListPtr);
+            ReleasePtr (*ListPtr);
 
             TmpListPtr = AllocatePool (AllocatePointer);
         }
@@ -840,9 +840,9 @@ VOID FreeList (
     if ((*ElementCount > 0) && (**ListPtr != NULL)) {
         for (i = 0; i < *ElementCount; i++) {
             // TODO: call a user-provided routine for each element here
-            MyFreePool ((*ListPtr)[i]);
+            ReleasePtr ((*ListPtr)[i]);
         }
-        MyFreePool (*ListPtr);
+        ReleasePtr (*ListPtr);
     }
 } // VOID FreeList()
 
@@ -885,7 +885,7 @@ VOID FreeVolumesList (
         for (i = 0; i < *ListCount; i++) {
             FreeVolume ((*ListVolumes)[i]);
         }
-        MyFreePool (*ListVolumes);
+        ReleasePtr (*ListVolumes);
         *ListCount = 0;
     }
 } // VOID FreeVolumesList()
@@ -2643,8 +2643,8 @@ EFI_STATUS DirNextEntry (
     #endif
 
     for (;;) {
-        // free pointer from last call
-        MyFreePool (*DirEntry);
+        // Release pointer from last call
+        ReleasePtr (*DirEntry);
         *DirEntry = NULL;
 
         // read next directory entry
@@ -3072,8 +3072,8 @@ VOID FindVolumeAndFilename (
         return;
     }
 
-    MyFreePool (*loader);
-    MyFreePool (*DeviceVolume);
+    ReleasePtr (*loader);
+    ReleasePtr (*DeviceVolume);
     *DeviceVolume = NULL;
     DeviceString  = DevicePathToStr (loadpath);
     *loader       = SplitDeviceString (DeviceString);
@@ -3116,7 +3116,7 @@ BOOLEAN SplitVolumeAndFilename (
         return FALSE;
     }
 
-    MyFreePool (*VolName);
+    ReleasePtr (*VolName);
     *VolName = NULL;
 
     Length = StrLen (*Path);
@@ -3151,9 +3151,9 @@ VOID SplitPathName (
 ) {
     CHAR16 *Temp = NULL;
 
-    MyFreePool (*VolName);
-    MyFreePool (*Path);
-    MyFreePool (*Filename);
+    ReleasePtr (*VolName);
+    ReleasePtr (*Path);
+    ReleasePtr (*Filename);
     *VolName = *Path = *Filename = NULL;
 
     Temp = StrDuplicate (InPath);
@@ -3166,12 +3166,12 @@ VOID SplitPathName (
     CleanUpPathNameSlashes (*Filename);
 
     if (StrLen (*Path) == 0) {
-        MyFreePool (*Path);
+        ReleasePtr (*Path);
         *Path = NULL;
     }
 
     if (StrLen (*Filename) == 0) {
-        MyFreePool (*Filename);
+        ReleasePtr (*Filename);
         *Filename = NULL;
     }
 
@@ -3274,6 +3274,12 @@ VOID MyFreePool (
     }
 }
 
+VOID ReleasePtr (
+    IN OUT VOID *Pointer
+) {
+    MyFreePool (&Pointer);
+}
+
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
 BOOLEAN EjectMedia (VOID) {
@@ -3337,7 +3343,7 @@ VOID EraseUint32List (
 
     while (*TheList) {
         NextItem = (*TheList)->Next;
-        MyFreePool (*TheList);
+        ReleasePtr (*TheList);
         *TheList = NextItem;
     }
 } // EraseUin32List()
