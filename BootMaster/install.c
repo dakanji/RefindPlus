@@ -166,8 +166,8 @@
 
          #if REFIT_DEBUG > 0
          LOG(2, LOG_LINE_NORMAL,
-             L"Returned '%d' from RunGenericMenu call on '%s' in 'PickOneESP'",
-             MenuExit, ChosenOption->Title
+             L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'PickOneESP'",
+             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
          );
          #endif
 
@@ -981,8 +981,8 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
          MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
          #if REFIT_DEBUG > 0
          LOG(2, LOG_LINE_NORMAL,
-             L"Returned '%d' from RunGenericMenu call on '%s' in 'PickOneBootOption'",
-             MenuExit, ChosenOption->Title
+             L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'PickOneBootOption'",
+             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
          );
          #endif
 

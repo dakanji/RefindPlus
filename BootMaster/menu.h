@@ -158,6 +158,7 @@ UINTN FindMainMenuItem (IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN
 UINTN WaitForInput (IN UINTN Timeout);
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);
+CHAR16 * MenuExitInfo (IN UINTN MenuExit);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
 

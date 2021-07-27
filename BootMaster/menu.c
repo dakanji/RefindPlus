@@ -365,6 +365,24 @@ VOID UpdateScroll (
 // menu helper functions
 //
 
+CHAR16 * MenuExitInfo (
+    IN UINTN MenuExit
+) {
+    CHAR16 *MenuExitData = NULL;
+
+    switch (MenuExit) {
+        case 1:  MenuExitData = L"ENTER";   break;
+        case 2:  MenuExitData = L"ESCAPE";  break;
+        case 3:  MenuExitData = L"DETAILS"; break;
+        case 4:  MenuExitData = L"TIMEOUT"; break;
+        case 5:  MenuExitData = L"EJECT";   break;
+        case 6:  MenuExitData = L"HIDE";    break;
+        default: MenuExitData = L"RETURN";  // Actually '99'
+    } // switch
+
+    return MenuExitData;
+} // CHAR16 * MenuExitInfo()
+
 VOID AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16            *InfoLine
@@ -374,7 +392,7 @@ VOID AddMenuInfoLine (
     #endif
 
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
-}
+} // VOID AddMenuInfoLine()
 
 VOID AddMenuEntry (
     IN REFIT_MENU_SCREEN *Screen,
@@ -385,7 +403,7 @@ VOID AddMenuEntry (
     #endif
 
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
-}
+} // VOID AddMenuEntry()
 
 static
 INTN FindMenuShortcutEntry (
@@ -2103,8 +2121,8 @@ VOID DisplaySimpleMessage (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'DisplaySimpleMessage'",
-        MenuExit, ChosenOption->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'DisplaySimpleMessage'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
 
     // DA-TAG: Tick box to run check after 'RunGenericMenu'
@@ -2277,8 +2295,8 @@ VOID ManageHiddenTags (VOID) {
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' from RunGenericMenu call on '%s' in 'ManageHiddenTags'",
-            MenuExit, ChosenOption->Title
+            L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'ManageHiddenTags'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
 
@@ -2430,8 +2448,8 @@ BOOLEAN HideEfiTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideEfiTag'",
-        MenuExit, ChosenOption->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideEfiTag'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
@@ -2486,8 +2504,8 @@ BOOLEAN HideFirmwareTag(
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideFirmwareTag'",
-        MenuExit, ChosenOption->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideFirmwareTag'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
@@ -2535,8 +2553,8 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'HideLegacyTag'",
-        MenuExit, ChosenOption->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideLegacyTag'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
@@ -2661,8 +2679,8 @@ UINTN RunMenu (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMenu'",
-        MenuExit, Screen->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'RunMenu'",
+        MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
     #endif
 
@@ -2711,8 +2729,8 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' from RunGenericMenu call on '%s' in 'RunMainMenu'",
-            MenuExit, TempChosenEntry->Title
+            L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'RunMainMenu'",
+            MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
 
@@ -2731,8 +2749,8 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Returned '%d' from RunGenericMenu call on SubScreen in 'RunMainMenu'",
-                    MenuExit
+                    L"Returned '%d' (%s) from RunGenericMenu call on SubScreen in 'RunMainMenu'",
+                    MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif
 

@@ -896,8 +896,8 @@ VOID preBootKicker (VOID) {
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'preBootKicker'",
-        MenuExit, ChosenEntry->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'preBootKicker'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     MsgLog ("User Input Received:\n");
     #endif
@@ -1039,8 +1039,8 @@ VOID preCleanNvram (VOID) {
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' from RunGenericMenu call on '%s' in 'preCleanNvram'",
-        MenuExit, ChosenEntry->Title
+        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'preCleanNvram'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     #endif
 
