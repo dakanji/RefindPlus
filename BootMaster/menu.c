@@ -112,9 +112,7 @@ static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NUL
 //
 
 static
-VOID InitSelection (
-    VOID
-) {
+VOID InitSelection (VOID) {
     EG_IMAGE  *TempSmallImage    = NULL;
     EG_IMAGE  *TempBigImage      = NULL;
     BOOLEAN    LoadedSmallImage  = FALSE;
@@ -464,9 +462,7 @@ VOID IdentifyRows (
 // TODO: Support more sophisticated screen savers, such as power-saving
 // mode and dynamic images.
 static
-VOID SaveScreen (
-    VOID
-) {
+VOID SaveScreen (VOID) {
     UINTN  retval;
     UINTN  ColourIndex;
     UINT64 TimeWait;
@@ -584,12 +580,12 @@ VOID SaveScreen (
         if (retval == INPUT_KEY || retval == INPUT_TIMER_ERROR) {
             break;
         }
-    } // for ;;
+    } // for
 
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"Detected Keypress");
     LOG(3, LOG_LINE_NORMAL,  L"%s", MsgStr);
-    MsgLog ("      %s ...", MsgStr);
+    MsgLog ("      %s ... ", MsgStr);
     MyFreePool (&MsgStr);
 
     MsgStr = StrDuplicate (L"Ending Screensaver");
@@ -2127,7 +2123,10 @@ VOID DisplaySimpleMessage (
 // is not done and the item is left intact, no matter what.
 // Returns TRUE if any files were deleted, FALSE otherwise.
 static
-BOOLEAN RemoveInvalidFilenames (CHAR16 *FilenameList, CHAR16 *VarName) {
+BOOLEAN RemoveInvalidFilenames (
+    CHAR16 *FilenameList,
+    CHAR16 *VarName
+) {
     EFI_STATUS       Status;
     UINTN            i = 0;
     CHAR16          *Filename, *OneElement, *VolName = NULL;
@@ -2206,9 +2205,7 @@ VOID SaveHiddenList (
 
 // Present a menu that enables the user to delete hidden tags
 //   that is, to un-hide them.
-VOID ManageHiddenTags (
-    VOID
-) {
+VOID ManageHiddenTags (VOID) {
     EFI_STATUS           Status  = EFI_SUCCESS;
     CHAR16              *AllTags = NULL, *OneElement = NULL;
     CHAR16              *HiddenLegacy, *HiddenFirmware, *HiddenTags, *HiddenTools;
@@ -2335,7 +2332,9 @@ VOID ManageHiddenTags (
     MyFreePool (&HiddenFirmware);
 } // VOID ManageHiddenTags()
 
-CHAR16 * ReadHiddenTags (CHAR16 *VarName) {
+CHAR16 * ReadHiddenTags (
+    CHAR16 *VarName
+) {
     CHAR8       *Buffer = NULL;
     UINTN       Size;
     EFI_STATUS  Status;
@@ -2773,7 +2772,9 @@ UINTN RunMainMenu (
     return MenuExit;
 } // UINTN RunMainMenu()
 
-VOID FreeLoaderEntry (IN LOADER_ENTRY *Entry) {
+VOID FreeLoaderEntry (
+    IN LOADER_ENTRY *Entry
+) {
     egFreeImage (Entry->me.Image);
     MyFreePool (&Entry->EfiLoaderPath);
     MyFreePool (&Entry->LoadOptions);

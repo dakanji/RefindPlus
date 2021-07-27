@@ -54,7 +54,8 @@ typedef struct {
 
 
 // Guid for internal protocol for publishing mem log buffer.
-EFI_GUID  mMemLogProtocolGuid = {0x74B91DA4, 0x2B4C, 0x11E2, {0x99, 0x03, 0x22, 0xF0, 0x61, 0x88, 0x70, 0x9B }};
+EFI_GUID  mMemLogProtocolGuid = { 0x74B91DA4, 0x2B4C, 0x11E2, \
+    { 0x99, 0x03, 0x22, 0xF0, 0x61, 0x88, 0x70, 0x9B } };
 
 // Pointer to mem log buffer.
 MEM_LOG   *mMemLog = NULL;
@@ -197,7 +198,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
         if (TimerAddr < 9) {
             TimerAddr = 0;
-            AsciiSPrint(InitError, sizeof (InitError), "Timer Address Not Obtained");
+            AsciiSPrint (InitError, sizeof (InitError), "Timer Address Not Obtained");
         }
         else {
             // Check that Timer is advancing
@@ -281,8 +282,8 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
     // Show Notice if Required
     if (InitError[0] != '\0') {
-        MemLog(FALSE, 1, "INFO: Could Not Calibrate ACPI PM Timer\n");
-        MemLog(FALSE, 1, "      %a\n\n", InitError);
+        MemLog (FALSE, 1, "INFO: Could Not Calibrate ACPI PM Timer\n");
+        MemLog (FALSE, 1, "      %a\n\n", InitError);
     }
 
     return Status;
@@ -317,7 +318,7 @@ VOID EFIAPI MemLogVA (
 
     // Check if buffer can accept MEM_LOG_MAX_LINE_SIZE chars.
     // Increase buffer if not.
-    if ((UINTN)(mMemLog->Cursor - mMemLog->Buffer) + MEM_LOG_MAX_LINE_SIZE > mMemLog->BufferSize) {
+    if ((UINTN) (mMemLog->Cursor - mMemLog->Buffer) + MEM_LOG_MAX_LINE_SIZE > mMemLog->BufferSize) {
         UINTN Offset;
         // not enough place for max line - make buffer bigger
         // but not too big (if something gets out of control)

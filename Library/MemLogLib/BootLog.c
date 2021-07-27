@@ -27,10 +27,10 @@ extern  INT16  NowHour;
 extern  INT16  NowMinute;
 extern  INT16  NowSecond;
 
-CHAR16  *gLogTemp              = NULL;
+CHAR16  *gLogTemp  = NULL;
 
-BOOLEAN  TimeStamp             = TRUE;
-BOOLEAN  UseMsgLog             = FALSE;
+BOOLEAN  TimeStamp = TRUE;
+BOOLEAN  UseMsgLog = FALSE;
 
 static
 CHAR16 * GetAltMonth (VOID) {
@@ -378,7 +378,6 @@ VOID EFIAPI DeepLoggger (
     MyFreePool (&FinalMsg);
     MyFreePool (&TmpMsg);
 }
-
 
 VOID EFIAPI DebugLog (
     IN INTN DebugMode,
