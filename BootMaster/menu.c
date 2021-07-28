@@ -2119,19 +2119,21 @@ VOID DisplaySimpleMessage (
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
+    // DA-TAG: Tick box to run check after 'RunGenericMenu'
+    CHAR16 *TypeMenuExit = NULL;
+    if (MenuExit < 1) {
+        // Dummy ... Never reached
+        TypeMenuExit = L"UNKNOWN!!";
+    }
+    else {
+        TypeMenuExit = MenuExitInfo (MenuExit);
+    }
+
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'DisplaySimpleMessage'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+        MenuExit, TypeMenuExit, ChosenOption->Title
     );
-
-    // DA-TAG: Tick box to run check after 'RunGenericMenu'
-    if (MenuExit == 0) {
-        LOG(1, LOG_LINE_NORMAL, L"%s - %s", Title, Message);
-    }
-    else {
-        LOG(1, LOG_LINE_NORMAL, L"%s - %s: MenuExit = %d", Title, Message, MenuExit);
-    }
     #endif
 } // VOID DisplaySimpleMessage()
 
@@ -2293,6 +2295,7 @@ VOID ManageHiddenTags (VOID) {
         } // while
 
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'ManageHiddenTags'",
@@ -2446,6 +2449,7 @@ BOOLEAN HideEfiTag (
     AddMenuEntry (HideItemMenu, &MenuEntryNo);
 
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
+
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideEfiTag'",
@@ -2514,7 +2518,7 @@ BOOLEAN HideFirmwareTag(
     ) {
         AddToHiddenTags(L"HiddenFirmware", Loader->Title);
         TagHidden = TRUE;
-    } // if
+    }
 
     return TagHidden;
 } // BOOLEAN HideFirmwareTag()
