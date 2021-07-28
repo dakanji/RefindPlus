@@ -2,18 +2,39 @@
 -----------------------
 - Adds 'TagHelp' Feature
   * Ensures HiddenTags can always be unhidden
-  * Active by default but can be disabled with the "disable_tag_help" token
+  * This featurre is active by default but can be disabled with the "disable_tag_help" token
+- Fixes Filtering of Windows Secure Boot Certificates on Apple Firmware
+  * Reverts Extension to Legacy Windows
+  * This appears to have been linked to observed negative impacts on some Macs
+- Fixes 'IgnoreVolumeICNS' and 'HideUI Badges' Implementation
+  * Now extended to cover other volume types from just internal volumes
+- Fixes Handling of "FirmwareBootNum" Entries
+  * These were not loaded as expected
+- Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
+  * Some UEFI PC appear to spontaneously generate invalid load options
+  * These resulted in a halt that required one or more key presses to proceed
+  * This bug was introduced in v0.12.0.AQ (Commit f5c438f)
+- Fixes Booting into Legacy (BIOS) OS on UEFI PC
+  * This bug was introduced in v0.13.2.AE (Commit b80f508)
+- Fixes Hang When Selecting SubScreen Options
+  * This bug was introduced in v0.13.2.AF (Commit 57280c3)
+- Improves Volume Scanning Implementation
+  * Improves speed generally by cutting self volume identification short once identified
+  * Fixes Specific Implementation on UEFI PC
 - Improves Tool Path Definitions
   * Extends fixes applied in v0.13.2.AF
+- Improves 'Sync_APFS' Implementation
+  * Fixes memory allocation issues with PreBoot volume objects separation
+- Improves Mac OS Volume Type Identification on UEFI PC
+  * Several Mac OS volume types, such as APFS, are now identified correctly on UEFI PC
+  * These were previously "Unknown"
+- Reduces Excessive Tool Validation Loops
+  * Tools are now only checked for validity if they actually exist on disk
 - Extends Manual Stanza Handling Fixes
   * Enhancements to "menuentry" sections applied to "submenuentry" sections
-- Improves Handling of "FirmwareBootNum" Entries
-  * These were not loaded as expected
 - Adopts Multiple Fixes and Enhancements from a Fork by GitHub User "joevt"
   * Mainly related to memory management
   * https://github.com/joevt/RefindPlus
-- Reverts Extension of Windows Certificate Filtering to Legacy Windows
-  * This appears to have been linked to negative impacts on some Macs
 
 0.13.2.AF (10 Jun 2021):
 -----------------------
@@ -90,7 +111,7 @@
   * Optical disc drives identified and assumption for network volumes
 - Improves Detection of Previously Set NVRAM Variables
   * This helps further reduce unnecessary NVRAM writes
-- Adds 'IgnoreVolumeICNS' Feature
+- Adds 'IgnoreVolumeICNS'  Feature
   * Speeds booting up by not scanning for '.VolumeIcons.icns' files (not typically used)
 
 
