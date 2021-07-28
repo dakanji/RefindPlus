@@ -125,4 +125,7 @@ static const UINT8 egemb_tool_clean_nvram_data[1497] = {
  0x3f, 0x4b, 0x7e, 0xe9, 0xa7, 0xec, 0x04, 0xc1, 0x76, 0x54, 0x54, 0xcf,
  0xaa, 0xec, 0x01, 0xcf, 0xc1, 0xff, 0xec, 0xdb, 0xec,
 };
-static EG_EMBEDDED_IMAGE egemb_tool_clean_nvram = { 48, 48, EG_EIPIXELMODE_COLOR, EG_EICOMPMODE_RLE, egemb_tool_clean_nvram_data, 1497 };
+static EG_EMBEDDED_IMAGE egemb_tool_clean_nvram = {
+    48, 48, EG_EIPIXELMODE_COLOR, EG_EICOMPMODE_RLE,
+    egemb_tool_clean_nvram_data, 1497
+};

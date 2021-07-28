@@ -41,4 +41,7 @@ static const UINT8 egemb_arrow_left_data[480] = {
  0x04, 0xef, 0xf1, 0xf1, 0xf0, 0xed, 0xa9, 0xec, 0x80, 0xed, 0xe9, 0xec,
 
 };
-static EG_EMBEDDED_IMAGE egemb_arrow_left = { 48, 48, EG_EIPIXELMODE_GRAY, EG_EICOMPMODE_RLE, egemb_arrow_left_data, 480 };
+static EG_EMBEDDED_IMAGE egemb_arrow_left = {
+    48, 48, EG_EIPIXELMODE_GRAY, EG_EICOMPMODE_RLE,
+    egemb_arrow_left_data, 480
+};

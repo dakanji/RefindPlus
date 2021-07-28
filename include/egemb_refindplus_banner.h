@@ -471,4 +471,7 @@ static const UINT8 egemb_refindplus_banner_data[5564] = {
  0xff, 0xbf, 0xff, 0xbf, 0xff, 0xbf, 0xff, 0xbf, 0xff, 0xbf, 0xff, 0xbf,
  0xff, 0xbf, 0xff, 0xbf, 0xff, 0xbf, 0xd2, 0xbf,
 };
-static EG_EMBEDDED_IMAGE egemb_refindplus_banner = { 320, 140, EG_EIPIXELMODE_GRAY, EG_EICOMPMODE_RLE, egemb_refindplus_banner_data, 5564 };
+static EG_EMBEDDED_IMAGE egemb_refindplus_banner = {
+    320, 140, EG_EIPIXELMODE_GRAY, EG_EICOMPMODE_RLE,
+    egemb_refindplus_banner_data, 5564
+};

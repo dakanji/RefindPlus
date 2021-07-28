@@ -173,4 +173,7 @@ static const UINT8 egemb_tool_bootscreen_data[2073] = {
  0x85, 0xb6, 0x05, 0xb1, 0xa4, 0x88, 0x88, 0x8b, 0xe4, 0x9a, 0xec, 0x00,
  0xcf, 0x8d, 0xbe, 0x00, 0xcf, 0xff, 0xec, 0x9a, 0xec,
 };
-static EG_EMBEDDED_IMAGE egemb_tool_bootscreen = { 48, 48, EG_EIPIXELMODE_COLOR, EG_EICOMPMODE_RLE, egemb_tool_bootscreen_data, 2073 };
+static EG_EMBEDDED_IMAGE egemb_tool_bootscreen = {
+    48, 48, EG_EIPIXELMODE_COLOR, EG_EICOMPMODE_RLE,
+    egemb_tool_bootscreen_data, 2073
+};
