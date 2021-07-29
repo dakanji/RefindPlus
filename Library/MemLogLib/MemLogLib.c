@@ -397,9 +397,9 @@ VOID EFIAPI MemLog (
         return;
     }
 
-    VA_START (Marker, Format);
+    VA_START(Marker, Format);
     MemLogVA (Timing, DebugMode, Format, Marker);
-    VA_END (Marker);
+    VA_END(Marker);
 }
 
 
@@ -409,7 +409,7 @@ VOID EFIAPI MemLog (
 CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
     EFI_STATUS        Status;
 
-    Status = MemLogInit ();
+    Status = MemLogInit();
     if (EFI_ERROR (Status)) {
         return NULL;
     }
@@ -424,7 +424,7 @@ CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
 UINTN EFIAPI GetMemLogLen (VOID) {
     EFI_STATUS        Status;
 
-    Status = MemLogInit ();
+    Status = MemLogInit();
     if (EFI_ERROR (Status)) {
         return 0;
     }
@@ -440,7 +440,7 @@ VOID EFIAPI SetMemLogCallback (
 ) {
     EFI_STATUS        Status;
 
-    Status = MemLogInit ();
+    Status = MemLogInit();
     if (EFI_ERROR (Status)) {
         return;
     }
@@ -454,7 +454,7 @@ VOID EFIAPI SetMemLogCallback (
 UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID) {
     EFI_STATUS        Status;
 
-    Status = MemLogInit ();
+    Status = MemLogInit();
     if (EFI_ERROR (Status)) {
         return 0;
     }

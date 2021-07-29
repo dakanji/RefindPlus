@@ -37,9 +37,7 @@ extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 **/
 
-CHAR16 *
-EFIAPI
-MyCatPrint (
+CHAR16 * EFIAPI MyCatPrint (
   IN OUT POOL_PRINT   *Str,
   IN CHAR16           *Fmt,
   ...
@@ -54,9 +52,9 @@ MyCatPrint (
     return Str->Str;
   }
 
-  VA_START (Args, Fmt);
+  VA_START(Args, Fmt);
   UnicodeVSPrint (AppendStr, 0x1000, Fmt, Args);
-  VA_END (Args);
+  VA_END(Args);
   if (NULL == Str->Str) {
         StringSize   = StrSize (AppendStr);
     Str->Str  = AllocateZeroPool (StringSize);
@@ -194,7 +192,7 @@ VOID DevPathVendor (
 
   UINT16              Info;
 
-  Vendor  = DevPath;
+  Vendor = DevPath;
 
   switch (DevicePathType (&Vendor->Header)) {
   case HARDWARE_DEVICE_PATH:
