@@ -206,6 +206,9 @@ EFI_STATUS daCheckAltGop (
                     Height   = 0;
 
                     for (Mode = 0; Mode < MaxMode; Mode++) {
+                        // Free Info if set
+                        MyFreePool (&Info);
+
                         Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
                         if (!EFI_ERROR (Status)) {
                             if (Width > Info->HorizontalResolution) {
@@ -238,11 +241,12 @@ EFI_STATUS daCheckAltGop (
                         OurValidGOP = TRUE;
 
                         break;
-                    } // if Width == 0 || Height == 0
+                    }
                 } // if !EFI_ERROR (Status)
             } // if HandleBuffer[i]
-        } // for
+        } // for i = 0
 
+        MyFreePool (&Info);
         MyFreePool (&HandleBuffer);
 
         #if REFIT_DEBUG > 0
@@ -1001,10 +1005,13 @@ VOID egInitScreen (
                                 );
                                 #endif
                             }
+
+                            MyFreePool (&Info);
                         }
-                    }
+                    } // for
                 }
-            }
+            } // for
+
             MyFreePool (&HandleBuffer);
         }
         else {
@@ -1345,27 +1352,28 @@ BOOLEAN egGetResFromMode (
     UINTN *ModeWidth,
     UINTN *Height
 ) {
-   UINTN                                  Size;
-   EFI_STATUS                             Status;
-   EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
+    UINTN                                  Size;
+    EFI_STATUS                             Status;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info = NULL;
 
-   if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
-      Status = REFIT_CALL_4_WRAPPER(
-          GOPDraw->QueryMode,
-          GOPDraw,
-          *ModeWidth,
-          &Size,
-          &Info
-      );
-      if (!EFI_ERROR (Status) && (Info != NULL)) {
-         *ModeWidth = Info->HorizontalResolution;
-         *Height    = Info->VerticalResolution;
+    if ((ModeWidth != NULL) && (Height != NULL) && GOPDraw) {
+        Status = REFIT_CALL_4_WRAPPER(
+            GOPDraw->QueryMode,
+            GOPDraw,
+            *ModeWidth,
+            &Size,
+            &Info
+        );
 
-         return TRUE;
-      }
-   }
+        if (!EFI_ERROR (Status) && (Info != NULL)) {
+            *ModeWidth = Info->HorizontalResolution;
+            *Height    = Info->VerticalResolution;
 
-   return FALSE;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 } // BOOLEAN egGetResFromMode()
 
 // Sets the screen resolution to the specified value, if possible. If *ScreenHeight
@@ -1515,8 +1523,10 @@ BOOLEAN egSetScreenSize (
                     PrintUglyText (MsgStr, NEXTLINE);
                     MyFreePool (&MsgStr);
                 }
+
+                MyFreePool (&Info);
             } while ((++ModeNum < GOPDraw->Mode->MaxMode) && !ModeSet);
-        } // if/else
+        } // if/else *ScreenHeight == 0
 
         if (ModeSet) {
             egScreenWidth  = *ScreenWidth;
@@ -1550,6 +1560,7 @@ BOOLEAN egSetScreenSize (
                     &Size,
                     &Info
                 );
+
                 if (!EFI_ERROR (Status) && (Info != NULL)) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
@@ -1566,8 +1577,7 @@ BOOLEAN egSetScreenSize (
                     if (ModeNum == CurrentModeNum) {
                         egScreenWidth  = Info->HorizontalResolution;
                         egScreenHeight = Info->VerticalResolution;
-                    } // if
-
+                    }
                 }
                 else {
                     MsgStr = StrDuplicate (L"Error : Could Not Query GOPDraw Mode");
@@ -1579,7 +1589,7 @@ BOOLEAN egSetScreenSize (
 
                     PrintUglyText (MsgStr, NEXTLINE);
                     MyFreePool (&MsgStr);
-                } // if
+                }
             } while (++ModeNum < GOPDraw->Mode->MaxMode);
 
             #if REFIT_DEBUG > 0
@@ -1633,7 +1643,7 @@ BOOLEAN egSetScreenSize (
             #endif
 
             MyFreePool (&MsgStr);
-        } // if/else
+        }
     } // if/else if (UGADraw != NULL)
 
     return (ModeSet);
