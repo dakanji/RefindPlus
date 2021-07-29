@@ -129,6 +129,10 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         return NULL;
     }
 
+    if (!LoadedImage || !LoadedImage->DeviceHandle) {
+        return NULL;
+    }
+
     RootDir = EfiLibOpenRoot (LoadedImage->DeviceHandle);
 
     if (RootDir == NULL) {
