@@ -236,7 +236,7 @@ EFI_STATUS StartEFIImage (
             L"'%r' while starting EFI image!!",
             ReturnStatus
         );
-        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -327,7 +327,7 @@ EFI_STATUS StartEFIImage (
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Invalid Loader!!");
-        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -339,7 +339,7 @@ EFI_STATUS StartEFIImage (
             L"'%r' returned by secure boot while loading %s!!",
             Status, ImageTitle
         );
-        LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -404,7 +404,7 @@ EFI_STATUS StartEFIImage (
                 L"'%r' when trying to set LoaderDevicePartUUID EFI variable!!",
                 Status
             );
-            LOG(1, LOG_LINE_NORMAL, L"ERROR: %s", MsgStr);
+            LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
             MsgLog ("* ERROR: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
         }

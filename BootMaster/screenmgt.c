@@ -773,6 +773,12 @@ VOID PauseForKey (VOID) {
                 break;
             }
         }
+
+        #if REFIT_DEBUG > 0
+        if (!Breakout) {
+            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated after Timeout");
+        }
+        #endif
     }
     else {
         #if REFIT_DEBUG > 0
@@ -809,7 +815,7 @@ VOID PauseForKey (VOID) {
     ReadAllKeyStrokes();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Proceeding after pause");
+    LOG(1, LOG_THREE_STAR_SEP, L"Proceeding After Pause");
     #endif
 }
 
@@ -883,7 +889,7 @@ BOOLEAN CheckFatalError (
     haveError = TRUE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, Temp);
+    LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
     MyFreePool (&Temp);
@@ -933,7 +939,7 @@ BOOLEAN CheckError (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, Temp);
+    LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
     MyFreePool (&Temp);

@@ -1409,7 +1409,7 @@ BOOLEAN egSetScreenSize (
     if ((ScreenWidth == NULL) || (ScreenHeight == NULL)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Error: ScreenWidth or ScreenHeight is NULL in egSetScreenSize!!"
+            L"WARN: ScreenWidth or ScreenHeight is NULL in egSetScreenSize!!"
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s", MsgStr);
@@ -2162,7 +2162,7 @@ VOID egScreenShot (
     if (Image == NULL) {
         SwitchToText (FALSE);
 
-        MsgStr = StrDuplicate (L"Error: Unable to take screen shot (Image is NULL)");
+        MsgStr = StrDuplicate (L"WARN: Unable to take screen shot (Image is NULL)");
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
@@ -2202,7 +2202,7 @@ VOID egScreenShot (
     if (EFI_ERROR (Status)) {
         SwitchToText (FALSE);
 
-        MsgStr = StrDuplicate (L"Error: Could Not Encode PNG");
+        MsgStr = StrDuplicate (L"WARN: Could Not Encode PNG");
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (MsgStr, NEXTLINE);
@@ -2229,7 +2229,7 @@ VOID egScreenShot (
         if (EFI_ERROR (Status)) {
             SwitchToText (FALSE);
 
-            MsgStr = StrDuplicate (L"    * Error: Could Not Save Screenshot");
+            MsgStr = StrDuplicate (L"    * WARN: Could Not Save Screenshot");
 
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
@@ -2258,7 +2258,7 @@ VOID egScreenShot (
             if (EFI_ERROR (Status)) {
                 SwitchToText (FALSE);
 
-                MsgStr = StrDuplicate (L"    * Error: Could Not Find ESP for Screenshot");
+                MsgStr = StrDuplicate (L"    * WARN: Could Not Find ESP for Screenshot");
 
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText (MsgStr, NEXTLINE);

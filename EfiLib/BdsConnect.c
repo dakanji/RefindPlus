@@ -291,7 +291,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         #if REFIT_DEBUG > 0
         if (PostConnect) {
             MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
-            LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG(3, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s\n\n", MsgStr);
             MyFreePool (&MsgStr);
         }

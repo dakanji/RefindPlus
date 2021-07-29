@@ -501,7 +501,7 @@ EFI_STATUS FindVarsDir (VOID) {
 
             if (EFI_ERROR (Status)) {
                 LOG(1, LOG_LINE_NORMAL,
-                    L"ERROR: Activate 'use_nvram' to Enable Hardware NVRAM for RefindPlus-Specific Items"
+                    L"Activate 'use_nvram' to Enable Hardware NVRAM for RefindPlus-Specific Items"
                 );
             }
             #endif
