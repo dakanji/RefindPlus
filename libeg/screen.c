@@ -2213,7 +2213,7 @@ VOID egScreenShot (
         MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
-        HaltForKey();
+        PauseSeconds(3);
         SwitchToGraphics();
         MyFreePool (&MsgStr);
         MyFreePool (&FileData);
@@ -2239,7 +2239,7 @@ VOID egScreenShot (
             MsgLog ("%s\n\n", MsgStr);
             #endif
 
-            HaltForKey();
+            PauseSeconds(3);
             SwitchToGraphics();
             MyFreePool (&MsgStr);
             MyFreePool (&FileData);
@@ -2268,7 +2268,7 @@ VOID egScreenShot (
                 MsgLog ("%s\n\n", MsgStr);
                 #endif
 
-                HaltForKey();
+                PauseSeconds(3);
                 SwitchToGraphics();
                 MyFreePool (&MsgStr);
                 MyFreePool (&FileData);
