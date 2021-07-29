@@ -416,6 +416,11 @@ VOID UninitRefitLib (VOID) {
        REFIT_CALL_1_WRAPPER(SelfRootDir->Close, SelfRootDir);
        SelfRootDir = NULL;
     }
+
+    if (gVarsDir != NULL) {
+       REFIT_CALL_1_WRAPPER(gVarsDir->Close, gVarsDir);
+       gVarsDir = NULL;
+    }
 } // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
