@@ -734,13 +734,13 @@ VOID PauseForKey (VOID) {
 
     Print (L"\n");
 
+    PrintUglyText (L"", NEXTLINE);
+    PrintUglyText (L"* Paused for Error/Warning *", NEXTLINE);
     if (GlobalConfig.ContinueOnWarning) {
-        PrintUglyText (L"", NEXTLINE);
-        PrintUglyText (L"* Paused for Error/Warning ... Waiting 3 Seconds *", NEXTLINE);
+        PrintUglyText (L"Press Any Key or Wait 5 Seconds to Continue", NEXTLINE);
     }
     else {
-        PrintUglyText (L"", NEXTLINE);
-        PrintUglyText (L"* Paused: Press Any Key to Continue *", NEXTLINE);
+        PrintUglyText (L"Press Any Key to Continue", NEXTLINE);
     }
 
     // Clear the Keystroke Buffer
@@ -748,15 +748,15 @@ VOID PauseForKey (VOID) {
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 3 Seconds");
+        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 5 Seconds");
         #endif
 
-        for (i = 0; i < 3; ++i) {
+        for (i = 0; i < 5; ++i) {
             ReadAllKeyStrokes();
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by User Keypress");
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
@@ -776,7 +776,7 @@ VOID PauseForKey (VOID) {
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
-            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated after Timeout");
+            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated at Timeout");
         }
         #endif
     }
@@ -790,7 +790,7 @@ VOID PauseForKey (VOID) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by User Keypress");
+                LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
@@ -815,7 +815,7 @@ VOID PauseForKey (VOID) {
     ReadAllKeyStrokes();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Proceeding After Pause");
+    LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
     #endif
 }
 

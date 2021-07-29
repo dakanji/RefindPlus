@@ -2478,7 +2478,7 @@ BOOLEAN IsValidTool (
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_LINE_NORMAL,
-        L"Checking tool validity:- '%s'",
+        L"Checking Tool Validity:- '%s'",
         PathName
     );
     #endif
