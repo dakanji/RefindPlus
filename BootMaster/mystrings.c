@@ -265,16 +265,17 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
     } // if
 } // VOID MergeWords()
 
-// Restrict TheString to at most Limit characters.
+// Restrict 'TheString' to at most 'Limit' characters.
 // Does this in two ways:
 // - Locates stretches of two or more spaces and compresses
 //   them down to one space.
 // - Truncates TheString
 // Returns TRUE if changes were made, FALSE otherwise
-BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
+BOOLEAN LimitStringLength (CHAR16 *TheString, UINTN Limit) {
     CHAR16    *SubString, *TempString;
     UINTN     i;
-    BOOLEAN   HasChanged = FALSE;
+    BOOLEAN   HasChanged   = FALSE;
+    BOOLEAN   WasTruncated = FALSE;
 
     // SubString will be NULL or point WITHIN TheString
     SubString = MyStrStr(TheString, L"  ");
@@ -298,17 +299,33 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
                 break;
             } // if/else
         } // if/else
-        SubString = MyStrStr(TheString, L"  ");
+        SubString = MyStrStr (TheString, L"  ");
     } // while
 
-    // If the string is still too long, truncate it.
-    if (StrLen(TheString) > Limit) {
-        TheString[Limit] = '\0';
-        HasChanged = TRUE;
-    } // if
+    // Truncate if still too long.
+    WasTruncated = TruncateString (TheString, Limit);
+    if (!HasChanged) {
+        HasChanged = WasTruncated;
+    }
 
     return HasChanged;
 } // BOOLEAN LimitStringLength()
+
+// Truncate 'TheString' to 'Limit' characters if longer.
+// Returns TRUE if truncated or FALSE otherwise
+BOOLEAN TruncateString (
+    CHAR16 *TheString,
+    UINTN Limit
+) {
+    BOOLEAN WasTruncated = FALSE;
+
+    if (StrLen (TheString) > Limit) {
+        TheString[Limit + 1] = '\0';
+        WasTruncated = TRUE;
+    }
+
+    return WasTruncated;
+} // BOOLEAN TruncateString()
 
 // Returns all the digits in the input string, including intervening
 // non-digit characters. For instance, if InString is "foo-3.3.4-7.img",

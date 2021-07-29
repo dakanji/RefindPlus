@@ -43,6 +43,7 @@ typedef struct _string_list {
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
 BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN MyStriCmp(IN const CHAR16 *String1, IN const CHAR16 *String2);
+BOOLEAN TruncateString(CHAR16 *TheString, UINTN Limit);
 BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
 BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List);
 BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
