@@ -1142,6 +1142,7 @@ BOOLEAN ShouldScan (
     BOOLEAN  ScanIt       = TRUE;
     UINTN    PreBootIndex;
 
+    // Align APFS ReMap
     if ((Volume->VolName) &&
         (GlobalConfig.SyncAPFS) &&
         (MyStriCmp (Volume->VolName, L"PreBoot"))
@@ -1651,6 +1652,12 @@ VOID ScanEfiFiles (
     BOOLEAN           ScanFallbackLoader = TRUE;
     BOOLEAN           FoundBRBackup      = FALSE;
 
+    #if REFIT_DEBUG > 0
+    UINTN    LogLineType;
+    CHAR16  *MsgStr   = NULL;
+    BOOLEAN  FixReMap = FALSE;
+    #endif
+
     if (!Volume) {
         return;
     }
@@ -1670,17 +1677,48 @@ VOID ScanEfiFiles (
         return;
     }
 
+    // Align APFS ReMap
+    if ((Volume->VolName) &&
+        (GlobalConfig.SyncAPFS) &&
+        (MyStriCmp (Volume->VolName, L"PreBoot"))
+    ) {
+        UINTN PreBootIndex;
+        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+            if (GuidsAreEqual (
+                    &(PreBootVolumes[PreBootIndex]->PartGuid),
+                    &(Volume->PartGuid)
+                )
+            ) {
+                #if REFIT_DEBUG > 0
+                FixReMap = TRUE;
+                #endif
+
+                MyFreePool (&Volume->VolName);
+                Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+                break;
+            }
+        } // for
+    }
+
     #if REFIT_DEBUG > 0
-    UINTN LogLineType;
     if (FirstLoaderScan) {
         LogLineType = LOG_THREE_STAR_MID;
     }
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
+
+    if (FixReMap) {
+        MsgStr = L"ReMapped Volume";
+    }
+    else {
+        MsgStr = L"Volume";
+    }
+
+    // "Scanning Volume 'XYZ'" or "Scanning ReMapped Volume 'XYZ'"
     LOG(1, LogLineType,
-        L"Scanning Volume '%s' for EFI Loaders",
-        Volume->VolName
+        L"Scanning %s '%s' for EFI Loaders",
+        MsgStr, Volume->VolName
     );
     #endif
 
