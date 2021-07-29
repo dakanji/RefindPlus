@@ -93,6 +93,8 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
             Volume,
             &File
         );
+
+        CheckError (Status, L"While Opening the Root Directory of the Volume");
     }
 
     //
