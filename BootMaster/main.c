@@ -801,9 +801,12 @@ BOOLEAN IsValidTool (
     CHAR16   *TestFileName = NULL;
     CHAR16   *DontScanThis = NULL;
 
-    if (FileExists (BaseVolume->RootDir, PathName) &&
-        IsValidLoader (BaseVolume->RootDir, PathName)
-    ) {
+    if (!FileExists (BaseVolume->RootDir, PathName)) {
+        // Early return if file does not exist
+        return FALSE;
+    }
+
+    if (IsValidLoader (BaseVolume->RootDir, PathName)) {
         SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
         while (retval && (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))) {
@@ -926,7 +929,6 @@ VOID preBootKicker (VOID) {
 
             for (i = 0; i < VolumesCount; i++) {
                 if (Volumes[i]->RootDir != NULL &&
-                    FileExists (Volumes[i]->RootDir, FilePath) &&
                     IsValidTool (Volumes[i], FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -1071,7 +1073,6 @@ VOID preCleanNvram (VOID) {
 
             for (i = 0; i < VolumesCount; i++) {
                 if (Volumes[i]->RootDir != NULL &&
-                    FileExists (Volumes[i]->RootDir, FilePath) &&
                     IsValidTool (Volumes[i], FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
@@ -2266,7 +2267,7 @@ EFI_STATUS EFIAPI efi_main (
                 ) {
                     // Set CSR if required
                     ActiveCSR();
-                    
+
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
                     }
