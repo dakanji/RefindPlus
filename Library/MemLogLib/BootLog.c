@@ -249,9 +249,8 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Message
 ) {
-          CHAR16 *TmpMsg     = NULL;
-          CHAR16 *FinalMsg   = NULL;
-    const CHAR16 *PadString  = L"                ";
+    CHAR16 *TmpMsg     = NULL;
+    CHAR16 *FinalMsg   = NULL;
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
@@ -272,53 +271,42 @@ VOID EFIAPI DeepLoggger (
         return;
     }
 
-    // Flag Padding and StartLineBreak
-    BOOLEAN LnBrk  = TRUE;
-    BOOLEAN StrPad = FALSE;
-
     // Disable Timestamp
     TimeStamp = FALSE;
 
     switch (type) {
         case LOG_BLANK_LINE_SEP:
-            LnBrk  = FALSE;
             TmpMsg = StrDuplicate (L"\n");
             break;
         case LOG_STAR_HEAD_SEP:
-            StrPad = TRUE;
-            TmpMsg = PoolPrint (L"***[ %s\n", *Message);
+            TmpMsg = PoolPrint (L"\n                ***[ %s\n", *Message);
             break;
         case LOG_STAR_SEPARATOR:
-            TmpMsg = PoolPrint (L"* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
+            TmpMsg = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
             break;
         case LOG_LINE_SEPARATOR:
-            TmpMsg = PoolPrint (L"===================[ %s ]===================\n", *Message);
+            TmpMsg = PoolPrint (L"\n===================[ %s ]===================\n", *Message);
             break;
         case LOG_LINE_THIN_SEP:
-            TmpMsg = PoolPrint (L"-------------------[ %s ]-------------------\n", *Message);
+            TmpMsg = PoolPrint (L"\n-------------------[ %s ]-------------------\n", *Message);
             break;
         case LOG_LINE_DASH_SEP:
-            TmpMsg = PoolPrint (L"- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
+            TmpMsg = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
             break;
         case LOG_THREE_STAR_SEP:
-            TmpMsg = PoolPrint (L". . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
+            TmpMsg = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
             break;
         case LOG_THREE_STAR_MID:
-            LnBrk  = FALSE;
-            StrPad = TRUE;
-            TmpMsg = PoolPrint (L"***[ %s\n", *Message);
+            TmpMsg = PoolPrint (L"                ***[ %s\n", *Message);
             break;
         case LOG_THREE_STAR_END:
-            LnBrk  = FALSE;
-            StrPad = TRUE;
-            TmpMsg = PoolPrint (L"***[ %s ]***\n\n", *Message);
+            TmpMsg = PoolPrint (L"                ***[ %s ]***\n\n", *Message);
             break;
         default:
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
             TmpMsg = PoolPrint (L"%s\n", *Message);
 
-            // Also Enable Timestamp and exclude StartLineBreak
-            LnBrk     = FALSE;
+            // Also Enable Timestamp
             TimeStamp = TRUE;
     } // switch
 
@@ -327,35 +315,11 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = TRUE;
 
         // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit;
-        UINTN   RawLimit = 510;
-        BOOLEAN LongStr  = FALSE;
+        UINTN   Limit   = 510;
+        BOOLEAN LongStr = FALSE;
 
-        if (StrPad) {
-            Limit = RawLimit - StrLen (PadString);
-        }
-        else {
-            Limit = RawLimit;
-        }
-
-        LongStr = LimitStringLength (TmpMsg, Limit);
-
-        if (StrPad) {
-            if (LnBrk) {
-                FinalMsg = PoolPrint (L"\n%s%s", PadString, TmpMsg);
-            }
-            else {
-                FinalMsg = PoolPrint (L"%s%s", PadString, TmpMsg);
-            }
-        }
-        else {
-            if (LnBrk) {
-                FinalMsg = PoolPrint (L"\n%s", TmpMsg);
-            }
-            else {
-                FinalMsg = PoolPrint (L"%s", TmpMsg);
-            }
-        }
+        LongStr  = TruncateString (TmpMsg, Limit);
+        FinalMsg = PoolPrint (L"%s", TmpMsg);
 
         if (LongStr) {
             Limit = 511;
