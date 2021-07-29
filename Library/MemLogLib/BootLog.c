@@ -319,7 +319,7 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = TRUE;
 
         // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit   = 510;
+        UINTN   Limit   = 150;
         BOOLEAN LongStr = FALSE;
 
         LongStr  = TruncateString (TmpMsg, Limit);
