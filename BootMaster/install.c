@@ -827,19 +827,24 @@ EFI_STATUS CopyDrivers (
      LOG(1, LOG_LINE_NORMAL, L"Installing RefindPlus to an ESP");
      #endif
 
-     AllESPs = FindAllESPs();
+     AllESPs     = FindAllESPs();
      SelectedESP = PickOneESP (AllESPs);
+
      if (SelectedESP) {
          Status = CopyRefindFiles (SelectedESP->RootDir);
-         if (Status == EFI_SUCCESS)
+
+         if (Status == EFI_SUCCESS) {
              Status = CreateNvramEntry (SelectedESP->DeviceHandle);
-         DeleteESPList (AllESPs);
+         }
+
          if (Status == EFI_SUCCESS) {
              DisplaySimpleMessage (L"Information", L"RefindPlus successfully installed");
          } else {
              DisplaySimpleMessage (L"Warning", L"Problems encountered during installation");
-         } // if/else
-     } // if
+         }
+     }
+
+     DeleteESPList (AllESPs);
  } // VOID InstallRefindPlus()
 
  /***********************
