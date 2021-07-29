@@ -871,7 +871,7 @@ BOOLEAN CheckFatalError (
 
     Temp = PoolPrint (L"Fatal Error: %s %s", ErrorName, where);
 #else
-    Temp = PoolPrint (L"Fatal Error: %s %s", Status, where);
+    Temp = PoolPrint (L"Fatal Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
     MsgLog ("** FATAL ERROR: %r %s\n", Status, where);
