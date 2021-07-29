@@ -766,6 +766,10 @@ BOOLEAN LoadDrivers(
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
+
+    if (NumFound < 1) {
+        LOG(1, LOG_LINE_NORMAL, L"No Drivers Found");
+    }
     #endif
 
     // connect all devices
