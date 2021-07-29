@@ -106,7 +106,7 @@ for filename in sys.argv[1:]:
             planes[2].append(pixeldata)
 
     else:
-        print (" Error: Mode not supported!!")
+        print (" Error: Mode '%s' is not supported!!" % mode)
         continue
 
     # special treatment for fonts
