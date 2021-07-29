@@ -238,7 +238,7 @@ VOID MergeWords(CHAR16 **MergeTo, CHAR16 *SourceString, CHAR16 AddChar) {
     BOOLEAN LineFinished = FALSE;
 
     if (SourceString) {
-        Temp = Word = p = StrDuplicate(SourceString);
+        Temp = Word = p = StrDuplicate (SourceString);
         if (Temp) {
             while (!LineFinished) {
                 if ((*p == L' ') ||
@@ -287,7 +287,7 @@ BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit) {
             HasChanged = TRUE;
         }
         else {
-            TempString = StrDuplicate(&SubString[i]);
+            TempString = StrDuplicate (&SubString[i]);
             if (TempString != NULL) {
                 StrCpy(&SubString[1], TempString);
                 MyFreePool (&TempString);
@@ -347,7 +347,7 @@ CHAR16 * FindNumbers(IN CHAR16 *InString) {
     if (EndOfElement > 0) {
         if (EndOfElement >= StartOfElement) {
             CopyLength = EndOfElement - StartOfElement + 1;
-            Found = StrDuplicate(&InString[StartOfElement]);
+            Found = StrDuplicate (&InString[StartOfElement]);
             if (Found != NULL)
                 Found[CopyLength] = 0;
         } // if (EndOfElement >= StartOfElement)
@@ -396,7 +396,7 @@ CHAR16 * FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index) {
                 CurPos++;
         } // while
         if (Index == 0)
-            FoundString = StrDuplicate(&InString[StartPos]);
+            FoundString = StrDuplicate (&InString[StartPos]);
         if (FoundString != NULL)
             FoundString[CurPos - StartPos] = 0;
     } // if

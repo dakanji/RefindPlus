@@ -246,9 +246,9 @@ EFI_STATUS StartEFIImage (
 
     // set load options
     if (LoadOptions != NULL) {
-        FullLoadOptions = StrDuplicate(LoadOptions);
+        FullLoadOptions = StrDuplicate (LoadOptions);
         if (OSType == 'M') {
-            MergeStrings(&FullLoadOptions, L" ", 0);
+            MergeStrings (&FullLoadOptions, L" ", 0);
             // NOTE: That last space is also added by the EFI shell and seems to be significant
             // when passing options to Apple's boot.efi...
         } // if
@@ -274,8 +274,8 @@ EFI_STATUS StartEFIImage (
     // Some EFIs crash if attempting to load driver for invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
-    if (IsValidLoader(Volume->RootDir, Filename)) {
-        DevicePath = FileDevicePath(Volume->DeviceHandle, Filename);
+    if (IsValidLoader (Volume->RootDir, Filename)) {
+        DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
         // NOTE: Commented-out line below could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
         // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
@@ -344,12 +344,12 @@ EFI_STATUS StartEFIImage (
         MyFreePool (&MsgStr);
         #endif
 
-        WarnSecureBootError(ImageTitle, Verbose);
+        WarnSecureBootError (ImageTitle, Verbose);
         goto bailout;
     }
 
     ErrorInfo = PoolPrint (L"while loading %s", ImageTitle);
-    if (CheckError(Status, ErrorInfo)) {
+    if (CheckError (Status, ErrorInfo)) {
         MyFreePool (&ErrorInfo);
         goto bailout;
     }
@@ -363,7 +363,7 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
-    if (CheckError(Status, L"while getting a LoadedImageProtocol handle")) {
+    if (CheckError (Status, L"while getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }
 

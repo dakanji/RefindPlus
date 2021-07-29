@@ -84,32 +84,32 @@ extern BOOLEAN AllowGraphicsMode;
 extern EG_PIXEL StdBackgroundPixel;
 extern EG_PIXEL MenuBackgroundPixel;
 
-EFI_STATUS SwitchToGraphics(VOID);
+EFI_STATUS SwitchToGraphics (VOID);
 
-BOOLEAN ReadAllKeyStrokes(VOID);
-BOOLEAN CheckError(IN EFI_STATUS Status, IN CHAR16 *where);
-BOOLEAN CheckFatalError(IN EFI_STATUS Status, IN CHAR16 *where);
+BOOLEAN ReadAllKeyStrokes (VOID);
+BOOLEAN CheckError (IN EFI_STATUS Status, IN CHAR16 *where);
+BOOLEAN CheckFatalError (IN EFI_STATUS Status, IN CHAR16 *where);
 
-VOID InitScreen(VOID);
-VOID SetupScreen(VOID);
-VOID BeginTextScreen(IN CHAR16 *Title);
-VOID FinishTextScreen(IN BOOLEAN WaitAlways);
-VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
-VOID FinishExternalScreen(VOID);
-VOID TerminateScreen(VOID);
-VOID DrawScreenHeader(IN CHAR16 *Title);
-VOID EndlessIdleLoop(VOID);
-VOID PrintUglyText(IN CHAR16 *Text, UINTN PositionCode);
-VOID HaltForKey(VOID);
-VOID PauseForKey(VOID);
-VOID PauseSeconds(UINTN Seconds);
-VOID SwitchToText(IN BOOLEAN CursorEnabled);
+VOID InitScreen (VOID);
+VOID SetupScreen (VOID);
+VOID BeginTextScreen (IN CHAR16 *Title);
+VOID FinishTextScreen (IN BOOLEAN WaitAlways);
+VOID BeginExternalScreen (IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
+VOID FinishExternalScreen (VOID);
+VOID TerminateScreen (VOID);
+VOID DrawScreenHeader (IN CHAR16 *Title);
+VOID EndlessIdleLoop (VOID);
+VOID PrintUglyText (IN CHAR16 *Text, UINTN PositionCode);
+VOID HaltForKey (VOID);
+VOID PauseForKey (VOID);
+VOID PauseSeconds (UINTN Seconds);
+VOID SwitchToText (IN BOOLEAN CursorEnabled);
 VOID SwitchToGraphicsAndClear (IN BOOLEAN ShowBanner);
-VOID BltClearScreen(IN BOOLEAN ShowBanner);
-VOID BltImage(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos);
-VOID BltImageAlpha(IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel);
-//VOID BltImageComposite(IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN UINTN XPos, IN UINTN YPos);
-VOID BltImageCompositeBadge(
+VOID BltClearScreen (IN BOOLEAN ShowBanner);
+VOID BltImage( IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos);
+VOID BltImageAlpha (IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel);
+//VOID BltImageComposite (IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN UINTN XPos, IN UINTN YPos);
+VOID BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,

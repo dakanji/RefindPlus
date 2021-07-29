@@ -2220,7 +2220,7 @@ VOID SaveHiddenList (
         );
     }
 
-    CheckError(Status, L"in SaveHiddenList!!");
+    CheckError (Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
 // Present a menu that enables the user to delete hidden tags

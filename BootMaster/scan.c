@@ -231,7 +231,7 @@ REFIT_MENU_SCREEN * CopyMenuScreen (
         } // for
 
         NewEntry->TimeoutSeconds = Entry->TimeoutSeconds;
-        NewEntry->TimeoutText    = (Entry->TimeoutText) ? StrDuplicate(Entry->TimeoutText) : NULL;
+        NewEntry->TimeoutText    = (Entry->TimeoutText) ? StrDuplicate (Entry->TimeoutText) : NULL;
 
         NewEntry->Hint1 = (Entry->Hint1) ? StrDuplicate (Entry->Hint1) : NULL;
         NewEntry->Hint2 = (Entry->Hint2) ? StrDuplicate (Entry->Hint2) : NULL;

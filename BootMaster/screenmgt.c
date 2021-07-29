@@ -866,15 +866,15 @@ BOOLEAN CheckFatalError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** FATAL ERROR: %s %s\n", ErrorName, where);
+    MsgLog ("** FATAL ERROR: '%s' %s\n", ErrorName, where);
     #endif
 
-    Temp = PoolPrint (L"Fatal Error: %s %s", ErrorName, where);
+    Temp = PoolPrint (L"Fatal Error: '%s' %s", ErrorName, where);
 #else
     Temp = PoolPrint (L"Fatal Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** FATAL ERROR: %r %s\n", Status, where);
+    MsgLog ("** FATAL ERROR: '%r' %s\n", Status, where);
     #endif
 #endif
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -906,15 +906,15 @@ BOOLEAN CheckError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** WARN: %s %s\n", ErrorName, where);
+    MsgLog ("** WARN: '%s' %s\n", ErrorName, where);
     #endif
 
-    Temp = PoolPrint (L"Error: %s %s", ErrorName, where);
+    Temp = PoolPrint (L"Error: '%s' %s", ErrorName, where);
 #else
-    Temp = PoolPrint (L"Error: %r %s", Status, where);
+    Temp = PoolPrint (L"Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** WARN: %r %s\n", Status, where);
+    MsgLog ("** WARN: '%r' %s\n", Status, where);
     #endif
 #endif
 

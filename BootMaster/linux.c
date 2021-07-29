@@ -128,7 +128,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 
     if (InitrdNames) {
         if (InitrdNames->Next == NULL) {
-            InitrdName = StrDuplicate(InitrdNames->Value);
+            InitrdName = StrDuplicate (InitrdNames->Value);
         }
         else {
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
@@ -149,7 +149,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
             } // while ()
 
             if (MaxSharedInitrd) {
-                InitrdName = StrDuplicate(MaxSharedInitrd->Value);
+                InitrdName = StrDuplicate (MaxSharedInitrd->Value);
             }
         } // if/else
     } // if
@@ -178,7 +178,7 @@ CHAR16 * AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
     CHAR16 *NewOptions = NULL;
 
     if (Options != NULL)
-        NewOptions = StrDuplicate(Options);
+        NewOptions = StrDuplicate (Options);
 
     if (InitrdPath != NULL) {
         if (StriSubCmp(L"%v", Options)) {

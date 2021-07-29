@@ -738,7 +738,7 @@ BOOLEAN LoadDrivers(
             CleanUpPathNameSlashes (Directory);
             Length = StrLen (Directory);
             if (Length > 0) {
-                SelfDirectory = SelfDirPath ? StrDuplicate(SelfDirPath) : NULL;
+                SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
                 CleanUpPathNameSlashes (SelfDirectory);
                 MergeStrings (&SelfDirectory, Directory, L'\\');
 
