@@ -54,9 +54,7 @@
 /*
  * Check whether we are in Secure Boot and user mode
  */
-BOOLEAN secure_mode (
-    VOID
-) {
+BOOLEAN secure_mode (VOID) {
     EFI_STATUS status;
     EFI_GUID global_var = EFI_GLOBAL_VARIABLE;
     UINTN charsize      = sizeof (char);
@@ -104,14 +102,15 @@ BOOLEAN secure_mode (
 
     DoneOnce = TRUE;
 
+    MyFreePool (&sb);
+    MyFreePool (&setupmode);
+
     return SecureMode;
 } // secure_mode()
 
 // Returns TRUE if the shim program is available to verify binaries,
 // FALSE if not
-BOOLEAN ShimLoaded (
-    VOID
-) {
+BOOLEAN ShimLoaded (VOID) {
     SHIM_LOCK   *shim_lock;
     EFI_GUID    ShimLockGuid = SHIM_LOCK_GUID;
 
