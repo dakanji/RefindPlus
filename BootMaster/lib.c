@@ -402,7 +402,7 @@ VOID UninitRefitLib (VOID) {
     // This piece of code was made to correspond to weirdness in ReinitRefitLib().
     // See the comment on it there.
     if (SelfRootDir == SelfVolume->RootDir) {
-        SelfRootDir=0;
+        SelfRootDir = NULL;
     }
 
     UninitVolumes();
