@@ -100,21 +100,30 @@ VOID TerminateScreen (VOID);
 VOID DrawScreenHeader (IN CHAR16 *Title);
 VOID EndlessIdleLoop (VOID);
 VOID PrintUglyText (IN CHAR16 *Text, UINTN PositionCode);
-VOID HaltForKey (VOID);
 VOID PauseForKey (VOID);
 VOID PauseSeconds (UINTN Seconds);
 VOID SwitchToText (IN BOOLEAN CursorEnabled);
 VOID SwitchToGraphicsAndClear (IN BOOLEAN ShowBanner);
 VOID BltClearScreen (IN BOOLEAN ShowBanner);
 VOID BltImage( IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos);
-VOID BltImageAlpha (IN EG_IMAGE *Image, IN UINTN XPos, IN UINTN YPos, IN EG_PIXEL *BackgroundPixel);
-//VOID BltImageComposite (IN EG_IMAGE *BaseImage, IN EG_IMAGE *TopImage, IN UINTN XPos, IN UINTN YPos);
+VOID BltImageAlpha (
+    IN EG_IMAGE *Image,
+    IN UINTN     XPos,
+    IN UINTN     YPos,
+    IN EG_PIXEL *BackgroundPixel
+);
 VOID BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
     IN EG_IMAGE *TopImage,
     IN EG_IMAGE *BadgeImage,
-    IN UINTN XPos,
-    IN UINTN YPos
+    IN UINTN     XPos,
+    IN UINTN     YPos
 );
+//VOID BltImageComposite (
+//    IN EG_IMAGE *BaseImage,
+//    IN EG_IMAGE *TopImage,
+//    IN UINTN     XPos,
+//    IN UINTN     YPos
+//);
 
 #endif

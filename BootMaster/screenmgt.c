@@ -681,51 +681,6 @@ VOID PrintUglyText (
     } // if
 } // VOID PrintUglyText()
 
-VOID HaltForKey (VOID) {
-    UINTN   WaitOut;
-    BOOLEAN Breakout = FALSE;
-
-    Print (L"\n");
-
-    PrintUglyText (L"", NEXTLINE);
-    PrintUglyText (L"* Halted: Press Any Key to Continue *", NEXTLINE);
-
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Halted for Error/Warning ... Requires Keypress");
-    #endif
-
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
-
-    for (;;) {
-        ReadAllKeyStrokes();
-        WaitOut = WaitForInput (1000);
-        if (WaitOut == INPUT_KEY) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Halt Terminated by User Keypress");
-            #endif
-
-            Breakout = TRUE;
-        }
-        else if (WaitOut == INPUT_TIMER_ERROR) {
-            #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Halt Terminated by Timer Error!!");
-            #endif
-
-            Breakout = TRUE;
-        }
-
-        if (Breakout) {
-            break;
-        }
-    }
-
-    GraphicsScreenDirty = TRUE;
-
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
-}
-
 VOID PauseForKey (VOID) {
     UINTN   i;
     UINTN   WaitOut;
