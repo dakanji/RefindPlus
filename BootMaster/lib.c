@@ -856,19 +856,30 @@ CHAR16 * SanitiseVolumeName (
     CHAR16 *VolumeName = NULL;
 
     if (Volume->VolName) {
-             if (MyStrStr (Volume->VolName, L"Whole Disk Volume") != NULL) VolumeName = L"Whole Disk Volume";
-        else if (MyStrStr (Volume->VolName, L"Unknown Volume")    != NULL) VolumeName = L"Unknown Volume";
-        else if (MyStrStr (Volume->VolName, L"HFS+ Volume")       != NULL) VolumeName = L"HFS+ Volume";
-        else if (MyStrStr (Volume->VolName, L"NTFS Volume")       != NULL) VolumeName = L"NTFS Volume";
-        else if (MyStrStr (Volume->VolName, L"FAT Volume")        != NULL) VolumeName = L"FAT Volume";
-        else if (MyStrStr (Volume->VolName, L"Ext2 Volume")       != NULL) VolumeName = L"Ext2 Volume";
-        else if (MyStrStr (Volume->VolName, L"Ext3 Volume")       != NULL) VolumeName = L"Ext3 Volume";
-        else if (MyStrStr (Volume->VolName, L"Ext4 Volume")       != NULL) VolumeName = L"Ext4 Volume";
-        else if (MyStrStr (Volume->VolName, L"ReiserFS Volume")   != NULL) VolumeName = L"ReiserFS Volume";
-        else if (MyStrStr (Volume->VolName, L"Btrfs Volume")      != NULL) VolumeName = L"BTRFS Volume";
-        else if (MyStrStr (Volume->VolName, L"XFS Volume")        != NULL) VolumeName = L"XFS Volume";
-        else if (MyStrStr (Volume->VolName, L"ISO-9660 Volume")   != NULL) VolumeName = L"ISO-9660 Volume";
-        else                                                               VolumeName = Volume->VolName;
+        if (MyStrStr (Volume->VolName, L"Microsoft Reserved Partition") != NULL) {
+            VolumeName = L"Microsoft Reserved Partition";
+        }
+        else if (MyStrStr (Volume->VolName, L"Basic Data Partition") != NULL) {
+            VolumeName = L"Basic Data Partition";
+        }
+        else if (MyStrStr (Volume->VolName, L"EFI System Partition") != NULL) {
+            VolumeName = L"EFI System Partition";
+        }
+        else {
+                 if (MyStrStr (Volume->VolName, L"Whole Disk Volume")    != NULL) VolumeName = L"Whole Disk Volume";
+            else if (MyStrStr (Volume->VolName, L"Unknown Volume")       != NULL) VolumeName = L"Unknown Volume";
+            else if (MyStrStr (Volume->VolName, L"HFS+ Volume")          != NULL) VolumeName = L"HFS+ Volume";
+            else if (MyStrStr (Volume->VolName, L"NTFS Volume")          != NULL) VolumeName = L"NTFS Volume";
+            else if (MyStrStr (Volume->VolName, L"FAT Volume")           != NULL) VolumeName = L"FAT Volume";
+            else if (MyStrStr (Volume->VolName, L"XFS Volume")           != NULL) VolumeName = L"XFS Volume";
+            else if (MyStrStr (Volume->VolName, L"Ext4 Volume")          != NULL) VolumeName = L"Ext4 Volume";
+            else if (MyStrStr (Volume->VolName, L"Ext3 Volume")          != NULL) VolumeName = L"Ext3 Volume";
+            else if (MyStrStr (Volume->VolName, L"Ext2 Volume")          != NULL) VolumeName = L"Ext2 Volume";
+            else if (MyStrStr (Volume->VolName, L"Btrfs Volume")         != NULL) VolumeName = L"BTRFS Volume";
+            else if (MyStrStr (Volume->VolName, L"ReiserFS Volume")      != NULL) VolumeName = L"ReiserFS Volume";
+            else if (MyStrStr (Volume->VolName, L"ISO-9660 Volume")      != NULL) VolumeName = L"ISO-9660 Volume";
+            else                                                                  VolumeName = Volume->VolName;
+        }
     }
 
     return VolumeName;
