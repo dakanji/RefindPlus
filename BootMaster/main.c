@@ -398,7 +398,7 @@ VOID ActiveCSR (VOID) {
             //
             // Seed the log buffer
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Disable SIP/SSV ...");
+            MsgLog ("INFO: Disable SIP/SSV ... ");
             #endif
 
             if (CsrEnabled) {
@@ -411,7 +411,7 @@ VOID ActiveCSR (VOID) {
             //
             // Seed the log buffer
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Enable SIP/SSV ...");
+            MsgLog ("INFO: Enable SIP/SSV ... ");
             #endif
 
             if (!CsrEnabled) {
@@ -2028,9 +2028,6 @@ EFI_STATUS EFIAPI efi_main (
         }
     }
 
-    // Set CSR if required
-    ActiveCSR();
-
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
     LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2307,6 +2304,9 @@ EFI_STATUS EFIAPI efi_main (
                     FilterCSR();
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Mac OS") != NULL) {
+                    // Set CSR if required
+                    ActiveCSR();
+
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
