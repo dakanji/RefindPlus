@@ -2264,6 +2264,9 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL ||
                     MyStrStr (ourLoaderEntry->LoaderPath, L"\\OpenCore") != NULL
                 ) {
+                    // Set CSR if required
+                    ActiveCSR();
+                    
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
                     }
@@ -2286,6 +2289,9 @@ EFI_STATUS EFIAPI efi_main (
                 else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL ||
                     MyStrStr (ourLoaderEntry->LoaderPath, L"\\Clover") != NULL
                 ) {
+                    // Set CSR if required
+                    ActiveCSR();
+
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
                     }
