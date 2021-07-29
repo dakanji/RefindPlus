@@ -41,43 +41,43 @@ typedef struct _string_list {
 
 // DA_TAG: See here for more if needed:
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
-BOOLEAN StriSubCmp(IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
-BOOLEAN MyStriCmp(IN const CHAR16 *String1, IN const CHAR16 *String2);
-BOOLEAN TruncateString(CHAR16 *TheString, UINTN Limit);
-BOOLEAN LimitStringLength(CHAR16 *TheString, UINTN Limit);
-BOOLEAN DeleteItemFromCsvList(CHAR16 *ToDelete, CHAR16 *List);
-BOOLEAN IsIn(IN CHAR16 *SmallString, IN CHAR16 *List);
-BOOLEAN IsInSubstring(IN CHAR16 *BigString, IN CHAR16 *List);
-BOOLEAN IsValidHex(CHAR16 *Input);
-BOOLEAN IsGuid(CHAR16 *UnknownString);
-BOOLEAN ReplaceSubstring(
+BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
+BOOLEAN MyStriCmp (IN const CHAR16 *String1, IN const CHAR16 *String2);
+BOOLEAN TruncateString (CHAR16 *TheString, UINTN Limit);
+BOOLEAN LimitStringLength (CHAR16 *TheString, UINTN Limit);
+BOOLEAN DeleteItemFromCsvList (CHAR16 *ToDelete, CHAR16 *List);
+BOOLEAN IsIn (IN CHAR16 *SmallString, IN CHAR16 *List);
+BOOLEAN IsInSubstring (IN CHAR16 *BigString, IN CHAR16 *List);
+BOOLEAN IsValidHex (CHAR16 *Input);
+BOOLEAN IsGuid (CHAR16 *UnknownString);
+BOOLEAN ReplaceSubstring (
     IN OUT CHAR16 **MainString,
     IN     CHAR16 *SearchString,
     IN     CHAR16 *ReplString
 );
 
-CHAR16 *GetTimeString(VOID);
+CHAR16 *GetTimeString (VOID);
 CHAR16 *MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
-CHAR16 *FindNumbers(IN CHAR16 *InString);
-CHAR16 * GuidAsString(EFI_GUID *GuidData);
-CHAR16 *FindCommaDelimited(IN CHAR16 *InString, IN UINTN Index);
+CHAR16 *FindNumbers (IN CHAR16 *InString);
+CHAR16 * GuidAsString (EFI_GUID *GuidData);
+CHAR16 *FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
 
 CHAR8 *MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
 
-VOID ToLower(CHAR16 * MyString);
-VOID MergeStrings(IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
-VOID MergeWords(CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
+VOID ToLower (CHAR16 * MyString);
+VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
+VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16 *StrCHAR16,
     OUT CHAR8  ArrCHAR8[255]
 );
 
-UINTN NumCharsInCommon(IN CHAR16* String1, IN CHAR16* String2);
+UINTN NumCharsInCommon (IN CHAR16* String1, IN CHAR16* String2);
 
-UINT64 StrToHex(CHAR16 *Input, UINTN Position, UINTN NumChars);
+UINT64 StrToHex (CHAR16 *Input, UINTN Position, UINTN NumChars);
 
-EFI_GUID StringAsGuid(CHAR16 * InString);
+EFI_GUID StringAsGuid (CHAR16 * InString);
 
-VOID DeleteStringList(STRING_LIST *StringList);
+VOID DeleteStringList (STRING_LIST *StringList);
 
 #endif
