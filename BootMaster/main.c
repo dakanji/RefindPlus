@@ -2261,7 +2261,9 @@ EFI_STATUS EFIAPI efi_main (
 
                 // Use multiple instaces of "User Input Received:"
 
-                if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL) {
+                if (MyStrStr (ourLoaderEntry->Title, L"OpenCore") != NULL ||
+                    MyStrStr (ourLoaderEntry->LoaderPath, L"\\OpenCore") != NULL
+                ) {
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
                     }
@@ -2282,7 +2284,7 @@ EFI_STATUS EFIAPI efi_main (
                     FilterCSR();
                 }
                 else if (MyStrStr (ourLoaderEntry->Title, L"Clover") != NULL ||
-                    MyStrStr (ourLoaderEntry->LoaderPath, L"CLOVER") != NULL
+                    MyStrStr (ourLoaderEntry->LoaderPath, L"\\Clover") != NULL
                 ) {
                     if (!ourLoaderEntry->UseGraphicsMode) {
                         ourLoaderEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
