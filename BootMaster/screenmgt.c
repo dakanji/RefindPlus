@@ -58,8 +58,8 @@
 
 // Console defines and variables
 
-UINTN  ConWidth;
-UINTN  ConHeight;
+UINTN   ConWidth;
+UINTN   ConHeight;
 CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
@@ -731,7 +731,7 @@ VOID PauseForKey (VOID) {
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
-            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated at Timeout");
+            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
         }
         #endif
     }
@@ -946,10 +946,10 @@ VOID egFreeImageQEMU (
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
-    static EG_IMAGE *Banner = NULL;
-    EG_IMAGE *NewBanner     = NULL;
-    INTN BannerPosX, BannerPosY;
-    EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
+    static EG_IMAGE *Banner    = NULL;
+           EG_IMAGE *NewBanner = NULL;
+           EG_PIXEL  Black     = { 0x0, 0x0, 0x0, 0 };
+           INTN      BannerPosX, BannerPosY;
 
     #if REFIT_DEBUG > 0
     static BOOLEAN LoggedBanner;
@@ -1143,13 +1143,13 @@ VOID BltImageCompositeBadge (
     IN UINTN     XPos,
     IN UINTN     YPos
 ) {
-     UINTN    TotalWidth  = 0;
-     UINTN    TotalHeight = 0;
-     UINTN    CompWidth   = 0;
-     UINTN    CompHeight  = 0;
-     UINTN    OffsetX     = 0;
-     UINTN    OffsetY     = 0;
-     EG_IMAGE *CompImage  = NULL;
+     UINTN     TotalWidth  = 0;
+     UINTN     TotalHeight = 0;
+     UINTN     CompWidth   = 0;
+     UINTN     CompHeight  = 0;
+     UINTN     OffsetX     = 0;
+     UINTN     OffsetY     = 0;
+     EG_IMAGE *CompImage   = NULL;
 
      // initialize buffer with base image
      if (BaseImage != NULL) {

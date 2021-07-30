@@ -188,7 +188,7 @@ static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
 // a linked list; used to sort entries within a directory.
 struct LOADER_LIST {
     CHAR16              *FileName;
-    EFI_TIME            TimeStamp;
+    EFI_TIME             TimeStamp;
     struct LOADER_LIST  *NextEntry;
 };
 
@@ -287,21 +287,21 @@ LOADER_ENTRY * InitializeLoaderEntry (
 
     NewEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
     if (NewEntry != NULL) {
-        NewEntry->me.Title        = NULL;
-        NewEntry->me.Tag          = TAG_LOADER;
         NewEntry->Enabled         = TRUE;
         NewEntry->UseGraphicsMode = FALSE;
-        NewEntry->OSType          = 0;
         NewEntry->EfiLoaderPath   = NULL;
+        NewEntry->me.Title        = NULL;
+        NewEntry->me.Tag          = TAG_LOADER;
+        NewEntry->OSType          = 0;
         NewEntry->EfiBootNum      = 0;
         if (Entry != NULL) {
-            NewEntry->LoaderPath      = (Entry->LoaderPath)   ? StrDuplicate (Entry->LoaderPath) : NULL;
-            NewEntry->Volume          = Entry->Volume;
-            NewEntry->UseGraphicsMode = Entry->UseGraphicsMode;
-            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions) : NULL;
-            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath) : NULL;
+            NewEntry->Volume          =  Entry->Volume;
+            NewEntry->EfiBootNum      =  Entry->EfiBootNum;
+            NewEntry->UseGraphicsMode =  Entry->UseGraphicsMode;
+            NewEntry->LoaderPath      = (Entry->LoaderPath)    ? StrDuplicate (Entry->LoaderPath)           : NULL;
+            NewEntry->LoadOptions     = (Entry->LoadOptions)   ? StrDuplicate (Entry->LoadOptions)          : NULL;
+            NewEntry->InitrdPath      = (Entry->InitrdPath)    ? StrDuplicate (Entry->InitrdPath)           : NULL;
             NewEntry->EfiLoaderPath   = (Entry->EfiLoaderPath) ? DuplicateDevicePath (Entry->EfiLoaderPath) : NULL;
-            NewEntry->EfiBootNum      = Entry->EfiBootNum;
         }
     }
 
@@ -318,8 +318,9 @@ LOADER_ENTRY * InitializeLoaderEntry (
 REFIT_MENU_SCREEN * InitializeSubScreen (
     IN LOADER_ENTRY *Entry
 ) {
-    CHAR16              *FileName, *MainOptions = NULL;
-    REFIT_MENU_SCREEN   *SubScreen = NULL;
+    CHAR16              *FileName;
+    CHAR16              *MainOptions = NULL;
+    REFIT_MENU_SCREEN   *SubScreen   = NULL;
     LOADER_ENTRY        *SubEntry;
 
     FileName = Basename (Entry->LoaderPath);
@@ -380,11 +381,12 @@ VOID GenerateSubScreen (
 ) {
     REFIT_MENU_SCREEN  *SubScreen;
     LOADER_ENTRY       *SubEntry;
-    CHAR16             *InitrdName, *KernelVersion = NULL;
-    CHAR16              DiagsFileName[256];
-    REFIT_FILE         *File;
-    UINTN               TokenCount;
+    CHAR16             *InitrdName;
+    CHAR16             *KernelVersion = NULL;
     CHAR16            **TokenList;
+    CHAR16              DiagsFileName[256];
+    UINTN               TokenCount;
+    REFIT_FILE         *File;
 
     // create the submenu
     if (StrLen (Entry->Title) == 0) {
@@ -882,12 +884,12 @@ LOADER_ENTRY * AddEfiLoaderEntry (
             FullTitle = PoolPrint (L"Reboot to %s", LoaderTitle);
         }
 
-        Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
         Entry->me.Row        = Row;
         Entry->me.Tag        = TAG_FIRMWARE_LOADER;
+        Entry->me.Title      = StrDuplicate ((FullTitle) ? FullTitle : L"Unknown");
         Entry->Title         = StrDuplicate ((LoaderTitle) ? LoaderTitle : L"Unknown"); // without "Reboot to"
         Entry->EfiLoaderPath = DuplicateDevicePath (EfiLoaderPath);
-        TempStr              = DevicePathToStr(EfiLoaderPath);
+        TempStr              = DevicePathToStr (EfiLoaderPath);
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL, L"EFI Loader Path:- '%s'", TempStr);
@@ -1207,8 +1209,6 @@ BOOLEAN ShouldScan (
 
         MyFreePool (&DontScanDir);
         MyFreePool (&VolName);
-        DontScanDir = NULL;
-        VolName     = NULL;
     } // while
 
     return ScanIt;
@@ -1222,14 +1222,18 @@ BOOLEAN ShouldScan (
 static
 BOOLEAN DuplicatesFallback (
     IN REFIT_VOLUME *Volume,
-    IN CHAR16 *FileName
+    IN CHAR16       *FileName
 ) {
-    CHAR8           *FileContents, *FallbackContents;
-    EFI_FILE_HANDLE FileHandle, FallbackHandle;
-    EFI_FILE_INFO   *FileInfo, *FallbackInfo;
-    UINTN           FileSize = 0, FallbackSize = 0;
-    EFI_STATUS      Status;
-    BOOLEAN         AreIdentical = FALSE;
+    EFI_STATUS       Status;
+    EFI_FILE_HANDLE  FileHandle;
+    EFI_FILE_HANDLE  FallbackHandle;
+    EFI_FILE_INFO   *FileInfo;
+    EFI_FILE_INFO   *FallbackInfo;
+    CHAR8           *FileContents;
+    CHAR8           *FallbackContents;
+    UINTN            FileSize     = 0;
+    UINTN            FallbackSize = 0;
+    BOOLEAN          AreIdentical = FALSE;
 
     if (!FileExists (Volume->RootDir, FileName) ||
         !FileExists (Volume->RootDir, FALLBACK_FULLNAME)
@@ -1871,7 +1875,7 @@ VOID ScanEfiFiles (
         MyFreePool (&Directory);
     } // while
 
-    // Don't scan the fallback loader if it's on the same volume and a duplicate of RefindPlus itself.
+    // Do not scan the fallback loader if it is on the same volume and a duplicate of RefindPlus itself.
     SelfPath = DevicePathToStr (SelfLoadedImage->FilePath);
     CleanUpPathNameSlashes (SelfPath);
 
@@ -1963,8 +1967,8 @@ VOID ScanOptical (VOID) {
 // match the label.
 static
 VOID ScanFirmwareDefined (
-    IN UINTN Row,
-    IN CHAR16 *MatchThis,
+    IN UINTN     Row,
+    IN CHAR16   *MatchThis,
     IN EG_IMAGE *Icon
 ) {
     BOOT_ENTRY_LIST *BootEntries;
@@ -2086,15 +2090,9 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
     }
 
     switch (DiskType) {
-        case BBS_HARDDISK:
-            Badge = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL);
-            break;
-        case BBS_USB:
-            Badge = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL);
-            break;
-        case BBS_CDROM:
-            Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);
-            break;
+        case BBS_HARDDISK: Badge = BuiltinIcon (BUILTIN_ICON_VOL_INTERNAL); break;
+        case BBS_USB:      Badge = BuiltinIcon (BUILTIN_ICON_VOL_EXTERNAL); break;
+        case BBS_CDROM:    Badge = BuiltinIcon (BUILTIN_ICON_VOL_OPTICAL);  break;
     } // switch
 
     return Badge;
