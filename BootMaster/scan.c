@@ -684,9 +684,7 @@ VOID SetLoaderDefaults (
         if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
             MergeFsName = TRUE;
 
-            if (MyStrStr (Volume->FsName, L"PreBoot") != NULL &&
-                GlobalConfig.SyncAPFS
-            ) {
+            if (MyStriCmp (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
                 MergeFsName = FALSE;
             }
 
