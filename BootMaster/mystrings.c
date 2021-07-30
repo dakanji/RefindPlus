@@ -349,7 +349,7 @@ BOOLEAN TruncateString (
     BOOLEAN WasTruncated = FALSE;
 
     if (StrLen (TheString) > Limit) {
-        TheString[Limit + 1] = '\0';
+        TheString[Limit] = '\0';
         WasTruncated = TRUE;
     }
 
