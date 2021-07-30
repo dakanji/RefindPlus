@@ -338,7 +338,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Creating subscreen: '%s'", SubScreen->Title);
+            LOG(3, LOG_LINE_NORMAL, L"Creating Subscreen: '%s'", SubScreen->Title);
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;
@@ -624,7 +624,7 @@ VOID SetLoaderDefaults (
     else {
         MsgStr = StrDuplicate (Entry->Title);
     }
-    LOG(3, LOG_LINE_NORMAL, L"Get Default Loader Settings for '%s'", MsgStr);
+    LOG(3, LOG_LINE_NORMAL, L"Getting Default Setting for Loader:- '%s'", MsgStr);
     MyFreePool (&MsgStr);
     #endif
 
