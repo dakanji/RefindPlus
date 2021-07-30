@@ -250,6 +250,14 @@ CHAR16 * SplitDeviceString (
 //
 
 static
+VOID CloseDir (EFI_FILE **theDir) {
+    if (theDir && *theDir) {
+        REFIT_CALL_1_WRAPPER((*theDir)->Close, *theDir);
+        *theDir = NULL;
+    }
+} // VOID CloseDir()
+
+static
 EFI_STATUS FinishInitRefitLib (VOID) {
     EFI_STATUS  Status;
 
@@ -319,10 +327,7 @@ static
 VOID UninitVolume (
     IN OUT REFIT_VOLUME  *Volume
 ) {
-    if (Volume->RootDir != NULL) {
-        REFIT_CALL_1_WRAPPER(Volume->RootDir->Close, Volume->RootDir);
-        Volume->RootDir = NULL;
-    }
+    CloseDir (&Volume->RootDir);
 
     Volume->DeviceHandle     = NULL;
     Volume->BlockIO          = NULL;
@@ -411,20 +416,9 @@ VOID UninitRefitLib (VOID) {
 
     UninitVolumes();
 
-    if (SelfDir != NULL) {
-        REFIT_CALL_1_WRAPPER(SelfDir->Close, SelfDir);
-        SelfDir = NULL;
-    }
-
-    if (SelfRootDir != NULL) {
-       REFIT_CALL_1_WRAPPER(SelfRootDir->Close, SelfRootDir);
-       SelfRootDir = NULL;
-    }
-
-    if (gVarsDir != NULL) {
-       REFIT_CALL_1_WRAPPER(gVarsDir->Close, gVarsDir);
-       gVarsDir = NULL;
-    }
+    CloseDir (&SelfDir);
+    CloseDir (&SelfRootDir);
+    CloseDir (&gVarsDir);
 } // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
@@ -2640,7 +2634,8 @@ BOOLEAN FileExists (
             0
         );
         if (Status == EFI_SUCCESS) {
-            REFIT_CALL_1_WRAPPER(TestFile->Close, TestFile);
+            CloseDir (&TestFile);
+
             return TRUE;
         }
     }
@@ -2892,7 +2887,7 @@ EFI_STATUS DirIterClose (
     MyFreePool (&DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
-        REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
+        CloseDir (&DirIter->DirHandle);
     }
 
     return DirIter->LastStatus;
