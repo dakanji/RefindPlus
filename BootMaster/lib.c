@@ -253,6 +253,10 @@ static
 EFI_STATUS FinishInitRefitLib (VOID) {
     EFI_STATUS  Status;
 
+    if (SelfVolume && SelfVolume->DeviceHandle != SelfLoadedImage->DeviceHandle) {
+        SelfLoadedImage->DeviceHandle = SelfVolume->DeviceHandle;
+    }
+
     if (SelfRootDir == NULL) {
         SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
         if (SelfRootDir == NULL) {
