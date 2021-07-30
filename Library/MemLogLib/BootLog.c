@@ -325,10 +325,7 @@ VOID EFIAPI DeepLoggger (
         LongStr  = TruncateString (TmpMsg, Limit);
         FinalMsg = PoolPrint (L"%s", TmpMsg);
 
-        if (LongStr) {
-            Limit = 511;
-        }
-        else {
+        if (!LongStr) {
             Limit = StrLen (FinalMsg) + 1;
         }
 
