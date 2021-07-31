@@ -2010,19 +2010,19 @@ BOOLEAN SetPreBootNames (
             FoundGUID = TRUE;
             if (Volume->VolName != NULL &&
                 StrLen (Volume->VolName) != 0 &&
-                !MyStriCmp (Volume->VolName, L"Recovery") &&
-                !MyStriCmp (Volume->VolName, L"PreBoot") &&
-                !MyStriCmp (Volume->VolName, L"Update") &&
-                !MyStriCmp (Volume->VolName, L"VM") &&
                 !MyStriCmp (Volume->VolName, L"") &&
-                MyStrStr (Volume->VolName, L"Unknown")    == NULL &&
+                !MyStriCmp (Volume->VolName, L"VM") &&
+                !MyStriCmp (Volume->VolName, L"Update") &&
+                MyStriStr (Volume->VolName, L"Recovery")  == NULL &&
+                MyStriStr (Volume->VolName, L"PreBoot")   == NULL &&
+                MyStriStr (Volume->VolName, L"Unknown")   == NULL &&
                 MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
                 NameSwap = TRUE;
                 break;
-            } // if Volume->VolName != NULL
-        } // if GuidsAreEqual
+            }
+        }
     } // for
 
     if (!NameSwap && FoundGUID) {
@@ -2034,21 +2034,21 @@ BOOLEAN SetPreBootNames (
             ) {
                 if (Volume->VolName != NULL &&
                     StrLen (Volume->VolName) != 0 &&
-                    !MyStriCmp (Volume->VolName, L"Recovery") &&
-                    !MyStriCmp (Volume->VolName, L"PreBoot") &&
-                    !MyStriCmp (Volume->VolName, L"Update") &&
-                    !MyStriCmp (Volume->VolName, L"VM") &&
                     !MyStriCmp (Volume->VolName, L"") &&
-                    MyStrStr (Volume->VolName, L"Unknown")    == NULL &&
-                    MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
-                    MyStrStr (Volume->VolName, L" - Data")    == NULL
+                    !MyStriCmp (Volume->VolName, L"VM") &&
+                    !MyStriCmp (Volume->VolName, L"Update") &&
+                    MyStriStr (Volume->VolName, L"Recovery")   == NULL &&
+                    MyStriStr (Volume->VolName, L"PreBoot")    == NULL &&
+                    MyStriStr (Volume->VolName, L"Unknown")    == NULL &&
+                    MyStriStr (Volume->VolName, L"/FileVault") == NULL &&
+                    MyStriStr (Volume->VolName, L" - Data")    == NULL
                 ) {
                     NameSwap = TRUE;
                     break;
                 }
-            } // if GuidsAreEqual
+            }
         } // for
-    } // if !NameSwap
+    }
 
     if (NameSwap) {
         MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
@@ -2075,7 +2075,7 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (MyStriCmp (Volumes[i]->VolName, L"PreBoot")) {
+        if (MyStriStr (Volumes[i]->VolName, L"PreBoot") != NULL) {
             FoundPreboot = TRUE;
             AddListElement (
                 (VOID ***) &PreBootVolumes,
@@ -2097,8 +2097,12 @@ VOID SetPrebootVolumes (VOID) {
             if ((Volumes[i]->VolName != NULL) &&
                 (Volumes[i]->VolName[0] != L'\0')
             ) {
-                if (MyStrStr (Volumes[i]->VolName, L"/FileVault") != NULL ||
-                    StrLen (Volumes[i]->VolName) == 0
+                if (Volumes[i]->VolName != NULL &&
+                    StrLen (Volumes[i]->VolName) != 0 &&
+                    MyStriStr (Volumes[i]->VolName, L"PreBoot")    == NULL &&
+                    MyStriStr (Volumes[i]->VolName, L"Unknown")    == NULL &&
+                    MyStriStr (Volumes[i]->VolName, L"Recovery")   == NULL &&
+                    MyStriStr (Volumes[i]->VolName, L"/FileVault") == NULL
                 ) {
                     SwapName = FALSE;
                 }
@@ -2118,7 +2122,7 @@ VOID SetPrebootVolumes (VOID) {
                     MyFreePool (&Volumes[i]->VolName);
                     Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
                 }
-            } // if Volumes[i]->VolName != NULL
+            }
         } // for
 
         #if REFIT_DEBUG > 0
