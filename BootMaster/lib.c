@@ -973,24 +973,24 @@ VOID FreeVolume (
 ) {
     if (Volume && *Volume) {
         // UnInit Volume
-        UninitVolume (&Volume);
+        UninitVolume (&(*Volume));
 
         // Free pool elements
-        MyFreePool (&(*Volume)->FsName);
-        MyFreePool (&(*Volume)->OSName);
-        MyFreePool (&(*Volume)->VolName);
-        MyFreePool (&(*Volume)->PartName);
-        MyFreePool (&(*Volume)->OSIconName);
-        MyFreePool (&(*Volume)->DevicePath);
-        MyFreePool (&(*Volume)->MbrPartitionTable);
-        MyFreePool (&(*Volume)->WholeDiskDevicePath);
+        ReleasePtr ((*Volume)->FsName);
+        ReleasePtr ((*Volume)->OSName);
+        ReleasePtr ((*Volume)->VolName);
+        ReleasePtr ((*Volume)->PartName);
+        ReleasePtr ((*Volume)->OSIconName);
+        ReleasePtr ((*Volume)->DevicePath);
+        ReleasePtr ((*Volume)->MbrPartitionTable);
+        ReleasePtr ((*Volume)->WholeDiskDevicePath);
 
         // Free image elements
         egFreeImage ((*Volume)->VolIconImage);
         egFreeImage ((*Volume)->VolBadgeImage);
 
         // Free whole volume
-        MyFreePool (&Volume);
+        ReleasePtr (*Volume);
     }
 } // VOID FreeVolume()
 
@@ -2363,7 +2363,6 @@ VOID ScanVolumes (VOID) {
         #endif
 
         SelfVolRun = TRUE;
-        FreeVolume (&Volume);
 
         return;
     }
