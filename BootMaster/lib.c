@@ -972,6 +972,9 @@ VOID FreeVolume (
     REFIT_VOLUME **Volume
 ) {
     if (Volume && *Volume) {
+        // UnInit Volume
+        UninitVolume (&Volume);
+
         // Free pool elements
         MyFreePool (&(*Volume)->FsName);
         MyFreePool (&(*Volume)->OSName);
@@ -981,11 +984,6 @@ VOID FreeVolume (
         MyFreePool (&(*Volume)->DevicePath);
         MyFreePool (&(*Volume)->MbrPartitionTable);
         MyFreePool (&(*Volume)->WholeDiskDevicePath);
-
-        if ((*Volume)->RootDir != NULL) {
-            REFIT_CALL_1_WRAPPER((*Volume)->RootDir->Close, (*Volume)->RootDir);
-            (*Volume)->RootDir = NULL;
-        }
 
         // Free image elements
         egFreeImage ((*Volume)->VolIconImage);
