@@ -2075,12 +2075,13 @@ VOID SetPrebootVolumes (VOID) {
 
     for (i = 0; i < VolumesCount; i++) {
         if (MyStrStrIns (Volumes[i]->VolName, L"PreBoot") != NULL) {
-            FoundPreboot = TRUE;
             AddListElement (
                 (VOID ***) &PreBootVolumes,
                 &PreBootVolumesCount,
                 CopyVolume (Volumes[i])
             );
+
+            FoundPreboot = TRUE;
         }
     }
 
@@ -2098,10 +2099,10 @@ VOID SetPrebootVolumes (VOID) {
             ) {
                 if (Volumes[i]->VolName != NULL &&
                     StrLen (Volumes[i]->VolName) != 0 &&
-                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot")    == NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Unknown")    == NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Recovery")   == NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault") == NULL
+                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot")    != NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"Unknown")    != NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"Recovery")   != NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault") != NULL
                 ) {
                     SwapName = FALSE;
                 }
