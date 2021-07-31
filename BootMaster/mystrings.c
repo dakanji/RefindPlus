@@ -92,8 +92,9 @@ CHAR16 * MyStrStr (
     CHAR16 *Src;
     CHAR16 *Sub;
 
-    if ((String == NULL) || (StrCharSet == NULL))
+    if ((String == NULL) || (StrCharSet == NULL)) {
         return NULL;
+    }
 
     Src = String;
     Sub = StrCharSet;
@@ -113,7 +114,64 @@ CHAR16 * MyStrStr (
     }
 
     return NULL;
-} // CHAR16 *MyStrStr()
+} // CHAR16 * MyStrStr()
+
+/*++
+ *
+ * Routine Description:
+ *
+ *  As 'MyStrStr' but case insensitive.
+ *
+ * Arguments:
+ *
+ *  RawString      - Null-terminated string to search.
+ *  RawStrCharSet  - Null-terminated string to search for.
+ *
+ * Returns:
+ *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
+ * --*/
+CHAR16 * MyStriStr (
+    IN CHAR16  *RawString,
+    IN CHAR16  *RawStrCharSet
+) {
+    if ((RawString == NULL) || (RawStrCharSet == NULL)) {
+        return NULL;
+    }
+
+    CHAR16 *Src;
+    CHAR16 *Sub;
+    CHAR16 *String     = StrDuplicate (RawString);
+    CHAR16 *StrCharSet = StrDuplicate (RawStrCharSet);
+
+    ToLower (String);
+    ToLower (StrCharSet);
+
+    Src = String;
+    Sub = StrCharSet;
+
+    while ((*String != L'\0') && (*StrCharSet != L'\0')) {
+        if (*String++ != *StrCharSet) {
+            String = ++Src;
+            StrCharSet = Sub;
+        }
+        else {
+            StrCharSet++;
+        }
+    }
+
+    if (*StrCharSet == L'\0') {
+        MyFreePool (&String);
+        MyFreePool (&StrCharSet);
+
+        return Src;
+    }
+
+    MyFreePool (&String);
+    MyFreePool (&StrCharSet);
+
+    return NULL;
+} // CHAR16 * MyStriStr()
+
 
 /**
   Returns the first occurrence of a Null-terminated ASCII sub-string
@@ -181,19 +239,20 @@ CHAR8 * MyAsciiStrStr (
 } // CHAR16 *MyAsciiStrStr()
 
 // Convert input string to all-lowercase.
-// DO NOT USE the standard StrLwr() function, since it's broken on some EFIs!
-VOID ToLower(
-    CHAR16 * MyString
+// DO NOT USE the standard StrLwr() function, as it is broken on some EFIs!
+VOID ToLower (
+    CHAR16 *MyString
 ) {
     UINTN i = 0;
 
     if (MyString) {
         while (MyString[i] != L'\0') {
-            if ((MyString[i] >= L'A') && (MyString[i] <= L'Z'))
+            if ((MyString[i] >= L'A') && (MyString[i] <= L'Z')) {
                 MyString[i] = MyString[i] - L'A' + L'a';
+            }
             i++;
         } // while
-    } // if
+    }
 } // VOID ToLower()
 
 // Merges two strings, creating a new one and returning a pointer to it.
@@ -444,7 +503,7 @@ CHAR16 * FindCommaDelimited (
     CHAR16   *FoundString = NULL;
 
     if (InString != NULL) {
-        InLength = StrLen(InString);
+        InLength = StrLen (InString);
         // After while() loop, StartPos marks start of item #Index
         while ((Index > 0) && (CurPos < InLength)) {
             if (InString[CurPos] == L',') {
