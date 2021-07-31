@@ -130,7 +130,7 @@ CHAR16 * MyStrStr (
  * Returns:
  *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
  * --*/
-CHAR16 * MyStriStr (
+CHAR16 * MyStrStrIns (
     IN CHAR16  *RawString,
     IN CHAR16  *RawStrCharSet
 ) {
@@ -170,7 +170,7 @@ CHAR16 * MyStriStr (
     MyFreePool (&StrCharSet);
 
     return NULL;
-} // CHAR16 * MyStriStr()
+} // CHAR16 * MyStrStrIns()
 
 
 /**

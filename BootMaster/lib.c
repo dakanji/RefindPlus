@@ -869,28 +869,28 @@ CHAR16 * SanitiseVolumeName (
     CHAR16 *VolumeName = NULL;
 
     if (Volume->VolName) {
-        if (MyStriStr (Volume->VolName, L"Microsoft Reserved Partition") != NULL) {
+        if (MyStrStrIns (Volume->VolName, L"Microsoft Reserved Partition") != NULL) {
             VolumeName = L"Microsoft Reserved Partition";
         }
-        else if (MyStriStr (Volume->VolName, L"Basic Data Partition") != NULL) {
+        else if (MyStrStrIns (Volume->VolName, L"Basic Data Partition") != NULL) {
             VolumeName = L"Basic Data Partition";
         }
-        else if (MyStriStr (Volume->VolName, L"EFI System Partition") != NULL) {
+        else if (MyStrStrIns (Volume->VolName, L"EFI System Partition") != NULL) {
             VolumeName = L"EFI System Partition";
         }
         else {
-                 if (MyStriStr (Volume->VolName, L"Whole Disk Volume")    != NULL) VolumeName = L"Whole Disk Volume";
-            else if (MyStriStr (Volume->VolName, L"Unknown Volume")       != NULL) VolumeName = L"Unknown Volume";
-            else if (MyStriStr (Volume->VolName, L"HFS+ Volume")          != NULL) VolumeName = L"HFS+ Volume";
-            else if (MyStriStr (Volume->VolName, L"NTFS Volume")          != NULL) VolumeName = L"NTFS Volume";
-            else if (MyStriStr (Volume->VolName, L"FAT Volume")           != NULL) VolumeName = L"FAT Volume";
-            else if (MyStriStr (Volume->VolName, L"XFS Volume")           != NULL) VolumeName = L"XFS Volume";
-            else if (MyStriStr (Volume->VolName, L"Ext4 Volume")          != NULL) VolumeName = L"Ext4 Volume";
-            else if (MyStriStr (Volume->VolName, L"Ext3 Volume")          != NULL) VolumeName = L"Ext3 Volume";
-            else if (MyStriStr (Volume->VolName, L"Ext2 Volume")          != NULL) VolumeName = L"Ext2 Volume";
-            else if (MyStriStr (Volume->VolName, L"Btrfs Volume")         != NULL) VolumeName = L"BTRFS Volume";
-            else if (MyStriStr (Volume->VolName, L"ReiserFS Volume")      != NULL) VolumeName = L"ReiserFS Volume";
-            else if (MyStriStr (Volume->VolName, L"ISO-9660 Volume")      != NULL) VolumeName = L"ISO-9660 Volume";
+                 if (MyStrStrIns (Volume->VolName, L"Whole Disk Volume")    != NULL) VolumeName = L"Whole Disk Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Unknown Volume")       != NULL) VolumeName = L"Unknown Volume";
+            else if (MyStrStrIns (Volume->VolName, L"HFS+ Volume")          != NULL) VolumeName = L"HFS+ Volume";
+            else if (MyStrStrIns (Volume->VolName, L"NTFS Volume")          != NULL) VolumeName = L"NTFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"FAT Volume")           != NULL) VolumeName = L"FAT Volume";
+            else if (MyStrStrIns (Volume->VolName, L"XFS Volume")           != NULL) VolumeName = L"XFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext4 Volume")          != NULL) VolumeName = L"Ext4 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext3 Volume")          != NULL) VolumeName = L"Ext3 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext2 Volume")          != NULL) VolumeName = L"Ext2 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Btrfs Volume")         != NULL) VolumeName = L"BTRFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"ReiserFS Volume")      != NULL) VolumeName = L"ReiserFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"ISO-9660 Volume")      != NULL) VolumeName = L"ISO-9660 Volume";
             else                                                                  VolumeName = Volume->VolName;
         }
     }
@@ -2013,9 +2013,9 @@ BOOLEAN SetPreBootNames (
                 !MyStriCmp (Volume->VolName, L"") &&
                 !MyStriCmp (Volume->VolName, L"VM") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
-                MyStriStr (Volume->VolName, L"Recovery")  == NULL &&
-                MyStriStr (Volume->VolName, L"PreBoot")   == NULL &&
-                MyStriStr (Volume->VolName, L"Unknown")   == NULL &&
+                MyStrStrIns (Volume->VolName, L"Recovery")  == NULL &&
+                MyStrStrIns (Volume->VolName, L"PreBoot")   == NULL &&
+                MyStrStrIns (Volume->VolName, L"Unknown")   == NULL &&
                 MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
@@ -2037,11 +2037,11 @@ BOOLEAN SetPreBootNames (
                     !MyStriCmp (Volume->VolName, L"") &&
                     !MyStriCmp (Volume->VolName, L"VM") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
-                    MyStriStr (Volume->VolName, L"Recovery")   == NULL &&
-                    MyStriStr (Volume->VolName, L"PreBoot")    == NULL &&
-                    MyStriStr (Volume->VolName, L"Unknown")    == NULL &&
-                    MyStriStr (Volume->VolName, L"/FileVault") == NULL &&
-                    MyStriStr (Volume->VolName, L" - Data")    == NULL
+                    MyStrStrIns (Volume->VolName, L"Recovery")   == NULL &&
+                    MyStrStrIns (Volume->VolName, L"PreBoot")    == NULL &&
+                    MyStrStrIns (Volume->VolName, L"Unknown")    == NULL &&
+                    MyStrStrIns (Volume->VolName, L"/FileVault") == NULL &&
+                    MyStrStrIns (Volume->VolName, L" - Data")    == NULL
                 ) {
                     NameSwap = TRUE;
                     break;
@@ -2075,7 +2075,7 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (MyStriStr (Volumes[i]->VolName, L"PreBoot") != NULL) {
+        if (MyStrStrIns (Volumes[i]->VolName, L"PreBoot") != NULL) {
             FoundPreboot = TRUE;
             AddListElement (
                 (VOID ***) &PreBootVolumes,
@@ -2099,10 +2099,10 @@ VOID SetPrebootVolumes (VOID) {
             ) {
                 if (Volumes[i]->VolName != NULL &&
                     StrLen (Volumes[i]->VolName) != 0 &&
-                    MyStriStr (Volumes[i]->VolName, L"PreBoot")    == NULL &&
-                    MyStriStr (Volumes[i]->VolName, L"Unknown")    == NULL &&
-                    MyStriStr (Volumes[i]->VolName, L"Recovery")   == NULL &&
-                    MyStriStr (Volumes[i]->VolName, L"/FileVault") == NULL
+                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot")    == NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"Unknown")    == NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"Recovery")   == NULL &&
+                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault") == NULL
                 ) {
                     SwapName = FALSE;
                 }

@@ -2243,8 +2243,8 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected Mac OS
-                if (MyStriStr (ourLoaderEntry->Title, L"Mac OS") == NULL &&
-                    MyStriStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
+                if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") == NULL &&
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
                 ) {
                     if (MyStriCmp (ourLoaderEntry->Volume->VolName, L"PreBoot")) {
                         ourLoaderEntry->Title = L"Mac OS";
@@ -2255,16 +2255,16 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 // Fix undetected Windows
-                if (MyStriStr (ourLoaderEntry->Title, L"Windows") == NULL &&
-                    MyStriStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot") != NULL
+                if (MyStrStrIns (ourLoaderEntry->Title, L"Windows") == NULL &&
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot") != NULL
                 ) {
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
                 // Use multiple instaces of "User Input Received:"
 
-                if (MyStriStr (ourLoaderEntry->Title, L"OpenCore") != NULL ||
-                    MyStriStr (ourLoaderEntry->LoaderPath, L"\\OpenCore") != NULL
+                if (MyStrStrIns (ourLoaderEntry->Title, L"OpenCore") != NULL ||
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\OpenCore") != NULL
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2288,8 +2288,8 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStriStr (ourLoaderEntry->Title, L"Clover") != NULL ||
-                    MyStriStr (ourLoaderEntry->LoaderPath, L"\\Clover") != NULL
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Clover") != NULL ||
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\Clover") != NULL
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2313,7 +2313,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStriStr (ourLoaderEntry->Title, L"Mac OS") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") != NULL) {
                     // Set CSR if required
                     ActiveCSR();
 
@@ -2366,7 +2366,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
                 }
-                else if (MyStriStr (ourLoaderEntry->Title, L"Windows") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows") != NULL) {
                     if (GlobalConfig.ProtectNVRAM &&
                         MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
@@ -2397,7 +2397,7 @@ EFI_STATUS EFIAPI efi_main (
                     MyFreePool (&MsgStr);
                     #endif
                 }
-                else if (MyStriStr (ourLoaderEntry->Title, L"Linux") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux") != NULL) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
@@ -2521,7 +2521,7 @@ EFI_STATUS EFIAPI efi_main (
                 MyFreePool (&MsgStr);
                 #endif
 
-                if (MyStriStr (ourLoaderEntry->Title, L"Boot Screen") != NULL) {
+                if (MyStrStrIns (ourLoaderEntry->Title, L"Boot Screen") != NULL) {
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
 

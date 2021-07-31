@@ -684,7 +684,7 @@ VOID SetLoaderDefaults (
         if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
             MergeFsName = TRUE;
 
-            if (MyStriStr (Volume->FsName, L"PreBoot") != NULL && GlobalConfig.SyncAPFS) {
+            if (MyStrStrIns (Volume->FsName, L"PreBoot") != NULL && GlobalConfig.SyncAPFS) {
                 MergeFsName = FALSE;
             }
 
@@ -1145,7 +1145,7 @@ BOOLEAN ShouldScan (
     // Align APFS ReMap
     if ((Volume->VolName) &&
         (GlobalConfig.SyncAPFS) &&
-        (MyStriStr (Volume->VolName, L"PreBoot") != NULL)
+        (MyStrStrIns (Volume->VolName, L"PreBoot") != NULL)
     ) {
         for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
             if (GuidsAreEqual (
@@ -1682,7 +1682,7 @@ VOID ScanEfiFiles (
     // Align APFS ReMap
     if ((Volume->VolName) &&
         (GlobalConfig.SyncAPFS) &&
-        (MyStriStr (Volume->VolName, L"PreBoot") != NULL)
+        (MyStrStrIns (Volume->VolName, L"PreBoot") != NULL)
     ) {
         UINTN PreBootIndex;
         for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
