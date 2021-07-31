@@ -2859,11 +2859,12 @@ VOID FreeBdsOption (
     BDS_COMMON_OPTION **BdsOption
 ) {
     if (BdsOption && *BdsOption) {
-        MyFreePool (&(*BdsOption)->DevicePath);
-        MyFreePool (&(*BdsOption)->OptionName);
-        MyFreePool (&(*BdsOption)->Description);
-        MyFreePool (&(*BdsOption)->LoadOptions);
-        MyFreePool (&(*BdsOption)->StatusString);
-        MyFreePool (BdsOption);
+        ReleasePtr ((*BdsOption)->DevicePath);
+        ReleasePtr ((*BdsOption)->OptionName);
+        ReleasePtr ((*BdsOption)->Description);
+        ReleasePtr ((*BdsOption)->LoadOptions);
+        ReleasePtr ((*BdsOption)->StatusString);
+
+        ReleasePtr (*BdsOption);
     }
 } // VOID FreeBdsOption()
