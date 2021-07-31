@@ -899,9 +899,9 @@ CHAR16 * SanitiseVolumeName (
 } // CHAR16 * SanitiseVolumeName ()
 #endif
 
-VOID FreeVolumesList (
-    REFIT_VOLUME  ***ListVolumes,
-    UINTN           *ListCount
+VOID FreeVolumes (
+    IN OUT REFIT_VOLUME  ***ListVolumes,
+    IN OUT UINTN           *ListCount
 ) {
     UINTN i;
 
@@ -912,7 +912,7 @@ VOID FreeVolumesList (
         ReleasePtr (*ListVolumes);
         *ListCount = 0;
     }
-} // VOID FreeVolumesList()
+} // VOID FreeVolumes()
 
 REFIT_VOLUME * CopyVolume (
     IN REFIT_VOLUME *VolumeToCopy
@@ -2064,7 +2064,7 @@ VOID SetPrebootVolumes (VOID) {
     CHAR16 *MsgStr = NULL;
     #endif
 
-    FreeVolumesList (
+    FreeVolumes (
         &PreBootVolumes,
         &PreBootVolumesCount
     );
@@ -2158,7 +2158,7 @@ VOID ScanVolumes (VOID) {
 
     if (SelfVolRun) {
         // Clear Volumes List if not Scanning for Self Volume
-        FreeVolumesList (
+        FreeVolumes (
             &Volumes,
             &VolumesCount
         );
