@@ -667,7 +667,7 @@ VOID PrintUglyText (
 
     if (Text) {
         if (AllowGraphicsMode &&
-            MyStriCmp (L"Apple", gST->FirmwareVendor) &&
+            MyStrStr (L"Apple", gST->FirmwareVendor) != NULL &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (Text, &BGColor, PositionCode);
@@ -677,8 +677,8 @@ VOID PrintUglyText (
             // non-Mac or in text mode; a Print() statement will work
             Print (Text);
             Print (L"\n");
-        } // if/else
-    } // if
+        }
+    }
 } // VOID PrintUglyText()
 
 VOID PauseForKey (VOID) {
@@ -686,20 +686,18 @@ VOID PauseForKey (VOID) {
     UINTN   WaitOut;
     BOOLEAN Breakout = FALSE;
 
-
-    Print (L"\n");
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
 
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"* Paused for Error/Warning *", NEXTLINE);
+
     if (GlobalConfig.ContinueOnWarning) {
         PrintUglyText (L"Press Any Key or Wait 5 Seconds to Continue", NEXTLINE);
     }
     else {
         PrintUglyText (L"Press Any Key to Continue", NEXTLINE);
     }
-
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
@@ -761,7 +759,7 @@ VOID PauseForKey (VOID) {
             if (Breakout) {
                 break;
             }
-        }
+        } // for
     }
 
     GraphicsScreenDirty = TRUE;
@@ -778,6 +776,9 @@ VOID PauseForKey (VOID) {
 VOID PauseSeconds (
     UINTN Seconds
 ) {
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
     #endif

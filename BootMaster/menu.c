@@ -2286,7 +2286,7 @@ VOID ManageHiddenTags (VOID) {
     else {
         AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
-            MenuEntryItem        = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
+            MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);
             MenuEntryItem->Tag   = TAG_RETURN;
             MenuEntryItem->Row   = 1;

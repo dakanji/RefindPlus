@@ -521,8 +521,8 @@ LibStrDuplicate (
   CHAR16  *Dest;
   UINTN   Size;
 
-  Size  = StrSize (Src);
-  Dest  = AllocateZeroPool (Size);
+  Size = StrSize (Src);
+  Dest = AllocateZeroPool (Size);
   ASSERT (Dest != NULL);
   if (Dest != NULL) {
     CopyMem (Dest, Src, Size);
@@ -700,7 +700,7 @@ LibAppendFileName (
   }
 
   MaxLen = (Size1 + Size2 + sizeof (CHAR16))/ sizeof (CHAR16);
-  Str   = AllocateZeroPool (Size1 + Size2 + sizeof (CHAR16));
+  Str = AllocateZeroPool (Size1 + Size2 + sizeof (CHAR16));
   ASSERT (Str != NULL);
 
   TmpStr = AllocateZeroPool (Size1 + Size2 + sizeof (CHAR16));
@@ -836,8 +836,10 @@ LibFindFileSystem (
           }
         }
       }
-      MenuEntry->DisplayString  = AllocateZeroPool (MAX_CHAR);
+      MenuEntry->DisplayString = AllocateZeroPool (MAX_CHAR);
+
       ASSERT (MenuEntry->DisplayString != NULL);
+
       UnicodeSPrint (
         MenuEntry->DisplayString,
         MAX_CHAR,
@@ -845,7 +847,8 @@ LibFindFileSystem (
         VolumeLabel,
         MenuEntry->HelpString
         );
-  	  MenuEntry->DisplayStringToken = HiiSetString (
+
+      MenuEntry->DisplayStringToken = HiiSetString (
                                              gFileExplorerPrivate.FeHiiHandle,
                                              0,
                                              MenuEntry->DisplayString,
@@ -1154,7 +1157,7 @@ LibFindFiles (
   OptionNumber = 0;
 
   DirBufferSize = sizeof (EFI_FILE_INFO) + 1024;
-  DirInfo       = AllocateZeroPool (DirBufferSize);
+  DirInfo = AllocateZeroPool (DirBufferSize);
   if (DirInfo == NULL) {
     return EFI_OUT_OF_RESOURCES;
   }

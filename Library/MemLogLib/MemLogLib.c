@@ -168,8 +168,8 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
     if (mMemLog == NULL) {
         return EFI_OUT_OF_RESOURCES;
     }
+    mMemLog->Buffer = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
     mMemLog->BufferSize = MEM_LOG_INITIAL_SIZE;
-    mMemLog->Buffer     = AllocateZeroPool (MEM_LOG_INITIAL_SIZE);
     mMemLog->Cursor     = mMemLog->Buffer;
     mMemLog->Callback   = NULL;
 

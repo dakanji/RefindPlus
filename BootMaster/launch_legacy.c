@@ -741,7 +741,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     FirstLegacyScan = FALSE;
 
     // prepare the menu entry
-    Entry                    = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
     Entry->Enabled           = TRUE;
     Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
@@ -760,7 +760,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     #endif
 
     // create the submenu
-    SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     SubScreen->Title = PoolPrint (
         L"Boot Options for %s on %s",
         LoaderTitle, VolDesc
@@ -777,9 +777,8 @@ LEGACY_ENTRY * AddLegacyEntry (
     }
 
     // default entry
-    SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = PoolPrint (L"Boot %s", LoaderTitle);
-
+    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
     SubEntry->me.Tag      = TAG_LEGACY;
     SubEntry->Volume      = Entry->Volume;
     SubEntry->LoadOptions = Entry->LoadOptions;
@@ -820,7 +819,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     LimitStringLength (LegacyDescription, 100);
 
     // prepare the menu entry
-    Entry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
     Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", LegacyDescription);
 
     #if REFIT_DEBUG > 0
@@ -843,9 +842,8 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     Entry->Enabled           = TRUE;
 
     // create the submenu
-    SubScreen        = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = StrDuplicate (L"No boot options for legacy target");
-
+    SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    SubScreen->Title      = StrDuplicate (L"No boot options for legacy target");
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
@@ -857,10 +855,9 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     }
 
     // default entry
-    SubEntry           = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
     SubEntry->me.Title = PoolPrint (L"Boot %s", LegacyDescription);
-
-    SubEntry->me.Tag = TAG_LEGACY_UEFI;
+    SubEntry->me.Tag    = TAG_LEGACY_UEFI;
     SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);

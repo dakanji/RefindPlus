@@ -248,7 +248,8 @@ RamDiskPublishNfit (
 
     NfitHeader = (EFI_ACPI_DESCRIPTION_HEADER *)TableHeader;
     NfitLen    = NfitHeader->Length + sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
-    Nfit       = AllocateZeroPool (NfitLen);
+
+    Nfit = AllocateZeroPool (NfitLen);
     if (Nfit == NULL) {
       return EFI_OUT_OF_RESOURCES;
     }
@@ -311,7 +312,8 @@ RamDiskPublishNfit (
 
     NfitLen = sizeof (EFI_ACPI_6_1_NVDIMM_FIRMWARE_INTERFACE_TABLE) +
               sizeof (EFI_ACPI_6_1_NFIT_SYSTEM_PHYSICAL_ADDRESS_RANGE_STRUCTURE);
-    Nfit    = AllocateZeroPool (NfitLen);
+
+    Nfit = AllocateZeroPool (NfitLen);
     if (Nfit == NULL) {
       return EFI_OUT_OF_RESOURCES;
     }

@@ -1257,8 +1257,9 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Re-scanning Tools and Loaders");
-    MsgLog ("INFO: Re-scanning Tools and Loaders\n\n");
+    CHAR16 *MsgStr = L"Re-Scanning Tools and Loaders";
+    LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n\n", MsgStr);
     #endif
 
     FreeList (

@@ -123,8 +123,8 @@ CHAR16 * EfiStrDuplicate (
         return NULL;
     }
 
-    Size  = StrSize (Src); //at least 2bytes
-    Dest  = AllocateZeroPool (Size);
+    Size = StrSize (Src); //at least 2bytes
+    Dest = AllocateZeroPool (Size);
     if (Dest != NULL) {
         CopyMem (Dest, Src, Size);
     }

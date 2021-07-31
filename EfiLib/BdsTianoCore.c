@@ -247,8 +247,8 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     return NULL;
   }
 
-  Option->Signature   = BDS_LOAD_OPTION_SIGNATURE;
-  Option->DevicePath  = AllocateZeroPool (GetDevicePathSize (DevicePath));
+  Option->Signature  = BDS_LOAD_OPTION_SIGNATURE;
+  Option->DevicePath = AllocateZeroPool (GetDevicePathSize (DevicePath));
   ASSERT(Option->DevicePath != NULL);
   CopyMem (Option->DevicePath, DevicePath, GetDevicePathSize (DevicePath));
 

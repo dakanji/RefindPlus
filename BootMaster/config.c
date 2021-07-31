@@ -1629,8 +1629,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     REFIT_FILE   *Fstab   = NULL;
 
     if (FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        Options = AllocateZeroPool (sizeof (REFIT_FILE));
-        Fstab   = AllocateZeroPool (sizeof (REFIT_FILE));
+        Fstab = Options = AllocateZeroPool (sizeof (REFIT_FILE));
         if (Fstab == NULL || Options == NULL) {
             MyFreePool (&Options);
             MyFreePool (&Fstab);

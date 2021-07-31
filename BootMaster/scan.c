@@ -2110,11 +2110,9 @@ LOADER_ENTRY * AddToolEntry (
     IN BOOLEAN       UseGraphicsMode
 ) {
     LOADER_ENTRY *Entry;
-    CHAR16       *TitleStr = NULL;
 
-    Entry    = AllocateZeroPool (sizeof (LOADER_ENTRY));
-    TitleStr = PoolPrint (L"Load %s", LoaderTitle);
-    Entry->me.Title          = TitleStr;
+    Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+    Entry->me.Title          = PoolPrint (L"Load %s", LoaderTitle);
     Entry->me.Tag            = TAG_TOOL;
     Entry->me.Row            = 1;
     Entry->me.ShortcutLetter = ShortcutLetter;

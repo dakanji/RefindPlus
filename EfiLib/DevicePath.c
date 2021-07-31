@@ -56,10 +56,11 @@ CHAR16 * EFIAPI MyCatPrint (
   UnicodeVSPrint (AppendStr, 0x1000, Fmt, Args);
   VA_END(Args);
   if (NULL == Str->Str) {
-        StringSize   = StrSize (AppendStr);
-    Str->Str  = AllocateZeroPool (StringSize);
-    ASSERT (Str->Str != NULL);
-  } else {
+        StringSize = StrSize (AppendStr);
+        Str->Str = AllocateZeroPool (StringSize);
+        ASSERT (Str->Str != NULL);
+  }
+  else {
         StringSize = StrSize (AppendStr);
         StringSize += (StrSize (Str->Str) - sizeof (UINT16));
 
