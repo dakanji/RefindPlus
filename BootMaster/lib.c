@@ -250,14 +250,6 @@ CHAR16 * SplitDeviceString (
 //
 
 static
-VOID CloseDir (EFI_FILE **theDir) {
-    if (theDir && *theDir) {
-        REFIT_CALL_1_WRAPPER((*theDir)->Close, *theDir);
-        *theDir = NULL;
-    }
-} // VOID CloseDir()
-
-static
 EFI_STATUS FinishInitRefitLib (VOID) {
     EFI_STATUS  Status;
 
@@ -325,13 +317,18 @@ EFI_STATUS InitRefitLib (
 
 static
 VOID UninitVolume (
-    IN OUT REFIT_VOLUME  *Volume
+    IN OUT REFIT_VOLUME  **Volume
 ) {
-    CloseDir (&Volume->RootDir);
+    if (Volume && *Volume) {
+        if ((*Volume)->RootDir != NULL) {
+            REFIT_CALL_1_WRAPPER((*Volume)->RootDir->Close, (*Volume)->RootDir);
+            (*Volume)->RootDir = NULL;
+        }
 
-    Volume->DeviceHandle     = NULL;
-    Volume->BlockIO          = NULL;
-    Volume->WholeDiskBlockIO = NULL;
+        (*Volume)->DeviceHandle     = NULL;
+        (*Volume)->BlockIO          = NULL;
+        (*Volume)->WholeDiskBlockIO = NULL;
+    }
 } // static VOID UninitVolume()
 
 static
@@ -339,7 +336,7 @@ VOID UninitVolumes (VOID) {
     UINTN VolumeIndex;
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        UninitVolume (Volumes[VolumeIndex]);
+        UninitVolume (&Volumes[VolumeIndex]);
     }
 } // static VOID UninitVolumes()
 
@@ -347,55 +344,57 @@ static
 VOID ReinitVolume (
     IN OUT REFIT_VOLUME *Volume
 ) {
-    EFI_STATUS        Status;
+    EFI_STATUS        StatusA, StatusB;
     EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE        DeviceHandle;
     EFI_HANDLE        WholeDiskHandle;
 
-    if (Volume->DevicePath != NULL) {
-        // get the handle for that path
-        RemainingDevicePath = Volume->DevicePath;
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->LocateDevicePath, &BlockIoProtocol,
-            &RemainingDevicePath, &DeviceHandle
-        );
-
-        if (!EFI_ERROR (Status)) {
-            Volume->DeviceHandle = DeviceHandle;
-
-            // get the root directory
-            Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
-
-        }
-        else {
-            CheckError (Status, L"from LocateDevicePath");
-        }
-    }
-
-    if (Volume->WholeDiskDevicePath != NULL) {
-        // get the handle for that path
-        RemainingDevicePath = Volume->WholeDiskDevicePath;
-        Status = REFIT_CALL_3_WRAPPER(
-            gBS->LocateDevicePath, &BlockIoProtocol,
-            &RemainingDevicePath, &WholeDiskHandle
-        );
-
-        if (!EFI_ERROR (Status)) {
-            // get the BlockIO protocol
-            Status = REFIT_CALL_3_WRAPPER(
-                gBS->HandleProtocol, WholeDiskHandle,
-                &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
+    if (Volume) {
+        if (Volume->DevicePath != NULL) {
+            // get the handle for that path
+            RemainingDevicePath = Volume->DevicePath;
+            StatusA = REFIT_CALL_3_WRAPPER(
+                gBS->LocateDevicePath, &BlockIoProtocol,
+                &RemainingDevicePath, &DeviceHandle
             );
 
-            if (EFI_ERROR (Status)) {
-                Volume->WholeDiskBlockIO = NULL;
-                CheckError (Status, L"from HandleProtocol");
+            if (!EFI_ERROR (StatusA)) {
+                Volume->DeviceHandle = DeviceHandle;
+
+                // get the root directory
+                Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
+
+            }
+            else {
+                CheckError (StatusA, L"from LocateDevicePath");
             }
         }
-        else {
-            CheckError (Status, L"from LocateDevicePath");
+
+        if (Volume->WholeDiskDevicePath != NULL) {
+            // get the handle for that path
+            RemainingDevicePath = Volume->WholeDiskDevicePath;
+            StatusB = REFIT_CALL_3_WRAPPER(
+                gBS->LocateDevicePath, &BlockIoProtocol,
+                &RemainingDevicePath, &WholeDiskHandle
+            );
+
+            if (!EFI_ERROR (StatusB)) {
+                // get the BlockIO protocol
+                StatusB = REFIT_CALL_3_WRAPPER(
+                    gBS->HandleProtocol, WholeDiskHandle,
+                    &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
+                );
+
+                if (EFI_ERROR (StatusB)) {
+                    Volume->WholeDiskBlockIO = NULL;
+                    CheckError (StatusB, L"from HandleProtocol");
+                }
+            }
+            else {
+                CheckError (StatusB, L"from LocateDevicePath");
+            }
         }
-    }
+    } // if Volume
 } // static VOID ReinitVolume()
 
 VOID ReinitVolumes (VOID) {
@@ -416,9 +415,20 @@ VOID UninitRefitLib (VOID) {
 
     UninitVolumes();
 
-    CloseDir (&SelfDir);
-    CloseDir (&SelfRootDir);
-    CloseDir (&gVarsDir);
+    if (SelfDir != NULL) {
+        REFIT_CALL_1_WRAPPER(SelfDir->Close, SelfDir);
+        SelfDir = NULL;
+    }
+
+    if (SelfRootDir != NULL) {
+       REFIT_CALL_1_WRAPPER(SelfRootDir->Close, SelfRootDir);
+       SelfRootDir = NULL;
+    }
+
+    if (gVarsDir != NULL) {
+       REFIT_CALL_1_WRAPPER(gVarsDir->Close, gVarsDir);
+       gVarsDir = NULL;
+    }
 } // VOID UninitRefitLib()
 
 // called after running external programs to re-open file handles
@@ -890,14 +900,14 @@ CHAR16 * SanitiseVolumeName (
 #endif
 
 VOID FreeVolumesList (
-    IN OUT VOID  ***ListVolumes,
-    IN OUT UINTN   *ListCount
+    REFIT_VOLUME  ***ListVolumes,
+    UINTN           *ListCount
 ) {
     UINTN i;
 
     if ((*ListCount > 0) && (**ListVolumes != NULL)) {
         for (i = 0; i < *ListCount; i++) {
-            FreeVolume ((*ListVolumes)[i]);
+            FreeVolume (&(*ListVolumes)[i]);
         }
         ReleasePtr (*ListVolumes);
         *ListCount = 0;
@@ -910,11 +920,8 @@ REFIT_VOLUME * CopyVolume (
     REFIT_VOLUME *Volume = NULL;
 
     if (VolumeToCopy) {
-        // UnInit 'VolumeToCopy'
-        UninitVolume (VolumeToCopy);
-
-        // Create New Volume based on VolumeToCopy (in 'UnInit' state)
-        Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), VolumeToCopy);
+        // Create a new volume based on VolumeToCopy
+        Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), &VolumeToCopy);
         if (Volume) {
             Volume->FsName        = StrDuplicate (VolumeToCopy->FsName);
             Volume->OSName        = StrDuplicate (VolumeToCopy->OSName);
@@ -947,37 +954,37 @@ REFIT_VOLUME * CopyVolume (
                 }
             }
 
-            // ReInit 'Volume'
-            ReinitVolume (Volume);
+            if (VolumeToCopy->RootDir) {
+                Volume->RootDir = Volume->DeviceHandle ? LibOpenRoot (Volume->DeviceHandle) : NULL;
+            }
         }
-
-        // ReInit 'VolumeToCopy'
-        ReinitVolume (VolumeToCopy);
-    }
+    } // if VolumeToCopy
 
     return Volume;
 } // REFIT_VOLUME * CopyVolume()
 
 VOID FreeVolume (
-    IN OUT REFIT_VOLUME *Volume
+    REFIT_VOLUME **Volume
 ) {
-    if (Volume) {
-        // UnInit 'Volume'
-        UninitVolume (Volume);
-
+    if (Volume && *Volume) {
         // Free pool elements
-        MyFreePool (&(Volume->FsName));
-        MyFreePool (&(Volume->OSName));
-        MyFreePool (&(Volume->VolName));
-        MyFreePool (&(Volume->PartName));
-        MyFreePool (&(Volume->OSIconName));
-        MyFreePool (&(Volume->DevicePath));
-        MyFreePool (&(Volume->MbrPartitionTable));
-        MyFreePool (&(Volume->WholeDiskDevicePath));
+        MyFreePool (&(*Volume)->FsName);
+        MyFreePool (&(*Volume)->OSName);
+        MyFreePool (&(*Volume)->VolName);
+        MyFreePool (&(*Volume)->PartName);
+        MyFreePool (&(*Volume)->OSIconName);
+        MyFreePool (&(*Volume)->DevicePath);
+        MyFreePool (&(*Volume)->MbrPartitionTable);
+        MyFreePool (&(*Volume)->WholeDiskDevicePath);
+
+        if ((*Volume)->RootDir != NULL) {
+            REFIT_CALL_1_WRAPPER((*Volume)->RootDir->Close, (*Volume)->RootDir);
+            (*Volume)->RootDir = NULL;
+        }
 
         // Free image elements
-        egFreeImage (Volume->VolIconImage);
-        egFreeImage (Volume->VolBadgeImage);
+        egFreeImage ((*Volume)->VolIconImage);
+        egFreeImage ((*Volume)->VolBadgeImage);
 
         // Free whole volume
         MyFreePool (&Volume);
@@ -2058,7 +2065,7 @@ VOID SetPrebootVolumes (VOID) {
     #endif
 
     FreeVolumesList (
-        (VOID ***) PreBootVolumes,
+        &PreBootVolumes,
         &PreBootVolumesCount
     );
 
@@ -2152,7 +2159,7 @@ VOID ScanVolumes (VOID) {
     if (SelfVolRun) {
         // Clear Volumes List if not Scanning for Self Volume
         FreeVolumesList (
-            (VOID ***) Volumes,
+            &Volumes,
             &VolumesCount
         );
         ForgetPartitionTables();
@@ -2349,7 +2356,7 @@ VOID ScanVolumes (VOID) {
         #endif
 
         SelfVolRun = TRUE;
-        FreeVolume (Volume);
+        FreeVolume (&Volume);
 
         return;
     }
@@ -2634,7 +2641,7 @@ BOOLEAN FileExists (
             0
         );
         if (Status == EFI_SUCCESS) {
-            CloseDir (&TestFile);
+            REFIT_CALL_1_WRAPPER(TestFile->Close, TestFile);
 
             return TRUE;
         }
@@ -2887,7 +2894,7 @@ EFI_STATUS DirIterClose (
     MyFreePool (&DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
-        CloseDir (&DirIter->DirHandle);
+        REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
     }
 
     return DirIter->LastStatus;

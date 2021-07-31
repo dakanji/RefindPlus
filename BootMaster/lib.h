@@ -129,8 +129,8 @@ VOID EraseUint32List (IN UINT32_LIST **TheList);
 VOID SetVolumeBadgeIcon (IN OUT REFIT_VOLUME *Volume);
 VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
 VOID FreeList (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
-VOID FreeVolumesList (IN OUT VOID ***ListVolumes, IN OUT UINTN *ListCount);
-VOID FreeVolume (IN OUT REFIT_VOLUME *Volume);
+VOID FreeVolumesList (REFIT_VOLUME ***ListVolumes, UINTN *ListCount);
+VOID FreeVolume (REFIT_VOLUME **Volume);
 VOID AddListElement (
     IN OUT VOID  ***ListPtr,
     IN OUT UINTN   *ElementCount,
