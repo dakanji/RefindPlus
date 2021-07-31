@@ -920,8 +920,11 @@ REFIT_VOLUME * CopyVolume (
     REFIT_VOLUME *Volume = NULL;
 
     if (VolumeToCopy) {
-        // Create a new volume based on VolumeToCopy
-        Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), &VolumeToCopy);
+        // UnInit VolumeToCopy
+        UninitVolume (&VolumeToCopy);
+
+          // Create New Volume based on VolumeToCopy (in 'UnInit' state)
+        Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), VolumeToCopy);
         if (Volume) {
             Volume->FsName        = StrDuplicate (VolumeToCopy->FsName);
             Volume->OSName        = StrDuplicate (VolumeToCopy->OSName);
@@ -954,10 +957,12 @@ REFIT_VOLUME * CopyVolume (
                 }
             }
 
-            if (VolumeToCopy->RootDir) {
-                Volume->RootDir = Volume->DeviceHandle ? LibOpenRoot (Volume->DeviceHandle) : NULL;
-            }
+            // ReInit Volume
+            ReinitVolume (Volume);
         }
+
+        // ReInit VolumeToCopy
+        ReinitVolume (VolumeToCopy);
     } // if VolumeToCopy
 
     return Volume;
