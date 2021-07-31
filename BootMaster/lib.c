@@ -111,6 +111,7 @@ EFI_FILE          *SelfDir;
 EFI_FILE          *gVarsDir            = NULL;
 
 CHAR16            *SelfDirPath;
+CHAR16            *SelfGUID;                    // Freed in 'ScanVolumes'
 
 REFIT_VOLUME      *SelfVolume          = NULL;
 REFIT_VOLUME     **Volumes             = NULL;
@@ -2353,12 +2354,11 @@ VOID ScanVolumes (VOID) {
             MyFreePool (&MsgStr);
         }
         else {
-            CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
+            SelfGUID = GuidAsString (&SelfVolume->PartGuid);
             MsgLog (
                 "INFO: Self Volume:- '%s:::%s'\n\n",
                 SelfVolume->VolName, SelfGUID
             );
-            MyFreePool (&SelfGUID);
         }
         #endif
 
@@ -2377,6 +2377,15 @@ VOID ScanVolumes (VOID) {
     // second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
+
+        // Relink SelfVolume as previously identified volume would have been freed
+        CHAR16 *VolGUID = GuidAsString (&Volume->PartGuid);
+        if (MyStriCmp (VolGUID, SelfGUID)) {
+            SelfVolume = Volume;
+        }
+        MyFreePool (VolGUID);
+        MyFreePool (SelfGUID); // Global to this file but no longer required
+
         // check MBR partition table for extended partitions
         if (Volume->BlockIO != NULL && Volume->WholeDiskBlockIO != NULL &&
             Volume->BlockIO == Volume->WholeDiskBlockIO && Volume->BlockIOOffset == 0 &&
