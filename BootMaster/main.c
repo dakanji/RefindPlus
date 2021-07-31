@@ -2058,6 +2058,14 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
+        // Sync APFS infrastrcture is no longer required ... free PreBootVolumes
+        if (PreBootVolumes && GlobalConfig.SyncAPFS) {
+            FreeVolumes (
+                &PreBootVolumes,
+                &PreBootVolumesCount
+            );
+        }
+
         if ((MenuExit == MENU_EXIT_TIMEOUT) && GlobalConfig.ShutdownAfterTimeout) {
             ChosenEntry->Tag = TAG_SHUTDOWN;
         }
