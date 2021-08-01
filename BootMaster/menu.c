@@ -211,10 +211,12 @@ VOID AdjustScrollState (
     if (State->CurrentSelection > State->LastVisible) {
         State->LastVisible   = State->CurrentSelection;
         State->FirstVisible  = 1 + State->CurrentSelection - State->MaxVisible;
+
         if (State->FirstVisible < 0) {
             // should not happen, but just in case.
             State->FirstVisible = 0;
         }
+
         State->PaintAll = TRUE;
     }
 
@@ -347,6 +349,7 @@ VOID UpdateScroll (
             break;
 
         case SCROLL_NONE:
+
             break;
     } // switch
 
@@ -426,6 +429,7 @@ INTN FindMenuShortcutEntry (
                         Screen->Entries[i]->ShortcutLetter == Shortcut[0]
                     ) {
                         MyFreePool (&Shortcut);
+
                         return i;
                     }
                 } // for
@@ -435,6 +439,7 @@ INTN FindMenuShortcutEntry (
             for (i = 0; i < Screen->EntryCount; i++) {
                 if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
                     MyFreePool (&Shortcut);
+
                     return i;
                 }
             } // for
@@ -675,6 +680,7 @@ UINTN RunGenericMenu (
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
             ShortcutEntry  = FindMenuShortcutEntry (Screen, KeyAsString);
+
             if (ShortcutEntry >= 0) {
                 State.CurrentSelection = ShortcutEntry;
                 MenuExit = MENU_EXIT_ENTER;
@@ -714,6 +720,7 @@ UINTN RunGenericMenu (
                 WaitForRelease = FALSE;
                 REFIT_CALL_2_WRAPPER(gST->ConIn->Reset, gST->ConIn, TRUE);
             }
+
             continue;
         }
 
@@ -729,6 +736,7 @@ UINTN RunGenericMenu (
                if (GlobalConfig.ScreensaverTime != -1) {
                    StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
                }
+
                MyFreePool (&TimeoutMessage);
 
                PreviousTime = CurrentTime;
@@ -803,8 +811,10 @@ UINTN RunGenericMenu (
             // the user pressed a key, cancel the timeout
             StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, L"");
             HaveTimeout = FALSE;
+
             if (GlobalConfig.ScreensaverTime == -1) { // cancel start-with-blank-screen coding
                GlobalConfig.ScreensaverTime = 0;
+
                if (!GlobalConfig.TextOnly) {
                    BltClearScreen (TRUE);
                }
@@ -878,6 +888,7 @@ UINTN RunGenericMenu (
             State.PreviousSelection = State.CurrentSelection;
             POINTER_STATE PointerState = pdGetState();
             Item = FindMainMenuItem (Screen, &State, PointerState.X, PointerState.Y);
+
             switch (Item) {
                 case POINTER_NO_ITEM:
                     if (DrawSelection) {
@@ -930,6 +941,7 @@ UINTN RunGenericMenu (
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
     }
+
     *DefaultEntryIndex = State.CurrentSelection;
 
     return MenuExit;
@@ -1291,6 +1303,7 @@ VOID DrawTextWithTransparency (
         TextBuffer->Width,
         TextBuffer->Height
     );
+
     egFreeImage (TextBuffer);
 }
 
@@ -1417,18 +1430,21 @@ VOID GraphicsMenuStyle (
                 &MenuWidth, &MenuHeight,
                 &LineWidth
             );
+
             TimeoutPosY = EntriesPosY + (Screen->EntryCount + 1) * TextLineHeight();
 
             // initial painting
             SwitchToGraphicsAndClear (TRUE);
 
             Window = egCreateFilledImage (MenuWidth, MenuHeight, FALSE, BackgroundPixel);
+
             if (Window) {
                 egDrawImage (Window, EntriesPosX, EntriesPosY);
                 egFreeImage (Window);
             }
 
             ItemWidth = egComputeTextWidth (Screen->Title);
+
             if (MenuWidth > ItemWidth) {
                 TitlePosX = EntriesPosX + (MenuWidth - ItemWidth) / 2 - CharWidth;
             }
@@ -1441,6 +1457,7 @@ VOID GraphicsMenuStyle (
                   }
                }
             }
+
             break;
 
         case MENU_FUNCTION_CLEANUP:
@@ -1474,6 +1491,7 @@ VOID GraphicsMenuStyle (
             }
 
             EntriesPosY += (TextLineHeight() * 2);
+
             if (Screen->InfoLineCount > 0) {
                 for (i = 0; i < (INTN)Screen->InfoLineCount; i++) {
                     DrawText (
@@ -1507,6 +1525,7 @@ VOID GraphicsMenuStyle (
                         ScreenH - (egGetFontHeight() * 3)
                     );
                 }
+
                 if ((Screen->Hint2 != NULL) && (StrLen (Screen->Hint2) > 0)) {
                     DrawTextWithTransparency (
                         Screen->Hint2,
@@ -1515,6 +1534,7 @@ VOID GraphicsMenuStyle (
                     );
                 }
             }
+
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
@@ -1525,16 +1545,19 @@ VOID GraphicsMenuStyle (
                 EntriesPosX,
                 EntriesPosY + State->PreviousSelection * TextLineHeight()
             );
+
             DrawText (
                 Screen->Entries[State->CurrentSelection]->Title,
                 TRUE, LineWidth,
                 EntriesPosX,
                 EntriesPosY + State->CurrentSelection * TextLineHeight()
             );
+
             break;
 
         case MENU_FUNCTION_PAINT_TIMEOUT:
             DrawText (ParamText, FALSE, LineWidth, EntriesPosX, TimeoutPosY);
+
             break;
     }
 } // static VOID GraphicsMenuStyle()
@@ -1577,12 +1600,14 @@ VOID DrawMainMenuEntry (
                 SelectionImages[Entry->Row],
                 0, 0
             );
+
             BltImageCompositeBadge (
                 Background,
                 Entry->Image,
                 Entry->BadgeImage,
                 XPos, YPos
             );
+
             egFreeImage (Background);
         }
     } // if/else !selected
@@ -2073,6 +2098,7 @@ BOOLEAN EditOptions (
     if (line_edit (MenuEntry->LoadOptions, &EditedOptions, x_max)) {
         MyFreePool (&MenuEntry->LoadOptions);
         MenuEntry->LoadOptions = EditedOptions;
+
         retval = TRUE;
     }
 
@@ -2361,13 +2387,14 @@ CHAR16 * ReadHiddenTags (
     EFI_STATUS  Status;
 
     Status = EfivarGetRaw (&RefindPlusGuid, VarName, &Buffer, &Size);
+
+    #if REFIT_DEBUG > 0
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
-        #if REFIT_DEBUG > 0
         CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags ('%s')", VarName);
         CheckError (Status, CheckErrMsg);
         MyFreePool (&CheckErrMsg);
-        #endif
     }
+    #endif
 
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         #if REFIT_DEBUG > 0
@@ -2431,7 +2458,12 @@ BOOLEAN HideEfiTag (
     MENU_STYLE_FUNC    Style        = TextMenuStyle;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if ((!Loader) || (!(Loader->Volume)) || (!(Loader->LoaderPath)) || (!HideItemMenu) || (!VarName)) {
+    if (!Loader ||
+        !VarName ||
+        !HideItemMenu ||
+        !Loader->Volume ||
+        !Loader->LoaderPath
+    ) {
         return FALSE;
     }
 
@@ -2743,7 +2775,11 @@ UINTN RunMainMenu (
         MyFreePool (&MenuTitle);
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
-            if (TempChosenEntry->SubScreen != NULL) {
+            if (!TempChosenEntry->SubScreen) {
+                // no sub-screen; ignore keypress
+                MenuExit = 0;
+            }
+            else {
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
@@ -2767,10 +2803,6 @@ UINTN RunMainMenu (
                       MenuExit = 0;
                   }
                }
-            }
-            else {
-                // no sub-screen; ignore keypress
-               MenuExit = 0;
             }
         } // if MenuExit == MENU_EXIT_DETAILS
 
@@ -2804,6 +2836,7 @@ VOID FreeLoaderEntry (
     MyFreePool (&Entry->LoaderPath);
     MyFreePool (&Entry->me.Title);
     MyFreePool (&Entry->Title);
+
     MyFreePool (&Entry);
 } // VOID FreeLoaderEntry()
 

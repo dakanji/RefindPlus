@@ -251,14 +251,14 @@ VOID EFIAPI DeepLoggger (
     IN INTN     DebugMode,
     IN INTN     level,
     IN INTN     type,
-    IN CHAR16 **Message
+    IN CHAR16 **InMsg
 ) {
     CHAR16 *TmpMsg     = NULL;
     CHAR16 *FinalMsg   = NULL;
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
-    ReleasePtr (*Message);
+    ReleasePtr (*InMsg);
 
     return;
 #endif
@@ -268,9 +268,9 @@ VOID EFIAPI DeepLoggger (
         GlobalConfig.LogLevel < 1 ||
         GlobalConfig.LogLevel < level ||
         MuteLogger ||
-        !(*Message)
+        !(*InMsg)
     ) {
-        ReleasePtr (*Message);
+        ReleasePtr (*InMsg);
 
         return;
     }
@@ -279,38 +279,18 @@ VOID EFIAPI DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
-        case LOG_BLANK_LINE_SEP:
-            TmpMsg = StrDuplicate (L"\n");
-            break;
-        case LOG_STAR_HEAD_SEP:
-            TmpMsg = PoolPrint (L"\n                ***[ %s\n", *Message);
-            break;
-        case LOG_STAR_SEPARATOR:
-            TmpMsg = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Message);
-            break;
-        case LOG_LINE_SEPARATOR:
-            TmpMsg = PoolPrint (L"\n===================[ %s ]===================\n", *Message);
-            break;
-        case LOG_LINE_THIN_SEP:
-            TmpMsg = PoolPrint (L"\n-------------------[ %s ]-------------------\n", *Message);
-            break;
-        case LOG_LINE_DASH_SEP:
-            TmpMsg = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n", *Message);
-            break;
-        case LOG_THREE_STAR_SEP:
-            TmpMsg = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n", *Message);
-            break;
-        case LOG_THREE_STAR_MID:
-            TmpMsg = PoolPrint (L"                ***[ %s\n", *Message);
-            break;
-        case LOG_THREE_STAR_END:
-            TmpMsg = PoolPrint (L"                ***[ %s ]***\n\n", *Message);
-            break;
-        default:
+        case LOG_BLANK_LINE_SEP: TmpMsg = StrDuplicate (L"\n");                                                      break;
+        case LOG_STAR_HEAD_SEP:  TmpMsg = PoolPrint (L"\n                ***[ %s\n",                        *InMsg); break;
+        case LOG_STAR_SEPARATOR: TmpMsg = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *InMsg); break;
+        case LOG_LINE_SEPARATOR: TmpMsg = PoolPrint (L"\n===================[ %s ]===================\n",   *InMsg); break;
+        case LOG_LINE_THIN_SEP:  TmpMsg = PoolPrint (L"\n-------------------[ %s ]-------------------\n",   *InMsg); break;
+        case LOG_LINE_DASH_SEP:  TmpMsg = PoolPrint (L"\n- - - - - - - - - -[ %s ]- - - - - - - - - -\n",   *InMsg); break;
+        case LOG_THREE_STAR_SEP: TmpMsg = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n",   *InMsg); break;
+        case LOG_THREE_STAR_END: TmpMsg = PoolPrint (L"                ***[ %s ]***\n\n",                   *InMsg); break;
+        case LOG_THREE_STAR_MID: TmpMsg = PoolPrint (L"                ***[ %s\n",                          *InMsg); break;
+        default:                 TmpMsg = PoolPrint (L"%s\n",                                               *InMsg);
             // Normally 'LOG_LINE_NORMAL', but use this default to also catch coding errors
-            TmpMsg = PoolPrint (L"%s\n", *Message);
-
-            // Also Enable Timestamp
+            // Enable Timestamp
             TimeStamp = TRUE;
     } // switch
 
@@ -339,7 +319,7 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = FALSE;
     }
 
-    ReleasePtr (*Message);
+    ReleasePtr (*InMsg);
     MyFreePool (&FinalMsg);
     MyFreePool (&TmpMsg);
 }
