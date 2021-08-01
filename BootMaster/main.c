@@ -1935,9 +1935,6 @@ EFI_STATUS EFIAPI efi_main (
     SetVolumeIcons();
     ScanForBootloaders (FALSE);
     ScanForTools();
-    // SetupScreen() clears the screen; but ScanForBootloaders() may display a
-    // message that must be deleted, so do so
-    BltClearScreen (TRUE);
     pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
