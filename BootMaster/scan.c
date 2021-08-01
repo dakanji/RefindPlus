@@ -1020,7 +1020,7 @@ LOADER_ENTRY * AddLoaderEntry (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID, L"Could not initialise loader entry");
+        LOG(1, LOG_THREE_STAR_MID, L"Could not initialise loader entry!!");
         #endif
     }
 
@@ -1560,23 +1560,27 @@ VOID ScanNetboot (VOID) {
     LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE boot options");
     #endif
 
-    if (FileExists (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
-        FileExists (SelfVolume->RootDir, IPXE_NAME) &&
+    if (FileExists (SelfVolume->RootDir, IPXE_NAME) &&
+        FileExists (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         IsValidLoader (SelfVolume->RootDir, IPXE_DISCOVER_NAME) &&
         IsValidLoader (SelfVolume->RootDir, IPXE_NAME)
     ) {
         Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
         if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
-            NetVolume = AllocatePool (sizeof (REFIT_VOLUME));
+            NetVolume = CopyVolume (SelfVolume);
             if (NetVolume) {
-                CopyMem (NetVolume, SelfVolume, sizeof (REFIT_VOLUME));
+                NetVolume->DiskKind = DISK_KIND_NET;
 
-                NetVolume->DiskKind      = DISK_KIND_NET;
+                egFreeImage (NetVolume->VolBadgeImage);
                 NetVolume->VolBadgeImage = BuiltinIcon (BUILTIN_ICON_VOL_NET);
 
-                NetVolume->PartName = NetVolume->VolName = NetVolume->FsName = NULL;
+                MyFreePool (&NetVolume->PartName);
+                MyFreePool (&NetVolume->VolName);
+                MyFreePool (&NetVolume->FsName);
 
                 AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
+
+                FreeVolume (&NetVolume);
             }
             else {
                 #if REFIT_DEBUG > 0
