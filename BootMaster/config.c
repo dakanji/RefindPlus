@@ -1550,7 +1550,6 @@ VOID ScanUserConfigured (
 ) {
     EFI_STATUS         Status;
     REFIT_FILE         File;
-    REFIT_VOLUME      *Volume;
     CHAR16           **TokenList;
     UINTN              TokenCount, size;
     LOADER_ENTRY      *Entry;
@@ -1561,20 +1560,21 @@ VOID ScanUserConfigured (
             return;
         }
 
-        Volume = SelfVolume;
-
         while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
             if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
-                Entry = AddStanzaEntries (&File, Volume, TokenList[1]);
+                Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
                 if (Entry) {
-                    if (Entry->Enabled) {
+                    if (!Entry->Enabled) {
+                        FreeLoaderEntry (Entry);
+                    }
+                    else {
                         #if REFIT_DEBUG > 0
                         MsgLog ("\n");
-                        if (Volume->VolName) {
+                        if (SelfVolume->VolName) {
                             MsgLog (
                                 "  - Found '%s' on '%s'",
                                 Entry->Title,
-                                SanitiseVolumeName (Volume)
+                                SanitiseVolumeName (SelfVolume)
                             );
                         }
                         else {
@@ -1587,12 +1587,9 @@ VOID ScanUserConfigured (
                         #endif
 
                         if (Entry->me.SubScreen == NULL) {
-                            GenerateSubScreen (Entry, Volume, TRUE);
+                            GenerateSubScreen (Entry, SelfVolume, TRUE);
                         }
                         AddPreparedLoaderEntry (Entry);
-                    }
-                    else {
-                        FreeLoaderEntry (Entry);
                     } // if/else Entry->Enabled
                 }
             }
