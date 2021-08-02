@@ -1935,24 +1935,35 @@ EFI_STATUS EFIAPI efi_main (
 
     // Apply Scan Delay if set
     if (GlobalConfig.ScanDelay > 0) {
-        MsgStr          = StrDuplicate (L"Paused for ScanDelay");
-        CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
-        UINTN   Trigger = 3;
+        MsgStr = StrDuplicate (L"Paused for ScanDelay");
+
+        UINTN Trigger = 3;
         if (GlobalConfig.ScanDelay > Trigger) {
+            CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (PartMsg, &BGColor, CENTER);
+
+            MyFreePool(&PartMsg);
         }
+
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"%s", PartMsg);
+        LOG(2, LOG_LINE_THIN_SEP, L"Scan Delay", MsgStr);
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         #endif
+
         MyFreePool(&MsgStr);
-        MyFreePool(&PartMsg);
 
         for (i = 0; i < GlobalConfig.ScanDelay; ++i) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_THREE_STAR_MID, L"Loading Paused for 1 Second");
+            #endif
+
             REFIT_CALL_1_WRAPPER(gBS->Stall, 1000000);
         }
 
         #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Resuming After a %d Second Pause", i);
+
         if (i == 1) {
             MsgLog ("  - Waited %d Second\n", i);
         }
