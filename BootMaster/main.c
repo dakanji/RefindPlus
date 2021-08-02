@@ -1930,46 +1930,47 @@ EFI_STATUS EFIAPI efi_main (
         NULL
     );
 
-    // further bootstrap (now with config available)
+    // Further bootstrap (now with config available)
     SetupScreen();
-    SetVolumeIcons();
-    ScanForBootloaders (FALSE);
-    ScanForTools();
-    pdInitialize();
 
+    // Apply Scan Delay if set
     if (GlobalConfig.ScanDelay > 0) {
-        if (GlobalConfig.ScanDelay > 1) {
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Pausing before re-scan");
-            #endif
-
-            egDisplayMessage (
-                L"Pausing before disc scan. Please wait.",
-                &BGColor, CENTER
-            );
+        MsgStr          = StrDuplicate (L"Paused for ScanDelay");
+        CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
+        UINTN   Trigger = 3;
+        if (GlobalConfig.ScanDelay > Trigger) {
+            egDisplayMessage (PartMsg, &BGColor, CENTER);
         }
-
         #if REFIT_DEBUG > 0
-        MsgLog ("Pause for Scan Delay:\n");
+        LOG(1, LOG_LINE_NORMAL, L"%s", PartMsg);
+        MsgLog ("%s:\n", MsgStr);
         #endif
+        MyFreePool(&MsgStr);
+        MyFreePool(&PartMsg);
 
         for (i = 0; i < GlobalConfig.ScanDelay; ++i) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 1000000);
         }
 
+        #if REFIT_DEBUG > 0
         if (i == 1) {
-            #if REFIT_DEBUG > 0
             MsgLog ("  - Waited %d Second\n", i);
-            #endif
         }
         else {
-            #if REFIT_DEBUG > 0
             MsgLog ("  - Waited %d Seconds\n", i);
-            #endif
         }
-        RescanAll (GlobalConfig.ScanDelay > 1, TRUE);
-        BltClearScreen (TRUE);
-    } // if GlobalConfig.ScanDelay
+        #endif
+
+        if (GlobalConfig.ScanDelay > Trigger) {
+            BltClearScreen (TRUE);
+        }
+    }
+
+    // Continue bootstrap
+    SetVolumeIcons();
+    ScanForBootloaders (FALSE);
+    ScanForTools();
+    pdInitialize();
 
     if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
