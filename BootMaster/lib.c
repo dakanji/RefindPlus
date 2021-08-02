@@ -2332,35 +2332,34 @@ VOID ScanVolumes (VOID) {
                 }
             }
 
-            // Do not free this!
+            // Do not free these!
+            VolDesc  = SanitiseVolumeName (Volume);
             PartType = FSTypeName (Volume->FSType);
 
             // Improve Apple Volume Id on Non-Mac Firmware
             if ((MyStriCmp (PartType, L"Unknown")) &&
                 !MyStriCmp (gST->FirmwareVendor, L"Apple")
             ) {
-                     if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS       )) PartType = L"APFS";
+                     if (MyStriCmp (VolDesc, L"APFS/FileVault Container"         )) PartType = L"APFS (Assumed)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS       )) PartType = L"APFS";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS        )) PartType = L"HFS+";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn  )) PartType = L"Mac Raid";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff )) PartType = L"Mac Raid";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec )) PartType = L"AppleTV";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) PartType = L"APFS/HFS+";
             }
-            LimitStringLength (PartType, 10);
+            LimitStringLength (PartType, 15);
 
             PartGUID     = GuidAsString (&Volume->PartGuid);
             PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
 
-            // Do not free this!
-            VolDesc = SanitiseVolumeName (Volume);
-
             if (!DoneHeadings) {
-                MsgLog ("%-41s%-41s%-15s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
+                MsgLog ("%-41s%-41s%-20s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
                 DoneHeadings = TRUE;
             }
 
             MsgStr = PoolPrint (
-                L"%s  :  %s  :  %-10s  :  %s",
+                L"%s  :  %s  :  %-15s  :  %s",
                 PartTypeGUID, PartGUID,
                 PartType, VolDesc
             );
@@ -2405,7 +2404,7 @@ VOID ScanVolumes (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgLog ("\n");
-        MsgLog ("%-41s%-41s%-15s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
+        MsgLog ("%-41s%-41s%-20s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
         MsgLog ("\n\n");
         #endif
     }
