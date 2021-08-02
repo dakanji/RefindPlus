@@ -361,13 +361,13 @@ HiiCreateRamDisk (
     Status = gBS->AllocatePool (
                     EfiBootServicesData,
                     (UINTN)Size,
-                    (VOID**)&StartingAddr
+                    (VOID **) &StartingAddr
                     );
   } else if (MemoryType == RAM_DISK_RESERVED_MEMORY) {
     Status = gBS->AllocatePool (
                     EfiReservedMemoryType,
                     (UINTN)Size,
-                    (VOID**)&StartingAddr
+                    (VOID **) &StartingAddr
                     );
   } else {
     Status = EFI_INVALID_PARAMETER;

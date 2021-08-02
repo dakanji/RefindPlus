@@ -120,7 +120,7 @@ HUF_compress() does the following:
 5. encode the data stream using HUF_compress4X_usingCTable()
 
 The following API allows targeting specific sub-functions for advanced tasks.
-For example, it's possible to compress several blocks using the same 'CTable',
+For example, it is possible to compress several blocks using the same 'CTable',
 or to save and regenerate 'CTable' using external methods.
 */
 /* FSE_count() : find it within "fse.h" */

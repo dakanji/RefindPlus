@@ -87,7 +87,7 @@ FSE_decompress() does the following:
 3. decode the data stream using decoding table 'DTable'
 
 The following API allows targeting specific sub-functions for advanced tasks.
-For example, it's possible to compress several blocks using the same 'CTable',
+For example, it is possible to compress several blocks using the same 'CTable',
 or to save and provide normalized distribution using external method.
 */
 
@@ -118,7 +118,7 @@ FSE_PUBLIC_API size_t FSE_writeNCount(void *buffer, size_t bufferSize, const sho
 
 /*! Constructor and Destructor of FSE_CTable.
 	Note that FSE_CTable size depends on 'tableLog' and 'maxSymbolValue' */
-typedef unsigned FSE_CTable; /* don't allocate that. It's only meant to be more restrictive than void* */
+typedef unsigned FSE_CTable; /* do not allocate that. It is only meant to be more restrictive than void* */
 
 /*! FSE_compress_usingCTable():
 	Compress `src` using `ct` into `dst` which must be already allocated.
@@ -181,7 +181,7 @@ FSE_PUBLIC_API size_t FSE_readNCount(short *normalizedCounter, unsigned *maxSymb
 
 /*! Constructor and Destructor of FSE_DTable.
 	Note that its size depends on 'tableLog' */
-typedef unsigned FSE_DTable; /* don't allocate that. It's just a way to be more restrictive than void* */
+typedef unsigned FSE_DTable; /* do not allocate that. It is just a way to be more restrictive than void* */
 
 /*! FSE_buildDTable():
 	Builds 'dt', which must be already allocated, using FSE_createDTable().
@@ -205,7 +205,7 @@ Tutorial :
 The first step is to obtain the normalized frequencies of symbols.
 This can be performed by FSE_readNCount() if it was saved using FSE_writeNCount().
 'normalizedCounter' must be already allocated, and have at least 'maxSymbolValuePtr[0]+1' cells of signed short.
-In practice, that means it's necessary to know 'maxSymbolValue' beforehand,
+In practice, that means it is necessary to know 'maxSymbolValue' beforehand,
 or size the table to handle worst case situations (typically 256).
 FSE_readNCount() will provide 'tableLog' and 'maxSymbolValue'.
 The result of FSE_readNCount() is the number of bytes read from 'rBuffer'.
@@ -255,7 +255,7 @@ size_t FSE_countFast_wksp(unsigned *count, unsigned *maxSymbolValuePtr, const vo
 
 /*! FSE_count_simple
  * Same as FSE_countFast(), but does not use any additional memory (not even on stack).
- * This function is unsafe, and will segfault if any value within `src` is `> *maxSymbolValuePtr` (presuming it's also the size of `count`).
+ * This function is unsafe, and will segfault if any value within `src` is `> *maxSymbolValuePtr` (presuming it is also the size of `count`).
 */
 size_t FSE_count_simple(unsigned *count, unsigned *maxSymbolValuePtr, const void *src, size_t srcSize);
 
@@ -340,7 +340,7 @@ to properly detect the exact end of stream.
 After each decoded symbol, check if DStream is fully consumed using this simple test :
 	BIT_reloadDStream(&DStream) >= BIT_DStream_completed
 
-When it's done, verify decompression is fully completed, by checking both DStream and the relevant states.
+When it is done, verify decompression is fully completed, by checking both DStream and the relevant states.
 Checking if DStream has reached its end is performed by :
 	BIT_endOfDStream(&DStream);
 Check also the states. There might be some symbols left there, if some high probability ones (>50%) are possible.

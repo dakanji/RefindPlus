@@ -1600,7 +1600,7 @@ BOOLEAN egSetScreenSize (
     else if ((UGADraw != NULL) && (*ScreenHeight > 0)) {
         // UGA mode (EFI 1.x)
         // Try to use current color depth & refresh rate for new mode. Maybe not the best choice
-        // in all cases, but I don't know how to probe for alternatives.
+        // in all cases, but I do not know how to probe for alternatives.
         REFIT_CALL_5_WRAPPER(
             UGADraw->GetMode, UGADraw,
             &ScreenW, &ScreenH,
@@ -1962,7 +1962,7 @@ VOID egDrawImage (
 
 // Display an unselected icon on the screen, so that the background image shows
 // through the transparency areas. The BadgeImage may be NULL, in which case
-// it's not composited in.
+// it is not composited in.
 VOID egDrawImageWithTransparency (
     EG_IMAGE *Image,
     EG_IMAGE *BadgeImage,

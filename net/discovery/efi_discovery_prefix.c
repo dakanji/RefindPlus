@@ -36,7 +36,7 @@ FILE_LICENCE ( GPL2_OR_LATER );
  * Close all open net devices
  *
  * Called before a fresh boot attempt in order to free up memory.  We
- * don't just close the device immediately after the boot fails,
+ * do not just close the device immediately after the boot fails,
  * because there may still be TCP connections in the process of
  * closing.
  */

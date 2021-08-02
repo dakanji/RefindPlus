@@ -46,7 +46,7 @@ fi
       
 Convert="$(command -v convert 2> /dev/null)"
 if [[ ! -x $Convert ]] ; then
-   echo "The 'convert' program is required but could not be found. It's part of the"
+   echo "The 'convert' program is required but could not be found. It is part of the"
    echo "ImagMagick program, usually installed in the 'imagemagick' package."
    echo ""
    exit 1

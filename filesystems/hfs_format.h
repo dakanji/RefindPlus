@@ -375,7 +375,7 @@ enum {
 	kHFSHasLinkChainBit	= 0x0005,	/* has hardlink chain (inode or link) */
 	kHFSHasLinkChainMask	= 0x0020,
 
-	kHFSHasChildLinkBit	= 0x0006,	/* folder has a child that's a dir link */
+	kHFSHasChildLinkBit	= 0x0006,	/* folder has a child that is a dir link */
 	kHFSHasChildLinkMask	= 0x0040
 };
 
@@ -588,7 +588,7 @@ enum {
 	kHFSVolumeHardwareLockBit	= 7,		/* volume is locked by hardware */
 	kHFSVolumeUnmountedBit		= 8,		/* volume was successfully unmounted */
 	kHFSVolumeSparedBlocksBit	= 9,		/* volume has bad blocks spared */
-	kHFSVolumeNoCacheRequiredBit = 10,		/* don't cache volume blocks (i.e. RAM or ROM disk) */
+	kHFSVolumeNoCacheRequiredBit = 10,		/* do not cache volume blocks (i.e. RAM or ROM disk) */
 	kHFSBootVolumeInconsistentBit = 11,		/* boot volume is inconsistent (System 7.6 and later) */
 	kHFSCatalogNodeIDsReusedBit = 12,
 	kHFSVolumeJournaledBit = 13,			/* this volume has a journal on it */

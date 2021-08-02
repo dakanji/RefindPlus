@@ -427,11 +427,11 @@ static fsw_status_t btrfs_read_superblock (struct fsw_volume *vol, struct btrfs_
         uint8_t *buffer;
         struct btrfs_superblock *sb;
 
-        /* Don't try additional superblocks beyond device size.  */
+        /* Do not try additional superblocks beyond device size.  */
         if (total_blocks <= superblock_pos[i])
             break;
 
-        err = fsw_block_get(vol, superblock_pos[i], 0, (void **)&buffer);
+        err = fsw_block_get(vol, superblock_pos[i], 0, (void **) &buffer);
         if (err) {
             fsw_block_release(vol, superblock_pos[i], buffer);
             break;
@@ -860,7 +860,7 @@ static void raid6_init_table (void)
 static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume *vol, uint64_t device_id, uint64_t offset)
 {
     if(vol->rcache == NULL) {
-	if(fsw_alloc_zero(sizeof (struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **)&vol->rcache) != FSW_SUCCESS)
+	if(fsw_alloc_zero(sizeof (struct fsw_btrfs_recover_cache) * RECOVER_CACHE_SIZE, (void **) &vol->rcache) != FSW_SUCCESS)
 	    return NULL;
     }
 #ifdef __MAKEWITH_TIANO
@@ -871,7 +871,7 @@ static struct fsw_btrfs_recover_cache *get_recover_cache(struct fsw_btrfs_volume
     DivU64x32Remainder(((device_id >> 32) | device_id | (offset >> 32) | offset), RECOVER_CACHE_SIZE, &hash);
     struct fsw_btrfs_recover_cache *rc = &vol->rcache[hash];
     if(rc->buffer == NULL) {
-	if(fsw_alloc_zero(vol->sectorsize, (void **)&rc->buffer) != FSW_SUCCESS)
+	if(fsw_alloc_zero(vol->sectorsize, (void **) &rc->buffer) != FSW_SUCCESS)
 	    return NULL;
     }
     if(rc->device_id != device_id || rc->offset != offset) {
@@ -1108,7 +1108,7 @@ begin_direct_read:
                     uint64_t n = 0;
                     while(n < csize) {
                         char *buffer;
-                        err = fsw_block_get(dev, paddr, cache_level, (void **)&buffer);
+                        err = fsw_block_get(dev, paddr, cache_level, (void **) &buffer);
                         if(err)
                             break;
                         int s = vol->sectorsize - off;
@@ -1166,7 +1166,7 @@ begin_direct_read:
 		    struct fsw_btrfs_recover_cache *rcache = NULL;
 		    uint64_t paddrN = (fsw_u64_le_swap (stripe[stripen].offset) >> vol->sectorshift) + stripe_offset;
 
-		    if(dev && !(err = fsw_block_get(dev, paddrN, cache_level, (void **)&buffer))) {
+		    if(dev && !(err = fsw_block_get(dev, paddrN, cache_level, (void **) &buffer))) {
 			// reading direct sector first
                         fsw_memcpy(buf+n, buffer+off, used_bytes);
                         fsw_block_release(dev, paddrN, (void *)buffer);
@@ -1182,7 +1182,7 @@ begin_direct_read:
 			// need recover data
 			if(!stripe_table) {
 			    // build&rotate(raid6) stripe table
-			    err = fsw_alloc_zero(sizeof (struct stripe_table) * nstripes, (void **)&stripe_table);
+			    err = fsw_alloc_zero(sizeof (struct stripe_table) * nstripes, (void **) &stripe_table);
 			    if(err)
 				goto io_error;
 			    unsigned dev_count = 0;
@@ -1215,7 +1215,7 @@ begin_direct_read:
 				// the target, first failed
 			    } else {
 				err = stripe_table[i].dev == NULL ? FSW_IO_ERROR :
-				    fsw_block_get(stripe_table[i].dev, stripe_table[i].off + stripe_offset, cache_level, (void **)&(stripe_table[i].ptr));
+				    fsw_block_get(stripe_table[i].dev, stripe_table[i].off + stripe_offset, cache_level, (void **) &(stripe_table[i].ptr));
 				if(err) {
 				    if(is_raid5 || bad2 != RAID5_TAG)
 					// third failed
@@ -1253,7 +1253,7 @@ begin_direct_read:
 			    if(bad2 == nstripes - 2) {
 				// target & P failed
 				block_mulx(255 - posN, rcache->buffer, sectorsize);
-			    } else if((err = fsw_alloc(sectorsize, (void **)&pbuf))==FSW_SUCCESS) {
+			    } else if((err = fsw_alloc(sectorsize, (void **) &pbuf))==FSW_SUCCESS) {
 				// double data failed
 				unsigned int c = ((255 ^ posN) + (255 ^ powx_inv[(powx[bad2 + (posN ^ 255)] ^ 1)]))%255;
 				block_mulx (c, rcache->buffer, sectorsize);
@@ -1343,7 +1343,7 @@ static fsw_status_t fsw_btrfs_volume_mount(struct fsw_volume *volg) {
     vol->n_devices_allocated = vol->num_devices;
     vol->rescan_once = vol->num_devices > 1;
     err = fsw_alloc(sizeof (struct fsw_btrfs_device_desc) * vol->n_devices_allocated,
-	(void **)&vol->devices_attached);
+	(void **) &vol->devices_attached);
     if (err)
         return err;
 
@@ -1529,7 +1529,7 @@ static fsw_ssize_t grub_btrfs_lzo_decompress(char *ibuf, fsw_size_t isize, grub_
     /* Jump forward to first block with requested data.  */
     while (off >= GRUB_BTRFS_LZO_BLOCK_SIZE)
     {
-        /* Don't let following uint32_t cross the page boundary.  */
+        /* Do not let following uint32_t cross the page boundary.  */
         if (((ibuf - ibuf0) & 0xffc) == 0xffc)
             ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
 
@@ -1547,7 +1547,7 @@ static fsw_ssize_t grub_btrfs_lzo_decompress(char *ibuf, fsw_size_t isize, grub_
     {
         lzo_uint usize = GRUB_BTRFS_LZO_BLOCK_SIZE;
 
-        /* Don't let following uint32_t cross the page boundary.  */
+        /* Do not let following uint32_t cross the page boundary.  */
         if (((ibuf - ibuf0) & 0xffc) == 0xffc)
             ibuf = ((ibuf - ibuf0 + 3) & ~3) + ibuf0;
 

@@ -146,7 +146,7 @@ struct iso9660_dirrec_buffer {
 
 struct fsw_iso9660_volume {
     struct fsw_volume g;            //!< Generic volume structure
-    /*Note: don't move g!*/
+    /*Note: do not move g!*/
     int fJoliet;
     /*Joliet specific fields*/
     int fRockRidge;

@@ -314,8 +314,8 @@ static VOID generate_hybrid_mbr(VOID) {
        i--;
     } // while
 
-    // Third, do anything that's left to cover uncovered spaces; but this requires
-    // first creating the EFI protective entry, since we don't want to bother with
+    // Third, do anything that is left to cover uncovered spaces; but this requires
+    // first creating the EFI protective entry, since we do not want to bother with
     // anything already covered by this entry.
     new_mbr_parts[0].index     = 0;
     new_mbr_parts[0].start_lba = 1;
@@ -436,10 +436,10 @@ static BOOLEAN should_rewrite(VOID) {
          retval = FALSE;
    } // if
 
-   // If existing hybrid MBR that's NOT identical to the new one, ask the user
+   // If existing hybrid MBR that is NOT identical to the new one, ask the user
    // before overwriting the old one.
    if ((num_new_hybrid > 0) && (num_existing_hybrid > 0)) {
-      Print(L"Existing hybrid MBR detected, but it's not identical to what this program\n");
+      Print(L"Existing hybrid MBR detected, but it is not identical to what this program\n");
       Print(L"would generate. Do you want to see the hybrid MBR that this program would\n");
       invalid = input_boolean(STR("generate? [y/N] "), &retval);
       if (invalid)

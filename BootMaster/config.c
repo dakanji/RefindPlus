@@ -766,7 +766,7 @@ VOID ReadConfig (
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
         }
         else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
-           // Note: Don't use HandleStrings() because it modifies slashes, which might be present in volume name
+           // Note: Do not use HandleStrings() because it modifies slashes, which might be present in volume name
            MyFreePool (&GlobalConfig.DontScanVolumes);
            GlobalConfig.DontScanVolumes = NULL;
            for (i = 1; i < TokenCount; i++) {

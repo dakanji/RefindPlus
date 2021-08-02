@@ -494,7 +494,7 @@ huft_build (unsigned *b,        /* code lengths in bits (all assumed <= BMAX) */
           /* backup over finished tables */
           while ((i & ((1 << w) - 1)) != x[h])
             {
-              h--;              /* don't need to update q */
+              h--;              /* do not need to update q */
               w -= l;
             }
         }
@@ -572,14 +572,14 @@ inflate_codes_in_window (grub_gzio_t gzio)
             while ((e = (t = t->v.t + ((unsigned) b & mask_bits[e]))->e) > 16);
           DUMPBITS (t->b);
 
-          if (e == 16)          /* then it's a literal */
+          if (e == 16)          /* then it is a literal */
             {
               gzio->slide[w++] = (uch) t->v.n;
               if (w == WSIZE)
                 break;
             }
           else
-            /* it's an EOB or a length */
+            /* it is an EOB or a length */
             {
               /* exit if end of block */
               if (e == 15)

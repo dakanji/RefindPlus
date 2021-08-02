@@ -1150,7 +1150,7 @@ $(BIN)/%.zbin : $(BIN)/%.bin $(BIN)/%.zinfo $(ZBIN)
 # You can derive the ROM/driver relationships using the variables
 # DRIVER_<rom> and/or ROMS_<driver>.
 # 
-# We don't currently do this, because (a) it would require generating
+# We do not currently do this, because (a) it would require generating
 # yet more Makefile fragments (since you need a rule for each ROM in
 # ROMS), and (b) the linker is so fast that it probably wouldn't make
 # much difference to the overall build time.

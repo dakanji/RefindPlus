@@ -311,8 +311,8 @@ LOADER_ENTRY * InitializeLoaderEntry (
 // Prepare a REFIT_MENU_SCREEN data structure for a subscreen entry. This sets up
 // the default entry that launches the boot loader using the same options as the
 // main Entry does. Subsequent options can be added by the calling function.
-// If a subscreen already exists in the Entry that's passed to this function,
-// it's left unchanged and a pointer to it is returned.
+// If a subscreen already exists in the Entry that is passed to this function,
+// it is left unchanged and a pointer to it is returned.
 // Returns a pointer to the new subscreen data structure, or NULL if there
 // were problems allocating memory.
 REFIT_MENU_SCREEN * InitializeSubScreen (
@@ -1176,7 +1176,7 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    // See if Path includes an explicit volume declaration that's NOT Volume.
+    // See if Path includes an explicit volume declaration that is NOT Volume.
     PathCopy = StrDuplicate (Path);
     if (SplitVolumeAndFilename (&PathCopy, &VolName)) {
         if (VolName && (!MyStriCmp (VolName, Volume->FsName) ||
@@ -1216,7 +1216,7 @@ BOOLEAN ShouldScan (
 // on the volume AND if the file is not itself the fallback file; returns
 // FALSE if the file is not identical to the fallback file OR if the file
 // IS the fallback file. Intended for use in excluding the fallback boot
-// loader when it's a duplicate of another boot loader.
+// loader when it is a duplicate of another boot loader.
 static
 BOOLEAN DuplicatesFallback (
     IN REFIT_VOLUME *Volume,
@@ -1888,7 +1888,7 @@ VOID ScanEfiFiles (
     }
     MyFreePool (&SelfPath);
 
-    // If not a duplicate & if it exists & if it's not us, create an entry
+    // If not a duplicate & if it exists & if it is not us, create an entry
     // for the fallback boot loader
     if (ScanFallbackLoader &&
         FileExists (Volume->RootDir, FALLBACK_FULLNAME) &&

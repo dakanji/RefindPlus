@@ -296,7 +296,7 @@ const char* lodepng_error_text(unsigned code);
 typedef struct LodePNGDecompressSettings LodePNGDecompressSettings;
 struct LodePNGDecompressSettings {
   /* Check LodePNGDecoderSettings for more ignorable errors such as ignore_crc */
-  unsigned ignore_adler32; /*if 1, continue and don't give an error message if the Adler32 checksum is corrupted*/
+  unsigned ignore_adler32; /*if 1, continue and do not give an error message if the Adler32 checksum is corrupted*/
   unsigned ignore_nlen; /*ignore complement of len checksum in uncompressed blocks*/
 
   /*use custom zlib decoder instead of built in one (default: null)*/
@@ -426,7 +426,7 @@ unsigned lodepng_has_palette_alpha(const LodePNGColorMode* info);
 Check if the given color info indicates the possibility of having non-opaque pixels in the PNG image.
 Returns true if the image can have translucent or invisible pixels (it still be opaque if it doesn't use such pixels).
 Returns false if the image can only have opaque pixels.
-In detail, it returns true only if it's a color type with alpha, or has a palette with non-opaque values,
+In detail, it returns true only if it is a color type with alpha, or has a palette with non-opaque values,
 or if "key_defined" is true.
 */
 unsigned lodepng_can_have_alpha(const LodePNGColorMode* info);
@@ -493,10 +493,10 @@ typedef struct LodePNGInfo {
   The PNG specification uses null characters for the keys, names and tags, and forbids null
   characters to appear in the main text which is why we can use null termination everywhere here.
 
-  A keyword is minimum 1 character and maximum 79 characters long. It's
+  A keyword is minimum 1 character and maximum 79 characters long. It is
   discouraged to use a single line length longer than 79 characters for texts.
 
-  Don't allocate these text buffers yourself. Use the init/cleanup functions
+  Do not allocate these text buffers yourself. Use the init/cleanup functions
   correctly and use lodepng_add_text and lodepng_clear_text.
   */
   size_t text_num; /*the amount of texts in these char** buffers (there may be more texts in itext)*/
@@ -582,7 +582,7 @@ typedef struct LodePNGInfo {
   char* iccp_name;            /* Null terminated string with profile name, 1-79 bytes */
   /*
   The ICC profile in iccp_profile_size bytes.
-  Don't allocate this buffer yourself. Use the init/cleanup functions
+  Do not allocate this buffer yourself. Use the init/cleanup functions
   correctly and use lodepng_set_icc and lodepng_clear_icc.
   */
   unsigned char* iccp_profile;
@@ -702,7 +702,7 @@ typedef enum LodePNGFilterStrategy {
 
 /*Gives characteristics about the integer RGBA colors of the image (count, alpha channel usage, bit depth, ...),
 which helps decide which color model to use for encoding.
-Used internally by default if "auto_convert" is enabled. Public because it's useful for custom algorithms.*/
+Used internally by default if "auto_convert" is enabled. Public because it is useful for custom algorithms.*/
 typedef struct LodePNGColorStats {
   unsigned colored; /*not grayscale*/
   unsigned key; /*image is not opaque and color key is possible instead of full alpha*/
@@ -716,7 +716,7 @@ typedef struct LodePNGColorStats {
   size_t numpixels;
 
   /*user settings for computing/using the stats*/
-  unsigned allow_palette; /*default 1. if 0, disallow choosing palette colortype in auto_choose_color, and don't count numcolors*/
+  unsigned allow_palette; /*default 1. if 0, disallow choosing palette colortype in auto_choose_color, and do not count numcolors*/
   unsigned allow_greyscale; /*default 1. if 0, choose RGB or RGBA even if the image only has gray colors*/
 } LodePNGColorStats;
 
@@ -744,7 +744,7 @@ typedef struct LodePNGEncoderSettings {
   LodePNGFilterStrategy filter_strategy;
   /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a buffer with
   the same length as the amount of scanlines in the image, and each value must <= 5. You
-  have to cleanup this buffer, LodePNG will never free it. Don't forget that filter_palette_zero
+  have to cleanup this buffer, LodePNG will never free it. Do not forget that filter_palette_zero
   must be set to 0 to ensure this is also used on palette or low bitdepth images.*/
   const unsigned char* predefined_filters;
 
@@ -861,7 +861,7 @@ void lodepng_chunk_type(char type[5], const unsigned char* chunk);
 /*check if the type is the given type*/
 unsigned char lodepng_chunk_type_equals(const unsigned char* chunk, const char* type);
 
-/*0: it's one of the critical chunk types, 1: it's an ancillary chunk (see PNG standard)*/
+/*0: it is one of the critical chunk types, 1: it is an ancillary chunk (see PNG standard)*/
 unsigned char lodepng_chunk_ancillary(const unsigned char* chunk);
 
 /*0: public, 1: private (see PNG standard)*/
@@ -874,7 +874,7 @@ unsigned char lodepng_chunk_safetocopy(const unsigned char* chunk);
 unsigned char* lodepng_chunk_data(unsigned char* chunk);
 const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk);
 
-/*returns 0 if the crc is correct, 1 if it's incorrect (0 for OK as usual!)*/
+/*returns 0 if the crc is correct, 1 if it is incorrect (0 for OK as usual!)*/
 unsigned lodepng_chunk_check_crc(const unsigned char* chunk);
 
 /*generates the correct CRC from the data and puts it in the last 4 bytes of the chunk*/
@@ -958,7 +958,7 @@ unsigned lodepng_zlib_compress(unsigned char** out, size_t* outsize,
 
 /*
 Find length-limited Huffman code for given frequencies. This function is in the
-public interface only for tests, it's used internally by lodepng_deflate.
+public interface only for tests, it is used internally by lodepng_deflate.
 */
 unsigned lodepng_huffman_code_lengths(unsigned* lengths, const unsigned* frequencies,
                                       size_t numcodes, unsigned maxbitlen);
@@ -1161,7 +1161,7 @@ the PNG file uses. To read and write files, there are simple functions to
 convert the files to/from buffers in memory.
 
 This all makes LodePNG suitable for loading textures in games, demos and small
-programs, ... It's less suitable for full fledged image editors, loading PNGs
+programs, ... It is less suitable for full fledged image editors, loading PNGs
 over network (it requires all the image data to be available before decoding can
 begin), life-critical systems, ...
 
@@ -1236,7 +1236,7 @@ of lodepng.cpp), and compile it with a C compiler.
 3. Security
 -----------
 
-Even if carefully designed, it's always possible that LodePNG contains possible
+Even if carefully designed, it is always possible that LodePNG contains possible
 exploits. If you discover one, please let me know, and it will be fixed.
 
 When using LodePNG, care has to be taken with the C version of LodePNG, as well
@@ -1325,9 +1325,9 @@ LodePNGInfo info_png
 --------------------
 
 When encoding, you use this the opposite way as when decoding: for encoding,
-you fill in the values you want the PNG to have before encoding. By default it's
-not needed to specify a color type for the PNG since it's automatically chosen,
-but it's possible to choose it yourself given the right settings.
+you fill in the values you want the PNG to have before encoding. By default it is
+not needed to specify a color type for the PNG since it is automatically chosen,
+but it is possible to choose it yourself given the right settings.
 
 The encoder will not always exactly match the LodePNGInfo struct you give,
 it tries as close as possible. Some things are ignored by the encoder. The
@@ -1365,12 +1365,12 @@ can encode the colors of all pixels without information loss.
    2048 by default, but can be set to 32768 for better, but slow, compression.
 *) force_palette: if colortype is 2 or 6, you can make the encoder write a PLTE
    chunk if force_palette is true. This can used as suggested palette to convert
-   to by viewers that don't support more than 256 colors (if those still exist)
+   to by viewers that do not support more than 256 colors (if those still exist)
 *) add_id: add text chunk "Encoder: LodePNG <version>" to the image.
 *) text_compression: default 1. If 1, it'll store texts as zTXt instead of tEXt chunks.
   zTXt chunks use zlib compression on the text. This gives a smaller result on
   large texts but a larger result on small texts (such as a single program name).
-  It's all tEXt or all zTXt though, there's no separate setting per text yet.
+  It is all tEXt or all zTXt though, there's no separate setting per text yet.
 
 
 6. color conversions
@@ -1436,7 +1436,7 @@ image, you need to specify its color type and bit depth in the LodePNGColorMode
 of the raw image, or use the parameters colortype and bitdepth of the simple
 encoding function.
 
-If, when encoding, you don't want LodePNG to choose the output PNG color type
+If, when encoding, you do not want LodePNG to choose the output PNG color type
 but control it yourself, you need to set auto_convert in the encoder settings
 to false, and specify the color type you want in the LodePNGInfo of the
 encoder (including palette: it can generate a palette if auto_convert is true,
@@ -1542,7 +1542,7 @@ Check the implementation of lodepng_error_text to see the meaning of each code.
 If you want to add extra chunks to a PNG you encode, or use LodePNG for a PNG
 editor that should follow the rules about handling of unknown chunks, or if your
 program is able to read other types of chunks than the ones handled by LodePNG,
-then that's possible with the chunk functions of LodePNG.
+then that is possible with the chunk functions of LodePNG.
 
 A PNG chunk has the following layout:
 
@@ -1571,7 +1571,7 @@ Get the length of the chunk's data. The total chunk length is this length + 12.
 void lodepng_chunk_type(char type[5], const unsigned char* chunk):
 unsigned char lodepng_chunk_type_equals(const unsigned char* chunk, const char* type):
 
-Get the type of the chunk or compare if it's a certain type
+Get the type of the chunk or compare if it is a certain type
 
 unsigned char lodepng_chunk_critical(const unsigned char* chunk):
 unsigned char lodepng_chunk_private(const unsigned char* chunk):
@@ -1579,7 +1579,7 @@ unsigned char lodepng_chunk_safetocopy(const unsigned char* chunk):
 
 Check if the chunk is critical in the PNG standard (only IHDR, PLTE, IDAT and IEND are).
 Check if the chunk is private (public chunks are part of the standard, private ones not).
-Check if the chunk is safe to copy. If it's not, then, when modifying data in a critical
+Check if the chunk is safe to copy. If it is not, then, when modifying data in a critical
 chunk, unsafe to copy chunks of the old image may NOT be saved in the new one if your
 program doesn't handle that type of unknown chunk.
 
@@ -1616,7 +1616,7 @@ The LodePNGInfo struct contains fields with the unknown chunk in it. It has 3
 buffers (each with size) to contain 3 types of unknown chunks:
 the ones that come before the PLTE chunk, the ones that come between the PLTE
 and the IDAT chunks, and the ones that come after the IDAT chunks.
-It's necessary to make the distinction between these 3 cases because the PNG
+It is necessary to make the distinction between these 3 cases because the PNG
 standard forces to keep the ordering of unknown chunks compared to the critical
 chunks, but does not force any other ordering rules.
 
@@ -1808,7 +1808,7 @@ https://github.com/lvandeve/lodepng
 *) 12 jan 2020: (!) added 'end' argument to lodepng_chunk_next to allow correct
    overflow checks.
 *) 14 aug 2019: around 25% faster decoding thanks to huffman lookup tables.
-*) 15 jun 2019: (!) auto_choose_color API changed (for bugfix: don't use palette
+*) 15 jun 2019: (!) auto_choose_color API changed (for bugfix: do not use palette
    if gray ICC profile) and non-ICC LodePNGColorProfile renamed to
    LodePNGColorStats.
 *) 30 dec 2018: code style changes only: removed newlines before opening braces.
@@ -1860,7 +1860,7 @@ https://github.com/lvandeve/lodepng
 *) 8 sep 2011: lz77 encoder lazy matching instead of greedy matching.
 *) 23 aug 2011: tweaked the zlib compression parameters after benchmarking.
     A bug with the PNG filtertype heuristic was fixed, so that it chooses much
-    better ones (it's quite significant). A setting to do an experimental, slow,
+    better ones (it is quite significant). A setting to do an experimental, slow,
     brute force search for PNG filter types is added.
 *) 17 aug 2011: (!) changed some C zlib related function names.
 *) 16 aug 2011: made the code less wide (max 120 characters per line).
@@ -1933,7 +1933,7 @@ https://github.com/lvandeve/lodepng
     Fixed a bug of the decoder with 16-bit per color.
 *) 15 okt 2006: Changed documentation structure
 *) 09 okt 2006: Encoder class added. It encodes a valid PNG image from the
-    given image buffer, however for now it's not compressed.
+    given image buffer, however for now it is not compressed.
 *) 08 sep 2006: (!) Changed to interface with a Decoder class
 *) 30 jul 2006: (!) LodePNG_InfoPng , width and height are now retrieved in different
     way. Renamed decodePNG to decodePNGGeneric.

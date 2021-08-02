@@ -957,7 +957,7 @@ LibGetFileHandleFromDevicePath (
     return Status;
   }
 
-  Status = gBS->HandleProtocol (Handle, &gEfiSimpleFileSystemProtocolGuid, (VOID**)&Volume);
+  Status = gBS->HandleProtocol (Handle, &gEfiSimpleFileSystemProtocolGuid, (VOID **) &Volume);
   if (EFI_ERROR (Status)) {
     return Status;
   }
@@ -1576,7 +1576,7 @@ FileExplorerLibConstructor (
 {
   EFI_STATUS                     Status;
 
-  gHiiVendorDevicePath = (HII_VENDOR_DEVICE_PATH*) DuplicateDevicePath ((EFI_DEVICE_PATH_PROTOCOL*)&FeHiiVendorDevicePath);
+  gHiiVendorDevicePath = (HII_VENDOR_DEVICE_PATH*) DuplicateDevicePath ((EFI_DEVICE_PATH_PROTOCOL*) &FeHiiVendorDevicePath);
   ASSERT (gHiiVendorDevicePath != NULL);
   CopyGuid (&gHiiVendorDevicePath->VendorDevicePath.Guid, &gEfiCallerIdGuid);
 

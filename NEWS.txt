@@ -223,7 +223,7 @@
   install a Secure Boot key using mokutil, which can slightly simplify the
   MOK setup. It also now creates a backup NVRAM entry to boot directly,
   rather than via a Shim, if installed with the --shim option. This should
-  help on systems with custom Secure Boot key sets that don't rely on Shim,
+  help on systems with custom Secure Boot key sets that do not rely on Shim,
   but with a stray Shim binary present on the ESP that a package script will
   detect and pass as a --shim option to rEFInd. If this configuration causes
   a Secure Boot failure on launching Shim, then it should fail over to the
@@ -239,7 +239,7 @@
   subdirectory of its own directory; and if that was unwritable (say, if it
   was on an HFS+ volume), then rEFInd would not store its own variables,
   such as PreviousBoot and HiddenTags. With this version, rEFInd will now
-  use the "vars" subdirectory of rEFInd's own directory; if that's not
+  use the "vars" subdirectory of rEFInd's own directory; if that is not
   available, it will use a directory called "refind-vars" in the root
   directory of the first ESP that rEFInd can locate; and if neither is
   available, rEFInd will use NVRAM storage instead, as if "use_nvram true"
@@ -651,7 +651,7 @@
   by default, except on the USB flash drive and CD-R images I create, and
   when using the --usedefault option to refind-install. The intent is that
   this feature can be used on emergency recovery media or to install rEFInd
-  for the first time. It's not likely to be useful in day-to-day use.
+  for the first time. It is not likely to be useful in day-to-day use.
 - Previous versions of rEFInd have all passed the name of the program being
   launched as a parameter to that program, just as the EFI shell does. This
   is causing problems for a new unified kernel image format that combines a
@@ -684,7 +684,7 @@
   non-existence. The deprecated code is located in rEFInd's scan.c file and
   simply creates sub-menus that pass options to these boot loaders. If
   anybody wants to experiment with obsolete boot loaders, they can achieve
-  the same effect with manual boot stanzas; and if they don't need to pass
+  the same effect with manual boot stanzas; and if they do not need to pass
   options to these boot loaders, they'll still work fine from rEFInd as
   "generic" boot loaders. For the moment, the code remains in place, but I
   may remove it on no further notice in the future.
@@ -715,7 +715,7 @@
   refind_linux.conf via "%v", since an inappropriate auto-detected initrd
   won't be included.
 
-- No longer build NTFS driver by default; it's just too buggy. The source
+- No longer build NTFS driver by default; it is just too buggy. The source
   code is still available and can be built by typing "make ntfs" in the
   filesystems subdirectory.
 
@@ -811,12 +811,12 @@
 --------------------------------------
 - Modified refind-install to be smarter about modifying NVRAM entries under
   Linux. It now re-creates existing rEFInd entries only if the existing
-  entries don't point to the same location that rEFInd will use.
+  entries do not point to the same location that rEFInd will use.
 
 - Modified the way rEFInd tracks boot loader files. This was made necessary
   by Mac OS 10.13/APFS, which was confusing rEFInd's old tracking code when
   it was compiled with GNU-EFI. Ideally, this will have no noticeable effect
-  to end users; however, it's possible that some loaders will appear or
+  to end users; however, it is possible that some loaders will appear or
   disappear from the menu, or "file not found" errors when launching loaders
   will go away, after upgrading to this version of rEFInd.
 
@@ -900,7 +900,7 @@
   at least there will be a prompt to press a key.)
 
 - rEFInd now displays its background and banner before scanning for boot
-  loaders, and displays a message that it's performing this scan.
+  loaders, and displays a message that it is performing this scan.
 
 - Added support for HiDPI/retina displays: rEFInd now automatically scales
   icons and text to twice the normal size when the screen's horizontal
@@ -950,9 +950,9 @@
   dont_scan_volumes.
 
 - Renamed "Mac OS X" to "Mac OS" in assorted messages, per Apple's
-  re-branding with version 10.12 (Sierra). Unfortunately, I don't know of an
+  re-branding with version 10.12 (Sierra). Unfortunately, I do not know of an
   easy way to tell which Mac OS version a given Mac OS boot loader will load,
-  so it's one name or the other for everything.
+  so it is one name or the other for everything.
 
 
 0.10.7 (17 APR 2017): UPSTREAM RELEASE
@@ -960,9 +960,9 @@
 - Update refind-install to recognize and copy mmx64.efi as alternative
   name for MokManager.
 
-- Hide volume name "Recovery HD," if that's what it is, from loader
+- Hide volume name "Recovery HD," if that is what it is, from loader
   description. This is done because some Mac OS X users are getting confused and
-  even upset over this detail, even though it's accurate, at least from an
+  even upset over this detail, even though it is accurate, at least from an
   EFI/rEFInd point of view.
 
 - Fixed memory management bug (introduced in 0.10.6) that caused error
@@ -987,7 +987,7 @@
   that are treated something like digits for purposes of matching Linux
   kernel and initrd filenames.
 
-- Don't set the video mode if the computer is already running in the
+- Do not set the video mode if the computer is already running in the
   requested mode. This is a shot-in-the-dark attempt to fix problems with
   Mac "retina" displays, which tend to get bumped down to a lower resolution
   by rEFInd.
@@ -1056,14 +1056,14 @@
 - Added recognition of the fwupx64.efi file as a firmware update tool.
   This filename is excluded from the first-row launchers, and is instead
   presented on the second row, controlled by the "fwupdate" item on the
-  "showtools" option line. It's enabled by default. Note that it's still a
+  "showtools" option line. It is enabled by default. Note that it is still a
   bit unclear to me how this tool is supposed to be used. rEFInd launches it
   with no options, but if it should take options, this will have to be
   changed in the future.
 
 - Tightened exclusion of shell binary filenames from boot loader scan.
   Previously, any filename containing the substring "shell" was excluded
-  from scans. Now it's tighter; only files matching one of the filenames in
+  from scans. Now it is tighter; only files matching one of the filenames in
   the constant SHELL_NAMES in main.c are excluded. This change will enable
   programs with names that include "shell", but that aren't in rEFInd's
   SHELL_NAMES list, such as "shelly.efi", to be shown in the rEFInd main
@@ -1085,7 +1085,7 @@
   that lack this variable. Mac OS X acts as if SIP were enabled, but rEFInd is
   then unable to disable SIP. This change gives rEFInd the ability to
   disable SIP on such systems. The drawback is that the variable might be
-  set on some systems that don't run Mac OS X 10.11. This should be harmless
+  set on some systems that do not run Mac OS X 10.11. This should be harmless
   from a technical point of view, but the presence of SIP indicators in
   rEFInd could be confusing.
 
@@ -1159,7 +1159,7 @@
   terminal, which means that the graphics features are untested -- I ran
   rEFInd with "textonly" uncommented in refind.conf. I've tested the ext4fs
   driver but no other drivers, although they all compile. (So does gptsync,
-  although it's unlikely to be useful on ARM64.) Some rEFInd features are
+  although it is unlikely to be useful on ARM64.) Some rEFInd features are
   meaningless on ARM64, such as BIOS-mode boot support, anything geared
   toward Macs (csr_values/csr_rotate, spoof_osx_version, etc.), and
   enable_and_lock_vmx.
@@ -1208,8 +1208,8 @@
   source for default boot options EXCEPT when refind-install receives the
   --root option. In that case, refind-install continues to use
   /etc/default/grub as the source of default options. The idea behind this
-  change is that it's more reliable to get boot options from /proc/cmdline
-  when the targeted system is the one that's booted; but --root would be
+  change is that it is more reliable to get boot options from /proc/cmdline
+  when the targeted system is the one that is booted; but --root would be
   used from emergency disks or live CDs, in which case the current boot
   options would be completely wrong, so extracting boot options from GRUB
   files is the best bet for getting close to the right options.
@@ -1220,10 +1220,10 @@
 
 - Added new System Integrity Protection (SIP) rotation feature for Macs
   running Mac OS X 10.11 or later. This feature is disabled by default, except
-  on CD-R and USB flash drive images, on which it's enabled. To enable it,
+  on CD-R and USB flash drive images, on which it is enabled. To enable it,
   you must make TWO changes to refind.conf: Uncomment the new "csr_values"
   item and add "csr_rotate" to the "showtools" line (uncommenting it, too,
-  if it's commented out). If desired, you can set more values on
+  if it is commented out). If desired, you can set more values on
   "csr_values"; these are comma-delimited one-byte hexadecimal values that
   define various SIP states.  When SIP/CSR rotation is activated, a new
   shield icon appears among the tools. Selecting it causes the next defined
@@ -1303,7 +1303,7 @@
   but the need for a leading backslash to refer to a file in the same
   directory as Shim is so confusing and wrong that I cannot in good
   conscience support it.) I've not seen signed Shim binaries between 0.4
-  and 0.7, so I don't know if any of them might work.
+  and 0.7, so I do not know if any of them might work.
 
 - Implemented a workaround for a bug in Shim 0.8 that prevented
   authentication of more than one binary. If any filesystem drivers were
@@ -1388,7 +1388,7 @@
 - Fixed bug that caused a rEFInd crash if an empty refind_linux.conf
   file was encountered.
 
-- The mkrlconf.sh script now checks the OS on which it's running, which
+- The mkrlconf.sh script now checks the OS on which it is running, which
   should help avoid confusion or problems by users who mistakenly run it
   under Mac OS X.
 
@@ -1480,7 +1480,7 @@
   option hides the device-type badges associated with the OS boot options.
 
 - Reverted rEFIt commit r472, introduced in rEFInd 0.8.5 to support more
-  BMP images because I've received bug reports that it's causing existing
+  BMP images because I've received bug reports that it is causing existing
   selection images to fail to load.
 
 - Fixed install.sh bug that caused misidentification of installation
@@ -1530,9 +1530,9 @@
 - Updated icons for Fedora and Ubuntu and added an icon for Xubuntu.
 
 - Added new configuration option, "enable_and_lock_vmx", which sets an
-  Intel CPU feature that's required for some types of virtualization to
+  Intel CPU feature that is required for some types of virtualization to
   work. Most EFIs enable setting this feature in their own setup utilities,
-  but some (such as most Macs) don't.
+  but some (such as most Macs) do not.
 
 - If rEFInd can't locate an icons directory (either the default or one
   specified by the icons_dir token), the program switches to text-only
@@ -1581,14 +1581,14 @@
 - Changed default scan_all_linux_kernels setting from "false" to "true",
   and commented the option out in refind.conf-sample. This should not
   affect most people, since refind.conf-sample had this option commented
-  out, and most rEFInd users either use it that way or don't have Linux
+  out, and most rEFInd users either use it that way or do not have Linux
   kernels installed at all. I've made this change because I want rEFInd to
   "do the right thing" by default in as many cases as possible. For a while
   now, rEFInd has been excluding non-bootable files from its menu, and most
   kernels "in the wild" now include the EFI stub. Thus, enabling this
   support by default seems worthwhile. If you prefer to not scan Linux
   kernels by default, simply uncomment the "scan_all_linux_kernels" line
-  and ensure it's set to "false".
+  and ensure it is set to "false".
 
 
 0.8.2.1 (08 JUN 2014): UPSTREAM RELEASE
@@ -1600,7 +1600,7 @@
 0.8.2 (08 JUN 2014): UPSTREAM RELEASE
 --------------------------------------
 - Changed behavior when default_selection is not set: It now boots the
-  previously-booted loader, assuming it's still available; if not, rEFInd
+  previously-booted loader, assuming it is still available; if not, rEFInd
   boots the first loader (as it does now). Behavior is unchanged if
   default_selection is set. Note that this behavior depends on the ability
   of rEFInd to store an EFI variable in NVRAM. It therefore fails on
@@ -1648,7 +1648,7 @@
 - Changed icons from ICNS to PNG form. There are several reasons to do
   this, all of them minor; but together they're enough to warrant a change.
   PNG is more common, and therefore more accessible to most users --
-  particularly those who don't use Mac OS X. The PNG files are smaller than
+  particularly those who do not use Mac OS X. The PNG files are smaller than
   their ICNS equivalents. PNG supports a wider range of sizes (although I'm
   not now using anything that ICNS doesn't support, I might in the future).
   The icon-scaling support added a few versions ago makes ICNS's support
@@ -1689,7 +1689,7 @@
   "Apple HFS/HFS+". These are ignored in favor of the descriptive fallback
   (e.g., "20 GiB Btrfs volume")
 
-- It's now possible to specify a volume by partition GUID number in a
+- It is now possible to specify a volume by partition GUID number in a
   manual boot stanza. This should be more reliable (albeit also more
   awkward) than using a filesystem number (such as fs0: or fs1:).
 
@@ -1726,7 +1726,7 @@
 0.7.8 (09 MAR 2014): UPSTREAM RELEASE
 --------------------------------------
 - Added "debian" directory to source, which facilitates creation of Debian
-  packages. Packages built in this way are built with GNU-EFI and don't run
+  packages. Packages built in this way are built with GNU-EFI and do not run
   any post-installation script, so although the rEFInd binaries are on the
   hard disk, they aren't installed to be bootable; you must manually run
   install.sh. Also, at least on Ubuntu, the Make.common file's /usr/lib64
@@ -1761,8 +1761,8 @@
   rather than just shim.efi. Ubuntu uses shimx64.efi, so Debian packages
   were failing to detect Ubuntu's shim in previous versions. (Note,
   however, that Ubuntu's early shim 0.1 is unsuitable for use with rEFInd
-  The newer 0.4 version that's in the repositories now should work fine;
-  it's only when installing on an older system that's NOT been updated that
+  The newer 0.4 version that is in the repositories now should work fine;
+  it is only when installing on an older system that is NOT been updated that
   problems might arise.
 
 
@@ -1794,7 +1794,7 @@
   UUID.
 
 - Added feature in install.sh: Script now tries to locate and mount an ESP
-  in Linux, if it's currently unmounted.
+  in Linux, if it is currently unmounted.
 
 - Fixed bug in mkrlconf.sh and install.sh that caused a stray line break
   and PARTUUID= specification to appear in generated refind_linux.conf file
@@ -1806,12 +1806,12 @@
 - Added support for multiple "default_selection" targets. These MUST be
   comma-separated AND enclosed in quotes, as in:
   default_selection "fred,ginger"
-  This example will launch "fred" by default if it's available; and if
-  it's not, rEFInd will attempt to launch "ginger" as the default.
+  This example will launch "fred" by default if it is available; and if
+  it is not, rEFInd will attempt to launch "ginger" as the default.
 
 - Added support for time-sensitive "default_selection" setting. This token
-  may now have either one or three options. If one, it's interpreted as it
-  has been in the past, as setting a default that's independent of times.
+  may now have either one or three options. If one, it is interpreted as it
+  has been in the past, as setting a default that is independent of times.
   If you follow this default by two times, however, those are interpreted
   as the start and end times (in 24-hour format) for a default setting. For
   instance, "default_selection foo 8:00 17:00" causes foo to be the default
@@ -1828,7 +1828,7 @@
   screensaver will be disabled.
 
 - Added --ownhfs {target} option to install.sh. This option causes rEFInd
-  to install to an HFS+ partition in a way that's more consistent with the
+  to install to an HFS+ partition in a way that is more consistent with the
   way the Mac's native boot loader is installed. Note that you should NOT
   install to an already-bootable partition with this option, since it will
   overwrite the existing boot loader, which would render Mac OS X unbootable.
@@ -1876,7 +1876,7 @@
 
 - Added space to end of "Boot %s from %s" string; enables adding a space
   to the end of the "default_selection" item (in quotes) to set a default
-  that matches a volume name that's identical to another one except for
+  that matches a volume name that is identical to another one except for
   extra characters at the end of the non-wanted volume's name.
 
 - Fixed bug that could cause rEFInd to hang when launching boot loaders
@@ -1904,7 +1904,7 @@
   (Some EFIs crash when attempting to load such drivers and programs.)
 
 - Added PreLoader.efi and shim-fedora.efi to default dont_scan_files list;
-  it's now "shim.efi, shim-fedora.efi, PreLoader.efi, TextMode.efi,
+  it is now "shim.efi, shim-fedora.efi, PreLoader.efi, TextMode.efi,
   ebounce.efi, GraphicsConsole.efi, MokManager.efi, HashTool.efi,
   HashTool-signed.efi".
 
@@ -1966,13 +1966,13 @@
 - Added support for PreBootloader to refind.spec's built-in installation
   script.
 
-- Added support for the Linux Foundation's PreLoader to install.sh. It's
+- Added support for the Linux Foundation's PreLoader to install.sh. It is
   treated just like shim, including using the --shim option (or, now,
   --preloader); but it searches for and copies HashTool.efi rather than
   MokManager.efi, and filenames are adjusted appropriately.
 
 - Added code to determine Linux root filesystem from /etc/fstab file, if
-  it's on the same partition as the kernel and if the refind_linux.conf
+  it is on the same partition as the kernel and if the refind_linux.conf
   file is not available. This enables rEFInd to boot Linux without any
   rEFInd-specific configuration files on some (but not all) systems.
 
@@ -2054,7 +2054,7 @@
 
 - Changed timeout code so that the timeout continues if the keyboard is
   disconnected. This can help in booting a headless server or a system with
-  a bluetooth or other keyboard that's not recognized by the EFI.
+  a bluetooth or other keyboard that is not recognized by the EFI.
 
 
 0.6.8 (16 APR 2013): UPSTREAM RELEASE
@@ -2100,7 +2100,7 @@
 0.6.6 (26 JAN 2013): UPSTREAM RELEASE
 --------------------------------------
 - rEFInd now ignores the fallback boot loader (EFI/BOOT/bootx64.efi or
-  EFI/BOOT/bootia32.efi) if it's identical to another boot loader on
+  EFI/BOOT/bootia32.efi) if it is identical to another boot loader on
   the same volume. This is intended to help unclutter the display on
   systems that run Windows, since Windows tends to duplicate its own boot
   loader under the fallback name.
@@ -2148,7 +2148,7 @@
 - Enable transparency of icons & main-menu text when the banner icon is
   sized to cover these areas.
 
-- Fixed bug that could cause rEFInd to crash if fed a banner image that's
+- Fixed bug that could cause rEFInd to crash if fed a banner image that is
   too big. Note that "too big" can be substantially smaller than the screen
   resolution!
 
@@ -2181,13 +2181,13 @@
   (EFI/BOOT or EFI/Microsoft/Boot). It can also do more exotic locations.
 
 - The install.sh script now installs to EFI/BOOT/bootx64.efi or
-  EFI/Microsoft/Boot/bootmgfw.efi if it's run in BIOS mode. This is
+  EFI/Microsoft/Boot/bootmgfw.efi if it is run in BIOS mode. This is
   intended to give some chance of producing a bootable installation should
   a user accidentally install Linux in EFI mode and then install rEFInd
   from that installation.
 
 - The install.sh script now tries to find an existing rEFInd installation
-  and upgrade it, even if it's in EFI/BOOT or EFI/Microsoft/Boot rather
+  and upgrade it, even if it is in EFI/BOOT or EFI/Microsoft/Boot rather
   than in EFI/refind.
 
 - New "--yes" option to install.sh to help with unattended or automated
@@ -2197,7 +2197,7 @@
 0.6.2 (30 DEC 2012): UPSTREAM RELEASE
 --------------------------------------
 - Inclusion of a sample refind.spec file for the benefit of RPM
-  distribution maintainers who might want to include rEFInd. It's a bit
+  distribution maintainers who might want to include rEFInd. It is a bit
   rough, but it gets you a good chunk of the way there.
 
 - The EFI filesystem drivers can now be built with the GNU-EFI toolkit as
@@ -2223,7 +2223,7 @@
   -- rEFInd relies on shim for authentication functions and will launch
   programs that are signed by Secure Boot keys, shim keys, or MOKs.
 
-- Altered default for "textmode" option (when it's commented out) to not
+- Altered default for "textmode" option (when it is commented out) to not
   adjust the text mode at all. (Prior versions set it to mode 0 by
   default.)
 
@@ -2249,8 +2249,8 @@
 - Added the "words" that make up a filesystem's label (delimited by spaces,
   dashes, or underscores) to the list of bases used to search for OS icons.
   For instance, if the filesystem's label is "Arch", rEFInd searches for
-  os_Arch.icns; if it's "Fedora 17", it searches for os_Fedora.icns and
-  os_17.icns; and if it's "NEW_GENTOO", it searches for os_NEW.icns and
+  os_Arch.icns; if it is "Fedora 17", it searches for os_Fedora.icns and
+  os_17.icns; and if it is "NEW_GENTOO", it searches for os_NEW.icns and
   os_GENTOO.icns.
 
 - Refined hints displays to be more context-sensitive, particularly in text
@@ -2318,7 +2318,7 @@
 
 - Changed install.sh --drivers option to --alldrivers, added new
   --nodrivers option, and made the default on Linux to install the one
-  driver that's used on /boot (or the root filesystem if /boot isn't a
+  driver that is used on /boot (or the root filesystem if /boot isn't a
   separate partition). Of course, this won't install a non-existent driver,
   and it also won't work properly if run from an emergency disk unless you
   mount a separate /boot partition at that location.
@@ -2363,7 +2363,7 @@
 
 - Implemented a fix to enable ELILO to launch with Secure Boot active.
   This fix might help with some other boot loaders in Secure Boot mode,
-  too, but I don't know of any specifics.
+  too, but I do not know of any specifics.
 
 0.5.0 (06 DEC 2012): UPSTREAM RELEASE
 --------------------------------------
@@ -2406,13 +2406,13 @@
 
 - Added the directory from which rEFInd launched to dont_scan_dirs. This
   works around a bug in which rEFInd would show itself as a bogus Windows
-  entry if it's installed as EFI/Microsoft/boot/bootmgfw.efi.
+  entry if it is installed as EFI/Microsoft/boot/bootmgfw.efi.
 
 - Added support for launching MokManager.efi for managing the Machine Owner
   Keys (MOKs) maintained by the shim boot loader developed by Fedora and
   SUSE. This program is scanned and presented as a second-row tool.
 
-- Added support for Apple's Recovery HD partition: If it's detected, a new
+- Added support for Apple's Recovery HD partition: If it is detected, a new
   icon appears on the second row. This icon can be removed by explicitly
   setting the "showtools" option in refind.conf and excluding the
   "apple_recovery" option from that line.
@@ -2502,7 +2502,7 @@
 - Graphics-mode booting now clears the screen to the current rEFInd
   background color (rather than black) and does NOT display boot messages.
   The intent is for a smoother transition when booting Mac OS X, or perhaps
-  other OSes that don't display boot loader messages. In practice, this
+  other OSes that do not display boot loader messages. In practice, this
   effect will be tiny for many OSes, since the boot loader generally clears
   the screen within a fraction of a second of being launched; but the
   "flicker" of a rEFInd message in that time can sometimes be distracting.
@@ -2561,7 +2561,7 @@
   these drivers originated with rEFIt, although the HFS+ driver seems to
   have come from Oracle's VirtualBox, with some files from Apple. I hadn't
   included these drivers previously because the build process proved
-  challenging. As it is, they don't work on my Mac Mini, I suspect because
+  challenging. As it is, they do not work on my Mac Mini, I suspect because
   the build process with the UDK2010 development kit may not work with the
   EFI 1.x that Apple uses.
 
@@ -2581,7 +2581,7 @@
 0.3.5 (15 MAY 2012): UPSTREAM RELEASE
 --------------------------------------
 - Removed the GRUB 2 detection "reciped" added with 0.3.2, since I've
-  received reports that it's not working as intended.
+  received reports that it is not working as intended.
 
 - Added re-scan feature: Press the Esc key to have rEFInd re-read its
   configuration file, tell the EFI to scan for new filesystems, and re-scan
@@ -2690,24 +2690,24 @@
   If you specify a non-supported video mode on a UEFI system, a message
   appears listing the supported video modes and you must then press a key
   to continue, using the default video mode (usually 800x600).
-  Unfortunately, I don't know the calls to get a list of supported video
+  Unfortunately, I do not know the calls to get a list of supported video
   modes on older EFI 1.x systems (including Macs), so on Macs setting an
   incorrect video mode silently fails (you keep using the default mode).
   This makes changing your video mode a hit-or-miss proposition on Macs.
-  CAUTION: It's possible to set a legal video mode that your monitor can't
+  CAUTION: It is possible to set a legal video mode that your monitor can't
   handle, in which case you'll get a blank display until you boot an OS
   that resets the video mode.
 
 - Fixed (maybe) a bug that caused rEFInd to crash when returning from an
   EFI shell or other programs on Macs, particularly when rEFInd used
   graphical mode. I'm not 100% sure this bug is squashed because I still
-  don't understand the cause and I only have one Mac for testing. See
+  do not understand the cause and I only have one Mac for testing. See
   comments in the ReinitRefitLib() function in refit/lib.c for more
   details.
 
 - Added new refind.conf option: scan_all_linux_kernels, which causes Linux
   kernels that lack ".efi" extensions to be included in scans for EFI boot
-  loaders. This may help integration with Linux distributions that don't
+  loaders. This may help integration with Linux distributions that do not
   give their kernels such names by default. Beware, though: It can detect
   unwanted files, such as older non-stub-loader kernels or .icns files used
   to give kernels with .efi extensions custom icons.
@@ -2726,7 +2726,7 @@
 - After much trial and tribulation, I've overcome a GNU-EFI limitation and
   enabled rEFInd to load EFI drivers. This feature was present in the
   original build of rEFIt but was removed in the versions that could
-  compile under Linux, but now it's back -- and still being compiled under
+  compile under Linux, but now it is back -- and still being compiled under
   Linux! To use it, you should place your drivers in a convenient directory
   on the ESP (or whatever partition you use to launch rEFInd) and add a
   "scan_driver_dirs" entry to refind.conf to tell rEFInd where to look. (As
@@ -2735,7 +2735,7 @@
   filesystem; they must be on the same volume that holds rEFInd. Those who
   compile from source code should note that implementing this feature
   necessitated using a more recent version of the GNU-EFI library. I'm
-  currently using version 3.0p, and version 3.0i does NOT work. I don't
+  currently using version 3.0p, and version 3.0i does NOT work. I do not
   know where the change occurred, but you may need to upgrade your GNU-EFI
   installation.
 
@@ -2836,7 +2836,7 @@
   differences, though, and this fix causes (apparently harmless) error
   messages about "(re)opening our installation volume" on at least one
   system (a 32-bit Mac Mini). I'm committing this change because, imperfect
-  though it is, it's preferable to the earlier version, at least on my
+  though it is, it is preferable to the earlier version, at least on my
   small sample of computers.
 
 - Because of news that the Linux kernel developers are planning to use the
@@ -2865,7 +2865,7 @@
 
 0.2.1 (19 APR 2012): UPSTREAM RELEASE
 --------------------------------------
-- Added ability to set a "default_selection" that's a title or a substring
+- Added ability to set a "default_selection" that is a title or a substring
   of one -- the name given to a stanza in a "menuentry" or the boot
   loader's filename, in most cases, although "Mac OS X", "Windows XP
   (XoM)", and "Microsoft EFI boot" are also titles.

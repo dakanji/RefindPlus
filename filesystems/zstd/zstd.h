@@ -236,7 +236,7 @@ typedef struct ZSTD_outBuffer_s {
  * Use ZSTD_decompressStream() repetitively to consume your input.
  * The function will update both `pos` fields.
  * If `input->pos < input->size`, some input has not been consumed.
- * It's up to the caller to present again remaining data.
+ * It is up to the caller to present again remaining data.
  * If `output->pos < output->size`, decoder has flushed everything it could.
  * Returns 0 iff a frame is completely decoded and fully flushed.
  * Otherwise it returns a suggested next input size that will never load more
@@ -289,7 +289,7 @@ size_t ZSTD_resetDStream(ZSTD_DStream *zds);
  *          decompressed data was written.
  * @input:  Source buffer. `input.pos` is updated to indicate how much data was
  *          read. Note that it may not consume the entire input, in which case
- *          `input.pos < input.size`, and it's up to the caller to present
+ *          `input.pos < input.size`, and it is up to the caller to present
  *          remaining data again.
  *
  * The `input` and `output` buffers may be any size. Guaranteed to make some

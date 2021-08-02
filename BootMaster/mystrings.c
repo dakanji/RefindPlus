@@ -260,7 +260,7 @@ VOID ToLower (
 // strings (unless the first string is NULL or empty). The original input
 // string *First is de-allocated and replaced by the new merged string.
 // This is similar to StrCat, but safer and more flexible because
-// MergeStrings allocates memory that's the correct size for the
+// MergeStrings allocates memory that is the correct size for the
 // new merged string, so it can take a NULL *First and it cleans
 // up the old memory. It should *NOT* be used with a constant
 // *First, though.
@@ -818,7 +818,7 @@ EFI_GUID StringAsGuid (
 } // EFI_GUID StringAsGuid()
 
 // Returns the current time as a string in 24-hour format; e.g., 14:03:17.
-// Discards date portion, since for our purposes, we really don't care.
+// Discards date portion, since for our purposes, we really do not care.
 // Calling function is responsible for releasing returned string.
 CHAR16 * GetTimeString(VOID) {
     CHAR16     *TimeStr = NULL;

@@ -221,7 +221,7 @@ Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
 // L"*.EFI") is fine for most systems; but Gigabyte's buggy Hybrid EFI does a case-sensitive
 // comparison when it should do a case-insensitive comparison, so I'm doubling this up. It does
 // no harm on other computers, AFAIK. In theory, every case variation should be done for
-// completeness, but that's ridiculous.
+// completeness, but that is ridiculous.
 #define LOADER_MATCH_PATTERNS   L"*.efi,*.EFI"
 
 // Definitions for the "hideui" option in config.conf
@@ -292,7 +292,7 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
 #endif
 
 /* DA-TAG: Add Macros */
-#define MY_OFFSET_OF(st, m) ((UINTN)((char *)&((st *)0)->m - (char *)0))
+#define MY_OFFSET_OF(st, m) ((UINTN)((char *) &((st *)0)->m - (char *)0))
 
 
 //

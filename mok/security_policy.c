@@ -56,12 +56,12 @@ struct _EFI_SECURITY_PROTOCOL {
 static EFI_SECURITY_FILE_AUTHENTICATION_STATE esfas = NULL;
 static EFI_SECURITY2_FILE_AUTHENTICATION es2fa = NULL;
 
-// Perform shim/MOK and Secure Boot authentication on a binary that's already been
+// Perform shim/MOK and Secure Boot authentication on a binary that is already been
 // loaded into memory. This function does the platform SB authentication first
 // but preserves its return value in case of its failure, so that it can be
 // returned in case of a shim/MOK authentication failure. This is done because
 // the SB failure code seems to vary from one implementation to another, and I
-// don't want to interfere with that at this time.
+// do not want to interfere with that at this time.
 static
 MSABI EFI_STATUS security2_policy_authentication (
    const EFI_SECURITY2_PROTOCOL *This,
@@ -75,15 +75,16 @@ MSABI EFI_STATUS security2_policy_authentication (
    /* Chain original security policy */
    Status = uefi_call_wrapper(es2fa, 5, This, DevicePath, FileBuffer, FileSize, BootPolicy);
 
-   /* if OK, don't bother with MOK check */
-   if (Status == EFI_SUCCESS)
-      return Status;
+   /* if OK, do not bother with MOK check */
+   if (Status == EFI_SUCCESS) {
+       return Status;
+   }
 
    if (ShimValidate(FileBuffer, FileSize)) {
-      return EFI_SUCCESS;
-   } else {
-      return Status;
+      Status = EFI_SUCCESS;
    }
+
+   return Status;
 } // EFI_STATUS security2_policy_authentication()
 
 // Perform both shim/MOK and platform Secure Boot authentication. This function loads
@@ -99,12 +100,12 @@ MSABI EFI_STATUS security_policy_authentication (
    UINT32 AuthenticationStatus,
    const EFI_DEVICE_PATH_PROTOCOL *DevicePathConst
 ) {
-   EFI_STATUS        Status;
+   EFI_STATUS         Status;
    EFI_DEVICE_PATH   *DevPath, *OrigDevPath;
-   EFI_HANDLE        h;
+   EFI_HANDLE         h;
    EFI_FILE          *f;
    VOID              *FileBuffer;
-   UINTN             FileSize;
+   UINTN              FileSize;
    CHAR16            *DevPathStr;
 
    if (DevicePathConst == NULL) {
@@ -113,9 +114,14 @@ MSABI EFI_STATUS security_policy_authentication (
       DevPath = OrigDevPath = DuplicateDevicePath((EFI_DEVICE_PATH *)DevicePathConst);
    }
 
-   Status = REFIT_CALL_3_WRAPPER(gBS->LocateDevicePath, &SIMPLE_FS_PROTOCOL, &DevPath, &h);
-   if (Status != EFI_SUCCESS)
-      goto out;
+   Status = REFIT_CALL_3_WRAPPER(
+       gBS->LocateDevicePath,
+       &SIMPLE_FS_PROTOCOL,
+       &DevPath, &h
+   );
+   if (Status != EFI_SUCCESS) {
+       goto out;
+   }
 
    DevPathStr = DevicePathToStr(DevPath);
 
@@ -152,14 +158,22 @@ EFI_STATUS security_policy_install(void) {
       return EFI_ALREADY_STARTED;
    }
 
-   /* Don't bother with status here.  The call is allowed
+   /* Do not bother with status here.  The call is allowed
     * to fail, since SECURITY2 was introduced in PI 1.2.1
     * If it fails, use security2_protocol == NULL as indicator */
-   uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
+   uefi_call_wrapper(
+       gBS->LocateProtocol, 3,
+       &SECURITY2_PROTOCOL_GUID, NULL,
+       (VOID **) &security2_protocol
+   );
 
-   status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
+   status = uefi_call_wrapper(
+       gBS->LocateProtocol, 3,
+       &SECURITY_PROTOCOL_GUID, NULL,
+       (VOID **) &security_protocol
+   );
    if (status != EFI_SUCCESS)
-      /* This one is mandatory, so there's a serious problem */
+      /* This one is mandatory, so there is a serious problem */
       return status;
 
    if (security2_protocol) {
@@ -178,14 +192,20 @@ EFI_STATUS security_policy_uninstall(void) {
    if (esfas) {
       EFI_SECURITY_PROTOCOL *security_protocol;
 
-      status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY_PROTOCOL_GUID, NULL, (VOID**) &security_protocol);
+      status = uefi_call_wrapper(
+          gBS->LocateProtocol, 3,
+          &SECURITY_PROTOCOL_GUID, NULL,
+          (VOID **) &security_protocol
+      );
 
-      if (status != EFI_SUCCESS)
-         return status;
+      if (status != EFI_SUCCESS) {
+          return status;
+      }
 
       security_protocol->FileAuthenticationState = esfas;
       esfas = NULL;
-   } else {
+   }
+   else {
       /* nothing installed */
       return EFI_NOT_STARTED;
    }
@@ -193,10 +213,15 @@ EFI_STATUS security_policy_uninstall(void) {
    if (es2fa) {
       EFI_SECURITY2_PROTOCOL *security2_protocol;
 
-      status = uefi_call_wrapper(gBS->LocateProtocol, 3, &SECURITY2_PROTOCOL_GUID, NULL, (VOID**) &security2_protocol);
+      status = uefi_call_wrapper(
+          gBS->LocateProtocol, 3,
+          &SECURITY2_PROTOCOL_GUID, NULL,
+          (VOID **) &security2_protocol
+      );
 
-      if (status != EFI_SUCCESS)
-         return status;
+      if (status != EFI_SUCCESS) {
+          return status;
+      }
 
       security2_protocol->FileAuthentication = es2fa;
       es2fa = NULL;

@@ -179,7 +179,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
             int ce_off;
             union fsw_rock_ridge_susp_ce *ce;
             if (fCe == 0)
-                fsw_alloc_zero(ISO9660_BLOCKSIZE, (void *)&begin);
+                fsw_alloc_zero(ISO9660_BLOCKSIZE, (void *) &begin);
             fCe = 1;
         //    DEBUG((DEBUG_WARN, "%a:%d we found CE before NM or its continuation\n", __FILE__, __LINE__));
             ce = (union fsw_rock_ridge_susp_ce *)r;
@@ -206,7 +206,7 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
                 {
                      str->len = 1;
                      if (str->data == NULL) {
-                         fsw_alloc_zero((2 * str->len) + 1, (void **)&str->data);
+                         fsw_alloc_zero((2 * str->len) + 1, (void **) &str->data);
                      }
                      fsw_memdup(str->data, ".", str->len);
                      goto done;
@@ -215,13 +215,13 @@ static fsw_status_t rr_find_nm(struct fsw_iso9660_volume *vol, struct iso9660_di
                 {
                      str->len = 2;
                      if (str->data == NULL) {
-                         fsw_alloc_zero((2 * str->len) + 1, (void **)&str->data);
+                         fsw_alloc_zero((2 * str->len) + 1, (void **) &str->data);
                      }
                      fsw_memdup(str->data, "..", str->len);
                      goto done;
                 }
                 len = nm->e.len - sizeof (struct fsw_rock_ridge_susp_nm) + 1;
-                fsw_alloc_zero(str->len + len, (void **)&tmp);
+                fsw_alloc_zero(str->len + len, (void **) &tmp);
                 if (str->data != NULL)
                 {
                     fsw_memcpy(tmp, str->data, str->len);
@@ -317,7 +317,7 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
                     fsw_free(vol->primary_voldesc);
                     vol->primary_voldesc = NULL;
                 }
-                status = fsw_memdup((void **)&vol->primary_voldesc, voldesc, ISO9660_BLOCKSIZE);
+                status = fsw_memdup((void **) &vol->primary_voldesc, voldesc, ISO9660_BLOCKSIZE);
             }
         } else if (!fsw_memeq(voldesc->standard_identifier, "CD", 2)) {
             // completely alien standard identifier, stop reading
@@ -667,7 +667,7 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
          if (   rc == FSW_SUCCESS
              && sp != NULL)
          {
-            sp_off = (fsw_u8 *)&sp[1] - (fsw_u8*)dirrec + sp->skip;
+            sp_off = (fsw_u8 *) &sp[1] - (fsw_u8*)dirrec + sp->skip;
          }
          rc = rr_find_nm(vol, dirrec, sp_off,  &dirrec_buffer->name);
          if (rc == FSW_SUCCESS)

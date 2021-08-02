@@ -40,7 +40,7 @@ BOOLEAN    MsgNormalised  = FALSE;
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
 // present and the firmware is Apple, fake it and claim it is enabled, since
-// that's how OS X 10.11 treats a system with the variable absent.
+// that is how OS X 10.11 treats a system with the variable absent.
 EFI_STATUS GetCsrStatus (
     IN OUT UINT32 *CsrStatus
 ) {
@@ -335,7 +335,7 @@ typedef struct EfiAppleSetOsInterface {
 } EfiAppleSetOsInterface;
 
 // Function to tell the firmware that Mac OS X is being launched. This is
-// required to work around problems on some Macs that don't fully
+// required to work around problems on some Macs that do not fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
 EFI_STATUS SetAppleOSInfo (
@@ -351,7 +351,7 @@ EFI_STATUS SetAppleOSInfo (
         gBS->LocateProtocol,
         &apple_set_os_guid,
         NULL,
-        (VOID**) &SetOs
+        (VOID **) &SetOs
     );
 
     // If not a Mac, ignore the call.

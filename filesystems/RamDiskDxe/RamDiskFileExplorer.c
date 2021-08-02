@@ -173,7 +173,7 @@ OpenFileByDevicePath(
   Status = gBS->OpenProtocol(
                   DeviceHandle,
                   &gEfiSimpleFileSystemProtocolGuid,
-                  (VOID**)&EfiSimpleFileSystemProtocol,
+                  (VOID **) &EfiSimpleFileSystemProtocol,
                   gImageHandle,
                   NULL,
                   EFI_OPEN_PROTOCOL_GET_PROTOCOL

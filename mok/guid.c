@@ -8,7 +8,7 @@
 #include "guid.h"
 
 // #ifndef BUILD_EFI
-// /* EFI has %g for this, so it's only needed in platform c */
+// /* EFI has %g for this, so it is only needed in platform c */
 // const char *guid_to_str(EFI_GUID *guid)
 // {
 //    static char str[256];

@@ -70,7 +70,7 @@ fsw_status_t fsw_mount(void *host_data,
     struct fsw_volume *vol;
 
     // allocate memory for the structure
-    status = fsw_alloc_zero(fstype_table->volume_struct_size, (void **)&vol);
+    status = fsw_alloc_zero(fstype_table->volume_struct_size, (void **) &vol);
     if (status)
         return status;
 
@@ -329,7 +329,7 @@ fsw_status_t fsw_dnode_create_root_with_tree(struct fsw_volume *vol, fsw_u64 tre
     struct fsw_dnode *dno;
 
     // allocate memory for the structure
-    status = fsw_alloc_zero(vol->fstype_table->dnode_struct_size, (void **)&dno);
+    status = fsw_alloc_zero(vol->fstype_table->dnode_struct_size, (void **) &dno);
     if (status)
         return status;
 
@@ -388,7 +388,7 @@ fsw_status_t fsw_dnode_create_with_tree(struct fsw_dnode *parent_dno, fsw_u64 tr
     }
 
     // allocate memory for the structure
-    status = fsw_alloc_zero(vol->fstype_table->dnode_struct_size, (void **)&dno);
+    status = fsw_alloc_zero(vol->fstype_table->dnode_struct_size, (void **) &dno);
     if (status)
         return status;
 
@@ -913,7 +913,7 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
                 copylen = buflen;
 
             // get one physical block
-            status = fsw_block_get(vol, phys_bno, cache_level, (void **)&block_buffer);
+            status = fsw_block_get(vol, phys_bno, cache_level, (void **) &block_buffer);
             if (status)
                 return status;
 

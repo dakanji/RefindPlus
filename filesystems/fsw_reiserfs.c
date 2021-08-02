@@ -226,7 +226,7 @@ static fsw_status_t fsw_reiserfs_dnode_fill(struct fsw_reiserfs_volume *vol, str
     if (status)
         return status;
     if (item.item_offset != 0) {
-        FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_dnode_fill: got item that's not stat_data\n")));
+        FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_dnode_fill: got item that is not stat_data\n")));
         fsw_reiserfs_item_release(vol, &item);
         return FSW_VOLUME_CORRUPTED;
     }
@@ -235,7 +235,7 @@ static fsw_status_t fsw_reiserfs_dnode_fill(struct fsw_reiserfs_volume *vol, str
     // get data in appropriate version
     if (item.ih.ih_version == KEY_FORMAT_3_5 && item_len == SD_V1_SIZE) {
         // have stat_data_v1 structure
-        status = fsw_memdup((void **)&dno->sd_v1, item.item_data, item_len);
+        status = fsw_memdup((void **) &dno->sd_v1, item.item_data, item_len);
         fsw_reiserfs_item_release(vol, &item);
         if (status)
             return status;
@@ -246,7 +246,7 @@ static fsw_status_t fsw_reiserfs_dnode_fill(struct fsw_reiserfs_volume *vol, str
 
     } else if (item.ih.ih_version == KEY_FORMAT_3_6 && item_len == SD_V2_SIZE) {
         // have stat_data_v2 structure
-        status = fsw_memdup((void **)&dno->sd_v2, item.item_data, item_len);
+        status = fsw_memdup((void **) &dno->sd_v2, item.item_data, item_len);
         fsw_reiserfs_item_release(vol, &item);
         if (status)
             return status;
@@ -657,7 +657,7 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
     for (tree_level = vol->sb->s_v1.s_tree_height - 1; ; tree_level--) {
 
         // get the current tree block into memory
-        status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
+        status = fsw_block_get(vol, tree_bno, tree_level, (void **) &buffer);
         if (status)
             return status;
         bhead = (struct block_head *)buffer;
@@ -771,7 +771,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
 
         // get the current tree block into memory
         tree_bno = item->path_bno[tree_level];
-        status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
+        status = fsw_block_get(vol, tree_bno, tree_level, (void **) &buffer);
         if (status)
             return status;
         bhead = (struct block_head *)buffer;
@@ -800,7 +800,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
             tree_level--;
 
             // get the current tree block into memory
-            status = fsw_block_get(vol, tree_bno, tree_level, (void **)&buffer);
+            status = fsw_block_get(vol, tree_bno, tree_level, (void **) &buffer);
             if (status)
                 return status;
             bhead = (struct block_head *)buffer;

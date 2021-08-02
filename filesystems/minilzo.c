@@ -1959,8 +1959,8 @@ extern "C" {
 
 #if (LZO_ARCH_I086)
 #  define ACC_MM_AHSHIFT        LZO_MM_AHSHIFT
-#  define ACC_PTR_FP_OFF(x)     (((const unsigned __far*)&(x))[0])
-#  define ACC_PTR_FP_SEG(x)     (((const unsigned __far*)&(x))[1])
+#  define ACC_PTR_FP_OFF(x)     (((const unsigned __far*) &(x))[0])
+#  define ACC_PTR_FP_SEG(x)     (((const unsigned __far*) &(x))[1])
 #  define ACC_PTR_MK_FP(s,o)    ((void __far*)(((unsigned long)(s)<<16)+(unsigned)(o)))
 #endif
 

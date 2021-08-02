@@ -1027,7 +1027,7 @@ struct path_element {
 	/* buffer above.                                  */
 };
 
-#define MAX_HEIGHT 5		/* maximal height of a tree. don't change this without changing JOURNAL_PER_BALANCE_CNT */
+#define MAX_HEIGHT 5		/* maximal height of a tree. do not change this without changing JOURNAL_PER_BALANCE_CNT */
 #define EXTENDED_MAX_HEIGHT         7	/* Must be equals MAX_HEIGHT + FIRST_PATH_ELEMENT_OFFSET */
 #define FIRST_PATH_ELEMENT_OFFSET   2	/* Must be equal to at least 2. */
 
@@ -1472,9 +1472,9 @@ struct reiserfs_journal_header {
 
 /* biggest tunable defines are right here */
 #define JOURNAL_BLOCK_COUNT 8192	/* number of blocks in the journal */
-#define JOURNAL_TRANS_MAX_DEFAULT 1024	/* biggest possible single transaction, don't change for now (8/3/99) */
+#define JOURNAL_TRANS_MAX_DEFAULT 1024	/* biggest possible single transaction, do not change for now (8/3/99) */
 #define JOURNAL_TRANS_MIN_DEFAULT 256
-#define JOURNAL_MAX_BATCH_DEFAULT   900	/* max blocks to batch into one transaction, don't make this any bigger than 900 */
+#define JOURNAL_MAX_BATCH_DEFAULT   900	/* max blocks to batch into one transaction, do not make this any bigger than 900 */
 #define JOURNAL_MIN_RATIO 2
 #define JOURNAL_MAX_COMMIT_AGE 30
 #define JOURNAL_MAX_TRANS_AGE 30
@@ -1604,12 +1604,12 @@ static inline void copy_key(struct reiserfs_key *to,
 
 /* inode.c */
 /* args for the create parameter of reiserfs_get_block */
-#define GET_BLOCK_NO_CREATE 0	/* don't create new blocks or convert tails */
+#define GET_BLOCK_NO_CREATE 0	/* do not create new blocks or convert tails */
 #define GET_BLOCK_CREATE 1	/* add anything you need to find block */
 #define GET_BLOCK_NO_HOLE 2	/* return -ENOENT for file holes */
 #define GET_BLOCK_READ_DIRECT 4	/* read the tail if indirect item not found */
-#define GET_BLOCK_NO_IMUX     8	/* i_mutex is not held, don't preallocate */
-#define GET_BLOCK_NO_DANGLE   16	/* don't leave any transactions running */
+#define GET_BLOCK_NO_IMUX     8	/* i_mutex is not held, do not preallocate */
+#define GET_BLOCK_NO_DANGLE   16	/* do not leave any transactions running */
 
 /* bitmap.c */
 

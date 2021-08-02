@@ -22,7 +22,7 @@ EFI_STATUS simple_file_open_by_handle(
    EFI_FILE *root;
 
    efi_status = uefi_call_wrapper(gBS->HandleProtocol, 3, device,
-                   &SIMPLE_FS_PROTOCOL, (VOID**) &drive);
+                   &SIMPLE_FS_PROTOCOL, (VOID **) &drive);
 
    if (efi_status != EFI_SUCCESS) {
       Print(L"Unable to find simple file protocol\n");
@@ -104,7 +104,7 @@ EFI_STATUS simple_file_open(
    CHAR16 *PathName = NULL;
 
    efi_status = uefi_call_wrapper(gBS->HandleProtocol, 3, image,
-                   &IMAGE_PROTOCOL, (VOID**) &li);
+                   &IMAGE_PROTOCOL, (VOID **) &li);
 
    if (efi_status != EFI_SUCCESS)
       return simple_file_open_by_handle(image, name, file, mode);

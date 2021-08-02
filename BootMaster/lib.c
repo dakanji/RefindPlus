@@ -914,18 +914,18 @@ CHAR16 * SanitiseVolumeName (
             VolumeName = L"EFI System Partition";
         }
         else {
-                 if (MyStrStrIns (Volume->VolName, L"Whole Disk Volume")    != NULL) VolumeName = L"Whole Disk Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Unknown Volume")       != NULL) VolumeName = L"Unknown Volume";
-            else if (MyStrStrIns (Volume->VolName, L"HFS+ Volume")          != NULL) VolumeName = L"HFS+ Volume";
-            else if (MyStrStrIns (Volume->VolName, L"NTFS Volume")          != NULL) VolumeName = L"NTFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"FAT Volume")           != NULL) VolumeName = L"FAT Volume";
-            else if (MyStrStrIns (Volume->VolName, L"XFS Volume")           != NULL) VolumeName = L"XFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext4 Volume")          != NULL) VolumeName = L"Ext4 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext3 Volume")          != NULL) VolumeName = L"Ext3 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext2 Volume")          != NULL) VolumeName = L"Ext2 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Btrfs Volume")         != NULL) VolumeName = L"BTRFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"ReiserFS Volume")      != NULL) VolumeName = L"ReiserFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"ISO-9660 Volume")      != NULL) VolumeName = L"ISO-9660 Volume";
+                 if (MyStrStrIns (Volume->VolName, L"Whole Disk Volume") != NULL) VolumeName = L"Whole Disk Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Unknown Volume")    != NULL) VolumeName = L"Unknown Volume";
+            else if (MyStrStrIns (Volume->VolName, L"HFS+ Volume")       != NULL) VolumeName = L"HFS+ Volume";
+            else if (MyStrStrIns (Volume->VolName, L"NTFS Volume")       != NULL) VolumeName = L"NTFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"FAT Volume")        != NULL) VolumeName = L"FAT Volume";
+            else if (MyStrStrIns (Volume->VolName, L"XFS Volume")        != NULL) VolumeName = L"XFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext4 Volume")       != NULL) VolumeName = L"Ext4 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext3 Volume")       != NULL) VolumeName = L"Ext3 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Ext2 Volume")       != NULL) VolumeName = L"Ext2 Volume";
+            else if (MyStrStrIns (Volume->VolName, L"Btrfs Volume")      != NULL) VolumeName = L"BTRFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"ReiserFS Volume")   != NULL) VolumeName = L"ReiserFS Volume";
+            else if (MyStrStrIns (Volume->VolName, L"ISO-9660 Volume")   != NULL) VolumeName = L"ISO-9660 Volume";
             else                                                                  VolumeName = Volume->VolName;
         }
     }
@@ -1089,11 +1089,11 @@ VOID SetFilesystemName (
 // 4096) bytes of the filesystem. Sets the filesystem type code in Volume->FSType
 // and the UUID/serial number in Volume->VolUuid. Note that the UUID value is
 // recognized differently for each filesystem, and is currently supported only
-// for NTFS, FAT, ext2/3/4fs, and ReiserFS (and for NTFS and FAT it's really a
+// for NTFS, FAT, ext2/3/4fs, and ReiserFS (and for NTFS and FAT it is really a
 // 64-bit or 32-bit serial number not a UUID or GUID). If the UUID can't be
-// determined, it's set to 0. Also, the UUID is just read directly into memory;
+// determined, it is set to 0. Also, the UUID is just read directly into memory;
 // it is *NOT* valid when displayed by GuidAsString() or used in other
-// GUID/UUID-manipulating functions. (As I write, it's being used merely to
+// GUID/UUID-manipulating functions. (As I write, it is being used merely to
 // detect partitions that are part of a RAID 1 array.)
 static
 VOID SetFilesystemData (
@@ -2281,8 +2281,8 @@ VOID ScanVolumes (VOID) {
         ScanVolume (Volume);
 
         UuidList[HandleIndex] = Volume->VolUuid;
-        // Deduplicate filesystem UUID so that we don't add duplicate entries for file systems
-        // that are part of RAID mirrors. Don't deduplicate ESP partitions though, since unlike
+        // Deduplicate filesystem UUID so that we do not add duplicate entries for file systems
+        // that are part of RAID mirrors. Do not deduplicate ESP partitions though, since unlike
         // normal file systems they are likely to all share the same volume UUID, and it is also
         // unlikely that they are part of software RAID mirrors.
         for (i = 0; i < HandleIndex; i++) {
@@ -3289,7 +3289,7 @@ BOOLEAN VolumeMatchesDescription (
 
 // Returns TRUE if specified Volume, Directory, and Filename correspond to an
 // element in the comma-delimited List, FALSE otherwise. Note that Directory and
-// Filename must *NOT* include a volume or path specification (that's part of
+// Filename must *NOT* include a volume or path specification (that is part of
 // the Volume variable), but the List elements may. Performs comparison
 // case-insensitively.
 BOOLEAN FilenameIn (

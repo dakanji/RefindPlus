@@ -54,7 +54,7 @@ typedef struct {
     UINT16           Size;
     CHAR16           *Label;
     EFI_DEVICE_PATH  *DevPath;
-//     CHAR16           *Arguments; // Part of original data structure, but we don't use
+//     CHAR16           *Arguments; // Part of original data structure, but we do not use
 } EFI_BOOT_ENTRY;
 
 // A linked-list data structure intended to hold a list of all the EFI boot

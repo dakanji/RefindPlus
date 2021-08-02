@@ -120,7 +120,7 @@ BOOLEAN ShimLoaded (VOID) {
             gBS->LocateProtocol,
             &ShimLockGuid,
             NULL,
-            (VOID**) &shim_lock
+            (VOID **) &shim_lock
         ) == EFI_SUCCESS
     );
 } // ShimLoaded()
@@ -140,7 +140,7 @@ BOOLEAN ShimValidate (
             gBS->LocateProtocol,
             &ShimLockGuid,
             NULL,
-            (VOID**) &shim_lock
+            (VOID **) &shim_lock
         ) == EFI_SUCCESS)
     ) {
         if (!shim_lock) {

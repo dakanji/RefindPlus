@@ -57,10 +57,10 @@ static struct fsw_volume *create_dummy_volume(EFI_DISK_IO *diskio, UINT32 mediai
     struct fsw_volume *vol;
     FSW_VOLUME_DATA *Volume;
 
-    err = fsw_alloc_zero(sizeof (struct fsw_volume), (void **)&vol);
+    err = fsw_alloc_zero(sizeof (struct fsw_volume), (void **) &vol);
     if(err)
         return NULL;
-    err = fsw_alloc_zero(sizeof (FSW_VOLUME_DATA), (void **)&Volume);
+    err = fsw_alloc_zero(sizeof (FSW_VOLUME_DATA), (void **) &Volume);
     if(err) {
         fsw_free(vol);
         return NULL;

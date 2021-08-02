@@ -69,7 +69,7 @@ RamDiskAcpiCheck (
   Status = gBS->LocateProtocol (
                   &gEfiAcpiTableProtocolGuid,
                   NULL,
-                  (VOID **)&mAcpiTableProtocol
+                  (VOID **) &mAcpiTableProtocol
                   );
   if (EFI_ERROR (Status)) {
     DEBUG ((
@@ -86,7 +86,7 @@ RamDiskAcpiCheck (
   Status = gBS->LocateProtocol (
                   &gEfiAcpiSdtProtocolGuid,
                   NULL,
-                  (VOID **)&mAcpiSdtProtocol
+                  (VOID **) &mAcpiSdtProtocol
                   );
   if (EFI_ERROR (Status)) {
     DEBUG ((

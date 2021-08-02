@@ -78,7 +78,7 @@ struct fsw_posix_volume * fsw_posix_mount(const char *path, struct fsw_fstype_ta
     struct fsw_posix_volume *pvol;
 
     // allocate volume structure
-    status = fsw_alloc_zero(sizeof (struct fsw_posix_volume), (void **)&pvol);
+    status = fsw_alloc_zero(sizeof (struct fsw_posix_volume), (void **) &pvol);
     if (status)
         return NULL;
     pvol->fd = -1;

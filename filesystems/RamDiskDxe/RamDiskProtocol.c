@@ -223,7 +223,7 @@ RamDiskPublishNfit (
   while (!EFI_ERROR (Status)) {
     Status = mAcpiSdtProtocol->GetAcpiTable (
                                  TableIndex,
-                                 (EFI_ACPI_SDT_HEADER **)&TableHeader,
+                                 (EFI_ACPI_SDT_HEADER **) &TableHeader,
                                  &TableVersion,
                                  &TableKey
                                  );
@@ -412,7 +412,7 @@ RamDiskUnpublishNfit (
   while (!EFI_ERROR (Status)) {
     Status = mAcpiSdtProtocol->GetAcpiTable (
                                  TableIndex,
-                                 (EFI_ACPI_SDT_HEADER **)&TableHeader,
+                                 (EFI_ACPI_SDT_HEADER **) &TableHeader,
                                  &TableVersion,
                                  &TableKey
                                  );

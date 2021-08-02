@@ -531,7 +531,7 @@ EFI_STATUS StartLegacyImageList (
     ReinitRefitLib();
 
 bailout_unload:
-    // unload the image, we don't care if it works or not...
+    // unload the image, we do not care if it works or not...
     REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ChildImageHandle);
 
 bailout:

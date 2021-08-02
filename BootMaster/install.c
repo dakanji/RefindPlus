@@ -377,7 +377,7 @@
 // Note: Does NOT copy HFS+ driver on Apple hardware even if HFS+ is detected;
 // but it DOES copy the HFS+ driver on non-Apple hardware if HFS+ is detected,
 // even though HFS+ is not technically a Linux filesystem, since HFS+ CAN be used
-// as a Linux /boot partition. That's weird, but it does work.
+// as a Linux /boot partition. That is weird, but it does work.
 static
 EFI_STATUS CopyDrivers (
     IN EFI_FILE *SourceDirPtr,
@@ -507,7 +507,7 @@ EFI_STATUS CopyDrivers (
 
      if (Status == EFI_SUCCESS) {
          // Now copy the config file -- but:
-         //  - Copy config.conf-sample, not config.conf, if it's available, to
+         //  - Copy config.conf-sample, not config.conf, if it is available, to
          //    avoid picking up live-disk-specific customizations.
          //  - Do not overwrite an existing config.conf at the target; instead,
          //    copy to config.conf-sample if config.conf is present.
@@ -576,7 +576,7 @@ EFI_STATUS CopyDrivers (
  } // EFI_STATUS CopyFiles()
 
  // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
- // Success isn't critical, so we don't return a Status value.
+ // Success isn't critical, so we do not return a Status value.
  static
  VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
      CHAR16   *Contents = NULL;
@@ -628,8 +628,8 @@ EFI_STATUS CopyDrivers (
          #endif
      }
      if (Status == EFI_SUCCESS) {
-         // Check status and log if it's an error; but do not pass on the
-         // result code unless it's EFI_ABORTED, since it may not be a
+         // Check status and log if it is an error; but do not pass on the
+         // result code unless it is EFI_ABORTED, since it may not be a
          // critical error.
          Status2 = CopyFiles (TargetDir);
          if (EFI_ERROR (Status2)) {
@@ -653,13 +653,13 @@ EFI_STATUS CopyDrivers (
 
  // Find a Boot#### number that will boot the new RefindPlus installation. This
  // function must be passed:
- // - *Entry -- A new entry that's been constructed, but not yet stored in NVRAM
+ // - *Entry -- A new entry that is been constructed, but not yet stored in NVRAM
  // - Size -- The size of the new entry
  // - *AlreadyExists -- A BOOLEAN for returning whether the returned boot number
  //   already exists (TRUE) vs. must be created (FALSE)
  //
  // The main return value can be EITHER of:
- // - An existing entry that's identical to the newly-constructed one, in which
+ // - An existing entry that is identical to the newly-constructed one, in which
  //   case *AlreadyExists is set to TRUE and the calling function should NOT
  //   create a new entry; or
  // - A number corresponding to an unused entry that the calling function can
@@ -787,7 +787,7 @@ EFI_STATUS CopyDrivers (
  } // EFI_STATUS SetBootDefault()
 
  // Create an NVRAM entry for the newly-installed RefindPlus and make it the default.
- // (If an entry that's identical to the one this function would create already
+ // (If an entry that is identical to the one this function would create already
  // exists, it may be used instead; see the comments before the FindBootNum()
  // function for details and caveats.)
  static
@@ -931,7 +931,7 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
 
  // Enable the user to pick one boot option to move to the top of the boot
  // order list (via Enter) or delete (via Delete or '-'). This function does
- // not actually call those options, though; that's left to the calling
+ // not actually call those options, though; that is left to the calling
  // function.
  // Returns the operation (EFI_BOOT_OPTION_MAKE_DEFAULT, EFI_BOOT_OPTION_DELETE,
  // or EFI_BOOT_OPTION_DO_NOTHING).

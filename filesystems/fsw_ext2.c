@@ -141,7 +141,7 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
         // get the block group descriptor
         gdesc_bno = (vol->sb->s_first_data_block + 1) + groupno / gdesc_per_block;
         gdesc_index = groupno % gdesc_per_block;
-        status = fsw_block_get(vol, gdesc_bno, 1, (void **)&buffer);
+        status = fsw_block_get(vol, gdesc_bno, 1, (void **) &buffer);
         if (status)
             return status;
         gdesc = ((struct ext2_group_desc *)(buffer)) + gdesc_index;
@@ -209,12 +209,12 @@ static fsw_status_t fsw_ext2_dnode_fill(struct fsw_ext2_volume *vol, struct fsw_
     ino_bno = vol->inotab_bno[groupno] +
         ino_in_group / (vol->g.phys_blocksize / vol->inode_size);
     ino_index = ino_in_group % (vol->g.phys_blocksize / vol->inode_size);
-    status = fsw_block_get(vol, ino_bno, 2, (void **)&buffer);
+    status = fsw_block_get(vol, ino_bno, 2, (void **) &buffer);
     if (status)
         return status;
 
     // keep our inode around
-    status = fsw_memdup((void **)&dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
+    status = fsw_memdup((void **) &dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
     fsw_block_release(vol, ino_bno, buffer);
     if (status)
         return status;
@@ -345,7 +345,7 @@ static fsw_status_t fsw_ext2_get_extent(struct fsw_ext2_volume *vol, struct fsw_
 
         if (release_bno)
             fsw_block_release(vol, release_bno, buffer);
-        status = fsw_block_get(vol, bno, 1, (void **)&buffer);
+        status = fsw_block_get(vol, bno, 1, (void **) &buffer);
         if (status)
             return status;
         release_bno = bno;

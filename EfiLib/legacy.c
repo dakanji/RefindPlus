@@ -793,7 +793,7 @@ BdsAddNonExistingLegacyBootOptions (
               );
     if (!Exist) {
       //
-      // Not found such type of legacy device in boot options or we found but it's disabled
+      // Not found such type of legacy device in boot options or we found but it is disabled
       // so we have to create one and put it to the tail of boot order list
       //
       Status = BdsCreateOneLegacyBootOption (

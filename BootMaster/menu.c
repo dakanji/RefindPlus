@@ -1023,7 +1023,7 @@ VOID TextMenuStyle (
             DisplayStrings = AllocatePool (sizeof (CHAR16 *) * Screen->EntryCount);
             for (i = 0; i <= State->MaxIndex; i++) {
                 // Note: Theoretically, SPrint() is a cleaner way to do this; but the
-                // description of the StrSize parameter to SPrint implies it's measured
+                // description of the StrSize parameter to SPrint implies it is measured
                 // in characters, but in practice both TianoCore and GNU-EFI seem to
                 // use bytes instead, resulting in truncated displays. I could just
                 // double the size of the StrSize parameter, but that seems unsafe in
@@ -1237,7 +1237,7 @@ VOID DrawText (
 // Using UINT64 instead is unworkable, since the code won't compile
 // on a 32-bit system. As the intended use for this function is to handle
 // a single text string's background, this shouldn't be a problem, but it
-// may need addressing if it's applied more broadly.
+// may need addressing if it is applied more broadly.
 static
 UINT8 AverageBrightness (
     EG_IMAGE *Image
@@ -1747,7 +1747,7 @@ VOID PaintSelection (
 } // static VOID MoveSelection (VOID)
 
 // Display a 48x48 icon at the specified location. Uses the image specified by
-// ExternalFilename if it's available, or BuiltInImage if it's not. The
+// ExternalFilename if it is available, or BuiltInImage if it is not. The
 // Y position is specified as the center value, and so is adjusted by half
 // the icon's height. The X position is set along the icon's left
 // edge if Alignment == ALIGN_LEFT, and along the right edge if
@@ -2627,7 +2627,7 @@ VOID HideTag (
     // crash occurs in FindVolumeAndFilename() and lib.c when calling
     // DevicePathToStr(). Calling RescanAll() on all returns from HideEfiTag()
     // seems to be an effective workaround, but there's likely a memory
-    // management bug somewhere that's the root cause.
+    // management bug somewhere that is the root cause.
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
@@ -2755,7 +2755,7 @@ UINTN RunMainMenu (
         DrawSelection  = !PointerEnabled;
     }
 
-    // Generate this now and keep it around forever, since it's likely to be
+    // Generate this now and keep it around forever, since it is likely to be
     // used after this function terminates.
     GenerateWaitList();
     MenuTitle = StrDuplicate (L"Unknown");

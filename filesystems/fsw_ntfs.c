@@ -275,7 +275,7 @@ static fsw_status_t get_extent(fsw_u8 **rlep, int *rlenp, fsw_u64 *lcnp, fsw_u64
 
     n = f >> 4;
     if(n==0) {
-	/* LCN 0 as sparse, due to we don't need $Boot */
+	/* LCN 0 as sparse, due to we do not need $Boot */
 	*lcnp = 0;
 	*lenp = c;
     } else {
@@ -411,7 +411,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
 	if(lcn) {
 	    for(; cnt>0; lcn++, cnt--) {
 		fsw_u8 *block;
-		if (fsw_block_get(&vol->g, lcn, 0, (void **)&block) != FSW_SUCCESS)
+		if (fsw_block_get(&vol->g, lcn, 0, (void **) &block) != FSW_SUCCESS)
 		{
 		    fsw_free(*optrp);
 		    *optrp = NULL;
@@ -479,7 +479,7 @@ static fsw_status_t read_mft(struct fsw_ntfs_volume *vol, fsw_u8 *mft, fsw_u64 m
 	    if(e[m].lcn + 1 == 0)
 		return FSW_VOLUME_CORRUPTED;
 
-	    if ((err = fsw_block_get(&vol->g, lcn, 0, (void **)&buffer)) != FSW_SUCCESS)
+	    if ((err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer)) != FSW_SUCCESS)
 		return FSW_VOLUME_CORRUPTED;
 
 	    fsw_memcpy(mft, buffer+offset, 1<<vol->mftbits);
@@ -496,7 +496,7 @@ static fsw_status_t read_mft(struct fsw_ntfs_volume *vol, fsw_u8 *mft, fsw_u64 m
 		return FSW_VOLUME_CORRUPTED;
 	    while(count-- > 0) {
 		fsw_u8 *buffer;
-		if ((err = fsw_block_get(&vol->g, lcn, 0, (void **)&buffer)) != FSW_SUCCESS)
+		if ((err = fsw_block_get(&vol->g, lcn, 0, (void **) &buffer)) != FSW_SUCCESS)
 		    return FSW_VOLUME_CORRUPTED;
 		fsw_memcpy(p, buffer, 1<<vol->clbits);
 		fsw_block_release(&vol->g, lcn, buffer);
@@ -656,7 +656,7 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
     struct ntfs_mft mft0;
 
     fsw_set_blocksize(volg, 512, 512);
-    if ((err = fsw_block_get(volg, 0, 0, (void **)&buffer)) != FSW_SUCCESS)
+    if ((err = fsw_block_get(volg, 0, 0, (void **) &buffer)) != FSW_SUCCESS)
 	return FSW_UNSUPPORTED;
 
     if (!fsw_memeq(buffer+3, "NTFS    ", 8))
@@ -706,7 +706,7 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
 	int len = 1 << vol->mftbits;
 	fsw_u64 lcn = mft_start[tmp];
 	while(len > 0) {
-	    if ((err = fsw_block_get(volg, lcn, 0, (void **)&buffer)) != FSW_SUCCESS)
+	    if ((err = fsw_block_get(volg, lcn, 0, (void **) &buffer)) != FSW_SUCCESS)
 	    {
 		free_mft(&mft0);
 		return FSW_UNSUPPORTED;
@@ -1035,7 +1035,7 @@ static int fsw_ntfs_read_buffer(struct fsw_ntfs_volume *vol, struct fsw_ntfs_dno
 	err = fsw_ntfs_dnode_get_lcn(vol, dno, vcn, &lcn);
 	if (err != FSW_SUCCESS) break;
 
-	err = fsw_block_get(&vol->g, lcn, 0, (void **)&block);
+	err = fsw_block_get(&vol->g, lcn, 0, (void **) &block);
 	if (err != FSW_SUCCESS) break;
 
 	bsz = (1<<vol->clbits) - boff;
@@ -1193,7 +1193,7 @@ static fsw_status_t fsw_ntfs_get_extent_compressed(struct fsw_ntfs_volume *vol, 
 	int b;
 	for(b=0; b<i; b++) {
 	    char *block;
-	    if (fsw_block_get(&vol->g, dno->clcn[b], 0, (void **)&block) != FSW_SUCCESS) {
+	    if (fsw_block_get(&vol->g, dno->clcn[b], 0, (void **) &block) != FSW_SUCCESS) {
 		dno->cperror = 1;
 		Print(L"Read ERROR at block %d\n", i);
 		break;
@@ -1287,7 +1287,7 @@ static fsw_status_t load_upcase(struct fsw_ntfs_volume *vol)
     init_mft(vol, &mft, MFTNO_UPCASE);
     err = read_mft(vol, mft.buf, MFTNO_UPCASE);
     if(err == FSW_SUCCESS) {
-	if((err = read_small_attribute(vol, &mft, AT_DATA, (fsw_u8 **)&vol->upcase, &vol->upcount))==FSW_SUCCESS) {
+	if((err = read_small_attribute(vol, &mft, AT_DATA, (fsw_u8 **) &vol->upcase, &vol->upcount))==FSW_SUCCESS) {
 	    vol->upcount /= 2;
 #ifndef FSW_LITTLE_ENDIAN
 	    int i;

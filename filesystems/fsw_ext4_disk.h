@@ -140,7 +140,7 @@ struct ext4_group_desc
 /* Reserved for compression usage... */
 #define EXT4_DIRTY_FL                   0x00000100
 #define EXT4_COMPRBLK_FL                0x00000200 /* One or more compressed clusters */
-#define EXT4_NOCOMP_FL                  0x00000400 /* Don't compress */
+#define EXT4_NOCOMP_FL                  0x00000400 /* Do not compress */
 #define EXT4_ECOMPR_FL                  0x00000800 /* Compression error */
 /* End compression flags --- maybe not all used */
 #define EXT4_INDEX_FL                   0x00001000 /* hash-indexed directory */
@@ -238,7 +238,7 @@ enum {
 /* Reserved for compression usage... */
 	EXT4_INODE_DIRTY	= 8,
 	EXT4_INODE_COMPRBLK	= 9,	/* One or more compressed clusters */
-	EXT4_INODE_NOCOMPR	= 10,	/* Don't compress */
+	EXT4_INODE_NOCOMPR	= 10,	/* Do not compress */
 	EXT4_INODE_ECOMPR	= 11,	/* Compression error */
 /* End compression flags --- maybe not all used */
 	EXT4_INODE_INDEX	= 12,	/* hash-indexed directory */
@@ -462,7 +462,7 @@ struct ext4_extent_tail {
 
 /*
  * This is the extent on-disk structure.
- * It's used at the bottom of the tree.
+ * It is used at the bottom of the tree.
  */
 struct ext4_extent {
 	__le32	ee_block;	/* first logical block extent covers */
@@ -473,7 +473,7 @@ struct ext4_extent {
 
 /*
  * This is index on-disk structure.
- * It's used at all the levels except the bottom.
+ * It is used at all the levels except the bottom.
  */
 struct ext4_extent_idx {
 	__le32	ei_block;	/* index covers logical blocks from 'block' */

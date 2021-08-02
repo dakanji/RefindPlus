@@ -73,7 +73,7 @@ platform if needed. Everything else in the code calls these. Pass
 -DLODEPNG_NO_COMPILE_ALLOCATORS to the compiler, or comment out
 #define LODEPNG_COMPILE_ALLOCATORS in the header, to disable the ones here and
 define them in your own project's source files without needing to change
-lodepng source code. Don't forget to remove "static" if you copypaste them
+lodepng source code. Do not forget to remove "static" if you copypaste them
 from here.*/
 
 #ifdef LODEPNG_COMPILE_ALLOCATORS
@@ -777,7 +777,7 @@ static unsigned HuffmanTree_makeTable(HuffmanTree* tree) {
     unsigned symbol = tree->codes[i];
     unsigned l = tree->lengths[i];
     unsigned index;
-    if(l <= FIRSTBITS) continue; /*symbols that fit in first table don't increase secondary table size*/
+    if(l <= FIRSTBITS) continue; /*symbols that fit in first table do not increase secondary table size*/
     /*get the FIRSTBITS MSBs, the MSBs of the symbol are encoded first. See later comment about the reversing*/
     index = reverseBits(symbol >> (l - FIRSTBITS), FIRSTBITS);
     maxlens[index] = LODEPNG_MAX(maxlens[index], l);
@@ -1569,7 +1569,7 @@ typedef struct Hash {
   int* val; /*circular pos to hash value*/
 
   /*TODO: do this not only for zeros but for any repeated byte. However for PNG
-  it's always going to be the zeros that dominate, so not important for PNG*/
+  it is always going to be the zeros that dominate, so not important for PNG*/
   int* headz; /*similar to head, but for chainz*/
   unsigned short* chainz; /*those with same amount of zeros*/
   unsigned short* zeros; /*length of zeros streak, used as a second hash chain*/
@@ -2017,7 +2017,7 @@ static unsigned deflateDynamic(LodePNGBitWriter* writer, Hash* hash,
     for(i = 0; i != numcodes_lld_e; ++i) {
       ++frequencies_cl[bitlen_lld_e[i]];
       /*after a repeat code come the bits that specify the number of repetitions,
-      those don't need to be in the frequencies_cl calculation*/
+      those do not need to be in the frequencies_cl calculation*/
       if(bitlen_lld_e[i] >= 16) ++i;
     }
 
@@ -3145,7 +3145,7 @@ typedef struct ColorTree ColorTree;
 /*
 One node of a color tree
 This is the data structure used to count the number of unique colors and to get a palette
-index for a color. It's like an octree, but because the alpha channel is used too, each
+index for a color. It is like an octree, but because the alpha channel is used too, each
 node has 16 instead of 8 children.
 */
 struct ColorTree {
@@ -3186,7 +3186,7 @@ static int color_tree_has(ColorTree* tree, unsigned char r, unsigned char g, uns
 #endif /*LODEPNG_COMPILE_ENCODER*/
 
 /*color is not allowed to already exist.
-Index should be >= 0 (it's signed to be compatible with using -1 for "doesn't exist")
+Index should be >= 0 (it is signed to be compatible with using -1 for "doesn't exist")
 Returns error code, or 0 if ok*/
 static unsigned color_tree_add(ColorTree* tree,
                                unsigned char r, unsigned char g, unsigned char b, unsigned char a, unsigned index) {
@@ -3966,7 +3966,7 @@ static unsigned auto_choose_color(LodePNGColorMode* mode_out,
   n = stats->numcolors;
   palettebits = n <= 2 ? 1 : (n <= 4 ? 2 : (n <= 16 ? 4 : 8));
   palette_ok = n <= 256 && bits <= 8 && n != 0; /*n==0 means likely numcolors wasn't computed*/
-  if(numpixels < n * 2) palette_ok = 0; /*don't add palette overhead if image has only a few pixels*/
+  if(numpixels < n * 2) palette_ok = 0; /*do not add palette overhead if image has only a few pixels*/
   if(gray_ok && !alpha && bits <= palettebits) palette_ok = 0; /*gray is less overhead*/
   if(!stats->allow_palette) palette_ok = 0;
 
@@ -4056,7 +4056,7 @@ static void Adam7_getpassvalues(unsigned passw[7], unsigned passh[7], size_t fil
 
   filter_passstart[0] = padded_passstart[0] = passstart[0] = 0;
   for(i = 0; i != 7; ++i) {
-    /*if passw[i] is 0, it's 0 bytes, not 1 (no filtertype-byte)*/
+    /*if passw[i] is 0, it is 0 bytes, not 1 (no filtertype-byte)*/
     filter_passstart[i + 1] = filter_passstart[i]
                             + ((passw[i] && passh[i]) ? passh[i] * (1u + (passw[i] * bpp + 7u) / 8u) : 0);
     /*bits padded if needed to fill full byte at end of each scanline*/
@@ -4284,7 +4284,7 @@ bpp: bits per pixel
 out has the following size in bits: w * h * bpp.
 in is possibly bigger due to padding bits between reduced images.
 out must be big enough AND must be 0 everywhere if bpp < 8 in the current implementation
-(because that's likely a little bit faster)
+(because that is likely a little bit faster)
 NOTE: comments about padding bits are only relevant if bpp < 8
 */
 static void Adam7_deinterlace(unsigned char* out, const unsigned char* in, unsigned w, unsigned h, unsigned bpp) {
@@ -4489,7 +4489,7 @@ static unsigned readChunk_tEXt(LodePNGInfo* info, const unsigned char* data, siz
 
     length = 0;
     while(length < chunkLength && data[length] != 0) ++length;
-    /*even though it's not allowed by the standard, no error is thrown if
+    /*even though it is not allowed by the standard, no error is thrown if
     there's no null termination char, if the text is empty*/
     if(length < 1 || length > 79) CERROR_BREAK(error, 89); /*keyword too short or long*/
 
@@ -4579,7 +4579,7 @@ static unsigned readChunk_iTXt(LodePNGInfo* info, const LodePNGDecompressSetting
 
   while(!error) /*not really a while loop, only used to break on error*/ {
     /*Quick check if the chunk length isn't too small. Even without check
-    it'd still fail with other error checks below if it's too short. This just gives a different error code.*/
+    it'd still fail with other error checks below if it is too short. This just gives a different error code.*/
     if(chunkLength < 5) CERROR_BREAK(error, 30); /*iTXt chunk too short*/
 
     /*read the key*/
@@ -4597,7 +4597,7 @@ static unsigned readChunk_iTXt(LodePNGInfo* info, const LodePNGDecompressSetting
     compressed = data[length + 1];
     if(data[length + 2] != 0) CERROR_BREAK(error, 72); /*the 0 byte indicating compression must be 0*/
 
-    /*even though it's not allowed by the standard, no error is thrown if
+    /*even though it is not allowed by the standard, no error is thrown if
     there's no null termination char, if the text is empty for the next 3 texts*/
 
     /*read the langtag*/
@@ -4944,7 +4944,7 @@ static void decodeGeneric(unsigned char** out, unsigned* w, unsigned* h,
       state->error = readChunk_iCCP(&state->info_png, &state->decoder.zlibsettings, data, chunkLength);
       if(state->error) break;
 #endif /*LODEPNG_COMPILE_ANCILLARY_CHUNKS*/
-    } else /*it's not an implemented chunk type, so ignore it: skip over the data*/ {
+    } else /*it is not an implemented chunk type, so ignore it: skip over the data*/ {
       /*error: unknown critical chunk (5th bit of first byte of chunk type is 0)*/
       if(!state->decoder.ignore_critical && !lodepng_chunk_ancillary(chunk)) {
         CERROR_BREAK(state->error, 69);
@@ -4990,7 +4990,7 @@ static void decodeGeneric(unsigned char** out, unsigned* w, unsigned* h,
   }
   if(!state->error) {
     /* This allocated data will be realloced by zlib_decompress, initially at
-    smaller size again. But the fact that it's already allocated at full size
+    smaller size again. But the fact that it is already allocated at full size
     here speeds the multiple reallocs up. TODO: make zlib_decompress support
     receiving already allocated buffer with expected size instead. */
     scanlines = (unsigned char*)lodepng_malloc(expected_size);
@@ -5582,7 +5582,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
             }
           }
 
-          /*check if this is smallest sum (or if type == 0 it's the first case so always store the values)*/
+          /*check if this is smallest sum (or if type == 0 it is the first case so always store the values)*/
           if(type == 0 || sum < smallest) {
             bestType = type;
             smallest = sum;
@@ -5621,7 +5621,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
           for(x = 0; x != 256; ++x) {
             sum += ilog2i(count[x]);
           }
-          /*check if this is smallest sum (or if type == 0 it's the first case so always store the values)*/
+          /*check if this is smallest sum (or if type == 0 it is the first case so always store the values)*/
           if(type == 0 || sum > bestSum) {
             bestType = type;
             bestSum = sum;
@@ -5660,7 +5660,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
     /*use fixed tree on the attempts so that the tree is not adapted to the filtertype on purpose,
     to simulate the true case where the tree is the same for the whole image. Sometimes it gives
     better result with dynamic tree anyway. Using the fixed tree sometimes gives worse, but in rare
-    cases better compression. It does make this a bit less slow, so it's worth doing this.*/
+    cases better compression. It does make this a bit less slow, so it is worth doing this.*/
     zlibsettings.btype = 1;
     /*a custom encoder likely doesn't read the btype setting and is optimized for complete PNG
     images only, so disable it*/
@@ -5681,7 +5681,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
           dummy = 0;
           zlib_compress(&dummy, &size[type], attempt[type], testsize, &zlibsettings);
           lodepng_free(dummy);
-          /*check if this is smallest size (or if type == 0 it's the first case so always store the values)*/
+          /*check if this is smallest size (or if type == 0 it is the first case so always store the values)*/
           if(type == 0 || size[type] < smallest) {
             bestType = type;
             smallest = size[type];
@@ -6107,7 +6107,7 @@ unsigned lodepng_encode(unsigned char** out, size_t* outsize,
         }
       }
       if(already_added_id_text == 0) {
-        addChunk_tEXt(&outv, "LodePNG", LODEPNG_VERSION_STRING); /*it's shorter as tEXt than as zTXt chunk*/
+        addChunk_tEXt(&outv, "LodePNG", LODEPNG_VERSION_STRING); /*it is shorter as tEXt than as zTXt chunk*/
       }
     }
     /*iTXt*/
@@ -6234,10 +6234,10 @@ const char* lodepng_error_text(unsigned code) {
     case 23: return "end of in buffer memory reached while inflating";
     case 24: return "invalid FCHECK in zlib header";
     case 25: return "invalid compression method in zlib header";
-    case 26: return "FDICT encountered in zlib header while it's not used for PNG";
+    case 26: return "FDICT encountered in zlib header while it is not used for PNG";
     case 27: return "PNG file is smaller than a PNG header";
     /*Checks the magic file header, the first 8 bytes of the PNG file*/
-    case 28: return "incorrect PNG signature, it's no PNG or corrupted";
+    case 28: return "incorrect PNG signature, it is no PNG or corrupted";
     case 29: return "first chunk is not the header chunk";
     case 30: return "chunk length too large, chunk broken off at end of file";
     case 31: return "illegal PNG color type or bpp";

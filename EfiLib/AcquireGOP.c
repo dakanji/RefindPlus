@@ -119,7 +119,7 @@ EFI_STATUS ReloadOptionROM (
                         gBS->LocateProtocol,
                         &gEfiDecompressProtocolGuid,
                         NULL,
-                        (VOID**) &Decompress
+                        (VOID **) &Decompress
                     );
 
                     if (!EFI_ERROR (Status)) {

@@ -1463,7 +1463,7 @@ VOID SetConfigFilename (
 } // static VOID SetConfigFilename()
 
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
-//  PreviousBoot variable, if it's available. If it's not available, delete that element.
+//  PreviousBoot variable, if it is available. If it is not available, delete that element.
 static
 VOID AdjustDefaultSelection (VOID) {
     EFI_STATUS  Status;

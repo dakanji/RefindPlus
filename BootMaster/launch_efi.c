@@ -192,11 +192,11 @@ BOOLEAN IsValidLoader (
     IsValid = !EFI_ERROR (Status) &&
               Size == sizeof (Header) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
-               (Size = *(UINT32 *)&Header[0x3c]) < 0x180 &&
+               (Size = *(UINT32 *) &Header[0x3c]) < 0x180 &&
                Header[Size] == 'P' && Header[Size+1] == 'E' &&
                Header[Size+2] == 0 && Header[Size+3] == 0 &&
-               *(UINT16 *)&Header[Size+4] == EFI_STUB_ARCH) ||
-              (*(UINT32 *)&Header == FAT_ARCH));
+               *(UINT16 *) &Header[Size+4] == EFI_STUB_ARCH) ||
+              (*(UINT32 *) &Header == FAT_ARCH));
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID,

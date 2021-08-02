@@ -592,7 +592,7 @@ static U32 HUF_decodeLastSymbolX4(void *op, BIT_DStream_t *DStream, const HUF_DE
 		if (DStream->bitsConsumed < (sizeof (DStream->bitContainer) * 8)) {
 			BIT_skipBits(DStream, dt[val].nbBits);
 			if (DStream->bitsConsumed > (sizeof (DStream->bitContainer) * 8))
-				/* ugly hack; works only because it's the last symbol. Note : can't easily extract nbBits from just this symbol */
+				/* ugly hack; works only because it is the last symbol. Note : can't easily extract nbBits from just this symbol */
 				DStream->bitsConsumed = (sizeof (DStream->bitContainer) * 8);
 		}
 	}

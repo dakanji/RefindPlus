@@ -216,7 +216,7 @@ static BOOLEAN MyStriCmp(IN CHAR16 *FirstString, IN CHAR16 *SecondString) {
     }
 } // BOOLEAN MyStriCmp()
 
-// Check firmware vendor; get verification to continue if it's not Apple.
+// Check firmware vendor; get verification to continue if it is not Apple.
 // Returns TRUE if Apple firmware or if user assents to use, FALSE otherwise.
 static BOOLEAN VerifyGoOn(VOID) {
    BOOLEAN GoOn = TRUE;

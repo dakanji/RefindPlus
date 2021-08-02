@@ -147,7 +147,7 @@ fsw_hfs_read_block (struct fsw_hfs_dnode    * dno,
 
     phys_bno = extent.phys_start;
   //Slice - increase cache level from 0 to 3
-    status = fsw_block_get(dno->g.vol, phys_bno, 3, (void **)&buffer);
+    status = fsw_block_get(dno->g.vol, phys_bno, 3, (void **) &buffer);
     if (status)
         return status;
 
@@ -319,7 +319,7 @@ static fsw_status_t fsw_hfs_volume_mount(struct fsw_hfs_volume *vol)
             break;
         }
 
-        status = fsw_memdup((void **)&vol->primary_voldesc, voldesc,
+        status = fsw_memdup((void **) &vol->primary_voldesc, voldesc,
                             sizeof (*voldesc));
         CHECK(status);
 
@@ -1116,7 +1116,7 @@ static fsw_status_t fsw_hfs_get_extent(struct fsw_hfs_volume * vol,
         }
 
         status = fsw_hfs_btree_search (&vol->extents_tree,
-                                       (BTreeKey*)&overflowkey,
+                                       (BTreeKey*) &overflowkey,
                                        fsw_hfs_cmp_extkey,
                                        &node, &ptr);
         if (status)
@@ -1262,7 +1262,7 @@ static fsw_status_t fsw_hfs_dir_lookup(struct fsw_hfs_volume * vol,
     catkey.keyLength = (fsw_u16)(5 + rec_name.size);
 
     status = fsw_hfs_btree_search (&vol->catalog_tree,
-                                   (BTreeKey*)&catkey,
+                                   (BTreeKey*) &catkey,
                                    vol->case_sensitive ?
                                        fsw_hfs_cmp_catkey : fsw_hfs_cmpi_catkey,
                                    &node, &ptr);
@@ -1358,7 +1358,7 @@ static fsw_status_t fsw_hfs_dir_read(struct fsw_hfs_volume *vol,
     param.file_info.name = &rec_name;
 
     status = fsw_hfs_btree_search (&vol->catalog_tree,
-                                   (BTreeKey*)&catkey,
+                                   (BTreeKey*) &catkey,
                                    vol->case_sensitive ?
                                        fsw_hfs_cmp_catkey : fsw_hfs_cmpi_catkey,
                                    &node, &ptr);

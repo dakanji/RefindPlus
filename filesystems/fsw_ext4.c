@@ -215,7 +215,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
         gdesc_index = groupno % gdesc_per_block;
 
         // Get block if necessary...
-        status = fsw_block_get(vol, gdesc_bno, 1, (void **)&buffer);
+        status = fsw_block_get(vol, gdesc_bno, 1, (void **) &buffer);
         if (status)
             return status;
 
@@ -298,13 +298,13 @@ static fsw_status_t fsw_ext4_dnode_fill(struct fsw_ext4_volume *vol, struct fsw_
     ino_bno = vol->inotab_bno[groupno] +
         ino_in_group / (vol->g.phys_blocksize / vol->inode_size);
     ino_index = ino_in_group % (vol->g.phys_blocksize / vol->inode_size);
-    status = fsw_block_get(vol, ino_bno, 2, (void **)&buffer);
+    status = fsw_block_get(vol, ino_bno, 2, (void **) &buffer);
 
     if (status)
         return status;
 
     // keep our inode around
-    status = fsw_memdup((void **)&dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
+    status = fsw_memdup((void **) &dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
     fsw_block_release(vol, ino_bno, buffer);
     if (status)
         return status;
@@ -452,7 +452,7 @@ static fsw_status_t fsw_ext4_get_by_extent(struct fsw_ext4_volume *vol, struct f
                 {
                     // Follow extent tree...
                     fsw_u64 phys_bno = ((fsw_u64)ext4_extent_idx->ei_leaf_hi << 32) | ext4_extent_idx->ei_leaf_lo;
-                    status = fsw_block_get(vol, phys_bno, 1, (void **)&buffer);
+                    status = fsw_block_get(vol, phys_bno, 1, (void **) &buffer);
                     if (status)
                         return status;
                     buf_offset = 0;
@@ -531,7 +531,7 @@ static fsw_status_t fsw_ext4_get_by_blkaddr(struct fsw_ext4_volume *vol, struct 
 
         if (release_bno)
             fsw_block_release(vol, release_bno, buffer);
-        status = fsw_block_get(vol, bno, 1, (void **)&buffer);
+        status = fsw_block_get(vol, bno, 1, (void **) &buffer);
         if (status)
             return status;
         release_bno = bno;

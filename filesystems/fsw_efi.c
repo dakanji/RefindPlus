@@ -193,7 +193,7 @@ struct cache_data {
    FSW_VOLUME_DATA   *Volume; // NOTE: Do not deallocate; copied here to ID volume
 };
 
-#define NUM_CACHES 2 /* Don't increase without modifying fsw_efi_read_block() */
+#define NUM_CACHES 2 /* Do not increase without modifying fsw_efi_read_block() */
 static struct cache_data    Caches[NUM_CACHES];
 static int LastRead = -1;
 
