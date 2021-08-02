@@ -2240,7 +2240,7 @@ VOID SaveHiddenList (
         Status = EfivarSetRaw (
             &RefindPlusGuid,
             VarName,
-            (CHAR8 *) HiddenList,
+            HiddenList,
             ListLen * 2 + 2 * (ListLen > 0),
             TRUE
         );
@@ -2340,7 +2340,7 @@ VOID ManageHiddenTags (VOID) {
                 Status = EfivarSetRaw (
                     &RefindPlusGuid,
                     L"HiddenLegacy",
-                    (CHAR8 *) HiddenLegacy,
+                    HiddenLegacy,
                     i * 2 + 2 * (i > 0),
                     TRUE
                 );
@@ -2382,11 +2382,11 @@ VOID ManageHiddenTags (VOID) {
 CHAR16 * ReadHiddenTags (
     CHAR16 *VarName
 ) {
-    CHAR8       *Buffer = NULL;
+    CHAR16     *Buffer = NULL;
     UINTN       Size;
     EFI_STATUS  Status;
 
-    Status = EfivarGetRaw (&RefindPlusGuid, VarName, &Buffer, &Size);
+    Status = EfivarGetRaw (&RefindPlusGuid, VarName, (VOID **) &Buffer, &Size);
 
     #if REFIT_DEBUG > 0
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
@@ -2407,7 +2407,7 @@ CHAR16 * ReadHiddenTags (
         Buffer = NULL;
     }
 
-    return (CHAR16 *) Buffer;
+    return Buffer;
 } // CHAR16* ReadHiddenTags()
 
 // Add PathName to the hidden tags variable specified by *VarName.
@@ -2429,7 +2429,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
         Status = EfivarSetRaw (
             &RefindPlusGuid,
             VarName,
-            (CHAR8 *) HiddenTags,
+            HiddenTags,
             StrLen (HiddenTags) * 2 + 2,
             TRUE
         );

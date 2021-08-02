@@ -2604,7 +2604,7 @@ BOOLEAN FindTool (
 VOID ScanForTools (VOID) {
     UINTN             i, j;
     UINTN             VolumeIndex;
-    CHAR8            *ItemBuffer = 0;
+    VOID             *ItemBuffer = 0;
     CHAR16           *ToolName   = NULL;
     CHAR16           *FileName   = NULL;
     CHAR16           *VolName    = NULL;
@@ -2796,7 +2796,7 @@ VOID ScanForTools (VOID) {
                     &ItemBuffer,
                     NULL
                 ) == EFI_SUCCESS) {
-                    osind = (UINT64) *ItemBuffer;
+                    osind = *(UINT64*) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
                         TempMenuEntry        = CopyMenuEntry (&MenuEntryFirmware);

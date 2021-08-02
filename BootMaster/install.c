@@ -690,7 +690,7 @@ EFI_STATUS CopyDrivers (
      *AlreadyExists = FALSE;
      do {
          VarName = PoolPrint (L"Boot%04x", i++);
-         Status = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
+         Status = EfivarGetRaw (&GlobalGuid, VarName, (VOID **) &Contents, &VarSize);
          if ((Status == EFI_SUCCESS) && (VarSize == Size) && (CompareMem (Contents, Entry, VarSize) == 0)) {
              *AlreadyExists = TRUE;
          }
@@ -724,11 +724,11 @@ EFI_STATUS CopyDrivers (
      *Size = sizeof (UINT32) + sizeof (UINT16) + StrSize (Label) + DevPathSize + 2;
      *Entry = Working = AllocateZeroPool (*Size);
      if (DevicePath && *Entry) {
-         *(UINT32 *)Working = LOAD_OPTION_ACTIVE;
+         *(UINT32 *) Working = LOAD_OPTION_ACTIVE;
          Working += sizeof (UINT32);
-         *(UINT16 *)Working = DevPathSize;
+         *(UINT16 *) Working = DevPathSize;
          Working += sizeof (UINT16);
-         StrCpy ((CHAR16 *)Working, Label);
+         StrCpy ((CHAR16 *) Working, Label);
          Working += StrSize (Label);
          CopyMem (Working, DevicePath, DevPathSize);
          // If support for arguments is required in the future, uncomment
@@ -751,13 +751,14 @@ EFI_STATUS CopyDrivers (
      UINT16   *BootOrder, *NewBootOrder;
      BOOLEAN  IsAlreadyFirst = FALSE;
 
-     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
+     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (VOID **) &BootOrder, &VarSize);
      if (Status == EFI_SUCCESS) {
          ListSize = VarSize / sizeof (UINT16);
          for (i = 0; i < ListSize; i++) {
              if (BootOrder[i] == BootNum) {
-                 if (i == 0)
+                 if (i == 0) {
                      IsAlreadyFirst = TRUE;
+                 }
              }
          } // for
          if (!IsAlreadyFirst) {
@@ -767,10 +768,16 @@ EFI_STATUS CopyDrivers (
              for (i = 0; i < ListSize; i++) {
                  if (BootOrder[i] != BootNum) {
                      NewBootOrder[j++] = BootOrder[i];
-                 } // if
+                 }
              } // for
-             Status = EfivarSetRaw (&GlobalGuid, L"BootOrder", (CHAR8*) NewBootOrder,
-                                   j * sizeof (UINT16), TRUE);
+
+             Status = EfivarSetRaw (
+                 &GlobalGuid,
+                 L"BootOrder",
+                 NewBootOrder,
+                 j * sizeof (UINT16),
+                 TRUE
+             );
              MyFreePool (&NewBootOrder);
          } // if
          MyFreePool (&BootOrder);
@@ -799,7 +806,7 @@ EFI_STATUS CopyDrivers (
 
      if ((Status == EFI_SUCCESS) && (AlreadyExists == FALSE)) {
          VarName = PoolPrint (L"Boot%04x", BootNum);
-         Status = EfivarSetRaw (&GlobalGuid, VarName, (CHAR8*) Entry, Size, TRUE);
+         Status = EfivarSetRaw (&GlobalGuid, VarName, Entry, Size, TRUE);
          MyFreePool (&VarName);
      }
      MyFreePool (&Entry);
@@ -866,14 +873,15 @@ EFI_STATUS CopyDrivers (
      LOG(1, LOG_LINE_NORMAL, L"Finding boot order entries");
      #endif
 
-     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
+     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (VOID **) &BootOrder, &VarSize);
      if (Status != EFI_SUCCESS)
          return NULL;
 
      ListSize = VarSize / sizeof (UINT16);
      for (i = 0; i < ListSize; i++) {
          VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-         Status  = EfivarGetRaw (&GlobalGuid, VarName, (CHAR8**) &Contents, &VarSize);
+         Status  = EfivarGetRaw (&GlobalGuid, VarName, (VOID **) &Contents, &VarSize);
+
          if (Status == EFI_SUCCESS) {
              L = AllocateZeroPool (sizeof (BOOT_ENTRY_LIST));
              if (L) {
@@ -882,10 +890,13 @@ EFI_STATUS CopyDrivers (
                  L->BootEntry.Size    = (UINT16) Contents[2];
                  L->BootEntry.Label   = StrDuplicate ((CHAR16*) &(Contents[3]));
                  L->BootEntry.DevPath = AllocatePool (L->BootEntry.Size);
-                 CopyMem (L->BootEntry.DevPath,
-                         (EFI_DEVICE_PATH*) &Contents[3 + StrSize (L->BootEntry.Label)/2],
-                         L->BootEntry.Size);
+                 CopyMem (
+                     L->BootEntry.DevPath,
+                     (EFI_DEVICE_PATH*) &Contents[3 + StrSize (L->BootEntry.Label)/2],
+                     L->BootEntry.Size
+                 );
                  L->NextBootEntry = NULL;
+
                  if (ListStart == NULL) {
                      ListStart = L;
                  }
@@ -893,8 +904,8 @@ EFI_STATUS CopyDrivers (
                      ListEnd->NextBootEntry = L;
                  }
                  ListEnd = L;
-             } // if
-         } // if
+             }
+         }
 
          MyFreePool (&VarName);
          MyFreePool (&Contents);
@@ -1019,24 +1030,31 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
      LOG(1, LOG_LINE_NORMAL, L"Deleting invalid boot entries from internal BootOrder list");
      #endif
 
-     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (CHAR8**) &BootOrder, &VarSize);
+     Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (VOID **) &BootOrder, &VarSize);
      if (Status == EFI_SUCCESS) {
          ListSize = VarSize / sizeof (UINT16);
          NewBootOrder = AllocateZeroPool (VarSize);
          for (i = 0; i < ListSize; i++) {
              VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
-             Status = EfivarGetRaw (&GlobalGuid, VarName, &Contents, &VarSize);
+             Status = EfivarGetRaw (&GlobalGuid, VarName, (VOID **) &Contents, &VarSize);
              MyFreePool (&VarName);
+
              if (Status == EFI_SUCCESS) {
                  NewBootOrder[j++] = BootOrder[i];
                  MyFreePool (&Contents);
-             } // if
+             }
          } // for
-         Status = EfivarSetRaw (&GlobalGuid, L"BootOrder", (CHAR8*) NewBootOrder,
-                               j * sizeof (UINT16), TRUE);
+         Status = EfivarSetRaw (
+             &GlobalGuid,
+             L"BootOrder",
+             NewBootOrder,
+             j * sizeof (UINT16),
+             TRUE
+         );
+
          MyFreePool (&NewBootOrder);
          MyFreePool (&BootOrder);
-     } // if
+     }
 
      return Status;
  } // EFI_STATUS DeleteInvalidBootEntries()

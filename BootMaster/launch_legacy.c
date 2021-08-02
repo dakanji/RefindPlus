@@ -302,7 +302,7 @@ EFI_STATUS WriteBootDiskHint (
    Status = EfivarSetRaw (
        &AppleVariableVendorID,
        L"BootCampHD",
-       (CHAR8*) WholeDiskDevicePath,
+       WholeDiskDevicePath,
        GetDevicePathSize (WholeDiskDevicePath),
        TRUE
    );

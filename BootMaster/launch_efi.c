@@ -402,7 +402,7 @@ EFI_STATUS StartEFIImage (
         Status = EfivarSetRaw (
             &SystemdGuid,
             L"LoaderDevicePartUUID",
-            (CHAR8 *) EspGUID,
+            EspGUID,
             StrLen (EspGUID) * 2 + 2,
             TRUE
         );
@@ -470,7 +470,7 @@ bailout:
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
-    CHAR8      *ItemBuffer;
+    UINT64     *ItemBuffer;
     CHAR16     *MsgStr = NULL;
     UINT64      osind;
     EFI_STATUS  err;
@@ -480,19 +480,19 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     err = EfivarGetRaw (
         &GlobalGuid,
         L"OsIndications",
-        &ItemBuffer,
+        (VOID **) &ItemBuffer,
         NULL
     );
 
     if (err == EFI_SUCCESS) {
-        osind |= (UINT64) *ItemBuffer;
+        osind |= *ItemBuffer;
     }
     MyFreePool (&ItemBuffer);
 
     err = EfivarSetRaw (
         &GlobalGuid,
         L"OsIndications",
-        (CHAR8 *) &osind,
+        &osind,
         sizeof (UINT64),
         TRUE
     );
@@ -561,7 +561,7 @@ VOID RebootIntoLoader (
     Status = EfivarSetRaw (
         &GlobalGuid,
         L"BootNext",
-        (CHAR8*) &(Entry->EfiBootNum),
+        &(Entry->EfiBootNum),
         sizeof (UINT16),
         TRUE
     );

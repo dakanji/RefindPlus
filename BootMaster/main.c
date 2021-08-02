@@ -1244,7 +1244,7 @@ VOID StoreLoaderName (
         EfivarSetRaw (
             &RefindPlusGuid,
             L"PreviousBoot",
-            (CHAR8*) Name,
+            Name,
             StrLen (Name) * 2 + 2,
             TRUE
         );
@@ -1465,7 +1465,7 @@ VOID SetConfigFilename (
 // Adjust the GlobalConfig.DefaultSelection variable: Replace all "+" elements with the
 //  PreviousBoot variable, if it's available. If it's not available, delete that element.
 static
-VOID AdjustDefaultSelection(VOID) {
+VOID AdjustDefaultSelection (VOID) {
     EFI_STATUS  Status;
     UINTN       i                 = 0;
     CHAR16     *Element           = NULL;
@@ -1481,7 +1481,7 @@ VOID AdjustDefaultSelection(VOID) {
             Status = EfivarGetRaw (
                 &RefindPlusGuid,
                 L"PreviousBoot",
-                (CHAR8 **) &PreviousBoot,
+                (VOID **) &PreviousBoot,
                 NULL
             );
 

@@ -525,12 +525,26 @@ EFI_STATUS FindVarsDir (VOID) {
 EFI_STATUS EfivarGetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    OUT CHAR8    **VariableData,
+    OUT VOID     **VariableData,
     OUT UINTN     *VariableSize  OPTIONAL
 ) {
+    VOID        *TmpBuffer     = NULL;
     UINTN        BufferSize    = 0;
-    UINT8       *TmpBuffer     = NULL;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
+
+    static VOID    *PrevBootBuf;
+    static UINTN    PrevBootSize;
+    static BOOLEAN  GotPrevBoot = FALSE;
+
+    if (GotPrevBoot &&
+        MyStriCmp (VariableName, L"PreviousBoot") &&
+        GuidsAreEqual (VendorGUID, &RefindPlusGuid)
+    ) {
+        *VariableData = PrevBootBuf;
+        *VariableSize = PrevBootSize;
+
+        return EFI_SUCCESS;
+    }
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -542,8 +556,10 @@ EFI_STATUS EfivarGetRaw (
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
             Status = egLoadFile (
-                gVarsDir, VariableName,
-                &TmpBuffer, &BufferSize
+                gVarsDir,
+                VariableName,
+                (UINT8 **) &TmpBuffer,
+                &BufferSize
             );
         }
         else if (Status != EFI_NOT_FOUND) {
@@ -577,18 +593,26 @@ EFI_STATUS EfivarGetRaw (
             L"'%r' Getting EFI Variable from Emulated NVRAM:- '%s'",
             Status, VariableName
         );
-        if (MyStriCmp (VariableName, L"PreviousBoot")) {
-            LOG(4, LOG_BLANK_LINE_SEP, L"X");
-        }
         #endif
 
         if (!EFI_ERROR (Status)) {
-            *VariableData = (CHAR8*) TmpBuffer;
+            *VariableData = TmpBuffer;
             if (BufferSize) {
                 *VariableSize = BufferSize;
             }
             else {
                 *VariableSize = 0;
+            }
+
+            if (MyStriCmp (VariableName, L"PreviousBoot")) {
+                GotPrevBoot  =  TRUE;
+                PrevBootBuf  =  TmpBuffer;
+                PrevBootSize = *VariableSize;
+
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Last Booted Loader:- '%s'", PrevBootBuf);
+                LOG(4, LOG_BLANK_LINE_SEP, L"X");
+                #endif
             }
         }
         else {
@@ -631,13 +655,31 @@ EFI_STATUS EfivarGetRaw (
             }
         }
 
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID,
+            L"'%r' Getting EFI Variable from Hardware NVRAM:- '%s'",
+            Status, VariableName
+        );
+        #endif
+
         if (!EFI_ERROR (Status)) {
-            *VariableData = (CHAR8*) TmpBuffer;
+            *VariableData = TmpBuffer;
             if (BufferSize) {
                 *VariableSize = BufferSize;
             }
             else {
                 *VariableSize = 0;
+            }
+
+            if (MyStriCmp (VariableName, L"PreviousBoot")) {
+                GotPrevBoot  =  TRUE;
+                PrevBootBuf  =  TmpBuffer;
+                PrevBootSize = *VariableSize;
+
+                #if REFIT_DEBUG > 0
+                LOG(4, LOG_LINE_NORMAL, L"Last Booted Loader:- '%s'", PrevBootBuf);
+                LOG(4, LOG_BLANK_LINE_SEP, L"X");
+                #endif
             }
         }
         else {
@@ -645,13 +687,6 @@ EFI_STATUS EfivarGetRaw (
             *VariableData = NULL;
             *VariableSize = 0;
         }
-
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' Getting EFI Variable from Hardware NVRAM:- '%s'",
-            Status, VariableName
-        );
-        #endif
 
         return Status;
     }
@@ -670,13 +705,13 @@ EFI_STATUS EfivarGetRaw (
 EFI_STATUS EfivarSetRaw (
     IN  EFI_GUID  *VendorGUID,
     IN  CHAR16    *VariableName,
-    IN  CHAR8     *VariableData,
+    IN  VOID      *VariableData,
     IN  UINTN      VariableSize,
     IN  BOOLEAN    Persistent
 ) {
     EFI_STATUS   Status;
     UINT32       StorageFlags;
-    CHAR8       *OldBuf;
+    VOID        *OldBuf;
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
 

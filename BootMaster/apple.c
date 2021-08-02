@@ -52,7 +52,7 @@ EFI_STATUS GetCsrStatus (
     Status = EfivarGetRaw (
         &CsrGuid,
         L"csr-active-config",
-        (CHAR8 **) &ReturnValue,
+        (VOID **) &ReturnValue,
         &CsrLength
     );
 
@@ -230,7 +230,7 @@ VOID RotateCsrValue (VOID) {
         if (TargetCsr != 0) {
             Status = EfivarSetRaw (
                 &CsrGuid, L"csr-active-config",
-                (CHAR8 *) &TargetCsr, 4, TRUE
+                &TargetCsr, 4, TRUE
             );
         }
         else {

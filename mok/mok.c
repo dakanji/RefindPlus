@@ -55,10 +55,11 @@
  * Check whether we are in Secure Boot and user mode
  */
 BOOLEAN secure_mode (VOID) {
-    EFI_STATUS status;
-    EFI_GUID global_var = EFI_GLOBAL_VARIABLE;
-    UINTN charsize      = sizeof (char);
-    UINT8 *sb = NULL, *setupmode = NULL;
+    EFI_STATUS  status;
+    EFI_GUID    global_var = EFI_GLOBAL_VARIABLE;
+    UINTN       charsize;
+    UINT8      *sb        = NULL;
+    UINT8      *setupmode = NULL;
 
     static BOOLEAN DoneOnce   = FALSE;
     static BOOLEAN SecureMode = FALSE;
@@ -70,7 +71,7 @@ BOOLEAN secure_mode (VOID) {
     status = EfivarGetRaw (
         &global_var,
         L"SecureBoot",
-        (CHAR8 **) &sb,
+        (VOID **) &sb,
         &charsize
     );
 
@@ -85,7 +86,7 @@ BOOLEAN secure_mode (VOID) {
         status = EfivarGetRaw (
             &global_var,
             L"SetupMode",
-            (CHAR8 **) &setupmode,
+            (VOID **) &setupmode,
             &charsize
         );
 
