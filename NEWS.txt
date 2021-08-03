@@ -1,15 +1,21 @@
+0.13.2.AH (Pre-Release):
+-----------------------
+- PENDING
+
+
 0.13.2.AG (03 Aug 2021):
 -----------------------
 - Adds 'TagHelp' Feature
   * Ensures HiddenTags can always be unhidden
-  * This featurre is active by default but can be disabled with the "disable_tag_help" token
+  * This feature is active by default but can be disabled with the "disable_tag_help" token
 - Fixes Banner Flicker During Load Sequence
-  * Rationalises freeing the screen background image to reduce load time flickering
+  * Rationalises freeing the screen background image to reduce flickering at load time
+  * Provides an improved UX
 - Fixes Filtering of Windows Secure Boot Certificates on Apple Firmware
   * Reverts Extension to Legacy Windows
   * This appears to have been linked to observed negative impacts on some Macs
 - Fixes 'IgnoreVolumeICNS' and 'HideUI Badges' Implementation
-  * Now extended to cover other volume types from just internal volumes
+  * Now extended to cover other volume types apart from 'internal' volumes
 - Fixes Handling of "FirmwareBootNum" Entries
   * These were not loaded as expected
 - Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
@@ -40,8 +46,8 @@
 - Amends 'ActiveCSR' Implementation
   * Now only run when booting into Mac OS, OpenCore or Clover
 - Amends 'ScanDelay' Implementation
-  * Now immediately implementated after 'SetupScreen'
-  * Allows for an improved UX
+  * Now immediately implemented after 'SetupScreen' to allow for an improved UX
+
 
 0.13.2.AF (10 Jun 2021):
 -----------------------
