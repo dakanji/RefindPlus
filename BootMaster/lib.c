@@ -590,7 +590,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' Getting EFI Variable from Emulated NVRAM:- '%s'",
+            L"'%r' in Emulated NVRAM when fetching EFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -610,7 +610,7 @@ EFI_STATUS EfivarGetRaw (
                 PrevBootSize = *VariableSize;
 
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Booted Loader:- '%s'", PrevBootBuf);
+                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", PrevBootBuf);
                 LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
@@ -657,7 +657,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' Getting EFI Variable from Hardware NVRAM:- '%s'",
+            L"'%r' in Hardware NVRAM when fetching EFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -677,7 +677,7 @@ EFI_STATUS EfivarGetRaw (
                 PrevBootSize = *VariableSize;
 
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Booted Loader:- '%s'", PrevBootBuf);
+                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", PrevBootBuf);
                 LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
@@ -692,7 +692,7 @@ EFI_STATUS EfivarGetRaw (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_END, L"Program Coding Error Getting EFI Variable from NVRAM!!");
+    LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching EFI Variable from NVRAM!!");
     #endif
 
     return Status;
@@ -760,13 +760,6 @@ EFI_STATUS EfivarSetRaw (
     if (!GlobalConfig.UseNvram &&
         GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
-            L"Saving to Emulated NVRAM:- '%s'",
-            VariableName
-        );
-        #endif
-
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
             Status = egSaveFile (
@@ -776,9 +769,9 @@ EFI_STATUS EfivarSetRaw (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Save '%s' to Emulated NVRAM ... %r",
-            VariableName, Status
+        LOG(4, LOG_THREE_STAR_MID,
+            L"'%r' in Emulated NVRAM when saving EFI Variable:- '%s'",
+            Status, VariableName
         );
 
         if (EFI_ERROR (Status)) {
@@ -792,13 +785,6 @@ EFI_STATUS EfivarSetRaw (
         #endif
     }
     else {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
-            L"Saving to Hardware NVRAM:- '%s'",
-            VariableName
-        );
-        #endif
-
         StorageFlags  = EFI_VARIABLE_BOOTSERVICE_ACCESS;
         StorageFlags |= EFI_VARIABLE_RUNTIME_ACCESS;
         if (Persistent) {
@@ -812,9 +798,9 @@ EFI_STATUS EfivarSetRaw (
         );
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Save '%s' to Hardware NVRAM ... %r",
-            VariableName, Status
+        LOG(4, LOG_THREE_STAR_MID,
+            L"'%r' in Hardware NVRAM when saving EFI Variable:- '%s'",
+            Status, VariableName
         );
         #endif
     }
@@ -2531,7 +2517,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"'HideUI Badges' Config Setting is Active");
+        LOG(1, LOG_LINE_NORMAL, L"Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return;
@@ -2598,7 +2584,7 @@ VOID SetVolumeIcons (VOID) {
 
     if (GlobalConfig.IgnoreVolumeICNS) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"'IgnoreVolumeICNS' Config Setting is Active");
+        LOG(1, LOG_LINE_NORMAL, L"Config Setting is Active:- 'IgnoreVolumeICNS'");
         #endif
 
         return;

@@ -707,6 +707,7 @@ BOOLEAN LoadDrivers(
     #if REFIT_DEBUG > 0
     MsgLog ("Load EFI Drivers from Default Folder...");
     #endif
+
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
         CleanUpPathNameSlashes (SelfDirectory);
@@ -724,7 +725,7 @@ BOOLEAN LoadDrivers(
             MsgLog ("  - Not Found or Empty");
             #endif
         }
-    }
+    } // while
 
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {

@@ -2085,7 +2085,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"'HideUI Badges' Config Setting is Active");
+        LOG(4, LOG_THREE_STAR_MID, L"Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return NULL;
