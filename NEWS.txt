@@ -18,6 +18,9 @@
   * Now extended to cover other volume types apart from 'internal' volumes
 - Fixes Handling of "FirmwareBootNum" Entries
   * These were not loaded as expected
+- Fixes Hangs Resulting from Changed Device Handles
+  * RefindPlus hangs on return from third party tools such as GDisk that change device handles
+  * RefindPlus now manages this situation and avoids such hanging 
 - Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
   * Some UEFI PC appear to spontaneously generate invalid load options
   * These resulted in a halt that required one or more key presses to proceed
