@@ -402,7 +402,16 @@ VOID AddMenuEntry (
     IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Entry to %s:- '%s'", Screen->Title, Entry->Title);
+    CHAR16 *MsgStr = NULL;
+
+    if (MyStrStr (Screen->Title, L"Main Menu") != NULL) {
+        MsgStr = L"MainMenu";
+    }
+    else {
+        MsgStr = Screen->Title;
+    }
+
+    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Entry to %s:- '%s'", MsgStr, Entry->Title);
     #endif
 
     AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
