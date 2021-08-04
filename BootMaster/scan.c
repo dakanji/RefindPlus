@@ -610,22 +610,14 @@ VOID SetLoaderDefaults (
     CHAR16   ShortcutLetter = 0;
     BOOLEAN  MergeFsName    = FALSE;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    #endif
-
     NameClues = Basename (LoaderPath);
     PathOnly  = FindPath (LoaderPath);
 
     #if REFIT_DEBUG > 0
-    if (Entry->me.Title) {
-        MsgStr = StrDuplicate (Entry->me.Title);
-    }
-    else {
-        MsgStr = StrDuplicate (Entry->Title);
-    }
-    LOG(3, LOG_LINE_NORMAL, L"Getting Default Setting for Loader:- '%s'", MsgStr);
-    MyFreePool (&MsgStr);
+    LOG(3, LOG_LINE_NORMAL,
+        L"Getting Default Setting for Loader:- '%s'",
+        (Entry->me.Title) ? Entry->me.Title : Entry->Title
+    );
     #endif
 
     if (Volume->DiskKind == DISK_KIND_NET) {
@@ -1649,7 +1641,6 @@ VOID ScanEfiFiles (
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
-    CHAR16  *MsgStr   = NULL;
     BOOLEAN  FixReMap = FALSE;
     #endif
 
@@ -1703,17 +1694,11 @@ VOID ScanEfiFiles (
         LogLineType = LOG_THREE_STAR_SEP;
     }
 
-    if (FixReMap) {
-        MsgStr = L"ReMapped Volume";
-    }
-    else {
-        MsgStr = L"Volume";
-    }
-
     // "Scanning Volume 'XYZ'" or "Scanning ReMapped Volume 'XYZ'"
     LOG(1, LogLineType,
         L"Scanning %s '%s' for EFI Loaders",
-        MsgStr, Volume->VolName
+        (FixReMap) ? L"ReMapped Volume" : L"Volume",
+        Volume->VolName
     );
     #endif
 

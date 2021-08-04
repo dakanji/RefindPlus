@@ -641,10 +641,6 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
 ) {
     EFI_STATUS  Status;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    #endif
-
     // Always position for multiple scan
     PostConnect = FALSE;
 
@@ -674,10 +670,9 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
             }
         }
         else {
-            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
+            CHAR16 *MsgStr = L"Additional DXE Drivers Revealed ... Relink Handles";
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
         }
         #endif
 
@@ -758,10 +753,6 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 ) {
     EFI_STATUS Status;
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    #endif
-
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
@@ -769,7 +760,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
+            CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
             LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
             MyFreePool (&MsgStr);

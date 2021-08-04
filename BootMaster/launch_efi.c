@@ -345,7 +345,7 @@ EFI_STATUS StartEFIImage (
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"'%r' returned by secure boot while loading %s!!",
+            L"'%r' Returned by Secure Boot while Loading %s!!",
             Status, ImageTitle
         );
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
@@ -357,7 +357,7 @@ EFI_STATUS StartEFIImage (
         goto bailout;
     }
 
-    ErrorInfo = PoolPrint (L"while loading %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"while Loading %s", ImageTitle);
     if (CheckError (Status, ErrorInfo)) {
         MyFreePool (&ErrorInfo);
         goto bailout;
@@ -372,7 +372,7 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
-    if (CheckError (Status, L"while getting a LoadedImageProtocol handle")) {
+    if (CheckError (Status, L"while Getting a LoadedImageProtocol handle")) {
         goto bailout_unload;
     }
 
@@ -471,7 +471,6 @@ bailout:
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
     UINT64     *ItemBuffer;
-    CHAR16     *MsgStr = NULL;
     UINT64      osind;
     EFI_STATUS  err;
 
@@ -521,7 +520,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 
     ReinitRefitLib();
 
-    MsgStr = PoolPrint (L"Error calling ResetSystem ... %r", err);
+    CHAR16 *MsgStr = PoolPrint (L"Error Calling ResetSystem ... %r", err);
 
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
@@ -548,14 +547,6 @@ VOID RebootIntoLoader (
 ) {
     EFI_STATUS Status;
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR,
-        L"Rebooting into EFI Loader '%s' (Boot%04x)",
-        Entry->Title,
-        Entry->EfiBootNum
-    );
-    #endif
-
     IsBoot = TRUE;
 
     Status = EfivarSetRaw (
@@ -567,23 +558,27 @@ VOID RebootIntoLoader (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot Into EFI Loader ... %r\n\n", Status);
+    CHAR16 *MsgStr = L"Reboot into EFI Loader";
+    LOG(1, LOG_LINE_SEPARATOR,
+        L"%s:- '%s' (Boot%04x)",
+        MsgStr,
+        Entry->Title,
+        Entry->EfiBootNum
+    );
+    MsgLog ("INFO: %s ... %r\n\n", MsgStr, Status);
     #endif
 
     if (EFI_ERROR(Status)) {
         Print(L"Error: %d\n", Status);
+
         return;
     }
 
     StoreLoaderName(Entry->me.Title);
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Attempting to reboot", Entry->Title, Entry->EfiBootNum);
-    #endif
+    REFIT_CALL_4_WRAPPER(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
 
-    REFIT_CALL_4_WRAPPER(RT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
-
-    Print(L"Error calling ResetSystem: %r", Status);
+    Print(L"Error Calling ResetSystem: %r", Status);
     PauseForKey();
 
     #if REFIT_DEBUG > 0
@@ -622,11 +617,14 @@ VOID DoEnableAndLockVMX(VOID) {
 } // VOID DoEnableAndLockVMX()
 
 // Directly launch an EFI boot loader (or similar program)
-VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
+VOID StartLoader (
+    LOADER_ENTRY *Entry,
+    CHAR16       *SelectionName
+) {
     CHAR16 *LoaderPath;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", SelectionName);
+    LOG(1, LOG_LINE_NORMAL, L"Launching Loader:- '%s'", SelectionName);
     #endif
 
     IsBoot = TRUE;
@@ -635,10 +633,10 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
         DoEnableAndLockVMX();
     }
 
-    LoaderPath = Basename(Entry->LoaderPath);
-    BeginExternalScreen(Entry->UseGraphicsMode, L"Booting OS");
-    StoreLoaderName(SelectionName);
-    StartEFIImage(
+    LoaderPath = Basename (Entry->LoaderPath);
+    BeginExternalScreen (Entry->UseGraphicsMode, L"Booting OS");
+    StoreLoaderName (SelectionName);
+    StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
         Entry->LoadOptions,
@@ -652,19 +650,21 @@ VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName) {
 } // VOID StartLoader()
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
-VOID StartTool(IN LOADER_ENTRY *Entry) {
+VOID StartTool (
+    IN LOADER_ENTRY *Entry
+) {
     CHAR16 *LoaderPath;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Starting '%s'", Entry->me.Title);
+    LOG(1, LOG_LINE_NORMAL, L"Launching Tool:- '%s'", Entry->me.Title);
     #endif
 
     IsBoot = TRUE;
 
-    LoaderPath = Basename(Entry->LoaderPath);
-    BeginExternalScreen(Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
-    StoreLoaderName(Entry->me.Title);
-    StartEFIImage(
+    LoaderPath = Basename (Entry->LoaderPath);
+    BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
+    StoreLoaderName (Entry->me.Title);
+    StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
         Entry->LoadOptions,

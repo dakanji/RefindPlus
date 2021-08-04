@@ -1272,7 +1272,7 @@ VOID RescanAll (
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary.
     if (Reconnect) {
-        ConnectAllDriversToAllControllers(FALSE);
+        ConnectAllDriversToAllControllers (FALSE);
         ScanVolumes();
     }
 
@@ -1315,15 +1315,16 @@ static
 BOOLEAN SecureBootSetup (VOID) {
     EFI_STATUS  Status;
     BOOLEAN     Success = FALSE;
-    CHAR16     *MsgStr  = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (if applicable)");
+    LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (If Applicable)");
     #endif
 
     if (secure_mode() && ShimLoaded()) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Secure boot mode detected with loaded Shim; adding MOK extensions");
+        LOG(2, LOG_LINE_NORMAL,
+            L"Secure Boot Mode Detected with Loaded Shim ... Adding MOK Extensions"
+        );
         #endif
 
         Status = security_policy_install();
@@ -1331,16 +1332,16 @@ BOOLEAN SecureBootSetup (VOID) {
             Success = TRUE;
         }
         else {
+            CHAR16 *MsgStr = L"Secure Boot Disabled ... Doing Nothing";
+
             #if REFIT_DEBUG > 0
             LOG(2, LOG_LINE_NORMAL, MsgStr)
-            MsgLog ("** WARN: Secure boot disabled ... doing nothing\n-----------------\n\n");
+            MsgLog ("** WARN: %s\n-----------------\n\n");
             #endif
 
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (L"Secure boot disabled ... doing nothing", NEXTLINE);
+            PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-
-            MyFreePool (&MsgStr);
 
             PauseForKey();
         }
@@ -1355,7 +1356,6 @@ static
 BOOLEAN SecureBootUninstall (VOID) {
     EFI_STATUS  Status;
     BOOLEAN     Success = TRUE;
-    CHAR16     *MsgStr  = NULL;
 
     if (secure_mode()) {
         Status = security_policy_uninstall();
@@ -1363,9 +1363,7 @@ BOOLEAN SecureBootUninstall (VOID) {
             Success = FALSE;
             BeginTextScreen (L"Secure Boot Policy Failure");
 
-            MsgStr = StrDuplicate (
-                L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds"
-            );
+            CHAR16 *MsgStr = L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds";
 
             #if REFIT_DEBUG > 0
             MsgLog ("%s\n-----------------\n\n", MsgStr);
@@ -1375,16 +1373,13 @@ BOOLEAN SecureBootUninstall (VOID) {
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            MyFreePool (&MsgStr);
-
             PauseSeconds(9);
 
             REFIT_CALL_4_WRAPPER(
                 gRT->ResetSystem,
                 EfiResetShutdown,
                 EFI_SUCCESS,
-                0,
-                NULL
+                0, NULL
             );
         }
     }
