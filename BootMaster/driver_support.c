@@ -693,6 +693,7 @@ BOOLEAN LoadDrivers(
 ) {
     CHAR16  *Directory;
     CHAR16  *SelfDirectory;
+    CHAR16  *MsgNotFound = L"Not Found or Empty";
     UINTN    Length;
     UINTN    i        = 0;
     UINTN    NumFound = 0;
@@ -712,19 +713,27 @@ BOOLEAN LoadDrivers(
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
         CleanUpPathNameSlashes (SelfDirectory);
         MergeStrings (&SelfDirectory, Directory, L'\\');
-        CurFound = ScanDriverDir(SelfDirectory);
-        MyFreePool (&Directory);
-        MyFreePool (&SelfDirectory);
+        CurFound = ScanDriverDir (SelfDirectory);
 
         if (CurFound > 0) {
             NumFound = NumFound + CurFound;
+
+            // We only process one default folder
+            // Exit loop if drivers were found
             break;
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Not Found or Empty");
+            LOG(3, LOG_LINE_NORMAL,
+                L"'%s' While Scanning Default Driver Folder:- '%s'",
+                MsgNotFound, Directory
+            );
+            MsgLog ("  - %s", MsgNotFound);
             #endif
         }
+
+        MyFreePool (&Directory);
+        MyFreePool (&SelfDirectory);
     } // while
 
     // Scan additional user-specified driver directories.
@@ -749,28 +758,28 @@ BOOLEAN LoadDrivers(
                 }
 
                 CurFound = ScanDriverDir (SelfDirectory);
-                MyFreePool (&SelfDirectory);
 
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Not Found or Empty");
+                    LOG(3, LOG_LINE_NORMAL,
+                        L"'%s' While Scanning User Defined Driver Folder:- '%s'",
+                        MsgNotFound, Directory
+                    );
+                    MsgLog ("  - %s", MsgNotFound);
                     #endif
                 }
             }
 
             MyFreePool (&Directory);
+            MyFreePool (&SelfDirectory);
         } // while
     }
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
-
-    if (NumFound < 1) {
-        LOG(1, LOG_LINE_NORMAL, L"No Drivers Found");
-    }
     #endif
 
     // connect all devices

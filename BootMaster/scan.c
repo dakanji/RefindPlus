@@ -1982,21 +1982,15 @@ VOID ScanFirmwareDefined (
     #if REFIT_DEBUG > 0
     if (GlobalConfig.DontScanFirmware != NULL) {
         LOG(2, LOG_LINE_NORMAL,
-            L"GlobalConfig.DontScanFirmware = '%s'",
+            L"GlobalConfig.DontScanFirmware:- '%s'",
             GlobalConfig.DontScanFirmware
         );
     }
-    else {
-        LOG(2, LOG_LINE_NORMAL, L"GlobalConfig.DontScanFirmware is Empty!!");
-    }
     if (DontScanFirmware != NULL) {
         LOG(2, LOG_LINE_NORMAL,
-            L"Firmware hidden tags = '%s'",
+            L"Firmware Hidden Tags:- '%s'",
             DontScanFirmware
         );
-    }
-    else {
-        LOG(2, LOG_LINE_NORMAL, L"Firmware hidden tags is Empty!!");
     }
     #endif
 
@@ -2006,7 +2000,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Also not scanning for shells");
+        LOG(2, LOG_LINE_NORMAL, L"Also not Scanning for UEFI Shell");
         #endif
 
         MergeStrings(&DontScanFirmware, L"shell", L',');
@@ -2015,7 +2009,7 @@ VOID ScanFirmwareDefined (
     #if REFIT_DEBUG > 0
     if (DontScanFirmware != NULL) {
         LOG(3, LOG_LINE_NORMAL,
-            L"Merged firmware dont-scan list is '%s'",
+            L"Merged Firmware Scan Exclusion List:- '%s'",
             DontScanFirmware
         );
     }
