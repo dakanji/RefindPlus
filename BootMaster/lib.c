@@ -532,20 +532,6 @@ EFI_STATUS EfivarGetRaw (
     UINTN        BufferSize    = 0;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
-    static VOID    *PrevBootBuf;
-    static UINTN    PrevBootSize;
-    static BOOLEAN  GotPrevBoot = FALSE;
-
-    if (GotPrevBoot &&
-        MyStriCmp (VariableName, L"PreviousBoot") &&
-        GuidsAreEqual (VendorGUID, &RefindPlusGuid)
-    ) {
-        *VariableData = PrevBootBuf;
-        *VariableSize = PrevBootSize;
-
-        return EFI_SUCCESS;
-    }
-
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
     #endif
@@ -605,12 +591,8 @@ EFI_STATUS EfivarGetRaw (
             }
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
-                GotPrevBoot  =  TRUE;
-                PrevBootBuf  =  TmpBuffer;
-                PrevBootSize = *VariableSize;
-
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", PrevBootBuf);
+                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", TmpBuffer);
                 LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
@@ -672,12 +654,8 @@ EFI_STATUS EfivarGetRaw (
             }
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
-                GotPrevBoot  =  TRUE;
-                PrevBootBuf  =  TmpBuffer;
-                PrevBootSize = *VariableSize;
-
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", PrevBootBuf);
+                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", TmpBuffer);
                 LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }

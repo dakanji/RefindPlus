@@ -508,7 +508,7 @@ EG_IMAGE * egLoadIcon (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In 'egLoadIcon': '%r' returned while trying to load '%s'!!",
+            L"In 'egLoadIcon', '%r' returned while trying to load '%s'!!",
             Status, Path
         );
         #endif
