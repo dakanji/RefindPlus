@@ -686,9 +686,6 @@ VOID PauseForKey (VOID) {
     UINTN   WaitOut;
     BOOLEAN Breakout = FALSE;
 
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
-
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"* Paused for Error/Warning *", NEXTLINE);
 
@@ -699,13 +696,15 @@ VOID PauseForKey (VOID) {
         PrintUglyText (L"Press Any Key to Continue", NEXTLINE);
     }
 
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 5 Seconds");
         #endif
 
         for (i = 0; i < 5; ++i) {
-            ReadAllKeyStrokes();
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
@@ -739,7 +738,6 @@ VOID PauseForKey (VOID) {
         #endif
 
         for (;;) {
-            ReadAllKeyStrokes();
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
@@ -762,10 +760,10 @@ VOID PauseForKey (VOID) {
         } // for
     }
 
-    GraphicsScreenDirty = TRUE;
-
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+
+    GraphicsScreenDirty = TRUE;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
