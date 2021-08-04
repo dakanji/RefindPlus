@@ -762,6 +762,13 @@ EFI_STATUS EfivarSetRaw (
     ) {
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
+            // Clear the current value
+            Status = egSaveFile (
+                gVarsDir, VariableName,
+                NULL, 0
+            );
+
+            // Store the new value
             Status = egSaveFile (
                 gVarsDir, VariableName,
                 (UINT8 *) VariableData, VariableSize
@@ -791,6 +798,14 @@ EFI_STATUS EfivarSetRaw (
             StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
         }
 
+        // Clear the current value
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, VariableName,
+            VendorGUID, StorageFlags,
+            0, NULL
+        );
+
+        // Store the new value
         Status = REFIT_CALL_5_WRAPPER(
             gRT->SetVariable, VariableName,
             VendorGUID, StorageFlags,

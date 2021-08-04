@@ -399,16 +399,17 @@ EFI_STATUS egSaveFile (
         return Status;
     }
 
-    if (FileDataLength > 0) {
+    if (FileDataLength == 0) {
+        Status = REFIT_CALL_1_WRAPPER(FileHandle->Delete, FileHandle);
+    }
+    else {
         BufferSize = FileDataLength;
         Status     = REFIT_CALL_3_WRAPPER(
             FileHandle->Write, FileHandle,
             &BufferSize, FileData
         );
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-    } else {
-        Status = REFIT_CALL_1_WRAPPER(FileHandle->Delete, FileHandle);
-    } // if/else (FileDataLength > 0)
+    }
 
     return Status;
 }
