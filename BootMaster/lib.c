@@ -727,7 +727,7 @@ EFI_STATUS EfivarSetRaw (
         MuteLogger = FALSE;
 
         if (!EFI_ERROR (Status)) {
-            // First check for setting match (compare mem as per upstream)
+            // Check for settings match
             SettingMatch = (
                 VariableSize == OldSize &&
                 CompareMem (VariableData, OldBuf, VariableSize) == 0
@@ -736,20 +736,7 @@ EFI_STATUS EfivarSetRaw (
             if (SettingMatch) {
                 // Return if settings match
                 MyFreePool (&OldBuf);
-                return EFI_ALREADY_STARTED;
-            }
 
-            // Alternative check for setting match (compare Ascii string)
-            SettingMatch = (
-                MyAsciiStrStr (
-                    (const CHAR8 *) OldBuf,
-                    (const CHAR8 *) VariableData
-                ) != NULL
-            );
-
-            if (SettingMatch) {
-                // Return if settings match
-                MyFreePool (&OldBuf);
                 return EFI_ALREADY_STARTED;
             }
         }
