@@ -67,6 +67,7 @@ CHAR8 *MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
 
 VOID ToLower (CHAR16 * MyString);
 VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
+VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16 *StrCHAR16,

@@ -273,15 +273,24 @@ VOID MergeStrings (
     CHAR16* NewString;
 
     if (*First != NULL) {
-        Length1 = StrLen(*First);
+        Length1 = StrLen (*First);
     }
 
     if (Second != NULL) {
-        Length2 = StrLen(Second);
+        Length2 = StrLen (Second);
     }
 
-    NewString = AllocatePool(sizeof (CHAR16) * (Length1 + Length2 + 2));
-    if (NewString != NULL) {
+    NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
+
+    if (!NewString) {
+        CHAR16 *MsgStr = L"In 'MergeStrings': Out of Resources While Allocating 'NewString'!!";
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_THREE_STAR_SEP, L"%s");
+        #endif
+
+        Print (L"%s\n", MsgStr);
+    }
+    else {
         if ((*First != NULL) && (Length1 == 0)) {
             ReleasePtr (*First);
             *First = NULL;
@@ -290,7 +299,7 @@ VOID MergeStrings (
         NewString[0] = L'\0';
 
         if (*First != NULL) {
-            StrCat(NewString, *First);
+            StrCat (NewString, *First);
             if (AddChar) {
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
@@ -298,16 +307,82 @@ VOID MergeStrings (
         }
 
         if (Second != NULL) {
-            StrCat(NewString, Second);
+            StrCat (NewString, Second);
         }
 
         ReleasePtr (*First);
         *First = NewString;
     }
-    else {
-        Print(L"Error! Unable to allocate memory in MergeStrings()!\n");
-    } // if/else
 } // VOID MergeStrings()
+
+// As MergeStrings but does not repeat substrings.
+VOID MergeUniqueStrings (
+    IN OUT CHAR16 **First,
+    IN CHAR16      *Second,
+    CHAR16          AddChar
+) {
+    UINTN Length1 = 0, Length2 = 0;
+    CHAR16* NewString;
+
+    if (*First != NULL) {
+        Length1 = StrLen (*First);
+    }
+
+    if (Second != NULL) {
+        Length2 = StrLen (Second);
+    }
+
+    NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
+
+    if (!NewString) {
+        CHAR16 *MsgStr = L"In 'MergeUniqueStrings': Out of Resources While Allocating 'NewString'!!";
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_THREE_STAR_SEP, L"%s");
+        #endif
+
+        Print (L"%s\n", MsgStr);
+    }
+    else {
+        if ((*First != NULL) && (Length1 == 0)) {
+            ReleasePtr (*First);
+            *First = NULL;
+        }
+
+        NewString[0] = L'\0';
+
+        if (*First != NULL) {
+            StrCat (NewString, *First);
+            if (AddChar) {
+                NewString[Length1] = AddChar;
+                NewString[Length1 + 1] = '\0';
+            }
+        }
+
+        if (Second != NULL) {
+            BOOLEAN SkipMerge = FALSE;
+
+            if (AddChar) {
+                UINTN   i       = 0;
+                CHAR16 *TestStr = NULL;
+
+                while (!SkipMerge && (TestStr = FindCommaDelimited (NewString, i++)) != NULL) {
+                    if (MyStrStr (TestStr, Second) != NULL) {
+                        SkipMerge = TRUE;
+                    }
+
+                    MyFreePool (&TestStr);
+                } // while
+            }
+
+            if (!SkipMerge) {
+                StrCat (NewString, Second);
+            }
+        }
+
+        ReleasePtr (*First);
+        *First = NewString;
+    }
+} // VOID MergeUniqueStrings()
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
 // merges each word separately. Words are defined as string fragments separated
@@ -322,7 +397,15 @@ VOID MergeWords (
 
     if (SourceString) {
         Temp = Word = p = StrDuplicate (SourceString);
-        if (Temp) {
+        if (!Temp) {
+            CHAR16 *MsgStr = L"In 'MergeWords': Out of Resources While Allocating 'Temp'!!";
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_THREE_STAR_SEP, L"%s");
+            #endif
+
+            Print (L"%s\n", MsgStr);
+        }
+        else {
             while (!LineFinished) {
                 if ((*p == L' ') ||
                     (*p == L':') ||
@@ -334,7 +417,7 @@ VOID MergeWords (
                         LineFinished = TRUE;
                     *p = L'\0';
                     if (*Word != L'\0')
-                        MergeStrings(MergeTo, Word, AddChar);
+                        MergeUniqueStrings (MergeTo, Word, AddChar);
                     Word = p + 1;
                 }
 
@@ -343,10 +426,7 @@ VOID MergeWords (
 
             MyFreePool (&Temp);
         }
-        else {
-            Print(L"Error! Unable to allocate memory in MergeWords()!\n");
-        } // if/else
-    } // if
+    }
 } // VOID MergeWords()
 
 // Restrict 'TheString' to at most 'Limit' characters.
@@ -359,31 +439,31 @@ BOOLEAN LimitStringLength (
     CHAR16 *TheString,
     UINTN    Limit
 ) {
-    CHAR16    *SubString, *TempString;
     UINTN     i;
+    CHAR16    *SubString, *TempString;
     BOOLEAN   HasChanged   = FALSE;
     BOOLEAN   WasTruncated = FALSE;
 
     // SubString will be NULL or point WITHIN TheString
-    SubString = MyStrStr(TheString, L"  ");
+    SubString = MyStrStr (TheString, L"  ");
     while (SubString != NULL) {
         i = 0;
         while (SubString[i] == L' ')
             i++;
-        if (i >= StrLen(SubString)) {
+        if (i >= StrLen (SubString)) {
             SubString[0] = '\0';
             HasChanged = TRUE;
         }
         else {
             TempString = StrDuplicate (&SubString[i]);
-            if (TempString != NULL) {
-                StrCpy(&SubString[1], TempString);
-                MyFreePool (&TempString);
-                HasChanged = TRUE;
+            if (TempString == NULL) {
+                // memory allocation problem ... abort to avoid potentially infinite loop!
+                break;
             }
             else {
-                // memory allocation problem; abort to avoid potentially infinite loop!
-                break;
+                StrCpy (&SubString[1], TempString);
+                MyFreePool (&TempString);
+                HasChanged = TRUE;
             }
         }
 

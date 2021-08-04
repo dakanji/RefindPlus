@@ -726,18 +726,7 @@ VOID SetLoaderDefaults (
             }
             #endif
 
-            CHAR16 *OurPartName = NULL;
-            if (MergeFsName &&
-                MyStriCmp (Volume->FsName, L"EFI") &&
-                MyStriCmp (Volume->PartName, L"EFI System Partition")
-            ) {
-                OurPartName = L"System Partition";
-            }
-            else {
-                OurPartName = Volume->PartName;
-            }
-
-            MergeWords (&OSIconName, OurPartName, L',');
+            MergeWords (&OSIconName, Volume->PartName, L',');
         }
     } // if/else Volume->DiskKind == DISK_KIND_NET
 
@@ -898,7 +887,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         Entry->EfiBootNum = EfiBootNum;
 
         MergeWords (&OSIconName, Entry->me.Title, L',');
-        MergeStrings (&OSIconName, L"unknown", L',');
+        MergeUniqueStrings (&OSIconName, L"Unknown", L',');
 
         if (Icon) {
             Entry->me.Image = Icon;
