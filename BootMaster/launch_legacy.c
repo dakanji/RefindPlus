@@ -805,22 +805,19 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
     CHAR16             ShortcutLetter    = 0;
-    CHAR16            *LegacyDescription = StrDuplicate (BdsOption->Description);
 
-    if (IsInSubstring (LegacyDescription, GlobalConfig.DontScanVolumes)) {
-        MyFreePool (&LegacyDescription);
-
+    if (IsInSubstring (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
         return NULL;
     }
 
     // Remove stray spaces, since many EFIs produce descriptions with lots of
     //   extra spaces, especially at the end; this throws off centering of the
     //   description on the screen.
-    LimitStringLength (LegacyDescription, 100);
+    LimitStringLength (BdsOption->Description, 100);
 
     // prepare the menu entry
     Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", LegacyDescription);
+    Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", BdsOption->Description);
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_MID,
@@ -843,7 +840,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     // create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title      = StrDuplicate (L"No boot options for legacy target");
+    SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
     SubScreen->TitleImage = Entry->me.Image;
     SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
@@ -856,7 +853,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     // default entry
     SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = PoolPrint (L"Boot %s", LegacyDescription);
+    SubEntry->me.Title = PoolPrint (L"Boot %s", BdsOption->Description);
     SubEntry->me.Tag    = TAG_LEGACY_UEFI;
     SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
@@ -868,10 +865,8 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("  - Found 'UEFI-Style Legacy (BIOS) OS' on '%s'", LegacyDescription);
+    MsgLog ("  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", BdsOption->Description);
     #endif
-
-    MyFreePool (&LegacyDescription);
 
     return Entry;
 } // static LEGACY_ENTRY * AddLegacyEntryUEFI()
