@@ -377,6 +377,10 @@ VOID MergeUniqueStrings (
             if (!SkipMerge) {
                 StrCat (NewString, Second);
             }
+            else if (AddChar) {
+                // Remove AddChar if not merging this item
+                NewString[Length1] = '\0';
+            }
         }
 
         ReleasePtr (*First);
