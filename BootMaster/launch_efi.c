@@ -76,6 +76,8 @@
 
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
+CHAR16 *BootSelection = NULL;
+
 static
 VOID WarnSecureBootError(
     CHAR16  *Name,
@@ -284,6 +286,12 @@ EFI_STATUS StartEFIImage (
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
     if (IsValidLoader (Volume->RootDir, Filename)) {
+        // Store loader name if booting and set to do so
+        if (IsBoot && BootSelection) {
+            StoreLoaderName (BootSelection);
+        }
+        BootSelection = NULL;
+
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
         // NOTE: Commented-out line below could be more efficient if file were read ahead of
         // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
@@ -633,9 +641,9 @@ VOID StartLoader (
         DoEnableAndLockVMX();
     }
 
-    LoaderPath = Basename (Entry->LoaderPath);
-    BeginExternalScreen (Entry->UseGraphicsMode, L"Booting OS");
-    StoreLoaderName (SelectionName);
+    BootSelection = SelectionName;
+    LoaderPath    = Basename (Entry->LoaderPath);
+    BeginExternalScreen (Entry->UseGraphicsMode, L"Booting into OS Loader");
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
