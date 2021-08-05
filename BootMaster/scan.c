@@ -973,20 +973,11 @@ LOADER_ENTRY * AddLoaderEntry (
 
         #if REFIT_DEBUG > 0
         MsgLog ("\n");
-        if (Volume->VolName) {
-            MsgLog (
-                "  - Found '%s' on '%s'",
-                TitleEntry,
-                SanitiseVolumeName (Volume)
-            );
-        }
-        else {
-            MsgLog (
-                "  - Found %s:- '%s'",
-                TitleEntry,
-                Entry->LoaderPath
-            );
-        }
+        MsgLog (
+            "  - Found '%s' on '%s'",
+            TitleEntry,
+            (Volume->VolName) ? Volume->VolName : Entry->LoaderPath
+        );
 
         UINTN LogLineType;
         if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {

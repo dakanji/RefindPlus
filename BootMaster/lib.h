@@ -131,6 +131,7 @@ VOID CleanUpPathNameSlashes (IN OUT CHAR16 *PathName);
 VOID FreeList (IN OUT VOID ***ListPtr, IN OUT UINTN *ElementCount);
 VOID FreeVolumes (IN OUT REFIT_VOLUME ***ListVolumes, IN OUT UINTN *ListCount);
 VOID FreeVolume (REFIT_VOLUME **Volume);
+VOID SanitiseVolumeName (REFIT_VOLUME **Volume);
 VOID AddListElement (
     IN OUT VOID  ***ListPtr,
     IN OUT UINTN   *ElementCount,
@@ -160,10 +161,6 @@ CHAR16 * FindLastDirName (IN CHAR16 *Path);
 CHAR16 * StripEfiExtension (IN CHAR16 *FileName);
 CHAR16 * GetVolumeName (IN REFIT_VOLUME *Volume);
 CHAR16 * SplitDeviceString (IN OUT CHAR16 *InString);
-
-#if REFIT_DEBUG > 0
-CHAR16 * SanitiseVolumeName (IN REFIT_VOLUME *Volume);
-#endif
 
 BOOLEAN EjectMedia (VOID);
 BOOLEAN HasWindowsBiosBootFiles (IN REFIT_VOLUME *Volume);

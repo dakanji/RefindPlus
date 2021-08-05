@@ -1570,20 +1570,11 @@ VOID ScanUserConfigured (
                     else {
                         #if REFIT_DEBUG > 0
                         MsgLog ("\n");
-                        if (SelfVolume->VolName) {
-                            MsgLog (
-                                "  - Found '%s' on '%s'",
-                                Entry->Title,
-                                SanitiseVolumeName (SelfVolume)
-                            );
-                        }
-                        else {
-                            MsgLog (
-                                "  - Found '%s' :: '%s'",
-                                Entry->Title,
-                                Entry->LoaderPath
-                            );
-                        }
+                        MsgLog (
+                            "  - Found '%s' on '%s'",
+                            Entry->Title,
+                            (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
+                        );
                         #endif
 
                         if (Entry->me.SubScreen == NULL) {

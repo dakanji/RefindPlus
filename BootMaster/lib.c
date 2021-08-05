@@ -863,42 +863,44 @@ VOID FreeList (
 //
 // volume functions
 //
-#if REFIT_DEBUG > 0
-CHAR16 * SanitiseVolumeName (
-    IN REFIT_VOLUME *Volume
+VOID SanitiseVolumeName (
+    REFIT_VOLUME **Volume
 ) {
     CHAR16 *VolumeName = NULL;
 
-    if (Volume->VolName) {
-        if (MyStrStrIns (Volume->VolName, L"Microsoft Reserved Partition") != NULL) {
-            VolumeName = L"Microsoft Reserved Partition";
-        }
-        else if (MyStrStrIns (Volume->VolName, L"Basic Data Partition") != NULL) {
-            VolumeName = L"Basic Data Partition";
-        }
-        else if (MyStrStrIns (Volume->VolName, L"EFI System Partition") != NULL) {
-            VolumeName = L"EFI System Partition";
-        }
-        else {
-                 if (MyStrStrIns (Volume->VolName, L"Whole Disk Volume") != NULL) VolumeName = L"Whole Disk Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Unknown Volume")    != NULL) VolumeName = L"Unknown Volume";
-            else if (MyStrStrIns (Volume->VolName, L"HFS+ Volume")       != NULL) VolumeName = L"HFS+ Volume";
-            else if (MyStrStrIns (Volume->VolName, L"NTFS Volume")       != NULL) VolumeName = L"NTFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"FAT Volume")        != NULL) VolumeName = L"FAT Volume";
-            else if (MyStrStrIns (Volume->VolName, L"XFS Volume")        != NULL) VolumeName = L"XFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext4 Volume")       != NULL) VolumeName = L"Ext4 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext3 Volume")       != NULL) VolumeName = L"Ext3 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Ext2 Volume")       != NULL) VolumeName = L"Ext2 Volume";
-            else if (MyStrStrIns (Volume->VolName, L"Btrfs Volume")      != NULL) VolumeName = L"BTRFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"ReiserFS Volume")   != NULL) VolumeName = L"ReiserFS Volume";
-            else if (MyStrStrIns (Volume->VolName, L"ISO-9660 Volume")   != NULL) VolumeName = L"ISO-9660 Volume";
-            else                                                                  VolumeName = Volume->VolName;
+    if (Volume && *Volume) {
+        if ((*Volume)->VolName) {
+            if (MyStrStrIns ((*Volume)->VolName, L"EFI System Partition")) {
+                VolumeName = L"EFI System Partition";
+            }
+            else if (MyStrStrIns ((*Volume)->VolName, L"Basic Data Partition")) {
+                VolumeName = L"Basic Data Partition";
+            }
+            else if (MyStrStrIns ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
+                VolumeName = L"Microsoft Reserved Partition";
+            }
+            else {
+                     if (MyStrStrIns ((*Volume)->VolName, L"Whole Disk Volume")) VolumeName = L"Whole Disk Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"Unknown Volume")   ) VolumeName = L"Unknown Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"HFS+ Volume")      ) VolumeName = L"HFS+ Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"NTFS Volume")      ) VolumeName = L"NTFS Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"FAT Volume")       ) VolumeName = L"FAT Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"XFS Volume")       ) VolumeName = L"XFS Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"Ext4 Volume")      ) VolumeName = L"Ext4 Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"Ext3 Volume")      ) VolumeName = L"Ext3 Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"Ext2 Volume")      ) VolumeName = L"Ext2 Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"Btrfs Volume")     ) VolumeName = L"BTRFS Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"ReiserFS Volume")  ) VolumeName = L"ReiserFS Volume";
+                else if (MyStrStrIns ((*Volume)->VolName, L"ISO-9660 Volume")  ) VolumeName = L"ISO-9660 Volume";
+            }
         }
     }
 
-    return VolumeName;
-} // CHAR16 * SanitiseVolumeName ()
-#endif
+    if (VolumeName != NULL) {
+        ReleasePtr ((*Volume)->VolName);
+        (*Volume)->VolName = StrDuplicate (VolumeName);
+    }
+} // VOID SanitiseVolumeName()
 
 VOID FreeVolumes (
     IN OUT REFIT_VOLUME  ***ListVolumes,
@@ -1890,6 +1892,7 @@ VOID ScanVolume (
 
     SetFilesystemName (Volume);
     Volume->VolName = GetVolumeName (Volume);
+    SanitiseVolumeName (&Volume);
 
     if (Volume->RootDir == NULL) {
         Volume->IsReadable = FALSE;
