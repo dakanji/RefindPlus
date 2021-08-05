@@ -663,7 +663,6 @@ VOID StartTool (
 
     LoaderPath = Basename (Entry->LoaderPath);
     BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
-    StoreLoaderName (Entry->me.Title);
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
