@@ -1,6 +1,19 @@
 0.13.2.AH (Pre-Release):
 -----------------------
-- PENDING
+- Fixes Static 'PreviousBoot' Setup
+  * The actually booted loader was not recorded if a tool had been run beforehand
+  * Such a run of a tool meant that tool was 'fixed' as the 'PreviousBoot' item
+  * The intented outcome of having a static setup could not be realised
+  * This bug was introduced in v0.13.2.AG (Commit add53ba)
+- Improves 'PreviousBoot' Implementation
+  * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to the saved
+  * Such Loaders are only saved after verification and not regardless as was the case
+- Improves NVRAM Management
+  * NVRAM Entries (Emulated and Hardware) are fully cleared before new entries are made
+- Extends Memory Management Fixes
+  * Additional memory management/allocation improvements
+
+
 
 
 0.13.2.AG (03 Aug 2021):
@@ -20,7 +33,7 @@
   * These were not loaded as expected
 - Fixes Hangs Resulting from Changed Device Handles
   * RefindPlus hangs on return from third party tools such as GDisk that change device handles
-  * RefindPlus now manages this situation and avoids such hanging 
+  * RefindPlus now manages this situation and avoids such hanging
 - Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
   * Some UEFI PC appear to spontaneously generate invalid load options
   * These resulted in a halt that required one or more key presses to proceed
