@@ -2372,9 +2372,15 @@ VOID ScanVolumes (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"%-41s%-41s%-20s%s",
+            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD
+        );
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
-        MsgLog ("%-41s%-41s%-20s%s", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
+        MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
+        MyFreePool (&MsgStr);
         #endif
     }
 
