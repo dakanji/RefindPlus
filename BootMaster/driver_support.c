@@ -693,13 +693,14 @@ BOOLEAN LoadDrivers(
 ) {
     CHAR16  *Directory;
     CHAR16  *SelfDirectory;
-    CHAR16  *MsgNotFound = L"Not Found or Empty";
     UINTN    Length;
     UINTN    i        = 0;
     UINTN    NumFound = 0;
     UINTN    CurFound = 0;
 
     #if REFIT_DEBUG > 0
+    CHAR16  *MsgNotFound = L"Not Found or Empty";
+
     LOG(1, LOG_LINE_SEPARATOR, L"Loading Drivers");
     #endif
 
