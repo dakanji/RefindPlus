@@ -131,8 +131,8 @@ EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
 EFI_GUID           GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
 EFI_GUID           GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
 EFI_GUID           GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
-EFI_GUID           GuidAppleTvRec      = APPLE_TV_RECOVERY_GUID;
 EFI_GUID           GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
+EFI_GUID           GuidAppleTvRec      = APPLE_TV_RECOVERY_GUID;
 
 
 extern EFI_GUID RefindPlusGuid;
@@ -260,7 +260,7 @@ EFI_STATUS FinishInitRefitLib (VOID) {
     if (SelfRootDir == NULL) {
         SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
         if (SelfRootDir == NULL) {
-            CheckError (EFI_LOAD_ERROR, L"while (re)opening our installation volume");
+            CheckError (EFI_LOAD_ERROR, L"While (Re)Opening Installation Volume");
 
             return EFI_LOAD_ERROR;
         }
@@ -271,7 +271,7 @@ EFI_STATUS FinishInitRefitLib (VOID) {
         &SelfDir, SelfDirPath,
         EFI_FILE_MODE_READ, 0
     );
-    if (CheckFatalError (Status, L"while opening our installation directory")) {
+    if (CheckFatalError (Status, L"While Opening Installation Directory")) {
         return EFI_LOAD_ERROR;
     }
 
@@ -565,7 +565,7 @@ EFI_STATUS EfivarGetRaw (
             MyFreePool (&MsgStr);
 
             MsgStr = StrDuplicate (
-                L"Activate the 'use_nvram' option to silence this warning"
+                L"Activate the 'use_nvram' Option to Silence this Warning"
             );
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("         %s", MsgStr);
@@ -954,7 +954,7 @@ REFIT_VOLUME * CopyVolume (
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_THREE_STAR_SEP,
-                        L"In 'CopyVolume', Out of Resources While Allocating MbrPartitionTable!!"
+                        L"In 'CopyVolume', Out of Resources While Allocating 'MbrPartitionTable'!!"
                     );
                     #endif
                 }
@@ -1458,7 +1458,7 @@ VOID SetVolumeBadgeIcon (
 ) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"VolumeBadge Config Setting is 'Hidden'");
+        LOG(2, LOG_LINE_NORMAL, L"VolumeBadge Config Setting:- 'Hidden'");
         #endif
 
         return;
@@ -1836,7 +1836,7 @@ VOID ScanVolume (
 
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Could not get DiskDevicePath for volume!!");
+                    LOG(1, LOG_LINE_NORMAL, L"Could Not Get DiskDevicePath for Volume!!");
                     #endif
                 }
                 else {
@@ -1854,7 +1854,7 @@ VOID ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Could not get WholeDiskBlockIO for volume!!");
+                    LOG(1, LOG_LINE_NORMAL, L"Could Not Get WholeDiskBlockIO for Volume!!");
                     #endif
                 }
                 else {
@@ -1866,7 +1866,7 @@ VOID ScanVolume (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Could not locate device path for volume!!");
+                LOG(1, LOG_LINE_NORMAL, L"Could Not Locate Device Path for Volume!!");
                 #endif
             }
         }
@@ -1877,7 +1877,7 @@ VOID ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            CHAR16 *MsgStr = L"Volume Considered Non-Bootable, but Boot Code is Present!!";
+            CHAR16 *MsgStr = L"Volume Considered Non-Bootable but Boot Code is Present!!";
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
@@ -1941,7 +1941,7 @@ VOID ScanExtendedPartition (
         );
         if (EFI_ERROR (Status)) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Error %d reading blocks from disk", Status);
+            LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
             #endif
 
             break;
@@ -2209,7 +2209,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
 
-        MsgStr = PoolPrint (L"In 'ScanVolumes', %r While Allocating 'UuidList'!!", Status);
+        MsgStr = PoolPrint (L"In 'ScanVolumes', '%r' While Allocating 'UuidList'!!", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s", MsgStr);
@@ -2233,7 +2233,7 @@ VOID ScanVolumes (VOID) {
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
 
-            MsgStr = PoolPrint (L"In 'ScanVolumes', %r While Allocating 'Volumes'!!", Status);
+            MsgStr = PoolPrint (L"In 'ScanVolumes', '%r' While Allocating 'Volumes'!!", Status);
             LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
             MsgLog ("\n\n");
             MsgLog ("%s", MsgStr);
@@ -2357,7 +2357,7 @@ VOID ScanVolumes (VOID) {
         else {
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
             MsgLog (
-                "INFO: Self Volume:- '%s:::%s'\n\n",
+                "INFO: Self Volume:- '%s ::: %s'\n\n",
                 SelfVolume->VolName, SelfGUID
             );
             MyFreePool (&SelfGUID);
@@ -2566,7 +2566,7 @@ VOID SetVolumeIcons (VOID) {
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting '.VolumeIcon' icns for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Setting '.VolumeIcon' Icons for Internal Volumes");
     #endif
 
     if (GlobalConfig.IgnoreVolumeICNS) {
@@ -2704,7 +2704,7 @@ EFI_STATUS DirNextEntry (
             if (BufferSize <= LastBufferSize) {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"FS Driver requests bad buffer size %d (was %d), using %d instead",
+                    L"FS Driver Requests Bad Buffer Size %d (was %d) ... Using %d Instead",
                     BufferSize,
                     LastBufferSize,
                     LastBufferSize * 2
@@ -2719,7 +2719,7 @@ EFI_STATUS DirNextEntry (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Reallocating buffer from %d to %d",
+                    L"Reallocating Buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);

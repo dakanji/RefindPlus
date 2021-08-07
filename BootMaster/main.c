@@ -1137,7 +1137,7 @@ VOID AboutRefindPlus (VOID) {
 
     if (AboutMenu.EntryCount > 0) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen (Not Updated)");
+        LOG(1, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
         #endif
     }
     else {
@@ -1317,7 +1317,7 @@ BOOLEAN SecureBootSetup (VOID) {
     BOOLEAN     Success = FALSE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Setting up Secure Boot (If Applicable)");
+    LOG(1, LOG_LINE_NORMAL, L"Setting Secure Boot Up (If Applicable)");
     #endif
 
     if (secure_mode() && ShimLoaded()) {
