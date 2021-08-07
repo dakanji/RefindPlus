@@ -1920,7 +1920,7 @@ EFI_STATUS EFIAPI efi_main (
 
     // Apply Scan Delay if set
     if (GlobalConfig.ScanDelay > 0) {
-        MsgStr = StrDuplicate (L"Paused for ScanDelay");
+        MsgStr = StrDuplicate (L"Paused for Scan Delay");
 
         UINTN Trigger = 3;
         if (GlobalConfig.ScanDelay > Trigger) {
@@ -1931,7 +1931,7 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_THIN_SEP, L"Scan Delay", MsgStr);
+        LOG(2, LOG_LINE_THIN_SEP, L"Scan Delay");
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         #endif
