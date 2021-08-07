@@ -142,7 +142,7 @@ static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryFirmware = {
-    L"Boot into Firmaware",
+    L"Reboot into Firmware",
     TAG_FIRMWARE,
     1, 0, 0,
     NULL, NULL, NULL
@@ -351,7 +351,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 LOG(3, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
                 #endif
 
-                SubEntry->me.Title    = StrDuplicate (L"Boot using default options");
+                SubEntry->me.Title    = StrDuplicate (L"Boot using Default Options");
                 MainOptions           = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (&MainOptions);
@@ -404,7 +404,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS with a 64-bit kernel";
+                SubEntry->me.Title        = L"Boot Mac OS with a 64-bit Kernel";
                 SubEntry->LoadOptions     = L"arch=x86_64";
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -412,7 +412,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = L"Boot Mac OS with a 32-bit kernel";
+                SubEntry->me.Title        = L"Boot Mac OS with a 32-bit Kernel";
                 SubEntry->LoadOptions     = L"arch=i386";
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -422,7 +422,7 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode";
+                    SubEntry->me.Title        = L"Boot Mac OS in Verbose Mode";
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -431,7 +431,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode (64-bit)";
+                    SubEntry->me.Title        = L"Boot Mac OS in Verbose Mode (64-bit)";
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v arch=x86_64";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -439,7 +439,7 @@ VOID GenerateSubScreen (
 
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = L"Boot Mac OS in verbose mode (32-bit)";
+                    SubEntry->me.Title        = L"Boot Mac OS in Verbose Mode (32-bit)";
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v arch=i386";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -448,7 +448,7 @@ VOID GenerateSubScreen (
 
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = L"Boot Mac OS in single user mode";
+                    SubEntry->me.Title        = L"Boot Mac OS in Single User Mode";
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v -s";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -458,7 +458,7 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = L"Boot Mac OS in safe mode";
+                    SubEntry->me.Title        = L"Boot Mac OS in Safe Mode";
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = L"-v -x";
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
@@ -630,7 +630,7 @@ VOID SetLoaderDefaults (
                 // locate a custom icon for the loader
                 // Anything found here takes precedence over the "hints" in the OSIconName variable
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Trying to load icon from boot loader's directory");
+                LOG(4, LOG_LINE_NORMAL, L"Trying to Load Icon from Bootloader Directory");
                 #endif
 
                 if (!Entry->me.Image) {
@@ -684,7 +684,7 @@ VOID SetLoaderDefaults (
                 #if REFIT_DEBUG > 0
                 if (Entry->me.Image == NULL) {
                     LOG(4, LOG_LINE_NORMAL,
-                        L"Merging hints based on filesystem name ('%s')",
+                        L"Merge Hints Based on Filesystem Name:- '%s'",
                         Volume->FsName
                     );
                 }
@@ -697,7 +697,7 @@ VOID SetLoaderDefaults (
                     #if REFIT_DEBUG > 0
                     if (Entry->me.Image == NULL) {
                         LOG(4, LOG_LINE_NORMAL,
-                            L"Merging hints based on volume name ('%s')",
+                            L"Merge Hints Based on Volume Name:- '%s'",
                             Volume->VolName
                         );
                     }
@@ -712,7 +712,7 @@ VOID SetLoaderDefaults (
             #if REFIT_DEBUG > 0
             if (Entry->me.Image == NULL) {
                 LOG(4, LOG_LINE_NORMAL,
-                    L"Merging hints based on partition name ('%s')",
+                    L"Merge Hints Based on Partition Name:- '%s'",
                     Volume->PartName
                 );
             }
@@ -724,7 +724,7 @@ VOID SetLoaderDefaults (
 
     #if REFIT_DEBUG > 0
     if (Entry->me.Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
+        LOG(4, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
     }
     #endif
 
@@ -828,7 +828,7 @@ VOID SetLoaderDefaults (
     if (Entry->me.Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"Trying to locate an icon based on hints '%s'",
+            L"Trying to Locate an Icon Based on Hints:- '%s'",
             OSIconName
         );
         #endif
@@ -937,8 +937,8 @@ LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Adding loader entry for '%s'", Entry->Title);
-        LOG(2, LOG_LINE_NORMAL, L"Loader path is '%s'", LoaderPath);
+        LOG(1, LOG_LINE_NORMAL, L"Adding Loader Entry for '%s'", Entry->Title);
+        LOG(2, LOG_LINE_NORMAL, L"Loader Path is '%s'", LoaderPath);
         #endif
 
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
@@ -992,7 +992,7 @@ LOADER_ENTRY * AddLoaderEntry (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID, L"Could not initialise loader entry!!");
+        LOG(1, LOG_THREE_STAR_MID, L"Could Not Initialise Loader Entry!!");
         #endif
     }
 
@@ -1540,7 +1540,14 @@ VOID ScanNetboot (VOID) {
         Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
         if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
             NetVolume = CopyVolume (SelfVolume);
-            if (NetVolume) {
+            if (!NetVolume) {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_THREE_STAR_SEP,
+                    L"In 'ScanNetboot', Out of Resources While Allocating 'NetVolume'!!"
+                );
+                #endif
+            }
+            else {
                 NetVolume->DiskKind = DISK_KIND_NET;
 
                 egFreeImage (NetVolume->VolBadgeImage);
@@ -1553,13 +1560,6 @@ VOID ScanNetboot (VOID) {
                 AddLoaderEntry (iPXEFileName, Location, NetVolume, TRUE);
 
                 FreeVolume (&NetVolume);
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP,
-                    L"In 'ScanNetboot': Out of Resources While Allocating NetVolume!!"
-                );
-                #endif
             }
         }
     }
@@ -2433,13 +2433,6 @@ BOOLEAN IsValidTool (
         return FALSE;
     }
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL,
-        L"Checking Tool Validity:- '%s'",
-        PathName
-    );
-    #endif
-
     if (gHiddenTools == NULL) {
         DontScanTools = ReadHiddenTags (L"HiddenTools");
         if (DontScanTools != NULL) {
@@ -2453,6 +2446,13 @@ BOOLEAN IsValidTool (
         DontScanTools = StrDuplicate (gHiddenTools);
     }
     MergeStrings (&DontScanTools, GlobalConfig.DontScanTools, L',');
+
+    #if REFIT_DEBUG > 0
+    LOG(4, LOG_LINE_NORMAL,
+        L"Check File is Valid:- '%s'",
+        PathName
+    );
+    #endif
 
     if (FileExists (BaseVolume->RootDir, PathName) &&
         IsValidLoader (BaseVolume->RootDir, PathName)
@@ -2775,7 +2775,7 @@ VOID ScanForTools (VOID) {
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL,
-                        L"Showtools includes firmware, but 'OsIndicationsSupported' is missing"
+                        L"'Showtools' includes firmware but 'OsIndicationsSupported' is missing!!"
                     );
                     #endif
                 }
@@ -2798,7 +2798,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
-                            L"Adding Shell tag for '%s' on '%s'",
+                            L"Adding Shell Tag for '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
                         );
@@ -2855,7 +2855,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
-                            L"Adding Hybrid MBR tool tag for '%s' on '%s'",
+                            L"Adding Hybrid MBR Tool Tag for '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
                         );
@@ -2904,7 +2904,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
-                            L"Adding GPT fdisk tag for '%s' on '%s'",
+                            L"Adding GDisk Tag for '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
                         );
@@ -2914,7 +2914,7 @@ VOID ScanForTools (VOID) {
                         AddToolEntry (
                             SelfVolume,
                             FileName,
-                            L"disk partitioning tool",
+                            L"Disk Partitioning Tool",
                             BuiltinIcon (BUILTIN_ICON_TOOL_PART),
                             'G',
                             FALSE
@@ -2954,7 +2954,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
-                            L"Adding Netboot tag for '%s' on '%s'",
+                            L"Adding Netboot Tag for '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
                         );
@@ -3010,7 +3010,7 @@ VOID ScanForTools (VOID) {
                         ) {
                             #if REFIT_DEBUG > 0
                             LOG(1, LOG_LINE_NORMAL,
-                                L"Adding Apple Recovery tag for '%s' on '%s'",
+                                L"Adding Apple Recovery Tag for '%s' on '%s'",
                                 FileName, Volumes[VolumeIndex]->VolName
                             );
                             #endif
@@ -3069,7 +3069,7 @@ VOID ScanForTools (VOID) {
                         ) {
                             #if REFIT_DEBUG > 0
                             LOG(1, LOG_LINE_NORMAL,
-                                L"Adding Windows Recovery tag for '%s' on '%s'",
+                                L"Adding Windows Recovery Tag for '%s' on '%s'",
                                 FileName, Volumes[VolumeIndex]->VolName
                             );
                             #endif

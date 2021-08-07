@@ -449,7 +449,7 @@ EFI_STATUS StartLegacyImageList (
     }
 
     Print (
-        L"Starting Mac-Style Legacy (BIOS) Loader\nUsing load options:- '%s'\n",
+        L"Starting 'Mac-Style' Legacy (BIOS) Loader\nUsing Load Options:- '%s'\n\n",
         FullLoadOptions ? FullLoadOptions : L""
     );
 
@@ -472,7 +472,7 @@ EFI_STATUS StartLegacyImageList (
         }
     } // for
 
-    if (CheckError (Status, L"while loading legacy loader")) {
+    if (CheckError (Status, L"While Loading 'Mac-Style' Legacy (BIOS) Loader")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 1;
         }
@@ -488,7 +488,7 @@ EFI_STATUS StartLegacyImageList (
     );
 
     ReturnStatus = Status;
-    if (CheckError (Status, L"while getting a LoadedImageProtocol handle")) {
+    if (CheckError (Status, L"While Fetching LoadedImageProtocol Handle!!")) {
         if (ErrorInStep != NULL) {
             *ErrorInStep = 2;
         }
@@ -504,7 +504,7 @@ EFI_STATUS StartLegacyImageList (
 
     // close open file handles
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Mac-style Legacy (BIOS) Loader");
+    LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy (BIOS) Loader");
     #endif
 
     UninitRefitLib();
@@ -517,9 +517,9 @@ EFI_STATUS StartLegacyImageList (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    if (CheckError (Status, L"returned from legacy loader")) {
+    if (CheckError (Status, L"Returned From 'Mac-Style' Legacy (BIOS) Loader")) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"returned from legacy loader");
+        LOG(1, LOG_LINE_NORMAL, L"Returned From 'Mac-Style' Legacy (BIOS) Loader");
         #endif
 
         if (ErrorInStep != NULL) {
@@ -650,16 +650,20 @@ VOID StartLegacyUEFI (
     LEGACY_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
+    CHAR16 *MsgStrA = L"'UEFI-Style' Legacy (BIOS) OS";
+    CHAR16 *MsgStrB = PoolPrint (L"Booting %s", MsgStrA);
+    CHAR16 *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
+
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_NORMAL,
-        L"Launching 'UEFI-style' Legacy (BIOS) OS:- '%s'",
-        SelectionName
+        L"Launching %s:- '%s'",
+        MsgStrA, SelectionName
     );
     #endif
 
     IsBoot = TRUE;
 
-    BeginExternalScreen (TRUE, L"Booting 'UEFI-style' Legacy (BIOS) OS");
+    BeginExternalScreen (TRUE, MsgStrB);
     StoreLoaderName (SelectionName);
 
     UninitRefitLib();
@@ -670,16 +674,20 @@ VOID StartLegacyUEFI (
     ReinitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Failure booting Legacy (BIOS) OS");
+    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStrC);
     #endif
 
-    Print(L"Failure booting Legacy (BIOS) OS");
+    Print(L"%s", MsgStrC);
     PauseForKey();
+
+    MyFreePool (&MsgStrB);
+    MyFreePool (&MsgStrC);
+
     FinishExternalScreen();
 } // static VOID StartLegacyUEFI()
 
 static
-LEGACY_ENTRY * AddLegacyEntry (
+VOID AddLegacyEntry (
     IN CHAR16       *LoaderTitle,
     IN REFIT_VOLUME *Volume
 ) {
@@ -719,7 +727,7 @@ LEGACY_ENTRY * AddLegacyEntry (
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (&LegacyTitle);
 
-       return NULL;
+       return;
     }
 
     #if REFIT_DEBUG > 0
@@ -742,10 +750,18 @@ LEGACY_ENTRY * AddLegacyEntry (
 
     // prepare the menu entry
     Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+
+    if (!Entry) {
+        MyFreePool (&LegacyTitle);
+
+        return;
+    }
+
+    Entry->me.Row            = 0;
     Entry->Enabled           = TRUE;
     Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
-    Entry->me.Row            = 0;
+    Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (Volume->OSIconName, L"legacy", FALSE);
     Entry->me.BadgeImage     = Volume->VolBadgeImage;
@@ -761,43 +777,43 @@ LEGACY_ENTRY * AddLegacyEntry (
 
     // create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title = PoolPrint (
-        L"Boot Options for %s on %s",
-        LoaderTitle, VolDesc
-     );
+    if (SubScreen) {
+        SubScreen->Title = PoolPrint (
+            L"Boot Options for %s on %s",
+            LoaderTitle, VolDesc
+         );
 
-    SubScreen->TitleImage = Entry->me.Image;
-    SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
+        SubScreen->TitleImage = Entry->me.Image;
+        SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
-    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-       SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
+        if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
+           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
+        }
+        else {
+           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
+        }
+
+        // default entry
+        SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+        SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
+        SubEntry->me.Tag      = TAG_LEGACY;
+        SubEntry->Volume      = Entry->Volume;
+        SubEntry->LoadOptions = Entry->LoadOptions;
+
+        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+        AddMenuEntry (SubScreen, &MenuEntryReturn);
+
+        Entry->me.SubScreen = SubScreen;
     }
-    else {
-       SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
-    }
-
-    // default entry
-    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
-    SubEntry->me.Tag      = TAG_LEGACY;
-    SubEntry->Volume      = Entry->Volume;
-    SubEntry->LoadOptions = Entry->LoadOptions;
-
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-    AddMenuEntry (SubScreen, &MenuEntryReturn);
-
-    Entry->me.SubScreen = SubScreen;
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
-
-    return Entry;
-} // static LEGACY_ENTRY * AddLegacyEntry()
+} // static VOID AddLegacyEntry()
 
 
 /**
     Create a RefindPlus boot option from a Legacy BIOS protocol option.
 */
 static
-LEGACY_ENTRY * AddLegacyEntryUEFI (
+VOID AddLegacyEntryUEFI (
     BDS_COMMON_OPTION *BdsOption,
     IN UINT16          DiskType
 ) {
@@ -807,7 +823,7 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
     CHAR16             ShortcutLetter    = 0;
 
     if (IsInSubstring (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
-        return NULL;
+        return;
     }
 
     // Remove stray spaces, since many EFIs produce descriptions with lots of
@@ -817,17 +833,27 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     // prepare the menu entry
     Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    Entry->me.Title = PoolPrint (L"Boot Legacy (BIOS) OS from %s", BdsOption->Description);
+
+    if (!Entry) {
+        return;
+    }
+
+    Entry->me.Title = PoolPrint (
+        L"Boot Legacy (BIOS) OS from %s",
+        BdsOption->Description
+    );
 
     #if REFIT_DEBUG > 0
+    LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG(1, LOG_THREE_STAR_MID,
-        L"Adding UEFI-style Legacy (BIOS) Entry for '%s'",
+        L"Adding 'UEFI-Style' Legacy (BIOS) Entry for '%s'",
         Entry->me.Title
     );
     #endif
 
-    Entry->me.Tag            = TAG_LEGACY_UEFI;
     Entry->me.Row            = 0;
+    Entry->me.Tag            = TAG_LEGACY_UEFI;
+    Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (L"legacy", L"legacy", TRUE);
     Entry->LoadOptions       = (DiskType == BBS_CDROM)
@@ -840,36 +866,35 @@ LEGACY_ENTRY * AddLegacyEntryUEFI (
 
     // create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
-    SubScreen->TitleImage = Entry->me.Image;
-    SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
+    if (SubScreen) {
+        SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
+        SubScreen->TitleImage = Entry->me.Image;
+        SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
-    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-       SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
+        if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
+           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
+        }
+        else {
+           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
+        }
+
+        // default entry
+        SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+        SubEntry->me.Title  = PoolPrint (L"Boot %s", BdsOption->Description);
+        SubEntry->me.Tag    = TAG_LEGACY_UEFI;
+        SubEntry->BdsOption = CopyBdsOption (BdsOption);
+
+        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+        AddMenuEntry (SubScreen, &MenuEntryReturn);
+        Entry->me.SubScreen = SubScreen;
     }
-    else {
-       SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
-    }
-
-    // default entry
-    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-    SubEntry->me.Title = PoolPrint (L"Boot %s", BdsOption->Description);
-    SubEntry->me.Tag    = TAG_LEGACY_UEFI;
-    SubEntry->BdsOption = CopyBdsOption (BdsOption);
-
-    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-
-    AddMenuEntry (SubScreen, &MenuEntryReturn);
-    Entry->me.SubScreen = SubScreen;
     AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
     MsgLog ("  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", BdsOption->Description);
     #endif
-
-    return Entry;
-} // static LEGACY_ENTRY * AddLegacyEntryUEFI()
+} // static VOID AddLegacyEntryUEFI()
 
 /**
     Scan for legacy BIOS targets on machines that implement EFI_LEGACY_BIOS_PROTOCOL.
@@ -900,7 +925,7 @@ VOID ScanLegacyUEFI (
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
-    LOG(1, LogLineType, L"Scanning for a UEFI-style Legacy (BIOS) OS");
+    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy (BIOS) OS");
     #endif
 
     FirstLegacyScan = FALSE;
@@ -956,12 +981,6 @@ VOID ScanLegacyUEFI (
             if ((BbsDevicePath->DeviceType == DiskType) &&
                 (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)
             ) {
-                #if REFIT_DEBUG > 0
-                if (Index > 0) {
-                    LOG(4, LOG_BLANK_LINE_SEP, L"X");
-                }
-                #endif
-
                 // USB flash drives appear as hard disks with certain media flags set.
                 // Look for this, and if present, pass it on with the (technically
                 //   incorrect, but internally useful) BBS_TYPE_USB flag set.
@@ -1168,7 +1187,7 @@ VOID WarnIfLegacyProblems (VOID) {
         if (found) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Legacy (BIOS) support enabled in RefindPlus but unavailable in EFI!!"
+                L"Legacy (BIOS) Support Enabled in RefindPlus but Unavailable in EFI!!"
             );
             #endif
 

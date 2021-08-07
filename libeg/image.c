@@ -199,12 +199,12 @@ EG_IMAGE * egScaleImage (
     UINTN      x_ratio, y_ratio;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Scaling image to %d x %d", NewWidth, NewHeight);
+    LOG(4, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
     #endif
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage': image is NULL or a size is 0!!");
+        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage', Image is NULL or a Size is 0!!");
         #endif
 
         return NULL;
@@ -217,7 +217,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage': could not create new image!!");
+        LOG(1, LOG_LINE_NORMAL, L"In 'egScaleImage', Could Not Create New Image!!");
         #endif
 
         return NULL;
@@ -265,7 +265,7 @@ EG_IMAGE * egScaleImage (
     } // for (i...)
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Scaling image completed");
+    LOG(3, LOG_LINE_NORMAL, L"Scaling Image Completed");
     #endif
 
     return NewImage;
@@ -344,7 +344,7 @@ EFI_STATUS egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"In 'egLoadFile': Loaded:- '%s'", FileName);
+    LOG(3, LOG_THREE_STAR_MID, L"In 'egLoadFile', Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -430,16 +430,10 @@ EG_IMAGE * egDecodeAny (
 ) {
    EG_IMAGE *NewImage = NULL;
 
-   NewImage = egDecodePNG (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL) {
-       NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
-   }
-   if (NewImage == NULL) {
-       NewImage = egDecodeBMP (FileData, FileDataLength, IconSize, WantAlpha);
-   }
-   if (NewImage == NULL) {
-       NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
-   }
+                         NewImage = egDecodePNG  (FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL) NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL) NewImage = egDecodeBMP  (FileData, FileDataLength, IconSize, WantAlpha);
+   if (NewImage == NULL) NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
 
    return NewImage;
 }
@@ -456,7 +450,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In 'egLoadIcon': requirements not met!!");
+        LOG(4, LOG_LINE_NORMAL, L"In 'egLoadIcon', Requirements not Met!!");
         #endif
 
         return NULL;
@@ -467,7 +461,7 @@ EG_IMAGE * egLoadImage (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In 'egLoadIcon': '%r' returned while attempting to load file!!",
+            L"In 'egLoadIcon', '%r' Returned while Attempting to Load File!!",
             Status
         );
         #endif
@@ -508,7 +502,7 @@ EG_IMAGE * egLoadIcon (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In 'egLoadIcon', '%r' returned while trying to load '%s'!!",
+            L"In 'egLoadIcon', '%r' When Trying to Load Icon:- '%s'!!",
             Status, Path
         );
         #endif
@@ -524,7 +518,9 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In 'egLoadIcon': could not decode file data!!");
+        LOG(4, LOG_LINE_NORMAL,
+            L"In 'egLoadIcon', Could Not Decode File Data!!"
+        );
         #endif
 
         return NULL;
@@ -539,16 +535,18 @@ EG_IMAGE * egLoadIcon (
             Image = NewImage;
         }
         else {
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL,
-                L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'",
-                Image->Width, Image->Height, IconSize, IconSize, Path
+            CHAR16 *MsgStr = PoolPrint (
+                L"Could Not Scale Icon in '%s' from %d x %d to %d x %d!!",
+                Path, Image->Width, Image->Height, IconSize, IconSize
             );
+
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL, L"In 'egLoadIcon', %s", MsgStr);
             #endif
 
-            Print(L"Warning: Unable to scale icon from %d x %d to %d x %d from '%s'\n",
-                Image->Width, Image->Height, IconSize, IconSize, Path
-            );
+            Print(MsgStr);
+
+            MyFreePool (&MsgStr);
         }
     }
 
@@ -572,18 +570,11 @@ EG_IMAGE * egLoadIconAnyType (
     UINTN      i = 0;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *TmpDirName;
-    if (StrLen (SubdirName) != 0) {
-        TmpDirName = StrDuplicate (SubdirName);
-    }
-    else {
-        TmpDirName = StrDuplicate (L"\\");
-    }
-    LOG(3, LOG_LINE_NORMAL,
-        L"Trying to load icon from '%s' with base name: '%s'",
-        TmpDirName, BaseName
+    LOG(3, LOG_THREE_STAR_MID,
+        L"Trying to Load Icon from '%s' with Base Name:- '%s'",
+        (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
+        BaseName
     );
-    MyFreePool (&TmpDirName);
     #endif
 
     while ((Image == NULL) && ((Extension = FindCommaDelimited (ICON_EXTENSIONS, i++)) != NULL)) {
@@ -595,12 +586,10 @@ EG_IMAGE * egLoadIconAnyType (
     } // while
 
     #if REFIT_DEBUG > 0
-    if (Image == NULL) {
-        LOG(3, LOG_LINE_NORMAL, L"Could not load icon in 'egLoadIconAnyType'");
-    }
-    else {
-        LOG(3, LOG_LINE_NORMAL, L"Loaded icon in 'egLoadIconAnyType'");
-    }
+    LOG(3, LOG_LINE_NORMAL,
+        L"In 'egLoadIconAnyType', %s",
+        (Image != NULL) ? L"Loaded Icon" : L"Could Not Load Icon!!"
+    );
     #endif
 
     return Image;
@@ -650,6 +639,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
     if (!EmbeddedImage) {
         return NULL;
     }
+
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
         (EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE &&
         EmbeddedImage->CompressMode  != EG_EICOMPMODE_RLE)
@@ -745,15 +735,12 @@ VOID egRestrictImageArea (
     if (Image && AreaWidth && AreaHeight) {
         if (AreaPosX >= Image->Width || AreaPosY >= Image->Height) {
             // out of bounds, operation has no effect
-            *AreaWidth  = 0;
-            *AreaHeight = 0;
+            *AreaWidth = *AreaHeight = 0;
         }
         else {
             // calculate affected area
-            if (*AreaWidth > Image->Width - AreaPosX)
-                *AreaWidth = Image->Width - AreaPosX;
-            if (*AreaHeight > Image->Height - AreaPosY)
-                *AreaHeight = Image->Height - AreaPosY;
+            if (*AreaWidth  > Image->Width  - AreaPosX) *AreaWidth  = Image->Width  - AreaPosX;
+            if (*AreaHeight > Image->Height - AreaPosY) *AreaHeight = Image->Height - AreaPosY;
         }
     }
 }

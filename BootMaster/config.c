@@ -501,21 +501,24 @@ static
 UINTN HandleTime (
     IN CHAR16 *TimeString
 ) {
-   UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
+    UINTN Hour = 0, Minute = 0, TimeLength, i = 0;
 
-   TimeLength = StrLen (TimeString);
-   while (i < TimeLength) {
-      if (TimeString[i] == L':') {
-         Hour = Minute;
-         Minute = 0;
-      } // if
-      if ((TimeString[i] >= L'0') && (TimeString[i] <= '9')) {
-         Minute *= 10;
-         Minute += (TimeString[i] - L'0');
-      } // if
-      i++;
-   } // while
-   return (Hour * 60 + Minute);
+    TimeLength = StrLen (TimeString);
+    while (i < TimeLength) {
+        if (TimeString[i] == L':') {
+            Hour = Minute;
+            Minute = 0;
+        }
+
+        if ((TimeString[i] >= L'0') && (TimeString[i] <= '9')) {
+            Minute *= 10;
+            Minute += (TimeString[i] - L'0');
+        }
+
+        i++;
+    } // while
+
+    return (Hour * 60 + Minute);
 } // BOOLEAN HandleTime()
 
 static
@@ -523,16 +526,18 @@ BOOLEAN HandleBoolean (
     IN CHAR16 **TokenList,
     IN UINTN    TokenCount
 ) {
-   BOOLEAN TruthValue = TRUE;
+    BOOLEAN TruthValue = TRUE;
 
-   if ((TokenCount >= 2) && ((StrCmp (TokenList[1], L"0") == 0) ||
-                             MyStriCmp (TokenList[1], L"false") ||
-                             MyStriCmp (TokenList[1], L"off"))) {
-      TruthValue = FALSE;
-   } // if
+    if ((TokenCount >= 2) &&
+        ((StrCmp (TokenList[1], L"0") == 0) ||
+        MyStriCmp (TokenList[1], L"false") ||
+        MyStriCmp (TokenList[1], L"off"))
+    ) {
+        TruthValue = FALSE;
+    }
 
-   return TruthValue;
-} // BOOLEAN HandleBoolean
+    return TruthValue;
+} // BOOLEAN HandleBoolean()
 
 // Sets the default boot loader IF the current time is within the bounds
 // defined by the third and fourth tokens in the TokenList.
@@ -541,46 +546,49 @@ VOID SetDefaultByTime (
     IN  CHAR16 **TokenList,
     OUT CHAR16 **Default
 ) {
-   EFI_STATUS            Status;
-   EFI_TIME              CurrentTime;
-   UINTN                 StartTime, EndTime, Now;
-   BOOLEAN               SetIt = FALSE;
+    EFI_STATUS            Status;
+    EFI_TIME              CurrentTime;
+    UINTN                 StartTime, EndTime, Now;
+    BOOLEAN               SetIt = FALSE;
 
-   StartTime = HandleTime (TokenList[2]);
-   EndTime   = HandleTime (TokenList[3]);
+    StartTime = HandleTime (TokenList[2]);
+    EndTime   = HandleTime (TokenList[3]);
 
-   if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
-      Status = REFIT_CALL_2_WRAPPER(GetTime, &CurrentTime, NULL);
-      if (Status != EFI_SUCCESS) {
-          return;
-      }
-      Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
+    if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
+        Status = REFIT_CALL_2_WRAPPER(GetTime, &CurrentTime, NULL);
+        if (Status != EFI_SUCCESS) {
+            return;
+        }
+        Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
 
-      if (Now > LAST_MINUTE) { // Shouldn't happen; just being paranoid
-        #if REFIT_DEBUG > 0
-        MsgLog ("  - WARN: Impossible system time: %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
-        #endif
+        if (Now > LAST_MINUTE) {
+            // Should not happen ... just being paranoid
+            #if REFIT_DEBUG > 0
+            MsgLog ("  - WARN: Impossible System Time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+            #endif
 
-         Print (L"Warning: Impossible system time: %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
-         return;
-      } // if impossible time
+            Print (L"Warning: Impossible system time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+            return;
+        }
 
-      if (StartTime < EndTime) { // Time range does NOT cross midnight
-         if ((Now >= StartTime) && (Now <= EndTime)) {
-             SetIt = TRUE;
-         }
-      }
-      else { // Time range DOES cross midnight
-         if ((Now >= StartTime) || (Now <= EndTime)) {
-             SetIt = TRUE;
-         }
-      } // if/else time range crosses midnight
+        if (StartTime < EndTime) {
+            // Time range does NOT cross midnight
+            if ((Now >= StartTime) && (Now <= EndTime)) {
+                SetIt = TRUE;
+            }
+        }
+        else {
+            // Time range DOES cross midnight
+            if ((Now >= StartTime) || (Now <= EndTime)) {
+                SetIt = TRUE;
+            }
+        }
 
-      if (SetIt) {
-         ReleasePtr (*Default);
-         *Default = StrDuplicate (TokenList[1]);
-      } // if (SetIt)
-   } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
+        if (SetIt) {
+            ReleasePtr (*Default);
+            *Default = StrDuplicate (TokenList[1]);
+        }
+    } // if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE))
 } // VOID SetDefaultByTime()
 
 static
@@ -599,7 +607,7 @@ VOID ReadConfig (
     EFI_STATUS        Status;
     REFIT_FILE        File;
     CHAR16          **TokenList;
-    CHAR16           *FlagName;
+    CHAR16           *Flag;
     CHAR16           *TempStr = NULL;
     CHAR16           *MsgStr  = NULL;
     UINTN             TokenCount, i;
@@ -610,60 +618,68 @@ VOID ReadConfig (
 
     // Set a few defaults only if we are loading the default file.
     if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
-       MyFreePool (&GlobalConfig.AlsoScan);
-       GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
-       MyFreePool (&GlobalConfig.DontScanDirs);
-       if (SelfVolume) {
-           TempStr = GuidAsString (&(SelfVolume->PartGuid));
-       }
-       MergeStrings (&TempStr, SelfDirPath, L':');
-       MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
-       GlobalConfig.DontScanDirs = TempStr;
-       MyFreePool (&GlobalConfig.DontScanFiles);
-       GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-       MyFreePool (&GlobalConfig.DontScanTools);
-       GlobalConfig.DontScanTools = NULL;
-       MyFreePool (&GlobalConfig.DontScanFirmware);
-       GlobalConfig.DontScanFirmware = NULL;
-       MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
-       MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
-       MyFreePool (&GlobalConfig.DontScanVolumes);
-       GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
-       MyFreePool (&GlobalConfig.WindowsRecoveryFiles);
-       GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
-       MyFreePool (&GlobalConfig.MacOSRecoveryFiles);
-       GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
-       MyFreePool (&GlobalConfig.DefaultSelection);
-       GlobalConfig.DefaultSelection = StrDuplicate (L"+");
+        MyFreePool (&GlobalConfig.AlsoScan);
+        GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
+
+        MyFreePool (&GlobalConfig.DontScanDirs);
+        if (SelfVolume) {
+            TempStr = GuidAsString (&(SelfVolume->PartGuid));
+        }
+        MergeStrings (&TempStr, SelfDirPath, L':');
+        MergeStrings (&TempStr, MEMTEST_LOCATIONS, L',');
+        GlobalConfig.DontScanDirs = TempStr;
+
+        MyFreePool (&GlobalConfig.DontScanFiles);
+        GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
+
+        MyFreePool (&GlobalConfig.DontScanTools);
+        GlobalConfig.DontScanTools = NULL;
+
+        MyFreePool (&GlobalConfig.DontScanFirmware);
+        GlobalConfig.DontScanFirmware = NULL;
+        MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
+        MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
+
+        MyFreePool (&GlobalConfig.DontScanVolumes);
+        GlobalConfig.DontScanVolumes = StrDuplicate (DONT_SCAN_VOLUMES);
+
+        MyFreePool (&GlobalConfig.WindowsRecoveryFiles);
+        GlobalConfig.WindowsRecoveryFiles = StrDuplicate (WINDOWS_RECOVERY_FILES);
+
+        MyFreePool (&GlobalConfig.MacOSRecoveryFiles);
+        GlobalConfig.MacOSRecoveryFiles = StrDuplicate (MACOS_RECOVERY_FILES);
+
+        MyFreePool (&GlobalConfig.DefaultSelection);
+        GlobalConfig.DefaultSelection = StrDuplicate (L"+");
     } // if
 
     if (!FileExists (SelfDir, FileName)) {
         SwitchToText (FALSE);
 
-        MsgStr = StrDuplicate (L"  - WARN: Cannot Find Configuration File. Loading Defaults");
+        MsgStr = StrDuplicate (L"  - WARN: Cannot Find Configuration File ... Loading Defaults!!");
         PrintUglyText (MsgStr, NEXTLINE);
 
         #if REFIT_DEBUG > 0
         MsgLog ("%s\n", MsgStr);
         #endif
 
-       if (!FileExists (SelfDir, L"icons")) {
-           MyFreePool (&MsgStr);
-           MsgStr = StrDuplicate (L"  - WARN: Cannot Find Icons Directory. Switching to Text Mode");
-           PrintUglyText (MsgStr, NEXTLINE);
+        if (!FileExists (SelfDir, L"icons")) {
+            MyFreePool (&MsgStr);
+            MsgStr = StrDuplicate (L"  - WARN: Cannot Find Icons Directory ... Switching to Text Mode!!");
+            PrintUglyText (MsgStr, NEXTLINE);
 
-           #if REFIT_DEBUG > 0
-           MsgLog ("%s\n", MsgStr);
-           #endif
+            #if REFIT_DEBUG > 0
+            MsgLog ("%s\n", MsgStr);
+            #endif
 
-          GlobalConfig.TextOnly = TRUE;
-       }
+            GlobalConfig.TextOnly = TRUE;
+        }
 
-       PauseForKey();
-       SwitchToGraphics();
-       MyFreePool (&MsgStr);
+        PauseForKey();
+        SwitchToGraphics();
+        MyFreePool (&MsgStr);
 
-       return;
+        return;
     }
 
     Status = RefitReadFile (SelfDir, FileName, &File, &i);
@@ -685,43 +701,23 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"hideui")) {
             for (i = 1; i < TokenCount; i++) {
-                FlagName = TokenList[i];
-                if (MyStriCmp (FlagName, L"banner")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
-                }
-                else if (MyStriCmp (FlagName, L"label")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
-                }
-                else if (MyStriCmp (FlagName, L"singleuser")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
-                }
-                else if (MyStriCmp (FlagName, L"hwtest")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
-                }
-                else if (MyStriCmp (FlagName, L"arrows")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
-                }
-                else if (MyStriCmp (FlagName, L"hints")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
-                }
-                else if (MyStriCmp (FlagName, L"editor")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
-                }
-                else if (MyStriCmp (FlagName, L"safemode")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
-                }
-                else if (MyStriCmp (FlagName, L"badges")) {
-                   GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
-                }
-                else if (MyStriCmp (FlagName, L"all")) {
-                   GlobalConfig.HideUIFlags = HIDEUI_FLAG_ALL;
-                }
+                Flag = TokenList[i];
+                     if (MyStriCmp (Flag, L"all")       ) GlobalConfig.HideUIFlags  = HIDEUI_FLAG_ALL;
+                else if (MyStriCmp (Flag, L"label")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_LABEL;
+                else if (MyStriCmp (Flag, L"hints")     ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HINTS;
+                else if (MyStriCmp (Flag, L"banner")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BANNER;
+                else if (MyStriCmp (Flag, L"hwtest")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_HWTEST;
+                else if (MyStriCmp (Flag, L"arrows")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_ARROWS;
+                else if (MyStriCmp (Flag, L"editor")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_EDITOR;
+                else if (MyStriCmp (Flag, L"badges")    ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_BADGES;
+                else if (MyStriCmp (Flag, L"safemode")  ) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SAFEMODE;
+                else if (MyStriCmp (Flag, L"singleuser")) GlobalConfig.HideUIFlags |= HIDEUI_FLAG_SINGLEUSER;
                 else {
                     SwitchToText (FALSE);
 
                     MsgStr = PoolPrint (
-                        L"  - WARN: Invalid 'hideui flag' Flag: '%s'",
-                        FlagName
+                        L"  - WARN: Invalid 'hideui' Flag:- '%s'",
+                        Flag
                     );
                     PrintUglyText (MsgStr, NEXTLINE);
 
@@ -735,58 +731,58 @@ VOID ReadConfig (
             }
         }
         else if (MyStriCmp (TokenList[0], L"icons_dir")) {
-           HandleString (TokenList, TokenCount, &(GlobalConfig.IconsDir));
+            HandleString (TokenList, TokenCount, &(GlobalConfig.IconsDir));
         }
         else if (MyStriCmp (TokenList[0], L"set_boot_args")) {
-           HandleString (TokenList, TokenCount, &(GlobalConfig.SetBootArgs));
+            HandleString (TokenList, TokenCount, &(GlobalConfig.SetBootArgs));
         }
         else if (MyStriCmp (TokenList[0], L"scanfor")) {
-           for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
-              if (i < TokenCount) {
-                  GlobalConfig.ScanFor[i] = TokenList[i][0];
-              }
-              else {
-                  GlobalConfig.ScanFor[i] = ' ';
-              }
-           }
+            for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
+                if (i < TokenCount) {
+                    GlobalConfig.ScanFor[i] = TokenList[i][0];
+                }
+                else {
+                    GlobalConfig.ScanFor[i] = ' ';
+                }
+            } // for
         }
         else if (MyStriCmp (TokenList[0], L"use_nvram")) {
-           GlobalConfig.UseNvram = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.UseNvram = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"uefi_deep_legacy_scan")) {
-           GlobalConfig.DeepLegacyScan = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.DeepLegacyScan = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scan_delay") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
-        }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
-           // Note: Do not use HandleStrings() because it modifies slashes, which might be present in volume name
-           MyFreePool (&GlobalConfig.DontScanVolumes);
-           GlobalConfig.DontScanVolumes = NULL;
-           for (i = 1; i < TokenCount; i++) {
-              MergeStrings (&GlobalConfig.DontScanVolumes, TokenList[i], L',');
-           }
         }
         else if (MyStriCmp (TokenList[0], L"don't_scan_dirs") || MyStriCmp (TokenList[0], L"dont_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanDirs));
         }
         else if (MyStriCmp (TokenList[0], L"don't_scan_files") || MyStriCmp (TokenList[0], L"dont_scan_files")) {
-           HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
-        }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_firmware") || MyStriCmp (TokenList[0], L"dont_scan_firmware")) {
-           HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
+            HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
         }
         else if (MyStriCmp (TokenList[0], L"don't_scan_tools") || MyStriCmp (TokenList[0], L"dont_scan_tools")) {
-           HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
+            HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
+        }
+        else if (MyStriCmp (TokenList[0], L"don't_scan_firmware") || MyStriCmp (TokenList[0], L"dont_scan_firmware")) {
+            HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
+        }
+        else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
+            // Note: Do not use HandleStrings() because it modifies slashes, which might be present in volume name
+            MyFreePool (&GlobalConfig.DontScanVolumes);
+            GlobalConfig.DontScanVolumes = NULL;
+            for (i = 1; i < TokenCount; i++) {
+                MergeStrings (&GlobalConfig.DontScanVolumes, TokenList[i], L',');
+            }
         }
         else if (MyStriCmp (TokenList[0], L"windows_recovery_files")) {
-           HandleStrings (TokenList, TokenCount, &(GlobalConfig.WindowsRecoveryFiles));
+            HandleStrings (TokenList, TokenCount, &(GlobalConfig.WindowsRecoveryFiles));
         }
         else if (MyStriCmp (TokenList[0], L"scan_driver_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DriverDirs));
@@ -795,138 +791,101 @@ VOID ReadConfig (
             SetMem (GlobalConfig.ShowTools, NUM_TOOLS * sizeof (UINTN), 0);
             GlobalConfig.HiddenTags = FALSE;
             for (i = 1; (i < TokenCount) && (i < NUM_TOOLS); i++) {
-                FlagName = TokenList[i];
-                if (MyStriCmp (FlagName, L"shell")) {
-                    GlobalConfig.ShowTools[i - 1] = TAG_SHELL;
-                }
-                else if (MyStriCmp (FlagName, L"gptsync")) {
-                    GlobalConfig.ShowTools[i - 1] = TAG_GPTSYNC;
-                }
-                else if (MyStriCmp (FlagName, L"gdisk")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_GDISK;
-                }
-                else if (MyStriCmp (FlagName, L"about")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_ABOUT;
-                }
-                else if (MyStriCmp (FlagName, L"exit")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_EXIT;
-                }
-                else if (MyStriCmp (FlagName, L"reboot")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_REBOOT;
-                }
-                else if (MyStriCmp (FlagName, L"shutdown")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_SHUTDOWN;
-                }
-                else if (MyStriCmp (FlagName, L"install")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_INSTALL;
-                }
-                else if (MyStriCmp (FlagName, L"bootorder")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
-                }
-                else if (MyStriCmp (FlagName, L"apple_recovery")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
-                }
-                else if (MyStriCmp (FlagName, L"windows_recovery")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
-                }
-                else if (MyStriCmp (FlagName, L"mok_tool")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
-                }
-                else if (MyStriCmp (FlagName, L"fwupdate")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
-                }
-                else if (MyStriCmp (FlagName, L"csr_rotate")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
-                }
-                else if (MyStriCmp (FlagName, L"firmware")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
-                }
-                else if (MyStriCmp (FlagName, L"memtest86") ||
-                    MyStriCmp (FlagName, L"memtest")
-                ) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
-                }
-                else if (MyStriCmp (FlagName, L"netboot")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
-                }
-                else if (MyStriCmp (FlagName, L"hidden_tags")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
-                   GlobalConfig.HiddenTags = TRUE;
-                }
-                else if (MyStriCmp (FlagName, L"show_bootscreen")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_PRE_BOOTKICKER;
-                }
-                else if (MyStriCmp (FlagName, L"clean_nvram")) {
-                   GlobalConfig.ShowTools[i - 1] = TAG_PRE_NVRAMCLEAN;
+                Flag = TokenList[i];
+                     if (MyStriCmp (Flag, L"exit")            ) GlobalConfig.ShowTools[i - 1] = TAG_EXIT;
+                else if (MyStriCmp (Flag, L"shell")           ) GlobalConfig.ShowTools[i - 1] = TAG_SHELL;
+                else if (MyStriCmp (Flag, L"gdisk")           ) GlobalConfig.ShowTools[i - 1] = TAG_GDISK;
+                else if (MyStriCmp (Flag, L"about")           ) GlobalConfig.ShowTools[i - 1] = TAG_ABOUT;
+                else if (MyStriCmp (Flag, L"reboot")          ) GlobalConfig.ShowTools[i - 1] = TAG_REBOOT;
+                else if (MyStriCmp (Flag, L"gptsync")         ) GlobalConfig.ShowTools[i - 1] = TAG_GPTSYNC;
+                else if (MyStriCmp (Flag, L"install")         ) GlobalConfig.ShowTools[i - 1] = TAG_INSTALL;
+                else if (MyStriCmp (Flag, L"netboot")         ) GlobalConfig.ShowTools[i - 1] = TAG_NETBOOT;
+                else if (MyStriCmp (Flag, L"memtest")         ) GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"memtest86")       ) GlobalConfig.ShowTools[i - 1] = TAG_MEMTEST;
+                else if (MyStriCmp (Flag, L"shutdown")        ) GlobalConfig.ShowTools[i - 1] = TAG_SHUTDOWN;
+                else if (MyStriCmp (Flag, L"mok_tool")        ) GlobalConfig.ShowTools[i - 1] = TAG_MOK_TOOL;
+                else if (MyStriCmp (Flag, L"firmware")        ) GlobalConfig.ShowTools[i - 1] = TAG_FIRMWARE;
+                else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
+                else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
+                else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
+                else if (MyStriCmp (Flag, L"show_bootscreen") ) GlobalConfig.ShowTools[i - 1] = TAG_PRE_BOOTKICKER;
+                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[i - 1] = TAG_PRE_NVRAMCLEAN;
+                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
+                else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
+                else if (MyStriCmp (Flag, L"hidden_tags")) {
+                    GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
+                    GlobalConfig.HiddenTags = TRUE;
                 }
                 else {
-                   Print (L" unknown showtools flag: '%s'\n", FlagName);
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
+                    #endif
                 }
-            } // showtools options
+            } // for
         }
         else if (MyStriCmp (TokenList[0], L"banner")) {
-           HandleString (TokenList, TokenCount, &(GlobalConfig.BannerFileName));
+            HandleString (TokenList, TokenCount, &(GlobalConfig.BannerFileName));
         }
         else if (MyStriCmp (TokenList[0], L"banner_scale") && (TokenCount == 2)) {
-           if (MyStriCmp (TokenList[1], L"noscale")) {
-              GlobalConfig.BannerScale = BANNER_NOSCALE;
-           }
-           else if (MyStriCmp (TokenList[1], L"fillscreen") || MyStriCmp (TokenList[1], L"fullscreen")) {
-              GlobalConfig.BannerScale = BANNER_FILLSCREEN;
-           }
-           else {
+            if (MyStriCmp (TokenList[1], L"noscale")) {
+                GlobalConfig.BannerScale = BANNER_NOSCALE;
+            }
+            else if (MyStriCmp (TokenList[1], L"fillscreen") || MyStriCmp (TokenList[1], L"fullscreen")) {
+                GlobalConfig.BannerScale = BANNER_FILLSCREEN;
+            }
+            else {
                 MsgStr = PoolPrint (
-                   L"  - WARN: Invalid 'banner_type' Flag: '%s'",
-                   TokenList[1]
-               );
-               PrintUglyText (MsgStr, NEXTLINE);
+                    L"  - WARN: Invalid 'banner_type' Flag:- '%s'",
+                    TokenList[1]
+                );
+                PrintUglyText (MsgStr, NEXTLINE);
 
-               #if REFIT_DEBUG > 0
-               MsgLog ("%s\n", MsgStr);
-               #endif
+                #if REFIT_DEBUG > 0
+                MsgLog ("%s\n", MsgStr);
+                #endif
 
-               PauseForKey();
-               MyFreePool (&MsgStr);
-           } // if/else
+                PauseForKey();
+                MyFreePool (&MsgStr);
+            } // if/else MyStriCmp TokenList[0]
         }
         else if (MyStriCmp (TokenList[0], L"small_icon_size") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &i);
-           if (i >= 32) {
-              GlobalConfig.IconSizes[ICON_SIZE_SMALL] = i;
-           }
+            HandleInt (TokenList, TokenCount, &i);
+            if (i >= 32) {
+                GlobalConfig.IconSizes[ICON_SIZE_SMALL] = i;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"big_icon_size") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &i);
-           if (i >= 32) {
-              GlobalConfig.IconSizes[ICON_SIZE_BIG] = i;
-              GlobalConfig.IconSizes[ICON_SIZE_BADGE] = i / 4;
-           }
+            HandleInt (TokenList, TokenCount, &i);
+            if (i >= 32) {
+                GlobalConfig.IconSizes[ICON_SIZE_BIG] = i;
+                GlobalConfig.IconSizes[ICON_SIZE_BADGE] = i / 4;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"mouse_size") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &i);
-           if (i >= DEFAULT_MOUSE_SIZE) {
-              GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = i;
-           }
+            HandleInt (TokenList, TokenCount, &i);
+            if (i >= DEFAULT_MOUSE_SIZE) {
+                GlobalConfig.IconSizes[ICON_SIZE_MOUSE] = i;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"selection_small")) {
-           HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
+            HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionSmallFileName));
         }
         else if (MyStriCmp (TokenList[0], L"selection_big")) {
-           HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionBigFileName));
+            HandleString (TokenList, TokenCount, &(GlobalConfig.SelectionBigFileName));
         }
         else if (MyStriCmp (TokenList[0], L"default_selection")) {
-           if (TokenCount == 4) {
-              SetDefaultByTime (TokenList, &(GlobalConfig.DefaultSelection));
+            if (TokenCount == 4) {
+                SetDefaultByTime (TokenList, &(GlobalConfig.DefaultSelection));
            }
            else {
-              HandleString (TokenList, TokenCount, &(GlobalConfig.DefaultSelection));
+               HandleString (TokenList, TokenCount, &(GlobalConfig.DefaultSelection));
            }
         }
         else if (MyStriCmp (TokenList[0], L"textonly")) {
-           GlobalConfig.TextOnly = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.TextOnly = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"textmode")) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.RequestedTextMode));
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
@@ -937,51 +896,38 @@ VOID ReadConfig (
                 GlobalConfig.RequestedScreenHeight = 0;
             }
             else {
-               GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
-               if (TokenCount == 3) {
-                   GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
-               }
-               else {
-                   GlobalConfig.RequestedScreenHeight = 0;
-               }
+                GlobalConfig.RequestedScreenWidth = Atoi(TokenList[1]);
+                if (TokenCount == 3) {
+                    GlobalConfig.RequestedScreenHeight = Atoi(TokenList[2]);
+                }
+                else {
+                    GlobalConfig.RequestedScreenHeight = 0;
+                }
             }
         }
         else if (MyStriCmp (TokenList[0], L"screensaver")) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
         }
         else if (MyStriCmp (TokenList[0], L"use_graphics_for")) {
             if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp (TokenList[1], L"+")))) {
                 GlobalConfig.GraphicsFor = 0;
             }
+
             for (i = 1; i < TokenCount; i++) {
-                if (MyStriCmp (TokenList[i], L"osx")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
-                }
-                else if (MyStriCmp (TokenList[i], L"linux")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
-                }
-                else if (MyStriCmp (TokenList[i], L"elilo")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
-                }
-                else if (MyStriCmp (TokenList[i], L"grub")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
-                }
-                else if (MyStriCmp (TokenList[i], L"windows")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
-                }
-                else if (MyStriCmp (TokenList[i], L"opencore")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
-                }
-                else if (MyStriCmp (TokenList[i], L"clover")) {
-                    GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
-                }
-            }
+                     if (MyStriCmp (TokenList[i], L"osx")     ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OSX;
+                else if (MyStriCmp (TokenList[i], L"grub")    ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_GRUB;
+                else if (MyStriCmp (TokenList[i], L"linux")   ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_LINUX;
+                else if (MyStriCmp (TokenList[i], L"elilo")   ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_ELILO;
+                else if (MyStriCmp (TokenList[i], L"clover")  ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_CLOVER;
+                else if (MyStriCmp (TokenList[i], L"windows") ) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_WINDOWS;
+                else if (MyStriCmp (TokenList[i], L"opencore")) GlobalConfig.GraphicsFor |= GRAPHICS_FOR_OPENCORE;
+            } // for
         }
         else if (MyStriCmp (TokenList[0], L"font") && (TokenCount == 2)) {
-           egLoadFont (TokenList[1]);
+            egLoadFont (TokenList[1]);
         }
         else if (MyStriCmp (TokenList[0], L"scan_all_linux_kernels")) {
-           GlobalConfig.ScanAllLinux = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanAllLinux = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"fold_linux_kernels")) {
             GlobalConfig.FoldLinuxKernels = HandleBoolean (TokenList, TokenCount);
@@ -990,10 +936,10 @@ VOID ReadConfig (
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.ExtraKernelVersionStrings));
         }
         else if (MyStriCmp (TokenList[0], L"max_tags")) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.MaxTags));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.MaxTags));
         }
         else if (MyStriCmp (TokenList[0], L"enable_and_lock_vmx")) {
-           GlobalConfig.EnableAndLockVMX = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.EnableAndLockVMX = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"spoof_osx_version")) {
             HandleString (TokenList, TokenCount, &(GlobalConfig.SpoofOSXVersion));
@@ -1001,99 +947,98 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"csr_values")) {
             HandleHexes (TokenList, TokenCount, CSR_MAX_LEGAL_VALUE, &(GlobalConfig.CsrValues));
         }
-        else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) && MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
-           if (!MyStriCmp (TokenList[1], FileName)) {
-               #if REFIT_DEBUG > 0
-               MsgLog ("Detected Overrides - ");
-               #endif
+        else if (MyStriCmp (TokenList[0], L"include") &&
+            (TokenCount == 2) &&
+            MyStriCmp (FileName, GlobalConfig.ConfigFilename)
+        ) {
+            if (!MyStriCmp (TokenList[1], FileName)) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("Detected Overrides - ");
+                #endif
 
-              ReadConfig (TokenList[1]);
-           }
+                ReadConfig (TokenList[1]);
+            }
         }
         else if (MyStriCmp (TokenList[0], L"write_systemd_vars")) {
-           GlobalConfig.WriteSystemdVars = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.WriteSystemdVars = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"enable_mouse")) {
-           GlobalConfig.EnableMouse = HandleBoolean (TokenList, TokenCount);
-           if (GlobalConfig.EnableMouse) {
-               GlobalConfig.EnableTouch = FALSE;
-           }
+            GlobalConfig.EnableMouse = HandleBoolean (TokenList, TokenCount);
+            if (GlobalConfig.EnableMouse) {
+                GlobalConfig.EnableTouch = FALSE;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"enable_touch")) {
-           GlobalConfig.EnableTouch = HandleBoolean (TokenList, TokenCount);
-           if (GlobalConfig.EnableTouch) {
-               GlobalConfig.EnableMouse = FALSE;
-           }
+            GlobalConfig.EnableTouch = HandleBoolean (TokenList, TokenCount);
+            if (GlobalConfig.EnableTouch) {
+                GlobalConfig.EnableMouse = FALSE;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"ignore_previous_boot")) {
-           GlobalConfig.IgnorePreviousBoot = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.IgnorePreviousBoot = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"ignore_volume_icns")) {
-           GlobalConfig.IgnoreVolumeICNS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.IgnoreVolumeICNS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"text_renderer")) {
-           GlobalConfig.TextRenderer = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.TextRenderer = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"uga_pass_through")) {
-           GlobalConfig.UgaPassThrough = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.UgaPassThrough = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
-           GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"reload_gop")) {
-           GlobalConfig.ReloadGOP = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ReloadGOP = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"direct_gop_renderer")) {
-           GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"continue_on_warning")) {
-          GlobalConfig.ContinueOnWarning = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ContinueOnWarning = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"force_trim")) {
-          GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ForceTRIM = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_compat_check")) {
-          GlobalConfig.DisableCompatCheck = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.DisableCompatCheck = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
-          GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"supply_apfs")) {
-          GlobalConfig.SupplyAPFS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SupplyAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"silence_apfs")) {
-          GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"sync_apfs")) {
-          GlobalConfig.SyncAPFS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SyncAPFS = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
-          GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
-          GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"disable_tag_help")) {
-          GlobalConfig.DisableTagHelp = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.DisableTagHelp = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
-          GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
         else if (MyStriCmp (TokenList[0], L"active_csr")) {
-           HandleInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
+            HandleInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
         }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
-           HandleInt (TokenList, TokenCount, &i);
-           if (i < 1) {
-               i = 1;
-           }
-           if (i > 32) {
-               i = 32;
-           }
-           GlobalConfig.MouseSpeed = i;
+            HandleInt (TokenList, TokenCount, &i);
+            if (i < 1)  i = 1;
+            if (i > 32) i = 32;
+            GlobalConfig.MouseSpeed = i;
         }
 
         FreeTokenLine (&TokenList, &TokenCount);
@@ -1208,7 +1153,7 @@ VOID AddSubmenu (
                         SubEntry->me.BadgeImage = Volume->VolBadgeImage;
                         SubEntry->Volume        = Volume;
                     }
-                } // if FindVolume
+                }
             }
             else if (MyStriCmp (TokenList[0], L"initrd")) {
                 MyFreePool (&SubEntry->InitrdPath);
@@ -1341,12 +1286,12 @@ LOADER_ENTRY * AddStanzaEntries (
                 PreviousVolume = CurrentVolume;
                 if (!FindVolume (&CurrentVolume, TokenList[1])) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_MID, L"* WARN: Could not find volume for '%s'!!", Entry->Title);
+                    LOG(1, LOG_THREE_STAR_MID, L"Could not find Volume for '%s'!!", Entry->Title);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Adding volume for '%s'", Entry->Title);
+                    LOG(4, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
                     #endif
 
                     if ((CurrentVolume != NULL) &&
@@ -1359,16 +1304,16 @@ LOADER_ENTRY * AddStanzaEntries (
                     else {
                         // Will not work out ... reset to previous working volume
                         CurrentVolume = PreviousVolume;
-                    } // if/else volume is readable
-                } // if match found
+                    }
+                } // if/else !FindVolume
             }
             else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
                 if (Entry->me.Image == NULL) {
-                    MsgStr = PoolPrint (L"Adding icon for '%s'", Entry->Title);
+                    MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
                 }
                 else {
-                    MsgStr = PoolPrint (L"Overriding previously set icon for '%s'", Entry->Title);
+                    MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
                 }
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MyFreePool (&MsgStr);
@@ -1388,7 +1333,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding initrd for '%s'", Entry->Title);
+                LOG(4, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
                 #endif
 
                 MyFreePool (&Entry->InitrdPath);
@@ -1396,7 +1341,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding options for '%s'", Entry->Title);
+                LOG(4, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
                 #endif
 
                 LoadOptions = StrDuplicate (TokenList[1]);
@@ -1404,7 +1349,7 @@ LOADER_ENTRY * AddStanzaEntries (
             else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
                 if (TokenCount > 1) {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Adding OS type for '%s'", Entry->Title);
+                    LOG(4, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
                     #endif
 
                     Entry->OSType = TokenList[1][0];
@@ -1412,26 +1357,24 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                if (HasPath) {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->LoaderPath);
-                }
-                else {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding graphics mode for '%s'", Entry->Title);
-                }
+                LOG(4, LOG_LINE_NORMAL,
+                    L"Adding Graphics Mode for '%s'",
+                    (HasPath) ? Entry->LoaderPath : Entry->Title
+                );
                 #endif
 
                 Entry->UseGraphicsMode = MyStriCmp (TokenList[1], L"on");
             }
             else if (MyStriCmp (TokenList[0], L"disabled")) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Entry is disabled");
+                LOG(1, LOG_LINE_NORMAL, L"Entry is Disabled!!");
                 #endif
 
                 Entry->Enabled = FALSE;
             }
             else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding firmware bootnum entry for '%s'", Entry->Title);
+                LOG(4, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
                 #endif
 
                 Entry->me.Tag        = TAG_FIRMWARE_LOADER;
@@ -1449,12 +1392,10 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                if (HasPath) {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->LoaderPath);
-                }
-                else {
-                    LOG(4, LOG_LINE_NORMAL, L"Adding submenu entry for '%s'", Entry->Title);
-                }
+                LOG(4, LOG_LINE_NORMAL,
+                    L"Adding Submenu Entry for '%s'",
+                    (HasPath) ? Entry->LoaderPath : Entry->Title
+                );
                 #endif
 
                 AddSubmenu (Entry, File, CurrentVolume, TokenList[1]);
@@ -1466,7 +1407,7 @@ LOADER_ENTRY * AddStanzaEntries (
     } // while
     FreeTokenLine (&TokenList, &TokenCount);
 
-    // Diabled entries are returned "as is" as will be discarded later
+    // Disabled entries are returned "as is" as will be discarded later
     if (Entry->Enabled) {
         // Set Screen Title
         if (!FirmwareBootNum && Entry->Volume->VolName) {
@@ -1581,7 +1522,7 @@ VOID ScanUserConfigured (
                             GenerateSubScreen (Entry, SelfVolume, TRUE);
                         }
                         AddPreparedLoaderEntry (Entry);
-                    } // if/else Entry->Enabled
+                    }
                 }
             }
             else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
@@ -1590,14 +1531,14 @@ VOID ScanUserConfigured (
                 if (!MyStriCmp (TokenList[1], FileName)) {
                     ScanUserConfigured (TokenList[1]);
                 }
-            } // if/else if MyStriCmp TokenList
+            }
 
             FreeTokenLine (&TokenList, &TokenCount);
         } // while
 
         FreeTokenLine (&TokenList, &TokenCount);
 
-    } // if()
+    } // if FileExists
 } // VOID ScanUserConfigured()
 
 // Create an options file based on /etc/fstab. The resulting file has two options
@@ -1626,7 +1567,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
         }
 
         Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
-        if (CheckError (Status, L"while reading /etc/fstab")) {
+        if (CheckError (Status, L"While Reading Options File:- '/etc/fstab'")) {
             MyFreePool (&Options);
             MyFreePool (&Fstab);
 
@@ -1637,7 +1578,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Read line from /etc/fstab holding %d tokens", TokenCount);
+                LOG(4, LOG_LINE_NORMAL, L"Read Line from '/etc/fstab' Holding %d Tokens", TokenCount);
                 #endif
 
                 if (TokenCount > 2) {
@@ -1655,20 +1596,21 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                             }
                         }
 
-                        Line = PoolPrint (L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
+                        Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
                         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
                         MyFreePool (&Line);
 
-                        Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
+                        Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
                         MyFreePool (&Line);
 
                         Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-                    } // if Root
+                    }
 
                     MyFreePool (&Root);
                     Root = NULL;
-                } // if
+                }
+
                 FreeTokenLine (&TokenList, &TokenCount);
             } // while
             FreeTokenLine (&TokenList, &TokenCount);
@@ -1715,30 +1657,33 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
             GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
             WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
             ToLower (GuidString);
+
             if (GuidString) {
                 Line = PoolPrint (
-                    L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
+                    L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
                     WriteStatus,
                     GuidString
                 );
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
                 MyFreePool (&Line);
                 Line = PoolPrint (
-                    L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
+                    L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
                     WriteStatus,
                     GuidString
                 );
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
                 MyFreePool (&Line);
                 MyFreePool (&GuidString);
-            } // if (GuidString)
+            }
+
             Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
             Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
             Options->Current16Ptr = (CHAR16 *)Options->Buffer;
             Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-        } // if (Options allocated OK)
-    } // if (partition has root GUID)
+        }
+    }
+
     return Options;
 } // REFIT_FILE * GenerateOptionsFromPartTypes()
 
@@ -1777,17 +1722,17 @@ REFIT_FILE * ReadLinuxOptionsFile (
                 File = AllocateZeroPool (sizeof (REFIT_FILE));
                 if (File) {
                     Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
-                    if (!CheckError (Status, L"while loading the Linux options file")) {
+                    if (!CheckError (Status, L"While Loading the Linux Options File!!")) {
                         GoOn      = FALSE;
                         FileFound = TRUE;
                     }
                 }
-            } // if FileExists
+            }
         }
         else {
             // a filename string is NULL
             GoOn = FALSE;
-        } // if/else
+        }
 
         MyFreePool (&OptionsFilename);
         MyFreePool (&FullFilename);
@@ -1797,11 +1742,12 @@ REFIT_FILE * ReadLinuxOptionsFile (
     if (!FileFound) {
          // No refind_linux.conf file; look for /etc/fstab and try to pull values from there
          File = GenerateOptionsFromEtcFstab (Volume);
+
          // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
          if (!File) {
              File = GenerateOptionsFromPartTypes();
          }
-     } // if
+     }
 
    return (File);
 } // REFIT_FILE * ReadLinuxOptionsFile()
@@ -1824,7 +1770,7 @@ CHAR16 * GetFirstOptionsFromFile (
         }
         FreeTokenLine (&TokenList, &TokenCount);
         MyFreePool (&File);
-    } // if
+    }
 
     return Options;
 } // CHAR16 * GetOptionsFile()

@@ -163,7 +163,7 @@ BOOLEAN IsValidLoader (
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"EFI file is *ASSUMED* to be valid:- '%s'",
+            L"EFI File is *ASSUMED* to be Valid:- '%s'",
             FileName
         );
         #endif
@@ -180,7 +180,7 @@ BOOLEAN IsValidLoader (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"EFI file is *NOT* valid:- '%s'",
+            L"EFI File is *NOT* Valid:- '%s'",
             FileName
         );
         #endif
@@ -202,8 +202,8 @@ BOOLEAN IsValidLoader (
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID,
-        L"EFI file is %s:- '%s'",
-        IsValid ? L"valid" : L"*NOT* valid",
+        L"EFI File is %s:- '%s'",
+        IsValid ? L"Valid" : L"*NOT* Valid",
         FileName
     );
     #endif
@@ -233,18 +233,15 @@ EFI_STATUS StartEFIImage (
     CHAR16            *FullLoadOptions   = NULL;
     CHAR16            *ErrorInfo         = NULL;
     CHAR16            *EspGUID           = NULL;
+    CHAR16            *MsgStr            = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
-
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-    #endif
 
     if (!Volume) {
         ReturnStatus = EFI_INVALID_PARAMETER;
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"'%r' while starting EFI image!!",
+            L"'%r' While Starting EFI Image!!",
             ReturnStatus
         );
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
@@ -262,24 +259,23 @@ EFI_STATUS StartEFIImage (
             MergeStrings (&FullLoadOptions, L" ", 0);
             // NOTE: That last space is also added by the EFI shell and seems to be significant
             // when passing options to Apple's boot.efi...
-        } // if
-    } // if (LoadOptions != NULL)
+        }
+    }
+
+    MsgStr = PoolPrint (
+        L"Starting '%s' ... Load Options:- '%s'",
+        ImageTitle, FullLoadOptions ? FullLoadOptions : L""
+    );
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL,
-        L"Starting '%s' ... Load Options:- '%s'",
-        ImageTitle,
-        FullLoadOptions ? FullLoadOptions : L""
-    );
+    LOG(3, LOG_LINE_NORMAL, MsgStr);
     #endif
 
     if (Verbose) {
-        Print(
-            L"Starting %s\nUsing load options '%s'\n",
-            ImageTitle,
-            FullLoadOptions ? FullLoadOptions : L""
-        );
+        Print(L"%s\n", MsgStr);
     }
+
+    MyFreePool (&MsgStr);
 
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     // Some EFIs crash if attempting to load driver for invalid architecture, so
@@ -353,7 +349,7 @@ EFI_STATUS StartEFIImage (
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"'%r' Returned by Secure Boot while Loading %s!!",
+            L"'%r' Returned by Secure Boot While Loading %s!!",
             Status, ImageTitle
         );
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
@@ -365,7 +361,7 @@ EFI_STATUS StartEFIImage (
         goto bailout;
     }
 
-    ErrorInfo = PoolPrint (L"while Loading %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"While Loading %s", ImageTitle);
     if (CheckError (Status, ErrorInfo)) {
         MyFreePool (&ErrorInfo);
         goto bailout;
@@ -380,7 +376,7 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
-    if (CheckError (Status, L"while Getting a LoadedImageProtocol handle")) {
+    if (CheckError (Status, L"while Getting LoadedImageProtocol Handle")) {
         goto bailout_unload;
     }
 
@@ -418,7 +414,7 @@ EFI_STATUS StartEFIImage (
         #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             MsgStr = PoolPrint (
-                L"'%r' when trying to set LoaderDevicePartUUID EFI variable!!",
+                L"'%r' When Trying to Set LoaderDevicePartUUID EFI Variable!!",
                 Status
             );
             LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
@@ -444,7 +440,7 @@ EFI_STATUS StartEFIImage (
     ReturnStatus = Status;
 
     // control returns here when the child image calls Exit()
-    ErrorInfo = PoolPrint (L"returned from %s", ImageTitle);
+    ErrorInfo = PoolPrint (L"Returned from %s", ImageTitle);
     CheckError (ReturnStatus, ErrorInfo);
     MyFreePool (&ErrorInfo);
     if (IsDriver) {
@@ -470,7 +466,7 @@ bailout:
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Load '%s' ... %r", ImageTitle, ReturnStatus);
+    LOG(1, LOG_THREE_STAR_MID, L"'%r' While Loading EFI Image:- '%s'", ReturnStatus, ImageTitle);
     #endif
 
     return ReturnStatus;
@@ -505,7 +501,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot Into Firmware ... %r\n\n", err);
+    MsgLog ("INFO: Reboot into Firmware ... %r\n\n", err);
     #endif
 
     if (err != EFI_SUCCESS) {
@@ -513,7 +509,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the computer's firmware");
+    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the Computer's Firmware");
     #endif
 
     UninitRefitLib();
@@ -553,9 +549,20 @@ EFI_STATUS RebootIntoFirmware (VOID) {
 VOID RebootIntoLoader (
     LOADER_ENTRY *Entry
 ) {
-    EFI_STATUS Status;
+    EFI_STATUS  Status;
+    CHAR16     *MsgStr = NULL;
 
     IsBoot = TRUE;
+
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"Reboot into NVRAM Boot Option:- '%s' (Boot%04x)",
+        Entry->Title, Entry->EfiBootNum
+    );
+    LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n\n", MsgStr);
+    MyFreePool (&MsgStr);
+    #endif
 
     Status = EfivarSetRaw (
         &GlobalGuid,
@@ -565,33 +572,40 @@ VOID RebootIntoLoader (
         TRUE
     );
 
-    #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = L"Reboot into EFI Loader";
-    LOG(1, LOG_LINE_SEPARATOR,
-        L"%s:- '%s' (Boot%04x)",
-        MsgStr,
-        Entry->Title,
-        Entry->EfiBootNum
-    );
-    MsgLog ("INFO: %s ... %r\n\n", MsgStr, Status);
-    #endif
-
     if (EFI_ERROR(Status)) {
-        Print(L"Error: %d\n", Status);
+        MsgStr = PoolPrint (
+            L"'%r' while Rebooting into NVRAM Boot Option",
+            Status
+        );
 
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        #endif
+
+        Print(L"%s\n", MsgStr);
+        PauseForKey();
+
+        MyFreePool (&MsgStr);
         return;
     }
 
     StoreLoaderName(Entry->me.Title);
 
-    REFIT_CALL_4_WRAPPER(gRT->ResetSystem, EfiResetCold, EFI_SUCCESS, 0, NULL);
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem, EfiResetCold,
+        EFI_SUCCESS, 0, NULL
+    );
 
-    Print(L"Error Calling ResetSystem: %r", Status);
-    PauseForKey();
+    MsgStr = PoolPrint (L"Call ResetSystem ... %r", Status);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Error calling ResetSystem: %r", Status);
+    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
+
+    Print(MsgStr);
+    PauseForKey();
+
+    MyFreePool (&MsgStr);
 } // RebootIntoLoader()
 
 //
@@ -608,7 +622,7 @@ VOID DoEnableAndLockVMX(VOID) {
     UINT32 high_bits = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Attempting to enable and lock VMX");
+    LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
     #endif
 
     // is VMX active ?

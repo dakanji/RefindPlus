@@ -166,7 +166,7 @@
 
          #if REFIT_DEBUG > 0
          LOG(2, LOG_LINE_NORMAL,
-             L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'PickOneESP'",
+             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
              MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
          );
          #endif
@@ -845,9 +845,9 @@ EFI_STATUS CopyDrivers (
          }
 
          if (Status == EFI_SUCCESS) {
-             DisplaySimpleMessage (L"Information", L"RefindPlus successfully installed");
+             DisplaySimpleMessage (L"Information", L"RefindPlus Successfully Installed");
          } else {
-             DisplaySimpleMessage (L"Warning", L"Problems encountered during installation");
+             DisplaySimpleMessage (L"Warning", L"Problems Encountered During Installation!!");
          }
      }
 
@@ -870,7 +870,7 @@ EFI_STATUS CopyDrivers (
      BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
 
      #if REFIT_DEBUG > 0
-     LOG(1, LOG_LINE_NORMAL, L"Finding boot order entries");
+     LOG(1, LOG_LINE_NORMAL, L"Locating Boot Order Entries");
      #endif
 
      Status = EfivarGetRaw (&GlobalGuid, L"BootOrder", (VOID **) &BootOrder, &VarSize);
@@ -997,7 +997,7 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
          MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
          #if REFIT_DEBUG > 0
          LOG(2, LOG_LINE_NORMAL,
-             L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'PickOneBootOption'",
+             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
              MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
          );
          #endif

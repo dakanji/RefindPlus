@@ -899,7 +899,7 @@ VOID preBootKicker (VOID) {
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'preBootKicker'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preBootKicker'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     MsgLog ("User Input Received:\n");
@@ -1041,7 +1041,7 @@ VOID preCleanNvram (VOID) {
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'preCleanNvram'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preCleanNvram'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
     #endif
@@ -2499,7 +2499,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Boot UEFI-Style Legacy (BIOS) OS:- '%s'",
+                    L"Boot 'UEFI-Style' Legacy (BIOS) OS:- '%s'",
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);

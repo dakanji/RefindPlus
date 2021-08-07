@@ -14,8 +14,6 @@
   * Additional memory management/allocation improvements
 
 
-
-
 0.13.2.AG (03 Aug 2021):
 -----------------------
 - Adds 'TagHelp' Feature

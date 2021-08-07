@@ -485,7 +485,7 @@ EFI_STATUS egSetGOPMode (
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could not Set GOP Mode");
+        MsgStr = StrDuplicate (L"Could Not Set GOP Mode");
         LOG(2, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s\n\n", MsgStr);
@@ -646,7 +646,7 @@ EFI_STATUS egSetMaxResolution (
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Could Not Set BestMode ... Try First Useable Mode");
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(2, LOG_LINE_NORMAL, L"%s!!", MsgStr);
             MsgLog ("** WARN: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
             #endif

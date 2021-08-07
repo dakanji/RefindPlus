@@ -576,7 +576,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' in Emulated NVRAM when fetching EFI Variable:- '%s'",
+            L"'%r' in Emulated NVRAM When Fetching EFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -639,7 +639,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' in Hardware NVRAM when fetching EFI Variable:- '%s'",
+            L"'%r' in Hardware NVRAM When Fetching EFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -715,6 +715,7 @@ EFI_STATUS EfivarSetRaw (
                 // Return if settings match
                 MyFreePool (&OldBuf);
 
+                // State to be logged by caller if required
                 return EFI_ALREADY_STARTED;
             }
         }
@@ -728,7 +729,7 @@ EFI_STATUS EfivarSetRaw (
         Status = FindVarsDir();
         if (Status == EFI_SUCCESS) {
             // Clear the current value
-            Status = egSaveFile (
+            egSaveFile (
                 gVarsDir, VariableName,
                 NULL, 0
             );
@@ -741,18 +742,17 @@ EFI_STATUS EfivarSetRaw (
         }
 
         #if REFIT_DEBUG > 0
+        CHAR16 *MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' in Emulated NVRAM when saving EFI Variable:- '%s'",
+            L"'%r' in Emulated NVRAM When Saving EFI Variable:- '%s'",
             Status, VariableName
         );
 
         if (EFI_ERROR (Status)) {
-            LOG(3, LOG_THREE_STAR_MID,
-                L"Activate the 'use_nvram' option to silence this warning"
-            );
+            LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
             MsgLog ("** WARN: Could Not Save to Emulated NVRAM:- '%s'\n", VariableName);
-            MsgLog ("         Activate the 'use_nvram' option to silence this warning\n\n");
+            MsgLog ("         %s\n\n", MsgStr);
         }
         #endif
     }
@@ -779,7 +779,7 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"'%r' in Hardware NVRAM when saving EFI Variable:- '%s'",
+            L"'%r' in Hardware NVRAM When Saving EFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -836,7 +836,7 @@ VOID AddListElement (
 
     if (Abort) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Could not allocate memory for list elements");
+        LOG(4, LOG_THREE_STAR_MID, L"Could Not Allocate Memory for List Elements!!");
         #endif
     }
     else {
@@ -954,7 +954,7 @@ REFIT_VOLUME * CopyVolume (
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_THREE_STAR_SEP,
-                        L"In 'CopyVolume': Out of Resources While Allocating MbrPartitionTable!!"
+                        L"In 'CopyVolume', Out of Resources While Allocating MbrPartitionTable!!"
                     );
                     #endif
                 }
@@ -1439,7 +1439,7 @@ VOID ScanVolumeBootcode (
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_THREE_STAR_SEP,
-                        L"In 'ScanVolumeBootcode': Out of Resources While Allocating MbrPartitionTable!!"
+                        L"In 'ScanVolumeBootcode', Out of Resources While Allocating 'MbrPartitionTable'!!"
                     );
                     #endif
                 }
@@ -1917,7 +1917,6 @@ VOID ScanExtendedPartition (
     IN     MBR_PARTITION_INFO *MbrEntry
 ) {
     EFI_STATUS          Status;
-    REFIT_VOLUME       *Volume;
     UINT32              ExtBase;
     UINT32              ExtCurrent;
     UINT32              NextExtCurrent;
@@ -1925,6 +1924,7 @@ VOID ScanExtendedPartition (
     UINTN               LogicalPartitionIndex = 4;
     UINT8               SectorBuffer[512];
     BOOLEAN             Bootable;
+    REFIT_VOLUME       *Volume;
     MBR_PARTITION_INFO *EMbrTable;
 
     ExtBase = MbrEntry->StartLBA;
@@ -2209,7 +2209,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
 
-        MsgStr = PoolPrint (L"In 'ScanVolumes': %r While Allocating UuidList!!", Status);
+        MsgStr = PoolPrint (L"In 'ScanVolumes', %r While Allocating 'UuidList'!!", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s", MsgStr);
@@ -2233,7 +2233,7 @@ VOID ScanVolumes (VOID) {
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
 
-            MsgStr = PoolPrint (L"In 'ScanVolumes': %r While Allocating Volumes!!", Status);
+            MsgStr = PoolPrint (L"In 'ScanVolumes', %r While Allocating 'Volumes'!!", Status);
             LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
             MsgLog ("\n\n");
             MsgLog ("%s", MsgStr);

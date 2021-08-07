@@ -775,7 +775,7 @@ UINTN RunGenericMenu (
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Menu timeout expired");
+                LOG(1, LOG_LINE_NORMAL, L"Menu Timeout Expired");
                 #endif
 
                 MenuExit = MENU_EXIT_TIMEOUT;
@@ -2163,7 +2163,7 @@ VOID DisplaySimpleMessage (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'DisplaySimpleMessage'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'DisplaySimpleMessage'",
         MenuExit, TypeMenuExit, ChosenOption->Title
     );
     #endif
@@ -2272,13 +2272,13 @@ VOID ManageHiddenTags (VOID) {
     REFIT_MENU_ENTRY    *ChosenOption  = NULL;
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
-    CHAR16             *MenuInfo     = L"Select a tag and press Enter to restore it";
+    CHAR16             *MenuInfo     = L"Select a Tag and Press 'Enter' to Restore";
     REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
                                          L"Select an option and press Enter or",
                                          L"press Esc to return to main menu without changes" };
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Managing hidden tags");
+    LOG(1, LOG_LINE_THIN_SEP, L"Manage Hidden Tags");
     #endif
 
     HideItemMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
@@ -2330,7 +2330,7 @@ VOID ManageHiddenTags (VOID) {
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'ManageHiddenTags'",
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
         #endif
@@ -2396,7 +2396,7 @@ CHAR16 * ReadHiddenTags (
 
     #if REFIT_DEBUG > 0
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
-        CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags ('%s')", VarName);
+        CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
         CheckError (Status, CheckErrMsg);
         MyFreePool (&CheckErrMsg);
     }
@@ -2440,7 +2440,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
             TRUE
         );
 
-        CheckError (Status, L"in AddToHiddenTags!!");
+        CheckError (Status, L"in 'AddToHiddenTags'!!");
         MyFreePool (&HiddenTags);
     }
 } // VOID AddToHiddenTags()
@@ -2490,7 +2490,7 @@ BOOLEAN HideEfiTag (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideEfiTag'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideEfiTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -2533,7 +2533,7 @@ BOOLEAN HideFirmwareTag(
         Style = GraphicsMenuStyle;
     }
 
-    AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really hide '%s'?", Loader->Title));
+    AddMenuInfoLine(HideItemMenu, PoolPrint(L"Really Hide '%s'?", Loader->Title));
     AddMenuEntry(HideItemMenu, &MenuEntryYes);
     AddMenuEntry(HideItemMenu, &MenuEntryNo);
 
@@ -2546,7 +2546,7 @@ BOOLEAN HideFirmwareTag(
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideFirmwareTag'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -2595,7 +2595,7 @@ BOOLEAN HideLegacyTag (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'HideLegacyTag'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideLegacyTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
@@ -2617,8 +2617,8 @@ VOID HideTag (
     LEGACY_ENTRY      *LegacyLoader  = (LEGACY_ENTRY *) ChosenEntry;
     REFIT_MENU_SCREEN  HideItemMenu  = {
         NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
-        L"Select an option and press 'Enter' or",
-        L"press 'Esc' to return to main menu without changes"
+        L"Select an Option and Press 'Enter' or",
+        L"Press 'Esc' to Return to Main Menu (Without Changes)"
     };
 
     if (ChosenEntry == NULL) {
@@ -2721,7 +2721,7 @@ UINTN RunMenu (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'RunMenu'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMenu'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
     #endif
@@ -2771,7 +2771,7 @@ UINTN RunMainMenu (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu call on '%s' in 'RunMainMenu'",
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMainMenu'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
@@ -2795,7 +2795,7 @@ UINTN RunMainMenu (
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL,
-                    L"Returned '%d' (%s) from RunGenericMenu call on SubScreen in 'RunMainMenu'",
+                    L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif
