@@ -2155,7 +2155,6 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr       = NULL;
-    CHAR16  *VolDesc      = NULL;
     CHAR16  *PartType     = NULL;
     CHAR16  *PartGUID     = NULL;
     CHAR16  *PartTypeGUID = NULL;
@@ -2301,15 +2300,14 @@ VOID ScanVolumes (VOID) {
                 }
             }
 
-            // Do not free these!
-            VolDesc  = SanitiseVolumeName (Volume);
+            // 'FSTypeName' returns a constant ... Do not free 'PartType'!
             PartType = FSTypeName (Volume->FSType);
 
             // Improve Apple Volume Id on Non-Mac Firmware
             if ((MyStriCmp (PartType, L"Unknown")) &&
                 !MyStriCmp (gST->FirmwareVendor, L"Apple")
             ) {
-                     if (MyStriCmp (VolDesc, L"APFS/FileVault Container"         )) PartType = L"APFS (Assumed)";
+                     if (MyStriCmp (Volume->VolName, L"APFS/FileVault Container" )) PartType = L"APFS (Assumed)";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS       )) PartType = L"APFS";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS        )) PartType = L"HFS+";
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn  )) PartType = L"Mac Raid";
@@ -2330,7 +2328,7 @@ VOID ScanVolumes (VOID) {
             MsgStr = PoolPrint (
                 L"%s  :  %s  :  %-15s  :  %s",
                 PartTypeGUID, PartGUID,
-                PartType, VolDesc
+                PartType, Volume->VolName
             );
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s", MsgStr);
