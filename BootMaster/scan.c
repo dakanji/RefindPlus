@@ -654,8 +654,8 @@ VOID SetLoaderDefaults (
         // to the loader
         #if REFIT_DEBUG > 0
         if (Entry->me.Image == NULL) {
-            LOG(4, LOG_LINE_NORMAL,
-                L"Creating Icon Hint from Loader Path: '%s'",
+            LOG(4, LOG_THREE_STAR_MID,
+                L"Creating Icon Hint from Loader Path:- '%s'",
                 LoaderPath
             );
         }
@@ -1543,7 +1543,7 @@ VOID ScanNetboot (VOID) {
             if (!NetVolume) {
                 #if REFIT_DEBUG > 0
                 LOG(1, LOG_THREE_STAR_SEP,
-                    L"In 'ScanNetboot', Out of Resources While Allocating 'NetVolume'!!"
+                    L"In ScanNetboot ... Out of Resources While Allocating 'NetVolume'!!"
                 );
                 #endif
             }

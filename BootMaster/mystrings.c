@@ -283,7 +283,7 @@ VOID MergeStrings (
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
     if (!NewString) {
-        CHAR16 *MsgStr = L"In 'MergeStrings', Out of Resources While Allocating 'NewString'!!";
+        CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
         #if REFIT_DEBUG > 0
         LOG(1, LOG_THREE_STAR_SEP, L"%s");
         #endif
@@ -335,7 +335,7 @@ VOID MergeUniqueStrings (
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
     if (!NewString) {
-        CHAR16 *MsgStr = L"In 'MergeUniqueStrings', Out of Resources While Allocating 'NewString'!!";
+        CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
         #if REFIT_DEBUG > 0
         LOG(1, LOG_THREE_STAR_SEP, L"%s");
         #endif
@@ -402,7 +402,7 @@ VOID MergeWords (
     if (SourceString) {
         Temp = Word = p = StrDuplicate (SourceString);
         if (!Temp) {
-            CHAR16 *MsgStr = L"In 'MergeWords', Out of Resources While Allocating 'Temp'!!";
+            CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'Temp'!!";
             #if REFIT_DEBUG > 0
             LOG(1, LOG_THREE_STAR_SEP, L"%s");
             #endif
