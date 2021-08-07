@@ -1127,10 +1127,6 @@ VOID preCleanNvram (VOID) {
 
 
 VOID AboutRefindPlus (VOID) {
-    UINT32   CsrStatus;
-    CHAR16  *MsgStr          = NULL;
-    CHAR16  *FirmwareVendor  = StrDuplicate (VendorInfo);
-
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
     #endif
@@ -1141,11 +1137,17 @@ VOID AboutRefindPlus (VOID) {
         #endif
     }
     else {
+        UINT32   CsrStatus;
+        CHAR16  *FirmwareVendor = StrDuplicate (VendorInfo);
+
+        // More than ~65 causes empty info page on 800x600 display
+        LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
+
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
+
         AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
         AddMenuInfoLine (&AboutMenu, L"");
-
-        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji");
+        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
@@ -1159,10 +1161,6 @@ VOID AboutRefindPlus (VOID) {
         #endif
 
         AddMenuInfoLine (&AboutMenu, L"");
-
-        // More than ~65 causes empty info page on 800x600 display
-        LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
-
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
@@ -1183,28 +1181,20 @@ VOID AboutRefindPlus (VOID) {
         AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
 
-        if ((gST->Hdr.Revision >> 16) == 1) {
-            MsgStr = L"EFI";
-        }
-        else {
-            MsgStr = L"UEFI";
-        }
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
                 L"EFI Revision: %s %d.%02d",
-                MsgStr,
+                ((gST->Hdr.Revision >> 16) == 1) ? L"EFI" : L"UEFI",
                 gST->Hdr.Revision >> 16,
                 gST->Hdr.Revision & ((1 << 16) - 1)
             )
         );
-        MyFreePool (&MsgStr);
-
         AddMenuInfoLine (
             &AboutMenu,
             PoolPrint (
                 L"Secure Boot: %s",
-                secure_mode() ? L"active" : L"inactive"
+                secure_mode() ? L"Active" : L"Inactive"
             )
         );
 
@@ -1213,7 +1203,7 @@ VOID AboutRefindPlus (VOID) {
             AddMenuInfoLine (&AboutMenu, gCsrStatus);
         }
 
-        MsgStr = egScreenDescription();
+        CHAR16 *MsgStr = egScreenDescription();
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", MsgStr));
         MyFreePool (&MsgStr);
 
@@ -1223,6 +1213,7 @@ VOID AboutRefindPlus (VOID) {
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
+
         AddMenuEntry (&AboutMenu, &MenuEntryReturn);
         MyFreePool (&FirmwareVendor);
     }
@@ -1258,6 +1249,7 @@ VOID RescanAll (
 ) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = L"Re-Scanning Tools and Loaders";
+
     LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     MsgLog ("INFO: %s\n\n", MsgStr);
     #endif
@@ -1283,7 +1275,6 @@ VOID RescanAll (
 } // VOID RescanAll()
 
 #ifdef __MAKEWITH_TIANO
-
 // Minimal initialisation function
 static
 VOID InitializeLib (
@@ -1306,7 +1297,6 @@ VOID InitializeLib (
     gBS->Hdr.CRC32       = 0;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
 } // VOID InitializeLib()
-
 #endif
 
 // Set up our own Secure Boot extensions.
