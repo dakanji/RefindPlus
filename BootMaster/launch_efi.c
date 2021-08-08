@@ -382,7 +382,7 @@ EFI_STATUS StartEFIImage (
 
     ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32)StrLen(FullLoadOptions) + 1) * sizeof (CHAR16)
+        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
 
     // turn control over to the image
@@ -391,7 +391,7 @@ EFI_STATUS StartEFIImage (
         ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
     ) {
         // Tell systemd what ESP RefindPlus used
-        EspGUID = GuidAsString(&(SelfVolume->PartGuid));
+        EspGUID = GuidAsString (&(SelfVolume->PartGuid));
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
@@ -417,7 +417,7 @@ EFI_STATUS StartEFIImage (
                 L"'%r' When Trying to Set LoaderDevicePartUUID EFI Variable!!",
                 Status
             );
-            LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
+            LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
             MsgLog ("* ERROR: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -430,7 +430,9 @@ EFI_STATUS StartEFIImage (
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Running '%s'", ImageTitle);
+    if (!IsDriver) {
+        LOG(3, LOG_LINE_NORMAL, L"Running EFI Image:- '%s'", ImageTitle);
+    }
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -439,15 +441,20 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_MID, L"'%r' Loading EFI Image:- '%s'", ReturnStatus, ImageTitle);
+    #endif
+
     // control returns here when the child image calls Exit()
     ErrorInfo = PoolPrint (L"Returned from %s", ImageTitle);
     CheckError (ReturnStatus, ErrorInfo);
     MyFreePool (&ErrorInfo);
+
     if (IsDriver) {
         // Below should have no effect on most systems, but works
         // around bug with some EFIs that prevents filesystem drivers
         // from binding to partitions.
-        ConnectFilesystemDriver(ChildImageHandle);
+        ConnectFilesystemDriver (ChildImageHandle);
     }
 
     // re-open file handles
@@ -464,10 +471,6 @@ bailout:
     if (!IsDriver) {
         FinishExternalScreen();
     }
-
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' While Loading EFI Image:- '%s'", ReturnStatus, ImageTitle);
-    #endif
 
     return ReturnStatus;
 } // EFI_STATUS StartEFIImage()
