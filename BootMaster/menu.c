@@ -818,12 +818,13 @@ UINTN RunGenericMenu (
             StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, L"");
             HaveTimeout = FALSE;
 
-            if (GlobalConfig.ScreensaverTime == -1) { // cancel start-with-blank-screen coding
-               GlobalConfig.ScreensaverTime = 0;
+            if (GlobalConfig.ScreensaverTime == -1) {
+                // cancel start-with-blank-screen coding
+                GlobalConfig.ScreensaverTime = 0;
 
-               if (!GlobalConfig.TextOnly) {
-                   BltClearScreen (TRUE);
-               }
+                if (!GlobalConfig.TextOnly) {
+                    BltClearScreen (TRUE);
+                }
             }
         }
 

@@ -1667,7 +1667,7 @@ BOOLEAN egSetTextMode (
         (RequestedMode != gST->ConOut->Mode->Mode)
     ) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Setting text mode to %d", RequestedMode);
+        LOG(1, LOG_LINE_NORMAL, L"Setting Text Mode to %d", RequestedMode);
         #endif
 
         Status = REFIT_CALL_2_WRAPPER(
@@ -1681,7 +1681,7 @@ BOOLEAN egSetTextMode (
         else {
             SwitchToText (FALSE);
 
-            MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode");
+            MsgStr = StrDuplicate (L"Error Setting Text Mode ... Unsupported Mode!!");
             PrintUglyText (MsgStr, NEXTLINE);
 
             #if REFIT_DEBUG > 0
@@ -1695,7 +1695,7 @@ BOOLEAN egSetTextMode (
 
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Error setting text mode %d; available modes are:",
+                L"Error Setting Text Mode %d ... Available Modes Are:",
                 RequestedMode
             );
             MsgLog ("%s\n", MsgStr);
