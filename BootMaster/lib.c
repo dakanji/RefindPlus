@@ -2299,16 +2299,16 @@ VOID ScanVolumes (VOID) {
             PartType = FSTypeName (Volume->FSType);
 
             // Improve Volume Id
-            if (MyStriCmp (PartType, L"Unknown")) {
-                     if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
-                else if (MyStriCmp (Volume->VolName, L"APFS/FileVault Container")    ) PartType = L"APFS (Assumed)";
-                else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)          ) PartType = L"APFS";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)           ) PartType = L"HFS+";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) PartType = L"Mac Raid";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) PartType = L"Mac Raid";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec)    ) PartType = L"AppleTV";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)   ) PartType = L"APFS/HFS+";
+            if (MyStrStrIns (PartType, L"Unknown")) {
+                     if (MyStrStrIns (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
+                else if (MyStrStrIns (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
+                else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")        ) PartType = L"APFS (Assumed)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)            ) PartType = L"APFS";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)             ) PartType = L"HFS+";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)       ) PartType = L"Mac Raid (ON)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)      ) PartType = L"Mac Raid (OFF)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec)      ) PartType = L"AppleTV";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)     ) PartType = L"APFS/HFS+";
             }
 
             // Allocate Pools
