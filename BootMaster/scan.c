@@ -2332,7 +2332,7 @@ VOID ScanForBootloaders (
     else {
         // assign shortcut keys
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Assigning Boot Shortcut Keys");
+        MsgStr = StrDuplicate (L"Assign Shortcut Keys");
         LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s:\n", MsgStr);
@@ -2582,7 +2582,7 @@ VOID ScanForTools (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Scanning for Tools");
+    LOG(1, LOG_LINE_SEPARATOR, L"Scan for Tools");
     MsgLog ("Scan for Builtin/External Tools...");
     #endif
 
@@ -2775,7 +2775,7 @@ VOID ScanForTools (VOID) {
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL,
-                        L"'Showtools' includes firmware but 'OsIndicationsSupported' is missing!!"
+                        L"'Showtools' Includes Firmware Tool but 'OsIndicationsSupported' Variable is Missing!!"
                     );
                     #endif
                 }
@@ -2806,12 +2806,10 @@ VOID ScanForTools (VOID) {
 
                         FoundTool = TRUE;
                         AddToolEntry (
-                            SelfVolume,
-                            FileName,
+                            SelfVolume, FileName,
                             L"UEFI Shell",
                             BuiltinIcon (BUILTIN_ICON_TOOL_SHELL),
-                            'S',
-                            FALSE
+                            'S', FALSE
                         );
 
                         #if REFIT_DEBUG > 0
@@ -2856,19 +2854,16 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
                             L"Adding Hybrid MBR Tool Tag for '%s' on '%s'",
-                            FileName,
-                            SelfVolume->VolName
+                            FileName, SelfVolume->VolName
                         );
                         #endif
 
                         FoundTool = TRUE;
                         AddToolEntry (
-                            SelfVolume,
-                            FileName,
+                            SelfVolume, FileName,
                             L"Hybrid MBR tool",
                             BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                            'P',
-                            FALSE
+                            'P', FALSE
                         );
 
                         #if REFIT_DEBUG > 0
@@ -2905,19 +2900,16 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
                             L"Adding GDisk Tag for '%s' on '%s'",
-                            FileName,
-                            SelfVolume->VolName
+                            FileName, SelfVolume->VolName
                         );
                         #endif
 
                         FoundTool = TRUE;
                         AddToolEntry (
-                            SelfVolume,
-                            FileName,
+                            SelfVolume, FileName,
                             L"Disk Partitioning Tool",
                             BuiltinIcon (BUILTIN_ICON_TOOL_PART),
-                            'G',
-                            FALSE
+                            'G', FALSE
                         );
 
                         #if REFIT_DEBUG > 0
@@ -2955,19 +2947,16 @@ VOID ScanForTools (VOID) {
                         #if REFIT_DEBUG > 0
                         LOG(1, LOG_LINE_NORMAL,
                             L"Adding Netboot Tag for '%s' on '%s'",
-                            FileName,
-                            SelfVolume->VolName
+                            FileName, SelfVolume->VolName
                         );
                         #endif
 
                         FoundTool = TRUE;
                         AddToolEntry (
-                            SelfVolume,
-                            FileName,
+                            SelfVolume, FileName,
                             L"Netboot",
                             BuiltinIcon (BUILTIN_ICON_TOOL_NETBOOT),
-                            'N',
-                            FALSE
+                            'N', FALSE
                         );
 
                         #if REFIT_DEBUG > 0
