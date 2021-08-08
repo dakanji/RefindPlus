@@ -1260,7 +1260,7 @@ LOADER_ENTRY * AddStanzaEntries (
     }
     OtherCall = TRUE;
 
-    LOG(1, LOG_LINE_NORMAL, L"Adding Manually Configured Loader:- '%s'", Entry->Title);
+    LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Loader:- '%s'", Entry->Title);
     #endif
 
     while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
@@ -1286,7 +1286,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 PreviousVolume = CurrentVolume;
                 if (!FindVolume (&CurrentVolume, TokenList[1])) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_MID, L"Could not find Volume for '%s'!!", Entry->Title);
+                    LOG(1, LOG_THREE_STAR_MID, L"Could Not Find Volume for '%s'!!", Entry->Title);
                     #endif
                 }
                 else {

@@ -153,7 +153,6 @@ VOID SetupScreen (VOID) {
     static BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *TmpStr = NULL;
     CHAR16 *MsgStr = NULL;
 
     MsgLog ("Setup Screen...\n");
@@ -276,14 +275,14 @@ VOID SetupScreen (VOID) {
             }
             MyFreePool (&MsgStr);
 
-            MsgStr = PoolPrint (L"Screen Vertical Resolution:- '%dpx'", ScreenH);
+            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx' (Vertical)", ScreenH);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n");
             MyFreePool (&MsgStr);
             #endif
 
-            // scale icons up for HiDPI monitors if required
+            // scale icons up for HiDPI graphics if required
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
@@ -295,17 +294,19 @@ VOID SetupScreen (VOID) {
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
                 #if REFIT_DEBUG > 0
+                CHAR16 *TmpStr = NULL;
+
                 if (ScreenH >= HIDPI_MIN) {
-                    TmpStr = StrDuplicate (L"HiDPI Monitor");
+                    TmpStr = L"HiDPI Mode";
                 }
                 else {
-                    TmpStr = StrDuplicate (L"HiDPI Flag");
+                    TmpStr = L"HiDPI Flag";
                 }
                 #endif
 
                 if (ScaledIcons) {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"%s ... Maintain Scaled Icons", TmpStr);
+                    MsgStr = PoolPrint (L"%s ... Maintain Upscaled Icons", TmpStr);
                     #endif
                 }
                 else {
@@ -324,13 +325,12 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&TmpStr);
                 MyFreePool (&MsgStr);
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"LoDPI Monitor ... Maintain Icon Scale");
+                MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");

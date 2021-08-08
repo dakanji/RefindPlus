@@ -1063,7 +1063,7 @@ VOID ScanLegacyDisc (VOID) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP,
-        L"Scanning Optical Discs with Mode:- 'Legacy (BIOS)'"
+        L"Scan for Optical Discs with Mode:- 'Legacy (BIOS)'"
     );
     #endif
 
@@ -1090,7 +1090,7 @@ VOID ScanLegacyInternal (VOID) {
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP,
-        L"Scanning Internal Disk Volumes with Mode:- 'Legacy (BIOS)'"
+        L"Scan for Internal Disk Volumes with Mode:- 'Legacy (BIOS)'"
     );
     #endif
 
@@ -1119,7 +1119,7 @@ VOID ScanLegacyExternal (VOID) {
 
    #if REFIT_DEBUG > 0
    LOG(1, LOG_LINE_THIN_SEP,
-       L"Scanning External Disk Volumes with Mode:- 'Legacy (BIOS)'"
+       L"Scan for External Disk Volumes with Mode:- 'Legacy (BIOS)'"
    );
    #endif
 

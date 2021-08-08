@@ -1161,15 +1161,7 @@ VOID AboutRefindPlus (VOID) {
         #endif
 
         AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (
-            &AboutMenu,
-            PoolPrint (
-                L"Firmware Vendor: %s %d.%02d",
-                FirmwareVendor,
-                gST->FirmwareRevision >> 16,
-                gST->FirmwareRevision & ((1 << 16) - 1)
-            )
-        );
+        AddMenuInfoLine (&AboutMenu, PoolPrint (L"Firmware Vendor: %s", FirmwareVendor));
 
         #if defined (EFI32)
         AddMenuInfoLine (&AboutMenu, L"Platform: x86 (32 bit)");
@@ -2245,8 +2237,8 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected Mac OS
-                if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") == NULL &&
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices") != NULL
+                if (!MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") &&
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     if (MyStriCmp (ourLoaderEntry->Volume->VolName, L"PreBoot")) {
                         ourLoaderEntry->Title = L"Mac OS";
@@ -2257,16 +2249,16 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 // Fix undetected Windows
-                if (MyStrStrIns (ourLoaderEntry->Title, L"Windows") == NULL &&
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot") != NULL
+                if (!MyStrStrIns (ourLoaderEntry->Title, L"Windows") &&
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot")
                 ) {
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
                 // Use multiple instaces of "User Input Received:"
 
-                if (MyStrStrIns (ourLoaderEntry->Title, L"OpenCore") != NULL ||
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\OpenCore") != NULL
+                if (MyStrStrIns (ourLoaderEntry->Title, L"OpenCore") ||
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2290,8 +2282,8 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Clover") != NULL ||
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\Clover") != NULL
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Clover") ||
+                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\Clover")
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2315,7 +2307,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS")) {
                     // Set CSR if required
                     ActiveCSR();
 
@@ -2368,7 +2360,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows")) {
                     if (GlobalConfig.ProtectNVRAM &&
                         MyStrStr (VendorInfo, L"Apple") != NULL
                     ) {
@@ -2399,7 +2391,7 @@ EFI_STATUS EFIAPI efi_main (
                     MyFreePool (&MsgStr);
                     #endif
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux") != NULL) {
+                else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux")) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("User Input Received:\n");
                     if (ourLoaderEntry->Volume->VolName) {
@@ -2523,7 +2515,7 @@ EFI_STATUS EFIAPI efi_main (
                 MyFreePool (&MsgStr);
                 #endif
 
-                if (MyStrStrIns (ourLoaderEntry->Title, L"Boot Screen") != NULL) {
+                if (MyStrStrIns (ourLoaderEntry->Title, L"Boot Screen")) {
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
 

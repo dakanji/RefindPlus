@@ -701,13 +701,13 @@ BOOLEAN LoadDrivers(
     #if REFIT_DEBUG > 0
     CHAR16  *MsgNotFound = L"Not Found or Empty";
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Loading Drivers");
+    LOG(1, LOG_LINE_SEPARATOR, L"Load EFI Drivers");
     #endif
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    MsgLog ("Load EFI Drivers from Default Folder...");
+    MsgLog ("Load EFI Drivers from Program Default Folder...");
     #endif
 
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
@@ -726,7 +726,7 @@ BOOLEAN LoadDrivers(
         else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
-                L"'%s' While Scanning Default Driver Folder:- '%s'",
+                L"'%s' in Progrmm Default EFI Driver Folder:- '%s'",
                 MsgNotFound, Directory
             );
             MsgLog ("  - %s", MsgNotFound);
@@ -766,7 +766,7 @@ BOOLEAN LoadDrivers(
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL,
-                        L"'%s' While Scanning User Defined Driver Folder:- '%s'",
+                        L"'%s' in User Defined EFI Driver Folder:- '%s'",
                         MsgNotFound, Directory
                     );
                     MsgLog ("  - %s", MsgNotFound);

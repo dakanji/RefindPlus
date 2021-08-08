@@ -863,36 +863,30 @@ VOID FreeList (
 //
 // volume functions
 //
+
 VOID SanitiseVolumeName (
     REFIT_VOLUME **Volume
 ) {
     CHAR16 *VolumeName = NULL;
 
-    if (Volume && *Volume) {
-        if ((*Volume)->VolName) {
-            if (MyStrStrIns ((*Volume)->VolName, L"EFI System Partition")) {
-                VolumeName = L"EFI System Partition";
-            }
-            else if (MyStrStrIns ((*Volume)->VolName, L"Basic Data Partition")) {
-                VolumeName = L"Basic Data Partition";
-            }
-            else if (MyStrStrIns ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
-                VolumeName = L"Microsoft Reserved Partition";
-            }
-            else {
-                     if (MyStrStrIns ((*Volume)->VolName, L"Whole Disk Volume")) VolumeName = L"Whole Disk Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"Unknown Volume")   ) VolumeName = L"Unknown Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"HFS+ Volume")      ) VolumeName = L"HFS+ Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"NTFS Volume")      ) VolumeName = L"NTFS Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"FAT Volume")       ) VolumeName = L"FAT Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"XFS Volume")       ) VolumeName = L"XFS Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"Ext4 Volume")      ) VolumeName = L"Ext4 Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"Ext3 Volume")      ) VolumeName = L"Ext3 Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"Ext2 Volume")      ) VolumeName = L"Ext2 Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"Btrfs Volume")     ) VolumeName = L"BTRFS Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"ReiserFS Volume")  ) VolumeName = L"ReiserFS Volume";
-                else if (MyStrStrIns ((*Volume)->VolName, L"ISO-9660 Volume")  ) VolumeName = L"ISO-9660 Volume";
-            }
+    if (Volume && *Volume && ((*Volume)->VolName)) {
+             if (MyStrStrIns ((*Volume)->VolName, L"EFI System Partition")) VolumeName = L"EFI System Partition";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Whole Disk Volume")   ) VolumeName = L"Whole Disk Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Unknown Volume")      ) VolumeName = L"Unknown Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"NTFS Volume")         ) VolumeName = L"NTFS Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"HFS+ Volume")         ) VolumeName = L"HFS+ Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"FAT Volume")          ) VolumeName = L"FAT Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"XFS Volume")          ) VolumeName = L"XFS Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Ext4 Volume")         ) VolumeName = L"Ext4 Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Ext3 Volume")         ) VolumeName = L"Ext3 Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Ext2 Volume")         ) VolumeName = L"Ext2 Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Btrfs Volume")        ) VolumeName = L"BTRFS Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"ReiserFS Volume")     ) VolumeName = L"ReiserFS Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"ISO-9660 Volume")     ) VolumeName = L"ISO-9660 Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"Basic Data Partition")) VolumeName = L"Basic Data Partition";
+
+        if (MyStrStrIns ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
+            VolumeName = L"Microsoft Reserved Partition";
         }
     }
 
@@ -2015,10 +2009,10 @@ BOOLEAN SetPreBootNames (
                 !MyStriCmp (Volume->VolName, L"") &&
                 !MyStriCmp (Volume->VolName, L"VM") &&
                 !MyStriCmp (Volume->VolName, L"Update") &&
-                MyStrStrIns (Volume->VolName, L"Recovery")  == NULL &&
-                MyStrStrIns (Volume->VolName, L"PreBoot")   == NULL &&
-                MyStrStrIns (Volume->VolName, L"Unknown")   == NULL &&
-                MyStrStr (Volume->VolName, L"/FileVault") == NULL &&
+                !MyStrStrIns (Volume->VolName, L"PreBoot") &&
+                !MyStrStrIns (Volume->VolName, L"Unknown") &&
+                !MyStrStrIns (Volume->VolName, L"Recovery") &&
+                !MyStrStrIns (Volume->VolName, L"/FileVault") &&
                 FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
             ) {
                 NameSwap = TRUE;
@@ -2039,11 +2033,11 @@ BOOLEAN SetPreBootNames (
                     !MyStriCmp (Volume->VolName, L"") &&
                     !MyStriCmp (Volume->VolName, L"VM") &&
                     !MyStriCmp (Volume->VolName, L"Update") &&
-                    MyStrStrIns (Volume->VolName, L"Recovery")   == NULL &&
-                    MyStrStrIns (Volume->VolName, L"PreBoot")    == NULL &&
-                    MyStrStrIns (Volume->VolName, L"Unknown")    == NULL &&
-                    MyStrStrIns (Volume->VolName, L"/FileVault") == NULL &&
-                    MyStrStrIns (Volume->VolName, L" - Data")    == NULL
+                    !MyStrStrIns (Volume->VolName, L"Unknown") &&
+                    !MyStrStrIns (Volume->VolName, L"PreBoot") &&
+                    !MyStrStrIns (Volume->VolName, L"Recovery") &&
+                    !MyStrStrIns (Volume->VolName, L"/FileVault") &&
+                    !MyStrStrIns (Volume->VolName, L" - Data")
                 ) {
                     NameSwap = TRUE;
                     break;
@@ -2077,7 +2071,7 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (MyStrStrIns (Volumes[i]->VolName, L"PreBoot") != NULL) {
+        if (MyStrStrIns (Volumes[i]->VolName, L"PreBoot")) {
             AddListElement (
                 (VOID ***) &PreBootVolumes,
                 &PreBootVolumesCount,
@@ -2102,10 +2096,10 @@ VOID SetPrebootVolumes (VOID) {
             ) {
                 if (Volumes[i]->VolName != NULL &&
                     StrLen (Volumes[i]->VolName) != 0 &&
-                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot")    != NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Unknown")    != NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Recovery")   != NULL &&
-                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault") != NULL
+                    MyStrStrIns (Volumes[i]->VolName, L"Unknown") &&
+                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot") &&
+                    MyStrStrIns (Volumes[i]->VolName, L"Recovery") &&
+                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault")
                 ) {
                     SwapName = FALSE;
                 }
@@ -2505,7 +2499,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting VolumeBadges for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Set VolumeBadges for Internal Volumes");
     #endif
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
@@ -2572,7 +2566,7 @@ VOID SetVolumeIcons (VOID) {
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Setting '.VolumeIcon' Icons for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Set '.VolumeIcon' Icons for Internal Volumes");
     #endif
 
     if (GlobalConfig.IgnoreVolumeICNS) {

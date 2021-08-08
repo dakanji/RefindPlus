@@ -338,7 +338,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Creating Subscreen: '%s'", SubScreen->Title);
+            LOG(3, LOG_THREE_STAR_MID, L"Build Subscreen:- '%s'", SubScreen->Title);
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;
@@ -676,7 +676,7 @@ VOID SetLoaderDefaults (
         if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
             MergeFsName = TRUE;
 
-            if (MyStrStrIns (Volume->FsName, L"PreBoot") != NULL && GlobalConfig.SyncAPFS) {
+            if (MyStrStrIns (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
                 MergeFsName = FALSE;
             }
 
@@ -1117,7 +1117,7 @@ BOOLEAN ShouldScan (
     // Align APFS ReMap
     if ((Volume->VolName) &&
         (GlobalConfig.SyncAPFS) &&
-        (MyStrStrIns (Volume->VolName, L"PreBoot") != NULL)
+        (MyStrStrIns (Volume->VolName, L"PreBoot"))
     ) {
         for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
             if (GuidsAreEqual (
@@ -1657,7 +1657,7 @@ VOID ScanEfiFiles (
     // Align APFS ReMap
     if ((Volume->VolName) &&
         (GlobalConfig.SyncAPFS) &&
-        (MyStrStrIns (Volume->VolName, L"PreBoot") != NULL)
+        (MyStrStrIns (Volume->VolName, L"PreBoot"))
     ) {
         UINTN PreBootIndex;
         for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
@@ -1872,7 +1872,7 @@ VOID ScanInternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Internal Disk Volumes with Mode:- 'UEFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scan for Internal Disk Volumes with Mode:- 'UEFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1891,7 +1891,7 @@ VOID ScanExternal (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning External Disk Volumes with Mode:- 'UEFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scan for External Disk Volumes with Mode:- 'UEFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -1911,7 +1911,7 @@ VOID ScanOptical (VOID) {
     UINTN VolumeIndex;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Scanning Optical Discs with Mode:- 'UEFI'");
+    LOG(1, LOG_LINE_THIN_SEP, L"Scan for Optical Discs with Mode:- 'UEFI'");
     #endif
 
     FirstLoaderScan = TRUE;
@@ -2193,7 +2193,7 @@ VOID ScanForBootloaders (
                 }
                 MsgLog ("Scan Manual:");
 
-                LOG(1, LOG_LINE_THIN_SEP, L"Scanning Manually Configured Boot Stanzas");
+                LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Boot Stanzas");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);
@@ -2741,7 +2741,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -2784,7 +2784,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -2835,7 +2835,7 @@ VOID ScanForTools (VOID) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
                 }
@@ -2890,7 +2890,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -2940,7 +2940,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -2991,7 +2991,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3047,7 +3047,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3113,7 +3113,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3132,7 +3132,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3151,7 +3151,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3178,7 +3178,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3227,7 +3227,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN: %s", ToolStr);
+                    MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
