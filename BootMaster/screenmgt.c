@@ -417,17 +417,15 @@ VOID SetupScreen (VOID) {
 VOID SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
-           EFI_STATUS  Status;
-    static BOOLEAN     HaveOverriden = FALSE;
+    EFI_STATUS  Status;
 
-    if (!GlobalConfig.TextRenderer && !HaveOverriden && !IsBoot) {
+    if (!GlobalConfig.TextRenderer && !IsBoot) {
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
-        HaveOverriden = TRUE;
 
         if (!EFI_ERROR (Status)) {
-            // DA-TAG: Condition outside Debug tag to silence static analysis
-            //         'Dead Store' notices in Release builds
+            GlobalConfig.TextRenderer = TRUE;
+
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
             #endif
