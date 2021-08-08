@@ -1,5 +1,8 @@
 0.13.2.AH (Pre-Release):
 -----------------------
+- Fixes Switching External Screens to Text Mode
+  * External screens switched to text mode were functional but elements, such as the header, were missing
+  * This has now been fixed along with properly disabling the cursor
 - Fixes Static 'PreviousBoot' Setup
   * The actually booted loader was not recorded if a tool had been run beforehand
   * Such a run of a tool meant that tool was 'fixed' as the 'PreviousBoot' item

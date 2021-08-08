@@ -551,10 +551,8 @@ VOID BeginExternalScreen (
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
-        // clear to dark background
-        egClearScreen (&DarkBackgroundPixel);
+        SwitchToText (UseGraphicsMode);
         DrawScreenHeader (Title);
-        SwitchToText (TRUE);
     }
 
     // reset error flag

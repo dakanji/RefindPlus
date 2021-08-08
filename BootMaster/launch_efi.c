@@ -684,7 +684,7 @@ VOID StartTool (
     IsBoot = TRUE;
 
     LoaderPath = Basename (Entry->LoaderPath);
-    BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title + 6);  // assumes "Start <title>" as assigned below
+    BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title);
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
