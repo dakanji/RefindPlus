@@ -711,12 +711,7 @@ VOID AddLegacyEntry (
     }
 
     if (Volume->VolName != NULL) {
-        if (MyStrStr (Volume->VolName, L"NTFS volume") != NULL) {
-            VolDesc = L"NTFS Volume";
-        }
-        else {
-            VolDesc = Volume->VolName;
-        }
+        VolDesc = Volume->VolName;
     }
     else {
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
@@ -741,7 +736,7 @@ VOID AddLegacyEntry (
     }
 
     LOG(1, LogLineType,
-        L"Adding Legacy (BIOS) Entry for '%s'",
+        L"Adding Legacy Boot Entry for '%s'",
         LegacyTitle
     );
     #endif
@@ -759,13 +754,13 @@ VOID AddLegacyEntry (
 
     Entry->me.Row            = 0;
     Entry->Enabled           = TRUE;
-    Entry->me.Title          = LegacyTitle;
     Entry->me.Tag            = TAG_LEGACY;
+    Entry->me.Title          = LegacyTitle;
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (Volume->OSIconName, L"legacy", FALSE);
-    Entry->me.BadgeImage     = Volume->VolBadgeImage;
     Entry->Volume            = Volume;
+    Entry->me.BadgeImage     = Volume->VolBadgeImage;
     Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
                                ? L"CD"
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
@@ -846,7 +841,7 @@ VOID AddLegacyEntryUEFI (
     #if REFIT_DEBUG > 0
     LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG(1, LOG_THREE_STAR_MID,
-        L"Adding 'UEFI-Style' Legacy (BIOS) Entry for '%s'",
+        L"Adding 'UEFI-Style' Legacy Entry for '%s'",
         Entry->me.Title
     );
     #endif
@@ -925,7 +920,7 @@ VOID ScanLegacyUEFI (
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
-    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy (BIOS) OS");
+    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Boot Option");
     #endif
 
     FirstLegacyScan = FALSE;
