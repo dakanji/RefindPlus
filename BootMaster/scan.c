@@ -630,7 +630,7 @@ VOID SetLoaderDefaults (
                 // locate a custom icon for the loader
                 // Anything found here takes precedence over the "hints" in the OSIconName variable
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Trying to Load Icon from Bootloader Directory");
+                LOG(4, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
                 #endif
 
                 if (!Entry->me.Image) {
@@ -2193,7 +2193,7 @@ VOID ScanForBootloaders (
                 }
                 MsgLog ("Scan Manual:");
 
-                LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Boot Stanzas");
+                LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Loaders");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);

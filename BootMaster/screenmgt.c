@@ -102,7 +102,7 @@ VOID InitScreen (VOID) {
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Screen Size");
+        LOG(4, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Resolution");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -374,7 +374,7 @@ VOID SetupScreen (VOID) {
                 }
                 else {
                     MsgStr = StrDuplicate (L"Switch to Graphics Mode ... Success");
-                    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
                     MsgLog ("INFO: %s", MsgStr);
                     MsgLog ("\n\n");
                     MyFreePool (&MsgStr);

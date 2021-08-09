@@ -2481,10 +2481,6 @@ VOID ScanVolumes (VOID) {
         }
     } // for
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Identified %d Volumes", VolumesCount);
-    #endif
-
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
         SetPrebootVolumes();
     }

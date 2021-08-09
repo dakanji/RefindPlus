@@ -344,7 +344,7 @@ EFI_STATUS egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"In egScaleImage ... Loaded File:- '%s'", FileName);
+    LOG(3, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -450,7 +450,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egScaleImage ... Requirements Not Met!!");
+        LOG(4, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
         #endif
 
         return NULL;
@@ -461,7 +461,7 @@ EG_IMAGE * egLoadImage (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In egScaleImage ... '%r' Returned While Attempting to Load File!!",
+            L"In egLoadImage ... '%r' Returned While Attempting to Load File!!",
             Status
         );
         #endif
@@ -502,7 +502,7 @@ EG_IMAGE * egLoadIcon (
     if (EFI_ERROR (Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In egScaleImage ... '%r' When Trying to Load Icon:- '%s'!!",
+            L"In egLoadIcon ... '%r' When Trying to Load Icon:- '%s'!!",
             Status, Path
         );
         #endif
@@ -519,7 +519,7 @@ EG_IMAGE * egLoadIcon (
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
-            L"In egScaleImage ... Could Not Decode File Data!!"
+            L"In egLoadIcon ... Could Not Decode File Data!!"
         );
         #endif
 
@@ -541,7 +541,7 @@ EG_IMAGE * egLoadIcon (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... %s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
             #endif
 
             Print(MsgStr);
@@ -587,7 +587,7 @@ EG_IMAGE * egLoadIconAnyType (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
-        L"In egScaleImage ... %s",
+        L"In egLoadIconAnyType ... %s",
         (Image != NULL) ? L"Loaded Icon" : L"Could Not Load Icon!!"
     );
     #endif
