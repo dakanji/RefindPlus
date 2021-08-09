@@ -2075,7 +2075,7 @@ LOADER_ENTRY * AddToolEntry (
     LOADER_ENTRY *Entry;
 
     Entry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-    Entry->me.Title          = PoolPrint (L"Load %s", LoaderTitle);
+    Entry->me.Title          = (LoaderTitle) ? StrDuplicate (LoaderTitle) : StrDuplicate (L"Unknown Tool");
     Entry->me.Tag            = TAG_TOOL;
     Entry->me.Row            = 1;
     Entry->me.ShortcutLetter = ShortcutLetter;
@@ -2084,7 +2084,7 @@ LOADER_ENTRY * AddToolEntry (
     Entry->Volume            = Volume;
     Entry->UseGraphicsMode   = UseGraphicsMode;
 
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
 } // static LOADER_ENTRY * AddToolEntry()
@@ -2907,7 +2907,7 @@ VOID ScanForTools (VOID) {
                         FoundTool = TRUE;
                         AddToolEntry (
                             SelfVolume, FileName,
-                            L"Disk Partitioning Tool",
+                            L"Partition Disks",
                             BuiltinIcon (BUILTIN_ICON_TOOL_PART),
                             'G', FALSE
                         );
