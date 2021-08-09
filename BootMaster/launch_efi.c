@@ -231,7 +231,6 @@ EFI_STATUS StartEFIImage (
     EFI_DEVICE_PATH   *DevicePath        = NULL;
     EFI_LOADED_IMAGE  *ChildLoadedImage  = NULL;
     CHAR16            *FullLoadOptions   = NULL;
-    CHAR16            *ErrorInfo         = NULL;
     CHAR16            *EspGUID           = NULL;
     CHAR16            *MsgStr            = NULL;
     EFI_GUID           SystemdGuid       = SYSTEMD_GUID_VALUE;
@@ -361,12 +360,12 @@ EFI_STATUS StartEFIImage (
         goto bailout;
     }
 
-    ErrorInfo = PoolPrint (L"While Loading %s", ImageTitle);
-    if (CheckError (Status, ErrorInfo)) {
-        MyFreePool (&ErrorInfo);
+    MsgStr = PoolPrint (L"While Loading %s", ImageTitle);
+    if (CheckError (Status, MsgStr)) {
+        MyFreePool (&MsgStr);
         goto bailout;
     }
-    MyFreePool (&ErrorInfo);
+    MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -431,8 +430,18 @@ EFI_STATUS StartEFIImage (
 
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
-        LOG(3, LOG_LINE_NORMAL, L"Running EFI Image:- '%s'", ImageTitle);
+        MsgStr = StrDuplicate (L"Loading Child Image");
     }
+    else {
+        // DA-TAG: This is used before 'MsgStr' is ultimately freed
+        MsgStr = StrDuplicate (L"Loading EFI Driver");
+    }
+
+    if (!IsDriver) {
+        // Do not log this for drivers
+        LOG(3, LOG_LINE_NORMAL, L"%s:- '%s'", MsgStr , ImageTitle);
+    }
+    // DA-TAG: MsgStr is recycled and freed later
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -441,14 +450,24 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
+    // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' Loading EFI Image:- '%s'", ReturnStatus, ImageTitle);
+    LOG(1, LOG_THREE_STAR_MID, L"'%r' While %s:- '%s'", ReturnStatus, MsgStr, ImageTitle);
+
+    // DA-TAG: MsgStr from earlier is freed here
+    MyFreePool (&MsgStr);
     #endif
 
-    // control returns here when the child image calls Exit()
-    ErrorInfo = PoolPrint (L"Returned from %s", ImageTitle);
-    CheckError (ReturnStatus, ErrorInfo);
-    MyFreePool (&ErrorInfo);
+    MsgStr = PoolPrint (L"Returned from %s", ImageTitle);
+
+    #if REFIT_DEBUG > 0
+    if (!IsDriver) {
+        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    }
+    #endif
+
+    CheckError (ReturnStatus, MsgStr);
+    MyFreePool (&MsgStr);
 
     if (IsDriver) {
         // Below should have no effect on most systems, but works
