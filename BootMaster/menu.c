@@ -506,7 +506,7 @@ VOID SaveScreen (VOID) {
     MyFreePool (&MsgStr);
 
     MsgStr = StrDuplicate (L"Start Screensaver");
-    LOG(2, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+    LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n");
     MyFreePool (&MsgStr);
