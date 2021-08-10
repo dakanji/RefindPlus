@@ -819,6 +819,7 @@ VOID SetLoaderDefaults (
         ShortcutLetter = 'N';
         MergeStrings (&OSIconName, L"network", L',');
     }
+    ToLower (OSIconName);
 
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
         ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
