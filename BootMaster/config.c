@@ -889,7 +889,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
-                // DA_TAG: has been set to 0 so as to ignore the 'max' setting
+                // DA-TAG: has been set to 0 so as to ignore the 'max' setting
                 //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
                 //GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
                 GlobalConfig.RequestedScreenWidth  = 0;

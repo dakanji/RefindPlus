@@ -929,7 +929,7 @@ VOID SwitchToGraphicsAndClear (
     #endif
 } // VOID SwitchToGraphicsAndClear()
 
-// DA_TAG: Permit Image->PixelData Memory Leak on Qemu
+// DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
 //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
 //         Temporary ... Eliminate when no longer required
@@ -1017,7 +1017,7 @@ VOID BltClearScreen (
           } // if GlobalConfig.BannerScale else if Banner->Width
 
            if (NewBanner != NULL) {
-              // DA_TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
+              // DA-TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
               //         See notes in 'egFreeImageQEMU'
               //         Revert when no longer required
               egFreeImageQEMU (Banner);
@@ -1065,7 +1065,7 @@ VOID BltClearScreen (
 
     GraphicsScreenDirty = FALSE;
 
-    // DA_TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
+    // DA-TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
     //         See notes in 'egFreeImageQEMU'
     //         Revert when no longer required
     egFreeImageQEMU (GlobalConfig.ScreenBackground);

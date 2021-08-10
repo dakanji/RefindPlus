@@ -838,7 +838,7 @@ BOOLEAN IsGuid (
                         break;
                     }
                 }
-                // DA_TAG: Condotion below can never be met
+                // DA-TAG: Condotion below can never be met
                 //         Comment out until review
                 //else if (((a < L'a') || (a > L'f')) &&
                 //    ((a < L'A') || (a > L'F')) &&

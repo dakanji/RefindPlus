@@ -39,7 +39,7 @@ typedef struct _string_list {
     struct _string_list  *Next;
 } STRING_LIST;
 
-// DA_TAG: See here for more if needed:
+// DA-TAG: See here for more if needed:
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
 BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN MyStriCmp (IN const CHAR16 *String1, IN const CHAR16 *String2);

@@ -1374,7 +1374,7 @@ VOID ScanVolumeBootcode (
         /**
          * NOTE: If you add an operating system with a name that starts with 'W' or 'L',
          *       you need to fix AddLegacyEntry in BootMaster/launch_legacy.c.
-         *       DA_TAGGED
+         *       DA-TAGGED
         **/
 
         if (Volume->HasBootCode) {

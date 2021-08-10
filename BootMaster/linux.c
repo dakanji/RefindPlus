@@ -294,7 +294,7 @@ VOID AddKernelToSubmenu (
             ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
             SubEntry = InitializeLoaderEntry (TargetLoader);
 
-            // DA_TAG: InitializeLoaderEntry can return NULL
+            // DA-TAG: InitializeLoaderEntry can return NULL
             if (SubEntry != NULL) {
                 SplitPathName (FileName, &VolName, &Path, &SubmenuName);
                 MergeStrings (&SubmenuName, L": ", '\0');
