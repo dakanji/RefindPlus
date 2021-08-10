@@ -90,20 +90,19 @@ VOID PrepareBlankLine (VOID) {
         BlankLine[i] = ' ';
     }
     BlankLine[i] = 0;
-}
+} // VOID PrepareBlankLine()
 
 //
 // Screen initialization and switching
 //
 
 VOID InitScreen (VOID) {
-    CHAR16 *MsgStr = NULL;
-    // initialize libeg
+    // initialise libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        MsgStr = L"Graphics Mode Detected ... Getting Resolution";
+        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Resolution");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -129,14 +128,12 @@ VOID InitScreen (VOID) {
 
     // get size of text console
     if (REFIT_CALL_4_WRAPPER(
-        gST->ConOut->QueryMode,
-        gST->ConOut,
+        gST->ConOut->QueryMode, gST->ConOut,
         gST->ConOut->Mode->Mode,
-        &ConWidth,
-        &ConHeight) != EFI_SUCCESS
-    ) {
+        &ConWidth, &ConHeight
+    ) != EFI_SUCCESS) {
         // use default values on error
-        ConWidth = 80;
+        ConWidth  = 80;
         ConHeight = 25;
     }
 
@@ -144,7 +141,7 @@ VOID InitScreen (VOID) {
 
     // show the banner if in text mode
     if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1)) {
-        DrawScreenHeader (L"Initializing...");
+        DrawScreenHeader (L"Initialising...");
     }
 } // VOID InitScreen()
 
@@ -235,7 +232,7 @@ VOID SetupScreen (VOID) {
             // Requested text mode forces us to use a bigger graphics mode
             GlobalConfig.RequestedScreenWidth  = ScreenW;
             GlobalConfig.RequestedScreenHeight = ScreenH;
-        } // if
+        }
 
         if (GlobalConfig.RequestedScreenWidth > 0) {
 
@@ -247,6 +244,7 @@ VOID SetupScreen (VOID) {
                 &(GlobalConfig.RequestedScreenWidth),
                 &(GlobalConfig.RequestedScreenHeight)
             );
+
             egGetScreenSize (&ScreenW, &ScreenH);
         } // if user requested a particular screen resolution
     }
@@ -328,6 +326,7 @@ VOID SetupScreen (VOID) {
 
                     ScaledIcons = TRUE;
                 }
+
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
@@ -403,6 +402,7 @@ VOID SetupScreen (VOID) {
                 // start with screen blanked
                 GraphicsScreenDirty = TRUE;
             }
+
             BannerLoaded = TRUE;
         }
     }
@@ -417,6 +417,7 @@ VOID SetupScreen (VOID) {
 
         AllowGraphicsMode     = FALSE;
         GlobalConfig.TextOnly = TRUE;
+
         SwitchToText (FALSE);
     }
 } // VOID SetupScreen()
@@ -424,7 +425,7 @@ VOID SetupScreen (VOID) {
 VOID SwitchToText (
     IN BOOLEAN CursorEnabled
 ) {
-    EFI_STATUS  Status;
+    EFI_STATUS Status;
 
     if (!GlobalConfig.TextRenderer && !IsBoot) {
         // Override Text Renderer Setting
@@ -472,9 +473,8 @@ VOID SwitchToText (
             (!IsBoot)
         ) {
             MsgLog (
-                "  Could Not Get Text Console Size ... Using Default: %d x %d\n\n",
-                ConHeight,
-                ConWidth
+                "  Could Not Get Text Console Size ... Using Default:- '%d x %d'\n\n",
+                ConHeight, ConWidth
             );
         }
         #endif
@@ -486,13 +486,13 @@ VOID SwitchToText (
             (!IsBoot)
         ) {
             MsgLog (
-                "  Text Console Size = %d x %d\n\n",
-                ConWidth,
-                ConHeight
+                "  Text Console Size:- '%d x %d'\n\n",
+                ConWidth, ConHeight
             );
         }
         #endif
     }
+
     PrepareBlankLine();
 
     #if REFIT_DEBUG > 0
@@ -502,7 +502,7 @@ VOID SwitchToText (
     #endif
 
     IsBoot = FALSE;
-}
+} // VOID SwitchToText()
 
 EFI_STATUS SwitchToGraphics (VOID) {
     if (AllowGraphicsMode) {
@@ -517,7 +517,7 @@ EFI_STATUS SwitchToGraphics (VOID) {
     }
 
     return EFI_NOT_FOUND;
-}
+} // EFI_STATUS SwitchToGraphics()
 
 //
 // Screen control for running tools
@@ -530,7 +530,7 @@ VOID BeginTextScreen (
 
     // reset error flag
     haveError = FALSE;
-}
+} // VOID BeginTextScreen()
 
 VOID FinishTextScreen (
     IN BOOLEAN WaitAlways
@@ -542,7 +542,7 @@ VOID FinishTextScreen (
 
     // reset error flag
     haveError = FALSE;
-}
+} // VOID FinishTextScreen()
 
 VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
@@ -562,7 +562,7 @@ VOID BeginExternalScreen (
 
     // reset error flag
     haveError = FALSE;
-}
+} // VOID BeginExternalScreen()
 
 VOID FinishExternalScreen (VOID) {
     // make sure we clean up later
@@ -578,7 +578,7 @@ VOID FinishExternalScreen (VOID) {
 
     // reset error flag
     haveError = FALSE;
-}
+} // VOID FinishExternalScreen()
 
 VOID TerminateScreen (VOID) {
     // clear text screen
@@ -587,7 +587,7 @@ VOID TerminateScreen (VOID) {
 
     // enable cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, TRUE);
-}
+} // VOID TerminateScreen()
 
 VOID DrawScreenHeader (
     IN CHAR16 *Title
@@ -613,7 +613,7 @@ VOID DrawScreenHeader (
     // reposition cursor
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
     REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, 4);
-}
+} // VOID DrawScreenHeader()
 
 //
 // Keyboard input
@@ -656,7 +656,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     return GotKeyStrokes;
-}
+} // BOOLEAN ReadAllKeyStrokes()
 
 // Displays *Text without regard to appearances. Used mainly for debugging
 // and rare error messages.
@@ -771,7 +771,7 @@ VOID PauseForKey (VOID) {
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
     #endif
-}
+} // VOID PauseForKey
 
 // Pause a specified number of seconds
 VOID PauseSeconds (
@@ -798,7 +798,7 @@ VOID DebugPause (VOID) {
 
     // reset error flag
     haveError = FALSE;
-}
+} // VOID DebugPause()
 #endif
 
 VOID EndlessIdleLoop (VOID) {
@@ -808,7 +808,7 @@ VOID EndlessIdleLoop (VOID) {
         ReadAllKeyStrokes();
         REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
-}
+} // VOID EndlessIdleLoop()
 
 //
 // Error handling
@@ -943,7 +943,7 @@ VOID egFreeImageQEMU (
     else {
         MyFreePool (&Image);
     }
-}
+} // static VOID egFreeImageQEMU()
 
 VOID BltClearScreen (
     BOOLEAN ShowBanner
@@ -1080,12 +1080,12 @@ VOID BltImage (
 ) {
     egDrawImage (Image, XPos, YPos);
     GraphicsScreenDirty = TRUE;
-}
+} // VOID BltImage()
 
 VOID BltImageAlpha (
     IN EG_IMAGE *Image,
-    IN UINTN XPos,
-    IN UINTN YPos,
+    IN UINTN     XPos,
+    IN UINTN     YPos,
     IN EG_PIXEL *BackgroundPixel
 ) {
     EG_IMAGE *CompImage;
@@ -1097,19 +1097,21 @@ VOID BltImageAlpha (
         FALSE,
         BackgroundPixel
     );
+
     egComposeImage (CompImage, Image, 0, 0);
 
     // blit to screen and clean up
     egDrawImage (CompImage, XPos, YPos);
     egFreeImage (CompImage);
+
     GraphicsScreenDirty = TRUE;
-}
+} // VOID BltImageAlpha()
 
 //VOID BltImageComposite (
 //    IN EG_IMAGE *BaseImage,
 //    IN EG_IMAGE *TopImage,
-//    IN UINTN XPos,
-//    IN UINTN YPos
+//    IN UINTN     XPos,
+//    IN UINTN     YPos
 //) {
 //    UINTN TotalWidth, TotalHeight, CompWidth, CompHeight, OffsetX, OffsetY;
 //    EG_IMAGE *CompImage;
@@ -1136,7 +1138,7 @@ VOID BltImageAlpha (
 //    egDrawImage (CompImage, XPos, YPos);
 //    egFreeImage (CompImage);
 //    GraphicsScreenDirty = TRUE;
-//}
+//} // VOID BltImageComposite()
 
 VOID BltImageCompositeBadge (
     IN EG_IMAGE *BaseImage,
@@ -1145,59 +1147,64 @@ VOID BltImageCompositeBadge (
     IN UINTN     XPos,
     IN UINTN     YPos
 ) {
-     UINTN     TotalWidth  = 0;
-     UINTN     TotalHeight = 0;
-     UINTN     CompWidth   = 0;
-     UINTN     CompHeight  = 0;
-     UINTN     OffsetX     = 0;
-     UINTN     OffsetY     = 0;
-     EG_IMAGE *CompImage   = NULL;
+    UINTN     TotalWidth  = 0;
+    UINTN     TotalHeight = 0;
+    UINTN     CompWidth   = 0;
+    UINTN     CompHeight  = 0;
+    UINTN     OffsetX     = 0;
+    UINTN     OffsetY     = 0;
+    EG_IMAGE *CompImage   = NULL;
 
-     // initialize buffer with base image
-     if (BaseImage != NULL) {
-         CompImage   = egCopyImage (BaseImage);
-         TotalWidth  = BaseImage->Width;
-         TotalHeight = BaseImage->Height;
-     }
+    // initialize buffer with base image
+    if (BaseImage != NULL) {
+        CompImage   = egCopyImage (BaseImage);
+        TotalWidth  = BaseImage->Width;
+        TotalHeight = BaseImage->Height;
+    }
 
-     // place the top image
-     if ((TopImage != NULL) && (CompImage != NULL)) {
-         CompWidth = TopImage->Width;
-         if (CompWidth > TotalWidth) {
-             CompWidth = TotalWidth;
-         }
-         OffsetX = (TotalWidth - CompWidth) >> 1;
-         CompHeight = TopImage->Height;
-         if (CompHeight > TotalHeight) {
-             CompHeight = TotalHeight;
-         }
-         OffsetY = (TotalHeight - CompHeight) >> 1;
-         egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
-     }
+    // place the top image
+    if ((TopImage != NULL) && (CompImage != NULL)) {
+        CompWidth = TopImage->Width;
 
-     // place the badge image
-     if (BadgeImage != NULL && CompImage != NULL &&
-         (BadgeImage->Width  + 8) < CompWidth &&
-         (BadgeImage->Height + 8) < CompHeight
-     ) {
-         OffsetX += CompWidth  - 8 - BadgeImage->Width;
-         OffsetY += CompHeight - 8 - BadgeImage->Height;
-         egComposeImage (CompImage, BadgeImage, OffsetX, OffsetY);
-     }
+        if (CompWidth > TotalWidth) {
+            CompWidth = TotalWidth;
+        }
 
-     // blit to screen and clean up
-     if (CompImage != NULL) {
-         if (CompImage->HasAlpha) {
-             egDrawImageWithTransparency (
-                 CompImage, NULL,
-                 XPos, YPos,
-                 CompImage->Width, CompImage->Height
-             );
-         }
-         else {
-             egDrawImage (CompImage, XPos, YPos);
-         }
-         egFreeImage (CompImage);
-         GraphicsScreenDirty = TRUE;
-     }
-}
+        OffsetX    = (TotalWidth - CompWidth) >> 1;
+        CompHeight = TopImage->Height;
+
+        if (CompHeight > TotalHeight) {
+            CompHeight = TotalHeight;
+        }
+
+        OffsetY = (TotalHeight - CompHeight) >> 1;
+        egComposeImage (CompImage, TopImage, OffsetX, OffsetY);
+    }
+
+    // place the badge image
+    if (BadgeImage != NULL && CompImage != NULL &&
+        (BadgeImage->Width  + 8) < CompWidth &&
+        (BadgeImage->Height + 8) < CompHeight
+    ) {
+        OffsetX += CompWidth  - 8 - BadgeImage->Width;
+        OffsetY += CompHeight - 8 - BadgeImage->Height;
+        egComposeImage (CompImage, BadgeImage, OffsetX, OffsetY);
+    }
+
+    // blit to screen and clean up
+    if (CompImage != NULL) {
+        if (CompImage->HasAlpha) {
+            egDrawImageWithTransparency (
+                CompImage, NULL,
+                XPos, YPos,
+                CompImage->Width, CompImage->Height
+            );
+        }
+        else {
+            egDrawImage (CompImage, XPos, YPos);
+        }
+
+        egFreeImage (CompImage);
+        GraphicsScreenDirty = TRUE;
+    }
+} // VOID BltImageCompositeBadge()
