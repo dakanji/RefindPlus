@@ -112,17 +112,15 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgStr = L"Graphics Mode Not Detected ... Setting Text Mode";
+        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode * NOT * Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;
         egSetTextMode (GlobalConfig.RequestedTextMode);
-        egSetGraphicsModeEnabled (FALSE);   // just to be sure we are in text mode
-    }
 
-    #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-    #endif
+         // Make double sure we are in text mode
+         egSetGraphicsModeEnabled (FALSE);
+    }
 
     GraphicsScreenDirty = TRUE;
 
@@ -228,8 +226,10 @@ VOID SetupScreen (VOID) {
             (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Adjusting Requested Screen Size to Actual Screen Size");
-            MsgLog ("  - Adjust Screen Size\n");
+            MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s\n", MsgStr);
+            MyFreePool (&MsgStr);
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
@@ -261,6 +261,7 @@ VOID SetupScreen (VOID) {
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MsgLog ("\n\n");
+        MyFreePool (&MsgStr);
         #endif
     }
     else if (AllowGraphicsMode) {
