@@ -97,12 +97,13 @@ VOID PrepareBlankLine (VOID) {
 //
 
 VOID InitScreen (VOID) {
+    CHAR16 *MsgStr = NULL;
     // initialize libeg
     egInitScreen();
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Resolution");
+        MsgStr = L"Graphics Mode Detected ... Getting Resolution";
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -111,13 +112,18 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode Not Detected ... Setting Text Mode");
+        MsgStr = L"Graphics Mode Not Detected ... Setting Text Mode";
         #endif
 
         AllowGraphicsMode = FALSE;
         egSetTextMode (GlobalConfig.RequestedTextMode);
         egSetGraphicsModeEnabled (FALSE);   // just to be sure we are in text mode
     }
+
+    #if REFIT_DEBUG > 0
+    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+    #endif
+
     GraphicsScreenDirty = TRUE;
 
     // disable cursor
@@ -142,7 +148,7 @@ VOID InitScreen (VOID) {
     if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1)) {
         DrawScreenHeader (L"Initializing...");
     }
-}
+} // VOID InitScreen()
 
 // Set the screen resolution and mode (text vs. graphics).
 VOID SetupScreen (VOID) {
@@ -192,7 +198,7 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Recording current resolution as %d x %d",
+            L"Recording Current Resolution as %d x %d",
             ScreenW, ScreenH
         );
         #endif
@@ -213,7 +219,7 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"After setting text mode, recording new current resolution as %d x %d",
+            L"After Setting Text Mode ... Recording * NEW * Current Resolution as %d x %d",
             ScreenW, ScreenH
         );
         #endif
@@ -222,7 +228,7 @@ VOID SetupScreen (VOID) {
             (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Adjusting requested screen size based on actual screen size");
+            LOG(2, LOG_LINE_NORMAL, L"Adjusting Requested Screen Size to Actual Screen Size");
             MsgLog ("  - Adjust Screen Size\n");
             #endif
 
