@@ -327,20 +327,18 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Filter Write to NVRAM:- '%s' ... %r", VariableName, LogStatus);
+    MsgStr = PoolPrint (L"Filter  Write to NVRAM:- '%s'", VariableName);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("INFO: %s", MsgStr);
+    MsgLog ("INFO: %s ... %r", MsgStr, LogStatus);
     MyFreePool (&MsgStr);
 
     if (BlockCert) {
-        MsgStr = StrDuplicate (L"To Hardware NVRAM ... Blocked Secure Boot Certificate Write");
-        LOG(3, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        LOG(3, LOG_THREE_STAR_MID,
+            L"To Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
+            LogStatus
+        );
         MsgLog ("\n");
-        MsgLog ("      * %s", MsgStr);
-        MyFreePool (&MsgStr);
-
-        MsgLog ("\n");
-        MsgLog ("        Successful NVRAM Write Attempt May Result in BootROM Damage");
+        MsgLog ("      * Successful Write May Result in BootROM Damage");
     }
     MsgLog ("\n\n");
     #endif
