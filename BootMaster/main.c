@@ -312,8 +312,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         ReturnStatus = Status;
     }
     else {
-        // Log 'Security Violation'
-        Status = EFI_SECURITY_VIOLATION;
+        // Log 'Access Denied'
+        Status = EFI_ACCESS_DENIED;
 
         // Report 'Success'
         ReturnStatus = EFI_SUCCESS;
