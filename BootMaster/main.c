@@ -267,22 +267,23 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  UINTN      VariableSize,
     IN  VOID      *VariableData
 ) {
-    EFI_STATUS   Status, ReturnStatus;
-    EFI_GUID     WinGuid                = MICROSOFT_VENDOR_GUID;
-    EFI_GUID     X509Guid               = X509_GUID;
-    EFI_GUID     PKCS7Guid              = PKCS7_GUID;
-    EFI_GUID     Sha001Guid             = EFI_CERT_SHA1_GUID;
-    EFI_GUID     Sha224Guid             = EFI_CERT_SHA224_GUID;
-    EFI_GUID     Sha256Guid             = EFI_CERT_SHA256_GUID;
-    EFI_GUID     Sha384Guid             = EFI_CERT_SHA384_GUID;
-    EFI_GUID     Sha512Guid             = EFI_CERT_SHA512_GUID;
-    EFI_GUID     RSA2048Guid            = RSA2048_GUID;
-    EFI_GUID     RSA2048Sha1Guid        = EFI_CERT_RSA2048_SHA1_GUID;
-    EFI_GUID     RSA2048Sha256Guid      = EFI_CERT_RSA2048_SHA256_GUID;
-    EFI_GUID     TypeRSA2048Sha256Guid  = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
+    EFI_STATUS     Status;
+    EFI_GUID       WinGuid               = MICROSOFT_VENDOR_GUID;
+    EFI_GUID       X509Guid              = X509_GUID;
+    EFI_GUID       PKCS7Guid             = PKCS7_GUID;
+    EFI_GUID       Sha001Guid            = EFI_CERT_SHA1_GUID;
+    EFI_GUID       Sha224Guid            = EFI_CERT_SHA224_GUID;
+    EFI_GUID       Sha256Guid            = EFI_CERT_SHA256_GUID;
+    EFI_GUID       Sha384Guid            = EFI_CERT_SHA384_GUID;
+    EFI_GUID       Sha512Guid            = EFI_CERT_SHA512_GUID;
+    EFI_GUID       RSA2048Guid           = RSA2048_GUID;
+    EFI_GUID       RSA2048Sha1Guid       = EFI_CERT_RSA2048_SHA1_GUID;
+    EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
+    EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    EFI_STATUS  LogStatus;
+    CHAR16     *MsgStr = NULL;
     #endif
 
     BOOLEAN BlockCert = (
@@ -309,19 +310,24 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             VariableSize,
             VariableData
         );
-        ReturnStatus = Status;
+
+        #if REFIT_DEBUG > 0
+        LogStatus = Status;
+        #endif
     }
     else {
+        #if REFIT_DEBUG > 0
         // Log 'Access Denied'
-        Status = EFI_ACCESS_DENIED;
+        LogStatus = EFI_ACCESS_DENIED;
+        #endif
 
         // Report 'Success'
-        ReturnStatus = EFI_SUCCESS;
+        Status = EFI_SUCCESS;
     }
 
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Filter Write to NVRAM:- '%s' ... %r", VariableName, Status);
+    MsgStr = PoolPrint (L"Filter Write to NVRAM:- '%s' ... %r", VariableName, LogStatus);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
@@ -339,7 +345,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MsgLog ("\n\n");
     #endif
 
-    return ReturnStatus;
+    return Status;
 } // VOID gRTSetVariableEx()
 
 static
