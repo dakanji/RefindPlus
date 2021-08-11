@@ -413,7 +413,7 @@ EFI_STATUS StartEFIImage (
         #if REFIT_DEBUG > 0
         if (EFI_ERROR (Status)) {
             MsgStr = PoolPrint (
-                L"'%r' When Trying to Set LoaderDevicePartUUID EFI Variable!!",
+                L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
                 Status
             );
             LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
@@ -423,7 +423,7 @@ EFI_STATUS StartEFIImage (
         #endif
 
         MyFreePool (&EspGUID);
-    } // if write systemd EFI variables
+    } // if write systemd UEFI variables
 
     // close open file handles
     UninitRefitLib();

@@ -462,7 +462,7 @@ EFI_STATUS ReinitRefitLib (VOID) {
 }
 
 //
-// EFI variable read and write functions
+// UEFI variable read and write functions
 //
 
 // Create a directory for holding RefindPlus variables, if they are stored on
@@ -519,7 +519,7 @@ EFI_STATUS FindVarsDir (VOID) {
     return Status;
 } // EFI_STATUS FindVarsDir()
 
-// Retrieve a raw EFI variable, either from NVRAM or from a disk file under
+// Retrieve a raw UEFI variable, either from NVRAM or from a disk file under
 // RefindPlus' "vars" subdirectory, depending on GlobalConfig.UseNvram.
 // Returns EFI status
 EFI_STATUS EfivarGetRaw (
@@ -576,7 +576,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"From Emulated NVRAM ... '%r' When Fetching EFI Variable:- '%s'",
+            L"From Emulated NVRAM ... '%r' When Fetching UEFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -639,7 +639,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"From Hardware NVRAM ... '%r' When Fetching EFI Variable:- '%s'",
+            L"From Hardware NVRAM ... '%r' When Fetching UEFI Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -670,13 +670,13 @@ EFI_STATUS EfivarGetRaw (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching EFI Variable from NVRAM!!");
+    LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching UEFI Variable from NVRAM!!");
     #endif
 
     return Status;
 } // EFI_STATUS EfivarGetRaw ()
 
-// Set an EFI variable. This is normally done to NVRAM; however, RefindPlus'
+// Set an UEFI variable. This is normally done to NVRAM; however, RefindPlus'
 // variables (as determined by the *VendorGUID code) will be saved to a disk file IF
 // GlobalConfig.UseNvram == FALSE.
 // Returns EFI status
@@ -744,7 +744,7 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         LOG(4, LOG_THREE_STAR_MID,
-            L"To Emulated NVRAM ... '%r' When Saving EFI Variable:- '%s'",
+            L"To Emulated NVRAM ... '%r' When Saving UEFI Variable:- '%s'",
             Status, VariableName
         );
 
@@ -779,7 +779,7 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"To Hardware NVRAM ... '%r' When Saving EFI Variable:- '%s'",
+            L"To Hardware NVRAM ... '%r' When Saving UEFI Variable:- '%s'",
             Status, VariableName
         );
         #endif

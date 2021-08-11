@@ -855,7 +855,7 @@ BdsAddNonExistingLegacyBootOptions (
 }
 
 /**
-  Deletete the Boot Option from EFI Variable. The Boot Order Arrray
+  Deletete the Boot Option from UEFI Variable. The Boot Order Arrray
   is also updated.
 
   @param OptionNumber    The number of Boot option want to be deleted.

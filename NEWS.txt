@@ -108,8 +108,8 @@
 - Fixes Default Opaque Setting
   * Images meant to default to "opaque" were set to "transparent" instead.
   * This bug was introduced in v0.13.2.AD (Commit 0edf341)
-- Fixes Windows Boot EFI Variable Handling
-  * Windows Boot EFI Variables were not handled properly on Apple firmware
+- Fixes Windows Boot UEFI Variable Handling
+  * Windows Boot UEFI Variables were not handled properly on Apple firmware
   * This resulted in an inability to boot into Windows on Macs
 - Fixes Manual Stanza Handling
   * Linux and "Firmware Reboot" stanzas were not handled properly
@@ -309,7 +309,7 @@
   * Fixes bug that can cause issues with disabled manual boot stanza referencing unreadable volumes
   * Accounts for new upstream initial logging function (ignored by RefindPlus)
   * Records selected EFI-based reboot options in the PreviousBoot variable
-  * Implements support for setting systemd's LoaderDevicePartUUID EFI variable
+  * Implements support for setting systemd's LoaderDevicePartUUID UEFI variable
   * Re-interpretes partial icon scaling fix implemented upstream
 - Syncs with Upstream v0.13.0
   * Limited to items that did not originate from RefindPlus (which are kept in their original form)
@@ -377,7 +377,7 @@
 - Fixed bug that caused rEFInd to not record a reboot to an EFI NVRAM-based
   boot option, thus preventing it from being made the default boot option on
   the next boot, if "default_selection +" was used.
-- Added ability to write to the LoaderDevicePartUUID EFI variable, which
+- Added ability to write to the LoaderDevicePartUUID UEFI variable, which
   systemd uses to identify the ESP that was used to boot the computer, and
   to mount that partition at /boot if that directory is empty and has
   nothing else mounted. This rEFInd feature is activated by the
@@ -386,7 +386,7 @@
   save a variable only if it does not currently exist or does not match the
   new value. This is intended to reduce wear and tear on NVRAM storage.
   (Previously, rEFInd did this with its own PreviousBoot variable, but this
-  change expands this functionality to apply to all EFI variables that
+  change expands this functionality to apply to all UEFI variables that
   rEFInd might write.)
 - Uncommented use_nvram from refind.conf-sample and set it to false. This
   change will cause new rEFInd installations to save rEFInd's own variables
@@ -1104,7 +1104,7 @@
   had many fragments and when the computer's CSM was activated. (Fix
   courtesy of "S L.")
 
-- Modified SIP/CSR rotation code: If the csr-active-config EFI variable is
+- Modified SIP/CSR rotation code: If the csr-active-config UEFI variable is
   missing AND the firmware is Apple (as identified by the string "Apple"
   being present in the gST->FirmwareVendor string), rEFInd treats the
   computer as one on which SIP is available and set to the "enabled" state
@@ -1633,7 +1633,7 @@
   previously-booted loader, assuming it is still available; if not, rEFInd
   boots the first loader (as it does now). Behavior is unchanged if
   default_selection is set. Note that this behavior depends on the ability
-  of rEFInd to store an EFI variable in NVRAM. It therefore fails on
+  of rEFInd to store an UEFI variable in NVRAM. It therefore fails on
   systems with flaky NVRAM storage. You can view the previously-booted
   loader in the
   /sys/firmware/efi/efivars/PreviousBoot-36d08fa7-cf0b-42f5-8f14-68df73ed3740

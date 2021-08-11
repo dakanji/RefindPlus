@@ -1220,7 +1220,7 @@ VOID AboutRefindPlus (VOID) {
     RunMenu (&AboutMenu, NULL);
 } // VOID AboutRefindPlus()
 
-// Record the loader's name/description in the "PreviousBoot" EFI variable
+// Record the loader's name/description in the "PreviousBoot" UEFI variable
 // if different from what is already stored there.
 VOID StoreLoaderName (
     IN CHAR16 *Name

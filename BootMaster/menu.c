@@ -2446,7 +2446,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
     }
 } // VOID AddToHiddenTags()
 
-// Adds a filename, specified by the *Loader variable, to the *VarName EFI variable,
+// Adds a filename, specified by the *Loader variable, to the *VarName UEFI variable,
 // using the mostly-prepared *HideItemMenu structure to prompt the user to confirm
 // hiding that item.
 // Returns TRUE if item was hidden, FALSE otherwise.

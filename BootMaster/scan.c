@@ -1930,7 +1930,7 @@ VOID ScanOptical (VOID) {
 // If MatchThis != NULL, only adds items with labels containing any element of
 // the MatchThis comma-delimited string; otherwise, searches for anything that
 // doesn't match GlobalConfig.DontScanFirmware or the contents of the
-// HiddenFirmware EFI variable.
+// HiddenFirmware UEFI variable.
 // If Icon != NULL, uses the specified icon; otherwise tries to find one to
 // match the label.
 static
@@ -2143,7 +2143,7 @@ VOID ScanForBootloaders (
     if (GlobalConfig.HiddenTags) {
         // We temporarily modify GlobalConfig.DontScanFiles and GlobalConfig.DontScanVolumes
         // to include contents of EFI HiddenTags and HiddenLegacy variables so that we do not
-        // have to re-load these EFI variables in several functions called from this one. To
+        // have to re-load these UEFI variables in several functions called from this one. To
         // do this, we must be able to restore the original contents, so back them up first.
         // We do *NOT* do this with the GlobalConfig.DontScanFirmware and
         // GlobalConfig.DontScanTools variables because they are used in only one function

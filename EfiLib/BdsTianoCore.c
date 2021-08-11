@@ -165,7 +165,7 @@ EFI_STATUS BdsLibConnectDevicePath (
 
   @param  BdsCommonOptionList   The header of the boot#### or driver#### option
                                 link list
-  @param  VariableName          EFI Variable name indicate if it is boot#### or
+  @param  VariableName          UEFI Variable name indicate if it is boot#### or
                                 driver####
 
   @retval BDS_COMMON_OPTION     Get the option just been created
@@ -291,14 +291,14 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
 
 
 /**
-  Read the EFI variable (VendorGuid/Name) and return a dynamically allocated
+  Read the UEFI variable (VendorGuid/Name) and return a dynamically allocated
   buffer, and the size of the buffer. If failure return NULL.
 
-  @param  Name                  String part of EFI variable name
-  @param  VendorGuid            GUID part of EFI variable name
-  @param  VariableSize          Returns the size of the EFI variable that was read
+  @param  Name                  String part of UEFI variable name
+  @param  VendorGuid            GUID part of UEFI variable name
+  @param  VariableSize          Returns the size of the UEFI variable that was read
 
-  @return                       Dynamically allocated memory that contains a copy of the EFI variable
+  @return                       Dynamically allocated memory that contains a copy of the UEFI variable
                                 Caller is responsible freeing the buffer.
   @retval NULL                  Variable was not read
 
