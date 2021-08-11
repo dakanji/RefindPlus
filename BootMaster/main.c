@@ -267,7 +267,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     IN  UINTN      VariableSize,
     IN  VOID      *VariableData
 ) {
-    EFI_STATUS   Status;
+    EFI_STATUS   Status, ReturnStatus;
     EFI_GUID     WinGuid                = MICROSOFT_VENDOR_GUID;
     EFI_GUID     X509Guid               = X509_GUID;
     EFI_GUID     PKCS7Guid              = PKCS7_GUID;
@@ -309,34 +309,37 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
             VariableSize,
             VariableData
         );
+        ReturnStatus = Status;
     }
     else {
-        // DA_TAG: Report 'Success' when blocked
-        //         Windows expects this
-        Status = EFI_SUCCESS;
+        // Log 'Security Violation'
+        Status = EFI_SECURITY_VIOLATION;
+
+        // Report 'Success'
+        ReturnStatus = EFI_SUCCESS;
     }
 
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Filtered Write to NVRAM:- '%s' ... %r", VariableName, Status);
+    MsgStr = PoolPrint (L"Filter Write to NVRAM:- '%s' ... %r", VariableName, Status);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
 
     if (BlockCert) {
-        MsgStr = StrDuplicate (L"Prevented Microsoft Secure Boot NVRAM Write Attempt");
-        LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        MsgStr = StrDuplicate (L"To Hardware NVRAM ... Blocked Secure Boot Certificate Write");
+        LOG(3, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("      * %s", MsgStr);
         MyFreePool (&MsgStr);
 
         MsgLog ("\n");
-        MsgLog ("        Successful NVRAM Write May Result in BootROM Damage");
+        MsgLog ("        Successful NVRAM Write Attempt May Result in BootROM Damage");
     }
     MsgLog ("\n\n");
     #endif
 
-    return Status;
+    return ReturnStatus;
 } // VOID gRTSetVariableEx()
 
 static
