@@ -283,11 +283,11 @@ EFI_STATUS AcquireGOP (
                         );
 
                         MyFreePool (&RomFileName);
-                    } // if BindingHandleCount
+                    }
 
                     MyFreePool (&BindingHandleBuffer);
-                } // if/else !PciIo->RomImage || !PciIo->RomSize
-            } // if !EFI_ERROR Status
+                }
+            }
 
             if (EFI_ERROR (ReturnStatus)) {
                 ReturnStatus = Status;

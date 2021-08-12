@@ -9,14 +9,13 @@ http://opensource.org/licenses/bsd-license.php
 
 THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-
 **/
-/*
+/**
  * Modified for RefindPlus
  * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
- */
+**/
 
 #include "Platform.h"
 #include "../BootMaster/lib.h"
@@ -52,10 +51,9 @@ EFI_STATUS EFIAPI daConnectController (
     if (ControllerHandle == NULL) {
         return EFI_INVALID_PARAMETER;
     }
-    //
-    // Do not connect controllers without device paths.
-    // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    //
+
+    // DA-TAG: Do not connect controllers without device paths.
+    //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
     Status = gBS->HandleProtocol (
         ControllerHandle,
         &gEfiDevicePathProtocolGuid,
@@ -95,10 +93,9 @@ EFI_STATUS ScanDeviceHandles (
     *HandleCount  = 0;
     *HandleBuffer = NULL;
     *HandleType   = NULL;
-    //
-    // Retrieve a list of handles with device paths
-    // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    //
+
+    // DA-TAG: Retrieve a list of handles with device paths
+    //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
     Status = gBS->LocateHandleBuffer (
         ByProtocol,
         &gEfiDevicePathProtocolGuid,
@@ -120,9 +117,8 @@ EFI_STATUS ScanDeviceHandles (
 
     for (k = 0; k < *HandleCount; k++) {
         (*HandleType)[k] = EFI_HANDLE_TYPE_UNKNOWN;
-        //
+
         // Retrieve a list of all the protocols on each handle
-        //
         Status = gBS->ProtocolsPerHandle (
             (*HandleBuffer)[k],
             &ProtocolGuidArray,
@@ -159,9 +155,7 @@ EFI_STATUS ScanDeviceHandles (
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
                 }
 
-                //
                 // Retrieve the list of agents that have opened each protocol
-                //
                 Status = gBS->OpenProtocolInformation (
                     (*HandleBuffer)[k],
                     ProtocolGuidArray[ProtocolIndex],
@@ -224,8 +218,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     EFI_STATUS            Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
     EFI_HANDLE           *HandleBuffer    = NULL;
-    UINTN                 i;
-    UINTN                 k;
+    UINTN                 i, k;
     UINTN                 HandleCount;
     UINTN                 AllHandleCount;
     UINT32               *HandleType = NULL;
@@ -278,7 +271,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     //
     // Only connect controllers with device paths.
     // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    //
     Status = gBS->LocateHandleBuffer (
         ByProtocol,
         &gEfiDevicePathProtocolGuid,
@@ -447,7 +439,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                         DevicePCI,
                                         FunctionPCI
                                     );
-                                } // VGADevice
+                                } // if/else VGADevice/GFXDevicce
 
                                 #endif
                             } // if/else EFI_ERROR (XStatus)

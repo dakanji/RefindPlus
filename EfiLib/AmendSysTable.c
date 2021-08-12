@@ -12,12 +12,12 @@
 
 #ifdef __MAKEWITH_GNUEFI
 
+EFI_STATUS AmendSysTable (VOID);
+
 /**
   @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
 **/
-EFI_STATUS AmendSysTable (
-    VOID
-) {
+EFI_STATUS AmendSysTable (VOID) {
     // NOOP if not compiled using EDK II
     return EFI_INCOMPATIBLE_VERSION;
 }
@@ -55,21 +55,20 @@ LIST_ENTRY                  gEventSignalQueue  = INITIALIZE_LIST_HEAD_VARIABLE (
 LIST_ENTRY                  gEventQueue[TPL_HIGH_LEVEL + 1];
 
 UINT32 mEventTable[] = {
-    EVT_TIMER | EVT_NOTIFY_SIGNAL,
+    EVT_TIMER|EVT_NOTIFY_SIGNAL,
     EVT_TIMER, EVT_NOTIFY_WAIT, EVT_NOTIFY_SIGNAL,
     EVT_SIGNAL_EXIT_BOOT_SERVICES,
     EVT_SIGNAL_VIRTUAL_ADDRESS_CHANGE, 0x00000000,
-    EVT_TIMER | EVT_NOTIFY_WAIT
+    EVT_TIMER|EVT_NOTIFY_WAIT
 };
 
 EFI_TPL EFIAPI FakeRaiseTpl (IN EFI_TPL  NewTpl);
-VOID EFIAPI FakeRestoreTpl (IN EFI_TPL  NewTpl);
-VOID FakeSetInterruptState (IN BOOLEAN  Enable);
-VOID FakeDispatchEventNotifies (IN EFI_TPL  Priority);
-VOID FakeAcquireLock (IN EFI_LOCK  *Lock);
-VOID FakeReleaseLock (IN EFI_LOCK  *Lock);
-EFI_STATUS AmendSysTable (VOID);
-EFI_STATUS FakeCreateEventEx (
+VOID    EFIAPI FakeRestoreTpl (IN EFI_TPL  NewTpl);
+VOID           FakeSetInterruptState (IN BOOLEAN  Enable);
+VOID           FakeDispatchEventNotifies (IN EFI_TPL  Priority);
+VOID           FakeAcquireLock (IN EFI_LOCK  *Lock);
+VOID           FakeReleaseLock (IN EFI_LOCK  *Lock);
+EFI_STATUS     FakeCreateEventEx (
     UINT32             Type,
     EFI_TPL            NotifyTpl,
     EFI_EVENT_NOTIFY   NotifyFunction,
@@ -142,6 +141,7 @@ VOID FakeDispatchEventNotifies (
 
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
+
         REFIT_CALL_2_WRAPPER(
             Event->NotifyFunction,
             Event,
@@ -378,9 +378,8 @@ EFI_STATUS FakeCreateEventEx (
         return EFI_OUT_OF_RESOURCES;
     }
 
-    IEvent->Signature = EVENT_SIGNATURE;
-    IEvent->Type = Type;
-
+    IEvent->Signature      = EVENT_SIGNATURE;
+    IEvent->Type           = Type;
     IEvent->NotifyTpl      = NotifyTpl;
     IEvent->NotifyFunction = NotifyFunction;
     IEvent->NotifyContext  = (VOID *)NotifyContext;
@@ -423,9 +422,7 @@ EFI_STATUS FakeCreateEventEx (
   @retval EFI_INVALID_PARAMETER     Command usage error.
   @retval Other value               Unknown error.
 **/
-EFI_STATUS AmendSysTable (
-    VOID
-) {
+EFI_STATUS AmendSysTable (VOID) {
     EFI_STATUS         Status;
     EFI_BOOT_SERVICES *uBS;
 

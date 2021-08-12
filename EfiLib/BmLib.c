@@ -9,14 +9,13 @@ http://opensource.org/licenses/bsd-license.php
 
 THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-
 **/
-/*
+/**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
- */
+**/
 
 #ifdef __MAKEWITH_TIANO
 #include "Platform.h"
@@ -55,7 +54,7 @@ EFI_STATUS EfiLibLocateProtocol (
     );
 
     return Status;
-}
+} // EFI_STATUS EfiLibLocateProtocol()
 
 /**
 
@@ -75,9 +74,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
 
     File = NULL;
 
-    //
     // File the file system interface to the device
-    //
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         DeviceHandle,
@@ -85,9 +82,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
         (VOID **) &Volume
     );
 
-    //
     // Open the root directory of the volume
-    //
     if (!EFI_ERROR (Status)) {
         Status = Volume->OpenVolume (
             Volume,
@@ -97,11 +92,9 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
         CheckError (Status, L"While Opening the Root Directory of the Volume");
     }
 
-    //
     // Done
-    //
     return EFI_ERROR (Status) ? NULL : File;
-}
+} // EFI_FILE_HANDLE EfiLibOpenRoot()
 
 /**
   Duplicate a string.
@@ -130,7 +123,7 @@ CHAR16 * EfiStrDuplicate (
     }
 
     return Dest;
-}
+} // CHAR16 * EfiStrDuplicate()
 
 /**
 
@@ -156,7 +149,7 @@ EFI_FILE_INFO * EfiLibFileInfo (
     }
 
     return EFI_ERROR (Status) ? NULL : FileInfo;
-}
+} // EFI_FILE_INFO * EfiLibFileInfo()
 
 EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (
     IN EFI_FILE_HANDLE      FHand
@@ -172,11 +165,10 @@ EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (
     }
 
     return EFI_ERROR (Status) ? NULL : FileSystemInfo;
-}
+} // EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo()
 
 /**
   Adjusts the size of a previously allocated buffer.
-
 
   @param OldPool         - A pointer to the buffer whose size is being adjusted.
   @param OldSize         - The size of the current buffer.
@@ -207,4 +199,4 @@ VOID * EfiReallocatePool (
     }
 
     return NewPool;
-}
+} // VOID * EfiReallocatePool()

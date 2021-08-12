@@ -4,23 +4,21 @@
  *
  */
 /**
-
-Copyright (c) 2004 - 2014, Intel Corporation. All rights reserved.<BR>
-This program and the accompanying materials
-are licensed and made available under the terms and conditions of the BSD License
-which accompanies this distribution.  The full text of the license may be found at
-http://opensource.org/licenses/bsd-license.php
-
-THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
-WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-
+ * Copyright (c) 2004 - 2014, Intel Corporation. All rights reserved.<BR>
+ * This program and the accompanying materials
+ * are licensed and made available under the terms and conditions of the BSD License
+ * which accompanies this distribution.  The full text of the license may be found at
+ * http://opensource.org/licenses/bsd-license.php
+ *
+ * THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
-/*
-* Modified for RefindPlus
-* Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
-*
-* Modifications distributed under the preceding terms.
-*/
+/**
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+**/
 
 #include "BdsHelper.h"
 #include "legacy.h"
@@ -29,7 +27,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "../BootMaster/lib.h"
 #include "../include/refit_call_wrapper.h"
 
-EFI_GUID gEfiLegacyBootProtocolGuid = {0xdb9a1e3d, 0x45cb, 0x4abb, {0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d}};
+EFI_GUID gEfiLegacyBootProtocolGuid = { 0xdb9a1e3d, 0x45cb, 0x4abb, \
+    { 0x85, 0x3b, 0xe5, 0x38, 0x7f, 0xdb, 0x2e, 0x2d }};
 
 /**
     Internal helper function.
@@ -66,6 +65,7 @@ VOID UpdateBbsTable (
         NULL,
         (VOID **) &LegacyBios
     );
+
     if (EFI_ERROR (Status) || Option == NULL) {
         return;
     }
@@ -97,15 +97,15 @@ VOID UpdateBbsTable (
                 // This entry doesn't exactly match, but is the right disk type; make it a bit lower
                 // in priority. Done mainly as a fallback in case of string-matching weirdness.
                 LocalBbsTable[Idx].BootPriority = 1;
-            } // if/else
+            }
         }
         else if (LocalBbsTable[Idx].BootPriority <= 1) {
             // Something has got a high enough boot priority to interfere with booting
             // our chosen entry, so bump it down a bit.
             LocalBbsTable[Idx].BootPriority = 2;
-        } // if/else if
+        }
     } // for
-} // PauseForKey();
+} // UpdateBbsTable();
 
 /**
     Boot the legacy system with the boot option
@@ -128,6 +128,7 @@ EFI_STATUS BdsLibDoLegacyBoot (
         NULL,
         (VOID **) &LegacyBios
     );
+
     if (EFI_ERROR (Status)) {
         return EFI_UNSUPPORTED;
     }
@@ -143,4 +144,4 @@ EFI_STATUS BdsLibDoLegacyBoot (
     );
 
     return Status;
-}
+} // EFI_STATUS BdsLibDoLegacyBoot()
