@@ -16,8 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+/**
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+**/
 
-FILE_LICENCE ( GPL2_OR_LATER );
+FILE_LICENCE (GPL2_OR_LATER);
 
 #include <stdlib.h>
 #include <ipxe/efi/efi_driver.h>
@@ -41,61 +47,68 @@ FILE_LICENCE ( GPL2_OR_LATER );
  * closing.
  */
 static
-void close_all_netdevs ( void ) {
+void close_all_netdevs (void) {
 	struct net_device *netdev;
 
-	for_each_netdev ( netdev ) {
-		ifclose ( netdev );
+	for_each_netdev (netdev) {
+		ifclose (netdev);
 	}
-}
+} // void close_all_netdevs()
 
-static
-struct uri * try_getting_next_server ( struct net_device *netdev ) {
+static struct
+uri * try_getting_next_server (
+	struct net_device *netdev
+) {
 	struct uri *filename;
 
 	/* Close all other network devices */
 	close_all_netdevs();
 
 	/* Open device and display device status */
-	if ( ifopen ( netdev ) != 0 )
+	if (ifopen (netdev) != 0) {
 		goto err_ifopen;
-	ifstat ( netdev );
+	}
+	ifstat (netdev);
 
 	/* Configure device */
-	if (ifconf ( netdev, NULL )!= 0 )
+	if (ifconf (netdev, NULL) != 0) {
 		goto err_dhcp;
+	}
 	route();
 
-  /* Fetch next server and filename */
-	filename = fetch_next_server_and_filename ( NULL );
-	if ( ! filename )
+	/* Fetch next server and filename */
+	filename = fetch_next_server_and_filename (NULL);
+	if (!filename) {
 		goto err_filename;
-	if ( ! uri_has_path ( filename ) ) {
+	}
+	if (! uri_has_path (filename)) {
 		/* Ignore empty filename */
-		uri_put ( filename );
+		uri_put (filename);
 		filename = NULL;
 	}
 
 	return filename;
-  err_filename:
-  err_dhcp:
-  err_ifopen:
-    return NULL;
-}
+
+err_filename:
+err_dhcp:
+err_ifopen:
+
+	return NULL;
+} // static struct uri * try_g()
 
 
-static
-struct uri * efi_discover ( void ) {
+static struct
+uri * efi_discover (void) {
 	struct net_device *netdev;
 
-  struct uri* filename = NULL;
+	struct uri *filename = NULL;
 
-	for_each_netdev ( netdev ) {
-		filename = try_getting_next_server ( netdev );
+	for_each_netdev (netdev) {
+		filename = try_getting_next_server (netdev);
 	}
 
 	return filename;
-}
+} // static struct uri * efi_discover()
 
 /**
  * EFI entry point
@@ -105,49 +118,50 @@ struct uri * efi_discover ( void ) {
  * @ret efirc		EFI return status code
  */
 EFI_STATUS EFIAPI _efi_discovery_start (
-	EFI_HANDLE image_handle,
+	EFI_HANDLE        image_handle,
 	EFI_SYSTEM_TABLE *systab
 ) {
 	EFI_STATUS efirc;
-	struct uri* filename;
-	userptr_t user_buf;
-	wchar_t* exit_buf;
+	struct uri        *filename;
+		   userptr_t   user_buf;
+		   wchar_t    *exit_buf;
 
 	/* Initialise EFI environment */
-	if ( ( efirc = efi_init ( image_handle, systab ) ) != 0 )
+	if ((efirc = efi_init (image_handle, systab)) != 0) {
 		goto err_init;
+	}
 
-  if ( ( user_buf = umalloc(MAX_EXIT_BUFFER_SIZE*2) ) == 0)
-  {
-     efirc = EFI_OUT_OF_RESOURCES;
-     goto err_init;
-  }
+	if ((user_buf = umalloc (MAX_EXIT_BUFFER_SIZE*2)) == 0) {
+		efirc = EFI_OUT_OF_RESOURCES;
 
-  exit_buf = (wchar_t *)user_to_phys(user_buf,0);
+		goto err_init;
+	}
 
-  initialise();
-  startup();
+	exit_buf = (wchar_t *) user_to_phys(user_buf, 0);
 
-  if ( ( filename = efi_discover() ) == NULL)
-  {
-     efirc = EFI_NOT_FOUND;
-     goto err_filename;
-  }
+	initialise();
+	startup();
+
+	if ((filename = efi_discover()) == NULL) {
+		efirc = EFI_NOT_FOUND;
+
+		goto err_filename;
+	}
 
 	efi_snp_release();
-	efi_loaded_image->Unload ( image_handle );
+	efi_loaded_image->Unload (image_handle);
 	efi_driver_reconnect_all();
+	efi_snprintf (exit_buf, MAX_EXIT_BUFFER_SIZE, "%s - %s", filename->host, filename->path);
+	uri_put (filename);
 
-  efi_snprintf(exit_buf,MAX_EXIT_BUFFER_SIZE,"%s - %s", filename->host, filename->path);
-  uri_put(filename);
+	systab->BootServices->Exit (image_handle, efirc, MAX_EXIT_BUFFER_SIZE, (CHAR16 *) exit_buf);
 
-  systab->BootServices->Exit(image_handle, efirc, MAX_EXIT_BUFFER_SIZE, (CHAR16 *) exit_buf);
+err_filename:
+err_init:
+	systab->BootServices->Exit (image_handle, efirc, 0, NULL);
 
- err_filename:
- err_init:
-	systab->BootServices->Exit(image_handle, efirc, 0, NULL);
 	return efirc;
-}
+} // EFI_STATUS EFIAPI _efi_discovery_start()
 
 /**
  * Probe EFI root bus
@@ -155,10 +169,11 @@ EFI_STATUS EFIAPI _efi_discovery_start (
  * @v rootdev		EFI root device
  */
 static
-int efi_probe ( struct root_device *rootdev __unused ) {
-
+int efi_probe (
+	struct root_device *rootdev __unused
+) {
 	return efi_driver_connect_all();
-}
+} // static int efi_probe()
 
 /**
  * Remove EFI root bus
@@ -166,20 +181,21 @@ int efi_probe ( struct root_device *rootdev __unused ) {
  * @v rootdev		EFI root device
  */
 static
-void efi_remove ( struct root_device *rootdev __unused ) {
-
+void efi_remove (
+	struct root_device *rootdev __unused
+) {
 	efi_driver_disconnect_all();
-}
+} // static void efi_remove ()
 
 /** EFI root device driver */
-static
-struct root_driver efi_root_driver = {
-	.probe = efi_probe,
+static struct
+root_driver efi_root_driver = {
+	.probe  = efi_probe,
 	.remove = efi_remove,
 };
 
 /** EFI root device */
 struct root_device efi_root_device __root_device = {
-	.dev = { .name = "EFI" },
+	.dev    = {.name = "EFI"},
 	.driver = &efi_root_driver,
 };
