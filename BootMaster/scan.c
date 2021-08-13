@@ -1925,7 +1925,7 @@ VOID ScanOptical (VOID) {
 
 } // static VOID ScanOptical()
 
-// Scan options stored in EFI firmware's boot list. Adds discovered and allowed
+// Scan options stored in UEFI firmware's boot list. Adds discovered and allowed
 // items to the specified Row.
 // If MatchThis != NULL, only adds items with labels containing any element of
 // the MatchThis comma-delimited string; otherwise, searches for anything that
@@ -2039,7 +2039,7 @@ VOID ScanFirmwareDefined (
     DeleteBootOrderEntries (BootEntries);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Added UEFI Firmware Defined Boot Options");
+    LOG(1, LOG_THREE_STAR_MID, L"Processed UEFI Firmware Defined Boot Options");
     #endif
 } // static VOID ScanFirmwareDefined()
 

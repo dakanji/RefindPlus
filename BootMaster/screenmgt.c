@@ -102,7 +102,7 @@ VOID InitScreen (VOID) {
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode Detected ... Getting Resolution");
+        LOG(2, LOG_THREE_STAR_MID, L"Graphics Mode Detected ... Getting Resolution");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -111,7 +111,7 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
+        LOG(2, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;

@@ -1563,11 +1563,10 @@ VOID LogBasicInfo (VOID) {
         MsgLog ("\n\n");
     }
 
-    /* NVRAM Storage Info */
+    /* UEFI 2.x NVRAM Storage Info */
     if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
-        MsgLog ("EFI Non-Volatile Storage Info:");
-        MsgLog ("\n");
+        MsgLog ("Non-Volatile Storage:");
 
         Status = REFIT_CALL_4_WRAPPER(
             gRT->QueryVariableInfo,
@@ -1577,10 +1576,12 @@ VOID LogBasicInfo (VOID) {
             &MaximumVariableSize
         );
         if (EFI_ERROR(Status)) {
-            MsgLog ("** WARN: Could not Retrieve Info!!");
+            MsgLog ("\n\n");
+            MsgLog ("** WARN: Could Not Retrieve Non-Volatile Storage Info!!");
             MsgLog ("\n\n");
         }
         else {
+            MsgLog ("\n");
             MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
             MsgLog ("  - Remaining Available   : %ld\n", RemainingVariableStorageSize);
             MsgLog ("  - Maximum Variable Size : %ld\n", MaximumVariableSize);

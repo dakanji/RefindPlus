@@ -1001,9 +1001,9 @@ VOID InstallRefindPlus (VOID) {
 
 // Create a list of Boot entries matching the BootOrder list.
 BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
-    UINTN            Status = EFI_SUCCESS, i;
+    UINTN             Status = EFI_SUCCESS, i;
     UINT16           *BootOrder = NULL;
-    UINTN            VarSize, ListSize;
+    UINTN             VarSize, ListSize;
     CHAR16           *VarName = NULL;
     CHAR16           *Contents = NULL;
     BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
