@@ -329,7 +329,7 @@ typedef struct APFS_NX_EFI_JUMPSTART_ {
   //
   UINT32               Version;
   //
-  // The length in bytes, of the embedded EFI driver
+  // The length in bytes, of the embedded UEFI driver
   //
   UINT32               EfiFileLen;
   //

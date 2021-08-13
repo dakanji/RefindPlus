@@ -52,7 +52,7 @@ Program (C source code and script) files:
 * Stefan Agner (stefan@agner.ch) turned the original ext2fs/ext3fs driver
   into one that can read ext4fs.
 
-* Samuel Liao ported the GRUB 2 Btrfs and NTFS code into EFI drivers and
+* Samuel Liao ported the GRUB 2 Btrfs and NTFS code into UEFI drivers and
   contributed them to this project, along with several miscellaneous
   improvements.
 

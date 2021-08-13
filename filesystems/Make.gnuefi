@@ -1,6 +1,6 @@
 #
 # filesystems/Make.gnuefi
-# Build control file for the EFI drivers, as built with GNU-EFI
+# Build control file for the UEFI drivers, as built with GNU-EFI
 #
 
 # This program is licensed under the terms of the GNU GPL, version 3,

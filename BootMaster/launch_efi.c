@@ -308,7 +308,7 @@ EFI_STATUS StartEFIImage (
         if (secure_mode() && ShimLoaded()) {
             // Load ourself into memory. This is a trick to work around a bug in Shim 0.8,
             // which ties itself into the gBS->LoadImage() and gBS->StartImage() functions and
-            // then unregisters itself from the EFI system table when its replacement
+            // then unregisters itself from the UEFI system table when its replacement
             // StartImage() function is called *IF* the previous LoadImage() was for the same
             // program. The result is that RefindPlus can validate only the first program it
             // launches (often a filesystem driver). Loading a second program (RefindPlus itself,
@@ -434,7 +434,7 @@ EFI_STATUS StartEFIImage (
     }
     else {
         // DA-TAG: This is used before 'MsgStr' is ultimately freed
-        MsgStr = StrDuplicate (L"Loading EFI Driver");
+        MsgStr = StrDuplicate (L"Loading UEFI Driver");
     }
 
     if (!IsDriver) {

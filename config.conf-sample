@@ -627,7 +627,7 @@
 #
 #windows_recovery_files LRS_ESP:/EFI/Microsoft/Boot/LrsBootmgr.efi
 
-# Directories in which to search for EFI drivers. These drivers
+# Directories in which to search for UEFI drivers. These drivers
 # provide filesystem support, give access to hard disks on plug-in
 # controllers, etc. When such drivers are present and RefindPlus is
 # required to automatically load them, paths to the driver locations

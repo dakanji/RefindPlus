@@ -683,7 +683,7 @@ UINTN ScanDriverDir (
 } // static UINTN ScanDriverDir()
 
 
-// Load all EFI drivers from RefindPlus' "drivers" subdirectory and from the
+// Load all UEFI drivers from RefindPlus' "drivers" subdirectory and from the
 // directories specified by the user in the "scan_driver_dirs" configuration
 // file line.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
@@ -701,13 +701,13 @@ BOOLEAN LoadDrivers(
     #if REFIT_DEBUG > 0
     CHAR16  *MsgNotFound = L"Not Found or Empty";
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Load EFI Drivers");
+    LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    MsgLog ("Load EFI Drivers from Program Default Folder...");
+    MsgLog ("Load UEFI Drivers from Program Default Folder...");
     #endif
 
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
@@ -726,7 +726,7 @@ BOOLEAN LoadDrivers(
         else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
-                L"'%s' in Progrmm Default EFI Driver Folder:- '%s'",
+                L"'%s' in Progrmm Default UEFI Driver Folder:- '%s'",
                 MsgNotFound, Directory
             );
             MsgLog ("  - %s", MsgNotFound);
@@ -741,7 +741,7 @@ BOOLEAN LoadDrivers(
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
-        MsgLog ("Load EFI Drivers from User Defined Folders...");
+        MsgLog ("Load UEFI Drivers from User Defined Folders...");
         #endif
 
         i = 0;
@@ -766,7 +766,7 @@ BOOLEAN LoadDrivers(
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL,
-                        L"'%s' in User Defined EFI Driver Folder:- '%s'",
+                        L"'%s' in User Defined UEFI Driver Folder:- '%s'",
                         MsgNotFound, Directory
                     );
                     MsgLog ("  - %s", MsgNotFound);

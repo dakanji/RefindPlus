@@ -109,8 +109,8 @@ typedef struct {
   UINT16                            PnPInstallationCheckOffset;
 
   ///
-  /// EFI system resources table. Type EFI_SYSTEM_TABLE is defined in the IntelPlatform
-  ///Innovation Framework for EFI Driver Execution Environment Core Interface Specification (DXE CIS).
+  /// UEFI system resources table. Type EFI_SYSTEM_TABLE is defined in the IntelPlatform
+  ///Innovation Framework for UEFI Driver Execution Environment Core Interface Specification (DXE CIS).
   ///
   UINT32                            EfiSystemTable;
 
@@ -1312,7 +1312,7 @@ EFI_STATUS
 
 /**
   Assign drive number to legacy HDD drives prior to booting an EFI
-  aware OS so the OS can access drives without an EFI driver.
+  aware OS so the OS can access drives without an UEFI driver.
 
   @param[in]  This       The protocol instance pointer.
   @param[out] BbsCount   The number of BBS_TABLE structures

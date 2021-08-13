@@ -82,7 +82,7 @@ EFI_GUID gMyEfiFileSystemVolumeLabelInfoIdGuid = EFI_FILE_SYSTEM_VOLUME_LABEL_IN
 
 /** Helper macro for stringification. */
 #define FSW_EFI_STRINGIFY(x) #x
-/** Expands to the EFI driver name given the file system type name. */
+/** Expands to the UEFI driver name given the file system type name. */
 #define FSW_EFI_DRIVER_NAME(t) L"RefindPlus 0.13.2 " FSW_EFI_STRINGIFY(t) L" File System Driver"
 
 // function prototypes
@@ -198,7 +198,7 @@ static struct cache_data    Caches[NUM_CACHES];
 static int LastRead = -1;
 
 /**
- * Interface structure for the EFI Driver Binding protocol.
+ * Interface structure for the UEFI Driver Binding protocol.
  */
 
 REFINDPLUS_EFI_DRIVER_BINDING_PROTOCOL fsw_efi_DriverBinding_table = {
@@ -566,7 +566,7 @@ EFI_STATUS EFIAPI fsw_efi_ComponentName_GetDriverName(
 
 /**
  * Component Name EFI protocol, GetControllerName function. Not implemented
- * because this is not a "bus" driver in the sense of the EFI Driver Model.
+ * because this is not a "bus" driver in the sense of the UEFI Driver Model.
  */
 
 EFI_STATUS EFIAPI fsw_efi_ComponentName_GetControllerName(

@@ -244,7 +244,7 @@
 - Fixed potential memory management bugs that could cause HFS+, ext2fs, and
   ext4fs drivers to misbehave.
 - Fixed bug (introduced with version 0.13.1) that caused rEFInd to fail to
-  load properly signed EFI drivers when Secure Boot was enabled and used via
+  load properly signed UEFI drivers when Secure Boot was enabled and used via
   Shim.
 - Fixed bug in mvrefind that would cause it to fail to create a new
   NVRAM entry to point to the moved rEFInd.
@@ -2754,7 +2754,7 @@
 0.2.7 (19 APR 2012): UPSTREAM RELEASE
 --------------------------------------
 - After much trial and tribulation, I've overcome a GNU-EFI limitation and
-  enabled rEFInd to load EFI drivers. This feature was present in the
+  enabled rEFInd to load UEFI drivers. This feature was present in the
   original build of rEFIt but was removed in the versions that could
   compile under Linux, but now it is back -- and still being compiled under
   Linux! To use it, you should place your drivers in a convenient directory
