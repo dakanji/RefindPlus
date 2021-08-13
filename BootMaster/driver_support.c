@@ -227,7 +227,7 @@ EFI_STATUS LibScanHandleDatabase (
         HandleCount,
         HandleBuffer
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         goto Error;
     }
 
@@ -269,7 +269,7 @@ EFI_STATUS LibScanHandleDatabase (
             &ArrayCount
         );
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiLoadedImageProtocolGuid) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
@@ -300,7 +300,7 @@ EFI_STATUS LibScanHandleDatabase (
                     &OpenInfo, &OpenInfoCount
                 );
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
                         if (DriverBindingHandle != NULL &&
                             OpenInfo[OpenInfoIndex].AgentHandle == DriverBindingHandle
@@ -427,7 +427,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
         &AllHandleBuffer
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -441,7 +441,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
             &HandleType
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             goto Done;
         }
 
@@ -525,7 +525,7 @@ VOID ConnectFilesystemDriver(
         &HandleCount, &Handles
     );
 
-    if (EFI_ERROR (Status) || HandleCount == 0) {
+    if (EFI_ERROR(Status) || HandleCount == 0) {
         return;
     }
 
@@ -546,7 +546,7 @@ VOID ConnectFilesystemDriver(
             (VOID **) &BlockIo
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             continue;
         }
 
@@ -580,7 +580,7 @@ VOID ConnectFilesystemDriver(
             &OpenInfoCount
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             continue;
         }
 
@@ -592,7 +592,7 @@ VOID ConnectFilesystemDriver(
                     OpenInfo[OpenInfoIndex].AgentHandle, NULL
                 );
 
-                if (!(EFI_ERROR (Status))) {
+                if (!EFI_ERROR(Status)) {
                     DriverHandleList[0] = DriverHandle;
                     REFIT_CALL_4_WRAPPER(
                         gBS->ConnectController, Handles[Index],

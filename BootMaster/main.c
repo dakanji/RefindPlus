@@ -724,7 +724,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                     &HandleBuffer
                 );
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     for (i = 0; i < HandleCount; i++) {
                         if (HandleBuffer[i] != gST->ConsoleOutHandle) {
                             Status = REFIT_CALL_6_WRAPPER(
@@ -737,7 +737,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                                 EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                             );
 
-                            if (!EFI_ERROR (Status)) {
+                            if (!EFI_ERROR(Status)) {
                                 break;
                             }
                         }
@@ -745,7 +745,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
 
                 } // if !EFI_ERROR Status
 
-                if (EFI_ERROR (Status) || *Interface == NULL) {
+                if (EFI_ERROR(Status) || *Interface == NULL) {
                     Status = EFI_UNSUPPORTED;
                 }
             } // If GOPDraw != NULL
@@ -1568,7 +1568,7 @@ VOID LogBasicInfo (VOID) {
     MsgLog ("ConsoleOut Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
-    MsgLog ("  - Text Mode           : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Text Mode           : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1577,7 +1577,7 @@ VOID LogBasicInfo (VOID) {
         &gEfiUgaDrawProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (UGA) : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (UGA) : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1586,7 +1586,7 @@ VOID LogBasicInfo (VOID) {
         &gEfiGraphicsOutputProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (GOP) : %s\n", EFI_ERROR (Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (GOP) : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
@@ -1604,7 +1604,7 @@ VOID LogBasicInfo (VOID) {
     MyFreePool (&MsgStr);
 
     Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         HandleCount = 0;
     }
     else {
@@ -1615,7 +1615,7 @@ VOID LogBasicInfo (VOID) {
             &HandleCount,
             &HandleBuffer
         );
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             HandleCount = 0;
         }
     }
@@ -1656,7 +1656,7 @@ EFI_STATUS EFIAPI efi_main (
     InitializeLib (ImageHandle, SystemTable);
     Status = InitRefitLib (ImageHandle);
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 

@@ -75,7 +75,7 @@ ApfsRegisterPartition (
         NULL
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         FreePool (PrivateData);
         return Status;
     }
@@ -106,7 +106,7 @@ ApfsStartDriver (
         (VOID **) &DevicePath
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         DevicePath = NULL;
     }
 
@@ -121,7 +121,7 @@ ApfsStartDriver (
         &ImageHandle
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -134,7 +134,7 @@ ApfsStartDriver (
             (VOID *) &LoadedImage
         );
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             if (mNullSystemTable == NULL) {
                 mNullSystemTable = AllocateNullTextOutSystemTable (gST);
             }
@@ -151,7 +151,7 @@ ApfsStartDriver (
         NULL
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         gBS->UnloadImage (ImageHandle);
 
         return Status;
@@ -191,14 +191,14 @@ ApfsConnectDevice (
 
     // This may yet not be APFS but some other file system ... verify
     Status = InternalApfsReadSuperBlock (BlockIo, &SuperBlock);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
     // We no longer need super block once we register ourselves.
     Status = ApfsRegisterPartition (Handle, BlockIo, SuperBlock, &PrivateData);
     FreePool (SuperBlock);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -209,7 +209,7 @@ ApfsConnectDevice (
     }
 
     Status = InternalApfsReadDriver (PrivateData, &DriverSize, &DriverBuffer);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -236,7 +236,7 @@ RpApfsConnectHandle (
         &TempProtocol
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return EFI_ALREADY_STARTED;
     }
 
@@ -249,7 +249,7 @@ RpApfsConnectHandle (
         (VOID **) &BlockIo
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
 
@@ -276,7 +276,7 @@ RpApfsConnectHandle (
         &TempProtocol
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
 
@@ -289,7 +289,7 @@ RpApfsConnectHandle (
         &TempProtocol
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
 

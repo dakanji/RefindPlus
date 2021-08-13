@@ -177,7 +177,7 @@ BOOLEAN IsValidLoader (
         EFI_FILE_MODE_READ, 0
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
             L"EFI File is *NOT* Valid:- '%s'",
@@ -191,7 +191,7 @@ BOOLEAN IsValidLoader (
     Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &Size, Header);
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
-    IsValid = !EFI_ERROR (Status) &&
+    IsValid = !EFI_ERROR(Status) &&
               Size == sizeof (Header) &&
               ((Header[0] == 'M' && Header[1] == 'Z' &&
                (Size = *(UINT32 *) &Header[0x3c]) < 0x180 &&
@@ -411,7 +411,7 @@ EFI_STATUS StartEFIImage (
         );
 
         #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             MsgStr = PoolPrint (
                 L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
                 Status

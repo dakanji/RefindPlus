@@ -535,7 +535,7 @@ EFI_STATUS CopyDrivers (
                 DestDirPtr, DestFileName
             );
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 WorstStatus = Status;
             }
 
@@ -571,7 +571,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
 
     MyFreePool (&SourceFile);
     MyFreePool (&RefindPlusName);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
             L"Error copying RefindPlus binary; installation has failed"
@@ -615,7 +615,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
             );
         }
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             WorstStatus = Status;
         }
         MyFreePool (&SourceFile);
@@ -629,7 +629,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
             L"EFI\\refindplus\\icons"
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Error %d copying drivers", Status);
             #endif
@@ -649,7 +649,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
             TargetDriversDir
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             WorstStatus = Status;
         }
 
@@ -731,7 +731,7 @@ VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
         // result code unless it is EFI_ABORTED, since it may not be a
         // critical error.
         Status2 = CopyFiles (TargetDir);
-        if (EFI_ERROR (Status2)) {
+        if (EFI_ERROR(Status2)) {
             if (Status2 == EFI_ABORTED) {
                Status = EFI_ABORTED;
             }

@@ -617,7 +617,7 @@ EFI_STATUS EfiLibDeleteVariable (
         // Delete variable from Storage
         Status = REFIT_CALL_5_WRAPPER(gRT->SetVariable, VarName, VarGuid, VAR_FLAG, 0, NULL);
 
-        ASSERT (!EFI_ERROR (Status));
+        ASSERT (!EFI_ERROR(Status));
 
         MyFreePool (&VarBuf);
     }
@@ -659,7 +659,7 @@ EFI_STATUS BdsAddNonExistingLegacyBootOptions (
 
     Status = EfiLibLocateProtocol (&gEfiLegacyBiosProtocolGuid, (VOID **) &LegacyBios);
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -718,7 +718,7 @@ EFI_STATUS BdsAddNonExistingLegacyBootOptions (
                 &BootOrderSize
             );
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 break;
             }
 
@@ -854,7 +854,7 @@ EFI_STATUS BdsDeleteAllInvalidLegacyBootOptions (
     BbsEntry      = NULL;
 
     Status = EfiLibLocateProtocol (&gEfiLegacyBiosProtocolGuid, (VOID **) &LegacyBios);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 

@@ -83,7 +83,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
     );
 
     // Open the root directory of the volume
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         Status = Volume->OpenVolume (
             Volume,
             &File
@@ -93,7 +93,7 @@ EFI_FILE_HANDLE EfiLibOpenRoot (
     }
 
     // Done
-    return EFI_ERROR (Status) ? NULL : File;
+    return EFI_ERROR(Status) ? NULL : File;
 } // EFI_FILE_HANDLE EfiLibOpenRoot()
 
 /**
@@ -148,7 +148,7 @@ EFI_FILE_INFO * EfiLibFileInfo (
         Status = FHand->GetInfo (FHand, &gEfiFileInfoGuid, &Size, FileInfo);
     }
 
-    return EFI_ERROR (Status) ? NULL : FileInfo;
+    return EFI_ERROR(Status) ? NULL : FileInfo;
 } // EFI_FILE_INFO * EfiLibFileInfo()
 
 EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (
@@ -164,7 +164,7 @@ EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo (
         Status = FHand->GetInfo (FHand, &gEfiFileSystemInfoGuid, &Size, FileSystemInfo);
     }
 
-    return EFI_ERROR (Status) ? NULL : FileSystemInfo;
+    return EFI_ERROR(Status) ? NULL : FileSystemInfo;
 } // EFI_FILE_SYSTEM_INFO * EfiLibFileSystemInfo()
 
 /**

@@ -122,7 +122,7 @@ EFI_STATUS ReloadOptionROM (
                         (VOID **) &Decompress
                     );
 
-                    if (!EFI_ERROR (Status)) {
+                    if (!EFI_ERROR(Status)) {
                         Status = REFIT_CALL_5_WRAPPER(
                             Decompress->GetInfo,
                             Decompress,
@@ -132,7 +132,7 @@ EFI_STATUS ReloadOptionROM (
                             &ScratchSize
                         );
 
-                        if (!EFI_ERROR (Status)) {
+                        if (!EFI_ERROR(Status)) {
                             DecompressedImageBuffer = AllocateZeroPool (DestinationSize);
 
                             if (DecompressedImageBuffer == NULL) {
@@ -157,7 +157,7 @@ EFI_STATUS ReloadOptionROM (
                                         ScratchSize
                                     );
 
-                                    if (!EFI_ERROR (Status)) {
+                                    if (!EFI_ERROR(Status)) {
                                         LoadROM     = TRUE;
                                         ImageBuffer = DecompressedImageBuffer;
                                         ImageLength = DestinationSize;
@@ -183,7 +183,7 @@ EFI_STATUS ReloadOptionROM (
                         &ImageHandle
                     );
 
-                    if (EFI_ERROR (Status)) {
+                    if (EFI_ERROR(Status)) {
                         if (Status == EFI_SECURITY_VIOLATION) {
                             REFIT_CALL_1_WRAPPER(gBS->UnloadImage, ImageHandle);
                         }
@@ -242,7 +242,7 @@ EFI_STATUS AcquireGOP (
         &HandleArray
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         ReturnStatus = EFI_PROTOCOL_ERROR;
     }
     else {
@@ -256,7 +256,7 @@ EFI_STATUS AcquireGOP (
                 (void **) &PciIo
             );
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 if (!PciIo->RomImage || !PciIo->RomSize) {
                     Status = EFI_NOT_FOUND;
                 }
@@ -289,7 +289,7 @@ EFI_STATUS AcquireGOP (
                 }
             }
 
-            if (EFI_ERROR (ReturnStatus)) {
+            if (EFI_ERROR(ReturnStatus)) {
                 ReturnStatus = Status;
             }
         } // for

@@ -125,7 +125,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         (VOID **) &LoadedImage
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return NULL;
     }
 
@@ -161,10 +161,10 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     Status  = REFIT_CALL_1_WRAPPER(RootDir->Close, RootDir);
     RootDir = NULL;
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         // try on first EFI partition
         Status = egFindESP (&RootDir);
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             Status = REFIT_CALL_5_WRAPPER(
                 RootDir->Open, RootDir,
                 &LogFile, ourDebugLog,
@@ -185,7 +185,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         }
     }
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         LogFile = NULL;
     }
 

@@ -66,7 +66,7 @@ VOID UpdateBbsTable (
         (VOID **) &LegacyBios
     );
 
-    if (EFI_ERROR (Status) || Option == NULL) {
+    if (EFI_ERROR(Status) || Option == NULL) {
         return;
     }
 
@@ -129,7 +129,7 @@ EFI_STATUS BdsLibDoLegacyBoot (
         (VOID **) &LegacyBios
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
 

@@ -2051,7 +2051,7 @@ UINTN WaitForInput (
         Length--;
     }
     else {
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
             return INPUT_TIMER_ERROR;
         }
@@ -2064,7 +2064,7 @@ UINTN WaitForInput (
     Status = REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, Length, WaitList, &Index);
     REFIT_CALL_1_WRAPPER(gBS->CloseEvent, TimerEvent);
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     }

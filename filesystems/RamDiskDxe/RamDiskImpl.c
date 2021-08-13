@@ -84,7 +84,7 @@ InstallRamDiskConfigForm (
                   ConfigAccess,
                   NULL
                   );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
@@ -373,7 +373,7 @@ HiiCreateRamDisk (
     Status = EFI_INVALID_PARAMETER;
   }
 
-  if ((StartingAddr == NULL) || EFI_ERROR (Status)) {
+  if ((StartingAddr == NULL) || EFI_ERROR(Status)) {
     do {
       CreatePopUp (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
@@ -426,7 +426,7 @@ HiiCreateRamDisk (
              NULL,
              &DevicePath
              );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     do {
       CreatePopUp (
         EFI_LIGHTGRAY | EFI_BACKGROUND_BLUE,
@@ -646,7 +646,7 @@ RamDiskCallback (
     switch (QuestionId) {
     case MAIN_GOTO_FILE_EXPLORER_ID:
       Status = ChooseFile (NULL, NULL, NULL, &FileDevPath);
-      if (EFI_ERROR (Status)) {
+      if (EFI_ERROR(Status)) {
         break;
       }
 
@@ -660,7 +660,7 @@ RamDiskCallback (
                    EFI_FILE_MODE_READ,
                    0
                    );
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
           break;
         }
 
@@ -673,7 +673,7 @@ RamDiskCallback (
                    FileHandle,
                    ConfigPrivate->ConfigStore.MemType
                    );
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
           break;
         }
 
@@ -724,7 +724,7 @@ RamDiskCallback (
                  NULL,
                  ConfigPrivate->ConfigStore.MemType
                  );
-      if (EFI_ERROR (Status)) {
+      if (EFI_ERROR(Status)) {
         break;
       }
 

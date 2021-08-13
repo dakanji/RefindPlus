@@ -358,7 +358,7 @@ VOID ReinitVolume (
                 &RemainingDevicePath, &DeviceHandle
             );
 
-            if (!EFI_ERROR (StatusA)) {
+            if (!EFI_ERROR(StatusA)) {
                 Volume->DeviceHandle = DeviceHandle;
 
                 // get the root directory
@@ -378,14 +378,14 @@ VOID ReinitVolume (
                 &RemainingDevicePath, &WholeDiskHandle
             );
 
-            if (!EFI_ERROR (StatusB)) {
+            if (!EFI_ERROR(StatusB)) {
                 // get the BlockIO protocol
                 StatusB = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol, WholeDiskHandle,
                     &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
                 );
 
-                if (EFI_ERROR (StatusB)) {
+                if (EFI_ERROR(StatusB)) {
                     Volume->WholeDiskBlockIO = NULL;
                     CheckError (StatusB, L"from HandleProtocol");
                 }
@@ -470,9 +470,9 @@ EFI_STATUS FindVarsDir (VOID) {
         );
         #endif
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             Status = egFindESP (&EspRootDir);
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 Status = REFIT_CALL_5_WRAPPER(
                     EspRootDir->Open, EspRootDir,
                     &gVarsDir, L"refind-vars",
@@ -487,7 +487,7 @@ EFI_STATUS FindVarsDir (VOID) {
                 Status
             );
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 LOG(1, LOG_LINE_NORMAL,
                     L"Activate 'use_nvram' to Enable Hardware NVRAM for RefindPlus-Specific Items"
                 );
@@ -561,7 +561,7 @@ EFI_STATUS EfivarGetRaw (
         );
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
             if (BufferSize) {
                 *VariableSize = BufferSize;
@@ -624,7 +624,7 @@ EFI_STATUS EfivarGetRaw (
         );
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
             if (BufferSize) {
                 *VariableSize = BufferSize;
@@ -684,7 +684,7 @@ EFI_STATUS EfivarSetRaw (
         Status     = EfivarGetRaw (VendorGUID, VariableName, &OldBuf, &OldSize);
         MuteLogger = FALSE;
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             // Check for settings match
             SettingMatch = (
                 VariableSize == OldSize &&
@@ -728,7 +728,7 @@ EFI_STATUS EfivarSetRaw (
             Status, VariableName
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
             MsgLog ("** WARN: Could Not Save to Emulated NVRAM:- '%s'\n", VariableName);
@@ -1229,7 +1229,7 @@ VOID ScanVolumeBootcode (
         Buffer
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         SetFilesystemData (Buffer, SAMPLE_SIZE, Volume);
 
         if (GlobalConfig.LegacyType != LEGACY_TYPE_MAC) {
@@ -1727,7 +1727,7 @@ VOID ScanVolume (
         (VOID **) &(Volume->BlockIO)
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
@@ -1799,7 +1799,7 @@ VOID ScanVolume (
 
             MyFreePool (&DiskDevicePath);
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 // get the device path for later
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
@@ -1824,7 +1824,7 @@ VOID ScanVolume (
                     &BlockIoProtocol,
                     (VOID **) &Volume->WholeDiskBlockIO
                 );
-                if (EFI_ERROR (Status)) {
+                if (EFI_ERROR(Status)) {
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
@@ -1913,7 +1913,7 @@ VOID ScanExtendedPartition (
             512,
             SectorBuffer
         );
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
             #endif
@@ -2159,7 +2159,7 @@ VOID ScanVolumes (VOID) {
         &HandleCount,
         &Handles
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"ERROR: %r While Listing File Systems", Status);
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
@@ -2416,7 +2416,7 @@ VOID ScanVolumes (VOID) {
                     512,
                     SectorBuffer1
                 );
-                if (EFI_ERROR (Status)) {
+                if (EFI_ERROR(Status)) {
                     break;
                 }
                 Status = REFIT_CALL_5_WRAPPER(
@@ -2427,7 +2427,7 @@ VOID ScanVolumes (VOID) {
                     512,
                     SectorBuffer2
                 );
-                if (EFI_ERROR (Status)) {
+                if (EFI_ERROR(Status)) {
                     break;
                 }
                 if (CompareMem (SectorBuffer1, SectorBuffer2, 512) != 0) {
@@ -2709,7 +2709,7 @@ EFI_STATUS DirNextEntry (
             LastBufferSize = BufferSize;
         }
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             MyFreePool (&Buffer);
             Buffer = NULL;
             break;
@@ -2765,7 +2765,7 @@ VOID DirIterOpen (
             &(DirIter->DirHandle), RelativePath,
             EFI_FILE_MODE_READ, 0
         );
-        DirIter->CloseDirHandle = EFI_ERROR (DirIter->LastStatus) ? FALSE : TRUE;
+        DirIter->CloseDirHandle = EFI_ERROR(DirIter->LastStatus) ? FALSE : TRUE;
     }
     DirIter->LastFileInfo = NULL;
 }
@@ -2794,7 +2794,7 @@ EFI_STATUS InitializeUnicodeCollationProtocol (
        NULL,
        (VOID **) &mUnicodeCollation
    );
-   if (EFI_ERROR (Status)) {
+   if (EFI_ERROR(Status)) {
        Status = REFIT_CALL_3_WRAPPER(
            gBS->LocateProtocol,
            &gEfiUnicodeCollationProtocolGuid,
@@ -2837,7 +2837,7 @@ BOOLEAN DirIterNext (
     MyFreePool (&DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
 
-    if (EFI_ERROR (DirIter->LastStatus)) {
+    if (EFI_ERROR(DirIter->LastStatus)) {
         // stop iteration
         return FALSE;
     }
@@ -2848,7 +2848,7 @@ BOOLEAN DirIterNext (
             &(DirIter->LastFileInfo),
             FilterMode
         );
-        if (EFI_ERROR (DirIter->LastStatus)) {
+        if (EFI_ERROR(DirIter->LastStatus)) {
             return FALSE;
         }
         if (DirIter->LastFileInfo == NULL)  {
@@ -3311,7 +3311,7 @@ BOOLEAN EjectMedia (VOID) {
         &HandleCount,
         &Handles
     );
-    if (EFI_ERROR (Status) || HandleCount == 0) {
+    if (EFI_ERROR(Status) || HandleCount == 0) {
         // probably not an Apple system
         return (FALSE);
     }
@@ -3325,12 +3325,12 @@ BOOLEAN EjectMedia (VOID) {
             (VOID **) &Ejectable
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             continue;
         }
 
         Status = REFIT_CALL_1_WRAPPER(Ejectable->Eject, Ejectable);
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             Ejected++;
         }
     }

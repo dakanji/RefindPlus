@@ -436,7 +436,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
 
     // make sure the dnode has complete info
     Status = fsw_posix_map_status(fsw_dnode_fill(dno), Volume);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
 
     // TODO: check/assert that the dno's name is in UTF16
@@ -466,7 +466,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
     sb.store_attr_posix = fsw_posix_store_attr_posix;
     sb.host_data = FileInfo;
     Status = fsw_posix_map_status(fsw_dnode_stat(dno, &sb), Volume);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
     FileInfo->PhysicalSize      = sb.used_bytes;
 

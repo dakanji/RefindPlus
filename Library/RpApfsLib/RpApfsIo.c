@@ -137,7 +137,7 @@ ApfsReadJumpStart (
       JumpStart
   );
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
       FreePool (JumpStart);
       return Status;
   }
@@ -221,7 +221,7 @@ ApfsReadDriver (
       ChunkPtr
       );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
       FreePool (EfiFile);
       return Status;
     }
@@ -277,7 +277,7 @@ InternalApfsReadSuperBlock (
         ReadSize,
         SuperBlock
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
       break;
     }
 
@@ -347,7 +347,7 @@ InternalApfsReadDriver (
     PrivateData,
     &JumpStart
     );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
@@ -360,7 +360,7 @@ InternalApfsReadDriver (
 
   FreePool (JumpStart);
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 

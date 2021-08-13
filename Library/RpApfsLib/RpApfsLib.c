@@ -47,13 +47,13 @@ RpApfsConnectParentDevice (
       &HandleBuffer
   );
 
-  if (!EFI_ERROR (Status)) {
+  if (!EFI_ERROR(Status)) {
       Status = EFI_NOT_FOUND;
 
       for (Index = 0; Index < HandleCount; ++Index) {
           XStatus = RpApfsConnectHandle (HandleBuffer[Index]);
           if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
-              if (EFI_ERROR (Status)) {
+              if (EFI_ERROR(Status)) {
                   Status = XStatus;
               }
           }

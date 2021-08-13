@@ -77,7 +77,7 @@ VOID pdInitialize() {
             &APointerHandles
         );
 
-        if (!EFI_ERROR (handlestatus)) {
+        if (!EFI_ERROR(handlestatus)) {
             APointerProtocol = AllocatePool (sizeof (EFI_ABSOLUTE_POINTER_PROTOCOL*) * NumPointerHandles);
             UINTN Index;
             for (Index = 0; Index < NumPointerHandles; Index++) {
@@ -119,7 +119,7 @@ VOID pdInitialize() {
             &SPointerHandles
         );
 
-        if (!EFI_ERROR (handlestatus)) {
+        if (!EFI_ERROR(handlestatus)) {
             SPointerProtocol = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
             UINTN Index;
             for (Index = 0; Index < NumPointerHandles; Index++) {
@@ -280,7 +280,7 @@ EFI_STATUS pdUpdateState() {
             &APointerState
         );
         // if new state found and we have not already found a new state
-        if (!EFI_ERROR (PointerStatus) && EFI_ERROR (Status)) {
+        if (!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 
 #ifdef EFI32
@@ -300,7 +300,7 @@ EFI_STATUS pdUpdateState() {
             &SPointerState
         );
         // if new state found and we have not already found a new state
-        if (!EFI_ERROR (PointerStatus) && EFI_ERROR (Status)) {
+        if (!EFI_ERROR(PointerStatus) && EFI_ERROR(Status)) {
             Status = EFI_SUCCESS;
 
             INT32 TargetX = 0;

@@ -305,7 +305,7 @@ EFI_STATUS egLoadFile (
     }
 
     Status = REFIT_CALL_5_WRAPPER(BaseDir->Open, BaseDir, &FileHandle, FileName, EFI_FILE_MODE_READ, 0);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -334,7 +334,7 @@ EFI_STATUS egLoadFile (
 
     Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         MyFreePool (&Buffer);
 
         return Status;
@@ -359,7 +359,7 @@ EFI_STATUS egFindESP (
     EFI_GUID     ESPGuid = ESP_GUID_VALUE;
 
     Status = LibLocateHandle (ByProtocol, &ESPGuid, NULL, &HandleCount, &Handles);
-    if (!EFI_ERROR (Status) && HandleCount > 0) {
+    if (!EFI_ERROR(Status) && HandleCount > 0) {
         *RootDir = LibOpenRoot (Handles[0]);
 
         if (*RootDir == NULL) {
@@ -384,7 +384,7 @@ EFI_STATUS egSaveFile (
 
     if (BaseDir == NULL) {
         Status = egFindESP (&BaseDir);
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             return Status;
         }
     }
@@ -395,7 +395,7 @@ EFI_STATUS egSaveFile (
         EFI_FILE_MODE_READ|EFI_FILE_MODE_WRITE|EFI_FILE_MODE_CREATE, 0
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -458,7 +458,7 @@ EG_IMAGE * egLoadImage (
 
     // load file
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
             L"In egLoadImage ... '%r' Returned While Attempting to Load File!!",
@@ -499,7 +499,7 @@ EG_IMAGE * egLoadIcon (
         Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     }
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG(4, LOG_LINE_NORMAL,
             L"In egLoadIcon ... '%r' When Trying to Load Icon:- '%s'!!",

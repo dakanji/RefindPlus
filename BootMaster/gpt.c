@@ -155,7 +155,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
             (VOID **) &(Volume->BlockIO)
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             Volume->BlockIO = NULL;
             Print (L"Warning: Can't get BlockIO protocol in ReadGptData().\n");
             Status = EFI_NOT_READY;

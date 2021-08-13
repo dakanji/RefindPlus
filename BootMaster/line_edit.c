@@ -117,7 +117,7 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
 
         REFIT_CALL_3_WRAPPER(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
         err = REFIT_CALL_2_WRAPPER(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
-        if (EFI_ERROR (err)) {
+        if (EFI_ERROR(err)) {
             continue;
         }
 

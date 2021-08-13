@@ -431,7 +431,7 @@ VOID SwitchToText (
         // Override Text Renderer Setting
         Status = OcUseBuiltinTextOutput (EfiConsoleControlScreenText);
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             GlobalConfig.TextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
@@ -462,7 +462,7 @@ VOID SwitchToText (
         &ConHeight
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         // use default values on error
         ConWidth  = 80;
         ConHeight = 25;
@@ -820,7 +820,7 @@ BOOLEAN CheckFatalError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return FALSE;
     }
 
@@ -860,7 +860,7 @@ BOOLEAN CheckError (
 ) {
     CHAR16 *Temp = NULL;
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         return FALSE;
     }
 

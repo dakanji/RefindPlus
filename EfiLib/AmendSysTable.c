@@ -100,7 +100,7 @@ VOID FakeSetInterruptState (
     }
 
     Status = gSmmBase2->InSmm (gSmmBase2, &InSmm);
-    if (!EFI_ERROR (Status) && !InSmm) {
+    if (!EFI_ERROR(Status) && !InSmm) {
         gCpu->EnableInterrupt (gCpu);
     }
 }
@@ -318,7 +318,7 @@ EFI_STATUS FakeCreateEventEx (
             break;
         }
     }
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return EFI_INVALID_PARAMETER;
     }
 
@@ -453,7 +453,7 @@ EFI_STATUS AmendSysTable (VOID) {
             SetSysTab = TRUE;
             Status    = (EFI_STATUS) uBS->CreateEventEx;
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 Status = EFI_INVALID_PARAMETER;
             }
             else {

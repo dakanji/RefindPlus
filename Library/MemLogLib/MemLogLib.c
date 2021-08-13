@@ -312,7 +312,7 @@ VOID EFIAPI MemLogVA (
     }
 
     Status = MemLogInit();
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return;
     }
 
@@ -410,7 +410,7 @@ CHAR8 * EFIAPI GetMemLogBuffer (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return NULL;
     }
 
@@ -425,7 +425,7 @@ UINTN EFIAPI GetMemLogLen (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return 0;
     }
 
@@ -441,7 +441,7 @@ VOID EFIAPI SetMemLogCallback (
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return;
     }
 
@@ -455,7 +455,7 @@ UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID) {
     EFI_STATUS        Status;
 
     Status = MemLogInit();
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return 0;
     }
 

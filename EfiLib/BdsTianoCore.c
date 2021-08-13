@@ -109,7 +109,7 @@ EFI_STATUS BdsLibConnectDevicePath (
                 &Handle
             );
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
 #ifdef __MAKEWITH_TIANO
                 if (Handle == PreviousHandle) {
                     // If no forward progress is made try invoking the Dispatcher.
@@ -121,7 +121,7 @@ EFI_STATUS BdsLibConnectDevicePath (
                 }
 #endif
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     PreviousHandle = Handle;
                     // Connect all drivers that apply to Handle and RemainingDevicePath,
                     // the Recursive flag is FALSE so only one level will be expanded.
@@ -140,7 +140,7 @@ EFI_STATUS BdsLibConnectDevicePath (
                 }
             }
             // Loop until RemainingDevicePath is an empty device path
-        } while (!EFI_ERROR (Status) && !IsDevicePathEnd (RemainingDevicePath));
+        } while (!EFI_ERROR(Status) && !IsDevicePathEnd (RemainingDevicePath));
     } while (DevicePath != NULL);
 
     if (CopyOfDevicePath != NULL) {
@@ -311,7 +311,7 @@ VOID * BdsLibGetVariableAndSize (
 
         // Read variable into the allocated buffer.
         Status = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             BufferSize = 0;
         }
     }

@@ -164,7 +164,7 @@ EFI_STATUS ActivateMbrPartition (
 
     // read MBR
     Status = REFIT_CALL_5_WRAPPER(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -218,7 +218,7 @@ EFI_STATUS ActivateMbrPartition (
         SectorBuffer
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -237,7 +237,7 @@ EFI_STATUS ActivateMbrPartition (
                 SectorBuffer
             );
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 return Status;
             }
 
@@ -280,7 +280,7 @@ EFI_STATUS ActivateMbrPartition (
                 SectorBuffer
             );
 
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 return Status;
             }
 
@@ -307,7 +307,7 @@ EFI_STATUS WriteBootDiskHint (
        TRUE
    );
 
-   if (EFI_ERROR (Status)) {
+   if (EFI_ERROR(Status)) {
        return Status;
    }
 
@@ -367,7 +367,7 @@ VOID ExtractLegacyLoaderPaths (
             (VOID **) &LoadedImage
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             // This can only happen if the firmware scewed up ... ignore it.
             continue;
         }
@@ -379,7 +379,7 @@ VOID ExtractLegacyLoaderPaths (
             (VOID **) &DevicePath
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             // This happens ... ignore it.
             continue;
         }
@@ -935,7 +935,7 @@ VOID ScanLegacyUEFI (
         NULL, (VOID **) &LegacyBios
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return;
     }
 
@@ -1149,7 +1149,7 @@ VOID FindLegacyBootType (VOID) {
         NULL, (VOID **) &LegacyBios
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
     }
 

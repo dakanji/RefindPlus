@@ -1239,7 +1239,7 @@ CHAR16 * EFIAPI DevicePathToStr (
         (VOID **) &DevPathToText
     );
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         ToText = DevPathToText->ConvertDevicePathToText (
             DevPath, FALSE, TRUE
         );

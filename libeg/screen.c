@@ -131,7 +131,7 @@ EFI_STATUS daCheckAltGop (
         (VOID **) &OrigGop
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         REFIT_CALL_3_WRAPPER(
             gBS->LocateProtocol,
             &GOPDrawProtocolGuid,
@@ -163,7 +163,7 @@ EFI_STATUS daCheckAltGop (
         MsgLog ("Seek Replacement GOP Candidates:");
         #endif
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             MsgLog ("\n");
             #endif
@@ -191,7 +191,7 @@ EFI_STATUS daCheckAltGop (
                     (VOID **) &Gop
                 );
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
                     MsgLog ("\n");
                     MsgLog ("  - Found Replacement Candidate on GPU Handle[%02d]\n", i);
@@ -210,7 +210,7 @@ EFI_STATUS daCheckAltGop (
                         MyFreePool (&Info);
 
                         Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
-                        if (!EFI_ERROR (Status)) {
+                        if (!EFI_ERROR(Status)) {
                             if (Width > Info->HorizontalResolution) {
                                 continue;
                             }
@@ -242,7 +242,7 @@ EFI_STATUS daCheckAltGop (
 
                         break;
                     }
-                } // if !EFI_ERROR (Status)
+                } // if !EFI_ERROR(Status)
             } // if HandleBuffer[i]
         } // for i = 0
 
@@ -253,14 +253,14 @@ EFI_STATUS daCheckAltGop (
         MsgLog ("\n\n");
         #endif
 
-        if (!OurValidGOP || EFI_ERROR (Status)) {
+        if (!OurValidGOP || EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Could Not Find Usable Replacement GOP\n\n");
             #endif
 
             return EFI_UNSUPPORTED;
         }
-    } // if !EFI_ERROR (Status)
+    } // if !EFI_ERROR(Status)
 
     return EFI_SUCCESS;
 }
@@ -345,7 +345,7 @@ EFI_STATUS egDumpGOPVideoModes (
             MsgLog ("  - Mode[%02d]", ModeLog);
             #endif
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 OurValidGOP = TRUE;
 
                 #if REFIT_DEBUG > 0
@@ -511,7 +511,7 @@ EFI_STATUS egSetGOPMode (
         #endif
     }
     else {
-        while (EFI_ERROR (Status) && i <= MaxMode) {
+        while (EFI_ERROR(Status) && i <= MaxMode) {
             Mode = Mode + Next;
             Mode = (Mode >= (INT32)MaxMode)?0:Mode;
             Mode = (Mode < 0)?((INT32)MaxMode - 1):Mode;
@@ -529,10 +529,10 @@ EFI_STATUS egSetGOPMode (
             MsgLog ("  - Mode[%02d] ... %r\n", Mode, Status);
             #endif
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 Status = GopSetModeAndReconnectTextOut ((UINT32)Mode);
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
                     egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
                 }
@@ -595,7 +595,7 @@ EFI_STATUS egSetMaxResolution (
             &Info
         );
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             if (Width > Info->HorizontalResolution) {
                 continue;
             }
@@ -636,7 +636,7 @@ EFI_STATUS egSetMaxResolution (
     }
     else {
         Status = GopSetModeAndReconnectTextOut (BestMode);
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             egScreenWidth  = Width;
             egScreenHeight = Height;
         }
@@ -689,7 +689,7 @@ VOID egDetermineScreenSize (
             &UGADepth, &UGARefreshRate
         );
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             UGADraw = NULL;   // graphics not available
         }
         else {
@@ -753,7 +753,7 @@ VOID egInitScreen (
     MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
-    if (EFI_ERROR (Status) || ConsoleControl == NULL) {
+    if (EFI_ERROR(Status) || ConsoleControl == NULL) {
         // Try Locating by Handle
         Status = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer,
@@ -768,7 +768,7 @@ VOID egInitScreen (
         MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             for (i = 0; i < HandleCount; i++) {
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
@@ -781,7 +781,7 @@ VOID egInitScreen (
                 MsgLog ("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
                 #endif
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     break;
                 }
             }
@@ -789,7 +789,7 @@ VOID egInitScreen (
         }
     }
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         DetectedDevices  = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -827,7 +827,7 @@ VOID egInitScreen (
     MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         // Try Locating by Handle
         Status = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer,
@@ -842,7 +842,7 @@ VOID egInitScreen (
         MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             EFI_UGA_DRAW_PROTOCOL *TmpUGA    = NULL;
             UINT32                 UGAWidth  = 0;
             UINT32                 UGAHeight = 0;
@@ -863,13 +863,13 @@ VOID egInitScreen (
                 MsgLog ("    ** Examine Handle[%02d] ... %r\n", i, Status);
                 #endif
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     Status = REFIT_CALL_5_WRAPPER(
                         TmpUGA->GetMode, TmpUGA,
                         &Width, &Height,
                         &Depth, &RefreshRate
                     );
-                    if (!EFI_ERROR (Status)) {
+                    if (!EFI_ERROR(Status)) {
                         if (UGAWidth < Width ||
                             UGAHeight < Height
                         ) {
@@ -899,7 +899,7 @@ VOID egInitScreen (
         }
     }
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ... NOT OK!!");
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -935,7 +935,7 @@ VOID egInitScreen (
     MsgLog ("    * Seek on ConsoleOut Handle ... %r\n", Status);
     #endif
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         // Try Locating by Handle
         Status = REFIT_CALL_5_WRAPPER(
             gBS->LocateHandleBuffer,
@@ -950,7 +950,7 @@ VOID egInitScreen (
         MsgLog ("    * Seek on Handle Buffer ... %r\n", Status);
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             EFI_GRAPHICS_OUTPUT_MODE_INFORMATION  *Info;
             EFI_GRAPHICS_OUTPUT_PROTOCOL *TmpGOP = NULL;
             UINT32 GOPWidth  = 0;
@@ -971,12 +971,12 @@ VOID egInitScreen (
                 MsgLog ("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
                 #endif
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     TmpGOP = OldGOP;
                     MaxMode = TmpGOP->Mode->MaxMode;
                     for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
                         Status = TmpGOP->QueryMode (TmpGOP, GOPMode, &SizeOfInfo, &Info);
-                        if (!EFI_ERROR (Status)) {
+                        if (!EFI_ERROR(Status)) {
                             if (GOPWidth < Info->HorizontalResolution ||
                                 GOPHeight < Info->VerticalResolution
                             ) {
@@ -1015,7 +1015,7 @@ VOID egInitScreen (
             MyFreePool (&HandleBuffer);
         }
         else {
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 // Force to NOT FOUND on error as subsequent code relies on this
                 Status = EFI_NOT_FOUND;
             }
@@ -1036,7 +1036,7 @@ VOID egInitScreen (
         #endif
     }
 
-    if (EFI_ERROR (Status) && XFlag == EFI_UNSUPPORTED) {
+    if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
         XFlag = EFI_NOT_FOUND;
 
         // Not Found
@@ -1047,7 +1047,7 @@ VOID egInitScreen (
         MyFreePool (&MsgStr);
         #endif
     }
-    else if (!EFI_ERROR (Status) && XFlag != EFI_ALREADY_STARTED) {
+    else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
         if (OldGOP->Mode->MaxMode > 0) {
             XFlag        = EFI_SUCCESS;
             thisValidGOP = TRUE;
@@ -1077,10 +1077,10 @@ VOID egInitScreen (
             if (GlobalConfig.ProvideConsoleGOP) {
                 Status = daCheckAltGop();
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     Status = OcProvideConsoleGop (TRUE);
 
-                    if (!EFI_ERROR (Status)) {
+                    if (!EFI_ERROR(Status)) {
                         Status = gBS->HandleProtocol (
                             gST->ConsoleOutHandle,
                             &GOPDrawProtocolGuid,
@@ -1114,7 +1114,7 @@ VOID egInitScreen (
                 #endif
             }
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 // Check ConsoleOut Handle
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
@@ -1123,7 +1123,7 @@ VOID egInitScreen (
                     (VOID **) &OldGOP
                 );
 
-                if (EFI_ERROR (Status)) {
+                if (EFI_ERROR(Status)) {
                     OldGOP = NULL;
                 }
                 else {
@@ -1159,7 +1159,7 @@ VOID egInitScreen (
         MyFreePool (&MsgStr);
         #endif
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             thisValidGOP = TRUE;
         }
     }
@@ -1169,7 +1169,7 @@ VOID egInitScreen (
     if (GOPDraw != NULL) {
         Status = egDumpGOPVideoModes();
 
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Invalid GOP Instance");
             LOG(4, LOG_LINE_NORMAL, L"WARNING: %s!!", MsgStr);
@@ -1184,7 +1184,7 @@ VOID egInitScreen (
 
             Status = egSetMaxResolution();
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
                 egScreenHeight = GOPDraw->Mode->Info->VerticalResolution;
             }
@@ -1238,7 +1238,7 @@ VOID egInitScreen (
                 &Depth, &RefreshRate
             );
 
-            if (!EFI_ERROR (Status)) {
+            if (!EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"GOP not Available");
                 LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -1365,7 +1365,7 @@ BOOLEAN egGetResFromMode (
             &Info
         );
 
-        if (!EFI_ERROR (Status) && (Info != NULL)) {
+        if (!EFI_ERROR(Status) && (Info != NULL)) {
             *ModeWidth = Info->HorizontalResolution;
             *Height    = Info->VerticalResolution;
 
@@ -1489,7 +1489,7 @@ BOOLEAN egSetScreenSize (
                     &Info
                 );
 
-                if ((!EFI_ERROR (Status)) &&
+                if ((!EFI_ERROR(Status)) &&
                     (Size >= sizeof (*Info) &&
                     (Info != NULL)) &&
                     (Info->HorizontalResolution == *ScreenWidth) &&
@@ -1561,7 +1561,7 @@ BOOLEAN egSetScreenSize (
                     &Info
                 );
 
-                if (!EFI_ERROR (Status) && (Info != NULL)) {
+                if (!EFI_ERROR(Status) && (Info != NULL)) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
                         L"Available Mode: Mode[%02d][%d x %d]",
@@ -1620,7 +1620,7 @@ BOOLEAN egSetScreenSize (
         *ScreenWidth  = (UINTN) ScreenW;
         *ScreenHeight = (UINTN) ScreenH;
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             ModeSet        = TRUE;
             egScreenWidth  = *ScreenWidth;
             egScreenHeight = *ScreenHeight;
@@ -1675,7 +1675,7 @@ BOOLEAN egSetTextMode (
             gST->ConOut,
             RequestedMode
         );
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             ChangedIt = TRUE;
         }
         else {
@@ -1712,7 +1712,7 @@ BOOLEAN egSetTextMode (
                     &Height
                 );
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     MsgStr = PoolPrint (L"  - Mode[%d] (%d x %d)", i, Width, Height);
                     PrintUglyText (MsgStr, NEXTLINE);
 
@@ -2199,7 +2199,7 @@ VOID egScreenShot (
     );
 
     egFreeImage (Image);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         SwitchToText (FALSE);
 
         MsgStr = StrDuplicate (L"WARN: Could Not Encode PNG");
@@ -2226,7 +2226,7 @@ VOID egScreenShot (
         !MyStriCmp (SelfVolume->VolName, L"ESP")
     ) {
         Status = egFindESP (&BaseDir);
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             SwitchToText (FALSE);
 
             MsgStr = StrDuplicate (L"    * WARN: Could Not Save Screenshot");
@@ -2255,7 +2255,7 @@ VOID egScreenShot (
         else {
             // Try to save to first available ESP
             Status = egFindESP (&BaseDir);
-            if (EFI_ERROR (Status)) {
+            if (EFI_ERROR(Status)) {
                 SwitchToText (FALSE);
 
                 MsgStr = StrDuplicate (L"    * WARN: Could Not Find ESP for Screenshot");

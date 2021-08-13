@@ -276,7 +276,7 @@ EFI_STATUS EFIAPI fsw_efi_main(
         &fsw_efi_DriverBinding_table
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -289,7 +289,7 @@ EFI_STATUS EFIAPI fsw_efi_main(
         &fsw_efi_ComponentName_table
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -327,7 +327,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Supported(
         ControllerHandle,
         EFI_OPEN_PROTOCOL_BY_DRIVER
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -393,7 +393,7 @@ fsw_efi_DriverBinding_Start(
          ControllerHandle,
          EFI_OPEN_PROTOCOL_GET_PROTOCOL
      );   // NOTE: we only want to look at the MediaId
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -406,7 +406,7 @@ fsw_efi_DriverBinding_Start(
         ControllerHandle,
         EFI_OPEN_PROTOCOL_BY_DRIVER
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return Status;
     }
 
@@ -431,7 +431,7 @@ fsw_efi_DriverBinding_Start(
         ),
         Volume
     );
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         // register the SimpleFileSystem protocol
         Volume->FileSystem.Revision     = EFI_FILE_IO_INTERFACE_REVISION;
         Volume->FileSystem.OpenVolume   = fsw_efi_FileSystem_OpenVolume;
@@ -446,7 +446,7 @@ fsw_efi_DriverBinding_Start(
     }
 
     // on errors, close the opened protocols
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         if (Volume->vol != NULL) {
             fsw_unmount(Volume->vol);
         }
@@ -497,7 +497,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
         ControllerHandle,
         EFI_OPEN_PROTOCOL_GET_PROTOCOL
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return EFI_UNSUPPORTED;
     }
 
@@ -512,7 +512,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
         &Volume->FileSystem,
         NULL
     );
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
  //       Print(L"Fsw ERROR: UninstallMultipleProtocolInterfaces returned %x\n", Status);
         return Status;
     }
@@ -665,7 +665,7 @@ fsw_status_t EFIAPI fsw_efi_read_block(
              (UINTN) CACHE_SIZE,
              (VOID*) Caches[ReadCache].Cache
          );
-         if (!EFI_ERROR (Status)) {
+         if (!EFI_ERROR(Status)) {
             Caches[ReadCache].CacheStart = StartRead;
             Caches[ReadCache].CacheValid = TRUE;
             Caches[ReadCache].Volume = Volume;
@@ -928,7 +928,7 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(
 
     // make sure the dnode has complete info
     Status = fsw_efi_map_status(fsw_dnode_fill(dno), (FSW_VOLUME_DATA *)dno->vol->host_data);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
 
     // check type
@@ -949,7 +949,7 @@ EFI_STATUS fsw_efi_dnode_to_FileHandle(
     // open shandle
     Status = fsw_efi_map_status(fsw_shandle_open(dno, &File->shand),
                                 (FSW_VOLUME_DATA *)dno->vol->host_data);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         FreePool(File);
         return Status;
     }
@@ -1058,13 +1058,13 @@ EFI_STATUS fsw_efi_dir_open(
 
     // resolve the path (symlinks along the way are automatically resolved)
     Status = fsw_efi_map_status(fsw_dnode_lookup_path(File->shand.dnode, &lookup_path, '\\', &dno), Volume);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
 
     // if the final node is a symlink, also resolve it
     Status = fsw_efi_map_status(fsw_dnode_resolve(dno, &target_dno), Volume);
     fsw_dnode_release(dno);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
     dno = target_dno;
 
@@ -1102,7 +1102,7 @@ EFI_STATUS fsw_efi_dir_read(
 #endif
         return EFI_SUCCESS;
     }
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
 
     // get info into buffer
@@ -1178,7 +1178,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(
         // get the missing info from the fs driver
         ZeroMem(&vsb, sizeof (struct fsw_volume_stat));
         Status = fsw_efi_map_status(fsw_volume_stat(Volume->vol, &vsb), Volume);
-        if (EFI_ERROR (Status))
+        if (EFI_ERROR(Status))
             return Status;
         FSInfo->VolumeSize  = vsb.total_bytes;
         FSInfo->FreeSpace   = vsb.free_bytes;
@@ -1276,7 +1276,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
 
     // make sure the dnode has complete info
     Status = fsw_efi_map_status(fsw_dnode_fill(dno), Volume);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
 
     // TODO: check/assert that the dno's name is in UTF16
@@ -1307,7 +1307,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
     ZeroMem(&sb, sizeof (struct fsw_dnode_stat));
     sb.host_data = FileInfo;
     Status = fsw_efi_map_status(fsw_dnode_stat(dno, &sb), Volume);
-    if (EFI_ERROR (Status))
+    if (EFI_ERROR(Status))
         return Status;
     FileInfo->PhysicalSize      = sb.used_bytes;
 

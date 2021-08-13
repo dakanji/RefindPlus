@@ -683,7 +683,7 @@ VOID ReadConfig (
     }
 
     Status = RefitReadFile (SelfDir, FileName, &File, &i);
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return;
     }
 
@@ -1497,7 +1497,7 @@ VOID ScanUserConfigured (
 
     if (FileExists (SelfDir, FileName)) {
         Status = RefitReadFile (SelfDir, FileName, &File, &size);
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             return;
         }
 

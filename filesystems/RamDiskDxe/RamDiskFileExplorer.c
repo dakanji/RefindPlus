@@ -64,7 +64,7 @@ GrowBuffer (
   //
   // If there's an error, free the buffer
   //
-  if (!TryAgain && EFI_ERROR (*Status) && (*Buffer != NULL)) {
+  if (!TryAgain && EFI_ERROR(*Status) && (*Buffer != NULL)) {
     FreePool (*Buffer);
     *Buffer = NULL;
   }
@@ -166,7 +166,7 @@ OpenFileByDevicePath(
                   FilePath,
                   &DeviceHandle
                   );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
@@ -178,12 +178,12 @@ OpenFileByDevicePath(
                   NULL,
                   EFI_OPEN_PROTOCOL_GET_PROTOCOL
                   );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
   Status = EfiSimpleFileSystemProtocol->OpenVolume(EfiSimpleFileSystemProtocol, &Handle1);
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     FileHandle = NULL;
     return Status;
   }
@@ -221,7 +221,7 @@ OpenFileByDevicePath(
     //
     // see if the error was that it needs to be created
     //
-    if ((EFI_ERROR (Status)) && (OpenMode != (OpenMode &~EFI_FILE_MODE_CREATE))) {
+    if ((EFI_ERROR(Status)) && (OpenMode != (OpenMode &~EFI_FILE_MODE_CREATE))) {
       Status = Handle2->Open (
                             Handle2,
                             &Handle1,
@@ -235,7 +235,7 @@ OpenFileByDevicePath(
     //
     Handle2->Close (Handle2);
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
       return (Status);
     }
 

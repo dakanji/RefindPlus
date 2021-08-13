@@ -60,7 +60,7 @@ EFI_STATUS EFIAPI daConnectController (
         &DevicePath
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         return EFI_NOT_STARTED;
     }
 
@@ -105,7 +105,7 @@ EFI_STATUS ScanDeviceHandles (
     );
 
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         goto Error;
     }
 
@@ -125,7 +125,7 @@ EFI_STATUS ScanDeviceHandles (
             &ArrayCount
         );
 
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
                     (*HandleType)[k] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
@@ -163,7 +163,7 @@ EFI_STATUS ScanDeviceHandles (
                     &OpenInfoCount
                 );
 
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
                         if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
                             if ((OpenInfo[OpenInfoIndex].Attributes &
@@ -279,7 +279,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         &AllHandleBuffer
     );
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         if (PostConnect) {
             MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
@@ -309,7 +309,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 &HandleType
             );
 
-            if (EFI_ERROR (XStatus)) {
+            if (EFI_ERROR(XStatus)) {
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
                     MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
@@ -387,7 +387,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             (void **) &PciIo
                         );
 
-                        if (EFI_ERROR (XStatus)) {
+                        if (EFI_ERROR(XStatus)) {
                             #if REFIT_DEBUG > 0
                             DeviceData = StrDuplicate (L" - Not PCIe Device");
                             #endif
@@ -403,7 +403,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                 &Pci
                             );
 
-                            if (EFI_ERROR (XStatus)) {
+                            if (EFI_ERROR(XStatus)) {
                                 MakeConnection = FALSE;
 
                                 #if REFIT_DEBUG > 0
@@ -442,8 +442,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                                 } // if/else VGADevice/GFXDevicce
 
                                 #endif
-                            } // if/else EFI_ERROR (XStatus)
-                        } // if/else !EFI_ERROR (XStatus)
+                            } // if/else EFI_ERROR(XStatus)
+                        } // if/else !EFI_ERROR(XStatus)
                     } // if DevTag
 
                     if (!FoundGOP) {
@@ -456,7 +456,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             &GOPArray
                         );
 
-                        if (!EFI_ERROR (XStatus)) {
+                        if (!EFI_ERROR(XStatus)) {
                             for (m = 0; m < GOPCount; m++) {
                                 if (GOPArray[m] != gST->ConsoleOutHandle) {
                                     #if REFIT_DEBUG > 0
@@ -519,7 +519,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         }
                         #endif
                     }
-                    else if (!EFI_ERROR (XStatus)) {
+                    else if (!EFI_ERROR(XStatus)) {
                         DetectedDevices = TRUE;
 
                         #if REFIT_DEBUG > 0
@@ -583,11 +583,11 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         }
 
                         #endif
-                    } // if Parent elseif !EFI_ERROR (XStatus) else
+                    } // if Parent elseif !EFI_ERROR(XStatus) else
                 } // if !Device
-            } // if EFI_ERROR (XStatus)
+            } // if EFI_ERROR(XStatus)
 
-            if (EFI_ERROR (XStatus)) {
+            if (EFI_ERROR(XStatus)) {
                 // Change Overall Status on Error
                 Status = XStatus;
             }
@@ -614,7 +614,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         #if REFIT_DEBUG > 0
         MyFreePool (&GopDevicePathStr);
         #endif
-    } // if !EFI_ERROR (Status)
+    } // if !EFI_ERROR(Status)
 
 	MyFreePool (&AllHandleBuffer);
 
@@ -656,7 +656,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
         Status = gDS->Dispatch();
 
         #if REFIT_DEBUG > 0
-        if (EFI_ERROR (Status)) {
+        if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
                 MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
             }
@@ -668,7 +668,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
         }
         #endif
 
-    } while (!EFI_ERROR (Status));
+    } while (!EFI_ERROR(Status));
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
@@ -705,7 +705,7 @@ EFI_STATUS ApplyGOPFix (
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
 
-    if (EFI_ERROR (Status)) {
+    if (EFI_ERROR(Status)) {
         MsgLog ("\n\n");
     }
     else {
@@ -713,7 +713,7 @@ EFI_STATUS ApplyGOPFix (
     }
     #endif
 
-    if (!EFI_ERROR (Status)) {
+    if (!EFI_ERROR(Status)) {
         Status = AcquireGOP();
 
         #if REFIT_DEBUG > 0
@@ -725,7 +725,7 @@ EFI_STATUS ApplyGOPFix (
         #endif
 
         // connect all devices
-        if (!EFI_ERROR (Status)) {
+        if (!EFI_ERROR(Status)) {
             Status = BdsLibConnectAllDriversToAllControllersEx();
         }
     }
@@ -747,7 +747,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
-        if (EFI_ERROR (Status) && ResetGOP && !ReLoaded && DetectedDevices) {
+        if (EFI_ERROR(Status) && ResetGOP && !ReLoaded && DetectedDevices) {
             ReLoaded = TRUE;
             Status   = ApplyGOPFix();
 

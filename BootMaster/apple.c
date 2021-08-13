@@ -399,7 +399,7 @@ EFI_STATUS SetAppleOSInfo (
                 Status = REFIT_CALL_1_WRAPPER(
                     SetOs->SetOsVersion, AppleOSVersion8
                 );
-                if (!EFI_ERROR (Status)) {
+                if (!EFI_ERROR(Status)) {
                     Status = EFI_SUCCESS;
                 }
                 MyFreePool (&AppleOSVersion8);

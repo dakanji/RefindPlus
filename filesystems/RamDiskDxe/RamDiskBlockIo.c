@@ -352,7 +352,7 @@ RamDiskBlkIo2ReadBlocksEx (
               BufferSize,
               Buffer
               );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
@@ -423,7 +423,7 @@ RamDiskBlkIo2WriteBlocksEx (
               BufferSize,
               Buffer
               );
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR(Status)) {
     return Status;
   }
 
