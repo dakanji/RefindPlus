@@ -288,14 +288,31 @@ EFI_STATUS StartEFIImage (
         BootSelection = NULL;
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
-        // NOTE: Commented-out line below could be more efficient if file were read ahead of
-        // time and passed as a pre-loaded image to LoadImage(), but it doesn't work on my
-        // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel; the
-        // kernel returns a "Failed to handle fs_proto" error message.
+
+        if (!IsDriver && Verbose) {
+            // Wait 1.5 Seconds if not a Driver and in Verbose Mode
+            // Stall works best in smaller increments as per Specs
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        }
+
+        // NOTE: Commented-out lines below could be more efficient if file were read ahead of
+        // time and passed as a pre-loaded image to LoadImage(), but it does not work on my
+        // 32-bit Mac Mini or my 64-bit Intel box when launching a Linux kernel.
+        // The kernel returns a "Failed to handle fs_proto" error message.
         // TODO: Track down the cause of this error and fix it, if possible.
-        // Status = REFIT_CALL_6_WRAPPER(gBS->LoadImage, FALSE, SelfImageHandle, DevicePath,
-        //                              ImageData, ImageSize, &ChildImageHandle);
-        // ReturnStatus = Status;
+        /*
+        Status = REFIT_CALL_6_WRAPPER(
+            gBS->LoadImage, FALSE,
+            SelfImageHandle, DevicePath,
+            ImageData, ImageSize,
+            &ChildImageHandle
+        );
+        */
         Status = REFIT_CALL_6_WRAPPER(
             gBS->LoadImage, FALSE,
             SelfImageHandle, DevicePath,
@@ -452,13 +469,13 @@ EFI_STATUS StartEFIImage (
 
     // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s:- '%s'", ReturnStatus, MsgStr, ImageTitle);
+    LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, MsgStr);
 
     // DA-TAG: MsgStr from earlier is freed here
     MyFreePool (&MsgStr);
     #endif
 
-    MsgStr = PoolPrint (L"Returned from %s", ImageTitle);
+    MsgStr = StrDuplicate (L"Returned from Child Image");
 
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
