@@ -48,7 +48,7 @@
 #define __HFS_FORMAT__
 
 // #if !defined(__MAKEWITH_TIANO) && !defined(HOST_POSIX)
-// // Only available on Mac? and Intel EFI Toolkit?
+// // Only available on Mac? and Intel UEFI Toolkit?
 // #include <sys/types.h>
 // #include <sys/appleapiopts.h>
 // #endif

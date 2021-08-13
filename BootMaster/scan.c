@@ -2587,8 +2587,8 @@ VOID ScanForTools (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Scan for Tools");
-    MsgLog ("Scan for Builtin/External Tools...");
+    LOG(1, LOG_LINE_SEPARATOR, L"Scan for UEFI Tools");
+    MsgLog ("Scan for UEFI Tools...");
     #endif
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);

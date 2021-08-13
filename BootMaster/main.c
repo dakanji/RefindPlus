@@ -2582,12 +2582,12 @@ EFI_STATUS EFIAPI efi_main (
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
                 break;
 
-            case TAG_TOOL:     // Start a EFI tool
+            case TAG_TOOL:     // Start a UEFI tool
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (
-                    L"Start EFI Tool:- '%s'",
+                    L"Start UEFI Tool:- '%s'",
                     ourLoaderEntry->LoaderPath
                 );
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);

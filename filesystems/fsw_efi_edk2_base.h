@@ -1,6 +1,6 @@
 /**
  * \file fsw_efi_edk2_base.h
- * Base definitions for the EDK EFI Toolkit environment.
+ * Base definitions for the EDK UEFI Toolkit environment.
  */
 /*
  * Copyright (c) 2012 Stefan Agner
