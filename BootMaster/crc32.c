@@ -42,6 +42,12 @@
 /*
  * Modified slightly for use on EFI by Rod Smith
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "crc32.h"
 

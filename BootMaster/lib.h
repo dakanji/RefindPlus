@@ -41,6 +41,14 @@
  * with this source code or binaries made from it.
  *
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #ifndef __LIB_H_
 #define __LIB_H_

@@ -82,13 +82,13 @@ typedef struct {
 #define DONT_SCAN_VOLUMES L"LRS_ESP"
 #define ALSO_SCAN_DIRS L"boot,@/boot"
 
-EFI_STATUS RefitReadFile(IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);
-VOID ReadConfig(CHAR16 *FileName);
-VOID ScanUserConfigured(CHAR16 *FileName);
-UINTN ReadTokenLine(IN REFIT_FILE *File, OUT CHAR16 ***TokenList);
-VOID FreeTokenLine(IN OUT CHAR16 ***TokenList, IN OUT UINTN *TokenCount);
-REFIT_FILE * ReadLinuxOptionsFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
-CHAR16 * GetFirstOptionsFromFile(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
+EFI_STATUS RefitReadFile (IN EFI_FILE_HANDLE BaseDir, CHAR16 *FileName, REFIT_FILE *File, UINTN *size);
+VOID ReadConfig (CHAR16 *FileName);
+VOID ScanUserConfigured (CHAR16 *FileName);
+UINTN ReadTokenLine (IN REFIT_FILE *File, OUT CHAR16 ***TokenList);
+VOID FreeTokenLine (IN OUT CHAR16 ***TokenList, IN OUT UINTN *TokenCount);
+REFIT_FILE * ReadLinuxOptionsFile (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
+CHAR16 * GetFirstOptionsFromFile (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 
 #endif
 
