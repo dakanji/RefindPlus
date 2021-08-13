@@ -1563,11 +1563,6 @@ VOID LogBasicInfo (VOID) {
         MsgLog ("\n\n");
     }
 
-    MsgLog ("Shim:- '%s'", ShimLoaded()         ? L"Present" : L"Absent");
-    MsgLog ("\n");
-    MsgLog ("Secure Boot:- '%s'", secure_mode() ? L"Active"  : L"Inactive");
-    MsgLog ("\n\n");
-
     /* NVRAM Storage Info */
     if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
@@ -1623,6 +1618,12 @@ VOID LogBasicInfo (VOID) {
     MsgLog ("  - Graphics Mode (GOP)   : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
     MyFreePool (&MsgStr);
+
+    /* Secure Boot */
+    MsgLog ("Shim:- '%s'", ShimLoaded()         ? L"Present" : L"Absent");
+    MsgLog ("\n");
+    MsgLog ("Secure Boot:- '%s'", secure_mode() ? L"Active"  : L"Inactive");
+    MsgLog ("\n");
 
     /* Apple Framebuffers */
     Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
@@ -1729,7 +1730,7 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     /* Architecture */
-    MsgLog ("Architecture:- ");
+    MsgLog ("Arch/Type:- ");
 #if defined(EFI32)
     MsgLog ("'x86 (32 bit)'");
 #elif defined(EFIX64)
