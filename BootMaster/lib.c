@@ -436,26 +436,6 @@ EFI_STATUS ReinitRefitLib (VOID) {
     EFI_STATUS Status;
 
     ReinitVolumes();
-
-    if ((gST->Hdr.Revision >> 16) == 1) {
-       // The two lines below were in rEFIt but seem to cause crashes and/or
-       // reboots when launching OSes after returning from programs on most
-       // systems. OTOH, my Mac Mini produces errors about "(re)opening our
-       // installation volume" (see the next function) when returning from
-       // programs when these two lines are removed, and it often crashes
-       // when returning from a program or when launching a second program
-       // with these lines removed. Therefore, the preceding if() statement
-       // executes these lines only on EFIs with a major version number of 1
-       // (which Macs have) and not with 2 (which UEFI PCs have). My selection
-       // of hardware on which to test is limited, though, so this may be the
-       // wrong test, or there may be a better way to fix this problem.
-       //
-       // TODO: Figure out cause of the issue and fix it more reliably!
-       if (SelfVolume != NULL && SelfVolume->RootDir != NULL) {
-           SelfRootDir = SelfVolume->RootDir;
-       }
-    } // if
-
     Status = FinishInitRefitLib();
 
     return Status;
