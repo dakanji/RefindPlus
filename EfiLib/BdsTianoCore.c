@@ -23,6 +23,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "BdsHelper.h"
 #include "gnuefi-helper.h"
 #endif
+
 #include "../include/refit_call_wrapper.h"
 
 extern VOID MyFreePool (IN OUT VOID *Pointer);
@@ -177,7 +178,6 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     VOID                      *LoadOptions;
     UINT32                     LoadOptionsSize;
     CHAR16                    *Description;
-    UINT8                      NumOff;
     EFI_GUID EfiGlobalVariableGuid = { 0x8BE4DF61, 0x93CA, 0x11D2, \
         { 0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C }};
 
@@ -245,13 +245,19 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     // Get the value from VariableName Unicode string since the ISO
     // standard assumes ASCII equivalent abbreviations, we can be safe
     // in converting this Unicode stream to ASCII without any loss in meaning.
-    if (*VariableName == 'B') {
-        NumOff = (UINT8) (sizeof (L"Boot") / sizeof (CHAR16) - 1);
-        Option->BootCurrent = (UINT16) ((VariableName[NumOff]  -'0') * 0x1000);
-        Option->BootCurrent = (UINT16) (Option->BootCurrent + ((VariableName[NumOff+1]-'0') * 0x100));
-        Option->BootCurrent = (UINT16) (Option->BootCurrent +  ((VariableName[NumOff+2]-'0') * 0x10));
-        Option->BootCurrent = (UINT16) (Option->BootCurrent + ((VariableName[NumOff+3]-'0')));
+    INTN i = 0;
+
+    #define is(x) (VariableName[i++] == x)
+    #define ishex ({CHAR16 c; c = VariableName[i++]; (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F');})
+    #define hex ({CHAR16 c; c = VariableName[4 + i]; (c - (c <= '9' ? '0' : 'A' - 10)) << ((3 - i++) * 4);})
+
+    if (is('B') && is('o') && is('o') && is('t') && ishex && ishex && ishex && ishex && is(0)) {
+        i = 0;
+        Option->BootCurrent = hex + hex + hex + hex;
     }
+
+    #undef is
+    #undef ishex
 
     // Insert active entry to BdsDeviceList
     if ((Option->Attribute & LOAD_OPTION_ACTIVE) == LOAD_OPTION_ACTIVE) {
@@ -293,8 +299,8 @@ VOID * BdsLibGetVariableAndSize (
     Buffer = NULL;
 
     // Pass in a zero size buffer to find the required buffer size.
-    BufferSize  = 0;
-    Status      = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
+    BufferSize = 0;
+    Status = REFIT_CALL_5_WRAPPER(gRT->GetVariable, Name, VendorGuid, NULL, &BufferSize, Buffer);
     if (Status == EFI_BUFFER_TOO_SMALL) {
         // Allocate the buffer to return
         Buffer = AllocateZeroPool (BufferSize);
