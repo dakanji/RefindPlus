@@ -872,7 +872,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         TempStr              = DevicePathToStr (EfiLoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"EFI Loader Path:- '%s'", TempStr);
+        LOG(2, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", TempStr);
         #endif
 
         MyFreePool (&TempStr);
@@ -1688,7 +1688,7 @@ VOID ScanEfiFiles (
 
     // "Scanning Volume 'XYZ'" or "Scanning ReMapped Volume 'XYZ'"
     LOG(1, LogLineType,
-        L"Scanning %s '%s' for EFI Loaders",
+        L"Scanning %s '%s' for UEFI Loaders",
         (FixReMap) ? L"ReMapped Volume" : L"Volume",
         Volume->VolName
     );
@@ -2017,7 +2017,7 @@ VOID ScanFirmwareDefined (
         if (ScanIt) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Adding EFI Loader Entry for '%s'",
+                L"Adding UEFI Loader Entry for '%s'",
                 CurrentEntry->BootEntry.Label
             );
             #endif

@@ -2316,7 +2316,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 break;
 
-            case TAG_LOADER:   // Boot OS via .EFI Loader
+            case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected Mac OS
@@ -2498,7 +2498,7 @@ EFI_STATUS EFIAPI efi_main (
                 else {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Boot OS via EFI Loader:- '%s%s'",
+                        L"Boot OS via UEFI Loader:- '%s%s'",
                         ourLoaderEntry->Volume->VolName,
                         ourLoaderEntry->LoaderPath
                     );
