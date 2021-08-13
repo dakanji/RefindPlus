@@ -31,7 +31,7 @@ DeepLoggger (
   IN  INTN     DebugMode,
   IN  INTN     level,
   IN  INTN     type,
-  IN  CHAR16 **InMsg
+  IN  CHAR16 **Msg
 );
 
 // NB: 'gLogTemp' is freed in DeepLoggger

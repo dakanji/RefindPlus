@@ -963,18 +963,23 @@ VOID preBootKicker (VOID) {
 
         if (FoundTool) {
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
             MsgLog ("  - Load BootKicker\n\n");
             #endif
 
             // Run BootKicker
             StartTool (ourLoaderEntry);
+
+            // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
             MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
         }
@@ -1107,6 +1112,7 @@ VOID preCleanNvram (VOID) {
 
         if (FoundTool) {
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
             MsgLog ("  - Load CleanNvram\n\n");
             #endif
@@ -1115,9 +1121,16 @@ VOID preCleanNvram (VOID) {
 
             // Run CleanNvram
             StartTool (ourLoaderEntry);
+
+            // If we get here, an error was met while starting the tool
+            #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
+            MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
+            #endif
         }
         else {
             #if REFIT_DEBUG > 0
+            LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
             #endif
         }
@@ -1247,7 +1260,7 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = L"Re-Scanning Tools and Loaders";
+    CHAR16 *MsgStr = L"Repeat Tool/Loader Scan";
 
     LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     MsgLog ("INFO: %s\n\n", MsgStr);
@@ -1486,6 +1499,35 @@ VOID AdjustDefaultSelection (VOID) {
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
+#if REFIT_DEBUG > 0
+static
+VOID LogRevisionInfo (
+    EFI_TABLE_HEADER *Hdr,
+    CHAR16           *Name,
+    UINT16            ExpectedSize,
+    BOOLEAN           DoEFICheck
+) {
+    static BOOLEAN FirstRun = TRUE;
+
+    (FirstRun) ? MsgLog ("\n\n") : MsgLog ("\n");
+    FirstRun = FALSE;
+
+    MsgLog (
+        "%s:- '%-4s %d.%02d'",
+        Name,
+        DoEFICheck ? ((Hdr->Revision >> 16 == 1) ? L"EFI" : L"UEFI") : L"Ver",
+        Hdr->Revision >> 16,
+        Hdr->Revision & 0xffff
+    );
+    if (Hdr->HeaderSize == ExpectedSize) {
+        MsgLog (" (HeaderSize: %d)", Hdr->HeaderSize);
+    }
+    else {
+        MsgLog (" (HeaderSize: %d ... Expected: %d)", Hdr->HeaderSize, ExpectedSize);
+    }
+}
+#endif
+
 // Log basic information (RefindPlus version, EFI version, etc.) to the log file.
 static
 VOID LogBasicInfo (VOID) {
@@ -1505,17 +1547,20 @@ VOID LogBasicInfo (VOID) {
     EFI_HANDLE *HandleBuffer                       = NULL;
     APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
 
+    LogRevisionInfo (&gST->Hdr, L"    System Table", sizeof(*gST), TRUE);
+    LogRevisionInfo (&gBS->Hdr, L"   Boot Services", sizeof(*gBS), TRUE);
+    LogRevisionInfo (&gRT->Hdr, L"Runtime Services", sizeof(*gRT), TRUE);
+    LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof(*gDS), FALSE);
+    MsgLog ("\n\n");
 
-    MsgLog ("System Summary...\n");
     MsgLog (
         "EFI Revision:- '%s %d.%02d'",
         (EfiMajorVersion == 1) ? L"EFI" : L"UEFI",
-        EfiMajorVersion,
-        gST->Hdr.Revision & ((1 << 16) - 1)
+        EfiMajorVersion, gST->Hdr.Revision & ((1 << 16) - 1)
     );
 
-    if (((gBS->Hdr.Revision >> 16) == EfiMajorVersion) &&
-        ((gRT->Hdr.Revision >> 16) == EfiMajorVersion)
+    if (((gST->Hdr.Revision >> 16) == EfiMajorVersion) &&
+        (((gBS->Hdr.Revision >> 16) == EfiMajorVersion) || ((gRT->Hdr.Revision >> 16) == EfiMajorVersion))
     ) {
         MsgLog ("\n");
     }
@@ -1568,7 +1613,7 @@ VOID LogBasicInfo (VOID) {
     MsgLog ("ConsoleOut Modes:\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
-    MsgLog ("  - Text Mode           : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Text Mode             : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1577,7 +1622,7 @@ VOID LogBasicInfo (VOID) {
         &gEfiUgaDrawProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (UGA) : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (UGA)   : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1586,7 +1631,7 @@ VOID LogBasicInfo (VOID) {
         &gEfiGraphicsOutputProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (GOP) : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (GOP)   : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
     MyFreePool (&MsgStr);
 
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
@@ -1701,7 +1746,7 @@ EFI_STATUS EFIAPI efi_main (
         NowDay, NowHour,
         NowMinute, NowSecond
     );
-    MsgLog ("Timestamp:- '%s (GMT)'\n\n", CurDateStr);
+    MsgLog ("Timestamp:- '%s (GMT)'", CurDateStr);
     MyFreePool (CurDateStr);
     #endif
 
@@ -1747,6 +1792,10 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     MsgLog ("INFO: LogLevel:- '%d'", GlobalConfig.LogLevel);
+
+    // Show REFIT_DEBUG Setting
+    MsgLog ("\n");
+    MsgLog ("      DebugLVL:- '%d'", REFIT_DEBUG);
 
     // Show ScanDelay Setting
     MsgLog ("\n");

@@ -360,7 +360,7 @@ EFI_STATUS StartEFIImage (
         goto bailout;
     }
 
-    MsgStr = PoolPrint (L"While Loading %s", ImageTitle);
+    MsgStr = PoolPrint (L"When Loading %s", ImageTitle);
     if (CheckError (Status, MsgStr)) {
         MyFreePool (&MsgStr);
         goto bailout;
