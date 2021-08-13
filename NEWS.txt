@@ -24,20 +24,20 @@
   * This feature is active by default but can be disabled with the "disable_tag_help" token
 - Fixes Banner Flicker During Load Sequence
   * Rationalises freeing the screen background image to reduce flickering at load time
-  * Provides an improved UX
+  * Provides improved UX
 - Fixes Filtering of Windows Secure Boot Certificates on Apple Firmware
   * Reverts Extension to Legacy Windows
-  * This appears to have been linked to observed negative impacts on some Macs
+  * This appeared to be linked to negative impacts on some Macs
 - Fixes 'IgnoreVolumeICNS' and 'HideUI Badges' Implementation
   * Now extended to cover other volume types apart from 'internal' volumes
 - Fixes Handling of "FirmwareBootNum" Entries
   * These were not loaded as expected
 - Fixes Hangs Resulting from Changed Device Handles
-  * RefindPlus hangs on return from third party tools such as GDisk that change device handles
+  * RefindPlus hangs on return from third party tools that change device handles, such as GDisk
   * RefindPlus now manages this situation and avoids such hanging
 - Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
   * Some UEFI PC appear to spontaneously generate invalid load options
-  * These resulted in a halt that required one or more key presses to proceed
+  * These result in a halt and require one or more key presses to proceed
   * This bug was introduced in v0.12.0.AQ (Commit f5c438f)
 - Fixes Booting into Legacy (BIOS) OS on UEFI PC
   * This bug was introduced in v0.13.2.AE (Commit b80f508)
@@ -63,7 +63,7 @@
 - Amends 'ActiveCSR' Implementation
   * Now only run when booting into Mac OS, OpenCore or Clover
 - Amends 'ScanDelay' Implementation
-  * Now immediately implemented after 'SetupScreen' to allow for an improved UX
+  * Now immediately implemented after 'SetupScreen' to allow for improved UX
 
 
 0.13.2.AF (10 Jun 2021):

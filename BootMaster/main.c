@@ -1554,43 +1554,25 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof(*gDS), FALSE);
     MsgLog ("\n\n");
 
-    MsgLog (
-        "EFI Revision:- '%s %d.%02d'",
-        (EfiMajorVersion == 1) ? L"EFI" : L"UEFI",
-        EfiMajorVersion, gST->Hdr.Revision & ((1 << 16) - 1)
-    );
-
-    if (((gST->Hdr.Revision >> 16) == EfiMajorVersion) &&
-        (((gBS->Hdr.Revision >> 16) == EfiMajorVersion) || ((gRT->Hdr.Revision >> 16) == EfiMajorVersion))
+    if (((gST->Hdr.Revision >> 16) != EfiMajorVersion) &&
+        (((gBS->Hdr.Revision >> 16) != EfiMajorVersion) || ((gRT->Hdr.Revision >> 16) != EfiMajorVersion))
     ) {
+        MsgLog ("** WARN: Inconsistent EFI Revisions Detected");
         MsgLog ("\n");
-    }
-    else {
-        MsgLog ("\n\n");
-        MsgLog ("** WARN: Inconsistent EFI Revisions Detected!!");
-        MsgLog ("\n");
-        MsgLog ("         RefindPlus Behaviour is not Defined!!");
+        MsgLog ("         Program Behaviour is *NOT* Defined!!");
         MsgLog ("\n\n");
     }
 
-    MsgLog ("Architecture:- ");
-    #if defined(EFI32)
-        MsgLog ("'x86 (32 bit)'");
-    #elif defined(EFIX64)
-        MsgLog ("'x86 (64 bit)'");
-    #elif defined(EFIAARCH64)
-        MsgLog ("'ARM (64 bit)'");
-    #else
-        MsgLog ("'Not Kknown'");
-    #endif
+    MsgLog ("Shim:- '%s'", ShimLoaded()         ? L"Present" : L"Absent");
     MsgLog ("\n");
+    MsgLog ("Secure Boot:- '%s'", secure_mode() ? L"Active"  : L"Inactive");
+    MsgLog ("\n\n");
 
-    MsgLog ("Shim:- '%s'\n", ShimLoaded()         ? L"Present" : L"Absent");
-    MsgLog ("Secure Boot:- '%s'\n", secure_mode() ? L"Active"  : L"Inactive");
-
+    /* NVRAM Storage Info */
     if ((gRT->Hdr.Revision >> 16) > 1) {
         // NB: QueryVariableInfo() is not supported by EFI 1.x
-        MsgLog ("EFI Non-Volatile Storage Info:\n");
+        MsgLog ("EFI Non-Volatile Storage Info:");
+        MsgLog ("\n");
 
         Status = REFIT_CALL_4_WRAPPER(
             gRT->QueryVariableInfo,
@@ -1600,7 +1582,8 @@ VOID LogBasicInfo (VOID) {
             &MaximumVariableSize
         );
         if (EFI_ERROR(Status)) {
-            MsgLog ("** WARN: Could not Retrieve Info!!\n");
+            MsgLog ("** WARN: Could not Retrieve Info!!");
+            MsgLog ("\n\n");
         }
         else {
             MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
@@ -1609,12 +1592,16 @@ VOID LogBasicInfo (VOID) {
         }
     }
 
-    // Report which video output devices are natively available. We do not actually
-    // use them, so just use MsgStr as a throwaway pointer to the protocol.
-    MsgLog ("ConsoleOut Modes:\n");
+    /**
+     * Report which video output devices are natively available. We do not actually
+     * use them, so just use MsgStr as a throwaway pointer to the protocol.
+    **/
+    MsgLog ("ConsoleOut Modes:");
+    MsgLog ("\n");
 
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
-    MsgLog ("  - Text Mode             : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Text Mode             : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("\n");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1623,7 +1610,8 @@ VOID LogBasicInfo (VOID) {
         &gEfiUgaDrawProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (UGA)   : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (UGA)   : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("\n");
     MyFreePool (&MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -1632,23 +1620,11 @@ VOID LogBasicInfo (VOID) {
         &gEfiGraphicsOutputProtocolGuid,
         (VOID **) &MsgStr
     );
-    MsgLog ("  - Graphics Mode (GOP)   : %s\n", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("  - Graphics Mode (GOP)   : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
+    MsgLog ("\n\n");
     MyFreePool (&MsgStr);
 
-    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
-    FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
-    }
-    switch (GlobalConfig.LegacyType) {
-        case LEGACY_TYPE_MAC:  MsgStr = StrDuplicate (L"Mac-Style");  break;
-        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"); break;
-        case LEGACY_TYPE_NONE: MsgStr = StrDuplicate (L"Absent");     break;
-        default:               MsgStr = StrDuplicate (L"Unknown");    break; // just in case
-    }
-    MsgLog ("Compat Support Module:- '%s'\n", MsgStr);
-    MyFreePool (&MsgStr);
-
+    /* Apple Framebuffers */
     Status = LibLocateProtocol (&AppleFramebufferInfoProtocolGuid, (VOID *) &FramebufferInfo);
     if (EFI_ERROR(Status)) {
         HandleCount = 0;
@@ -1667,8 +1643,24 @@ VOID LogBasicInfo (VOID) {
     }
     AppleFramebuffers = HandleCount;
     MsgLog ("Apple Framebuffers:- '%d'", AppleFramebuffers);
-    MsgLog ("\n\n");
+    MsgLog ("\n");
     MyFreePool (&HandleBuffer);
+
+    /* CSM Type */
+    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
+    FindLegacyBootType();
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
+    }
+    switch (GlobalConfig.LegacyType) {
+        case LEGACY_TYPE_MAC:  MsgStr = StrDuplicate (L"Mac-Style");  break;
+        case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"); break;
+        case LEGACY_TYPE_NONE: MsgStr = StrDuplicate (L"Absent");     break;
+        default:               MsgStr = StrDuplicate (L"Unknown");    break; // just in case
+    }
+    MsgLog ("Compat Support Module:- '%s'", MsgStr);
+    MsgLog ("\n\n");
+    MyFreePool (&MsgStr);
 #endif
 } // VOID LogBasicInfo()
 
@@ -1695,10 +1687,10 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16    *MsgStr        = NULL;
     CHAR16    *SelectionName = NULL;
 
-    // Force Native Logging
+    /* Force Native Logging */
     ForceNativeLoggging = TRUE;
 
-    // bootstrap
+    /* Bootstrap */
     InitializeLib (ImageHandle, SystemTable);
     Status = InitRefitLib (ImageHandle);
 
@@ -1730,17 +1722,35 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     InitBooterLog();
 
+    /* Start Logging */
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
         REFINDPLUS_VERSION, VendorInfo
     );
 
-#if defined(__MAKEWITH_GNUEFI)
-    MsgLog ("Made With:- 'GNU-EFI'\n");
+    /* Architecture */
+    MsgLog ("Architecture:- ");
+#if defined(EFI32)
+    MsgLog ("'x86 (32 bit)'");
+#elif defined(EFIX64)
+    MsgLog ("'x86 (64 bit)'");
+#elif defined(EFIAARCH64)
+    MsgLog ("'ARM (64 bit)'");
 #else
-    MsgLog ("Made With:- 'TianoCore EDK II'\n");
+    MsgLog ("'Not Known'");
 #endif
+    MsgLog ("\n");
 
+    /* Build Engine */
+    MsgLog ("Made With:- ");
+#if defined(__MAKEWITH_GNUEFI)
+    MsgLog ("'GNU-EFI'");
+#else
+    MsgLog ("'TianoCore EDK II'");
+#endif
+    MsgLog ("\n");
+
+    /* TimeStamp */
     CHAR16 *CurDateStr = PoolPrint (
         L"%d-%02d-%02d %02d:%02d:%02d",
         NowYear, NowMonth,
@@ -1751,20 +1761,20 @@ EFI_STATUS EFIAPI efi_main (
     MyFreePool (CurDateStr);
     #endif
 
-    // Set Legacy Boot Type
+    /* Set Legacy Boot Type */
     CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
     FindLegacyBootType();
     if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
         CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
     }
 
-    // Log System Details
+    /* Log System Details */
     LogBasicInfo ();
 
-    // read configuration
+    /* Read Configuration */
     SetConfigFilename (ImageHandle);
 
-    // Set Secure Boot Up
+    /* Set Secure Boot Up */
     MokProtocol = SecureBootSetup();
 
     // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
@@ -1774,7 +1784,7 @@ EFI_STATUS EFIAPI efi_main (
     // SelfVolume->VolName.
     ScanVolumes();
 
-    // Read Config first to get tokens that may be required by LoadDrivers();
+    /* Get/Set Config File ... Prefer RefindPlus Configuration File Naame */
     if (!FileExists (SelfDir, GlobalConfig.ConfigFilename)) {
         ConfigWarn = TRUE;
 
@@ -1782,27 +1792,30 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("** WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'\n");
         MsgLog ("         Trying rEFInd's Configuration File:- 'refind.conf'\n");
         MsgLog ("         Provide 'config.conf' file to silence this warning\n");
-        MsgLog ("         You can rename 'refind.conf' file as 'config.conf'\n");
-        MsgLog ("         NB: Will not contain all RefindPlus config tokens\n\n");
+        MsgLog ("         You can rename 'refind.conf' as 'config.conf'\n");
+        MsgLog ("         NB: Will not contain all RefindPlus settings\n\n");
         #endif
 
         GlobalConfig.ConfigFilename = L"refind.conf";
     }
+
+    /* Read config file to get tokens that may be required by 'LoadDrivers' */
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: LogLevel:- '%d'", GlobalConfig.LogLevel);
+    /* Show Refit Debug Setting */
+    MsgLog ("INFO: RefitDBG:- '%d'", REFIT_DEBUG);
 
-    // Show REFIT_DEBUG Setting
+    /* Show Log Level Setting */
     MsgLog ("\n");
-    MsgLog ("      DebugLVL:- '%d'", REFIT_DEBUG);
+    MsgLog ("      LogLevel:- '%d'", GlobalConfig.LogLevel);
 
-    // Show ScanDelay Setting
+    /* Show ScanDelay Setting */
     MsgLog ("\n");
     MsgLog ("      ScanDelay:- '%d'", GlobalConfig.ScanDelay);
 
-    // Show ReloadGOP Status
+    /* Show ReloadGOP Status */
     MsgLog ("\n");
     MsgLog ("      ReloadGOP:- ");
     if (GlobalConfig.ReloadGOP) {
@@ -1812,7 +1825,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'NO'");
     }
 
-    // Show SyncAPFS Status
+    /* Show SyncAPFS Status */
     MsgLog ("\n");
     MsgLog ("      SyncAPFS:- ");
     if (GlobalConfig.SyncAPFS) {
@@ -1822,7 +1835,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show TextOnly Status
+    /* Show TextOnly Status */
     MsgLog ("\n");
     MsgLog ("      TextOnly:- ");
     if (GlobalConfig.TextOnly) {
@@ -1832,7 +1845,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show TextRenderer Status
+    /* Show TextRenderer Status */
     MsgLog ("\n");
     MsgLog ("      TextRenderer:- ");
     if (GlobalConfig.TextRenderer) {
@@ -1842,7 +1855,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show ProtectNVRAM Status
+    /* Show ProtectNVRAM Status */
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
         MsgLog ("      ProtectNVRAM:- 'Disabled'");
@@ -1857,7 +1870,7 @@ EFI_STATUS EFIAPI efi_main (
         }
     }
 
-    // Show NormaliseCSR Status
+    /* Show NormaliseCSR Status */
     MsgLog ("\n");
     MsgLog ("      NormaliseCSR:- ");
     if (GlobalConfig.NormaliseCSR) {
@@ -1867,7 +1880,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show ScanOtherESP Status
+    /* Show ScanOtherESP Status */
     MsgLog ("\n");
     MsgLog ("      ScanOtherESP:- ");
     if (GlobalConfig.ScanOtherESP) {
@@ -1877,7 +1890,17 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    // Show IgnorePreviousBoot Status
+    /* Show DisableTagHelp Status */
+    MsgLog ("\n");
+    MsgLog ("      DisableTagHelp:- ");
+    if (GlobalConfig.DisableTagHelp) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
+    /* Show IgnorePreviousBoot Status */
     MsgLog ("\n");
     MsgLog ("      IgnorePreviousBoot:- ");
     if (GlobalConfig.IgnorePreviousBoot) {
@@ -1914,8 +1937,10 @@ EFI_STATUS EFIAPI efi_main (
     // Disable Forced Native Logging
     ForceNativeLoggging = FALSE;
 
+    // Load Drivers
     LoadDrivers();
 
+    // Scan Volumes
     #if REFIT_DEBUG > 0
     MsgLog ("Scan Volumes...\n");
     #endif

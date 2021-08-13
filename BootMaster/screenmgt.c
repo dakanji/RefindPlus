@@ -111,7 +111,7 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode * NOT * Detected ... Setting Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;

@@ -430,7 +430,7 @@ EFI_STATUS StartEFIImage (
 
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
-        MsgStr = StrDuplicate (L"Loading Child Image");
+        MsgStr = StrDuplicate (L"Running Child Image");
     }
     else {
         // DA-TAG: This is used before 'MsgStr' is ultimately freed
@@ -439,9 +439,9 @@ EFI_STATUS StartEFIImage (
 
     if (!IsDriver) {
         // Do not log this for drivers
-        LOG(3, LOG_LINE_NORMAL, L"%s:- '%s'", MsgStr , ImageTitle);
+        LOG(3, LOG_LINE_NORMAL, L"%s via Loader:- '%s'", MsgStr , ImageTitle);
     }
-    // DA-TAG: MsgStr is recycled and freed later
+    // DA-TAG: 'MsgStr' is recycled and freed later
     #endif
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -452,7 +452,7 @@ EFI_STATUS StartEFIImage (
 
     // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' While %s:- '%s'", ReturnStatus, MsgStr, ImageTitle);
+    LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s:- '%s'", ReturnStatus, MsgStr, ImageTitle);
 
     // DA-TAG: MsgStr from earlier is freed here
     MyFreePool (&MsgStr);

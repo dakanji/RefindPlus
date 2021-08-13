@@ -1949,7 +1949,7 @@ VOID ScanFirmwareDefined (
     #if REFIT_DEBUG > 0
     if (Row == 0) {
         LOG(1, LOG_LINE_THIN_SEP,
-            L"Scanning for EFI Firmware-Defined Boot Options"
+            L"Scanning for UEFI Firmware Defined Boot Options"
         );
     }
     #endif
@@ -1977,7 +1977,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Also not Scanning for UEFI Shell");
+        LOG(2, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell from Scan");
         #endif
 
         MergeStrings(&DontScanFirmware, L"shell", L',');
@@ -2037,6 +2037,10 @@ VOID ScanFirmwareDefined (
 
     MyFreePool (&DontScanFirmware);
     DeleteBootOrderEntries (BootEntries);
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_THREE_STAR_MID, L"Added UEFI Firmware Defined Boot Options");
+    #endif
 } // static VOID ScanFirmwareDefined()
 
 // default volume badge icon based on disk kind
@@ -2839,10 +2843,14 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
                 else {
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    #endif
+
                     ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_BLANK_LINE_SEP, L"Blank");
+                    LOG(1, LOG_BLANK_LINE_SEP, L"X");
                     #endif
                 }
 
