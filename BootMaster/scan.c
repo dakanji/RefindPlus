@@ -2386,28 +2386,11 @@ VOID ScanForBootloaders (
         }  // for
 
         #if REFIT_DEBUG > 0
-        const CHAR16 *keyStr    = NULL;
-        const CHAR16 *LoaderStr = NULL;
-
-        if (i == 1) {
-            keyStr = L"Key";
-        }
-        else {
-            keyStr = L"Keys";
-        }
-
-        if (MainMenu.EntryCount == 1) {
-            LoaderStr = L"Loader";
-        }
-        else {
-            LoaderStr = L"Loaders";
-        }
-
         MsgStr = PoolPrint (
             L"Assigned Shortcut %s to %d of %d %s",
-            keyStr, i,
-            MainMenu.EntryCount,
-            LoaderStr
+            (i == 1) ? L"Key" : L"Keys",
+            i, MainMenu.EntryCount,
+            (MainMenu.EntryCount == 1) ? L"Loader" : L"Loaders"
         );
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
