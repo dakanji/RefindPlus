@@ -537,10 +537,10 @@ EFI_STATUS EfivarGetRaw (
             }
 
             MsgStr = PoolPrint (
-                L"Could Not Read '%s' from Emulated NVRAM",
+                L"From Emulated NVRAM ... Could Not Read UEFI Variable:- '%s'",
                 VariableName
             );
-            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG(4, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n");
             MyFreePool (&MsgStr);
@@ -574,7 +574,6 @@ EFI_STATUS EfivarGetRaw (
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
                 #if REFIT_DEBUG > 0
                 LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", TmpBuffer);
-                LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
         }
@@ -582,6 +581,12 @@ EFI_STATUS EfivarGetRaw (
             MyFreePool (&TmpBuffer);
             *VariableData = NULL;
             *VariableSize = 0;
+        }
+
+        if (MyStriCmp (VariableName, L"PreviousBoot")) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_BLANK_LINE_SEP, L"X");
+            #endif
         }
 
         return Status;
