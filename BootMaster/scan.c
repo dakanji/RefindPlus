@@ -2187,17 +2187,17 @@ VOID ScanForBootloaders (
 
     // scan for loaders and tools, add them to the menu
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
+        if (LogNewLine) {
+            MsgLog ("\n");
+        }
+        else {
+            LogNewLine = TRUE;
+        }
+
         switch (GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Manual:");
-
                 LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Loaders");
                 #endif
 
@@ -2206,12 +2206,6 @@ VOID ScanForBootloaders (
 
             case 'i': case 'I':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Internal:");
                 #endif
 
@@ -2220,12 +2214,6 @@ VOID ScanForBootloaders (
 
             case 'h': case 'H':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Internal (Legacy):");
                 #endif
 
@@ -2234,12 +2222,6 @@ VOID ScanForBootloaders (
 
             case 'e': case 'E':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan External:");
                 #endif
 
@@ -2248,12 +2230,6 @@ VOID ScanForBootloaders (
 
             case 'b': case 'B':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan External (Legacy):");
                 #endif
 
@@ -2262,12 +2238,6 @@ VOID ScanForBootloaders (
 
             case 'o': case 'O':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Optical:");
                 #endif
 
@@ -2276,12 +2246,6 @@ VOID ScanForBootloaders (
 
             case 'c': case 'C':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Optical (Legacy):");
                 #endif
 
@@ -2290,12 +2254,6 @@ VOID ScanForBootloaders (
 
             case 'n': case 'N':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Net Boot:");
                 #endif
 
@@ -2304,12 +2262,6 @@ VOID ScanForBootloaders (
 
             case 'f': case 'F':
                 #if REFIT_DEBUG > 0
-                if (LogNewLine) {
-                    MsgLog ("\n");
-                }
-                else {
-                    LogNewLine = TRUE;
-                }
                 MsgLog ("Scan Firmware:");
                 #endif
 
@@ -2376,7 +2328,10 @@ VOID ScanForBootloaders (
             MsgLog ("  - %s", MsgStr);
             MyFreePool (&MsgStr);
 
-            if (KeyNum < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0 && KeyNum != 0) {
+            if (KeyNum < MainMenu.EntryCount &&
+                MainMenu.Entries[i]->Row == 0 &&
+                KeyNum != 0
+            ) {
                 MsgLog ("\n");
             }
             else {
