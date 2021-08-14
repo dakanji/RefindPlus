@@ -31,7 +31,7 @@ assignees: ''
 
 **Environment:**
 <!-- AMEND THE TEMPLATE BELOW -->
- - RefindPlus Version : [e.g. v0.12.0.AN]
+ - RefindPlus Version : [e.g. v0.13.2.AG]
  - Hardware
    * Computer         : [e.g. MacPro 3,1 or Toshiba XYZ Laptop or ...]
    * Motherboard      : [e.g. Apple OEM or ATX 123 or ...]
@@ -44,10 +44,9 @@ assignees: ''
 
 **Log Files**
 <!--
-Add Debug Log Level 0 file. A higher level log file will be requested if required.
-If you already have a higher level log file, please also include a Level 0 file.
-Kindly attach the file(s) and do not paste the contents directly in your post.
-ATTACH THE FILE(S) AFTER THE ARROW BELOW
+Run the DBG Buld file and add a debug log file ... Log Level 0 or 4.
+Kindly attach the file and do not paste the contents directly in your post.
+ATTACH AFTER THE ARROW BELOW
 -->
 
 
@@ -56,7 +55,8 @@ ATTACH THE FILE(S) AFTER THE ARROW BELOW
 **Screenshots**
 <!--
 If applicable, add screenshots to help explain your problem.
-You can save a screenshot by using the F10 key
+You can save a RefindPlus screenshot by using the F10 key.
+The screenshots will be saved as a PNG file in your ESP.
 ATTACH THE SCREENSHOTS AFTER THE ARROW BELOW
 -->
 

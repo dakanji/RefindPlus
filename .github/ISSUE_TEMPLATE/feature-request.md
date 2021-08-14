@@ -23,7 +23,7 @@ ENTER AFTER THE ARROW BELOW
 
 **Describe alternatives you have considered**
 <!--
-A clear and concise description of any alternative solutions or features you've considered.
+A clear and concise description of any alternative solutions or features you have considered.
 ENTER AFTER THE ARROW BELOW
 -->
 
