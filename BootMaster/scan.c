@@ -938,8 +938,8 @@ LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Adding Loader Entry for '%s'", Entry->Title);
-        LOG(2, LOG_LINE_NORMAL, L"Loader Path is '%s'", LoaderPath);
+        LOG(1, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
+        LOG(2, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
         #endif
 
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
@@ -2627,7 +2627,7 @@ VOID ScanForTools (VOID) {
             case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");         break;
             case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");    break;
             case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Windows Recovery");   break;
-            default: continue;
+            default:                                                                 continue;
         } // switch
 
         ToolTotal = ToolTotal + 1;

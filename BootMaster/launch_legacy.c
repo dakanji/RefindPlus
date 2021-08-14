@@ -920,7 +920,7 @@ VOID ScanLegacyUEFI (
     else {
         LogLineType = LOG_THREE_STAR_SEP;
     }
-    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Boot Options");
+    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy Boot Options");
     #endif
 
     FirstLegacyScan = FALSE;
