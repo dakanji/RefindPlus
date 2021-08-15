@@ -144,9 +144,11 @@ EG_IMAGE * LoadOSIcon(
     }
 
     // First, try to find an icon from the OSIconName list.
-    while ((Image == NULL) && ((CutoutName = FindCommaDelimited(OSIconName, Index++)) != NULL)) {
+    while ((Image == NULL) &&
+        ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL)
+    ) {
        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-       Image    = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (&CutoutName);
        MyFreePool (&BaseName);
     }
@@ -159,7 +161,7 @@ EG_IMAGE * LoadOSIcon(
        LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
        #endif
 
-       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (&BaseName);
     }
 
@@ -171,7 +173,7 @@ EG_IMAGE * LoadOSIcon(
        LOG(4, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
        #endif
 
-       Image = egFindIcon(BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+       Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
        MyFreePool (&BaseName);
     }
 
@@ -181,7 +183,7 @@ EG_IMAGE * LoadOSIcon(
         LOG(4, LOG_LINE_NORMAL, L"Setting dummy image");
         #endif
 
-        Image = DummyImage(GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     return Image;

@@ -335,7 +335,10 @@ UINTN ReadTokenLine (
         LineFinished = FALSE;
         while (!LineFinished) {
             // skip whitespace & find start of token
-            while ((*p == ' ' || *p == '\t' || *p == '=' || *p == ',') && !IsQuoted) {
+            while (
+                (*p == ' ' || *p == '\t' || *p == '=' || *p == ',') &&
+                !IsQuoted
+            ) {
                 p++;
             }
             if (*p == 0 || *p == '#') {
@@ -1264,7 +1267,9 @@ LOADER_ENTRY * AddStanzaEntries (
     LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Loader:- '%s'", Entry->Title);
     #endif
 
-    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) && (StrCmp (TokenList[0], L"}") != 0)) {
+    while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) &&
+        (StrCmp (TokenList[0], L"}") != 0)
+    ) {
         if (Entry->Enabled) {
             if (MyStriCmp (TokenList[0], L"loader") && (TokenCount > 1)) {
                 // set the boot loader filename

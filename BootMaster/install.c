@@ -289,11 +289,14 @@ EFI_STATUS BackupOldFile (
 // Create directories in which RefindPlus will reside.
 static
 EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
-    CHAR16   *FileName = NULL;
-    UINTN    i = 0, Status = EFI_SUCCESS;
-    EFI_FILE *TheDir = NULL;
+    EFI_STATUS  Status   = EFI_SUCCESS;
+    EFI_FILE   *TheDir   = NULL;
+    CHAR16     *FileName = NULL;
+    UINTN       i        = 0;
 
-    while ((FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL && Status == EFI_SUCCESS) {
+    while (Status == EFI_SUCCESS &&
+        (FileName = FindCommaDelimited (INST_DIRECTORIES, i++)) != NULL
+    ) {
         REFIT_CALL_5_WRAPPER(
             BaseDir->Open,
             BaseDir,
@@ -302,10 +305,13 @@ EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
             EFI_FILE_DIRECTORY
         );
+
         Status = REFIT_CALL_1_WRAPPER(TheDir->Close, TheDir);
+
         MyFreePool (&FileName);
         MyFreePool (&TheDir);
     } // while
+
     return (Status);
 } // CreateDirectories()
 
@@ -404,7 +410,7 @@ EFI_STATUS CopyDirectory (
     EFI_STATUS      Status = EFI_SUCCESS;
 
     DirIterOpen (SourceDirPtr, SourceDirName, &DirIter);
-    while (DirIterNext (&DirIter, 2, NULL, &DirEntry) && (Status == EFI_SUCCESS)) {
+    while (Status == EFI_SUCCESS && DirIterNext (&DirIter, 2, NULL, &DirEntry)) {
         SourceFileName = PoolPrint (L"%s\\%s", SourceDirName, DirEntry->FileName);
         DestFileName   = PoolPrint (L"%s\\%s", DestDirName, DirEntry->FileName);
         Status = CopyOneFile (

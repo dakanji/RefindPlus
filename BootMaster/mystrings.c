@@ -60,7 +60,9 @@ BOOLEAN MyStriCmp (
     IN const CHAR16 *SecondString
 ) {
     if (FirstString && SecondString) {
-        while ((*FirstString != L'\0') && ((*FirstString & ~0x20) == (*SecondString & ~0x20))) {
+        while ((*FirstString != L'\0') &&
+            ((*FirstString & ~0x20) == (*SecondString & ~0x20))
+        ) {
                 FirstString++;
                 SecondString++;
         }
@@ -365,7 +367,9 @@ VOID MergeUniqueStrings (
                 UINTN   i       = 0;
                 CHAR16 *TestStr = NULL;
 
-                while (!SkipMerge && (TestStr = FindCommaDelimited (NewString, i++)) != NULL) {
+                while (!SkipMerge &&
+                    (TestStr = FindCommaDelimited (NewString, i++)) != NULL
+                ) {
                     if (MyStrStr (TestStr, Second) != NULL) {
                         SkipMerge = TRUE;
                     }
@@ -514,13 +518,15 @@ CHAR16 * FindNumbers (
     if (InString == NULL)
         return NULL;
 
-    StartOfElement = StrLen(InString);
+    StartOfElement = StrLen (InString);
 
     // Find extra_kernel_version_strings
-    while ((ExtraFound == NULL) && (LookFor = FindCommaDelimited(GlobalConfig.ExtraKernelVersionStrings, i++))) {
-        if ((ExtraFound = MyStrStr(InString, LookFor))) {
+    while ((ExtraFound == NULL) &&
+        (LookFor = FindCommaDelimited (GlobalConfig.ExtraKernelVersionStrings, i++))
+    ) {
+        if ((ExtraFound = MyStrStr (InString, LookFor))) {
             StartOfElement = ExtraFound - InString;
-            EndOfElement = StartOfElement + StrLen(LookFor) - 1;
+            EndOfElement = StartOfElement + StrLen (LookFor) - 1;
         }
 
         MyFreePool (&LookFor);
@@ -566,7 +572,10 @@ UINTN NumCharsInCommon (
         return 0;
     }
 
-    while ((String1[Count] != L'\0') && (String2[Count] != L'\0') && (String1[Count] == String2[Count])) {
+    while ((String1[Count] != L'\0') &&
+        (String2[Count] != L'\0') &&
+        (String1[Count] == String2[Count])
+    ) {
         Count++;
     }
 

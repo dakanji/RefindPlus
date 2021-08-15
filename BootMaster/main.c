@@ -817,7 +817,9 @@ BOOLEAN IsValidTool (
     if (IsValidLoader (BaseVolume->RootDir, PathName)) {
         SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
 
-        while (retval && (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))) {
+        while (retval &&
+            (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))
+        ) {
             SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
 
             if (MyStriCmp (TestFileName, DontFileName) &&
@@ -1474,7 +1476,9 @@ VOID AdjustDefaultSelection (VOID) {
     MsgLog ("Adjust Default Selection...\n\n");
     #endif
 
-    while ((Element = FindCommaDelimited (GlobalConfig.DefaultSelection, i++)) != NULL) {
+    while ((Element = FindCommaDelimited (
+        GlobalConfig.DefaultSelection, i++)) != NULL
+    ) {
         if (MyStriCmp (Element, L"+")) {
             Status = EfivarGetRaw (
                 &RefindPlusGuid,

@@ -2867,7 +2867,9 @@ BOOLEAN DirIterNext (
             }
 
             i = 0;
-            while (KeepGoing && (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL) {
+            while (KeepGoing &&
+                (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
+            ) {
                if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
                    KeepGoing = FALSE;
                }

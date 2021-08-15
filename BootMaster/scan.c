@@ -1164,7 +1164,9 @@ BOOLEAN ShouldScan (
     VolName = NULL;
 
     // See if Volume is in GlobalConfig.DontScanDirs.
-    while (ScanIt && (DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))) {
+    while (ScanIt &&
+        (DontScanDir = FindCommaDelimited (GlobalConfig.DontScanDirs, i++))
+    ) {
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
         if (VolName != NULL) {
