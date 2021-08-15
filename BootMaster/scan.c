@@ -351,7 +351,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 LOG(3, LOG_LINE_NORMAL, L"Setting Entries for '%s'", SubScreen->Title);
                 #endif
 
-                SubEntry->me.Title    = StrDuplicate (L"Boot using Default Options");
+                SubEntry->me.Title    = StrDuplicate (L"Boot With Default Options");
                 MainOptions           = SubEntry->LoadOptions;
                 SubEntry->LoadOptions = AddInitrdToOptions (MainOptions, SubEntry->InitrdPath);
                 MyFreePool (&MainOptions);
@@ -2758,7 +2758,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
@@ -2816,7 +2816,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n                               ");
@@ -2862,7 +2862,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
@@ -2909,7 +2909,7 @@ VOID ScanForTools (VOID) {
                         );
 
                         #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                        ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                         LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
@@ -2967,7 +2967,7 @@ VOID ScanForTools (VOID) {
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");
@@ -3029,7 +3029,7 @@ VOID ScanForTools (VOID) {
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- (%s) '%s'", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- [%s] '%s'", ToolName, FileName);
                             LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");

@@ -1545,12 +1545,12 @@ VOID LogBasicInfo (VOID) {
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
-    UINTN       EfiMajorVersion                    = gST->Hdr.Revision >> 16;
     UINTN       HandleCount                        = 0;
+    UINTN       EfiMajorVersion                    = gST->Hdr.Revision >> 16;
     EFI_GUID    ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
     EFI_GUID    AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
     EFI_HANDLE *HandleBuffer                       = NULL;
-    APPLE_FRAMEBUFFER_INFO_PROTOCOL  *FramebufferInfo;
+    APPLE_FRAMEBUFFER_INFO_PROTOCOL *FramebufferInfo;
 
     LogRevisionInfo (&gST->Hdr, L"    System Table", sizeof(*gST), TRUE);
     LogRevisionInfo (&gBS->Hdr, L"   Boot Services", sizeof(*gBS), TRUE);
@@ -2720,7 +2720,7 @@ EFI_STATUS EFIAPI efi_main (
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Main loop has exited, but it should not have!!");
+    LOG(1, LOG_THREE_STAR_SEP, L"Unexpected Main Loop Exit ... Try to Reboot!!");
 
     MsgLog ("Fallback: System Restart...\n");
     MsgLog ("Screen Termination:\n");
@@ -2740,12 +2740,12 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown after main loop exit has FAILED!!");
+    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown After Main Loop Exit:- 'FAILED'!!");
     #endif
 
     SwitchToText (FALSE);
 
-    MsgStr = StrDuplicate (L"INFO: Reboot Failed ... Entering Endless Idle Loop");
+    MsgStr = StrDuplicate (L"Reboot Failed ... Entering Endless Idle Loop");
 
     REFIT_CALL_2_WRAPPER(
         gST->ConOut->SetAttribute,
@@ -2760,7 +2760,9 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("%s\n-----------------\n\n", MsgStr);
+    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("INFO: %s\n-----------------\n\n", MsgStr);
     #endif
 
     MyFreePool (&MsgStr);
