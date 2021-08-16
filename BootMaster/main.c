@@ -1964,7 +1964,9 @@ EFI_STATUS EFIAPI efi_main (
     #endif
     ScanVolumes();
 
-    if (GlobalConfig.SpoofOSXVersion && GlobalConfig.SpoofOSXVersion[0] != L'\0') {
+    if (GlobalConfig.SpoofOSXVersion &&
+        GlobalConfig.SpoofOSXVersion[0] != L'\0'
+    ) {
         Status = SetAppleOSInfo();
 
         #if REFIT_DEBUG > 0
@@ -2152,22 +2154,24 @@ EFI_STATUS EFIAPI efi_main (
             );
         }
 
-        if ((MenuExit == MENU_EXIT_TIMEOUT) && GlobalConfig.ShutdownAfterTimeout) {
+        if ((MenuExit == MENU_EXIT_TIMEOUT) &&
+            GlobalConfig.ShutdownAfterTimeout
+        ) {
             ChosenEntry->Tag = TAG_SHUTDOWN;
         }
 
         switch (ChosenEntry->Tag) {
-
             case TAG_NVRAMCLEAN:    // Clean NVRAM
                 #if REFIT_DEBUG > 0
                 LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
 
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - Clean NVRAM");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Clean NVRAM\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Clean NVRAM\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2199,7 +2203,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_LINE_NORMAL, L"System Restart");
 
-                    MsgLog ("System Restarting\n-----------------\n\n");
+                    MsgLog ("System Restarting");
+                    MsgLog ("\n-----------------\n\n");
                     #endif
 
                     REFIT_CALL_4_WRAPPER(
@@ -2231,11 +2236,12 @@ EFI_STATUS EFIAPI efi_main (
                 LOG(1, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
 
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - Load Apple Boot Screen");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Load Apple Boot Screen\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Load Apple Boot Screen\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2259,11 +2265,12 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_REBOOT:    // Reboot
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - System Restart");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - System Restart\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - System Restart\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2293,11 +2300,12 @@ EFI_STATUS EFIAPI efi_main (
                 LOG(1, LOG_STAR_SEPARATOR, L"Shutting System Down");
 
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - System Shutdown");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - System Shutdown\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - System Shutdown\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2626,7 +2634,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Reboot into Loader\n-----------------\n\n");
+                MsgLog ("  - Reboot into Loader");
+                MsgLog ("\n-----------------\n\n");
                 #endif
 
                 RebootIntoLoader ((LOADER_ENTRY *) ChosenEntry);
@@ -2652,11 +2661,12 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - Terminate RefindPlus");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Terminate RefindPlus\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Terminate RefindPlus\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2674,11 +2684,12 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - Reboot into Firmware");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Reboot into Firmware\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Reboot into Firmware\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2699,11 +2710,12 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
+                MsgLog ("  - Install RefindPlus");
                 if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("  - Install RefindPlus\n-----------------\n\n");
+                    MsgLog ("\n-----------------\n\n");
                 }
                 else {
-                    MsgLog ("  - Install RefindPlus\n\n");
+                    MsgLog ("\n\n");
                 }
                 #endif
 
@@ -2774,7 +2786,8 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("INFO: %s\n-----------------\n\n", MsgStr);
+    MsgLog ("INFO: %s", MsgStr);
+    MsgLog ("\n-----------------\n\n");
     #endif
 
     MyFreePool (&MsgStr);

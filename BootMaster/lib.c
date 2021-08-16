@@ -466,7 +466,7 @@ EFI_STATUS FindVarsDir (VOID) {
 
         #if REFIT_DEBUG > 0
         LOG(1, LOG_LINE_NORMAL,
-            L"Locate/Create Emulated NVRAM in Installation Folder for RefindPlus-Specific Items ... %r",
+            L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
             Status
         );
         #endif
@@ -484,13 +484,13 @@ EFI_STATUS FindVarsDir (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL,
-                L"Locate/Create Emulated NVRAM in any ESP for RefindPlus-Specific Items ... %r",
+                L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
                 Status
             );
 
             if (EFI_ERROR(Status)) {
-                LOG(1, LOG_LINE_NORMAL,
-                    L"Activate 'use_nvram' to Enable Hardware NVRAM for RefindPlus-Specific Items"
+                LOG(1, LOG_THREE_STAR_MID,
+                    L"Activate the 'use_nvram' Config Token to Use Hardware NVRAM Instead"
                 );
             }
             #endif
@@ -564,16 +564,11 @@ EFI_STATUS EfivarGetRaw (
 
         if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
-            if (BufferSize) {
-                *VariableSize = BufferSize;
-            }
-            else {
-                *VariableSize = 0;
-            }
+            *VariableSize = (BufferSize) ? BufferSize : 0;
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", TmpBuffer);
+                LOG(4, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
                 #endif
             }
         }
@@ -632,16 +627,11 @@ EFI_STATUS EfivarGetRaw (
 
         if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
-            if (BufferSize) {
-                *VariableSize = BufferSize;
-            }
-            else {
-                *VariableSize = 0;
-            }
+            *VariableSize = (BufferSize) ? BufferSize : 0;
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Last Run:- '%s'", TmpBuffer);
+                LOG(4, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
                 LOG(4, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
