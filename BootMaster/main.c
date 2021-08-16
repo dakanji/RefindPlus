@@ -1471,29 +1471,41 @@ VOID AdjustDefaultSelection (VOID) {
     CHAR16     *Element           = NULL;
     CHAR16     *NewCommaDelimited = NULL;
     CHAR16     *PreviousBoot      = NULL;
+    BOOLEAN     Ignore;
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Adjust Default Selection...\n\n");
+    MsgLog ("Adjust Default Selection...");
+    MsgLog ("\n\n");
     #endif
 
     while ((Element = FindCommaDelimited (
-        GlobalConfig.DefaultSelection, i++)) != NULL
-    ) {
-        if (MyStriCmp (Element, L"+")) {
-            Status = EfivarGetRaw (
-                &RefindPlusGuid,
-                L"PreviousBoot",
-                (VOID **) &PreviousBoot,
-                NULL
-            );
+        GlobalConfig.DefaultSelection, i++
+    )) != NULL) {
+        Ignore = FALSE;
 
-            MyFreePool (&Element);
-            if (Status == EFI_SUCCESS) {
-                Element = PreviousBoot;
+        if (MyStriCmp (Element, L"+")) {
+            if (GlobalConfig.IgnorePreviousBoot &&
+                StrLen (GlobalConfig.DefaultSelection) > 1
+            ) {
+                Ignore = TRUE;
+            }
+
+            if (!Ignore) {
+                Status = EfivarGetRaw (
+                    &RefindPlusGuid,
+                    L"PreviousBoot",
+                    (VOID **) &PreviousBoot,
+                    NULL
+                );
+
+                MyFreePool (&Element);
+                if (Status == EFI_SUCCESS) {
+                    Element = PreviousBoot;
+                }
             }
         }
 
-        if (Element && StrLen (Element)) {
+        if (!Ignore && Element && StrLen (Element)) {
             MergeStrings (&NewCommaDelimited, Element, L',');
         }
 

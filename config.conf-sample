@@ -835,7 +835,7 @@
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
 #    will be the default.
 #  - A "+" symbol at the start of the string, which refers to the most
-#    recently booted loader.
+#    recently booted loader (Unless overriden by 'IgnorePreviousBoot').
 #  - Any substring that corresponds to a portion of the loader's title
 #    (usually the OS's name, boot loader's path, or a volume or
 #    filesystem title).
@@ -851,7 +851,7 @@
 # set followed by one or more that include times to set different
 # defaults for different times of day.
 #
-# Boots the previously booted loader when commented out
+# Defaults to "+" when commented out (Selects the last run loader)
 #
 #default_selection 1
 #default_selection Microsoft

@@ -11,6 +11,11 @@
 - Improves 'PreviousBoot' Implementation
   * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved
   * Such Loaders are only saved after verification and not regardless as was the case
+- Rationalises 'IgnorePreviousBoot' Implementation
+  * This token is now enforced everywhere when set
+  * Setting '+' under the 'default_selection' token will therefore have no effect in such cases
+  * NB: Setting 'default_selection "+"' remains equivalent to commenting that token out
+  *     This default setting will continue to function as before
 - Improves NVRAM Management
   * NVRAM Entries (Emulated and Hardware) are fully cleared before new entries are made
 - Extends Memory Management Fixes
