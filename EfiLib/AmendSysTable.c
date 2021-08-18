@@ -469,8 +469,8 @@ EFI_STATUS AmendSysTable (VOID) {
                 gST->Hdr.HeaderSize,
                 &gST->Hdr.CRC32
             );
-        }
-    }
+        } // if/else uBS == NULL
+    } // if/else gST->Hdr.Revision
 
     return Status;
 }

@@ -82,8 +82,7 @@ EFI_STATUS ScanDeviceHandles (
 ) {
     EFI_STATUS                            Status;
     EFI_GUID                            **ProtocolGuidArray;
-    UINTN                                 k;
-    UINTN                                 ArrayCount;
+    UINTN                                 k, ArrayCount;
     UINTN                                 ProtocolIndex;
     UINTN                                 OpenInfoCount;
     UINTN                                 OpenInfoIndex;

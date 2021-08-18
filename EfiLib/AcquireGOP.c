@@ -166,14 +166,16 @@ EFI_STATUS ReloadOptionROM (
                                     MyFreePool (&Scratch);
                                 }
                             }
-                        }
-                    }
-                }
+                        } // if !EFI_ERROR Status = REFIT_CALL_5_WRAPPER
+                    } // if !EFI_ERROR Status = REFIT_CALL_3_WRAPPER
+                } // if EfiRomHeader
 
                 if (LoadROM) {
                     RomFileName = PoolPrint (L"%s[%d]", FileName, ImageIndex);
-                    FilePath    = REFIT_CALL_2_WRAPPER(FileDevicePath, NULL, RomFileName);
-                    Status      = REFIT_CALL_6_WRAPPER(
+                    FilePath  = REFIT_CALL_2_WRAPPER(
+                        FileDevicePath, NULL, RomFileName
+                    );
+                    Status = REFIT_CALL_6_WRAPPER(
                         gBS->LoadImage,
                         TRUE,
                         gImageHandle,
@@ -196,8 +198,8 @@ EFI_STATUS ReloadOptionROM (
                 }
 
                 MyFreePool (&DecompressedImageBuffer);
-            }
-        }
+            } // if InitializationSize
+        } // if Pcir->CodeType
 
         RomBarOffset = RomBarOffset + ImageSize;
         ImageIndex++;
