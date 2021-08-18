@@ -788,7 +788,7 @@ static fsw_status_t fsw_reiserfs_item_next(struct fsw_reiserfs_volume *vol,
         if (item->path_index[tree_level] >= nr_ptr_item) {
             item->path_index[tree_level] = 0;
             fsw_block_release(vol, tree_bno, buffer);
-            continue;  // this node doesn't have any more items, move up one level
+            continue;  // this node does not have any more items, move up one level
         }
 
         // we have a new path to follow, move down to the leaf node again

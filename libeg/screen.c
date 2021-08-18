@@ -1627,7 +1627,7 @@ BOOLEAN egSetScreenSize (
         }
         else {
             // TODO: Find a list of supported modes and display it.
-            // NOTE: Below doesn't actually appear unless we explicitly switch to text mode.
+            // NOTE: Below does not actually appear unless we explicitly switch to text mode.
             // This is just a placeholder until something better can be done.
             MsgStr = PoolPrint (
                 L"Error setting %d x %d resolution ... Unsupported Mode",

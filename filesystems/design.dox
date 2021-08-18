@@ -54,7 +54,7 @@ Inode numbers can be used for this purpose, non-Unix file systems will have to
 come up with a unique number in some way.
 
 The fsw_shandle structure is used to access file data ("storage handle").
-A dnode only represents the file as such and doesn't offer access to its data.
+A dnode only represents the file as such and does not offer access to its data.
 An shandle is linked to a certain dnode, but there may be several shandles per
 dnode. The shandle stores a file position pointer (byte offset) that can be changed
 at will. With the current design, an shandle is also used for directory iteration,
@@ -70,7 +70,7 @@ systems, these two are identical, but there may be some where the file allocatio
 block size is larger than the sector or block size used to store metadata. (FAT
 comes to mind as an example.)
 
-For accessing the actual file data, the file system driver doesn't handle the
+For accessing the actual file data, the file system driver does not handle the
 disk I/O, but merely returns information about the mapping from file logical
 blocks to disk physical blocks in the fsw_extent structure. This allows host OS
 buffer mechanisms to be used for file data. In special cases, like tail-packing,

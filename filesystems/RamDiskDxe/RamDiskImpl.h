@@ -199,7 +199,7 @@ RamDiskRegister (
   @retval EFI_UNSUPPORTED         The device specified by DevicePath is not a
                                   valid ramdisk device path and not supported
                                   by the driver.
-  @retval EFI_NOT_FOUND           The RAM disk pointed by DevicePath doesn't
+  @retval EFI_NOT_FOUND           The RAM disk pointed by DevicePath does not
                                   exist.
 
 **/
@@ -517,7 +517,7 @@ UnregisterAllRamDisks (
                                   values.
   @retval EFI_OUT_OF_RESOURCES    Not enough memory to store the results.
   @retval EFI_INVALID_PARAMETER   Request is illegal syntax, or unknown name.
-  @retval EFI_NOT_FOUND           Routing data doesn't match any storage in
+  @retval EFI_NOT_FOUND           Routing data does not match any storage in
                                   this driver.
 
 **/
@@ -544,7 +544,7 @@ RamDiskExtractConfig (
 
   @retval EFI_SUCCESS             The Results is processed successfully.
   @retval EFI_INVALID_PARAMETER   Configuration is NULL.
-  @retval EFI_NOT_FOUND           Routing data doesn't match any storage in
+  @retval EFI_NOT_FOUND           Routing data does not match any storage in
                                   this driver.
 
 **/

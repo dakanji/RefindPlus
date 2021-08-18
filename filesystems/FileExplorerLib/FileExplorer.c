@@ -109,7 +109,7 @@ LibCreateNewFile (
                          String to be allocated by the called function.
 
   @retval  EFI_INVALID_PARAMETER  Request is illegal syntax, or unknown name.
-  @retval  EFI_NOT_FOUND          Routing data doesn't match any storage in this driver.
+  @retval  EFI_NOT_FOUND          Routing data does not match any storage in this driver.
 
 **/
 EFI_STATUS
@@ -141,7 +141,7 @@ LibExtractConfig (
                          name/value pair) or the terminating NULL if all was successful.
 
   @retval  EFI_INVALID_PARAMETER  Configuration is NULL.
-  @retval  EFI_NOT_FOUND          Routing data doesn't match any storage in this driver.
+  @retval  EFI_NOT_FOUND          Routing data does not match any storage in this driver.
 
 **/
 EFI_STATUS

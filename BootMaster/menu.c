@@ -2634,7 +2634,7 @@ VOID HideTag (
     // call. This seems to be related to memory management of Volumes; the
     // crash occurs in FindVolumeAndFilename() and lib.c when calling
     // DevicePathToStr(). Calling RescanAll() on all returns from HideEfiTag()
-    // seems to be an effective workaround, but there's likely a memory
+    // seems to be an effective workaround, but there is likely a memory
     // management bug somewhere that is the root cause.
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:

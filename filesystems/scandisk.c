@@ -96,7 +96,7 @@ static int scan_disks(int (*hook)(struct fsw_volume *, struct fsw_volume *), str
     UINTN       i;
     UINTN       scanned = 0;
 
-    // Driver hangs if compiled with GNU-EFI unless there's a Print() statement somewhere.
+    // Driver hangs if compiled with GNU-EFI unless there is a Print() statement somewhere.
     // I'm still trying to track that down; in the meantime, work around it.
 #if defined(__MAKEWITH_GNUEFI)
     Print(L" ");

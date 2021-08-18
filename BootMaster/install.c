@@ -258,7 +258,7 @@ EFI_STATUS RenameFile (
     return Status;
 } // EFI_STATUS RenameFile()
 
-// Rename *FileName to add a "-old" extension, but only if that file doesn't
+// Rename *FileName to add a "-old" extension, but only if that file does not
 // already exist. Called on the icons directory to preserve it in case the
 // user wants icons stored there that have been supplanted by new icons.
 static

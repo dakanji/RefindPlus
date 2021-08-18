@@ -424,7 +424,7 @@ Loops through the palette to check this.*/
 unsigned lodepng_has_palette_alpha(const LodePNGColorMode* info);
 /*
 Check if the given color info indicates the possibility of having non-opaque pixels in the PNG image.
-Returns true if the image can have translucent or invisible pixels (it still be opaque if it doesn't use such pixels).
+Returns true if the image can have translucent or invisible pixels (it still be opaque if it does not use such pixels).
 Returns false if the image can only have opaque pixels.
 In detail, it returns true only if it is a color type with alpha, or has a palette with non-opaque values,
 or if "key_defined" is true.
@@ -1294,7 +1294,7 @@ LodePNGDecoderSettings decoder
 The settings can be used to ignore the errors created by invalid CRC and Adler32
 chunks, and to disable the decoding of tEXt chunks.
 
-There's also a setting color_convert, true by default. If false, no conversion
+There is also a setting color_convert, true by default. If false, no conversion
 is done, the resulting data will be as it was in the PNG (after decompression)
 and you'll have to puzzle the colors of the pixels together yourself using the
 color type information in the LodePNGInfo.
@@ -1370,7 +1370,7 @@ can encode the colors of all pixels without information loss.
 *) text_compression: default 1. If 1, it'll store texts as zTXt instead of tEXt chunks.
   zTXt chunks use zlib compression on the text. This gives a smaller result on
   large texts but a larger result on small texts (such as a single program name).
-  It is all tEXt or all zTXt though, there's no separate setting per text yet.
+  It is all tEXt or all zTXt though, there is no separate setting per text yet.
 
 
 6. color conversions
@@ -1388,7 +1388,7 @@ well, though.
 To be able to do this, LodePNG does conversions from one color mode to another.
 It can convert from almost any color type to any other color type, except the
 following conversions: RGB to grayscale is not supported, and converting to a
-palette when the palette doesn't have a required color is not supported. This is
+palette when the palette does not have a required color is not supported. This is
 not supported on purpose: this is information loss which requires a color
 reduction algorithm that is beyond the scope of a PNG encoder (yes, RGB to gray
 is easy, but there are multiple ways if you want to give some channels more
@@ -1455,10 +1455,10 @@ To avoid some confusion:
  is enabled, it is automatically generated instead
 -when decoding, the color type in LodePNGInfo is set by the decoder to that of the original
  PNG image, but it can be ignored since the raw image has the color type you requested instead
--if the color type of the LodePNGColorMode and PNG image aren't the same, a conversion
+-if the color type of the LodePNGColorMode and PNG image are not the same, a conversion
  between the color types is done if the color types are supported. If it is not
  supported, an error is returned. If the types are the same, no conversion is done.
--even though some conversions aren't supported, LodePNG supports loading PNGs from any
+-even though some conversions are not supported, LodePNG supports loading PNGs from any
  colortype and saving PNGs to any colortype, sometimes it just requires preparing
  the raw image correctly before encoding.
 -both encoder and decoder use the same color converter.
@@ -1581,7 +1581,7 @@ Check if the chunk is critical in the PNG standard (only IHDR, PLTE, IDAT and IE
 Check if the chunk is private (public chunks are part of the standard, private ones not).
 Check if the chunk is safe to copy. If it is not, then, when modifying data in a critical
 chunk, unsafe to copy chunks of the old image may NOT be saved in the new one if your
-program doesn't handle that type of unknown chunk.
+program does not handle that type of unknown chunk.
 
 unsigned char* lodepng_chunk_data(unsigned char* chunk):
 const unsigned char* lodepng_chunk_data_const(const unsigned char* chunk):
@@ -1722,7 +1722,7 @@ int main(int argc, char *argv[]) {
   unsigned width, height;
   unsigned error = lodepng::decode(image, width, height, filename);
 
-  //if there's an error, display it
+  //if there is an error, display it
   if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
   //the pixels are now in the vector "image", 4 bytes per pixel, ordered RGBARGBA..., use it as texture, draw it, ...
@@ -1799,7 +1799,7 @@ state.info_png.: more PNG related settings, see struct LodePNGInfo
 The version number of LodePNG is the date of the change given in the format
 yyyymmdd.
 
-Some changes aren't backwards compatible. Those are indicated with a (!)
+Some changes are not backwards compatible. Those are indicated with a (!)
 symbol.
 
 Not all changes are listed here, the commit history in github lists more:
@@ -1962,7 +1962,7 @@ https://github.com/lvandeve/lodepng
 -----------------------
 
 Feel free to contact me with suggestions, problems, comments, ... concerning
-LodePNG. If you encounter a PNG image that doesn't work properly with this
+LodePNG. If you encounter a PNG image that does not work properly with this
 decoder, feel free to send it and I'll use it to find and fix the problem.
 
 My email address is (puzzle the account and domain together with an @ symbol):

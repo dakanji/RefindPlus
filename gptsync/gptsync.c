@@ -355,7 +355,7 @@ static VOID generate_hybrid_mbr(VOID) {
 
     sort_mbr(new_mbr_parts);
 
-    // make sure there's exactly one active partition
+    // make sure there is exactly one active partition
     for (iter = 0; iter < 3; iter++) {
         // check
         count_active = 0;
@@ -426,7 +426,7 @@ static BOOLEAN should_rewrite(VOID) {
       return FALSE;
    }
 
-   // If there's nothing to hybridize, but an existing hybrid MBR exists, offer to replace
+   // If there is nothing to hybridize, but an existing hybrid MBR exists, offer to replace
    // the hybrid MBR with a protective MBR.
    if ((num_new_hybrid == 0) && (num_existing_hybrid > 0)) {
       Print(L"Found no partitions that could be hybridized, but an existing hybrid MBR exists.\n");

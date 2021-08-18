@@ -62,7 +62,7 @@ GrowBuffer (
     }
   }
   //
-  // If there's an error, free the buffer
+  // If there is an error, free the buffer
   //
   if (!TryAgain && EFI_ERROR(*Status) && (*Buffer != NULL)) {
     FreePool (*Buffer);

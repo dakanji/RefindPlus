@@ -915,7 +915,7 @@
   delivered with many distributions can use this file to re-create rEFInd's
   NVRAM boot entry should it be lost. Some distributions (such as Fedora)
   set up fallback.efi in the EFI/BOOT directory on the ESP, so it will run
-  automatically if NVRAM variables are lost. All this said, there's no
+  automatically if NVRAM variables are lost. All this said, there is no
   guarantee that rEFInd will be FIRST in the boot order should the NVRAM
   entries be lost.
 
@@ -931,7 +931,7 @@
 --------------------------------------
 - The PauseForKey() function now works on Macs in graphics mode, which can
   help when some errors are encountered. (Most of the errors associated with
-  this function still rely on Print(), which still doesn't work on Macs; but
+  this function still rely on Print(), which still does not work on Macs; but
   at least there will be a prompt to press a key.)
 
 - rEFInd now displays its background and banner before scanning for boot
@@ -1100,7 +1100,7 @@
   Previously, any filename containing the substring "shell" was excluded
   from scans. Now it is tighter; only files matching one of the filenames in
   the constant SHELL_NAMES in main.c are excluded. This change will enable
-  programs with names that include "shell", but that aren't in rEFInd's
+  programs with names that include "shell", but that are not in rEFInd's
   SHELL_NAMES list, such as "shelly.efi", to be shown in the rEFInd main
   menu.
 
@@ -1230,7 +1230,7 @@
 - The refind-install script can now be run as a symbolic link in Linux.
   This enables creating a /usr/sbin/refind-install link in Linux packages,
   with the binaries stashed wherever the package system likes them. This
-  feature does NOT work in Mac OS X, but there's relatively little need for it
+  feature does NOT work in Mac OS X, but there is relatively little need for it
   there.
 
 
@@ -1462,7 +1462,7 @@
   they're unreliable -- filesystem numbers can change between boots and
   might not be the same as those used in an EFI shell or other program.
   Sooner or later I'll remove code supporting this feature. In the
-  meantime, if it doesn't work for you, please switch to using filesystem
+  meantime, if it does not work for you, please switch to using filesystem
   labels, partition labels, or partition GUIDs.
 
 - Added detection of FreeBSD's BIOS-mode GPT boot loader. Previously,
@@ -1604,7 +1604,7 @@
 - Removed GPLv2 code from the FSW core files. This was done because the
   Btrfs driver is derived from the GRUB Btrfs driver, which is licensed
   under the GPLv3. Ironically, the GPLv2 and GPLv3 are incompatible
-  licenses, so ensuring that the Btrfs driver doesn't rely on GPLv2 code
+  licenses, so ensuring that the Btrfs driver does not rely on GPLv2 code
   was legally necessary. In most cases, I reverted to the original rEFIt
   code, although I kept my own cache code; since I wrote it, I can
   change its license to a BSD license.
@@ -1685,7 +1685,7 @@
   PNG is more common, and therefore more accessible to most users --
   particularly those who do not use Mac OS X. The PNG files are smaller than
   their ICNS equivalents. PNG supports a wider range of sizes (although I'm
-  not now using anything that ICNS doesn't support, I might in the future).
+  not now using anything that ICNS does not support, I might in the future).
   The icon-scaling support added a few versions ago makes ICNS's support
   for multiple icon sizes relatively unimportant.
 
@@ -1763,7 +1763,7 @@
 - Added "debian" directory to source, which facilitates creation of Debian
   packages. Packages built in this way are built with GNU-EFI and do not run
   any post-installation script, so although the rEFInd binaries are on the
-  hard disk, they aren't installed to be bootable; you must manually run
+  hard disk, they are not installed to be bootable; you must manually run
   install.sh. Also, at least on Ubuntu, the Make.common file's /usr/lib64
   references must be changed to /usr/lib. This is more of a proof of
   concept and a "leg up" for distribution maintainers than anything else.
@@ -2237,7 +2237,7 @@
 
 - The EFI filesystem drivers can now be built with the GNU-EFI toolkit as
   well as with the TianoCore EDK2. See the BUILDING.txt file for details on
-  how to build them with either toolkit. This improvement doesn't affect
+  how to build them with either toolkit. This improvement does not affect
   users of my binary packages, but it should make it easier for Linux
   distributions to adopt rEFInd into their package systems.
 
@@ -2378,7 +2378,7 @@
   configuration file from a primary one.
 
 - Modified install.sh so that it creates a simple refind_linux.conf file in
-  /boot, if that file doesn't already exist and if install.sh is run from
+  /boot, if that file does not already exist and if install.sh is run from
   Linux. If that directory happens to be on a FAT, HFS+, ext2fs, ext3fs, or
   ReiserFS volume, and if the necessary drivers are installed, the result
   is that rEFInd will detect the Linux installation with no further
@@ -2583,7 +2583,7 @@
 - Cleaned up the Make.common file for the filesystem drivers.
 
 - Changed HFS+ driver to return volume label of "HFS+ volume" rather than
-  an empty label. (The driver doesn't currently read the real volume
+  an empty label. (The driver does not currently read the real volume
   label.)
 
 - Fixed bug that could cause rEFInd to appear in its own menu after
@@ -2657,7 +2657,7 @@
   - Page Up and Page Down now move through chunks of visible tags (in both
     text & graphics modes), jumping from one row to another only when at
     the edge of the row. In text mode, the "rows" are broken down as in
-    graphics mode, but they aren't visibly distinguished on the screen.
+    graphics mode, but they are not visibly distinguished on the screen.
 
 - Improved text-mode use: rEFInd now displays the proper number of entries
   when first started in text mode and scrolling is done sensibly when too
@@ -2713,7 +2713,7 @@
 0.3.0 (22 APR 2012): UPSTREAM RELEASE
 --------------------------------------
 - I'm officially upgrading this project's status from "alpha" to "beta" and
-  giving it a bump from 0.2.x to 0.3.0. This doesn't reflect any major
+  giving it a bump from 0.2.x to 0.3.0. This does not reflect any major
   milestone with this version; rather, it reflects my sense that rEFInd has
   been "out there" for a while, and although I've gotten bug reports,
   they've been minor and/or have been fixed. The program still has known
@@ -2778,7 +2778,7 @@
 
 - Added new refind.conf token: also_scan_dirs. When scanning volumes for
   EFI boot loaders, rEFInd always scans the root directory and every
-  subdirectory of the /EFI directory, but it doesn't recurse into these
+  subdirectory of the /EFI directory, but it does not recurse into these
   directories. The also_scan_dirs token adds more directories to the scan
   list. It defaults to "elilo,boot", but you can set it to any directory or
   directories you like.

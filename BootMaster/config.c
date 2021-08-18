@@ -1056,25 +1056,25 @@ VOID ReadConfig (
         // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
         for (i = 0; i < NUM_TOOLS; i++) {
             switch (GlobalConfig.ShowTools[i]) {
-                case TAG_SHUTDOWN:
-                case TAG_REBOOT:
-                case TAG_ABOUT:
                 case TAG_EXIT:
-                case TAG_FIRMWARE:
+                case TAG_ABOUT:
                 case TAG_SHELL:
-                case TAG_GPTSYNC:
                 case TAG_GDISK:
+                case TAG_REBOOT:
+                case TAG_MEMTEST:
+                case TAG_GPTSYNC:
                 case TAG_NETBOOT:
-                case TAG_APPLE_RECOVERY:
-                case TAG_WINDOWS_RECOVERY:
-                case TAG_MOK_TOOL:
-                case TAG_FWUPDATE_TOOL:
-                case TAG_CSR_ROTATE:
                 case TAG_INSTALL:
+                case TAG_MOK_TOOL:
+                case TAG_FIRMWARE:
+                case TAG_SHUTDOWN:
                 case TAG_BOOTORDER:
+                case TAG_CSR_ROTATE:
+                case TAG_FWUPDATE_TOOL:
                 case TAG_PRE_BOOTKICKER:
                 case TAG_PRE_NVRAMCLEAN:
-                case TAG_MEMTEST:
+                case TAG_APPLE_RECOVERY:
+                case TAG_WINDOWS_RECOVERY:
                     // Continue checking
                     break;
                 case TAG_HIDDEN:
@@ -1108,7 +1108,7 @@ VOID ReadConfig (
         MsgLog ("  - WARN: Cannot Find Icons Directory. Switching to Text Mode\n");
         #endif
 
-       Print (L"Icons directory doesn't exist; setting textonly = TRUE!\n");
+       Print (L"Icons Directory Does Not Exist ... Setting TextOnly to TRUE!!\n");
        GlobalConfig.TextOnly = TRUE;
     }
 

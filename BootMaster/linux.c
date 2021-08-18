@@ -167,7 +167,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     return (InitrdName);
 } // static CHAR16 * FindInitrd()
 
-// Adds InitrdPath to Options, but only if Options doesn't already include an
+// Adds InitrdPath to Options, but only if Options does not already include an
 // initrd= line or a `%v` variable. Done to enable overriding the default initrd
 // selection in a refind_linux.conf file's options list.
 // If a `%v` substring/variable is found in Options, it is replaced with the
@@ -352,7 +352,7 @@ VOID AddKernelToSubmenu (
 // Returns TRUE if a file with the same name as the original but with
 // ".efi.signed" is also present in the same directory. Ubuntu is using
 // this filename as a signed version of the original unsigned kernel, and
-// there's no point in cluttering the display with two kernels that will
+// there is no point in cluttering the display with two kernels that will
 // behave identically on non-SB systems, or when one will fail when SB
 // is active.
 // CAUTION: *FullName MUST be properly cleaned up (via CleanUpPathNameSlashes())

@@ -1298,7 +1298,7 @@ BOOLEAN DuplicatesFallback (
 // Returns FALSE if two measures of file size are identical for a single file,
 // TRUE if not or if the file can't be opened and the other measure is non-0.
 // Despite the function's name, this isn't really a direct test of symbolic
-// link status, since EFI doesn't officially support symlinks. It does seem
+// link status, since EFI does not officially support symlinks. It does seem
 // to be a reliable indicator, though. (OTOH, some disk errors might cause a
 // file to fail to open, which would return a false positive -- but as I use
 // this function to exclude symbolic links from the list of boot loaders,
@@ -1805,7 +1805,7 @@ VOID ScanEfiFiles (
         if (MyStriCmp (EfiDirEntry->FileName, L"tools") ||
             EfiDirEntry->FileName[0] == '.'
         ) {
-            // skip this, doesn't contain boot loaders or is scanned later
+            // skip this, does not contain boot loaders or is scanned later
             continue;
         }
 
@@ -1931,7 +1931,7 @@ VOID ScanOptical (VOID) {
 // items to the specified Row.
 // If MatchThis != NULL, only adds items with labels containing any element of
 // the MatchThis comma-delimited string; otherwise, searches for anything that
-// doesn't match GlobalConfig.DontScanFirmware or the contents of the
+// does not match GlobalConfig.DontScanFirmware or the contents of the
 // HiddenFirmware UEFI variable.
 // If Icon != NULL, uses the specified icon; otherwise tries to find one to
 // match the label.

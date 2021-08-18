@@ -94,7 +94,7 @@ VOID UpdateBbsTable (
                 LocalBbsTable[Idx].BootPriority = 0;
             }
             else {
-                // This entry doesn't exactly match, but is the right disk type; make it a bit lower
+                // This entry does not exactly match, but is the right disk type; make it a bit lower
                 // in priority. Done mainly as a fallback in case of string-matching weirdness.
                 LocalBbsTable[Idx].BootPriority = 1;
             }

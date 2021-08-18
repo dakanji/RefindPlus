@@ -5,7 +5,7 @@
  *   http://developer.apple.com/technotes/tn/tn1150.html
  *
  * Current limitations:
- *  - Doesn't support permissions
+ *  - Does not support permissions
  *  - Complete Unicode case-insensitiveness disabled (large tables)
  *  - No links
  *  - Only supports pure HFS+ (i.e. no HFS, or HFS+ embedded to HFS)

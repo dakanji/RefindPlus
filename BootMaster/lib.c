@@ -997,7 +997,7 @@ CHAR16 * FSTypeName (
 } // CHAR16 *FSTypeName()
 
 // Sets the FsName field of Volume, based on data recorded in the partition's
-// filesystem. This field may remain unchanged if there's no known filesystem
+// filesystem. This field may remain unchanged if there is no known filesystem
 // or if the name field is empty.
 static
 VOID SetFilesystemName (

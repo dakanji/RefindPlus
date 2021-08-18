@@ -278,7 +278,7 @@ endif # NUM_BINS == 0
 
 ifdef BIN
 
-# Create $(BIN) directory if it doesn't exist yet
+# Create $(BIN) directory if it does not exist yet
 #
 ifeq ($(wildcard $(BIN)),)
 $(shell $(MKDIR) -p $(BIN))
@@ -887,7 +887,7 @@ EINFOS		:= $(patsubst $(BIN)/%.o,$(BIN)/%.einfo,$(BOBJS))
 $(BIN)/errors : $(EINFOS) $(EINFO)
 	$(QM)$(ECHO) "  [EINFO] $@"
 	$(Q)$(EINFO) $(EINFOS) | sort > $@
-CLEANUP		+= $(BIN)/errors	# Doesn't match the $(BIN)/*.* pattern
+CLEANUP		+= $(BIN)/errors	# Does not match the $(BIN)/*.* pattern
 
 # Generate the NIC file from the parsed source files.  The NIC file is
 # only for rom-o-matic.
@@ -898,7 +898,7 @@ $(BIN)/NIC : $(AUTO_DEPS)
 	     'it is only for rom-o-matic' >> $@
 	@$(ECHO) >> $@
 	@perl -ne 'chomp; print "$$1\n" if /\# NIC\t(.*)$$/' $^ >> $@
-CLEANUP		+= $(BIN)/NIC	# Doesn't match the $(BIN)/*.* pattern
+CLEANUP		+= $(BIN)/NIC	# Does not match the $(BIN)/*.* pattern
 
 # Analyse a target name (e.g. "bin/dfe538--prism2_pci.rom.tmp") and
 # derive the variables:
@@ -1138,7 +1138,7 @@ $(BIN)/%.zbin : $(BIN)/%.bin $(BIN)/%.zinfo $(ZBIN)
 # external Makefile fragment.  We could do this via $(eval ...), but
 # that would require make >= 3.80.
 # 
-# Note that there's an alternative way to generate most .rom images:
+# Note that there is an alternative way to generate most .rom images:
 # they can be copied from their 'master' ROM image using cp and
 # reprocessed with makerom to add the PCI IDs and ident string.  The
 # relevant rule would look something like:

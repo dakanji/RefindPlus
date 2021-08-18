@@ -73,7 +73,7 @@ EG_IMAGE * egDecodeJPEG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
             NewImage->PixelData[i].r = JpegData[i].red;
             NewImage->PixelData[i].g = JpegData[i].green;
             NewImage->PixelData[i].b = JpegData[i].blue;
-            // Note: AFAIK, NanoJPEG doesn't support alpha/transparency, so if we are
+            // Note: AFAIK, NanoJPEG does not support alpha/transparency, so if we are
             // asked to do this, set it to be fully opaque.
             if (WantAlpha)
                 NewImage->PixelData[i].a = 255;

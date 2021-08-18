@@ -431,7 +431,7 @@ size_t ZSTD_getFrameParams(ZSTD_frameParams *fparamsPtr, const void *src,
  * - When a block is considered not compressible enough, ZSTD_compressBlock()
  *   result will be zero. In which case, nothing is produced into `dst`.
  *   + User must test for such outcome and deal directly with uncompressed data
- *   + ZSTD_decompressBlock() doesn't accept uncompressed data as input!!!
+ *   + ZSTD_decompressBlock() does not accept uncompressed data as input!!!
  *   + In case of multiple successive blocks, decoder must be informed of
  *     uncompressed block existence to follow proper history. Use
  *     ZSTD_insertBlock() in such a case.

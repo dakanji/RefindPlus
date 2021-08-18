@@ -226,13 +226,13 @@ struct ext2_super_block {
      *
      * Note: the difference between the compatible feature set and
      * the incompatible feature set is that if there is a bit set
-     * in the incompatible feature set that the kernel doesn't
+     * in the incompatible feature set that the kernel does not
      * know about, it should refuse to mount the filesystem.
      * 
-     * e2fsck's requirements are more strict; if it doesn't know
+     * e2fsck's requirements are more strict; if it does not know
      * about a feature in either the compatible or incompatible
      * feature set, it must abort and not try to meddle with
-     * things it doesn't understand...
+     * things it does not understand...
      */
     __le32  s_first_ino;            /* First non-reserved inode */
     __le16  s_inode_size;           /* size of inode structure */

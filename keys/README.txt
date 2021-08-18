@@ -48,7 +48,7 @@ The files in this directory are, in alphabetical order:
 - microsoft-pca-public.cer -- A Microsoft public key, matched to the one
   used to sign Microsoft's own boot loader. You might include this key in
   your MOK list if you replace the keys that came with your computer with
-  your own key but still want to boot Windows. There's no reason to add it
+  your own key but still want to boot Windows. There is no reason to add it
   to your MOK list if your computer came this key pre-installed and you did
   not replace the default keys.
 
@@ -56,7 +56,7 @@ The files in this directory are, in alphabetical order:
   Microsoft uses to sign third-party applications and drivers. If you
   remove your default keys, adding this one to your MOK list will enable
   you to launch third-party boot loaders and other tools signed by
-  Microsoft. There's no reason to add it to your MOK list if your computer
+  Microsoft. There is no reason to add it to your MOK list if your computer
   came this key pre-installed and you did not replace the default keys.
 
 - openSUSE-UEFI-CA-Certificate.cer, openSUSE-UEFI-CA-Certificate.crt,

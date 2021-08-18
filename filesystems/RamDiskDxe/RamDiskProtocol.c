@@ -753,7 +753,7 @@ ErrorExit:
   @retval EFI_UNSUPPORTED         The device specified by DevicePath is not a
                                   valid ramdisk device path and not supported
                                   by the driver.
-  @retval EFI_NOT_FOUND           The RAM disk pointed by DevicePath doesn't
+  @retval EFI_NOT_FOUND           The RAM disk pointed by DevicePath does not
                                   exist.
 
 **/

@@ -332,7 +332,7 @@ EFI_STATUS StartEFIImage (
             // here, to keep it smaller than a kernel) works around this problem. See the
             // replacements.c file in Shim, and especially its start_image() function, for
             // the source of the problem.
-            // NOTE: This doesn't check the return status or handle errors. It could
+            // NOTE: This does not check the return status or handle errors. It could
             // conceivably do weird things if, say, RefindPlus were on a USB drive that the
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
