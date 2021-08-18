@@ -496,7 +496,7 @@ VOID SaveScreen (VOID) {
     UINTN  retval;
     UINTN  ColourIndex;
     UINT64 TimeWait;
-    UINT64 BaseTimeWait = 1875;
+    UINT64 BaseTimeWait = 3750;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
