@@ -1498,8 +1498,8 @@ CHAR16 * GetVolumeName (
 ) {
     CHAR16                *SISize;
     CHAR16                *TypeName;
-    CHAR16                *FoundName           = NULL;
-    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr   = NULL;
+    CHAR16                *FoundName         = NULL;
+    EFI_FILE_SYSTEM_INFO  *FileSystemInfoPtr = NULL;
 
 
     if ((Volume->FsName != NULL) &&
@@ -1718,11 +1718,11 @@ VOID ScanVolume (
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Cannot get BlockIO Protocol in ScanVolume!!");
+        LOG(1, LOG_LINE_NORMAL, L"Cannot Get BlockIO Protocol in ScanVolume!!");
         #endif
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
-            Volume->DiskKind = DISK_KIND_OPTICAL;
+        Volume->DiskKind = DISK_KIND_OPTICAL;
     }
 
     // scan for bootcode and MBR table
@@ -1739,10 +1739,12 @@ VOID ScanVolume (
         }
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH &&
-            (DevicePathSubType (DevicePath) == MSG_USB_DP ||
-            DevicePathSubType (DevicePath)  == MSG_USB_CLASS_DP ||
-            DevicePathSubType (DevicePath)  == MSG_1394_DP ||
-            DevicePathSubType (DevicePath)  == MSG_FIBRECHANNEL_DP)
+            (
+                DevicePathSubType (DevicePath) == MSG_USB_DP ||
+                DevicePathSubType (DevicePath) == MSG_1394_DP ||
+                DevicePathSubType (DevicePath) == MSG_USB_CLASS_DP ||
+                DevicePathSubType (DevicePath) == MSG_FIBRECHANNEL_DP
+            )
         ) {
             // USB/FireWire/FC device -> external
             Volume->DiskKind = DISK_KIND_EXTERNAL;
@@ -1786,7 +1788,12 @@ VOID ScanVolume (
 
             MyFreePool (&DiskDevicePath);
 
-            if (!EFI_ERROR(Status)) {
+            if (EFI_ERROR(Status)) {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"Could Not Locate Device Path for Volume!!");
+                #endif
+            }
+            else {
                 // get the device path for later
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
@@ -1824,13 +1831,8 @@ VOID ScanVolume (
                         Volume->DiskKind = DISK_KIND_OPTICAL;
                     }
                 }
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Could Not Locate Device Path for Volume!!");
-                #endif
-            }
-        }
+            } // if/else EFI_ERROR(Status)
+        } // if DevicePathType
 
         DevicePath = NextDevicePath;
     } // while
@@ -1881,8 +1883,7 @@ VOID ScanExtendedPartition (
     UINT32              ExtBase;
     UINT32              ExtCurrent;
     UINT32              NextExtCurrent;
-    UINTN               i;
-    UINTN               LogicalPartitionIndex = 4;
+    UINTN               i, LogicalPartitionIndex = 4;
     UINT8               SectorBuffer[512];
     BOOLEAN             Bootable;
     REFIT_VOLUME       *Volume;
@@ -1900,6 +1901,7 @@ VOID ScanExtendedPartition (
             512,
             SectorBuffer
         );
+
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
@@ -1907,9 +1909,11 @@ VOID ScanExtendedPartition (
 
             break;
         }
+
         if (*((UINT16 *) (SectorBuffer + 510)) != 0xaa55) {
             break;
         }
+
         EMbrTable = (MBR_PARTITION_INFO *) (SectorBuffer + 446);
 
         // scan logical partitions in this EMBR
@@ -2230,6 +2234,7 @@ VOID ScanVolumes (VOID) {
                     (CompareMem (&(Volume->VolUuid), &GuidNull,      sizeof (EFI_GUID)) != 0)
                 );
             }
+
             if (DupFlag) {
                 // This is a duplicate filesystem item
                 Volume->IsReadable = FALSE;
@@ -2249,13 +2254,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
             if (ScannedOnce) {
-                if ((HandleIndex % 5) == 0 &&
-                    (HandleCount - HandleIndex) > 2
-                ) {
-                    if (GlobalConfig.LogLevel == 2) {
-                        LOG(2, LOG_BLANK_LINE_SEP, L"X");
-                    }
-
+                if ((HandleIndex % 5) == 0 && (HandleCount - HandleIndex) > 2) {
                     MsgLog ("\n\n");
                 }
                 else {
@@ -2556,6 +2555,7 @@ VOID SetVolumeIcons (VOID) {
                 L"Trying to Set VolumeIcon for '%s'",
                 Volume->VolName
             );
+
             if (LoopOnce) {
                 LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
             }
@@ -2624,6 +2624,7 @@ BOOLEAN FileExists (
             return TRUE;
         }
     }
+
     return FALSE;
 }
 
@@ -2709,6 +2710,7 @@ EFI_STATUS DirNextEntry (
             // end of directory listing
             MyFreePool (&Buffer);
             Buffer = NULL;
+
             break;
         }
 
@@ -2836,14 +2838,20 @@ BOOLEAN DirIterNext (
             &(DirIter->LastFileInfo),
             FilterMode
         );
+
         if (EFI_ERROR(DirIter->LastStatus)) {
             return FALSE;
         }
+
         if (DirIter->LastFileInfo == NULL)  {
             // end of listing
             return FALSE;
         }
-        if (FilePattern != NULL) {
+
+        if (FilePattern == NULL) {
+            break;
+        }
+        else {
             if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
                 KeepGoing = FALSE;
             }
@@ -2857,10 +2865,6 @@ BOOLEAN DirIterNext (
                }
                MyFreePool (&OnePattern);
             } // while
-            // else continue loop
-        }
-        else {
-            break;
         }
    } while (KeepGoing && FilePattern);
 
@@ -2919,8 +2923,8 @@ CHAR16 * StripEfiExtension (
         Length = StrLen (Copy);
         if ((Length >= 4) && MyStriCmp (&Copy[Length - 4], L".efi")) {
             Copy[Length - 4] = 0;
-        } // if
-    } // if
+        }
+    }
 
     return Copy;
 } // CHAR16 *StripExtension()
@@ -2936,13 +2940,13 @@ INTN FindMem (
     IN UINTN  SearchStringLength
 ) {
     UINT8 *BufferPtr;
-    UINTN Offset;
+    UINTN  Offset;
 
     BufferPtr = Buffer;
     BufferLength -= SearchStringLength;
     for (Offset = 0; Offset < BufferLength; Offset++, BufferPtr++) {
         if (CompareMem (BufferPtr, SearchString, SearchStringLength) == 0) {
-            return (INTN)Offset;
+            return (INTN) Offset;
         }
     }
 
@@ -3109,9 +3113,9 @@ VOID FindVolumeAndFilename (
 // Returns TRUE if both components are found, FALSE otherwise.
 BOOLEAN SplitVolumeAndFilename (
     IN  OUT CHAR16 **Path,
-    OUT CHAR16     **VolName
+        OUT CHAR16 **VolName
 ) {
-    UINTN i = 0, Length;
+    UINTN   Length, i = 0;
     CHAR16 *Filename;
 
     if (*Path == NULL) {
@@ -3194,7 +3198,7 @@ BOOLEAN FindVolume (
     while ((i < VolumesCount) && (!Found)) {
         if (VolumeMatchesDescription (Volumes[i], Identifier)) {
             *Volume = Volumes[i];
-             Found  = TRUE;
+            Found   = TRUE;
         }
         i++;
     }
@@ -3219,9 +3223,11 @@ BOOLEAN VolumeMatchesDescription (
         return GuidsAreEqual (&TargetVolGuid, &(Volume->PartGuid));
     }
     else {
-        return (MyStriCmp(Description, Volume->VolName)  ||
-                MyStriCmp(Description, Volume->PartName) ||
-                MyStriCmp(Description, Volume->FsName));
+        return (
+            MyStriCmp (Description, Volume->VolName)  ||
+            MyStriCmp (Description, Volume->PartName) ||
+            MyStriCmp (Description, Volume->FsName)
+        );
     }
 } // BOOLEAN VolumeMatchesDescription()
 
@@ -3238,11 +3244,11 @@ BOOLEAN FilenameIn (
 ) {
 
     CHAR16    *OneElement;
-    CHAR16    *TargetVolName   = NULL;
-    CHAR16    *TargetPath      = NULL;
-    CHAR16    *TargetFilename  = NULL;
-    UINTN      i               = 0;
-    BOOLEAN    Found           = FALSE;
+    CHAR16    *TargetVolName  = NULL;
+    CHAR16    *TargetPath     = NULL;
+    CHAR16    *TargetFilename = NULL;
+    UINTN      i              = 0;
+    BOOLEAN    Found          = FALSE;
 
     if (Filename && List) {
         while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
@@ -3285,14 +3291,14 @@ VOID ReleasePtr (
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
 BOOLEAN EjectMedia (VOID) {
-    EFI_STATUS                       Status;
-    UINTN                            HandleIndex;
-    UINTN                            HandleCount             = 0;
-    UINTN                            Ejected                 = 0;
-    EFI_GUID                         AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
-    EFI_HANDLE                      *Handles;
-    EFI_HANDLE                       Handle;
-    APPLE_REMOVABLE_MEDIA_PROTOCOL  *Ejectable;
+    EFI_STATUS                      Status;
+    UINTN                           HandleIndex;
+    UINTN                           HandleCount             = 0;
+    UINTN                           Ejected                 = 0;
+    EFI_GUID                        AppleRemovableMediaGuid = APPLE_REMOVABLE_MEDIA_PROTOCOL_GUID;
+    EFI_HANDLE                     *Handles;
+    EFI_HANDLE                      Handle;
+    APPLE_REMOVABLE_MEDIA_PROTOCOL *Ejectable;
 
     Status = LibLocateHandle (
         ByProtocol,
