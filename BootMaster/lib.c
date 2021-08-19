@@ -1197,11 +1197,11 @@ VOID ScanVolumeBootcode (
     MBR_PARTITION_INFO  *MbrTable;
     BOOLEAN              MbrTableFound = FALSE;
 
+    *Bootable           = FALSE;
+    MediaCheck          = FALSE;
     Volume->HasBootCode = FALSE;
     Volume->OSIconName  = NULL;
     Volume->OSName      = NULL;
-    *Bootable           = FALSE;
-    MediaCheck          = FALSE;
 
     if (Volume->BlockIO == NULL) {
         return;
@@ -1355,11 +1355,6 @@ VOID ScanVolumeBootcode (
                 Volume->FSType == FS_TYPE_NTFS
             ) {
                 Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
-
-                if (!Volume->HasBootCode) {
-                    Volume->OSIconName  = L"win8,win";
-                    Volume->OSName      = L"Windows (UEFI)";
-                }
             }
             else if (FindMem (Buffer, 512, "Non-system disk", 15) >= 0) {
                 // dummy FAT boot sector (created by OS X's newfs_msdos)
@@ -1401,20 +1396,20 @@ VOID ScanVolumeBootcode (
                 Volume->MbrPartitionTable = AllocatePool (SizeMBR);
                 if (Volume->MbrPartitionTable) {
                     CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
+
+                    #if REFIT_DEBUG > 0
+                    LOG(3, LOG_LINE_NORMAL, L"Found MBR Partition Table");
+                    #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_THREE_STAR_SEP,
-                        L"In CopyVolume ... Out of Resources While Allocating 'MbrPartitionTable'!!"
+                        L"In ScanVolumeBootcode ... Out of Resources While Allocating MBR Partition Table!!"
                     );
                     #endif
                 }
-
-                #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Found MBR Partition Table");
-                #endif
             }
-        } // if/else if GlobalConfig.LegacyType != LEGACY_TYPE_MAC
+        }
     } // if !EFI_ERROR Status
 } // VOID ScanVolumeBootcode()
 
@@ -1871,7 +1866,7 @@ VOID ScanVolume (
             Volume->HasBootCode
         ) {
             // VBR boot code found on NTFS, but volume is not actually bootable
-            // unless there are actual boot file, so check for them.
+            // on Mac unless there are actual boot file, so check for them.
             Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
         }
     } // if/else
@@ -1952,6 +1947,7 @@ VOID ScanExtendedPartition (
                     Volume->HasBootCode = FALSE;
                 }
                 ScanMBR = FALSE;
+
                 SetVolumeBadgeIcon (Volume);
                 AddListElement ((VOID ***) &Volumes, &VolumesCount, Volume);
             }
