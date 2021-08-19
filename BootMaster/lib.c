@@ -900,10 +900,8 @@ REFIT_VOLUME * CopyVolume (
         Volume = AllocateCopyPool (sizeof (REFIT_VOLUME), VolumeToCopy);
         if (Volume) {
             Volume->FsName        = StrDuplicate (VolumeToCopy->FsName);
-            Volume->OSName        = StrDuplicate (VolumeToCopy->OSName);
             Volume->VolName       = StrDuplicate (VolumeToCopy->VolName);
             Volume->PartName      = StrDuplicate (VolumeToCopy->PartName);
-            Volume->OSIconName    = StrDuplicate (VolumeToCopy->OSIconName);
             Volume->VolIconImage  = egCopyImage (VolumeToCopy->VolIconImage);
             Volume->VolBadgeImage = egCopyImage (VolumeToCopy->VolBadgeImage);
 
@@ -950,10 +948,8 @@ VOID FreeVolume (
 
         // Free pool elements
         ReleasePtr ((*Volume)->FsName);
-        ReleasePtr ((*Volume)->OSName);
         ReleasePtr ((*Volume)->VolName);
         ReleasePtr ((*Volume)->PartName);
-        ReleasePtr ((*Volume)->OSIconName);
         ReleasePtr ((*Volume)->DevicePath);
         ReleasePtr ((*Volume)->MbrPartitionTable);
         ReleasePtr ((*Volume)->WholeDiskDevicePath);
