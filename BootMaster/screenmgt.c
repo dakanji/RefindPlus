@@ -692,10 +692,10 @@ VOID PauseForKey (VOID) {
     PrintUglyText (L"* Paused for Error/Warning *", NEXTLINE);
 
     if (GlobalConfig.ContinueOnWarning) {
-        PrintUglyText (L"Press Any Key or Wait 9 Seconds to Continue", NEXTLINE);
+        PrintUglyText (L"Press a Key or Wait 9 Seconds to Continue", NEXTLINE);
     }
     else {
-        PrintUglyText (L"Press Any Key to Continue", NEXTLINE);
+        PrintUglyText (L"Press a Key to Continue", NEXTLINE);
     }
 
     // Clear the Keystroke Buffer
@@ -913,7 +913,7 @@ BOOLEAN CheckError (
     PrintUglyText (Temp, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-    // Defeat need to "Press a key to continue" in debug mode
+    // Defeat need to "Press a Key to Continue" in debug mode
     if (MyStrStr (where, L"While Reading Boot Sector") != NULL ||
         MyStrStr (where, L"in ReadHiddenTags") != NULL
     ) {

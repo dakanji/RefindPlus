@@ -128,7 +128,7 @@ static
 VOID PauseForKey (VOID) {
     UINTN Index;
 
-    Print (L"\n* Hit any key to continue *");
+    Print (L"\n* Press a Key to Continue *");
 
     if (ReadAllKeyStrokes()) {  // remove buffered key strokes
         REFIT_CALL_1_WRAPPER(gBS->Stall, 5000000);     // 5 seconds delay

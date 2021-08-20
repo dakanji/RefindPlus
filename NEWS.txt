@@ -2301,7 +2301,7 @@
   EFI\foo\bar.efi from".
 
 - Fixed a bug that caused the screen to clear after displaying an error
-  message but before displaying the "Hit any key to continue" message when
+  message but before displaying the "Press a Key to Continue" message when
   a boot loader launch failed.
 
 

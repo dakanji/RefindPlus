@@ -2042,13 +2042,10 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL, L"Resuming After a %d Second Pause", i);
-
-        if (i == 1) {
-            MsgLog ("  - Waited %d Second\n", i);
-        }
-        else {
-            MsgLog ("  - Waited %d Seconds\n", i);
-        }
+        MsgLog (
+            "  - Waited %d %s\n",
+            i, (i == 1) ? L"Second" : L"Seconds"
+        );
         #endif
 
         if (GlobalConfig.ScanDelay > Trigger) {
