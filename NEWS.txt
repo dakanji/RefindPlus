@@ -3,6 +3,10 @@
 - Fixes Switching External Screens to Text Mode
   * External screens switched to text mode were functional but elements, such as the header, were missing
   * This has now been fixed along with properly disabling the cursor
+- Fixes Hang on Runtime Pauses
+  * RefindPlus hung on runtime pauses initiated before the main menu was loaded
+  * This was due to an absence of the Event WaitList in such situations
+  * The WaitList is now always generated on runtime pauses if not present
 - Fixes Static 'PreviousBoot' Setup
   * The actually booted loader was not recorded if a tool had been run beforehand
   * Such a run of a tool meant that tool was 'fixed' as the 'PreviousBoot' item
@@ -38,8 +42,8 @@
 - Fixes Handling of "FirmwareBootNum" Entries
   * These were not loaded as expected
 - Fixes Hangs Resulting from Changed Device Handles
-  * RefindPlus hangs on return from third party tools that change device handles, such as GDisk
-  * RefindPlus now manages this situation and avoids such hanging
+  * RefindPlus hung on return from third party tools that change device handles, such as GDisk
+  * RefindPlus now manages this situation
 - Fixes Invalid 'Command Line Option Error' Notice on UEFI PC
   * Some UEFI PC appear to spontaneously generate invalid load options
   * These result in a halt and require one or more key presses to proceed

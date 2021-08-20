@@ -2023,29 +2023,36 @@ UINTN FindMainMenuItem (
 } // VOID FindMainMenuItem()
 
 VOID GenerateWaitList(VOID) {
-    UINTN PointerCount = pdCount();
+    if (WaitList == NULL) {
+        UINTN PointerCount = pdCount();
 
-    WaitListLength = 2 + PointerCount;
-    WaitList       = AllocatePool (sizeof (EFI_EVENT) * WaitListLength);
-    WaitList[0]    = gST->ConIn->WaitForKey;
+        WaitListLength = 2 + PointerCount;
+        WaitList       = AllocatePool (sizeof (EFI_EVENT) * WaitListLength);
+        WaitList[0]    = gST->ConIn->WaitForKey;
 
-    UINTN Index;
-    for (Index = 0; Index < PointerCount; Index++) {
-        WaitList[Index + 1] = pdWaitEvent (Index);
+        UINTN Index;
+        for (Index = 0; Index < PointerCount; Index++) {
+            WaitList[Index + 1] = pdWaitEvent (Index);
+        }
     }
 } // VOID GenerateWaitList()
 
 UINTN WaitForInput (
     UINTN Timeout
 ) {
-    UINTN       Index      = INPUT_TIMEOUT;
-    UINTN       Length     = WaitListLength;
-    EFI_EVENT   TimerEvent = NULL;
     EFI_STATUS  Status;
+    UINTN       Length;
+    UINTN       Index      = INPUT_TIMEOUT;
+    EFI_EVENT   TimerEvent = NULL;
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
     #endif
+
+    // Generate WaitList if not already generated.
+    GenerateWaitList();
+
+    Length = WaitListLength;
 
     Status = REFIT_CALL_5_WRAPPER(gBS->CreateEvent, EVT_TIMER, 0, NULL, NULL, &TimerEvent);
     if (Timeout == 0) {
@@ -2763,9 +2770,9 @@ UINTN RunMainMenu (
         DrawSelection  = !PointerEnabled;
     }
 
-    // Generate this now and keep it around forever, since it is likely to be
-    // used after this function terminates.
+    // Generate WaitList if not already generated.
     GenerateWaitList();
+
     MenuTitle = StrDuplicate (L"Unknown");
 
     while (!MenuExit) {
