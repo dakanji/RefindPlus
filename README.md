@@ -74,7 +74,7 @@ In addition to the new functions above, the following upsteam functions have bee
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running Mac OS v11.x (Big Sur), or later, with SIP enabled.
 
 ## Divergence
-Implementation differences between rEFInd and RefindPlus as at rEFInd v0.13.2 are:
+Implementation differences as at RefindPlus v0.13.2.xx are:
 - **"timeout" Token:** The default is no timeout unless explicitly set.
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.

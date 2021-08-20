@@ -226,13 +226,13 @@
 # and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
 # token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
 # RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
-# "Toggle Mac CSR" tool after RefindPlus is loaded.
+# "Toggle CSR" tool after RefindPlus is loaded.
 # The following options are available:
-#  -1    - Always Disable SIP (and SSV, if on Mac OS 11.x and configured under "csr_values")
+#  -1    - Always Disable SIP (and SSV on Mac OS 11.x or later when configured in "csr_values")
 #   0    - Take no Action
-#   1    - Always Enable SIP (and SSV, if on Mac OS 11.x)
+#   1    - Always Enable SIP (and SSV on Mac OS 11.x or later)
 #
-# Inactive when commented out (Takes no action on SIP and SSV)
+# Inactive when commented out (Takes no action on SIP and/or SSV)
 #
 #active_csr 1
 
@@ -420,10 +420,19 @@
 #
 #csr_values 10,77
 
+# Blank screen and show different solid colours after the specified
+# number of seconds without input. Screen is restored on keypresses
+# (Excluding keys such as "Shift", "Control", "Alt", and "Option").
+# "-1" causes RefindPlus to start up with the screensaver active.
+#
+# The screensaver is diabled when commented out
+#
+#screensaver 300
+
 
 ##--------------------------------------------------------------##
 ##                STANDARD CONFIGURATION ITEMS                  ##
-##                  Standard rEFInd Features                    ##
+##                  Unchanged  Functionality                    ##
 ##--------------------------------------------------------------##
 #
 #
@@ -434,18 +443,9 @@
 # CAUTION: MANY COMPUTERS WILL HANG OR REBOOT INSTEAD! Macs and more
 # recent UEFI-based PCs are most likely to work with this feature.
 #
-# Boots the default selection when commented out
+# Boots the default selection on timeout when commented out
 #
 #shutdown_after_timeout
-
-# Blank screen and show different solid colours after the specified
-# number of seconds without input. Screen is restored on keypresses
-# (Excluding keys such as "Shift", "Control", "Alt", and "Option").
-# "-1" causes RefindPlus to start up with the screensaver active.
-#
-# The screensaver is diabled when commented out
-#
-#screensaver 300
 
 # Hide user interface elements for personal preference or for security:
 #  banner      - the RefindPlus title banner (built-in or loaded via "banner")
