@@ -685,8 +685,7 @@ VOID PrintUglyText (
 } // VOID PrintUglyText()
 
 VOID PauseForKey (VOID) {
-    UINTN   i;
-    UINTN   WaitOut;
+    UINTN   i, WaitOut;
     BOOLEAN Breakout = FALSE;
 
     PrintUglyText (L"", NEXTLINE);
@@ -727,7 +726,7 @@ VOID PauseForKey (VOID) {
             if (Breakout) {
                 break;
             }
-        }
+        } // for
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
@@ -777,6 +776,9 @@ VOID PauseForKey (VOID) {
 VOID PauseSeconds (
     UINTN Seconds
 ) {
+    UINTN   i, WaitOut;
+    BOOLEAN Breakout = FALSE;
+
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
 
@@ -784,7 +786,33 @@ VOID PauseSeconds (
     LOG(4, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
     #endif
 
-    WaitForInput (1000 * Seconds);
+    for (i = 0; i < Seconds; ++i) {
+        WaitOut = WaitForInput (1000);
+        if (WaitOut == INPUT_KEY) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+            #endif
+
+            Breakout = TRUE;
+        }
+        else if (WaitOut == INPUT_TIMER_ERROR) {
+            #if REFIT_DEBUG > 0
+            LOG(4, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+            #endif
+
+            Breakout = TRUE;
+        }
+
+        if (Breakout) {
+            break;
+        }
+    } // for
+
+    #if REFIT_DEBUG > 0
+    if (!Breakout) {
+        LOG(4, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+    }
+    #endif
 
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();

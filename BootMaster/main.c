@@ -1453,7 +1453,7 @@ VOID SetConfigFilename (
 
                 PrintUglyText (MsgStr, NEXTLINE);
 
-                PauseSeconds(6);
+                PauseSeconds(9);
                 MyFreePool (&MsgStr);
             } // if/else FileExists (SelfDir, FileName
 
