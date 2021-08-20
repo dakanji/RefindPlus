@@ -48,7 +48,7 @@ CHAR16 * GetAltMonth (VOID) {
         case 9:  AltMonth = L"r";  break;
         case 10: AltMonth = L"t";  break;
         case 11: AltMonth = L"v";  break;
-        default: AltMonth = L"x";
+        default: AltMonth = L"x";  break;
     } // switch
 
     return AltMonth;
@@ -82,7 +82,7 @@ CHAR16 * GetAltHour (VOID) {
         case 20: AltHour = L"w";  break;
         case 21: AltHour = L"x";  break;
         case 22: AltHour = L"y";  break;
-        default: AltHour = L"z";
+        default: AltHour = L"z";  break;
     } // switch
 
     return AltHour;
@@ -309,11 +309,11 @@ VOID EFIAPI DeepLoggger (
             Limit = StrLen (DoneMsg) + 1;
         }
 
-        CHAR8 FormatString[Limit];
-        MyUnicodeStrToAsciiStr (DoneMsg, FormatString);
+        CHAR8 FormatMsg[Limit];
+        MyUnicodeStrToAsciiStr (DoneMsg, FormatMsg);
 
         // Write the Message String
-        DebugLog (DebugMode, (const CHAR8 *) FormatString);
+        DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
 
         // Disable Native Logging
         UseMsgLog = FALSE;
@@ -326,19 +326,19 @@ VOID EFIAPI DeepLoggger (
 
 VOID EFIAPI DebugLog (
     IN INTN DebugMode,
-    IN const CHAR8 *FormatString, ...
+    IN const CHAR8 *FormatString,
+    ...
 ) {
 #if REFIT_DEBUG < 1
     // Just return in RELEASE builds
     return;
 #else
-    // Make sure logging is not muted
-    if (MuteLogger) {
-        return;
-    }
-
-    // Make sure the buffer is intact for writing
-    if (FormatString == NULL || DebugMode < 0) {
+    // Make sure writing is allowed/possible
+    if (MuteLogger
+        || DebugMode < 1
+        || FormatString == NULL
+        || GlobalConfig.LogLevel < 0
+    ) {
         return;
     }
 
