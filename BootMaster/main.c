@@ -2073,25 +2073,28 @@ EFI_STATUS EFIAPI efi_main (
     // show config mismatch warning
     if (ConfigWarn) {
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Displaying User Warning\n\n");
+        MsgStr = StrDuplicate (L"Displaying User Warning");
+        LOG(1, LOG_LINE_SEPARATOR, L"%s:- Missing Config File", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (&MsgStr);
         #endif
 
         SwitchToText (FALSE);
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        if (ConfigWarn) {
-            PrintUglyText (L"                                                           ", NEXTLINE);
-            PrintUglyText (L" WARN: Could Not Find RefindPlus Configuration File        ", NEXTLINE);
-            PrintUglyText (L"                                                           ", NEXTLINE);
-            PrintUglyText (L"       Trying rEFInd's Configuration File:- 'refind.conf'  ", NEXTLINE);
-            PrintUglyText (L"       Provide 'config.conf' file to silence this warning  ", NEXTLINE);
-            PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'  ", NEXTLINE);
-            PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens   ", NEXTLINE);
-            PrintUglyText (L"                                                           ", NEXTLINE);
-        }
+        PrintUglyText (L"                                                            ", NEXTLINE);
+        PrintUglyText (L" WARN:   Could Not Find a RefindPlus Configuration File     ", NEXTLINE);
+        PrintUglyText (L"       Trying the rEFInd Configuration File:- 'refind.conf' ", NEXTLINE);
+        PrintUglyText (L"                                                            ", NEXTLINE);
+        PrintUglyText (L"       Provide 'config.conf' file to silence this warning   ", NEXTLINE);
+        PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'   ", NEXTLINE);
+        PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens    ", NEXTLINE);
+        PrintUglyText (L"                                                            ", NEXTLINE);
+        PrintUglyText (L"         * Press a Key or Wait 12 Seconds to Continue *     ", NEXTLINE);
+        PrintUglyText (L"                                                            ", NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-        PauseSeconds(6);
+        PauseSeconds(12);
 
         #if REFIT_DEBUG > 0
         MsgLog ("INFO: User Warning");
