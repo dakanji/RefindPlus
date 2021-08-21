@@ -2070,40 +2070,32 @@ EFI_STATUS EFIAPI efi_main (
     // show config mismatch warning
     if (ConfigWarn) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Displaying User Warning");
-        LOG(1, LOG_LINE_SEPARATOR, L"%s:- Missing Config File", MsgStr);
-        MsgLog ("INFO: %s\n\n", MsgStr);
+        MsgStr = StrDuplicate (L"Displaying User Warning:- Missing Config File");
+        LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
         SwitchToText (FALSE);
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (L"                                                            ", NEXTLINE);
-        PrintUglyText (L" WARN:   Could Not Find a RefindPlus Configuration File     ", NEXTLINE);
-        PrintUglyText (L"       Trying the rEFInd Configuration File:- 'refind.conf' ", NEXTLINE);
-        PrintUglyText (L"                                                            ", NEXTLINE);
-        PrintUglyText (L"       Provide 'config.conf' file to silence this warning   ", NEXTLINE);
-        PrintUglyText (L"       You can rename 'refind.conf' file as 'config.conf'   ", NEXTLINE);
-        PrintUglyText (L"       NB: Will not contain all RefindPlus config tokens    ", NEXTLINE);
-        PrintUglyText (L"                                                            ", NEXTLINE);
-        PrintUglyText (L"         * Press a Key or Wait 12 Seconds to Continue *     ", NEXTLINE);
-        PrintUglyText (L"                                                            ", NEXTLINE);
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"     Could not find a RefindPlus 'config.conf' file       ", NEXTLINE);
+        PrintUglyText (L"     Attempting to load a rEFInd 'refind.conf' file       ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
 
-        PauseSeconds(12);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"    Provide a config.conf file to silence this warning    ", NEXTLINE);
+        PrintUglyText (L"     You can rename a refind.conf file as config.conf     ", NEXTLINE);
+        PrintUglyText (L" * Will not contain all RefindPlus configuration tokens * ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+
+        PauseForKey();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("INFO: User Warning");
-
-        if (GlobalConfig.ContinueOnWarning) {
-            MsgLog (" Acknowledged or Timed Out ...");
-        }
-        else {
-            MsgLog (" Acknowledged ...");
-        }
+        MsgLog ("      User Warning Acknowledged or Timed Out ...");
         #endif
-
         if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
