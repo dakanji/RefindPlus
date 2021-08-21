@@ -1323,10 +1323,11 @@ static size_t ZSTD_decompressBlock_internal(ZSTD_DCtx *dctx, void *dst, size_t d
 		ip += litCSize;
 		srcSize -= litCSize;
 	}
-	if (sizeof (size_t) > 4) /* do not enable prefetching on 32-bits x86, as it is performance detrimental */
-				/* likely because of register pressure */
-				/* if that is the correct cause, then 32-bits ARM should be affected differently */
-				/* it would be good to test this on ARM real hardware, to see if prefetch version improves speed */
+	if (sizeof (size_t) > 4)
+		/* do not enable prefetching on 32-bits x86, as it is detrimental to performance */
+		/* likely because of register pressure */
+		/* if that is the correct cause, then 32-bits ARM should be affected differently */
+		/* it would be good to test this on ARM real hardware, to see if prefetch version improves speed */
 		if (dctx->fParams.windowSize > (1 << 23))
 			return ZSTD_decompressSequencesLong(dctx, dst, dstCapacity, ip, srcSize);
 	return ZSTD_decompressSequences(dctx, dst, dstCapacity, ip, srcSize);

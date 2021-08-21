@@ -29,7 +29,7 @@ extern VOID MyFreePool (IN OUT VOID *Pointer);
 /**
 
   Find the first instance of this Protocol
-  in the system and return it is interface.
+  in the system and return its interface.
 
 
   @param ProtocolGuid    Provides the protocol to search for
