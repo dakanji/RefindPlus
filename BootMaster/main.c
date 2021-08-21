@@ -2080,8 +2080,8 @@ EFI_STATUS EFIAPI efi_main (
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"     Could not find a RefindPlus 'config.conf' file       ", NEXTLINE);
-        PrintUglyText (L"     Attempting to load a rEFInd 'refind.conf' file       ", NEXTLINE);
+        PrintUglyText (L"      Could not find a RefindPlus 'config.conf' file      ", NEXTLINE);
+        PrintUglyText (L"    Trying to load a rEFInd 'refind.conf' file instead    ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);

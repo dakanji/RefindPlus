@@ -689,16 +689,19 @@ VOID PauseForKey (VOID) {
     BOOLEAN Breakout = FALSE;
 
     PrintUglyText (L"", NEXTLINE);
-    PrintUglyText (L"                                          ", NEXTLINE);
-    PrintUglyText (L"       * Paused for Error/Warning *       ", NEXTLINE);
+    PrintUglyText (L"", NEXTLINE);
+    PrintUglyText (L"                                                          ", NEXTLINE);
+    PrintUglyText (L"                                                          ", NEXTLINE);
+    PrintUglyText (L"             * Paused for Error or Warning *              ", NEXTLINE);
 
     if (GlobalConfig.ContinueOnWarning) {
-        PrintUglyText (L"Press a Key or Wait 9 Seconds to Continue ", NEXTLINE);
+        PrintUglyText (L"        Press a Key or Wait 9 Seconds to Continue         ", NEXTLINE);
     }
     else {
-        PrintUglyText (L"         Press a Key to Continue          ", NEXTLINE);
+        PrintUglyText (L"                 Press a Key to Continue                  ", NEXTLINE);
     }
-    PrintUglyText (L"                                          ", NEXTLINE);
+    PrintUglyText (L"                                                          ", NEXTLINE);
+    PrintUglyText (L"                                                          ", NEXTLINE);
 
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
