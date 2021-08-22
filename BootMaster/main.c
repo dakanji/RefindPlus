@@ -1807,9 +1807,9 @@ EFI_STATUS EFIAPI efi_main (
         ConfigWarn = TRUE;
 
         #if REFIT_DEBUG > 0
-        MsgLog ("** WARN: Could Not Find RefindPlus Configuration File:- 'config.conf'\n");
-        MsgLog ("         Trying rEFInd's Configuration File:- 'refind.conf'\n");
-        MsgLog ("         Provide 'config.conf' file to silence this warning\n");
+        MsgLog ("** WARN: Could not find RefindPlus configuration file:- 'config.conf'\n");
+        MsgLog ("         Trying rEFInd's configuration file instead:- 'refind.conf'\n");
+        MsgLog ("         Provide a 'config.conf' file to silence this warning\n");
         MsgLog ("         You can rename 'refind.conf' as 'config.conf'\n");
         MsgLog ("         NB: Will not contain all RefindPlus settings\n\n");
         #endif
@@ -2094,7 +2094,11 @@ EFI_STATUS EFIAPI efi_main (
         PauseForKey();
 
         #if REFIT_DEBUG > 0
-        MsgLog ("      User Warning Acknowledged or Timed Out ...");
+        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        MsgLog ("      %s ...", MsgStr);
+        MyFreePool (&MsgStr);
         #endif
         if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
