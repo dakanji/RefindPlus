@@ -741,7 +741,7 @@ VOID PauseForKey (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Requires Keypress");
+        LOG(4, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
         #endif
 
         for (;;) {

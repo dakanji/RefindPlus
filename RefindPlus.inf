@@ -113,7 +113,7 @@
 [LibraryClasses.AARCH64]
   BaseStackCheckLib
 # Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
-  CompilerIntrinsicsLib
+# CompilerIntrinsicsLib
 
 [Guids]
   gEfiAcpiTableGuid

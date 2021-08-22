@@ -2070,9 +2070,9 @@ EFI_STATUS EFIAPI efi_main (
     // show config mismatch warning
     if (ConfigWarn) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Displaying User Warning:- Missing Config File");
-        LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("INFO: %s\n", MsgStr);
+        MsgStr = StrDuplicate (L"Missing Config File");
+        LOG(1, LOG_LINE_SEPARATOR, L"%s!!", MsgStr);
+        MsgLog ("INFO: User Warning:-%s\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
