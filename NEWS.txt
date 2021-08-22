@@ -12,6 +12,10 @@
   * Such a run of a tool meant that tool was 'fixed' as the 'PreviousBoot' item
   * The intented outcome of having a static setup could not be realised
   * This bug was introduced in v0.13.2.AG (Commit add53ba)
+- Improves APFS Volume Role Identification
+  * APFS volume roles are now identified by their predefined 'Disk Roles'
+  * Data volumes therefore no longer need to have a default naming pattern for the 'sync_apfs' feature
+  * Additionally, the 'sync_apfs' feature has been optimised for faster completion
 - Improves 'PreviousBoot' Implementation
   * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved
   * Such Loaders are only saved after verification and not regardless as was the case

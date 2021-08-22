@@ -1115,22 +1115,41 @@ BOOLEAN ShouldScan (
     BOOLEAN  ScanIt       = TRUE;
     UINTN    PreBootIndex;
 
-    // Align APFS ReMap
-    if ((Volume->VolName) &&
-        (GlobalConfig.SyncAPFS) &&
-        (MyStrStrIns (Volume->VolName, L"PreBoot"))
-    ) {
-        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-            if (GuidsAreEqual (
-                    &(PreBootVolumes[PreBootIndex]->PartGuid),
-                    &(Volume->PartGuid)
-                )
-            ) {
-                MyFreePool (&Volume->VolName);
-                Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
-                break;
-            }
-        } // for
+    EFI_STATUS                 Status;
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+    Status = GetApfsVolumeInfo_RP (
+        Volume->DeviceHandle,
+        &ContainerGuid,
+        &VolumeGuid,
+        &VolumeRole
+    );
+
+    if (!EFI_ERROR(Status)) {
+        // Align APFS ReMap
+        if ((Volume->VolName) &&
+            (GlobalConfig.SyncAPFS) &&
+            (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
+        ) {
+            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                if (GuidsAreEqual (
+                        &(PreBootVolumes[PreBootIndex]->PartGuid),
+                        &(Volume->PartGuid)
+                    )
+                ) {
+                    // GUID matches a preboot volume ... swap display name if source is not
+                    // also called "PreBoot" ... which means cloaking was not successful.
+                    if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
+                        MyFreePool (&Volume->VolName);
+                        Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+
+                        break;
+                    }
+                }
+            } // for
+        }
     }
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
@@ -1657,27 +1676,45 @@ VOID ScanEfiFiles (
         return;
     }
 
-    // Align APFS ReMap
-    if ((Volume->VolName) &&
-        (GlobalConfig.SyncAPFS) &&
-        (MyStrStrIns (Volume->VolName, L"PreBoot"))
-    ) {
-        UINTN PreBootIndex;
-        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-            if (GuidsAreEqual (
-                    &(PreBootVolumes[PreBootIndex]->PartGuid),
-                    &(Volume->PartGuid)
-                )
-            ) {
-                #if REFIT_DEBUG > 0
-                FixReMap = TRUE;
-                #endif
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-                MyFreePool (&Volume->VolName);
-                Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
-                break;
-            }
-        } // for
+    Status = GetApfsVolumeInfo_RP (
+        Volume->DeviceHandle,
+        &ContainerGuid,
+        &VolumeGuid,
+        &VolumeRole
+    );
+
+    if (!EFI_ERROR(Status)) {
+        // Align APFS ReMap
+        if ((Volume->VolName) &&
+            (GlobalConfig.SyncAPFS) &&
+            (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
+        ) {
+            UINTN PreBootIndex;
+            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                if (GuidsAreEqual (
+                        &(PreBootVolumes[PreBootIndex]->PartGuid),
+                        &(Volume->PartGuid)
+                    )
+                ) {
+                    // GUID matches a preboot volume ... swap display name if source is not
+                    // also called "PreBoot" ... which means cloaking was not successful.
+                    if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
+                        #if REFIT_DEBUG > 0
+                        FixReMap = TRUE;
+                        #endif
+
+                        MyFreePool (&Volume->VolName);
+                        Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+
+                        break;
+                    }
+                }
+            } // for
+        }
     }
 
     #if REFIT_DEBUG > 0

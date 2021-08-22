@@ -175,8 +175,6 @@
 # respective "PreBoot" partitions which will be used to boot such Mac OS instances and the
 # associated "PreBoot" partitions will be hidden from view. This option also allows direct
 # booting into FileVault encrypted APFS volumes with their volume labels (not "PreBoot").
-# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data", to
-# improve the reliability of this option in distinguishing between APFS partitions.
 #
 # Inactive when commented out (Does not map APFS volumes to PreBoot partitions)
 #

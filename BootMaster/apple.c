@@ -416,3 +416,187 @@ EFI_STATUS SetAppleOSInfo (
 
     return Status;
 } // EFI_STATUS SetAppleOSInfo()
+
+
+
+//
+// APFS Volume Role Identification
+//
+
+/**
+ * Copyright (C) 2019, vit9696
+ *
+ * All rights reserved.
+ *
+ * This program and the accompanying materials
+ * are licensed and made available under the terms and conditions of the BSD License
+ * which accompanies this distribution.  The full text of the license may be found at
+ * http://opensource.org/licenses/bsd-license.php
+ *
+ * THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+**/
+/**
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+**/
+
+extern
+BOOLEAN OcOverflowAddUN (
+    UINTN   A,
+    UINTN   B,
+    UINTN  *Result
+);
+
+static
+VOID * GetFileInfo_RP (
+    IN  EFI_FILE_PROTOCOL  *File,
+    IN  EFI_GUID           *InformationType,
+    IN  UINTN               MinFileInfoSize,
+    OUT UINTN              *RealFileInfoSize  OPTIONAL
+) {
+    EFI_STATUS  Status;
+    UINTN       FileInfoSize;
+    VOID       *FileInfoBuffer;
+
+    FileInfoSize   = 0;
+    FileInfoBuffer = NULL;
+
+    Status = File->GetInfo (
+        File,
+        InformationType,
+        &FileInfoSize,
+        NULL
+    );
+
+    if (Status == EFI_BUFFER_TOO_SMALL &&
+        FileInfoSize >= MinFileInfoSize
+    ) {
+        // Some drivers (i.e. built-in 32-bit Apple HFS driver) may possibly
+        // omit null terminators from file info data.
+        if (CompareGuid (InformationType, &gEfiFileInfoGuid) &&
+            OcOverflowAddUN (FileInfoSize, sizeof (CHAR16), &FileInfoSize)
+        ) {
+            return NULL;
+        }
+        FileInfoBuffer = AllocateZeroPool (FileInfoSize);
+
+        if (FileInfoBuffer != NULL) {
+            Status = File->GetInfo (
+                File,
+                InformationType,
+                &FileInfoSize,
+                FileInfoBuffer
+            );
+
+            if (EFI_ERROR(Status)) {
+                MyFreePool (FileInfoBuffer);
+            }
+            else if (RealFileInfoSize != NULL) {
+                *RealFileInfoSize = FileInfoSize;
+            }
+        }
+    }
+
+  return FileInfoBuffer;
+} // VOID * GetFileInfo_RP()
+
+static
+EFI_STATUS GetApfsSpecialFileInfo_RP (
+    IN     EFI_FILE_PROTOCOL           *Root,
+    IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo OPTIONAL,
+    IN OUT APPLE_APFS_CONTAINER_INFO  **ContainerInfo OPTIONAL
+) {
+    EFI_GUID AppleApfsVolumeInfoGuid    = APPLE_APFS_VOLUME_INFO_GUID;
+    EFI_GUID AppleApfsContainerInfoGuid = APPLE_APFS_CONTAINER_INFO_GUID;
+
+    if (ContainerInfo == NULL && VolumeInfo == NULL) {
+        return EFI_INVALID_PARAMETER;
+    }
+
+    if (VolumeInfo != NULL) {
+        *VolumeInfo = GetFileInfo_RP (
+            Root,
+            &AppleApfsVolumeInfoGuid,
+            sizeof (**VolumeInfo),
+            NULL
+        );
+
+        if (*VolumeInfo == NULL) {
+            return EFI_NOT_FOUND;
+        }
+    }
+
+    if (ContainerInfo != NULL) {
+        *ContainerInfo = GetFileInfo_RP (
+            Root,
+            &AppleApfsContainerInfoGuid,
+            sizeof (**ContainerInfo),
+            NULL
+        );
+
+        if (*ContainerInfo == NULL) {
+            ReleasePtr (*VolumeInfo);
+            return EFI_NOT_FOUND;
+        }
+    }
+
+    return EFI_SUCCESS;
+} // EFI_STATUS GetApfsSpecialFileInfo_RP()
+
+EFI_STATUS GetApfsVolumeInfo_RP (
+    IN  EFI_HANDLE               Device,
+    OUT EFI_GUID                *ContainerGuid,
+    OUT EFI_GUID                *VolumeGuid,
+    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole
+) {
+    EFI_STATUS                       Status;
+    EFI_FILE_PROTOCOL               *Root;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
+    APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
+    APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
+
+    Root = NULL;
+
+    Status = gBS->HandleProtocol (
+        Device,
+        &gEfiSimpleFileSystemProtocolGuid,
+        (VOID **) &FileSystem
+    );
+
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = FileSystem->OpenVolume (FileSystem, &Root);
+    if (EFI_ERROR(Status)) {
+        return Status;
+    }
+
+    Status = GetApfsSpecialFileInfo_RP (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
+
+    Root->Close (Root);
+
+    if (EFI_ERROR(Status)) {
+        return EFI_NOT_FOUND;
+    }
+
+    CopyGuid (
+        VolumeGuid,
+        &ApfsVolumeInfo->Uuid
+    );
+
+    *VolumeRole = ApfsVolumeInfo->Role;
+
+    CopyGuid (
+        ContainerGuid,
+        &ApfsContainerInfo->Uuid
+    );
+
+    MyFreePool (ApfsVolumeInfo);
+    MyFreePool (ApfsContainerInfo);
+
+    return EFI_SUCCESS;
+} // EFI_STATUS GetApfsVolumeInfo_RP()

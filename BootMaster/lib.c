@@ -55,6 +55,7 @@
 #include "../include/RemovableMedia.h"
 #include "gpt.h"
 #include "config.h"
+#include "apple.h"
 #include "mystrings.h"
 
 #ifdef __MAKEWITH_GNUEFI
@@ -1965,73 +1966,57 @@ static
 BOOLEAN SetPreBootNames (
     IN REFIT_VOLUME *Volume
 ) {
-    UINTN   PreBootIndex;
-    BOOLEAN NameSwap  = FALSE;
-    BOOLEAN FoundGUID = FALSE;
+    EFI_STATUS                 Status;
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    BOOLEAN              SystemVolume = FALSE;
+    UINTN                PreBootIndex;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-    for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-        if (GuidsAreEqual (
-                &(PreBootVolumes[PreBootIndex]->PartGuid),
-                &(Volume->PartGuid)
-            )
-        ) {
-            FoundGUID = TRUE;
-            if (Volume->VolName != NULL &&
-                StrLen (Volume->VolName) != 0 &&
-                !MyStriCmp (Volume->VolName, L"") &&
-                !MyStriCmp (Volume->VolName, L"VM") &&
-                !MyStriCmp (Volume->VolName, L"Update") &&
-                !MyStrStrIns (Volume->VolName, L"PreBoot") &&
-                !MyStrStrIns (Volume->VolName, L"Unknown") &&
-                !MyStrStrIns (Volume->VolName, L"Recovery") &&
-                !MyStrStrIns (Volume->VolName, L"/FileVault") &&
-                FileExists (Volume->RootDir, MACOSX_LOADER_PATH)
-            ) {
-                NameSwap = TRUE;
-                break;
-            }
-        }
-    } // for
+    Status = GetApfsVolumeInfo_RP (
+        Volume->DeviceHandle,
+        &ContainerGuid,
+        &VolumeGuid,
+        &VolumeRole
+    );
 
-    if (!NameSwap && FoundGUID) {
-        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-            if (GuidsAreEqual (
-                    &(PreBootVolumes[PreBootIndex]->PartGuid),
-                    &(Volume->PartGuid)
-                )
-            ) {
-                if (Volume->VolName != NULL &&
-                    StrLen (Volume->VolName) != 0 &&
-                    !MyStriCmp (Volume->VolName, L"") &&
-                    !MyStriCmp (Volume->VolName, L"VM") &&
-                    !MyStriCmp (Volume->VolName, L"Update") &&
-                    !MyStrStrIns (Volume->VolName, L"Unknown") &&
-                    !MyStrStrIns (Volume->VolName, L"PreBoot") &&
-                    !MyStrStrIns (Volume->VolName, L"Recovery") &&
-                    !MyStrStrIns (Volume->VolName, L"/FileVault") &&
-                    !MyStrStrIns (Volume->VolName, L" - Data")
+    if (!EFI_ERROR(Status)) {
+        SystemVolume = (
+            (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_A) ||
+            (VolumeRole & APPLE_APFS_VOLUME_ROLE_SYSTEM_B) != 0
+        );
+
+        if (SystemVolume) {
+            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                if (GuidsAreEqual (
+                        &(PreBootVolumes[PreBootIndex]->PartGuid),
+                        &(Volume->PartGuid)
+                    )
                 ) {
-                    NameSwap = TRUE;
+                    MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
+                    PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
+
                     break;
                 }
-            }
-        } // for
+            } // for
+        }
     }
 
-    if (NameSwap) {
-        MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
-        PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
-    }
-
-    return NameSwap;
+    return SystemVolume;
 } // VOID SetPreBootNames()
 
 // Create a subset of Mac OS 'PreBoot' volumes from the volume collection.
 static
 VOID SetPrebootVolumes (VOID) {
+    EFI_STATUS    Status;
     UINTN         i;
     BOOLEAN       SwapName;
     BOOLEAN       FoundPreboot = FALSE;
+
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
+
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
@@ -2043,16 +2028,27 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (MyStrStrIns (Volumes[i]->VolName, L"PreBoot")) {
-            AddListElement (
-                (VOID ***) &PreBootVolumes,
-                &PreBootVolumesCount,
-                CopyVolume (Volumes[i])
+        if (GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)) {
+            Status = GetApfsVolumeInfo_RP (
+                Volumes[i]->DeviceHandle,
+                &ContainerGuid,
+                &VolumeGuid,
+                &VolumeRole
             );
 
-            FoundPreboot = TRUE;
+            if (!EFI_ERROR(Status)) {
+                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                    AddListElement (
+                        (VOID ***) &PreBootVolumes,
+                        &PreBootVolumesCount,
+                        CopyVolume (Volumes[i])
+                    );
+
+                    FoundPreboot = TRUE;
+                }
+            }
         }
-    }
+    } // for
 
     if (FoundPreboot) {
         #if REFIT_DEBUG > 0
@@ -2063,34 +2059,27 @@ VOID SetPrebootVolumes (VOID) {
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
-            if ((Volumes[i]->VolName != NULL) &&
-                (Volumes[i]->VolName[0] != L'\0')
+            SwapName = FALSE;
+
+            if (GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)
+                && Volumes[i]->VolName != NULL
+                && Volumes[i]->VolName[0] != L'\0'
+                && StrLen (Volumes[i]->VolName) != 0
             ) {
-                if (Volumes[i]->VolName != NULL &&
-                    StrLen (Volumes[i]->VolName) != 0 &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Unknown") &&
-                    MyStrStrIns (Volumes[i]->VolName, L"PreBoot") &&
-                    MyStrStrIns (Volumes[i]->VolName, L"Recovery") &&
-                    MyStrStrIns (Volumes[i]->VolName, L"/FileVault")
-                ) {
-                    SwapName = FALSE;
-                }
-                else {
-                    SwapName = SetPreBootNames (Volumes[i]);
-                }
+                SwapName = SetPreBootNames (Volumes[i]);
+            }
 
-                if (SwapName) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
-                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    MsgLog ("\n");
-                    MsgLog ("  - %s", MsgStr);
-                    MyFreePool (&MsgStr);
-                    #endif
+            if (SwapName) {
+                #if REFIT_DEBUG > 0
+                MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                MsgLog ("\n");
+                MsgLog ("  - %s", MsgStr);
+                MyFreePool (&MsgStr);
+                #endif
 
-                    MyFreePool (&Volumes[i]->VolName);
-                    Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
-                }
+                MyFreePool (&Volumes[i]->VolName);
+                Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
             }
         } // for
 
