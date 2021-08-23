@@ -625,28 +625,35 @@ VOID SetLoaderDefaults (
     }
     else {
         if (Entry->me.Image == NULL) {
-            CHAR16 *NoExtension = StripEfiExtension (NameClues);
-            if (NoExtension != NULL) {
-                // locate a custom icon for the loader
-                // Anything found here takes precedence over the "hints" in the OSIconName variable
-                #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
-                #endif
+            BOOLEAN MacFlag = FALSE;
+            if (LoaderPath && MyStrStrIns (LoaderPath, L"System\\Library\\CoreServices")) {
+                MacFlag = TRUE;
+            }
 
-                if (!Entry->me.Image) {
-                    Entry->me.Image = egLoadIconAnyType (
-                        Volume->RootDir,
-                        PathOnly,
-                        NoExtension,
-                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                    );
+            if (!GlobalConfig.SyncAPFS || !MacFlag) {
+                CHAR16 *NoExtension = StripEfiExtension (NameClues);
+                if (NoExtension != NULL) {
+                    // locate a custom icon for the loader
+                    // Anything found here takes precedence over the "hints" in the OSIconName variable
+                    #if REFIT_DEBUG > 0
+                    LOG(4, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
+                    #endif
+
+                    if (!Entry->me.Image) {
+                        Entry->me.Image = egLoadIconAnyType (
+                            Volume->RootDir,
+                            PathOnly,
+                            NoExtension,
+                            GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                        );
+                    }
+
+                    if (!Entry->me.Image) {
+                        Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                    }
+
+                    MyFreePool (&NoExtension);
                 }
-
-                if (!Entry->me.Image) {
-                    Entry->me.Image = egCopyImage (Volume->VolIconImage);
-                }
-
-                MyFreePool (&NoExtension);
             }
         }
 
