@@ -156,7 +156,7 @@ VOID SetupScreen (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
 
-    MsgLog ("Setup Screen...\n");
+    MsgLog ("Set Screen Up...\n");
     #endif
 
     // Convert mode number to horizontal & vertical resolution values

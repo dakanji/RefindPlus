@@ -1369,6 +1369,8 @@ BOOLEAN egGetResFromMode (
             *ModeWidth = Info->HorizontalResolution;
             *Height    = Info->VerticalResolution;
 
+            MyFreePool (&Info);
+
             return TRUE;
         }
     }
