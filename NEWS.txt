@@ -5,17 +5,17 @@
   * This has now been fixed along with properly disabling the cursor
 - Fixes Hang on Runtime Pauses
   * RefindPlus hung on runtime pauses initiated before the main menu was loaded
-  * This was due to an absence of the Event WaitList in such situations
-  * The WaitList is now always generated on runtime pauses if not present
+  * This was due to an absence of the Event Waitlist in such situations
+  * The Waitlist is now always generated on runtime pauses if not present
 - Fixes Static 'PreviousBoot' Setup
-  * The actually booted loader was not recorded if a tool had been run beforehand
-  * Such a run of a tool meant that tool was 'fixed' as the 'PreviousBoot' item
-  * The intented outcome of having a static setup could not be realised
+  * The actually booted loader was not recorded if an item had been set beforehand
+  * Any previously set item could only be changed by manually deleting the NVRAM entry
+  * The intented outcome of having a static setup could not be realised as envisaged
   * This bug was introduced in v0.13.2.AG (Commit add53ba)
 - Improves APFS Volume Role Identification
   * APFS volume roles are now identified by their predefined 'Disk Roles'
-  * Data volumes therefore no longer need to have a default naming pattern for the 'sync_apfs' feature
-  * Additionally, the 'sync_apfs' feature has been optimised for faster completion
+  * The 'SyncAPFS' feature no longer requires a default name pattern (in English) for APFS Data volumes
+  * Additionally, the 'SyncAPFS' feature has been optimised for faster completion
 - Improves 'PreviousBoot' Implementation
   * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved
   * Such Loaders are only saved after verification and not regardless as was the case
@@ -27,7 +27,7 @@
 - Improves NVRAM Management
   * NVRAM Entries (Emulated and Hardware) are fully cleared before new entries are made
 - Extends Memory Management Fixes
-  * Additional memory management/allocation improvements
+  * Additional memory management improvements
 
 
 0.13.2.AG (03 Aug 2021):
