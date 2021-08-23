@@ -1570,10 +1570,24 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof(*gDS), FALSE);
     MsgLog ("\n\n");
 
-    if (((gST->Hdr.Revision >> 16) != EfiMajorVersion) &&
-        (((gBS->Hdr.Revision >> 16) != EfiMajorVersion) || ((gRT->Hdr.Revision >> 16) != EfiMajorVersion))
+    BOOLEAN ErrEFI = FALSE;
+    if (((gST->Hdr.Revision >> 16) != EfiMajorVersion)
+        || ((gBS->Hdr.Revision >> 16) != EfiMajorVersion)
+        || ((gRT->Hdr.Revision >> 16) != EfiMajorVersion)
     ) {
-        MsgLog ("** WARN: Inconsistent EFI Revisions Detected");
+        MsgLog ("** WARN: Inconsistent EFI Versions Detected");
+        ErrEFI = TRUE;
+    }
+    else {
+        if (((gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff))
+            || ((gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
+            || ((gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
+        ) {
+            MsgLog ("** WARN: Inconsistent UEFI Revisions Detected");
+            ErrEFI = TRUE;
+        }
+    }
+    if (ErrEFI) {
         MsgLog ("\n");
         MsgLog ("         Program Behaviour is *NOT* Defined!!");
         MsgLog ("\n\n");
