@@ -1017,8 +1017,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"silence_apfs")) {
             GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"sync_apfs")) {
-            GlobalConfig.SyncAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"ignore_help_apfs")) {
+            BOOLEAN IgnoreHelpAPFS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SyncAPFS = IgnoreHelpAPFS ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
             GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);

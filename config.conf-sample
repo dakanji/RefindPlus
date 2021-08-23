@@ -171,14 +171,15 @@
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
 # of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
 # SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
-# in kernel panics. When this option is activated, RefindPlus will map APFS volumes to their
-# respective "PreBoot" partitions which will be used to boot such Mac OS instances and the
-# associated "PreBoot" partitions will be hidden from view. This option also allows direct
-# booting into FileVault encrypted APFS volumes with their volume labels (not "PreBoot").
+# in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
+# respective "PreBoot" partitions, which will be used to boot such Mac OS instances and the
+# associated "PreBoot" partitions will be hidden from view. This arrangement also permits
+# booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
+# When this option is enabled, this "help" with APFS partitions will be deactivated.
 #
-# Inactive when commented out (Does not map APFS volumes to PreBoot partitions)
+# Inactive when commented out (Does not disable APFS partition synchronisation)
 #
-#sync_apfs
+#ignore_help_apfs
 
 # Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
@@ -202,7 +203,7 @@
 # by default (even when the tool is not specified in the "showtools" list). This is done
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
 # the "hidden_tags" tool is available). When this option is enabled, this "help" with
-# setup will be inactivated and the ability to unhide items will be solely based on
+# setup will be deactivated and the ability to unhide items will be solely based on
 # whether the "hidden_tags" tool has been explictly added to the "showtools" list.
 #
 # Inactive when commented out (Does not disable help with hidden_tags)
