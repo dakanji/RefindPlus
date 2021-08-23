@@ -726,7 +726,7 @@ BOOLEAN LoadDrivers(
         else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
-                L"'%s' in Program Default UEFI Driver Folder:- '%s'",
+                L"'%s' in Program Default Driver Folder:- '%s'",
                 MsgNotFound, Directory
             );
             MsgLog ("  - %s", MsgNotFound);
@@ -766,7 +766,7 @@ BOOLEAN LoadDrivers(
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL,
-                        L"'%s' in User Defined UEFI Driver Folder:- '%s'",
+                        L"'%s' in User Defined Driver Folder:- '%s'",
                         MsgNotFound, Directory
                     );
                     MsgLog ("  - %s", MsgNotFound);
