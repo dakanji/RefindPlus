@@ -1981,18 +1981,14 @@ BOOLEAN SetPreBootNames (
     );
 
     if (!EFI_ERROR(Status)) {
-        SystemVolume = (
-            (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_A) ||
-            (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_B)
-        );
-
-        if (SystemVolume) {
+        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_A || VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_B) {
             for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
                 if (GuidsAreEqual (
                         &(PreBootVolumes[PreBootIndex]->PartGuid),
                         &(Volume->PartGuid)
                     )
                 ) {
+                    SystemVolume = TRUE;
                     MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
                     PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
 
