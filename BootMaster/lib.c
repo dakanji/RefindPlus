@@ -2061,10 +2061,9 @@ VOID SetPrebootVolumes (VOID) {
         for (i = 0; i < VolumesCount; i++) {
             SwapName = FALSE;
 
-            if (GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)
-                && Volumes[i]->VolName != NULL
-                && Volumes[i]->VolName[0] != L'\0'
+            if (Volumes[i]->VolName != NULL
                 && StrLen (Volumes[i]->VolName) != 0
+                && GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)
             ) {
                 SwapName = SetPreBootNames (Volumes[i]);
             }
