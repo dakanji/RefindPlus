@@ -268,16 +268,13 @@ VOID SetupScreen (VOID) {
             #if REFIT_DEBUG > 0
             if (!gotGraphics) {
                 MsgStr = StrDuplicate (L"Prepare Graphics Mode Switch");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("%s:", MsgStr);
-                MsgLog ("\n");
             }
             else {
                 MsgStr = StrDuplicate (L"Prepare Placeholder Display");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("%s:", MsgStr);
-                MsgLog ("\n");
             }
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("%s:", MsgStr);
+            MsgLog ("\n");
             MyFreePool (&MsgStr);
 
             MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx' (Vertical)", ScreenH);
@@ -373,18 +370,14 @@ VOID SetupScreen (VOID) {
                 #if REFIT_DEBUG > 0
                 if (gotGraphics) {
                     MsgStr = StrDuplicate (L"Displayed Placeholder");
-                    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-                    MsgLog ("INFO: %s", MsgStr);
-                    MsgLog ("\n\n");
-                    MyFreePool (&MsgStr);
                 }
                 else {
                     MsgStr = StrDuplicate (L"Switch to Graphics Mode ... Success");
-                    LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                    MsgLog ("INFO: %s", MsgStr);
-                    MsgLog ("\n\n");
-                    MyFreePool (&MsgStr);
                 }
+                LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MsgLog ("\n\n");
+                MyFreePool (&MsgStr);
                 #endif
             }
             else {
