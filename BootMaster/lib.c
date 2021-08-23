@@ -1162,7 +1162,6 @@ VOID SetFilesystemData (
         //         Volume->PartTypeGuid is not yet available
         //         Needs code sequence restructuring
         //         'SetPartGuidAndName' must be run before this
-        EFI_GUID GuidAPFS = APFS_GUID_VALUE;
         if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
             Volume->FSType = FS_TYPE_APFS;
             return;
@@ -2046,7 +2045,22 @@ VOID SetPrebootVolumes (VOID) {
         }
     } // for
 
-    if (FoundPreboot) {
+    if (!FoundPreboot) {
+        if (GlobalConfig.SyncAPFS) {
+            // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
+            GlobalConfig.SyncAPFS = FALSE;
+
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"APFS Volume Guids Not Found ... Disabled SyncAFPS");
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            MsgLog ("INFO: %s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (&MsgStr);
+            #endif
+        }
+    }
+    else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
         LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
