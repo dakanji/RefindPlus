@@ -419,7 +419,7 @@ typedef struct {
    BOOLEAN           SyncAPFS;
    BOOLEAN           ProtectNVRAM;
    BOOLEAN           ScanOtherESP;
-   BOOLEAN           DisableTagHelp;
+   BOOLEAN           DeclineHelpTags;
    BOOLEAN           NormaliseCSR;
    BOOLEAN           ShutdownAfterTimeout;
    BOOLEAN           Install;

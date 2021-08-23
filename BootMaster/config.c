@@ -1017,9 +1017,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"silence_apfs")) {
             GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"ignore_help_apfs")) {
-            BOOLEAN IgnoreHelpAPFS = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SyncAPFS = IgnoreHelpAPFS ? FALSE : TRUE;
+        else if (MyStriCmp (TokenList[0], L"decline_help_apfs")) {
+            BOOLEAN DeclineHelpAPFS = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SyncAPFS = DeclineHelpAPFS ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
             GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
@@ -1027,8 +1027,8 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
             GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"disable_tag_help")) {
-            GlobalConfig.DisableTagHelp = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decline_help_tags")) {
+            GlobalConfig.DeclineHelpTags = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
@@ -1051,7 +1051,7 @@ VOID ReadConfig (
     FreeTokenLine (&TokenList, &TokenCount);
 
     // "TagHelp" is active
-    if (!GlobalConfig.DisableTagHelp) {
+    if (!GlobalConfig.DeclineHelpTags) {
         // "TagHelp" feature is active ... Set "found" flag to false
         BOOLEAN HiddenTagsFlag = FALSE;
         // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool
