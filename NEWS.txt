@@ -12,6 +12,12 @@
   * Any previously set item could only be changed by manually deleting the NVRAM entry
   * The intented outcome of having a static setup could not be realised as envisaged
   * This bug was introduced in v0.13.2.AG (Commit add53ba)
+- Fixes Graphics Mode Selection in Multi-GPU Setups
+  * When more than one GPU is present, RefindPlus always tried to use the GOP instance from the last processed GPU
+  * Thhe GPU with a GOP instance having the highest resolution is now selected instead (as intended)
+  * NB: RefindPlus does not check whether a GPU is actually connected to a display
+  *     Hence, a blank display will result if the highest resolution GPU is not connected
+  * This bug was introduced in v0.12.0.AN (Commit 62e6fe8)
 - Improves APFS Volume Role Identification
   * APFS volume roles are now identified by their predefined 'Disk Roles'
   * The 'SyncAPFS' feature no longer requires a default name pattern (in English) for APFS Data volumes

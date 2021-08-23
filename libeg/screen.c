@@ -960,11 +960,12 @@ VOID egInitScreen (
             UINTN  SizeOfInfo;
 
             for (i = 0; i < HandleCount; i++) {
+                MyFreePool (&TmpGOP);
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
                     &GOPDrawProtocolGuid,
-                    (VOID*) &OldGOP
+                    (VOID*) &TmpGOP
                 );
 
                 #if REFIT_DEBUG > 0
@@ -972,7 +973,6 @@ VOID egInitScreen (
                 #endif
 
                 if (!EFI_ERROR(Status)) {
-                    TmpGOP = OldGOP;
                     MaxMode = TmpGOP->Mode->MaxMode;
                     for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
                         Status = TmpGOP->QueryMode (TmpGOP, GOPMode, &SizeOfInfo, &Info);
@@ -1008,7 +1008,7 @@ VOID egInitScreen (
 
                             MyFreePool (&Info);
                         }
-                    } // for
+                    } // for GOPMode = 0
                 }
             } // for
 
