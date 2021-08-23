@@ -130,7 +130,7 @@
 # create a Mac OS boot argument the first time it is triggered and it will remain
 # active until explicitly cleared even if the setting is subsequently disabled.
 #
-# Inactive when commented out (Does not disable the compatibility check)
+# Inactive when commented out (Allows Mac OS compatibility checks)
 #
 #disable_compat_check
 
@@ -141,7 +141,7 @@
 # boot argument the first time it is triggered and that this will remain active
 # until explicitly cleared even if the setting is subsequently disabled.
 #
-# Inactive when commented out (Does not disable AMFI checks)
+# Inactive when commented out (Allows AMFI checks)
 #
 #disable_amfi
 
@@ -164,7 +164,7 @@
 # negative effects are observed. This setting only applies to Mac OS.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Inactive when commented out (Does not suppress verbose APFS text)
+# Inactive when commented out (Allows verbose APFS text)
 #
 #silence_apfs
 
@@ -177,7 +177,7 @@
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled, this "help" with APFS partitions will be deactivated.
 #
-# Inactive when commented out (Does not disable APFS partition synchronisation)
+# Inactive when commented out (Allows APFS partition synchronisation)
 #
 #decline_help_apfs
 
@@ -187,7 +187,7 @@
 # this issue and is recommended instead when running Microsoft Windows on Apple Firmware.
 # This setting only applies when loading Windows on Apple Firmware.
 #
-# Inactive when commented out (Does not prevent UEFI Windows writes to Apple NVRAM)
+# Inactive when commented out (Allows UEFI Windows writes to Apple NVRAM)
 #
 #protect_nvram
 
@@ -206,7 +206,7 @@
 # setup will be deactivated and the ability to unhide items will be solely based on
 # whether the "hidden_tags" tool has been explictly added to the "showtools" list.
 #
-# Inactive when commented out (Does not disable help with hidden_tags)
+# Inactive when commented out (Allows help with hidden_tags)
 #
 #decline_help_tags
 
@@ -723,7 +723,7 @@
 # as "myvol:EFI/somedir", to exclude EFI/somedirfrom the scan
 # on the "myvol" volume but not on other volumes.
 #
-# Inactive when commented out (Does not exclude additional directories)
+# Inactive when commented out (Allows additional directories)
 #
 #dont_scan_dirs ESP:/EFI/boot,EFI/Dell,EFI/memtest86
 
@@ -751,7 +751,7 @@
 # specified as the first item in the new list. If not,
 # items from the default list are likely to appear.
 #
-# Inactive when commented out (Does not exclude additional files)
+# Inactive when commented out (Allows additional files)
 #
 #dont_scan_files shim.efi,MokManager.efi
 
