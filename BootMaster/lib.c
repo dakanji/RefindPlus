@@ -1983,7 +1983,7 @@ BOOLEAN SetPreBootNames (
     if (!EFI_ERROR(Status)) {
         SystemVolume = (
             (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_A) ||
-            (VolumeRole & APPLE_APFS_VOLUME_ROLE_SYSTEM_B) != 0
+            (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_B)
         );
 
         if (SystemVolume) {
