@@ -267,6 +267,7 @@ VOID EFIAPI DeepLoggger (
     if (DebugMode < 1 ||
         GlobalConfig.LogLevel < 1 ||
         GlobalConfig.LogLevel < level ||
+        ForceNativeLoggging ||        
         MuteLogger ||
         !(*Msg)
     ) {
