@@ -960,7 +960,6 @@ VOID egInitScreen (
             UINTN  SizeOfInfo;
 
             for (i = 0; i < HandleCount; i++) {
-                MyFreePool (&TmpGOP);
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     HandleBuffer[i],
