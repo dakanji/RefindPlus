@@ -137,38 +137,37 @@ struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 struct MY_EFI_FILE_PROTOCOL;
 
 typedef
-EFI_STATUS
-(EFIAPI *MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
-  IN struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *This,
-  OUT struct MY_EFI_FILE_PROTOCOL                **Root
-  );
+EFI_STATUS (EFIAPI *MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME) (
+    IN struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL    *This,
+    OUT struct MY_EFI_FILE_PROTOCOL                **Root
+);
 
 typedef struct _MY_MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
-  UINT64                                         Revision;
-  MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
+    UINT64                                         Revision;
+    MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME OpenVolume;
 } MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
 typedef struct _MY_EFI_FILE_PROTOCOL {
-  UINT64                Revision;
-  EFI_FILE_OPEN         Open;
-  EFI_FILE_CLOSE        Close;
-  EFI_FILE_DELETE       Delete;
-  EFI_FILE_READ         Read;
-  EFI_FILE_WRITE        Write;
-  EFI_FILE_GET_POSITION GetPosition;
-  EFI_FILE_SET_POSITION SetPosition;
-  EFI_FILE_GET_INFO     GetInfo;
-  EFI_FILE_SET_INFO     SetInfo;
-  EFI_FILE_FLUSH        Flush;
+    UINT64                Revision;
+    EFI_FILE_OPEN         Open;
+    EFI_FILE_CLOSE        Close;
+    EFI_FILE_DELETE       Delete;
+    EFI_FILE_READ         Read;
+    EFI_FILE_WRITE        Write;
+    EFI_FILE_GET_POSITION GetPosition;
+    EFI_FILE_SET_POSITION SetPosition;
+    EFI_FILE_GET_INFO     GetInfo;
+    EFI_FILE_SET_INFO     SetInfo;
+    EFI_FILE_FLUSH        Flush;
 } MY_EFI_FILE_PROTOCOL;
 
 typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
-  UINT64              Revision;
-  EFI_BLOCK_IO_MEDIA *Media;
-  EFI_BLOCK_RESET     Reset;
-  EFI_BLOCK_READ      ReadBlocks;
-  EFI_BLOCK_WRITE     WriteBlocks;
-  EFI_BLOCK_FLUSH     FlushBlocks;
+    UINT64              Revision;
+    EFI_BLOCK_IO_MEDIA *Media;
+    EFI_BLOCK_RESET     Reset;
+    EFI_BLOCK_READ      ReadBlocks;
+    EFI_BLOCK_WRITE     WriteBlocks;
+    EFI_BLOCK_FLUSH     FlushBlocks;
 } MY_EFI_BLOCK_IO_PROTOCOL;
 #else /* Make with Tianocore */
 #define MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
@@ -502,7 +501,7 @@ Done:
  * passed to us. This should have no effect on systems unaffected by this EFI
  * bug/quirk.
  */
-VOID ConnectFilesystemDriver(
+VOID ConnectFilesystemDriver (
     EFI_HANDLE DriverHandle
 ) {
     EFI_STATUS                             Status;
@@ -688,9 +687,7 @@ UINTN ScanDriverDir (
 // file line.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
-BOOLEAN LoadDrivers(
-    VOID
-) {
+BOOLEAN LoadDrivers (VOID) {
     CHAR16  *Directory;
     CHAR16  *SelfDirectory;
     UINTN    Length;

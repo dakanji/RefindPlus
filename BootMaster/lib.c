@@ -1761,8 +1761,8 @@ VOID ScanVolume (
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
             // make a device path for the whole device
             PartialLength  = (UINT8 *) NextDevicePath - (UINT8 *) (Volume->DevicePath);
-            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (PartialLength +
-                sizeof (EFI_DEVICE_PATH)
+            DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (
+                PartialLength + sizeof (EFI_DEVICE_PATH)
             );
 
             CopyMem (
@@ -1833,7 +1833,6 @@ VOID ScanVolume (
                 }
             } // if/else EFI_ERROR(Status)
         } // if DevicePathType
-
         DevicePath = NextDevicePath;
     } // while
 
