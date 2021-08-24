@@ -266,7 +266,7 @@ VOID SetupScreen (VOID) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
-            (!gotGraphics)
+            MsgStr = (!gotGraphics)
                 ? StrDuplicate (L"Prepare Graphics Mode Switch")
                 : StrDuplicate (L"Prepare Placeholder Display");
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
