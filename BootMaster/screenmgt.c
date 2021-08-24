@@ -219,8 +219,8 @@ VOID SetupScreen (VOID) {
         );
         #endif
 
-        if ((ScreenW > GlobalConfig.RequestedScreenWidth) ||
-            (ScreenH > GlobalConfig.RequestedScreenHeight)
+        if ((ScreenW > GlobalConfig.RequestedScreenWidth)
+            || (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
@@ -266,12 +266,9 @@ VOID SetupScreen (VOID) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
-            if (!gotGraphics) {
-                MsgStr = StrDuplicate (L"Prepare Graphics Mode Switch");
-            }
-            else {
-                MsgStr = StrDuplicate (L"Prepare Placeholder Display");
-            }
+            (!gotGraphics)
+                ? StrDuplicate (L"Prepare Graphics Mode Switch")
+                : StrDuplicate (L"Prepare Placeholder Display");
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s:", MsgStr);
             MsgLog ("\n");
@@ -298,12 +295,7 @@ VOID SetupScreen (VOID) {
                 #if REFIT_DEBUG > 0
                 CHAR16 *TmpStr = NULL;
 
-                if (ScreenH >= HIDPI_MIN) {
-                    TmpStr = L"HiDPI Mode";
-                }
-                else {
-                    TmpStr = L"HiDPI Flag";
-                }
+                TmpStr = (ScreenH >= HIDPI_MIN) ? L"HiDPI Mode" : L"HiDPI Flag";
                 #endif
 
                 if (ScaledIcons) {
@@ -368,12 +360,9 @@ VOID SetupScreen (VOID) {
                 BltClearScreen (TRUE);
 
                 #if REFIT_DEBUG > 0
-                if (gotGraphics) {
-                    MsgStr = StrDuplicate (L"Displayed Placeholder");
-                }
-                else {
-                    MsgStr = StrDuplicate (L"Switch to Graphics Mode ... Success");
-                }
+                MsgStr = (gotGraphics)
+                    ? StrDuplicate (L"Displayed Placeholder")
+                    : StrDuplicate (L"Switch to Graphics Mode ... Success");
                 LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
@@ -461,9 +450,9 @@ VOID SwitchToText (
         ConHeight = 25;
 
         #if REFIT_DEBUG > 0
-        if ((GraphicsModeOnEntry) &&
-            (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-            (!IsBoot)
+        if (!IsBoot
+            && GraphicsModeOnEntry
+            && (!AllowGraphicsMode || GlobalConfig.TextOnly)
         ) {
             MsgLog (
                 "  Could Not Get Text Console Size ... Using Default:- '%d x %d'\n\n",
@@ -474,9 +463,9 @@ VOID SwitchToText (
     }
     else {
         #if REFIT_DEBUG > 0
-        if ((GraphicsModeOnEntry) &&
-            (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-            (!IsBoot)
+        if (!IsBoot
+            && GraphicsModeOnEntry
+            && (!AllowGraphicsMode || GlobalConfig.TextOnly)
         ) {
             MsgLog (
                 "  Text Console Size:- '%d x %d'\n\n",
@@ -628,13 +617,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    if (GotKeyStrokes) {
-        Status = EFI_SUCCESS;
-    }
-    else {
-        Status = EFI_ALREADY_STARTED;
-    }
-
+    Status = (GotKeyStrokes) ? EFI_SUCCESS : EFI_ALREADY_STARTED;
     LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ... %r", Status);
     #endif
 
