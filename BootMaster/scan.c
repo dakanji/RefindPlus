@@ -113,7 +113,7 @@
 
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
 
-BOOLEAN  LogNewLine      = TRUE;
+BOOLEAN  LogNewLine      = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
@@ -2231,8 +2231,25 @@ VOID ScanForBootloaders (
         MyFreePool (&HiddenLegacy);
     } // if GlobalConfig.HiddenTags
 
-    // scan for loaders and tools, add them to the menu
+    // get count of options set to be scanned
+    UINTN SetOptions = 0;
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
+        switch (GlobalConfig.ScanFor[i]) {
+            case 'm': case 'M':
+            case 'i': case 'I':
+            case 'h': case 'H':
+            case 'e': case 'E':
+            case 'b': case 'B':
+            case 'o': case 'O':
+            case 'c': case 'C':
+            case 'n': case 'N':
+            case 'f': case 'F':
+            SetOptions = SetOptions + 1;
+        } // switch
+    } // for
+
+    // scan for loaders and tools, add them to the menu
+    for (i = 0; i < SetOptions; i++) {
         if (LogNewLine) {
             MsgLog ("\n");
         }
