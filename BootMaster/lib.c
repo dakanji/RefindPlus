@@ -2218,7 +2218,7 @@ VOID ScanVolumes (VOID) {
         // normal file systems they are likely to all share the same volume UUID, and it is also
         // unlikely that they are part of software RAID mirrors.
         for (i = 0; i < HandleIndex; i++) {
-            if (GlobalConfig.ScanOtherESP) {
+            if (GlobalConfig.ScanAllESP) {
                 DupFlag = (
                     (!GuidsAreEqual (&(Volume->PartTypeGuid), &ESPGuid)) &&
                     (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&

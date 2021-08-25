@@ -195,9 +195,9 @@
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.
 #
-# Inactive when commented out (Does not make other ESPs available)
+# Inactive when commented out (Allows scans of other ESPs)
 #
-#scan_other_esp
+#decline_help_scanesp
 
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done

@@ -1024,8 +1024,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
             GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"scan_other_esp")) {
-            GlobalConfig.ScanOtherESP = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decline_help_scanesp")) {
+            BOOLEAN DeclineHelpScanESP = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanAllESP = DeclineHelpScanESP ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_help_hidetags")) {
             GlobalConfig.DeclineHelpHideTags = HandleBoolean (TokenList, TokenCount);

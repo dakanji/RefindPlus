@@ -146,7 +146,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SilenceAPFS = */ FALSE,
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ FALSE,
-    /* ScanOtherESP = */ FALSE,
+    /* ScanAllESP = */ FALSE,
     /* DeclineHelpHideTags = */ FALSE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
@@ -1887,6 +1887,16 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
+    /* Show ScanAllESP Status */
+    MsgLog ("\n");
+    MsgLog ("      ScanAllESP:- ");
+    if (GlobalConfig.ScanAllESP) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
     /* Show ProtectNVRAM Status */
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
@@ -1906,16 +1916,6 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n");
     MsgLog ("      NormaliseCSR:- ");
     if (GlobalConfig.NormaliseCSR) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show ScanOtherESP Status */
-    MsgLog ("\n");
-    MsgLog ("      ScanOtherESP:- ");
-    if (GlobalConfig.ScanOtherESP) {
         MsgLog ("'Active'");
     }
     else {
