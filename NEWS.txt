@@ -32,6 +32,9 @@
   *     This default setting will continue to function as before
 - Improves NVRAM Management
   * NVRAM Entries (Emulated and Hardware) are fully cleared before new entries are made
+- Improves Graphics Mode Selection
+    * Eliminates unnecessary iteration over UGA/GOP modes when only one UGA/GOP instance exists
+    * This improves loading speed.
 - Extends Memory Management Fixes
   * Additional memory management improvements
 - Amends 'SyncAPFS' Implementation

@@ -864,6 +864,11 @@ VOID egInitScreen (
                 #endif
 
                 if (!EFI_ERROR(Status)) {
+                    if (HandleCount == 1) {
+                        UGADraw = TmpUGA;
+                        break;
+                    }
+
                     Status = REFIT_CALL_5_WRAPPER(
                         TmpUGA->GetMode, TmpUGA,
                         &Width, &Height,
@@ -972,6 +977,11 @@ VOID egInitScreen (
                 #endif
 
                 if (!EFI_ERROR(Status)) {
+                    if (HandleCount == 1) {
+                        OldGOP = TmpGOP;
+                        break;
+                    }
+
                     MaxMode = TmpGOP->Mode->MaxMode;
                     for (GOPMode = 0; GOPMode < MaxMode; GOPMode++) {
                         Status = TmpGOP->QueryMode (TmpGOP, GOPMode, &SizeOfInfo, &Info);
