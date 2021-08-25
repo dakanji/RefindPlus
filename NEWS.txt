@@ -8,10 +8,13 @@
   * This was due to an absence of the Event Waitlist in such situations
   * The Waitlist is now always generated on runtime pauses if not present
 - Fixes Static 'PreviousBoot' Setup
-  * The actually booted loader was not recorded if an item had been set beforehand
-  * Any previously set item could only be changed by manually deleting the NVRAM entry
+  * The actually booted loader was not recorded if an tool had been run beforehand
+  * Such previously set tool could only be changed by manually deleting the NVRAM entry
   * The intented outcome of having a static setup could not be realised as envisaged
   * This bug was introduced in v0.13.2.AG (Commit add53ba)
+- Fixes Failure to set 'PreviousBoot' on Text Mode Boots
+  * The 'PreviousBoot' variable was not saved when running loaders in text mode
+  * This bug was introduced in v0.13.AA (Commit 74d70fb) and exposed in v0.13.2.AG (Commit 4590047)
 - Fixes Graphics Mode Selection in Multi-GPU Setups
   * When more than one GPU is present, RefindPlus always tried to use the GOP instance from the last processed GPU
   * Thhe GPU with a GOP instance having the highest resolution is now selected instead (as intended)

@@ -720,7 +720,7 @@ VOID StartTool (
     LOG(1, LOG_LINE_NORMAL, L"Launching Tool:- '%s'", Entry->me.Title);
     #endif
 
-    IsBoot = TRUE;
+    IsBoot = FALSE;
 
     LoaderPath = Basename (Entry->LoaderPath);
     BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title);

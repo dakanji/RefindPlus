@@ -482,8 +482,6 @@ VOID SwitchToText (
         MsgLog ("INFO: Switch to Text Mode ... Success\n\n");
     }
     #endif
-
-    IsBoot = FALSE;
 } // VOID SwitchToText()
 
 EFI_STATUS SwitchToGraphics (VOID) {
