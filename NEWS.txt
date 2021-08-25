@@ -37,9 +37,6 @@
     * This improves loading speed.
 - Extends Memory Management Fixes
   * Additional memory management improvements
-- Amends 'SyncAPFS' Implementation
-  * This feature is now activated by default and has been removed from the configuration file
-  * Users can however deactivate it via the new 'decline_help_apfssync' configuration token
 - Renames Misc Configuration Tokens
     * The 'decline_help_XYZ' format will be used for options to disable divergent defaults
     * 'scan_other_esp' as 'decline_help_scanesp'
