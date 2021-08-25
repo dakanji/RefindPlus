@@ -1877,20 +1877,20 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    /* Show TextRenderer Status */
+    /* Show ScanAllESP Status */
     MsgLog ("\n");
-    MsgLog ("      TextRenderer:- ");
-    if (GlobalConfig.TextRenderer) {
+    MsgLog ("      ScanAllESP:- ");
+    if (GlobalConfig.ScanAllESP) {
         MsgLog ("'Active'");
     }
     else {
         MsgLog ("'Inactive'");
     }
 
-    /* Show ScanAllESP Status */
+    /* Show TextRenderer Status */
     MsgLog ("\n");
-    MsgLog ("      ScanAllESP:- ");
-    if (GlobalConfig.ScanAllESP) {
+    MsgLog ("      TextRenderer:- ");
+    if (GlobalConfig.TextRenderer) {
         MsgLog ("'Active'");
     }
     else {
