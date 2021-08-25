@@ -179,7 +179,7 @@
 #
 # Inactive when commented out (Allows APFS partition synchronisation)
 #
-#decline_help_apfs
+#decline_help_apfssync
 
 # Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
