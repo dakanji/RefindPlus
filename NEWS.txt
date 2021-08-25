@@ -42,9 +42,11 @@
   * Users can however deactivate it via the new 'decline_help_apfssync' configuration token
 - Renames Misc Configuration Tokens
     * The 'decline_help_XYZ' format will be used for options to disable divergent defaults
-    * 'sync_apfs' as 'decline_help_apfssync'
-    * 'ignore_tag_help' as 'decline_help_hidetags'
     * 'scan_other_esp' as 'decline_help_scanesp'
+    * 'ignore_tag_help' as 'decline_help_hidetags'
+    * 'sync_apfs' as 'decline_help_apfssync' ('SyncAPFS' is now active by default)
+    * 'supply_apfs' as 'decline_help_apfsload' ('SupplyAPFS' is now active by default)
+    * 'silence_apfs' as 'decline_help_apfsmute' ('SilenceAPFS' is now active by default)
 
 
 0.13.2.AG (03 Aug 2021):

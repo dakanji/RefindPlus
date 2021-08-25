@@ -7,6 +7,61 @@
 ##--------------------------------------------------------------##
 #
 #
+# Supply APFS filesystem capability. By default, RefindPlus is set up to always load
+# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
+# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
+# Mac OS version. This ensures that any changes made to APFS drivers for each specific
+# Mac OS version are accomodated, compared to using one driver no matter which specific
+# Mac OS version is being loaded. This default is deactivated whenever this option is set.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not supply APFS filesystem capability)
+#
+#decline_help_apfsload
+
+# Suppress verbose APFS loading text output. RefindPlus is set up by default to always
+# suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
+# This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
+# This feature may impact other text output however, and should be disabled by activating
+# this option if such negative effects are observed. This option only applies to Mac OS.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Allows verbose APFS text)
+#
+#decline_help_apfsmute
+
+# Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
+# of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
+# SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
+# in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
+# respective "PreBoot" partitions, which will be used to boot such Mac OS instances and the
+# associated "PreBoot" partitions will be hidden from view. This arrangement also permits
+# booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
+# When this option is enabled, this "help" with APFS partitions will be deactivated.
+#
+# Inactive when commented out (Allows APFS partition synchronisation)
+#
+#decline_help_apfssync
+
+# Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
+# by default (even when the tool is not specified in the "showtools" list). This is done
+# to ensure that items hidden (always possible) can also be unhidden (only possible if
+# the "hidden_tags" tool is available). When this option is enabled, this "help" with
+# setup will be deactivated and the ability to unhide items will be solely based on
+# whether the "hidden_tags" tool has been explictly added to the "showtools" list.
+#
+# Inactive when commented out (Allows help with hidden_tags)
+#
+#decline_help_hidetags
+
+# Allow scans of multiple ESPs. When this option is active, RefindPlus
+# will make other ESPs, separate from that containing RefindPlus,
+# available to be scanned for kernels and loaders.
+#
+# Inactive when commented out (Allows scans of other ESPs)
+#
+#decline_help_scanesp
+
 # RefindPlus defaults to scanning volumes for ".VolumeIcon" icns files and if
 # found, these are used as display icons for internal volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
@@ -145,42 +200,6 @@
 #
 #disable_amfi
 
-# Supply APFS filesystem capability. When this option is activated, RefindPlus loads
-# Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
-# Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
-# Mac OS version. This ensures that any changes made to APFS drivers for each specific
-# Mac OS version are accomodated, compared to using one driver no matter which specific
-# Mac OS version is being loaded. This setting only applies to Mac OS and only as needed.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# Inactive when commented out (Does not supply APFS filesystem capability)
-#
-#supply_apfs
-
-# Suppress verbose APFS loading text output. When this option is active, RefindPlus will
-# suppress verbose text output from APFS drivers loaded via the "supply_apfs" option.
-# This option only acts on apfs drivers loaded by RefindPlus using "supply_apfs".
-# This option may impact other text output and should be disabled if such
-# negative effects are observed. This setting only applies to Mac OS.
-# NB: This functionality is only available on TianoCore Builds.
-#
-# Inactive when commented out (Allows verbose APFS text)
-#
-#silence_apfs
-
-# Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
-# of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
-# SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
-# in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
-# respective "PreBoot" partitions, which will be used to boot such Mac OS instances and the
-# associated "PreBoot" partitions will be hidden from view. This arrangement also permits
-# booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
-# When this option is enabled, this "help" with APFS partitions will be deactivated.
-#
-# Inactive when commented out (Allows APFS partition synchronisation)
-#
-#decline_help_apfssync
-
 # Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
@@ -190,25 +209,6 @@
 # Inactive when commented out (Allows UEFI Windows writes to Apple NVRAM)
 #
 #protect_nvram
-
-# Allow scans of multiple ESPs. When this option is active, RefindPlus
-# will make other ESPs, separate from that containing RefindPlus,
-# available to be scanned for kernels and loaders.
-#
-# Inactive when commented out (Allows scans of other ESPs)
-#
-#decline_help_scanesp
-
-# Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
-# by default (even when the tool is not specified in the "showtools" list). This is done
-# to ensure that items hidden (always possible) can also be unhidden (only possible if
-# the "hidden_tags" tool is available). When this option is enabled, this "help" with
-# setup will be deactivated and the ability to unhide items will be solely based on
-# whether the "hidden_tags" tool has been explictly added to the "showtools" list.
-#
-# Inactive when commented out (Allows help with hidden_tags)
-#
-#decline_help_hidetags
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.

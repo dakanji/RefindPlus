@@ -1011,11 +1011,13 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"supply_apfs")) {
-            GlobalConfig.SupplyAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decline_help_apfsload")) {
+            BOOLEAN DeclineHelpApfsLoad = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SupplyAPFS = DeclineHelpApfsLoad ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"silence_apfs")) {
-            GlobalConfig.SilenceAPFS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decline_help_apfsmute")) {
+            BOOLEAN DeclineHelpApfsMute = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SilenceAPFS = DeclineHelpApfsMute ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_help_apfssync")) {
             BOOLEAN DeclineHelpApfsSync = HandleBoolean (TokenList, TokenCount);
