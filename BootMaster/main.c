@@ -147,7 +147,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ FALSE,
     /* ScanOtherESP = */ FALSE,
-    /* DeclineHelpTags = */ FALSE,
+    /* DeclineHelpHideTags = */ FALSE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
@@ -1922,10 +1922,10 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
-    /* Show DeclineHelpTags Status */
+    /* Show DeclineHelpHideTags Status */
     MsgLog ("\n");
-    MsgLog ("      DeclineHelpTags:- ");
-    if (GlobalConfig.DeclineHelpTags) {
+    MsgLog ("      DeclineHelpHideTags:- ");
+    if (GlobalConfig.DeclineHelpHideTags) {
         MsgLog ("'Active'");
     }
     else {

@@ -40,7 +40,7 @@
 - Amends 'SyncAPFS' Implementation
   * This feature is now activated by default and has been removed from the configuration file
   * Users can however deactivate it via the new 'decline_help_apfssync' configuration token
-- Renames 'ignore_tag_help' as 'decline_help_tags'
+- Renames 'ignore_tag_help' as 'decline_help_hidetags'
     * The 'decline_help_XYZ' format will be used for options to disable defaults (align with rEFInd)
 
 
