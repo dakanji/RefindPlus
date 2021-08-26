@@ -13,8 +13,6 @@ The current development focus is on the following units:
 
 However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
 
-**NB:** Visit https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md for information related to the current (work in progress) code base.
-
 ## Headline Features
 - Maintains feature and configuration parity with the base rEFInd version.
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
@@ -96,3 +94,5 @@ Implementation differences with the upstream base version v0.13.2 are:
 
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
+
+[CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for ReadMe File related to the current (work in progress) code base.
