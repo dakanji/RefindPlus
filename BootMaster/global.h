@@ -478,7 +478,7 @@ extern BOOLEAN              IsBoot;
 extern BOOLEAN              SetSysTab;
 extern BOOLEAN              MuteLogger;
 extern BOOLEAN              DetectedDevices;
-extern BOOLEAN              ForceNativeLoggging;
+extern BOOLEAN              NativeLogger;
 
 extern EFI_FILE            *SelfDir;
 extern EFI_FILE            *SelfRootDir;

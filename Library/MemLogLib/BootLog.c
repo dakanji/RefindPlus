@@ -264,12 +264,12 @@ VOID EFIAPI DeepLoggger (
 #endif
 
     // Make sure we are able to write
-    if (DebugMode < 1 ||
-        GlobalConfig.LogLevel < 1 ||
-        GlobalConfig.LogLevel < level ||
-        ForceNativeLoggging ||        
-        MuteLogger ||
-        !(*Msg)
+    if (DebugMode < 1
+        || GlobalConfig.LogLevel < 1
+        || GlobalConfig.LogLevel < level
+        || NativeLogger
+        || MuteLogger
+        || !(*Msg)
     ) {
         ReleasePtr (*Msg);
 
@@ -345,7 +345,7 @@ VOID EFIAPI DebugLog (
 
     // Abort on higher log levels if not forcing
     if (!UseMsgLog) {
-        UseMsgLog = ForceNativeLoggging;
+        UseMsgLog = NativeLogger;
 
         if (!UseMsgLog && GlobalConfig.LogLevel > 0) {
             return;

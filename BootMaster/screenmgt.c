@@ -365,8 +365,6 @@ VOID SetupScreen (VOID) {
                     : StrDuplicate (L"Switch to Graphics Mode ... Success");
                 LOG(2, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
                 #endif
             }
             else {
@@ -377,15 +375,17 @@ VOID SetupScreen (VOID) {
                 MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
                 LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("      %s", MsgStr);
-                MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
                 #endif
 
                 // start with screen blanked
                 GraphicsScreenDirty = TRUE;
             }
-
             BannerLoaded = TRUE;
+
+            #if REFIT_DEBUG > 0
+            MyFreePool (&MsgStr);
+            NativeLogger ? MsgLog ("\n") : MsgLog ("\n\n");
+            #endif
         }
     }
     else {

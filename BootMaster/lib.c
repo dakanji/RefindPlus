@@ -514,6 +514,12 @@ EFI_STATUS EfivarGetRaw (
     UINTN        BufferSize    = 0;
     EFI_STATUS   Status        = EFI_LOAD_ERROR;
 
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
+
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
     #endif
@@ -584,11 +590,8 @@ EFI_STATUS EfivarGetRaw (
             LOG(4, LOG_BLANK_LINE_SEP, L"X");
             #endif
         }
-
-        return Status;
     }
-
-    if (GlobalConfig.UseNvram ||
+    else if (GlobalConfig.UseNvram ||
         !GuidsAreEqual (VendorGUID, &RefindPlusGuid)
     ) {
         // Pass in a zero-size buffer to find the required buffer size.
@@ -642,13 +645,16 @@ EFI_STATUS EfivarGetRaw (
             *VariableData = NULL;
             *VariableSize = 0;
         }
-
-        return Status;
+    }
+    else {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable from NVRAM!!");
+        #endif
     }
 
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable from NVRAM!!");
-    #endif
+    if (HybridLogger) {
+        NativeLogger = TRUE;
+    }
 
     return Status;
 } // EFI_STATUS EfivarGetRaw ()
@@ -670,6 +676,12 @@ EFI_STATUS EfivarSetRaw (
     UINTN        OldSize;
     BOOLEAN      SettingMatch;
 
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
+
     if (VariableSize > 0 &&
         VariableData != NULL &&
         !MyStriCmp (VariableName, L"HiddenTags") &&
@@ -690,6 +702,10 @@ EFI_STATUS EfivarSetRaw (
 
             if (SettingMatch) {
                 // Return if settings match
+                if (HybridLogger) {
+                    NativeLogger = TRUE;
+                }
+
                 MyFreePool (&OldBuf);
 
                 // State to be logged by caller if required
@@ -760,6 +776,10 @@ EFI_STATUS EfivarSetRaw (
             Status, VariableName
         );
         #endif
+    }
+
+    if (HybridLogger) {
+        NativeLogger = TRUE;
     }
 
     return Status;
@@ -1693,6 +1713,12 @@ VOID ScanVolume (
     UINTN             PartialLength;
     BOOLEAN           Bootable;
 
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
+
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
         DevicePathFromHandle (Volume->DeviceHandle)
@@ -1718,6 +1744,9 @@ VOID ScanVolume (
         Volume->BlockIO = NULL;
 
         #if REFIT_DEBUG > 0
+        if (HybridLogger) {
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        }
         LOG(1, LOG_LINE_NORMAL, L"Cannot Get BlockIO Protocol in ScanVolume!!");
         #endif
     }
@@ -1790,6 +1819,9 @@ VOID ScanVolume (
 
             if (EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
+                if (HybridLogger) {
+                    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                }
                 LOG(1, LOG_LINE_NORMAL, L"Could Not Locate Device Path for Volume!!");
                 #endif
             }
@@ -1804,6 +1836,9 @@ VOID ScanVolume (
 
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
+                    if (HybridLogger) {
+                        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    }
                     LOG(1, LOG_LINE_NORMAL, L"Could Not Get DiskDevicePath for Volume!!");
                     #endif
                 }
@@ -1822,6 +1857,9 @@ VOID ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
+                    if (HybridLogger) {
+                        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    }
                     LOG(1, LOG_LINE_NORMAL, L"Could Not Get WholeDiskBlockIO for Volume!!");
                     #endif
                 }
@@ -1839,14 +1877,21 @@ VOID ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            CHAR16 *MsgStr = L"Volume Considered Non-Bootable but Boot Code is Present!!";
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            CHAR16 *MsgStr = L"Volume Considered Non-Bootable but Boot Code is Present";
+            if (HybridLogger) {
+                LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            }
+            LOG(2, LOG_LINE_NORMAL, L"%s!!", MsgStr);
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
         }
         #endif
 
         Volume->HasBootCode = FALSE;
+    }
+
+    if (HybridLogger) {
+        NativeLogger = TRUE;
     }
 
     // open the root directory of the volume
@@ -1860,17 +1905,16 @@ VOID ScanVolume (
         Volume->IsReadable = FALSE;
         return;
     }
-    else {
-        Volume->IsReadable = TRUE;
-        if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) &&
-            (Volume->FSType == FS_TYPE_NTFS) &&
-            Volume->HasBootCode
-        ) {
-            // VBR boot code found on NTFS, but volume is not actually bootable
-            // on Mac unless there are actual boot file, so check for them.
-            Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
-        }
-    } // if/else
+
+    Volume->IsReadable = TRUE;
+    if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) &&
+        (Volume->FSType == FS_TYPE_NTFS) &&
+        Volume->HasBootCode
+    ) {
+        // VBR boot code found on NTFS, but volume is not actually bootable
+        // on Mac unless there are actual boot file, so check for them.
+        Volume->HasBootCode = HasWindowsBiosBootFiles (Volume);
+    }
 } // ScanVolume()
 
 static
@@ -2050,7 +2094,9 @@ VOID SetPrebootVolumes (VOID) {
             GlobalConfig.SyncAPFS = FALSE;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"APFS Volume Guids Not Found ... Disabled SyncAFPS");
+            MsgStr = StrDuplicate (
+                L"Could Not Positively Identify APFS Volumes ... Disabling SyncAFPS"
+            );
             LOG(1, LOG_BLANK_LINE_SEP, L"X");
             LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);

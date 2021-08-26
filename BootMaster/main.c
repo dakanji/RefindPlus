@@ -232,7 +232,7 @@ CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
-BOOLEAN                ForceNativeLoggging  = FALSE;
+BOOLEAN                NativeLogger         = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
@@ -1719,8 +1719,8 @@ EFI_STATUS EFIAPI efi_main (
     CHAR16    *MsgStr        = NULL;
     CHAR16    *SelectionName = NULL;
 
-    /* Force Native Logging */
-    ForceNativeLoggging = TRUE;
+    /* Enable Forced Native Logging */
+    NativeLogger = TRUE;
 
     /* Bootstrap */
     InitializeLib (ImageHandle, SystemTable);
@@ -1958,16 +1958,13 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     // Clear Lines
-    if (GlobalConfig.LogLevel > 0) {
+    if (!NativeLogger && GlobalConfig.LogLevel > 0) {
         MsgLog ("\n");
     }
     else {
         MsgLog ("\n\n");
     }
     #endif
-
-    // Disable Forced Native Logging
-    ForceNativeLoggging = FALSE;
 
     // Load Drivers
     LoadDrivers();
@@ -2026,6 +2023,9 @@ EFI_STATUS EFIAPI efi_main (
     // Further bootstrap (now with config available)
     SetupScreen();
 
+    /* Disable Forced Native Logging */
+    NativeLogger = FALSE;
+
     // Apply Scan Delay if set
     if (GlobalConfig.ScanDelay > 0) {
         MsgStr = StrDuplicate (L"Paused for Scan Delay");
@@ -2035,7 +2035,7 @@ EFI_STATUS EFIAPI efi_main (
             CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (PartMsg, &BGColor, CENTER);
 
-            MyFreePool(&PartMsg);
+            MyFreePool (&PartMsg);
         }
 
         #if REFIT_DEBUG > 0
@@ -2044,7 +2044,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("%s:\n", MsgStr);
         #endif
 
-        MyFreePool(&MsgStr);
+        MyFreePool (&MsgStr);
 
         for (i = 0; i < GlobalConfig.ScanDelay; ++i) {
             #if REFIT_DEBUG > 0
@@ -2055,11 +2055,10 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Resuming After a %d Second Pause", i);
-        MsgLog (
-            "  - Waited %d %s\n",
-            i, (i == 1) ? L"Second" : L"Seconds"
-        );
+        MsgStr = PoolPrint (L"Resuming After a %d Second Pause", i);
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("  - %s\n", MsgStr);
+        MyFreePool (&MsgStr);
         #endif
 
         if (GlobalConfig.ScanDelay > Trigger) {
@@ -2067,7 +2066,7 @@ EFI_STATUS EFIAPI efi_main (
         }
     }
 
-    // Continue bootstrap
+    // Continue Bootstrap
     SetVolumeIcons();
     ScanForBootloaders (FALSE);
     ScanForTools();

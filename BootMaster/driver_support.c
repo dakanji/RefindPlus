@@ -644,11 +644,12 @@ UINTN ScanDriverDir (
         NumFound++;
         FileName = PoolPrint (L"%s\\%s", Path, DirEntry->FileName);
 
-        #if REFIT_DEBUG > 0
-        if (RunOnce) {
-            LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
-        }
-        #endif
+        // DA-TAG: Delete once ForcedNativeLogging setup is firmed up
+        //#if REFIT_DEBUG > 0
+        //if (RunOnce) {
+        //    LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
+        //}
+        //#endif
 
         Status = StartEFIImage (
             SelfVolume, FileName, L"",
@@ -700,6 +701,12 @@ BOOLEAN LoadDrivers (VOID) {
 
     LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
+
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
@@ -779,6 +786,13 @@ BOOLEAN LoadDrivers (VOID) {
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
     #endif
+
+    if (HybridLogger) {
+        #if REFIT_DEBUG > 0
+        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        #endif
+        NativeLogger = TRUE;
+    }
 
     // connect all devices
     // DA-TAG: Always run this
