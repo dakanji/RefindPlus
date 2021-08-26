@@ -544,7 +544,7 @@ EFI_STATUS EfivarGetRaw (
             }
 
             MsgStr = PoolPrint (
-                L"From Emulated NVRAM ... Could Not Read UEFI Variable:- '%s'",
+                L"In Emulated NVRAM ... Could Not Read UEFI Variable:- '%s'",
                 VariableName
             );
             LOG(4, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
@@ -564,7 +564,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"From Emulated NVRAM ... %r When Fetching Variable:- '%s'",
+            L"In Emulated NVRAM ... %r When Fetching Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -624,7 +624,7 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"From Hardware NVRAM ... %r When Fetching Variable:- '%s'",
+            L"In Hardware NVRAM ... %r When Fetching Variable:- '%s'",
             Status, VariableName
         );
         #endif
@@ -737,7 +737,7 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         LOG(4, LOG_THREE_STAR_MID,
-            L"To Emulated NVRAM ... %r When Saving Variable:- '%s'",
+            L"In Emulated NVRAM ... %r When Saving Variable:- '%s'",
             Status, VariableName
         );
 
@@ -772,7 +772,7 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"To Hardware NVRAM ... %r When Saving Variable:- '%s'",
+            L"In Hardware NVRAM ... %r When Saving Variable:- '%s'",
             Status, VariableName
         );
         #endif

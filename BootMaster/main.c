@@ -335,7 +335,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     if (BlockCert) {
         LOG(3, LOG_THREE_STAR_MID,
-            L"To Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
+            L"In Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
             LogStatus
         );
         MsgLog ("\n");
