@@ -642,21 +642,21 @@ CHAR16 * GetScanCodeText (
     CHAR16 *retval = NULL;
 
     switch (ScanCode) {
-        case SCAN_END:       retval = L"SCROLL_LAST";              break;
-        case SCAN_HOME:      retval = L"SCROLL_FIRST";             break;
-        case SCAN_PAGE_UP:   retval = L"PAGE_UP";                  break;
-        case SCAN_PAGE_DOWN: retval = L"PAGE_DOWN";                break;
-        case SCAN_UP:        retval = L"ARROW_UP";                 break;
-        case SCAN_LEFT:      retval = L"ARROW_LEFT";               break;
-        case SCAN_DOWN:      retval = L"ARROW_DOWN";               break;
-        case SCAN_RIGHT:     retval = L"ARROW_RIGHT";              break;
-        case SCAN_ESC:       retval = L"KEY_ESC_Escape";           break;
-        case SCAN_DELETE:    retval = L"KEY_DELETE_Hide";          break;
-        case SCAN_INSERT:    retval = L"KEY_INSERT_ShowDetails";   break;
-        case SCAN_F2:        retval = L"KEY_F2_ShowDetails";       break;
-        case SCAN_F10:       retval = L"KEY_F10_ScreenShot";       break;
-        case 0x0016:         retval = L"KEY_F12_EjectMedia";       break;
-        default:             retval = L"KEY_UNKNOWN";              break;
+        case SCAN_END:       retval = L"SCROLL_LAST";          break;
+        case SCAN_HOME:      retval = L"SCROLL_FIRST";         break;
+        case SCAN_PAGE_UP:   retval = L"PAGE_UP";              break;
+        case SCAN_PAGE_DOWN: retval = L"PAGE_DOWN";            break;
+        case SCAN_UP:        retval = L"ARROW_UP";             break;
+        case SCAN_LEFT:      retval = L"ARROW_LEFT";           break;
+        case SCAN_DOWN:      retval = L"ARROW_DOWN";           break;
+        case SCAN_RIGHT:     retval = L"ARROW_RIGHT";          break;
+        case SCAN_ESC:       retval = L"KEY_ESC_Escape";       break;
+        case SCAN_DELETE:    retval = L"KEY_DELETE_Hide";      break;
+        case SCAN_INSERT:    retval = L"KEY_INSERT_Details";   break;
+        case SCAN_F2:        retval = L"KEY_F2_Details";       break;
+        case SCAN_F10:       retval = L"KEY_F10_ScreenShot";   break;
+        case 0x0016:         retval = L"KEY_F12_EjectMedia";   break;
+        default:             retval = L"KEY_UNKNOWN";          break;
     } // switch
 
     return retval;
@@ -902,21 +902,21 @@ UINTN RunGenericMenu (
             } // switch
 
             #if REFIT_DEBUG > 0
-            CHAR16 *KeyText = GetScanCodeText (key.ScanCode);
-            if (MyStriCmp (KeyText, L"KEY_UNKNOWN")) {
+            CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
+            if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyText = L"INFER_ENTER   Key='Space'";          break;
-                    case CHAR_LINEFEED:        KeyText = L"INFER_ENTER   Key='LineFeed'";       break;
-                    case CHAR_CARRIAGE_RETURN: KeyText = L"INFER_ENTER   Key='CarriageReturn'"; break;
-                    case CHAR_BACKSPACE:       KeyText = L"INFER_ESCAPE  Key='BackSpace'";      break;
-                    case '+':                  KeyText = L"INFER_DETAILS Key='+''";             break;
-                    case CHAR_TAB:             KeyText = L"INFER_DETAILS Key='Tab'";            break;
-                    case '-':                  KeyText = L"INFER_HIDE    Key='-''";             break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER          Key=Space";          break;
+                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER          Key=LineFeed";       break;
+                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER          Key=CarriageReturn"; break;
+                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE         Key=BackSpace";      break;
+                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS        Key=Tab";            break;
+                    case '+':                  KeyTxt = L"INFER_DETAILS        Key='+''";           break;
+                    case '-':                  KeyTxt = L"INFER_HIDE           Key='-''";           break;
                 } // switch
             }
             LOG(3, LOG_LINE_NORMAL,
                 L"Processing Keystroke: UnicodeChar = %02d ... ScanCode = %02d - %s",
-                key.UnicodeChar, key.ScanCode, KeyText
+                key.UnicodeChar, key.ScanCode, KeyTxt
             );
             #endif
         }

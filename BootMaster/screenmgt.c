@@ -533,9 +533,17 @@ VOID BeginExternalScreen (
     }
 
     if (UseGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Loading External Screen with Display Mode:- 'Graphics'");
+        #endif
+
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_LINE_NORMAL, L"Loading External Screen with Display Mode:- 'Text'");
+        #endif
+
         SwitchToText (UseGraphicsMode);
         DrawScreenHeader (Title);
     }

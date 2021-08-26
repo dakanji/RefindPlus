@@ -2261,7 +2261,7 @@ VOID ScanForBootloaders (
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
                 MsgLog ("Scan Manual:");
-                LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Loaders");
+                LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Stanzas");
                 #endif
 
                 ScanUserConfigured (GlobalConfig.ConfigFilename);

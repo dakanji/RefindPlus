@@ -1944,19 +1944,22 @@ EFI_STATUS EFIAPI efi_main (
 
     #endif
 
+
+    #if REFIT_DEBUG > 0
+    Status = EFI_NOT_STARTED;
+    #endif
+
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
         Status = RpApfsConnectDevices();
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("\n\n");
-        MsgLog ("INFO: Supply APFS ... %r", Status);
-        #endif
     }
     #endif
 
     #if REFIT_DEBUG > 0
+    MsgLog ("\n\n");
+    MsgLog ("INFO: Supply APFS ... %r", Status);
+
     // Clear Lines
     if (!NativeLogger && GlobalConfig.LogLevel > 0) {
         MsgLog ("\n");
@@ -2072,10 +2075,6 @@ EFI_STATUS EFIAPI efi_main (
     ScanForTools();
     pdInitialize();
 
-    if (GlobalConfig.DefaultSelection) {
-        SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
-    }
-
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
     }
@@ -2085,7 +2084,7 @@ EFI_STATUS EFIAPI efi_main (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Missing Config File");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        MsgLog ("INFO: User Warning:-%s\n", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -2130,8 +2129,34 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
     LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("INFO: %s on %s Firmware\n\n", MsgStr, VendorInfo);
+    MsgLog ("INFO: %s on %s Firmware", MsgStr, VendorInfo);
+    MsgLog ("\n");
     MyFreePool (&MsgStr);
+
+    CHAR16 *TmpStr = NULL;
+    #endif
+
+    if (GlobalConfig.DefaultSelection) {
+        SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
+
+        #if REFIT_DEBUG > 0
+        TmpStr = SelectionName;
+        #endif
+    }
+    else {
+        #if REFIT_DEBUG > 0
+        TmpStr = L"Not Set";
+        #endif
+    }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (L"Default Selection:- '%s'", TmpStr);
+    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    MsgLog ("      %s", MsgStr);
+    MsgLog ("\n\n");
+    MyFreePool (&MsgStr);
+
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
     #endif
 
