@@ -691,6 +691,7 @@ VOID ReadConfig (
         return;
     }
 
+    BOOLEAN DeclineSetting = FALSE;
     for (;;) {
         TokenCount = ReadTokenLine (&File, &TokenList);
         if (TokenCount == 0) {
@@ -1023,8 +1024,9 @@ VOID ReadConfig (
             BOOLEAN DeclineHelpApfsSync = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SyncAPFS = DeclineHelpApfsSync ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
-            GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
             BOOLEAN DeclineHelpEspFilter = HandleBoolean (TokenList, TokenCount);

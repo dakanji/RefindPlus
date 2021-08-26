@@ -50,6 +50,7 @@ decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
 decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_espfilter     |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
+decline_nvramprotect  |Disables feature that blocks UEFI Windows certificates on Apple NVRAM
 decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden
 direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
 disable_amfi          |Disables AMFI Checks on Mac OS if required
@@ -58,7 +59,6 @@ force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
 ignore_previous_boot  |Disables saving the last booted loader if not required
 ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
-protect_nvram         |Prevents UEFI Windows from saving certificates to Apple NVRAM
 provide_console_gop   |Fixes issues with GOP on some legacy units
 reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units)
 scale_ui              |Provides control of UI element scaling
@@ -90,6 +90,7 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsload` configuration token.
 - **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsmute` configuration token.
 - **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted Mac OS. Hence, a single option for booting Mac OS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfssync` configuration token.
+- **Apple NVRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Apple NVRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Apple Macs. This filtering only happens when Apple firmware is detected and is not applied to other types of firmware. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_nvramprotect` configuration token.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_espfilter` configuration token.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
 

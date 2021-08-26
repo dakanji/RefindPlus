@@ -200,7 +200,7 @@
 #
 #disable_amfi
 
-# Prevent UEFI Windows "Secure Boot" from writing to Apple NVRAM. When this option is active,
+# Allow or prevent UEFI Windows "Secure Boot" from saving certificates to Apple NVRAM. By default,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
 # this issue and is recommended instead when running Microsoft Windows on Apple Firmware.
@@ -208,7 +208,7 @@
 #
 # Inactive when commented out (Allows UEFI Windows writes to Apple NVRAM)
 #
-#protect_nvram
+#decline_nvramprotect
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.

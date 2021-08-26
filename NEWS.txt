@@ -41,12 +41,13 @@
 - Extends Memory Management Fixes
   * Additional memory management improvements
 - Renames Misc Configuration Tokens
-    * The 'decline_XYZ' format will be used for options to disable divergent defaults
+    * The 'decline_XYZ' format is now used for options to disable divergent defaults
     * 'scan_other_esp' as 'decline_espfilter'
     * 'ignore_tag_help' as 'decline_tagshelp'
     * 'sync_apfs' as 'decline_apfssync' ('SyncAPFS' is now active by default)
     * 'supply_apfs' as 'decline_apfsload' ('SupplyAPFS' is now active by default)
     * 'silence_apfs' as 'decline_apfsmute' ('SilenceAPFS' is now active by default)
+    * 'protect_nvram' to 'decline_nvramprotect'  ('ProtectNVRAM' is now active by default)
 
 
 0.13.2.AG (03 Aug 2021):
