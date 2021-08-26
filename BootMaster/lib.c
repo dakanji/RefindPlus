@@ -2023,7 +2023,7 @@ BOOLEAN SetPreBootNames (
     );
 
     if (!EFI_ERROR(Status)) {
-        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_A || VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM_B) {
+        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PROTOTYPE || VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM) {
             for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
                 if (GuidsAreEqual (
                         &(PreBootVolumes[PreBootIndex]->PartGuid),

@@ -76,13 +76,13 @@ typedef struct {
 } APPLE_APFS_CONTAINER_INFO;
 
 
-#define APPLE_APFS_VOLUME_ROLE_SYSTEM_A    (0x00)  // Early APFS Versions ... Combined System and Data Volumes
-#define APPLE_APFS_VOLUME_ROLE_SYSTEM_B    (0x01)  // Later APFS Versions ... Separate System Volumes
-#define APPLE_APFS_VOLUME_ROLE_RECOVERY    (0x04)
-#define APPLE_APFS_VOLUME_ROLE_VM          (0x08)
-#define APPLE_APFS_VOLUME_ROLE_PREBOOT     (0x10)
-#define APPLE_APFS_VOLUME_ROLE_DATA        (0x40)
-#define APPLE_APFS_VOLUME_ROLE_UPDATE      (0xC0)
+#define APPLE_APFS_VOLUME_ROLE_PROTOTYPE  (0x00) // Early APFS ... Combined System/Data Volume
+#define APPLE_APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
+//#define APPLE_APFS_VOLUME_ROLE_RECOVERY (0x04) // Uncomment and adjust spacing if/when needed
+//#define APPLE_APFS_VOLUME_ROLE_VM       (0x08) // Uncomment and adjust spacing if/when needed
+#define APPLE_APFS_VOLUME_ROLE_PREBOOT    (0x10)
+//#define APPLE_APFS_VOLUME_ROLE_DATA     (0x40) // Uncomment and adjust spacing if/when needed
+//#define APPLE_APFS_VOLUME_ROLE_UPDATE   (0xC0) // Uncomment and adjust spacing if/when needed
 typedef UINT32 APPLE_APFS_VOLUME_ROLE;
 
 
