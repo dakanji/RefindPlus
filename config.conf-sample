@@ -17,7 +17,7 @@
 #
 # Inactive when commented out (Does not supply APFS filesystem capability)
 #
-#decline_help_apfsload
+#decline_apfsload
 
 # Suppress verbose APFS loading text output. RefindPlus is set up by default to always
 # suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
@@ -28,7 +28,7 @@
 #
 # Inactive when commented out (Allows verbose APFS text)
 #
-#decline_help_apfsmute
+#decline_apfsmute
 
 # Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
 # of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
@@ -41,7 +41,15 @@
 #
 # Inactive when commented out (Allows APFS partition synchronisation)
 #
-#decline_help_apfssync
+#decline_apfssync
+
+# Allow scans of multiple ESPs. When this option is active, RefindPlus
+# will make other ESPs, separate from that containing RefindPlus,
+# available to be scanned for kernels and loaders.
+#
+# Inactive when commented out (Allows scans of other ESPs)
+#
+#decline_espfilter
 
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
@@ -52,15 +60,7 @@
 #
 # Inactive when commented out (Allows help with hidden_tags)
 #
-#decline_help_hidetags
-
-# Allow scans of multiple ESPs. When this option is active, RefindPlus
-# will make other ESPs, separate from that containing RefindPlus,
-# available to be scanned for kernels and loaders.
-#
-# Inactive when commented out (Allows scans of other ESPs)
-#
-#decline_help_scanesp
+#decline_tagshelp
 
 # RefindPlus defaults to scanning volumes for ".VolumeIcon" icns files and if
 # found, these are used as display icons for internal volumes. However, most

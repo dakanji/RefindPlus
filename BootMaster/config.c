@@ -1011,26 +1011,26 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"decline_help_apfsload")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apfsload")) {
             BOOLEAN DeclineHelpApfsLoad = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyAPFS = DeclineHelpApfsLoad ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_help_apfsmute")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
             BOOLEAN DeclineHelpApfsMute = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SilenceAPFS = DeclineHelpApfsMute ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_help_apfssync")) {
+        else if (MyStriCmp (TokenList[0], L"decline_apfssync")) {
             BOOLEAN DeclineHelpApfsSync = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SyncAPFS = DeclineHelpApfsSync ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"protect_nvram")) {
             GlobalConfig.ProtectNVRAM = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"decline_help_scanesp")) {
-            BOOLEAN DeclineHelpScanESP = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ScanAllESP = DeclineHelpScanESP ? FALSE : TRUE;
+        else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
+            BOOLEAN DeclineHelpEspFilter = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanAllESP = DeclineHelpEspFilter ? FALSE : TRUE;
         }
-        else if (MyStriCmp (TokenList[0], L"decline_help_hidetags")) {
+        else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
             BOOLEAN DeclineHelpTags = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.HideTagsHelp = DeclineHelpTags ? FALSE : TRUE;
         }

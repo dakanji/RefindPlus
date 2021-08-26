@@ -44,27 +44,27 @@ RefindPlus-Specific funtionality can be activated by adding the tokens below to 
 
 Token | Functionality
 :----: | :----:
-active_csr            |Actively enables or disables the CSR Policy on Macs.
-continue_on_warning   |Proceeds as if a key is pressed after screen warnings (for remote login).
-decline_help_apfsload |Disables built in provision of APFS filesystem capability.
-decline_help_apfsmute |Disables supressesion of verbose APFS text on boot.
-decline_help_apfssync |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot").
-decline_help_hidetags |Disables feature that ensures hidden tags can always be unhidden.
-decline_help_scanesp  |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders.
-direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs.
-disable_amfi          |Disables AMFI Checks on Mac OS if required.
-disable_compat_check  |Disables Mac version compatibility checks if required.
-force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required.
-ignore_previous_boot  |Disables saving the last booted loader if not required.
-ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required.
-normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates.
-protect_nvram         |Prevents UEFI Windows from saving certificates to Apple NVRAM.
-provide_console_gop   |Fixes issues with GOP on some legacy units.
-reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units).
-scale_ui              |Provides control of UI element scaling.
-set_boot_args         |Allows arbitrary Mac OS boot argument strings.
-text_renderer         |Provides a text renderer that allows text mode when not otherwise available.
-uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs.
+active_csr            |Actively enables or disables the CSR Policy on Macs
+continue_on_warning   |Proceeds as if a key is pressed after screen warnings (for remote login)
+decline_apfsload      |Disables built in provision of APFS filesystem capability
+decline_apfsmute      |Disables supressesion of verbose APFS text on boot
+decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
+decline_espfilter     |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
+decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden
+direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
+disable_amfi          |Disables AMFI Checks on Mac OS if required
+disable_compat_check  |Disables Mac version compatibility checks if required
+force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
+ignore_previous_boot  |Disables saving the last booted loader if not required
+ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required
+normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
+protect_nvram         |Prevents UEFI Windows from saving certificates to Apple NVRAM
+provide_console_gop   |Fixes issues with GOP on some legacy units
+reload_gop            |Install UEFI 2.x GOP drivers on EFI 1.x units (modern GPUs on legacy units)
+scale_ui              |Provides control of UI element scaling
+set_boot_args         |Allows arbitrary Mac OS boot argument strings
+text_renderer         |Provides a text renderer that allows text mode when not otherwise available
+uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
 
 In addition to the new functions above, the following upsteam functions have been extended:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
@@ -86,11 +86,11 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution.
-- **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_help_hidetags` configuration token.
-- **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_help_apfsload` configuration token.
-- **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_help_apfsmute` configuration token.
-- **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted Mac OS. Hence, a single option for booting Mac OS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_help_apfssync` configuration token.
-- **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_help_scanesp` configuration token.
+- **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_tagshelp` configuration token.
+- **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsload` configuration token.
+- **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsmute` configuration token.
+- **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted Mac OS. Hence, a single option for booting Mac OS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfssync` configuration token.
+- **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_espfilter` configuration token.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to `submenuentry` items which can be enabled or disabled separately.
 
 ## Roll Your Own
