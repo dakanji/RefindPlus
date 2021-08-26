@@ -1013,28 +1013,28 @@ VOID ReadConfig (
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfsload")) {
-            BOOLEAN DeclineHelpApfsLoad = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SupplyAPFS = DeclineHelpApfsLoad ? FALSE : TRUE;
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SupplyAPFS = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
-            BOOLEAN DeclineHelpApfsMute = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SilenceAPFS = DeclineHelpApfsMute ? FALSE : TRUE;
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SilenceAPFS = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfssync")) {
-            BOOLEAN DeclineHelpApfsSync = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.SyncAPFS = DeclineHelpApfsSync ? FALSE : TRUE;
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SyncAPFS = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
-            BOOLEAN DeclineHelpEspFilter = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ScanAllESP = DeclineHelpEspFilter ? FALSE : TRUE;
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ScanAllESP = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
-            BOOLEAN DeclineHelpTags = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.HideTagsHelp = DeclineHelpTags ? FALSE : TRUE;
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.HideTagsHelp = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
