@@ -646,21 +646,21 @@ CHAR16 * GetScanCodeText (
     CHAR16 *retval = NULL;
 
     switch (ScanCode) {
-        case SCAN_END:       retval = L"SCROLL_LAST";      break;
-        case SCAN_HOME:      retval = L"SCROLL_FIRST";     break;
-        case SCAN_PAGE_UP:   retval = L"PAGE_UP";          break;
-        case SCAN_PAGE_DOWN: retval = L"PAGE_DOWN";        break;
-        case SCAN_UP:        retval = L"ARROW_UP";         break;
-        case SCAN_LEFT:      retval = L"ARROW_LEFT";       break;
-        case SCAN_DOWN:      retval = L"ARROW_DOWN";       break;
-        case SCAN_RIGHT:     retval = L"ARROW_RIGHT";      break;
-        case SCAN_ESC:       retval = L"ESC-Escape";       break;
-        case SCAN_DELETE:    retval = L"DELETE-Hide";      break;
-        case SCAN_INSERT:    retval = L"INSERT-Details";   break;
-        case SCAN_F2:        retval = L"F2-Details";       break;
-        case SCAN_F10:       retval = L"F10-ScreenShot";   break;
-        case 0x0016:         retval = L"F12-EjectMedia";   break;
-        default:             retval = L"KEY_UNKNOWN";      break;
+        case SCAN_END:       retval = L"SCROLL_LAST";   break;
+        case SCAN_HOME:      retval = L"SCROLL_FIRST";  break;
+        case SCAN_PAGE_UP:   retval = L"PAGE_UP";       break;
+        case SCAN_PAGE_DOWN: retval = L"PAGE_DOWN";     break;
+        case SCAN_UP:        retval = L"ARROW_UP";      break;
+        case SCAN_LEFT:      retval = L"ARROW_LEFT";    break;
+        case SCAN_DOWN:      retval = L"ARROW_DOWN";    break;
+        case SCAN_RIGHT:     retval = L"ARROW_RIGHT";   break;
+        case SCAN_ESC:       retval = L"ESC-Rescan";    break;
+        case SCAN_DELETE:    retval = L"DEL-Hide";      break;
+        case SCAN_INSERT:    retval = L"INS-Details";   break;
+        case SCAN_F2:        retval = L"F2-Details";    break;
+        case SCAN_F10:       retval = L"F10-ScrnSht";   break; // Using 'ScrnSht' to limit length
+        case 0x0016:         retval = L"F12-Eject";     break;
+        default:             retval = L"KEY_UNKNOWN";   break;
     } // switch
 
     return retval;
@@ -910,13 +910,13 @@ UINTN RunGenericMenu (
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyTxt = L"INFER_ENTER      Key=Space";          break;
-                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER      Key=LineFeed";       break;
-                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER      Key=CarriageReturn"; break;
-                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE     Key=BackSpace";      break;
-                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS    Key=Tab";            break;
-                    case '+':                  KeyTxt = L"INFER_DETAILS    Key='+''";           break;
-                    case '-':                  KeyTxt = L"INFER_HIDE       Key='-''";           break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=Space";          break;
+                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key=LineFeed";       break;
+                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key=CarriageReturn"; break;
+                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key=BackSpace";      break;
+                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key=Tab";            break;
+                    case '+':                  KeyTxt = L"INFER_DETAILS  Key='+''";           break;
+                    case '-':                  KeyTxt = L"INFER_HIDE     Key='-''";           break;
                 } // switch
             }
             LOG(3, LOG_LINE_NORMAL,

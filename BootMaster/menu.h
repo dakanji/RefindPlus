@@ -112,7 +112,7 @@ typedef struct {
 
 struct _refit_menu_screen;
 
-typedef VOID (*MENU_STYLE_FUNC)(
+typedef VOID (*MENU_STYLE_FUNC) (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
     IN UINTN Function,

@@ -43,7 +43,7 @@ RefindPlus-Specific funtionality can be activated by adding the tokens below to 
 Token | Functionality
 :----: | :----:
 active_csr            |Actively enables or disables the CSR Policy on Macs
-continue_on_warning   |Proceeds as if a key is pressed after screen warnings (for remote login)
+continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended login)
 decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
 decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
@@ -95,4 +95,4 @@ Implementation differences with the upstream base version v0.13.2 are:
 ## Roll Your Own
 Refer to [BUILDING.md](https://github.com/dakanji/RefindPlus/blob/GOPFix/BUILDING.md) for build instructions (x64 Only).
 
-[CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for ReadMe File related to the current (work in progress) code base.
+[CLICK HERE](https://github.com/dakanji/RefindPlus/blob/GOPFix/README-Dev.md) for the ReadMe File related to the current (work in progress) code base.

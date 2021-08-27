@@ -12,10 +12,10 @@
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version. This ensures that any changes made to APFS drivers for each specific
 # Mac OS version are accomodated, compared to using one driver no matter which specific
-# Mac OS version is being loaded. This default is deactivated whenever this option is set.
+# Mac OS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Inactive when commented out (Does not supply APFS filesystem capability)
+# APFS filesystem capability is supplied (if required) when commented out
 #
 #decline_apfsload
 
@@ -26,7 +26,7 @@
 # this option if such negative effects are observed. This option only applies to Mac OS.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Inactive when commented out (Allows verbose APFS text)
+# Verbose APFS text is allowed (if genereated) when commented out
 #
 #decline_apfsmute
 
@@ -39,7 +39,7 @@
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled, this "help" with APFS partitions will be deactivated.
 #
-# Inactive when commented out (Allows APFS partition synchronisation)
+# APFS partition synchronisation is allowed (if required) when commented out
 #
 #decline_apfssync
 
@@ -47,9 +47,19 @@
 # will make other ESPs, separate from that containing RefindPlus,
 # available to be scanned for kernels and loaders.
 #
-# Inactive when commented out (Allows scans of other ESPs)
+# Scans of other ESPs are allowed when commented out
 #
 #decline_espfilter
+
+# Allow or prevent UEFI Windows "Secure Boot" from saving certificates to Apple NVRAM. By default,
+# RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
+# as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
+# this issue and is recommended instead when running Microsoft Windows on Apple Firmware.
+# This setting is only activated when Apple Firmware is detected on UEFI Windows boot.
+#
+# UEFI Windows certificate writes to Apple NVRAM are allowed when commented out
+#
+#decline_nvramprotect
 
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
@@ -58,7 +68,7 @@
 # setup will be deactivated and the ability to unhide items will be solely based on
 # whether the "hidden_tags" tool has been explictly added to the "showtools" list.
 #
-# Inactive when commented out (Allows help with hidden_tags)
+# The "hidden_tags" tool is always available when commented out
 #
 #decline_tagshelp
 
@@ -73,19 +83,6 @@
 # Always scans for ".VolumeIcon" icns files when commented out
 #
 #ignore_volume_icns
-
-# RefindPlus defaults to storing the name of the last booted loader in
-# the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
-# provides a default option to be selected on the main screen when RefindPlus
-# is loaded. This can however increase wear and tear on the NVRAM and disabling
-# the "use_nvram" token writes variables to the filesystem instead, limiting this.
-# On some setups however, such as when the "default_selection" token is set, such
-# writes are not required to start with. When the "ignore_previous_boot" setting
-# is active, RefindPlus will not store the "PreviousBoot" variable anywhere.
-#
-# Always saves the "PreviousBoot" variable when commented out
-#
-#ignore_previous_boot
 
 # The SimpleText protocol on the ConsoleOut handle is usually used for
 # text output. On Macs and some other firmware, this is complicated by
@@ -102,13 +99,18 @@
 #
 #text_renderer
 
-# Adds the UGA Protocol to GOP when absent. This option allows the RefindPlus
-# screen when using modern GPUs on units with only EFIBoot capability.
-# NB: This functionality is only available on TianoCore Builds.
+# RefindPlus defaults to storing the name of the last booted loader in
+# the "PreviousBoot" variable in the NVRAM under the RefindPlus GUID. This
+# provides a default option to be selected on the main screen when RefindPlus
+# is loaded. This can however increase wear and tear on the NVRAM and disabling
+# the "use_nvram" token writes variables to the filesystem instead, limiting this.
+# On some setups however, such as when the "default_selection" token is set, such
+# writes are not required to start with. When the "ignore_previous_boot" setting
+# is active, RefindPlus will not store the "PreviousBoot" variable anywhere.
 #
-# Inactive when commented out (Does not add UGA to GOP)
+# Always saves the "PreviousBoot" variable when commented out
 #
-#uga_pass_through
+#ignore_previous_boot
 
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
@@ -126,6 +128,14 @@
 #
 #provide_console_gop
 
+# Adds the UGA Protocol to GOP when absent. This option allows the RefindPlus
+# screen when using modern GPUs on units with only EFIBoot capability.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# Inactive when commented out (Does not add UGA to GOP)
+#
+#uga_pass_through
+
 # When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
 # UEFI 2.x requirements, they do not work on legacy devices as the specifications
 # mandate that on installation, compliant GOP drivers should confirm devices are
@@ -135,8 +145,8 @@
 # all of, the UEFI 2.x capabilities. When this token is active, RefindPlus
 # will temporarily amend the device's EFI Revision to UEFI 2.x and attempt
 # reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
-# is not available. The changes are reverted afterwards and allow running
-# modern GPUs on some legacy units where they would usually fail to work.
+# is not available. The changes are reverted afterwards and permit running
+# modern GPUs on some legacy units when they would otherwise fail to work.
 #
 # Inactive when commented out (Does not reinstall GOP)
 #
@@ -179,7 +189,7 @@
 
 # Disable Mac OS compatibility check when booting. Macs check whether the
 # current Mac OS version is supported on the machine when booting and halts
-# if not. When this option is active, RefindPlus will set the "-no_compat_check"
+# if not. When this option is active, RefindPlus will set a "-no_compat_check"
 # boot argument which disables this check and allows boot to proceed on otherwise
 # unsupported Macs. This setting only applies to Mac OS. Note that this setting will
 # create a Mac OS boot argument the first time it is triggered and it will remain
@@ -199,16 +209,6 @@
 # Inactive when commented out (Allows AMFI checks)
 #
 #disable_amfi
-
-# Allow or prevent UEFI Windows "Secure Boot" from saving certificates to Apple NVRAM. By default,
-# RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
-# as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
-# this issue and is recommended instead when running Microsoft Windows on Apple Firmware.
-# This setting only applies when loading Windows on Apple Firmware.
-#
-# Inactive when commented out (Allows UEFI Windows writes to Apple NVRAM)
-#
-#decline_nvramprotect
 
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
@@ -402,18 +402,18 @@
 # is recommended however, to keep the default "OFF" setting
 # of "10" in place, and to use the "normalise_csr" token
 # instead to better achieve the same end (both values).
-#      CSR_ALLOW_UNTRUSTED_KEXTS               0x0001
-#      CSR_ALLOW_UNRESTRICTED_FS               0x0002
-#      CSR_ALLOW_TASK_FOR_PID                  0x0004
-#      CSR_ALLOW_KERNEL_DEBUGGER               0x0008
-#      CSR_ALLOW_APPLE_INTERNAL                0x0010
-#      CSR_ALLOW_UNRESTRICTED_DTRACE           0x0020
-#      CSR_ALLOW_UNRESTRICTED_NVRAM            0x0040
-#      CSR_ALLOW_DEVICE_CONFIGURATION          0x0080
-#      CSR_ALLOW_ANY_RECOVERY_OS               0x0100
-#      CSR_ALLOW_UNAPPROVED_KEXTS              0x0200
-#      CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE    0x0400
-#      CSR_ALLOW_UNAUTHENTICATED_ROOT          0x0800
+#      CSR_ALLOW_UNTRUSTED_KEXTS                0x0001
+#      CSR_ALLOW_UNRESTRICTED_FS                0x0002
+#      CSR_ALLOW_TASK_FOR_PID                   0x0004
+#      CSR_ALLOW_KERNEL_DEBUGGER                0x0008
+#      CSR_ALLOW_APPLE_INTERNAL                 0x0010
+#      CSR_ALLOW_UNRESTRICTED_DTRACE            0x0020
+#      CSR_ALLOW_UNRESTRICTED_NVRAM             0x0040
+#      CSR_ALLOW_DEVICE_CONFIGURATION           0x0080
+#      CSR_ALLOW_ANY_RECOVERY_OS                0x0100
+#      CSR_ALLOW_UNAPPROVED_KEXTS               0x0200
+#      CSR_ALLOW_EXECUTABLE_POLICY_OVERRIDE     0x0400
+#      CSR_ALLOW_UNAUTHENTICATED_ROOT           0x0800
 #
 # Inactive when commented out (CSR values for SIP/SSV cannot be set)
 #

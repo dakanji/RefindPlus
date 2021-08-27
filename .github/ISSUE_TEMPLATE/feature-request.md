@@ -1,15 +1,15 @@
 ---
 name: Feature Request
-about: Suggest improvements for RefindPlus
+about: Suggest improvements to RefindPlus
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
+**Is your feature request related to a specific problem?**
 <!--
-A clear and concise description of the problem is.
+A clear and concise description of the problem.
 ENTER AFTER THE ARROW BELOW
 -->
 

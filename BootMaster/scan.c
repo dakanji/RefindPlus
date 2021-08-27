@@ -1160,10 +1160,10 @@ BOOLEAN ShouldScan (
     }
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
-    if ((IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)) ||
-        (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) ||
-        (IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)) ||
-        (IsIn (VolGuid, GlobalConfig.DontScanVolumes))
+    if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
+        || IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)
+        || IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)
+        || IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
     ) {
         MyFreePool (&VolGuid);
 
@@ -1171,17 +1171,21 @@ BOOLEAN ShouldScan (
     }
     MyFreePool (&VolGuid);
 
-    if (MyStriCmp (Path, SelfDirPath) && (Volume->DeviceHandle == SelfVolume->DeviceHandle)) {
+    if (MyStriCmp (Path, SelfDirPath)
+        && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
+    ) {
         return FALSE;
     }
 
     // See if Path includes an explicit volume declaration that is NOT Volume.
     PathCopy = StrDuplicate (Path);
     if (SplitVolumeAndFilename (&PathCopy, &VolName)) {
-        if (VolName && (!MyStriCmp (VolName, Volume->FsName) ||
-            !MyStriCmp(VolName, Volume->PartName))
-        ) {
-            ScanIt = FALSE;
+        if (VolName) {
+            if (!MyStriCmp (VolName, Volume->FsName)
+                || !MyStriCmp(VolName, Volume->PartName)
+            ) {
+                ScanIt = FALSE;
+            }
         }
     }
 
@@ -1196,7 +1200,9 @@ BOOLEAN ShouldScan (
         SplitVolumeAndFilename (&DontScanDir, &VolName);
         CleanUpPathNameSlashes (DontScanDir);
         if (VolName != NULL) {
-            if (VolumeMatchesDescription (Volume, VolName) && MyStriCmp (DontScanDir, Path)) {
+            if (VolumeMatchesDescription (Volume, VolName)
+                && MyStriCmp (DontScanDir, Path)
+            ) {
                 ScanIt = FALSE;
             }
         }
@@ -1305,7 +1311,11 @@ BOOLEAN DuplicatesFallback (
                 );
             }
             if (Status == EFI_SUCCESS) {
-                AreIdentical = (CompareMem (FileContents, FallbackContents, FileSize) == 0);
+                AreIdentical = (CompareMem (
+                    FileContents,
+                    FallbackContents,
+                    FileSize
+                ) == 0);
             }
         }
 
@@ -3237,7 +3247,7 @@ VOID ScanForTools (VOID) {
 
     #if REFIT_DEBUG > 0
     ToolStr = PoolPrint (L"Processed %d Tool Types", ToolTotal);
-    LOG(4, LOG_THREE_STAR_SEP, L"%s", ToolStr);
+    LOG(4, LOG_THREE_STAR_END, L"%s", ToolStr);
     MsgLog ("\n\n");
     MsgLog ("INFO: %s", ToolStr);
     MsgLog ("\n\n");
