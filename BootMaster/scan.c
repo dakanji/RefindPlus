@@ -3236,8 +3236,10 @@ VOID ScanForTools (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
+    ToolStr = PoolPrint (L"Processed %d Tool Types", ToolTotal);
+    LOG(4, LOG_THREE_STAR_SEP, L"%s", ToolStr);
     MsgLog ("\n\n");
-    MsgLog ("INFO: Processed %d Tool Types", ToolTotal);
+    MsgLog ("INFO: %s", ToolStr);
     MsgLog ("\n\n");
     #endif
 } // VOID ScanForTools
