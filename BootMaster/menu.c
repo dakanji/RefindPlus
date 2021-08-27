@@ -105,6 +105,9 @@ BOOLEAN DrawSelection     = TRUE;
 extern EFI_GUID          RefindPlusGuid;
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
+extern BOOLEAN           FlushFailedTag;
+extern BOOLEAN           FlushFailReset;
+
 static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 
@@ -984,11 +987,26 @@ UINTN RunGenericMenu (
     pdClear();
     StyleFunc (Screen, &State, MENU_FUNCTION_CLEANUP, NULL);
 
-    if (ChosenEntry) {
-        *ChosenEntry = Screen->Entries[State.CurrentSelection];
-    }
+    // Ignore MenuExit if FlushFailedTag is set and not previously reset
+    if (FlushFailedTag && !FlushFailReset) {
+        #if REFIT_DEBUG > 0
+        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
+        LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
 
-    *DefaultEntryIndex = State.CurrentSelection;
+        FlushFailedTag = FALSE;
+        FlushFailReset = TRUE;
+        MenuExit = 0;
+    }
+    else {
+        if (ChosenEntry) {
+            *ChosenEntry = Screen->Entries[State.CurrentSelection];
+        }
+
+        *DefaultEntryIndex = State.CurrentSelection;
+    }
 
     return MenuExit;
 } // UINTN RunGenericMenu()
@@ -2867,13 +2885,28 @@ UINTN RunMainMenu (
         }
     } // while
 
-    if (ChosenEntry) {
-        *ChosenEntry = TempChosenEntry;
-    }
+    // Ignore MenuExit if FlushFailedTag is set and not previously reset
+    if (FlushFailedTag && !FlushFailReset) {
+        #if REFIT_DEBUG > 0
+        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
+        LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+        MsgLog ("INFO: %s\n\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
 
-    if (DefaultSelection) {
-       ReleasePtr (*DefaultSelection);
-       *DefaultSelection = MenuTitle;
+        FlushFailedTag = FALSE;
+        FlushFailReset = TRUE;
+        MenuExit = 0;
+    }
+    else {
+        if (ChosenEntry) {
+            *ChosenEntry = TempChosenEntry;
+        }
+
+        if (DefaultSelection) {
+           ReleasePtr (*DefaultSelection);
+           *DefaultSelection = MenuTitle;
+        }
     }
 
     return MenuExit;

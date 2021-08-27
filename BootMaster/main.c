@@ -233,6 +233,8 @@ BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
+BOOLEAN                FlushFailedTag       = FALSE;
+BOOLEAN                FlushFailReset       = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
@@ -2168,6 +2170,20 @@ EFI_STATUS EFIAPI efi_main (
 
         // Clear Keystrokes
         ReadAllKeyStrokes();
+
+        // Ignore MenuExit if FlushFailedTag is set and not previously reset
+        if (FlushFailedTag && !FlushFailReset) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
+            LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (&MsgStr);
+            #endif
+
+            FlushFailedTag = FALSE;
+            FlushFailReset = TRUE;
+            continue;
+        }
 
         // The Escape key triggers a re-scan operation
         if (MenuExit == MENU_EXIT_ESCAPE) {

@@ -21,6 +21,10 @@
   * NB: RefindPlus does not check whether a GPU is actually connected to a display
   *     Hence, a blank display will result if the highest resolution GPU is not connected
   * This bug was introduced in v0.12.0.AN (Commit 62e6fe8)
+- Improves Keystroke Flushing
+  * Device errors are returned when attempting to read keystrokes under some conditions
+  * This appears to typically only happen on UEFI PC
+  * RefindPlus now further attempts to ensure the read takes place and/or mitigate the impact
 - Improves APFS Volume Role Identification
   * APFS volume roles are now identified by their predefined 'Disk Roles'
   * The 'SyncAPFS' feature no longer requires a default name pattern (in English) for APFS Data volumes

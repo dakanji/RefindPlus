@@ -78,6 +78,8 @@ EG_PIXEL DarkBackgroundPixel = { 0x0,  0x0,  0x0,  0 };
 static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
 
+extern BOOLEAN FlushFailedTag;
+
 
 static
 VOID PrepareBlankLine (VOID) {
@@ -534,14 +536,14 @@ VOID BeginExternalScreen (
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Loading External Screen with Display Mode:- 'Graphics'");
+        LOG(4, LOG_LINE_NORMAL, L"Begin External Screen with Display Mode:- 'Graphics'");
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"Loading External Screen with Display Mode:- 'Text'");
+        LOG(4, LOG_LINE_NORMAL, L"Begin External Screen with Display Mode:- 'Text'");
         #endif
 
         SwitchToText (UseGraphicsMode);
@@ -608,33 +610,50 @@ VOID DrawScreenHeader (
 //
 
 BOOLEAN ReadAllKeyStrokes (VOID) {
-    BOOLEAN       GotKeyStrokes;
+    BOOLEAN       GotKeyStrokes = FALSE;
+    BOOLEAN       EmptyBuffer   = FALSE ;
     EFI_STATUS    Status;
     EFI_INPUT_KEY key;
 
-    GotKeyStrokes = FALSE;
     for (;;) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
+        } else if (Status == EFI_NOT_READY) {
+            EmptyBuffer = TRUE;
         }
         break;
     }
 
     #if REFIT_DEBUG > 0
-    Status = (GotKeyStrokes) ? EFI_SUCCESS : EFI_ALREADY_STARTED;
+    Status = (GotKeyStrokes)
+        ? EFI_SUCCESS
+        : (EmptyBuffer)
+            ? EFI_ALREADY_STARTED
+            : Status;
     LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ... %r", Status);
     #endif
 
-    // Wait 100ms and quietly repeat flushing
-    gBS->Stall(100000);
-    for (;;) {
-        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-        if (Status == EFI_SUCCESS) {
-            continue;
+    // Wait and quietly try again on device error
+    if (!GotKeyStrokes && !EmptyBuffer) {
+        gBS->Stall(250000);
+        gBS->Stall(250000);
+        gBS->Stall(250000);
+        gBS->Stall(250000);
+        for (;;) {
+            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+            if (Status == EFI_SUCCESS) {
+                continue;
+            }
+            break;
         }
-        break;
+    }
+
+    // Flag device error and proceed if not resolved
+    // We will try to resolve under the main loop if required
+    if (!GotKeyStrokes && !EmptyBuffer) {
+        FlushFailedTag = TRUE;
     }
 
     return GotKeyStrokes;
