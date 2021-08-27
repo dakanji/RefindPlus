@@ -2075,7 +2075,12 @@ EFI_STATUS EFIAPI efi_main (
     SetVolumeIcons();
     ScanForBootloaders (FALSE);
     ScanForTools();
+
+    /* Enable Forced Native Logging */
+    NativeLogger = TRUE;
     pdInitialize();
+    NativeLogger = FALSE;
+    /* Disable Forced Native Logging */
 
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
