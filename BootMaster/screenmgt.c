@@ -615,6 +615,12 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     EFI_STATUS    Status;
     EFI_INPUT_KEY key;
 
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
+
     for (;;) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
@@ -654,6 +660,14 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     // We will try to resolve under the main loop if required
     if (!GotKeyStrokes && !EmptyBuffer) {
         FlushFailedTag = TRUE;
+    }
+
+    if (HybridLogger) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_BLANK_LINE_SEP, L"X");
+        #endif
+
+        NativeLogger = TRUE;
     }
 
     return GotKeyStrokes;

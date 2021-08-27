@@ -673,6 +673,9 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     LOG(3, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
     #endif
 
+    // Clear Keystrokes
+    ReadAllKeyStrokes();
+
     if (FoundGOP) {
         return EFI_SUCCESS;
     }
