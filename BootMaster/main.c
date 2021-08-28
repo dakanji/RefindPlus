@@ -336,7 +336,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     MyFreePool (&MsgStr);
 
     if (BlockCert) {
-        LOG(3, LOG_THREE_STAR_MID,
+        LOG(4, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
             LogStatus
         );
@@ -362,7 +362,7 @@ VOID FilterCSR (VOID) {
             L"Normalise CSR ... %r",
             Status
         );
-        LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("    * %s", MsgStr);
         MyFreePool (&MsgStr);
@@ -869,7 +869,7 @@ VOID preBootKicker (VOID) {
 
     if (BootKickerMenu.EntryCount > 0) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
+        LOG(3, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
         #endif
     }
     else {
@@ -910,7 +910,7 @@ VOID preBootKicker (VOID) {
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preBootKicker'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
@@ -968,7 +968,7 @@ VOID preBootKicker (VOID) {
 
         if (FoundTool) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
+            LOG(3, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
             MsgLog ("  - Load BootKicker\n\n");
             #endif
@@ -978,13 +978,13 @@ VOID preBootKicker (VOID) {
 
             // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
+            LOG(3, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
             MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
+            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
         }
@@ -1018,7 +1018,7 @@ VOID preCleanNvram (VOID) {
 
     if (CleanNvramMenu.EntryCount > 0) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
+        LOG(3, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
         #endif
     }
     else {
@@ -1057,7 +1057,7 @@ VOID preCleanNvram (VOID) {
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preCleanNvram'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
@@ -1117,7 +1117,7 @@ VOID preCleanNvram (VOID) {
 
         if (FoundTool) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
+            LOG(3, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
             MsgLog ("  - Load CleanNvram\n\n");
             #endif
@@ -1129,13 +1129,13 @@ VOID preCleanNvram (VOID) {
 
             // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
+            LOG(3, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
             MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
+            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
             #endif
         }
@@ -1158,7 +1158,7 @@ VOID AboutRefindPlus (VOID) {
 
     if (AboutMenu.EntryCount > 0) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
+        LOG(3, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
         #endif
     }
     else {
@@ -1324,12 +1324,12 @@ BOOLEAN SecureBootSetup (VOID) {
     BOOLEAN     Success = FALSE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Setting Secure Boot Up (If Applicable)");
+    LOG(3, LOG_LINE_NORMAL, L"Setting Secure Boot Up (If Applicable)");
     #endif
 
     if (secure_mode() && ShimLoaded()) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Secure Boot Mode Detected with Loaded Shim ... Adding MOK Extensions"
         );
         #endif
@@ -1342,7 +1342,7 @@ BOOLEAN SecureBootSetup (VOID) {
             CHAR16 *MsgStr = L"Secure Boot Disabled ... Doing Nothing";
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, MsgStr)
+            LOG(3, LOG_LINE_NORMAL, MsgStr)
             MsgLog ("** WARN: %s\n-----------------\n\n");
             #endif
 
@@ -1971,6 +1971,11 @@ EFI_STATUS EFIAPI efi_main (
     }
     #endif
 
+    if (GlobalConfig.LogLevel < 3) {
+        /* Disable Forced Native Logging */
+        NativeLogger = FALSE;
+    }
+
     // Load Drivers
     LoadDrivers();
 
@@ -2044,8 +2049,8 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_THIN_SEP, L"Scan Delay");
-        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_THIN_SEP, L"Scan Delay");
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         #endif
 
@@ -2061,7 +2066,7 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Resuming After a %d Second Pause", i);
-        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2076,11 +2081,15 @@ EFI_STATUS EFIAPI efi_main (
     ScanForBootloaders (FALSE);
     ScanForTools();
 
-    /* Enable Forced Native Logging */
-    NativeLogger = TRUE;
+    if (GlobalConfig.LogLevel > 2) {
+        /* Enable Forced Native Logging */
+        NativeLogger = TRUE;
+    }
     pdInitialize();
-    NativeLogger = FALSE;
-    /* Disable Forced Native Logging */
+    if (GlobalConfig.LogLevel > 2) {
+        /* Disable Forced Native Logging */
+        NativeLogger = FALSE;
+    }
 
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
@@ -2114,8 +2123,8 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
         MsgLog ("      %s ...", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2158,8 +2167,8 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"Default Selection:- '%s'", TmpStr);
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(3, LOG_BLANK_LINE_SEP, L"X");
     MsgLog ("      %s", MsgStr);
     MsgLog ("\n\n");
     MyFreePool (&MsgStr);
@@ -2177,7 +2186,7 @@ EFI_STATUS EFIAPI efi_main (
         if (FlushFailedTag && !FlushFailReset) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
-            LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+            LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
             #endif
@@ -2215,7 +2224,7 @@ EFI_STATUS EFIAPI efi_main (
         switch (ChosenEntry->Tag) {
             case TAG_NVRAMCLEAN:    // Clean NVRAM
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
+                LOG(3, LOG_LINE_NORMAL, L"Cleaning NVRAM");
 
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Clean NVRAM");
@@ -2243,7 +2252,7 @@ EFI_STATUS EFIAPI efi_main (
                 // Reboot if CleanNvram was triggered
                 if (ranCleanNvram) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"Cleaned NVRAM");
+                    LOG(3, LOG_LINE_NORMAL, L"Cleaned NVRAM");
 
                     MsgLog ("INFO: Cleaned Nvram\n\n");
                     MsgLog ("Terminating Screen:\n");
@@ -2253,7 +2262,7 @@ EFI_STATUS EFIAPI efi_main (
                     TerminateScreen();
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL, L"System Restart");
+                    LOG(3, LOG_LINE_NORMAL, L"System Restart");
 
                     MsgLog ("System Restarting");
                     MsgLog ("\n-----------------\n\n");
@@ -2270,7 +2279,7 @@ EFI_STATUS EFIAPI efi_main (
                     PrintUglyText (MsgStr, NEXTLINE);
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_SEP, MsgStr);
+                    LOG(2, LOG_THREE_STAR_SEP, MsgStr);
                     MsgLog ("INFO: %s\n\n", MsgStr);
                     #endif
 
@@ -2285,7 +2294,7 @@ EFI_STATUS EFIAPI efi_main (
 
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
+                LOG(3, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
 
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - Load Apple Boot Screen");
@@ -2340,7 +2349,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Restart FAILED!!");
+                LOG(3, LOG_LINE_NORMAL, L"Restart FAILED!!");
                 #endif
 
                 // just in case we get this far
@@ -2371,7 +2380,7 @@ EFI_STATUS EFIAPI efi_main (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Shutdown FAILED!!");
+                LOG(3, LOG_LINE_NORMAL, L"Shutdown FAILED!!");
                 #endif
 
                 // just in case we get this far
@@ -2796,7 +2805,7 @@ EFI_STATUS EFIAPI efi_main (
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Unexpected Main Loop Exit ... Try to Reboot!!");
+    LOG(2, LOG_THREE_STAR_SEP, L"Unexpected Main Loop Exit ... Try to Reboot!!");
 
     MsgLog ("Fallback: System Restart...\n");
     MsgLog ("Screen Termination:\n");
@@ -2816,7 +2825,7 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Shutdown After Main Loop Exit:- 'FAILED'!!");
+    LOG(2, LOG_THREE_STAR_SEP, L"Shutdown After Main Loop Exit:- 'FAILED'!!");
     #endif
 
     SwitchToText (FALSE);
@@ -2836,8 +2845,8 @@ EFI_STATUS EFIAPI efi_main (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_BLANK_LINE_SEP, L"X");
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(3, LOG_BLANK_LINE_SEP, L"X");
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("INFO: %s", MsgStr);
     MsgLog ("\n-----------------\n\n");
     #endif

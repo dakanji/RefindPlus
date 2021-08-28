@@ -74,6 +74,7 @@
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
 BOOLEAN SilenceAPFS;
+BOOLEAN InnerScan = FALSE;
 
 // extern REFIT_MENU_ENTRY MenuEntryReturn;
 //static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
@@ -823,7 +824,7 @@ VOID ReadConfig (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
+                    LOG(4, LOG_THREE_STAR_MID, L"Unknown Showtools Flag:- '%s'!!", Flag);
                     #endif
                 }
             } // for
@@ -1267,11 +1268,12 @@ LOADER_ENTRY * AddStanzaEntries (
 
     static BOOLEAN OtherCall;
     if (OtherCall) {
+        /* Exception for LOG_THREE_STAR_SEP */
         LOG(3, LOG_THREE_STAR_SEP, L"NEXT STANZA");
     }
     OtherCall = TRUE;
 
-    LOG(1, LOG_LINE_NORMAL, L"Adding User Configured Loader:- '%s'", Entry->Title);
+    LOG(3, LOG_LINE_NORMAL, L"Adding User Configured Loader:- '%s'", Entry->Title);
     #endif
 
     while (((TokenCount = ReadTokenLine (File, &TokenList)) > 0) &&
@@ -1285,7 +1287,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 HasPath = (Entry->LoaderPath && StrLen (Entry->LoaderPath) > 0);
                 if (HasPath) {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
+                    LOG(3, LOG_LINE_NORMAL, L"Adding Loader Path:- '%s'", Entry->LoaderPath);
                     #endif
 
                     SetLoaderDefaults (Entry, TokenList[1], CurrentVolume);
@@ -1299,12 +1301,12 @@ LOADER_ENTRY * AddStanzaEntries (
                 PreviousVolume = CurrentVolume;
                 if (!FindVolume (&CurrentVolume, TokenList[1])) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_THREE_STAR_MID, L"Could Not Find Volume for '%s'!!", Entry->Title);
+                    LOG(4, LOG_THREE_STAR_MID, L"Could Not Find Volume for '%s'!!", Entry->Title);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
+                    LOG(3, LOG_LINE_NORMAL, L"Adding Volume for '%s'", Entry->Title);
                     #endif
 
                     if ((CurrentVolume != NULL) &&
@@ -1328,7 +1330,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 else {
                     MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
                 }
-                LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MyFreePool (&MsgStr);
                 #endif
 
@@ -1346,7 +1348,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
+                LOG(3, LOG_LINE_NORMAL, L"Adding Initrd for '%s'", Entry->Title);
                 #endif
 
                 MyFreePool (&Entry->InitrdPath);
@@ -1354,7 +1356,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"options") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
+                LOG(3, LOG_LINE_NORMAL, L"Adding Options for '%s'", Entry->Title);
                 #endif
 
                 LoadOptions = StrDuplicate (TokenList[1]);
@@ -1362,7 +1364,7 @@ LOADER_ENTRY * AddStanzaEntries (
             else if (MyStriCmp (TokenList[0], L"ostype") && (TokenCount > 1)) {
                 if (TokenCount > 1) {
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
+                    LOG(3, LOG_LINE_NORMAL, L"Adding OS Type for '%s'", Entry->Title);
                     #endif
 
                     Entry->OSType = TokenList[1][0];
@@ -1370,7 +1372,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"graphics") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL,
+                LOG(3, LOG_LINE_NORMAL,
                     L"Adding Graphics Mode for '%s'",
                     (HasPath) ? Entry->LoaderPath : Entry->Title
                 );
@@ -1380,14 +1382,14 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"disabled")) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Entry is Disabled!!");
+                LOG(3, LOG_LINE_NORMAL, L"Entry is Disabled!!");
                 #endif
 
                 Entry->Enabled = FALSE;
             }
             else if (MyStriCmp(TokenList[0], L"firmware_bootnum") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
+                LOG(3, LOG_LINE_NORMAL, L"Adding Firmware Bootnum Entry for '%s'", Entry->Title);
                 #endif
 
                 Entry->me.Tag        = TAG_FIRMWARE_LOADER;
@@ -1405,7 +1407,7 @@ LOADER_ENTRY * AddStanzaEntries (
             }
             else if (MyStriCmp (TokenList[0], L"submenuentry") && (TokenCount > 1)) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL,
+                LOG(3, LOG_LINE_NORMAL,
                     L"Adding Submenu Entry for '%s'",
                     (HasPath) ? Entry->LoaderPath : Entry->Title
                 );
@@ -1508,50 +1510,59 @@ VOID ScanUserConfigured (
     UINTN              TokenCount, size;
     LOADER_ENTRY      *Entry;
 
+    static UINTN EntryCount = 0;
+
     if (FileExists (SelfDir, FileName)) {
         Status = RefitReadFile (SelfDir, FileName, &File, &size);
-        if (EFI_ERROR(Status)) {
-            return;
-        }
-
-        while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
-            if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
-                Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
-                if (Entry) {
-                    if (!Entry->Enabled) {
-                        FreeLoaderEntry (Entry);
-                    }
-                    else {
-                        #if REFIT_DEBUG > 0
-                        MsgLog ("\n");
-                        MsgLog (
-                            "  - Found '%s' on '%s'",
-                            Entry->Title,
-                            (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
-                        );
-                        #endif
-
-                        if (Entry->me.SubScreen == NULL) {
-                            GenerateSubScreen (Entry, SelfVolume, TRUE);
+        if (!EFI_ERROR(Status)) {
+            while ((TokenCount = ReadTokenLine (&File, &TokenList)) > 0) {
+                if (MyStriCmp (TokenList[0], L"menuentry") && (TokenCount > 1)) {
+                    Entry = AddStanzaEntries (&File, SelfVolume, TokenList[1]);
+                    if (Entry) {
+                        EntryCount = EntryCount + 1;
+                        if (!Entry->Enabled) {
+                            FreeLoaderEntry (Entry);
                         }
-                        AddPreparedLoaderEntry (Entry);
+                        else {
+                            #if REFIT_DEBUG > 0
+                            MsgLog ("\n");
+                            MsgLog (
+                                "  - Found '%s' on '%s'",
+                                Entry->Title,
+                                (SelfVolume->VolName) ? SelfVolume->VolName : Entry->LoaderPath
+                            );
+                            #endif
+
+                            if (Entry->me.SubScreen == NULL) {
+                                GenerateSubScreen (Entry, SelfVolume, TRUE);
+                            }
+                            AddPreparedLoaderEntry (Entry);
+                        }
                     }
                 }
-            }
-            else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
-                MyStriCmp (FileName, GlobalConfig.ConfigFilename)
-            ) {
-                if (!MyStriCmp (TokenList[1], FileName)) {
-                    ScanUserConfigured (TokenList[1]);
+                else if (MyStriCmp (TokenList[0], L"include") && (TokenCount == 2) &&
+                    MyStriCmp (FileName, GlobalConfig.ConfigFilename)
+                ) {
+                    if (!MyStriCmp (TokenList[1], FileName)) {
+                        InnerScan = TRUE;
+                        ScanUserConfigured (TokenList[1]);
+                    }
                 }
-            }
+
+                FreeTokenLine (&TokenList, &TokenCount);
+            } // while
 
             FreeTokenLine (&TokenList, &TokenCount);
-        } // while
-
-        FreeTokenLine (&TokenList, &TokenCount);
-
+        }
     } // if FileExists
+
+    #if REFIT_DEBUG > 0
+    if (!InnerScan) {
+        LOG(2, LOG_THREE_STAR_SEP, L"Processed %d Stanzas", EntryCount);
+    }
+    #endif
+
+    InnerScan = FALSE;
 } // VOID ScanUserConfigured()
 
 // Create an options file based on /etc/fstab. The resulting file has two options
@@ -1591,7 +1602,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Read Line from '/etc/fstab' Holding %d Tokens", TokenCount);
+                LOG(3, LOG_LINE_NORMAL, L"Read Line from '/etc/fstab' Holding %d Tokens", TokenCount);
                 #endif
 
                 if (TokenCount > 2) {

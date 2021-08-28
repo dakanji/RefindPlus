@@ -338,7 +338,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_THREE_STAR_MID, L"Build Subscreen:- '%s'", SubScreen->Title);
+            LOG(4, LOG_THREE_STAR_MID, L"Build Subscreen:- '%s'", SubScreen->Title);
             #endif
 
             SubScreen->TitleImage = Entry->me.Image;
@@ -636,7 +636,7 @@ VOID SetLoaderDefaults (
                     // locate a custom icon for the loader
                     // Anything found here takes precedence over the "hints" in the OSIconName variable
                     #if REFIT_DEBUG > 0
-                    LOG(4, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
+                    LOG(3, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
                     #endif
 
                     if (!Entry->me.Image) {
@@ -690,7 +690,7 @@ VOID SetLoaderDefaults (
             if (MergeFsName) {
                 #if REFIT_DEBUG > 0
                 if (Entry->me.Image == NULL) {
-                    LOG(4, LOG_LINE_NORMAL,
+                    LOG(3, LOG_LINE_NORMAL,
                         L"Merge Hints Based on Filesystem Name:- '%s'",
                         Volume->FsName
                     );
@@ -703,7 +703,7 @@ VOID SetLoaderDefaults (
                 if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
                     #if REFIT_DEBUG > 0
                     if (Entry->me.Image == NULL) {
-                        LOG(4, LOG_LINE_NORMAL,
+                        LOG(3, LOG_LINE_NORMAL,
                             L"Merge Hints Based on Volume Name:- '%s'",
                             Volume->VolName
                         );
@@ -718,7 +718,7 @@ VOID SetLoaderDefaults (
         if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
             #if REFIT_DEBUG > 0
             if (Entry->me.Image == NULL) {
-                LOG(4, LOG_LINE_NORMAL,
+                LOG(3, LOG_LINE_NORMAL,
                     L"Merge Hints Based on Partition Name:- '%s'",
                     Volume->PartName
                 );
@@ -731,7 +731,7 @@ VOID SetLoaderDefaults (
 
     #if REFIT_DEBUG > 0
     if (Entry->me.Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
+        LOG(3, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
     }
     #endif
 
@@ -835,7 +835,7 @@ VOID SetLoaderDefaults (
     Entry->me.ShortcutLetter = ShortcutLetter;
     if (Entry->me.Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Trying to Locate an Icon Based on Hints:- '%s'",
             OSIconName
         );
@@ -879,7 +879,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         TempStr              = DevicePathToStr (EfiLoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", TempStr);
+        LOG(3, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", TempStr);
         #endif
 
         MyFreePool (&TempStr);
@@ -945,8 +945,8 @@ LOADER_ENTRY * AddLoaderEntry (
         Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
-        LOG(2, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
+        LOG(3, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
+        LOG(3, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
         #endif
 
         if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
@@ -995,12 +995,12 @@ LOADER_ENTRY * AddLoaderEntry (
             LogLineType = LOG_THREE_STAR_END;
         }
 
-        LOG(3, LogLineType, L"Successfully Created Menu Entry for %s", Entry->Title);
+        LOG(2, LogLineType, L"Successfully Created Menu Entry for %s", Entry->Title);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID, L"Could Not Initialise Loader Entry!!");
+        LOG(4, LOG_THREE_STAR_MID, L"Could Not Initialise Loader Entry!!");
         #endif
     }
 
@@ -1488,7 +1488,7 @@ BOOLEAN ScanLoaderDir (
 
             if (FirstKernel != NULL && IsLinux && GlobalConfig.FoldLinuxKernels) {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Adding 'Return' entry to folded Linux kernels");
+                LOG(3, LOG_LINE_NORMAL, L"Adding 'Return' entry to folded Linux kernels");
                 #endif
 
                 AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
@@ -1568,7 +1568,7 @@ VOID ScanNetboot (VOID) {
     REFIT_VOLUME  *NetVolume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Scanning for iPXE boot options");
+    LOG(3, LOG_LINE_NORMAL, L"Scanning for iPXE boot options");
     #endif
 
     if (FileExists (SelfVolume->RootDir, IPXE_NAME) &&
@@ -1581,7 +1581,7 @@ VOID ScanNetboot (VOID) {
             NetVolume = CopyVolume (SelfVolume);
             if (!NetVolume) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_THREE_STAR_SEP,
+                LOG(2, LOG_THREE_STAR_SEP,
                     L"In ScanNetboot ... Out of Resources While Allocating 'NetVolume'!!"
                 );
                 #endif
@@ -1743,7 +1743,8 @@ VOID ScanEfiFiles (
     }
 
     // "Scanning Volume 'XYZ'" or "Scanning ReMapped Volume 'XYZ'"
-    LOG(1, LogLineType,
+    /* Exception for LOG_THREE_STAR_SEP */
+    LOG(3, LogLineType,
         L"Scanning %s '%s' for UEFI Loaders",
         (FixReMap) ? L"ReMapped Volume" : L"Volume",
         Volume->VolName
@@ -2014,13 +2015,13 @@ VOID ScanFirmwareDefined (
 
     #if REFIT_DEBUG > 0
     if (GlobalConfig.DontScanFirmware != NULL) {
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"GlobalConfig.DontScanFirmware:- '%s'",
             GlobalConfig.DontScanFirmware
         );
     }
     if (DontScanFirmware != NULL) {
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Firmware Hidden Tags:- '%s'",
             DontScanFirmware
         );
@@ -2033,7 +2034,7 @@ VOID ScanFirmwareDefined (
 
     if (Row == 0) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell from Scan");
+        LOG(4, LOG_THREE_STAR_MID, L"NB: Excluding UEFI Shell from Scan");
         #endif
 
         MergeStrings(&DontScanFirmware, L"shell", L',');
@@ -2072,7 +2073,7 @@ VOID ScanFirmwareDefined (
 
         if (ScanIt) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL,
+            LOG(3, LOG_LINE_NORMAL,
                 L"Adding UEFI Loader Entry for '%s'",
                 CurrentEntry->BootEntry.Label
             );
@@ -2095,7 +2096,7 @@ VOID ScanFirmwareDefined (
     DeleteBootOrderEntries (BootEntries);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Processed UEFI Firmware Defined Boot Options");
+    LOG(4, LOG_THREE_STAR_MID, L"Processed UEFI Firmware Defined Boot Options");
     #endif
 } // static VOID ScanFirmwareDefined()
 
@@ -2216,7 +2217,7 @@ VOID ScanForBootloaders (
         HiddenTags = ReadHiddenTags (L"HiddenTags");
         if ((HiddenTags) && (StrLen (HiddenTags) > 0)) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL,
+            LOG(3, LOG_LINE_NORMAL,
                 L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
                 HiddenTags
             );
@@ -2229,7 +2230,7 @@ VOID ScanForBootloaders (
         HiddenLegacy = ReadHiddenTags (L"HiddenLegacy");
         if ((HiddenLegacy) && (StrLen (HiddenLegacy) > 0)) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL,
+            LOG(3, LOG_LINE_NORMAL,
                 L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
                 HiddenLegacy
             );
@@ -2354,7 +2355,7 @@ VOID ScanForBootloaders (
     if (MainMenu.EntryCount < 1) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could Not Find Boot Loaders");
-        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("* WARN: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2420,7 +2421,7 @@ VOID ScanForBootloaders (
             i, MainMenu.EntryCount,
             (MainMenu.EntryCount == 1) ? L"Loader" : L"Loaders"
         );
-        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2464,7 +2465,7 @@ BOOLEAN IsValidTool (
     MergeStrings (&DontScanTools, GlobalConfig.DontScanTools, L',');
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Check File is Valid:- '%s'",
         PathName
     );
@@ -2532,7 +2533,7 @@ BOOLEAN FindTool (
                     IsValidTool (Volumes[VolumeIndex], PathName)
                 ) {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL,
+                    LOG(3, LOG_LINE_NORMAL,
                         L"Adding tag for '%s' on '%s'",
                         FileName, Volumes[VolumeIndex]->VolName
                     );
@@ -2655,7 +2656,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2670,7 +2671,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2685,7 +2686,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2700,7 +2701,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2715,7 +2716,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2730,7 +2731,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -2747,7 +2748,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
@@ -2756,7 +2757,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -2781,7 +2782,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                         MsgLog ("%s", ToolStr);
                         MyFreePool (&ToolStr);
                         #endif
@@ -2790,7 +2791,7 @@ VOID ScanForTools (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL,
+                    LOG(3, LOG_LINE_NORMAL,
                         L"'Showtools' Includes Firmware Tool but 'OsIndicationsSupported' Variable is Missing!!"
                     );
                     #endif
@@ -2799,7 +2800,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -2813,7 +2814,7 @@ VOID ScanForTools (VOID) {
                 while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
+                        LOG(3, LOG_LINE_NORMAL,
                             L"Adding Shell Tag for '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
@@ -2830,7 +2831,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(4, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
                         }
@@ -2848,20 +2849,20 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    LOG(3, LOG_BLANK_LINE_SEP, L"X");
                     #endif
 
                     ScanFirmwareDefined (1, L"Shell", BuiltinIcon(BUILTIN_ICON_TOOL_SHELL));
 
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_BLANK_LINE_SEP, L"X");
+                    LOG(3, LOG_BLANK_LINE_SEP, L"X");
                     #endif
                 }
 
@@ -2872,7 +2873,7 @@ VOID ScanForTools (VOID) {
                 while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
+                        LOG(3, LOG_LINE_NORMAL,
                             L"Adding Hybrid MBR Tool Tag for '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
@@ -2888,7 +2889,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
                             MsgLog ("\n                               ");
                         }
@@ -2904,7 +2905,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -2918,7 +2919,7 @@ VOID ScanForTools (VOID) {
                 while ((FileName = FindCommaDelimited (GDISK_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
+                        LOG(3, LOG_LINE_NORMAL,
                             L"Adding GDisk Tag for '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
@@ -2934,7 +2935,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
                         }
@@ -2951,7 +2952,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -2965,7 +2966,7 @@ VOID ScanForTools (VOID) {
                 while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
-                        LOG(1, LOG_LINE_NORMAL,
+                        LOG(3, LOG_LINE_NORMAL,
                             L"Adding Netboot Tag for '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
@@ -2981,7 +2982,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
                         }
@@ -2999,7 +3000,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3018,7 +3019,7 @@ VOID ScanForTools (VOID) {
                             (IsValidTool (Volumes[VolumeIndex], FileName))
                         ) {
                             #if REFIT_DEBUG > 0
-                            LOG(1, LOG_LINE_NORMAL,
+                            LOG(3, LOG_LINE_NORMAL,
                                 L"Adding Apple Recovery Tag for '%s' on '%s'",
                                 FileName, Volumes[VolumeIndex]->VolName
                             );
@@ -3039,7 +3040,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");
                             }
@@ -3055,7 +3056,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3077,7 +3078,7 @@ VOID ScanForTools (VOID) {
                             ((VolName == NULL) || MyStriCmp (VolName, Volumes[VolumeIndex]->VolName))
                         ) {
                             #if REFIT_DEBUG > 0
-                            LOG(1, LOG_LINE_NORMAL,
+                            LOG(3, LOG_LINE_NORMAL,
                                 L"Adding Windows Recovery Tag for '%s' on '%s'",
                                 FileName, Volumes[VolumeIndex]->VolName
                             );
@@ -3101,7 +3102,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");
                             }
@@ -3121,7 +3122,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3140,7 +3141,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3159,7 +3160,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3177,7 +3178,7 @@ VOID ScanForTools (VOID) {
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("%s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
@@ -3186,7 +3187,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3202,7 +3203,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -3217,7 +3218,7 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                 MsgLog ("%s", ToolStr);
                 MyFreePool (&ToolStr);
                 #endif
@@ -3235,7 +3236,7 @@ VOID ScanForTools (VOID) {
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("* WARN * %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
@@ -3247,7 +3248,7 @@ VOID ScanForTools (VOID) {
 
     #if REFIT_DEBUG > 0
     ToolStr = PoolPrint (L"Processed %d Tool Types", ToolTotal);
-    LOG(4, LOG_THREE_STAR_END, L"%s", ToolStr);
+    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
     MsgLog ("\n\n");
     MsgLog ("INFO: %s", ToolStr);
     MsgLog ("\n\n");

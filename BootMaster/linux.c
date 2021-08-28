@@ -78,7 +78,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     EFI_FILE_INFO       *DirEntry;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Searching for an initrd to match '%s' on '%s'",
         LoaderPath, Volume->VolName
     );
@@ -89,7 +89,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     Path          = FindPath(LoaderPath);
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
+    LOG(3, LOG_LINE_NORMAL, L"Kernel version string is '%s'", KernelVersion);
     #endif
 
     // Add trailing backslash for root directory; necessary on some systems, but must
@@ -161,7 +161,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool (&Path);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
+    LOG(3, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
     #endif
 
     return (InitrdName);
@@ -282,7 +282,7 @@ VOID AddKernelToSubmenu (
     UINTN                TokenCount;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
+    LOG(2, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
     #endif
 
     File = ReadLinuxOptionsFile (TargetLoader->LoaderPath, Volume);
@@ -321,7 +321,7 @@ VOID AddKernelToSubmenu (
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"InitializeLoaderEntry on '%s' is NULL!!", TargetLoader);
+                LOG(3, LOG_LINE_NORMAL, L"InitializeLoaderEntry on '%s' is NULL!!", TargetLoader);
                 #endif
 
                 break;
@@ -340,7 +340,7 @@ VOID AddKernelToSubmenu (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
+        LOG(3, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
         #endif
     }
 
@@ -365,7 +365,7 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     if (NewFile != NULL) {
         if (FileExists(Volume->RootDir, NewFile)) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
+            LOG(3, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
             #endif
 
             retval = TRUE;

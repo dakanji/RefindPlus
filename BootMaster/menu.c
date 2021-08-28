@@ -395,7 +395,7 @@ VOID AddMenuInfoLine (
     IN CHAR16            *InfoLine
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
+    LOG(3, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
     #endif
 
     AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
@@ -406,7 +406,7 @@ VOID AddMenuEntry (
     IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Adding Menu Entry to %s:- '%s'",
         MyStrStr (Screen->Title, L"Main Menu")
             ? L"MainMenu"
@@ -510,7 +510,7 @@ VOID SaveScreen (VOID) {
     MyFreePool (&MsgStr);
 
     MsgStr = StrDuplicate (L"Start Screensaver");
-    LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n");
     MyFreePool (&MsgStr);
@@ -565,12 +565,12 @@ VOID SaveScreen (VOID) {
                 TimeWait = BaseTimeWait;
 
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Reset Timeout");
+                LOG(3, LOG_LINE_NORMAL, L"Reset Timeout");
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(4, LOG_LINE_NORMAL, L"Extend Timeout");
+                LOG(3, LOG_LINE_NORMAL, L"Extend Timeout");
                 #endif
             }
         }
@@ -622,7 +622,7 @@ VOID SaveScreen (VOID) {
     MyFreePool (&MsgStr);
 
     MsgStr = StrDuplicate (L"Ending Screensaver");
-    LOG(2, LOG_THREE_STAR_END, L"%s", MsgStr);
+    LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n\n");
     MyFreePool (&MsgStr);
@@ -691,7 +691,7 @@ UINTN RunGenericMenu (
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
-    LOG(2, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
+    LOG(3, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
     #endif
 
     if (Screen->TimeoutSeconds > 0) {
@@ -808,7 +808,7 @@ UINTN RunGenericMenu (
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Menu Timeout Expired");
+                LOG(3, LOG_LINE_NORMAL, L"Menu Timeout Expired");
                 #endif
 
                 MenuExit = MENU_EXIT_TIMEOUT;
@@ -928,7 +928,7 @@ UINTN RunGenericMenu (
         else {
             //react to pointer event
             #if REFIT_DEBUG > 0
-            LOG(4, LOG_LINE_NORMAL, L"Processing Pointer Event");
+            LOG(3, LOG_LINE_NORMAL, L"Processing Pointer Event");
             #endif
 
             if (StyleFunc != MainMenuStyle) {
@@ -993,7 +993,7 @@ UINTN RunGenericMenu (
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
-        LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+        LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2229,7 +2229,7 @@ VOID DisplaySimpleMessage (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'DisplaySimpleMessage'",
         MenuExit, TypeMenuExit, ChosenOption->Title
     );
@@ -2396,7 +2396,7 @@ VOID ManageHiddenTags (VOID) {
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
@@ -2471,7 +2471,7 @@ CHAR16 * ReadHiddenTags (
 
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Zero Size in ReadHiddenTags ... Clearing Buffer"
         );
         #endif
@@ -2556,7 +2556,7 @@ BOOLEAN HideEfiTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideEfiTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2612,7 +2612,7 @@ BOOLEAN HideFirmwareTag(
     );
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2661,7 +2661,7 @@ BOOLEAN HideLegacyTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideLegacyTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2787,7 +2787,7 @@ UINTN RunMenu (
     MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(3, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMenu'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
@@ -2837,7 +2837,7 @@ UINTN RunMainMenu (
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMainMenu'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
@@ -2861,7 +2861,7 @@ UINTN RunMainMenu (
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL,
+                LOG(3, LOG_LINE_NORMAL,
                     L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
@@ -2891,7 +2891,7 @@ UINTN RunMainMenu (
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
-        LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+        LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif

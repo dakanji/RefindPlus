@@ -35,6 +35,9 @@ BOOLEAN ReLoaded        = FALSE;
 BOOLEAN PostConnect     = FALSE;
 BOOLEAN DetectedDevices = FALSE;
 
+UINTN   AllHandleCount;
+
+
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
 
@@ -220,7 +223,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     EFI_HANDLE           *HandleBuffer    = NULL;
     UINTN                 i, k;
     UINTN                 HandleCount;
-    UINTN                 AllHandleCount;
     UINT32               *HandleType = NULL;
     BOOLEAN               Parent;
     BOOLEAN               Device;
@@ -253,7 +255,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     if (PostConnect) {
         if (ReLoaded) {
             MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
-            LOG(3, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+            LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -262,7 +264,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
             ReadAllKeyStrokes();
 
             MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
-            LOG(3, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+            LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -286,7 +288,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         #if REFIT_DEBUG > 0
         if (PostConnect) {
             MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
-            LOG(3, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s\n\n", MsgStr);
             MyFreePool (&MsgStr);
         }
@@ -294,7 +296,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
     }
     else {
         #if REFIT_DEBUG > 0
-        UINTN AllHandleCountTrigger = (UINTN) AllHandleCount - 1;
+        UINTN AllHandleCountTrigger = AllHandleCount - 1;
         #endif
 
         for (i = 0; i < AllHandleCount; i++) {
@@ -316,7 +318,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
                     MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
-                    LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
                     MsgLog ("%s", MsgStr);
                     MyFreePool (&MsgStr);
                 }
@@ -326,7 +328,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 #if REFIT_DEBUG > 0
                 if (PostConnect) {
                     MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
-                    LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                    LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
                     MsgLog ("%s", MsgStr);
                     MyFreePool (&MsgStr);
                 }
@@ -636,6 +638,10 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
 ) {
     EFI_STATUS  Status;
 
+    #if REFIT_DEBUG > 0
+    CHAR16  *MsgStr = NULL;
+    #endif
+
     // Always position for multiple scan
     PostConnect = FALSE;
 
@@ -665,16 +671,23 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
             }
         }
         else {
-            CHAR16 *MsgStr = L"Additional DXE Drivers Revealed ... Relink Handles";
+            MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (&MsgStr);
         }
         #endif
 
     } while (!EFI_ERROR(Status));
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
+    MsgStr = PoolPrint (
+        L"Processed %d %s",
+        AllHandleCount,
+        (AllHandleCount == 1) ? L"Handle" : L"Handles"
+    );
+    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     if (FoundGOP) {
@@ -701,10 +714,10 @@ EFI_STATUS ApplyGOPFix (
     // Update Boot Services to permit reloading GPU OptionROM
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_SEPARATOR, L"Reload OptionROM");
+    LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
 
     MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
-    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
 
@@ -721,7 +734,7 @@ EFI_STATUS ApplyGOPFix (
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
-        LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("      %s", MsgStr);
         MyFreePool (&MsgStr);
         MsgLog ("\n\n");
@@ -756,7 +769,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 
             #if REFIT_DEBUG > 0
             CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
-            LOG(4, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
             MyFreePool (&MsgStr);
             MsgLog ("\n\n");

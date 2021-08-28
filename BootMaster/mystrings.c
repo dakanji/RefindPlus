@@ -287,7 +287,7 @@ VOID MergeStrings (
     if (!NewString) {
         CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"%s");
+        LOG(2, LOG_THREE_STAR_SEP, L"%s");
         #endif
 
         Print (L"%s\n", MsgStr);
@@ -339,7 +339,7 @@ VOID MergeUniqueStrings (
     if (!NewString) {
         CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_SEP, L"%s");
+        LOG(2, LOG_THREE_STAR_SEP, L"%s");
         #endif
 
         Print (L"%s\n", MsgStr);
@@ -408,7 +408,7 @@ VOID MergeWords (
         if (!Temp) {
             CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'Temp'!!";
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_THREE_STAR_SEP, L"%s");
+            LOG(2, LOG_THREE_STAR_SEP, L"%s");
             #endif
 
             Print (L"%s\n", MsgStr);

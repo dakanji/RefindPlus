@@ -337,7 +337,7 @@ EFI_STATUS StartEFIImage (
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
-            LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
             #endif
@@ -414,7 +414,7 @@ EFI_STATUS StartEFIImage (
             L"Systemd LoaderDevicePartUUID:- '%s'",
             EspGUID
         );
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -469,7 +469,7 @@ EFI_STATUS StartEFIImage (
 
     // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, MsgStr);
+    LOG(4, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, MsgStr);
 
     // DA-TAG: MsgStr from earlier is freed here
     MyFreePool (&MsgStr);
@@ -479,7 +479,7 @@ EFI_STATUS StartEFIImage (
 
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
-        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     }
     #endif
 
@@ -576,7 +576,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     PauseForKey();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, MsgStr, err);
+    LOG(3, LOG_LINE_NORMAL, MsgStr, err);
     #endif
 
     MyFreePool (&MsgStr);
@@ -618,7 +618,7 @@ VOID RebootIntoLoader (
         );
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        LOG(3, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         #endif
 
         Print(L"%s\n", MsgStr);
@@ -638,7 +638,7 @@ VOID RebootIntoLoader (
     MsgStr = PoolPrint (L"Call ResetSystem ... %r", Status);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
     Print(MsgStr);
@@ -661,7 +661,7 @@ VOID DoEnableAndLockVMX(VOID) {
     UINT32 high_bits = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
+    LOG(3, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
     #endif
 
     // is VMX active ?
@@ -685,7 +685,7 @@ VOID StartLoader (
     CHAR16 *LoaderPath;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Loader:- '%s'", SelectionName);
+    LOG(3, LOG_LINE_NORMAL, L"Launching Loader:- '%s'", SelectionName);
     #endif
 
     IsBoot = TRUE;
@@ -717,7 +717,7 @@ VOID StartTool (
     CHAR16 *LoaderPath;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching Tool:- '%s'", Entry->me.Title);
+    LOG(3, LOG_LINE_NORMAL, L"Launching Tool:- '%s'", Entry->me.Title);
     #endif
 
     IsBoot = FALSE;

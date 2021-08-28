@@ -199,12 +199,12 @@ EG_IMAGE * egScaleImage (
     UINTN      x_ratio, y_ratio;
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
+    LOG(3, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
     #endif
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Image is NULL or a Size is 0!!");
+        LOG(3, LOG_LINE_NORMAL, L"In egScaleImage ... Image is NULL or a Size is 0!!");
         #endif
 
         return NULL;
@@ -217,7 +217,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Could Not Create New Image!!");
+        LOG(3, LOG_LINE_NORMAL, L"In egScaleImage ... Could Not Create New Image!!");
         #endif
 
         return NULL;
@@ -344,7 +344,7 @@ EFI_STATUS egLoadFile (
     *FileDataLength = BufferSize;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
+    LOG(4, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -450,7 +450,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
+        LOG(3, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
         #endif
 
         return NULL;
@@ -460,7 +460,7 @@ EG_IMAGE * egLoadImage (
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"In egLoadImage ... '%r' Returned While Attempting to Load File!!",
             Status
         );
@@ -501,7 +501,7 @@ EG_IMAGE * egLoadIcon (
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"In egLoadIcon ... '%r' When Trying to Load Icon:- '%s'!!",
             Status, Path
         );
@@ -518,7 +518,7 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_LINE_NORMAL,
+        LOG(3, LOG_LINE_NORMAL,
             L"In egLoadIcon ... Could Not Decode File Data!!"
         );
         #endif
@@ -541,7 +541,7 @@ EG_IMAGE * egLoadIcon (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
+            LOG(3, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
             #endif
 
             Print(MsgStr);
@@ -570,7 +570,7 @@ EG_IMAGE * egLoadIconAnyType (
     UINTN      i = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID,
+    LOG(4, LOG_THREE_STAR_MID,
         L"Trying to Load Icon from '%s' with Base Name:- '%s'",
         (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
         BaseName

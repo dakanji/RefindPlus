@@ -647,7 +647,7 @@ UINTN ScanDriverDir (
         // DA-TAG: Delete once ForcedNativeLogging setup is firmed up
         //#if REFIT_DEBUG > 0
         //if (RunOnce) {
-        //    LOG(1, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
+        //    LOG(2, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
         //}
         //#endif
 
@@ -789,10 +789,20 @@ BOOLEAN LoadDrivers (VOID) {
 
     if (HybridLogger) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
         #endif
         NativeLogger = TRUE;
     }
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = PoolPrint (
+        L"Processed %d UEFI %s",
+        NumFound,
+        (NumFound == 1) ? L"Driver" : L"Drivers"
+    );
+    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    MyFreePool (&MsgStr);
+    #endif
 
     // connect all devices
     // DA-TAG: Always run this
