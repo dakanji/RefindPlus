@@ -2173,9 +2173,6 @@ EFI_STATUS EFIAPI efi_main (
 
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
-        // Clear Keystrokes
-        ReadAllKeyStrokes();
-
         // Ignore MenuExit if FlushFailedTag is set and not previously reset
         if (FlushFailedTag && !FlushFailReset) {
             #if REFIT_DEBUG > 0

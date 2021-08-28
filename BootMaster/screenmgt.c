@@ -372,7 +372,6 @@ VOID SetupScreen (VOID) {
             else {
                 #if REFIT_DEBUG > 0
                 MsgLog ("INFO: Changing to Screensaver Display");
-                MsgLog ("\n");
 
                 MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
                 LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -386,7 +385,9 @@ VOID SetupScreen (VOID) {
 
             #if REFIT_DEBUG > 0
             MyFreePool (&MsgStr);
-            NativeLogger ? MsgLog ("\n") : MsgLog ("\n\n");
+            (NativeLogger && GlobalConfig.LogLevel > 0)
+                ? MsgLog ("\n")
+                : MsgLog ("\n\n");
             #endif
         }
     }
@@ -615,12 +616,6 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     EFI_STATUS    Status;
     EFI_INPUT_KEY key;
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
-
     for (;;) {
         Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
         if (Status == EFI_SUCCESS) {
@@ -638,36 +633,17 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
         : (EmptyBuffer)
             ? EFI_ALREADY_STARTED
             : Status;
-    LOG(4, LOG_LINE_NORMAL, L"Clear Keystroke Buffer ... %r", Status);
+
+    CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
+    MsgLog ("INFO: %s\n\n", MsgStr);
+    LOG(4, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
-    // Wait and quietly try again on device error
-    if (!GotKeyStrokes && !EmptyBuffer) {
-        gBS->Stall(250000);
-        gBS->Stall(250000);
-        gBS->Stall(250000);
-        gBS->Stall(250000);
-        for (;;) {
-            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-            if (Status == EFI_SUCCESS) {
-                continue;
-            }
-            break;
-        }
-    }
-
-    // Flag device error and proceed if not resolved
+    // Flag device error and proceed if present
     // We will try to resolve under the main loop if required
     if (!GotKeyStrokes && !EmptyBuffer) {
         FlushFailedTag = TRUE;
-    }
-
-    if (HybridLogger) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_BLANK_LINE_SEP, L"X");
-        #endif
-
-        NativeLogger = TRUE;
     }
 
     return GotKeyStrokes;

@@ -19,6 +19,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 #include "Platform.h"
 #include "../BootMaster/lib.h"
+#include "../BootMaster/screenmgt.h"
 #include "../BootMaster/mystrings.h"
 #include "../BootMaster/launch_efi.h"
 #include "../include/refit_call_wrapper.h"
@@ -257,6 +258,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
             MyFreePool (&MsgStr);
         }
         else {
+            // Clear Keystrokes
+            ReadAllKeyStrokes();
+
             MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
             LOG(3, LOG_LINE_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
@@ -672,9 +676,6 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     #if REFIT_DEBUG > 0
     LOG(3, LOG_THREE_STAR_SEP, L"Connected Handles to Controllers");
     #endif
-
-    // Clear Keystrokes
-    ReadAllKeyStrokes();
 
     if (FoundGOP) {
         return EFI_SUCCESS;
