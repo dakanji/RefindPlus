@@ -1034,7 +1034,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"decline_tagshelp")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.HideTagsHelp = DeclineSetting ? FALSE : TRUE;
+            GlobalConfig.TagsHelp = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"normalise_csr")) {
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
@@ -1057,7 +1057,7 @@ VOID ReadConfig (
     FreeTokenLine (&TokenList, &TokenCount);
 
     // "TagHelp" is active
-    if (!GlobalConfig.HideTagsHelp) {
+    if (!GlobalConfig.TagsHelp) {
         // "TagHelp" feature is active ... Set "found" flag to false
         BOOLEAN HiddenTagsFlag = FALSE;
         // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool

@@ -147,7 +147,7 @@ REFIT_CONFIG GlobalConfig = {
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ TRUE,
     /* ScanAllESP = */ FALSE,
-    /* HideTagsHelp = */ TRUE,
+    /* TagsHelp = */ TRUE,
     /* NormaliseCSR = */ FALSE,
     /* ShutdownAfterTimeout = */ FALSE,
     /* Install = */ FALSE,
@@ -1869,6 +1869,16 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("'Inactive'");
     }
 
+    /* Show TagsHelp Status */
+    MsgLog ("\n");
+    MsgLog ("      TagsHelp:- ");
+    if (GlobalConfig.TagsHelp) {
+        MsgLog ("'Active'");
+    }
+    else {
+        MsgLog ("'Inactive'");
+    }
+
     /* Show TextOnly Status */
     MsgLog ("\n");
     MsgLog ("      TextOnly:- ");
@@ -1893,16 +1903,6 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n");
     MsgLog ("      TextRenderer:- ");
     if (GlobalConfig.TextRenderer) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show HideTagsHelp Status */
-    MsgLog ("\n");
-    MsgLog ("      HideTagsHelp:- ");
-    if (GlobalConfig.HideTagsHelp) {
         MsgLog ("'Active'");
     }
     else {
