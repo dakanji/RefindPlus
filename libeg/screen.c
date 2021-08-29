@@ -1424,7 +1424,7 @@ BOOLEAN egSetScreenSize (
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s", MsgStr);
-        MsgLog ("\n", MsgStr);
+        MsgLog ("\n");
         MyFreePool (&MsgStr);
         #endif
 
@@ -1442,7 +1442,7 @@ BOOLEAN egSetScreenSize (
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s", MsgStr);
-        MsgLog ("\n", MsgStr);
+        MsgLog ("\n");
         MyFreePool (&MsgStr);
         #endif
 

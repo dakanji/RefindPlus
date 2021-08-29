@@ -1558,7 +1558,7 @@ VOID ScanUserConfigured (
 
     #if REFIT_DEBUG > 0
     if (!InnerScan) {
-        LOG(2, LOG_THREE_STAR_SEP, L"Processed %d Stanzas", EntryCount);
+        LOG(2, LOG_THREE_STAR_SEP, L"Processed %d User Defined Stanzas", EntryCount);
     }
     #endif
 

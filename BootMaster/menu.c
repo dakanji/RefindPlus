@@ -2103,9 +2103,10 @@ UINTN WaitForInput (
     UINTN       Index      = INPUT_TIMEOUT;
     EFI_EVENT   TimerEvent = NULL;
 
-    #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
-    #endif
+    //DA-TAG: Consider deleting later. Seems more of a distraction than a useful item
+    //#if REFIT_DEBUG > 0
+    //LOG(4, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
+    //#endif
 
     // Generate WaitList if not already generated.
     GenerateWaitList();

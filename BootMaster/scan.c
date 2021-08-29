@@ -2096,7 +2096,7 @@ VOID ScanFirmwareDefined (
     DeleteBootOrderEntries (BootEntries);
 
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"Processed UEFI Firmware Defined Boot Options");
+    LOG(3, LOG_LINE_NORMAL, L"Processed UEFI Firmware Defined Boot Options");
     #endif
 } // static VOID ScanFirmwareDefined()
 
@@ -2416,10 +2416,10 @@ VOID ScanForBootloaders (
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"Assigned Shortcut %s to %d of %d %s",
-            (i == 1) ? L"Key" : L"Keys",
+            L"Assigned Shortcut Key%s to %d of %d Loader%s",
+            (i == 1) ? L"" : L"s",
             i, MainMenu.EntryCount,
-            (MainMenu.EntryCount == 1) ? L"Loader" : L"Loaders"
+            (MainMenu.EntryCount == 1) ? L"" : L"s"
         );
         LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
@@ -3248,7 +3248,8 @@ VOID ScanForTools (VOID) {
 
     #if REFIT_DEBUG > 0
     ToolStr = PoolPrint (L"Processed %d Tool Types", ToolTotal);
-    LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
+    LOG(3, LOG_THREE_STAR_SEP, L"%s", ToolStr);
+    LOG(3, LOG_BLANK_LINE_SEP, L"%s", ToolStr);
     MsgLog ("\n\n");
     MsgLog ("INFO: %s", ToolStr);
     MsgLog ("\n\n");

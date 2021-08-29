@@ -796,9 +796,8 @@ BOOLEAN LoadDrivers (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = PoolPrint (
-        L"Processed %d UEFI %s",
-        NumFound,
-        (NumFound == 1) ? L"Driver" : L"Drivers"
+        L"Processed %d UEFI Driver%s",
+        NumFound, (NumFound == 1) ? L"" : L"s"
     );
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MyFreePool (&MsgStr);

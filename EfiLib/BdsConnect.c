@@ -33,6 +33,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
 BOOLEAN PostConnect     = FALSE;
+BOOLEAN AcquireErrorGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
 
 UINTN   AllHandleCount;
@@ -682,10 +683,10 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Processed %d %s",
-        AllHandleCount,
-        (AllHandleCount == 1) ? L"Handle" : L"Handles"
+        L"Processed %d Handle%s",
+        AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
     );
+    MsgLog ("INFO: %s\n\n", MsgStr);
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MyFreePool (&MsgStr);
     #endif
@@ -740,8 +741,11 @@ EFI_STATUS ApplyGOPFix (
         MsgLog ("\n\n");
         #endif
 
-        // connect all devices
-        if (!EFI_ERROR(Status)) {
+        // connect all devices if no error
+        if (EFI_ERROR(Status)) {
+            AcquireErrorGOP = TRUE;
+        }
+        else {
             Status = BdsLibConnectAllDriversToAllControllersEx();
         }
     }
@@ -768,11 +772,13 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             Status   = ApplyGOPFix();
 
             #if REFIT_DEBUG > 0
-            CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
-            LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            MsgLog ("INFO: %s", MsgStr);
-            MyFreePool (&MsgStr);
-            MsgLog ("\n\n");
+            if (!AcquireErrorGOP) {
+                CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
+                LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+                MsgLog ("INFO: %s", MsgStr);
+                MyFreePool (&MsgStr);
+                MsgLog ("\n\n");
+            }
             #endif
 
             ReLoaded = FALSE;

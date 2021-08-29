@@ -1979,22 +1979,6 @@ EFI_STATUS EFIAPI efi_main (
     // Load Drivers
     LoadDrivers();
 
-    // Scan Volumes
-    #if REFIT_DEBUG > 0
-    MsgLog ("Scan Volumes...\n");
-    #endif
-    ScanVolumes();
-
-    if (GlobalConfig.SpoofOSXVersion &&
-        GlobalConfig.SpoofOSXVersion[0] != L'\0'
-    ) {
-        Status = SetAppleOSInfo();
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("INFO: Spoof Mac OS Version ... %r\n\n", Status);
-        #endif
-    }
-
     // Restore SystemTable if previously amended
     if (SetSysTab) {
         // Reinitialise
@@ -2007,6 +1991,19 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("INFO: %s", MsgStr);
         MsgLog ("\n\n");
         MyFreePool (&MsgStr);
+        #endif
+    }
+
+    // Scan Volumes
+    ScanVolumes();
+
+    if (GlobalConfig.SpoofOSXVersion &&
+        GlobalConfig.SpoofOSXVersion[0] != L'\0'
+    ) {
+        Status = SetAppleOSInfo();
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("INFO: Spoof Mac OS Version ... %r\n\n", Status);
         #endif
     }
 

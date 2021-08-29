@@ -2059,7 +2059,8 @@ VOID SetPrebootVolumes (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
+    CHAR16  *MsgStr      = NULL;
+    BOOLEAN  ShowHeading = TRUE;
     #endif
 
     FreeVolumes (
@@ -2109,13 +2110,6 @@ VOID SetPrebootVolumes (VOID) {
         }
     }
     else {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-        MsgLog ("%s:", MsgStr);
-        MyFreePool (&MsgStr);
-        #endif
-
         for (i = 0; i < VolumesCount; i++) {
             SwapName = FALSE;
 
@@ -2128,6 +2122,16 @@ VOID SetPrebootVolumes (VOID) {
 
             if (SwapName) {
                 #if REFIT_DEBUG > 0
+                if (ShowHeading) {
+                    ShowHeading = FALSE;
+
+                    MsgStr = StrDuplicate (L"ReMap APFS Volumes");
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog ("\n\n");
+                    MsgLog ("%s:", MsgStr);
+                    MyFreePool (&MsgStr);
+                }
+
                 MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n");
@@ -2143,14 +2147,19 @@ VOID SetPrebootVolumes (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"ReMapped %d %s",
-            MappedCount,
-            (MappedCount == 1) ? L"Volume" : L"Volumes"
+            L"ReMapped %d APFS Volume%s",
+            MappedCount, (MappedCount == 1) ? L"" : L"s"
         );
         LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
 
         MsgLog ("\n\n");
-        MsgLog ("INFO: %s", MsgStr);
+        if (MappedCount == 0) {
+            MsgLog ("      ") ;
+        }
+        else {
+            MsgLog ("INFO: ");
+        }
+        MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
@@ -2311,7 +2320,10 @@ VOID ScanVolumes (VOID) {
 
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
-            if (ScannedOnce) {
+            if (!DoneHeadings) {
+                MsgLog ("\n                   ");
+            }
+            else if (ScannedOnce) {
                 if ((HandleIndex % 5) == 0 && (HandleCount - HandleIndex) > 2) {
                     MsgLog ("\n\n");
                 }
@@ -2400,7 +2412,7 @@ VOID ScanVolumes (VOID) {
             ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
+        MsgLog ("\n                   ");
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
         MyFreePool (&MsgStr);
@@ -2507,7 +2519,13 @@ VOID ScanVolumes (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_THREE_STAR_SEP, L"Processed %d Volumes", VolumesCount);
+    MsgStr = PoolPrint (
+        L"Processed %d Volume%s",
+        VolumesCount, (VolumesCount == 1) ? L"" : L"s"
+    );
+    MsgLog ("INFO: %s", MsgStr); // Skip Line Break
+    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    MyFreePool (&MsgStr);
     #endif
 
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
