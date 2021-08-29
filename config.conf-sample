@@ -61,6 +61,23 @@
 #
 #decline_nvramprotect
 
+# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
+# UEFI 2.x requirements, they do not work on legacy devices as the specifications
+# mandate that on installation, compliant GOP drivers should confirm devices are
+# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
+# do not activate on Classic MacPros for instance, as these are not actually
+# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
+# all of, the UEFI 2.x capabilities. RefindPlus is configred by default to
+# temporarily partially amend a device's EFI Revision to v2.x and then try
+# reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
+# is not available. The changes are reverted afterwards and permit running
+# modern GPUs on some legacy units when they would otherwise fail to work.
+# This program default configuration is deactivated by setting this token.
+#
+# GOP drivers are not reloaded when commented out
+#
+#decline_reloadgop
+
 # Help with "hidden_tags" setup. RefindPlus always makes the "hidden_tags" tool available
 # by default (even when the tool is not specified in the "showtools" list). This is done
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
@@ -135,22 +152,6 @@
 # Inactive when commented out (Does not add UGA to GOP)
 #
 #uga_pass_through
-
-# When GOP drivers, which are UEFI 2.x drivers, are implemented in compliance with
-# UEFI 2.x requirements, they do not work on legacy devices as the specifications
-# mandate that on installation, compliant GOP drivers should confirm devices are
-# UEFI 2.x compliant and to fail if they are not. Hence, compliant GOP drivers
-# do not activate on Classic MacPros for instance, as these are not actually
-# UEFI 2.x but EFI 1.x devices to which Apple has added a chunk of, but not
-# all of, the UEFI 2.x capabilities. When this token is active, RefindPlus
-# will temporarily amend the device's EFI Revision to UEFI 2.x and attempt
-# reinstalling a copy of the GPU's Option ROM whenever it detects that GOP
-# is not available. The changes are reverted afterwards and permit running
-# modern GPUs on some legacy units when they would otherwise fail to work.
-#
-# Inactive when commented out (Does not reinstall GOP)
-#
-#reload_gop
 
 # Use a built-in GOP renderer which may provide enhanced performance
 # and fix rendering issues on certain specific GPU models including

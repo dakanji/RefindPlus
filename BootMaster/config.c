@@ -995,9 +995,6 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"provide_console_gop")) {
             GlobalConfig.ProvideConsoleGOP = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"reload_gop")) {
-            GlobalConfig.ReloadGOP = HandleBoolean (TokenList, TokenCount);
-        }
         else if (MyStriCmp (TokenList[0], L"direct_gop_renderer")) {
             GlobalConfig.UseDirectGop = HandleBoolean (TokenList, TokenCount);
         }
@@ -1012,6 +1009,10 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"disable_amfi")) {
             GlobalConfig.DisableAMFI = HandleBoolean (TokenList, TokenCount);
+        }
+        else if (MyStriCmp (TokenList[0], L"decline_reloadgop")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ReloadGOP = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_apfsload")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
