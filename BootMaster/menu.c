@@ -1002,13 +1002,12 @@ UINTN RunGenericMenu (
         FlushFailReset = TRUE;
         MenuExit = 0;
     }
-    else {
-        if (ChosenEntry) {
-            *ChosenEntry = Screen->Entries[State.CurrentSelection];
-        }
 
-        *DefaultEntryIndex = State.CurrentSelection;
+    if (ChosenEntry) {
+        *ChosenEntry = Screen->Entries[State.CurrentSelection];
     }
+
+    *DefaultEntryIndex = State.CurrentSelection;
 
     return MenuExit;
 } // UINTN RunGenericMenu()
@@ -2901,15 +2900,14 @@ UINTN RunMainMenu (
         FlushFailReset = TRUE;
         MenuExit = 0;
     }
-    else {
-        if (ChosenEntry) {
-            *ChosenEntry = TempChosenEntry;
-        }
 
-        if (DefaultSelection) {
-           ReleasePtr (*DefaultSelection);
-           *DefaultSelection = MenuTitle;
-        }
+    if (ChosenEntry) {
+        *ChosenEntry = TempChosenEntry;
+    }
+
+    if (DefaultSelection) {
+       ReleasePtr (*DefaultSelection);
+       *DefaultSelection = MenuTitle;
     }
 
     return MenuExit;
