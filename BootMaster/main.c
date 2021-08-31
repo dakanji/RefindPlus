@@ -1595,30 +1595,52 @@ VOID LogBasicInfo (VOID) {
         MsgLog ("\n\n");
     }
 
-    /* UEFI 2.x NVRAM Storage Info */
-    if ((gRT->Hdr.Revision >> 16) > 1) {
-        // NB: QueryVariableInfo() is not supported by EFI 1.x
-        MsgLog ("Non-Volatile Storage:");
-
-        Status = REFIT_CALL_4_WRAPPER(
-            gRT->QueryVariableInfo,
-            EFI_VARIABLE_NON_VOLATILE,
-            &MaximumVariableStorageSize,
-            &RemainingVariableStorageSize,
-            &MaximumVariableSize
-        );
-        if (EFI_ERROR(Status)) {
+    /* NVRAM Storage Info */
+    BOOLEAN QVInfoSupport = FALSE;
+    MsgLog ("Non-Volatile Storage:");
+    if (gRT->Hdr.Revision >> 16 > 1
+        && MyStrStr (VendorInfo, L"Apple") == NULL
+    ) {
+        if ((gRT->Hdr.HeaderSize <
+            MY_OFFSET_OF(EFI_RUNTIME_SERVICES, QueryVariableInfo) + sizeof(gRT->QueryVariableInfo))
+        ) {
             MsgLog ("\n\n");
-            MsgLog ("** WARN: Could Not Retrieve Non-Volatile Storage Info!!");
-            MsgLog ("\n\n");
+            MsgLog ("** WARN: Inconsistent UEFI 2.x Implementation Detected");
+            MsgLog ("\n");
+            MsgLog ("         Program Behaviour is *NOT* Defined!!");
+            WarnMissingQVInfo = TRUE;
         }
         else {
-            MsgLog ("\n");
-            MsgLog ("  - Total Storage         : %ld\n", MaximumVariableStorageSize);
-            MsgLog ("  - Remaining Available   : %ld\n", RemainingVariableStorageSize);
-            MsgLog ("  - Maximum Variable Size : %ld\n", MaximumVariableSize);
+            Status = REFIT_CALL_4_WRAPPER(
+                gRT->QueryVariableInfo,
+                EFI_VARIABLE_NON_VOLATILE,
+                &MaximumVariableStorageSize,
+                &RemainingVariableStorageSize,
+                &MaximumVariableSize
+            );
+            if (EFI_ERROR(Status)) {
+                MsgLog ("\n\n");
+                MsgLog ("** WARN: Could Not Retrieve Non-Volatile Storage Info");
+            }
+            else {
+                MsgLog ("\n");
+                MsgLog ("  - Total Storage         : %ld", MaximumVariableStorageSize);
+                MsgLog ("\n");
+                MsgLog ("  - Remaining Available   : %ld", RemainingVariableStorageSize);
+                MsgLog ("\n");
+                MsgLog ("  - Maximum Variable Size : %ld", MaximumVariableSize);
+            }
         }
+        QVInfoSupport = TRUE;
     }
+
+    if (!QVInfoSupport) {
+        // QueryVariableInfo is not supported on Apple or EFI 1.x Firmware
+        MsgLog ("\n");
+        MsgLog (" ** QueryVariableInfo is not Available");
+        // DA-TAG: Leave preceeding single space above intact
+    }
+    MsgLog ("\n\n");
 
     /**
      * Report which video output devices are natively available. We do not actually

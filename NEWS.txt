@@ -1,5 +1,10 @@
 0.13.2.AH (Pre-Release):
 -----------------------
+- Adds Non-Stadard UEFI 2.x Implementation Resilience
+  * Some UEFI 2.x implementations may be incomplete with some functionality missing
+  * This is typically due to customisation of the firmware as on Late Intel Macs such as the MacMini8,1
+  * This affected running the DEBUG build on such units
+  * RefindPlus now accommodates this situation.
 - Fixes Switching External Screens to Text Mode
   * External screens switched to text mode were functional but elements, such as the header, were missing
   * This has now been fixed along with properly disabling the cursor
