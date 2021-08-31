@@ -2023,8 +2023,11 @@ BOOLEAN SetPreBootNames (
     );
 
     if (!EFI_ERROR(Status)) {
-        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PROTO ||
-            VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+        if ((VolumeRole == APPLE_APFS_VOLUME_ROLE_PROTO || VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM)
+            && Volume->VolName != NULL
+            && StrLen (Volume->VolName) != 0
+            && MyStrStr (Volume->VolName, L"/FileVault") == NULL
+            && MyStrStrIns (Volume->VolName, L" - Data") == NULL
         ) {
             for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
                 if (GuidsAreEqual (
