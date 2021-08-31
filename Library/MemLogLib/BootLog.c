@@ -289,6 +289,7 @@ VOID EFIAPI DeepLoggger (
         case LOG_THREE_STAR_SEP: Tmp = PoolPrint (L"\n. . . . . . . . ***[ %s ]*** . . . . . . . .\n",   *Msg); break;
         case LOG_THREE_STAR_END: Tmp = PoolPrint (L"                ***[ %s ]***\n\n",                   *Msg); break;
         case LOG_THREE_STAR_MID: Tmp = PoolPrint (L"                ***[ %s\n",                          *Msg); break;
+        case LOG_LINE_SPECIAL:   Tmp = PoolPrint (L"\n                   %s",                            *Msg); break;
         default:                 Tmp = PoolPrint (L"%s\n",                                               *Msg);
             // Should be 'LOG_LINE_NORMAL', but use 'default' so as to also catch coding errors
             // Enable Timestamp for this
