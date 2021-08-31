@@ -235,6 +235,9 @@ BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                FlushFailedTag       = FALSE;
 BOOLEAN                FlushFailReset       = FALSE;
+BOOLEAN                WarnVersionEFI       = FALSE;
+BOOLEAN                WarnRevisionUEFI     = FALSE;
+BOOLEAN                WarnMissingQVInfo    = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
@@ -1572,22 +1575,23 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof(*gDS), FALSE);
     MsgLog ("\n\n");
 
-    BOOLEAN ErrEFI = FALSE;
+    BOOLEAN ErrEFI = TRUE;
     if (((gST->Hdr.Revision >> 16) != EfiMajorVersion)
         || ((gBS->Hdr.Revision >> 16) != EfiMajorVersion)
         || ((gRT->Hdr.Revision >> 16) != EfiMajorVersion)
     ) {
+        WarnVersionEFI = TRUE;
         MsgLog ("** WARN: Inconsistent EFI Versions Detected");
-        ErrEFI = TRUE;
+    }
+    else if (((gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff))
+        || ((gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
+        || ((gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
+    ) {
+        WarnRevisionUEFI = TRUE;
+        MsgLog ("** WARN: Inconsistent UEFI Revisions Detected");
     }
     else {
-        if (((gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff))
-            || ((gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
-            || ((gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
-        ) {
-            MsgLog ("** WARN: Inconsistent UEFI Revisions Detected");
-            ErrEFI = TRUE;
-        }
+        ErrEFI = FALSE;
     }
     if (ErrEFI) {
         MsgLog ("\n");
@@ -1859,113 +1863,36 @@ EFI_STATUS EFIAPI efi_main (
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
+
     #if REFIT_DEBUG > 0
-    /* Show Refit Debug Setting */
-    MsgLog ("INFO: RefitDBG:- '%d'", REFIT_DEBUG);
-
-    /* Show Log Level Setting */
+    MsgLog ("INFO: RefitDBG:- '%d'",   REFIT_DEBUG);               // Single Item
     MsgLog ("\n");
-    MsgLog ("      LogLevel:- '%d'", GlobalConfig.LogLevel);
-
-    /* Show ScanDelay Setting */
+    MsgLog ("      LogLevel:- '%d'",   GlobalConfig.LogLevel);     // Single Item
     MsgLog ("\n");
-    MsgLog ("      ScanDelay:- '%d'", GlobalConfig.ScanDelay);
-
-    /* Show ReloadGOP Status */
+    MsgLog ("      ScanDelay:- '%d'",  GlobalConfig.ScanDelay);    // Single Item
     MsgLog ("\n");
-    MsgLog ("      ReloadGOP:- ");
-    if (GlobalConfig.ReloadGOP) {
-        MsgLog ("'YES'");
-    }
-    else {
-        MsgLog ("'NO'");
-    }
-
-    /* Show SyncAPFS Status */
+    MsgLog ("      ReloadGOP:- %s",    (GlobalConfig.ReloadGOP)    ? L"'YES'"    : L"'NO'");
     MsgLog ("\n");
-    MsgLog ("      SyncAPFS:- ");
-    if (GlobalConfig.SyncAPFS) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show TagsHelp Status */
+    MsgLog ("      SyncAPFS:- %s",     (GlobalConfig.SyncAPFS)     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TagsHelp:- ");
-    if (GlobalConfig.TagsHelp) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show TextOnly Status */
+    MsgLog ("      TagsHelp:- %s",     (GlobalConfig.TagsHelp)     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TextOnly:- ");
-    if (GlobalConfig.TextOnly) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show ScanAllESP Status */
+    MsgLog ("      TextOnly:- %s",     (GlobalConfig.TextOnly)     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      ScanAllESP:- ");
-    if (GlobalConfig.ScanAllESP) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show TextRenderer Status */
+    MsgLog ("      ScanAllESP:- %s",   (GlobalConfig.ScanAllESP)   ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TextRenderer:- ");
-    if (GlobalConfig.TextRenderer) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show ProtectNVRAM Status */
+    MsgLog ("      TextRenderer:- %s", (GlobalConfig.TextRenderer) ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
         MsgLog ("      ProtectNVRAM:- 'Disabled'");
     }
     else {
-        MsgLog ("      ProtectNVRAM:- ");
-        if (GlobalConfig.ProtectNVRAM) {
-            MsgLog ("'Active'");
-        }
-        else {
-            MsgLog ("'Inactive'");
-        }
+        MsgLog ("      ProtectNVRAM:- %s",   (GlobalConfig.ProtectNVRAM)       ? L"'Active'" : L"'Inactive'");
     }
-
-    /* Show NormaliseCSR Status */
     MsgLog ("\n");
-    MsgLog ("      NormaliseCSR:- ");
-    if (GlobalConfig.NormaliseCSR) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
-    /* Show IgnorePreviousBoot Status */
+    MsgLog ("      NormaliseCSR:- %s",       (GlobalConfig.NormaliseCSR)       ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      IgnorePreviousBoot:- ");
-    if (GlobalConfig.IgnorePreviousBoot) {
-        MsgLog ("'Active'");
-    }
-    else {
-        MsgLog ("'Inactive'");
-    }
-
+    MsgLog ("      IgnorePreviousBoot:- %s", (GlobalConfig.IgnorePreviousBoot) ? L"'Active'" : L"'Inactive'");
     #endif
 
 
@@ -2100,18 +2027,131 @@ EFI_STATUS EFIAPI efi_main (
     ScanForBootloaders (FALSE);
     ScanForTools();
 
-    if (GlobalConfig.LogLevel > 2) {
-        /* Enable Forced Native Logging */
-        NativeLogger = TRUE;
-    }
-    pdInitialize();
-    if (GlobalConfig.LogLevel > 2) {
-        /* Disable Forced Native Logging */
-        NativeLogger = FALSE;
-    }
-
     if (GlobalConfig.ShutdownAfterTimeout) {
         MainMenu.TimeoutText = L"Shutdown";
+    }
+
+    // show EFI Version mismatch warning
+    if (WarnVersionEFI) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Inconsistent EFI Versions");
+        LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+
+        SwitchToText (FALSE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"            Inconsistent EFI Versions Detected            ", NEXTLINE);
+        PrintUglyText (L"           Program Behaviour is *NOT* Defined!!           ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        PauseForKey();
+
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        MsgLog ("      %s ...", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+        if (egIsGraphicsModeEnabled()) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Restore Graphics Mode\n\n");
+            #endif
+
+            SwitchToGraphicsAndClear (TRUE);
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Proceeding\n\n");
+            #endif
+        }
+    }
+
+    // show UEFI Revision mismatch warning
+    if (WarnRevisionUEFI) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Inconsistent UEFI Revisions");
+        LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+
+        SwitchToText (FALSE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"           Inconsistent UEFI Revision Detected            ", NEXTLINE);
+        PrintUglyText (L"           Program Behaviour is *NOT* Defined!!           ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        PauseForKey();
+
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        MsgLog ("      %s ...", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+        if (egIsGraphicsModeEnabled()) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Restore Graphics Mode\n\n");
+            #endif
+
+            SwitchToGraphicsAndClear (TRUE);
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Proceeding\n\n");
+            #endif
+        }
+    }
+
+    // show config mismatch warning
+    if (WarnMissingQVInfo) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
+        LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+
+        SwitchToText (FALSE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"       Inconsistent UEFI 2.x Implementation Detected      ", NEXTLINE);
+        PrintUglyText (L"           Program Behaviour is *NOT* Defined!!           ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
+        PauseForKey();
+
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        MsgLog ("      %s ...", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+        if (egIsGraphicsModeEnabled()) {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Restore Graphics Mode\n\n");
+            #endif
+
+            SwitchToGraphicsAndClear (TRUE);
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgLog ("Proceeding\n\n");
+            #endif
+        }
     }
 
     // show config mismatch warning
@@ -2161,39 +2201,23 @@ EFI_STATUS EFIAPI efi_main (
         }
     }
 
-    #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
-    LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("INFO: %s on %s Firmware", MsgStr, VendorInfo);
-    MsgLog ("\n");
-    MyFreePool (&MsgStr);
+    if (GlobalConfig.LogLevel > 2) {
+        /* Enable Forced Native Logging */
+        NativeLogger = TRUE;
+    }
+    pdInitialize();
+    if (GlobalConfig.LogLevel > 2) {
+        /* Disable Forced Native Logging */
+        NativeLogger = FALSE;
+    }
 
-    CHAR16 *TmpStr = NULL;
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
     #endif
 
     if (GlobalConfig.DefaultSelection) {
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
-
-        #if REFIT_DEBUG > 0
-        TmpStr = SelectionName;
-        #endif
     }
-    else {
-        #if REFIT_DEBUG > 0
-        TmpStr = L"Not Set";
-        #endif
-    }
-
-    #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Default Selection:- '%s'", TmpStr);
-    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG(3, LOG_BLANK_LINE_SEP, L"X");
-    MsgLog ("      %s", MsgStr);
-    MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
-
-    LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");
-    #endif
 
     while (MainLoopRunning) {
         // Set to false as may not be booting

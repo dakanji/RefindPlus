@@ -58,6 +58,7 @@
 #include "mystrings.h"
 #include "icns.h"
 #include "scan.h"
+#include "../include/version.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_back_selected_small.h"
@@ -103,6 +104,9 @@ BOOLEAN PointerActive     = FALSE;
 BOOLEAN DrawSelection     = TRUE;
 
 extern EFI_GUID          RefindPlusGuid;
+
+extern CHAR16           *VendorInfo;
+
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
 extern BOOLEAN           FlushFailedTag;
@@ -2809,16 +2813,63 @@ UINTN RunMainMenu (
     INTN                DefaultEntryIndex   = -1;
     INTN                DefaultSubmenuIndex = -1;
 
-    // remove any buffered key strokes
-    ReadAllKeyStrokes();
+    #if REFIT_DEBUG > 0
+           CHAR16  *MsgStr              = NULL;
+    static BOOLEAN  ShowLoaded          = TRUE;
+           BOOLEAN  DefaultSelectionSet = FALSE;
+    #endif
 
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
+    #if REFIT_DEBUG > 0
+    if (ShowLoaded) {
+        MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
+        LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("INFO: %s on %s Firmware", MsgStr, VendorInfo);
+        MyFreePool (&MsgStr);
+    }
+    #endif
+
     if ((DefaultSelection != NULL) && (*DefaultSelection != NULL)) {
         // Find a menu entry that includes *DefaultSelection as a substring
         DefaultEntryIndex = FindMenuShortcutEntry (Screen, *DefaultSelection);
+
+        #if REFIT_DEBUG > 0
+        if (ShowLoaded) {
+            DefaultSelectionSet = TRUE;
+
+            MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("\n");
+            MsgLog ("      %s", MsgStr);
+            MyFreePool (&MsgStr);
+        }
+        #endif
     }
+
+    #if REFIT_DEBUG > 0
+    if (ShowLoaded) {
+        ShowLoaded  = FALSE;
+
+        if (DefaultSelectionSet) {
+            UINTN EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
+            MsgStr = PoolPrint (
+                L"Highlighted Screen Option:- '%s'",
+                Screen->Entries[EntryPosition]->Title
+            );
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(3, LOG_BLANK_LINE_SEP, L"X");
+            MsgLog ("\n");
+            MsgLog ("      %s", MsgStr);
+            MyFreePool (&MsgStr);
+        }
+        MsgLog ("\n\n");
+    }
+    #endif
+
+    // remove any buffered key strokes
+    ReadAllKeyStrokes();
 
     if (AllowGraphicsMode) {
         Style     = GraphicsMenuStyle;
