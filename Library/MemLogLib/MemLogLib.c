@@ -282,8 +282,7 @@ EFI_STATUS EFIAPI MemLogInit (VOID) {
 
     // Show Notice if Required
     if (InitError[0] != '\0') {
-        MemLog (FALSE, 1, "INFO: Could Not Calibrate ACPI PM Timer\n");
-        MemLog (FALSE, 1, "      %a\n\n", InitError);
+        MemLog (FALSE, 1, "*** Could Not Calibrate ACPI PM Timer ... %a ***\n\n", InitError);
     }
 
     return Status;

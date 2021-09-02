@@ -127,6 +127,7 @@ BOOLEAN            SelfVolSet          = FALSE;
 BOOLEAN            SelfVolRun          = FALSE;
 BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScanMBR             = FALSE;
+BOOLEAN            SkipSpacing         = FALSE;
 
 EFI_GUID           GuidHFS             = HFS_GUID_VALUE;
 EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
@@ -875,6 +876,7 @@ VOID SanitiseVolumeName (
         else if (MyStrStrIns ((*Volume)->VolName, L"HFS+ Volume")         ) VolumeName = L"HFS+ Volume";
         else if (MyStrStrIns ((*Volume)->VolName, L"FAT Volume")          ) VolumeName = L"FAT Volume";
         else if (MyStrStrIns ((*Volume)->VolName, L"XFS Volume")          ) VolumeName = L"XFS Volume";
+        else if (MyStrStrIns ((*Volume)->VolName, L"PreBoot")             ) VolumeName = L"PreBoot";
         else if (MyStrStrIns ((*Volume)->VolName, L"Ext4 Volume")         ) VolumeName = L"Ext4 Volume";
         else if (MyStrStrIns ((*Volume)->VolName, L"Ext3 Volume")         ) VolumeName = L"Ext3 Volume";
         else if (MyStrStrIns ((*Volume)->VolName, L"Ext2 Volume")         ) VolumeName = L"Ext2 Volume";
@@ -1218,6 +1220,11 @@ VOID ScanVolumeBootcode (
     MBR_PARTITION_INFO  *MbrTable;
     BOOLEAN              MbrTableFound = FALSE;
 
+    #if REFIT_DEBUG > 0
+    UINTN   LogLineType;
+    CHAR16 *StrSpacer = NULL;
+    #endif
+
     *Bootable           = FALSE;
     MediaCheck          = FALSE;
     Volume->HasBootCode = FALSE;
@@ -1252,7 +1259,7 @@ VOID ScanVolumeBootcode (
                     MediaCheck = TRUE;
                 }
                 ScannedOnce = FALSE;
-                CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector on Volume Below");
+                CHAR16 *MsgStr = StrDuplicate (L"Error While Reading Boot Sector");
                 MsgLog ("\n\n");
                 MsgLog ("** WARN: '%r' %s", Status, MsgStr);
                 MsgLog ("\n");
@@ -1394,7 +1401,16 @@ VOID ScanVolumeBootcode (
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
             if (DoneHeadings) {
-                LOG(3, LOG_LINE_SPECIAL,  L"Found Legacy Boot Code on Volume Below");
+                if (SkipSpacing) {
+                    StrSpacer   = L" ... ";
+                    LogLineType = LOG_LINE_SAME;
+                }
+                else {
+                    StrSpacer   = L"";
+                    LogLineType = LOG_LINE_SPECIAL;
+                }
+                LOG(4, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
+                SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
             }
         }
         #endif
@@ -1419,6 +1435,21 @@ VOID ScanVolumeBootcode (
                 Volume->MbrPartitionTable = AllocatePool (SizeMBR);
                 if (Volume->MbrPartitionTable) {
                     CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
+
+                    #if REFIT_DEBUG > 0
+                    if (DoneHeadings) {
+                        if (SkipSpacing) {
+                            StrSpacer   = L" ... ";
+                            LogLineType = LOG_LINE_SAME;
+                        }
+                        else {
+                            StrSpacer   = L"";
+                            LogLineType = LOG_LINE_SPECIAL;
+                        }
+                        LOG(4, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                    }
+                    #endif
                 }
             }
         }
@@ -1706,7 +1737,8 @@ VOID ScanVolume (
     BOOLEAN           Bootable;
 
     #if REFIT_DEBUG > 0
-    UINTN LogLineType;
+    UINTN   LogLineType;
+    CHAR16 *StrSpacer = NULL;
     #endif
 
     BOOLEAN HybridLogger = FALSE;
@@ -1820,12 +1852,21 @@ VOID ScanVolume (
                 #if REFIT_DEBUG > 0
                 if (DoneHeadings) {
                     if (HybridLogger) {
-                        LogLineType = LOG_LINE_SPECIAL;
+                        if (SkipSpacing) {
+                            StrSpacer   = L" ... ";
+                            LogLineType = LOG_LINE_SAME;
+                        }
+                        else {
+                            StrSpacer   = L"";
+                            LogLineType = LOG_LINE_SPECIAL;
+                        }
                     }
                     else {
+                        StrSpacer   = L"";
                         LogLineType = LOG_LINE_NORMAL;
                     }
-                    LOG(3, LogLineType, L"Could Not Locate Device Path For Volume Below!!");
+                    LOG(4, LogLineType, L"%sCould Not Locate Device Path", StrSpacer);
+                    SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
                 }
                 #endif
             }
@@ -1842,12 +1883,21 @@ VOID ScanVolume (
                     #if REFIT_DEBUG > 0
                     if (DoneHeadings) {
                         if (HybridLogger) {
-                            LogLineType = LOG_LINE_SPECIAL;
+                            if (SkipSpacing) {
+                                StrSpacer   = L" ... ";
+                                LogLineType = LOG_LINE_SAME;
+                            }
+                            else {
+                                StrSpacer   = L"";
+                                LogLineType = LOG_LINE_SPECIAL;
+                            }
                         }
                         else {
+                            StrSpacer   = L"";
                             LogLineType = LOG_LINE_NORMAL;
                         }
-                        LOG(3, LogLineType, L"Could Not Get DiskDevicePath For Volume Below");
+                        LOG(4, LogLineType, L"%sCould Not Get DiskDevicePath", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1868,12 +1918,21 @@ VOID ScanVolume (
                     #if REFIT_DEBUG > 0
                     if (DoneHeadings) {
                         if (HybridLogger) {
-                            LogLineType = LOG_LINE_SPECIAL;
+                            if (SkipSpacing) {
+                                StrSpacer   = L" ... ";
+                                LogLineType = LOG_LINE_SAME;
+                            }
+                            else {
+                                StrSpacer   = L"";
+                                LogLineType = LOG_LINE_SPECIAL;
+                            }
                         }
                         else {
+                            StrSpacer   = L"";
                             LogLineType = LOG_LINE_NORMAL;
                         }
-                        LOG(3, LogLineType, L"Could Not Get WholeDiskBlockIO For Volume Below!!");
+                        LOG(4, LogLineType, L"%sCould Not Get WholeDiskBlockIO", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1891,19 +1950,27 @@ VOID ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            CHAR16 *MsgStr = L"Volume Below Considered Non-Bootable but Boot Code is Present";
+            CHAR16 *MsgStr = L"Considered Non-Bootable but Boot Code is Present";
             if (DoneHeadings) {
                 if (HybridLogger) {
-                    LogLineType = LOG_LINE_SPECIAL;
+                    if (SkipSpacing) {
+                        StrSpacer   = L" ... ";
+                        LogLineType = LOG_LINE_SAME;
+                    }
+                    else {
+                        StrSpacer   = L"";
+                        LogLineType = LOG_LINE_SPECIAL;
+                    }
                 }
                 else {
+                    StrSpacer   = L"";
                     LogLineType = LOG_LINE_NORMAL;
                 }
-                LOG(3, LogLineType, L"%s!!", MsgStr);
+                LOG(4, LogLineType, L"%s%s!!", StrSpacer, MsgStr);
             }
-            LOG(3, LogLineType, L"%s!!", MsgStr);
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
+            SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
         }
         #endif
 
@@ -2174,7 +2241,6 @@ VOID SetPrebootVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr      = NULL;
-    BOOLEAN  ShowHeading = TRUE;
     #endif
 
     FreeVolumes (
@@ -2217,12 +2283,19 @@ VOID SetPrebootVolumes (VOID) {
             LOG(3, LOG_BLANK_LINE_SEP, L"X");
             LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s", MsgStr);
-            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
         }
     }
     else {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
+        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("%s:", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+
         for (i = 0; i < VolumesCount; i++) {
             SwapName = FALSE;
 
@@ -2235,16 +2308,6 @@ VOID SetPrebootVolumes (VOID) {
 
             if (SwapName) {
                 #if REFIT_DEBUG > 0
-                if (ShowHeading) {
-                    ShowHeading = FALSE;
-
-                    MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("\n\n");
-                    MsgLog ("%s:", MsgStr);
-                    MyFreePool (&MsgStr);
-                }
-
                 MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n");
@@ -2269,13 +2332,13 @@ VOID SetPrebootVolumes (VOID) {
             L"ReMapped %d APFS Volume%s",
             SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
         );
-        LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
 
-        MsgLog ("\n\n");
         if (SystemVolumesCount == 0) {
-            MsgLog ("      ") ;
+            MsgLog ("\n                   ") ;
         }
         else {
+            MsgLog ("\n\n");
             MsgLog ("INFO: ");
         }
         MsgLog ("%s", MsgStr);
@@ -2329,7 +2392,7 @@ CHAR16 * GetApfsRoleString (
         case APPLE_APFS_VOLUME_ROLE_VM:       retval = L"0x08 - VM";         break;
         case APPLE_APFS_VOLUME_ROLE_PREBOOT:  retval = L"0x10 - PreBoot";    break;
         case APPLE_APFS_VOLUME_ROLE_DATA:     retval = L"0x40 - Data";       break;
-        case APPLE_APFS_VOLUME_ROLE_UPDATE:   retval = L"0xC0 - Update";     break;
+        case APPLE_APFS_VOLUME_ROLE_UPDATE:   retval = L"0xC0 - Snapshot";     break;
         default:                              retval = L"0xFF - Unset";      break;
     } // switch
 
@@ -2358,7 +2421,7 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr       = NULL;
-    CHAR16  *TmpStr       = NULL;
+    CHAR16  *RoleStr      = NULL;
     CHAR16  *PartType     = NULL;
     CHAR16  *PartName     = NULL;
     CHAR16  *PartGUID     = NULL;
@@ -2370,8 +2433,8 @@ VOID ScanVolumes (VOID) {
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
-    const CHAR16 *ITEMVOLC = L"APFS ROLE";
-    const CHAR16 *ITEMVOLD = L"VOLUME TYPE";
+    const CHAR16 *ITEMVOLC = L"PARTITION TYPE";
+    const CHAR16 *ITEMVOLD = L"VOLUME ROLE";
     const CHAR16 *ITEMVOLE = L"VOLUME ID";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
@@ -2499,17 +2562,25 @@ VOID ScanVolumes (VOID) {
 
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
+            if (SkipSpacing) {
+                MsgLog (" on Volume Below");
+            }
+
             if (!DoneHeadings) {
                 MsgLog ("\n\n                   ");
             }
             else if (ScannedOnce) {
-                if ((HandleIndex % 5) == 0 && (HandleCount - HandleIndex) > 2) {
+                if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
                     MsgLog ("\n\n");
                 }
                 else {
                     MsgLog ("\n");
                 }
+                if (!SkipSpacing && (HandleIndex % 16) == 0 && (HandleCount - HandleIndex) > 8) {
+                    DoneHeadings = FALSE;
+                }
             }
+            SkipSpacing = FALSE;
 
             // 'FSTypeName' returns a constant ... Do not free 'PartType'!
             PartType = FSTypeName (Volume->FSType);
@@ -2537,17 +2608,20 @@ VOID ScanVolumes (VOID) {
 
             if (!DoneHeadings) {
                 MsgLog (
-                    "%-41s%-41s%-20s%-20s%s\n",
+                    "%-41s%-41s%-20s%-22s%s\n",
                     ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
                 );
                 DoneHeadings = TRUE;
             }
 
-            TmpStr = L"";
+            RoleStr = L"";
             VolumeRole = 0;
-            if (MyStrStrIns (Volume->VolName, L"/FileVault Container")) {
-                TmpStr = L"0xFF - Unset";
-            }
+                 if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
+            else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * Mac Recovery";
+            else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
+            else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
+            else if (MyStrStrIns (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
+            else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0x99 - Unset";
             else {
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
@@ -2557,14 +2631,14 @@ VOID ScanVolumes (VOID) {
                 );
 
                 if (!EFI_ERROR(Status)) {
-                    TmpStr = GetApfsRoleString (VolumeRole);
+                    RoleStr = GetApfsRoleString (VolumeRole);
                 }
             }
 
             MsgStr = PoolPrint (
-                L"%s  :  %s  :  %-15s  :  %-15s  :  %s",
-                PartTypeGUID, PartGUID, TmpStr,
-                PartType, Volume->VolName
+                L"%s  :  %s  :  %-15s  :  %-17s  :  %s",
+                PartTypeGUID, PartGUID, PartType,
+                RoleStr, Volume->VolName
             );
 
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2609,7 +2683,7 @@ VOID ScanVolumes (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"%-41s%-41s%-20s%-20s%s",
+            L"%-41s%-41s%-20s%-22s%s",
             ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);

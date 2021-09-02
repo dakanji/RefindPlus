@@ -270,22 +270,34 @@ EFI_STATUS LibScanHandleDatabase (
 
         if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiLoadedImageProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiLoadedImageProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverBindingProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverBindingProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverConfigurationProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverConfigurationProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverDiagnosticsProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverDiagnosticsProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiComponentNameProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiComponentNameProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
-                if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gMyEfiDevicePathProtocolGuid) == 0) {
+                if (CompareGuid (
+                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDevicePathProtocolGuid
+                ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
                 }
 
@@ -304,8 +316,8 @@ EFI_STATUS LibScanHandleDatabase (
                         if (DriverBindingHandle != NULL &&
                             OpenInfo[OpenInfoIndex].AgentHandle == DriverBindingHandle
                         ) {
-                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) ==
-                                EFI_OPEN_PROTOCOL_BY_DRIVER
+                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER)
+                                == EFI_OPEN_PROTOCOL_BY_DRIVER
                             ) {
                                 //
                                 // Mark the device handle as being managed by the driver
@@ -322,8 +334,8 @@ EFI_STATUS LibScanHandleDatabase (
                                 }
                             }
 
-                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) ==
-                                EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER)
+                                == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                             ) {
                                 //
                                 // Mark the DriverBindingHandle as being a driver that is
@@ -334,10 +346,11 @@ EFI_STATUS LibScanHandleDatabase (
                                 }
                             }
 
-                            if (ControllerHandle != NULL && (*HandleBuffer)[HandleIndex] == ControllerHandle) {
-                                if (
-                                    (OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) ==
-                                    EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                            if (ControllerHandle != NULL
+                                && (*HandleBuffer)[HandleIndex] == ControllerHandle
+                            ) {
+                                if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER)
+                                    == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                                 ) {
                                     for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
                                         if (
@@ -365,8 +378,8 @@ EFI_STATUS LibScanHandleDatabase (
                                 }
                             }
 
-                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER) ==
-                                EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
+                            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER)
+                                == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                             ) {
                                 (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_PARENT_HANDLE;
                                 for (ChildIndex = 0; ChildIndex < *HandleCount; ChildIndex++) {
@@ -445,10 +458,9 @@ EFI_STATUS ConnectAllDriversToAllControllers (
         }
 
         Device = TRUE;
-        if (HandleType[Index] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE) {
-            Device = FALSE;
-        }
-        if (HandleType[Index] & EFI_HANDLE_TYPE_IMAGE_HANDLE) {
+        if (HandleType[Index] & EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE
+            || HandleType[Index] & EFI_HANDLE_TYPE_IMAGE_HANDLE
+        ) {
             Device = FALSE;
         }
 
@@ -585,7 +597,9 @@ VOID ConnectFilesystemDriver (
 
         DriverHandleList[1] = NULL;
         for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
-            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER) == EFI_OPEN_PROTOCOL_BY_DRIVER) {
+            if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER)
+                == EFI_OPEN_PROTOCOL_BY_DRIVER
+            ) {
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->DisconnectController, Handles[Index],
                     OpenInfo[OpenInfoIndex].AgentHandle, NULL
@@ -730,7 +744,7 @@ BOOLEAN LoadDrivers (VOID) {
         else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
-                L"'%s' in Program Default Driver Folder:- '%s'",
+                L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, Directory
             );
             MsgLog ("  - %s", MsgNotFound);
@@ -743,10 +757,20 @@ BOOLEAN LoadDrivers (VOID) {
 
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
+        if (HybridLogger) {
+            HybridLogger = FALSE;
+            NativeLogger = TRUE;
+        }
+
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
         MsgLog ("Load UEFI Drivers from User Defined Folders...");
         #endif
+
+        if (NativeLogger) {
+            HybridLogger = TRUE;
+            NativeLogger = FALSE;
+        }
 
         i = 0;
         while ((Directory = FindCommaDelimited (GlobalConfig.DriverDirs, i++)) != NULL) {
@@ -770,7 +794,7 @@ BOOLEAN LoadDrivers (VOID) {
                 else {
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL,
-                        L"'%s' in User Defined Driver Folder:- '%s'",
+                        L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, Directory
                     );
                     MsgLog ("  - %s", MsgNotFound);
@@ -782,6 +806,7 @@ BOOLEAN LoadDrivers (VOID) {
             MyFreePool (&SelfDirectory);
         } // while
     }
+
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");

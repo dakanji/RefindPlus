@@ -261,9 +261,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
             MyFreePool (&MsgStr);
         }
         else {
-            // Clear Keystrokes
-            ReadAllKeyStrokes();
-
             MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
             LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
             MsgLog ("%s...\n", MsgStr);
@@ -668,7 +665,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle\n\n");
+                MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle");
             }
         }
         else {
@@ -686,7 +683,14 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
         L"Processed %d Handle%s",
         AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
     );
-    MsgLog ("INFO: %s", MsgStr); // Skip Line Break
+    if (!FoundGOP && DetectedDevices) {
+        MsgLog ("\n");
+        MsgLog ("      ");
+    }
+    else {
+        MsgLog ("INFO: ");
+    }
+    MsgLog ("%s", MsgStr);
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MyFreePool (&MsgStr);
     #endif
@@ -719,14 +723,12 @@ EFI_STATUS ApplyGOPFix (
 
     MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("\n\n");
     MsgLog ("INFO: %s", MsgStr);
     MyFreePool (&MsgStr);
 
     if (EFI_ERROR(Status)) {
         MsgLog ("\n\n");
-    }
-    else {
-        MsgLog ("\n");
     }
     #endif
 
@@ -736,9 +738,9 @@ EFI_STATUS ApplyGOPFix (
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        MsgLog ("\n");
         MsgLog ("      %s", MsgStr);
         MyFreePool (&MsgStr);
-        MsgLog ("\n\n");
         #endif
 
         // connect all devices if no error
@@ -746,6 +748,7 @@ EFI_STATUS ApplyGOPFix (
             AcquireErrorGOP = TRUE;
         }
         else {
+            MsgLog ("\n\n");
             Status = BdsLibConnectAllDriversToAllControllersEx();
         }
     }
@@ -765,6 +768,9 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
 ) {
     EFI_STATUS Status;
 
+    // Clear Keystrokes
+    ReadAllKeyStrokes();
+
     Status = BdsLibConnectAllDriversToAllControllersEx();
     if (GlobalConfig.ReloadGOP) {
         if (EFI_ERROR(Status) && ResetGOP && !ReLoaded && DetectedDevices) {
@@ -775,9 +781,9 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             if (!AcquireErrorGOP) {
                 CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
                 LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+                MsgLog ("\n\n");
                 MsgLog ("INFO: %s", MsgStr);
                 MyFreePool (&MsgStr);
-                MsgLog ("\n\n");
             }
             #endif
 

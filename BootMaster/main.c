@@ -1937,8 +1937,7 @@ EFI_STATUS EFIAPI efi_main (
         Status = EFI_SUCCESS;
         MsgStr = PoolPrint (L"Restore System Table ... %r", Status);
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("INFO: %s", MsgStr);
-        MsgLog ("\n\n");
+        MsgLog ("      %s", MsgStr);
         MyFreePool (&MsgStr);
         #endif
     }
