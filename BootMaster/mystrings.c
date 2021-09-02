@@ -947,6 +947,45 @@ VOID DeleteStringList (
     }
 } // VOID DeleteStringList()
 
+/** Convert null terminated ascii string to unicode.
+
+  @param[in]  String1  A pointer to the ascii string to convert to unicode.
+  @param[in]  Length   Length or 0 to calculate the length of the ascii string to convert.
+
+  @retval  A pointer to the converted unicode string allocated from pool.
+**/
+CHAR16 * MyAsciiStrCopyToUnicode (
+    IN  CHAR8   *AsciiString,
+    IN  UINTN    Length
+) {
+    CHAR16  *UnicodeString;
+    CHAR16  *UnicodeStringWalker;
+    UINTN   UnicodeStringSize;
+
+    if (AsciiString == NULL) {
+        return NULL;
+    }
+
+    if (Length == 0) {
+        Length = AsciiStrLen (AsciiString);
+    }
+
+    UnicodeStringSize = (Length + 1) * sizeof (CHAR16);
+    UnicodeString = AllocatePool (UnicodeStringSize);
+
+    if (UnicodeString != NULL) {
+        UnicodeStringWalker = UnicodeString;
+
+        while (*AsciiString != '\0' && Length--) {
+            *(UnicodeStringWalker++) = *(AsciiString++);
+        }
+        *UnicodeStringWalker = L'\0';
+    }
+
+    return UnicodeString;
+} // CHAR16 * MyAsciiStrCopyToUnicode()
+
+
 // Convert Unicode String To Ascii String
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16  *StrCHAR16,
@@ -977,4 +1016,28 @@ VOID MyUnicodeStrToAsciiStr (
             ArrCHAR8[i]      = character;
         }
     } while (i < k);
-} // VOID MyUnicodeStrToAsciiStr
+} // VOID MyUnicodeStrToAsciiStr()
+
+VOID MyUnicodeFilterString (
+    IN OUT CHAR16   *String,
+    IN     BOOLEAN   SingleLine
+) {
+    while (*String != L'\0') {
+        if ((*String & 0x7FU) != *String) {
+            // Remove all unicode characters.
+            *String = L'_';
+        }
+        else if (SingleLine && (*String == L'\r' || *String == L'\n')) {
+            // Stop after printing one line.
+            *String = L'\0';
+
+            break;
+        }
+        else if (*String < 0x20 || *String == 0x7F) {
+            // Drop all unprintable spaces but space including tabs.
+            *String = L'_';
+        }
+
+        ++String;
+    }
+} // VOID MyUnicodeFilterString()

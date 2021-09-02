@@ -686,7 +686,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
         L"Processed %d Handle%s",
         AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
     );
-    MsgLog ("INFO: %s\n\n", MsgStr);
+    MsgLog ("INFO: %s", MsgStr); // Skip Line Break
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MyFreePool (&MsgStr);
     #endif

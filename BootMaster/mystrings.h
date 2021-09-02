@@ -56,12 +56,16 @@ BOOLEAN ReplaceSubstring (
     IN     CHAR16 *ReplString
 );
 
-CHAR16 *GetTimeString (VOID);
-CHAR16 *MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
-CHAR16 *MyStrStrIns (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
-CHAR16 *FindNumbers (IN CHAR16 *InString);
+CHAR16 * GetTimeString (VOID);
+CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
+CHAR16 * MyStrStrIns (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
+CHAR16 * FindNumbers (IN CHAR16 *InString);
 CHAR16 * GuidAsString (EFI_GUID *GuidData);
-CHAR16 *FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
+CHAR16 * FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
+CHAR16 * MyAsciiStrCopyToUnicode (
+    IN  CHAR8   *AsciiString,
+    IN  UINTN    Length
+);
 
 CHAR8 *MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
 
@@ -72,6 +76,10 @@ VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16 *StrCHAR16,
     OUT CHAR8  ArrCHAR8[255]
+);
+VOID MyUnicodeFilterString (
+    IN OUT CHAR16   *String,
+    IN     BOOLEAN   SingleLine
 );
 
 UINTN NumCharsInCommon (IN CHAR16* String1, IN CHAR16* String2);

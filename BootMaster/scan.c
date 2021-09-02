@@ -112,6 +112,7 @@
 #define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
+extern EFI_GUID GuidAPFS;
 
 BOOLEAN  LogNewLine      = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
@@ -987,20 +988,7 @@ LOADER_ENTRY * AddLoaderEntry (
             (Volume->VolName) ? Volume->VolName : Entry->LoaderPath
         );
 
-        UINTN LogLineType;
-        if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-            LogLineType = LOG_THREE_STAR_MID;
-        }
-        else {
-            LogLineType = LOG_THREE_STAR_END;
-        }
-
-        LOG(2, LogLineType, L"Successfully Created Menu Entry for %s", Entry->Title);
-        #endif
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Could Not Initialise Loader Entry!!");
+        LOG(2, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
         #endif
     }
 
@@ -1120,44 +1108,47 @@ BOOLEAN ShouldScan (
     CHAR16  *PathCopy     = NULL;
     CHAR16  *DontScanDir  = NULL;
     BOOLEAN  ScanIt       = TRUE;
+
     UINTN    PreBootIndex;
 
     EFI_STATUS                 Status;
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    Status = GetApfsVolumeInfo_RP (
-        Volume->DeviceHandle,
-        &ContainerGuid,
-        &VolumeGuid,
-        &VolumeRole
-    );
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
 
-    if (!EFI_ERROR(Status)) {
-        // Align APFS ReMap
-        if ((Volume->VolName) &&
-            (GlobalConfig.SyncAPFS) &&
-            (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
-        ) {
-            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                if (GuidsAreEqual (
-                        &(PreBootVolumes[PreBootIndex]->PartGuid),
-                        &(Volume->PartGuid)
-                    )
-                ) {
-                    // GUID matches a preboot volume ... swap display name if source is not
-                    // also called "PreBoot" ... which means cloaking was not successful.
-                    if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
-                        MyFreePool (&Volume->VolName);
-                        Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+        if (!EFI_ERROR(Status)) {
+            // Align APFS ReMap
+            if ((Volume->VolName) &&
+                (GlobalConfig.SyncAPFS) &&
+                (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
+            ) {
+                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[PreBootIndex]->PartGuid),
+                            &(Volume->PartGuid)
+                        )
+                    ) {
+                        // GUID matches a preboot volume ... swap display name if source is not
+                        // also called "PreBoot" ... which means cloaking was not successful.
+                        if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
+                            MyFreePool (&Volume->VolName);
+                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
 
-                        break;
+                            break;
+                        }
                     }
-                }
-            } // for
+                } // for
+            }
         }
-    }
+    } // if GuidsAreEqual Volume->PartTypeGuid
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
     if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
@@ -1668,10 +1659,10 @@ VOID ScanEfiFiles (
     CHAR16           *Directory          = NULL;
     BOOLEAN           ScanFallbackLoader = TRUE;
     BOOLEAN           FoundBRBackup      = FALSE;
+    BOOLEAN           FixReMap           = FALSE;
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
-    BOOLEAN  FixReMap = FALSE;
     #endif
 
     if (!Volume) {
@@ -1695,44 +1686,44 @@ VOID ScanEfiFiles (
 
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    Status = GetApfsVolumeInfo_RP (
-        Volume->DeviceHandle,
-        &ContainerGuid,
-        &VolumeGuid,
-        &VolumeRole
-    );
+    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
 
-    if (!EFI_ERROR(Status)) {
-        // Align APFS ReMap
-        if ((Volume->VolName) &&
-            (GlobalConfig.SyncAPFS) &&
-            (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
-        ) {
-            UINTN PreBootIndex;
-            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                if (GuidsAreEqual (
-                        &(PreBootVolumes[PreBootIndex]->PartGuid),
-                        &(Volume->PartGuid)
-                    )
-                ) {
-                    // GUID matches a preboot volume ... swap display name if source is not
-                    // also called "PreBoot" ... which means cloaking was not successful.
-                    if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
-                        #if REFIT_DEBUG > 0
-                        FixReMap = TRUE;
-                        #endif
+        if (!EFI_ERROR(Status)) {
+            // Align APFS ReMap
+            if ((Volume->VolName) &&
+                (GlobalConfig.SyncAPFS) &&
+                (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
+            ) {
+                UINTN PreBootIndex;
+                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[PreBootIndex]->PartGuid),
+                            &(Volume->PartGuid)
+                        )
+                    ) {
+                        // GUID matches a preboot volume ... swap display name if source is not
+                        // also called "PreBoot" ... which means cloaking was not successful.
+                        if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
+                            FixReMap = TRUE;
 
-                        MyFreePool (&Volume->VolName);
-                        Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
+                            MyFreePool (&Volume->VolName);
+                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
 
-                        break;
+                            break;
+                        }
                     }
-                }
-            } // for
+                } // for
+            }
         }
-    }
+    } // if GuidsAreEqual Volume->PartTypeGuid
 
     #if REFIT_DEBUG > 0
     if (FirstLoaderScan) {

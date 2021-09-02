@@ -31,8 +31,7 @@
   * This appears to typically only happen on UEFI PC
   * RefindPlus now further attempts to ensure the read takes place and/or mitigate the impact
 - Improves APFS Volume Role Identification
-  * APFS volume roles are now identified by their predefined 'Disk Roles'
-  * The 'SyncAPFS' feature no longer requires a default name pattern (in English) for APFS Data volumes
+  * APFS volume roles are now identified by their predefined 'Disk Roles' when possible
   * Additionally, the 'SyncAPFS' feature has been optimised for faster completion
 - Improves 'PreviousBoot' Implementation
   * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved

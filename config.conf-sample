@@ -38,6 +38,8 @@
 # associated "PreBoot" partitions will be hidden from view. This arrangement also permits
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled, this "help" with APFS partitions will be deactivated.
+# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
+# to improve the reliability of this option distinguishing between partitions.
 #
 # APFS partition synchronisation is allowed (if required) when commented out
 #

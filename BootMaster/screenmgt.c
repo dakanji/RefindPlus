@@ -537,14 +537,14 @@ VOID BeginExternalScreen (
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Begin External Screen with Display Mode:- 'Graphics'");
+        LOG(3, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Begin External Screen with Display Mode:- 'Text'");
+        LOG(3, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
         #endif
 
         SwitchToText (UseGraphicsMode);

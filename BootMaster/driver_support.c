@@ -702,17 +702,17 @@ BOOLEAN LoadDrivers (VOID) {
     LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
-
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
     MsgLog ("Load UEFI Drivers from Program Default Folder...");
     #endif
+
+    BOOLEAN HybridLogger = FALSE;
+    if (NativeLogger) {
+        HybridLogger = TRUE;
+        NativeLogger = FALSE;
+    }
 
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;

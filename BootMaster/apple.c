@@ -449,9 +449,66 @@ BOOLEAN OcOverflowAddUN (
     UINTN   B,
     UINTN  *Result
 );
+extern
+VOID * OcReadFile (
+    IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem,
+    IN  CONST CHAR16                     *FilePath,
+    OUT UINT32                           *FileSize   OPTIONAL,
+    IN  UINT32                           MaxFileSize OPTIONAL
+);
+extern
+UINTN OcFileDevicePathNameSize (
+    IN CONST FILEPATH_DEVICE_PATH  *FilePath
+);
+
 
 static
-VOID * GetFileInfo_RP (
+CHAR16 * RP_GetAppleDiskLabelEx (
+    IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem,
+    IN  CHAR16                           *BootDirectoryName,
+    IN  CONST CHAR16                     *LabelFilename
+) {
+    UINTN     DiskLabelPathSize;
+    UINTN     MaxVolumelabelSize = 64;
+    CHAR8    *AsciiDiskLabel;
+    CHAR16   *DiskLabelPath;
+    CHAR16   *UnicodeDiskLabel;
+    UINT32    DiskLabelLength;
+
+    DiskLabelPathSize = StrSize (BootDirectoryName) + StrSize (LabelFilename) - sizeof (CHAR16);
+    DiskLabelPath     = AllocatePool (DiskLabelPathSize);
+
+    if (DiskLabelPath == NULL) {
+        return NULL;
+    }
+
+    DiskLabelPath = PoolPrint (L"%s%s", BootDirectoryName, LabelFilename);
+
+    AsciiDiskLabel = (CHAR8 *) OcReadFile (
+        FileSystem,
+        DiskLabelPath,
+        &DiskLabelLength,
+        MaxVolumelabelSize
+    );
+    MyFreePool (DiskLabelPath);
+
+    if (AsciiDiskLabel != NULL) {
+        UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
+
+        if (UnicodeDiskLabel != NULL) {
+            MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
+        }
+        MyFreePool (AsciiDiskLabel);
+    }
+    else {
+        UnicodeDiskLabel = NULL;
+    }
+
+    return UnicodeDiskLabel;
+} // static CHAR16 * RP_GetAppleDiskLabelEx()
+
+static
+VOID * RP_GetFileInfo (
     IN  EFI_FILE_PROTOCOL  *File,
     IN  EFI_GUID           *InformationType,
     IN  UINTN               MinFileInfoSize,
@@ -501,10 +558,10 @@ VOID * GetFileInfo_RP (
     }
 
   return FileInfoBuffer;
-} // VOID * GetFileInfo_RP()
+} // static VOID * RP_GetFileInfo()
 
 static
-EFI_STATUS GetApfsSpecialFileInfo_RP (
+EFI_STATUS RP_GetApfsSpecialFileInfo (
     IN     EFI_FILE_PROTOCOL           *Root,
     IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo OPTIONAL,
     IN OUT APPLE_APFS_CONTAINER_INFO  **ContainerInfo OPTIONAL
@@ -517,7 +574,7 @@ EFI_STATUS GetApfsSpecialFileInfo_RP (
     }
 
     if (VolumeInfo != NULL) {
-        *VolumeInfo = GetFileInfo_RP (
+        *VolumeInfo = RP_GetFileInfo (
             Root,
             &AppleApfsVolumeInfoGuid,
             sizeof (**VolumeInfo),
@@ -530,7 +587,7 @@ EFI_STATUS GetApfsSpecialFileInfo_RP (
     }
 
     if (ContainerInfo != NULL) {
-        *ContainerInfo = GetFileInfo_RP (
+        *ContainerInfo = RP_GetFileInfo (
             Root,
             &AppleApfsContainerInfoGuid,
             sizeof (**ContainerInfo),
@@ -544,9 +601,63 @@ EFI_STATUS GetApfsSpecialFileInfo_RP (
     }
 
     return EFI_SUCCESS;
-} // EFI_STATUS GetApfsSpecialFileInfo_RP()
+} // static EFI_STATUS RP_GetApfsSpecialFileInfo()
 
-EFI_STATUS GetApfsVolumeInfo_RP (
+static
+CHAR16 * RP_GetBootPathName (
+    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+) {
+    UINTN                            Len;
+    UINTN                            Size;
+    UINTN                            PathNameSize;
+    CHAR16                          *PathName;
+    CHAR16                          *FilePathName;
+    FILEPATH_DEVICE_PATH            *FilePath;
+
+    if ((DevicePathType (DevicePath) == MEDIA_DEVICE_PATH)
+        && (DevicePathSubType (DevicePath) == MEDIA_FILEPATH_DP)
+    ) {
+        FilePath = (FILEPATH_DEVICE_PATH *) DevicePath;
+
+        Size = OcFileDevicePathNameSize (FilePath);
+
+        PathNameSize = Size + sizeof (CHAR16);
+        PathName = AllocateZeroPool (PathNameSize);
+
+        if (PathName == NULL) {
+            return NULL;
+        }
+
+        CopyMem (PathName, FilePath->PathName, Size);
+
+        if (MyStrStr (PathName, L"\\")) {
+            Len = StrLen (PathName);
+
+            FilePathName = &PathName[Len - 1];
+
+            while (*FilePathName != L'\\') {
+                *FilePathName = L'\0';
+                --FilePathName;
+            }
+        }
+        else {
+            StrCpyS (PathName, PathNameSize, L"\\");
+        }
+    }
+    else {
+        PathName = AllocateZeroPool (sizeof (L"\\"));
+
+        if (PathName == NULL) {
+            return NULL;
+        }
+
+        StrCpyS (PathName, sizeof (L"\\"), L"\\");
+    }
+
+    return PathName;
+} // static EFI_STATUS RP_GetBootPathName
+
+EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
     OUT EFI_GUID                *ContainerGuid,
     OUT EFI_GUID                *VolumeGuid,
@@ -575,7 +686,7 @@ EFI_STATUS GetApfsVolumeInfo_RP (
         return Status;
     }
 
-    Status = GetApfsSpecialFileInfo_RP (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
+    Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
 
     Root->Close (Root);
 
@@ -599,4 +710,47 @@ EFI_STATUS GetApfsVolumeInfo_RP (
     MyFreePool (ApfsContainerInfo);
 
     return EFI_SUCCESS;
-} // EFI_STATUS GetApfsVolumeInfo_RP()
+} // EFI_STATUS RP_GetApfsVolumeInfo()
+
+CHAR16 * RP_GetAppleDiskLabel (
+    IN  REFIT_VOLUME *Volume
+) {
+    EFI_STATUS                        Status;
+    CHAR16                           *BootDirectoryName;
+    CHAR16                           *AppleDiskLabel = NULL;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
+
+    BootDirectoryName = RP_GetBootPathName (
+        Volume->DevicePath
+    );
+    if (!BootDirectoryName) {
+        return NULL;
+    }
+
+    Status = gBS->HandleProtocol (
+        Volume->DeviceHandle,
+        &gEfiSimpleFileSystemProtocolGuid,
+        (VOID **) &FileSystem
+    );
+
+    if (EFI_ERROR (Status)) {
+        MyFreePool (BootDirectoryName);
+        return NULL;
+    }
+
+    AppleDiskLabel = RP_GetAppleDiskLabelEx (
+        FileSystem,
+        BootDirectoryName,
+        L".contentDetails"
+    );
+
+    if (AppleDiskLabel == NULL) {
+        AppleDiskLabel = RP_GetAppleDiskLabelEx (
+            FileSystem,
+            BootDirectoryName,
+            L".disk_label.contentDetails"
+        );
+    }
+
+    return AppleDiskLabel;
+} // CHAR16 * RP_GetAppleDiskLabel()

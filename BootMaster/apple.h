@@ -78,11 +78,12 @@ typedef struct {
 
 #define APPLE_APFS_VOLUME_ROLE_PROTO      (0x00) // Early APFS ... Combined System/Data Volume
 #define APPLE_APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
-//#define APPLE_APFS_VOLUME_ROLE_RECOVERY (0x04) // Uncomment and adjust spacing if/when needed
-//#define APPLE_APFS_VOLUME_ROLE_VM       (0x08) // Uncomment and adjust spacing if/when needed
+#define APPLE_APFS_VOLUME_ROLE_RECOVERY   (0x04)
+#define APPLE_APFS_VOLUME_ROLE_VM         (0x08)
 #define APPLE_APFS_VOLUME_ROLE_PREBOOT    (0x10)
-//#define APPLE_APFS_VOLUME_ROLE_DATA     (0x40) // Uncomment and adjust spacing if/when needed
-//#define APPLE_APFS_VOLUME_ROLE_UPDATE   (0xC0) // Uncomment and adjust spacing if/when needed
+#define APPLE_APFS_VOLUME_ROLE_DATA       (0x40)
+#define APPLE_APFS_VOLUME_ROLE_UPDATE     (0xC0)
+#define APPLE_APFS_VOLUME_ROLE_UNKOWN     (0xFF)
 typedef UINT32 APPLE_APFS_VOLUME_ROLE;
 
 
@@ -97,11 +98,15 @@ typedef struct {
 } APPLE_APFS_VOLUME_INFO;
 
 
-EFI_STATUS GetApfsVolumeInfo_RP (
+EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
     OUT EFI_GUID                *ContainerGuid,
     OUT EFI_GUID                *VolumeGuid,
     OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole
+);
+
+CHAR16 * RP_GetAppleDiskLabel (
+    IN  REFIT_VOLUME *Volume
 );
 #endif // APPLE_APFS_INFO_H
 

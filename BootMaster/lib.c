@@ -167,10 +167,11 @@ BOOLEAN egIsGraphicsModeEnabled (VOID);
 VOID CleanUpPathNameSlashes (
     IN OUT CHAR16 *PathName
 ) {
-    UINTN Source = 0, Dest = 0;
+    UINTN Dest   = 0;
+    UINTN Source = 0;
 
-    if ((PathName == NULL) ||
-        (PathName[0] == '\0')
+    if (PathName == NULL ||
+        PathName[0] == '\0'
     ) {
         return;
     }
@@ -187,6 +188,7 @@ VOID CleanUpPathNameSlashes (
                     // Skip subsequent slashes
                     Source++;
                 } while ((PathName[Source] == L'/') || (PathName[Source] == L'\\'));
+
                 Dest++;
             }
         }
@@ -211,8 +213,7 @@ VOID CleanUpPathNameSlashes (
 } // CleanUpPathNameSlashes()
 
 // Splits an EFI device path into device and filename components. For instance, if InString is
-// PciRoot (0x0)/Pci (0x1f,0x2)/Ata (Secondary,Master,0x0)/HD (2,GPT,8314ae90-ada3-48e9-9c3b-09a88f80d921,0x96028,0xfa000)/\bzImage-3.5.1.efi,
-// this function will truncate that input to
+// PciRoot (0x0)/Pci (0x1f,0x2)/Ata (Secondary,Master,0x0)/HD (2,GPT,8314ae90-ada3-48e9-9c3b-09a88f80d921,0x96028,0xfa000)/\bzImage-3.5.1.efi, this function will truncate that input to
 // PciRoot (0x0)/Pci (0x1f,0x2)/Ata (Secondary,Master,0x0)/HD (2,GPT,8314ae90-ada3-48e9-9c3b-09a88f80d921,0x96028,0xfa000)
 // and return bzImage-3.5.1.efi as its return value.
 // It does this by searching for the last ")" character in InString, copying everything
@@ -223,7 +224,7 @@ VOID CleanUpPathNameSlashes (
 CHAR16 * SplitDeviceString (
     IN OUT CHAR16 *InString
 ) {
-    INTN i;
+    INTN     i;
     CHAR16  *FileName = NULL;
     BOOLEAN  Found    = FALSE;
 
@@ -1392,7 +1393,9 @@ VOID ScanVolumeBootcode (
 
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            LOG(3, LOG_LINE_NORMAL, L"Found Legacy Boot Code");
+            if (DoneHeadings) {
+                LOG(3, LOG_LINE_SPECIAL,  L"Found Legacy Boot Code on Volume Below");
+            }
         }
         #endif
 
@@ -1416,17 +1419,6 @@ VOID ScanVolumeBootcode (
                 Volume->MbrPartitionTable = AllocatePool (SizeMBR);
                 if (Volume->MbrPartitionTable) {
                     CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
-
-                    #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL, L"Found MBR Partition Table");
-                    #endif
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    LOG(2, LOG_THREE_STAR_SEP,
-                        L"In ScanVolumeBootcode ... Out of Resources While Allocating MBR Partition Table!!"
-                    );
-                    #endif
                 }
             }
         }
@@ -1713,6 +1705,10 @@ VOID ScanVolume (
     UINTN             PartialLength;
     BOOLEAN           Bootable;
 
+    #if REFIT_DEBUG > 0
+    UINTN LogLineType;
+    #endif
+
     BOOLEAN HybridLogger = FALSE;
     if (NativeLogger) {
         HybridLogger = TRUE;
@@ -1745,9 +1741,12 @@ VOID ScanVolume (
 
         #if REFIT_DEBUG > 0
         if (HybridLogger) {
-            LOG(3, LOG_BLANK_LINE_SEP, L"X");
+            LogLineType = LOG_LINE_SPECIAL;
         }
-        LOG(3, LOG_LINE_NORMAL, L"Cannot Get BlockIO Protocol in ScanVolume!!");
+        else {
+            LogLineType = LOG_LINE_NORMAL;
+        }
+        LOG(3, LogLineType, L"Cannot Get BlockIO Protocol in ScanVolume!!");
         #endif
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
@@ -1819,10 +1818,15 @@ VOID ScanVolume (
 
             if (EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
-                if (HybridLogger) {
-                    LOG(3, LOG_BLANK_LINE_SEP, L"X");
+                if (DoneHeadings) {
+                    if (HybridLogger) {
+                        LogLineType = LOG_LINE_SPECIAL;
+                    }
+                    else {
+                        LogLineType = LOG_LINE_NORMAL;
+                    }
+                    LOG(3, LogLineType, L"Could Not Locate Device Path For Volume Below!!");
                 }
-                LOG(3, LOG_LINE_NORMAL, L"Could Not Locate Device Path for Volume!!");
                 #endif
             }
             else {
@@ -1836,10 +1840,15 @@ VOID ScanVolume (
 
                 if (EFI_ERROR(Status)) {
                     #if REFIT_DEBUG > 0
-                    if (HybridLogger) {
-                        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+                    if (DoneHeadings) {
+                        if (HybridLogger) {
+                            LogLineType = LOG_LINE_SPECIAL;
+                        }
+                        else {
+                            LogLineType = LOG_LINE_NORMAL;
+                        }
+                        LOG(3, LogLineType, L"Could Not Get DiskDevicePath For Volume Below");
                     }
-                    LOG(3, LOG_LINE_NORMAL, L"Could Not Get DiskDevicePath for Volume!!");
                     #endif
                 }
                 else {
@@ -1857,10 +1866,15 @@ VOID ScanVolume (
                     Volume->WholeDiskBlockIO = NULL;
 
                     #if REFIT_DEBUG > 0
-                    if (HybridLogger) {
-                        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+                    if (DoneHeadings) {
+                        if (HybridLogger) {
+                            LogLineType = LOG_LINE_SPECIAL;
+                        }
+                        else {
+                            LogLineType = LOG_LINE_NORMAL;
+                        }
+                        LOG(3, LogLineType, L"Could Not Get WholeDiskBlockIO For Volume Below!!");
                     }
-                    LOG(3, LOG_LINE_NORMAL, L"Could Not Get WholeDiskBlockIO for Volume!!");
                     #endif
                 }
                 else {
@@ -1877,11 +1891,17 @@ VOID ScanVolume (
     if (!Bootable) {
         #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
-            CHAR16 *MsgStr = L"Volume Considered Non-Bootable but Boot Code is Present";
-            if (HybridLogger) {
-                LOG(3, LOG_BLANK_LINE_SEP, L"X");
+            CHAR16 *MsgStr = L"Volume Below Considered Non-Bootable but Boot Code is Present";
+            if (DoneHeadings) {
+                if (HybridLogger) {
+                    LogLineType = LOG_LINE_SPECIAL;
+                }
+                else {
+                    LogLineType = LOG_LINE_NORMAL;
+                }
+                LOG(3, LogLineType, L"%s!!", MsgStr);
             }
-            LOG(3, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+            LOG(3, LogLineType, L"%s!!", MsgStr);
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
         }
@@ -1947,6 +1967,7 @@ VOID ScanExtendedPartition (
 
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
+            LOG(3, LOG_BLANK_LINE_SEP, L"X");
             LOG(3, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
             #endif
 
@@ -2002,6 +2023,94 @@ VOID ScanExtendedPartition (
     } // for ExtCurrent = ExtBase
 } // VOID ScanExtendedPartition()
 
+// Set PreBoot Volume Label
+static
+VOID SetPreBootLabel (
+    IN REFIT_VOLUME *PreBootVolume
+) {
+    UINTN    i, StrLength, Index;
+    CHAR16  *TmpLabel     = NULL;
+    CHAR16  *PreBootLabel = NULL;
+
+    EFI_STATUS                 Status;
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+
+    // DA-TAG: A preboot volume exists but the associated system volume was not found
+    //         This is likely to be related to snapshots in Mac OS 11.x (Big Sur) or later.
+    //         Fix 'RP_GetAppleDiskLabel' to get the actual volume label.
+    PreBootLabel = RP_GetAppleDiskLabel (PreBootVolume);
+
+    if (!PreBootLabel || MyStriCmp (PreBootLabel, L"PreBoot")) {
+        for (Index = 0; Index < VolumesCount; Index++) {
+            TmpLabel  = StrDuplicate (Volumes[Index]->VolName);
+            StrLength = StrLen (TmpLabel);
+
+            if (TmpLabel != NULL
+                && StrLength != 0
+                && !MyStriCmp (TmpLabel, L"")
+                && !MyStriCmp (TmpLabel, L"VM")
+                && !MyStriCmp (TmpLabel, L"Update")
+                && !MyStrStrIns (TmpLabel, L"PreBoot")
+                && !MyStrStrIns (TmpLabel, L"Unknown")
+                && !MyStrStrIns (TmpLabel, L"Recovery")
+                && !MyStrStrIns (TmpLabel, L"/FileVault")
+            ) {
+                if (GuidsAreEqual (
+                        &(Volumes[Index]->PartGuid),
+                        &(PreBootVolume->PartGuid)
+                    )
+                ) {
+                    VolumeRole = 0;
+                    Status = RP_GetApfsVolumeInfo (
+                        Volumes[Index]->DeviceHandle,
+                        &ContainerGuid,
+                        &VolumeGuid,
+                        &VolumeRole
+                    );
+
+                    if (!EFI_ERROR(Status)
+                        && (VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA) != 0
+                    ) {
+                        for (i = 0; TmpLabel[i] != L'\0'; i++) {
+                            if (i + 5 > StrLength) {
+                                break;
+                            }
+
+                            if (i > 1
+                                && (TmpLabel[i + 0] == L' ')
+                                && (TmpLabel[i + 1] == L'-')
+                                && (TmpLabel[i + 2] == L' ')
+                            ) {
+                                TmpLabel[i]  = L'\0';
+                                PreBootLabel = StrDuplicate (TmpLabel);
+
+                                MyFreePool (&TmpLabel);
+                                break;
+                            }
+                        } // for TmpLabel
+
+                        break;
+                    }
+                } // if GuidsAreEqual
+            } // if TmpLabel != NULL
+
+            MyFreePool (&TmpLabel);
+        } // for for Index = 0
+    } // if !PreBootLabel
+
+    if (!PreBootLabel || MyStriCmp (PreBootLabel, L"PreBoot")) {
+        PreBootLabel = StrDuplicate (L"BigSur or Later");
+    }
+
+    if (PreBootLabel && !MyStriCmp (PreBootLabel, L"PreBoot")) {
+        MyFreePool (&PreBootVolume->VolName);
+        PreBootVolume->VolName = PreBootLabel;
+    }
+} // static CHAR16 * SetPreBootLabel()
+
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
 // Returns TRUE if a match was found and FALSE if not.
 static
@@ -2013,9 +2122,9 @@ BOOLEAN SetPreBootNames (
     EFI_GUID            ContainerGuid;
     BOOLEAN              SystemVolume = FALSE;
     UINTN                PreBootIndex;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    Status = GetApfsVolumeInfo_RP (
+    Status = RP_GetApfsVolumeInfo (
         Volume->DeviceHandle,
         &ContainerGuid,
         &VolumeGuid,
@@ -2052,14 +2161,16 @@ BOOLEAN SetPreBootNames (
 static
 VOID SetPrebootVolumes (VOID) {
     EFI_STATUS    Status;
-    UINTN         i, MappedCount;
+    UINTN         i, PreBootIndex;
     BOOLEAN       SwapName;
     BOOLEAN       FoundPreboot = FALSE;
 
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
+    REFIT_VOLUME     **SystemVolumes       = NULL;
+    UINTN              SystemVolumesCount  = 0;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr      = NULL;
@@ -2073,7 +2184,7 @@ VOID SetPrebootVolumes (VOID) {
 
     for (i = 0; i < VolumesCount; i++) {
         if (GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)) {
-            Status = GetApfsVolumeInfo_RP (
+            Status = RP_GetApfsVolumeInfo (
                 Volumes[i]->DeviceHandle,
                 &ContainerGuid,
                 &VolumeGuid,
@@ -2094,7 +2205,6 @@ VOID SetPrebootVolumes (VOID) {
         }
     } // for
 
-    MappedCount = 0;
     if (!FoundPreboot) {
         if (GlobalConfig.SyncAPFS) {
             // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
@@ -2144,19 +2254,25 @@ VOID SetPrebootVolumes (VOID) {
 
                 MyFreePool (&Volumes[i]->VolName);
                 Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
-                MappedCount = MappedCount + 1;
+
+                // Create a list of RemApped System Volumes
+                AddListElement (
+                    (VOID ***) &SystemVolumes,
+                    &SystemVolumesCount,
+                    CopyVolume (Volumes[i])
+                );
             }
         } // for
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
             L"ReMapped %d APFS Volume%s",
-            MappedCount, (MappedCount == 1) ? L"" : L"s"
+            SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
         );
         LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
 
         MsgLog ("\n\n");
-        if (MappedCount == 0) {
+        if (SystemVolumesCount == 0) {
             MsgLog ("      ") ;
         }
         else {
@@ -2166,8 +2282,60 @@ VOID SetPrebootVolumes (VOID) {
         MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
-    }
+
+        if (SystemVolumesCount < PreBootVolumesCount) {
+            BOOLEAN FoundReMap = FALSE;
+            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                for (i = 0; i < SystemVolumesCount; i++) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[PreBootIndex]->PartGuid),
+                            &(SystemVolumes[i]->PartGuid)
+                        )
+                    ) {
+                        FoundReMap = TRUE;
+                        break;
+                    }
+                } // for
+
+                if (!FoundReMap) {
+                    // DA-TAG: A preboot volume exists but the associated system volume was not found
+                    //         Fix 'SetPreBootLabel' function to provide the proper volume label
+                    SetPreBootLabel (PreBootVolumes[PreBootIndex]);
+                }
+
+                FoundReMap = FALSE;
+            } // for
+        }
+
+        // Free SystemVolumes list
+        FreeVolumes (
+            &SystemVolumes,
+            &SystemVolumesCount
+        );
+    } // if/else !FoundPreboot
 } // VOID SetPrebootVolumes()
+
+#if REFIT_DEBUG > 0
+static
+CHAR16 * GetApfsRoleString (
+    IN APPLE_APFS_VOLUME_ROLE VolumeRole
+) {
+    CHAR16 *retval = NULL;
+
+    switch (VolumeRole) {
+        case APPLE_APFS_VOLUME_ROLE_PROTO:    retval = L"0x00 - Proto";      break;
+        case APPLE_APFS_VOLUME_ROLE_SYSTEM:   retval = L"0x01 - System";     break;
+        case APPLE_APFS_VOLUME_ROLE_RECOVERY: retval = L"0x04 - Recovery";   break;
+        case APPLE_APFS_VOLUME_ROLE_VM:       retval = L"0x08 - VM";         break;
+        case APPLE_APFS_VOLUME_ROLE_PREBOOT:  retval = L"0x10 - PreBoot";    break;
+        case APPLE_APFS_VOLUME_ROLE_DATA:     retval = L"0x40 - Data";       break;
+        case APPLE_APFS_VOLUME_ROLE_UPDATE:   retval = L"0xC0 - Update";     break;
+        default:                              retval = L"0xFF - Unset";      break;
+    } // switch
+
+    return retval;
+} // static CHAR16 * GetApfsRoleString()
+#endif
 
 VOID ScanVolumes (VOID) {
     EFI_STATUS          Status;
@@ -2190,15 +2358,21 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr       = NULL;
+    CHAR16  *TmpStr       = NULL;
     CHAR16  *PartType     = NULL;
     CHAR16  *PartName     = NULL;
     CHAR16  *PartGUID     = NULL;
     CHAR16  *PartTypeGUID = NULL;
 
-    const CHAR16 *ITEMVOLA = L"VOLUME TYPE GUID";
-    const CHAR16 *ITEMVOLB = L"VOLUME GUID";
-    const CHAR16 *ITEMVOLC = L"VOLUME TYPE";
-    const CHAR16 *ITEMVOLD = L"VOLUME ID";
+    EFI_GUID               VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+    const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
+    const CHAR16 *ITEMVOLB = L"PARTITION GUID";
+    const CHAR16 *ITEMVOLC = L"APFS ROLE";
+    const CHAR16 *ITEMVOLD = L"VOLUME TYPE";
+    const CHAR16 *ITEMVOLE = L"VOLUME ID";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
@@ -2246,6 +2420,7 @@ VOID ScanVolumes (VOID) {
         Status = EFI_BUFFER_TOO_SMALL;
 
         MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'UuidList'", Status);
+        LOG(2, LOG_BLANK_LINE_SEP, L"X");
         LOG(2, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s", MsgStr);
@@ -2271,6 +2446,7 @@ VOID ScanVolumes (VOID) {
             Status = EFI_BUFFER_TOO_SMALL;
 
             MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'Volumes'", Status);
+            LOG(2, LOG_BLANK_LINE_SEP, L"X");
             LOG(2, LOG_THREE_STAR_SEP, L"%!!s", MsgStr);
             MsgLog ("\n\n");
             MsgLog ("** WARN: %s", MsgStr);
@@ -2324,7 +2500,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         if (SelfVolRun) {
             if (!DoneHeadings) {
-                MsgLog ("\n                   ");
+                MsgLog ("\n\n                   ");
             }
             else if (ScannedOnce) {
                 if ((HandleIndex % 5) == 0 && (HandleCount - HandleIndex) > 2) {
@@ -2360,15 +2536,37 @@ VOID ScanVolumes (VOID) {
             LimitStringLength (PartName, 15);
 
             if (!DoneHeadings) {
-                MsgLog ("%-41s%-41s%-20s%s\n", ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD);
+                MsgLog (
+                    "%-41s%-41s%-20s%-20s%s\n",
+                    ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
+                );
                 DoneHeadings = TRUE;
             }
 
+            TmpStr = L"";
+            VolumeRole = 0;
+            if (MyStrStrIns (Volume->VolName, L"/FileVault Container")) {
+                TmpStr = L"0xFF - Unset";
+            }
+            else {
+                Status = RP_GetApfsVolumeInfo (
+                    Volume->DeviceHandle,
+                    &ContainerGuid,
+                    &VolumeGuid,
+                    &VolumeRole
+                );
+
+                if (!EFI_ERROR(Status)) {
+                    TmpStr = GetApfsRoleString (VolumeRole);
+                }
+            }
+
             MsgStr = PoolPrint (
-                L"%s  :  %s  :  %-15s  :  %s",
-                PartTypeGUID, PartGUID,
+                L"%s  :  %s  :  %-15s  :  %-15s  :  %s",
+                PartTypeGUID, PartGUID, TmpStr,
                 PartType, Volume->VolName
             );
+
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s", MsgStr);
             MyFreePool (&MsgStr);
@@ -2411,8 +2609,8 @@ VOID ScanVolumes (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"%-41s%-41s%-20s%s",
-            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD
+            L"%-41s%-41s%-20s%-20s%s",
+            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n                   ");
