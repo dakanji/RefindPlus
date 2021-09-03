@@ -2191,33 +2191,38 @@ BOOLEAN SetPreBootNames (
     UINTN                PreBootIndex;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    Status = RP_GetApfsVolumeInfo (
-        Volume->DeviceHandle,
-        &ContainerGuid,
-        &VolumeGuid,
-        &VolumeRole
-    );
+    if (Volume->VolName != NULL
+        && StrLen (Volume->VolName) != 0
+        && GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)
+    ) {
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
 
-    if (!EFI_ERROR(Status)) {
-        if ((VolumeRole == APPLE_APFS_VOLUME_ROLE_PROTO || VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM)
-            && Volume->VolName != NULL
-            && StrLen (Volume->VolName) != 0
-            && MyStrStr (Volume->VolName, L"/FileVault") == NULL
-            && MyStrStrIns (Volume->VolName, L" - Data") == NULL
-        ) {
-            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                if (GuidsAreEqual (
-                        &(PreBootVolumes[PreBootIndex]->PartGuid),
-                        &(Volume->PartGuid)
-                    )
-                ) {
-                    SystemVolume = TRUE;
-                    MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
-                    PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
+        if (!EFI_ERROR(Status)) {
+            if ((VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED)
+                && Volume->VolName != NULL
+                && StrLen (Volume->VolName) != 0
+                && MyStrStr (Volume->VolName, L"/FileVault") == NULL
+                && MyStrStrIns (Volume->VolName, L" - Data") == NULL
+            ) {
+                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[PreBootIndex]->PartGuid),
+                            &(Volume->PartGuid)
+                        )
+                    ) {
+                        SystemVolume = TRUE;
+                        MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
+                        PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
 
-                    break;
-                }
-            } // for
+                        break;
+                    }
+                } // for
+            }
         }
     }
 
@@ -2278,11 +2283,13 @@ VOID SetPrebootVolumes (VOID) {
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
-                L"Could Not Positively Identify APFS Volumes ... Disabling SyncAFPS"
+                L"Could Not Positively Identify APFS Partition Types ... Disabling SyncAFPS"
             );
             LOG(3, LOG_BLANK_LINE_SEP, L"X");
             LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            MsgLog ("\n\n");
             MsgLog ("INFO: %s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
         }
@@ -2297,14 +2304,7 @@ VOID SetPrebootVolumes (VOID) {
         #endif
 
         for (i = 0; i < VolumesCount; i++) {
-            SwapName = FALSE;
-
-            if (Volumes[i]->VolName != NULL
-                && StrLen (Volumes[i]->VolName) != 0
-                && GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)
-            ) {
-                SwapName = SetPreBootNames (Volumes[i]);
-            }
+            SwapName = SetPreBootNames (Volumes[i]);
 
             if (SwapName) {
                 #if REFIT_DEBUG > 0
@@ -2362,7 +2362,8 @@ VOID SetPrebootVolumes (VOID) {
 
                 if (!FoundReMap) {
                     // DA-TAG: A preboot volume exists but the associated system volume was not found
-                    //         Fix 'SetPreBootLabel' function to provide the proper volume label
+                    //         Use the 'SetPreBootLabel' function to provide the proper volume label
+                    //         The function needs improvement
                     SetPreBootLabel (PreBootVolumes[PreBootIndex]);
                 }
 
@@ -2386,14 +2387,14 @@ CHAR16 * GetApfsRoleString (
     CHAR16 *retval = NULL;
 
     switch (VolumeRole) {
-        case APPLE_APFS_VOLUME_ROLE_PROTO:    retval = L"0x00 - Proto";      break;
-        case APPLE_APFS_VOLUME_ROLE_SYSTEM:   retval = L"0x01 - System";     break;
-        case APPLE_APFS_VOLUME_ROLE_RECOVERY: retval = L"0x04 - Recovery";   break;
-        case APPLE_APFS_VOLUME_ROLE_VM:       retval = L"0x08 - VM";         break;
-        case APPLE_APFS_VOLUME_ROLE_PREBOOT:  retval = L"0x10 - PreBoot";    break;
-        case APPLE_APFS_VOLUME_ROLE_DATA:     retval = L"0x40 - Data";       break;
-        case APPLE_APFS_VOLUME_ROLE_UPDATE:   retval = L"0xC0 - Snapshot";     break;
-        default:                              retval = L"0xFF - Unset";      break;
+        case APPLE_APFS_VOLUME_ROLE_UNDEFINED: retval = L"0x00 - Undefined";  break;
+        case APPLE_APFS_VOLUME_ROLE_SYSTEM:    retval = L"0x01 - System";     break;
+        case APPLE_APFS_VOLUME_ROLE_RECOVERY:  retval = L"0x04 - Recovery";   break;
+        case APPLE_APFS_VOLUME_ROLE_VM:        retval = L"0x08 - VM";         break;
+        case APPLE_APFS_VOLUME_ROLE_PREBOOT:   retval = L"0x10 - PreBoot";    break;
+        case APPLE_APFS_VOLUME_ROLE_DATA:      retval = L"0x40 - Data";       break;
+        case APPLE_APFS_VOLUME_ROLE_UPDATE:    retval = L"0xC0 - Snapshot";   break;
+        default:                               retval = L"0xFF - Unknown";    break;
     } // switch
 
     return retval;
@@ -2571,13 +2572,16 @@ VOID ScanVolumes (VOID) {
             }
             else if (ScannedOnce) {
                 if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
-                    MsgLog ("\n\n");
+                    if (!SkipSpacing && (HandleIndex % 16) == 0 && (HandleCount - HandleIndex) > 8) {
+                        DoneHeadings = FALSE;
+                        MsgLog ("\n\n                   ");
+                    }
+                    else {
+                        MsgLog ("\n\n");
+                    }
                 }
                 else {
                     MsgLog ("\n");
-                }
-                if (!SkipSpacing && (HandleIndex % 16) == 0 && (HandleCount - HandleIndex) > 8) {
-                    DoneHeadings = FALSE;
                 }
             }
             SkipSpacing = FALSE;

@@ -686,7 +686,9 @@ UINTN RunGenericMenu (
     INTN           PreviousTime       = -1;
     INTN           CurrentTime;
     INTN           ShortcutEntry;
+    UINTN          ElapsCount;
     UINTN          MenuExit;
+    UINTN          Input;
     UINTN          Item;
     CHAR16        *TimeoutMessage;
     CHAR16         KeyAsString[2];
@@ -805,24 +807,25 @@ UINTN RunGenericMenu (
                 break;
             }
 
-            PointerActive = TRUE;
+            PointerActive      = TRUE;
             TimeSinceKeystroke = 0;
         }
         else {
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Menu Timeout Expired");
+                LOG(3, LOG_LINE_NORMAL, L"Menu Timeout Expired:- '%d Seconds'", Screen->TimeoutSeconds);
                 #endif
 
                 MenuExit = MENU_EXIT_TIMEOUT;
                 break;
             }
             else if (HaveTimeout || GlobalConfig.ScreensaverTime > 0) {
-                UINTN ElapsCount = 1;
-                UINTN Input      = WaitForInput (1000); // 1s Timeout
+                ElapsCount = 1;
+                Input      = WaitForInput (1000); // 1s Timeout
 
                 if (Input == INPUT_KEY || Input == INPUT_POINTER) {
+                    TimeSinceKeystroke = 0;
                     continue;
                 }
                 else if (Input == INPUT_TIMEOUT) {
@@ -832,8 +835,7 @@ UINTN RunGenericMenu (
                 TimeSinceKeystroke += ElapsCount;
                 if (HaveTimeout) {
                     TimeoutCountdown = (TimeoutCountdown > ElapsCount)
-                    ? TimeoutCountdown - ElapsCount
-                    : 0;
+                        ? TimeoutCountdown - ElapsCount : 0;
                 }
                 else if (GlobalConfig.ScreensaverTime > 0 &&
                     TimeSinceKeystroke > (GlobalConfig.ScreensaverTime * 10)
@@ -914,7 +916,7 @@ UINTN RunGenericMenu (
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=Space";          break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=SpaceBar";       break;
                     case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key=LineFeed";       break;
                     case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key=CarriageReturn"; break;
                     case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key=BackSpace";      break;

@@ -92,7 +92,7 @@
 #decline_tagshelp
 
 # RefindPlus defaults to scanning volumes for ".VolumeIcon" image icons and if
-# found, these are used as display icons for internal volumes. However, most
+# found, these may be used as display icons for some volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
 # do, typically Apple Macs, do not require the files as their icons in
 # Refindplus. Hence, scanning for the files typically just slows the

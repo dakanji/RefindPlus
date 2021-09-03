@@ -76,7 +76,7 @@ typedef struct {
 } APPLE_APFS_CONTAINER_INFO;
 
 
-#define APPLE_APFS_VOLUME_ROLE_PROTO      (0x00) // Early APFS ... Combined System/Data Volume
+#define APPLE_APFS_VOLUME_ROLE_UNDEFINED  (0x00) // Early APFS ... Combined System/Data Volume
 #define APPLE_APFS_VOLUME_ROLE_SYSTEM     (0x01) // Later APFS ... Separate System Volume
 #define APPLE_APFS_VOLUME_ROLE_RECOVERY   (0x04)
 #define APPLE_APFS_VOLUME_ROLE_VM         (0x08)
