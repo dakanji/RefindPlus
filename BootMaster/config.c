@@ -983,8 +983,11 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"ignore_previous_boot")) {
             GlobalConfig.IgnorePreviousBoot = HandleBoolean (TokenList, TokenCount);
         }
-        else if (MyStriCmp (TokenList[0], L"ignore_volume_icns")) {
-            GlobalConfig.IgnoreVolumeICNS = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"ignore_hidden_icons")) {
+            GlobalConfig.IgnoreHiddenIcons = HandleBoolean (TokenList, TokenCount);
+        }
+        else if (MyStriCmp (TokenList[0], L"prefer_hidden_icons")) {
+            GlobalConfig.PreferHiddenIcons = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"text_renderer")) {
             GlobalConfig.TextRenderer = HandleBoolean (TokenList, TokenCount);

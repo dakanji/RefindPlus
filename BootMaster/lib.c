@@ -2887,9 +2887,9 @@ VOID SetVolumeIcons (VOID) {
     LOG(1, LOG_LINE_THIN_SEP, L"Set '.VolumeIcon' Icons for Internal Volumes");
     #endif
 
-    if (GlobalConfig.IgnoreVolumeICNS) {
+    if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Config Setting is Active:- 'IgnoreVolumeICNS'");
+        LOG(3, LOG_LINE_NORMAL, L"Config Setting is Active:- 'IgnoreHiddenIcons'");
         #endif
 
         return;

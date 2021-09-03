@@ -1,5 +1,7 @@
 0.13.2.AH (Pre-Release):
 -----------------------
+- Adds "PreferHiddenIcons" Feature
+  * This functionality allows prioritising ".VolumeIcon" image icons for loaders
 - Adds Non-Stadard UEFI 2.x Implementation Resilience
   * Some UEFI 2.x implementations may be incomplete with some functionality missing
   * This is typically due to customisation of the firmware as on Late Intel Macs such as the MacMini8,1
@@ -44,19 +46,20 @@
 - Improves NVRAM Management
   * NVRAM Entries (Emulated and Hardware) are fully cleared before new entries are made
 - Improves Graphics Mode Selection
-    * Eliminates unnecessary iteration over UGA/GOP modes when only one UGA/GOP instance exists
-    * This improves loading speed.
+  * Eliminates unnecessary iteration over UGA/GOP modes when only one UGA/GOP instance exists
+  * This improves loading speed.
 - Extends Memory Management Fixes
   * Additional memory management improvements
 - Renames Misc Configuration Tokens
-    * The 'decline_XYZ' format is now used for options to disable divergent defaults
-    * 'scan_other_esp' to 'decline_espfilter'
-    * 'ignore_tag_help' to 'decline_tagshelp'
-    * 'sync_apfs' to 'decline_apfssync' ('SyncAPFS' is now active by default)
-    * 'supply_apfs' to 'decline_apfsload' ('SupplyAPFS' is now active by default)
-    * 'silence_apfs' to 'decline_apfsmute' ('SilenceAPFS' is now active by default)
-    * 'protect_nvram' to 'decline_nvramprotect'  ('ProtectNVRAM' is now active by default)
-    * 'reload_gop' to 'decline_reloadgop'  ('ReloadGOP' is now active by default)
+  * 'ignore_volume_icns' to 'ignore_hidden_icons'
+  * The 'decline_XYZ' format is now used for options to disable divergent defaults
+    - 'scan_other_esp' to 'decline_espfilter'
+    - 'ignore_tag_help' to 'decline_tagshelp'
+    - 'sync_apfs' to 'decline_apfssync' ('SyncAPFS' is now active by default)
+    - 'supply_apfs' to 'decline_apfsload' ('SupplyAPFS' is now active by default)
+    - 'silence_apfs' to 'decline_apfsmute' ('SilenceAPFS' is now active by default)
+    - 'protect_nvram' to 'decline_nvramprotect'  ('ProtectNVRAM' is now active by default)
+    - 'reload_gop' to 'decline_reloadgop'  ('ReloadGOP' is now active by default)
 
 
 0.13.2.AG (03 Aug 2021):

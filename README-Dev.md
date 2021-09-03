@@ -55,9 +55,10 @@ direct_gop_renderer   |Provides a potentially improved GOP instance for certain 
 disable_amfi          |Disables AMFI Checks on Mac OS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
+ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
 ignore_previous_boot  |Disables saving the last booted loader if not required
-ignore_volume_icns    |Disables scanning for `.VolumeIcon` icns files if not required
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
+prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
 scale_ui              |Provides control of UI element scaling
 set_boot_args         |Allows arbitrary Mac OS boot argument strings

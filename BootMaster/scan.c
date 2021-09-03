@@ -625,7 +625,23 @@ VOID SetLoaderDefaults (
         MergeStrings (&NameClues, Entry->me.Title, L' ');
     }
     else {
-        if (Entry->me.Image == NULL) {
+        if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"Trying to Display '.VolumeIcon' Image");
+            #endif
+
+            // use a ".VolumeIcon" image icon for the loader
+            // Takes precedence all over options
+            Entry->me.Image = egCopyImage (Volume->VolIconImage);
+        }
+
+        if (!Entry->me.Image) {
+            #if REFIT_DEBUG > 0
+            if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+                LOG(3, LOG_LINE_NORMAL, L"Could Not Display '.VolumeIcon' Image!!");
+            }
+            #endif
+
             BOOLEAN MacFlag = FALSE;
             if (LoaderPath && MyStrStrIns (LoaderPath, L"System\\Library\\CoreServices")) {
                 MacFlag = TRUE;
@@ -649,7 +665,7 @@ VOID SetLoaderDefaults (
                         );
                     }
 
-                    if (!Entry->me.Image) {
+                    if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons) {
                         Entry->me.Image = egCopyImage (Volume->VolIconImage);
                     }
 
