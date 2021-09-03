@@ -1021,9 +1021,9 @@ UINTN RunGenericMenu (
     ) {
         UINT64 CurrentSecond = GetCurrentSecond();
 
-        if ((CurrentSecond - InitLoadSecond) < 3) {
+        if ((CurrentSecond - InitLoadSecond) < 2) {
             #if REFIT_DEBUG > 0
-            CHAR16 *MsgStr = StrDuplicate (L"Low 'Keypress After Load' Time ... Ignoring MenuExit");
+            CHAR16 *MsgStr = StrDuplicate (L"Low 'Keypress After Load' Interval ... Ignoring MenuExit");
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
