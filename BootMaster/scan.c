@@ -1132,7 +1132,7 @@ BOOLEAN ShouldScan (
     EFI_GUID            ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+    if (Volume->FSType == FS_TYPE_APFS) {
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
             &ContainerGuid,
@@ -1704,7 +1704,7 @@ VOID ScanEfiFiles (
     EFI_GUID            ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
+    if (Volume->FSType == FS_TYPE_APFS) {
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
             &ContainerGuid,

@@ -2193,7 +2193,7 @@ BOOLEAN SetPreBootNames (
 
     if (Volume->VolName != NULL
         && StrLen (Volume->VolName) != 0
-        && GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)
+        && Volume->FSType == FS_TYPE_APFS
     ) {
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
@@ -2207,6 +2207,7 @@ BOOLEAN SetPreBootNames (
                 && Volume->VolName != NULL
                 && StrLen (Volume->VolName) != 0
                 && MyStrStr (Volume->VolName, L"/FileVault") == NULL
+                && MyStrStrIns (Volume->VolName, L"Unknown") == NULL
                 && MyStrStrIns (Volume->VolName, L" - Data") == NULL
             ) {
                 for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
@@ -2254,7 +2255,7 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (GuidsAreEqual (&(Volumes[i]->PartTypeGuid), &GuidAPFS)) {
+        if (Volumes[i]->FSType == FS_TYPE_APFS) {
             Status = RP_GetApfsVolumeInfo (
                 Volumes[i]->DeviceHandle,
                 &ContainerGuid,
@@ -2635,7 +2636,9 @@ VOID ScanVolumes (VOID) {
                 );
 
                 if (!EFI_ERROR(Status)) {
-                    RoleStr = GetApfsRoleString (VolumeRole);
+                    PartType       = L"APFS";
+                    Volume->FSType = FS_TYPE_APFS;
+                    RoleStr        = GetApfsRoleString (VolumeRole);
                 }
             }
 

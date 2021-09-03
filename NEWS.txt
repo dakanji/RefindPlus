@@ -1,7 +1,7 @@
 0.13.2.AH (Pre-Release):
 -----------------------
 - Adds "PreferHiddenIcons" Feature
-  * This functionality allows prioritising ".VolumeIcon" image icons for loaders
+  * This functionality allows prioritising the use of ".VolumeIcon" image icons for loaders
 - Adds Non-Stadard UEFI 2.x Implementation Resilience
   * Some UEFI 2.x implementations may be incomplete with some functionality missing
   * This is typically due to customisation of the firmware as on Late Intel Macs such as the MacMini8,1
@@ -35,6 +35,11 @@
 - Improves APFS Volume Role Identification
   * APFS volume roles are now identified by their predefined 'Disk Roles' when possible
   * Additionally, the 'SyncAPFS' feature has been optimised for faster completion
+- Improves APFS Partition Tyoe Detection
+  * RefindPlus Primarily uses the Partition Type Guid to identify APFS Partitions
+  * Some UEFI PC may however not provide a Partition Type Guid for APFS volumes
+  * This affected the operation of the SyncAPFS feature which had to be disabled on such units
+  * RefindPlus can now determine APFS partitions when the Partition Type Guid is not present
 - Improves 'PreviousBoot' Implementation
   * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved
   * Such Loaders are only saved after verification and not regardless as was the case
