@@ -1843,6 +1843,19 @@ VOID PaintSelection (
     }
 } // static VOID MoveSelection (VOID)
 
+static
+EG_IMAGE * GetIcon (
+    IN EG_EMBEDDED_IMAGE *BuiltInIcon,
+    IN CHAR16            *ExternalFilename
+) {
+    EG_IMAGE *Icon = NULL;
+    Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
+    if (Icon == NULL) {
+        Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
+    }
+    return Icon;
+} // static EG_IMAGE * GetIcon()
+
 // Display a 48x48 icon at the specified location. Uses the image specified by
 // ExternalFilename if it is available, or BuiltInImage if it is not. The
 // Y position is specified as the center value, and so is adjusted by half
@@ -1851,19 +1864,11 @@ VOID PaintSelection (
 // Alignment == ALIGN_RIGHT
 static
 VOID PaintIcon (
-    IN EG_EMBEDDED_IMAGE *BuiltInIcon,
-    IN CHAR16            *ExternalFilename,
-    UINTN                 PosX,
-    UINTN                 PosY,
-    UINTN                 Alignment
+    IN EG_IMAGE *Icon,
+    UINTN        PosX,
+    UINTN        PosY,
+    UINTN        Alignment
 ) {
-    EG_IMAGE *Icon = NULL;
-
-    Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
-    if (Icon == NULL) {
-        Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
-    }
-
     if (Icon != NULL) {
         if (Alignment == ALIGN_RIGHT) {
             PosX -= Icon->Width;
@@ -1877,10 +1882,8 @@ VOID PaintIcon (
             Icon->Width,
             Icon->Height
         );
-
-        egFreeImage (Icon);
     }
-} // static VOID()
+} // static VOID PaintIcon()
 
 UINTN ComputeRow0PosY (VOID) {
     return ((ScreenH / 2) - TileSizes[0] / 2);
@@ -1895,38 +1898,58 @@ VOID PaintArrows (
     UINTN         PosY,
     UINTN         row0Loaders
 ) {
-    EG_IMAGE *TempImage;
-    UINTN Width, Height, RightX, AdjPosY;
+    static EG_IMAGE *LeftArrow       = NULL;
+    static EG_IMAGE *RightArrow      = NULL;
+    static EG_IMAGE *LeftBackground  = NULL;
+    static EG_IMAGE *RightBackground = NULL;
+    static BOOLEAN   LoadedArrows    = FALSE;
 
-    // NOTE: Assume that left and right arrows are of the same size...
-    Width   = egemb_arrow_left.Width;
-    Height  = egemb_arrow_left.Height;
-    RightX  = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
-    AdjPosY = PosY - (Height / 2);
+    UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
+
+    if (!LoadedArrows && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS)) {
+        LeftArrow  = GetIcon (&egemb_arrow_left , L"arrow_left" );
+        RightArrow = GetIcon (&egemb_arrow_right, L"arrow_right");
+
+        if (LeftArrow) {
+            LeftBackground = egCropImage (
+                GlobalConfig.ScreenBackground,
+                PosX - LeftArrow->Width,
+                PosY - (LeftArrow->Height / 2),
+                LeftArrow->Width,
+                LeftArrow->Height
+            );
+        }
+        if (RightArrow) {
+            RightBackground = egCropImage (
+                GlobalConfig.ScreenBackground,
+                RightX,
+                PosY - (RightArrow->Height / 2),
+                RightArrow->Width,
+                RightArrow->Height
+            );
+        }
+        LoadedArrows = TRUE;
+    }
 
     // For PaintIcon() calls, the starting Y position is moved to the midpoint
     // of the surrounding row; PaintIcon() adjusts this back up by half the
     // icon's height to properly center it.
-    if ((State->FirstVisible > 0) &&
-        (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))
-    ) {
-        PaintIcon (&egemb_arrow_left, L"arrow_left", PosX, PosY, ALIGN_RIGHT);
-    }
-    else {
-        TempImage = egCropImage (GlobalConfig.ScreenBackground, PosX - Width, AdjPosY, Width, Height);
-        BltImage (TempImage, PosX - Width, AdjPosY);
-        egFreeImage (TempImage);
+    if (LeftArrow && LeftBackground) {
+        if (State->FirstVisible > 0) {
+            PaintIcon (LeftArrow, PosX, PosY, ALIGN_RIGHT);
+        }
+        else {
+            BltImage (LeftBackground, PosX - LeftArrow->Width, PosY - (LeftArrow->Height / 2));
+        }
     }
 
-    if ((State->LastVisible < (row0Loaders - 1)) &&
-        (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS))
-    ) {
-        PaintIcon (&egemb_arrow_right, L"arrow_right", RightX, PosY, ALIGN_LEFT);
-    }
-    else {
-        TempImage = egCropImage (GlobalConfig.ScreenBackground, RightX, AdjPosY, Width, Height);
-        BltImage (TempImage, RightX, AdjPosY);
-        egFreeImage (TempImage);
+    if (RightArrow && RightBackground) {
+        if (State->LastVisible < row0Loaders - 1) {
+            PaintIcon (RightArrow, RightX, PosY, ALIGN_LEFT);
+        }
+        else {
+            BltImage (RightBackground, RightX, PosY - (RightArrow->Height / 2));
+        }
     }
 } // VOID PaintArrows()
 
