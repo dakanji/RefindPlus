@@ -20,21 +20,19 @@ typedef VOID (EFIAPI *MEM_LOG_CALLBACK) (IN INTN DebugMode, IN CHAR8 *LastMessag
 
 /**
   Prints a log message to memory buffer.
- 
+
   @param  Timing      TRUE to prepend timing to log.
   @param  DebugMode   DebugMode will be passed to Callback function if it is set.
   @param  Format      The format string for the debug message to print.
   @param  Marker      VA_LIST with variable arguments for Format.
- 
+
 **/
-VOID
-EFIAPI
-MemLogVA (
+VOID EFIAPI MemLogVA (
   IN  const BOOLEAN Timing,
   IN  const INTN    DebugMode,
   IN  const CHAR8   *Format,
   IN  VA_LIST       Marker
-  );
+);
 
 /**
   Prints a log message to memory buffer.
@@ -44,56 +42,44 @@ MemLogVA (
   @param  Timing      TRUE to prepend timing to log.
   @param  DebugMode   DebugMode will be passed to Callback function if it is set.
   @param  Format      The format string for the debug message to print.
-  @param  ...         The variable argument list whose contents are accessed 
+  @param  ...         The variable argument list whose contents are accessed
                       based on the format string specified by Format.
 
 **/
-VOID
-EFIAPI
-MemLog (
+VOID EFIAPI MemLog (
   IN  const BOOLEAN Timing,
   IN  const INTN    DebugMode,
   IN  const CHAR8   *Format,
   ...
-  );
+);
 
 
 /**
   Returns pointer to MemLog buffer.
 **/
-CHAR8*
-EFIAPI
-GetMemLogBuffer (
-  VOID
-  );
+CHAR8 * EFIAPI GetMemLogBuffer (VOID);
 
 
 /**
   Returns the length of log (number of chars written) in mem buffer.
  **/
-UINTN
-EFIAPI
-GetMemLogLen (
-  VOID
-  );
+UINTN EFIAPI GetMemLogLen (VOID);
 
 
 /**
   Sets callback that will be called when message is added to mem log.
  **/
-VOID
-EFIAPI
-SetMemLogCallback (
+VOID EFIAPI SetMemLogCallback (
   MEM_LOG_CALLBACK  Callback
-  );
+);
 
 
 /**
   Returns TSC ticks per second.
  **/
-UINT64
-EFIAPI
-GetMemLogTscTicksPerSecond (VOID);
+UINT64 EFIAPI GetMemLogTscTicksPerSecond (VOID);
+
+UINT64 GetCurrentSecond (VOID);
 
 
 #endif // __MEMLOG_LIB_H__

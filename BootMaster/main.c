@@ -228,6 +228,7 @@ REFIT_CONFIG GlobalConfig = {
 \\EFI\\tools_x64\\CleanNvram.efi,\\EFI\\x64_CleanNvram.efi,\\EFI\\CleanNvram_x64.efi,\\EFI\\CleanNvram.efi,\
 \\x64_CleanNvram.efi,\\CleanNvram_x64.efi,\\CleanNvram.efi"
 
+UINT64                 InitLoadSecond       = 0;
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                SetSysTab            = FALSE;
@@ -247,8 +248,10 @@ EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 #if REFIT_DEBUG > 0
 UINTN  AppleFramebuffers = 0;
 
-extern VOID InitBooterLog (VOID);
+extern VOID   InitBooterLog (VOID);
 #endif
+
+extern UINT64 GetCurrentSecond (VOID);
 
 extern EFI_STATUS RpApfsConnectDevices (VOID);
 
@@ -2219,6 +2222,9 @@ EFI_STATUS EFIAPI efi_main (
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
 
+    // Log time just before entering the main loop
+    InitLoadSecond = GetCurrentSecond();
+
     while (MainLoopRunning) {
         // Set to false as may not be booting
         IsBoot = FALSE;
@@ -2229,7 +2235,7 @@ EFI_STATUS EFIAPI efi_main (
         if (FlushFailedTag && !FlushFailReset) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
-            LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
+            LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
             MyFreePool (&MsgStr);
             #endif

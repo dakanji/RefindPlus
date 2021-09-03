@@ -64,12 +64,31 @@ MEM_LOG   *mMemLog = NULL;
 CHAR8     mTimingTxt[32];
 
 
+UINT64 GetCurrentSecond (VOID) {
+	UINT64    dTStartSec;
+	UINT64    dTStartMs;
+	UINT64    CurrentTsc;
 
-/**
-  Inits mem log.
+	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
+		CurrentTsc = AsmReadTsc();
 
-  @retval EFI_SUCCESS   The constructor always returns EFI_SUCCESS.
-**/
+		dTStartMs = DivU64x64Remainder (
+            MultU64x32 (
+                CurrentTsc - mMemLog->TscStart,
+                1000
+            ),
+            mMemLog->TscFreqSec,
+            NULL
+        );
+
+        dTStartSec = DivU64x64Remainder (dTStartMs, 1000, &dTStartMs);
+
+        return dTStartSec;
+	}
+
+	return 0;
+}
+
 CHAR8 * GetTiming (VOID) {
 	UINT64    dTStartSec;
 	UINT64    dTStartMs;

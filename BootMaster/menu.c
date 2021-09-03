@@ -107,6 +107,9 @@ extern EFI_GUID          RefindPlusGuid;
 
 extern CHAR16           *VendorInfo;
 
+extern UINT64            InitLoadSecond;
+
+
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
 extern BOOLEAN           FlushFailedTag;
@@ -114,6 +117,9 @@ extern BOOLEAN           FlushFailReset;
 
 static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
+
+
+extern UINT64 GetCurrentSecond (VOID);
 
 //
 // Graphics helper functions
@@ -999,7 +1005,7 @@ UINTN RunGenericMenu (
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
-        LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
+        LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -1007,6 +1013,26 @@ UINTN RunGenericMenu (
         FlushFailedTag = FALSE;
         FlushFailReset = TRUE;
         MenuExit = 0;
+    }
+
+    // Ignore MenuExit if time between loading main menu and detecting a keypress is too low
+    if (!FlushFailReset &&
+        MyStriCmp (Screen->Title, L"Main Menu")
+    ) {
+        UINT64 CurrentSecond = GetCurrentSecond();
+
+        if ((CurrentSecond - InitLoadSecond) < 3) {
+            #if REFIT_DEBUG > 0
+            CHAR16 *MsgStr = StrDuplicate (L"Low 'Keypress After Load' Time ... Ignoring MenuExit");
+            LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            MsgLog ("INFO: %s\n\n", MsgStr);
+            MyFreePool (&MsgStr);
+            #endif
+
+            FlushFailedTag = FALSE;
+            FlushFailReset = TRUE;
+            MenuExit = 0;
+        }
     }
 
     if (ChosenEntry) {
