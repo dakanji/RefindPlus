@@ -1850,10 +1850,14 @@ EG_IMAGE * GetIcon (
     IN CHAR16            *ExternalFilename
 ) {
     EG_IMAGE *Icon = NULL;
+
+    MuteLogger = TRUE;
     Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
     if (Icon == NULL) {
         Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
     }
+    MuteLogger = FALSE;
+    
     return Icon;
 } // static EG_IMAGE * GetIcon()
 
@@ -1942,6 +1946,11 @@ VOID PaintArrows (
         else {
             BltImage (LeftBackground, PosX - LeftArrow->Width, PosY - (LeftArrow->Height / 2));
         }
+
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL,
+            L"Processing Keystroke: UnicodeChar = XX ... ScanCode = XX - DRAW_LEFT_ICON");
+        #endif
     }
 
     if (RightArrow && RightBackground) {
@@ -1951,6 +1960,11 @@ VOID PaintArrows (
         else {
             BltImage (RightBackground, RightX, PosY - (RightArrow->Height / 2));
         }
+
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL,
+            L"Processing Keystroke: UnicodeChar = XX ... ScanCode = XX - DRAW_RIGHT_ICON");
+        #endif
     }
 } // VOID PaintArrows()
 
