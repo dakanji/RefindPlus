@@ -1874,34 +1874,34 @@ EFI_STATUS EFIAPI efi_main (
 
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: RefitDBG:- '%d'",   REFIT_DEBUG);               // Single Item
+    MsgLog ("INFO: RefitDBG:- '%d'",   REFIT_DEBUG                                            );
     MsgLog ("\n");
-    MsgLog ("      LogLevel:- '%d'",   GlobalConfig.LogLevel);     // Single Item
+    MsgLog ("      LogLevel:- '%d'",   GlobalConfig.LogLevel                                  );
     MsgLog ("\n");
-    MsgLog ("      ScanDelay:- '%d'",  GlobalConfig.ScanDelay);    // Single Item
+    MsgLog ("      ScanDelay:- '%d'",  GlobalConfig.ScanDelay                                 );
     MsgLog ("\n");
-    MsgLog ("      ReloadGOP:- %s",    (GlobalConfig.ReloadGOP)    ? L"'YES'"    : L"'NO'");
+    MsgLog ("      ReloadGOP:- %s",    GlobalConfig.ReloadGOP    ? L"'YES'"    : L"'NO'"      );
     MsgLog ("\n");
-    MsgLog ("      SyncAPFS:- %s",     (GlobalConfig.SyncAPFS)     ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      SyncAPFS:- %s",     GlobalConfig.SyncAPFS     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TagsHelp:- %s",     (GlobalConfig.TagsHelp)     ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      TagsHelp:- %s",     GlobalConfig.TagsHelp     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TextOnly:- %s",     (GlobalConfig.TextOnly)     ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      TextOnly:- %s",     GlobalConfig.TextOnly     ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      ScanAllESP:- %s",   (GlobalConfig.ScanAllESP)   ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      ScanAllESP:- %s",   GlobalConfig.ScanAllESP   ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      TextRenderer:- %s", (GlobalConfig.TextRenderer) ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      TextRenderer:- %s", GlobalConfig.TextRenderer ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
-        MsgLog ("      ProtectNVRAM:- 'Disabled'");
+        MsgLog ("      ProtectNVRAM:- 'Disabled'"                                                         );
     }
     else {
-        MsgLog ("      ProtectNVRAM:- %s",   (GlobalConfig.ProtectNVRAM)       ? L"'Active'" : L"'Inactive'");
+        MsgLog ("      ProtectNVRAM:- %s",   GlobalConfig.ProtectNVRAM       ? L"'Active'" : L"'Inactive'");
     }
     MsgLog ("\n");
-    MsgLog ("      NormaliseCSR:- %s",       (GlobalConfig.NormaliseCSR)       ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      NormaliseCSR:- %s",       GlobalConfig.NormaliseCSR       ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
-    MsgLog ("      IgnorePreviousBoot:- %s", (GlobalConfig.IgnorePreviousBoot) ? L"'Active'" : L"'Inactive'");
+    MsgLog ("      IgnorePreviousBoot:- %s", GlobalConfig.IgnorePreviousBoot ? L"'Active'" : L"'Inactive'");
     #endif
 
 
