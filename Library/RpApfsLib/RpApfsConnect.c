@@ -35,6 +35,9 @@
 
 extern BOOLEAN SilenceAPFS;
 
+extern EFI_STATUS OcConnectDrivers (VOID);
+
+
 LIST_ENTRY               mApfsPrivateDataList = INITIALIZE_LIST_HEAD_VARIABLE (mApfsPrivateDataList);
 static EFI_SYSTEM_TABLE  *mNullSystemTable;
 
@@ -163,16 +166,23 @@ ApfsStartDriver (
     // REF: https://github.com/acidanthera/bugtracker/issues/1128
     OcDisconnectDriversOnHandle (PrivateData->LocationInfo.ControllerHandle);
 
-    // Recursively connect controller to get apfs.efi loaded.
-    // We cannot use apfs.efi handle as it apparently creates new handles.
-    // This follows ApfsJumpStart driver implementation.
-    REFIT_CALL_4_WRAPPER(
-        gBS->ConnectController,
-        PrivateData->LocationInfo.ControllerHandle,
-        NULL,
-        NULL,
-        TRUE
-    );
+    if (MyStrStr (gST->FirmwareVendor, L"Apple") == NULL) {
+        // Connect all devices on Non-Apple Firmware.
+        // REF: https://github.com/acidanthera/bugtracker/issues/960
+        OcConnectDrivers();
+    }
+    else {
+        // Recursively connect controller to get apfs.efi loaded.
+        // We cannot use apfs.efi handle as it apparently creates new handles.
+        // This follows ApfsJumpStart driver implementation.
+        REFIT_CALL_4_WRAPPER(
+            gBS->ConnectController,
+            PrivateData->LocationInfo.ControllerHandle,
+            NULL,
+            NULL,
+            TRUE
+        );
+    }
 
     return EFI_SUCCESS;
 }
