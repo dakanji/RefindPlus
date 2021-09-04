@@ -1721,11 +1721,6 @@ VOID LogBasicInfo (VOID) {
     MyFreePool (&HandleBuffer);
 
     /* CSM Type */
-    CopyMem (GlobalConfig.ScanFor, "ieom       ", NUM_SCAN_OPTIONS);
-    FindLegacyBootType();
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
-        CopyMem (GlobalConfig.ScanFor, "ihebocm    ", NUM_SCAN_OPTIONS);
-    }
     switch (GlobalConfig.LegacyType) {
         case LEGACY_TYPE_MAC:  MsgStr = StrDuplicate (L"Mac-Style");  break;
         case LEGACY_TYPE_UEFI: MsgStr = StrDuplicate (L"UEFI-Style"); break;
