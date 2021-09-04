@@ -68,7 +68,8 @@ UINTN   ScreenW;
 UINTN   ScreenH;
 
 BOOLEAN AllowGraphicsMode;
-BOOLEAN IsBoot = FALSE;
+BOOLEAN ClearedBuffer = FALSE;
+BOOLEAN IsBoot        = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -644,6 +645,9 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     // We will try to resolve under the main loop if required
     if (!GotKeyStrokes && !EmptyBuffer) {
         FlushFailedTag = TRUE;
+    }
+    else if (GotKeyStrokes) {
+        ClearedBuffer = TRUE;
     }
 
     return GotKeyStrokes;

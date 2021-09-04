@@ -114,6 +114,7 @@ extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
 extern BOOLEAN           FlushFailedTag;
 extern BOOLEAN           FlushFailReset;
+extern BOOLEAN           ClearedBuffer;
 
 static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
@@ -1016,7 +1017,7 @@ UINTN RunGenericMenu (
     }
 
     // Ignore MenuExit if time between loading main menu and detecting a keypress is too low
-    if (!FlushFailReset &&
+    if (!ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu")
     ) {
         UINT64 CurrentSecond = GetCurrentSecond();
