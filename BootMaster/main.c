@@ -2020,7 +2020,11 @@ EFI_STATUS EFIAPI efi_main (
             LOG(4, LOG_THREE_STAR_MID, L"Loading Paused for 1 Second");
             #endif
 
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 1000000);
+            // Wait 1 second
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
         }
 
         #if REFIT_DEBUG > 0
