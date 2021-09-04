@@ -1555,19 +1555,18 @@ VOID LogRevisionInfo (
 #endif
 
 // Log basic information (RefindPlus version, EFI version, etc.) to the log file.
+// Also sets some variables that may be needed later
 static
 VOID LogBasicInfo (VOID) {
-#if REFIT_DEBUG == 0
-    // NOOP on RELEASE Builds
-    return;
-#else
+    UINTN  EfiMajorVersion = gST->Hdr.Revision >> 16;
+
+#if REFIT_DEBUG > 0
     EFI_STATUS  Status;
     CHAR16     *MsgStr = NULL;
     UINT64      MaximumVariableSize;
     UINT64      MaximumVariableStorageSize;
     UINT64      RemainingVariableStorageSize;
     UINTN       HandleCount                        = 0;
-    UINTN       EfiMajorVersion                    = gST->Hdr.Revision >> 16;
     EFI_GUID    ConsoleControlProtocolGuid         = EFI_CONSOLE_CONTROL_PROTOCOL_GUID;
     EFI_GUID    AppleFramebufferInfoProtocolGuid   = APPLE_FRAMEBUFFER_INFO_PROTOCOL_GUID;
     EFI_HANDLE *HandleBuffer                       = NULL;
@@ -1578,26 +1577,30 @@ VOID LogBasicInfo (VOID) {
     LogRevisionInfo (&gRT->Hdr, L"Runtime Services", sizeof(*gRT), TRUE);
     LogRevisionInfo (&gDS->Hdr, L"    DXE Services", sizeof(*gDS), FALSE);
     MsgLog ("\n\n");
+#endif
 
-    BOOLEAN ErrEFI = TRUE;
+    WarnVersionEFI = WarnRevisionUEFI = FALSE;
     if (((gST->Hdr.Revision >> 16) != EfiMajorVersion)
         || ((gBS->Hdr.Revision >> 16) != EfiMajorVersion)
         || ((gRT->Hdr.Revision >> 16) != EfiMajorVersion)
     ) {
         WarnVersionEFI = TRUE;
-        MsgLog ("** WARN: Inconsistent EFI Versions Detected");
     }
     else if (((gST->Hdr.Revision & 0xffff) != (gBS->Hdr.Revision & 0xffff))
         || ((gST->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
         || ((gBS->Hdr.Revision & 0xffff) != (gRT->Hdr.Revision & 0xffff))
     ) {
         WarnRevisionUEFI = TRUE;
-        MsgLog ("** WARN: Inconsistent UEFI Revisions Detected");
     }
-    else {
-        ErrEFI = FALSE;
-    }
-    if (ErrEFI) {
+
+#if REFIT_DEBUG > 0
+    if (WarnVersionEFI || WarnRevisionUEFI) {
+        if (WarnVersionEFI) {
+            MsgLog ("** WARN: Inconsistent EFI Versions Detected");
+        }
+        else {
+            MsgLog ("** WARN: Inconsistent UEFI Revisions Detected");
+        }
         MsgLog ("\n");
         MsgLog ("         Program Behaviour is *NOT* Defined!!");
         MsgLog ("\n\n");
@@ -1606,17 +1609,21 @@ VOID LogBasicInfo (VOID) {
     /* NVRAM Storage Info */
     BOOLEAN QVInfoSupport = FALSE;
     MsgLog ("Non-Volatile Storage:");
+#endif
+
     if (gRT->Hdr.Revision >> 16 > 1
         && MyStrStr (VendorInfo, L"Apple") == NULL
     ) {
         if ((gRT->Hdr.HeaderSize <
             MY_OFFSET_OF(EFI_RUNTIME_SERVICES, QueryVariableInfo) + sizeof(gRT->QueryVariableInfo))
         ) {
+            WarnMissingQVInfo = TRUE;
+
+#if REFIT_DEBUG > 0
             MsgLog ("\n\n");
             MsgLog ("** WARN: Inconsistent UEFI 2.x Implementation Detected");
             MsgLog ("\n");
             MsgLog ("         Program Behaviour is *NOT* Defined!!");
-            WarnMissingQVInfo = TRUE;
         }
         else {
             Status = REFIT_CALL_4_WRAPPER(
@@ -1638,10 +1645,13 @@ VOID LogBasicInfo (VOID) {
                 MsgLog ("\n");
                 MsgLog ("  - Maximum Variable Size : %ld", MaximumVariableSize);
             }
+            QVInfoSupport = TRUE;
+#endif
         }
-        QVInfoSupport = TRUE;
     }
+    // Ends here on RELEASE Builds
 
+#if REFIT_DEBUG > 0
     if (!QVInfoSupport) {
         // QueryVariableInfo is not supported on Apple or EFI 1.x Firmware
         MsgLog ("\n");
@@ -2034,7 +2044,7 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu.TimeoutText = L"Shutdown";
     }
 
-    // show EFI Version mismatch warning
+    // Show EFI Version Mismatch Warning
     if (WarnVersionEFI) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent EFI Versions");
@@ -2073,9 +2083,14 @@ EFI_STATUS EFIAPI efi_main (
             MsgLog ("Proceeding\n\n");
             #endif
         }
+        // Wait 1 second
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     }
 
-    // show UEFI Revision mismatch warning
+    // Show UEFI Revision Mismatch Warning
     if (WarnRevisionUEFI) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent UEFI Revisions");
@@ -2102,6 +2117,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("      %s ...", MsgStr);
         MyFreePool (&MsgStr);
         #endif
+
         if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
@@ -2114,9 +2130,14 @@ EFI_STATUS EFIAPI efi_main (
             MsgLog ("Proceeding\n\n");
             #endif
         }
+        // Wait 1 second
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     }
 
-    // show config mismatch warning
+    // Show Inconsistent UEFI 2.x Implementation Warning
     if (WarnMissingQVInfo) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
@@ -2143,6 +2164,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("      %s ...", MsgStr);
         MyFreePool (&MsgStr);
         #endif
+
         if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
@@ -2155,9 +2177,14 @@ EFI_STATUS EFIAPI efi_main (
             MsgLog ("Proceeding\n\n");
             #endif
         }
+        // Wait 1 second
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     }
 
-    // show config mismatch warning
+    // Show Config Mismatch Warning
     if (ConfigWarn) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Missing Config File");
@@ -2190,6 +2217,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("      %s ...", MsgStr);
         MyFreePool (&MsgStr);
         #endif
+
         if (egIsGraphicsModeEnabled()) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
@@ -2202,6 +2230,8 @@ EFI_STATUS EFIAPI efi_main (
             MsgLog ("Proceeding\n\n");
             #endif
         }
+        // Wait 0.25 second
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     }
 
     if (GlobalConfig.LogLevel > 2) {
