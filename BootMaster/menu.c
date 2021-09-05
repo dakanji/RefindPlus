@@ -96,6 +96,7 @@ static EG_IMAGE *SelectionImages[2]      = { NULL, NULL };
 static EG_PIXEL SelectionBackgroundPixel = { 0xff, 0xff, 0xff, 0 };
 
 EFI_EVENT *WaitList       = NULL;
+UINT64     MainMenuLoad   = 0;
 UINTN      WaitListLength = 0;
 
 // Pointer variables
@@ -106,9 +107,6 @@ BOOLEAN DrawSelection     = TRUE;
 extern EFI_GUID          RefindPlusGuid;
 
 extern CHAR16           *VendorInfo;
-
-extern UINT64            InitLoadSecond;
-
 
 extern REFIT_MENU_ENTRY  MenuEntryReturn;
 
@@ -1005,7 +1003,7 @@ UINTN RunGenericMenu (
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
-        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
+        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
@@ -1020,13 +1018,17 @@ UINTN RunGenericMenu (
     if (!ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu")
     ) {
-        UINT64 CurrentSecond = GetCurrentSecond();
+        UINT64 MenuExitTime = GetCurrentSecond();
 
-        if ((CurrentSecond - InitLoadSecond) < 2) {
+        if ((MenuExitTime - MainMenuLoad) < 2) {
             #if REFIT_DEBUG > 0
-            CHAR16 *MsgStr = StrDuplicate (L"Low 'Keypress After Load' Interval ... Ignoring MenuExit");
+            MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignore MenuExit");
+            MsgLog ("\n");
+
+            CHAR16 *MsgStr = StrDuplicate (L"Persistent Primed Keystroke Buffer Mitigation");
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
+            MsgLog ("      %s");
+            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
 
@@ -1857,7 +1859,7 @@ EG_IMAGE * GetIcon (
         Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
     }
     MuteLogger = FALSE;
-    
+
     return Icon;
 } // static EG_IMAGE * GetIcon()
 
@@ -2950,6 +2952,9 @@ UINTN RunMainMenu (
 
     MenuTitle = StrDuplicate (L"Unknown");
 
+    // Save seconds elaspsed from start until just before entering the Main Menu MenuExit loop
+    MainMenuLoad = GetCurrentSecond();
+
     while (MenuExit == 0) {
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
@@ -3007,7 +3012,7 @@ UINTN RunMainMenu (
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
-        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignoring MenuExit");
+        CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MyFreePool (&MsgStr);
