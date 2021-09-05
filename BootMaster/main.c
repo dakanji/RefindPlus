@@ -1788,9 +1788,11 @@ EFI_STATUS EFIAPI efi_main (
         );
     }
 
-    #if REFIT_DEBUG > 0
+    /* Init Logging */
+    // DA-TAG: Also on RELEASE Builds as we need the timer
     InitBooterLog();
 
+    #if REFIT_DEBUG > 0
     /* Start Logging */
     MsgLog (
         "Loading RefindPlus v%s on %s Firmware\n",
