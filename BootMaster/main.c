@@ -246,9 +246,9 @@ EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 
 #if REFIT_DEBUG > 0
 UINTN  AppleFramebuffers = 0;
+#endif
 
 extern VOID   InitBooterLog (VOID);
-#endif
 
 extern UINT64 GetCurrentSecond (VOID);
 
