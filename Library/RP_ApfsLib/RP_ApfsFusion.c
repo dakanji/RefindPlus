@@ -14,16 +14,15 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "RpApfsInternal.h"
+#include "RP_ApfsInternal.h"
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
-#include "RpApfsLib.h"
+#include "RP_ApfsLib.h"
 #include <Protocol/BlockIo.h>
 
-VOID
-InternalApfsInitFusionData (
+VOID InternalApfsInitFusionData (
   IN  APFS_NX_SUPERBLOCK   *SuperBlock,
   OUT APFS_PRIVATE_DATA    *PrivateData
   )
@@ -101,8 +100,7 @@ InternalApfsInitFusionData (
   }
 }
 
-EFI_BLOCK_IO_PROTOCOL *
-InternalApfsTranslateBlock (
+EFI_BLOCK_IO_PROTOCOL * InternalApfsTranslateBlock (
   IN  APFS_PRIVATE_DATA    *PrivateData,
   IN  UINT64               Block,
   OUT EFI_LBA              *Lba

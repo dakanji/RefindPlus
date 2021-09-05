@@ -99,27 +99,23 @@ typedef struct APFS_PRIVATE_DATA_ {
 **/
 extern LIST_ENTRY  mApfsPrivateDataList;
 
-EFI_STATUS
-InternalApfsReadSuperBlock (
+EFI_STATUS InternalApfsReadSuperBlock (
   IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
   OUT APFS_NX_SUPERBLOCK     **SuperBlockPtr
   );
 
-EFI_STATUS
-InternalApfsReadDriver (
+EFI_STATUS InternalApfsReadDriver (
   IN  APFS_PRIVATE_DATA    *PrivateData,
   OUT UINTN                *DriverSize,
   OUT VOID                 **DriverBuffer
   );
 
-VOID
-InternalApfsInitFusionData (
+VOID InternalApfsInitFusionData (
   IN  APFS_NX_SUPERBLOCK   *SuperBlock,
   OUT APFS_PRIVATE_DATA    *PrivateData
   );
 
-EFI_BLOCK_IO_PROTOCOL *
-InternalApfsTranslateBlock (
+EFI_BLOCK_IO_PROTOCOL * InternalApfsTranslateBlock (
   IN  APFS_PRIVATE_DATA    *PrivateData,
   IN  UINT64               Block,
   OUT EFI_LBA              *Lba

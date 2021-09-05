@@ -14,11 +14,11 @@
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "RpApfsInternal.h"
+#include "RP_ApfsInternal.h"
 #include <Library/BaseLib.h>
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
-#include "RpApfsLib.h"
+#include "RP_ApfsLib.h"
 #include <Library/OcBootManagementLib.h>
 #include <Library/OcConsoleLib.h>
 #include <Library/OcDriverConnectionLib.h>
@@ -35,15 +35,11 @@
 
 extern BOOLEAN SilenceAPFS;
 
-extern EFI_STATUS OcConnectDrivers (VOID);
-
-
 LIST_ENTRY               mApfsPrivateDataList = INITIALIZE_LIST_HEAD_VARIABLE (mApfsPrivateDataList);
 static EFI_SYSTEM_TABLE  *mNullSystemTable;
 
 static
-EFI_STATUS
-ApfsRegisterPartition (
+EFI_STATUS ApfsRegisterPartition (
     IN  EFI_HANDLE             Handle,
     IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
     IN  APFS_NX_SUPERBLOCK     *SuperBlock,
@@ -91,8 +87,7 @@ ApfsRegisterPartition (
 }
 
 static
-EFI_STATUS
-ApfsStartDriver (
+EFI_STATUS ApfsStartDriver (
     IN APFS_PRIVATE_DATA  *PrivateData,
     IN VOID               *DriverBuffer,
     IN UINTN              DriverSize
@@ -188,8 +183,7 @@ ApfsStartDriver (
 }
 
 static
-EFI_STATUS
-ApfsConnectDevice (
+EFI_STATUS ApfsConnectDevice (
     IN EFI_HANDLE             Handle,
     IN EFI_BLOCK_IO_PROTOCOL  *BlockIo
 ) {
@@ -229,8 +223,7 @@ ApfsConnectDevice (
     return Status;
 }
 
-EFI_STATUS
-RpApfsConnectHandle (
+EFI_STATUS RP_ApfsConnectHandle (
     IN EFI_HANDLE  Handle
 ) {
     EFI_STATUS             Status;

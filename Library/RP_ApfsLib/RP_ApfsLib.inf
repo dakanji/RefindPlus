@@ -20,11 +20,11 @@
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = RpApfsLib
+  BASE_NAME                      = RP_ApfsLib
   FILE_GUID                      = CD8EE15C-EAAF-44F4-8D07-8C37A4B53315
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
-  LIBRARY_CLASS                  = RpApfsLib|DXE_DRIVER DXE_RUNTIME_DRIVER UEFI_DRIVER UEFI_APPLICATION DXE_SMM_DRIVER
+  LIBRARY_CLASS                  = RP_ApfsLib|DXE_DRIVER DXE_RUNTIME_DRIVER UEFI_DRIVER UEFI_APPLICATION DXE_SMM_DRIVER
 
 #
 # The following information is for reference only and not required by the build tools.
@@ -33,11 +33,11 @@
 #
 
 [Sources]
-  RpApfsConnect.c
-  RpApfsFusion.c
-  RpApfsInternal.h
-  RpApfsIo.c
-  RpApfsLib.c
+  RP_ApfsConnect.c
+  RP_ApfsFusion.c
+  RP_ApfsInternal.h
+  RP_ApfsIo.c
+  RP_ApfsLib.c
 
 [Packages]
   OpenCorePkg/OpenCorePkg.dec

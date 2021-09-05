@@ -253,7 +253,7 @@ extern VOID   InitBooterLog (VOID);
 
 extern UINT64 GetCurrentSecond (VOID);
 
-extern EFI_STATUS RpApfsConnectDevices (VOID);
+extern EFI_STATUS RP_ApfsConnectDevices (VOID);
 
 // Link to Cert GUIDs in mok/guid.c
 extern EFI_GUID X509_GUID;
@@ -1912,7 +1912,7 @@ EFI_STATUS EFIAPI efi_main (
     #ifdef __MAKEWITH_TIANO
     // DA-TAG: Limit to TianoCore
     if (GlobalConfig.SupplyAPFS) {
-        Status = RpApfsConnectDevices();
+        Status = RP_ApfsConnectDevices();
     }
     #endif
 

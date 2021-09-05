@@ -14,20 +14,19 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "RpApfsInternal.h"
+#include "RP_ApfsInternal.h"
 #include <IndustryStandard/PeImage.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
-#include "RpApfsLib.h"
+#include "RP_ApfsLib.h"
 #include <Library/OcGuardLib.h>
 
 #include "../../include/refit_call_wrapper.h"
 
 static
-UINT64
-ApfsFletcher64 (
+UINT64 ApfsFletcher64 (
   VOID    *Data,
   UINTN   DataSize
   )
@@ -79,8 +78,7 @@ ApfsFletcher64 (
 }
 
 static
-BOOLEAN
-ApfsBlockChecksumVerify (
+BOOLEAN ApfsBlockChecksumVerify (
   APFS_OBJ_PHYS   *Block,
   UINTN           DataSize
   )
@@ -102,8 +100,7 @@ ApfsBlockChecksumVerify (
 }
 
 static
-EFI_STATUS
-ApfsReadJumpStart (
+EFI_STATUS ApfsReadJumpStart (
   IN  APFS_PRIVATE_DATA      *PrivateData,
   OUT APFS_NX_EFI_JUMPSTART  **JumpStartPtr
   )
@@ -167,8 +164,7 @@ ApfsReadJumpStart (
 }
 
 static
-EFI_STATUS
-ApfsReadDriver (
+EFI_STATUS ApfsReadDriver (
   IN  APFS_PRIVATE_DATA      *PrivateData,
   IN  APFS_NX_EFI_JUMPSTART  *JumpStart,
   OUT UINTN                  *DriverSize,
@@ -243,8 +239,7 @@ ApfsReadDriver (
   return EFI_SUCCESS;
 }
 
-EFI_STATUS
-InternalApfsReadSuperBlock (
+EFI_STATUS InternalApfsReadSuperBlock (
   IN  EFI_BLOCK_IO_PROTOCOL  *BlockIo,
   OUT APFS_NX_SUPERBLOCK     **SuperBlockPtr
   )
@@ -333,8 +328,7 @@ InternalApfsReadSuperBlock (
   return EFI_UNSUPPORTED;
 }
 
-EFI_STATUS
-InternalApfsReadDriver (
+EFI_STATUS InternalApfsReadDriver (
   IN  APFS_PRIVATE_DATA    *PrivateData,
   OUT UINTN                *DriverSize,
   OUT VOID                 **DriverBuffer

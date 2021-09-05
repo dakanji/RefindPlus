@@ -14,8 +14,8 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include "RpApfsInternal.h"
-#include "RpApfsLib.h"
+#include "RP_ApfsInternal.h"
+#include "RP_ApfsLib.h"
 #include <Library/BaseMemoryLib.h>
 #include <Library/DebugLib.h>
 #include <Library/DevicePathLib.h>
@@ -27,8 +27,7 @@ Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
 
 #include "../../include/refit_call_wrapper.h"
 
-EFI_STATUS
-RpApfsConnectParentDevice (
+EFI_STATUS RP_ApfsConnectParentDevice (
     VOID
 ) {
   EFI_STATUS       Status;
@@ -51,7 +50,7 @@ RpApfsConnectParentDevice (
       Status = EFI_NOT_FOUND;
 
       for (Index = 0; Index < HandleCount; ++Index) {
-          XStatus = RpApfsConnectHandle (HandleBuffer[Index]);
+          XStatus = RP_ApfsConnectHandle (HandleBuffer[Index]);
           if (XStatus == EFI_SUCCESS || XStatus == EFI_ALREADY_STARTED) {
               if (EFI_ERROR(Status)) {
                   Status = XStatus;
@@ -65,8 +64,7 @@ RpApfsConnectParentDevice (
   return Status;
 }
 
-EFI_STATUS
-RpApfsConnectDevices (
+EFI_STATUS RP_ApfsConnectDevices (
     VOID
 ) {
     EFI_STATUS  Status;
@@ -79,7 +77,7 @@ RpApfsConnectDevices (
         NULL,
         &PartitionInfoInterface
     );
-    Status = RpApfsConnectParentDevice();
+    Status = RP_ApfsConnectParentDevice();
 
     return Status;
 }

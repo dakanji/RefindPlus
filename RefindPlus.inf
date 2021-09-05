@@ -108,7 +108,7 @@
 # Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
   HandleParsingLib
 # Added by dakanji (sf.net/u/dakanji/profile) based on OcApfsLib from OpenCore
-  RpApfsLib
+  RP_ApfsLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib
