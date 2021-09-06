@@ -705,7 +705,6 @@ UINTN ScanDriverDir (
 BOOLEAN LoadDrivers (VOID) {
     CHAR16  *Directory;
     CHAR16  *SelfDirectory;
-    UINTN    Length;
     UINTN    i        = 0;
     UINTN    NumFound = 0;
     UINTN    CurFound = 0;
@@ -729,6 +728,7 @@ BOOLEAN LoadDrivers (VOID) {
     }
 
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
+        CleanUpPathNameSlashes (Directory);
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
         CleanUpPathNameSlashes (SelfDirectory);
         MergeStrings (&SelfDirectory, Directory, L'\\');
@@ -775,15 +775,16 @@ BOOLEAN LoadDrivers (VOID) {
         i = 0;
         while ((Directory = FindCommaDelimited (GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes (Directory);
-            Length = StrLen (Directory);
-            if (Length > 0) {
+            if (StrLen (Directory) > 0) {
                 SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
                 CleanUpPathNameSlashes (SelfDirectory);
-                MergeStrings (&SelfDirectory, Directory, L'\\');
 
-                if (MyStrStr (SelfDirectory, L"EFI\\BOOT\\EFI") != NULL) {
-                    ReplaceSubstring (&SelfDirectory, L"EFI\\BOOT\\EFI", L"EFI");
-                    ReplaceSubstring (&SelfDirectory, L"System\\Library\\CoreServices\\System", L"System");
+                if (MyStrBegins (SelfDirectory, Directory)) {
+                    MyFreePool (&SelfDirectory);
+                    SelfDirectory = StrDuplicate (Directory);
+                }
+                else {
+                    MergeStrings (&SelfDirectory, Directory, L'\\');
                 }
 
                 CurFound = ScanDriverDir (SelfDirectory);
