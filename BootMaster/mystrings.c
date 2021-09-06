@@ -257,6 +257,22 @@ VOID ToLower (
     }
 } // VOID ToLower()
 
+// Convert input string to all-uppercase.
+VOID ToUpper (
+    CHAR16 *MyString
+) {
+    UINTN i = 0;
+
+    if (MyString) {
+        while (MyString[i] != L'\0') {
+            if ((MyString[i] >= L'a') && (MyString[i] <= L'z')) {
+                MyString[i] = MyString[i] - L'a' + L'A';
+            }
+            i++;
+        } // while
+    }
+} // VOID ToUpper()
+
 // Merges two strings, creating a new one and returning a pointer to it.
 // If AddChar != 0, the specified character is placed between the two original
 // strings (unless the first string is NULL or empty). The original input
