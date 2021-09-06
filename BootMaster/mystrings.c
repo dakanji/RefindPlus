@@ -73,6 +73,32 @@ BOOLEAN MyStriCmp (
     return FALSE;
 } // BOOLEAN MyStriCmp()
 
+// As MyStriCmp but only checks whether SecondString starts with FirstString
+// Returns TRUE on match, FALSE otherwise.
+BOOLEAN MyStrBegins (
+    IN CHAR16 *FirstString,
+    IN CHAR16 *SecondString
+) {
+    BOOLEAN StrBegins = FALSE;
+
+    if (FirstString && SecondString) {
+        while (*FirstString != L'\0') {
+            if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
+                StrBegins = TRUE;
+                FirstString++;
+                SecondString++;
+            }
+            else {
+                StrBegins = FALSE;
+                break;
+            }
+        }
+    }
+
+    return StrBegins;
+} // BOOLEAN MyStrBegins()
+
+
 /*++
  *
  * Routine Description:

@@ -55,6 +55,10 @@ BOOLEAN ReplaceSubstring (
     IN     CHAR16 *SearchString,
     IN     CHAR16 *ReplString
 );
+BOOLEAN MyStrBegins (
+    IN CHAR16 *FirstString,
+    IN CHAR16 *SecondString
+);
 
 CHAR16 * GetTimeString (VOID);
 CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
