@@ -638,7 +638,8 @@ UINTN ScanDriverDir (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
-    MsgLog ("Scan '%s' Folder:\n", Path);
+    MsgLog ("Scan '%s' Folder:", Path);
+    MsgLog ("\n");
     #endif
 
     // look through contents of the directory
@@ -670,6 +671,7 @@ UINTN ScanDriverDir (
             DirEntry->FileName, 0,
             FALSE, TRUE
         );
+
 
         MyFreePool (&DirEntry);
 
@@ -721,19 +723,14 @@ BOOLEAN LoadDrivers (VOID) {
     MsgLog ("Load UEFI Drivers from Program Default Folder...");
     #endif
 
-    BOOLEAN HybridLogger = FALSE;
-    if (NativeLogger) {
-        HybridLogger = TRUE;
-        NativeLogger = FALSE;
-    }
 
     while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         CleanUpPathNameSlashes (Directory);
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
         CleanUpPathNameSlashes (SelfDirectory);
         MergeStrings (&SelfDirectory, Directory, L'\\');
-        CurFound = ScanDriverDir (SelfDirectory);
 
+        CurFound = ScanDriverDir (SelfDirectory);
         if (CurFound > 0) {
             NumFound = NumFound + CurFound;
 
@@ -745,7 +742,7 @@ BOOLEAN LoadDrivers (VOID) {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL,
                 L"'%s' ... Program Default Driver Folder:- '%s'",
-                MsgNotFound, Directory
+                MsgNotFound, SelfDirectory
             );
             MsgLog ("  - %s", MsgNotFound);
             #endif
@@ -757,20 +754,10 @@ BOOLEAN LoadDrivers (VOID) {
 
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
-        if (HybridLogger) {
-            HybridLogger = FALSE;
-            NativeLogger = TRUE;
-        }
-
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
         MsgLog ("Load UEFI Drivers from User Defined Folders...");
         #endif
-
-        if (NativeLogger) {
-            HybridLogger = TRUE;
-            NativeLogger = FALSE;
-        }
 
         i = 0;
         while ((Directory = FindCommaDelimited (GlobalConfig.DriverDirs, i++)) != NULL) {
@@ -788,7 +775,6 @@ BOOLEAN LoadDrivers (VOID) {
                 }
 
                 CurFound = ScanDriverDir (SelfDirectory);
-
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
@@ -796,7 +782,7 @@ BOOLEAN LoadDrivers (VOID) {
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL,
                         L"'%s' ... User Defined Driver Folder:- '%s'",
-                        MsgNotFound, Directory
+                        MsgNotFound, SelfDirectory
                     );
                     MsgLog ("  - %s", MsgNotFound);
                     #endif
@@ -812,13 +798,6 @@ BOOLEAN LoadDrivers (VOID) {
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
     #endif
-
-    if (HybridLogger) {
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_BLANK_LINE_SEP, L"X");
-        #endif
-        NativeLogger = TRUE;
-    }
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = PoolPrint (

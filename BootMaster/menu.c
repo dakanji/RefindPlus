@@ -141,6 +141,10 @@ VOID InitSelection (VOID) {
     }
 
     if (TempSmallImage == NULL) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL, L"Using Embedded Image:- 'egemb_back_selected_small'");
+        #endif
+
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE);
     }
     else {
@@ -165,10 +169,18 @@ VOID InitSelection (VOID) {
         }
 
         if (TaintFree && LoadedSmallImage) {
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"Scaling from LoadedSmallImage");
+            #endif
+
            // calculate big selection image from small one
            TempBigImage = egCopyImage (TempSmallImage);
         }
         else {
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"Using Embedded Image:- 'egemb_back_selected_big'");
+            #endif
+
            TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE);
         }
     }
@@ -931,7 +943,7 @@ UINTN RunGenericMenu (
                 } // switch
             }
             LOG(3, LOG_LINE_NORMAL,
-                L"Processing Keystroke: UnicodeChar = %02d ... ScanCode = %02d - %s",
+                L"Processing Keystroke: UnicodeChar = 0x%02X ... ScanCode = 0x%02X - %s",
                 key.UnicodeChar, key.ScanCode, KeyTxt
             );
             #endif
@@ -1025,7 +1037,7 @@ UINTN RunGenericMenu (
             MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignore MenuExit");
             MsgLog ("\n");
 
-            CHAR16 *MsgStr = StrDuplicate (L"Persistent Primed Keystroke Buffer Mitigation");
+            CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("      %s");
             MsgLog ("\n\n");
@@ -1853,12 +1865,10 @@ EG_IMAGE * GetIcon (
 ) {
     EG_IMAGE *Icon = NULL;
 
-    MuteLogger = TRUE;
     Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
     if (Icon == NULL) {
         Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
     }
-    MuteLogger = FALSE;
 
     return Icon;
 } // static EG_IMAGE * GetIcon()
@@ -1948,11 +1958,6 @@ VOID PaintArrows (
         else {
             BltImage (LeftBackground, PosX - LeftArrow->Width, PosY - (LeftArrow->Height / 2));
         }
-
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Processing Keystroke: UnicodeChar = XX ... ScanCode = XX - DRAW_LEFT_ICON");
-        #endif
     }
 
     if (RightArrow && RightBackground) {
@@ -1962,11 +1967,6 @@ VOID PaintArrows (
         else {
             BltImage (RightBackground, RightX, PosY - (RightArrow->Height / 2));
         }
-
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Processing Keystroke: UnicodeChar = XX ... ScanCode = XX - DRAW_RIGHT_ICON");
-        #endif
     }
 } // VOID PaintArrows()
 

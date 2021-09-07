@@ -1920,20 +1920,8 @@ EFI_STATUS EFIAPI efi_main (
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
     MsgLog ("INFO: Supply APFS ... %r", Status);
-
-    // Clear Lines
-    if (!NativeLogger && GlobalConfig.LogLevel > 0) {
-        MsgLog ("\n");
-    }
-    else {
-        MsgLog ("\n\n");
-    }
+    MsgLog ("\n\n");
     #endif
-
-    if (GlobalConfig.LogLevel < 3) {
-        /* Disable Forced Native Logging */
-        NativeLogger = FALSE;
-    }
 
     // Load Drivers
     LoadDrivers();
@@ -1947,6 +1935,7 @@ EFI_STATUS EFIAPI efi_main (
         Status = EFI_SUCCESS;
         MsgStr = PoolPrint (L"Restore System Table ... %r", Status);
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("\n");
         MsgLog ("      %s", MsgStr);
         MyFreePool (&MsgStr);
         #endif
@@ -2239,10 +2228,8 @@ EFI_STATUS EFIAPI efi_main (
         NativeLogger = TRUE;
     }
     pdInitialize();
-    if (GlobalConfig.LogLevel > 2) {
-        /* Disable Forced Native Logging */
-        NativeLogger = FALSE;
-    }
+    /* Disable Forced Native Logging */
+    NativeLogger = FALSE;
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_SEPARATOR, L"Entering Main Loop");

@@ -2573,7 +2573,7 @@ VOID ScanVolumes (VOID) {
             }
             else if (ScannedOnce) {
                 if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
-                    if (!SkipSpacing && (HandleIndex % 16) == 0 && (HandleCount - HandleIndex) > 8) {
+                    if (!SkipSpacing && (HandleIndex % 20) == 0 && (HandleCount - HandleIndex) > 10) {
                         DoneHeadings = FALSE;
                         MsgLog ("\n\n                   ");
                     }
