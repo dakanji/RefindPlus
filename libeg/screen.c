@@ -80,7 +80,8 @@ EFI_CONSOLE_CONTROL_PROTOCOL *ConsoleControl = NULL;
 EFI_UGA_DRAW_PROTOCOL        *UGADraw        = NULL;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw        = NULL;
 
-static BOOLEAN egHasGraphics  = FALSE;
+BOOLEAN egHasGraphics  = FALSE;
+
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 

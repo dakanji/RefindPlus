@@ -264,6 +264,8 @@ extern EFI_FILE *gVarsDir;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
+extern BOOLEAN egHasGraphics;
+
 //
 // misc functions
 //
@@ -2033,12 +2035,17 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu.TimeoutText = L"Shutdown";
     }
 
+    BOOLEAN LoadScreenGraphics = (
+        egIsGraphicsModeEnabled()
+        || (!GlobalConfig.TextOnly && egHasGraphics)
+    );
+
     // Show EFI Version Mismatch Warning
     if (WarnVersionEFI) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent EFI Versions");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -2057,10 +2064,10 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG(3, LOG_BLANK_LINE_SEP, L"X");
-        MsgLog ("      %s ...", MsgStr);
+        MsgLog ("INFO: %s ... ", MsgStr);
         MyFreePool (&MsgStr);
         #endif
-        if (egIsGraphicsModeEnabled()) {
+        if (LoadScreenGraphics) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
@@ -2084,7 +2091,7 @@ EFI_STATUS EFIAPI efi_main (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent UEFI Revisions");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -2107,7 +2114,7 @@ EFI_STATUS EFIAPI efi_main (
         MyFreePool (&MsgStr);
         #endif
 
-        if (egIsGraphicsModeEnabled()) {
+        if (LoadScreenGraphics) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
@@ -2131,7 +2138,7 @@ EFI_STATUS EFIAPI efi_main (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -2154,7 +2161,7 @@ EFI_STATUS EFIAPI efi_main (
         MyFreePool (&MsgStr);
         #endif
 
-        if (egIsGraphicsModeEnabled()) {
+        if (LoadScreenGraphics) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
@@ -2178,7 +2185,7 @@ EFI_STATUS EFIAPI efi_main (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Missing Config File");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
-        MsgLog ("INFO: User Warning:- '%s'\n", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
         MyFreePool (&MsgStr);
         #endif
 
@@ -2207,7 +2214,7 @@ EFI_STATUS EFIAPI efi_main (
         MyFreePool (&MsgStr);
         #endif
 
-        if (egIsGraphicsModeEnabled()) {
+        if (LoadScreenGraphics) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
