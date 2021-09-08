@@ -34,6 +34,7 @@
 #include "../../include/refit_call_wrapper.h"
 
 extern BOOLEAN SilenceAPFS;
+extern CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
 
 LIST_ENTRY               mApfsPrivateDataList = INITIALIZE_LIST_HEAD_VARIABLE (mApfsPrivateDataList);
 static EFI_SYSTEM_TABLE  *mNullSystemTable;
