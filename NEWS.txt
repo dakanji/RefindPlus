@@ -7,6 +7,10 @@
   * This is typically due to customisation of the firmware as on Late Intel Macs such as the MacMini8,1
   * This affected running the DEBUG build on such units
   * RefindPlus now accommodates this situation.
+- Fixes Text Mode Selected Menu Item Display
+  * The selected item in text mode menus was not displayed
+  * The selections had to be toggled to display the item
+  * RefindPlus now works around this issue by automatically toggling such menu items
 - Fixes Driver Loading from User Defined Folders
   * Drivers in folders defined by the 'scan_driver_dirs' configuration token were not loaded in some instances
   * This was because the routine expected the defined paths to not include the installation folder path

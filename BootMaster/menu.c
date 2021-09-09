@@ -226,8 +226,8 @@ VOID InitScroll (
     State->LastVisible     = State->FirstVisible + State->MaxVisible - 1;
 }
 
-// Adjust variables relating to the scrolling of tags, for when a selected icon isn't
-// visible given the current scrolling condition.
+// Adjust variables relating to the scrolling of tags, for when a selected icon
+// is not visible given the current scrolling condition.
 static
 VOID AdjustScrollState (
     IN SCROLL_STATE *State
@@ -261,6 +261,7 @@ VOID UpdateScroll (
     State->PreviousSelection = State->CurrentSelection;
 
     switch (Movement) {
+        case SCROLL_NONE:       break;
         case SCROLL_LINE_LEFT:
             if (State->CurrentSelection > 0) {
                 State->CurrentSelection --;
@@ -280,10 +281,10 @@ VOID UpdateScroll (
                 if (State->CurrentSelection >= State->InitialRow1) {
                     if (State->MaxIndex > State->InitialRow1) {
                         // avoid division by 0!
-                        State->CurrentSelection = State->FirstVisible +
-                            (State->LastVisible      - State->FirstVisible) *
-                            (State->CurrentSelection - State->InitialRow1) /
-                            (State->MaxIndex         - State->InitialRow1);
+                        State->CurrentSelection = State->FirstVisible
+                            + (State->LastVisible      - State->FirstVisible)
+                            * (State->CurrentSelection - State->InitialRow1)
+                            / (State->MaxIndex         - State->InitialRow1);
                     }
                     else {
                         State->CurrentSelection = State->FirstVisible;
@@ -314,8 +315,9 @@ VOID UpdateScroll (
                 }
             }
             else {
-                if (State->CurrentSelection < State->MaxIndex)
-                State->CurrentSelection++;
+                if (State->CurrentSelection < State->MaxIndex) {
+                    State->CurrentSelection++;
+                }
             }
 
             break;
@@ -370,10 +372,6 @@ VOID UpdateScroll (
                 State->PaintAll = TRUE;
                 State->CurrentSelection = State->MaxIndex;
             }
-
-            break;
-
-        case SCROLL_NONE:
 
             break;
     } // switch
@@ -758,6 +756,7 @@ UINTN RunGenericMenu (
         State.PaintAll = TRUE;
     }
 
+    BOOLEAN Toggled = FALSE;
     while (!MenuExit) {
         // update the screen
         pdClear();
@@ -784,6 +783,28 @@ UINTN RunGenericMenu (
             }
 
             continue;
+        }
+
+        // DA-TAG: Toggle the selection once to workaround failure
+        //         to display default selection on load in text mode.
+        //         Workaround ... 'Proper' solution needed.
+        if (!Toggled) {
+            Toggled = TRUE;
+            if (State.ScrollMode == SCROLL_MODE_TEXT) {
+                if (State.CurrentSelection < State.MaxIndex) {
+                    UpdateScroll (&State, SCROLL_LINE_DOWN);
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 5000);
+                    UpdateScroll (&State, SCROLL_LINE_UP);
+                }
+                else if (State.CurrentSelection > 0) {
+                    UpdateScroll (&State, SCROLL_LINE_UP);
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 5000);
+                    UpdateScroll (&State, SCROLL_LINE_DOWN);
+                }
+                else {
+                    UpdateScroll (&State, SCROLL_NONE);
+                }
+            }
         }
 
         if (HaveTimeout) {
