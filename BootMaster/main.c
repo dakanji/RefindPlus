@@ -1895,13 +1895,16 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n");
     MsgLog ("      TextRenderer:- %s", GlobalConfig.TextRenderer ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
+
+    MsgLog ("      ProtectNVRAM:- "                                          );
     if (MyStrStr (VendorInfo, L"Apple") == NULL) {
-        MsgLog ("      ProtectNVRAM:- 'Disabled'"                                                         );
+        MsgLog ("'Disabled'"                                                 );
     }
     else {
-        MsgLog ("      ProtectNVRAM:- %s",   GlobalConfig.ProtectNVRAM       ? L"'Active'" : L"'Inactive'");
+        MsgLog ("%s", GlobalConfig.ProtectNVRAM ? L"'Active'" : L"'Inactive'");
     }
     MsgLog ("\n");
+
     MsgLog ("      NormaliseCSR:- %s",       GlobalConfig.NormaliseCSR       ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
     MsgLog ("      IgnorePreviousBoot:- %s", GlobalConfig.IgnorePreviousBoot ? L"'Active'" : L"'Inactive'");
@@ -2553,9 +2556,7 @@ EFI_STATUS EFIAPI efi_main (
                     ReMapOpenProtocol();
                 }
                 else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows")) {
-                    if (GlobalConfig.ProtectNVRAM &&
-                        MyStrStr (VendorInfo, L"Apple") != NULL
-                    ) {
+                    if (GlobalConfig.ProtectNVRAM) {
                         // Protect Mac NVRAM from UEFI Windows
                         AltSetVariable                             = gRT->SetVariable;
                         RT->SetVariable                            = gRTSetVariableEx;

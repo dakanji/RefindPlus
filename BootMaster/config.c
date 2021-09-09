@@ -1030,8 +1030,15 @@ VOID ReadConfig (
             GlobalConfig.SyncAPFS = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
-            DeclineSetting = HandleBoolean (TokenList, TokenCount);
-            GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
+            if (MyStrStr (gST->FirmwareVendor, L"Apple") == NULL) {
+                // Disable ProtectNVRAM on Non-Apple Firmware
+                GlobalConfig.ProtectNVRAM = FALSE;
+            }
+            else {
+                DeclineSetting = HandleBoolean (TokenList, TokenCount);
+                GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
+            }
+
         }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
