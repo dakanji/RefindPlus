@@ -1030,14 +1030,8 @@ VOID ReadConfig (
             GlobalConfig.SyncAPFS = DeclineSetting ? FALSE : TRUE;
         }
         else if (MyStriCmp (TokenList[0], L"decline_nvramprotect")) {
-            if (MyStrStr (gST->FirmwareVendor, L"Apple") == NULL) {
-                // Disable ProtectNVRAM on Non-Apple Firmware
-                GlobalConfig.ProtectNVRAM = FALSE;
-            }
-            else {
-                DeclineSetting = HandleBoolean (TokenList, TokenCount);
-                GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
-            }
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.ProtectNVRAM = DeclineSetting ? FALSE : TRUE;
 
         }
         else if (MyStriCmp (TokenList[0], L"decline_espfilter")) {
@@ -1129,6 +1123,11 @@ VOID ReadConfig (
 
        Print (L"Icons Directory Does Not Exist ... Setting TextOnly to TRUE!!\n");
        GlobalConfig.TextOnly = TRUE;
+    }
+
+    // Disable ProtectNVRAM on Non-Apple Firmware
+    if (MyStrStr (gST->FirmwareVendor, L"Apple") == NULL) {
+        GlobalConfig.ProtectNVRAM = FALSE;
     }
 
     SilenceAPFS = GlobalConfig.SilenceAPFS;
