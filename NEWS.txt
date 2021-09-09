@@ -313,7 +313,7 @@
   detect and pass as a --shim option to rEFInd. If this configuration causes
   a Secure Boot failure on launching Shim, then it should fail over to the
   direct boot and be fine. (Some EFIs will hang rather than fail over to the
-  next entry, though, and this change won't help with them.)
+  next entry, though, and this change will not help with them.)
 - More logging improvements, including bumping the maximum log_level from 3
   to 4.
 - Improved separation of filesystem name vs. partition name internally. This
@@ -446,7 +446,7 @@
 - Uncommented use_nvram from refind.conf-sample and set it to false. This
   change will cause new rEFInd installations to save rEFInd's own variables
   (PreviousBoot, HiddenTags, and others) on disk rather than in NVRAM.
-  Existing installations won't be affected by this change. The point is to
+  Existing installations will not be affected by this change. The point is to
   try to save wear and tear on NVRAM storage; however, users who install
   rEFInd to an HFS+ volume will need to comment out use_nvram or set it to
   true in order to use features that rely on rEFInd's variable storage.
@@ -798,7 +798,7 @@
   automatically include the auto-detected initrd file. This gives the user
   greater control of initrd options when specifying them via in
   refind_linux.conf via "%v", since an inappropriate auto-detected initrd
-  won't be included.
+  will not be included.
 
 - No longer build NTFS driver by default; it is just too buggy. The source
   code is still available and can be built by typing "make ntfs" in the
@@ -1828,7 +1828,7 @@
   to the right size and set the icon sizes in refind.conf.
 
 - rEFInd now automatically scales icons to fit the standard icon sizes.
-  This won't have any effect with the icons that come with rEFInd, but it
+  This will not have any effect with the icons that come with rEFInd, but it
   can help if you want to use another icon, since you needn't scale it in a
   graphics program before using it. Note that rEFInd uses bitmap icons, so
   scaling by a huge amount (say, a 16x16 icon to fit the standard 128x128
@@ -2293,7 +2293,7 @@
 
 - Tweaked refind.inf file for better build results using "native" TianoCore
   EDK2 build process (vs. the Makefile-based build process that I use under
-  Linux). This won't affect those who use my binary builds or build under
+  Linux). This will not affect those who use my binary builds or build under
   Linux with the "make" command.
 
 - Fixed bug that prevented Secure Boot launches from working when rEFInd
@@ -2404,8 +2404,8 @@
 - Changed install.sh --drivers option to --alldrivers, added new
   --nodrivers option, and made the default on Linux to install the one
   driver that is used on /boot (or the root filesystem if /boot isn't a
-  separate partition). Of course, this won't install a non-existent driver,
-  and it also won't work properly if run from an emergency disk unless you
+  separate partition). Of course, this will not install a non-existent driver,
+  and it also will not work properly if run from an emergency disk unless you
   mount a separate /boot partition at that location.
 
 - Fixed bug in install.sh that prevented creation of refind_linux.conf file
@@ -2546,7 +2546,7 @@
   - Adding the "manual" option enables users to simply add manual boot
     stanzas and have them work, which is more intuitive. Adding the
     "manual" option will have no effect unless manual stanzas are created
-    or uncommented, so this part of the change won't affect users' working
+    or uncommented, so this part of the change will not affect users' working
     default configurations.
 
 - Added new legacy (BIOS) boot support for UEFI-based PCs.

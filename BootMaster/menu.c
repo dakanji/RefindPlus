@@ -1346,10 +1346,10 @@ VOID DrawText (
 // Finds the average brightness of the input Image.
 // NOTE: Passing an Image that covers the whole screen can strain the
 // capacity of a UINTN on a 32-bit system with a very large display.
-// Using UINT64 instead is unworkable, since the code won't compile
-// on a 32-bit system. As the intended use for this function is to handle
-// a single text string's background, this shouldn't be a problem, but it
-// may need addressing if it is applied more broadly.
+// Using UINT64 instead is unworkable, as the code will not compile
+// on a 32-bit system. As the intended use for this function is to
+// handle a single text string's background, this should not be a
+// problem, but may need addressing if applied more broadly.
 static
 UINT8 AverageBrightness (
     EG_IMAGE *Image
@@ -1924,8 +1924,10 @@ VOID PaintArrows (
     UINTN RightX = (ScreenW + (TileSizes[0] + TILE_XSPACING) * State->MaxVisible) / 2 + TILE_XSPACING;
 
     if (!LoadedArrows && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS)) {
+        MuteLogger = TRUE;
         LeftArrow  = GetIcon (&egemb_arrow_left , L"arrow_left" );
         RightArrow = GetIcon (&egemb_arrow_right, L"arrow_right");
+        MuteLogger = FALSE;
 
         if (LeftArrow) {
             LeftBackground = egCropImage (

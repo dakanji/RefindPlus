@@ -52,8 +52,8 @@ BOOLEAN IsValidHex (CHAR16 *Input);
 BOOLEAN IsGuid (CHAR16 *UnknownString);
 BOOLEAN ReplaceSubstring (
     IN OUT CHAR16 **MainString,
-    IN     CHAR16 *SearchString,
-    IN     CHAR16 *ReplString
+    IN     CHAR16  *SearchString,
+    IN     CHAR16  *ReplString
 );
 BOOLEAN MyStrBegins (
     IN CHAR16 *FirstString,
@@ -66,33 +66,31 @@ CHAR16 * MyStrStrIns (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
 CHAR16 * FindNumbers (IN CHAR16 *InString);
 CHAR16 * GuidAsString (EFI_GUID *GuidData);
 CHAR16 * FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
-VOID ToUpper (CHAR16 *MyString);
 CHAR16 * MyAsciiStrCopyToUnicode (
     IN  CHAR8   *AsciiString,
     IN  UINTN    Length
 );
 
-CHAR8 *MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
-
+VOID DeleteStringList (STRING_LIST *StringList);
+VOID ToUpper (CHAR16 *MyString);
 VOID ToLower (CHAR16 * MyString);
 VOID MergeStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 VOID MergeUniqueStrings (IN OUT CHAR16 **First, IN CHAR16 *Second, CHAR16 AddChar);
 VOID MergeWords (CHAR16 **MergeTo, CHAR16 *InString, CHAR16 AddChar);
 VOID MyUnicodeStrToAsciiStr (
     IN  CHAR16 *StrCHAR16,
-    OUT CHAR8  ArrCHAR8[255]
+    OUT CHAR8   ArrCHAR8[255]
 );
 VOID MyUnicodeFilterString (
     IN OUT CHAR16   *String,
     IN     BOOLEAN   SingleLine
 );
 
-UINTN NumCharsInCommon (IN CHAR16* String1, IN CHAR16* String2);
+CHAR8 * MyAsciiStrStr (IN const CHAR8 *String, IN const CHAR8 *SearchString);
+
+UINTN NumCharsInCommon (IN CHAR16 *String1, IN CHAR16 *String2);
 
 UINT64 StrToHex (CHAR16 *Input, UINTN Position, UINTN NumChars);
 
-EFI_GUID StringAsGuid (CHAR16 * InString);
-
-VOID DeleteStringList (STRING_LIST *StringList);
-
+EFI_GUID StringAsGuid (CHAR16 *InString);
 #endif
