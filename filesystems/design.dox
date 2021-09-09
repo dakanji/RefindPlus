@@ -24,7 +24,7 @@ Why read-only? There are a range of reasons why FSW only provides read-only
 access:
 
 - Read-only drivers are much easier to write than read-write drivers.
-- Write access isn't easily abstracted in an OS-independent way because
+- Write access is not easily abstracted in an OS-independent way because
   of more delicate buffer I/O handling requirements and features like
   journalling.
 - There is no risk of destroying data on the disk.

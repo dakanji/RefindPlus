@@ -217,7 +217,7 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
-            L"After Setting Text Mode ... Recording * NEW * Current Resolution as %d x %d",
+            L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
             ScreenW, ScreenH
         );
         #endif

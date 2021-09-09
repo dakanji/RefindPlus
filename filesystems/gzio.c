@@ -1026,7 +1026,7 @@ test_zlib_header (grub_gzio_t gzio)
       return 0;
     }
 
-  /* Dictionary isn't supported.  */
+  /* Dictionary is not supported.  */
   if (flg & 0x20)
     {
       return 0;

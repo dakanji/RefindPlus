@@ -1340,7 +1340,7 @@ BOOLEAN DuplicatesFallback (
 
 // Returns FALSE if two measures of file size are identical for a single file,
 // TRUE if not or if the file can't be opened and the other measure is non-0.
-// Despite the function's name, this isn't really a direct test of symbolic
+// Despite the function's name, this is not really a direct test of symbolic
 // link status, since EFI does not officially support symlinks. It does seem
 // to be a reliable indicator, though. (OTOH, some disk errors might cause a
 // file to fail to open, which would return a false positive -- but as I use

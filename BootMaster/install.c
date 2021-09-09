@@ -668,7 +668,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
 } // EFI_STATUS CopyFiles()
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
-// Success isn't critical, so we do not return a Status value.
+// Success is not critical, so we do not return a Status value.
 static
 VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
     CHAR16   *Contents = NULL;
@@ -777,7 +777,7 @@ VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
 // an exact duplicate, then this function will return 5, resulting in two
 // identical entries (Boot0005 and Boot0006). This is done because scanning
 // all possible entries (0 through 0xffff) takes a few seconds, and because
-// a single duplicate isn't a big deal. (If RefindPlus is re-installed via this
+// a single duplicate is not a big deal. (If RefindPlus is re-installed via this
 // feature again, this function will return "5," so no additional duplicate
 // entry will be created. A third duplicate might be created if some other
 // process were to delete an entry between Boot0000 and Boot0004, though.)

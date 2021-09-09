@@ -92,7 +92,7 @@ static __attribute__((unused)) unsigned int ZSTD_isError(size_t code)
  * @functionResult: The result of a function for which ZSTD_isError() is true.
  *
  * Return:          The ZSTD_ErrorCode corresponding to the functionResult or 0
- *                  if the functionResult isn't an error.
+ *                  if the functionResult is not an error.
  */
 static __attribute__((unused)) ZSTD_ErrorCode ZSTD_getErrorCode(
 	size_t functionResult)
@@ -174,7 +174,7 @@ typedef struct {
  * ZSTD_getCParams() - returns ZSTD_compressionParameters for selected level
  * @compressionLevel: The compression level from 1 to ZSTD_maxCLevel().
  * @estimatedSrcSize: The estimated source size to compress or 0 if unknown.
- * @dictSize:         The dictionary size or 0 if a dictionary isn't being used.
+ * @dictSize:         The dictionary size or 0 if a dictionary is not being used.
  *
  * Return:            The selected ZSTD_compressionParameters.
  */
@@ -185,7 +185,7 @@ ZSTD_compressionParameters ZSTD_getCParams(int compressionLevel,
  * ZSTD_getParams() - returns ZSTD_parameters for selected level
  * @compressionLevel: The compression level from 1 to ZSTD_maxCLevel().
  * @estimatedSrcSize: The estimated source size to compress or 0 if unknown.
- * @dictSize:         The dictionary size or 0 if a dictionary isn't being used.
+ * @dictSize:         The dictionary size or 0 if a dictionary is not being used.
  *
  * The same as ZSTD_getCParams() except also selects the default frame
  * parameters (all zero).

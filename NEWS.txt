@@ -1268,7 +1268,7 @@
   options to be excluded from refind_linux.conf. There were two trouble
   conditions:
   - Previously, these scripts assumed that the first option in
-    /proc/cmdline was the kernel's filename, but this isn't always the
+    /proc/cmdline was the kernel's filename, but this is not always the
     case. (In particular, when gummiboot launches the kernel, this is not
     true. It might be an incorrect assumption in some other cases, too.)
     The fix involves checking for likely signs of a kernel filename before
@@ -2325,7 +2325,7 @@
 
 - Thanks to Stefan Agner, the ext4fs driver now supports the "meta_bg"
   filesystem feature, which distributes metadata throughout the disk. This
-  feature isn't used by default, but can be set at filesystem creation time
+  feature is not used by default, but can be set at filesystem creation time
   by passing the "-O meta_bg,^resize_inode" option to mke2fs. (Using
   "^resize_inode" is necessary because meta_bg is incompatible with
   resize_inode, which IS used by default.) This feature can be used on
@@ -2407,7 +2407,7 @@
 
 - Changed install.sh --drivers option to --alldrivers, added new
   --nodrivers option, and made the default on Linux to install the one
-  driver that is used on /boot (or the root filesystem if /boot isn't a
+  driver that is used on /boot (or the root filesystem if /boot is not a
   separate partition). Of course, this will not install a non-existent driver,
   and it also will not work properly if run from an emergency disk unless you
   mount a separate /boot partition at that location.
@@ -2524,7 +2524,7 @@
 
 - Modified the "scan_delay" feature to delay and then perform a re-scan,
   which may work better than the first attempt at this feature (which I'm
-  told isn't working as planned).
+  told is not working as planned).
 
 - Modified rEFInd to add a space after the command-line options only when
   launching Mac OS X. On some early Macs, the extra space (which had been
@@ -2660,7 +2660,7 @@
 
 - Added new feature to eject CDs (and other removable media): Press F12 to
   eject all such media. This function works only on some Macs, though (it
-  relies on an Apple-specific EFI extension, and this extension isn't even
+  relies on an Apple-specific EFI extension, and this extension is not even
   implemented on all Macs, much less on UEFI-based PCs).
 
 - Fixed a problem that could cause GRUB 2 to fail to read its configuration
@@ -2907,7 +2907,7 @@
 - Added x86 and x86-64 EFI shells to the CD image version of the binary,
   but NOT to the binary zip file. The logic is that the CD image is more
   likely to be used directly as an emergency disc and so may need this
-  feature, even though the source isn't part of the rEFInd project. (The
+  feature, even though the source is not part of the rEFInd project. (The
   source is readily available from the TianoCore project.)
 
 - EFI shells may now be stored at /shellx64.efi for x86-64 systems or at

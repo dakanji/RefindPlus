@@ -388,8 +388,8 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
         if (sp->magic[0] == 0xbe && sp->magic[1] == 0xef) {
             vol->fRockRidge = 1;
         } else {
- //           FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: SP magic isn't valid\n")));
-//          DBG("fsw_iso9660_volume_mount: SP magic isn't valid\n");
+ //           FSW_MSG_DEBUG((FSW_MSGSTR("fsw_iso9660_volume_mount: SP magic is not valid\n")));
+//          DBG("fsw_iso9660_volume_mount: SP magic is not valid\n");
         }
     }
 #endif

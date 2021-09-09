@@ -192,7 +192,7 @@ endif
 
 # Some versions of gas choke on division operators, treating them as
 # comment markers.  Specifying --divide will work around this problem,
-# but isn't available on older gas versions.
+# but is not available on older gas versions.
 #
 DIVIDE_TEST = $(AS) --divide /dev/null -o /dev/null 2>/dev/null
 DIVIDE_FLAGS := $(shell $(DIVIDE_TEST) && $(ECHO) '--divide')

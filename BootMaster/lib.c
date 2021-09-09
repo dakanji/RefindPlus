@@ -164,7 +164,7 @@ BOOLEAN egIsGraphicsModeEnabled (VOID);
 // separators, and because we want consistent start and end slashes for
 // directory comparisons. A special case: If the PathName refers to root,
 // but is non-empty, return "\", since some firmware implementations flake
-// out if this isn't present.
+// out if this is not present.
 VOID CleanUpPathNameSlashes (
     IN OUT CHAR16 *PathName
 ) {

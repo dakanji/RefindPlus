@@ -4578,7 +4578,7 @@ static unsigned readChunk_iTXt(LodePNGInfo* info, const LodePNGDecompressSetting
   ucvector_init(&decoded); /* TODO: only use in case of compressed text */
 
   while(!error) /*not really a while loop, only used to break on error*/ {
-    /*Quick check if the chunk length isn't too small. Even without check
+    /*Quick check if the chunk length is not too small. Even without check
     it'd still fail with other error checks below if it is too short. This just gives a different error code.*/
     if(chunkLength < 5) CERROR_BREAK(error, 30); /*iTXt chunk too short*/
 
@@ -5575,7 +5575,7 @@ static unsigned filter(unsigned char* out, const unsigned char* in, unsigned w, 
           } else {
             for(x = 0; x != linebytes; ++x) {
               /*For differences, each byte should be treated as signed, values above 127 are negative
-              (converted to signed char). Filtertype 0 isn't a difference though, so use unsigned there.
+              (converted to signed char). Filtertype 0 is not a difference though, so use unsigned there.
               This means filtertype 0 is almost never chosen, but that is justified.*/
               unsigned char s = attempt[type][x];
               sum += s < 128 ? s : (255U - s);
@@ -6294,7 +6294,7 @@ const char* lodepng_error_text(unsigned code) {
     case 79: return "failed to open file for writing";
     case 80: return "tried creating a tree of 0 symbols";
     case 81: return "lazy matching at pos 0 is impossible";
-    case 82: return "color conversion to palette requested while a color isn't in palette, or index out of bounds";
+    case 82: return "color conversion to palette requested while a color is not in palette, or index out of bounds";
     case 83: return "memory allocation failed";
     case 84: return "given image too small to contain all pixels to be encoded";
     case 86: return "impossible offset in lz77 encoding (internal bug)";

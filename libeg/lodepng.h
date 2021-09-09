@@ -636,7 +636,7 @@ void lodepng_clear_icc(LodePNGInfo* info); /*use this to clear the texts again a
 Converts raw buffer from one color type to another color type, based on
 LodePNGColorMode structs to describe the input and output color type.
 See the reference manual at the end of this header file to see which color conversions are supported.
-return value = LodePNG error code (0 if all went ok, an error if the conversion isn't supported)
+return value = LodePNG error code (0 if all went ok, an error if the conversion is not supported)
 The out buffer must have size (w * h * bpp + 7) / 8, where bpp is the bits per pixel
 of the output color type (lodepng_get_bpp).
 For < 8 bpp images, there should not be padding bits at the end of scanlines.
@@ -1464,7 +1464,7 @@ To avoid some confusion:
 -both encoder and decoder use the same color converter.
 
 The function lodepng_convert does the color conversion. It is available in the
-interface but normally isn't needed since the encoder and decoder already call
+interface but normally is not needed since the encoder and decoder already call
 it.
 
 Non supported color conversions:
@@ -1495,7 +1495,7 @@ info_raw are then ignored.
 -----------------
 
 In the PNG file format, if a less than 8-bit per pixel color type is used and the scanlines
-have a bit amount that isn't a multiple of 8, then padding bits are used so that each
+have a bit amount that is not a multiple of 8, then padding bits are used so that each
 scanline starts at a fresh byte. But that is NOT true for the LodePNG raw input and output.
 The raw input image you give to the encoder, and the raw output image you get from the decoder
 will NOT have these padding bits, e.g. in the case of a 1-bit image with a width
@@ -1632,7 +1632,7 @@ if you set the option settings.remember_unknown_chunks to 1. By default, this
 option is off (0).
 
 The encoder will always encode unknown chunks that are stored in the info_png.
-If you need it to add a particular chunk that isn't known by LodePNG, you can
+If you need it to add a particular chunk that is not known by LodePNG, you can
 use lodepng_chunk_append or lodepng_chunk_create to the chunk data in
 info_png.unknown_chunks_data[x].
 
