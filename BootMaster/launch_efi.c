@@ -78,6 +78,8 @@
 
 CHAR16 *BootSelection = NULL;
 
+extern BOOLEAN egHasGraphics;
+
 static
 VOID WarnSecureBootError(
     CHAR16  *Name,
@@ -289,15 +291,27 @@ EFI_STATUS StartEFIImage (
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
-        if (!IsDriver && Verbose) {
-            // Wait 1.5 Seconds if not a Driver and in Verbose Mode
-            // Stall works best in smaller increments as per Specs
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        // Stall to avoid unwanted flash of text in text screen mode
+        // Stall works best in smaller increments as per Specs
+        if (!egIsGraphicsModeEnabled()
+            || GlobalConfig.TextOnly
+            || !egHasGraphics
+        ) {
+            if (!IsDriver) {
+                // Wait 1 Second if not a Driver
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+
+                if (Verbose) {
+                    // Wait a further 1 Second if in Verbose Mode
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                }
+            }
         }
 
         // NOTE: Commented-out lines below could be more efficient if file were read ahead of
