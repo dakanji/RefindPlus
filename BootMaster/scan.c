@@ -2113,7 +2113,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Config Setting is Active:- 'HideUI Badges'");
+        LOG(4, LOG_THREE_STAR_MID, L"Skipped ... Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return NULL;
@@ -2838,7 +2838,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(4, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
                         }

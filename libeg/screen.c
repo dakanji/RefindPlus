@@ -82,6 +82,8 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw        = NULL;
 
 BOOLEAN egHasGraphics  = FALSE;
 
+UINTN   SelectedGOP    = 0;
+
 static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
@@ -343,7 +345,7 @@ EFI_STATUS egDumpGOPVideoModes (
                 ModeLog = Mode;
             }
 
-            MsgLog ("  - Mode[%02d]", ModeLog);
+            MsgLog ("  - Mode[%02d][%02d]", SelectedGOP, ModeLog);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -613,8 +615,9 @@ EFI_STATUS egSetMaxResolution (
     }
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"BestMode: GOP Mode[%d] @ %d x %d",
-        BestMode, Width, Height
+    MsgStr = PoolPrint (L"BestMode: Mode[%d] on Handle[%d] @ %d x %d",
+        BestMode, SelectedGOP,
+        Width, Height
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s\n", MsgStr);
@@ -990,9 +993,10 @@ VOID egInitScreen (
                             if (GOPWidth < Info->HorizontalResolution ||
                                 GOPHeight < Info->VerticalResolution
                             ) {
-                                OldGOP    = TmpGOP;
-                                GOPWidth  = Info->HorizontalResolution;
-                                GOPHeight = Info->VerticalResolution;
+                                OldGOP      = TmpGOP;
+                                GOPWidth    = Info->HorizontalResolution;
+                                GOPHeight   = Info->VerticalResolution;
+                                SelectedGOP = i;
 
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
@@ -1455,7 +1459,7 @@ BOOLEAN egSetScreenSize (
                 MsgStr = StrDuplicate (L"Mode Set from ScreenWidth");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n", MsgStr);
+                MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
 
@@ -1472,7 +1476,7 @@ BOOLEAN egSetScreenSize (
                 MsgStr = PoolPrint (L"Setting GOP mode to %d", ModeNum);
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n", MsgStr);
+                MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
 
@@ -1483,7 +1487,7 @@ BOOLEAN egSetScreenSize (
                 MsgStr = StrDuplicate (L"Could Not Set GOPDraw Mode");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n", MsgStr);
+                MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
             }
@@ -1517,7 +1521,7 @@ BOOLEAN egSetScreenSize (
                     MsgStr = PoolPrint (L"Setting GOP mode to %d", ModeNum);
                     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
-                    MsgLog ("\n\n", MsgStr);
+                    MsgLog ("\n\n");
                     MyFreePool (&MsgStr);
                     #endif
 
@@ -1529,7 +1533,7 @@ BOOLEAN egSetScreenSize (
                     #if REFIT_DEBUG > 0
                     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
-                    MsgLog ("\n\n", MsgStr);
+                    MsgLog ("\n\n");
                     #endif
 
                     PrintUglyText (MsgStr, NEXTLINE);

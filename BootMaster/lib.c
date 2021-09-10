@@ -2573,7 +2573,7 @@ VOID ScanVolumes (VOID) {
             }
             else if (ScannedOnce) {
                 if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
-                    if (!SkipSpacing && (HandleIndex % 20) == 0 && (HandleCount - HandleIndex) > 10) {
+                    if (!SkipSpacing && (HandleIndex % 28) == 0 && (HandleCount - HandleIndex) > 14) {
                         DoneHeadings = FALSE;
                         MsgLog ("\n\n                   ");
                     }
@@ -2829,7 +2829,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Config Setting is Active:- 'HideUI Badges'");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return;
@@ -2896,7 +2896,7 @@ VOID SetVolumeIcons (VOID) {
 
     if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Config Setting is Active:- 'IgnoreHiddenIcons'");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Config Setting is Active:- 'IgnoreHiddenIcons'");
         #endif
 
         return;

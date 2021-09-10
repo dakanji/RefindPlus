@@ -142,13 +142,19 @@ VOID InitSelection (VOID) {
 
     if (TempSmallImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Using Embedded Image:- 'egemb_back_selected_small'");
+        LOG(3, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_small'");
         #endif
 
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE);
     }
     else {
         LoadedSmallImage = TRUE;
+
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL,
+            L"Using Configured Selection Image:- '%s'", GlobalConfig.SelectionSmallFileName
+        );
+        #endif
     }
 
     if ((TempSmallImage->Width != TileSizes[1]) || (TempSmallImage->Height != TileSizes[1])) {
@@ -163,14 +169,21 @@ VOID InitSelection (VOID) {
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
     }
 
-    if (TempBigImage == NULL) {
+    if (TempBigImage != NULL) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL,
+            L"Using Configured Selection Image:- '%s'", GlobalConfig.SelectionBigFileName
+        );
+        #endif
+    }
+    else {
         if (TempSmallImage->Width > 128 || TempSmallImage->Height > 128) {
             TaintFree = FALSE;
         }
 
         if (TaintFree && LoadedSmallImage) {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Scaling from LoadedSmallImage");
+            LOG(3, LOG_LINE_NORMAL, L"Scaling Selection Image from LoadedSmallImage");
             #endif
 
            // calculate big selection image from small one
@@ -178,7 +191,7 @@ VOID InitSelection (VOID) {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Using Embedded Image:- 'egemb_back_selected_big'");
+            LOG(3, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_big'");
             #endif
 
            TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE);

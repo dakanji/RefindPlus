@@ -261,8 +261,13 @@ VOID SetupScreen (VOID) {
         MsgStr = StrDuplicate (L"Screen Set to Text Mode");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
-        MsgLog ("\n\n");
         MyFreePool (&MsgStr);
+        if (GlobalConfig.LogLevel == 0) {
+            MsgLog ("\n\n");
+        }
+        else {
+            MsgLog ("\n");
+        }
         #endif
     }
     else if (AllowGraphicsMode) {
