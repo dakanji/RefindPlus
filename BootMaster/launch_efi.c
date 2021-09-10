@@ -291,14 +291,14 @@ EFI_STATUS StartEFIImage (
 
         DevicePath = FileDevicePath (Volume->DeviceHandle, Filename);
 
-        // Stall to avoid unwanted flash of text in text screen mode
+        // Stall to avoid unwanted flash of text when starting loaders
         // Stall works best in smaller increments as per Specs
-        if (!egIsGraphicsModeEnabled()
-            || GlobalConfig.TextOnly
-            || !egHasGraphics
-        ) {
-            if (!IsDriver) {
-                // Wait 1 Second if not a Driver
+        if (!IsDriver) {
+            if (!egIsGraphicsModeEnabled()
+                || GlobalConfig.TextOnly
+                || !egHasGraphics
+            ) {
+                // Wait 1 Second if in text screen mode
                 REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
                 REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
                 REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
