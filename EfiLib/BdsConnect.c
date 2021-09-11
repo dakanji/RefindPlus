@@ -40,8 +40,11 @@ UINTN   AllHandleCount;
 
 extern EFI_STATUS AmendSysTable (VOID);
 extern EFI_STATUS AcquireGOP (VOID);
-extern EFI_STATUS OcConnectDrivers (VOID);
 
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore
+extern EFI_STATUS OcConnectDrivers (VOID);
+#endif
 
 static
 EFI_STATUS EFIAPI daConnectController (
@@ -615,7 +618,10 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     #endif
 
     // First Pass Driver Connection
+    // DA-TAG: Limit to TianoCore
+    #ifdef __MAKEWITH_TIANO
     OcConnectDrivers();
+    #endif
 
     do {
         FoundGOP = FALSE;
