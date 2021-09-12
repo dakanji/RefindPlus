@@ -143,8 +143,12 @@ VOID InitScreen (VOID) {
     PrepareBlankLine();
 
     // show the banner if in text mode
-    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1)) {
-        DrawScreenHeader (L"Initialising...");
+    if (GlobalConfig.TextOnly) {
+        AllowGraphicsMode = FALSE; // DA-TAG: Just to make sure this is set
+
+        if (GlobalConfig.ScreensaverTime != -1) {
+            DrawScreenHeader (L"Initialising...");
+        }
     }
 } // VOID InitScreen()
 
@@ -258,7 +262,7 @@ VOID SetupScreen (VOID) {
         SwitchToText (FALSE);
 
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Screen Set to Text Mode");
+        MsgStr = StrDuplicate (L"Screen is in Text Mode");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MyFreePool (&MsgStr);
@@ -435,11 +439,13 @@ VOID SwitchToText (
     REFIT_CALL_2_WRAPPER(gST->ConOut->EnableCursor, gST->ConOut, CursorEnabled);
 
     #if REFIT_DEBUG > 0
-    BOOLEAN GraphicsModeOnEntry = egIsGraphicsModeEnabled();
-    if ((GraphicsModeOnEntry) &&
-        (!AllowGraphicsMode || GlobalConfig.TextOnly) &&
-        (!IsBoot)
-    ) {
+    BOOLEAN TextModeOnEntry = (
+        egIsGraphicsModeEnabled()
+        && !AllowGraphicsMode
+        && !IsBoot
+    );
+
+    if (TextModeOnEntry) {
         MsgLog ("Determine Text Console Size:\n");
     }
     #endif
@@ -459,10 +465,7 @@ VOID SwitchToText (
         ConHeight = 25;
 
         #if REFIT_DEBUG > 0
-        if (!IsBoot
-            && GraphicsModeOnEntry
-            && (!AllowGraphicsMode || GlobalConfig.TextOnly)
-        ) {
+        if (TextModeOnEntry) {
             MsgLog (
                 "  Could Not Get Text Console Size ... Using Default:- '%d x %d'\n\n",
                 ConHeight, ConWidth
@@ -472,10 +475,7 @@ VOID SwitchToText (
     }
     else {
         #if REFIT_DEBUG > 0
-        if (!IsBoot
-            && GraphicsModeOnEntry
-            && (!AllowGraphicsMode || GlobalConfig.TextOnly)
-        ) {
+        if (TextModeOnEntry) {
             MsgLog (
                 "  Text Console Size:- '%d x %d'\n\n",
                 ConWidth, ConHeight
@@ -487,7 +487,7 @@ VOID SwitchToText (
     PrepareBlankLine();
 
     #if REFIT_DEBUG > 0
-    if (GraphicsModeOnEntry && !IsBoot) {
+    if (TextModeOnEntry) {
         MsgLog ("INFO: Switch to Text Mode ... Success\n\n");
     }
     #endif
@@ -991,25 +991,30 @@ VOID BltClearScreen (
     CHAR16 *MsgStr = NULL;
     #endif
 
+    #if REFIT_DEBUG > 0
+    MsgLog ("Refresh Screen:");
+    #endif
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
-        #if REFIT_DEBUG > 0
-        MsgLog ("Refresh Screen:\n");
-        #endif
         // load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Get Banner\n");
+            MsgLog ("\n");
+            MsgLog ("  - Get Banner");
             #endif
 
             if (GlobalConfig.BannerFileName) {
                 Banner = egLoadImage (SelfDir, GlobalConfig.BannerFileName, FALSE);
             }
 
+            #if REFIT_DEBUG > 0
+            MsgLog ("\n");
+            #endif
+
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Default Title Banner");
-                MsgLog ("    * %s\n", MsgStr);
+                MsgLog ("    * %s", MsgStr);
                 if (!LoggedBanner) {
                     LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
@@ -1021,7 +1026,7 @@ VOID BltClearScreen (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Custom Title Banner");
-                MsgLog ("    * %s\n", MsgStr);
+                MsgLog ("    * %s", MsgStr);
                 if (!LoggedBanner) {
                     LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
@@ -1033,7 +1038,8 @@ VOID BltClearScreen (
 
         if (Banner) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Scale Banner\n");
+            MsgLog ("\n");
+            MsgLog ("  - Scale Banner");
             #endif
 
            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
@@ -1062,7 +1068,8 @@ VOID BltClearScreen (
 
         // clear and draw banner
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Clear Screen\n");
+        MsgLog ("\n");
+        MsgLog ("  - Clear Screen");
         #endif
 
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -1074,7 +1081,8 @@ VOID BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Show Banner\n\n");
+            MsgLog ("\n");
+            MsgLog ("  - Show Banner");
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
@@ -1091,10 +1099,19 @@ VOID BltClearScreen (
         }
     }
     else {
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n");
+        MsgLog ("  - Clear Screen");
+        #endif
+
         // not showing banner
         // clear to menu background color
         egClearScreen (&MenuBackgroundPixel);
     }
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("\n\n");
+    #endif
 
     GraphicsScreenDirty = FALSE;
 

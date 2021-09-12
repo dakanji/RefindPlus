@@ -2835,6 +2835,14 @@ VOID GetVolumeBadgeIcons (VOID) {
         return;
     }
 
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Screen is in Text Mode");
+        #endif
+
+        return;
+    }
+
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
@@ -2897,6 +2905,14 @@ VOID SetVolumeIcons (VOID) {
     if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL, L"Skipped ... Config Setting is Active:- 'IgnoreHiddenIcons'");
+        #endif
+
+        return;
+    }
+
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Screen is in Text Mode");
         #endif
 
         return;

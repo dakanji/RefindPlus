@@ -78,8 +78,6 @@
 
 CHAR16 *BootSelection = NULL;
 
-extern BOOLEAN egHasGraphics;
-
 static
 VOID WarnSecureBootError(
     CHAR16  *Name,
@@ -293,24 +291,19 @@ EFI_STATUS StartEFIImage (
 
         // Stall to avoid unwanted flash of text when starting loaders
         // Stall works best in smaller increments as per Specs
-        if (!IsDriver) {
-            if (!egIsGraphicsModeEnabled()
-                || GlobalConfig.TextOnly
-                || !egHasGraphics
-            ) {
-                // Wait 1 Second if in text screen mode
-                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        if (!AllowGraphicsMode && !IsDriver) {
+            // Wait 1 Second if in text screen mode and not a driver
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
 
-                if (Verbose) {
-                    // Wait a further 1 Second if in Verbose Mode
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                    REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
-                }
+            if (Verbose) {
+                // Wait a further 1 Second if in Verbose Mode
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+                REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             }
         }
 

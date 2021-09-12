@@ -494,6 +494,15 @@ EG_IMAGE * egLoadIcon (
         // set error status if unable to get to image
         Status = EFI_INVALID_PARAMETER;
     }
+    else if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID,
+            L"In egLoadIcon ... Skipped Loading Icon in Text Mode"
+        );
+        #endif
+
+        return NULL;
+    }
     else {
         // try to load file if able to get to image
         Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
@@ -568,6 +577,16 @@ EG_IMAGE * egLoadIconAnyType (
     CHAR16    *Extension;
     CHAR16    *FileName;
     UINTN      i = 0;
+
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID,
+            L"In egLoadIconAnyType ... Skipped Loading Icon in Text Mode"
+        );
+        #endif
+
+        return NULL;
+    }
 
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID,

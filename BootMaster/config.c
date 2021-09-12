@@ -1333,27 +1333,36 @@ LOADER_ENTRY * AddStanzaEntries (
                 } // if/else !FindVolume
             }
             else if (MyStriCmp (TokenList[0], L"icon") && (TokenCount > 1)) {
-                #if REFIT_DEBUG > 0
-                if (Entry->me.Image == NULL) {
-                    MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
+                if (!AllowGraphicsMode) {
+                    #if REFIT_DEBUG > 0
+                    LOG(4, LOG_THREE_STAR_MID,
+                        L"In AddStanzaEntries ... Skipped Loading Icon in Text Mode"
+                    );
+                    #endif
                 }
                 else {
-                    MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
-                }
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MyFreePool (&MsgStr);
-                #endif
+                    #if REFIT_DEBUG > 0
+                    if (Entry->me.Image == NULL) {
+                        MsgStr = PoolPrint (L"Adding Icon for '%s'", Entry->Title);
+                    }
+                    else {
+                        MsgStr = PoolPrint (L"Overriding Previous Icon for '%s'", Entry->Title);
+                    }
+                    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    MyFreePool (&MsgStr);
+                    #endif
 
-                egFreeImage (Entry->me.Image);
-                Entry->me.Image = egLoadIcon (
-                    CurrentVolume->RootDir,
-                    TokenList[1],
-                    GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                );
+                    egFreeImage (Entry->me.Image);
+                    Entry->me.Image = egLoadIcon (
+                        CurrentVolume->RootDir,
+                        TokenList[1],
+                        GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                    );
 
-                if (Entry->me.Image == NULL) {
-                    // Set dummy image if icon was not found
-                    Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+                    if (Entry->me.Image == NULL) {
+                        // Set dummy image if icon was not found
+                        Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+                    }
                 }
             }
             else if (MyStriCmp (TokenList[0], L"initrd") && (TokenCount > 1)) {
@@ -1497,7 +1506,7 @@ LOADER_ENTRY * AddStanzaEntries (
             SetLoaderDefaults (Entry, L"\\EFI\\BOOT\\nemo.efi", CurrentVolume);
         }
 
-        if (Entry->me.Image == NULL) {
+        if (AllowGraphicsMode && Entry->me.Image == NULL) {
             // Still no icon ... set dummy image
             Entry->me.Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
         }

@@ -264,8 +264,6 @@ extern EFI_FILE *gVarsDir;
 
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
-extern BOOLEAN egHasGraphics;
-
 //
 // misc functions
 //
@@ -2038,11 +2036,6 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu.TimeoutText = L"Shutdown";
     }
 
-    BOOLEAN LoadScreenGraphics = (
-        egIsGraphicsModeEnabled()
-        || (!GlobalConfig.TextOnly && egHasGraphics)
-    );
-
     // Show EFI Version Mismatch Warning
     if (WarnVersionEFI) {
         #if REFIT_DEBUG > 0
@@ -2070,7 +2063,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("INFO: %s ... ", MsgStr);
         MyFreePool (&MsgStr);
         #endif
-        if (LoadScreenGraphics) {
+        if (AllowGraphicsMode) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif
@@ -2117,18 +2110,25 @@ EFI_STATUS EFIAPI efi_main (
         MyFreePool (&MsgStr);
         #endif
 
-        if (LoadScreenGraphics) {
+        if (AllowGraphicsMode) {
             #if REFIT_DEBUG > 0
-            MsgLog ("Restore Graphics Mode\n\n");
+            MsgLog ("Restore Graphics Mode");
             #endif
 
             SwitchToGraphicsAndClear (TRUE);
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("Proceeding\n\n");
+            MsgLog ("Proceeding");
             #endif
+
+            BltClearScreen (FALSE);
         }
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n\n");
+        #endif
+
         // Wait 1 second
         REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
         REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
@@ -2170,7 +2170,7 @@ EFI_STATUS EFIAPI efi_main (
         MyFreePool (&MsgStr);
         #endif
 
-        if (LoadScreenGraphics) {
+        if (AllowGraphicsMode) {
             #if REFIT_DEBUG > 0
             MsgLog ("Restore Graphics Mode\n\n");
             #endif

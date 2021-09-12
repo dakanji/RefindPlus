@@ -621,136 +621,147 @@ VOID SetLoaderDefaults (
     );
     #endif
 
-    if (Volume->DiskKind == DISK_KIND_NET) {
-        MergeStrings (&NameClues, Entry->me.Title, L' ');
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        LOG(4, LOG_THREE_STAR_MID,
+            L"In SetLoaderDefaults ... Skipped Loading Icon in Text Mode"
+        );
+        #endif
     }
     else {
-        if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"Trying to Display '.VolumeIcon' Image");
-            #endif
-
-            // use a ".VolumeIcon" image icon for the loader
-            // Takes precedence all over options
-            Entry->me.Image = egCopyImage (Volume->VolIconImage);
+        if (Volume->DiskKind == DISK_KIND_NET) {
+            MergeStrings (&NameClues, Entry->me.Title, L' ');
         }
-
-        if (!Entry->me.Image) {
-            #if REFIT_DEBUG > 0
-            if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
-                LOG(3, LOG_LINE_NORMAL, L"Could Not Display '.VolumeIcon' Image!!");
-            }
-            #endif
-
-            BOOLEAN MacFlag = FALSE;
-            if (LoaderPath && MyStrStrIns (LoaderPath, L"System\\Library\\CoreServices")) {
-                MacFlag = TRUE;
-            }
-
-            if (!GlobalConfig.SyncAPFS || !MacFlag) {
-                CHAR16 *NoExtension = StripEfiExtension (NameClues);
-                if (NoExtension != NULL) {
-                    // locate a custom icon for the loader
-                    // Anything found here takes precedence over the "hints" in the OSIconName variable
-                    #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
-                    #endif
-
-                    if (!Entry->me.Image) {
-                        Entry->me.Image = egLoadIconAnyType (
-                            Volume->RootDir,
-                            PathOnly,
-                            NoExtension,
-                            GlobalConfig.IconSizes[ICON_SIZE_BIG]
-                        );
-                    }
-
-                    if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons) {
-                        Entry->me.Image = egCopyImage (Volume->VolIconImage);
-                    }
-
-                    MyFreePool (&NoExtension);
-                }
-            }
-        }
-
-        // Begin creating icon "hints" by using last part of directory path leading
-        // to the loader
-        #if REFIT_DEBUG > 0
-        if (Entry->me.Image == NULL) {
-            LOG(4, LOG_THREE_STAR_MID,
-                L"Creating Icon Hint from Loader Path:- '%s'",
-                LoaderPath
-            );
-        }
-        #endif
-
-        CHAR16 *Temp = FindLastDirName (LoaderPath);
-        MergeStrings (&OSIconName, Temp, L',');
-        MyFreePool (&Temp);
-        Temp = NULL;
-
-        if (OSIconName != NULL) {
-            ShortcutLetter = OSIconName[0];
-        }
-
-        // Add every "word" in the filesystem and partition names, delimited by
-        // spaces, dashes (-), underscores (_), or colons (:), to the list of
-        // hints to be used in searching for OS icons.
-        if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
-            MergeFsName = TRUE;
-
-            if (MyStrStrIns (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
-                MergeFsName = FALSE;
-            }
-
-            if (MergeFsName) {
+        else {
+            if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
                 #if REFIT_DEBUG > 0
-                if (Entry->me.Image == NULL) {
-                    LOG(3, LOG_LINE_NORMAL,
-                        L"Merge Hints Based on Filesystem Name:- '%s'",
-                        Volume->FsName
-                    );
+                LOG(3, LOG_LINE_NORMAL, L"Trying to Display '.VolumeIcon' Image");
+                #endif
+
+                // use a ".VolumeIcon" image icon for the loader
+                // Takes precedence all over options
+                Entry->me.Image = egCopyImage (Volume->VolIconImage);
+            }
+
+            if (!Entry->me.Image) {
+                #if REFIT_DEBUG > 0
+                if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+                    LOG(3, LOG_LINE_NORMAL, L"Could Not Display '.VolumeIcon' Image!!");
                 }
                 #endif
 
-                MergeWords (&OSIconName, Volume->FsName, L',');
-            }
-            else {
-                if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
-                    #if REFIT_DEBUG > 0
-                    if (Entry->me.Image == NULL) {
-                        LOG(3, LOG_LINE_NORMAL,
-                            L"Merge Hints Based on Volume Name:- '%s'",
-                            Volume->VolName
-                        );
-                    }
-                    #endif
+                BOOLEAN MacFlag = FALSE;
+                if (LoaderPath && MyStrStrIns (LoaderPath, L"System\\Library\\CoreServices")) {
+                    MacFlag = TRUE;
+                }
 
-                    MergeWords (&OSIconName, Volume->VolName, L',');
+                if (!GlobalConfig.SyncAPFS || !MacFlag) {
+                    CHAR16 *NoExtension = StripEfiExtension (NameClues);
+                    if (NoExtension != NULL) {
+                        // locate a custom icon for the loader
+                        // Anything found here takes precedence over the "hints" in the OSIconName variable
+                        #if REFIT_DEBUG > 0
+                        LOG(3, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
+                        #endif
+
+                        if (!Entry->me.Image) {
+                            Entry->me.Image = egLoadIconAnyType (
+                                Volume->RootDir,
+                                PathOnly,
+                                NoExtension,
+                                GlobalConfig.IconSizes[ICON_SIZE_BIG]
+                            );
+                        }
+
+                        if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons) {
+                            Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                        }
+
+                        MyFreePool (&NoExtension);
+                    }
                 }
             }
-        }
 
-        if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
+            // Begin creating icon "hints" by using last part of directory path leading
+            // to the loader
             #if REFIT_DEBUG > 0
             if (Entry->me.Image == NULL) {
-                LOG(3, LOG_LINE_NORMAL,
-                    L"Merge Hints Based on Partition Name:- '%s'",
-                    Volume->PartName
+                LOG(4, LOG_THREE_STAR_MID,
+                    L"Creating Icon Hint from Loader Path:- '%s'",
+                    LoaderPath
                 );
             }
             #endif
 
-            MergeWords (&OSIconName, Volume->PartName, L',');
-        }
-    } // if/else Volume->DiskKind == DISK_KIND_NET
+            CHAR16 *Temp = FindLastDirName (LoaderPath);
+            MergeStrings (&OSIconName, Temp, L',');
+            MyFreePool (&Temp);
+            Temp = NULL;
 
-    #if REFIT_DEBUG > 0
-    if (Entry->me.Image == NULL) {
-        LOG(3, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
+            if (OSIconName != NULL) {
+                ShortcutLetter = OSIconName[0];
+            }
+
+            // Add every "word" in the filesystem and partition names, delimited by
+            // spaces, dashes (-), underscores (_), or colons (:), to the list of
+            // hints to be used in searching for OS icons.
+            if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
+                MergeFsName = TRUE;
+
+                if (MyStrStrIns (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
+                    MergeFsName = FALSE;
+                }
+
+                if (MergeFsName) {
+                    #if REFIT_DEBUG > 0
+                    if (Entry->me.Image == NULL) {
+                        LOG(3, LOG_LINE_NORMAL,
+                            L"Merge Hints Based on Filesystem Name:- '%s'",
+                            Volume->FsName
+                        );
+                    }
+                    #endif
+
+                    MergeWords (&OSIconName, Volume->FsName, L',');
+                }
+                else {
+                    if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
+                        #if REFIT_DEBUG > 0
+                        if (Entry->me.Image == NULL) {
+                            LOG(3, LOG_LINE_NORMAL,
+                                L"Merge Hints Based on Volume Name:- '%s'",
+                                Volume->VolName
+                            );
+                        }
+                        #endif
+
+                        MergeWords (&OSIconName, Volume->VolName, L',');
+                    }
+                }
+            }
+
+            if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
+                #if REFIT_DEBUG > 0
+                if (Entry->me.Image == NULL) {
+                    LOG(3, LOG_LINE_NORMAL,
+                        L"Merge Hints Based on Partition Name:- '%s'",
+                        Volume->PartName
+                    );
+                }
+                #endif
+
+                MergeWords (&OSIconName, Volume->PartName, L',');
+            }
+        } // if/else Volume->DiskKind == DISK_KIND_NET
     }
-    #endif
+
+    if (!AllowGraphicsMode) {
+        #if REFIT_DEBUG > 0
+        if (Entry->me.Image == NULL) {
+            LOG(3, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
+        }
+        #endif
+    }
 
     // detect specific loaders
     if (StriSubCmp (L"bzImage", NameClues) ||
@@ -850,7 +861,7 @@ VOID SetLoaderDefaults (
     }
 
     Entry->me.ShortcutLetter = ShortcutLetter;
-    if (Entry->me.Image == NULL) {
+    if (AllowGraphicsMode && Entry->me.Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"Trying to Locate an Icon Based on Hints:- '%s'",
@@ -2838,7 +2849,7 @@ VOID ScanForTools (VOID) {
 
                         #if REFIT_DEBUG > 0
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
-                        LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        LOG(3, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (OtherFind) {
                             MsgLog ("\n                               ");
                         }
