@@ -2308,6 +2308,9 @@ VOID SetPrebootVolumes (VOID) {
                 if (Volumes[i]->VolName != NULL
                     && StrLen (Volumes[i]->VolName) != 0
                     && Volumes[i]->FSType == FS_TYPE_APFS
+                    && MyStrStr (Volumes[i]->VolName, L"/FileVault") == NULL
+                    && MyStrStrIns (Volumes[i]->VolName, L"Unknown") == NULL
+                    && MyStrStrIns (Volumes[i]->VolName, L" - Data") == NULL
                 ) {
                     if (GuidsAreEqual (
                             &(PreBootVolumes[PreBootIndex]->PartGuid),
@@ -2323,13 +2326,8 @@ VOID SetPrebootVolumes (VOID) {
                         );
 
                         if (!EFI_ERROR(Status)) {
-                            if ((
-                                    VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
-                                    || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                                )
-                                && MyStrStr (Volumes[i]->VolName, L"/FileVault") == NULL
-                                && MyStrStrIns (Volumes[i]->VolName, L"Unknown") == NULL
-                                && MyStrStrIns (Volumes[i]->VolName, L" - Data") == NULL
+                            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+                                || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
                             ) {
                                 if (ActiveContainer) {
                                     SecondSystem = TRUE;
