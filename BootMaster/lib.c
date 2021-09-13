@@ -2203,7 +2203,10 @@ BOOLEAN SetPreBootNames (
         );
 
         if (!EFI_ERROR(Status)) {
-            if ((VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED)
+            if ((
+                    VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+                    || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                )
                 && Volume->VolName != NULL
                 && StrLen (Volume->VolName) != 0
                 && MyStrStr (Volume->VolName, L"/FileVault") == NULL
@@ -2256,6 +2259,7 @@ VOID SetPrebootVolumes (VOID) {
 
     for (i = 0; i < VolumesCount; i++) {
         if (Volumes[i]->FSType == FS_TYPE_APFS) {
+            VolumeRole = 0;
             Status = RP_GetApfsVolumeInfo (
                 Volumes[i]->DeviceHandle,
                 &ContainerGuid,
@@ -2278,13 +2282,80 @@ VOID SetPrebootVolumes (VOID) {
     } // for
 
     if (!FoundPreboot) {
-        if (GlobalConfig.SyncAPFS) {
-            // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
+        // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
+        GlobalConfig.SyncAPFS = FALSE;
+
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (
+            L"Could Not Positively Identify APFS Partition Types ... Disabling SyncAFPS"
+        );
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("INFO: %s", MsgStr);
+        MsgLog ("\n\n");
+        MyFreePool (&MsgStr);
+        #endif
+    }
+    else {
+        BOOLEAN ActiveContainer;
+        BOOLEAN SecondSystem = FALSE;
+
+        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+            ActiveContainer = FALSE;
+
+            for (i = 0; i < VolumesCount; i++) {
+                if (Volumes[i]->VolName != NULL
+                    && StrLen (Volumes[i]->VolName) != 0
+                    && Volumes[i]->FSType == FS_TYPE_APFS
+                ) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[PreBootIndex]->PartGuid),
+                            &(Volumes[i]->PartGuid)
+                        )
+                    ) {
+                        VolumeRole = 0;
+                        Status = RP_GetApfsVolumeInfo (
+                            Volumes[i]->DeviceHandle,
+                            &ContainerGuid,
+                            &VolumeGuid,
+                            &VolumeRole
+                        );
+
+                        if (!EFI_ERROR(Status)) {
+                            if ((
+                                    VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+                                    || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                                )
+                                && MyStrStr (Volumes[i]->VolName, L"/FileVault") == NULL
+                                && MyStrStrIns (Volumes[i]->VolName, L"Unknown") == NULL
+                                && MyStrStrIns (Volumes[i]->VolName, L" - Data") == NULL
+                            ) {
+                                if (ActiveContainer) {
+                                    SecondSystem = TRUE;
+                                    break;
+                                }
+                                else {
+                                    ActiveContainer = TRUE;
+                                }
+                            }
+                        }
+                    } // if GuidsAreEqual
+                } // if Volumes[i]->VolName != NULL
+            } // for i = 0
+
+            if (SecondSystem) {
+                break;
+            }
+        } // for PreBootIndex = 0
+
+        if (SecondSystem) {
+            // Disable SyncAPFS if we detect multiple installations in a single APFS Container
             GlobalConfig.SyncAPFS = FALSE;
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
-                L"Could Not Positively Identify APFS Partition Types ... Disabling SyncAFPS"
+                L"Multiple APFS Installations in Single Container ... Disabling SyncAFPS"
             );
             LOG(3, LOG_BLANK_LINE_SEP, L"X");
             LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2294,89 +2365,89 @@ VOID SetPrebootVolumes (VOID) {
             MyFreePool (&MsgStr);
             #endif
         }
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-        MsgLog ("\n\n");
-        MsgLog ("%s:", MsgStr);
-        MyFreePool (&MsgStr);
-        #endif
-
-        for (i = 0; i < VolumesCount; i++) {
-            SwapName = SetPreBootNames (Volumes[i]);
-
-            if (SwapName) {
-                #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("\n");
-                MsgLog ("  - %s", MsgStr);
-                MyFreePool (&MsgStr);
-                #endif
-
-                MyFreePool (&Volumes[i]->VolName);
-                Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
-
-                // Create a list of RemApped System Volumes
-                AddListElement (
-                    (VOID ***) &SystemVolumes,
-                    &SystemVolumesCount,
-                    CopyVolume (Volumes[i])
-                );
-            }
-        } // for
-
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"ReMapped %d APFS Volume%s",
-            SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
-        );
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-
-        if (SystemVolumesCount == 0) {
-            MsgLog ("\n                   ") ;
-        }
         else {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"ReMap APFS Volumes");
+            LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
             MsgLog ("\n\n");
-            MsgLog ("INFO: ");
-        }
-        MsgLog ("%s", MsgStr);
-        MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
-        #endif
+            MsgLog ("%s:", MsgStr);
+            MyFreePool (&MsgStr);
+            #endif
 
-        if (SystemVolumesCount < PreBootVolumesCount) {
-            BOOLEAN FoundReMap = FALSE;
-            for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                for (i = 0; i < SystemVolumesCount; i++) {
-                    if (GuidsAreEqual (
-                            &(PreBootVolumes[PreBootIndex]->PartGuid),
-                            &(SystemVolumes[i]->PartGuid)
-                        )
-                    ) {
-                        FoundReMap = TRUE;
-                        break;
-                    }
-                } // for
+            for (i = 0; i < VolumesCount; i++) {
+                SwapName = SetPreBootNames (Volumes[i]);
 
-                if (!FoundReMap) {
-                    // DA-TAG: A preboot volume exists but the associated system volume was not found
-                    //         Use the 'SetPreBootLabel' function to provide the proper volume label
-                    //         The function needs improvement
-                    SetPreBootLabel (PreBootVolumes[PreBootIndex]);
+                if (SwapName) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
+                    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    MsgLog ("\n");
+                    MsgLog ("  - %s", MsgStr);
+                    MyFreePool (&MsgStr);
+                    #endif
+
+                    MyFreePool (&Volumes[i]->VolName);
+                    Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
+
+                    // Create a list of RemApped System Volumes
+                    AddListElement (
+                        (VOID ***) &SystemVolumes,
+                        &SystemVolumesCount,
+                        CopyVolume (Volumes[i])
+                    );
                 }
-
-                FoundReMap = FALSE;
             } // for
-        }
 
-        // Free SystemVolumes list
-        FreeVolumes (
-            &SystemVolumes,
-            &SystemVolumesCount
-        );
+            #if REFIT_DEBUG > 0
+            MsgStr = PoolPrint (
+                L"ReMapped %d APFS Volume%s",
+                SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
+            );
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+
+            if (SystemVolumesCount == 0) {
+                MsgLog ("\n                   ") ;
+            }
+            else {
+                MsgLog ("\n\n");
+                MsgLog ("INFO: ");
+            }
+            MsgLog ("%s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (&MsgStr);
+            #endif
+
+            if (SystemVolumesCount < PreBootVolumesCount) {
+                BOOLEAN FoundReMap = FALSE;
+                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
+                    for (i = 0; i < SystemVolumesCount; i++) {
+                        if (GuidsAreEqual (
+                                &(PreBootVolumes[PreBootIndex]->PartGuid),
+                                &(SystemVolumes[i]->PartGuid)
+                            )
+                        ) {
+                            FoundReMap = TRUE;
+                            break;
+                        }
+                    } // for
+
+                    if (!FoundReMap) {
+                        // DA-TAG: A preboot volume exists but the associated system volume was not found
+                        //         Use the 'SetPreBootLabel' function to provide the proper volume label
+                        //         The function needs improvement
+                        SetPreBootLabel (PreBootVolumes[PreBootIndex]);
+                    }
+
+                    FoundReMap = FALSE;
+                } // for
+            }
+
+            // Free SystemVolumes list
+            FreeVolumes (
+                &SystemVolumes,
+                &SystemVolumesCount
+            );
+        } // if/else SecondSystem
     } // if/else !FoundPreboot
 } // VOID SetPrebootVolumes()
 
