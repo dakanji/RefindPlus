@@ -536,7 +536,7 @@ VOID SaveScreen (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
 
-    MsgStr = StrDuplicate (L"Threshold Exceeded");
+    MsgStr = StrDuplicate (L"Keypress Wait Threshold Exceeded");
     LOG(3, LOG_LINE_NORMAL,  L"%s", MsgStr);
     MsgLog ("INFO: %s ...", MsgStr);
     MyFreePool (&MsgStr);
@@ -2928,9 +2928,12 @@ UINTN RunMainMenu (
 
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
-        MsgStr = PoolPrint (L"Loaded RefindPlus v%s", REFINDPLUS_VERSION);
+        MsgStr = PoolPrint (
+            L"Loaded RefindPlus v%s on %s Firmware",
+            REFINDPLUS_VERSION, VendorInfo
+        );
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("INFO: %s on %s Firmware", MsgStr, VendorInfo);
+        MsgLog ("INFO: %s", MsgStr);
         MyFreePool (&MsgStr);
     }
     #endif

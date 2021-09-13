@@ -454,7 +454,7 @@ EFI_STATUS ConnectAllDriversToAllControllers (
         );
 
         if (EFI_ERROR(Status)) {
-            goto Done;
+            break;
         }
 
         Device = TRUE;
@@ -488,9 +488,8 @@ EFI_STATUS ConnectAllDriversToAllControllers (
         MyFreePool (&HandleBuffer);
         MyFreePool (&HandleType);
     }
-
-Done:
     MyFreePool (&AllHandleBuffer);
+
     return Status;
 #endif
 } // EFI_STATUS ConnectAllDriversToAllControllers()
@@ -659,19 +658,11 @@ UINTN ScanDriverDir (
         NumFound++;
         FileName = PoolPrint (L"%s\\%s", Path, DirEntry->FileName);
 
-        // DA-TAG: Delete once ForcedNativeLogging setup is firmed up
-        //#if REFIT_DEBUG > 0
-        //if (RunOnce) {
-        //    LOG(2, LOG_THREE_STAR_SEP, L"NEXT DRIVER");
-        //}
-        //#endif
-
         Status = StartEFIImage (
             SelfVolume, FileName, L"",
             DirEntry->FileName, 0,
             FALSE, TRUE
         );
-
 
         MyFreePool (&DirEntry);
 
@@ -682,7 +673,7 @@ UINTN ScanDriverDir (
 
         RunOnce = TRUE;
 
-        MsgLog ("  - Load '%s' ... %r", FileName, Status);
+        MsgLog ("  - %r ... UEFI Driver:- '%s'", Status, FileName);
         #endif
 
         MyFreePool (&FileName);

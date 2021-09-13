@@ -88,37 +88,33 @@ static UINTN   egScreenWidth  = 800;
 static UINTN   egScreenHeight = 600;
 
 static
-EFI_STATUS
-EncodeAsPNG (
-  IN  VOID     *RawData,
-  IN  UINT32    Width,
-  IN  UINT32    Height,
-  OUT VOID    **Buffer,
-  OUT UINTN    *BufferSize
-  )
-{
-  unsigned ErrorCode;
+EFI_STATUS EncodeAsPNG (
+    IN  VOID     *RawData,
+    IN  UINT32    Width,
+    IN  UINT32    Height,
+    OUT VOID    **Buffer,
+    OUT UINTN    *BufferSize
+) {
+    unsigned ErrorCode;
 
-  // Should return 0 on success
-  ErrorCode = lodepng_encode32 (
-      (unsigned char **) Buffer,
-      BufferSize,
-      RawData,
-      Width,
-      Height
-  );
+    // Should return 0 on success
+    ErrorCode = lodepng_encode32 (
+        (unsigned char **) Buffer,
+        BufferSize,
+        RawData,
+        Width,
+        Height
+    );
 
-  if (ErrorCode != 0) {
-    return EFI_INVALID_PARAMETER;
-  }
+    if (ErrorCode != 0) {
+        return EFI_INVALID_PARAMETER;
+    }
 
-  return EFI_SUCCESS;
-}
+    return EFI_SUCCESS;
+} // static EFI_STATUS EncodeAsPNG()
 
 static
-EFI_STATUS daCheckAltGop (
-    VOID
-) {
+EFI_STATUS daCheckAltGop (VOID) {
     EFI_STATUS                     Status;
     UINTN                          i;
     UINTN                          HandleCount;
@@ -266,11 +262,9 @@ EFI_STATUS daCheckAltGop (
     } // if !EFI_ERROR(Status)
 
     return EFI_SUCCESS;
-}
+} // static EFI_STATUS daCheckAltGop()
 
-EFI_STATUS egDumpGOPVideoModes (
-    VOID
-) {
+EFI_STATUS egDumpGOPVideoModes (VOID) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
     EFI_STATUS Status;
@@ -309,8 +303,8 @@ EFI_STATUS egDumpGOPVideoModes (
         }
 
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes (%d %s ... 0x%lx-0x%lx Framebuffer)",
-            MaxMode, ModeTxt,
+            L"Analyse GOP Modes on Handle[%d]:- '%d %s ... 0x%lx-0x%lx Framebuffer'",
+            SelectedGOP, MaxMode, ModeTxt,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
@@ -345,7 +339,7 @@ EFI_STATUS egDumpGOPVideoModes (
                 ModeLog = Mode;
             }
 
-            MsgLog ("  - Mode[%02d][%02d]", SelectedGOP, ModeLog);
+            MsgLog ("  - Mode[%02d]", ModeLog);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -434,7 +428,7 @@ EFI_STATUS egDumpGOPVideoModes (
     }
 
     return EFI_SUCCESS;
-}
+} // EFI_STATUS egDumpGOPVideoModes()
 
 //
 // Sets mode via GOP protocol, and reconnects simple text out drivers
@@ -467,7 +461,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     #endif
 
     return Status;
-}
+} // static EFI_STATUS GopSetModeAndReconnectTextOut()
 
 EFI_STATUS egSetGOPMode (
     INT32 Next
@@ -546,13 +540,11 @@ EFI_STATUS egSetGOPMode (
     }
 
     return Status;
-}
+} // EFI_STATUS egSetGOPMode()
 
 // On GOP systems, set the maximum available resolution.
 // On UGA systems, just record the current resolution.
-EFI_STATUS egSetMaxResolution (
-    VOID
-) {
+EFI_STATUS egSetMaxResolution (VOID) {
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
 
     EFI_STATUS   Status;
@@ -658,7 +650,7 @@ EFI_STATUS egSetMaxResolution (
     }
 
     return Status;
-}
+} // EFI_STATUS egSetMaxResolution()
 
 
 //
@@ -716,12 +708,10 @@ VOID egGetScreenSize (
     if (ScreenHeight != NULL) {
         *ScreenHeight = egScreenHeight;
     }
-}
+} // VOID egGetScreenSize()
 
 
-VOID egInitScreen (
-    VOID
-) {
+VOID egInitScreen (VOID) {
     EFI_GRAPHICS_OUTPUT_PROTOCOL  *OldGOP  = NULL;
     EFI_STATUS                     Status  = EFI_SUCCESS;
     EFI_STATUS                     XFlag;
@@ -798,19 +788,19 @@ VOID egInitScreen (
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Console Control ... NOT OK!!");
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("  - %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Console Control ... ok");
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("  - %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
         #endif
     }
+    #if REFIT_DEBUG > 0
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("  - %s", MsgStr);
+    MsgLog ("\n\n");
+    MyFreePool (&MsgStr);
+    #endif
 
     // Get UGADraw Protocol
     UGADraw = NULL;
@@ -902,28 +892,29 @@ VOID egInitScreen (
                             #endif
                         }
                     }
-                }
-            }
+                } // if !EFI_ERROR(Status)
+            } // for
             MyFreePool (&HandleBuffer);
-        }
-    }
+
+        } // if !EFI_ERROR(Status)
+    } // if EFI_ERROR(Status
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ... NOT OK!!");
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("  - %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Universal Graphics Adapter ... ok");
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("  - %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
         #endif
     }
+    #if REFIT_DEBUG > 0
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+    MsgLog ("  - %s", MsgStr);
+    MsgLog ("\n\n");
+    MyFreePool (&MsgStr);
+    #endif
 
     // Get GOPDraw Protocol
     GOPDraw = NULL;
@@ -1001,8 +992,7 @@ VOID egInitScreen (
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
                                     "    *** Select Handle[%02d][%02d] @ %5d x %-5d\n",
-                                    i,
-                                    GOPMode,
+                                    i, GOPMode,
                                     GOPWidth,
                                     GOPHeight
                                 );
@@ -1012,8 +1002,7 @@ VOID egInitScreen (
                                 #if REFIT_DEBUG > 0
                                 MsgLog (
                                     "        Ignore Handle[%02d][%02d] @ %5d x %-5d\n",
-                                    i,
-                                    GOPMode,
+                                    i, GOPMode,
                                     Info->HorizontalResolution,
                                     Info->VerticalResolution
                                 );
@@ -1057,7 +1046,8 @@ VOID egInitScreen (
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ERROR!!");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("  - %s\n\n", MsgStr);
+        MsgLog ("  - %s", MsgStr);
+        MsgLog ("\n\n");
         MyFreePool (&MsgStr);
         #endif
     }
@@ -1072,7 +1062,8 @@ VOID egInitScreen (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("  - %s\n\n", MsgStr);
+            MsgLog ("  - %s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
         }
@@ -1082,7 +1073,8 @@ VOID egInitScreen (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("  - %s\n\n", MsgStr);
+            MsgLog ("  - %s", MsgStr);
+            MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
 
@@ -1254,15 +1246,9 @@ VOID egInitScreen (
 
             if (!EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"GOP not Available");
+                MsgStr = StrDuplicate (L"GOP not Available ... Fall Back on UGA");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n");
-                MyFreePool (&MsgStr);
-
-                MsgStr = StrDuplicate (L"Fall Back on UGA");
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("      %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
 
@@ -1279,15 +1265,9 @@ VOID egInitScreen (
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Graphics not Available");
+                MsgStr = StrDuplicate (L"Graphics not Available ... Fall Back on Text Mode");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n");
-                MyFreePool (&MsgStr);
-
-                MsgStr = StrDuplicate (L"Fall Back on Text Mode");
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("      %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
@@ -1357,7 +1337,7 @@ VOID egInitScreen (
     MsgLog ("\n\n");
     MyFreePool (&MsgStr);
     #endif
-}
+} // VOID egInitScreen()
 
 // Convert a graphics mode (in *ModeWidth) to a width and height (returned in
 // *ModeWidth and *Height, respectively).
@@ -1456,11 +1436,7 @@ BOOLEAN egSetScreenSize (
             ModeNum = (UINT32) *ScreenWidth;
             if (ModeNum != CurrentModeNum) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Mode Set from ScreenWidth");
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MsgStr = StrDuplicate (L"GOP Mode Set from Configured ScreenWidth");
                 #endif
 
                 ModeSet = TRUE;
@@ -1473,25 +1449,22 @@ BOOLEAN egSetScreenSize (
                 ) == EFI_SUCCESS)
             ) {
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (L"Setting GOP mode to %d", ModeNum);
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MsgStr = PoolPrint (L"Setting GOP Mode to %d", ModeNum);
                 #endif
 
                 ModeSet = TRUE;
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Could Not Set GOPDraw Mode");
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("  - %s", MsgStr);
-                MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MsgStr = StrDuplicate (L"Could Not Set GOP Mode");
                 #endif
             }
-            // User specified width & height; must find mode...
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            MsgLog ("  - %s", MsgStr);
+            MsgLog ("\n\n");
+            MyFreePool (&MsgStr);
+            #endif
         }
         else {
             // Do a loop through the modes to see if the specified one is available;
@@ -1758,9 +1731,7 @@ BOOLEAN egSetTextMode (
     return ChangedIt;
 } // BOOLEAN egSetTextMode()
 
-CHAR16 * egScreenDescription (
-    VOID
-) {
+CHAR16 * egScreenDescription (VOID) {
     CHAR16  *GraphicsInfo  = NULL;
     CHAR16  *TextInfo      = NULL;
 
@@ -1800,17 +1771,13 @@ CHAR16 * egScreenDescription (
     MyFreePool (&TextInfo);
 
     return GraphicsInfo;
-}
+} // CHAR16 * egScreenDescription()
 
-BOOLEAN egHasGraphicsMode (
-    VOID
-) {
+BOOLEAN egHasGraphicsMode (VOID) {
     return egHasGraphics;
-}
+} // BOOLEAN egHasGraphicsMode()
 
-BOOLEAN egIsGraphicsModeEnabled (
-    VOID
-) {
+BOOLEAN egIsGraphicsModeEnabled (VOID) {
     EFI_CONSOLE_CONTROL_SCREEN_MODE CurrentMode;
 
     if (ConsoleControl != NULL) {
@@ -1825,7 +1792,7 @@ BOOLEAN egIsGraphicsModeEnabled (
     }
 
     return FALSE;
-}
+} // BOOLEAN egIsGraphicsModeEnabled()
 
 VOID egSetGraphicsModeEnabled (
     IN BOOLEAN Enable
@@ -1841,13 +1808,9 @@ VOID egSetGraphicsModeEnabled (
             NULL, NULL
         );
 
-        if (Enable) {
-            NewMode = EfiConsoleControlScreenGraphics;
-        }
-        else {
-            NewMode = EfiConsoleControlScreenText;
-        }
-
+        NewMode = (Enable)
+            ? EfiConsoleControlScreenGraphics
+            : EfiConsoleControlScreenText;
         if (CurrentMode != NewMode) {
             REFIT_CALL_2_WRAPPER(
                 ConsoleControl->SetMode,
@@ -1856,7 +1819,7 @@ VOID egSetGraphicsModeEnabled (
             );
         }
     }
-}
+} // VOID egSetGraphicsModeEnabl()
 
 //
 // Drawing to the screen
@@ -1904,7 +1867,7 @@ VOID egClearScreen (
             egScreenWidth, egScreenHeight, 0
         );
     }
-}
+} // VOID egClearScreen()
 
 VOID egDrawImage (
     IN EG_IMAGE *Image,
@@ -1916,11 +1879,11 @@ VOID egDrawImage (
     // NOTE: Weird seemingly redundant tests because some placement code can "wrap around" and
     //   send "negative" values, which of course become very large unsigned ints that can then
     //   wrap around AGAIN if values are added to them.
-    if ((!egHasGraphics) ||
-        ((ScreenPosX + Image->Width)  > egScreenWidth) ||
-        ((ScreenPosY + Image->Height) > egScreenHeight) ||
-        (ScreenPosX > egScreenWidth) ||
-        (ScreenPosY > egScreenHeight)
+    if ((!egHasGraphics)
+        || ((ScreenPosX + Image->Width)  > egScreenWidth)
+        || ((ScreenPosY + Image->Height) > egScreenHeight)
+        || (ScreenPosX > egScreenWidth)
+        || (ScreenPosY > egScreenHeight)
     ) {
         return;
     }
@@ -1942,7 +1905,7 @@ VOID egDrawImage (
 
        if (CompImage == NULL) {
            #if REFIT_DEBUG > 0
-          MsgLog ("Error! Cannot crop image in egDrawImage()!\n");
+          MsgLog ("Error! Cannot Crop Image in egDrawImage()!\n");
           #endif
 
           return;
@@ -2050,7 +2013,7 @@ VOID egDrawImageArea (
             Image->Width * 4
         );
     }
-}
+} // VOID egDrawImageArea()
 
 // Display a message in the center of the screen, surrounded by a box of the
 // specified color. For the moment, uses graphics calls only. (It still works
@@ -2066,8 +2029,8 @@ VOID egDisplayMessage (
 
    if ((Text != NULL) && (BGColor != NULL)) {
       egMeasureText (Text, &BoxWidth, &BoxHeight);
-      BoxWidth += 14;
-      BoxHeight *= 2;
+      BoxWidth  += 14;
+      BoxHeight *=  2;
 
       if (BoxWidth > egScreenWidth) {
           BoxWidth = egScreenWidth;
@@ -2081,18 +2044,10 @@ VOID egDisplayMessage (
       );
 
       switch (PositionCode) {
-          case CENTER:
-              Position = (egScreenHeight - BoxHeight) / 2;
-              break;
-          case BOTTOM:
-              Position = egScreenHeight - (BoxHeight * 2);
-              break;
-          case TOP:
-              Position = 1;
-              break;
-          default: // NEXTLINE
-              Position += BoxHeight + (BoxHeight / 10);
-              break;
+          case TOP:     Position  = 1;                                  break;
+          case CENTER:  Position  = ((egScreenHeight - BoxHeight) / 2); break;
+          case BOTTOM:  Position  = (egScreenHeight - (BoxHeight * 2)); break;
+          default:      Position += (BoxHeight + (BoxHeight / 10));     break; // NEXTLINE
       } // switch
 
       egDrawImage (Box, (egScreenWidth - BoxWidth) / 2, Position);
@@ -2151,13 +2106,9 @@ EG_IMAGE * egCopyScreenArea (
    return Image;
 } // EG_IMAGE * egCopyScreenArea()
 
-//
-// Make a screenshot
-//
 
-VOID egScreenShot (
-    VOID
-) {
+// Make a screenshot
+VOID egScreenShot (VOID) {
     EFI_STATUS    Status;
     EFI_FILE     *BaseDir;
     EG_IMAGE     *Image;
@@ -2324,6 +2275,6 @@ bailout_wait:
         gBS->WaitForEvent, 1,
         &gST->ConIn->WaitForKey, &i
     );
-}
+} // VOID egScreenShot()
 
 /* EOF */

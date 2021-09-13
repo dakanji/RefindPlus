@@ -11,7 +11,7 @@
 # Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version. This ensures that any changes made to APFS drivers for each specific
-# Mac OS version are accomodated, compared to using one driver no matter which specific
+# Mac OS version are accommodated, compared to using one driver no matter what specific
 # Mac OS version is being loaded. This default is deactivated whenever this token is set.
 # NB: This functionality is only available on TianoCore Builds.
 #
@@ -85,7 +85,7 @@
 # to ensure that items hidden (always possible) can also be unhidden (only possible if
 # the "hidden_tags" tool is available). When this option is enabled, this "help" with
 # setup will be deactivated and the ability to unhide items will be solely based on
-# whether the "hidden_tags" tool has been explictly added to the "showtools" list.
+# whether the "hidden_tags" tool has been explicitly added to the "showtools" list.
 #
 # The "hidden_tags" tool is always available when commented out
 #
@@ -238,7 +238,7 @@
 #
 #scale_ui 1
 
-# This token allows actively enabling or disabling the System Intergrity Protection (SIP)
+# This token allows actively enabling or disabling the System Integrity Protection (SIP)
 # and Sealed System Volume (SSV) settings defined under the "csr_values" option. When this
 # token is active, RefindPlus will actively set the CSR Policy as defined. This is done when
 # RefindPlus is loaded but users can manually toggle the set values "ON" or "OFF" by using the
@@ -252,7 +252,7 @@
 #
 #active_csr 1
 
-# As of Mac OS v11.x (Big Sur), the previous default SIP/SSV setttings which had all included
+# As of Mac OS v11.x (Big Sur), the previous default SIP/SSV settings which had all included
 # the "CSR_ALLOW_APPLE_INTERNAL" bit may leave Macs not able to receive "Over The Air" (OTA)
 # updates from Apple. Mac OS v11.x (and later) remove this bit on boot if detected but the
 # attempted removal may fail when booting into Mac OS via non-standard path ways such as
@@ -312,7 +312,7 @@
 # its variables to a folder on the filesystem instead. However, this will not
 # work if RefindPlus is on a filesystem that is read-only to the EFI, such as
 # HFS+ volumes. In such cases, an attempt to write to the first ESP RefindPlus
-# can identify will be made. If this attempt is not sucessful, the variable will
+# can identify will be made. If this attempt is not successful, the variable will
 # not be saved and this fact will be logged if running the debug version. NB: This
 # option only applies to RefindPlus variables such as the PreviousBoot, HiddenTags,
 # HiddenTools, and HiddenLegacy variables and does not apply to any variables from
@@ -390,7 +390,7 @@
 
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about
-# what RefindPlus is doing. When set to "1" or above, the logging is in the upsteam
+# what RefindPlus is doing. When set to "1" or above, the logging is in the upstream
 # format instead (a variant of). Higher values, up to the maximum of 4, record more
 # information. NOTE: This option is only active when running DEBUG builds and the
 # logging process, particularly higher levels, noticeably slows RefindPlus down.
@@ -410,7 +410,7 @@
 # commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
 # respectively, when run along with the "csrutil enable / disable" commands.
 #
-# As of Mac OS v11.x (Big Sur), the previous default settting of 10 (ON)
+# As of Mac OS v11.x (Big Sur), the previous default setting of 10 (ON)
 # may leave Macs not able to receive "Over The Air" (OTA) updates from
 # Apple with the reliable setting being enabling SIP/SSV by clearing
 # the stored CSR value in the NVRAM. RefindPlus will clear the CSR
@@ -441,7 +441,7 @@
 # (Excluding keys such as "Shift", "Control", "Alt", and "Option").
 # "-1" causes RefindPlus to start up with the screensaver active.
 #
-# The screensaver is diabled when commented out
+# The screensaver is disabled when commented out
 #
 #screensaver 300
 
@@ -516,7 +516,7 @@
 # an optimally sized one is specified, this may be scaled in an "ugly" way.
 #
 # As with the "banner" setting below, these options take filenames of
-# uncompressed BMP, JPEG, PNG or ICNS image files with a color depth
+# uncompressed BMP, JPEG, PNG or ICNS image files with a colour depth
 # of 24, 8, 4, or 1 bits. PNG or ICNS image files are required for
 # transparency support. As with the "banner" setting below, paths
 # are relative to the directory containing the RefindPlus efi.
@@ -572,9 +572,9 @@
 # takes a single digit that refers to a mode number. Mode "0" is usually
 # 80x25, "1" is sometimes 80x50, and higher numbers are system-specific
 # modes. Mode "1024" is a special code that sets RefindPlus not to use
-# text mode spcifically but instead use whatever mode was in use when
-# it was launched. If an invalid mode is specified, RefindPlus will
-# pause booting to display information on valid modes instead.
+# text mode specifically but to instead use whatever mode was in use
+# when it was launched. If an invalid mode is specified, RefindPlus
+# will pause booting to display information on valid modes instead.
 #
 # CAUTION: On VirtualBox, and perhaps on some real computers, specifying
 # a text mode and uncommenting the "textonly" option without specifying
@@ -878,7 +878,7 @@
 # Enable VMX bit and lock the CPU MSR if unlocked. On some
 # Intel Apple computers, the firmware does not lock the MSR 0x3A.
 # The symptom on Windows is "Hyper-V" not working even if the CPU
-# meets the minimum requirements (HW assisted virtualization and SLAT)
+# meets the minimum requirements (HW assisted virtualisation and SLAT)
 #
 # DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
 # http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
@@ -907,7 +907,7 @@
 # Include a secondary configuration file within this one. This secondary
 # file is loaded as if its options appeared at the point of the "include"
 # option. So, to override a setting in the main file, the secondary file
-# must be referenced AFTER the setting to be overriden. NB: A secondary
+# must be referenced AFTER the setting to be overridden. NB: A secondary
 # configuration file cannot reference a tertiary configuration file.
 #
 # Inactive when commented out (secondary file is not loaded)

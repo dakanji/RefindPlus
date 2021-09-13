@@ -689,21 +689,23 @@ VOID StartLoader (
     LOADER_ENTRY *Entry,
     CHAR16       *SelectionName
 ) {
-    CHAR16 *LoaderPath;
+    CHAR16 *MsgStr     = NULL;
+    CHAR16 *LoaderPath = NULL;
+
+    IsBoot        = TRUE;
+    BootSelection = SelectionName;
+    LoaderPath    = Basename (Entry->LoaderPath);
+    MsgStr        = PoolPrint (L"Launching Loader:- '%s'", SelectionName);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Launching Loader:- '%s'", SelectionName);
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
-
-    IsBoot = TRUE;
 
     if (GlobalConfig.EnableAndLockVMX) {
         DoEnableAndLockVMX();
     }
 
-    BootSelection = SelectionName;
-    LoaderPath    = Basename (Entry->LoaderPath);
-    BeginExternalScreen (Entry->UseGraphicsMode, L"Booting into OS Loader");
+    BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
@@ -714,6 +716,7 @@ VOID StartLoader (
         FALSE
     );
 
+    MyFreePool (&MsgStr);
     MyFreePool (&LoaderPath);
 } // VOID StartLoader()
 
@@ -721,16 +724,18 @@ VOID StartLoader (
 VOID StartTool (
     IN LOADER_ENTRY *Entry
 ) {
-    CHAR16 *LoaderPath;
+    CHAR16 *MsgStr     = NULL;
+    CHAR16 *LoaderPath = NULL;
+
+    IsBoot        = FALSE;
+    LoaderPath    = Basename (Entry->LoaderPath);
+    MsgStr        = PoolPrint (L"Launching Tool:- '%s'", Entry->me.Title);
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Launching Tool:- '%s'", Entry->me.Title);
+    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
-    IsBoot = FALSE;
-
-    LoaderPath = Basename (Entry->LoaderPath);
-    BeginExternalScreen (Entry->UseGraphicsMode, Entry->me.Title);
+    BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,
@@ -741,5 +746,6 @@ VOID StartTool (
         FALSE
     );
 
+    MyFreePool (&MsgStr);
     MyFreePool (&LoaderPath);
 } // VOID StartTool()

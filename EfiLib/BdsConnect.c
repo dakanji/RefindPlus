@@ -43,6 +43,7 @@ extern EFI_STATUS AcquireGOP (VOID);
 
 #ifdef __MAKEWITH_TIANO
 // DA-TAG: Limit to TianoCore
+//         Technically Not Needed
 extern EFI_STATUS OcConnectDrivers (VOID);
 #endif
 
@@ -619,6 +620,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
 
     // First Pass Driver Connection
     // DA-TAG: Limit to TianoCore
+    //         Technically Not Needed
     #ifdef __MAKEWITH_TIANO
     OcConnectDrivers();
     #endif

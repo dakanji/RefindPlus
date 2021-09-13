@@ -124,10 +124,12 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         switch (key.ScanCode) {
         case SCAN_ESC:
             exit = TRUE;
+
             break;
         case SCAN_HOME:
             cursor = 0;
             first  = 0;
+
             continue;
         case SCAN_END:
             cursor = len;
@@ -135,26 +137,36 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
                 cursor = x_max-2;
                 first  = len - (x_max-2);
             }
+
             continue;
         case SCAN_UP:
-            while ((first + cursor) && line[first + cursor] == ' ')
+            while ((first + cursor) && line[first + cursor] == ' ') {
                 cursor_left (&cursor, &first);
-            while ((first + cursor) && line[first + cursor] != ' ')
+            }
+            while ((first + cursor) && line[first + cursor] != ' ') {
                 cursor_left (&cursor, &first);
-            while ((first + cursor) && line[first + cursor] == ' ')
+            }
+            while ((first + cursor) && line[first + cursor] == ' ') {
                 cursor_left (&cursor, &first);
-            if (first + cursor != len && first + cursor)
+            }
+            if (first + cursor != len && first + cursor) {
                 cursor_right (&cursor, &first, x_max, len);
+            }
             REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+
             continue;
         case SCAN_DOWN:
-            while (line[first + cursor] && line[first + cursor] == ' ')
+            while (line[first + cursor] && line[first + cursor] == ' ') {
                 cursor_right (&cursor, &first, x_max, len);
-            while (line[first + cursor] && line[first + cursor] != ' ')
+            }
+            while (line[first + cursor] && line[first + cursor] != ' ') {
                 cursor_right (&cursor, &first, x_max, len);
-            while (line[first + cursor] && line[first + cursor] == ' ')
+            }
+            while (line[first + cursor] && line[first + cursor] == ' ') {
                 cursor_right (&cursor, &first, x_max, len);
+            }
             REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+
             continue;
         case SCAN_RIGHT:
             if (first + cursor == len) {
@@ -162,10 +174,12 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             }
             cursor_right (&cursor, &first, x_max, len);
             REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+
             continue;
         case SCAN_LEFT:
             cursor_left (&cursor, &first);
             REFIT_CALL_3_WRAPPER(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
+
             continue;
         case SCAN_DELETE:
             if (len == 0) {
@@ -174,11 +188,14 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             if (first + cursor == len) {
                 continue;
             }
+
             for (i = first + cursor; i < len; i++) {
                 line[i] = line[i+1];
             }
+
             line[len-1] = ' ';
             len--;
+
             continue;
         }
 
@@ -211,6 +228,7 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             if (len < x_max-2) {
                 cursor = first;
                 first = 0;
+
                 continue;
             }
             /* jump left to see what we delete */
@@ -222,6 +240,7 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
                 cursor = first;
                 first = 0;
             }
+
             continue;
         case '\t':
         case ' ' ... '~':
@@ -241,6 +260,7 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
             else if (first + cursor < len) {
                 first++;
             }
+
             continue;
         }
     }
@@ -252,5 +272,6 @@ BOOLEAN line_edit (CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
     );
     MyFreePool (&print);
     MyFreePool (&line);
+
     return enter;
 } // BOOLEAN line_edit()

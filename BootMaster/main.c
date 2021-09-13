@@ -2450,8 +2450,6 @@ EFI_STATUS EFIAPI efi_main (
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
-                // Use multiple instaces of "User Input Received:"
-
                 if (MyStrStrIns (ourLoaderEntry->Title, L"OpenCore") ||
                     MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
@@ -2463,14 +2461,15 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
-                    MsgStr = PoolPrint (
-                        L"Load OpenCore Instance:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
+                    MsgStr = StrDuplicate (L"Load OpenCore Instance");
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog (
+                        "  - %s:- '%s'",
+                        MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
-                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (&MsgStr);
                     #endif
 
@@ -2488,14 +2487,15 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
-                    MsgStr = PoolPrint (
-                        L"Load Clover Instance:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
+                    MsgStr = StrDuplicate (L"Load Clover Instance");
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    MsgLog (
+                        "  - %s:- '%s'",
+                        MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
-                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("  - %s", MsgStr);
                     MyFreePool (&MsgStr);
                     #endif
 
@@ -2507,21 +2507,17 @@ EFI_STATUS EFIAPI efi_main (
                     ActiveCSR();
 
                     #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgStr = PoolPrint (
-                            L"Boot Mac OS from '%s'",
-                            ourLoaderEntry->Volume->VolName
-                        );
-                    }
-                    else {
-                        MsgStr = PoolPrint (
-                            L"Boot Mac OS:- '%s'",
-                            ourLoaderEntry->LoaderPath
-                        );
-                    }
+                    MsgStr = StrDuplicate (L"Boot Mac OS");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog (" from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
+                    }
 
                     MyFreePool (&MsgStr);
                     #endif
@@ -2565,56 +2561,50 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgStr = PoolPrint (
-                            L"Boot UEFI Windows from '%s'",
-                            ourLoaderEntry->Volume->VolName
-                        );
-                    }
-                    else {
-                        MsgStr = PoolPrint (
-                            L"Boot UEFI Windows:- '%s'",
-                            ourLoaderEntry->LoaderPath
-                        );
-                    }
+                    MsgStr = StrDuplicate (L"Boot UEFI Windows");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog (" from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
+                    }
 
                     MyFreePool (&MsgStr);
                     #endif
                 }
                 else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux")) {
                     #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgStr = PoolPrint (
-                            L"Boot Linux Flavour from '%s'",
-                            ourLoaderEntry->Volume->VolName
-                        );
-                    }
-                    else {
-                        MsgStr = PoolPrint (
-                            L"Load Linux Flavour:- '%s'",
-                            ourLoaderEntry->LoaderPath
-                        );
-                    }
+                    MsgStr = StrDuplicate (L"Boot Linux");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
+                    if (ourLoaderEntry->Volume->VolName) {
+                        MsgLog (" from '%s'", ourLoaderEntry->Volume->VolName);
+                    }
+                    else {
+                        MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
+                    }
 
                     MyFreePool (&MsgStr);
                     #endif
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (
-                        L"Boot OS via UEFI Loader:- '%s%s'",
-                        ourLoaderEntry->Volume->VolName,
+                    MsgStr = StrDuplicate (L"Boot Child Image via UEFI Loader");
+                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    // DA-TAG: Using separate instances of 'User Input Received:'
+                    MsgLog ("User Input Received:\n");
+                    MsgLog (
+                        "  - %s:- '%s'",
+                        MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
-                    LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("User Input Received:\n");
-                    MsgLog ("  - %s", MsgStr);
+
                     MyFreePool (&MsgStr);
                     #endif
                 }
@@ -2647,12 +2637,9 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (
-                        L"Boot Legacy (BIOS) OS:- '%s'",
-                        ourLegacyEntry->Volume->OSName
-                    );
+                    MsgStr = StrDuplicate (L"Boot 'Mac-Style' Legacy (BIOS) OS");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    MsgLog ("  - %s", MsgStr);
+                    MsgLog ("  - %s:- '%s'", MsgStr, ourLegacyEntry->Volume->OSName);
                     MyFreePool (&MsgStr);
                     #endif
                 }
@@ -2673,13 +2660,14 @@ EFI_STATUS EFIAPI efi_main (
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (
-                    L"Boot 'UEFI-Style' Legacy (BIOS) OS:- '%s'",
-                    ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
-                );
+                MsgStr = StrDuplicate (L"Boot 'UEFI-Style' Legacy (BIOS) OS");
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - %s", MsgStr);
+                MsgLog (
+                    "  - %s:- '%s'",
+                    MsgStr,
+                    ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
+                );
                 MyFreePool (&MsgStr);
 
                 if (egIsGraphicsModeEnabled()) {
@@ -2697,13 +2685,10 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = PoolPrint (
-                    L"Start UEFI Tool:- '%s'",
-                    ourLoaderEntry->LoaderPath
-                );
+                MsgStr = StrDuplicate (L"Start UEFI Tool");
                 LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - %s", MsgStr);
+                MsgLog ("  - %s:- '%s'", MsgStr, ourLoaderEntry->LoaderPath);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
                 #endif
@@ -2719,7 +2704,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Reboot into Loader");
+                MsgLog ("  - Reboot into Firmaware Defined Loader");
                 MsgLog ("\n-----------------\n\n");
                 #endif
 
@@ -2742,11 +2727,11 @@ EFI_STATUS EFIAPI efi_main (
 
                 break;
 
-            case TAG_EXIT:    // Terminate RefindPlus
+            case TAG_EXIT:    // Exit RefindPlus
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Terminate RefindPlus");
+                MsgLog ("  - Exit RefindPlus");
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("\n-----------------\n\n");
                 }
