@@ -2351,6 +2351,11 @@ VOID SetPrebootVolumes (VOID) {
             // Disable SyncAPFS if we detect multiple installations in a single APFS Container
             GlobalConfig.SyncAPFS = FALSE;
 
+            FreeVolumes (
+                &PreBootVolumes,
+                &PreBootVolumesCount
+            );
+
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
                 L"Multiple APFS Installations in Single Container ... Disabling SyncAFPS"
