@@ -183,8 +183,8 @@
 
 # Proceed automatically when notices are shown on-screen instead
 # of having to press a key to continue. When this option is active,
-# RefindPlus will pause for three seconds when on-screen warnings
 # are shown and then proceed as if a key had been pressed.
+# RefindPlus will pause for nine seconds when on-screen notices
 #
 # Inactive when commented out (Does not proceed automatically)
 #
@@ -192,10 +192,10 @@
 
 # Force "TRIM" on non-Apple SSDs. "TRIM", which may improve SSD health,
 # is inactive by default for non-Apple SSDs in Mac OS. When this option
-# is active, RefindPlus will enforce Mac OS "TRIM" on for all SSDs types
-# including on non-Apple SSDs. This setting only applies to Mac OS. Note
-# that this setting will create a Mac OS NVRAM entry the first time it is
-# triggered and that this will remain active until explicitly cleared even
+# is active however, RefindPlus will enforce Mac OS "TRIM" for all types
+# of SSDs, including non-Apple SSDs. This setting only applies to Mac OS.
+# Note that the setting will create a Mac OS NVRAM entry the first time it
+# is triggered and that this will stay active until explicitly cleared even
 # if the setting is subsequently disabled. Also note that forcing "TRIM"
 # may significantly increase boot times and that enabling "TRIM" on
 # non-Apple SSDs may affect the integrity of data on such SSDs.

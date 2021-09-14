@@ -1200,7 +1200,6 @@ VOID SetFilesystemData (
         //         Volume->PartTypeGuid is not yet available
         //         Needs code sequence restructuring
         //         'SetPartGuidAndName' must be run before this
-        EFI_GUID GuidHFS = HFS_GUID_VALUE;
         if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
             Volume->FSType = FS_TYPE_HFSPLUS;
             return;
