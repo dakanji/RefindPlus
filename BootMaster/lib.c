@@ -129,6 +129,11 @@ BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScanMBR             = FALSE;
 BOOLEAN            SkipSpacing         = FALSE;
 
+#if REFIT_DEBUG > 0
+BOOLEAN            FirstVolume         = TRUE;
+BOOLEAN            FoundMBR            = FALSE;
+#endif
+
 EFI_GUID           GuidHFS             = HFS_GUID_VALUE;
 EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
 EFI_GUID           GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
@@ -1437,6 +1442,8 @@ VOID ScanVolumeBootcode (
                     CopyMem (Volume->MbrPartitionTable, MbrTable, SizeMBR);
 
                     #if REFIT_DEBUG > 0
+                    FoundMBR = TRUE;
+
                     if (DoneHeadings) {
                         if (SkipSpacing) {
                             StrSpacer   = L" ... ";
@@ -1462,7 +1469,7 @@ VOID SetVolumeBadgeIcon (
 ) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"VolumeBadge Config Setting:- 'Hidden'");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped ... VolumeBadge Config Setting:- 'Hidden'");
         #endif
 
         return;
@@ -2691,6 +2698,21 @@ VOID ScanVolumes (VOID) {
                     ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
                 );
                 DoneHeadings = TRUE;
+
+                if (FirstVolume) {
+                    if (Volume->HasBootCode) {
+                        MsgLog ("Found Legacy Boot Code");
+                    }
+                    if (FoundMBR) {
+                        if (Volume->HasBootCode) {
+                            MsgLog (" ... ");
+                        }
+                        MsgLog ("Found MBR Partition Table");
+                    }
+                    if (FoundMBR || Volume->HasBootCode) {
+                        MsgLog (" on Volume Below\n");
+                    }
+                }
             }
 
             RoleStr = L"";
@@ -2730,6 +2752,9 @@ VOID ScanVolumes (VOID) {
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
         }
+
+        FoundMBR      = FALSE;
+        FirstVolume   = FALSE;
         #endif
 
         ScannedOnce = TRUE;
