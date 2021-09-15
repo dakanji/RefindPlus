@@ -1186,28 +1186,14 @@ VOID SetFilesystemData (
         }
 
         // If no other filesystem is identified, assume APFS if on partition with APFS GUID
-        // DA-TAG: Needs Activation
-        //         Volume->PartTypeGuid is not yet available
-        //         Needs code sequence restructuring
-        //         'SetPartGuidAndName' must be run before this
         if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)) {
             Volume->FSType = FS_TYPE_APFS;
             return;
         }
 
         // If no other filesystem is identified, assume HFS+ if on partition with HFS+ GUID
-        // DA-TAG: Needs Activation
-        //         Volume->PartTypeGuid is not yet available
-        //         Needs code sequence restructuring
-        //         'SetPartGuidAndName' must be run before this
         if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
             Volume->FSType = FS_TYPE_HFSPLUS;
-            return;
-        }
-
-        // If no other filesystem is identified, assume APFS if on Apple Firmware
-        if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
-            Volume->FSType = FS_TYPE_APFS;
             return;
         }
     } // if ((Buffer != NULL) && (Volume != NULL))
@@ -1791,10 +1777,6 @@ VOID ScanVolume (
         Volume->DiskKind = DISK_KIND_OPTICAL;
     }
 
-    // scan for bootcode and MBR table
-    Bootable = FALSE;
-    ScanVolumeBootcode (Volume, &Bootable);
-
     // detect device type
     DevicePath = Volume->DevicePath;
     while (DevicePath != NULL && !IsDevicePathEndType (DevicePath)) {
@@ -1953,9 +1935,16 @@ VOID ScanVolume (
         DevicePath = NextDevicePath;
     } // while
 
+    // scan for bootcode and MBR table
+    Bootable = FALSE;
+    ScanVolumeBootcode (Volume, &Bootable);
+    if (Volume->DiskKind == DISK_KIND_OPTICAL) {
+        Bootable = TRUE;
+    }
+
     if (!Bootable) {
-        #if REFIT_DEBUG > 0
         if (Volume->HasBootCode) {
+            #if REFIT_DEBUG > 0
             CHAR16 *MsgStr = L"Considered Non-Bootable but Boot Code is Present";
             if (DoneHeadings) {
                 if (HybridLogger) {
@@ -1977,10 +1966,10 @@ VOID ScanVolume (
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
             SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
-        }
-        #endif
+            #endif
 
-        Volume->HasBootCode = FALSE;
+            Volume->HasBootCode = FALSE;
+        }
     }
 
     if (HybridLogger) {

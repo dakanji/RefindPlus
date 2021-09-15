@@ -38,10 +38,15 @@
 # associated "PreBoot" partitions will be hidden from view. This arrangement also permits
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled, this "help" with APFS partitions will be deactivated.
+#
 # NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
 # to improve the reliability of this option distinguishing between partitions.
 #
-# APFS partition synchronisation is allowed (if required) when commented out
+# Note that this setting is automatically enabled by RefindPlus, and APFS
+# partition syncing therefore disabled, if the host computer has more
+# than one Mac OS instance installed into any one APFS container.
+#
+# APFS partition synchronisation is allowed when commented out
 #
 #decline_apfssync
 
@@ -410,7 +415,7 @@
 # commands, added in Mac OS v11.x (Big Sur), set values of 10 (ON) and 87F (OFF)
 # respectively, when run along with the "csrutil enable / disable" commands.
 #
-# As of Mac OS v11.x (Big Sur), the previous default setting of 10 (ON)
+# As of Mac OS v11.x (Big Sur), the previous default setting of "10" (ON)
 # may leave Macs not able to receive "Over The Air" (OTA) updates from
 # Apple with the reliable setting being enabling SIP/SSV by clearing
 # the stored CSR value in the NVRAM. RefindPlus will clear the CSR
