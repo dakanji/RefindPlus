@@ -117,6 +117,10 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     EFI_FILE_PROTOCOL   *LogFile;
     CHAR16              *ourDebugLog = NULL;
 
+    if (GlobalConfig.LogLevel < 0) {
+        return NULL;
+    }
+
     // get RootDir from device we are loaded from
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -237,10 +241,15 @@ VOID EFIAPI MemLogCallback (
     IN INTN DebugMode,
     IN CHAR8 *LastMessage
 ) {
-    // Print message to console
-    if (DebugMode >= 2) {
-        AsciiPrint (LastMessage);
+
+    if (GlobalConfig.LogLevel < 0) {
+        return;
     }
+
+    // Print message to console
+    //if (DebugMode >= 2) {
+    //    AsciiPrint (LastMessage);
+    //}
 
     if ( (DebugMode >= 1) ) {
         SaveMessageToDebugLogFile (LastMessage);

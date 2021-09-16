@@ -70,6 +70,8 @@
 #define ENCODING_UTF8       (1)
 #define ENCODING_UTF16_LE   (2)
 
+#define MAXLOGLEVEL         (4)
+
 #define GetTime gST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
 
@@ -781,6 +783,10 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
             // Signed integer as can have negative value (DA-TAG: negative disables logging - Not documented)
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
+            // Disable Logging on invalid max setting
+            if (GlobalConfig.LogLevel > MAXLOGLEVEL) {
+                GlobalConfig.LogLevel = -1;
+            }
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
