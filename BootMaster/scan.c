@@ -1696,18 +1696,18 @@ VOID ScanEfiFiles (
         return;
     }
 
-    if (GlobalConfig.SyncAPFS &&
-        MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
-    ) {
-        // Early Return on Cloaked Volume
-        return;
-    }
-
     if (!Volume->IsReadable ||
         Volume->RootDir == NULL ||
         Volume->VolName == NULL
     ) {
         // Early Return on Invalid Volume
+        return;
+    }
+
+    if (GlobalConfig.SyncAPFS &&
+        MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
+    ) {
+        // Early Return on Cloaked Volume
         return;
     }
 
