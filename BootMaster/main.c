@@ -157,13 +157,11 @@ REFIT_CONFIG GlobalConfig = {
     /* RequestedScreenHeight = */ 0,
     /* BannerBottomEdge = */ 0,
     /* RequestedTextMode = */ DONT_CHANGE_TEXT_MODE,
-    /* Timeout = */ 0,
     /* HideUIFlags = */ 0,
     /* MaxTags = */ 0,
     /* GraphicsFor = */ GRAPHICS_FOR_OSX,
     /* LegacyType = */ LEGACY_TYPE_MAC,
     /* ScanDelay = */ 0,
-    /* ScreensaverTime = */ 0,
     /* MouseSpeed = */ 4,
     /* IconSizes = */ {
         DEFAULT_BIG_ICON_SIZE / 4,
@@ -172,6 +170,8 @@ REFIT_CONFIG GlobalConfig = {
         DEFAULT_MOUSE_SIZE
     },
     /* BannerScale = */ BANNER_NOSCALE,
+    /* ScreensaverTime = */ 0,
+    /* Timeout = */ 0,
     /* ScaleUI = */ 0,
     /* ActiveCSR = */ 0,
     /* LogLevel = */ 0,

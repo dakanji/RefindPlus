@@ -381,13 +381,29 @@ VOID FreeTokenLine (
     FreeList ((VOID ***) TokenList, TokenCount);
 }
 
-// handle a parameter with a single integer argument
+// handle a parameter with a single integer argument (unsigned)
 static
-VOID
-HandleInt (
-    IN CHAR16 **TokenList,
-    IN UINTN TokenCount,
-    OUT UINTN *Value
+VOID HandleInt (
+    IN  CHAR16 **TokenList,
+    IN  UINTN    TokenCount,
+    OUT UINTN   *Value
+) {
+    if (TokenCount == 2) {
+       if (StrCmp (TokenList[1], L"-1") == 0) {
+           *Value = -1;
+       }
+       else {
+           *Value = Atoi (TokenList[1]);
+       }
+    }
+}
+
+// handle a parameter with a single integer argument (signed)
+static
+VOID HandleSignedInt (
+    IN  CHAR16 **TokenList,
+    IN  UINTN    TokenCount,
+    OUT INTN    *Value
 ) {
     if (TokenCount == 2) {
        if (StrCmp (TokenList[1], L"-1") == 0) {
@@ -700,7 +716,8 @@ VOID ReadConfig (
         }
 
         if (MyStriCmp (TokenList[0], L"timeout")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.Timeout));
+            // Signed integer as can have negative value
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.Timeout));
         }
         else if (MyStriCmp (TokenList[0], L"shutdown_after_timeout")) {
            GlobalConfig.ShutdownAfterTimeout = HandleBoolean (TokenList, TokenCount);
@@ -762,7 +779,8 @@ VOID ReadConfig (
             HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
+            // Signed integer as can have negative value (DA-TAG: negative disables logging - Not documented)
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
@@ -912,7 +930,8 @@ VOID ReadConfig (
             }
         }
         else if (MyStriCmp (TokenList[0], L"screensaver")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
+            // Signed integer as can have negative value
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
         }
         else if (MyStriCmp (TokenList[0], L"use_graphics_for")) {
             if ((TokenCount == 2) || ((TokenCount > 2) && (!MyStriCmp (TokenList[1], L"+")))) {
@@ -1046,10 +1065,12 @@ VOID ReadConfig (
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
+            // Signed integer as can have negative value
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
         else if (MyStriCmp (TokenList[0], L"active_csr")) {
-            HandleInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
+            // Signed integer as can have negative value
+            HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
         }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
             HandleInt (TokenList, TokenCount, &i);

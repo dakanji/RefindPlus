@@ -7,6 +7,9 @@
   * This is typically due to customisation of the firmware as on Late Intel Macs such as the MacMini8,1
   * This affected running the DEBUG build on such units
   * RefindPlus now accommodates this situation.
+- Fixes Implicit Casting of Some Config Integers
+  * Some config tokens that could take negative values such as "screensaver" were handled as Unsigned Integers
+  * These are now correctly handled as Signed Integers
 - Fixes Text Mode Selected Menu Item Display
   * The selected item in text mode menus was not displayed
   * The selections had to be toggled to display the item
