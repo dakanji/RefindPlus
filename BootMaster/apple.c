@@ -595,7 +595,12 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
         );
 
         if (*ContainerInfo == NULL) {
-            ReleasePtr (*VolumeInfo);
+            // DA-TAG: Checking NULL status should not be needed before
+            //         'ReleasePtr' but Coverity complains on this one
+            if (*VolumeInfo != NULL) {
+                ReleasePtr (*VolumeInfo);
+            }
+
             return EFI_NOT_FOUND;
         }
     }

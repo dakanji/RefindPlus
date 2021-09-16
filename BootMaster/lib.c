@@ -2110,8 +2110,7 @@ VOID SetPreBootLabel (
             TmpLabel  = StrDuplicate (Volumes[Index]->VolName);
             StrLength = StrLen (TmpLabel);
 
-            if (TmpLabel != NULL
-                && StrLength != 0
+            if (StrLength != 0
                 && !MyStriCmp (TmpLabel, L"")
                 && !MyStriCmp (TmpLabel, L"VM")
                 && !MyStriCmp (TmpLabel, L"Update")
@@ -3750,7 +3749,9 @@ VOID MyFreePool (
 VOID ReleasePtr (
     IN OUT VOID *Pointer
 ) {
-    MyFreePool (&Pointer);
+    if (Pointer != NULL) {
+        MyFreePool (&Pointer);
+    }
 }
 
 // Eject all removable media.
