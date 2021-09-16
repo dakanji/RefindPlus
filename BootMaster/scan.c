@@ -2480,7 +2480,10 @@ BOOLEAN IsValidTool (
     else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
         DontScanTools = StrDuplicate (gHiddenTools);
     }
-    MergeStrings (&DontScanTools, GlobalConfig.DontScanTools, L',');
+
+    if (!MyStriCmp (gHiddenTools, L"NotSet")) {
+        MergeStrings (&DontScanTools, GlobalConfig.DontScanTools, L',');
+    }
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
