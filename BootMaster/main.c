@@ -90,7 +90,7 @@ REFIT_MENU_ENTRY MenuEntryReturn = {
 };
 
 REFIT_MENU_SCREEN MainMenu = {
-    L"Main Menu",
+    L"MainMenu",
     NULL,
     0, NULL, 0,
     NULL, 0, L"Automatic boot",

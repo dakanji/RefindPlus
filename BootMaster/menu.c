@@ -440,9 +440,7 @@ VOID AddMenuEntry (
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
         L"Adding Menu Entry to %s:- '%s'",
-        MyStrStr (Screen->Title, L"Main Menu")
-            ? L"MainMenu"
-            : Screen->Title,
+        Screen->Title,
         Entry->Title
     );
     #endif
@@ -1062,7 +1060,7 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting a keypress is too low
     if (!ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"Main Menu")
+        MyStriCmp (Screen->Title, L"MainMenu")
     ) {
         UINT64 MenuExitTime = GetCurrentSecond();
 
