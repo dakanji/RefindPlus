@@ -311,21 +311,25 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = TRUE;
 
         // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit   = 255;
+        UINTN   Limit   = 510;
         BOOLEAN LongStr = FALSE;
         BOOLEAN NoLnBrk = (Tmp[-1] != '\n') ? TRUE : FALSE;
         BOOLEAN BiLnBrk = (Tmp[-2] == '\n') ? TRUE : FALSE;
 
-        LongStr = TruncateString (Tmp, Limit);
-        DoneMsg = (NoLnBrk)
-            ? PoolPrint (L"%s", Tmp)
-            : (!BiLnBrk)
-                ? PoolPrint (L"%s\n", Tmp)
-                : PoolPrint (L"%s\n\n", Tmp);
+        LongStr = TruncateString (Tmp, Limit - 1);
 
         if (!LongStr) {
-            Limit = StrLen (DoneMsg) + 1;
+            Limit = StrLen (Tmp) + 1;
         }
+        else {
+            Tmp[Limit - 2] = '\n'
+
+            if (BiLnBrk) {
+                Tmp[Limit - 3] = '\n'
+            }
+        }
+
+        DoneMsg = PoolPrint (L"%s", Tmp);
 
         CHAR8 FormatMsg[Limit + 1];
         MyUnicodeStrToAsciiStr (DoneMsg, FormatMsg);
