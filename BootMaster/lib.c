@@ -2761,10 +2761,8 @@ VOID ScanVolumes (VOID) {
         }
         else {
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-            MsgLog (
-                "INFO: Self Volume:- '%s ::: %s'\n\n",
-                SelfVolume->VolName, SelfGUID
-            );
+            MsgLog ("INFO: Self Volume:- '%s ::: %s'\n", SelfVolume->VolName, SelfGUID);
+            MsgLog ("      Self Folder:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"NotSet");
             MyFreePool (&SelfGUID);
         }
         #endif
