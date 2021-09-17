@@ -694,7 +694,7 @@ CHAR16 * GetScanCodeText (
     } // switch
 
     return retval;
-}
+} // static CHAR16 * GetScanCodeText()
 #endif
 
 UINTN RunGenericMenu (
@@ -1176,7 +1176,9 @@ VOID TextMenuStyle (
                 // TODO: Review the above and possibly change other uses of SPrint()
                 DisplayStrings[i] = AllocateZeroPool (2 * sizeof (CHAR16));
                 DisplayStrings[i][0] = L' ';
+                MuteLogger = TRUE;
                 MergeStrings (&DisplayStrings[i], Screen->Entries[i]->Title, 0);
+                MuteLogger = FALSE;
                 if (StrLen (DisplayStrings[i]) > MenuWidth) {
                     DisplayStrings[i][MenuWidth - 1] = 0;
                 }

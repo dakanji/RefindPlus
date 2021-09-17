@@ -388,6 +388,7 @@ VOID GenerateSubScreen (
     CHAR16              DiagsFileName[256];
     UINTN               TokenCount;
     REFIT_FILE         *File;
+    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... A - START MAIN");
 
     // create the submenu
     if (StrLen (Entry->Title) == 0) {
@@ -483,46 +484,86 @@ VOID GenerateSubScreen (
             }
         }
         else if (Entry->OSType == 'L') {   // entries for Linux kernels with EFI stub loaders
+            LOG(5, LOG_BLANK_LINE_SEP, L"X");
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 1 - START for OSType L");
             File = ReadLinuxOptionsFile (Entry->LoaderPath, Volume);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2");
             if (File) {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 1");
                 InitrdName    = FindInitrd (Entry->LoaderPath, Volume);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 2");
                 TokenCount    = ReadTokenLine (File, &TokenList);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 3");
                 KernelVersion = FindNumbers (Entry->LoaderPath);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 4");
                 ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
 
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 5");
                 // first entry requires special processing, since it was initially set
                 // up with a default title but correct options by InitializeSubScreen(),
                 // earlier.
                 if ((TokenCount > 1) && (SubScreen->Entries != NULL) && (SubScreen->Entries[0] != NULL)) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 5a 1");
                     MyFreePool (&SubScreen->Entries[0]->Title);
                     SubScreen->Entries[0]->Title = TokenList[0]
                         ? StrDuplicate (TokenList[0])
                         : StrDuplicate (L"Boot Linux");
+
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 5a 2");
                 }
 
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 6");
                 FreeTokenLine (&TokenList, &TokenCount);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7");
                 while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
+                    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 1 START WHILE LOOP");
                     ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 2");
                     SubEntry = InitializeLoaderEntry (Entry);
+
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3");
                     if (SubEntry != NULL) {
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3a 1");
                         SubEntry->me.Title = TokenList[0]
                             ? StrDuplicate (TokenList[0])
                             : StrDuplicate (L"Boot Linux");
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3a 2");
                         MyFreePool (&SubEntry->LoadOptions);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3a 3");
                         SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3a 4");
                         SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 3a 5");
                         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
                     }
 
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 4");
                     FreeTokenLine (&TokenList, &TokenCount);
+
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 7a 5 END WHILE LOOP");
+                    LOG(5, LOG_BLANK_LINE_SEP, L"X");
                 } // while
                 FreeTokenLine (&TokenList, &TokenCount);
 
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 8");
                 MyFreePool (&KernelVersion);
                 MyFreePool (&InitrdName);
                 MyFreePool (&File);
-            } // if File
 
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 9");
+            } // if File
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 3 END for OSType L");
         }
         else if (Entry->OSType == 'E') {   // entries for ELILO
             SubEntry = InitializeLoaderEntry (Entry);
@@ -590,10 +631,18 @@ VOID GenerateSubScreen (
             }
         } // entries for xom.efi
 
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1 - START");
         if (GenerateReturn) {
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1a 1");
             AddMenuEntry (SubScreen, &MenuEntryReturn);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1a 2");
         }
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 2");
         Entry->me.SubScreen = SubScreen;
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 3 END MAIN - VOID GenerateSubScreen");
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
     }
 } // VOID GenerateSubScreen()
 
@@ -611,7 +660,11 @@ VOID SetLoaderDefaults (
     CHAR16   ShortcutLetter = 0;
     BOOLEAN  MergeFsName    = FALSE;
 
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 1 - START");
     NameClues = Basename (LoaderPath);
+
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 2");
     PathOnly  = FindPath (LoaderPath);
 
     #if REFIT_DEBUG > 0
@@ -621,7 +674,9 @@ VOID SetLoaderDefaults (
     );
     #endif
 
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3");
     if (!AllowGraphicsMode) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3a 1");
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
             L"In SetLoaderDefaults ... Skipped Loading Icon in Text Mode"
@@ -629,11 +684,17 @@ VOID SetLoaderDefaults (
         #endif
     }
     else {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1");
         if (Volume->DiskKind == DISK_KIND_NET) {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 1");
             MergeStrings (&NameClues, Entry->me.Title, L' ');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2");
         }
         else {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1");
             if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1a 1");
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"Trying to Display '.VolumeIcon' Image");
                 #endif
@@ -641,21 +702,29 @@ VOID SetLoaderDefaults (
                 // use a ".VolumeIcon" image icon for the loader
                 // Takes precedence all over options
                 Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1a 2");
             }
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2");
             if (!Entry->me.Image) {
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 1");
                 #if REFIT_DEBUG > 0
                 if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
                     LOG(3, LOG_LINE_NORMAL, L"Could Not Display '.VolumeIcon' Image!!");
                 }
                 #endif
 
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2");
                 BOOLEAN MacFlag = FALSE;
                 if (LoaderPath && MyStrStrIns (LoaderPath, L"System\\Library\\CoreServices")) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2a 1");
                     MacFlag = TRUE;
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2a 2");
                 }
 
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3");
                 if (!GlobalConfig.SyncAPFS || !MacFlag) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1");
                     CHAR16 *NoExtension = StripEfiExtension (NameClues);
                     if (NoExtension != NULL) {
                         // locate a custom icon for the loader
@@ -664,24 +733,35 @@ VOID SetLoaderDefaults (
                         LOG(3, LOG_LINE_NORMAL, L"Search for Icon in Bootloader Directory");
                         #endif
 
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 1");
                         if (!Entry->me.Image) {
+                            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 1a 1");
                             Entry->me.Image = egLoadIconAnyType (
                                 Volume->RootDir,
                                 PathOnly,
                                 NoExtension,
                                 GlobalConfig.IconSizes[ICON_SIZE_BIG]
                             );
+                            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 1a 2");
                         }
 
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2");
                         if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons) {
+                            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2a 1");
                             Entry->me.Image = egCopyImage (Volume->VolIconImage);
+                            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2a 2");
                         }
 
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 3");
                         MyFreePool (&NoExtension);
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 4");
                     }
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 2");
                 }
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 4");
             }
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 3");
             // Begin creating icon "hints" by using last part of directory path leading
             // to the loader
             #if REFIT_DEBUG > 0
@@ -693,26 +773,40 @@ VOID SetLoaderDefaults (
             }
             #endif
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 4");
             CHAR16 *Temp = FindLastDirName (LoaderPath);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 5");
             MergeStrings (&OSIconName, Temp, L',');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 6");
             MyFreePool (&Temp);
             Temp = NULL;
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 7");
             if (OSIconName != NULL) {
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 7a 1");
                 ShortcutLetter = OSIconName[0];
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 7a 2");
             }
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8");
             // Add every "word" in the filesystem and partition names, delimited by
             // spaces, dashes (-), underscores (_), or colons (:), to the list of
             // hints to be used in searching for OS icons.
             if (Volume->FsName && (Volume->FsName[0] != L'\0')) {
                 MergeFsName = TRUE;
 
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 1");
                 if (MyStrStrIns (Volume->FsName, L"PreBoot") && GlobalConfig.SyncAPFS) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 1a 1");
                     MergeFsName = FALSE;
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 1a 2");
                 }
 
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2");
                 if (MergeFsName) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2a 1");
                     #if REFIT_DEBUG > 0
                     if (Entry->me.Image == NULL) {
                         LOG(3, LOG_LINE_NORMAL,
@@ -722,9 +816,12 @@ VOID SetLoaderDefaults (
                     }
                     #endif
 
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2a 2");
                     MergeWords (&OSIconName, Volume->FsName, L',');
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2a 3");
                 }
                 else {
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1");
                     if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
                         #if REFIT_DEBUG > 0
                         if (Entry->me.Image == NULL) {
@@ -735,11 +832,17 @@ VOID SetLoaderDefaults (
                         }
                         #endif
 
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 1");
                         MergeWords (&OSIconName, Volume->VolName, L',');
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 2");
                     }
+                    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 2");
                 }
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 3");
             }
 
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9");
             if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
                 #if REFIT_DEBUG > 0
                 if (Entry->me.Image == NULL) {
@@ -750,117 +853,207 @@ VOID SetLoaderDefaults (
                 }
                 #endif
 
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9a 1");
                 MergeWords (&OSIconName, Volume->PartName, L',');
+                LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9a 2");
             }
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 3");
         } // if/else Volume->DiskKind == DISK_KIND_NET
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 2");
     }
 
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4");
     if (!AllowGraphicsMode) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4a 1");
         #if REFIT_DEBUG > 0
         if (Entry->me.Image == NULL) {
             LOG(3, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
         }
         #endif
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4a 2");
     }
 
     // detect specific loaders
-    if (StriSubCmp (L"bzImage", NameClues) ||
-        StriSubCmp (L"vmlinuz", NameClues) ||
-        StriSubCmp (L"kernel", NameClues)
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5");
+    if (StriSubCmp (L"bzImage", NameClues)
+        || StriSubCmp (L"vmlinuz", NameClues)
+        || StriSubCmp (L"kernel", NameClues)
     ) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 1");
         if (Volume->DiskKind != DISK_KIND_NET) {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 1a 1");
             GuessLinuxDistribution (&OSIconName, Volume, LoaderPath);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 1a 2");
             Entry->LoadOptions = GetMainLinuxOptions (LoaderPath, Volume);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 1a 3");
         }
 
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 2");
         MergeStrings (&OSIconName, L"linux", L',');
         Entry->OSType = 'L';
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 3");
         if (ShortcutLetter == 0) {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 3a 1");
             ShortcutLetter = 'L';
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 3a 2");
         }
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 4");
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 5");
     }
     else if (StriSubCmp (L"refit", LoaderPath)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5b 1");
         MergeStrings (&OSIconName, L"refit", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5b 2");
         Entry->OSType = 'R';
         ShortcutLetter = 'R';
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5b 3");
     }
     else if (StriSubCmp (L"refind", LoaderPath)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5c 1");
         MergeStrings (&OSIconName, L"refind", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5c 2");
         Entry->OSType = 'R';
         ShortcutLetter = 'R';
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5c 3");
     }
     else if (StriSubCmp (MACOSX_LOADER_PATH, LoaderPath)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1");
         if (FileExists (Volume->RootDir, L"EFI\\refind\\config.conf") ||
             FileExists (Volume->RootDir, L"EFI\\refind\\refind.conf")
         ) {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1a 1");
             MergeStrings (&OSIconName, L"refind", L',');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1a 2");
             Entry->OSType = 'R';
             ShortcutLetter = 'R';
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1a 3");
         }
         else {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1b 1");
             MergeStrings (&OSIconName, L"mac", L',');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1b 2");
             Entry->OSType = 'M';
             ShortcutLetter = 'M';
             Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
+
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 1b 3");
         }
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5d 2");
     }
     else if (MyStriCmp (NameClues, L"diags.efi")) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5e 1");
         MergeStrings (&OSIconName, L"hwtest", L',');
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5e 2");
     }
     else if (MyStriCmp (NameClues, L"e.efi") ||
         MyStriCmp (NameClues, L"elilo.efi")  ||
         StriSubCmp (L"elilo", NameClues)
     ) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 1");
         MergeStrings (&OSIconName, L"elilo,linux", L',');
         Entry->OSType = 'E';
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 2");
         if (ShortcutLetter == 0) {
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 2a 1");
             ShortcutLetter = 'L';
+            LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 2a 2");
         }
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 3");
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5f 4");
     }
     else if (StriSubCmp (L"grub", NameClues)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5g 1");
         MergeStrings (&OSIconName, L"grub,linux", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5g 2");
         Entry->OSType = 'G';
         ShortcutLetter = 'G';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5g 3");
     }
     else if (MyStriCmp (NameClues, L"cdboot.efi") ||
         MyStriCmp (NameClues, L"bootmgr.efi")  ||
         MyStriCmp (NameClues, L"bootmgfw.efi") ||
         MyStriCmp (NameClues, L"bkpbootmgfw.efi")
     ) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5h 1");
         MergeStrings (&OSIconName, L"win8", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5h 2");
         Entry->OSType = 'W';
         ShortcutLetter = 'W';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5h 3");
     }
     else if (MyStriCmp (NameClues, L"xom.efi")) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5i 1");
         MergeStrings (&OSIconName, L"xom,win,win8", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5i 2");
         Entry->OSType = 'X';
         ShortcutLetter = 'W';
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5i 3");
     }
     else if (MyStriCmp (NameClues, L"opencore")) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5j 1");
         MergeStrings (&OSIconName, L"opencore", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5j 2");
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OPENCORE;
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5j 3");
     }
     else if (MyStriCmp (NameClues, L"clover")) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5k 1");
         MergeStrings (&OSIconName, L"clover", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5k 2");
         Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_CLOVER;
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5k 3");
     }
     else if (StriSubCmp (L"ipxe", NameClues)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5l 1");
+        MergeStrings (&OSIconName, L"network", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5l 2");
         Entry->OSType = 'N';
         ShortcutLetter = 'N';
-        MergeStrings (&OSIconName, L"network", L',');
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5l 3");
     }
+
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 6");
     ToLower (OSIconName);
 
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7");
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7a 1");
         ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
+
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7a 2");
     }
 
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 8");
     Entry->me.ShortcutLetter = ShortcutLetter;
+
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9");
     if (AllowGraphicsMode && Entry->me.Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
@@ -869,12 +1062,18 @@ VOID SetLoaderDefaults (
         );
         #endif
 
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9a 1");
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9a 2");
     }
 
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 10");
     MyFreePool (&PathOnly);
     MyFreePool (&OSIconName);
     MyFreePool (&NameClues);
+
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 11 - END:- VOID");
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID SetLoaderDefaults()
 
 // Add an NVRAM-based EFI boot loader entry to the menu.
@@ -2124,7 +2323,7 @@ EG_IMAGE * GetDiskBadge (IN UINTN DiskType) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Skipped ... Config Setting is Active:- 'HideUI Badges'");
+        LOG(4, LOG_THREE_STAR_MID, L"Skipped ... 3onfig Setting is Active:- 'HideUI Badges'");
         #endif
 
         return NULL;
@@ -2239,6 +2438,7 @@ VOID ScanForBootloaders (
                 L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
                 HiddenTags
             );
+            LOG(3, LOG_BLANK_LINE_SEP, L"X")
             #endif
 
             MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
@@ -2252,6 +2452,7 @@ VOID ScanForBootloaders (
                 L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
                 HiddenLegacy
             );
+            LOG(3, LOG_BLANK_LINE_SEP, L"X")
             #endif
 
             MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');

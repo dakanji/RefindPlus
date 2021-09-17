@@ -120,27 +120,38 @@ CHAR16 * MyStrStr (
     CHAR16 *Src;
     CHAR16 *Sub;
 
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1 - START:- Find '%s' in '%s'", StrCharSet, String);
     if ((String == NULL) || (StrCharSet == NULL)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1a - END:- NULL INPUT");
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return NULL;
     }
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 2");
     Src = String;
     Sub = StrCharSet;
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 3 - WHILE LOOP:- START/ENTER");
     while ((*String != L'\0') && (*StrCharSet != L'\0')) {
         if (*String++ != *StrCharSet) {
-            String = ++Src;
+            String     = ++Src;
             StrCharSet = Sub;
         }
         else {
             StrCharSet++;
         }
-    }
+    } // while
+    //LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 4 - WHILE LOOP:- END/EXIT");
 
     if (*StrCharSet == L'\0') {
+        LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 4a - END:- return CHAR16 *Src (Substring Found)");
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return Src;
     }
 
+    LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 5 - END:- return NULL (Substring not Found)");
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return NULL;
 } // CHAR16 * MyStrStr()
 
@@ -316,47 +327,81 @@ VOID MergeStrings (
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
 
-    if (*First != NULL) {
-        Length1 = StrLen (*First);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 1 - START:- Merge '%s' into '%s'",
+        Second ? Second : L"NULL",
+        *First ? *First : L"NULL"
+    );
+
+    if (*First == NULL) {
+        *First = StrDuplicate (Second);
+        LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 1a 1 - END:- VOID ... Out String = '%s'", *First);
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+
+        return;
     }
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 2");
+    Length1 = StrLen (*First);
+
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 3");
     if (Second != NULL) {
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 3a 1");
         Length2 = StrLen (Second);
+
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 3a 2");
     }
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 4");
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
-    if (!NewString) {
-        CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_SEP, L"%s");
-        #endif
-
-        Print (L"%s\n", MsgStr);
-    }
-    else {
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5");
+    if (NewString) {
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1");
         if ((*First != NULL) && (Length1 == 0)) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 1");
             ReleasePtr (*First);
             *First = NULL;
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 2");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 2");
         NewString[0] = L'\0';
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3");
         if (*First != NULL) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 1");
             StrCat (NewString, *First);
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2");
             if (AddChar) {
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2a 1");
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
+
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2a 2");
             }
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 3");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4");
         if (Second != NULL) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4a 1");
             StrCat (NewString, Second);
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4a 2");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 5");
         ReleasePtr (*First);
         *First = NewString;
+
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 6");
     }
+    LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 6 - END:- VOID ... Out String = '%s'", *First);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeStrings()
 
 // As MergeStrings but does not repeat substrings.
@@ -368,47 +413,75 @@ VOID MergeUniqueStrings (
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
 
-    if (*First != NULL) {
-        Length1 = StrLen (*First);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 1 - START:- Merge '%s' into '%s'",
+        Second ? Second : L"NULL",
+        *First ? *First : L"NULL"
+    );
+    if (*First == NULL) {
+        *First = StrDuplicate (Second);
+        LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 1a 1 - END:- VOID ... Out String = '%s'", *First);
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+
+        return;
     }
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 2");
+    Length1 = StrLen (*First);
+
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3");
     if (Second != NULL) {
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3a 1");
         Length2 = StrLen (Second);
+
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3a 2");
     }
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 4");
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
-    if (!NewString) {
-        CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'NewString'!!";
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_SEP, L"%s");
-        #endif
-
-        Print (L"%s\n", MsgStr);
-    }
-    else {
+    //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5");
+    if (NewString) {
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1");
         if ((*First != NULL) && (Length1 == 0)) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 1");
             ReleasePtr (*First);
             *First = NULL;
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 2");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 2");
         NewString[0] = L'\0';
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3");
         if (*First != NULL) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 1");
             StrCat (NewString, *First);
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2");
             if (AddChar) {
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2a 1");
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
+
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2a 2");
             }
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 3");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4");
         if (Second != NULL) {
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 1");
             BOOLEAN SkipMerge = FALSE;
 
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2");
             if (AddChar) {
                 UINTN   i       = 0;
                 CHAR16 *TestStr = NULL;
 
+                LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER");
                 while (!SkipMerge &&
                     (TestStr = FindCommaDelimited (NewString, i++)) != NULL
                 ) {
@@ -418,20 +491,36 @@ VOID MergeUniqueStrings (
 
                     MyFreePool (&TestStr);
                 } // while
+                LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT");
             }
 
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3");
             if (!SkipMerge) {
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3a 1");
                 StrCat (NewString, Second);
+
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3a 2");
             }
             else if (AddChar) {
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3b 1");
                 // Remove AddChar if not merging this item
                 NewString[Length1] = '\0';
+
+                //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3b 2");
             }
+
+            //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 4");
         }
 
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 5");
         ReleasePtr (*First);
         *First = NewString;
+
+        //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 6");
     }
+
+    LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 6 - END:- VOID ... Out String = '%s'", *First);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeUniqueStrings()
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
@@ -447,15 +536,7 @@ VOID MergeWords (
 
     if (SourceString) {
         Temp = Word = p = StrDuplicate (SourceString);
-        if (!Temp) {
-            CHAR16 *MsgStr = L"In MergeStrings ... Out of Resources While Allocating 'Temp'!!";
-            #if REFIT_DEBUG > 0
-            LOG(2, LOG_THREE_STAR_SEP, L"%s");
-            #endif
-
-            Print (L"%s\n", MsgStr);
-        }
-        else {
+        if (Temp) {
             while (!LineFinished) {
                 if ((*p == L' ') ||
                     (*p == L':') ||
@@ -557,8 +638,9 @@ CHAR16 * FindNumbers (
     UINTN i = 0, StartOfElement, EndOfElement = 0, CopyLength;
     CHAR16 *Found = NULL, *ExtraFound = NULL, *LookFor;
 
-    if (InString == NULL)
+    if (InString == NULL) {
         return NULL;
+    }
 
     StartOfElement = StrLen (InString);
 
@@ -770,29 +852,55 @@ BOOLEAN ReplaceSubstring (
     BOOLEAN WasReplaced = FALSE;
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
-    FoundSearchString = MyStrStr(*MainString, SearchString);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In ReplaceSubstring ... 1 - START:- Replace '%s' with '%s' in '%s'",
+        SearchString, ReplString, *MainString
+    );
+    FoundSearchString = MyStrStr (*MainString, SearchString);
+
+    LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2");
     if (FoundSearchString) {
-        NewString = AllocateZeroPool(sizeof (CHAR16) * StrLen(*MainString));
+        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 1");
+        NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen(*MainString));
+
+        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2");
         if (NewString) {
-            EndString = &(FoundSearchString[StrLen(SearchString)]);
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 1");
+            EndString = &(FoundSearchString[StrLen (SearchString)]);
             FoundSearchString[0] = L'\0';
 
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2");
             if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
+                LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2a 1");
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             }
 
-            StrCpy(NewString, *MainString);
-            MergeStrings(&NewString, ReplString, L'\0');
-            MergeStrings(&NewString, EndString, L'\0');
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 3");
+            StrCpy (NewString, *MainString);
 
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 4");
+            MergeStrings (&NewString, ReplString, L'\0');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 5");
+            MergeStrings (&NewString, EndString, L'\0');
+
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 6");
             MyFreePool (&MainString);
             *MainString = NewString;
 
+            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 7 - WasReplaced = TRUE");
             WasReplaced = TRUE;
         }
+        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 3");
     }
 
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In ReplaceSubstring ... 3 END - return BOOLEAN WasReplaced:- '%s'",
+        WasReplaced ? "TRUE" : "FALSE"
+    );
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return WasReplaced;
 } // BOOLEAN ReplaceSubstring()
 
@@ -979,7 +1087,8 @@ CHAR16 * GetTimeString(VOID) {
 VOID DeleteStringList (
     STRING_LIST *StringList
 ) {
-    STRING_LIST *Current = StringList, *Previous;
+    STRING_LIST *Previous = NULL;
+    STRING_LIST *Current  = StringList;
 
     while (Current != NULL) {
         MyFreePool (&(Current->Value));

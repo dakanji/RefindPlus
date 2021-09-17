@@ -1648,7 +1648,11 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             Options->Encoding = ENCODING_UTF16_LE;
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Read Line from '/etc/fstab' Holding %d Tokens", TokenCount);
+                LOG(3, LOG_LINE_NORMAL,
+                    L"Read Line Holding %d Token%s From '/etc/fstab'",
+                    TokenCount,
+                    (TokenCount == 1) ? L"" : L"s"
+                );
                 #endif
 
                 if (TokenCount > 2) {
@@ -1781,6 +1785,10 @@ REFIT_FILE * ReadLinuxOptionsFile (
     BOOLEAN      FileFound = FALSE;
     REFIT_FILE  *File      = NULL;
 
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 1 - START");
+
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2 - DO LOOP:- START/ENTER");
     do {
         OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
         FullFilename    = FindPath (LoaderPath);
@@ -1808,18 +1816,22 @@ REFIT_FILE * ReadLinuxOptionsFile (
         MyFreePool (&FullFilename);
         OptionsFilename = FullFilename = NULL;
     } while (GoOn);
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3 - DO LOOP:- END/EXIT");
 
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 4");
     if (!FileFound) {
-         // No refind_linux.conf file; look for /etc/fstab and try to pull values from there
-         File = GenerateOptionsFromEtcFstab (Volume);
+        // No refind_linux.conf file; look for /etc/fstab and try to pull values from there
+        File = GenerateOptionsFromEtcFstab (Volume);
 
-         // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
-         if (!File) {
-             File = GenerateOptionsFromPartTypes();
-         }
-     }
+        // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
+        if (!File) {
+            File = GenerateOptionsFromPartTypes();
+        }
+    }
 
-   return (File);
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 5 - END:- return REFIT_FILE *File");
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    return File;
 } // REFIT_FILE * ReadLinuxOptionsFile()
 
 // Retrieve a single line of options from a Linux kernel options file
@@ -1832,15 +1844,36 @@ CHAR16 * GetFirstOptionsFromFile (
     CHAR16      **TokenList;
     REFIT_FILE   *File;
 
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 1 - START");
     File = ReadLinuxOptionsFile (LoaderPath, Volume);
+
+    LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2");
     if (File != NULL) {
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 1");
         TokenCount = ReadTokenLine (File, &TokenList);
+
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2");
         if (TokenCount > 1) {
+            LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2a 1");
             Options = StrDuplicate (TokenList[1]);
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2a 2");
         }
+
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 3");
         FreeTokenLine (&TokenList, &TokenCount);
+
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 4");
         MyFreePool (&File);
+
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 5");
     }
 
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In GetFirstOptionsFromFile ... 3 - END:- return CHAR16 *Options:- '%s'",
+        Options ? Options : L"NULL"
+    );
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return Options;
-} // CHAR16 * GetOptionsFile()
+} // CHAR16 * GetFirstOptionsFromFile()

@@ -1366,7 +1366,7 @@ BOOLEAN SecureBootUninstall (VOID) {
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-            PauseSeconds(9);
+            PauseSeconds (9);
 
             REFIT_CALL_4_WRAPPER(
                 gRT->ResetSystem,
@@ -1441,7 +1441,7 @@ VOID SetConfigFilename (
 
                 PrintUglyText (MsgStr, NEXTLINE);
 
-                PauseSeconds(9);
+                PauseSeconds (9);
                 MyFreePool (&MsgStr);
             } // if/else FileExists (SelfDir, FileName
 
@@ -2062,12 +2062,14 @@ EFI_STATUS EFIAPI efi_main (
 
         SwitchToText (FALSE);
 
+        MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"            Inconsistent EFI Versions Detected            ", NEXTLINE);
         PrintUglyText (L"           Program Behaviour is *NOT* Defined!!           ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = FALSE;
 
         PauseForKey();
 
@@ -2108,12 +2110,14 @@ EFI_STATUS EFIAPI efi_main (
 
         SwitchToText (FALSE);
 
+        MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"       Inconsistent UEFI 2.x Implementation Detected      ", NEXTLINE);
         PrintUglyText (L"           Program Behaviour is *NOT* Defined!!           ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = FALSE;
 
         PauseForKey();
 
@@ -2162,6 +2166,7 @@ EFI_STATUS EFIAPI efi_main (
 
         SwitchToText (FALSE);
 
+        MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"      Could not find a RefindPlus 'config.conf' file      ", NEXTLINE);
@@ -2174,6 +2179,7 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L"     You can rename a refind.conf file as config.conf     ", NEXTLINE);
         PrintUglyText (L" * Will not contain all RefindPlus configuration tokens * ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
+        MuteLogger = FALSE;
 
         PauseForKey();
 

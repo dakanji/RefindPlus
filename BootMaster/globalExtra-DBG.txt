@@ -12,6 +12,7 @@
 #define LOG_THREE_STAR_MID   9
 #define LOG_THREE_STAR_END   10
 #define LOG_STAR_HEAD_SEP    11
+#define LOG_LINE_FORENSIC    12
 
 VOID
 DebugLog (
@@ -25,7 +26,6 @@ DebugLog (
     #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
 #endif
 
-#if REFIT_DEBUG > 0
 extern CHAR16 *gLogTemp;
 
 VOID
@@ -40,4 +40,3 @@ DeepLoggger (
 #define LOG(level, type, ...) \
         gLogTemp = PoolPrint(__VA_ARGS__); \
         DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp);
-#endif

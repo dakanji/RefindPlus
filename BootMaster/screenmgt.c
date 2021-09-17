@@ -688,6 +688,7 @@ VOID PauseForKey (VOID) {
     UINTN   i, WaitOut;
     BOOLEAN Breakout = FALSE;
 
+    MuteLogger = TRUE;
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
@@ -702,6 +703,7 @@ VOID PauseForKey (VOID) {
     }
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
+    MuteLogger = FALSE;
 
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
