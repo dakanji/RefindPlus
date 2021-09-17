@@ -2352,7 +2352,7 @@ VOID SetPrebootVolumes (VOID) {
 
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (
-                L"Multiple APFS Installations in Single Container ... Disabling SyncAFPS"
+                L"Detected Multiple APFS Installations in a Single Container ... Disabling SyncAFPS"
             );
             LOG(3, LOG_BLANK_LINE_SEP, L"X");
             LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);

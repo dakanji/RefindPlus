@@ -1829,7 +1829,8 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     Status = (MokProtocol) ? EFI_SUCCESS : EFI_NOT_STARTED;
-    MsgLog ("INFO: MokProtocol ... %r\n\n", Status);
+    MsgLog ("INFO: MokProtocol ... %r", Status);
+    MsgLog ("\n\n");
     #endif
 
     // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();

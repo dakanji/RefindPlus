@@ -2180,7 +2180,7 @@ VOID egScreenShot (VOID) {
         MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
-        PauseSeconds(3);
+        PauseSeconds (3);
         SwitchToGraphics();
         MyFreePool (&MsgStr);
         MyFreePool (&FileData);
@@ -2206,7 +2206,7 @@ VOID egScreenShot (VOID) {
             MsgLog ("%s\n\n", MsgStr);
             #endif
 
-            PauseSeconds(3);
+            PauseSeconds (3);
             SwitchToGraphics();
             MyFreePool (&MsgStr);
             MyFreePool (&FileData);
@@ -2235,7 +2235,7 @@ VOID egScreenShot (VOID) {
                 MsgLog ("%s\n\n", MsgStr);
                 #endif
 
-                PauseSeconds(3);
+                PauseSeconds (3);
                 SwitchToGraphics();
                 MyFreePool (&MsgStr);
                 MyFreePool (&FileData);
