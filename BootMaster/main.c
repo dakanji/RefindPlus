@@ -239,6 +239,7 @@ BOOLEAN                FlushFailReset       = FALSE;
 BOOLEAN                WarnVersionEFI       = FALSE;
 BOOLEAN                WarnRevisionUEFI     = FALSE;
 BOOLEAN                WarnMissingQVInfo    = FALSE;
+BOOLEAN                SecureBootFailure    = FALSE;
 EFI_GUID               RefindPlusGuid       = REFINDPLUS_GUID;
 EFI_SET_VARIABLE       AltSetVariable;
 EFI_OPEN_PROTOCOL      OrigOpenProtocol;
@@ -1327,21 +1328,16 @@ VOID InitializeLib (
 static
 BOOLEAN SecureBootSetup (VOID) {
     if (secure_mode() && ShimLoaded()) {
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Secure Boot Mode Detected with Loaded Shim ... Adding MOK Extensions");
-        #endif
-
         if (security_policy_install() == EFI_SUCCESS) {
             return TRUE;
         }
 
+        SecureBootFailure = TRUE;
+
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Failed to Install Secure Boot MOK Extensions");
+        MsgLog ("** FATAL ERROR: Failed to Install MOK Secure Boot Extensions");
+        MsgLog ("\n\n");
         #endif
-
-        Print (L"Failed to Install Secure Boot MOK Extensions");
-        PauseForKey();
-
     }
 
     return FALSE;
@@ -1971,6 +1967,36 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Disable Forced Native Logging */
     NativeLogger = FALSE;
+
+    // Show Secure Boot Failure Notice and Shut Down
+    if (SecureBootFailure) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Secure Boot Failure");
+        LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
+        MsgLog ("INFO: User Warning:- '%s ... Forcing Shutdown'\n\n", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
+
+        SwitchToText (FALSE);
+
+        MuteLogger = TRUE;
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        PrintUglyText (L"              Failure Setting Secure Boot Up              ", NEXTLINE);
+        PrintUglyText (L"              Forcing Shutdown in 9 Seconds!              ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = FALSE;
+
+        PauseSeconds (9);
+
+        REFIT_CALL_4_WRAPPER(
+            gRT->ResetSystem,
+            EfiResetShutdown,
+            EFI_SUCCESS,
+            0, NULL
+        );
+    }
 
     // Apply Scan Delay if set
     if (GlobalConfig.ScanDelay > 0) {
