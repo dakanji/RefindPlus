@@ -1326,41 +1326,25 @@ VOID InitializeLib (
 // Returns TRUE on success, FALSE otherwise
 static
 BOOLEAN SecureBootSetup (VOID) {
-    EFI_STATUS  Status;
-    BOOLEAN     Success = FALSE;
-
-    #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Setting Secure Boot Up (If Applicable)");
-    #endif
-
     if (secure_mode() && ShimLoaded()) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Secure Boot Mode Detected with Loaded Shim ... Adding MOK Extensions"
-        );
+        LOG(3, LOG_LINE_NORMAL, L"Secure Boot Mode Detected with Loaded Shim ... Adding MOK Extensions");
         #endif
 
-        Status = security_policy_install();
-        if (Status == EFI_SUCCESS) {
-            Success = TRUE;
+        if (security_policy_install() == EFI_SUCCESS) {
+            return TRUE;
         }
-        else {
-            CHAR16 *MsgStr = L"Secure Boot Disabled ... Doing Nothing";
 
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, MsgStr)
-            MsgLog ("** WARN: %s\n-----------------\n\n");
-            #endif
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_LINE_NORMAL, L"Failed to Install Secure Boot MOK Extensions");
+        #endif
 
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (MsgStr, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        Print (L"Failed to Install Secure Boot MOK Extensions");
+        PauseForKey();
 
-            PauseForKey();
-        }
     }
 
-    return Success;
+    return FALSE;
 } // VOID SecureBootSetup()
 
 // Remove our own Secure Boot extensions.
@@ -1846,6 +1830,11 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Set Secure Boot Up */
     MokProtocol = SecureBootSetup();
+
+    #if REFIT_DEBUG > 0
+    Status = (MokProtocol) ? EFI_SUCCESS : EFI_NOT_STARTED;
+    MsgLog ("INFO: MokProtocol ... %r\n\n", Status);
+    #endif
 
     // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
     // however, if drivers are loaded, a second call to ScanVolumes() is needed
