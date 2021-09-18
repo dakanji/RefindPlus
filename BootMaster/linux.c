@@ -164,7 +164,7 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
     LOG(3, LOG_LINE_NORMAL, L"Located initrd is '%s'", InitrdName);
     #endif
 
-    return (InitrdName);
+    return InitrdName;
 } // static CHAR16 * FindInitrd()
 
 // Adds InitrdPath to Options, but only if Options does not already include an
@@ -175,7 +175,10 @@ CHAR16 * FindInitrd(IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume) {
 // of initrd options.
 // Returns a pointer to a new string. The calling function is responsible for
 // freeing its memory.
-CHAR16 * AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
+CHAR16 * AddInitrdToOptions (
+    CHAR16 *Options,
+    CHAR16 *InitrdPath
+) {
     CHAR16 *NewOptions = NULL;
 
     if (Options != NULL)
@@ -199,7 +202,10 @@ CHAR16 * AddInitrdToOptions(CHAR16 *Options, CHAR16 *InitrdPath) {
 // Returns options for a Linux kernel. Reads them from an options file in the
 // kernel's directory; and if present, adds an initrd= option for an initial
 // RAM disk file with the same version number as the kernel file.
-CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
+CHAR16 * GetMainLinuxOptions (
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
     CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
 
     Options       = GetFirstOptionsFromFile(LoaderPath, Volume);
@@ -212,7 +218,7 @@ CHAR16 * GetMainLinuxOptions(IN CHAR16 * LoaderPath, IN REFIT_VOLUME *Volume) {
     MyFreePool (&InitrdName);
     MyFreePool (&KernelVersion);
 
-    return (FullOptions);
+    return FullOptions;
 } // static CHAR16 * GetMainLinuxOptions()
 
 // Read the specified file and add values of "ID", "NAME", or "DISTRIB_ID" tokens to
@@ -236,13 +242,16 @@ VOID ParseReleaseFile (
     }
 
     if (FileExists (Volume->RootDir, FileName) &&
-        (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)) {
+        (RefitReadFile (Volume->RootDir, FileName, &File, &FileSize) == EFI_SUCCESS)
+    ) {
         do {
             TokenCount = ReadTokenLine (&File, &TokenList);
             if ((TokenCount > 1) &&
-                (MyStriCmp (TokenList[0], L"ID") ||
-                MyStriCmp (TokenList[0], L"NAME") ||
-                MyStriCmp (TokenList[0], L"DISTRIB_ID"))
+                (
+                    MyStriCmp (TokenList[0], L"ID") ||
+                    MyStriCmp (TokenList[0], L"NAME") ||
+                    MyStriCmp (TokenList[0], L"DISTRIB_ID")
+                )
             ) {
                 MergeWords (OSIconName, TokenList[1], L',');
             }
@@ -256,7 +265,11 @@ VOID ParseReleaseFile (
 
 // Try to guess the name of the Linux distribution & add that name to
 // OSIconName list.
-VOID GuessLinuxDistribution(CHAR16 **OSIconName, REFIT_VOLUME *Volume, CHAR16 *LoaderPath) {
+VOID GuessLinuxDistribution (
+    CHAR16       **OSIconName,
+    REFIT_VOLUME  *Volume,
+    CHAR16        *LoaderPath
+) {
     // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.
     ParseReleaseFile(OSIconName, Volume, L"etc\\lsb-release");
     ParseReleaseFile(OSIconName, Volume, L"etc\\os-release");

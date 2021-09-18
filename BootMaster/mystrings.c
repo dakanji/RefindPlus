@@ -766,8 +766,8 @@ BOOLEAN DeleteItemFromCsvList (
     if ((ToDelete == NULL) || (List == NULL))
         return FALSE;
 
-    if ((Found = MyStrStr(List, ToDelete)) != NULL) {
-        if ((Comma = MyStrStr(Found, L",")) == NULL) {
+    if ((Found = MyStrStr (List, ToDelete)) != NULL) {
+        if ((Comma = MyStrStr (Found, L",")) == NULL) {
             // Found is final element
             if (Found == List) { // Found is ONLY element
                 List[0] = L'\0';
@@ -778,7 +778,7 @@ BOOLEAN DeleteItemFromCsvList (
             } // if/else
         }
         else { // Found is NOT final element
-            StrCpy(Found, &Comma[1]);
+            StrCpy (Found, &Comma[1]);
         }
 
         return TRUE;
@@ -798,8 +798,8 @@ BOOLEAN IsIn (
    CHAR16    *OneElement;
 
    if (SmallString && List) {
-      while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
-         if (MyStriCmp(OneElement, SmallString)) {
+      while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
+         if (MyStriCmp (OneElement, SmallString)) {
              Found = TRUE;
          }
          MyFreePool (&OneElement);
@@ -820,17 +820,17 @@ BOOLEAN IsInSubstring (
     CHAR16  *OneElement;
 
     if (BigString && List) {
-        while (!Found && (OneElement = FindCommaDelimited(List, i++))) {
+        while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
             ElementLength = StrLen(OneElement);
             if ((ElementLength <= StrLen(BigString)) &&
                 (ElementLength > 0) &&
-                (StriSubCmp(OneElement, BigString))
+                (StriSubCmp (OneElement, BigString))
             ) {
                 Found = TRUE;
             } // if
 
-            if ((ElementLength <= StrLen(BigString)) &&
-                (StriSubCmp(OneElement, BigString))
+            if ((ElementLength <= StrLen (BigString)) &&
+                (StriSubCmp (OneElement, BigString))
             ) {
                 Found = TRUE;
             }
@@ -898,7 +898,7 @@ BOOLEAN ReplaceSubstring (
 
     LOG(5, LOG_LINE_FORENSIC,
         L"In ReplaceSubstring ... 3 END - return BOOLEAN WasReplaced:- '%s'",
-        WasReplaced ? "TRUE" : "FALSE"
+        WasReplaced ? L"TRUE" : L"FALSE"
     );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return WasReplaced;
@@ -942,7 +942,7 @@ UINT64 StrToHex (
         return 0;
     }
 
-    InputLength = StrLen(Input);
+    InputLength = StrLen (Input);
     while ((Pos <= InputLength) && (NumDone < NumChars)) {
         a = Input[Pos];
         if ((a >= '0') && (a <= '9')) {
@@ -984,7 +984,7 @@ BOOLEAN IsGuid (
         retval = FALSE;
     }
     else {
-        Length = StrLen(UnknownString);
+        Length = StrLen (UnknownString);
         if (Length != 36) {
             retval = FALSE;
         }
@@ -997,7 +997,7 @@ BOOLEAN IsGuid (
                         break;
                     }
                 }
-                // DA-TAG: Condotion below can never be met
+                // DA-TAG: Condition below can never be met
                 //         Comment out until review
                 //else if (((a < L'a') || (a > L'f')) &&
                 //    ((a < L'A') || (a > L'F')) &&
@@ -1005,7 +1005,7 @@ BOOLEAN IsGuid (
                 //) {
                 //    retval = FALSE;
                 //    break;
-                //} // if/else if
+                //}
             } // for
         }
     }
