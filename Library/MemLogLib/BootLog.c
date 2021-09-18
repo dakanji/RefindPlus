@@ -312,30 +312,42 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = TRUE;
 
         // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit   = 510;
+        UINTN   Limit   = 275;
         BOOLEAN LongStr = FALSE;
-        BOOLEAN BiLnBrk = (Tmp[-2] == '\n') ? TRUE : FALSE;
+        BOOLEAN LineBrk = (Tmp[-1] == L'\n') ? TRUE : FALSE;
+        BOOLEAN BiLnBrk = (Tmp[-2] == L'\n') ? TRUE : FALSE;
 
-        LongStr = TruncateString (Tmp, Limit - 1);
-
-        if (!LongStr) {
-            Limit = StrLen (Tmp) + 1;
-        }
-        else {
-            Tmp[Limit - 2] = '\n';
-
-            if (BiLnBrk) {
-                Tmp[Limit - 3] = '\n';
+        //if (GlobalConfig.LogLevel < 4) {
+            // Trancate strings if required  on LogLevels 3 and lower
+            LongStr = TruncateString (Tmp, Limit - 1);
+            if (!LongStr) {
+                Limit = StrLen (Tmp) + 1;
             }
-        }
+        //}
 
         DoneMsg = PoolPrint (L"%s", Tmp);
 
-        CHAR8 FormatMsg[Limit + 1];
+        CHAR8 FormatMsg[Limit];
         MyUnicodeStrToAsciiStr (DoneMsg, FormatMsg);
 
         // Write the Message String
         DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
+
+        // Flush the buffer if the string was truncated
+        if (LongStr) {
+            MyFreePool (&DoneMsg);
+
+            DoneMsg = (BiLnBrk)
+                ? StrDuplicate (L" ... Snipped!!\n\n")
+                : (!LineBrk)
+                    ? StrDuplicate (L" ... Snipped!! ") // Do not remove end space
+                    : StrDuplicate (L" ... Snipped!!\n");
+
+            Limit = StrLen (DoneMsg) + 1;
+            CHAR8 EndMsg[Limit];
+            MyUnicodeStrToAsciiStr (DoneMsg, EndMsg);
+            DebugLog (DebugMode, (const CHAR8 *) EndMsg);
+        }
 
         // Disable Native Logging
         UseMsgLog = FALSE;
