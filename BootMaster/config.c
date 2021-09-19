@@ -1496,9 +1496,7 @@ LOADER_ENTRY * AddStanzaEntries (
             else {
                 Entry->me.Title = PoolPrint (
                     L"Boot %s",
-                    (Title != NULL)
-                        ? Title
-                        : L"Unknown"
+                    (Title != NULL) ? Title : L"Unknown"
                 );
             }
         }
@@ -1627,86 +1625,158 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
     REFIT_FILE   *Options = NULL;
     REFIT_FILE   *Fstab   = NULL;
 
-    if (FileExists (Volume->RootDir, L"\\etc\\fstab")) {
-        Fstab = Options = AllocateZeroPool (sizeof (REFIT_FILE));
-        if (Fstab == NULL || Options == NULL) {
-            MyFreePool (&Options);
-            MyFreePool (&Fstab);
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1 - START");
 
-            return NULL;
-        }
+    if (FileExists(Volume->RootDir, L"\\etc\\fstab")) {
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 1");
+        Options = AllocateZeroPool (sizeof(REFIT_FILE));
 
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 2");
+        Fstab = AllocateZeroPool (sizeof(REFIT_FILE));
+
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 3");
         Status = RefitReadFile (Volume->RootDir, L"\\etc\\fstab", Fstab, &i);
-        if (CheckError (Status, L"While Reading Options File:- '/etc/fstab'")) {
-            MyFreePool (&Options);
-            MyFreePool (&Fstab);
 
-            return NULL;
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4");
+        if (CheckError (Status, L"while reading /etc/fstab")) {
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 1");
+            if (Options != NULL) {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 1a 1");
+                MyFreePool (&Options);
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 1a 2");
+            }
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 2");
+            if (Fstab != NULL) {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 2a 1");
+                MyFreePool (&Fstab);
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 2a 2");
+            }
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 3");
+            Options = NULL;
+            Fstab   = NULL;
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4a 4");
         }
         else {
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 1");
             // File read; locate root fs and create entries
             Options->Encoding = ENCODING_UTF16_LE;
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2");
             while ((TokenCount = ReadTokenLine (Fstab, &TokenList)) > 0) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL,
+                LOG(3, LOG_THREE_STAR_MID,
                     L"Read Line Holding %d Token%s From '/etc/fstab'",
                     TokenCount,
                     (TokenCount == 1) ? L"" : L"s"
                 );
                 #endif
 
+                LOG(5, LOG_BLANK_LINE_SEP, L"X");
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1  START WHILE LOOP");
                 if (TokenCount > 2) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1");
                     if (StrCmp (TokenList[1], L"\\") == 0) {
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1a 1");
                         Root = PoolPrint (L"%s", TokenList[0]);
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1a 2");
                     }
                     else if (StrCmp (TokenList[2], L"\\") == 0) {
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1b 1");
                         Root = PoolPrint (L"%s=%s", TokenList[0], TokenList[1]);
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1b 2");
                     }
 
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2");
                     if (Root && (Root[0] != L'\0')) {
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 1");
                         for (i = 0; i < StrLen (Root); i++) {
+                            LOG(5, LOG_BLANK_LINE_SEP, L"X");
+                            LOG(5, LOG_LINE_FORENSIC,
+                                L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 1  START FOR LOOP"
+                            );
                             if (Root[i] == '\\') {
+                                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 1a 1");
                                 Root[i] = '/';
+                                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 1a 2");
                             }
+                            LOG(5, LOG_LINE_FORENSIC,
+                                L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 2  END FOR LOOP"
+                            );
+                            LOG(5, LOG_BLANK_LINE_SEP, L"X");
                         }
 
-                        Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 2");
+                        Line = PoolPrint (L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 3");
                         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 4");
                         MyFreePool (&Line);
 
-                        Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 5");
+                        Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 6");
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
+
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 7");
                         MyFreePool (&Line);
 
-                        Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-                    }
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 8");
+                        Options->BufferSize = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
 
+                        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 9");
+                    } // if
+
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 3");
                     MyFreePool (&Root);
                     Root = NULL;
-                }
 
-                FreeTokenLine (&TokenList, &TokenCount);
+                    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 4");
+                 } // if
+
+                 LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 2");
+                 FreeTokenLine (&TokenList, &TokenCount);
+
+                 LOG(5, LOG_LINE_FORENSIC,
+                     L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 3 END WHILE LOOP"
+                 );
+                 LOG(5, LOG_BLANK_LINE_SEP, L"X");
             } // while
-            FreeTokenLine (&TokenList, &TokenCount);
 
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3");
             if (Options->Buffer) {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3a 1");
                 Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
                 Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
                 Options->Current16Ptr = (CHAR16 *)Options->Buffer;
                 Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3a 2");
             }
             else {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3b 1");
                 MyFreePool (&Options);
                 Options = NULL;
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3b 2");
             }
 
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 4");
             MyFreePool (&Fstab->Buffer);
             MyFreePool (&Fstab);
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 5");
         } // if/else file read error
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 5");
     } // if /etc/fstab exists
 
+    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 2 - END:- return REFIT_FILE *Options");
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return Options;
 } // GenerateOptionsFromEtcFstab()
+
 
 // Create options from partition type codes. Specifically, if the earlier
 // partition scan found a partition with a type code corresponding to a root
@@ -1718,48 +1788,75 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
 // appropriate type code, so this will work poorly on dual-boot systems or
 // if the type code is set incorrectly.
 static
-REFIT_FILE * GenerateOptionsFromPartTypes (
-    VOID
-) {
+REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
     REFIT_FILE   *Options = NULL;
     CHAR16       *Line, *GuidString, *WriteStatus;
 
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1 - START");
     if (GlobalConfig.DiscoveredRoot) {
-        Options = AllocateZeroPool (sizeof (REFIT_FILE));
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 1");
+        Options = AllocateZeroPool (sizeof(REFIT_FILE));
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2");
         if (Options) {
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 1");
             Options->Encoding = ENCODING_UTF16_LE;
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 2");
             GuidString = GuidAsString (&(GlobalConfig.DiscoveredRoot->PartGuid));
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 3");
             WriteStatus = GlobalConfig.DiscoveredRoot->IsMarkedReadOnly ? L"ro" : L"rw";
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 4");
             ToLower (GuidString);
 
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5");
             if (GuidString) {
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 1");
                 Line = PoolPrint (
-                    L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
-                    WriteStatus,
-                    GuidString
+                    L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
+                    WriteStatus, GuidString
                 );
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 2");
                 MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 3");
                 MyFreePool (&Line);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 4");
                 Line = PoolPrint (
-                    L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
-                    WriteStatus,
-                    GuidString
+                    L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
+                    WriteStatus, GuidString
                 );
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 5");
                 MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 6");
                 MyFreePool (&Line);
                 MyFreePool (&GuidString);
-            }
 
-            Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof (CHAR16);
-            Options->Current8Ptr  = (CHAR8 *)Options->Buffer;
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 7");
+            } // if (GuidString)
+
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 6");
+            Options->BufferSize   = StrLen ((CHAR16*) Options->Buffer) * sizeof(CHAR16);
+            Options->Current8Ptr  = (CHAR8 *) Options->Buffer;
             Options->End8Ptr      = Options->Current8Ptr + Options->BufferSize;
-            Options->Current16Ptr = (CHAR16 *)Options->Buffer;
+            Options->Current16Ptr = (CHAR16 *) Options->Buffer;
             Options->End16Ptr     = Options->Current16Ptr + (Options->BufferSize >> 1);
-        }
-    }
+            LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 7");
+        } // if (Options allocated OK)
+        LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 3");
+    } // if (partition has root GUID)
 
+    LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 2 - END:- return REFIT_FILE *Options");
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return Options;
 } // REFIT_FILE * GenerateOptionsFromPartTypes()
+
 
 // Read a Linux kernel options file for a Linux boot loader into memory. The LoaderPath
 // and Volume variables identify the location of the options file, but not its name --
@@ -1771,7 +1868,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (
 // works only if the kernel is being read from the Linux root filesystem.
 //
 // The return value is a pointer to the REFIT_FILE handle for the file, or NULL if
-// it wasn't found.
+// it was not found.
 REFIT_FILE * ReadLinuxOptionsFile (
     IN CHAR16       *LoaderPath,
     IN REFIT_VOLUME *Volume
@@ -1788,51 +1885,88 @@ REFIT_FILE * ReadLinuxOptionsFile (
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 1 - START");
 
-    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2 - DO LOOP:- START/ENTER");
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2");
     do {
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 1  START DO LOOP");
         OptionsFilename = FindCommaDelimited (LINUX_OPTIONS_FILENAMES, i++);
-        FullFilename    = FindPath (LoaderPath);
 
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 2");
+        FullFilename = FindPath (LoaderPath);
+
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3");
         if ((OptionsFilename != NULL) && (FullFilename != NULL)) {
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 1");
             MergeStrings (&FullFilename, OptionsFilename, '\\');
 
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2");
             if (FileExists (Volume->RootDir, FullFilename)) {
-                File = AllocateZeroPool (sizeof (REFIT_FILE));
-                if (File) {
-                    Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
-                    if (!CheckError (Status, L"While Loading the Linux Options File!!")) {
-                        GoOn      = FALSE;
-                        FileFound = TRUE;
+                LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 1");
+                File = AllocateZeroPool(sizeof(REFIT_FILE));
+
+                LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 2");
+                Status = RefitReadFile (Volume->RootDir, FullFilename, File, &size);
+
+                LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3");
+                if (CheckError(Status, L"while loading the Linux options file")) {
+                    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 1");
+                    if (File != NULL) {
+                        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 1a 1");
+                        MyFreePool (&File);
+                        File = NULL;
+                        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 1a 2");
                     }
+                    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 2");
                 }
-            }
+                else {
+                    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3b 1");
+                    GoOn      = FALSE;
+                    FileFound = TRUE;
+                    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3b 2");
+                } // if/else error
+                LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 4");
+            } // if file exists
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 3");
         }
         else {
-            // a filename string is NULL
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3b 1");
             GoOn = FALSE;
-        }
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3b 2");
+        } // if/else
 
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 4");
         MyFreePool (&OptionsFilename);
         MyFreePool (&FullFilename);
+
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 5");
         OptionsFilename = FullFilename = NULL;
+
+        LOG(5, LOG_LINE_FORENSIC,
+            L"In ReadLinuxOptionsFile ... 2a 6 END WHILE LOOP"
+        );
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
     } while (GoOn);
-    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3 - DO LOOP:- END/EXIT");
 
-    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 4");
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3");
     if (!FileFound) {
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3a 1");
         // No refind_linux.conf file; look for /etc/fstab and try to pull values from there
-        File = GenerateOptionsFromEtcFstab (Volume);
+        File = GenerateOptionsFromEtcFstab(Volume);
 
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3a 2");
         // If still no joy, try to use Freedesktop.org Discoverable Partitions Spec
         if (!File) {
-            File = GenerateOptionsFromPartTypes();
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3a 2a 1");
+            File = GenerateOptionsFromPartTypes ();
+            LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3a 2a 2");
         }
-    }
+        LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 3a 3");
+    } // if
 
-    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 5 - END:- return REFIT_FILE *File");
+    LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 4 - END:- return REFIT_FILE *File");
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    return File;
-} // REFIT_FILE * ReadLinuxOptionsFile()
+    return (File);
+} // static REFIT_FILE * ReadLinuxOptionsFile()
 
 // Retrieve a single line of options from a Linux kernel options file
 CHAR16 * GetFirstOptionsFromFile (
@@ -1851,29 +1985,26 @@ CHAR16 * GetFirstOptionsFromFile (
     LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2");
     if (File != NULL) {
         LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 1");
-        TokenCount = ReadTokenLine (File, &TokenList);
+        TokenCount = ReadTokenLine(File, &TokenList);
 
         LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2");
         if (TokenCount > 1) {
-            LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2a 1");
-            Options = StrDuplicate (TokenList[1]);
-
-            LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 2a 2");
+            Options = StrDuplicate(TokenList[1]);
         }
 
         LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 3");
         FreeTokenLine (&TokenList, &TokenCount);
 
-        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 4");
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 3");
         MyFreePool (&File);
 
-        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 5");
-    }
+        LOG(5, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 4");
+    } // if
 
     LOG(5, LOG_LINE_FORENSIC,
-        L"In GetFirstOptionsFromFile ... 3 - END:- return CHAR16 *Options:- '%s'",
+        L"In GetFirstOptionsFromFile ... 3 - END:- return CHAR16 *Options = '%s'",
         Options ? Options : L"NULL"
     );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return Options;
-} // CHAR16 * GetFirstOptionsFromFile()
+} // static CHAR16 * GetOptionsFile()

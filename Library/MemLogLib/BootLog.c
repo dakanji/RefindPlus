@@ -312,7 +312,7 @@ VOID EFIAPI DeepLoggger (
         UseMsgLog = TRUE;
 
         // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit   = 275;
+        UINTN   Limit   = 255;
         BOOLEAN LongStr = FALSE;
         BOOLEAN LineBrk = (Tmp[-1] == L'\n') ? TRUE : FALSE;
         BOOLEAN BiLnBrk = (Tmp[-2] == L'\n') ? TRUE : FALSE;

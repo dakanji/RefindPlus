@@ -121,7 +121,11 @@ CHAR16 * MyStrStr (
     CHAR16 *Sub;
 
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1 - START:- Find '%s' in '%s'", StrCharSet, String);
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MyStrStr ... 1 - START:- Find '%s' in '%s'",
+        StrCharSet ? StrCharSet : L"NULL",
+        String     ? String     : L"NULL"
+    );
     if ((String == NULL) || (StrCharSet == NULL)) {
         LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1a - END:- NULL INPUT");
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
@@ -763,8 +767,9 @@ BOOLEAN DeleteItemFromCsvList (
 ) {
     CHAR16 *Found, *Comma;
 
-    if ((ToDelete == NULL) || (List == NULL))
+    if ((ToDelete == NULL) || (List == NULL)) {
         return FALSE;
+    }
 
     if ((Found = MyStrStr (List, ToDelete)) != NULL) {
         if ((Comma = MyStrStr (Found, L",")) == NULL) {
@@ -855,45 +860,52 @@ BOOLEAN ReplaceSubstring (
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     LOG(5, LOG_LINE_FORENSIC,
         L"In ReplaceSubstring ... 1 - START:- Replace '%s' with '%s' in '%s'",
-        SearchString, ReplString, *MainString
+        SearchString ? SearchString : L"NULL",
+        ReplString   ? ReplString   : L"NULL",
+        *MainString  ? *MainString  : L"NULL"
     );
+    if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
+        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 1a - END:- NULL INPUT");
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        return FALSE;
+    }
     FoundSearchString = MyStrStr (*MainString, SearchString);
 
-    LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2");
+    //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2");
     if (FoundSearchString) {
-        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 1");
+        //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 1");
         NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen(*MainString));
 
-        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2");
+        //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2");
         if (NewString) {
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 1");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 1");
             EndString = &(FoundSearchString[StrLen (SearchString)]);
             FoundSearchString[0] = L'\0';
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2");
             if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
-                LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2a 1");
+                //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2a 1");
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             }
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 3");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 3");
             StrCpy (NewString, *MainString);
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 4");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 4");
             MergeStrings (&NewString, ReplString, L'\0');
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 5");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 5");
             MergeStrings (&NewString, EndString, L'\0');
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 6");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 6");
             MyFreePool (&MainString);
             *MainString = NewString;
 
-            LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 7 - WasReplaced = TRUE");
+            //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 7 - WasReplaced = TRUE");
             WasReplaced = TRUE;
         }
-        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 3");
+        //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 3");
     }
 
     LOG(5, LOG_LINE_FORENSIC,

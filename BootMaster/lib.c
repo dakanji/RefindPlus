@@ -838,12 +838,7 @@ VOID AddListElement (
         }
     }
 
-    if (Abort) {
-        #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID, L"Could Not Allocate Memory for List Elements!!");
-        #endif
-    }
-    else {
+    if (!Abort) {
         (*ListPtr)[*ElementCount] = NewElement;
         (*ElementCount)++;
     }

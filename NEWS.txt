@@ -9,6 +9,8 @@
   * RefindPlus now accommodates this situation.
 - Adds Forced Shutdown on Secure Boot Setup Failure
   * RefindPlus will now shutdown if meant to use secure boot but this could not be set up
+- Fixes Failure to Detect Linux Partitions
+  * Linux partitions were not detected and therefore, could not be booted by RefindPlus
 - Fixes Implicit Casting of Some Config Integers
   * Some config tokens that could take negative values such as "screensaver" were handled as Unsigned Integers
   * These are now correctly handled as Signed Integers
