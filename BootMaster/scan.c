@@ -2496,9 +2496,13 @@ VOID ScanForBootloaders (
 ) {
     UINTN     i;
     CHAR8     ScanOption;
-    BOOLEAN   ScanForLegacy = FALSE;
-    EG_PIXEL  BGColor       = COLOR_LIGHTBLUE;
+    BOOLEAN   ScanForLegacy   = FALSE;
+    BOOLEAN   DeleteItem      = FALSE;
+    BOOLEAN   AmendedDontScan = FALSE;
+    EG_PIXEL  BGColor         = COLOR_LIGHTBLUE;
+    CHAR16   *DontScanItem    = NULL;
     CHAR16   *HiddenTags, *HiddenLegacy;
+    CHAR16   *OrigDontScanDirs;
     CHAR16   *OrigDontScanFiles;
     CHAR16   *OrigDontScanVolumes;
     CHAR16    ShortCutKey;
@@ -2581,6 +2585,77 @@ VOID ScanForBootloaders (
 
         MyFreePool (&HiddenLegacy);
     } // if GlobalConfig.HiddenTags
+
+    // DA-TAG: Override Hidden/Disabled PreBoot Volumes if SyncAPFS is Active
+    if (GlobalConfig.SyncAPFS) {
+        OrigDontScanDirs = StrDuplicate (GlobalConfig.DontScanDirs);
+
+        if (GlobalConfig.DontScanFiles) {
+            while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanFiles, i)) != NULL) {
+                DeleteItem = (MyStrStrIns (DontScanItem, L"Preboot:"))
+                    ? TRUE
+                    : (MyStriCmp (DontScanItem, L"Preboot"))
+                        ? TRUE
+                        : FALSE;
+
+                if (DeleteItem) {
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanFiles);
+                    AmendedDontScan = TRUE;
+                }
+                else {
+                    i++;
+                }
+
+                MyFreePool (&DontScanItem);
+            } // while
+        } // if GlobalConfig
+
+        if (GlobalConfig.DontScanDirs) {
+            while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanDirs, i)) != NULL) {
+                DeleteItem = (MyStrStrIns (DontScanItem, L"Preboot:"))
+                    ? TRUE
+                    : (MyStriCmp (DontScanItem, L"Preboot"))
+                        ? TRUE
+                        : FALSE;
+
+                if (DeleteItem) {
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanDirs);
+                    AmendedDontScan = TRUE;
+                }
+                else {
+                    i++;
+                }
+
+                MyFreePool (&DontScanItem);
+            } // while
+        } // if GlobalConfig
+
+        if (GlobalConfig.DontScanVolumes) {
+            while ((DontScanItem = FindCommaDelimited (GlobalConfig.DontScanVolumes, i)) != NULL) {
+                DeleteItem = (MyStrStrIns (DontScanItem, L"Preboot:"))
+                    ? TRUE
+                    : (MyStriCmp (DontScanItem, L"Preboot"))
+                        ? TRUE
+                        : FALSE;
+
+                if (DeleteItem) {
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanVolumes);
+                    AmendedDontScan = TRUE;
+                }
+                else {
+                    i++;
+                }
+
+                MyFreePool (&DontScanItem);
+            } // while
+        } // if GlobalConfig
+
+        #if REFIT_DEBUG > 0
+        if (AmendedDontScan) {
+            LOG(3, LOG_STAR_SEPARATOR, L"Amended 'Dont Scan Items' ... SyncAPFS is Active");
+        }
+        #endif
+    } // if GlobalConfig.SyncAPFS
 
     // get count of options set to be scanned
     UINTN SetOptions = 0;
@@ -2690,6 +2765,12 @@ VOID ScanForBootloaders (
         MyFreePool (&GlobalConfig.DontScanVolumes);
         GlobalConfig.DontScanFiles   = OrigDontScanFiles;
         GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
+    }
+
+    if (GlobalConfig.SyncAPFS && AmendedDontScan) {
+        MyFreePool (&GlobalConfig.DontScanDirs);
+        GlobalConfig.DontScanDirs = OrigDontScanDirs;
+
     }
 
     if (MainMenu.EntryCount < 1) {
