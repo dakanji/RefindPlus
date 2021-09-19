@@ -262,7 +262,7 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN   Limit    = 125;
+    UINTN   Limit    = 150;
     CHAR16 *Tmp      = NULL;
     CHAR16 *DoneMsg  = NULL;
     CHAR16 *StoreMsg = NULL;
@@ -289,7 +289,7 @@ VOID EFIAPI DeepLoggger (
 
     // Truncate message at LogLevels 3 and lower (if required)
     if (GlobalConfig.LogLevel < 4) {
-        BOOLEAN LongStr = LimitStringLength (*Msg, Limit);
+        BOOLEAN LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
         ReleasePtr (*Msg);
