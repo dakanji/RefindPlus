@@ -52,7 +52,7 @@ CHAR16 * GetAltMonth (VOID) {
     } // switch
 
     return AltMonth;
-}
+} // CHAR16 * GetAltMonth()
 
 static
 CHAR16 * GetAltHour (VOID) {
@@ -86,7 +86,7 @@ CHAR16 * GetAltHour (VOID) {
     } // switch
 
     return AltHour;
-}
+} // CHAR16 * GetAltHour()
 
 static
 CHAR16 * GetDateString (VOID) {
@@ -107,7 +107,7 @@ CHAR16 * GetDateString (VOID) {
     );
 
     return DateStr;
-}
+} // CHAR16 * GetDateString()
 
 static
 EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
@@ -196,7 +196,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     MyFreePool (&ourDebugLog);
 
     return LogFile;
-}
+} // static EFI_FILE_PROTOCOL * GetDebugLogFile()
 
 static
 VOID SaveMessageToDebugLogFile (
@@ -234,7 +234,7 @@ VOID SaveMessageToDebugLogFile (
 
         LogFile->Close (LogFile);
     }
-}
+} // static VOID SaveMessageToDebugLogFile()
 
 static
 VOID EFIAPI MemLogCallback (
@@ -254,7 +254,7 @@ VOID EFIAPI MemLogCallback (
     if ( (DebugMode >= 1) ) {
         SaveMessageToDebugLogFile (LastMessage);
     }
-}
+} // static VOID EFIAPI MemLogCallback()
 
 VOID EFIAPI DeepLoggger (
     IN INTN     DebugMode,
@@ -262,8 +262,10 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    CHAR16 *Tmp     = NULL;
-    CHAR16 *DoneMsg = NULL;
+    UINTN   Limit    = 125;
+    CHAR16 *Tmp      = NULL;
+    CHAR16 *DoneMsg  = NULL;
+    CHAR16 *StoreMsg = NULL;
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
@@ -274,8 +276,8 @@ VOID EFIAPI DeepLoggger (
 
     // Make sure we are able to write
     if (DebugMode < 1
-        || GlobalConfig.LogLevel < 1
         || GlobalConfig.LogLevel < level
+        || GlobalConfig.LogLevel < 1
         || NativeLogger
         || MuteLogger
         || !(*Msg)
@@ -283,6 +285,17 @@ VOID EFIAPI DeepLoggger (
         ReleasePtr (*Msg);
 
         return;
+    }
+
+    // Truncate message at LogLevels 3 and lower (if required)
+    if (GlobalConfig.LogLevel < 4) {
+        BOOLEAN LongStr = LimitStringLength (*Msg, Limit);
+
+        StoreMsg = StrDuplicate (*Msg);
+        ReleasePtr (*Msg);
+        *Msg = (LongStr)
+            ? PoolPrint (L"%s ... Snipped!!", StoreMsg)
+            : StrDuplicate (StoreMsg);
     }
 
     // Disable Timestamp
@@ -311,43 +324,14 @@ VOID EFIAPI DeepLoggger (
         // Use Native Logging
         UseMsgLog = TRUE;
 
-        // Convert Unicode Message String to Ascii ... Control Size/Len First
-        UINTN   Limit   = 255;
-        BOOLEAN LongStr = FALSE;
-        BOOLEAN LineBrk = (Tmp[-1] == L'\n') ? TRUE : FALSE;
-        BOOLEAN BiLnBrk = (Tmp[-2] == L'\n') ? TRUE : FALSE;
-
-        //if (GlobalConfig.LogLevel < 4) {
-            // Trancate strings if required  on LogLevels 3 and lower
-            LongStr = TruncateString (Tmp, Limit - 1);
-            if (!LongStr) {
-                Limit = StrLen (Tmp) + 1;
-            }
-        //}
-
+        // Convert Unicode Message String to Ascii
         DoneMsg = PoolPrint (L"%s", Tmp);
-
+        Limit   = StrLen (DoneMsg) + 1;
         CHAR8 FormatMsg[Limit];
         MyUnicodeStrToAsciiStr (DoneMsg, FormatMsg);
 
         // Write the Message String
         DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
-
-        // Flush the buffer if the string was truncated
-        if (LongStr) {
-            MyFreePool (&DoneMsg);
-
-            DoneMsg = (BiLnBrk)
-                ? StrDuplicate (L" ... Snipped!!\n\n")
-                : (!LineBrk)
-                    ? StrDuplicate (L" ... Snipped!! ") // Do not remove end space
-                    : StrDuplicate (L" ... Snipped!!\n");
-
-            Limit = StrLen (DoneMsg) + 1;
-            CHAR8 EndMsg[Limit];
-            MyUnicodeStrToAsciiStr (DoneMsg, EndMsg);
-            DebugLog (DebugMode, (const CHAR8 *) EndMsg);
-        }
 
         // Disable Native Logging
         UseMsgLog = FALSE;
@@ -356,7 +340,8 @@ VOID EFIAPI DeepLoggger (
     ReleasePtr (*Msg);
     MyFreePool (&Tmp);
     MyFreePool (&DoneMsg);
-}
+    MyFreePool (&StoreMsg);
+} // VOID EFIAPI DeepLoggger()
 
 VOID EFIAPI DebugLog (
     IN INTN DebugMode,
@@ -393,8 +378,8 @@ VOID EFIAPI DebugLog (
 
     TimeStamp = TRUE;
 #endif
-}
+} // VOID EFIAPI DebugLog()
 
 VOID InitBooterLog (VOID) {
     SetMemLogCallback (MemLogCallback);
-}
+} // VOID InitBooterLog()
