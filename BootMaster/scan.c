@@ -2516,7 +2516,7 @@ VOID ScanForBootloaders (
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"Seek Boot Loaders");
     LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("%s...", MsgStr);
+    MsgLog ("%s...\n", MsgStr);
     MyFreePool (&MsgStr);
     #endif
 
@@ -3187,7 +3187,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3230,7 +3230,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3279,7 +3279,7 @@ VOID ScanForTools (VOID) {
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                     #endif
                 }
@@ -3335,7 +3335,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3382,7 +3382,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3430,7 +3430,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3486,7 +3486,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3552,7 +3552,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3571,7 +3571,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3590,7 +3590,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3617,7 +3617,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif
@@ -3666,7 +3666,7 @@ VOID ScanForTools (VOID) {
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
                     LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("* WARN * %s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
                     MyFreePool (&ToolStr);
                 }
                 #endif

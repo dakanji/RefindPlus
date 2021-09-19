@@ -303,7 +303,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         }
 
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes on Handle[%d]:- '%d %s ... 0x%lx-0x%lx Framebuffer'",
+            L"Analyse GOP Modes on Handle[%d]:- %d %s ... 0x%lx-0x%lx Framebuffer",
             SelectedGOP, MaxMode, ModeTxt,
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize

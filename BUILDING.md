@@ -1,5 +1,5 @@
 # Building RefindPlus on Mac OS
-These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for buidling the RefindPlus boot manager on Mac OS.
+These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for building the RefindPlus boot manager on Mac OS.
 
 These steps have been verified on Mac OS v10.12 (Sierra) and Mac OS v10.14 (Mojave) and should also work on Mac OS v10.13 (High Sierra) and Mac OS v10.15 (Catalina).
 
