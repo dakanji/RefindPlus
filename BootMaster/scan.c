@@ -2767,10 +2767,15 @@ VOID ScanForBootloaders (
         GlobalConfig.DontScanVolumes = OrigDontScanVolumes;
     }
 
-    if (GlobalConfig.SyncAPFS && AmendedDontScan) {
-        MyFreePool (&GlobalConfig.DontScanDirs);
-        GlobalConfig.DontScanDirs = OrigDontScanDirs;
+    if (OrigDontScanDirs) {
+        if (GlobalConfig.SyncAPFS && AmendedDontScan) {
+            MyFreePool (&GlobalConfig.DontScanDirs);
+            GlobalConfig.DontScanDirs = OrigDontScanDirs;
 
+        }
+        else {
+            MyFreePool (&OrigDontScanDirs);
+        }
     }
 
     if (MainMenu.EntryCount < 1) {
