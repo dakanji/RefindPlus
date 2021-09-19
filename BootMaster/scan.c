@@ -1040,7 +1040,7 @@ VOID SetLoaderDefaults (
     }
 
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 6");
-    ToLower (OSIconName);
+    //ToLower (OSIconName);
 
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7");
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
