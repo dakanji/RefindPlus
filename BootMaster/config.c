@@ -1487,7 +1487,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 MyFreePool (&Entry->InitrdPath);
 
                 Entry->me.Title = PoolPrint (
-                    L"Boot %s (Firmware Boot Number)",
+                    L"Boot %s [Firmware Boot Number]",
                     (Title != NULL) ? Title : L"Unknown"
                 );
 
@@ -1709,7 +1709,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                         }
 
                         LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 2");
-                        Line = PoolPrint (L"\"Boot with normal options\"    \"ro root=%s\"\n", Root);
+                        Line = PoolPrint (L"\"Boot with Normal Options\"    \"ro root=%s\"\n", Root);
 
                         LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 3");
                         MergeStrings ((CHAR16 **) &(Options->Buffer), Line, 0);
@@ -1718,7 +1718,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                         MyFreePool (&Line);
 
                         LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 5");
-                        Line = PoolPrint (L"\"Boot into single-user mode\"  \"ro root=%s single\"\n", Root);
+                        Line = PoolPrint (L"\"Boot into Single User Mode\"  \"ro root=%s single\"\n", Root);
 
                         LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 2a 6");
                         MergeStrings ((CHAR16**) &(Options->Buffer), Line, 0);
@@ -1815,7 +1815,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
             if (GuidString) {
                 LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 1");
                 Line = PoolPrint (
-                    L"\"Boot with normal options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
+                    L"\"Boot with Normal Options\"    \"%s root=/dev/disk/by-partuuid/%s\"\n",
                     WriteStatus, GuidString
                 );
 
@@ -1827,7 +1827,7 @@ REFIT_FILE * GenerateOptionsFromPartTypes (VOID) {
 
                 LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromPartTypes ... 1a 2a 5a 4");
                 Line = PoolPrint (
-                    L"\"Boot into single-user mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
+                    L"\"Boot into Single User Mode\"  \"%s root=/dev/disk/by-partuuid/%s single\"\n",
                     WriteStatus, GuidString
                 );
 

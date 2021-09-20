@@ -164,7 +164,7 @@ BOOLEAN IsValidLoader (
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
             L"EFI File is *ASSUMED* to be Valid:- '%s'",
-            FileName
+            FileName ? FileName : L"NULL"
         );
         #endif
 
@@ -181,7 +181,7 @@ BOOLEAN IsValidLoader (
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
             L"EFI File is *NOT* Valid:- '%s'",
-            FileName
+            FileName ? FileName : L"NULL"
         );
         #endif
 
@@ -203,8 +203,8 @@ BOOLEAN IsValidLoader (
     #if REFIT_DEBUG > 0
     LOG(4, LOG_THREE_STAR_MID,
         L"EFI File is %s:- '%s'",
-        IsValid ? L"Valid" : L"*NOT* Valid",
-        FileName
+        IsValid  ? L"Valid" : L"*NOT* Valid",
+        FileName ? FileName : L"NULL"
     );
     #endif
 #else
@@ -263,7 +263,7 @@ EFI_STATUS StartEFIImage (
 
     MsgStr = PoolPrint (
         L"Starting '%s' ... Load Options:- '%s'",
-        ImageTitle, FullLoadOptions ? FullLoadOptions : L""
+        ImageTitle, FullLoadOptions ? FullLoadOptions : L"NULL"
     );
 
     #if REFIT_DEBUG > 0
@@ -405,8 +405,7 @@ EFI_STATUS StartEFIImage (
 
     ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
-        : 0;
+        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
 
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!

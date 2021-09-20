@@ -3191,7 +3191,7 @@ EFI_STATUS DirNextEntry (
             // no filter or unknown filter -> return everything
             break;
         }
-    }
+    } // for ;;;
 
     return Status;
 }
