@@ -2499,8 +2499,9 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
     const CHAR16 *ITEMVOLC = L"PARTITION TYPE";
-    const CHAR16 *ITEMVOLD = L"VOLUME ROLE";
-    const CHAR16 *ITEMVOLE = L"VOLUME ID";
+    const CHAR16 *ITEMVOLD = L"VOLUME UUID";
+    const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
+    const CHAR16 *ITEMVOLF = L"VOLUME ID";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
@@ -2676,8 +2677,8 @@ VOID ScanVolumes (VOID) {
 
             if (!DoneHeadings) {
                 MsgLog (
-                    "%-41s%-41s%-20s%-22s%s\n",
-                    ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
+                    "%-41s%-41s%-20s%-41s%-22s%s\n",
+                    ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
                 );
                 DoneHeadings = TRUE;
 
@@ -2714,16 +2715,17 @@ VOID ScanVolumes (VOID) {
                 );
 
                 if (!EFI_ERROR(Status)) {
-                    PartType       = L"APFS";
-                    Volume->FSType = FS_TYPE_APFS;
-                    RoleStr        = GetApfsRoleString (VolumeRole);
+                    PartType        = L"APFS";
+                    Volume->FSType  = FS_TYPE_APFS;
+                    Volume->VolUuid = VolumeGuid;
+                    RoleStr         = GetApfsRoleString (VolumeRole);
                 }
             }
 
             MsgStr = PoolPrint (
-                L"%s  :  %s  :  %-15s  :  %-17s  :  %s",
+                L"%s  :  %s  :  %-15s  :  %s  :  %-17s  :  %s",
                 PartTypeGUID, PartGUID, PartType,
-                RoleStr, Volume->VolName
+                GuidAsString (&Volume->VolUuid), RoleStr, Volume->VolName
             );
 
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2769,8 +2771,8 @@ VOID ScanVolumes (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"%-41s%-41s%-20s%-22s%s",
-            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE
+            L"%-41s%-41s%-20s%-41s%-22s%s",
+            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n                   ");
