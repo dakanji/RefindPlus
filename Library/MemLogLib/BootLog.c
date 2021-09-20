@@ -262,7 +262,7 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN   Limit    = 150;
+    UINTN   Limit    = 225;
     CHAR16 *Tmp      = NULL;
     CHAR16 *DoneMsg  = NULL;
     CHAR16 *StoreMsg = NULL;

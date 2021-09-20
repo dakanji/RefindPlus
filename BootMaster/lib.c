@@ -129,6 +129,8 @@ BOOLEAN            FirstVolume         = TRUE;
 BOOLEAN            FoundMBR            = FALSE;
 #endif
 
+EFI_GUID           GuidNull            = NULL_GUID_VALUE;
+EFI_GUID           GuidESP             = ESP_GUID_VALUE;
 EFI_GUID           GuidHFS             = HFS_GUID_VALUE;
 EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
 EFI_GUID           GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
@@ -2474,8 +2476,6 @@ VOID ScanVolumes (VOID) {
     UINT8              *SectorBuffer1;
     UINT8              *SectorBuffer2;
     EFI_GUID           *UuidList;
-    EFI_GUID            GuidNull = NULL_GUID_VALUE;
-    EFI_GUID            ESPGuid  = ESP_GUID_VALUE;
     BOOLEAN             DupFlag;
 
     #if REFIT_DEBUG > 0
@@ -2485,6 +2485,7 @@ VOID ScanVolumes (VOID) {
     CHAR16  *PartName     = NULL;
     CHAR16  *PartGUID     = NULL;
     CHAR16  *PartTypeGUID = NULL;
+    CHAR16  *VolumeUUID   = NULL;
 
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
@@ -2495,7 +2496,7 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLC = L"PARTITION TYPE";
     const CHAR16 *ITEMVOLD = L"VOLUME UUID";
     const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
-    const CHAR16 *ITEMVOLF = L"VOLUME ID";
+    const CHAR16 *ITEMVOLF = L"VOLUME NAME";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
@@ -2592,7 +2593,7 @@ VOID ScanVolumes (VOID) {
         for (i = 0; i < HandleIndex; i++) {
             if (GlobalConfig.ScanAllESP) {
                 DupFlag = (
-                    (!GuidsAreEqual (&(Volume->PartTypeGuid), &ESPGuid)) &&
+                    (!GuidsAreEqual (&(Volume->PartTypeGuid), &GuidESP)) &&
                     (CompareMem (&(Volume->VolUuid), &(UuidList[i]), sizeof (EFI_GUID)) == 0) &&
                     (CompareMem (&(Volume->VolUuid), &GuidNull,      sizeof (EFI_GUID)) != 0)
                 );
@@ -2661,14 +2662,6 @@ VOID ScanVolumes (VOID) {
                 else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)   ) PartType = L"APFS/HFS+";
             }
 
-            // Allocate Pools
-            PartName     = StrDuplicate (PartType);
-            PartGUID     = GuidAsString (&Volume->PartGuid);
-            PartTypeGUID = GuidAsString (&Volume->PartTypeGuid);
-
-            // Control PartName Length
-            LimitStringLength (PartName, 15);
-
             if (!DoneHeadings) {
                 MsgLog (
                     "%-41s%-41s%-20s%-41s%-22s%s\n",
@@ -2716,19 +2709,30 @@ VOID ScanVolumes (VOID) {
                 }
             }
 
+            // Allocate Pools for Log Details
+            PartName     = StrDuplicate (PartType);
+            PartGUID     = GuidAsString (&(Volume->PartGuid));
+            PartTypeGUID = GuidAsString (&(Volume->PartTypeGuid));
+            VolumeUUID   = GuidAsString (&(Volume->VolUuid));
+
+            // Control PartName Length
+            LimitStringLength (PartName, 15);
+
             MsgStr = PoolPrint (
-                L"%s  :  %s  :  %-15s  :  %s  :  %-17s  :  %s",
+                L"%-36s  :  %-36s  :  %-15s  :  %-36s  :  %-17s  :  %s",
                 PartTypeGUID, PartGUID, PartType,
-                GuidAsString (&Volume->VolUuid), RoleStr, Volume->VolName
+                VolumeUUID, RoleStr, Volume->VolName
             );
 
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s", MsgStr);
             MyFreePool (&MsgStr);
 
+
             MyFreePool (&PartName);
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
+            MyFreePool (&VolumeUUID);
         }
 
         FoundMBR      = FALSE;
