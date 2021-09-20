@@ -688,7 +688,6 @@ VOID SetLoaderDefaults (
         if (Volume->DiskKind == DISK_KIND_NET) {
             LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 1");
             MergeStrings (&NameClues, Entry->me.Title, L' ');
-
             LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2");
         }
         else {
@@ -834,7 +833,6 @@ VOID SetLoaderDefaults (
 
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 1");
                         MergeWords (&OSIconName, Volume->VolName, L',');
-
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 2");
                     }
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 2");
@@ -865,19 +863,21 @@ VOID SetLoaderDefaults (
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4");
     if (!AllowGraphicsMode) {
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4a 1");
+
         #if REFIT_DEBUG > 0
         if (Entry->me.Image == NULL) {
             LOG(3, LOG_LINE_NORMAL, L"Add Hints Based on Specific Loaders");
         }
         #endif
+
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 4a 2");
     }
 
     // detect specific loaders
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5");
-    if (StriSubCmp (L"bzImage", NameClues)
-        || StriSubCmp (L"vmlinuz", NameClues)
-        || StriSubCmp (L"kernel", NameClues)
+    if (StriSubCmp (L"bzImage", NameClues) ||
+        StriSubCmp (L"vmlinuz", NameClues) ||
+        StriSubCmp (L"kernel",  NameClues)
     ) {
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5a 1");
         if (Volume->DiskKind != DISK_KIND_NET) {
@@ -1035,25 +1035,20 @@ VOID SetLoaderDefaults (
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5l 2");
         Entry->OSType = 'N';
         ShortcutLetter = 'N';
-
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 5l 3");
     }
 
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 6");
-    //ToLower (OSIconName);
-
-    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7");
     if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z')) {
-        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7a 1");
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 6a 1");
         ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
-
-        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7a 2");
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 6a 2");
     }
 
-    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 8");
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 7");
     Entry->me.ShortcutLetter = ShortcutLetter;
 
-    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9");
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 8");
     if (AllowGraphicsMode && Entry->me.Image == NULL) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
@@ -1062,17 +1057,17 @@ VOID SetLoaderDefaults (
         );
         #endif
 
-        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9a 1");
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 8a 1");
         Entry->me.Image = LoadOSIcon (OSIconName, L"unknown", FALSE);
-        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9a 2");
+        LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 8a 2");
     }
 
-    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 10");
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 9");
     MyFreePool (&PathOnly);
     MyFreePool (&OSIconName);
     MyFreePool (&NameClues);
 
-    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 11 - END:- VOID");
+    LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 10 - END:- VOID");
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID SetLoaderDefaults()
 /*

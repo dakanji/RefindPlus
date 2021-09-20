@@ -1,15 +1,10 @@
 # Building RefindPlus on Mac OS
 These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for building the RefindPlus boot manager on Mac OS.
 
-These steps have been verified on Mac OS v10.12 (Sierra) and Mac OS v10.14 (Mojave) and should also work on Mac OS v10.13 (High Sierra) and Mac OS v10.15 (Catalina).
-
-
 ## Activate Mac OS Development Tools
 
 ### Xcode
 Download [Xcode](https://developer.apple.com/xcode) from the Mac App Store and install.
-
-**NB:** Tested on Xcode v9.4.1 and v11.3 but should also work on v10.x and v12.x
 
 ### Xcode Commandline Tools
 After installing Xcode, you will additionally need to install commandline tools.
@@ -25,15 +20,9 @@ $ xcode-select --install
 
 While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for Tianocore EDK II development.
 
-These tools can be obtained in a number of ways, but the two most popular ways are by using HomeBrew or MacPorts.
+This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink which, unlike HomeBrew, maintain support for older versions of Mac OS. Just substitute in the equivalent commands as required.
 
-This guide focuses on `HomeBrew` but equivalent steps can be taken in MacPorts.
-
-If you do not have HomeBrew already installed, go to the [HomeBrew Home Page](https://brew.sh) and follow the instructions.
-
-Installation involves copying and pasting a one-line code string into Terminal and pressing `Enter`.
-
-#### Update the PATH Environment Variable
+#### Update the PATH Environment Variable for HomeBrew
 
 Tools installed using HomeBrew are placed in `/usr/local/bin` which is non-standard to avoid conflicts with pre-installed tools.
 
@@ -159,3 +148,6 @@ $ git push origin HEAD -f
 $ git pull upstream rudk
 $ git push
 ```
+
+### OPTION 3: GitHub Sync
+GitHub now includes an interface for syncing forks. While Options 1 and 2 will leave the fork with a clean history consistent with the upstream repository, some may find the GitHub interface easier to use.

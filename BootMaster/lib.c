@@ -88,18 +88,13 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define FAT32_SIGNATURE                  "FAT32   "
 
 #if defined (EFIX64)
-    EFI_GUID gFreedesktopRootGuid = { 0x4f68bce3, 0xe8cd, 0x4db1, \
-    { 0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09 }};
+    EFI_GUID gFreedesktopRootGuid = {0x4f68bce3, 0xe8cd, 0x4db1, {0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09}};
 #elif defined (EFI32)
-    EFI_GUID gFreedesktopRootGuid = { 0x44479540, 0xf297, 0x41b2, \
-    { 0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a }};
+    EFI_GUID gFreedesktopRootGuid = {0x44479540, 0xf297, 0x41b2, {0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a}};
 #elif defined (EFIAARCH64)
-    EFI_GUID gFreedesktopRootGuid = { 0xb921b045, 0x1df0, 0x41c3, \
-    { 0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae }};
-#else
-    // Below is GUID for ARM32
-    EFI_GUID gFreedesktopRootGuid = { 0x69dad710, 0x2ce4, 0x4e3c, \
-    { 0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3 }};
+    EFI_GUID gFreedesktopRootGuid = {0xb921b045, 0x1df0, 0x41c3, {0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae}};
+#else // Below is GUID for ARM32
+    EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3}};
 #endif
 
 // variables
@@ -1095,8 +1090,8 @@ VOID SetFilesystemData (
 
         if (BufferSize >= (65536 + 100)) {
             MagicString = (char*) (Buffer + 65536 + 52);
-            if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING, 8)     == 0) ||
-                (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING, 9)    == 0) ||
+            if ((CompareMem(MagicString, REISERFS_SUPER_MAGIC_STRING,     8) == 0) ||
+                (CompareMem(MagicString, REISER2FS_SUPER_MAGIC_STRING,    9) == 0) ||
                 (CompareMem(MagicString, REISER2FS_JR_SUPER_MAGIC_STRING, 9) == 0)
             ) {
                 Volume->FSType = FS_TYPE_REISERFS;
@@ -1157,7 +1152,7 @@ VOID SetFilesystemData (
                     CopyMem(&(Volume->VolUuid), Buffer + 0x48, sizeof(UINT64));
                 }
                 else if ((CompareMem(MagicString + 0x36, FAT12_SIGNATURE, 8) == 0) ||
-                    (CompareMem(MagicString + 0x36, FAT16_SIGNATURE, 8)      == 0)
+                    (CompareMem(MagicString + 0x36,      FAT16_SIGNATURE, 8) == 0)
                 ) {
                     Volume->FSType = FS_TYPE_FAT;
                     CopyMem(&(Volume->VolUuid), Buffer + 0x27, sizeof(UINT32));
@@ -1200,10 +1195,10 @@ VOID ScanVolumeBootcode (
     IN OUT BOOLEAN       *Bootable
 ) {
     EFI_STATUS           Status;
-    UINT8                Buffer[SAMPLE_SIZE];
     UINTN                i;
-    MBR_PARTITION_INFO  *MbrTable;
+    UINT8                Buffer[SAMPLE_SIZE];
     BOOLEAN              MbrTableFound = FALSE;
+    MBR_PARTITION_INFO  *MbrTable;
 
     #if REFIT_DEBUG > 0
     UINTN   LogLineType;
@@ -1264,9 +1259,9 @@ VOID ScanVolumeBootcode (
         }
 
         // detect specific boot codes
-        if (CompareMem (Buffer + 2, "LILO", 4)     == 0 ||
-            CompareMem (Buffer + 6, "LILO", 4)     == 0 ||
-            CompareMem (Buffer + 3, "SYSLINUX", 8) == 0 ||
+        if (CompareMem (Buffer + 2, "LILO",           4) == 0 ||
+            CompareMem (Buffer + 6, "LILO",           4) == 0 ||
+            CompareMem (Buffer + 3, "SYSLINUX",       8) == 0 ||
             FindMem (Buffer, SECTOR_SIZE, "ISOLINUX", 8) >= 0
         ) {
             Volume->HasBootCode  = TRUE;
@@ -1289,7 +1284,7 @@ VOID ScanVolumeBootcode (
             Volume->OSName       = L"FreeBSD (Legacy)";
         }
         else if ((*((UINT16 *)(Buffer + 510)) == 0xaa55) &&
-            (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large", 21) >= 0) &&
+            (FindMem (Buffer, SECTOR_SIZE, "Boot loader too large",         21) >= 0) &&
             (FindMem (Buffer, SECTOR_SIZE, "I/O error loading boot loader", 29) >= 0)
         ) {
             // If more differentiation needed, also search for
@@ -1298,7 +1293,7 @@ VOID ScanVolumeBootcode (
             Volume->OSIconName   = L"freebsd";
             Volume->OSName       = L"FreeBSD (Legacy)";
         }
-        else if (FindMem (Buffer, 512, "!Loading", 8) >= 0 ||
+        else if (FindMem (Buffer, 512,    "!Loading",            8) >= 0 ||
             FindMem (Buffer, SECTOR_SIZE, "/cdboot\0/CDBOOT\0", 16) >= 0
         ) {
             Volume->HasBootCode  = TRUE;
@@ -1325,14 +1320,14 @@ VOID ScanVolumeBootcode (
             Volume->OSName       = L"Windows (Legacy)";
         }
         else if (FindMem (Buffer, 512, "CPUBOOT SYS", 11) >= 0 ||
-            FindMem (Buffer, 512, "KERNEL  SYS", 11) >= 0
+            FindMem (Buffer,      512, "KERNEL  SYS", 11) >= 0
         ) {
             Volume->HasBootCode  = TRUE;
             Volume->OSIconName   = L"freedos";
             Volume->OSName       = L"FreeDOS (Legacy)";
         }
-        else if (FindMem (Buffer, 512, "OS2LDR", 6) >= 0 ||
-            FindMem (Buffer, 512, "OS2BOOT", 7) >= 0
+        else if (FindMem (Buffer, 512, "OS2LDR",  6) >= 0 ||
+            FindMem (Buffer,      512, "OS2BOOT", 7) >= 0
         ) {
             Volume->HasBootCode  = TRUE;
             Volume->OSIconName   = L"ecomstation";
@@ -1349,7 +1344,7 @@ VOID ScanVolumeBootcode (
             Volume->OSName       = L"ZETA (Legacy)";
         }
         else if (FindMem (Buffer, 512, "\x04" "beos\x06" "system\x05" "zbeos", 18) >= 0 ||
-            FindMem (Buffer, 512, "\x06" "system\x0c" "haiku_loader", 20) >= 0
+            FindMem (Buffer,      512, "\x06" "system\x0c" "haiku_loader",     20) >= 0
         ) {
             Volume->HasBootCode  = TRUE;
             Volume->OSIconName   = L"haiku,beos";
@@ -1616,16 +1611,13 @@ CHAR16 * GetVolumeName (
             else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)) {
                 FoundName = StrDuplicate (L"Unidentified HFS+ Volume");
             }
-            else if (StrLen (TypeName) > 0) {
+            else {
                 if (MyStriCmp (TypeName, L"APFS")) {
                     FoundName = StrDuplicate (L"APFS Volume (Assumed)");
                 }
                 else {
                     FoundName = PoolPrint (L"%s Volume", TypeName);
                 }
-            }
-            else {
-                FoundName = StrDuplicate (L"Unknown Volume");
             }
         }
 
@@ -1638,8 +1630,8 @@ CHAR16 * GetVolumeName (
     } // if FoundName == NULL
 
     // TODO: Above could be improved/extended, in case filesystem name is not found,
-    // such as:
-    //  - use or add disk/partition number (e.g., "(hd0,2)")
+    //       such as:
+    //         - use or add disk/partition number (e.g., "(hd0,2)")
 
     return FoundName;
 } // static CHAR16 *GetVolumeName()
@@ -1783,8 +1775,8 @@ VOID ScanVolume (
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH &&
             (
-                DevicePathSubType (DevicePath) == MSG_USB_DP ||
-                DevicePathSubType (DevicePath) == MSG_1394_DP ||
+                DevicePathSubType (DevicePath) == MSG_USB_DP       ||
+                DevicePathSubType (DevicePath) == MSG_1394_DP      ||
                 DevicePathSubType (DevicePath) == MSG_USB_CLASS_DP ||
                 DevicePathSubType (DevicePath) == MSG_FIBRECHANNEL_DP
             )
@@ -1984,9 +1976,9 @@ VOID ScanVolume (
     }
 
     Volume->IsReadable = TRUE;
-    if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) &&
-        (Volume->FSType == FS_TYPE_NTFS) &&
-        Volume->HasBootCode
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC
+        && Volume->FSType == FS_TYPE_NTFS
+        && Volume->HasBootCode
     ) {
         // VBR boot code found on NTFS, but volume is not actually bootable
         // on Mac unless there are actual boot file, so check for them.
@@ -2057,10 +2049,12 @@ VOID ScanExtendedPartition (
                 Volume->DiskKind          = WholeDiskVolume->DiskKind;
                 Volume->IsMbrPartition    = TRUE;
                 Volume->MbrPartitionIndex = LogicalPartitionIndex++;
-                Volume->VolName           = PoolPrint (
+
+                Volume->VolName = PoolPrint (
                     L"Partition %d",
                     Volume->MbrPartitionIndex + 1
                 );
+
                 Volume->BlockIO          = WholeDiskVolume->BlockIO;
                 Volume->BlockIOOffset    = ExtCurrent + EMbrTable[i].StartLBA;
                 Volume->WholeDiskBlockIO = WholeDiskVolume->BlockIO;
@@ -2135,7 +2129,7 @@ VOID SetPreBootLabel (
                                 break;
                             }
 
-                            if (i > 1
+                            if ((i > 1)
                                 && (TmpLabel[i + 0] == L' ')
                                 && (TmpLabel[i + 1] == L'-')
                                 && (TmpLabel[i + 2] == L' ')
@@ -2705,7 +2699,7 @@ VOID ScanVolumes (VOID) {
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
             else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
             else if (MyStrStrIns (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
-            else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0x99 - Unset";
+            else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0x99 - Not Set";
             else {
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
@@ -2759,7 +2753,7 @@ VOID ScanVolumes (VOID) {
         else {
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
             MsgLog ("INFO: Self Volume:- '%s ::: %s'\n", SelfVolume->VolName, SelfGUID);
-            MsgLog ("      Self Folder:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"NotSet");
+            MsgLog ("      Install Dir:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"Not Set");
             MyFreePool (&SelfGUID);
         }
         #endif
