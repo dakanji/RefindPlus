@@ -3005,12 +3005,14 @@ BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
-    UINTN             i, j;
+    UINTN             i, j, k;
     UINTN             VolumeIndex;
     VOID             *ItemBuffer = 0;
+    CHAR16           *TmpStr     = NULL;
     CHAR16           *ToolName   = NULL;
     CHAR16           *FileName   = NULL;
-    CHAR16           *VolName    = NULL;
+    CHAR16           *VolumeTag  = NULL;
+    CHAR16           *RecoverVol = NULL;
     CHAR16           *MokLocations;
     CHAR16           *Description;
     UINT64            osind;
@@ -3038,7 +3040,7 @@ VOID ScanForTools (VOID) {
     for (i = 0; i < NUM_TOOLS; i++) {
         // Reset Vars
         MyFreePool (&FileName);
-        MyFreePool (&VolName);
+        MyFreePool (&VolumeTag);
         MyFreePool (&ToolName);
 
         FoundTool = FALSE;
@@ -3046,7 +3048,7 @@ VOID ScanForTools (VOID) {
         #if REFIT_DEBUG > 0
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");   break;
-            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Apple Recovery");     break;
+            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Mac Recovery");       break;
             case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Boot Order");         break;
             case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");         break;
             case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");    break;
@@ -3441,17 +3443,34 @@ VOID ScanForTools (VOID) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName))
                         ) {
+                            // Get a meaningful tag for the recovery volume if available
+                            for (k = 0; k < VolumesCount; k++) {
+                                if (Volumes[k]->FSType == FS_TYPE_APFS ||
+                                    Volumes[k]->FSType == FS_TYPE_HFSPLUS
+                                ) {
+                                    TmpStr = GuidAsString (&(Volumes[k]->VolUuid));
+                                    if (MyStrStrIns (FileName, TmpStr)) {
+                                        MyFreePool (&TmpStr);
+                                        RecoverVol = StrDuplicate (Volumes[k]->VolName);
+
+                                        break;
+                                    }
+                                    MyFreePool (&TmpStr);
+                                }
+                            } // for
+                            VolumeTag = RecoverVol ? RecoverVol : Volumes[VolumeIndex]->VolName;
+
                             #if REFIT_DEBUG > 0
                             LOG(3, LOG_LINE_NORMAL,
-                                L"Adding Apple Recovery Tag for '%s' on '%s'",
-                                FileName, Volumes[VolumeIndex]->VolName
+                                L"Adding Mac Recovery Tag:- '%s' for '%s'",
+                                FileName, VolumeTag
                             );
                             #endif
 
                             FoundTool = TRUE;
                             Description = PoolPrint (
-                                L"%s on %s",
-                                ToolName, Volumes[VolumeIndex]->VolName
+                                L"%s for %s",
+                                ToolName, VolumeTag
                             );
                             AddToolEntry (
                                 Volumes[VolumeIndex],
@@ -3462,7 +3481,7 @@ VOID ScanForTools (VOID) {
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
+                            ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s for %s", ToolName, FileName, VolumeTag);
                             LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");
@@ -3473,7 +3492,9 @@ VOID ScanForTools (VOID) {
 
                             OtherFind = TRUE;
                         }
+
                         MyFreePool (&FileName);
+                        MyFreePool (&RecoverVol);
                     } // while
                 } // for
 
@@ -3494,12 +3515,12 @@ VOID ScanForTools (VOID) {
                 while (
                     (FileName = FindCommaDelimited (GlobalConfig.WindowsRecoveryFiles, j++)) != NULL
                 ) {
-                    SplitVolumeAndFilename (&FileName, &VolName);
+                    SplitVolumeAndFilename (&FileName, &VolumeTag);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (MyStrStr (FileName, L"\\BOOT\\BOOT") != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
-                            ((VolName == NULL) || MyStriCmp (VolName, Volumes[VolumeIndex]->VolName))
+                            ((VolumeTag == NULL) || MyStriCmp (VolumeTag, Volumes[VolumeIndex]->VolName))
                         ) {
                             #if REFIT_DEBUG > 0
                             LOG(3, LOG_LINE_NORMAL,
@@ -3539,8 +3560,7 @@ VOID ScanForTools (VOID) {
                     } // for
 
                     MyFreePool (&FileName);
-                    MyFreePool (&VolName);
-                    FileName = VolName = NULL;
+                    MyFreePool (&VolumeTag);
                 } // while
 
                 #if REFIT_DEBUG > 0

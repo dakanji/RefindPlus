@@ -44,6 +44,10 @@
   * NB: RefindPlus does not check whether a GPU is actually connected to a display
   *     Hence, a blank display will result if the highest resolution GPU is not connected
   * This bug was introduced in v0.12.0.AN (Commit 62e6fe8)
+- Improves Mac Recovery Tool Identification
+  * RefindPlus now attempts to associate Apple Mac Recovery Tool instances to specific Mac OS Volumes
+  * The same generic name was previously used for all instances
+  * This had made it difficult to know which volume a specific recovery instance applied to
 - Improves Keystroke Flushing
   * Device errors are returned when attempting to read keystrokes under some conditions
   * This appears to typically only happen on UEFI PC
