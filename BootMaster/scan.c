@@ -1276,65 +1276,68 @@ LOADER_ENTRY * AddLoaderEntry (
 
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
-    if (Entry != NULL) {
-        Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
-        if (LoaderTitle == NULL) {
-            TitleEntry = LoaderPath;
-        }
-        else {
-            TitleEntry = LoaderTitle;
-        }
 
-        Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
-
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
-        LOG(3, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
-        #endif
-
-        if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
-            Entry->me.Title = PoolPrint (
-                L"Boot %s from %s",
-                (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
-                Volume->VolName
-            );
-        }
-        else {
-            Entry->me.Title = PoolPrint (
-                L"Boot %s ",
-                (LoaderTitle != NULL) ? TitleEntry : LoaderPath
-            );
-        }
-
-        Entry->me.Row = 0;
-        Entry->me.BadgeImage = Volume->VolBadgeImage;
-
-        if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
-            Entry->LoaderPath = StrDuplicate (L"\\");
-        }
-        else {
-            Entry->LoaderPath = NULL;
-        }
-
-        MergeStrings (&(Entry->LoaderPath), LoaderPath, 0);
-        Entry->Volume = Volume;
-        SetLoaderDefaults (Entry, LoaderPath, Volume);
-        GenerateSubScreen (Entry, Volume, SubScreenReturn);
-        AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        MsgLog (
-            "  - Found '%s' on '%s'",
-            TitleEntry,
-            (Volume->VolName) ? Volume->VolName : Entry->LoaderPath
-        );
-
-        LOG(2, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
-        #endif
+    if (Entry == NULL) {
+        return NULL;
     }
 
-    return (Entry);
+    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
+    if (LoaderTitle == NULL) {
+        TitleEntry = LoaderPath;
+    }
+    else {
+        TitleEntry = LoaderTitle;
+    }
+
+    Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+
+    #if REFIT_DEBUG > 0
+    LOG(3, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
+    LOG(3, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
+    #endif
+
+    if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
+        Entry->me.Title = PoolPrint (
+            L"Boot %s from %s",
+            (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
+            Volume->VolName
+        );
+    }
+    else {
+        Entry->me.Title = PoolPrint (
+            L"Boot %s ",
+            (LoaderTitle != NULL) ? TitleEntry : LoaderPath
+        );
+    }
+
+    Entry->me.Row = 0;
+    Entry->me.BadgeImage = Volume->VolBadgeImage;
+
+    if ((LoaderPath != NULL) && (LoaderPath[0] != L'\\')) {
+        Entry->LoaderPath = StrDuplicate (L"\\");
+    }
+    else {
+        Entry->LoaderPath = NULL;
+    }
+
+    MergeStrings (&(Entry->LoaderPath), LoaderPath, 0);
+    Entry->Volume = Volume;
+    SetLoaderDefaults (Entry, LoaderPath, Volume);
+    GenerateSubScreen (Entry, Volume, SubScreenReturn);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("\n");
+    MsgLog (
+        "  - Found '%s' on '%s'",
+        TitleEntry,
+        (Volume->VolName) ? Volume->VolName : Entry->LoaderPath
+    );
+
+    LOG(2, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);
+    #endif
+
+    return Entry;
 } // LOADER_ENTRY * AddLoaderEntry()
 
 // Returns -1 if (Time1 < Time2), +1 if (Time1 > Time2), or 0 if
@@ -3038,7 +3041,6 @@ VOID ScanForTools (VOID) {
         MyFreePool (&VolName);
         MyFreePool (&ToolName);
 
-        FileName = VolName = ToolName = NULL;
         FoundTool = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -3239,7 +3241,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(3, LOG_LINE_NORMAL,
-                            L"Adding Shell Tag for '%s' on '%s'",
+                            L"Adding Shell Tag:- '%s' on '%s'",
                             FileName,
                             SelfVolume->VolName
                         );
@@ -3267,7 +3269,6 @@ VOID ScanForTools (VOID) {
                     }
 
                     MyFreePool (&FileName);
-                    FileName = NULL;
                 } // while
 
                 if (!FoundTool) {
@@ -3298,7 +3299,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(3, LOG_LINE_NORMAL,
-                            L"Adding Hybrid MBR Tool Tag for '%s' on '%s'",
+                            L"Adding Hybrid MBR Tag:- '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
                         #endif
@@ -3323,7 +3324,6 @@ VOID ScanForTools (VOID) {
                     }
 
                     MyFreePool (&FileName);
-                    FileName = NULL;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -3344,7 +3344,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(3, LOG_LINE_NORMAL,
-                            L"Adding GDisk Tag for '%s' on '%s'",
+                            L"Adding GDisk Tag:- '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
                         #endif
@@ -3391,7 +3391,7 @@ VOID ScanForTools (VOID) {
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         LOG(3, LOG_LINE_NORMAL,
-                            L"Adding Netboot Tag for '%s' on '%s'",
+                            L"Adding Netboot Tag:- '%s' on '%s'",
                             FileName, SelfVolume->VolName
                         );
                         #endif
@@ -3418,7 +3418,6 @@ VOID ScanForTools (VOID) {
                     }
 
                     MyFreePool (&FileName);
-                    FileName = NULL;
                 } // while
 
                 #if REFIT_DEBUG > 0
@@ -3474,6 +3473,7 @@ VOID ScanForTools (VOID) {
 
                             OtherFind = TRUE;
                         }
+                        MyFreePool (&FileName);
                     } // while
                 } // for
 
@@ -3503,7 +3503,7 @@ VOID ScanForTools (VOID) {
                         ) {
                             #if REFIT_DEBUG > 0
                             LOG(3, LOG_LINE_NORMAL,
-                                L"Adding Windows Recovery Tag for '%s' on '%s'",
+                                L"Adding Windows Recovery Tag:- '%s' on '%s'",
                                 FileName, Volumes[VolumeIndex]->VolName
                             );
                             #endif
