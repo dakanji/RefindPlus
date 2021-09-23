@@ -2255,11 +2255,21 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
-        // Sync APFS infrastrcture is no longer required ... free PreBootVolumes
-        if (PreBootVolumes && GlobalConfig.SyncAPFS) {
+        // Sync APFS infrastrcture is no longer required ... free Associated Volume Lists
+        if (GlobalConfig.SyncAPFS && (PreBootVolumes || SystemVolumes)) {
             FreeVolumes (
                 &PreBootVolumes,
                 &PreBootVolumesCount
+            );
+
+            FreeVolumes (
+                &SystemVolumes,
+                &SystemVolumesCount
+            );
+
+            FreeVolumes (
+                &DataVolumes,
+                &DataVolumesCount
             );
         }
 
@@ -2648,7 +2658,7 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Boot %s from '%s'",
+                        L"Run %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
                         ourLegacyEntry->Volume->VolName
                     );

@@ -662,7 +662,7 @@ VOID SetLoaderDefaults (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
-        L"Getting Default Setting for Loader:- '%s'",
+        L"Getting Default Settings for Loader:- '%s'",
         (Entry->me.Title) ? Entry->me.Title : Entry->Title
     );
     #endif
@@ -1271,8 +1271,11 @@ LOADER_ENTRY * AddLoaderEntry (
     IN REFIT_VOLUME *Volume,
     IN BOOLEAN       SubScreenReturn
 ) {
+    EFI_STATUS     Status;
     LOADER_ENTRY  *Entry;
-    CHAR16        *TitleEntry = NULL;
+    CHAR16        *TitleEntry  = NULL;
+    CHAR16        *DisplayName = NULL;
+    UINTN          i           = 0;
 
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
@@ -1281,32 +1284,81 @@ LOADER_ENTRY * AddLoaderEntry (
         return NULL;
     }
 
-    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
-    if (LoaderTitle == NULL) {
-        TitleEntry = LoaderPath;
-    }
-    else {
-        TitleEntry = LoaderTitle;
-    }
+    if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+        EFI_GUID               VolumeGuid;
+        EFI_GUID            ContainerGuid;
+        APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-    Entry->Title = StrDuplicate ((LoaderTitle != NULL) ? TitleEntry : LoaderPath);
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
+
+        if (!EFI_ERROR(Status)) {
+            if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                for (i = 0; i < SystemVolumesCount; i++) {
+                    if (
+                        MyStrStrIns (
+                            LoaderPath,
+                            GuidAsString (&(SystemVolumes[i]->VolUuid))
+                        )
+                    ) {
+                        DisplayName = StrDuplicate (SystemVolumes[i]->VolName);
+
+                        break;
+                    }
+                } // for
+
+                if (!DisplayName) {
+                    for (i = 0; i < DataVolumesCount; i++) {
+                        if (
+                            MyStrStrIns (
+                                LoaderPath,
+                                GuidAsString (&(DataVolumes[i]->VolUuid))
+                            )
+                        ) {
+                            DisplayName = StrDuplicate (DataVolumes[i]->VolName);
+
+                            break;
+                        }
+                    } // for
+                }
+
+                if (!DisplayName) {
+                    // Do not display this PreBoot Volume Menu Entry
+                    return NULL;
+                }
+            }
+        }
+
+    } // if GlobalConfig.SyncAFPS
+
+    Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
+    TitleEntry   = (LoaderTitle) ? LoaderTitle : LoaderPath;
+    Entry->Title = StrDuplicate (TitleEntry);
 
     #if REFIT_DEBUG > 0
+    if (DisplayName) {
+        LOG(3, LOG_THREE_STAR_MID, L"Synced PreBoot:- '%s'", DisplayName);
+    }
     LOG(3, LOG_LINE_NORMAL, L"Add Loader Entry:- '%s'", Entry->Title);
-    LOG(3, LOG_LINE_NORMAL, L"UEFI Loader Path:- '%s'", LoaderPath);
+    LOG(3, LOG_LINE_NORMAL, L"UEFI Loader File:- '%s'", LoaderPath);
     #endif
 
-    if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
+    if (DisplayName || Volume->VolName) {
         Entry->me.Title = PoolPrint (
             L"Run %s from %s",
-            (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
-            Volume->VolName
+            (LoaderTitle) ? LoaderTitle : LoaderPath,
+            DisplayName ? DisplayName : Volume->VolName
         );
+        MyFreePool (&DisplayName);
     }
     else {
         Entry->me.Title = PoolPrint (
             L"Run %s",
-            (LoaderTitle != NULL) ? TitleEntry : LoaderPath
+            (LoaderTitle) ? LoaderTitle : LoaderPath
         );
     }
 
@@ -1453,47 +1505,6 @@ BOOLEAN ShouldScan (
     CHAR16  *PathCopy     = NULL;
     CHAR16  *DontScanDir  = NULL;
     BOOLEAN  ScanIt       = TRUE;
-
-    UINTN    PreBootIndex;
-
-    EFI_STATUS                 Status;
-    EFI_GUID               VolumeGuid;
-    EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
-
-    if (Volume->FSType == FS_TYPE_APFS) {
-        Status = RP_GetApfsVolumeInfo (
-            Volume->DeviceHandle,
-            &ContainerGuid,
-            &VolumeGuid,
-            &VolumeRole
-        );
-
-        if (!EFI_ERROR(Status)) {
-            // Align APFS ReMap
-            if ((Volume->VolName) &&
-                (GlobalConfig.SyncAPFS) &&
-                (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
-            ) {
-                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                    if (GuidsAreEqual (
-                            &(PreBootVolumes[PreBootIndex]->PartGuid),
-                            &(Volume->PartGuid)
-                        )
-                    ) {
-                        // GUID matches a preboot volume ... swap display name if source is not
-                        // also called "PreBoot" ... which means cloaking was not successful.
-                        if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
-                            MyFreePool (&Volume->VolName);
-                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
-
-                            break;
-                        }
-                    }
-                } // for
-            }
-        }
-    } // if GuidsAreEqual Volume->PartTypeGuid
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
     if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
@@ -1954,6 +1965,7 @@ BOOLEAN ScanMacOsLoader (
     CHAR16   *VolName            = NULL;
     CHAR16   *PathName           = NULL;
     CHAR16   *FileName           = NULL;
+    UINTN     i;
 
     SplitPathName (FullFileName, &VolName, &PathName, &FileName);
     if (FileExists (Volume->RootDir, FullFileName) &&
@@ -1965,10 +1977,13 @@ BOOLEAN ScanMacOsLoader (
             AddLoaderEntry (FullFileName, L"RefindPlus", Volume, TRUE);
         }
         else {
-            if (MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL &&
-                GlobalConfig.SyncAPFS
-            ) {
-                AddThisEntry = FALSE;
+            if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+                for (i = 0; i < SystemVolumesCount; i++) {
+                    if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
+                        AddThisEntry = FALSE;
+                        break;
+                    }
+                }
             }
 
             if (AddThisEntry) {
@@ -1995,7 +2010,7 @@ VOID ScanEfiFiles (
     EFI_STATUS        Status;
     REFIT_DIR_ITER    EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
-    UINTN             i, Length;
+    UINTN             i, j, Length;
     CHAR16           *Temp;
     CHAR16           *FileName;
     CHAR16           *SelfPath;
@@ -2004,71 +2019,28 @@ VOID ScanEfiFiles (
     CHAR16           *Directory          = NULL;
     BOOLEAN           ScanFallbackLoader = TRUE;
     BOOLEAN           FoundBRBackup      = FALSE;
-    BOOLEAN           FixReMap           = FALSE;
 
     #if REFIT_DEBUG > 0
     UINTN    LogLineType;
     #endif
 
-    if (!Volume) {
-        return;
-    }
-
-    if (!Volume->IsReadable ||
-        Volume->RootDir == NULL ||
-        Volume->VolName == NULL
+    if (!Volume ||
+        !Volume->RootDir ||
+        !Volume->VolName ||
+        !Volume->IsReadable
     ) {
         // Early Return on Invalid Volume
         return;
     }
 
-    if (GlobalConfig.SyncAPFS &&
-        MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
-    ) {
-        // Early Return on Cloaked Volume
-        return;
-    }
-
-    EFI_GUID               VolumeGuid;
-    EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
-
-    if (Volume->FSType == FS_TYPE_APFS) {
-        Status = RP_GetApfsVolumeInfo (
-            Volume->DeviceHandle,
-            &ContainerGuid,
-            &VolumeGuid,
-            &VolumeRole
-        );
-
-        if (!EFI_ERROR(Status)) {
-            // Align APFS ReMap
-            if ((Volume->VolName) &&
-                (GlobalConfig.SyncAPFS) &&
-                (VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0
-            ) {
-                UINTN PreBootIndex;
-                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                    if (GuidsAreEqual (
-                            &(PreBootVolumes[PreBootIndex]->PartGuid),
-                            &(Volume->PartGuid)
-                        )
-                    ) {
-                        // GUID matches a preboot volume ... swap display name if source is not
-                        // also called "PreBoot" ... which means cloaking was not successful.
-                        if (!MyStriCmp (PreBootVolumes[PreBootIndex]->VolName, L"PreBoot")) {
-                            FixReMap = TRUE;
-
-                            MyFreePool (&Volume->VolName);
-                            Volume->VolName = StrDuplicate (PreBootVolumes[PreBootIndex]->VolName);
-
-                            break;
-                        }
-                    }
-                } // for
+    if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+        for (j = 0; j < SystemVolumesCount; j++) {
+            if (GuidsAreEqual (&(SystemVolumes[j]->VolUuid), &(Volume->VolUuid))) {
+                // Early Return on ReMapped Volume
+                return;
             }
         }
-    } // if GuidsAreEqual Volume->PartTypeGuid
+    }
 
     #if REFIT_DEBUG > 0
     if (FirstLoaderScan) {
@@ -2078,12 +2050,10 @@ VOID ScanEfiFiles (
         LogLineType = LOG_THREE_STAR_SEP;
     }
 
-    // "Scanning Volume 'XYZ'" or "Scanning ReMapped Volume 'XYZ'"
     /* Exception for LOG_THREE_STAR_SEP */
     LOG(3, LogLineType,
-        L"Scanning %s '%s' for UEFI Loaders",
-        (FixReMap) ? L"ReMapped Volume" : L"Volume",
-        Volume->VolName
+        L"Scanning Volume '%s' for UEFI Loaders",
+        Volume->VolName ? Volume->VolName : L"** No Name **"
     );
     #endif
 
@@ -3438,28 +3408,27 @@ VOID ScanForTools (VOID) {
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     j = 0;
                     while (
-                        (FileName = FindCommaDelimited (GlobalConfig.MacOSRecoveryFiles, j++)) != NULL
+                        (
+                            FileName = FindCommaDelimited (
+                                GlobalConfig.MacOSRecoveryFiles, j++
+                            )
+                        ) != NULL
                     ) {
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName))
                         ) {
                             // Get a meaningful tag for the recovery volume if available
                             for (k = 0; k < VolumesCount; k++) {
-                                if (Volumes[k]->FSType == FS_TYPE_APFS ||
-                                    Volumes[k]->FSType == FS_TYPE_HFSPLUS
-                                ) {
-                                    TmpStr = GuidAsString (&(Volumes[k]->VolUuid));
-                                    if (MyStrStrIns (FileName, TmpStr)
-                                        && !MyStrStr (FileName, L"Cloaked_SkipThis_")
-                                    ) {
-                                        MyFreePool (&TmpStr);
-                                        RecoverVol = StrDuplicate (Volumes[k]->VolName);
-
-                                        break;
-                                    }
+                                TmpStr = GuidAsString (&(Volumes[k]->VolUuid));
+                                if (MyStrStrIns (FileName, TmpStr)) {
                                     MyFreePool (&TmpStr);
+                                    RecoverVol = StrDuplicate (Volumes[k]->VolName);
+
+                                    break;
                                 }
+                                MyFreePool (&TmpStr);
                             } // for
+
                             VolumeTag = RecoverVol ? RecoverVol : Volumes[VolumeIndex]->VolName;
 
                             #if REFIT_DEBUG > 0
@@ -3483,7 +3452,10 @@ VOID ScanForTools (VOID) {
                             MyFreePool (&Description);
 
                             #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s for %s", ToolName, FileName, VolumeTag);
+                            ToolStr = PoolPrint (
+                                L"Added Tool:- '%s' ... %s for %s",
+                                ToolName, FileName, VolumeTag
+                            );
                             LOG(3, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
                                 MsgLog ("\n                               ");

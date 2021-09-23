@@ -112,8 +112,12 @@ CHAR16            *SelfDirPath;
 REFIT_VOLUME      *SelfVolume          = NULL;
 REFIT_VOLUME     **Volumes             = NULL;
 REFIT_VOLUME     **PreBootVolumes      = NULL;
+REFIT_VOLUME     **SystemVolumes       = NULL;
+REFIT_VOLUME     **DataVolumes         = NULL;
 
 UINTN              PreBootVolumesCount = 0;
+UINTN              SystemVolumesCount  = 0;
+UINTN              DataVolumesCount    = 0;
 UINTN              VolumesCount        = 0;
 
 BOOLEAN            MediaCheck          = FALSE;
@@ -2163,6 +2167,29 @@ VOID SetPreBootLabel (
     }
 } // static CHAR16 * SetPreBootLabel()
 
+static
+BOOLEAN FixkDataLabel (
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *SearchTag
+) {
+    UINTN    i;
+    CHAR16  *CheckName = NULL;
+
+    for (i= 0; i < SystemVolumesCount; i++) {
+        CheckName = PoolPrint (L"%s - %s", SystemVolumes[i]->VolName, SearchTag);
+        if (MyStriCmp (Volume->VolName, CheckName)) {
+            MyFreePool (&CheckName);
+            MyFreePool (&Volume->VolName);
+            Volume->VolName = StrDuplicate (SystemVolumes[i]->VolName);
+
+            return TRUE;
+        }
+        MyFreePool (&CheckName);
+    } // for
+
+    return FALSE;
+} // static BOOLEAN FixkDataLabel()
+
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
 // Returns TRUE if a match was found and FALSE if not.
 static
@@ -2195,9 +2222,10 @@ BOOLEAN SetPreBootNames (
                 )
                 && Volume->VolName != NULL
                 && StrLen (Volume->VolName) != 0
-                && MyStrStr (Volume->VolName, L"/FileVault") == NULL
-                && MyStrStrIns (Volume->VolName, L"Unknown") == NULL
-                && MyStrStrIns (Volume->VolName, L" - Data") == NULL
+                && MyStrStr (Volume->VolName, L"/FileVault")  == NULL
+                && MyStrStrIns (Volume->VolName, L"Unknown")  == NULL
+                && MyStrStrIns (Volume->VolName, L" - Data")  == NULL
+                && MyStrStrIns (Volume->VolName, L" - Daten") == NULL
             ) {
                 for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
                     if (GuidsAreEqual (
@@ -2206,9 +2234,6 @@ BOOLEAN SetPreBootNames (
                         )
                     ) {
                         SystemVolume = TRUE;
-                        MyFreePool (&PreBootVolumes[PreBootIndex]->VolName);
-                        PreBootVolumes[PreBootIndex]->VolName = StrDuplicate (Volume->VolName);
-
                         break;
                     }
                 } // for
@@ -2223,19 +2248,18 @@ BOOLEAN SetPreBootNames (
 static
 VOID SetPrebootVolumes (VOID) {
     EFI_STATUS    Status;
-    UINTN         i, PreBootIndex;
-    BOOLEAN       SwapName;
-    BOOLEAN       FoundPreboot = FALSE;
+    UINTN         i, j = 0;
+    CHAR16       *DataFlag      = NULL;
+    BOOLEAN       SwapName      = FALSE;
+    BOOLEAN       FoundPreboot  = FALSE;
+    BOOLEAN       FixedDataVols = FALSE;
 
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
-    REFIT_VOLUME     **SystemVolumes       = NULL;
-    UINTN              SystemVolumesCount  = 0;
-
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr      = NULL;
+    CHAR16  *MsgStr = NULL;
     #endif
 
     FreeVolumes (
@@ -2244,24 +2268,45 @@ VOID SetPrebootVolumes (VOID) {
     );
 
     for (i = 0; i < VolumesCount; i++) {
-        if (Volumes[i]->FSType == FS_TYPE_APFS) {
-            VolumeRole = 0;
-            Status = RP_GetApfsVolumeInfo (
-                Volumes[i]->DeviceHandle,
-                &ContainerGuid,
-                &VolumeGuid,
-                &VolumeRole
-            );
+        VolumeRole = 0;
+        Status = RP_GetApfsVolumeInfo (
+            Volumes[i]->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
 
-            if (!EFI_ERROR(Status)) {
-                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
-                    AddListElement (
-                        (VOID ***) &PreBootVolumes,
-                        &PreBootVolumesCount,
-                        CopyVolume (Volumes[i])
-                    );
+        if (!EFI_ERROR(Status)) {
+            if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                AddListElement (
+                    (VOID ***) &PreBootVolumes,
+                    &PreBootVolumesCount,
+                    CopyVolume (Volumes[i])
+                );
 
-                    FoundPreboot = TRUE;
+                FoundPreboot = TRUE;
+            }
+            else if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA) != 0
+                || MyStrStrIns (Volumes[i]->VolName, L" - Data") != NULL
+                || MyStrStrIns (Volumes[i]->VolName, L" - Daten") != NULL
+            ) {
+                AddListElement (
+                    (VOID ***) &DataVolumes,
+                    &DataVolumesCount,
+                    CopyVolume (Volumes[i])
+                );
+                j = j + 1;
+
+                // Remove 'Data' Flag in English
+                DataFlag      = StrDuplicate (L"Data");
+                FixedDataVols = FixkDataLabel (DataVolumes[j], DataFlag);
+                MyFreePool (&DataFlag);
+
+                if (!FixedDataVols) {
+                    // Remove 'Data' Flag in German
+                    DataFlag      = StrDuplicate (L"Daten");
+                    FixedDataVols = FixkDataLabel (DataVolumes[j], DataFlag);
+                    MyFreePool (&DataFlag);
                 }
             }
         }
@@ -2284,159 +2329,76 @@ VOID SetPrebootVolumes (VOID) {
         #endif
     }
     else {
-        BOOLEAN ActiveContainer;
-        BOOLEAN SecondSystem = FALSE;
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
+        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        MsgLog ("\n\n");
+        MsgLog ("%s:", MsgStr);
+        MyFreePool (&MsgStr);
+        #endif
 
-        for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-            ActiveContainer = FALSE;
+        for (i = 0; i < VolumesCount; i++) {
+            SwapName = SetPreBootNames (Volumes[i]);
 
-            for (i = 0; i < VolumesCount; i++) {
-                if (Volumes[i]->VolName != NULL
-                    && StrLen (Volumes[i]->VolName) != 0
-                    && Volumes[i]->FSType == FS_TYPE_APFS
-                    && MyStrStr (Volumes[i]->VolName, L"/FileVault") == NULL
-                    && MyStrStrIns (Volumes[i]->VolName, L"Unknown") == NULL
-                    && MyStrStrIns (Volumes[i]->VolName, L" - Data") == NULL
-                ) {
-                    if (GuidsAreEqual (
-                            &(PreBootVolumes[PreBootIndex]->PartGuid),
-                            &(Volumes[i]->PartGuid)
-                        )
-                    ) {
-                        VolumeRole = 0;
-                        Status = RP_GetApfsVolumeInfo (
-                            Volumes[i]->DeviceHandle,
-                            &ContainerGuid,
-                            &VolumeGuid,
-                            &VolumeRole
-                        );
+            if (SwapName) {
+                #if REFIT_DEBUG > 0
+                LOG(3, LOG_LINE_NORMAL, L"Mapped Volume:- '%s'", Volumes[i]->VolName);
+                MsgLog ("\n");
+                MsgLog ("  - %s", Volumes[i]->VolName);
+                #endif
 
-                        if (!EFI_ERROR(Status)) {
-                            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
-                                || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                            ) {
-                                if (ActiveContainer) {
-                                    SecondSystem = TRUE;
-                                    break;
-                                }
-                                else {
-                                    ActiveContainer = TRUE;
-                                }
-                            }
-                        }
-                    } // if GuidsAreEqual
-                } // if Volumes[i]->VolName != NULL
-            } // for i = 0
-
-            if (SecondSystem) {
-                break;
+                // Create a list of RemApped System Volumes
+                AddListElement (
+                    (VOID ***) &SystemVolumes,
+                    &SystemVolumesCount,
+                    CopyVolume (Volumes[i])
+                );
             }
-        } // for PreBootIndex = 0
+        } // for
 
-        if (SecondSystem) {
-            // Disable SyncAPFS if we detect multiple installations in a single APFS Container
-            GlobalConfig.SyncAPFS = FALSE;
+        #if REFIT_DEBUG > 0
+        MsgStr = PoolPrint (
+            L"ReMapped %d APFS Volume%s",
+            SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
+        );
+        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
 
-            FreeVolumes (
-                &PreBootVolumes,
-                &PreBootVolumesCount
-            );
-
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (
-                L"Detected Multiple System Volumes in a Single APFS Container ... Disabling SyncAFPS"
-            );
-            LOG(3, LOG_BLANK_LINE_SEP, L"X");
-            LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            MsgLog ("\n\n");
-            MsgLog ("INFO: %s", MsgStr);
-            MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
-            #endif
+        if (SystemVolumesCount == 0) {
+            MsgLog ("\n                   ") ;
         }
         else {
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-            LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
             MsgLog ("\n\n");
-            MsgLog ("%s:", MsgStr);
-            MyFreePool (&MsgStr);
-            #endif
+            MsgLog ("INFO: ");
+        }
+        MsgLog ("%s", MsgStr);
+        MsgLog ("\n\n");
+        MyFreePool (&MsgStr);
+        #endif
 
-            for (i = 0; i < VolumesCount; i++) {
-                SwapName = SetPreBootNames (Volumes[i]);
-
-                if (SwapName) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Mapped Volume:- '%s'", Volumes[i]->VolName);
-                    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    MsgLog ("\n");
-                    MsgLog ("  - %s", MsgStr);
-                    MyFreePool (&MsgStr);
-                    #endif
-
-                    MyFreePool (&Volumes[i]->VolName);
-                    Volumes[i]->VolName = PoolPrint (L"Cloaked_SkipThis_%03d", i);
-
-                    // Create a list of RemApped System Volumes
-                    AddListElement (
-                        (VOID ***) &SystemVolumes,
-                        &SystemVolumesCount,
-                        CopyVolume (Volumes[i])
-                    );
-                }
-            } // for
-
-            #if REFIT_DEBUG > 0
-            MsgStr = PoolPrint (
-                L"ReMapped %d APFS Volume%s",
-                SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
-            );
-            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-
-            if (SystemVolumesCount == 0) {
-                MsgLog ("\n                   ") ;
-            }
-            else {
-                MsgLog ("\n\n");
-                MsgLog ("INFO: ");
-            }
-            MsgLog ("%s", MsgStr);
-            MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
-            #endif
-
-            if (SystemVolumesCount < PreBootVolumesCount) {
-                BOOLEAN FoundReMap = FALSE;
-                for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
-                    for (i = 0; i < SystemVolumesCount; i++) {
-                        if (GuidsAreEqual (
-                                &(PreBootVolumes[PreBootIndex]->PartGuid),
-                                &(SystemVolumes[i]->PartGuid)
-                            )
-                        ) {
-                            FoundReMap = TRUE;
-                            break;
-                        }
-                    } // for
-
-                    if (!FoundReMap) {
-                        // DA-TAG: A preboot volume exists but the associated system volume was not found
-                        //         Use the 'SetPreBootLabel' function to provide the proper volume label
-                        //         The function needs improvement
-                        SetPreBootLabel (PreBootVolumes[PreBootIndex]);
+        if (SystemVolumesCount < PreBootVolumesCount) {
+            BOOLEAN FoundReMap = FALSE;
+            for (j = 0; j < PreBootVolumesCount; j++) {
+                for (i = 0; i < SystemVolumesCount; i++) {
+                    if (GuidsAreEqual (
+                            &(PreBootVolumes[j]->PartGuid),
+                            &(SystemVolumes[i]->PartGuid)
+                        )
+                    ) {
+                        FoundReMap = TRUE;
+                        break;
                     }
-
-                    FoundReMap = FALSE;
                 } // for
-            }
 
-            // Free SystemVolumes list
-            FreeVolumes (
-                &SystemVolumes,
-                &SystemVolumesCount
-            );
-        } // if/else SecondSystem
+                if (!FoundReMap) {
+                    // DA-TAG: A preboot volume exists but the associated system volume was not found
+                    //         Use the 'SetPreBootLabel' function to provide the proper volume label
+                    //         The function needs improvement
+                    SetPreBootLabel (PreBootVolumes[j]);
+                }
+
+                FoundReMap = FALSE;
+            } // for
+        }
     } // if/else !FoundPreboot
 } // VOID SetPrebootVolumes()
 
@@ -2899,27 +2861,28 @@ VOID ScanVolumes (VOID) {
 
 static
 VOID GetVolumeBadgeIcons (VOID) {
-    UINTN         VolumeIndex;
+    UINTN         i, VolumeIndex;
+    BOOLEAN       FoundSysVol = FALSE;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
-    LOG(1, LOG_LINE_THIN_SEP, L"Set VolumeBadges for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Set Volume Badges for Internal Volumes");
     #endif
 
-    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
+    if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Config Setting is Active:- 'HideUI Badges'");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Screen is in Text Mode");
         #endif
 
         return;
     }
 
-    if (!AllowGraphicsMode) {
+    if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Screen is in Text Mode");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return;
@@ -2928,10 +2891,16 @@ VOID GetVolumeBadgeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        if (GlobalConfig.SyncAPFS &&
-            MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
-        ) {
-            continue;
+        if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+            FoundSysVol = FALSE;
+            for (i = 0; i < SystemVolumesCount; i++) {
+                FoundSysVol = TRUE;
+                break;
+            }
+
+            if (FoundSysVol) {
+                continue;
+            }
         }
 
         if (Volume->IsReadable) {
@@ -2969,7 +2938,8 @@ VOID GetVolumeBadgeIcons (VOID) {
 } // VOID GetVolumeBadgeIcons()
 
 VOID SetVolumeIcons (VOID) {
-    UINTN         VolumeIndex;
+    UINTN         i, VolumeIndex;
+    BOOLEAN       FoundSysVol = FALSE;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -2984,17 +2954,17 @@ VOID SetVolumeIcons (VOID) {
     LOG(1, LOG_LINE_THIN_SEP, L"Set '.VolumeIcon' Icons for Internal Volumes");
     #endif
 
-    if (GlobalConfig.IgnoreHiddenIcons) {
+    if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Config Setting is Active:- 'IgnoreHiddenIcons'");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Screen is in Text Mode");
         #endif
 
         return;
     }
 
-    if (!AllowGraphicsMode) {
+    if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped ... Screen is in Text Mode");
+        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Config Setting is Active:- 'IgnoreHiddenIcons'");
         #endif
 
         return;
@@ -3003,10 +2973,16 @@ VOID SetVolumeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        if (GlobalConfig.SyncAPFS &&
-            MyStrStr (Volume->VolName, L"Cloaked_SkipThis_") != NULL
-        ) {
-            continue;
+        if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+            FoundSysVol = FALSE;
+            for (i = 0; i < SystemVolumesCount; i++) {
+                FoundSysVol = TRUE;
+                break;
+            }
+
+            if (FoundSysVol) {
+                continue;
+            }
         }
 
         if (Volume->IsReadable) {
