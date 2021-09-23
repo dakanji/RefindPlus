@@ -62,7 +62,7 @@ prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
 scale_ui              |Provides control of UI element scaling
 set_boot_args         |Allows arbitrary Mac OS boot argument strings
-text_renderer         |Provides a text renderer that allows text mode when not otherwise available
+text_renderer         |Provides a text renderer that allows text output when otherwise unavailable
 uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
 
 In addition to the new functions above, the following upsteam functions have been extended:
@@ -81,7 +81,7 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format
-  * Levels 1 to 4 output logs equivalent to the detailed upstream format
+  * Levels 1 to 4 output logs similar to the detailed upstream format
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution.

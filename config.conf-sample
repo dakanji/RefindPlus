@@ -329,36 +329,39 @@
 
 # Non-bootloader tools to show on the "tools" line
 # of the main menu and their display order:
-#  shell            - UEFI/EFI Shell. (External program; see documentation)
-#  memtest          - Memory Testing Utility. (External program; memtest86)
-#  gptsync          - the (dangerous) gptsync.efi utility (requires external
-#                     program; see documentation for details)
+#  shell            - UEFI/EFI Shell.
+#                     NB: Requires external program
+#                         See documentation for details
+#  memtest          - Memory Testing Utility.
+#                     NB: Requires external memtest8 program
+#  gptsync          - the (dangerous) gptsync.efi utility
+#                     NB: Requires external program
+#                         See documentation for details
 #  gdisk            - the gdisk partitioning program
-#  show_bootscreen  - load Apple Boot Screen if available. (External program)
-#                     Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
-#                     "Fully Compatible GPUs" are those with native Apple Boot Screen
-#  clean_nvram      - reset NVRAM from RefindPlus. (External program)
-#                     Requires Apple Firmware.
-#  apple_recovery   - boots the Apple Recovery HD partition, if present
-#  windows_recovery - boots an OEM Windows recovery tool, if present
-#                     (see also the windows_recovery_files option)
-#  mok_tool         - makes available the Machine Owner Key (MOK) maintenance
-#                     tool, MokManager.efi, used on Secure Boot systems
-#  csr_rotate       - adjusts Apple System Integrity Protection (SIP)
-#                     policy. Requires "csr_values" to be set.
-#  install          - an option to install RefindPlus from the current location
-#                     to another ESP
-#  bootorder        - adjust the EFI's (NOT RefindPlus') boot order
-#  about            - an "about this program" option
+#  show_bootscreen  - load Apple Boot Screen if available.
+#                     NB: Needs External program.
+#                         Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
+#                         "Fully Compatible GPUs" are those with native Apple Boot Screen
+#  clean_nvram      - reset NVRAM from RefindPlus.
+#                     NB: Needs External program.
+#                         Requires Apple Firmware.
+#  apple_recovery   - loads Apple Mac Recovery partitions, if present
+#  windows_recovery - boots an OEM Windows recovery tool, if present.
+#                     NB: Also refer to the "windows_recovery_files" option
+#  mok_tool         - makes available the Machine Owner Key (MOK) maintenance tool,
+#                     MokManager.efi, used on Secure Boot systems
+#  csr_rotate       - adjusts Apple System Integrity Protection (SIP) policy.
+#                     NB: Requires "csr_values" to be set.
+#  install          - an option to install RefindPlus from the current location to another ESP
+#  bootorder        - adjust the firmware's boot order variables
+#  about            - an "About This Program" option
 #  hidden_tags      - manage hidden tags
-#  exit             - a tag to exit from RefindPlus
-#  shutdown         - shuts down the computer (a bug causes this to reboot
-#                     many UEFI systems)
-#  reboot           - a tag to reboot the computer
-#  firmware         - a tag to reboot the computer into the firmware's
-#                     user interface (ignored on older computers)
-#  fwupdate         - a tag to update the firmware; launches the fwupx64.efi
-#                     (or similar) program
+#  exit             - a tag to exit RefindPlus
+#  shutdown         - shuts down the computer (a bug causes this to reboot many UEFI systems)
+#  reboot           - a tag to reboot the computer normally
+#  firmware         - a tag to reboot the computer into the firmware's user interface.
+#                     NB: Ignored on older computers.
+#  fwupdate         - a tag to update the firmware; launches the fwupx64.efi (or similar) program
 #  netboot          - launch the ipxe.efi tool for network (PXE) booting
 #
 # The default setting is shell, memtest, gdisk, apple_recovery, windows_recovery, mok_tool, about, hidden_tags, shutdown, reboot, firmware, fwupdate

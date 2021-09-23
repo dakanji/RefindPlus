@@ -90,12 +90,12 @@ REFIT_MENU_ENTRY MenuEntryReturn = {
 };
 
 REFIT_MENU_SCREEN MainMenu = {
-    L"MainMenu",
+    L"Main Menu",
     NULL,
     0, NULL, 0,
     NULL, 0, L"Automatic boot",
-    L"Use arrow keys to move cursor; Enter to boot;",
-    L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh"
+    L"Use arrow keys to move cursor; 'Enter' to boot;",
+    L"'Insert', 'Tab', or 'F2' for more options; 'Esc' or 'Backspace' to refresh"
 };
 
 REFIT_MENU_SCREEN AboutMenu = {
@@ -103,7 +103,7 @@ REFIT_MENU_SCREEN AboutMenu = {
     NULL,
     0, NULL, 0,
     NULL, 0, NULL,
-    L"Press 'Enter' to return to main menu",
+    L"Press 'Enter' to Return to Main Menu",
     L""
 };
 
@@ -1829,7 +1829,7 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     Status = (MokProtocol) ? EFI_SUCCESS : EFI_NOT_STARTED;
-    MsgLog ("INFO: MokProtocol ... %r", Status);
+    MsgLog ("INFO: MOK Protocol ... %r", Status);
     MsgLog ("\n\n");
     #endif
 

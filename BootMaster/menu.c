@@ -1060,7 +1060,7 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting a keypress is too low
     if (!ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"MainMenu")
+        MyStriCmp (Screen->Title, L"Main Menu")
     ) {
         UINT64 MenuExitTime = GetCurrentSecond();
 
@@ -2313,7 +2313,7 @@ VOID DisplaySimpleMessage (
     REFIT_MENU_ENTRY    *TempMenuEntry  = CopyMenuEntry (&MenuEntryReturn);
     TempMenuEntry->Image                = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
     REFIT_MENU_SCREEN    HideItemMenu   = { NULL, NULL, 0, NULL, 0, &TempMenuEntry, 0, NULL,
-                                         L"Press Enter to return to main menu", L"" };
+                                         L"Press 'Enter' to Return to Main Menu", L"" };
 
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
@@ -2449,8 +2449,8 @@ VOID ManageHiddenTags (VOID) {
 
     CHAR16             *MenuInfo     = L"Select a Tag and Press 'Enter' to Restore";
     REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
-                                         L"Select an option and press Enter or",
-                                         L"press Esc to return to main menu without changes" };
+                                         L"Select an option and press 'Enter' to apply the option",
+                                         L"Press 'Esc' to return to the main menu without changes" };
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_LINE_THIN_SEP, L"Manage Hidden Tags");
@@ -2488,7 +2488,7 @@ VOID ManageHiddenTags (VOID) {
     }
 
     if (!AllTags || StrLen (AllTags) < 1) {
-        DisplaySimpleMessage (L"Information", L"No hidden tags found");
+        DisplaySimpleMessage (L"Information", L"No Hidden Tags Found");
     }
     else {
         AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));

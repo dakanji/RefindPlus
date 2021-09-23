@@ -14,10 +14,6 @@
 - Fixes Implicit Casting of Some Config Integers
   * Some config tokens that could take negative values such as "screensaver" were handled as Unsigned Integers
   * These are now correctly handled as Signed Integers
-- Fixes Text Mode Selected Menu Item Display
-  * The selected item in text mode menus was not displayed
-  * The selections had to be toggled to display the item
-  * RefindPlus now works around this issue by automatically toggling such menu items
 - Fixes Driver Loading from User Defined Folders
   * Drivers in folders defined by the 'scan_driver_dirs' configuration token were not loaded in some instances
   * This was because the routine expected the defined paths to not include the installation folder path
@@ -44,6 +40,11 @@
   * NB: RefindPlus does not check whether a GPU is actually connected to a display
   *     Hence, a blank display will result if the highest resolution GPU is not connected
   * This bug was introduced in v0.12.0.AN (Commit 62e6fe8)
+- Mitigates Text Mode Selected Menu Item Display
+  * The selected item in text mode menus was not displayed
+  * The selections had to be toggled to display the item
+  * RefindPlus now works around this issue by automatically toggling such menu items
+  * This toggling may however not happen on some units
 - Improves Mac Recovery Tool Identification
   * RefindPlus now attempts to associate Apple Mac Recovery Tool instances to specific Mac OS Volumes
   * The same generic name was previously used for all instances
@@ -56,12 +57,12 @@
   * APFS volume roles are now identified by their predefined 'Disk Roles' when possible
   * Additionally, the 'SyncAPFS' feature has been optimised for faster completion
 - Improves APFS Partition Tyoe Detection
-  * RefindPlus Primarily uses the Partition Type Guid to identify APFS Partitions
+  * RefindPlus Primarily used the Partition Type Guid to identify APFS Partitions
   * Some UEFI PC may however not provide a Partition Type Guid for APFS volumes
   * This affected the operation of the SyncAPFS feature which had to be disabled on such units
   * RefindPlus can now determine APFS partitions when the Partition Type Guid is not present
 - Improves 'PreviousBoot' Implementation
-  * Only Loaders (Row 1 Items) are saved as 'PreviousBoot' when this is configured to be saved
+  * Only Loaders (Row 1 Items) are now saved as 'PreviousBoot' when this is configured to be saved
   * Such Loaders are only saved after verification and not regardless as was the case
 - Improves 'IgnorePreviousBoot' Implementation
   * This token is now enforced everywhere when set

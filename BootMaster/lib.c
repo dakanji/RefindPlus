@@ -2188,7 +2188,8 @@ BOOLEAN SetPreBootNames (
         );
 
         if (!EFI_ERROR(Status)) {
-            if ((
+            if (
+                (
                     VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
                     || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
                 )
@@ -2755,10 +2756,12 @@ VOID ScanVolumes (VOID) {
             MyFreePool (&MsgStr);
         }
         else {
+            CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-            MsgLog ("INFO: Self Volume:- '%s ::: %s'\n", SelfVolume->VolName, SelfGUID);
+            MsgLog ("INFO: Self Volume:- '%s ::: %s ::: %s'\n", SelfVolume->VolName, SelfGUID, SelfUUID);
             MsgLog ("      Install Dir:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"Not Set");
             MyFreePool (&SelfGUID);
+            MyFreePool (&SelfUUID);
         }
         #endif
 

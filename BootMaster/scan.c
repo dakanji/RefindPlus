@@ -1298,14 +1298,14 @@ LOADER_ENTRY * AddLoaderEntry (
 
     if ((Volume->VolName) && (!MyStriCmp (Volume->VolName, L"Recovery HD"))) {
         Entry->me.Title = PoolPrint (
-            L"Boot %s from %s",
+            L"Run %s from %s",
             (LoaderTitle != NULL) ? TitleEntry : LoaderPath,
             Volume->VolName
         );
     }
     else {
         Entry->me.Title = PoolPrint (
-            L"Boot %s ",
+            L"Run %s",
             (LoaderTitle != NULL) ? TitleEntry : LoaderPath
         );
     }
@@ -3449,7 +3449,9 @@ VOID ScanForTools (VOID) {
                                     Volumes[k]->FSType == FS_TYPE_HFSPLUS
                                 ) {
                                     TmpStr = GuidAsString (&(Volumes[k]->VolUuid));
-                                    if (MyStrStrIns (FileName, TmpStr)) {
+                                    if (MyStrStrIns (FileName, TmpStr)
+                                        && !MyStrStr (FileName, L"Cloaked_SkipThis_")
+                                    ) {
                                         MyFreePool (&TmpStr);
                                         RecoverVol = StrDuplicate (Volumes[k]->VolName);
 
