@@ -1070,128 +1070,43 @@ VOID SetLoaderDefaults (
     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 10 - END:- VOID");
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID SetLoaderDefaults()
-/*
-// Sets a few defaults for a loader entry -- mainly the icon, but also the OS type
-// code and shortcut letter. For Linux EFI stub loaders, also sets kernel options
-// that will (with luck) work fairly automatically.
-VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, REFIT_VOLUME *Volume) {
-    CHAR16      *NameClues, *PathOnly, *NoExtension, *OSIconName = NULL, *Temp;
-    CHAR16      ShortcutLetter = 0;
 
-    NameClues = Basename(LoaderPath);
-    PathOnly = FindPath(LoaderPath);
-    NoExtension = StripEfiExtension(NameClues);
+CHAR16 * GetVolumeGroupName (
+    IN CHAR16       *LoaderPath,
+    IN REFIT_VOLUME *Volume
+) {
+    UINTN   i;
+    CHAR16 *VolumeGroupName = NULL;
 
-    LOG(3, LOG_LINE_NORMAL, L"Finding loader defaults for '%s'", Entry->me.Title);
-    LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    LOG(5, LOG_LINE_FORENSIC, L"In Refit-SetLoaderDefaults ... 1 - START");
-    if (Volume->DiskKind == DISK_KIND_NET) {
-        MergeStrings(&NameClues, Entry->me.Title, L' ');
-    } else {
-        // locate a custom icon for the loader
-        // Anything found here takes precedence over the "hints" in the OSIconName variable
-        LOG(4, LOG_LINE_NORMAL, L"Trying to load icon in same directory as loader....");
-        if (!Entry->me.Image) {
-            Entry->me.Image = egLoadIconAnyType(Volume->RootDir, PathOnly, NoExtension,
-                                                GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+    for (i = 0; i < SystemVolumesCount; i++) {
+        if (
+            MyStrStrIns (
+                LoaderPath,
+                GuidAsString (&(SystemVolumes[i]->VolUuid))
+            )
+        ) {
+            VolumeGroupName = StrDuplicate (SystemVolumes[i]->VolName);
+            break;
         }
-        if (!Entry->me.Image) {
-            Entry->me.Image = egCopyImage(Volume->VolIconImage);
-        }
+    } // for
 
-        // Begin creating icon "hints" by using last part of directory path leading
-        // to the loader
-        LOG(4, LOG_LINE_NORMAL, L"Creating icon hint based on loader path '%s'", LoaderPath);
-        Temp = FindLastDirName(LoaderPath);
-        MergeStrings(&OSIconName, Temp, L',');
-        MyFreePool(Temp);
-        Temp = NULL;
-        if (OSIconName != NULL) {
-            ShortcutLetter = OSIconName[0];
-        }
-
-        // Add every "word" in the filesystem and partition names, delimited by
-        // spaces, dashes (-), underscores (_), or colons (:), to the list of
-        // hints to be used in searching for OS icons.
-        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on filesystem name ('%s')", Volume->FsName);
-        MergeWords(&OSIconName, Volume->FsName, L',');
-        LOG(4, LOG_LINE_NORMAL, L"Merging hints based on partition name ('%s')", Volume->PartName);
-        MergeWords(&OSIconName, Volume->PartName, L',');
-    } // if/else network boot
-
-    LOG(4, LOG_LINE_NORMAL, L"Adding hints based on specific loaders");
-    // detect specific loaders
-    if (StriSubCmp(L"bzImage", NameClues) || StriSubCmp(L"vmlinuz", NameClues) || StriSubCmp(L"kernel", NameClues)) {
-        if (Volume->DiskKind != DISK_KIND_NET) {
-            GuessLinuxDistribution(&OSIconName, Volume, LoaderPath);
-            Entry->LoadOptions = GetMainLinuxOptions(LoaderPath, Volume);
-        }
-        MergeStrings(&OSIconName, L"linux", L',');
-        Entry->OSType = 'L';
-        if (ShortcutLetter == 0)
-            ShortcutLetter = 'L';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
-    } else if (StriSubCmp(L"refit", LoaderPath)) {
-        MergeStrings(&OSIconName, L"refit", L',');
-        Entry->OSType = 'R';
-        ShortcutLetter = 'R';
-    } else if (StriSubCmp(L"refind", LoaderPath)) {
-        MergeStrings(&OSIconName, L"refind", L',');
-        Entry->OSType = 'R';
-        ShortcutLetter = 'R';
-    } else if (StriSubCmp(MACOSX_LOADER_PATH, LoaderPath)) {
-        MergeStrings(&OSIconName, L"mac", L',');
-        Entry->OSType = 'M';
-        ShortcutLetter = 'M';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
-    } else if (MyStriCmp(NameClues, L"diags.efi")) {
-        MergeStrings(&OSIconName, L"hwtest", L',');
-    } else if (MyStriCmp(NameClues, L"e.efi") || MyStriCmp(NameClues, L"elilo.efi") || StriSubCmp(L"elilo", NameClues)) {
-        MergeStrings(&OSIconName, L"elilo,linux", L',');
-        Entry->OSType = 'E';
-        if (ShortcutLetter == 0)
-            ShortcutLetter = 'L';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_ELILO;
-    } else if (StriSubCmp(L"grub", NameClues)) {
-        MergeStrings(&OSIconName, L"grub,linux", L',');
-        Entry->OSType = 'G';
-        ShortcutLetter = 'G';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_GRUB;
-    } else if (MyStriCmp(NameClues, L"cdboot.efi") ||
-               MyStriCmp(NameClues, L"bootmgr.efi") ||
-               MyStriCmp(NameClues, L"bootmgfw.efi") ||
-               MyStriCmp(NameClues, L"bkpbootmgfw.efi")) {
-        MergeStrings(&OSIconName, L"win8", L',');
-        Entry->OSType = 'W';
-        ShortcutLetter = 'W';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    } else if (MyStriCmp(NameClues, L"xom.efi")) {
-        MergeStrings(&OSIconName, L"xom,win,win8", L',');
-        Entry->OSType = 'X';
-        ShortcutLetter = 'W';
-        Entry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_WINDOWS;
-    }
-    else if (StriSubCmp(L"ipxe", NameClues)) {
-        Entry->OSType = 'N';
-        ShortcutLetter = 'N';
-        MergeStrings(&OSIconName, L"network", L',');
+    if (!VolumeGroupName) {
+        for (i = 0; i < DataVolumesCount; i++) {
+            if (
+                MyStrStrIns (
+                    LoaderPath,
+                    GuidAsString (&(DataVolumes[i]->VolUuid))
+                )
+            ) {
+                VolumeGroupName = StrDuplicate (DataVolumes[i]->VolName);
+                break;
+            }
+        } // for
     }
 
-    if ((ShortcutLetter >= 'a') && (ShortcutLetter <= 'z'))
-        ShortcutLetter = ShortcutLetter - 'a' + 'A'; // convert lowercase to uppercase
-    Entry->me.ShortcutLetter = ShortcutLetter;
-    if (Entry->me.Image == NULL) {
-        LOG(4, LOG_LINE_NORMAL, L"Trying to locate an icon based on hints '%s'", OSIconName);
-        Entry->me.Image = LoadOSIcon(OSIconName, L"unknown", FALSE);
-    }
-    MyFreePool(PathOnly);
-    MyFreePool(OSIconName);
-    MyFreePool(NoExtension);
-    MyFreePool(NameClues);
-    LOG(5, LOG_LINE_FORENSIC, L"In Refit-SetLoaderDefaults ... 11 - END:- VOID");
-    LOG(5, LOG_BLANK_LINE_SEP, L"X");
-} // VOID SetLoaderDefaults()
-*/
+    return VolumeGroupName;
+} // CHAR16 * GetVolumeGroupName()
+
 // Add an NVRAM-based EFI boot loader entry to the menu.
 static
 LOADER_ENTRY * AddEfiLoaderEntry (
@@ -1275,7 +1190,6 @@ LOADER_ENTRY * AddLoaderEntry (
     LOADER_ENTRY  *Entry;
     CHAR16        *TitleEntry  = NULL;
     CHAR16        *DisplayName = NULL;
-    UINTN          i           = 0;
 
     CleanUpPathNameSlashes (LoaderPath);
     Entry = InitializeLoaderEntry (NULL);
@@ -1298,33 +1212,7 @@ LOADER_ENTRY * AddLoaderEntry (
 
         if (!EFI_ERROR(Status)) {
             if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
-                for (i = 0; i < SystemVolumesCount; i++) {
-                    if (
-                        MyStrStrIns (
-                            LoaderPath,
-                            GuidAsString (&(SystemVolumes[i]->VolUuid))
-                        )
-                    ) {
-                        DisplayName = StrDuplicate (SystemVolumes[i]->VolName);
-
-                        break;
-                    }
-                } // for
-
-                if (!DisplayName) {
-                    for (i = 0; i < DataVolumesCount; i++) {
-                        if (
-                            MyStrStrIns (
-                                LoaderPath,
-                                GuidAsString (&(DataVolumes[i]->VolUuid))
-                            )
-                        ) {
-                            DisplayName = StrDuplicate (DataVolumes[i]->VolName);
-
-                            break;
-                        }
-                    } // for
-                }
+                DisplayName = GetVolumeGroupName (LoaderPath, Volume);
 
                 if (!DisplayName) {
                     // Do not display this PreBoot Volume Menu Entry
@@ -1332,7 +1220,6 @@ LOADER_ENTRY * AddLoaderEntry (
                 }
             }
         }
-
     } // if GlobalConfig.SyncAFPS
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
@@ -1349,15 +1236,15 @@ LOADER_ENTRY * AddLoaderEntry (
 
     if (DisplayName || Volume->VolName) {
         Entry->me.Title = PoolPrint (
-            L"Run %s from %s",
+            L"Boot %s from %s",
             (LoaderTitle) ? LoaderTitle : LoaderPath,
-            DisplayName ? DisplayName : Volume->VolName
+            DisplayName   ? DisplayName : Volume->VolName
         );
         MyFreePool (&DisplayName);
     }
     else {
         Entry->me.Title = PoolPrint (
-            L"Run %s",
+            L"Boot %s",
             (LoaderTitle) ? LoaderTitle : LoaderPath
         );
     }
@@ -1383,7 +1270,11 @@ LOADER_ENTRY * AddLoaderEntry (
     MsgLog (
         "  - Found '%s' on '%s'",
         TitleEntry,
-        (Volume->VolName) ? Volume->VolName : Entry->LoaderPath
+        DisplayName
+            ? DisplayName
+            : (Volume->VolName)
+                ? Volume->VolName
+                : Entry->LoaderPath
     );
 
     LOG(2, LOG_THREE_STAR_END, L"Successfully Created Menu Entry for %s", Entry->Title);

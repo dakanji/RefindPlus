@@ -997,7 +997,9 @@ VOID BltClearScreen (
     MsgLog ("Refresh Screen:");
     #endif
 
-    if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
+    if (!IsBoot
+        || (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER))
+    ) {
         // load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
@@ -1102,8 +1104,10 @@ VOID BltClearScreen (
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        MsgLog ("  - Clear Screen");
+        if (!IsBoot) {
+            MsgLog ("\n");
+            MsgLog ("  - Clear Screen");
+        }
         #endif
 
         // not showing banner
@@ -1112,7 +1116,9 @@ VOID BltClearScreen (
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("\n\n");
+    if (!IsBoot) {
+        MsgLog ("\n\n");
+    }
     #endif
 
     GraphicsScreenDirty = FALSE;

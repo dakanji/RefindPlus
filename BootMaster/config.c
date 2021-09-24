@@ -1241,7 +1241,7 @@ VOID AddSubmenu (
 
     if (TitleVolume) {
         SubEntry->me.Title = PoolPrint (
-            L"Run %s from %s",
+            L"Boot %s from %s",
             (Title != NULL) ? Title : L"Unknown",
             Volume->VolName
         );
@@ -1473,7 +1473,7 @@ LOADER_ENTRY * AddStanzaEntries (
         // Set Screen Title
         if (!FirmwareBootNum && Entry->Volume->VolName) {
             Entry->me.Title = PoolPrint (
-                L"Run %s from %s",
+                L"Boot %s from %s",
                 (Title != NULL) ? Title : L"Unknown",
                 Entry->Volume->VolName
             );

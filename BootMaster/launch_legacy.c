@@ -717,7 +717,7 @@ VOID AddLegacyEntry (
         VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
     }
 
-    LegacyTitle = PoolPrint (L"Run %s from %s", LoaderTitle, VolDesc);
+    LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MyFreePool (&LegacyTitle);

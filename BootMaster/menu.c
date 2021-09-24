@@ -439,7 +439,7 @@ VOID AddMenuEntry (
 ) {
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
-        L"Adding Menu Entry to %s:- '%s'",
+        L"Adding Menu Entry to %s - %s",
         Screen->Title,
         Entry->Title
     );

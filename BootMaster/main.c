@@ -2544,14 +2544,45 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Boot Mac OS");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
-                    if (ourLoaderEntry->Volume->VolName) {
-                        MsgLog (" from '%s'", ourLoaderEntry->Volume->VolName);
+
+                    CHAR16 *DisplayName = NULL;
+                    if (!ourLoaderEntry->Volume->VolName) {
+                        MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
                         MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
-                    }
 
+                        if (GlobalConfig.SyncAPFS && ourLoaderEntry->Volume->FSType == FS_TYPE_APFS) {
+                            EFI_GUID               VolumeGuid;
+                            EFI_GUID            ContainerGuid;
+                            APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+                            Status = RP_GetApfsVolumeInfo (
+                                ourLoaderEntry->Volume->DeviceHandle,
+                                &ContainerGuid,
+                                &VolumeGuid,
+                                &VolumeRole
+                            );
+
+                            if (!EFI_ERROR(Status)) {
+                                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                                    DisplayName = GetVolumeGroupName (
+                                        ourLoaderEntry->LoaderPath,
+                                        ourLoaderEntry->Volume
+                                    );
+                                }
+                            }
+                        } // if GlobalConfig.SyncAFPS
+
+                        MsgLog (
+                            " from '%s'",
+                            DisplayName
+                                ? DisplayName
+                                : ourLoaderEntry->Volume->VolName
+                        );
+                    }
                     MyFreePool (&MsgStr);
+                    MyFreePool (&DisplayName);
                     #endif
 
                     // Enable TRIM on non-Apple SSDs if configured to
@@ -2658,7 +2689,7 @@ EFI_STATUS EFIAPI efi_main (
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
-                        L"Run %s from '%s'",
+                        L"Boot %s from '%s'",
                         ourLegacyEntry->Volume->OSName,
                         ourLegacyEntry->Volume->VolName
                     );

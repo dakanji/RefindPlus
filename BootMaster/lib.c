@@ -2167,29 +2167,6 @@ VOID SetPreBootLabel (
     }
 } // static CHAR16 * SetPreBootLabel()
 
-static
-BOOLEAN FixkDataLabel (
-    IN REFIT_VOLUME *Volume,
-    IN CHAR16       *SearchTag
-) {
-    UINTN    i;
-    CHAR16  *CheckName = NULL;
-
-    for (i= 0; i < SystemVolumesCount; i++) {
-        CheckName = PoolPrint (L"%s - %s", SystemVolumes[i]->VolName, SearchTag);
-        if (MyStriCmp (Volume->VolName, CheckName)) {
-            MyFreePool (&CheckName);
-            MyFreePool (&Volume->VolName);
-            Volume->VolName = StrDuplicate (SystemVolumes[i]->VolName);
-
-            return TRUE;
-        }
-        MyFreePool (&CheckName);
-    } // for
-
-    return FALSE;
-} // static BOOLEAN FixkDataLabel()
-
 // Check volumes for associated Mac OS 'PreBoot' partitions and rename partition match
 // Returns TRUE if a match was found and FALSE if not.
 static
@@ -2225,7 +2202,6 @@ BOOLEAN SetPreBootNames (
                 && MyStrStr (Volume->VolName, L"/FileVault")  == NULL
                 && MyStrStrIns (Volume->VolName, L"Unknown")  == NULL
                 && MyStrStrIns (Volume->VolName, L" - Data")  == NULL
-                && MyStrStrIns (Volume->VolName, L" - Daten") == NULL
             ) {
                 for (PreBootIndex = 0; PreBootIndex < PreBootVolumesCount; PreBootIndex++) {
                     if (GuidsAreEqual (
@@ -2248,11 +2224,10 @@ BOOLEAN SetPreBootNames (
 static
 VOID SetPrebootVolumes (VOID) {
     EFI_STATUS    Status;
-    UINTN         i, j = 0;
-    CHAR16       *DataFlag      = NULL;
+    UINTN         i, j, k;
+    CHAR16       *CheckName     = NULL;
     BOOLEAN       SwapName      = FALSE;
     BOOLEAN       FoundPreboot  = FALSE;
-    BOOLEAN       FixedDataVols = FALSE;
 
     EFI_GUID               VolumeGuid;
     EFI_GUID            ContainerGuid;
@@ -2288,25 +2263,28 @@ VOID SetPrebootVolumes (VOID) {
             }
             else if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA) != 0
                 || MyStrStrIns (Volumes[i]->VolName, L" - Data") != NULL
-                || MyStrStrIns (Volumes[i]->VolName, L" - Daten") != NULL
             ) {
+                // Create List of Data volumes to represent Volume Groups
                 AddListElement (
                     (VOID ***) &DataVolumes,
                     &DataVolumesCount,
                     CopyVolume (Volumes[i])
                 );
-                j = j + 1;
 
-                // Remove 'Data' Flag in English
-                DataFlag      = StrDuplicate (L"Data");
-                FixedDataVols = FixkDataLabel (DataVolumes[j], DataFlag);
-                MyFreePool (&DataFlag);
+                // Filter '- Data' tag out of Volume Group name if present
+                k = DataVolumesCount - 1;
+                if (MyStrStr (DataVolumes[k]->VolName, L"- Data") != NULL) {
+                    for (j = 0; j < SystemVolumesCount; j++) {
+                        CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
+                        if (MyStriCmp (DataVolumes[k]->VolName, CheckName)) {
+                            MyFreePool (&CheckName);
+                            MyFreePool (&DataVolumes[k]->VolName);
+                            DataVolumes[k]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
 
-                if (!FixedDataVols) {
-                    // Remove 'Data' Flag in German
-                    DataFlag      = StrDuplicate (L"Daten");
-                    FixedDataVols = FixkDataLabel (DataVolumes[j], DataFlag);
-                    MyFreePool (&DataFlag);
+                            break;
+                        }
+                        MyFreePool (&CheckName);
+                    } // for
                 }
             }
         }
