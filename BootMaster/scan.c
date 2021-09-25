@@ -1924,11 +1924,36 @@ VOID ScanEfiFiles (
         return;
     }
 
-    if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
-        for (j = 0; j < SystemVolumesCount; j++) {
-            if (GuidsAreEqual (&(SystemVolumes[j]->VolUuid), &(Volume->VolUuid))) {
-                // Early Return on ReMapped Volume
+    if (Volume->FSType == FS_TYPE_APFS) {
+        EFI_GUID               VolumeGuid;
+        EFI_GUID            ContainerGuid;
+        APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
+
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
+
+        if (!EFI_ERROR(Status)) {
+            if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_RECOVERY)   != 0
+                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_UNKNOWN) != 0
+                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_UPDATE)  != 0
+                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA)    != 0
+                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_VM)      != 0
+            ) {
+                // Early Return on APFS Support Volume
                 return;
+            }
+        }
+
+        if (GlobalConfig.SyncAPFS) {
+            for (i = 0; i < SystemVolumesCount; i++) {
+                if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
+                    // Early Return on ReMapped Volume
+                    return;
+                }
             }
         }
     }
