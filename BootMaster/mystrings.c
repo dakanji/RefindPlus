@@ -25,29 +25,34 @@ BOOLEAN StriSubCmp (
     IN CHAR16 *SmallStr,
     IN CHAR16 *BigStr
 ) {
-    BOOLEAN Found = 0, Terminate = 0;
+    BOOLEAN Found = FALSE, Terminate = FALSE;
     UINTN BigIndex = 0, SmallIndex = 0, BigStart = 0;
 
-    if (SmallStr && BigStr) {
-        while (!Terminate) {
-            if (BigStr[BigIndex] == '\0') {
-                Terminate = 1;
-            }
-            if (SmallStr[SmallIndex] == '\0') {
-                Found = 1;
-                Terminate = 1;
-            }
-            if ((SmallStr[SmallIndex] & ~0x20) == (BigStr[BigIndex] & ~0x20)) {
-                SmallIndex++;
-                BigIndex++;
-            }
-            else {
-                SmallIndex = 0;
-                BigStart++;
-                BigIndex = BigStart;
-            }
-        } // while
-    } // if
+    if (!SmallStr || !BigStr) {
+        return FALSE;
+    }
+
+    while (!Terminate) {
+        if (BigStr[BigIndex] == '\0') {
+            Terminate = TRUE;
+        }
+
+        if (SmallStr[SmallIndex] == '\0') {
+            Found     = TRUE;
+            Terminate = TRUE;
+        }
+
+        if ((SmallStr[SmallIndex] & ~0x20) == (BigStr[BigIndex] & ~0x20)) {
+            SmallIndex++;
+            BigIndex++;
+        }
+        else {
+            SmallIndex = 0;
+            BigStart++;
+            BigIndex = BigStart;
+        }
+    } // while
+
     return Found;
 } // BOOLEAN StriSubCmp()
 
@@ -59,18 +64,18 @@ BOOLEAN MyStriCmp (
     IN const CHAR16 *FirstString,
     IN const CHAR16 *SecondString
 ) {
-    if (FirstString && SecondString) {
-        while ((*FirstString != L'\0') &&
-            ((*FirstString & ~0x20) == (*SecondString & ~0x20))
-        ) {
-                FirstString++;
-                SecondString++;
-        }
-
-        return (*FirstString == *SecondString);
+    if (!FirstString || !SecondString) {
+        return FALSE;
     }
 
-    return FALSE;
+    while ((*FirstString != L'\0') &&
+        ((*FirstString & ~0x20) == (*SecondString & ~0x20))
+    ) {
+        FirstString++;
+        SecondString++;
+    } // while
+
+    return (*FirstString == *SecondString);
 } // BOOLEAN MyStriCmp()
 
 // As MyStriCmp but only checks whether SecondString starts with FirstString
@@ -81,19 +86,21 @@ BOOLEAN MyStrBegins (
 ) {
     BOOLEAN StrBegins = FALSE;
 
-    if (FirstString && SecondString) {
-        while (*FirstString != L'\0') {
-            if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
-                StrBegins = TRUE;
-                FirstString++;
-                SecondString++;
-            }
-            else {
-                StrBegins = FALSE;
-                break;
-            }
-        }
+    if (!FirstString || !SecondString) {
+        return FALSE;
     }
+
+    while (*FirstString != L'\0') {
+        if ((*FirstString & ~0x20) == (*SecondString & ~0x20)) {
+            StrBegins = TRUE;
+            FirstString++;
+            SecondString++;
+        }
+        else {
+            StrBegins = FALSE;
+            break;
+        }
+    } // while
 
     return StrBegins;
 } // BOOLEAN MyStrBegins()
@@ -254,32 +261,31 @@ CHAR8 * MyAsciiStrStr (
     ASSERT (AsciiStrSize (SearchString) != 0);
 
     if (*SearchString == '\0') {
-      return (CHAR8 *) String;
+        return (CHAR8 *) String;
     }
 
     while (*String != '\0') {
-      SearchStringTmp = SearchString;
-      FirstMatch = String;
+        SearchStringTmp = SearchString;
+        FirstMatch = String;
 
-      while ((*String == *SearchStringTmp)
-              && (*String != '\0')) {
-        String++;
-        SearchStringTmp++;
-      }
+        while ((*String == *SearchStringTmp) && (*String != '\0')) {
+            String++;
+            SearchStringTmp++;
+        }
 
-      if (*SearchStringTmp == '\0') {
-        return (CHAR8 *) FirstMatch;
-      }
+        if (*SearchStringTmp == '\0') {
+            return (CHAR8 *) FirstMatch;
+        }
 
-      if (*String == '\0') {
-        return NULL;
-      }
+        if (*String == '\0') {
+            return NULL;
+        }
 
-      String = FirstMatch + 1;
-    }
+        String = FirstMatch + 1;
+    } // while
 
     return NULL;
-} // CHAR16 *MyAsciiStrStr()
+} // CHAR16 * MyAsciiStrStr()
 
 // Convert input string to all-lowercase.
 // DO NOT USE the standard StrLwr() function, as it is broken on some EFIs!
@@ -288,14 +294,16 @@ VOID ToLower (
 ) {
     UINTN i = 0;
 
-    if (MyString) {
-        while (MyString[i] != L'\0') {
-            if ((MyString[i] >= L'A') && (MyString[i] <= L'Z')) {
-                MyString[i] = MyString[i] - L'A' + L'a';
-            }
-            i++;
-        } // while
+    if (!MyString) {
+        return;
     }
+
+    while (MyString[i] != L'\0') {
+        if ((MyString[i] >= L'A') && (MyString[i] <= L'Z')) {
+            MyString[i] = MyString[i] - L'A' + L'a';
+        }
+        i++;
+    } // while
 } // VOID ToLower()
 
 // Convert input string to all-uppercase.
@@ -304,14 +312,16 @@ VOID ToUpper (
 ) {
     UINTN i = 0;
 
-    if (MyString) {
-        while (MyString[i] != L'\0') {
-            if ((MyString[i] >= L'a') && (MyString[i] <= L'z')) {
-                MyString[i] = MyString[i] - L'a' + L'A';
-            }
-            i++;
-        } // while
+    if (!MyString) {
+        return;
     }
+
+    while (MyString[i] != L'\0') {
+        if ((MyString[i] >= L'a') && (MyString[i] <= L'z')) {
+            MyString[i] = MyString[i] - L'a' + L'A';
+        }
+        i++;
+    } // while
 } // VOID ToUpper()
 
 // Merges two strings, creating a new one and returning a pointer to it.
@@ -538,31 +548,33 @@ VOID MergeWords (
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
 
-    if (InString) {
-        Temp = Word = p = StrDuplicate (InString);
-        if (Temp) {
-            while (!LineFinished) {
-                if ((*p == L' ') ||
-                    (*p == L':') ||
-                    (*p == L'_') ||
-                    (*p == L'-') ||
-                    (*p == L'\0')
-                ) {
-                    if (*p == L'\0') {
-                        LineFinished = TRUE;
-                    }
-                    *p = L'\0';
-                    if (*Word != L'\0') {
-                        MergeStrings (MergeTo, Word, AddChar);
-                    }
-                    Word = p + 1;
+    if (!InString) {
+        return;
+    }
+
+    Temp = Word = p = StrDuplicate (InString);
+    if (Temp) {
+        while (!LineFinished) {
+            if ((*p == L' ') ||
+                (*p == L':') ||
+                (*p == L'_') ||
+                (*p == L'-') ||
+                (*p == L'\0')
+            ) {
+                if (*p == L'\0') {
+                    LineFinished = TRUE;
                 }
+                *p = L'\0';
+                if (*Word != L'\0') {
+                    MergeStrings (MergeTo, Word, AddChar);
+                }
+                Word = p + 1;
+            }
 
-                p++;
-            } // while
+            p++;
+        } // while
 
-            MyFreePool (&Temp);
-        }
+        MyFreePool (&Temp);
     }
 } // VOID MergeWords()
 
@@ -575,31 +587,33 @@ VOID MergeUniqueWords (
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
 
-    if (InString) {
-        Temp = Word = p = StrDuplicate (InString);
-        if (Temp) {
-            while (!LineFinished) {
-                if ((*p == L' ') ||
-                    (*p == L':') ||
-                    (*p == L'_') ||
-                    (*p == L'-') ||
-                    (*p == L'\0')
-                ) {
-                    if (*p == L'\0') {
-                        LineFinished = TRUE;
-                    }
-                    *p = L'\0';
-                    if (*Word != L'\0') {
-                        MergeUniqueStrings (MergeTo, Word, AddChar);
-                    }
-                    Word = p + 1;
+    if (!InString) {
+        return;
+    }
+
+    Temp = Word = p = StrDuplicate (InString);
+    if (Temp) {
+        while (!LineFinished) {
+            if ((*p == L' ') ||
+                (*p == L':') ||
+                (*p == L'_') ||
+                (*p == L'-') ||
+                (*p == L'\0')
+            ) {
+                if (*p == L'\0') {
+                    LineFinished = TRUE;
                 }
+                *p = L'\0';
+                if (*Word != L'\0') {
+                    MergeUniqueStrings (MergeTo, Word, AddChar);
+                }
+                Word = p + 1;
+            }
 
-                p++;
-            } // while
+            p++;
+        } // while
 
-            MyFreePool (&Temp);
-        }
+        MyFreePool (&Temp);
     }
 } // VOID MergeUniqueWords()
 
@@ -608,44 +622,46 @@ VOID MergeUniqueWords (
 CHAR16 * SanitiseString (
     CHAR16  *InString
 ) {
-    CHAR16  *OutputString = NULL;
     CHAR16  *Temp, *Word, *p;
+    CHAR16  *OutString    = NULL;
     BOOLEAN  LineFinished = FALSE;
 
-    if (InString) {
-        Temp = Word = p = StrDuplicate (InString);
-        if (Temp) {
-            while (!LineFinished) {
-                if ((*p == L'.') || (*p == L',') || (*p == L'*') ||
-                    (*p == L':') || (*p == L'_') || (*p == L'-') ||
-                    (*p == L'&') || (*p == L'#') || (*p == L'?') ||
-                    (*p == L'(') || (*p == L')') || (*p == L';') ||
-                    (*p == L'[') || (*p == L']') || (*p == L'$') ||
-                    (*p == L'{') || (*p == L'}') || (*p == L'+') ||
-                    (*p == L'@') || (*p == L'%') || (*p == L'\0')
-                ) {
-                    if (*p == L'\0') {
-                        LineFinished = TRUE;
-                    }
-                    *p = L'\0';
-                    if (*Word != L'\0') {
-                        MergeStrings (&OutputString, Word, L' ');
-                    }
-                    Word = p + 1;
+    if (!InString) {
+        return NULL;
+    }
+
+    Temp = Word = p = StrDuplicate (InString);
+    if (Temp) {
+        while (!LineFinished) {
+            if ((*p == L'.') || (*p == L',') || (*p == L'*') ||
+                (*p == L':') || (*p == L'_') || (*p == L'-') ||
+                (*p == L'&') || (*p == L'#') || (*p == L'?') ||
+                (*p == L'(') || (*p == L')') || (*p == L';') ||
+                (*p == L'[') || (*p == L']') || (*p == L'$') ||
+                (*p == L'{') || (*p == L'}') || (*p == L'+') ||
+                (*p == L'@') || (*p == L'%') || (*p == L'\0')
+            ) {
+                if (*p == L'\0') {
+                    LineFinished = TRUE;
                 }
+                *p = L'\0';
+                if (*Word != L'\0') {
+                    MergeStrings (&OutString, Word, L' ');
+                }
+                Word = p + 1;
+            }
 
-                p++;
-            } // while
+            p++;
+        } // while
 
-            MyFreePool (&Temp);
-        }
+        MyFreePool (&Temp);
     }
 
-    if (!OutputString) {
-        OutputString = StrDuplicate (InString);
+    if (!OutString) {
+        OutString = StrDuplicate (InString);
     }
 
-    return OutputString;
+    return OutString;
 } // CHAR16 * SanitiseString()
 
 // Restrict 'TheString' to at most 'Limit' characters.
@@ -807,38 +823,40 @@ CHAR16 * FindCommaDelimited (
     BOOLEAN  Found = FALSE;
     CHAR16   *FoundString = NULL;
 
-    if (InString != NULL) {
-        InLength = StrLen (InString);
-        // After while() loop, StartPos marks start of item #Index
-        while ((Index > 0) && (CurPos < InLength)) {
-            if (InString[CurPos] == L',') {
-                Index--;
-                StartPos = CurPos + 1;
-            }
+    if (InString == NULL) {
+        return NULL;
+    }
 
+    InLength = StrLen (InString);
+    // After while() loop, StartPos marks start of item #Index
+    while ((Index > 0) && (CurPos < InLength)) {
+        if (InString[CurPos] == L',') {
+            Index--;
+            StartPos = CurPos + 1;
+        }
+
+        CurPos++;
+    } // while
+
+    // After while() loop, CurPos is one past the end of the element
+    while ((CurPos < InLength) && (!Found)) {
+        if (InString[CurPos] == L',') {
+            Found = TRUE;
+        }
+        else {
             CurPos++;
-        } // while
-
-        // After while() loop, CurPos is one past the end of the element
-        while ((CurPos < InLength) && (!Found)) {
-            if (InString[CurPos] == L',') {
-                Found = TRUE;
-            }
-            else {
-                CurPos++;
-            }
-        } // while
-
-        if (Index == 0) {
-            FoundString = StrDuplicate (&InString[StartPos]);
         }
+    } // while
 
-        if (FoundString != NULL) {
-            FoundString[CurPos - StartPos] = 0;
-        }
-    } // if
+    if (Index == 0) {
+        FoundString = StrDuplicate (&InString[StartPos]);
+    }
 
-    return (FoundString);
+    if (FoundString != NULL) {
+        FoundString[CurPos - StartPos] = 0;
+    }
+
+    return FoundString;
 } // CHAR16 *FindCommaDelimited()
 
 // Delete an individual element from a comma-separated value list.
@@ -908,24 +926,26 @@ BOOLEAN IsInSubstring (
     BOOLEAN Found = FALSE;
     CHAR16  *OneElement;
 
-    if (BigString && List) {
-        while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
-            ElementLength = StrLen(OneElement);
-            if ((ElementLength <= StrLen(BigString)) &&
-                (ElementLength > 0) &&
-                (StriSubCmp (OneElement, BigString))
-            ) {
-                Found = TRUE;
-            } // if
+    if (!BigString || !List) {
+        return FALSE;
+    }
 
-            if ((ElementLength <= StrLen (BigString)) &&
-                (StriSubCmp (OneElement, BigString))
-            ) {
-                Found = TRUE;
-            }
-            MyFreePool (&OneElement);
-        } // while
-    } // if
+    while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
+        ElementLength = StrLen(OneElement);
+        if ((ElementLength <= StrLen(BigString)) &&
+            (ElementLength > 0) &&
+            (StriSubCmp (OneElement, BigString))
+        ) {
+            Found = TRUE;
+        } // if
+
+        if ((ElementLength <= StrLen (BigString)) &&
+            (StriSubCmp (OneElement, BigString))
+        ) {
+            Found = TRUE;
+        }
+        MyFreePool (&OneElement);
+    } // while
 
     return Found;
 } // BOOLEAN IsSubstringIn()
@@ -1077,35 +1097,33 @@ BOOLEAN IsGuid (
     CHAR16  a;
 
     if (UnknownString == NULL) {
+        return FALSE;
+    }
+
+    Length = StrLen (UnknownString);
+    if (Length != 36) {
         retval = FALSE;
     }
     else {
-        Length = StrLen (UnknownString);
-        if (Length != 36) {
-            retval = FALSE;
-        }
-        else {
-            for (i = 0; i < Length; i++) {
-                a = UnknownString[i];
-                if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
-                    if (a != L'-') {
-                        retval = FALSE;
-                        break;
-                    }
+        for (i = 0; i < Length; i++) {
+            a = UnknownString[i];
+            if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+                if (a != L'-') {
+                    retval = FALSE;
+                    break;
                 }
-                // DA-TAG: Condition below can never be met
-                //         Comment out until review
-                //else if (((a < L'a') || (a > L'f')) &&
-                //    ((a < L'A') || (a > L'F')) &&
-                //    ((a < L'0') && (a > L'9'))
-                //) {
-                //    retval = FALSE;
-                //    break;
-                //}
-            } // for
-        }
+            }
+            // DA-TAG: Condition below can never be met
+            //         Comment out until review
+            //else if (((a < L'a') || (a > L'f')) &&
+            //    ((a < L'A') || (a > L'F')) &&
+            //    ((a < L'0') && (a > L'9'))
+            //) {
+            //    retval = FALSE;
+            //    break;
+            //}
+        } // for
     }
-
 
     return retval;
 } // BOOLEAN IsGuid()
