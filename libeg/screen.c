@@ -276,7 +276,6 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr   = NULL;
-    CHAR16 *ModeTxt  = NULL;
     CHAR16 *PixelFormatDesc;
     #endif
 
@@ -295,23 +294,16 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
         #if REFIT_DEBUG > 0
-        if (MaxMode == 1) {
-            ModeTxt = StrDuplicate (L"Mode");
-        }
-        else {
-            ModeTxt = StrDuplicate (L"Modes");
-        }
-
         MsgStr = PoolPrint (
-            L"Analyse GOP Modes on Handle[%d]:- %d %s ... 0x%lx-0x%lx Framebuffer",
-            SelectedGOP, MaxMode, ModeTxt,
+            L"Analyse GOP Modes on Handle[%d] - %02d Mode%s ... 0x%lx-0x%lx Framebuffer",
+            SelectedGOP, MaxMode,
+            (MaxMode != 1) ? L"s" : L"",
             GOPDraw->Mode->FrameBufferBase,
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
         LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
         MyFreePool (&MsgStr);
-        MyFreePool (&ModeTxt);
         #endif
 
         LoopCount = -1;
