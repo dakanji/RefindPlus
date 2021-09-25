@@ -603,6 +603,51 @@ VOID MergeUniqueWords (
     }
 } // VOID MergeUniqueWords()
 
+// Replaces special characters, '.', ':', '_', '-', '&', and '#',
+// in the input string with a space, ' '.
+CHAR16 * SanitiseString (
+    CHAR16  *InString
+) {
+    CHAR16  *OutputString = NULL;
+    CHAR16  *Temp, *Word, *p;
+    BOOLEAN  LineFinished = FALSE;
+
+    if (InString) {
+        Temp = Word = p = StrDuplicate (InString);
+        if (Temp) {
+            while (!LineFinished) {
+                if ((*p == L'.') ||
+                    (*p == L':') ||
+                    (*p == L'_') ||
+                    (*p == L'-') ||
+                    (*p == L'&') ||
+                    (*p == L'#') ||
+                    (*p == L'\0')
+                ) {
+                    if (*p == L'\0') {
+                        LineFinished = TRUE;
+                    }
+                    *p = L'\0';
+                    if (*Word != L'\0') {
+                        MergeStrings (&OutputString, Word, L' ');
+                    }
+                    Word = p + 1;
+                }
+
+                p++;
+            } // while
+
+            MyFreePool (&Temp);
+        }
+    }
+
+    if (!OutputString) {
+        OutputString = StrDuplicate (InString);
+    }
+
+    return OutputString;
+} // CHAR16 * SanitiseString()
+
 // Restrict 'TheString' to at most 'Limit' characters.
 // Does this in two ways:
 // - Locates stretches of two or more spaces and compresses

@@ -66,6 +66,7 @@ CHAR16 * MyStrStrIns (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
 CHAR16 * FindNumbers (IN CHAR16 *InString);
 CHAR16 * GuidAsString (EFI_GUID *GuidData);
 CHAR16 * FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);
+CHAR16 * SanitiseString (CHAR16 *InString);
 CHAR16 * MyAsciiStrCopyToUnicode (
     IN  CHAR8   *AsciiString,
     IN  UINTN    Length

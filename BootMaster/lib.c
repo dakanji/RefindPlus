@@ -2106,7 +2106,8 @@ VOID VetSyncAPFS (VOID) {
     else {
         #if REFIT_DEBUG > 0
         UINTN   i, j;
-        CHAR16 *CheckName = NULL;
+        CHAR16 *CheckName     = NULL;
+        CHAR16 *SanitisedName = NULL;
 
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -2126,15 +2127,18 @@ VOID VetSyncAPFS (VOID) {
         for (i = 0; i < DataVolumesCount; i++) {
             if (MyStrStr (DataVolumes[i]->VolName, L"- Data") != NULL) {
                 for (j = 0; j < SystemVolumesCount; j++) {
-                    CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
+                    SanitisedName = SanitiseString (SystemVolumes[j]->VolName);
+                    CheckName     = PoolPrint (L"%s - Data", SanitisedName);
                     if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
                         MyFreePool (&CheckName);
+                        MyFreePool (&SanitisedName);
                         MyFreePool (&DataVolumes[i]->VolName);
                         DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
 
                         break;
                     }
                     MyFreePool (&CheckName);
+                    MyFreePool (&SanitisedName);
                 } // for
             }
         } // for
