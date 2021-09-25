@@ -532,14 +532,14 @@ VOID MergeUniqueStrings (
 // by ' ', ':', '_', or '-'.
 VOID MergeWords (
     CHAR16 **MergeTo,
-    CHAR16  *SourceString,
+    CHAR16  *InString,
     CHAR16   AddChar
 ) {
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
 
-    if (SourceString) {
-        Temp = Word = p = StrDuplicate (SourceString);
+    if (InString) {
+        Temp = Word = p = StrDuplicate (InString);
         if (Temp) {
             while (!LineFinished) {
                 if ((*p == L' ') ||
@@ -548,11 +548,13 @@ VOID MergeWords (
                     (*p == L'-') ||
                     (*p == L'\0')
                 ) {
-                    if (*p == L'\0')
+                    if (*p == L'\0') {
                         LineFinished = TRUE;
+                    }
                     *p = L'\0';
-                    if (*Word != L'\0')
+                    if (*Word != L'\0') {
                         MergeStrings (MergeTo, Word, AddChar);
+                    }
                     Word = p + 1;
                 }
 
@@ -567,14 +569,14 @@ VOID MergeWords (
 // As MergeWords, but only unique words are merged
 VOID MergeUniqueWords (
     CHAR16 **MergeTo,
-    CHAR16  *SourceString,
+    CHAR16  *InString,
     CHAR16   AddChar
 ) {
     CHAR16 *Temp, *Word, *p;
     BOOLEAN LineFinished = FALSE;
 
-    if (SourceString) {
-        Temp = Word = p = StrDuplicate (SourceString);
+    if (InString) {
+        Temp = Word = p = StrDuplicate (InString);
         if (Temp) {
             while (!LineFinished) {
                 if ((*p == L' ') ||
@@ -583,11 +585,13 @@ VOID MergeUniqueWords (
                     (*p == L'-') ||
                     (*p == L'\0')
                 ) {
-                    if (*p == L'\0')
+                    if (*p == L'\0') {
                         LineFinished = TRUE;
+                    }
                     *p = L'\0';
-                    if (*Word != L'\0')
+                    if (*Word != L'\0') {
                         MergeUniqueStrings (MergeTo, Word, AddChar);
+                    }
                     Word = p + 1;
                 }
 
@@ -597,7 +601,7 @@ VOID MergeUniqueWords (
             MyFreePool (&Temp);
         }
     }
-} // VOID MergeWords()
+} // VOID MergeUniqueWords()
 
 // Restrict 'TheString' to at most 'Limit' characters.
 // Does this in two ways:
