@@ -679,7 +679,7 @@ VOID SetLoaderDefaults (
         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3a 1");
         #if REFIT_DEBUG > 0
         LOG(4, LOG_THREE_STAR_MID,
-            L"In SetLoaderDefaults ... Skipped Loading Icon in Text Mode"
+            L"In SetLoaderDefaults ... Skipped Loading Icon in Text Screen Mode"
         );
         #endif
     }

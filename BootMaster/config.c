@@ -1363,7 +1363,7 @@ LOADER_ENTRY * AddStanzaEntries (
                 if (!AllowGraphicsMode) {
                     #if REFIT_DEBUG > 0
                     LOG(4, LOG_THREE_STAR_MID,
-                        L"In AddStanzaEntries ... Skipped Loading Icon in Text Mode"
+                        L"In AddStanzaEntries ... Skipped Loading Icon in Text Screen Mode"
                     );
                     #endif
                 }
