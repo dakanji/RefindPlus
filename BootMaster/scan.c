@@ -816,7 +816,7 @@ VOID SetLoaderDefaults (
                     #endif
 
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2a 2");
-                    MergeWords (&OSIconName, Volume->FsName, L',');
+                    MergeUniqueWords (&OSIconName, Volume->FsName, L',');
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2a 3");
                 }
                 else {
@@ -832,7 +832,7 @@ VOID SetLoaderDefaults (
                         #endif
 
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 1");
-                        MergeWords (&OSIconName, Volume->VolName, L',');
+                        MergeUniqueWords (&OSIconName, Volume->VolName, L',');
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 2");
                     }
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 2");
@@ -852,7 +852,7 @@ VOID SetLoaderDefaults (
                 #endif
 
                 LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9a 1");
-                MergeWords (&OSIconName, Volume->PartName, L',');
+                MergeUniqueWords (&OSIconName, Volume->PartName, L',');
                 LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9a 2");
             }
             LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 3");
@@ -1144,7 +1144,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
 
         Entry->EfiBootNum = EfiBootNum;
 
-        MergeWords (&OSIconName, Entry->me.Title, L',');
+        MergeUniqueWords (&OSIconName, Entry->me.Title, L',');
         MergeUniqueStrings (&OSIconName, L"Unknown", L',');
 
         if (Icon) {

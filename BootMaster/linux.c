@@ -399,7 +399,7 @@ VOID ParseReleaseFile (
                     MyStriCmp (TokenList[0], L"DISTRIB_ID")
                 )
             ) {
-                MergeWords (OSIconName, TokenList[1], L',');
+                MergeUniqueWords (OSIconName, TokenList[1], L',');
             }
 
             FreeTokenLine (&TokenList, &TokenCount);
