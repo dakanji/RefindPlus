@@ -291,7 +291,9 @@ EFI_STATUS StartEFIImage (
 
         // Stall to avoid unwanted flash of text when starting loaders
         // Stall works best in smaller increments as per Specs
-        if (Verbose && !IsDriver) {
+        if (!IsDriver && (!AllowGraphicsMode || Verbose)) {
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+            REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
             REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
