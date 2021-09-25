@@ -1901,7 +1901,7 @@ VOID ScanEfiFiles (
     EFI_STATUS        Status;
     REFIT_DIR_ITER    EfiDirIter;
     EFI_FILE_INFO    *EfiDirEntry;
-    UINTN             i, j, Length;
+    UINTN             i, Length;
     CHAR16           *Temp;
     CHAR16           *FileName;
     CHAR16           *SelfPath;
