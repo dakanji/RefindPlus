@@ -149,12 +149,6 @@ VOID InitSelection (VOID) {
     }
     else {
         LoadedSmallImage = TRUE;
-
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Using Configured Selection Image:- '%s'", GlobalConfig.SelectionSmallFileName
-        );
-        #endif
     }
 
     if ((TempSmallImage->Width != TileSizes[1]) || (TempSmallImage->Height != TileSizes[1])) {
@@ -169,14 +163,7 @@ VOID InitSelection (VOID) {
         TempBigImage = egLoadImage (SelfDir, GlobalConfig.SelectionBigFileName, TRUE);
     }
 
-    if (TempBigImage != NULL) {
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Using Configured Selection Image:- '%s'", GlobalConfig.SelectionBigFileName
-        );
-        #endif
-    }
-    else {
+    if (TempBigImage == NULL) {
         if (TempSmallImage->Width > 128 || TempSmallImage->Height > 128) {
             TaintFree = FALSE;
         }
