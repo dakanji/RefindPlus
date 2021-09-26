@@ -1028,13 +1028,14 @@ BOOLEAN IsValidHex (
     CHAR16 *Input
 ) {
     BOOLEAN IsHex = TRUE;
-    UINTN i = 0;
+    UINTN   i = 0;
 
-    while ((Input[i] != L'\0') && IsHex) {
+    while (IsHex && (Input[i] != L'\0')) {
         if (!(((Input[i] >= L'0') && (Input[i] <= L'9')) ||
               ((Input[i] >= L'A') && (Input[i] <= L'F')) ||
-              ((Input[i] >= L'a') && (Input[i] <= L'f')))) {
-                IsHex = FALSE;
+              ((Input[i] >= L'a') && (Input[i] <= L'f')))
+        ) {
+            IsHex = FALSE;
         }
         i++;
     } // while
@@ -1143,7 +1144,7 @@ CHAR16 * GuidAsString (
         SPrint (
             TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
             (UINTN) GuidData->Data1,    (UINTN) GuidData->Data2,    (UINTN) GuidData->Data3,
-            (UINTN) GuidData->Data4[0], (UINTN) GuidData->Data4[1], (UINTN )GuidData->Data4[2],
+            (UINTN) GuidData->Data4[0], (UINTN) GuidData->Data4[1], (UINTN) GuidData->Data4[2],
             (UINTN) GuidData->Data4[3], (UINTN) GuidData->Data4[4], (UINTN) GuidData->Data4[5],
             (UINTN) GuidData->Data4[6], (UINTN) GuidData->Data4[7]
         );
@@ -1161,17 +1162,17 @@ EFI_GUID StringAsGuid (
         return Guid;
     }
 
-    Guid.Data1    = (UINT32) StrToHex(InString,  0, 8);
-    Guid.Data2    = (UINT16) StrToHex(InString,  9, 4);
-    Guid.Data3    = (UINT16) StrToHex(InString, 14, 4);
-    Guid.Data4[0] =  (UINT8) StrToHex(InString, 19, 2);
-    Guid.Data4[1] =  (UINT8) StrToHex(InString, 21, 2);
-    Guid.Data4[2] =  (UINT8) StrToHex(InString, 23, 2);
-    Guid.Data4[3] =  (UINT8) StrToHex(InString, 26, 2);
-    Guid.Data4[4] =  (UINT8) StrToHex(InString, 28, 2);
-    Guid.Data4[5] =  (UINT8) StrToHex(InString, 30, 2);
-    Guid.Data4[6] =  (UINT8) StrToHex(InString, 32, 2);
-    Guid.Data4[7] =  (UINT8) StrToHex(InString, 34, 2);
+    Guid.Data1    = (UINT32) StrToHex (InString,  0, 8);
+    Guid.Data2    = (UINT16) StrToHex (InString,  9, 4);
+    Guid.Data3    = (UINT16) StrToHex (InString, 14, 4);
+    Guid.Data4[0] =  (UINT8) StrToHex (InString, 19, 2);
+    Guid.Data4[1] =  (UINT8) StrToHex (InString, 21, 2);
+    Guid.Data4[2] =  (UINT8) StrToHex (InString, 23, 2);
+    Guid.Data4[3] =  (UINT8) StrToHex (InString, 26, 2);
+    Guid.Data4[4] =  (UINT8) StrToHex (InString, 28, 2);
+    Guid.Data4[5] =  (UINT8) StrToHex (InString, 30, 2);
+    Guid.Data4[6] =  (UINT8) StrToHex (InString, 32, 2);
+    Guid.Data4[7] =  (UINT8) StrToHex (InString, 34, 2);
 
     return Guid;
 } // EFI_GUID StringAsGuid()
@@ -1179,17 +1180,17 @@ EFI_GUID StringAsGuid (
 // Returns the current time as a string in 24-hour format; e.g., 14:03:17.
 // Discards date portion, since for our purposes, we really do not care.
 // Calling function is responsible for releasing returned string.
-CHAR16 * GetTimeString(VOID) {
+CHAR16 * GetTimeString (VOID) {
     CHAR16     *TimeStr = NULL;
     EFI_TIME    CurrentTime;
     EFI_STATUS  Status = EFI_SUCCESS;
 
     Status = REFIT_CALL_2_WRAPPER(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
     if (EFI_ERROR(Status)) {
-        TimeStr = PoolPrint(L"unknown time");
+        TimeStr = PoolPrint (L"unknown time");
     }
     else {
-        TimeStr = PoolPrint(
+        TimeStr = PoolPrint (
             L"%02d:%02d:%02d",
             CurrentTime.Hour,
             CurrentTime.Minute,
