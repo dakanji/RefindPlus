@@ -904,14 +904,16 @@ BOOLEAN IsIn (
    BOOLEAN   Found = FALSE;
    CHAR16    *OneElement;
 
-   if (SmallString && List) {
-      while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
-         if (MyStriCmp (OneElement, SmallString)) {
-             Found = TRUE;
-         }
-         MyFreePool (&OneElement);
-      } // while
+   if (!SmallString || !List) {
+       return FALSE;
    }
+
+    while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
+        if (MyStriCmp (OneElement, SmallString)) {
+            Found = TRUE;
+        }
+        MyFreePool (&OneElement);
+    } // while
 
    return Found;
 } // BOOLEAN IsIn()
