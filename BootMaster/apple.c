@@ -196,14 +196,11 @@ VOID RotateCsrValue (VOID) {
 
         while ((ListItem != NULL) && (ListItem->Value != CurrentValue)) {
             ListItem = ListItem->Next;
-        }
+        } // while
 
-        if (ListItem == NULL || ListItem->Next == NULL) {
-            TargetCsr = GlobalConfig.CsrValues->Value;
-        }
-        else {
-            TargetCsr = ListItem->Next->Value;
-        }
+        TargetCsr = (ListItem == NULL || ListItem->Next == NULL)
+            ? GlobalConfig.CsrValues->Value
+            : ListItem->Next->Value;
 
         #if REFIT_DEBUG > 0
         if (TargetCsr == 0) {
@@ -343,8 +340,8 @@ EFI_STATUS SetAppleOSInfo (
 ) {
     EFI_STATUS               Status;
     EFI_GUID                 apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
-    CHAR16                  *AppleOSVersion     = NULL;
-    CHAR8                   *AppleOSVersion8    = NULL;
+    CHAR16                  *AppleVersionOS     = NULL;
+    CHAR8                   *MacVersionStr      = NULL;
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
     Status = REFIT_CALL_3_WRAPPER(
@@ -358,51 +355,40 @@ EFI_STATUS SetAppleOSInfo (
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
-            L"Not a Mac ... Not setting Apple OS information"
+            L"Not a Mac ... Do Not Set Mac OS Information"
         );
         #endif
 
         Status = EFI_SUCCESS;
     }
     else if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
-        #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
-            L"Setting Apple OS information"
-        );
-        #endif
+        Status         = EFI_OUT_OF_RESOURCES;
+        AppleVersionOS = StrDuplicate (L"Mac OS");
+        MergeStrings (&AppleVersionOS, GlobalConfig.SpoofOSXVersion, ' ');
 
-        AppleOSVersion = L"Mac OS";
-        MergeStrings (&AppleOSVersion, GlobalConfig.SpoofOSXVersion, ' ');
-
-        if (AppleOSVersion) {
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
-                L"Setting Apple OS information to '%s'",
-                AppleOSVersion
+        if (AppleVersionOS) {
+            MacVersionStr = AllocateZeroPool (
+                (StrLen (AppleVersionOS) + 1) * sizeof (CHAR8)
             );
-            #endif
 
-            AppleOSVersion8 = AllocateZeroPool (
-                (StrLen (AppleOSVersion) + 1) * sizeof (CHAR8)
-            );
-            if (!AppleOSVersion8) {
+            if (MacVersionStr) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_THREE_STAR_SEP,
-                    L"Memory Error!!"
+                LOG(3, LOG_LINE_NORMAL,
+                    L"Setting Mac OS Information to '%s'",
+                    AppleVersionOS
                 );
                 #endif
 
-                Status = EFI_OUT_OF_RESOURCES;
-            }
-            else {
-                UnicodeStrToAsciiStr (AppleOSVersion, AppleOSVersion8);
+                UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
                 Status = REFIT_CALL_1_WRAPPER(
-                    SetOs->SetOsVersion, AppleOSVersion8
+                    SetOs->SetOsVersion, MacVersionStr
                 );
+
                 if (!EFI_ERROR(Status)) {
                     Status = EFI_SUCCESS;
                 }
-                MyFreePool (&AppleOSVersion8);
+
+                MyFreePool (&MacVersionStr);
             }
 
             if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
@@ -410,8 +396,9 @@ EFI_STATUS SetAppleOSInfo (
                     SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
                 );
             }
-            MyFreePool (&AppleOSVersion);
-        } // if (AppleOSVersion)
+
+            MyFreePool (&AppleVersionOS);
+        } // if (AppleVersionOS)
     } // if/else
 
     return Status;
@@ -476,8 +463,8 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     UINT32    DiskLabelLength;
 
     DiskLabelPathSize = StrSize (BootDirectoryName) + StrSize (LabelFilename) - sizeof (CHAR16);
-    DiskLabelPath     = AllocatePool (DiskLabelPathSize);
 
+    DiskLabelPath = AllocatePool (DiskLabelPathSize);
     if (DiskLabelPath == NULL) {
         return NULL;
     }
@@ -490,18 +477,19 @@ CHAR16 * RP_GetAppleDiskLabelEx (
         &DiskLabelLength,
         MaxVolumelabelSize
     );
+
     MyFreePool (DiskLabelPath);
 
-    if (AsciiDiskLabel != NULL) {
+    if (AsciiDiskLabel == NULL) {
+        UnicodeDiskLabel = NULL;
+    }
+    else {
         UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
 
         if (UnicodeDiskLabel != NULL) {
             MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
         }
         MyFreePool (AsciiDiskLabel);
-    }
-    else {
-        UnicodeDiskLabel = NULL;
     }
 
     return UnicodeDiskLabel;
@@ -538,8 +526,8 @@ VOID * RP_GetFileInfo (
         ) {
             return NULL;
         }
-        FileInfoBuffer = AllocateZeroPool (FileInfoSize);
 
+        FileInfoBuffer = AllocateZeroPool (FileInfoSize);
         if (FileInfoBuffer != NULL) {
             Status = File->GetInfo (
                 File,
@@ -619,15 +607,13 @@ CHAR16 * RP_GetBootPathName (
     CHAR16                          *FilePathName;
     FILEPATH_DEVICE_PATH            *FilePath;
 
-    if ((DevicePathType (DevicePath) == MEDIA_DEVICE_PATH)
-        && (DevicePathSubType (DevicePath) == MEDIA_FILEPATH_DP)
+    if ((DevicePathType    (DevicePath) == MEDIA_DEVICE_PATH) &&
+        (DevicePathSubType (DevicePath) == MEDIA_FILEPATH_DP)
     ) {
-        FilePath = (FILEPATH_DEVICE_PATH *) DevicePath;
-
-        Size = OcFileDevicePathNameSize (FilePath);
-
+        FilePath     = (FILEPATH_DEVICE_PATH *) DevicePath;
+        Size         = OcFileDevicePathNameSize (FilePath);
         PathNameSize = Size + sizeof (CHAR16);
-        PathName = AllocateZeroPool (PathNameSize);
+        PathName     = AllocateZeroPool (PathNameSize);
 
         if (PathName == NULL) {
             return NULL;
@@ -635,28 +621,24 @@ CHAR16 * RP_GetBootPathName (
 
         CopyMem (PathName, FilePath->PathName, Size);
 
-        if (MyStrStr (PathName, L"\\")) {
-            Len = StrLen (PathName);
-
+        if (!MyStrStr (PathName, L"\\")) {
+            StrCpyS (PathName, PathNameSize, L"\\");
+        }
+        else {
+            Len          = StrLen (PathName);
             FilePathName = &PathName[Len - 1];
 
             while (*FilePathName != L'\\') {
                 *FilePathName = L'\0';
                 --FilePathName;
-            }
-        }
-        else {
-            StrCpyS (PathName, PathNameSize, L"\\");
+            } // while
         }
     }
     else {
         PathName = AllocateZeroPool (sizeof (L"\\"));
-
-        if (PathName == NULL) {
-            return NULL;
+        if (PathName != NULL) {
+            StrCpyS (PathName, sizeof (L"\\"), L"\\");
         }
-
-        StrCpyS (PathName, sizeof (L"\\"), L"\\");
     }
 
     return PathName;
