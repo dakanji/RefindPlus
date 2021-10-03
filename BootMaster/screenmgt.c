@@ -110,7 +110,6 @@ VOID InitScreen (VOID) {
 
         egGetScreenSize (&ScreenW, &ScreenH);
         AllowGraphicsMode = TRUE;
-
     }
     else {
         #if REFIT_DEBUG > 0
@@ -144,7 +143,8 @@ VOID InitScreen (VOID) {
 
     // show the banner if in text mode
     if (GlobalConfig.TextOnly) {
-        AllowGraphicsMode = FALSE; // DA-TAG: Just to make sure this is set
+        // DA-TAG: Just to make sure this is set
+        AllowGraphicsMode = FALSE;
 
         if (GlobalConfig.ScreensaverTime != -1) {
             DrawScreenHeader (L"Initialising...");
@@ -226,8 +226,8 @@ VOID SetupScreen (VOID) {
         );
         #endif
 
-        if ((ScreenW > GlobalConfig.RequestedScreenWidth)
-            || (ScreenH > GlobalConfig.RequestedScreenHeight)
+        if ((ScreenW > GlobalConfig.RequestedScreenWidth) ||
+            (ScreenH > GlobalConfig.RequestedScreenHeight)
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
@@ -266,12 +266,9 @@ VOID SetupScreen (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MyFreePool (&MsgStr);
-        if (GlobalConfig.LogLevel == 0) {
-            MsgLog ("\n\n");
-        }
-        else {
-            MsgLog ("\n");
-        }
+        (GlobalConfig.LogLevel == 0)
+            ? MsgLog ("\n\n")
+            : MsgLog ("\n");
         #endif
     }
     else if (AllowGraphicsMode) {

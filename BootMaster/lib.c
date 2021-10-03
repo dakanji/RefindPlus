@@ -2394,12 +2394,14 @@ VOID ScanVolumes (VOID) {
                      if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
                 else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
                 else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)          ) PartType = L"APFS";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)           ) PartType = L"HFS+";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)     ) PartType = L"Mac Raid (ON)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff)    ) PartType = L"Mac Raid (OFF)";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec)    ) PartType = L"AppleTV";
-                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)   ) PartType = L"APFS/HFS+";
+
+                // Split checks as '/FileVault' may be Core Storage
+                     if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidHFS)        ) PartType = L"HFS+";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOn)  ) PartType = L"Mac Raid (ON)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidMacRaidOff) ) PartType = L"Mac Raid (OFF)";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAppleTvRec) ) PartType = L"AppleTV Recov";
+                else if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidCoreStorage)) PartType = L"Core Storage";
             }
 
             if (!DoneHeadings) {
@@ -2974,7 +2976,7 @@ EFI_STATUS DirNextEntry (
             // no filter or unknown filter -> return everything
             break;
         }
-    } // for ;;;
+    } // for ;;
 
     return Status;
 }
@@ -3004,9 +3006,7 @@ VOID DirIterOpen (
 EFI_UNICODE_COLLATION_PROTOCOL *mUnicodeCollation = NULL;
 
 static
-EFI_STATUS InitializeUnicodeCollationProtocol (
-    VOID
-) {
+EFI_STATUS InitializeUnicodeCollationProtocol (VOID) {
    EFI_STATUS  Status;
 
    if (mUnicodeCollation != NULL) {

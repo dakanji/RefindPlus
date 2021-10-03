@@ -156,12 +156,16 @@ CHAR16 * MyStrStr (
     //LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 4 - WHILE LOOP:- END/EXIT");
 
     if (*StrCharSet == L'\0') {
-        LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 4a - END:- return CHAR16 *Src (Substring Found)");
+        LOG(5, LOG_LINE_FORENSIC,
+            L"In MyStrStr ... 4a - END:- return CHAR16 *Src (Substring Found)"
+        );
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return Src;
     }
 
-    LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 5 - END:- return NULL (Substring not Found)");
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MyStrStr ... 5 - END:- return NULL (Substring not Found)"
+    );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return NULL;
 } // CHAR16 * MyStrStr()
@@ -342,14 +346,18 @@ VOID MergeStrings (
     CHAR16* NewString;
 
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 1 - START:- Merge '%s' into '%s'",
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MergeStrings ... 1 - START:- Merge '%s' into '%s'",
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
     );
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 1a 1 - END:- VOID ... Out String = '%s'", *First);
+        LOG(5, LOG_LINE_FORENSIC,
+            L"In MergeStrings ... 1a 1 - END:- VOID ... Out String = '%s'",
+            *First
+        );
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
 
         return;
@@ -414,7 +422,10 @@ VOID MergeStrings (
 
         //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 6");
     }
-    LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 6 - END:- VOID ... Out String = '%s'", *First);
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MergeStrings ... 6 - END:- VOID ... Out String = '%s'",
+        *First
+    );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeStrings()
 
@@ -428,13 +439,17 @@ VOID MergeUniqueStrings (
     CHAR16* NewString;
 
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 1 - START:- Merge '%s' into '%s'",
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MergeUniqueStrings ... 1 - START:- Merge '%s' into '%s'",
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
     );
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 1a 1 - END:- VOID ... Out String = '%s'", *First);
+        LOG(5, LOG_LINE_FORENSIC,
+            L"In MergeUniqueStrings ... 1a 1 - END:- VOID ... Out String = '%s'",
+            *First
+        );
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
 
         return;
@@ -495,9 +510,11 @@ VOID MergeUniqueStrings (
                 UINTN   i       = 0;
                 CHAR16 *TestStr = NULL;
 
-                LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER");
-                while (!SkipMerge &&
-                    (TestStr = FindCommaDelimited (NewString, i++)) != NULL
+                LOG(5, LOG_LINE_FORENSIC,
+                    L"In MergeUniqueStrings ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER"
+                );
+                while (!SkipMerge
+                    && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
                 ) {
                     if (MyStrStr (TestStr, Second) != NULL) {
                         SkipMerge = TRUE;
@@ -505,7 +522,9 @@ VOID MergeUniqueStrings (
 
                     MyFreePool (&TestStr);
                 } // while
-                LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT");
+                LOG(5, LOG_LINE_FORENSIC,
+                    L"In MergeUniqueStrings ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT"
+                );
             }
 
             //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3");
@@ -533,7 +552,10 @@ VOID MergeUniqueStrings (
         //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 6");
     }
 
-    LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 6 - END:- VOID ... Out String = '%s'", *First);
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In MergeUniqueStrings ... 6 - END:- VOID ... Out String = '%s'",
+        *First
+    );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeUniqueStrings()
 
@@ -545,8 +567,8 @@ VOID MergeWords (
     CHAR16  *InString,
     CHAR16   AddChar
 ) {
-    CHAR16 *Temp, *Word, *p;
-    BOOLEAN LineFinished = FALSE;
+    CHAR16  *Temp, *Word, *p;
+    BOOLEAN  LineFinished = FALSE;
 
     if (!InString) {
         return;
@@ -564,10 +586,13 @@ VOID MergeWords (
                 if (*p == L'\0') {
                     LineFinished = TRUE;
                 }
+
                 *p = L'\0';
+
                 if (*Word != L'\0') {
                     MergeStrings (MergeTo, Word, AddChar);
                 }
+
                 Word = p + 1;
             }
 
@@ -603,10 +628,13 @@ VOID MergeUniqueWords (
                 if (*p == L'\0') {
                     LineFinished = TRUE;
                 }
+
                 *p = L'\0';
+
                 if (*Word != L'\0') {
                     MergeUniqueStrings (MergeTo, Word, AddChar);
                 }
+
                 Word = p + 1;
             }
 
@@ -644,10 +672,13 @@ CHAR16 * SanitiseString (
                 if (*p == L'\0') {
                     LineFinished = TRUE;
                 }
+
                 *p = L'\0';
+
                 if (*Word != L'\0') {
                     MergeStrings (&OutString, Word, L' ');
                 }
+
                 Word = p + 1;
             }
 
@@ -675,7 +706,7 @@ BOOLEAN LimitStringLength (
     UINTN    Limit
 ) {
     UINTN     i;
-    CHAR16    *SubString, *TempString;
+    CHAR16   *SubString, *TempString;
     BOOLEAN   HasChanged   = FALSE;
     BOOLEAN   WasTruncated = FALSE;
 
@@ -683,8 +714,10 @@ BOOLEAN LimitStringLength (
     SubString = MyStrStr (TheString, L"  ");
     while (SubString != NULL) {
         i = 0;
-        while (SubString[i] == L' ')
+        while (SubString[i] == L' ') {
             i++;
+        }
+
         if (i >= StrLen (SubString)) {
             SubString[0] = '\0';
             HasChanged = TRUE;
@@ -692,7 +725,7 @@ BOOLEAN LimitStringLength (
         else {
             TempString = StrDuplicate (&SubString[i]);
             if (TempString == NULL) {
-                // memory allocation problem ... abort to avoid potentially infinite loop!
+                // Memory Allocation Problem ... abort to avoid potential infinite loop!
                 break;
             }
             else {
@@ -724,7 +757,7 @@ BOOLEAN TruncateString (
 
     if (StrLen (TheString) > Limit) {
         TheString[Limit] = '\0';
-        WasTruncated = TRUE;
+        WasTruncated     = TRUE;
     }
 
     return WasTruncated;
@@ -739,7 +772,7 @@ BOOLEAN TruncateString (
 CHAR16 * FindNumbers (
     IN CHAR16 *InString
 ) {
-    UINTN i = 0, StartOfElement, EndOfElement = 0, CopyLength;
+    UINTN   i = 0, EndOfElement = 0, StartOfElement, CopyLength;
     CHAR16 *Found = NULL, *ExtraFound = NULL, *LookFor;
 
     if (InString == NULL) {
@@ -754,7 +787,7 @@ CHAR16 * FindNumbers (
     ) {
         if ((ExtraFound = MyStrStr (InString, LookFor))) {
             StartOfElement = ExtraFound - InString;
-            EndOfElement = StartOfElement + StrLen (LookFor) - 1;
+            EndOfElement   = StartOfElement + StrLen (LookFor) - 1;
         }
 
         MyFreePool (&LookFor);
@@ -777,6 +810,7 @@ CHAR16 * FindNumbers (
     if (EndOfElement > 0) {
         if (EndOfElement >= StartOfElement) {
             CopyLength = EndOfElement - StartOfElement + 1;
+
             Found = StrDuplicate (&InString[StartOfElement]);
             if (Found != NULL) {
                 Found[CopyLength] = 0;
@@ -800,12 +834,12 @@ UINTN NumCharsInCommon (
         return 0;
     }
 
-    while ((String1[Count] != L'\0') &&
-        (String2[Count] != L'\0') &&
-        (String1[Count] == String2[Count])
+    while (String1[Count] != L'\0'
+        && String2[Count] != L'\0'
+        && String1[Count] == String2[Count]
     ) {
         Count++;
-    }
+    } // while
 
     return Count;
 } // UINTN NumCharsInCommon()
@@ -829,7 +863,7 @@ CHAR16 * FindCommaDelimited (
 
     InLength = StrLen (InString);
     // After while() loop, StartPos marks start of item #Index
-    while ((Index > 0) && (CurPos < InLength)) {
+    while (Index > 0 && CurPos < InLength) {
         if (InString[CurPos] == L',') {
             Index--;
             StartPos = CurPos + 1;
@@ -839,7 +873,7 @@ CHAR16 * FindCommaDelimited (
     } // while
 
     // After while() loop, CurPos is one past the end of the element
-    while ((CurPos < InLength) && (!Found)) {
+    while (!Found && CurPos < InLength) {
         if (InString[CurPos] == L',') {
             Found = TRUE;
         }
@@ -874,18 +908,21 @@ BOOLEAN DeleteItemFromCsvList (
     }
 
     if ((Found = MyStrStr (List, ToDelete)) != NULL) {
-        if ((Comma = MyStrStr (Found, L",")) == NULL) {
+        if ((Comma = MyStrStr (Found, L",")) != NULL) {
+            // Found is NOT the final element
+            StrCpy (Found, &Comma[1]);
+        }
+        else {
             // Found is final element
-            if (Found == List) { // Found is ONLY element
+            if (Found == List) {
+                // Found is ONLY element
                 List[0] = L'\0';
             }
-            else { // Delete the comma preceding Found.
+            else {
+                // Delete the comma preceding Found.
                 Found--;
                 Found[0] = L'\0';
-            } // if/else
-        }
-        else { // Found is NOT final element
-            StrCpy (Found, &Comma[1]);
+            }
         }
 
         return TRUE;
@@ -912,6 +949,7 @@ BOOLEAN IsIn (
         if (MyStriCmp (OneElement, SmallString)) {
             Found = TRUE;
         }
+
         MyFreePool (&OneElement);
     } // while
 
@@ -934,9 +972,10 @@ BOOLEAN IsInSubstring (
 
     while (!Found && (OneElement = FindCommaDelimited (List, i++))) {
         ElementLength = StrLen(OneElement);
-        if ((ElementLength <= StrLen(BigString)) &&
-            (ElementLength > 0) &&
-            (StriSubCmp (OneElement, BigString))
+        if (
+            ElementLength <= StrLen(BigString) &&
+            ElementLength > 0 &&
+            StriSubCmp (OneElement, BigString)
         ) {
             Found = TRUE;
         } // if
@@ -1031,12 +1070,16 @@ BOOLEAN IsValidHex (
     UINTN   i = 0;
 
     while (IsHex && (Input[i] != L'\0')) {
-        if (!(((Input[i] >= L'0') && (Input[i] <= L'9')) ||
-              ((Input[i] >= L'A') && (Input[i] <= L'F')) ||
-              ((Input[i] >= L'a') && (Input[i] <= L'f')))
+        if (
+            !(
+                ((Input[i] >= L'0') && (Input[i] <= L'9')) ||
+                ((Input[i] >= L'A') && (Input[i] <= L'F')) ||
+                ((Input[i] >= L'a') && (Input[i] <= L'f'))
+            )
         ) {
             IsHex = FALSE;
         }
+
         i++;
     } // while
 
@@ -1064,6 +1107,7 @@ UINT64 StrToHex (
     InputLength = StrLen (Input);
     while ((Pos <= InputLength) && (NumDone < NumChars)) {
         a = Input[Pos];
+
         if ((a >= '0') && (a <= '9')) {
             retval *= 0x10;
             retval += (a - '0');
@@ -1181,22 +1225,20 @@ EFI_GUID StringAsGuid (
 // Discards date portion, since for our purposes, we really do not care.
 // Calling function is responsible for releasing returned string.
 CHAR16 * GetTimeString (VOID) {
-    CHAR16     *TimeStr = NULL;
+    EFI_STATUS  Status;
     EFI_TIME    CurrentTime;
-    EFI_STATUS  Status = EFI_SUCCESS;
+    CHAR16     *TimeStr = NULL;
 
-    Status = REFIT_CALL_2_WRAPPER(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
-    if (EFI_ERROR(Status)) {
-        TimeStr = PoolPrint (L"unknown time");
-    }
-    else {
-        TimeStr = PoolPrint (
+    Status  = REFIT_CALL_2_WRAPPER(ST->RuntimeServices->GetTime, &CurrentTime, NULL);
+    TimeStr = EFI_ERROR(Status)
+        ? StrDuplicate (L"Unknown Time")
+        : PoolPrint (
             L"%02d:%02d:%02d",
             CurrentTime.Hour,
             CurrentTime.Minute,
             CurrentTime.Second
         );
-    }
+
     return TimeStr;
 } // CHAR16 *GetTimeString()
 
@@ -1246,7 +1288,8 @@ CHAR16 * MyAsciiStrCopyToUnicode (
 
         while (*AsciiString != '\0' && Length--) {
             *(UnicodeStringWalker++) = *(AsciiString++);
-        }
+        } // while
+
         *UnicodeStringWalker = L'\0';
     }
 

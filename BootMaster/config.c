@@ -283,8 +283,8 @@ BOOLEAN KeepReading (
     IN OUT CHAR16  *p,
     IN OUT BOOLEAN *IsQuoted
 ) {
-   BOOLEAN MoreToRead = FALSE;
-   CHAR16  *Temp = NULL;
+   BOOLEAN  MoreToRead = FALSE;
+   CHAR16  *Temp       = NULL;
 
    if ((p == NULL) || (IsQuoted == NULL)) {
        return FALSE;
@@ -297,6 +297,7 @@ BOOLEAN KeepReading (
    if ((*p != ' ' && *p != '\t' && *p != '=' && *p != '#' && *p != ',') || *IsQuoted) {
       MoreToRead = TRUE;
    }
+
    if (*p == L'"') {
       if (p[1] == L'"') {
          Temp = StrDuplicate (&p[1]);
@@ -331,19 +332,19 @@ UINTN ReadTokenLine (
     while (TokenCount == 0) {
         Line = ReadLine (File);
         if (Line == NULL) {
-            return (0);
+            return 0;
         }
 
         p = Line;
         LineFinished = FALSE;
         while (!LineFinished) {
             // skip whitespace & find start of token
-            while (
-                (*p == ' ' || *p == '\t' || *p == '=' || *p == ',') &&
-                !IsQuoted
+            while ((!IsQuoted)
+                && (*p == ' ' || *p == '\t' || *p == '=' || *p == ',')
             ) {
                 p++;
-            }
+            } // while
+
             if (*p == 0 || *p == '#') {
                 break;
             }
@@ -351,7 +352,8 @@ UINTN ReadTokenLine (
             if (*p == '"') {
                IsQuoted = !IsQuoted;
                p++;
-            } // if
+            }
+
             Token = p;
 
             // find end of token
@@ -368,11 +370,12 @@ UINTN ReadTokenLine (
             *p++ = 0;
 
             AddListElement ((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate (Token));
-        }
+        } // while
 
         MyFreePool (&Line);
     }
-    return (TokenCount);
+
+    return TokenCount;
 } /* ReadTokenLine() */
 
 VOID FreeTokenLine (
@@ -552,9 +555,11 @@ BOOLEAN HandleBoolean (
     BOOLEAN TruthValue = TRUE;
 
     if ((TokenCount >= 2) &&
-        ((StrCmp (TokenList[1], L"0") == 0) ||
-        MyStriCmp (TokenList[1], L"false") ||
-        MyStriCmp (TokenList[1], L"off"))
+        (
+            StrCmp (TokenList[1], L"0") == 0
+            || MyStriCmp (TokenList[1], L"false")
+            || MyStriCmp (TokenList[1], L"off")
+        )
     ) {
         TruthValue = FALSE;
     }
@@ -579,9 +584,11 @@ VOID SetDefaultByTime (
 
     if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
         Status = REFIT_CALL_2_WRAPPER(GetTime, &CurrentTime, NULL);
+
         if (Status != EFI_SUCCESS) {
             return;
         }
+
         Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
 
         if (Now > LAST_MINUTE) {
@@ -618,9 +625,9 @@ static
 LOADER_ENTRY * AddPreparedLoaderEntry (
     LOADER_ENTRY *Entry
 ) {
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *)Entry);
+    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
-    return (Entry);
+    return Entry;
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
 
 // read config file
@@ -1135,7 +1142,7 @@ VOID ReadConfig (
                 // Halt search loop
                 break;
             }
-        }
+        } // for
     }
 
     if ((GlobalConfig.DontScanFiles) && (GlobalConfig.WindowsRecoveryFiles)) {
@@ -1145,11 +1152,10 @@ VOID ReadConfig (
 
     if (!FileExists (SelfDir, L"icons") && !FileExists (SelfDir, GlobalConfig.IconsDir)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("  - WARN: Cannot Find Icons Directory. Switching to Text Mode\n");
+        MsgLog ("  - WARN: Cannot Find Icons Directory ... Switching to Text Mode\n");
         #endif
 
-       Print (L"Icons Directory Does Not Exist ... Setting TextOnly to TRUE!!\n");
-       GlobalConfig.TextOnly = TRUE;
+        GlobalConfig.TextOnly = TRUE;
     }
 
     // Disable ProtectNVRAM on Non-Apple Firmware
@@ -1540,7 +1546,7 @@ LOADER_ENTRY * AddStanzaEntries (
     MyFreePool (&OurEfiBootNumber);
     MyFreePool (&LoadOptions);
 
-    return (Entry);
+    return Entry;
 } // static VOID AddStanzaEntries()
 
 // Read the user-configured menu entries from config.conf and add or delete
@@ -1965,7 +1971,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
 
     LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 4 - END:- return REFIT_FILE *File");
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
-    return (File);
+    return File;
 } // static REFIT_FILE * ReadLinuxOptionsFile()
 
 // Retrieve a single line of options from a Linux kernel options file

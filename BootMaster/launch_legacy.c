@@ -450,7 +450,7 @@ EFI_STATUS StartLegacyImageList (
 
     Print (
         L"Starting 'Mac-Style' Legacy (BIOS) Loader\nUsing Load Options:- '%s'\n\n",
-        FullLoadOptions ? FullLoadOptions : L""
+        FullLoadOptions ? FullLoadOptions : L"NULL"
     );
 
     // load the image into memory
@@ -495,9 +495,9 @@ EFI_STATUS StartLegacyImageList (
         goto bailout_unload;
     }
 
-    ChildLoadedImage->LoadOptions = (VOID *)FullLoadOptions;
+    ChildLoadedImage->LoadOptions     = (VOID *) FullLoadOptions;
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
-        ? ((UINT32)StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
+        ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
     // turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!

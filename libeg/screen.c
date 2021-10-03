@@ -2254,7 +2254,8 @@ VOID egScreenShot (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("    * Screenshot Taken:- '%s'\n\n", FileName);
+    MsgLog ("    * Screenshot Taken:- '%s'", FileName);
+    MsgLog ("\n\n");
     #endif
 
     return;

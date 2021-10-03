@@ -232,8 +232,8 @@ CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
-BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
+BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                FlushFailedTag       = FALSE;
 BOOLEAN                FlushFailReset       = FALSE;
 BOOLEAN                WarnVersionEFI       = FALSE;
@@ -801,62 +801,6 @@ VOID ReMapOpenProtocol (VOID) {
 } // ReMapOpenProtocol()
 
 
-// Checks to see if a specified file seems to be a valid tool.
-// Returns TRUE if it passes all tests, FALSE otherwise
-static
-BOOLEAN IsValidTool (
-    IN  REFIT_VOLUME  *BaseVolume,
-    IN  CHAR16        *PathName
-) {
-    UINTN     i            = 0;
-    BOOLEAN   retval       = TRUE;
-    CHAR16   *TestVolName  = NULL;
-    CHAR16   *DontVolName  = NULL;
-    CHAR16   *DontPathName = NULL;
-    CHAR16   *DontFileName = NULL;
-    CHAR16   *TestPathName = NULL;
-    CHAR16   *TestFileName = NULL;
-    CHAR16   *DontScanThis = NULL;
-
-    if (!FileExists (BaseVolume->RootDir, PathName)) {
-        // Early return if file does not exist
-        return FALSE;
-    }
-
-    if (IsValidLoader (BaseVolume->RootDir, PathName)) {
-        SplitPathName (PathName, &TestVolName, &TestPathName, &TestFileName);
-
-        while (retval &&
-            (DontScanThis = FindCommaDelimited (GlobalConfig.DontScanTools, i++))
-        ) {
-            SplitPathName (DontScanThis, &DontVolName, &DontPathName, &DontFileName);
-
-            if (MyStriCmp (TestFileName, DontFileName) &&
-                ((DontPathName == NULL) || (MyStriCmp (TestPathName, DontPathName))) &&
-                ((DontVolName == NULL) || (VolumeMatchesDescription (BaseVolume, DontVolName)))
-            ) {
-                retval = FALSE;
-            }
-
-            MyFreePool (&DontScanThis);
-        } // while
-
-    }
-    else {
-        retval = FALSE;
-    }
-
-    MyFreePool (&TestVolName);
-    MyFreePool (&TestPathName);
-    MyFreePool (&TestFileName);
-
-    MyFreePool (&DontVolName);
-    MyFreePool (&DontPathName);
-    MyFreePool (&DontFileName);
-
-    return retval;
-} // BOOLEAN IsValidTool()
-
 VOID preBootKicker (VOID) {
     UINTN              MenuExit;
     INTN               DefaultEntry   = 1;
@@ -948,7 +892,7 @@ VOID preBootKicker (VOID) {
 
             for (i = 0; i < VolumesCount; i++) {
                 if (Volumes[i]->RootDir != NULL &&
-                    IsValidTool (Volumes[i], FilePath)
+                    FileExists (Volumes[i]->RootDir, FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                     ourLoaderEntry->me.Title          = Description;
@@ -973,7 +917,17 @@ VOID preBootKicker (VOID) {
             }
         } // while
 
-        if (FoundTool) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        #endif
+
+        if (!FoundTool) {
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
+            MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
+            #endif
+        }
+        else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
@@ -987,12 +941,6 @@ VOID preBootKicker (VOID) {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
             MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
-            #endif
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
-            MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
         }
 
@@ -1097,7 +1045,7 @@ VOID preCleanNvram (VOID) {
 
             for (i = 0; i < VolumesCount; i++) {
                 if (Volumes[i]->RootDir != NULL &&
-                    IsValidTool (Volumes[i], FilePath)
+                    FileExists (Volumes[i]->RootDir, FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
                     ourLoaderEntry->me.Title          = Description;
@@ -1122,7 +1070,17 @@ VOID preCleanNvram (VOID) {
             }
         } // while
 
-        if (FoundTool) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        #endif
+
+        if (!FoundTool) {
+            #if REFIT_DEBUG > 0
+            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
+            MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
+            #endif
+        }
+        else {
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("    ** Success: Found %s\n", FilePath);
@@ -1137,13 +1095,7 @@ VOID preCleanNvram (VOID) {
             // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
-            MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
-            #endif
-        }
-        else {
-            #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
-            MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
+            MsgLog ("* WARN: CleanNvram Error ... Return to Main Menu\n\n");
             #endif
         }
 
@@ -2255,8 +2207,10 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
-        // Sync APFS infrastrcture is no longer required ... free Associated Volume Lists
-        if (GlobalConfig.SyncAPFS && (PreBootVolumes || SystemVolumes)) {
+        // Sync APFS infrastrcture is no longer required ... Free Associated Volume Lists
+        if ((GlobalConfig.SyncAPFS) &&
+            (PreBootVolumes || SystemVolumes || DataVolumes)
+        ) {
             FreeVolumes (
                 &PreBootVolumes,
                 &PreBootVolumesCount

@@ -459,7 +459,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     UINTN     MaxVolumelabelSize = 64;
     CHAR8    *AsciiDiskLabel;
     CHAR16   *DiskLabelPath;
-    CHAR16   *UnicodeDiskLabel;
+    CHAR16   *UnicodeDiskLabel = NULL;
     UINT32    DiskLabelLength;
 
     DiskLabelPathSize = StrSize (BootDirectoryName) + StrSize (LabelFilename) - sizeof (CHAR16);
@@ -480,17 +480,16 @@ CHAR16 * RP_GetAppleDiskLabelEx (
 
     MyFreePool (DiskLabelPath);
 
-    if (AsciiDiskLabel == NULL) {
-        UnicodeDiskLabel = NULL;
+    if (AsciiDiskLabel != NULL) {
+        return NULL;
     }
-    else {
-        UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
 
-        if (UnicodeDiskLabel != NULL) {
-            MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
-        }
-        MyFreePool (AsciiDiskLabel);
+    UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
+
+    if (UnicodeDiskLabel != NULL) {
+        MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
     }
+    MyFreePool (AsciiDiskLabel);
 
     return UnicodeDiskLabel;
 } // static CHAR16 * RP_GetAppleDiskLabelEx()
@@ -707,9 +706,7 @@ CHAR16 * RP_GetAppleDiskLabel (
     CHAR16                           *AppleDiskLabel = NULL;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
 
-    BootDirectoryName = RP_GetBootPathName (
-        Volume->DevicePath
-    );
+    BootDirectoryName = RP_GetBootPathName (Volume->DevicePath);
     if (!BootDirectoryName) {
         return NULL;
     }
@@ -738,6 +735,7 @@ CHAR16 * RP_GetAppleDiskLabel (
             L".disk_label.contentDetails"
         );
     }
+    MyFreePool (BootDirectoryName);
 
     return AppleDiskLabel;
 } // CHAR16 * RP_GetAppleDiskLabel()
