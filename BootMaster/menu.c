@@ -1045,9 +1045,12 @@ UINTN RunGenericMenu (
         MenuExit = 0;
     }
 
-    // Ignore MenuExit if time between loading main menu and detecting a keypress is too low
-    if (!ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"Main Menu")
+    // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
+    // Primed Keystroke Buffer appears to only affect UEFI PC
+    if (MenuExit == MENU_EXIT_ENTER &&
+        !ClearedBuffer && !FlushFailReset &&
+        MyStriCmp (Screen->Title, L"Main Menu") &&
+        MyStrStr (gST->FirmwareVendor, L"Apple") == NULL
     ) {
         UINT64 MenuExitTime = GetCurrentSecond();
 

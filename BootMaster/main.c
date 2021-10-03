@@ -529,7 +529,6 @@ VOID SetBootArgs (VOID) {
         }
 
         if (BootArg) {
-            // Convert Unicode Message String to Ascii
             DataNVRAM = AllocateZeroPool (
                 (StrLen (BootArg) + 1) * sizeof (CHAR8)
             );

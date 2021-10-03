@@ -322,7 +322,6 @@ VOID EFIAPI DeepLoggger (
     } // switch
 
     if (Tmp) {
-        // Convert Unicode Message String to Ascii
         FormatMsg = AllocateZeroPool (
             (StrLen (Tmp) + 1) * sizeof (CHAR8)
         );
