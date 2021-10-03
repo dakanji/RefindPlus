@@ -2536,7 +2536,7 @@ VOID ScanForBootloaders (
 
         #if REFIT_DEBUG > 0
         if (AmendedDontScan) {
-            LOG(3, LOG_STAR_SEPARATOR, L"Amended 'Dont Scan Items' ... SyncAPFS is Active");
+            LOG(3, LOG_STAR_SEPARATOR, L"Amended 'Dont Scan' Items ... SyncAPFS is Active");
         }
         #endif
     } // if GlobalConfig.SyncAPFS

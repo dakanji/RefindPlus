@@ -90,7 +90,7 @@ CHAR16 * FindInitrd (
     REFIT_DIR_ITER       DirIter;
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID,
+    LOG(3, LOG_LINE_NORMAL,
         L"Search for Initrd Matching '%s' in '%s'",
         LoaderPath, Volume->VolName
     );
@@ -119,9 +119,9 @@ CHAR16 * FindInitrd (
 
     LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 5");
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL, L"Path                  : '%s'", Path);
-    LOG(3, LOG_LINE_NORMAL, L"FileName              : '%s'", FileName);
-    LOG(3, LOG_LINE_NORMAL, L"Kernel Version String : '%s'", KernelVersion);
+    LOG(3, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path);
+    LOG(3, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName);
+    LOG(3, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion);
     #endif
 
     LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 6");

@@ -1053,12 +1053,12 @@ UINTN RunGenericMenu (
 
         if ((MenuExitTime - MainMenuLoad) < 2) {
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignore MenuExit");
+            MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             MsgLog ("\n");
 
             CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            MsgLog ("      %s");
+            MsgLog ("      %s", MsgStr);
             MsgLog ("\n\n");
             MyFreePool (&MsgStr);
             #endif
