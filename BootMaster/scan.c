@@ -1937,11 +1937,9 @@ VOID ScanEfiFiles (
         );
 
         if (!EFI_ERROR(Status)) {
-            if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_RECOVERY)   != 0
-                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_UNKNOWN) != 0
-                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_UPDATE)  != 0
-                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA)    != 0
-                || (VolumeRole & APPLE_APFS_VOLUME_ROLE_VM)      != 0
+            if (VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
+                VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM &&
+                VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
             ) {
                 // Early Return on APFS Support Volume
                 return;
