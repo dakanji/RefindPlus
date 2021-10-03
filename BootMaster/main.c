@@ -458,11 +458,11 @@ VOID ActiveCSR (VOID) {
 
 static
 VOID SetBootArgs (VOID) {
-    EFI_STATUS   Status;
+    EFI_STATUS   Status     = EFI_NOT_STARTED;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
-    CHAR16      *BootArg;
-    CHAR8        DataNVRAM[255];
+    CHAR16      *BootArg    = NULL;
+    CHAR8       *DataNVRAM  = NULL;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr                = NULL;
@@ -487,6 +487,7 @@ VOID SetBootArgs (VOID) {
             // Do not duplicate 'amfi_get_out_of_my_way=1'
             GlobalConfig.DisableAMFI = FALSE;
         }
+
         if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check") != NULL) {
             #if REFIT_DEBUG > 0
             if (GlobalConfig.DisableCompatCheck) {
@@ -527,17 +528,26 @@ VOID SetBootArgs (VOID) {
             BootArg = PoolPrint (L"%s", GlobalConfig.SetBootArgs);
         }
 
-        // Convert BootArg to CHAR8 array in 'ArrCHAR8'
-        MyUnicodeStrToAsciiStr  (BootArg, DataNVRAM);
-        MyFreePool (&BootArg);
+        if (BootArg) {
+            // Convert Unicode Message String to Ascii
+            DataNVRAM = AllocateZeroPool (
+                (StrLen (BootArg) + 1) * sizeof (CHAR8)
+            );
 
-        Status = EfivarSetRaw (
-            &AppleGUID,
-            NameNVRAM,
-            DataNVRAM,
-            AsciiStrSize (DataNVRAM),
-            TRUE
-        );
+            if (DataNVRAM) {
+                // Convert Unicode String 'BootArg' to Ascii String 'DataNVRAM'
+                UnicodeStrToAsciiStr (BootArg, DataNVRAM);
+
+                Status = EfivarSetRaw (
+                    &AppleGUID,
+                    NameNVRAM,
+                    DataNVRAM,
+                    AsciiStrSize (DataNVRAM),
+                    TRUE
+                );
+            }
+            MyFreePool (&BootArg);
+        }
     }
 
     #if REFIT_DEBUG > 0

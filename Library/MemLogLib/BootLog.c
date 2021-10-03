@@ -262,10 +262,11 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN   Limit    = 225;
-    CHAR16 *Tmp      = NULL;
-    CHAR16 *DoneMsg  = NULL;
-    CHAR16 *StoreMsg = NULL;
+    UINTN   Limit     = 225;
+    CHAR8  *FormatMsg = NULL;
+    CHAR16 *Tmp       = NULL;
+    CHAR16 *StoreMsg  = NULL;
+
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
@@ -321,26 +322,28 @@ VOID EFIAPI DeepLoggger (
     } // switch
 
     if (Tmp) {
-        // Use Native Logging
-        UseMsgLog = TRUE;
-
         // Convert Unicode Message String to Ascii
-        DoneMsg = PoolPrint (L"%s", Tmp);
-        Limit   = StrLen (DoneMsg) + 1;
-        CHAR8 FormatMsg[Limit];
-        MyUnicodeStrToAsciiStr (DoneMsg, FormatMsg);
+        FormatMsg = AllocateZeroPool (
+            (StrLen (Tmp) + 1) * sizeof (CHAR8)
+        );
 
-        // Write the Message String
-        DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
+        if (FormatMsg) {
+            // Use Native Logging
+            UseMsgLog = TRUE;
 
-        // Disable Native Logging
-        UseMsgLog = FALSE;
+            // Write the Message String to File
+            UnicodeStrToAsciiStr (Tmp, FormatMsg);
+            DebugLog (DebugMode, (const CHAR8 *) FormatMsg);
+
+            // Disable Native Logging
+            UseMsgLog = FALSE;
+        }
     }
 
     ReleasePtr (*Msg);
     MyFreePool (&Tmp);
-    MyFreePool (&DoneMsg);
     MyFreePool (&StoreMsg);
+    MyFreePool (&FormatMsg);
 } // VOID EFIAPI DeepLoggger()
 
 VOID EFIAPI DebugLog (

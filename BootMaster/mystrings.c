@@ -1296,39 +1296,6 @@ CHAR16 * MyAsciiStrCopyToUnicode (
     return UnicodeString;
 } // CHAR16 * MyAsciiStrCopyToUnicode()
 
-
-// Convert Unicode String To Ascii String
-VOID MyUnicodeStrToAsciiStr (
-    IN  CHAR16  *StrCHAR16,
-    OUT CHAR8    ArrCHAR8[256]
-) {
-    UINTN k = -1;
-    UINTN i = -1;
-
-    // Get the number of characters (plus null terminator) in StrCHAR16
-    do {
-        // increment index
-        k = k + 1;
-    } while (StrCHAR16[k] != L'\0');
-
-    // Move StrCHAR16 characters to ArrCHAR8
-    do {
-        // increment index
-        i = i + 1;
-
-        if (i > 254) {
-            // prevent overflow
-            ArrCHAR8[i]  = L'\0';
-            break;
-        }
-        else {
-            // convert to single byte character and assign to array
-            CHAR8 character  = StrCHAR16[i];
-            ArrCHAR8[i]      = character;
-        }
-    } while (i < k);
-} // VOID MyUnicodeStrToAsciiStr()
-
 VOID MyUnicodeFilterString (
     IN OUT CHAR16   *String,
     IN     BOOLEAN   SingleLine
