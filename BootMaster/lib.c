@@ -146,7 +146,10 @@ EFI_GUID           GuidAppleTvRec      = APPLE_TV_RECOVERY_GUID;
 
 extern EFI_GUID RefindPlusGuid;
 
+#if REFIT_DEBUG > 0
 extern BOOLEAN  LogNewLine;
+#endif
+
 extern BOOLEAN  ScanningLoaders;
 
 

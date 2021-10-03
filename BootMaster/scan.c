@@ -114,7 +114,10 @@
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
 extern EFI_GUID GuidAPFS;
 
+#if REFIT_DEBUG > 0
 BOOLEAN  LogNewLine      = FALSE;
+#endif
+
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
@@ -2377,7 +2380,6 @@ VOID ScanForBootloaders (
     BOOLEAN ShowMessage
 ) {
     UINTN     i;
-    CHAR8     ScanOption;
     BOOLEAN   ScanForLegacy   = FALSE;
     BOOLEAN   DeleteItem      = FALSE;
     BOOLEAN   AmendedDontScan = FALSE;
@@ -2408,12 +2410,12 @@ VOID ScanForBootloaders (
 
     // Determine up-front if we will be scanning for legacy loaders
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
-        ScanOption = GlobalConfig.ScanFor[i];
-        if (ScanOption == 'c' || ScanOption == 'C' ||
-            ScanOption == 'h' || ScanOption == 'H' ||
-            ScanOption == 'b' || ScanOption == 'B'
+        if (GlobalConfig.ScanFor[i] == 'c' || GlobalConfig.ScanFor[i] == 'C' ||
+            GlobalConfig.ScanFor[i] == 'h' || GlobalConfig.ScanFor[i] == 'H' ||
+            GlobalConfig.ScanFor[i] == 'b' || GlobalConfig.ScanFor[i] == 'B'
         ) {
             ScanForLegacy = TRUE;
+            break;
         }
     } // for
 
@@ -2557,17 +2559,13 @@ VOID ScanForBootloaders (
     } // for
 
     // scan for loaders and tools, add them to the menu
-    for (i = 0; i < SetOptions; i++) {
-        if (LogNewLine) {
-            MsgLog ("\n");
-        }
-        else {
-            LogNewLine = TRUE;
-        }
-
+    for (i = 0; i <= SetOptions; i++) {
         switch (GlobalConfig.ScanFor[i]) {
             case 'm': case 'M':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Manual:");
                 LOG(1, LOG_LINE_THIN_SEP, L"Process User Configured Stanzas");
                 #endif
@@ -2577,6 +2575,9 @@ VOID ScanForBootloaders (
 
             case 'i': case 'I':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Internal:");
                 #endif
 
@@ -2585,6 +2586,9 @@ VOID ScanForBootloaders (
 
             case 'h': case 'H':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Internal (Legacy):");
                 #endif
 
@@ -2593,6 +2597,9 @@ VOID ScanForBootloaders (
 
             case 'e': case 'E':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan External:");
                 #endif
 
@@ -2600,7 +2607,10 @@ VOID ScanForBootloaders (
                 break;
 
             case 'b': case 'B':
-                #if REFIT_DEBUG > 0
+            #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan External (Legacy):");
                 #endif
 
@@ -2609,6 +2619,9 @@ VOID ScanForBootloaders (
 
             case 'o': case 'O':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Optical:");
                 #endif
 
@@ -2616,7 +2629,10 @@ VOID ScanForBootloaders (
                 break;
 
             case 'c': case 'C':
-                #if REFIT_DEBUG > 0
+            #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Optical (Legacy):");
                 #endif
 
@@ -2625,6 +2641,9 @@ VOID ScanForBootloaders (
 
             case 'n': case 'N':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Net Boot:");
                 #endif
 
@@ -2633,6 +2652,9 @@ VOID ScanForBootloaders (
 
             case 'f': case 'F':
                 #if REFIT_DEBUG > 0
+                if (LogNewLine) MsgLog ("\n");
+                LogNewLine = TRUE;
+
                 MsgLog ("Scan Firmware:");
                 #endif
 
