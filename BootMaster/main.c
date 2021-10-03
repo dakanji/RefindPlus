@@ -544,6 +544,7 @@ VOID SetBootArgs (VOID) {
                     AsciiStrSize (DataNVRAM),
                     TRUE
                 );
+                MyFreePool (&DataNVRAM);
             }
             MyFreePool (&BootArg);
         }
