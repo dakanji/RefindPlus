@@ -67,9 +67,8 @@ CHAR16 *BlankLine = NULL;
 UINTN   ScreenW;
 UINTN   ScreenH;
 
-BOOLEAN AllowGraphicsMode;
-BOOLEAN ClearedBuffer = FALSE;
-BOOLEAN IsBoot        = FALSE;
+BOOLEAN AllowGraphicsMode = FALSE;
+BOOLEAN ClearedBuffer     = FALSE;
 
 EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
 EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
@@ -80,7 +79,7 @@ static BOOLEAN GraphicsScreenDirty;
 static BOOLEAN haveError = FALSE;
 
 extern BOOLEAN FlushFailedTag;
-
+extern BOOLEAN IsBoot;
 
 static
 VOID PrepareBlankLine (VOID) {
@@ -991,7 +990,9 @@ VOID BltClearScreen (
     #endif
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Refresh Screen:");
+    if (!IsBoot) {
+        MsgLog ("Refresh Screen:");
+    }
     #endif
 
     if (!IsBoot

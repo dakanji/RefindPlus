@@ -60,7 +60,8 @@
 #include "../EfiLib/legacy.h"
 #include "../include/Handle.h"
 
-extern REFIT_MENU_ENTRY MenuEntryReturn;
+extern BOOLEAN           IsBoot;
+extern REFIT_MENU_ENTRY  MenuEntryReturn;
 extern REFIT_MENU_SCREEN MainMenu;
 
 #ifndef __MAKEWITH_GNUEFI

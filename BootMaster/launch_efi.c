@@ -78,6 +78,10 @@
 
 CHAR16 *BootSelection = NULL;
 
+
+extern BOOLEAN IsBoot;
+
+
 static
 VOID WarnSecureBootError(
     CHAR16  *Name,

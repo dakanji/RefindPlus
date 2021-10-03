@@ -464,7 +464,6 @@ extern UINTN                PreBootVolumesCount;
 extern UINTN                SystemVolumesCount;
 extern UINTN                DataVolumesCount;
 
-extern BOOLEAN              IsBoot;
 extern BOOLEAN              SetSysTab;
 extern BOOLEAN              MuteLogger;
 extern BOOLEAN              DetectedDevices;

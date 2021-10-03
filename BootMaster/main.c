@@ -230,6 +230,7 @@ REFIT_CONFIG GlobalConfig = {
 
 CHAR16                *VendorInfo           = NULL;
 CHAR16                *gHiddenTools         = NULL;
+BOOLEAN                IsBoot               = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
