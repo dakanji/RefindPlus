@@ -298,19 +298,21 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     #endif
 
     BOOLEAN BlockCert = (
-        (GuidsAreEqual (VendorGuid, &WinGuid) ||
-        (GuidsAreEqual (VendorGuid, &X509Guid)) ||
-        (GuidsAreEqual (VendorGuid, &PKCS7Guid)) ||
-        (GuidsAreEqual (VendorGuid, &Sha001Guid)) ||
-        (GuidsAreEqual (VendorGuid, &Sha224Guid)) ||
-        (GuidsAreEqual (VendorGuid, &Sha256Guid)) ||
-        (GuidsAreEqual (VendorGuid, &Sha384Guid)) ||
-        (GuidsAreEqual (VendorGuid, &Sha512Guid)) ||
-        (GuidsAreEqual (VendorGuid, &RSA2048Guid)) ||
-        (GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid)) ||
-        (GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid)) ||
-        (GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid))) &&
-        (MyStrStr (VendorInfo, L"Apple") != NULL)
+        (MyStrStr (VendorInfo, L"Apple") != NULL) &&
+        (
+            GuidsAreEqual (VendorGuid, &WinGuid) ||
+            GuidsAreEqual (VendorGuid, &X509Guid) ||
+            GuidsAreEqual (VendorGuid, &PKCS7Guid) ||
+            GuidsAreEqual (VendorGuid, &Sha001Guid) ||
+            GuidsAreEqual (VendorGuid, &Sha224Guid) ||
+            GuidsAreEqual (VendorGuid, &Sha256Guid) ||
+            GuidsAreEqual (VendorGuid, &Sha384Guid) ||
+            GuidsAreEqual (VendorGuid, &Sha512Guid) ||
+            GuidsAreEqual (VendorGuid, &RSA2048Guid) ||
+            GuidsAreEqual (VendorGuid, &RSA2048Sha1Guid) ||
+            GuidsAreEqual (VendorGuid, &RSA2048Sha256Guid) ||
+            GuidsAreEqual (VendorGuid, &TypeRSA2048Sha256Guid)
+        )
     );
 
     if (!BlockCert) {

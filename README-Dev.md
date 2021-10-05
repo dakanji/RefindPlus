@@ -80,8 +80,9 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
 - **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
-  * Level 0 does not switch logging off but activates the native summary format
-  * Levels 1 to 4 output logs similar to the detailed upstream format
+  * Level 0 does not switch logging off but activates the native summary format.
+  * Levels 1 to 4 output logs similar to the detailed upstream format.
+  * Level 5 (RefindPlus-Specific) provides very detailed output at a forensic level
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution.
