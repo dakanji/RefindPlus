@@ -646,7 +646,6 @@ VOID MergeUniqueWords (
 } // VOID MergeUniqueWords()
 
 // Replaces special characters in the input string with a space.
-// '.', ',', '*', ':', '_', '-', '&', '#', '?', '(', ')', ';', '[', ']', '$', '{', '}', '+', '@', and '%'
 CHAR16 * SanitiseString (
     CHAR16  *InString
 ) {
@@ -661,13 +660,13 @@ CHAR16 * SanitiseString (
     Temp = Word = p = StrDuplicate (InString);
     if (Temp) {
         while (!LineFinished) {
-            if ((*p == L'.') || (*p == L',') || (*p == L'*') ||
-                (*p == L':') || (*p == L'_') || (*p == L'-') ||
-                (*p == L'&') || (*p == L'#') || (*p == L'?') ||
-                (*p == L'(') || (*p == L')') || (*p == L';') ||
-                (*p == L'[') || (*p == L']') || (*p == L'$') ||
-                (*p == L'{') || (*p == L'}') || (*p == L'+') ||
-                (*p == L'@') || (*p == L'%') || (*p == L'\0')
+            if (
+                (*p != L' ') &&
+                (*p != L'_') &&
+                (*p != L'-') &&
+                !('a' <= *p && 'z' >= *p) &&
+                !('A' <= *p && 'Z' >= *p) &&
+                !('0' <= *p && '9' >= *p)
             ) {
                 if (*p == L'\0') {
                     LineFinished = TRUE;
