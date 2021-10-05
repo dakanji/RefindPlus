@@ -1,4 +1,4 @@
-0.13.2.AH (Pre-Release):
+0.13.2.AH (05 Oct 2021):
 -----------------------
 - Adds "PreferHiddenIcons" Feature
   * This functionality allows prioritising the use of ".VolumeIcon" image icons for loaders
