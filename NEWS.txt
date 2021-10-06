@@ -41,7 +41,7 @@
   * This bug was introduced in v0.13.2.AA (Commit 74d70fb) and exposed in v0.13.2.AG (Commit 4590047)
 - Fixes Graphics Mode Selection in Multi-GPU Setups
   * When more than one GPU is present, RefindPlus always tried to use the GOP instance from the last processed GPU
-  * Thhe GPU with a GOP instance having the highest resolution is now selected instead (as intended)
+  * The GPU with a GOP instance having the highest resolution is now selected instead (as intended)
   * NB: RefindPlus does not check whether a GPU is actually connected to a display
     - Hence, a blank display will result if the highest resolution GPU is not connected
   * This bug was introduced in v0.12.0.AN (Commit 62e6fe8)

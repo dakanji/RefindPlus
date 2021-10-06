@@ -63,14 +63,14 @@
 
 // constants
 
-#define LINUX_OPTIONS_FILENAMES  L"refind_linux.conf,refind-linux.conf"
+#define LINUX_OPTIONS_FILENAMES  L"refindplus_linux.conf,refindplus-linux.conf,refind_linux.conf,refind-linux.conf"
 #define MAXCONFIGFILESIZE        (128*1024)
 
 #define ENCODING_ISO8859_1  (0)
 #define ENCODING_UTF8       (1)
 #define ENCODING_UTF16_LE   (2)
 
-#define MAXLOGLEVEL         (5)
+#define MAXLOGLEVEL         (4)
 
 #define GetTime gST->RuntimeServices->GetTime
 #define LAST_MINUTE 1439 /* Last minute of a day */
