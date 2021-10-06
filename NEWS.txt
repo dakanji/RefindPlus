@@ -1,6 +1,6 @@
-0.13.2.AJ (PRE-RELEASE):
+0.13.2.AJ (06 Oct 2021):
 -----------------------
-- Pemding
+- Fixes 'PreBoot' Volume Filtering in REL Builds
 
 
 0.13.2.AH (05 Oct 2021):

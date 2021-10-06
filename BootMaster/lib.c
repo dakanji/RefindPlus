@@ -2107,11 +2107,11 @@ VOID VetSyncAPFS (VOID) {
         #endif
     }
     else {
-        #if REFIT_DEBUG > 0
         UINTN   i, j;
         CHAR16 *CheckName     = NULL;
         CHAR16 *SanitisedName = NULL;
 
+        #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
@@ -2125,6 +2125,7 @@ VOID VetSyncAPFS (VOID) {
             MsgLog ("  - %s", MsgStr);
             MyFreePool (&MsgStr);
         } // for
+        #endif
 
         // Filter '- Data' string tag out of Volume Group name if present
         for (i = 0; i < DataVolumesCount; i++) {
@@ -2146,6 +2147,7 @@ VOID VetSyncAPFS (VOID) {
             }
         } // for
 
+        #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
             L"ReMapped %d APFS Volume%s",
             SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
@@ -2166,7 +2168,6 @@ VOID VetSyncAPFS (VOID) {
     } // if/else PreBootVolumesCount == 0
 } // VOID VetSyncAPFS()
 
-#if REFIT_DEBUG > 0
 static
 CHAR16 * GetApfsRoleString (
     IN APPLE_APFS_VOLUME_ROLE VolumeRole
@@ -2186,7 +2187,6 @@ CHAR16 * GetApfsRoleString (
 
     return retval;
 } // static CHAR16 * GetApfsRoleString()
-#endif
 
 VOID ScanVolumes (VOID) {
     EFI_STATUS          Status;
@@ -2202,21 +2202,20 @@ VOID ScanVolumes (VOID) {
     UINTN               SectorSum, i;
     UINT8              *SectorBuffer1;
     UINT8              *SectorBuffer2;
-    EFI_GUID           *UuidList;
+    CHAR16             *RoleStr      = NULL;
+    CHAR16             *PartType     = NULL;
     BOOLEAN             DupFlag;
+    EFI_GUID           *UuidList;
+    EFI_GUID            VolumeGuid;
+    EFI_GUID            ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr       = NULL;
-    CHAR16  *RoleStr      = NULL;
-    CHAR16  *PartType     = NULL;
     CHAR16  *PartName     = NULL;
     CHAR16  *PartGUID     = NULL;
     CHAR16  *PartTypeGUID = NULL;
     CHAR16  *VolumeUUID   = NULL;
-
-    EFI_GUID               VolumeGuid;
-    EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
@@ -2364,8 +2363,8 @@ VOID ScanVolumes (VOID) {
             SelfVolume = CopyVolume (Volume);
         }
 
-        #if REFIT_DEBUG > 0
         if (SelfVolRun) {
+            #if REFIT_DEBUG > 0
             if (SkipSpacing) {
                 MsgLog (" on Volume Below");
             }
@@ -2429,6 +2428,7 @@ VOID ScanVolumes (VOID) {
                     }
                 }
             }
+            #endif
 
             RoleStr = L"";
             VolumeRole = 0;
@@ -2481,6 +2481,7 @@ VOID ScanVolumes (VOID) {
                 }
             }
 
+            #if REFIT_DEBUG > 0
             // Allocate Pools for Log Details
             PartName     = StrDuplicate (PartType);
             PartGUID     = GuidAsString (&(Volume->PartGuid));
@@ -2505,8 +2506,10 @@ VOID ScanVolumes (VOID) {
             MyFreePool (&PartGUID);
             MyFreePool (&PartTypeGUID);
             MyFreePool (&VolumeUUID);
+            #endif
         }
 
+        #if REFIT_DEBUG > 0
         FoundMBR      = FALSE;
         FirstVolume   = FALSE;
         #endif
