@@ -1,6 +1,7 @@
 0.13.2.AJ (06 Oct 2021):
 -----------------------
 - Fixes 'PreBoot' Volume Filtering in REL Builds
+- Deactivates Log Level 5
 
 
 0.13.2.AH (05 Oct 2021):
