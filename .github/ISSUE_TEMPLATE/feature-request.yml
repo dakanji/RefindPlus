@@ -1,7 +1,5 @@
 name: Feature Request
 description: Suggest improvements to RefindPlus
-title: "[Request]:"
-labels: "Enhancement"
 body:
   - type: markdown
     attributes:
@@ -9,30 +7,23 @@ body:
         Thank you for taking the time to suggest improvements to RefindPlus.
         If you instead just wish to raise a query, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead.
   - type: textarea
-    id: feature-problem
+    id: suggested-feature
     attributes:
-      label: Describe a Problem
-      description: |
-        Is your feature request related to a specific problem?.
-        Please provide a clear and concise description of the problem if so.
-  - type: textarea
-    id: suggested-solution
-    attributes:
-      label: Suggested Solution
+      label: Suggested Feature
       description: |
         Please provide a clear and concise description of what you want to happen.
     validations:
       required: true
   - type: textarea
-    id: alternatives-considered
+    id: background-information
     attributes:
-      label: Alternatives Considered
+      label: Background Information
       description: |
-        Please provide a clear and concise description of any alternative solutions or features you have considered.
-    validations:
-      required: true
+        Is your feature request related to a specific problem?
+        Please provide a clear and concise description of the problem if so.
+        Add information about any alternative solutions or features you have considered.
   - type: textarea
     id: extra-info
     attributes:
       label: Additional Context
-      description: Add any additional context that may assist in understanding and implementing the feature
+      description: Add any additional context that may facilitate understanding and implementing the feature

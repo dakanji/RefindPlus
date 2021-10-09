@@ -1,7 +1,5 @@
 name: Bug Report
 description: Report a problem with RefindPlus
-title: "[Bug]:"
-labels: "Bug"
 body:
   - type: markdown
     attributes:
@@ -9,31 +7,6 @@ body:
         Thank you for taking the time to report a problem with RefindPlus.
         RefindPlus development relies on such reports as it is not possible to test all potential configurations.
         If you instead just wish to raise a query however, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead.
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: Describe the Problem
-      description: |
-        Please provide a clear and concise description of the problem.
-        Additionally, outline how to reproduce the problem.
-    validations:
-      required: true
-  - type: textarea
-    id: log-file
-    attributes:
-      label: Attach a Debug Log File
-      description: |
-        Run the DBG Build file and add a debug log file at Log Level 0 or 4.
-        Kindly attach the log file and do not paste the contents directly.
-    validations:
-      required: true
-  - type: textarea
-    id: screen-shots
-    attributes:
-      label: Attach Screenshots
-      description: |
-        If applicable, add screenshots to help explain the problem.
-        You can save RefindPlus screenshots by pressing the F10 key.
   - type: dropdown
     id: version
     attributes:
@@ -49,7 +22,7 @@ body:
   - type: dropdown
     id: hardware
     attributes:
-      label: Computer Type
+      label: Device Type
       description: What type of device is RefindPlus being run on?
       options:
         - 'Apple Mac'
@@ -59,35 +32,12 @@ body:
     validations:
       required: true
   - type: textarea
-    id: gpu-model
+    id: problem-description
     attributes:
-      label: GPU Model
-      description: Please indicate your GPU Model (Example... Nvidia GTX 680 or Unknown)
-    validations:
-      required: true
-  - type: dropdown
-    id: gpu-port
-    attributes:
-      label: GPU Port
-      description: What port on your GPU is your screen connected to?
-      options:
-        - 'Not Applicable (All in One Unit)'
-        - 'DVI-I'
-        - 'DVI-D'
-        - 'HDMI'
-        - 'Display Port'
-        - 'Other'
-        - 'Unknown'
-    validations:
-      required: true
-  - type: dropdown
-    id: mybootmgr-used
-    attributes:
-      label: MyBootMgr Install
-      description: Have you installed RefindPlus by running MyBootMgr?
-      options:
-        - 'Yes'
-        - 'No'
+      label: Problem Description
+      description: |
+        Please provide a clear and concise description of the problem.
+        Additionally, outline how to reproduce the problem.
     validations:
       required: true
   - type: dropdown
@@ -107,24 +57,35 @@ body:
   - type: dropdown
     id: os-type
     attributes:
-      label: Which OS/Tool is affected?
+      label: Affected Items
       description: You can make more than one selection
       multiple: true
       options:
         - 'Everything'
-        - 'Only One or More Tools (Second Row Items)'
+        - 'One or More Tools (Second Row Items)'
         - 'All OS Loaders (First Row Items)'
-        - 'Mac OS'
-        - 'Windows'
-        - 'Linux'
-        - 'OpenCore'
-        - 'Clover'
-        - 'Other'
+        - 'Mac OS Loader'
+        - 'Win OS Loader'
+        - 'Lin OS Loader'
+        - 'OpenCore Loader'
+        - 'Clover Loader'
+        - 'Other Loader'
         - 'Not Applicable'
+    validations:
+      required: true
+  - type: textarea
+    id: log-file
+    attributes:
+      label: Screenshots and/or Debug Log
+      description: |
+        Run the DBG Build file and add a debug log file at Log Level 0 or 4.
+        Kindly attach the log file and do not paste the contents directly.
+        If applicable, add screenshots to help explain the problem.
+        You can save RefindPlus screenshots by pressing the F10 key.
     validations:
       required: true
   - type: textarea
     id: extra-info
     attributes:
       label: Additional Context
-      description: Add any additional context that may assist in understanding and resolving the problem
+      description: Add any additional context that may facilitate understanding and resolving the problem
