@@ -2517,8 +2517,6 @@ EFI_STATUS EFIAPI efi_main (
                         MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
                     }
                     else {
-                        MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
-
                         if (GlobalConfig.SyncAPFS && ourLoaderEntry->Volume->FSType == FS_TYPE_APFS) {
                             EFI_GUID               VolumeGuid;
                             EFI_GUID            ContainerGuid;

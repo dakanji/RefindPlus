@@ -1681,7 +1681,7 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
                 #endif
 
                 LOG(5, LOG_BLANK_LINE_SEP, L"X");
-                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1  START WHILE LOOP");
+                LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1 START WHILE LOOP");
                 if (TokenCount > 2) {
                     LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 1");
                     if (StrCmp (TokenList[1], L"\\") == 0) {
@@ -1948,7 +1948,7 @@ REFIT_FILE * ReadLinuxOptionsFile (
         OptionsFilename = FullFilename = NULL;
 
         LOG(5, LOG_LINE_FORENSIC,
-            L"In ReadLinuxOptionsFile ... 2a 6 END WHILE LOOP"
+            L"In ReadLinuxOptionsFile ... 2a 6 END DO LOOP"
         );
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
     } while (GoOn);

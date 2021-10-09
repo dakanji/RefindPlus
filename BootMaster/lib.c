@@ -2108,8 +2108,8 @@ VOID VetSyncAPFS (VOID) {
     }
     else {
         UINTN   i, j;
-        CHAR16 *CheckName     = NULL;
-        CHAR16 *SanitisedName = NULL;
+        CHAR16 *CheckName = NULL;
+        CHAR16 *TweakName = NULL;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
@@ -2131,21 +2131,37 @@ VOID VetSyncAPFS (VOID) {
         for (i = 0; i < DataVolumesCount; i++) {
             if (MyStrStr (DataVolumes[i]->VolName, L"- Data") != NULL) {
                 for (j = 0; j < SystemVolumesCount; j++) {
-                    SanitisedName = SanitiseString (SystemVolumes[j]->VolName);
-                    CheckName     = PoolPrint (L"%s - Data", SanitisedName);
+                    MyFreePool (&TweakName);
+                    TweakName = SanitiseString (SystemVolumes[j]->VolName);
+
+                    MyFreePool (&CheckName);
+                    CheckName = PoolPrint (L"%s - Data", TweakName);
+
                     if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
-                        MyFreePool (&CheckName);
-                        MyFreePool (&SanitisedName);
                         MyFreePool (&DataVolumes[i]->VolName);
                         DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
 
                         break;
                     }
-                    MyFreePool (&CheckName);
-                    MyFreePool (&SanitisedName);
-                } // for
+
+                    // Check against raw name string if apporpriate
+                    if (!MyStriCmp (SystemVolumes[j]->VolName, TweakName)) {
+                        MyFreePool (&CheckName);
+                        CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
+
+                        if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
+                            MyFreePool (&DataVolumes[i]->VolName);
+                            DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
+
+                            break;
+                        }
+                    }
+                } // for j = 0
+
+                MyFreePool (&TweakName);
+                MyFreePool (&CheckName);
             }
-        } // for
+        } // for i = 0
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
@@ -3330,7 +3346,7 @@ VOID FindVolumeAndFilename (
     DeviceString  = DevicePathToStr (loadpath);
     *loader       = SplitDeviceString (DeviceString);
 
-    while ((i < VolumesCount) && (!Found)) {
+    while (!Found && i < VolumesCount) {
         if (Volumes[i]->DevicePath == NULL) {
             i++;
             continue;

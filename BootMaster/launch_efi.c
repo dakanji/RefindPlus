@@ -485,6 +485,11 @@ EFI_STATUS StartEFIImage (
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
         LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+
+        if (Verbose) {
+            MsgLog ("User Input Received:\n");
+            MsgLog ("  - Exit Child Image Loader:- '%s'\n\n", ImageTitle);
+        }
     }
     #endif
 
@@ -731,9 +736,20 @@ VOID StartTool (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+
+    if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
+        MsgLog ("INFO: Running Graphics Mode Switch\n");
+    }
     #endif
 
     BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
+
+    #if REFIT_DEBUG > 0
+    if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
+        MsgLog ("      Switch Graphics to Text Mode ... Success\n\n");
+    }
+    #endif
+
     StartEFIImage (
         Entry->Volume,
         Entry->LoaderPath,

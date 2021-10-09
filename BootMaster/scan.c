@@ -336,10 +336,34 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         // No subscreen yet; initialize default entry
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen) {
+            CHAR16 *DisplayName = NULL;
+
+            if (GlobalConfig.SyncAPFS) {
+                EFI_GUID               VolumeGuid;
+                EFI_GUID            ContainerGuid;
+                APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+                EFI_STATUS Status = RP_GetApfsVolumeInfo (
+                    Entry->Volume->DeviceHandle,
+                    &ContainerGuid,
+                    &VolumeGuid,
+                    &VolumeRole
+                );
+
+                if (!EFI_ERROR(Status)) {
+                    if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                        DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
+                    }
+                }
+            } // if GlobalConfig.SyncAFPS
+
             SubScreen->Title = PoolPrint (
                 L"Boot Options for %s on %s",
-                (Entry->Title != NULL) ? Entry->Title : FileName, Entry->Volume->VolName
+                (Entry->Title != NULL) ? Entry->Title  : FileName,
+                (DisplayName) ? DisplayName : Entry->Volume->VolName
             );
+
+            MyFreePool (&DisplayName);
 
             #if REFIT_DEBUG > 0
             LOG(4, LOG_THREE_STAR_MID, L"Build Subscreen:- '%s'", SubScreen->Title);
@@ -825,18 +849,46 @@ VOID SetLoaderDefaults (
                 else {
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1");
                     if (Volume->VolName && (Volume->VolName[0] != L'\0')) {
+                        CHAR16 *DisplayName = NULL;
+
+                        if (GlobalConfig.SyncAPFS) {
+                            EFI_GUID               VolumeGuid;
+                            EFI_GUID            ContainerGuid;
+                            APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+                            EFI_STATUS Status = RP_GetApfsVolumeInfo (
+                                Volume->DeviceHandle,
+                                &ContainerGuid,
+                                &VolumeGuid,
+                                &VolumeRole
+                            );
+
+                            if (!EFI_ERROR(Status)) {
+                                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                                    DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
+                                }
+                            }
+                        } // if GlobalConfig.SyncAFPS
+
+                        // Do not free TargetName
+                        CHAR16 *TargetName = DisplayName
+                            ? DisplayName
+                            : Volume->VolName;
+
                         #if REFIT_DEBUG > 0
                         if (Entry->me.Image == NULL) {
                             LOG(3, LOG_LINE_NORMAL,
                                 L"Merge Hints Based on Volume Name:- '%s'",
-                                Volume->VolName
+                                TargetName
                             );
                         }
                         #endif
 
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 1");
-                        MergeUniqueWords (&OSIconName, Volume->VolName, L',');
+                        MergeUniqueWords (&OSIconName, TargetName, L',');
                         LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 1a 2");
+
+                        MyFreePool (&DisplayName);
                     }
                     LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 8a 2b 2");
                 }
@@ -1400,23 +1452,56 @@ BOOLEAN ShouldScan (
     CHAR16  *DontScanDir  = NULL;
     BOOLEAN  ScanIt       = TRUE;
 
+    if (MyStriCmp (Path, SelfDirPath)
+        && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
+    ) {
+        return FALSE;
+    }
+
+    if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+        EFI_STATUS                 Status;
+        CHAR16       *TmpVolNameA  = NULL;
+        CHAR16       *TmpVolNameB  = NULL;
+        EFI_GUID               VolumeGuid;
+        EFI_GUID            ContainerGuid;
+        APPLE_APFS_VOLUME_ROLE VolumeRole;
+
+        Status = RP_GetApfsVolumeInfo (
+            Volume->DeviceHandle,
+            &ContainerGuid,
+            &VolumeGuid,
+            &VolumeRole
+        );
+
+        if (!EFI_ERROR(Status)) {
+            TmpVolNameB = PoolPrint (L"%s - DATA", Volume->VolName);
+            if (IsIn (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
+                ScanIt = FALSE;
+            }
+            MyFreePool (&TmpVolNameB);
+            if (!ScanIt) return FALSE;
+
+            TmpVolNameA = SanitiseString (Volume->VolName);
+            TmpVolNameB = PoolPrint (L"%s - DATA", TmpVolNameA);
+            if (IsIn (TmpVolNameB, GlobalConfig.DontScanVolumes)) {
+                ScanIt = FALSE;
+            }
+            MyFreePool (&TmpVolNameA);
+            MyFreePool (&TmpVolNameB);
+            if (!ScanIt) return FALSE;
+        }
+    } // if GlobalConfig.SyncAFPS
+
     VolGuid = GuidAsString (&(Volume->PartGuid));
     if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
         || IsIn (Volume->FsName, GlobalConfig.DontScanVolumes)
         || IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)
         || IsIn (Volume->PartName, GlobalConfig.DontScanVolumes)
     ) {
-        MyFreePool (&VolGuid);
-
-        return FALSE;
+        ScanIt = FALSE;
     }
     MyFreePool (&VolGuid);
-
-    if (MyStriCmp (Path, SelfDirPath)
-        && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
-    ) {
-        return FALSE;
-    }
+    if (!ScanIt) return FALSE;
 
     // See if Path includes an explicit volume declaration that is NOT Volume.
     PathCopy = StrDuplicate (Path);
@@ -1429,10 +1514,8 @@ BOOLEAN ShouldScan (
             }
         }
     }
-
     MyFreePool (&PathCopy);
     MyFreePool (&VolName);
-    VolName = NULL;
 
     // See if Volume is in GlobalConfig.DontScanDirs.
     while (ScanIt &&

@@ -40,11 +40,9 @@
 # When this option is enabled, this "help" with APFS partitions will be deactivated.
 #
 # NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
-# to improve the reliability of this option distinguishing between partitions.
-#
-# Note that this setting is automatically enabled by RefindPlus, and APFS
-# partition syncing therefore disabled, if the host computer has more
-# than one Mac OS instance installed into any one APFS container.
+# to improve the reliability of this setting distinguishing between partitions.
+# It is also recommended to exclude all special characters from volume names
+# and to only use alphanumeric characters, dashes, underscores or spaces.
 #
 # APFS partition synchronisation is allowed when commented out
 #

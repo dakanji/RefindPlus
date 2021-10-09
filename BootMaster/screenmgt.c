@@ -162,7 +162,9 @@ VOID SetupScreen (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
 
-    MsgLog ("Set Screen Up...\n");
+    if (!BannerLoaded) {
+        MsgLog ("Set Screen Up...\n");
+    }
     #endif
 
     // Convert mode number to horizontal & vertical resolution values
@@ -585,17 +587,19 @@ VOID TerminateScreen (VOID) {
 VOID DrawScreenHeader (
     IN CHAR16 *Title
 ) {
-    UINTN y;
+    UINTN i;
 
-    // clear to black background
-    egClearScreen (&DarkBackgroundPixel); // first clear in graphics mode
+    // clear to black background ... first clear in graphics mode
+    egClearScreen (&DarkBackgroundPixel);
+
+    // then clear in text mode
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-    REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut); // then clear in text mode
+    REFIT_CALL_1_WRAPPER(gST->ConOut->ClearScreen,  gST->ConOut);
 
     // paint header background
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BANNER);
-    for (y = 0; y < 3; y++) {
-        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, y);
+    for (i = 0; i < 3; i++) {
+        REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, i);
         Print (BlankLine);
     }
 
