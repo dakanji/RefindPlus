@@ -38,8 +38,8 @@
   * This was due to an absence of the Event Waitlist in such situations
   * The Waitlist is now always generated on runtime pauses if not present
 - Fixes Static 'PreviousBoot' Setup
-  * The actually booted loader was not recorded if an tool had been run beforehand
-  * Such previously set tool could only be changed by manually deleting the NVRAM entry
+  * The actually booted loader was not recorded if a tool had been run beforehand
+  * Such previously set tools could only be changed by manually deleting the NVRAM entry
   * The intented outcome of having a static setup could not be realised as envisaged
   * This bug was introduced in v0.13.2.AG (Commit add53ba)
 - Fixes Failure to set 'PreviousBoot' on Text Mode Boots
@@ -67,7 +67,7 @@
 - Improves APFS Volume Role Identification
   * APFS volume roles are now identified by their predefined 'Disk Roles' when possible
   * Additionally, the 'SyncAPFS' feature has been optimised for faster completion
-- Improves APFS Partition Tyoe Detection
+- Improves APFS Partition Type Detection
   * RefindPlus Primarily used the Partition Type Guid to identify APFS Partitions
   * Some UEFI PC may however not provide a Partition Type Guid for APFS volumes
   * This affected the operation of the SyncAPFS feature which had to be disabled on such units

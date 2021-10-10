@@ -5,7 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to suggest improvements to RefindPlus.
-        If you instead just wish to raise a query, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead.
+        If you just wish to raise a query instead, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature.
   - type: textarea
     id: suggested-feature
     attributes:

@@ -5,8 +5,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time to report a problem with RefindPlus.
-        RefindPlus development relies on such reports as it is not possible to test all potential configurations.
-        If you instead just wish to raise a query however, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature instead.
+        If you just wish to raise a query instead, please kindly use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature.
   - type: dropdown
     id: version
     attributes:
@@ -76,12 +75,10 @@ body:
   - type: textarea
     id: log-file
     attributes:
-      label: Screenshots and/or Debug Log
+      label: Debug Log and (Optional) Screenshots
       description: |
-        Run the DBG Build file and add a debug log file at Log Level 0 or 4.
-        Kindly attach the log file and do not paste the contents directly.
-        If applicable, add screenshots to help explain the problem.
-        You can save RefindPlus screenshots by pressing the F10 key.
+        Run the DEBUG Build file and add a debug log file (Log Level 0 or 4). Kindly attach the log file and do not paste the contents directly.
+        If applicable, add screenshots to help explain the problem. You can save RefindPlus screenshots by pressing the F10 key.
     validations:
       required: true
   - type: textarea
