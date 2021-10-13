@@ -37,12 +37,13 @@
 # respective "PreBoot" partitions, which will be used to boot such Mac OS instances and the
 # associated "PreBoot" partitions will be hidden from view. This arrangement also permits
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
-# When this option is enabled, this "help" with APFS partitions will be deactivated.
+# When this option is enabled however, the RefindPlus "SyncAPFS" feature is disabled.
 #
 # NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
-# to improve the reliability of this setting distinguishing between partitions.
-# It is also recommended to exclude all special characters from volume names
-# and to only use alphanumeric characters, dashes, underscores or spaces.
+# to improve the reliability of "SyncAPFS" distinguishing between APFS volumes.
+# Also, avoid the use of special characters in Mac OS volume names and limit
+# names to alphanumeric characters. Dashes, underscores and/or spaces can
+# be used in combination with alphanumeric characters without issue.
 #
 # APFS partition synchronisation is allowed when commented out
 #
@@ -186,8 +187,8 @@
 
 # Proceed automatically when notices are shown on-screen instead
 # of having to press a key to continue. When this option is active,
-# are shown and then proceed as if a key had been pressed.
 # RefindPlus will pause for nine seconds when on-screen notices
+# are shown and then proceed as if a key had been pressed.
 #
 # Inactive when commented out (Does not proceed automatically)
 #

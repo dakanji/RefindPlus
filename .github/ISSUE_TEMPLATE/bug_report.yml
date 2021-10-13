@@ -10,12 +10,11 @@ body:
     id: version
     attributes:
       label: RefindPlus Version
-      description: Which version of RefindPlus are you running?
+      description: Which version of RefindPlus is affected?
       options:
         - 'v0.13.2.AJ Release'
-        - 'An Earlier Release'
-        - 'A Build of the Current Unreleased Code'
-        - 'An Unknown Version'
+        - 'Another Released Version'
+        - 'Build of Current Unreleased Code'
     validations:
       required: true
   - type: dropdown
@@ -24,8 +23,8 @@ body:
       label: Device Type
       description: What type of device is RefindPlus being run on?
       options:
-        - 'Apple Mac'
         - 'UEFI PC'
+        - 'Apple Mac'
         - 'Chromebook'
         - 'Other'
     validations:
@@ -45,11 +44,11 @@ body:
       label: Problem Point
       description: Where does the problem manifest itself?
       options:
-        - 'Between starting your device and the RefindPlus display'
-        - 'Within RefindPlus (Before loading anything)'
-        - 'Within RefindPlus (After selecting a loader/tool)'
-        - 'Between selecting a loader/tool and the loader/tool display'
-        - 'After/during a loader/tool display'
+        - 'Between starting device and RefindPlus display'
+        - 'RefindPlus (Before starting loader/tool)'
+        - 'RefindPlus (After starting loader/tool)'
+        - 'Between starting loader/tool and loader/tool display'
+        - 'After/During loader/tool display'
         - 'Other'
     validations:
       required: true
@@ -60,7 +59,6 @@ body:
       description: You can make more than one selection
       multiple: true
       options:
-        - 'Everything'
         - 'One or More Tools (Second Row Items)'
         - 'All OS Loaders (First Row Items)'
         - 'Mac OS Loader'
@@ -69,7 +67,7 @@ body:
         - 'OpenCore Loader'
         - 'Clover Loader'
         - 'Other Loader'
-        - 'Not Applicable'
+        - 'Other Item'
     validations:
       required: true
   - type: textarea
