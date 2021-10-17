@@ -294,7 +294,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     #if REFIT_DEBUG > 0
     EFI_STATUS  LogStatus;
-    CHAR16     *MsgStr = NULL;
     #endif
 
     BOOLEAN BlockCert = (
@@ -340,11 +339,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
 
     #if REFIT_DEBUG > 0
-    MsgStr = PoolPrint (L"Filter  Write to NVRAM:- '%s'", VariableName);
-    LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("INFO: %s ... %r", MsgStr, LogStatus);
-    MyFreePool (&MsgStr);
-
     if (BlockCert) {
         LOG(4, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
@@ -352,8 +346,8 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         );
         MsgLog ("\n");
         MsgLog ("      * Successful Write May Result in BootROM Damage");
+        MsgLog ("\n\n");
     }
-    MsgLog ("\n\n");
     #endif
 
     return Status;
@@ -2189,9 +2183,18 @@ EFI_STATUS EFIAPI efi_main (
         SelectionName = StrDuplicate (GlobalConfig.DefaultSelection);
     }
 
+    BOOLEAN ProtectNVRAM = FALSE;
     while (MainLoopRunning) {
         // Set to false as may not be booting
         IsBoot = FALSE;
+
+        // Reset NVRAM Protection
+        if (ProtectNVRAM) {
+            ProtectNVRAM                               = FALSE;
+            RT->SetVariable                            = gRT->SetVariable;
+            gRT->SetVariable                           = gRT->SetVariable;
+            SystemTable->RuntimeServices->SetVariable  = gRT->SetVariable;
+        }
 
         MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
 
@@ -2582,6 +2585,7 @@ EFI_STATUS EFIAPI efi_main (
                 else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows")) {
                     if (GlobalConfig.ProtectNVRAM) {
                         // Protect Mac NVRAM from UEFI Windows
+                        ProtectNVRAM                               = TRUE;
                         AltSetVariable                             = gRT->SetVariable;
                         RT->SetVariable                            = gRTSetVariableEx;
                         gRT->SetVariable                           = gRTSetVariableEx;
