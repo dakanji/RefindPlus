@@ -2931,10 +2931,14 @@ BOOLEAN FindTool (
     UINTN    j = 0;
     UINTN    k = 0;
     UINTN    VolumeIndex;
-    CHAR16  *DirName;
-    CHAR16  *FileName;
-    CHAR16  *PathName;
+    CHAR16  *DirName   = NULL;
+    CHAR16  *FileName  = NULL;
+    CHAR16  *PathName  = NULL;
     BOOLEAN  FoundTool = FALSE;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *ToolStr = NULL;
+    #endif
 
 //DA-TAG: Commented Out
 //    CHAR16 FullDescription;
@@ -2942,7 +2946,7 @@ BOOLEAN FindTool (
     while ((DirName = FindCommaDelimited (Locations, j++)) != NULL) {
         k = 0;
         while ((FileName = FindCommaDelimited (Names, k++)) != NULL) {
-            PathName = StrDuplicate (DirName);
+            PathName  = StrDuplicate (DirName);
             MergeStrings (&PathName, FileName, MyStriCmp (PathName, L"\\") ? 0 : L'\\');
             for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                 if (Volumes[VolumeIndex]->RootDir != NULL &&
@@ -2955,7 +2959,6 @@ BOOLEAN FindTool (
                     );
                     #endif
 
-                    FoundTool = TRUE;
 //DA-TAG: Commented Out
 //                    FullDescription = PoolPrint (
 //                        L"%s at %s on %s",
@@ -2973,12 +2976,19 @@ BOOLEAN FindTool (
                     );
 
                     #if REFIT_DEBUG > 0
-                    MsgLog (
-                        "Added Tool:- '%s' : %s%s",
+                    ToolStr = PoolPrint (
+                        L"Added Tool:- '%s' : %s%s",
                         Description, DirName, FileName
                     );
+                    LOG(3, LOG_THREE_STAR_MID, L"%s", ToolStr);
+                    if (FoundTool) {
+                        MsgLog ("\n                               ");
+                    }
+                    MsgLog ("%s", ToolStr);
+                    MyFreePool (&ToolStr);
                     #endif
 
+                    FoundTool = TRUE;
                 } // if Volumes[VolumeIndex]->RootDir
             } // for
 
