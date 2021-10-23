@@ -122,6 +122,7 @@ VOID pdInitialize() {
         if (!EFI_ERROR(handlestatus)) {
             SPointerProtocol = AllocatePool (sizeof (EFI_SIMPLE_POINTER_PROTOCOL*) * NumPointerHandles);
             UINTN Index;
+            BOOLEAN GotMouse = FALSE;
             for (Index = 0; Index < NumPointerHandles; Index++) {
                 // Open the protocol on the handle
                 EFI_STATUS status = REFIT_CALL_6_WRAPPER(
@@ -134,16 +135,18 @@ VOID pdInitialize() {
                     EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL
                 );
                 if (status == EFI_SUCCESS) {
-                    #if REFIT_DEBUG > 0
-                    MsgLog ("  - Enable Mouse\n");
-                    #endif
-
+                    GotMouse = TRUE;
                     NumSPointerDevices++;
                 }
+            } // for
+
+            #if REFIT_DEBUG > 0
+            if (GotMouse) {
+                MsgLog ("  - Enabled Mouse\n");
             }
+            #endif
         }
         else {
-
             #if REFIT_DEBUG > 0
             MsgLog ("  - Disable Mouse\n");
             #endif

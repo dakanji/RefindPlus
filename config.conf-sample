@@ -609,7 +609,7 @@
 # provide the necessary underlying support, so this feature may
 # not always work. If it does work, an OS or tool can be launched
 # by clicking it with the computer's mouse. Note that this feature
-# is mutually exclusive with "enable_touch" feature and that if both
+# is mutually exclusive with the "enable_touch" feature and if both
 # are active, the most recently read one of the two takes precedence.
 #
 # Inactive when commented out (Does not enable mouse support)

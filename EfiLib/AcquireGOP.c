@@ -295,6 +295,7 @@ EFI_STATUS AcquireGOP (
                 ReturnStatus = Status;
             }
         } // for
+        MyFreePool (&HandleArray);
     } // if/else EFI_ERROR Status
 
     return ReturnStatus;
