@@ -83,7 +83,7 @@ UINT64 GetCurrentSecond (VOID) {
 
         dTStartSec = DivU64x64Remainder (dTStartMs, 1000, &dTStartMs);
 
-        return dTStartSec;
+        return (dTStartSec * 1000) + dTStartMs;
 	}
 
 	return 0;

@@ -1049,12 +1049,12 @@ UINTN RunGenericMenu (
     // Primed Keystroke Buffer appears to only affect UEFI PC
     if (MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"Main Menu") &&
-        MyStrStr (gST->FirmwareVendor, L"Apple") == NULL
+        MyStriCmp (Screen->Title, L"Main Menu") 
     ) {
         UINT64 MenuExitTime = GetCurrentSecond();
+        UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-        if ((MenuExitTime - MainMenuLoad) < 2) {
+        if (MenuExitDiff < 250) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             MsgLog ("\n");
