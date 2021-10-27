@@ -64,29 +64,21 @@ MEM_LOG   *mMemLog = NULL;
 CHAR8     mTimingTxt[32];
 
 
-UINT64 GetCurrentSecond (VOID) {
-	UINT64    dTStartSec;
-	UINT64    dTStartMs;
-	UINT64    CurrentTsc;
+UINT64 GetCurrentMS (VOID) {
+	UINT64    CurrentMS  = 0;
+	UINT64    CurrentTsc = 0;
 
 	if (mMemLog != NULL && mMemLog->TscFreqSec != 0) {
 		CurrentTsc = AsmReadTsc();
 
-		dTStartMs = DivU64x64Remainder (
-            MultU64x32 (
-                CurrentTsc - mMemLog->TscStart,
-                1000
-            ),
+		CurrentMS = DivU64x64Remainder (
+            MultU64x32 (CurrentTsc - mMemLog->TscStart, 1000),
             mMemLog->TscFreqSec,
             NULL
         );
-
-        dTStartSec = DivU64x64Remainder (dTStartMs, 1000, &dTStartMs);
-
-        return (dTStartSec * 1000) + dTStartMs;
 	}
 
-	return 0;
+	return CurrentMS;
 }
 
 CHAR8 * GetTiming (VOID) {

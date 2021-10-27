@@ -1,6 +1,15 @@
 0.13.2.AK (PRE-RELEASE):
 -----------------------
-- Pending
+- Improves Menory Management
+  * Frees some previously overlooked items
+- Improves Time Bound Primed Buffer Mitigation
+  * Prevents RefindPlus from spontaneously running default item
+  * Intervention is now based on a minumum 0.25 second interval
+  * Extended scope now covers Mac OS again (previously removed)
+- Improves 'ProtectNVRAM' Implementation
+  * Now ensures this is reset on each loop through the RefindPlus Main Loop
+  * This ensures the filtering is not on if UEFI Windows boot fails
+  * Only has cosmetic relevance but best practice
 
 
 0.13.2.AJ (06 Oct 2021):

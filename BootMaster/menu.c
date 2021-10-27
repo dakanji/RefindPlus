@@ -118,7 +118,7 @@ static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NU
 static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 
 
-extern UINT64 GetCurrentSecond (VOID);
+extern UINT64 GetCurrentMS (VOID);
 
 //
 // Graphics helper functions
@@ -1051,7 +1051,7 @@ UINTN RunGenericMenu (
         !ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu") 
     ) {
-        UINT64 MenuExitTime = GetCurrentSecond();
+        UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
         if (MenuExitDiff < 250) {
@@ -2982,7 +2982,7 @@ UINTN RunMainMenu (
     MenuTitle = StrDuplicate (L"Unknown");
 
     // Save seconds elaspsed from start until just before entering the Main Menu MenuExit loop
-    MainMenuLoad = GetCurrentSecond();
+    MainMenuLoad = GetCurrentMS();
 
     while (MenuExit == 0) {
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);

@@ -252,7 +252,7 @@ UINTN  AppleFramebuffers = 0;
 
 extern VOID   InitBooterLog (VOID);
 
-extern UINT64 GetCurrentSecond (VOID);
+extern UINT64 GetCurrentMS (VOID);
 
 extern EFI_STATUS RP_ApfsConnectDevices (VOID);
 
