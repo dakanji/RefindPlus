@@ -87,10 +87,13 @@
     RP_ApfsLib|RefindPlusPkg/Library/RP_ApfsLib/RP_ApfsLib.inf
     OcDriverConnectionLib|OpenCorePkg/Library/OcDriverConnectionLib/OcDriverConnectionLib.inf
 
-# Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
+  # Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
     HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
     FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
     SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+
+  # Added by dakanji (sf.net/u/dakanji/profile) for NvmExpressLib
+    NvmExpressLib|RefindPlusPkg/Library/NvmExpressLib/NvmExpressLib.inf
 
 [LibraryClasses.AARCH64]
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf

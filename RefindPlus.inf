@@ -109,6 +109,8 @@
   HandleParsingLib
 # Added by dakanji (sf.net/u/dakanji/profile) based on OcApfsLib from OpenCore
   RP_ApfsLib
+# Added by dakanji (sf.net/u/dakanji/profile) from EDK2 Repo
+  NvmExpressLib
 
 [LibraryClasses.AARCH64]
   BaseStackCheckLib

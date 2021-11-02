@@ -57,6 +57,15 @@
 #
 #decline_espfilter
 
+# Supply NVME driver. By default, RefindPlus is set up to always load
+# a built in version of the NvmExpressDxe driver which provides NVMe
+# support when unavailable. This is disabled when this token is on.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# NVMe support is provided (if required) when commented out
+#
+#decline_nvmeload
+
 # Allow or prevent UEFI Windows "Secure Boot" from saving certificates to Apple NVRAM. By default,
 # RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
 # as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
@@ -213,8 +222,8 @@
 # if not. When this option is active, RefindPlus will set a "-no_compat_check"
 # boot argument which disables this check and allows boot to proceed on otherwise
 # unsupported Macs. This setting only applies to Mac OS. Note that this setting will
-# create a Mac OS boot argument the first time it is triggered and it will remain
-# active until explicitly cleared even if the setting is subsequently disabled.
+# create a Mac OS boot argument the first time it is triggered and this will remain
+# active until explicitly cleared, even if this setting is subsequently disabled.
 #
 # Inactive when commented out (Allows Mac OS compatibility checks)
 #
@@ -222,10 +231,10 @@
 
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,
 # RefindPlus will set the "amfi_get_out_of_my_way=1" boot argument which along with
-# System Integrity Protection (SIP), restricts access to entitlements by applications.
+# System Integrity Protection (SIP), restricts application access to OS entitlements.
 # This setting only applies to Mac OS. Note that this setting will create a Mac OS
 # boot argument the first time it is triggered and that this will remain active
-# until explicitly cleared even if the setting is subsequently disabled.
+# until explicitly cleared, even if this setting is subsequently disabled.
 #
 # Inactive when commented out (Allows AMFI checks)
 #
@@ -272,11 +281,11 @@
 
 # Set arbitrary boot arguments on Mac OS. When this option is active,
 # RefindPlus will change the Mac OS boot arguments to the specified string.
-# This setting only applies to Mac OS and accounts for arguments injected by
-# "disable_amfi" and "disable_compat_check" as required. Note that this
-# will create a Mac OS boot argument the first time it is triggered
-# and that this will remain active until explicitly cleared even
-# if the setting is subsequently disabled.
+# This setting only applies to Mac OS and accounts for any arguments injected
+# by the "disable_amfi" and "disable_compat_check" settings. Note that this
+# will create a Mac OS boot argument the first time it is triggered and
+# that the boot argument will remain active until it is explicitly
+# cleared, even if the setting is subsequently disabled.
 #
 # Inactive when commented out (Does not change boot arguments)
 #

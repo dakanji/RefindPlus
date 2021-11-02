@@ -143,6 +143,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ForceTRIM = */ FALSE,
     /* DisableCompatCheck = */ FALSE,
     /* DisableAMFI = */ FALSE,
+    /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
@@ -252,9 +253,12 @@ UINTN  AppleFramebuffers = 0;
 
 extern VOID   InitBooterLog (VOID);
 
-extern UINT64 GetCurrentMS (VOID);
+extern EFI_STATUS        RP_ApfsConnectDevices (VOID);
+extern EFI_STATUS EFIAPI NvmExpressLoad (
+    IN EFI_HANDLE        ImageHandle,
+    IN EFI_SYSTEM_TABLE  *SystemTable
+);
 
-extern EFI_STATUS RP_ApfsConnectDevices (VOID);
 
 // Link to Cert GUIDs in mok/guid.c
 extern EFI_GUID X509_GUID;
@@ -1851,10 +1855,8 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("      NormaliseCSR:- %s",       GlobalConfig.NormaliseCSR       ? L"'Active'" : L"'Inactive'");
     MsgLog ("\n");
     MsgLog ("      IgnorePreviousBoot:- %s", GlobalConfig.IgnorePreviousBoot ? L"'Active'" : L"'Inactive'");
-    #endif
 
-
-    #if REFIT_DEBUG > 0
+    // Prime Status for SupplyAPFS
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -1867,7 +1869,23 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n\n");
-    MsgLog ("INFO: Supply APFS ... %r", Status);
+    MsgLog ("INFO: Supply APFS Support ... %r", Status);
+    MsgLog ("\n");
+
+    // Prime Status for SupplNVME
+    Status = EFI_NOT_STARTED;
+    #endif
+
+    #ifdef __MAKEWITH_TIANO
+    // DA-TAG: Limit to TianoCore
+    if (GlobalConfig.SupplyNVME) {
+        Status = NvmExpressLoad (ImageHandle, SystemTable);
+    }
+    #endif
+
+    #if REFIT_DEBUG > 0
+    MsgLog ("      ");
+    MsgLog ("Supply NVMe Support ... %r", Status);
     MsgLog ("\n\n");
     #endif
 
