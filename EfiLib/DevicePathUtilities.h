@@ -216,17 +216,4 @@ EFIAPI
 --*/
 ;
 
-typedef struct {
-  EFI_DEVICE_PATH_UTILS_GET_DEVICE_PATH_SIZE GetDevicePathSize;
-  EFI_DEVICE_PATH_UTILS_DUP_DEVICE_PATH      DuplicateDevicePath;
-  EFI_DEVICE_PATH_UTILS_APPEND_PATH          AppendDevicePath;
-  EFI_DEVICE_PATH_UTILS_APPEND_NODE          AppendDeviceNode;
-  EFI_DEVICE_PATH_UTILS_APPEND_INSTANCE      AppendDevicePathInstance;
-  EFI_DEVICE_PATH_UTILS_GET_NEXT_INSTANCE    GetNextDevicePathInstance;
-  EFI_DEVICE_PATH_UTILS_IS_MULTI_INSTANCE    IsDevicePathMultiInstance;
-  EFI_DEVICE_PATH_UTILS_CREATE_NODE          CreateDeviceNode;
-} EFI_DEVICE_PATH_UTILITIES_PROTOCOL;
-
-extern EFI_GUID gEfiDevicePathUtilitiesProtocolGuid;
-
 #endif

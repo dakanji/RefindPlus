@@ -17,11 +17,11 @@
 # define REFIT_CALL_6_WRAPPER(f, a1, a2, a3, a4, a5, a6) \
   uefi_call_wrapper(f, 6, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6))
 # define REFIT_CALL_7_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7) \
-  uefi_call_wrapper(f, 6, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7))
+  uefi_call_wrapper(f, 7, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7))
 # define REFIT_CALL_8_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8) \
-  uefi_call_wrapper(f, 10, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7), (UINT64)(a8))
+  uefi_call_wrapper(f, 8, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7), (UINT64)(a8))
 # define REFIT_CALL_9_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
-  uefi_call_wrapper(f, 10, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7), (UINT64)(a8), (UINT64)(a9))
+  uefi_call_wrapper(f, 9, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7), (UINT64)(a8), (UINT64)(a9))
 # define REFIT_CALL_10_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
   uefi_call_wrapper(f, 10, (UINT64)(a1), (UINT64)(a2), (UINT64)(a3), (UINT64)(a4), (UINT64)(a5), (UINT64)(a6), (UINT64)(a7), (UINT64)(a8), (UINT64)(a9), (UINT64)(a10))
 #else
@@ -38,11 +38,11 @@
 # define REFIT_CALL_6_WRAPPER(f, a1, a2, a3, a4, a5, a6) \
   uefi_call_wrapper(f, 6, a1, a2, a3, a4, a5, a6)
 # define REFIT_CALL_7_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7) \
-  uefi_call_wrapper(f, 10, a1, a2, a3, a4, a5, a6, a7)
+  uefi_call_wrapper(f, 7, a1, a2, a3, a4, a5, a6, a7)
 # define REFIT_CALL_8_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8) \
-  uefi_call_wrapper(f, 10, a1, a2, a3, a4, a5, a6, a7, a8)
+  uefi_call_wrapper(f, 8, a1, a2, a3, a4, a5, a6, a7, a8)
 # define REFIT_CALL_9_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
-  uefi_call_wrapper(f, 10, a1, a2, a3, a4, a5, a6, a7, a8, a9)
+  uefi_call_wrapper(f, 9, a1, a2, a3, a4, a5, a6, a7, a8, a9)
 # define REFIT_CALL_10_WRAPPER(f, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) \
   uefi_call_wrapper(f, 10, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 #endif
