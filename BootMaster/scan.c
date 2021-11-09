@@ -351,7 +351,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 );
 
                 if (!EFI_ERROR(Status)) {
-                    if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                         DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
                     }
                 }
@@ -864,7 +864,7 @@ VOID SetLoaderDefaults (
                             );
 
                             if (!EFI_ERROR(Status)) {
-                                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                                     DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
                                 }
                             }
@@ -1266,7 +1266,7 @@ LOADER_ENTRY * AddLoaderEntry (
         );
 
         if (!EFI_ERROR(Status)) {
-            if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+            if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                 DisplayName = GetVolumeGroupName (LoaderPath, Volume);
 
                 if (!DisplayName) {

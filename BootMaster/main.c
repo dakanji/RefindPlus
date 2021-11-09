@@ -2551,7 +2551,7 @@ EFI_STATUS EFIAPI efi_main (
                             );
 
                             if (!EFI_ERROR(Status)) {
-                                if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                                     DisplayName = GetVolumeGroupName (
                                         ourLoaderEntry->LoaderPath,
                                         ourLoaderEntry->Volume

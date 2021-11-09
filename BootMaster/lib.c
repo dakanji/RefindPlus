@@ -2468,7 +2468,7 @@ VOID ScanVolumes (VOID) {
                     Volume->VolUuid = VolumeGuid;
                     RoleStr         = GetApfsRoleString (VolumeRole);
 
-                    if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_PREBOOT) != 0) {
+                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                         // Create or add to a list of APFS PreBoot Volumes
                         AddListElement (
                             (VOID ***) &PreBootVolumes,
@@ -2476,7 +2476,7 @@ VOID ScanVolumes (VOID) {
                             CopyVolume (Volume)
                         );
                     }
-                    else if ((VolumeRole & APPLE_APFS_VOLUME_ROLE_DATA) != 0) {
+                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
                         // Create or add to a list representing APFS VolumeGroups
                         AddListElement (
                             (VOID ***) &DataVolumes,
