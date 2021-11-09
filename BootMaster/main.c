@@ -1597,7 +1597,7 @@ VOID LogBasicInfo (VOID) {
     if (!QVInfoSupport) {
         // QueryVariableInfo is not supported on Apple or EFI 1.x Firmware
         MsgLog ("\n");
-        MsgLog (" ** QueryVariableInfo is not Available");
+        MsgLog (" ** QueryVariableInfo is Unavailable");
         // DA-TAG: Leave preceeding single space above intact
     }
     MsgLog ("\n\n");

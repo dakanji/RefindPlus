@@ -1238,13 +1238,14 @@ VOID egInitScreen (VOID) {
 
             if (!EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"GOP not Available ... Fall Back on UGA");
+                MsgStr = StrDuplicate (L"GOP Not Available ... Fall Back on UGA");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n\n");
+                MsgLog ("\n");
                 MyFreePool (&MsgStr);
 
-                FlagUGA = TRUE;
+                FlagUGA  = TRUE;
+                PrevFlag = TRUE;
                 #endif
 
                 egHasGraphics  = TRUE;
@@ -1257,11 +1258,12 @@ VOID egInitScreen (VOID) {
                 GlobalConfig.TextOnly = TRUE;
 
                 #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Graphics not Available ... Fall Back on Text Mode");
+                MsgStr = StrDuplicate (L"Graphics Not Available ... Fall Back on Text Mode");
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
                 MyFreePool (&MsgStr);
+                PrevFlag = TRUE;
                 #endif
             }
         }

@@ -1047,14 +1047,15 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
     // Primed Keystroke Buffer appears to only affect UEFI PC
-    if (MenuExit == MENU_EXIT_ENTER &&
+    if (GlobalConfig.Timeout > -1 &&
+        MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
-        MyStriCmp (Screen->Title, L"Main Menu") 
+        MyStriCmp (Screen->Title, L"Main Menu")
     ) {
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-        if (MenuExitDiff < 250) {
+        if (MenuExitDiff < 500) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             MsgLog ("\n");
