@@ -188,7 +188,7 @@ CHAR16 * FindInitrd (
             LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 4");
         }
         LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 5");
-        MyFreePool (&InitrdVersion);
+        MY_FREE_POOL(InitrdVersion);
 
         LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 3 - END WHILE LOOP");
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
@@ -254,9 +254,9 @@ CHAR16 * FindInitrd (
     DeleteStringList(InitrdNames);
 
     LOG(5, LOG_LINE_FORENSIC, L"In FindInitrd ... 11");
-    MyFreePool (&Path);
-    MyFreePool (&FileName);
-    MyFreePool (&KernelVersion);
+    MY_FREE_POOL(Path);
+    MY_FREE_POOL(FileName);
+    MY_FREE_POOL(KernelVersion);
 
     LOG(5, LOG_LINE_FORENSIC,
         L"In FindInitrd ... 12 - END:- return CHAR16 *InitrdName = '%s'",
@@ -305,7 +305,7 @@ CHAR16 * AddInitrdToOptions (
             ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
 
             LOG(5, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 3");
-            MyFreePool (&InitrdVersion);
+            MY_FREE_POOL(InitrdVersion);
 
             LOG(5, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 4");
         }
@@ -355,9 +355,9 @@ CHAR16 * GetMainLinuxOptions (
     FullOptions = AddInitrdToOptions (Options, InitrdName);
 
     LOG(5, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 6");
-    MyFreePool (&Options);
-    MyFreePool (&InitrdName);
-    MyFreePool (&KernelVersion);
+    MY_FREE_POOL(Options);
+    MY_FREE_POOL(InitrdName);
+    MY_FREE_POOL(KernelVersion);
 
     LOG(5, LOG_LINE_FORENSIC,
         L"In GetMainLinuxOptions ... 7 - END:- return CHAR16 *FullOptions = '%s'",
@@ -404,7 +404,7 @@ VOID ParseReleaseFile (
 
             FreeTokenLine (&TokenList, &TokenCount);
         } while (TokenCount > 0);
-        MyFreePool (&File.Buffer);
+        MY_FREE_POOL(File.Buffer);
 
     } // if
 } // VOID ParseReleaseFile()
@@ -514,8 +514,8 @@ VOID AddKernelToSubmenu (
                 );
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 4");
-                MyFreePool (&SubEntry->LoaderPath);
-                MyFreePool (&SubEntry->LoadOptions);
+                MY_FREE_POOL(SubEntry->LoaderPath);
+                MY_FREE_POOL(SubEntry->LoadOptions);
                 SubEntry->LoadOptions = NULL;
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 5");
@@ -556,12 +556,12 @@ VOID AddKernelToSubmenu (
         FreeTokenLine (&TokenList, &TokenCount);
 
         LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 6");
-        MyFreePool (&VolName);
-        MyFreePool (&Path);
-        MyFreePool (&SubmenuName);
-        MyFreePool (&InitrdName);
-        MyFreePool (&File);
-        MyFreePool (&KernelVersion);
+        MY_FREE_POOL(VolName);
+        MY_FREE_POOL(Path);
+        MY_FREE_POOL(SubmenuName);
+        MY_FREE_POOL(InitrdName);
+        MY_FREE_POOL(File);
+        MY_FREE_POOL(KernelVersion);
         LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 7");
     }
     LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 3 - END:- VOID");
@@ -592,7 +592,7 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
 
             retval = TRUE;
         }
-        MyFreePool (&NewFile);
+        MY_FREE_POOL(NewFile);
     } // if
 
     return retval;

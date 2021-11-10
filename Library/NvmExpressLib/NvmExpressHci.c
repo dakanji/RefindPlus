@@ -14,9 +14,8 @@
 **/
 
 #include "NvmExpress.h"
+#include "../../BootMaster/my_free_pool.h"
 #include "../../include/refit_call_wrapper.h"
-
-extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 #define NVME_SHUTDOWN_PROCESS_TIMEOUT 45
 
@@ -832,7 +831,7 @@ EFI_STATUS NvmeControllerInit (
     // Get current Identify Controller Data
     Status = NvmeIdentifyController (Private, Private->ControllerData);
     if (EFI_ERROR(Status)) {
-        MyFreePool (&(Private->ControllerData));
+        MY_FREE_POOL(Private->ControllerData);
         Private->ControllerData = NULL;
         return EFI_NOT_FOUND;
     }

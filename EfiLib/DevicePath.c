@@ -19,8 +19,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
 #include "Platform.h"
-
-extern VOID MyFreePool (IN OUT VOID *Pointer);
+#include "../BootMaster/my_free_pool.h"
 
 /**
 Concatenates a formatted unicode string to allocated pool.
@@ -75,7 +74,7 @@ CHAR16 * EFIAPI MyCatPrint (
             Str->Len = StringSize - sizeof (UINT16);
         }
 
-        MyFreePool (&AppendStr);
+        MY_FREE_POOL(AppendStr);
     }
 
     return Str->Str;

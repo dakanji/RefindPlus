@@ -51,9 +51,9 @@ GPT_DATA * AllocateGptData (VOID) {
         GptData->Header = AllocateZeroPool (sizeof (GPT_HEADER));
 
         if ((GptData->ProtectiveMBR == NULL) || (GptData->Header == NULL)) {
-            MyFreePool (&GptData->ProtectiveMBR);
-            MyFreePool (&GptData->Header);
-            MyFreePool (&GptData);
+            MY_FREE_POOL(GptData->ProtectiveMBR);
+            MY_FREE_POOL(GptData->Header);
+            MY_FREE_POOL(GptData);
             GptData = NULL;
         }
     }
@@ -68,16 +68,16 @@ VOID ClearGptData (
 ) {
     if (Data) {
         if (Data->ProtectiveMBR) {
-            MyFreePool (&Data->ProtectiveMBR);
+            MY_FREE_POOL(Data->ProtectiveMBR);
         }
         if (Data->Header) {
-            MyFreePool (&Data->Header);
+            MY_FREE_POOL(Data->Header);
         }
         if (Data->Entries) {
-            MyFreePool (&Data->Entries);
+            MY_FREE_POOL(Data->Entries);
         }
 
-        MyFreePool (&Data);
+        MY_FREE_POOL(Data);
     }
 } // VOID ClearGptData()
 

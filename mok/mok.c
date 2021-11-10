@@ -103,8 +103,8 @@ BOOLEAN secure_mode (VOID) {
 
     DoneOnce = TRUE;
 
-    MyFreePool (&sb);
-    MyFreePool (&setupmode);
+    MY_FREE_POOL(sb);
+    MY_FREE_POOL(setupmode);
 
     return SecureMode;
 } // secure_mode()

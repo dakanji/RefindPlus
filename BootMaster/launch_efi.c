@@ -135,11 +135,11 @@ VOID WarnSecureBootError(
     PauseForKey();
     SwitchToGraphics();
 
-    MyFreePool (&MsgStrA);
-    MyFreePool (&MsgStrB);
-    MyFreePool (&MsgStrC);
-    MyFreePool (&MsgStrD);
-    MyFreePool (&MsgStrE);
+    MY_FREE_POOL(MsgStrA);
+    MY_FREE_POOL(MsgStrB);
+    MY_FREE_POOL(MsgStrC);
+    MY_FREE_POOL(MsgStrD);
+    MY_FREE_POOL(MsgStrE);
 } // VOID WarnSecureBootError()
 
 // Returns TRUE if this file is a valid EFI loader file, and is proper ARCH
@@ -249,7 +249,7 @@ EFI_STATUS StartEFIImage (
         );
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return ReturnStatus;
@@ -278,7 +278,7 @@ EFI_STATUS StartEFIImage (
         Print(L"%s\n", MsgStr);
     }
 
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     // Some EFIs crash if attempting to load driver for invalid architecture, so
@@ -325,7 +325,7 @@ EFI_STATUS StartEFIImage (
             NULL, 0,
             &ChildImageHandle
         );
-        MyFreePool (&DevicePath);
+        MY_FREE_POOL(DevicePath);
         ReturnStatus = Status;
 
         if (secure_mode() && ShimLoaded()) {
@@ -345,7 +345,7 @@ EFI_STATUS StartEFIImage (
             MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             REFIT_CALL_6_WRAPPER(
@@ -364,7 +364,7 @@ EFI_STATUS StartEFIImage (
         MsgStr = StrDuplicate (L"Invalid Loader!!");
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
 
@@ -376,7 +376,7 @@ EFI_STATUS StartEFIImage (
         );
         LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
         MsgLog ("* ERROR: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         WarnSecureBootError (ImageTitle, Verbose);
@@ -385,10 +385,10 @@ EFI_STATUS StartEFIImage (
 
     MsgStr = PoolPrint (L"When Loading %s", ImageTitle);
     if (CheckError (Status, MsgStr)) {
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         goto bailout;
     }
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -421,7 +421,7 @@ EFI_STATUS StartEFIImage (
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         Status = EfivarSetRaw (
@@ -440,11 +440,11 @@ EFI_STATUS StartEFIImage (
             );
             LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
             MsgLog ("* ERROR: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         #endif
 
-        MyFreePool (&EspGUID);
+        MY_FREE_POOL(EspGUID);
     } // if write systemd UEFI variables
 
     // close open file handles
@@ -477,7 +477,7 @@ EFI_STATUS StartEFIImage (
     LOG(4, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, MsgStr);
 
     // DA-TAG: MsgStr from earlier is freed here
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     MsgStr = StrDuplicate (L"Returned from Child Image");
@@ -494,7 +494,7 @@ EFI_STATUS StartEFIImage (
     #endif
 
     CheckError (ReturnStatus, MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     if (IsDriver) {
         // Below should have no effect on most systems, but works
@@ -513,7 +513,7 @@ bailout_unload:
     }
 
 bailout:
-    MyFreePool (&FullLoadOptions);
+    MY_FREE_POOL(FullLoadOptions);
     if (!IsDriver) {
         FinishExternalScreen();
     }
@@ -539,7 +539,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     if (err == EFI_SUCCESS) {
         osind |= *ItemBuffer;
     }
-    MyFreePool (&ItemBuffer);
+    MY_FREE_POOL(ItemBuffer);
 
     err = EfivarSetRaw (
         &GlobalGuid,
@@ -589,7 +589,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     LOG(3, LOG_LINE_NORMAL, MsgStr, err);
     #endif
 
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     return err;
 } // EFI_STATUS RebootIntoFirmware()
@@ -610,7 +610,7 @@ VOID RebootIntoLoader (
     );
     LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     MsgLog ("INFO: %s\n\n", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     Status = EfivarSetRaw (
@@ -634,7 +634,7 @@ VOID RebootIntoLoader (
         Print(L"%s\n", MsgStr);
         PauseForKey();
 
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         return;
     }
 
@@ -654,7 +654,7 @@ VOID RebootIntoLoader (
     Print(MsgStr);
     PauseForKey();
 
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 } // RebootIntoLoader()
 
 //
@@ -719,8 +719,8 @@ VOID StartLoader (
         FALSE
     );
 
-    MyFreePool (&MsgStr);
-    MyFreePool (&LoaderPath);
+    MY_FREE_POOL(MsgStr);
+    MY_FREE_POOL(LoaderPath);
 } // VOID StartLoader()
 
 // Launch an EFI tool (a shell, SB management utility, etc.)
@@ -760,6 +760,6 @@ VOID StartTool (
         FALSE
     );
 
-    MyFreePool (&MsgStr);
-    MyFreePool (&LoaderPath);
+    MY_FREE_POOL(MsgStr);
+    MY_FREE_POOL(LoaderPath);
 } // VOID StartTool()

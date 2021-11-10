@@ -9,8 +9,12 @@
 - Fixes Failure to Set Volume Badges and .VolumeIcon files on APFS Volumes
   * The items were skipped by optimisation meant to only skip such on APFS System Volumes for SyncAPFS
   * This bug was introduced in v0.13.2.AJ (Commit d87d3fb)
-- Improves Menory Management
+- Fixes Memory Management
   * Frees some previously overlooked items
+  * The 'MyFreePool' function implementation did not actually free items passed
+  * Similarly, the 'ReleasePtr' that called this was non operational
+  * Both functions have now been removed and consolidated into a new 'MY_FREE_POOL' macro
+  * This bug was introduced in v0.13.2.AD (Commit 65e5083)
 - Improves Time Bound Primed Buffer Mitigation
   * Prevents RefindPlus from spontaneously running default item
   * Intervention is now based on a minumum 0.25 second interval

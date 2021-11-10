@@ -278,8 +278,8 @@ VOID egFreeImage (
         return;
     }
 
-    MyFreePool (&Image->PixelData);
-    MyFreePool (&Image);
+    MY_FREE_POOL(Image->PixelData);
+    MY_FREE_POOL(Image);
 }
 
 //
@@ -322,7 +322,7 @@ EFI_STATUS egLoadFile (
         ReadSize = MAX_FILE_SIZE;
     }
 
-    MyFreePool (&FileInfo);
+    MY_FREE_POOL(FileInfo);
 
     BufferSize = (UINTN)ReadSize;   // was limited to 1 GB above, so this is safe
     Buffer = (UINT8 *) AllocatePool (BufferSize);
@@ -335,7 +335,7 @@ EFI_STATUS egLoadFile (
     Status = REFIT_CALL_3_WRAPPER(FileHandle->Read, FileHandle, &BufferSize, Buffer);
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
     if (EFI_ERROR(Status)) {
-        MyFreePool (&Buffer);
+        MY_FREE_POOL(Buffer);
 
         return Status;
     }
@@ -366,7 +366,7 @@ EFI_STATUS egFindESP (
             Status = EFI_NOT_FOUND;
         }
 
-        MyFreePool (&Handles);
+        MY_FREE_POOL(Handles);
     }
 
     return Status;
@@ -472,7 +472,7 @@ EG_IMAGE * egLoadImage (
     // decode it
     // '128' can be any arbitrary value
     NewImage = egDecodeAny (FileData, FileDataLength, 128, WantAlpha);
-    MyFreePool (&FileData);
+    MY_FREE_POOL(FileData);
 
     return NewImage;
 }
@@ -522,7 +522,7 @@ EG_IMAGE * egLoadIcon (
 
     // decode it
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
-    MyFreePool (&FileData);
+    MY_FREE_POOL(FileData);
 
     // return null if unable to decode
     if (Image == NULL) {
@@ -555,7 +555,7 @@ EG_IMAGE * egLoadIcon (
 
             Print(MsgStr);
 
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
     }
 
@@ -600,8 +600,8 @@ EG_IMAGE * egLoadIconAnyType (
         FileName = PoolPrint (L"%s\\%s.%s", SubdirName, BaseName, Extension);
         Image    = egLoadIcon (BaseDir, FileName, IconSize);
 
-        MyFreePool (&Extension);
-        MyFreePool (&FileName);
+        MY_FREE_POOL(Extension);
+        MY_FREE_POOL(FileName);
     } // while
 
     #if REFIT_DEBUG > 0

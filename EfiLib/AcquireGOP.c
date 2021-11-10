@@ -163,7 +163,7 @@ EFI_STATUS ReloadOptionROM (
                                         ImageLength = DestinationSize;
                                     }
 
-                                    MyFreePool (&Scratch);
+                                    MY_FREE_POOL(Scratch);
                                 }
                             }
                         } // if !EFI_ERROR Status = REFIT_CALL_5_WRAPPER
@@ -194,10 +194,10 @@ EFI_STATUS ReloadOptionROM (
                         Status = REFIT_CALL_3_WRAPPER(gBS->StartImage, ImageHandle, NULL, NULL);
                     }
 
-                     MyFreePool (&RomFileName);
+                     MY_FREE_POOL(RomFileName);
                 }
 
-                MyFreePool (&DecompressedImageBuffer);
+                MY_FREE_POOL(DecompressedImageBuffer);
             } // if InitializationSize
         } // if Pcir->CodeType
 
@@ -284,10 +284,10 @@ EFI_STATUS AcquireGOP (
                             (const CHAR16 *) RomFileName
                         );
 
-                        MyFreePool (&RomFileName);
+                        MY_FREE_POOL(RomFileName);
                     }
 
-                    MyFreePool (&BindingHandleBuffer);
+                    MY_FREE_POOL(BindingHandleBuffer);
                 }
             }
 
@@ -295,7 +295,7 @@ EFI_STATUS AcquireGOP (
                 ReturnStatus = Status;
             }
         } // for
-        MyFreePool (&HandleArray);
+        MY_FREE_POOL(HandleArray);
     } // if/else EFI_ERROR Status
 
     return ReturnStatus;

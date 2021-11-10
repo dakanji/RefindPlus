@@ -206,7 +206,7 @@ EFI_STATUS daCheckAltGop (VOID) {
 
                     for (Mode = 0; Mode < MaxMode; Mode++) {
                         // Free Info if set
-                        MyFreePool (&Info);
+                        MY_FREE_POOL(Info);
 
                         Status = Gop->QueryMode (Gop, Mode, &SizeOfInfo, &Info);
                         if (!EFI_ERROR(Status)) {
@@ -245,8 +245,8 @@ EFI_STATUS daCheckAltGop (VOID) {
             } // if HandleBuffer[i]
         } // for i = 0
 
-        MyFreePool (&Info);
-        MyFreePool (&HandleBuffer);
+        MY_FREE_POOL(Info);
+        MY_FREE_POOL(HandleBuffer);
 
         #if REFIT_DEBUG > 0
         MsgLog ("\n\n");
@@ -284,7 +284,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         MsgStr = StrDuplicate (L"Could not Find GOP Instance");
         LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
         MsgLog ("** WARN: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -303,7 +303,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         );
         LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("%s:\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         LoopCount = -1;
@@ -380,7 +380,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                 }
                 #endif
 
-                MyFreePool (Info);
+                MY_FREE_POOL(Info);
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -413,7 +413,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         MsgStr = StrDuplicate (L"Could Not Find Usable GOP");
         LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
         MsgLog ("INFO: %s:\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -449,7 +449,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ... %r", ModeNumber, Status);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s\n\n", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     return Status;
@@ -478,7 +478,7 @@ EFI_STATUS egSetGOPMode (
         LOG(3, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return EFI_UNSUPPORTED;
@@ -496,7 +496,7 @@ EFI_STATUS egSetGOPMode (
         LOG(3, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
     else {
@@ -594,7 +594,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
             Width    = Info->HorizontalResolution;
             Height   = Info->VerticalResolution;
 
-            MyFreePool (Info);
+            MY_FREE_POOL(Info);
         }
     }
 
@@ -605,7 +605,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     );
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s\n", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     // check if requested mode is equal to current mode
@@ -616,7 +616,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
         MsgStr = StrDuplicate (L"Screen Resolution Already Set");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         egScreenWidth  = GOPDraw->Mode->Info->HorizontalResolution;
@@ -636,7 +636,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
             MsgStr = StrDuplicate (L"Could Not Set BestMode ... Try First Useable Mode");
             LOG(3, LOG_LINE_NORMAL, L"%s!!", MsgStr);
             MsgLog ("** WARN: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
     }
@@ -771,7 +771,7 @@ VOID egInitScreen (VOID) {
                     break;
                 }
             }
-            MyFreePool (&HandleBuffer);
+            MY_FREE_POOL(HandleBuffer);
         }
     }
 
@@ -791,7 +791,7 @@ VOID egInitScreen (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s", MsgStr);
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     // Get UGADraw Protocol
@@ -886,7 +886,7 @@ VOID egInitScreen (VOID) {
                     }
                 } // if !EFI_ERROR(Status)
             } // for
-            MyFreePool (&HandleBuffer);
+            MY_FREE_POOL(HandleBuffer);
 
         } // if !EFI_ERROR(Status)
     } // if EFI_ERROR(Status
@@ -905,7 +905,7 @@ VOID egInitScreen (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("  - %s", MsgStr);
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     // Get GOPDraw Protocol
@@ -1001,13 +1001,13 @@ VOID egInitScreen (VOID) {
                                 #endif
                             }
 
-                            MyFreePool (&Info);
+                            MY_FREE_POOL(Info);
                         }
                     } // for GOPMode = 0
                 }
             } // for
 
-            MyFreePool (&HandleBuffer);
+            MY_FREE_POOL(HandleBuffer);
         }
         else {
             if (EFI_ERROR(Status)) {
@@ -1027,7 +1027,7 @@ VOID egInitScreen (VOID) {
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT FOUND!!");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
 
@@ -1040,7 +1040,7 @@ VOID egInitScreen (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
     else if (!EFI_ERROR(Status) && XFlag != EFI_ALREADY_STARTED) {
@@ -1056,7 +1056,7 @@ VOID egInitScreen (VOID) {
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
         else {
@@ -1067,7 +1067,7 @@ VOID egInitScreen (VOID) {
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             #ifdef __MAKEWITH_TIANO
@@ -1098,7 +1098,7 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (L"Cannot Implement Direct GOP Renderer");
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
         else {
@@ -1136,7 +1136,7 @@ VOID egInitScreen (VOID) {
             MsgStr = PoolPrint (L"Implement Direct GOP Renderer ... %r", Status);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
     }
@@ -1146,7 +1146,7 @@ VOID egInitScreen (VOID) {
         MsgStr = PoolPrint (L"Graphics Output Protocol ... %r", XFlag);
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
     else if (XFlag == EFI_UNSUPPORTED) {
@@ -1154,7 +1154,7 @@ VOID egInitScreen (VOID) {
         MsgStr = PoolPrint (L"Provide GOP on ConsoleOut Handle ... %r", Status);
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -1172,7 +1172,7 @@ VOID egInitScreen (VOID) {
             MsgStr = StrDuplicate (L"Invalid GOP Instance");
             LOG(3, LOG_LINE_NORMAL, L"WARNING: %s!!", MsgStr);
             MsgLog ("** WARN: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             GOPDraw = NULL;
@@ -1197,7 +1197,7 @@ VOID egInitScreen (VOID) {
                 MsgStr = PoolPrint (L"Implement Graphics Output Protocol ... %r", Status);
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s\n\n", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
             }
             #endif
         }
@@ -1223,7 +1223,7 @@ VOID egInitScreen (VOID) {
             else {
                 MsgLog ("\n\n");
             }
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
         #endif
@@ -1242,7 +1242,7 @@ VOID egInitScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
 
                 FlagUGA  = TRUE;
                 PrevFlag = TRUE;
@@ -1262,7 +1262,7 @@ VOID egInitScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 PrevFlag = TRUE;
                 #endif
             }
@@ -1297,7 +1297,7 @@ VOID egInitScreen (VOID) {
             }
             MsgLog ("%s", MsgStr);
             MsgLog ("\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             PrevFlag = TRUE;
             #endif
         #endif
@@ -1329,7 +1329,7 @@ VOID egInitScreen (VOID) {
     }
     MsgLog ("Graphics Available:- '%s'", MsgStr);
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 } // VOID egInitScreen()
 
@@ -1357,7 +1357,7 @@ BOOLEAN egGetResFromMode (
             *ModeWidth = Info->HorizontalResolution;
             *Height    = Info->VerticalResolution;
 
-            MyFreePool (&Info);
+            MY_FREE_POOL(Info);
 
             return TRUE;
         }
@@ -1404,7 +1404,7 @@ BOOLEAN egSetScreenSize (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s", MsgStr);
         MsgLog ("\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return FALSE;
@@ -1422,7 +1422,7 @@ BOOLEAN egSetScreenSize (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s", MsgStr);
         MsgLog ("\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         if (*ScreenHeight == 0) {
@@ -1457,7 +1457,7 @@ BOOLEAN egSetScreenSize (
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
         else {
@@ -1489,7 +1489,7 @@ BOOLEAN egSetScreenSize (
                     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
                     MsgLog ("\n\n");
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
 
                     ModeSet = TRUE;
@@ -1504,10 +1504,10 @@ BOOLEAN egSetScreenSize (
                     #endif
 
                     PrintUglyText (MsgStr, NEXTLINE);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                 }
 
-                MyFreePool (&Info);
+                MY_FREE_POOL(Info);
             } while ((++ModeNum < GOPDraw->Mode->MaxMode) && !ModeSet);
         } // if/else *ScreenHeight == 0
 
@@ -1523,11 +1523,11 @@ BOOLEAN egSetScreenSize (
             #if REFIT_DEBUG > 0
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s:\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             PrintUglyText (MsgStr, NEXTLINE);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             ModeNum = 0;
             do {
@@ -1554,7 +1554,7 @@ BOOLEAN egSetScreenSize (
                     );
                     LOG(3, LOG_LINE_NORMAL, MsgStr);
                     MsgLog ("  - %s", MsgStr);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
 
                     if (ModeNum == CurrentModeNum) {
@@ -1571,7 +1571,7 @@ BOOLEAN egSetScreenSize (
                     #endif
 
                     PrintUglyText (MsgStr, NEXTLINE);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                 }
             } while (++ModeNum < GOPDraw->Mode->MaxMode);
 
@@ -1625,7 +1625,7 @@ BOOLEAN egSetScreenSize (
 
             #endif
 
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
     } // if/else if (UGADraw != NULL)
 
@@ -1671,7 +1671,7 @@ BOOLEAN egSetTextMode (
             MsgLog ("%s\n", MsgStr);
             #endif
 
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             MsgStr = StrDuplicate (L"Seek Available Modes:");
             PrintUglyText (MsgStr, NEXTLINE);
@@ -1684,7 +1684,7 @@ BOOLEAN egSetTextMode (
             MsgLog ("%s\n", MsgStr);
             #endif
 
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             do {
                 Status = REFIT_CALL_4_WRAPPER(
@@ -1704,7 +1704,7 @@ BOOLEAN egSetTextMode (
                     MsgLog ("%s\n", MsgStr);
                     #endif
 
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                 }
             } while (++i < gST->ConOut->Mode->MaxMode);
 
@@ -1718,7 +1718,7 @@ BOOLEAN egSetTextMode (
 
             PauseForKey();
             SwitchToGraphicsAndClear (TRUE);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         } // if/else successful change
     } // if need to change mode
 
@@ -1762,7 +1762,7 @@ CHAR16 * egScreenDescription (VOID) {
         );
     }
 
-    MyFreePool (&TextInfo);
+    MY_FREE_POOL(TextInfo);
 
     return GraphicsInfo;
 } // CHAR16 * egScreenDescription()
@@ -2136,7 +2136,7 @@ VOID egScreenShot (VOID) {
 
         PauseForKey();
         SwitchToGraphics();
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
 
        goto bailout_wait;
     }
@@ -2176,8 +2176,8 @@ VOID egScreenShot (VOID) {
 
         PauseSeconds (3);
         SwitchToGraphics();
-        MyFreePool (&MsgStr);
-        MyFreePool (&FileData);
+        MY_FREE_POOL(MsgStr);
+        MY_FREE_POOL(FileData);
 
         return;
     }
@@ -2202,8 +2202,8 @@ VOID egScreenShot (VOID) {
 
             PauseSeconds (3);
             SwitchToGraphics();
-            MyFreePool (&MsgStr);
-            MyFreePool (&FileData);
+            MY_FREE_POOL(MsgStr);
+            MY_FREE_POOL(FileData);
 
             return;
         }
@@ -2231,8 +2231,8 @@ VOID egScreenShot (VOID) {
 
                 PauseSeconds (3);
                 SwitchToGraphics();
-                MyFreePool (&MsgStr);
-                MyFreePool (&FileData);
+                MY_FREE_POOL(MsgStr);
+                MY_FREE_POOL(FileData);
 
                 return;
             }
@@ -2242,14 +2242,14 @@ VOID egScreenShot (VOID) {
     // Search for existing screen shot files; increment number to an unused value...
     i = 0;
     do {
-        MyFreePool (&FileName);
+        MY_FREE_POOL(FileName);
         FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
     } while (FileExists (BaseDir, FileName));
 
     // save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
 
-    MyFreePool (&FileData);
+    MY_FREE_POOL(FileData);
 
     if (CheckError (Status, L"in egSaveFile")) {
         goto bailout_wait;

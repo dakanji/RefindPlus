@@ -373,7 +373,7 @@ VOID FilterCSR (VOID) {
         LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("    * %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
 } // static VOID FilterCSR()
@@ -544,9 +544,9 @@ VOID SetBootArgs (VOID) {
                     AsciiStrSize (DataNVRAM),
                     TRUE
                 );
-                MyFreePool (&DataNVRAM);
+                MY_FREE_POOL(DataNVRAM);
             }
-            MyFreePool (&BootArg);
+            MY_FREE_POOL(BootArg);
         }
     }
 
@@ -559,7 +559,7 @@ VOID SetBootArgs (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("    * %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
 
     MsgStr = PoolPrint (
@@ -569,7 +569,7 @@ VOID SetBootArgs (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
     MsgLog ("    * %s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
         MsgStr = PoolPrint (
@@ -579,7 +579,7 @@ VOID SetBootArgs (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("    * %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
     #endif
 } // static VOID SetBootArgs()
@@ -626,7 +626,7 @@ VOID DisableAMFI (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
     MsgLog ("    * %s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     if (GlobalConfig.DisableCompatCheck) {
         MsgStr = PoolPrint (
@@ -636,7 +636,7 @@ VOID DisableAMFI (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("    * %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
     #endif
 } // VOID DisableAMFI()
@@ -668,7 +668,7 @@ VOID DisableCompatCheck (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
     MsgLog ("    * %s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 } // VOID DisableCompatCheck()
 
@@ -699,7 +699,7 @@ VOID ForceTRIM (VOID) {
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n");
     MsgLog ("    * %s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 } // VOID ForceTRIM()
 
@@ -772,7 +772,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
             } // If GOPDraw != NULL
         } // if GuidsAreEqual
 
-        MyFreePool (&HandleBuffer);
+        MY_FREE_POOL(HandleBuffer);
     } // if Status == EFI_UNSUPPORTED
 
     return Status;
@@ -838,7 +838,7 @@ VOID preBootKicker (VOID) {
         BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
         AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
-        MyFreePool (&MenuInfo);
+        MY_FREE_POOL(MenuInfo);
         AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
         AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
         AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
@@ -850,7 +850,7 @@ VOID preBootKicker (VOID) {
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
             AddMenuInfoLine (&BootKickerMenu, FilePath);
-            MyFreePool (&FilePath);
+            MY_FREE_POOL(FilePath);
         }
 
         AddMenuInfoLine (&BootKickerMenu, L"");
@@ -867,7 +867,7 @@ VOID preBootKicker (VOID) {
         AddMenuEntry (&BootKickerMenu, &MenuEntryBootKicker);
         AddMenuEntry (&BootKickerMenu, &MenuEntryReturn);
 
-        MyFreePool (&TempMenuEntry);
+        MY_FREE_POOL(TempMenuEntry);
     }
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
@@ -924,7 +924,7 @@ VOID preBootKicker (VOID) {
                 break;
             }
             else {
-                MyFreePool (&FilePath);
+                MY_FREE_POOL(FilePath);
             }
         } // while
 
@@ -955,7 +955,7 @@ VOID preBootKicker (VOID) {
             #endif
         }
 
-        MyFreePool (&FilePath);
+        MY_FREE_POOL(FilePath);
     }
     else {
         #if REFIT_DEBUG > 0
@@ -991,7 +991,7 @@ VOID preCleanNvram (VOID) {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         CleanNvramMenu.Title = L"Clean NVRAM";
         AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
-        MyFreePool (&MenuInfo);
+        MY_FREE_POOL(MenuInfo);
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
@@ -1001,7 +1001,7 @@ VOID preCleanNvram (VOID) {
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
             AddMenuInfoLine (&CleanNvramMenu, FilePath);
-            MyFreePool (&FilePath);
+            MY_FREE_POOL(FilePath);
         }
 
         AddMenuInfoLine (&CleanNvramMenu, L"");
@@ -1018,7 +1018,7 @@ VOID preCleanNvram (VOID) {
         AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
         AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
 
-        MyFreePool (&TempMenuEntry);
+        MY_FREE_POOL(TempMenuEntry);
     }
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
@@ -1077,7 +1077,7 @@ VOID preCleanNvram (VOID) {
                 break;
             }
             else {
-                MyFreePool (&FilePath);
+                MY_FREE_POOL(FilePath);
             }
         } // while
 
@@ -1110,7 +1110,7 @@ VOID preCleanNvram (VOID) {
             #endif
         }
 
-        MyFreePool (&FilePath);
+        MY_FREE_POOL(FilePath);
     }
     else {
         #if REFIT_DEBUG > 0
@@ -1192,7 +1192,7 @@ VOID AboutRefindPlus (VOID) {
 
         CHAR16 *MsgStr = egScreenDescription();
         AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", MsgStr));
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
 
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
@@ -1202,7 +1202,7 @@ VOID AboutRefindPlus (VOID) {
         AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
 
         AddMenuEntry (&AboutMenu, &MenuEntryReturn);
-        MyFreePool (&FirmwareVendor);
+        MY_FREE_POOL(FirmwareVendor);
     }
 
     RunMenu (&AboutMenu, NULL);
@@ -1393,7 +1393,7 @@ VOID SetConfigFilename (
                 #endif
                 PrintUglyText (MsgStr, NEXTLINE);
 
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
 
                 MsgStr = StrDuplicate (L"Try Default:- 'config.conf / refind.conf'");
                 PrintUglyText (MsgStr, NEXTLINE);
@@ -1405,10 +1405,10 @@ VOID SetConfigFilename (
                 PrintUglyText (MsgStr, NEXTLINE);
 
                 PauseSeconds (9);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
             } // if/else FileExists (SelfDir, FileName
 
-            MyFreePool (&FileName);
+            MY_FREE_POOL(FileName);
         } // if SubString
     } // if (Status == EFI_SUCCESS) && Info->LoadOptionsSize
 } // static VOID SetConfigFilename()
@@ -1449,7 +1449,7 @@ VOID AdjustDefaultSelection (VOID) {
                     NULL
                 );
 
-                MyFreePool (&Element);
+                MY_FREE_POOL(Element);
                 if (Status == EFI_SUCCESS) {
                     Element = PreviousBoot;
                 }
@@ -1460,10 +1460,10 @@ VOID AdjustDefaultSelection (VOID) {
             MergeStrings (&NewCommaDelimited, Element, L',');
         }
 
-        MyFreePool (&Element);
+        MY_FREE_POOL(Element);
     } // while
 
-    MyFreePool (&GlobalConfig.DefaultSelection);
+    MY_FREE_POOL(GlobalConfig.DefaultSelection);
     GlobalConfig.DefaultSelection = NewCommaDelimited;
 } // AdjustDefaultSelection()
 
@@ -1612,7 +1612,7 @@ VOID LogBasicInfo (VOID) {
     Status = LibLocateProtocol (&ConsoleControlProtocolGuid, (VOID **) &MsgStr);
     MsgLog ("  - Text Mode             : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -1622,7 +1622,7 @@ VOID LogBasicInfo (VOID) {
     );
     MsgLog ("  - Graphics Mode (UGA)   : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
     MsgLog ("\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -1632,7 +1632,7 @@ VOID LogBasicInfo (VOID) {
     );
     MsgLog ("  - Graphics Mode (GOP)   : %s", EFI_ERROR(Status) ? L" NO" : L"YES");
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     /* Secure Boot */
     MsgLog ("Shim:- '%s'", ShimLoaded()         ? L"Present" : L"Absent");
@@ -1660,7 +1660,7 @@ VOID LogBasicInfo (VOID) {
     AppleFramebuffers = HandleCount;
     MsgLog ("Apple Framebuffers:- '%d'", AppleFramebuffers);
     MsgLog ("\n");
-    MyFreePool (&HandleBuffer);
+    MY_FREE_POOL(HandleBuffer);
 
     /* CSM Type */
     switch (GlobalConfig.LegacyType) {
@@ -1671,7 +1671,7 @@ VOID LogBasicInfo (VOID) {
     }
     MsgLog ("Compat Support Module:- '%s'", MsgStr);
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 #endif
 } // VOID LogBasicInfo()
 
@@ -1771,7 +1771,7 @@ EFI_STATUS EFIAPI efi_main (
         NowMinute, NowSecond
     );
     MsgLog ("Timestamp:- '%s (GMT)'", CurDateStr);
-    MyFreePool (CurDateStr);
+    MY_FREE_POOL(CurDateStr);
     #endif
 
     /* Set Legacy Boot Type */
@@ -1903,7 +1903,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("      %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
 
@@ -1925,7 +1925,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     MsgLog ("%s...", MsgStr);
     MsgLog ("\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     InitScreen();
@@ -1952,7 +1952,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = StrDuplicate (L"Secure Boot Failure");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
         MsgLog ("INFO: User Warning:- '%s ... Forcing Shutdown'\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         SwitchToText (FALSE);
@@ -1985,7 +1985,7 @@ EFI_STATUS EFIAPI efi_main (
             CHAR16 *PartMsg = PoolPrint (L"%s ... Please Wait", MsgStr);
             egDisplayMessage (PartMsg, &BGColor, CENTER);
 
-            MyFreePool (&PartMsg);
+            MY_FREE_POOL(PartMsg);
         }
 
         #if REFIT_DEBUG > 0
@@ -1994,7 +1994,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgLog ("%s:\n", MsgStr);
         #endif
 
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
 
         for (i = 0; i < GlobalConfig.ScanDelay; ++i) {
             #if REFIT_DEBUG > 0
@@ -2012,7 +2012,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = PoolPrint (L"Resuming After a %d Second Pause", i);
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("  - %s\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         if (GlobalConfig.ScanDelay > Trigger) {
@@ -2035,7 +2035,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = StrDuplicate (L"Inconsistent EFI Versions");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
         MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         SwitchToText (FALSE);
@@ -2056,7 +2056,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG(3, LOG_BLANK_LINE_SEP, L"X");
         MsgLog ("INFO: %s ... ", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
         if (AllowGraphicsMode) {
             #if REFIT_DEBUG > 0
@@ -2083,7 +2083,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = StrDuplicate (L"Inconsistent UEFI 2.x Implementation");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
         MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         SwitchToText (FALSE);
@@ -2104,7 +2104,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG(3, LOG_BLANK_LINE_SEP, L"X");
         MsgLog ("      %s ...", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         if (AllowGraphicsMode) {
@@ -2139,7 +2139,7 @@ EFI_STATUS EFIAPI efi_main (
         MsgStr = StrDuplicate (L"Missing Config File");
         LOG(1, LOG_LINE_SEPARATOR, L"Display %s Warning", MsgStr);
         MsgLog ("INFO: User Warning:- '%s'\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         SwitchToText (FALSE);
@@ -2166,7 +2166,7 @@ EFI_STATUS EFIAPI efi_main (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         LOG(3, LOG_BLANK_LINE_SEP, L"X");
         MsgLog ("      %s ...", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         if (AllowGraphicsMode) {
@@ -2222,7 +2222,7 @@ EFI_STATUS EFIAPI efi_main (
             MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             FlushFailedTag = FALSE;
@@ -2329,7 +2329,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgLog ("INFO: %s\n\n", MsgStr);
                     #endif
 
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
 
                     PauseForKey();
 
@@ -2490,7 +2490,7 @@ EFI_STATUS EFIAPI efi_main (
                         MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
@@ -2516,7 +2516,7 @@ EFI_STATUS EFIAPI efi_main (
                         MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
 
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
@@ -2567,8 +2567,8 @@ EFI_STATUS EFIAPI efi_main (
                                 : ourLoaderEntry->Volume->VolName
                         );
                     }
-                    MyFreePool (&MsgStr);
-                    MyFreePool (&DisplayName);
+                    MY_FREE_POOL(MsgStr);
+                    MY_FREE_POOL(DisplayName);
                     #endif
 
                     // Enable TRIM on non-Apple SSDs if configured to
@@ -2623,7 +2623,7 @@ EFI_STATUS EFIAPI efi_main (
                         MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
                     }
 
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
                 else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux")) {
@@ -2640,7 +2640,7 @@ EFI_STATUS EFIAPI efi_main (
                         MsgLog (":- '%s'", ourLoaderEntry->LoaderPath);
                     }
 
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
                 else {
@@ -2655,7 +2655,7 @@ EFI_STATUS EFIAPI efi_main (
                         ourLoaderEntry->LoaderPath
                     );
 
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
 
@@ -2682,7 +2682,7 @@ EFI_STATUS EFIAPI efi_main (
                     );
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s", MsgStr);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
                 else {
@@ -2690,7 +2690,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = StrDuplicate (L"Boot 'Mac-Style' Legacy (BIOS) OS");
                     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     MsgLog ("  - %s:- '%s'", MsgStr, ourLegacyEntry->Volume->OSName);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
 
@@ -2718,7 +2718,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr,
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
 
                 if (egIsGraphicsModeEnabled()) {
                     MsgLog ("\n-----------------\n\n");
@@ -2740,7 +2740,7 @@ EFI_STATUS EFIAPI efi_main (
                 MsgLog ("User Input Received:\n");
                 MsgLog ("  - %s:- '%s'", MsgStr, ourLoaderEntry->LoaderPath);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
 
                 if (MyStrStrIns (ourLoaderEntry->Title, L"Boot Screen")) {
@@ -2859,7 +2859,7 @@ EFI_STATUS EFIAPI efi_main (
                 break;
         } // switch
     } // while
-    MyFreePool (&SelectionName);
+    MY_FREE_POOL(SelectionName);
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
@@ -2910,7 +2910,7 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n-----------------\n\n");
     #endif
 
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     PauseForKey();
     EndlessIdleLoop();

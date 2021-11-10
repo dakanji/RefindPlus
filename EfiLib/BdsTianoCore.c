@@ -24,9 +24,8 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "gnuefi-helper.h"
 #endif
 
+#include "../BootMaster/my_free_pool.h"
 #include "../include/refit_call_wrapper.h"
-
-extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, \
     { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }};
@@ -80,7 +79,7 @@ EFI_STATUS BdsLibConnectDevicePath (
         Instance  = GetNextDevicePathInstance (&DevicePath, &Size);
 
         if (Instance == NULL) {
-            MyFreePool (&CopyOfDevicePath);
+            MY_FREE_POOL(CopyOfDevicePath);
 
             return EFI_OUT_OF_RESOURCES;
         }
@@ -144,7 +143,7 @@ EFI_STATUS BdsLibConnectDevicePath (
     } while (DevicePath != NULL);
 
     if (CopyOfDevicePath != NULL) {
-        MyFreePool (&CopyOfDevicePath);
+        MY_FREE_POOL(CopyOfDevicePath);
     }
 
     // All handles with DevicePath exists in the handle database
@@ -262,13 +261,13 @@ BDS_COMMON_OPTION * BdsLibVariableToOption (
     // Insert active entry to BdsDeviceList
     if ((Option->Attribute & LOAD_OPTION_ACTIVE) == LOAD_OPTION_ACTIVE) {
         InsertTailList (BdsCommonOptionList, &Option->Link);
-        MyFreePool (&Variable);
+        MY_FREE_POOL(Variable);
 
         return Option;
     }
 
-    MyFreePool (&Variable);
-    MyFreePool (&Option);
+    MY_FREE_POOL(Variable);
+    MY_FREE_POOL(Option);
 
     return NULL;
 } // BDS_COMMON_OPTION * BdsLibVariableToOption()

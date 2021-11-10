@@ -29,9 +29,8 @@
 #include "global.h"
 #include "screenmgt.h"
 #include "icns.h"
+#include "my_free_pool.h"
 #include "../include/refit_call_wrapper.h"
-
-extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 UINTN                           NumAPointerDevices = 0;
 UINTN                           NumSPointerDevices = 0;
@@ -189,11 +188,11 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        MyFreePool (&APointerHandles);
+        MY_FREE_POOL(APointerHandles);
         APointerHandles = NULL;
     }
     if (APointerProtocol) {
-        MyFreePool (&APointerProtocol);
+        MY_FREE_POOL(APointerProtocol);
         APointerProtocol = NULL;
     }
     if (SPointerHandles) {
@@ -207,11 +206,11 @@ VOID pdCleanup() {
                 NULL
             );
         }
-        MyFreePool (&SPointerHandles);
+        MY_FREE_POOL(SPointerHandles);
         SPointerHandles = NULL;
     }
     if (SPointerProtocol) {
-        MyFreePool (&SPointerProtocol);
+        MY_FREE_POOL(SPointerProtocol);
         SPointerProtocol = NULL;
     }
     if (MouseImage) {

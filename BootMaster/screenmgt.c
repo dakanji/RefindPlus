@@ -85,7 +85,7 @@ static
 VOID PrepareBlankLine (VOID) {
     UINTN i;
 
-    MyFreePool (&BlankLine);
+    MY_FREE_POOL(BlankLine);
     // make a buffer for a whole text line
     BlankLine = AllocatePool ((ConWidth + 1) * sizeof (CHAR16));
     for (i = 0; i < ConWidth; i++) {
@@ -234,7 +234,7 @@ VOID SetupScreen (VOID) {
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             // Requested text mode forces us to use a bigger graphics mode
@@ -266,7 +266,7 @@ VOID SetupScreen (VOID) {
         MsgStr = StrDuplicate (L"Screen is in Text Mode");
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         (GlobalConfig.LogLevel == 0)
             ? MsgLog ("\n\n")
             : MsgLog ("\n");
@@ -282,13 +282,13 @@ VOID SetupScreen (VOID) {
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s:", MsgStr);
             MsgLog ("\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx' (Vertical)", ScreenH);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             // scale icons up for HiDPI graphics if required
@@ -298,7 +298,7 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
             else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
@@ -330,7 +330,7 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
             else {
@@ -339,7 +339,7 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("    * %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             } // if GlobalConfig.ScaleUI
 
@@ -349,7 +349,7 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
 
                 // clear screen and show banner
@@ -362,7 +362,7 @@ VOID SetupScreen (VOID) {
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
 
@@ -392,7 +392,7 @@ VOID SetupScreen (VOID) {
             BannerLoaded = TRUE;
 
             #if REFIT_DEBUG > 0
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             (NativeLogger && GlobalConfig.LogLevel > 0)
                 ? MsgLog ("\n")
                 : MsgLog ("\n\n");
@@ -405,7 +405,7 @@ VOID SetupScreen (VOID) {
         LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("WARN: %s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         AllowGraphicsMode     = FALSE;
@@ -643,7 +643,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
     MsgLog ("INFO: %s\n\n", MsgStr);
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     // Flag device error and proceed if present
@@ -884,7 +884,7 @@ BOOLEAN CheckFatalError (
     LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
-    MyFreePool (&Temp);
+    MY_FREE_POOL(Temp);
 
     return TRUE;
 } // BOOLEAN CheckFatalError()
@@ -934,7 +934,7 @@ BOOLEAN CheckError (
     LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
-    MyFreePool (&Temp);
+    MY_FREE_POOL(Temp);
 
     return haveError;
 } // BOOLEAN CheckError()
@@ -976,7 +976,7 @@ VOID egFreeImageQEMU (
         egFreeImage (Image);
     }
     else {
-        MyFreePool (&Image);
+        MY_FREE_POOL(Image);
     }
 } // static VOID egFreeImageQEMU()
 
@@ -1025,7 +1025,7 @@ VOID BltClearScreen (
                     LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
                 }
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
                 Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner, FALSE);
             }
@@ -1037,7 +1037,7 @@ VOID BltClearScreen (
                     LOG(3, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
                 }
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
         }

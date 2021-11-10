@@ -455,7 +455,7 @@ INTN FindMenuShortcutEntry (
                     if (Screen->Entries[i]->ShortcutDigit  == Shortcut[0] ||
                         Screen->Entries[i]->ShortcutLetter == Shortcut[0]
                     ) {
-                        MyFreePool (&Shortcut);
+                        MY_FREE_POOL(Shortcut);
 
                         return i;
                     }
@@ -465,14 +465,14 @@ INTN FindMenuShortcutEntry (
         else if (ShortcutLength > 1) {
             for (i = 0; i < Screen->EntryCount; i++) {
                 if (StriSubCmp (Shortcut, Screen->Entries[i]->Title)) {
-                    MyFreePool (&Shortcut);
+                    MY_FREE_POOL(Shortcut);
 
                     return i;
                 }
             } // for
         }
 
-        MyFreePool (&Shortcut);
+        MY_FREE_POOL(Shortcut);
         j++;
     } // while
 
@@ -524,13 +524,13 @@ VOID SaveScreen (VOID) {
     MsgStr = StrDuplicate (L"Keypress Wait Threshold Exceeded");
     LOG(3, LOG_LINE_NORMAL,  L"%s", MsgStr);
     MsgLog ("INFO: %s ...", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     MsgStr = StrDuplicate (L"Start Screensaver");
     LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     EG_PIXEL OUR_COLOUR;
@@ -636,13 +636,13 @@ VOID SaveScreen (VOID) {
     MsgStr = StrDuplicate (L"Detected Keypress");
     LOG(3, LOG_LINE_NORMAL,  L"%s", MsgStr);
     MsgLog ("      %s ... ", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     MsgStr = StrDuplicate (L"Ending Screensaver");
     LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n\n");
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     if (AllowGraphicsMode) {
@@ -818,7 +818,7 @@ UINTN RunGenericMenu (
                    StyleFunc (Screen, &State, MENU_FUNCTION_PAINT_TIMEOUT, TimeoutMessage);
                }
 
-               MyFreePool (&TimeoutMessage);
+               MY_FREE_POOL(TimeoutMessage);
 
                PreviousTime = CurrentTime;
             }
@@ -1037,7 +1037,7 @@ UINTN RunGenericMenu (
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         FlushFailedTag = FALSE;
@@ -1064,7 +1064,7 @@ UINTN RunGenericMenu (
             LOG(2, LOG_STAR_SEPARATOR, L"%s", MsgStr);
             MsgLog ("      %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             FlushFailedTag = FALSE;
@@ -1182,9 +1182,9 @@ VOID TextMenuStyle (
         case MENU_FUNCTION_CLEANUP:
             // release temporary memory
             for (i = 0; i <= State->MaxIndex; i++) {
-                MyFreePool (&DisplayStrings[i]);
+                MY_FREE_POOL(DisplayStrings[i]);
             }
-            MyFreePool (&DisplayStrings);
+            MY_FREE_POOL(DisplayStrings);
 
             break;
 
@@ -2060,7 +2060,7 @@ VOID MainMenuStyle (
             break;
 
         case MENU_FUNCTION_CLEANUP:
-            MyFreePool (&itemPosX);
+            MY_FREE_POOL(itemPosX);
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
@@ -2173,7 +2173,7 @@ UINTN FindMainMenuItem (
         }
     }
 
-    MyFreePool (&itemPosX);
+    MY_FREE_POOL(itemPosX);
 
     return ItemIndex;
 } // VOID FindMainMenuItem()
@@ -2268,7 +2268,7 @@ BOOLEAN EditOptions (
     }
 
     if (line_edit (MenuEntry->LoadOptions, &EditedOptions, x_max)) {
-        MyFreePool (&MenuEntry->LoadOptions);
+        MY_FREE_POOL(MenuEntry->LoadOptions);
         MenuEntry->LoadOptions = EditedOptions;
 
         retval = TRUE;
@@ -2380,9 +2380,9 @@ BOOLEAN RemoveInvalidFilenames (
             i++;
         }
 
-        MyFreePool (&OneElement);
-        MyFreePool (&Filename);
-        MyFreePool (&VolName);
+        MY_FREE_POOL(OneElement);
+        MY_FREE_POOL(Filename);
+        MY_FREE_POOL(VolName);
 
         VolName = NULL;
 
@@ -2489,7 +2489,7 @@ VOID ManageHiddenTags (VOID) {
             MenuEntryItem->Tag   = TAG_RETURN;
             MenuEntryItem->Row   = 1;
             AddMenuEntry (&HideItemMenu, MenuEntryItem);
-            MyFreePool (&OneElement);
+            MY_FREE_POOL(OneElement);
         } // while
 
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
@@ -2531,7 +2531,7 @@ VOID ManageHiddenTags (VOID) {
 
         if (SaveTools) {
             SaveHiddenList (HiddenTools, L"HiddenTools");
-            MyFreePool (&gHiddenTools);
+            MY_FREE_POOL(gHiddenTools);
             gHiddenTools = NULL;
         }
 
@@ -2544,11 +2544,11 @@ VOID ManageHiddenTags (VOID) {
         }
     } // if !AllTags
 
-    MyFreePool (&AllTags);
-    MyFreePool (&HiddenTags);
-    MyFreePool (&HiddenTools);
-    MyFreePool (&HiddenLegacy);
-    MyFreePool (&HiddenFirmware);
+    MY_FREE_POOL(AllTags);
+    MY_FREE_POOL(HiddenTags);
+    MY_FREE_POOL(HiddenTools);
+    MY_FREE_POOL(HiddenLegacy);
+    MY_FREE_POOL(HiddenFirmware);
 } // VOID ManageHiddenTags()
 
 CHAR16 * ReadHiddenTags (
@@ -2564,7 +2564,7 @@ CHAR16 * ReadHiddenTags (
     if ((Status != EFI_SUCCESS) && (Status != EFI_NOT_FOUND)) {
         CHAR16 *CheckErrMsg = PoolPrint (L"in ReadHiddenTags:- '%s'", VarName);
         CheckError (Status, CheckErrMsg);
-        MyFreePool (&CheckErrMsg);
+        MY_FREE_POOL(CheckErrMsg);
     }
     #endif
 
@@ -2575,7 +2575,7 @@ CHAR16 * ReadHiddenTags (
         );
         #endif
 
-        MyFreePool (&Buffer);
+        MY_FREE_POOL(Buffer);
         Buffer = NULL;
     }
 
@@ -2607,7 +2607,7 @@ VOID AddToHiddenTags (CHAR16 *VarName, CHAR16 *Pathname) {
         );
 
         CheckError (Status, L"in 'AddToHiddenTags'!!");
-        MyFreePool (&HiddenTags);
+        MY_FREE_POOL(HiddenTags);
     }
 } // VOID AddToHiddenTags()
 
@@ -2664,7 +2664,7 @@ BOOLEAN HideEfiTag (
     if (MyStriCmp (ChosenOption->Title, L"Yes") && (MenuExit == MENU_EXIT_ENTER)) {
         GuidStr = GuidAsString (&Loader->Volume->PartGuid);
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
-            MyFreePool (&FullPath);
+            MY_FREE_POOL(FullPath);
             FullPath = NULL;
             MergeStrings (&FullPath, GuidStr, L'\0');
             MergeStrings (&FullPath, L":", L'\0');
@@ -2676,10 +2676,10 @@ BOOLEAN HideEfiTag (
         }
         AddToHiddenTags (VarName, FullPath);
         TagHidden = TRUE;
-        MyFreePool (&GuidStr);
+        MY_FREE_POOL(GuidStr);
     }
 
-    MyFreePool (&FullPath);
+    MY_FREE_POOL(FullPath);
 
     return TagHidden;
 } // BOOLEAN HideEfiTag()
@@ -2770,7 +2770,7 @@ BOOLEAN HideLegacyTag (
         AddToHiddenTags (L"HiddenLegacy", Name);
         TagHidden = TRUE;
     }
-    MyFreePool (&Name);
+    MY_FREE_POOL(Name);
 
     return TagHidden;
 } // BOOLEAN HideLegacyTag()
@@ -2858,7 +2858,7 @@ VOID HideTag (
         case TAG_TOOL:
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
-            MyFreePool (&gHiddenTools);
+            MY_FREE_POOL(gHiddenTools);
             gHiddenTools = NULL;
 
             #if REFIT_DEBUG > 0
@@ -2925,7 +2925,7 @@ UINTN RunMainMenu (
         );
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
     #endif
 
@@ -2941,7 +2941,7 @@ UINTN RunMainMenu (
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("      %s", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         #endif
     }
@@ -2960,7 +2960,7 @@ UINTN RunMainMenu (
             LOG(3, LOG_BLANK_LINE_SEP, L"X");
             MsgLog ("\n");
             MsgLog ("      %s", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         MsgLog ("\n\n");
     }
@@ -2997,7 +2997,7 @@ UINTN RunMainMenu (
 
         Screen->TimeoutSeconds = 0;
 
-        MyFreePool (&MenuTitle);
+        MY_FREE_POOL(MenuTitle);
         MenuTitle = StrDuplicate (TempChosenEntry->Title);
         if (MenuExit == MENU_EXIT_DETAILS) {
             if (!TempChosenEntry->SubScreen) {
@@ -3045,7 +3045,7 @@ UINTN RunMainMenu (
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         LOG(3, LOG_THREE_STAR_END, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         FlushFailedTag = FALSE;
@@ -3058,7 +3058,7 @@ UINTN RunMainMenu (
     }
 
     if (DefaultSelection) {
-       ReleasePtr (*DefaultSelection);
+       MY_FREE_POOL(*DefaultSelection);
        *DefaultSelection = MenuTitle;
     }
 
@@ -3069,14 +3069,14 @@ VOID FreeLoaderEntry (
     IN LOADER_ENTRY *Entry
 ) {
     egFreeImage (Entry->me.Image);
-    MyFreePool (&Entry->EfiLoaderPath);
-    MyFreePool (&Entry->LoadOptions);
-    MyFreePool (&Entry->InitrdPath);
-    MyFreePool (&Entry->LoaderPath);
-    MyFreePool (&Entry->me.Title);
-    MyFreePool (&Entry->Title);
+    MY_FREE_POOL(Entry->EfiLoaderPath);
+    MY_FREE_POOL(Entry->LoadOptions);
+    MY_FREE_POOL(Entry->InitrdPath);
+    MY_FREE_POOL(Entry->LoaderPath);
+    MY_FREE_POOL(Entry->me.Title);
+    MY_FREE_POOL(Entry->Title);
 
-    MyFreePool (&Entry);
+    MY_FREE_POOL(Entry);
 } // VOID FreeLoaderEntry()
 
 BDS_COMMON_OPTION * CopyBdsOption (
@@ -3131,12 +3131,12 @@ VOID FreeBdsOption (
     BDS_COMMON_OPTION **BdsOption
 ) {
     if (BdsOption && *BdsOption) {
-        ReleasePtr ((*BdsOption)->DevicePath);
-        ReleasePtr ((*BdsOption)->OptionName);
-        ReleasePtr ((*BdsOption)->Description);
-        ReleasePtr ((*BdsOption)->LoadOptions);
-        ReleasePtr ((*BdsOption)->StatusString);
+        MY_FREE_POOL((*BdsOption)->DevicePath);
+        MY_FREE_POOL((*BdsOption)->OptionName);
+        MY_FREE_POOL((*BdsOption)->Description);
+        MY_FREE_POOL((*BdsOption)->LoadOptions);
+        MY_FREE_POOL((*BdsOption)->StatusString);
 
-        ReleasePtr (*BdsOption);
+        MY_FREE_POOL(*BdsOption);
     }
 } // VOID FreeBdsOption()

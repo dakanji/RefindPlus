@@ -65,7 +65,7 @@ EFI_STATUS GetCsrStatus (
             gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
         }
 
-        MyFreePool (&ReturnValue);
+        MY_FREE_POOL(ReturnValue);
     }
     else if (Status == EFI_NOT_FOUND) {
         *CsrStatus = SIP_ENABLED_EX;
@@ -172,7 +172,7 @@ VOID RecordgCsrStatus (
         MsgLog ("    * %s\n\n", MsgStr);
         #endif
 
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
 } // VOID RecordgCsrStatus()
 
@@ -388,7 +388,7 @@ EFI_STATUS SetAppleOSInfo (
                     Status = EFI_SUCCESS;
                 }
 
-                MyFreePool (&MacVersionStr);
+                MY_FREE_POOL(MacVersionStr);
             }
 
             if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
@@ -397,7 +397,7 @@ EFI_STATUS SetAppleOSInfo (
                 );
             }
 
-            MyFreePool (&AppleVersionOS);
+            MY_FREE_POOL(AppleVersionOS);
         } // if (AppleVersionOS)
     } // if/else
 
@@ -440,8 +440,8 @@ extern
 VOID * OcReadFile (
     IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem,
     IN  CONST CHAR16                     *FilePath,
-    OUT UINT32                           *FileSize   OPTIONAL,
-    IN  UINT32                           MaxFileSize OPTIONAL
+    OUT UINT32                           *FileSize    OPTIONAL,
+    IN  UINT32                            MaxFileSize OPTIONAL
 );
 extern
 UINTN OcFileDevicePathNameSize (
@@ -478,7 +478,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
         MaxVolumelabelSize
     );
 
-    MyFreePool (DiskLabelPath);
+    MY_FREE_POOL(DiskLabelPath);
 
     if (AsciiDiskLabel != NULL) {
         return NULL;
@@ -489,7 +489,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
     if (UnicodeDiskLabel != NULL) {
         MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
     }
-    MyFreePool (AsciiDiskLabel);
+    MY_FREE_POOL(AsciiDiskLabel);
 
     return UnicodeDiskLabel;
 } // static CHAR16 * RP_GetAppleDiskLabelEx()
@@ -536,7 +536,7 @@ VOID * RP_GetFileInfo (
             );
 
             if (EFI_ERROR(Status)) {
-                MyFreePool (FileInfoBuffer);
+                MY_FREE_POOL(FileInfoBuffer);
             }
             else if (RealFileInfoSize != NULL) {
                 *RealFileInfoSize = FileInfoSize;
@@ -582,11 +582,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
         );
 
         if (*ContainerInfo == NULL) {
-            // DA-TAG: Checking NULL status should not be needed before
-            //         'ReleasePtr' but Coverity complains on this one
-            if (VolumeInfo || *VolumeInfo) {
-                ReleasePtr (*VolumeInfo);
-            }
+            MY_FREE_POOL(*VolumeInfo);
 
             return EFI_NOT_FOUND;
         }
@@ -692,8 +688,8 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         &ApfsContainerInfo->Uuid
     );
 
-    MyFreePool (ApfsVolumeInfo);
-    MyFreePool (ApfsContainerInfo);
+    MY_FREE_POOL(ApfsVolumeInfo);
+    MY_FREE_POOL(ApfsContainerInfo);
 
     return EFI_SUCCESS;
 } // EFI_STATUS RP_GetApfsVolumeInfo()
@@ -718,7 +714,7 @@ CHAR16 * RP_GetAppleDiskLabel (
     );
 
     if (EFI_ERROR (Status)) {
-        MyFreePool (BootDirectoryName);
+        MY_FREE_POOL(BootDirectoryName);
         return NULL;
     }
 
@@ -735,7 +731,7 @@ CHAR16 * RP_GetAppleDiskLabel (
             L".disk_label.contentDetails"
         );
     }
-    MyFreePool (BootDirectoryName);
+    MY_FREE_POOL(BootDirectoryName);
 
     return AppleDiskLabel;
 } // CHAR16 * RP_GetAppleDiskLabel()

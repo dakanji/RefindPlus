@@ -52,7 +52,7 @@ VOID DeleteESPList (ESP_LIST *AllESPs) {
     while (AllESPs != NULL) {
         Temp = AllESPs;
         AllESPs = AllESPs->NextESP;
-        MyFreePool (&Temp);
+        MY_FREE_POOL(Temp);
     } // while
 } // VOID DeleteESPList()
 
@@ -129,7 +129,7 @@ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
     if (AllESPs) {
         CurrentESP = AllESPs;
         AddMenuInfoLine (&InstallMenu, StrDuplicate (MenuInfo));
-        MyFreePool (&MenuInfo);
+        MY_FREE_POOL(MenuInfo);
         while (CurrentESP != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
@@ -157,7 +157,7 @@ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
             LOG(3, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
             #endif
 
-            MyFreePool (&GuidStr);
+            MY_FREE_POOL(GuidStr);
             MenuEntryItem->Title = Temp;
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = i++;
@@ -182,7 +182,7 @@ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
                     ChosenVolume = CurrentESP->Volume;
                 }
                 CurrentESP = CurrentESP->NextESP;
-                MyFreePool (&Temp);
+                MY_FREE_POOL(Temp);
             } // while
         }
     }
@@ -193,7 +193,7 @@ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
         LOG(3, LOG_LINE_NORMAL, L"No ESPs found");
         #endif
     }
-    MyFreePool (&TempMenuEntry);
+    MY_FREE_POOL(TempMenuEntry);
 
     return ChosenVolume;
 } // REFIT_VOLUME *PickOneESP()
@@ -245,9 +245,9 @@ EFI_STATUS RenameFile (
                 (VOID *) NewInfo
             );
 
-            MyFreePool (&NewInfo);
-            MyFreePool (&FilePtr);
-            MyFreePool (&Buffer);
+            MY_FREE_POOL(NewInfo);
+            MY_FREE_POOL(FilePtr);
+            MY_FREE_POOL(Buffer);
         }
         else {
             Status = EFI_BUFFER_TOO_SMALL;
@@ -281,7 +281,7 @@ EFI_STATUS BackupOldFile (
     if (!FileExists (BaseDir, NewName)) {
         Status = RenameFile (BaseDir, FileName, NewName);
     }
-    MyFreePool (&NewName);
+    MY_FREE_POOL(NewName);
 
     return (Status);
 } // EFI_STATUS BackupOldFile()
@@ -308,8 +308,8 @@ EFI_STATUS CreateDirectories (IN EFI_FILE *BaseDir) {
 
         Status = REFIT_CALL_1_WRAPPER(TheDir->Close, TheDir);
 
-        MyFreePool (&FileName);
-        MyFreePool (&TheDir);
+        MY_FREE_POOL(FileName);
+        MY_FREE_POOL(TheDir);
     } // while
 
     return (Status);
@@ -341,7 +341,7 @@ EFI_STATUS CopyOneFile (
             return EFI_NO_RESPONSE;
         }
         FileSize = FileInfo->FileSize;
-        MyFreePool (&FileInfo);
+        MY_FREE_POOL(FileInfo);
     }
 
     if (Status == EFI_SUCCESS) {
@@ -380,9 +380,9 @@ EFI_STATUS CopyOneFile (
         Status = REFIT_CALL_1_WRAPPER(DestFile->Close, DestFile);
     }
 
-    MyFreePool (&SourceFile);
-    MyFreePool (&DestFile);
-    MyFreePool (&Buffer);
+    MY_FREE_POOL(SourceFile);
+    MY_FREE_POOL(DestFile);
+    MY_FREE_POOL(Buffer);
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
@@ -418,9 +418,9 @@ EFI_STATUS CopyDirectory (
             DestDirPtr, DestFileName
         );
 
-        MyFreePool (&DestFileName);
-        MyFreePool (&SourceFileName);
-        MyFreePool (&DirEntry);
+        MY_FREE_POOL(DestFileName);
+        MY_FREE_POOL(SourceFileName);
+        MY_FREE_POOL(DirEntry);
     } // while
 
     return (Status);
@@ -545,8 +545,8 @@ EFI_STATUS CopyDrivers (
                 WorstStatus = Status;
             }
 
-            MyFreePool (&SourceFileName);
-            MyFreePool (&DestFileName);
+            MY_FREE_POOL(SourceFileName);
+            MY_FREE_POOL(DestFileName);
         } // if DriverNam
     } // for
 
@@ -575,8 +575,8 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
         TargetDir, RefindPlusName
     );
 
-    MyFreePool (&SourceFile);
-    MyFreePool (&RefindPlusName);
+    MY_FREE_POOL(SourceFile);
+    MY_FREE_POOL(RefindPlusName);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
@@ -601,7 +601,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
             SourceFile = PoolPrint (L"%s\\config.conf", SourceDir);
         }
 
-        MyFreePool (&ConfFile);
+        MY_FREE_POOL(ConfFile);
 
         // Note: CopyOneFile() logs errors if they occur
         if (FileExists (TargetDir, L"\\EFI\\refindplus\\config.conf")) {
@@ -624,7 +624,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
         if (EFI_ERROR(Status)) {
             WorstStatus = Status;
         }
-        MyFreePool (&SourceFile);
+        MY_FREE_POOL(SourceFile);
 
         // Now copy icons.
         SourceFile = PoolPrint (L"%s\\icons", SourceDir);
@@ -642,7 +642,7 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
 
             WorstStatus = Status;
         }
-        MyFreePool (&SourceFile);
+        MY_FREE_POOL(SourceFile);
 
         // Now copy drivers.
         SourceDriversDir = PoolPrint (L"%s\\%s", SourceDir, INST_DRIVERS_SUBDIR);
@@ -659,10 +659,10 @@ EFI_STATUS CopyFiles (IN EFI_FILE *TargetDir) {
             WorstStatus = Status;
         }
 
-        MyFreePool (&SourceDriversDir);
-        MyFreePool (&TargetDriversDir);
+        MY_FREE_POOL(SourceDriversDir);
+        MY_FREE_POOL(TargetDriversDir);
     }
-    MyFreePool (&SourceDir);
+    MY_FREE_POOL(SourceDir);
 
     return (WorstStatus);
 } // EFI_STATUS CopyFiles()
@@ -697,10 +697,10 @@ VOID CreateFallbackCSV (IN EFI_FILE *TargetDir) {
             if (Status == EFI_SUCCESS) {
                 REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
             }
-            MyFreePool (&FilePtr);
+            MY_FREE_POOL(FilePtr);
         }
 
-        MyFreePool (&Contents);
+        MY_FREE_POOL(Contents);
     }
 
     #if REFIT_DEBUG > 0
@@ -810,7 +810,7 @@ UINTN FindBootNum (
         ) {
             *AlreadyExists = TRUE;
         }
-        MyFreePool (&VarName);
+        MY_FREE_POOL(VarName);
     } while ((Status == EFI_SUCCESS) && (*AlreadyExists == FALSE));
 
     if (i > 0x10000) {
@@ -866,7 +866,7 @@ EFI_STATUS ConstructBootEntry (
     else {
         Status = EFI_OUT_OF_RESOURCES;
     }
-    MyFreePool (&DevicePath);
+    MY_FREE_POOL(DevicePath);
 
     return Status;
 } // EFI_STATUS ConstructBootEntry()
@@ -911,10 +911,10 @@ EFI_STATUS SetBootDefault (UINTN BootNum) {
                j * sizeof (UINT16),
                TRUE
             );
-            MyFreePool (&NewBootOrder);
+            MY_FREE_POOL(NewBootOrder);
         }
 
-        MyFreePool (&BootOrder);
+        MY_FREE_POOL(BootOrder);
     }
 
     return Status;
@@ -937,7 +937,7 @@ EFI_STATUS CreateNvramEntry (EFI_HANDLE DeviceHandle) {
         L"RefindPlus Boot Manager",
         (CHAR8**) &Entry, &Size
     );
-    MyFreePool (&ProgName);
+    MY_FREE_POOL(ProgName);
 
     if (Status == EFI_SUCCESS) {
         BootNum = FindBootNum (Entry, Size, &AlreadyExists);
@@ -946,9 +946,9 @@ EFI_STATUS CreateNvramEntry (EFI_HANDLE DeviceHandle) {
     if ((Status == EFI_SUCCESS) && (AlreadyExists == FALSE)) {
         VarName = PoolPrint (L"Boot%04x", BootNum);
         Status = EfivarSetRaw (&GlobalGuid, VarName, Entry, Size, TRUE);
-        MyFreePool (&VarName);
+        MY_FREE_POOL(VarName);
     }
-    MyFreePool (&Entry);
+    MY_FREE_POOL(Entry);
 
     if (Status == EFI_SUCCESS) {
         Status = SetBootDefault (BootNum);
@@ -1060,11 +1060,11 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
             }
         }
 
-        MyFreePool (&VarName);
-        MyFreePool (&Contents);
+        MY_FREE_POOL(VarName);
+        MY_FREE_POOL(Contents);
     } // for
 
-    MyFreePool (&BootOrder);
+    MY_FREE_POOL(BootOrder);
 
     return ListStart;
 } // BOOT_ENTRY_LIST * FindBootOrderEntries()
@@ -1075,10 +1075,10 @@ VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
 
     while (Entries != NULL) {
         Current = Entries;
-        MyFreePool (&Current->BootEntry.Label);
-        MyFreePool (&Current->BootEntry.DevPath);
+        MY_FREE_POOL(Current->BootEntry.Label);
+        MY_FREE_POOL(Current->BootEntry.DevPath);
         Entries = Entries->NextBootEntry;
-        MyFreePool (&Current);
+        MY_FREE_POOL(Current);
     }
 } // VOID DeleteBootOrderEntries()
 
@@ -1118,7 +1118,7 @@ UINTN PickOneBootOption (
 
     if (Entries) {
         AddMenuInfoLine (&Menu, StrDuplicate (MenuInfo));
-        MyFreePool (&MenuInfo);
+        MY_FREE_POOL(MenuInfo);
         while (Entries != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
@@ -1147,14 +1147,14 @@ UINTN PickOneBootOption (
                 );
             }
 
-            MyFreePool (&Filename);
+            MY_FREE_POOL(Filename);
             Filename = NULL;
             Volume   = NULL;
             MenuEntryItem->Title = StrDuplicate (Temp);
             MenuEntryItem->Row = Entries->BootEntry.BootNum; // Not really the row; the Boot#### number
             AddMenuEntry (&Menu, MenuEntryItem);
             Entries = Entries->NextBootEntry;
-            MyFreePool (&Temp);
+            MY_FREE_POOL(Temp);
         } // while
 
         MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
@@ -1174,12 +1174,12 @@ UINTN PickOneBootOption (
             Operation = EFI_BOOT_OPTION_DELETE;
             *BootOrderNum = ChosenOption->Row;
         }
-        MyFreePool (&MenuEntryItem);
+        MY_FREE_POOL(MenuEntryItem);
      }
      else {
         DisplaySimpleMessage (L"Information", L"UEFI Boot Order List is Unavailable!!");
     }
-    MyFreePool (&TempMenuEntry);
+    MY_FREE_POOL(TempMenuEntry);
 
     return Operation;
 } // REFIT_VOLUME *PickOneBootOption()
@@ -1205,11 +1205,11 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
         for (i = 0; i < ListSize; i++) {
             VarName = PoolPrint (L"Boot%04x", BootOrder[i]);
             Status = EfivarGetRaw (&GlobalGuid, VarName, (VOID **) &Contents, &VarSize);
-            MyFreePool (&VarName);
+            MY_FREE_POOL(VarName);
 
             if (Status == EFI_SUCCESS) {
                 NewBootOrder[j++] = BootOrder[i];
-                MyFreePool (&Contents);
+                MY_FREE_POOL(Contents);
             }
         } // for
         Status = EfivarSetRaw (
@@ -1220,8 +1220,8 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
             TRUE
         );
 
-        MyFreePool (&NewBootOrder);
-        MyFreePool (&BootOrder);
+        MY_FREE_POOL(NewBootOrder);
+        MY_FREE_POOL(BootOrder);
     }
 
     return Status;
@@ -1244,14 +1244,14 @@ VOID ManageBootorder (VOID) {
         DeleteInvalidBootEntries();
         Message = PoolPrint (L"Boot%04x has been Deleted.", BootNum);
         DisplaySimpleMessage (L"Information", Message);
-        MyFreePool (&Name);
-        MyFreePool (&Message);
+        MY_FREE_POOL(Name);
+        MY_FREE_POOL(Message);
     }
     if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
         SetBootDefault (BootNum);
         Message = PoolPrint (L"Boot%04x is Now the Default EFI Boot Option.", BootNum);
         DisplaySimpleMessage (L"Information", Message);
-        MyFreePool (&Message);
+        MY_FREE_POOL(Message);
     }
     DeleteBootOrderEntries (Entries);
 } // VOID ManageBootorder()

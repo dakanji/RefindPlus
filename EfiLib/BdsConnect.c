@@ -197,19 +197,19 @@ EFI_STATUS ScanDeviceHandles (
                         }
                     } // for OpenInfoIndex = 0
 
-                    MyFreePool (&OpenInfo);
+                    MY_FREE_POOL(OpenInfo);
                 }
             } // for for ProtocolIndex = 0
 
-            MyFreePool (&ProtocolGuidArray);
+            MY_FREE_POOL(ProtocolGuidArray);
         } // if !EFI_ERROR Status
     } // for k = 0
 
     return EFI_SUCCESS;
 
     Error:
-    ReleasePtr (*HandleType);
-    ReleasePtr (*HandleBuffer);
+    MY_FREE_POOL(*HandleType);
+    MY_FREE_POOL(*HandleBuffer);
 
     *HandleCount  = 0;
     *HandleBuffer = NULL;
@@ -261,13 +261,13 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("%s...\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
     else {
         MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
         LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
         MsgLog ("%s...\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
     }
     #endif
 
@@ -289,7 +289,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
         MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("%s\n\n", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
     else {
@@ -317,7 +317,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
                 LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("%s", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
             else if (HandleType == NULL) {
@@ -325,7 +325,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
                 LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("%s", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
             else {
@@ -348,7 +348,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                     MsgStr = PoolPrint (L"Handle 0x%03X ... Discounted [Other Item]", HexIndex);
                     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                     MsgLog ("%s", MsgStr);
-                    MyFreePool (&MsgStr);
+                    MY_FREE_POOL(MsgStr);
                     #endif
                 }
                 else {
@@ -469,7 +469,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             }
                         }
 
-                        MyFreePool (&GOPArray);
+                        MY_FREE_POOL(GOPArray);
                     }
 
                     #if REFIT_DEBUG > 0
@@ -487,7 +487,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                         }
 
-                        MyFreePool (&DevicePathStr);
+                        MY_FREE_POOL(DevicePathStr);
                     }
 
                     #endif
@@ -511,7 +511,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         );
                         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                         MsgLog ("%s", MsgStr);
-                        MyFreePool (&MsgStr);
+                        MY_FREE_POOL(MsgStr);
                         #endif
                     }
                     else if (!EFI_ERROR(XStatus)) {
@@ -524,7 +524,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                         );
                         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                         MsgLog ("%s", MsgStr);
-                        MyFreePool (&MsgStr);
+                        MY_FREE_POOL(MsgStr);
                         #endif
                     }
                     else {
@@ -537,7 +537,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                             MsgLog ("%s", MsgStr);
-                            MyFreePool (&MsgStr);
+                            MY_FREE_POOL(MsgStr);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
                             MsgStr = PoolPrint (
@@ -546,7 +546,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                             MsgLog ("%s", MsgStr);
-                            MyFreePool (&MsgStr);
+                            MY_FREE_POOL(MsgStr);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
                             MsgStr = PoolPrint (
@@ -555,7 +555,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                             MsgLog ("%s", MsgStr);
-                            MyFreePool (&MsgStr);
+                            MY_FREE_POOL(MsgStr);
                         }
                         else {
                             MsgStr = PoolPrint (
@@ -564,7 +564,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                             );
                             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                             MsgLog ("%s", MsgStr);
-                            MyFreePool (&MsgStr);
+                            MY_FREE_POOL(MsgStr);
                         }
 
                         #endif
@@ -585,19 +585,19 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
                 MsgLog ("\n");
             }
 
-            MyFreePool (&DeviceData);
+            MY_FREE_POOL(DeviceData);
             #endif
 
-            MyFreePool (&HandleBuffer);
-            MyFreePool (&HandleType);
+            MY_FREE_POOL(HandleBuffer);
+            MY_FREE_POOL(HandleType);
         }  // for
 
         #if REFIT_DEBUG > 0
-        MyFreePool (&GopDevicePathStr);
+        MY_FREE_POOL(GopDevicePathStr);
         #endif
     } // if !EFI_ERROR(Status)
 
-	MyFreePool (&AllHandleBuffer);
+	MY_FREE_POOL(AllHandleBuffer);
 
 	return Status;
 } // EFI_STATUS BdsLibConnectMostlyAllEfi()
@@ -646,7 +646,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
             MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("INFO: %s\n\n", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         #endif
 
@@ -666,7 +666,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
     }
     MsgLog ("%s", MsgStr);
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     if (FoundGOP) {
@@ -699,7 +699,7 @@ EFI_STATUS ApplyGOPFix (
     LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
     MsgLog ("\n\n");
     MsgLog ("INFO: %s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
 
     if (EFI_ERROR(Status)) {
         MsgLog ("\n\n");
@@ -714,7 +714,7 @@ EFI_STATUS ApplyGOPFix (
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n");
         MsgLog ("      %s", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         // connect all devices if no error
@@ -757,7 +757,7 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
                 LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
                 MsgLog ("\n\n");
                 MsgLog ("INFO: %s", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
             }
             #endif
 

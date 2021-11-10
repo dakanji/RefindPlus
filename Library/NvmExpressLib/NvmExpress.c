@@ -14,9 +14,8 @@
 **/
 
 #include "NvmExpress.h"
+#include "../../BootMaster/my_free_pool.h"
 #include "../../include/refit_call_wrapper.h"
-
-extern VOID MyFreePool (IN OUT VOID *Pointer);
 
 // NVM Express Driver Binding Protocol Instance
 EFI_DRIVER_BINDING_PROTOCOL gNvmExpressDriverBinding = {
@@ -196,7 +195,7 @@ EFI_STATUS EnumerateNvmeDevNamespace (
                 && IsDevicePathEnd (RemainingDevicePath)
             ) {
                 Status = EFI_ALREADY_STARTED;
-                MyFreePool (&DevicePath);
+                MY_FREE_POOL(DevicePath);
 
                 break;
             }
@@ -302,12 +301,12 @@ EFI_STATUS EnumerateNvmeDevNamespace (
         }
     } while (0);
 
-    MyFreePool (&NamespaceData);
-    MyFreePool (&NewDevicePathNode);
+    MY_FREE_POOL(NamespaceData);
+    MY_FREE_POOL(NewDevicePathNode);
 
     if (EFI_ERROR(Status)) {
-        MyFreePool (&(Device->DevicePath));
-        MyFreePool (&Device);
+        MY_FREE_POOL(Device->DevicePath);
+        MY_FREE_POOL(Device);
     }
 
     return Status;
@@ -485,8 +484,8 @@ EFI_STATUS UnregisterNvmeNamespace (
         FreeUnicodeStringTable (Device->ControllerNameTable);
     }
 
-    MyFreePool (&(Device->DevicePath));
-    MyFreePool (&Device);
+    MY_FREE_POOL(Device->DevicePath);
+    MY_FREE_POOL(Device);
 
     return EFI_SUCCESS;
 }
@@ -543,14 +542,14 @@ VOID EFIAPI ProcessAsyncTaskList (
             ) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Request->Link);
-                MyFreePool (&BlkIo2Request);
+                MY_FREE_POOL(BlkIo2Request);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Token->Event);
             }
 
-            MyFreePool (&(Subtask->CommandPacket->NvmeCmd));
-            MyFreePool (&(Subtask->CommandPacket->NvmeCompletion));
-            MyFreePool (&(Subtask->CommandPacket));
-            MyFreePool (&Subtask);
+            MY_FREE_POOL(Subtask->CommandPacket->NvmeCmd);
+            MY_FREE_POOL(Subtask->CommandPacket->NvmeCompletion);
+            MY_FREE_POOL(Subtask->CommandPacket);
+            MY_FREE_POOL(Subtask);
 
             continue;
         }
@@ -573,14 +572,14 @@ VOID EFIAPI ProcessAsyncTaskList (
             if (IsListEmpty (&BlkIo2Request->SubtasksQueue) && Subtask->IsLast) {
                 // Remove the BlockIo2 request from the device asynchronous queue.
                 RemoveEntryList (&BlkIo2Request->Link);
-                MyFreePool (&BlkIo2Request);
+                MY_FREE_POOL(BlkIo2Request);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Token->Event);
             }
 
-            MyFreePool (&(Subtask->CommandPacket->NvmeCmd));
-            MyFreePool (&(Subtask->CommandPacket->NvmeCompletion));
-            MyFreePool (&(Subtask->CommandPacket));
-            MyFreePool (&Subtask);
+            MY_FREE_POOL(Subtask->CommandPacket->NvmeCmd);
+            MY_FREE_POOL(Subtask->CommandPacket->NvmeCompletion);
+            MY_FREE_POOL(Subtask->CommandPacket);
+            MY_FREE_POOL(Subtask);
         }
         else {
             InsertTailList (&BlkIo2Request->SubtasksQueue, Link);
@@ -637,7 +636,7 @@ VOID EFIAPI ProcessAsyncTaskList (
 
                 RemoveEntryList (Link);
                 REFIT_CALL_1_WRAPPER(gBS->SignalEvent, AsyncRequest->CallerEvent);
-                MyFreePool (&AsyncRequest);
+                MY_FREE_POOL(AsyncRequest);
 
                 // Update submission queue head.
                 Private->AsyncSqHead = Cq->Sqhd;
@@ -1054,7 +1053,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
     }
 
     if (Private != NULL) {
-        MyFreePool (&(Private->ControllerData));
+        MY_FREE_POOL(Private->ControllerData);
     }
 
     if (Private != NULL) {
@@ -1062,7 +1061,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
             REFIT_CALL_1_WRAPPER(gBS->CloseEvent, Private->TimerEvent);
         }
 
-        MyFreePool (&Private);
+        MY_FREE_POOL(Private);
     }
 
     REFIT_CALL_4_WRAPPER(
@@ -1173,8 +1172,8 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStop (
                 Private->PciIo->FreeBuffer (Private->PciIo, 6, Private->Buffer);
             }
 
-            MyFreePool (&(Private->ControllerData));
-            MyFreePool (&Private);
+            MY_FREE_POOL(Private->ControllerData);
+            MY_FREE_POOL(Private);
         }
 
         REFIT_CALL_4_WRAPPER(
@@ -1326,7 +1325,7 @@ EFI_STATUS EFIAPI NvmExpressUnload (
     } while (0);
 
     // Free the buffer containing the list of handles from the handle database
-    MyFreePool (&DeviceHandleBuffer);
+    MY_FREE_POOL(DeviceHandleBuffer);
 
     return Status;
 }

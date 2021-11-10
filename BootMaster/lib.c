@@ -316,12 +316,12 @@ EFI_STATUS InitRefitLib (
     );
 
     CleanUpPathNameSlashes (DevicePathAsString);
-    MyFreePool (&SelfDirPath);
+    MY_FREE_POOL(SelfDirPath);
     Temp        = FindPath (DevicePathAsString);
     SelfDirPath = SplitDeviceString (Temp);
 
-    MyFreePool (&DevicePathAsString);
-    MyFreePool (&Temp);
+    MY_FREE_POOL(DevicePathAsString);
+    MY_FREE_POOL(Temp);
 
     Status = FinishInitRefitLib();
 
@@ -561,7 +561,7 @@ EFI_STATUS EfivarGetRaw (
             LOG(4, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             MsgStr = StrDuplicate (
                 L"Activate the 'use_nvram' Option to Silence this Warning"
@@ -569,7 +569,7 @@ EFI_STATUS EfivarGetRaw (
             LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("         %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
         }
 
@@ -591,7 +591,7 @@ EFI_STATUS EfivarGetRaw (
             }
         }
         else {
-            MyFreePool (&TmpBuffer);
+            MY_FREE_POOL(TmpBuffer);
             *VariableData = NULL;
             *VariableSize = 0;
         }
@@ -652,7 +652,7 @@ EFI_STATUS EfivarGetRaw (
             }
         }
         else {
-            MyFreePool (&TmpBuffer);
+            MY_FREE_POOL(TmpBuffer);
             *VariableData = NULL;
             *VariableSize = 0;
         }
@@ -717,13 +717,13 @@ EFI_STATUS EfivarSetRaw (
                     NativeLogger = TRUE;
                 }
 
-                MyFreePool (&OldBuf);
+                MY_FREE_POOL(OldBuf);
 
                 // State to be logged by caller if required
                 return EFI_ALREADY_STARTED;
             }
         }
-        MyFreePool (&OldBuf);
+        MY_FREE_POOL(OldBuf);
     }
 
     // Proceed ... settings do not match
@@ -824,7 +824,7 @@ VOID AddListElement (
         if (*ElementCount == 0) {
             // *ListPtr != NULL && *ElementCount == 0 ???
             // Should not happen but free *ListPtr just in case
-            ReleasePtr (*ListPtr);
+            MY_FREE_POOL(*ListPtr);
 
             TmpListPtr = AllocatePool (AllocatePointer);
         }
@@ -857,9 +857,9 @@ VOID FreeList (
     if ((*ElementCount > 0) && (**ListPtr != NULL)) {
         for (i = 0; i < *ElementCount; i++) {
             // TODO: call a user-provided routine for each element here
-            ReleasePtr ((*ListPtr)[i]);
+            MY_FREE_POOL((*ListPtr)[i]);
         }
-        ReleasePtr (*ListPtr);
+        MY_FREE_POOL(*ListPtr);
     }
 } // VOID FreeList()
 
@@ -895,7 +895,7 @@ VOID SanitiseVolumeName (
     }
 
     if (VolumeName != NULL) {
-        ReleasePtr ((*Volume)->VolName);
+        MY_FREE_POOL((*Volume)->VolName);
         (*Volume)->VolName = StrDuplicate (VolumeName);
     }
 } // VOID SanitiseVolumeName()
@@ -910,7 +910,7 @@ VOID FreeVolumes (
         for (i = 0; i < *ListCount; i++) {
             FreeVolume (&(*ListVolumes)[i]);
         }
-        ReleasePtr (*ListVolumes);
+        MY_FREE_POOL(*ListVolumes);
         *ListCount = 0;
     }
 } // VOID FreeVolumes()
@@ -975,19 +975,19 @@ VOID FreeVolume (
         UninitVolume (&(*Volume));
 
         // Free pool elements
-        ReleasePtr ((*Volume)->FsName);
-        ReleasePtr ((*Volume)->VolName);
-        ReleasePtr ((*Volume)->PartName);
-        ReleasePtr ((*Volume)->DevicePath);
-        ReleasePtr ((*Volume)->MbrPartitionTable);
-        ReleasePtr ((*Volume)->WholeDiskDevicePath);
+        MY_FREE_POOL((*Volume)->FsName);
+        MY_FREE_POOL((*Volume)->VolName);
+        MY_FREE_POOL((*Volume)->PartName);
+        MY_FREE_POOL((*Volume)->DevicePath);
+        MY_FREE_POOL((*Volume)->MbrPartitionTable);
+        MY_FREE_POOL((*Volume)->WholeDiskDevicePath);
 
         // Free image elements
         egFreeImage ((*Volume)->VolIconImage);
         egFreeImage ((*Volume)->VolBadgeImage);
 
         // Free whole volume
-        ReleasePtr (*Volume);
+        MY_FREE_POOL(*Volume);
     }
 } // VOID FreeVolume()
 
@@ -1037,13 +1037,13 @@ VOID SetFilesystemName (
         (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
     ) {
         if (Volume->FsName) {
-            MyFreePool (&(Volume->FsName));
+            MY_FREE_POOL(Volume->FsName);
             Volume->FsName = NULL;
         }
         Volume->FsName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
     }
 
-    MyFreePool (&FileSystemInfoPtr);
+    MY_FREE_POOL(FileSystemInfoPtr);
 } // VOID *SetFilesystemName()
 
 // Identify the filesystem type and record the filesystem's UUID/serial number,
@@ -1253,7 +1253,7 @@ VOID ScanVolumeBootcode (
                 MsgLog ("** WARN: '%r' %s", Status, MsgStr);
                 MsgLog ("\n");
                 CheckError (Status, MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
             }
             #endif
 
@@ -1516,7 +1516,7 @@ CHAR16 * SizeInIEEEUnits (
     }
 
     TheValue = PoolPrint (L"%ld%s", SizeInIeee, Units);
-    MyFreePool (&Units);
+    MY_FREE_POOL(Units);
 
     return TheValue;
 } // CHAR16 *SizeInIEEEUnits()
@@ -1586,8 +1586,8 @@ CHAR16 * GetVolumeName (
             );
             #endif
 
-            MyFreePool (&SISize);
-            MyFreePool (&FileSystemInfoPtr);
+            MY_FREE_POOL(SISize);
+            MY_FREE_POOL(FileSystemInfoPtr);
         }
     }
 
@@ -1678,7 +1678,7 @@ VOID SetPartGuidAndName (
 
                 Volume->IsMarkedReadOnly = ((PartInfo->attributes & GPT_READ_ONLY) > 0);
 
-                MyFreePool (&PartInfo);
+                MY_FREE_POOL(PartInfo);
             }
         }
         else {
@@ -1830,7 +1830,7 @@ VOID ScanVolume (
                 &WholeDiskHandle
             );
 
-            MyFreePool (&DiskDevicePath);
+            MY_FREE_POOL(DiskDevicePath);
 
             if (EFI_ERROR(Status)) {
                 #if REFIT_DEBUG > 0
@@ -2103,7 +2103,7 @@ VOID VetSyncAPFS (VOID) {
         MsgLog ("\n\n");
         MsgLog ("INFO: %s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
     else {
@@ -2116,14 +2116,14 @@ VOID VetSyncAPFS (VOID) {
         LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("%s:", MsgStr);
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
 
         for (i = 0; i < SystemVolumesCount; i++) {
             MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("  - %s", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         } // for
         #endif
 
@@ -2131,14 +2131,14 @@ VOID VetSyncAPFS (VOID) {
         for (i = 0; i < DataVolumesCount; i++) {
             if (MyStrStr (DataVolumes[i]->VolName, L"- Data") != NULL) {
                 for (j = 0; j < SystemVolumesCount; j++) {
-                    MyFreePool (&TweakName);
+                    MY_FREE_POOL(TweakName);
                     TweakName = SanitiseString (SystemVolumes[j]->VolName);
 
-                    MyFreePool (&CheckName);
+                    MY_FREE_POOL(CheckName);
                     CheckName = PoolPrint (L"%s - Data", TweakName);
 
                     if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
-                        MyFreePool (&DataVolumes[i]->VolName);
+                        MY_FREE_POOL(DataVolumes[i]->VolName);
                         DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
 
                         break;
@@ -2146,11 +2146,11 @@ VOID VetSyncAPFS (VOID) {
 
                     // Check against raw name string if apporpriate
                     if (!MyStriCmp (SystemVolumes[j]->VolName, TweakName)) {
-                        MyFreePool (&CheckName);
+                        MY_FREE_POOL(CheckName);
                         CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
 
                         if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
-                            MyFreePool (&DataVolumes[i]->VolName);
+                            MY_FREE_POOL(DataVolumes[i]->VolName);
                             DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
 
                             break;
@@ -2158,8 +2158,8 @@ VOID VetSyncAPFS (VOID) {
                     }
                 } // for j = 0
 
-                MyFreePool (&TweakName);
-                MyFreePool (&CheckName);
+                MY_FREE_POOL(TweakName);
+                MY_FREE_POOL(CheckName);
             }
         } // for i = 0
 
@@ -2179,7 +2179,7 @@ VOID VetSyncAPFS (VOID) {
         }
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     } // if/else PreBootVolumesCount == 0
 } // VOID VetSyncAPFS()
@@ -2283,7 +2283,7 @@ VOID ScanVolumes (VOID) {
         MsgLog ("\n\n");
         MsgLog ("** %s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return;
@@ -2307,7 +2307,7 @@ VOID ScanVolumes (VOID) {
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return;
@@ -2333,7 +2333,7 @@ VOID ScanVolumes (VOID) {
             MsgLog ("\n\n");
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             return;
@@ -2515,13 +2515,13 @@ VOID ScanVolumes (VOID) {
 
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
 
-            MyFreePool (&PartName);
-            MyFreePool (&PartGUID);
-            MyFreePool (&PartTypeGUID);
-            MyFreePool (&VolumeUUID);
+            MY_FREE_POOL(PartName);
+            MY_FREE_POOL(PartGUID);
+            MY_FREE_POOL(PartTypeGUID);
+            MY_FREE_POOL(VolumeUUID);
             #endif
         }
 
@@ -2533,8 +2533,8 @@ VOID ScanVolumes (VOID) {
         ScannedOnce = TRUE;
     } // for: first pass
 
-    MyFreePool (&UuidList);
-    MyFreePool (&Handles);
+    MY_FREE_POOL(UuidList);
+    MY_FREE_POOL(Handles);
 
     if (!SelfVolSet || !SelfVolRun) {
         #if REFIT_DEBUG > 0
@@ -2543,15 +2543,15 @@ VOID ScanVolumes (VOID) {
             LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n\n");
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
         }
         else {
             CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
             MsgLog ("INFO: Self Volume:- '%s ::: %s ::: %s'\n", SelfVolume->VolName, SelfGUID, SelfUUID);
             MsgLog ("      Install Dir:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"Not Set");
-            MyFreePool (&SelfGUID);
-            MyFreePool (&SelfUUID);
+            MY_FREE_POOL(SelfGUID);
+            MY_FREE_POOL(SelfUUID);
         }
         #endif
 
@@ -2569,7 +2569,7 @@ VOID ScanVolumes (VOID) {
         MsgLog ("\n                   ");
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
-        MyFreePool (&MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
     }
 
@@ -2667,8 +2667,8 @@ VOID ScanVolumes (VOID) {
                 break;
             }
 
-            MyFreePool (&SectorBuffer1);
-            MyFreePool (&SectorBuffer2);
+            MY_FREE_POOL(SectorBuffer1);
+            MY_FREE_POOL(SectorBuffer2);
         }
     } // for
 
@@ -2679,7 +2679,7 @@ VOID ScanVolumes (VOID) {
     );
     MsgLog ("INFO: %s", MsgStr); // Skip Line Break
     LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
-    MyFreePool (&MsgStr);
+    MY_FREE_POOL(MsgStr);
     #endif
 
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
@@ -2746,7 +2746,7 @@ VOID GetVolumeBadgeIcons (VOID) {
             else {
                 LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             }
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
             #endif
 
             // Set volume badge icon
@@ -2760,7 +2760,7 @@ VOID GetVolumeBadgeIcons (VOID) {
                 MsgStr = StrDuplicate (L"VolumeBadge Found");
             }
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MyFreePool (&MsgStr);
+            MY_FREE_POOL(MsgStr);
 
             LoopOnce = TRUE;
             #endif
@@ -2915,7 +2915,7 @@ EFI_STATUS DirNextEntry (
 
     for (;;) {
         // Release pointer from last call
-        ReleasePtr (*DirEntry);
+        MY_FREE_POOL(*DirEntry);
         *DirEntry = NULL;
 
         // read next directory entry
@@ -2946,7 +2946,7 @@ EFI_STATUS DirNextEntry (
                 );
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n%s", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
 
                 BufferSize = LastBufferSize * 2;
@@ -2959,7 +2959,7 @@ EFI_STATUS DirNextEntry (
                 );
                 LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n%s", MsgStr);
-                MyFreePool (&MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
             }
             Buffer = EfiReallocatePool (
@@ -2969,7 +2969,7 @@ EFI_STATUS DirNextEntry (
         }
 
         if (EFI_ERROR(Status)) {
-            MyFreePool (&Buffer);
+            MY_FREE_POOL(Buffer);
             Buffer = NULL;
             break;
         }
@@ -2978,7 +2978,7 @@ EFI_STATUS DirNextEntry (
 
         if (BufferSize == 0) {
             // end of directory listing
-            MyFreePool (&Buffer);
+            MY_FREE_POOL(Buffer);
             Buffer = NULL;
 
             break;
@@ -3092,7 +3092,7 @@ BOOLEAN DirIterNext (
     UINTN    i;
     CHAR16  *OnePattern;
 
-    MyFreePool (&DirIter->LastFileInfo);
+    MY_FREE_POOL(DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
 
     if (EFI_ERROR(DirIter->LastStatus)) {
@@ -3131,7 +3131,7 @@ BOOLEAN DirIterNext (
                if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
                    KeepGoing = FALSE;
                }
-               MyFreePool (&OnePattern);
+               MY_FREE_POOL(OnePattern);
             } // while
         }
    } while (KeepGoing && FilePattern);
@@ -3143,7 +3143,7 @@ BOOLEAN DirIterNext (
 EFI_STATUS DirIterClose (
     IN OUT REFIT_DIR_ITER *DirIter
 ) {
-    MyFreePool (&DirIter->LastFileInfo);
+    MY_FREE_POOL(DirIter->LastFileInfo);
     DirIter->LastFileInfo = NULL;
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
         REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
@@ -3346,8 +3346,8 @@ VOID FindVolumeAndFilename (
         return;
     }
 
-    ReleasePtr (*loader);
-    ReleasePtr (*DeviceVolume);
+    MY_FREE_POOL(*loader);
+    MY_FREE_POOL(*DeviceVolume);
     *DeviceVolume = NULL;
     DeviceString  = DevicePathToStr (loadpath);
     *loader       = SplitDeviceString (DeviceString);
@@ -3367,11 +3367,11 @@ VOID FindVolumeAndFilename (
         }
         i++;
 
-        MyFreePool (&Temp);
-        MyFreePool (&VolumeDeviceString);
+        MY_FREE_POOL(Temp);
+        MY_FREE_POOL(VolumeDeviceString);
     } // while
 
-    MyFreePool (&DeviceString);
+    MY_FREE_POOL(DeviceString);
 } // VOID FindVolumeAndFilename()
 
 // Splits a volume/filename string (e.g., "fs0:\EFI\BOOT") into separate
@@ -3390,7 +3390,7 @@ BOOLEAN SplitVolumeAndFilename (
         return FALSE;
     }
 
-    ReleasePtr (*VolName);
+    MY_FREE_POOL(*VolName);
     *VolName = NULL;
 
     Length = StrLen (*Path);
@@ -3425,9 +3425,9 @@ VOID SplitPathName (
 ) {
     CHAR16 *Temp = NULL;
 
-    ReleasePtr (*VolName);
-    ReleasePtr (*Path);
-    ReleasePtr (*Filename);
+    MY_FREE_POOL(*VolName);
+    MY_FREE_POOL(*Path);
+    MY_FREE_POOL(*Filename);
     *VolName = *Path = *Filename = NULL;
 
     Temp = StrDuplicate (InPath);
@@ -3440,16 +3440,16 @@ VOID SplitPathName (
     CleanUpPathNameSlashes (*Filename);
 
     if (StrLen (*Path) == 0) {
-        ReleasePtr (*Path);
+        MY_FREE_POOL(*Path);
         *Path = NULL;
     }
 
     if (StrLen (*Filename) == 0) {
-        ReleasePtr (*Filename);
+        MY_FREE_POOL(*Filename);
         *Filename = NULL;
     }
 
-    MyFreePool (&Temp);
+    MY_FREE_POOL(Temp);
 } // VOID SplitPathName()
 
 // Finds a volume with the specified Identifier (a filesystem label, a
@@ -3528,35 +3528,16 @@ BOOLEAN FilenameIn (
             ) {
                 Found = FALSE;
             }
-            MyFreePool (&OneElement);
+            MY_FREE_POOL(OneElement);
         }
 
-        MyFreePool (&TargetVolName);
-        MyFreePool (&TargetPath);
-        MyFreePool (&TargetFilename);
+        MY_FREE_POOL(TargetVolName);
+        MY_FREE_POOL(TargetPath);
+        MY_FREE_POOL(TargetFilename);
     }
 
     return Found;
 } // BOOLEAN FilenameIn()
-
-// Implement FreePool the way it should have been done to begin with, so that
-// it does not throw an ASSERT message if fed a NULL pointer
-VOID MyFreePool (
-    IN OUT VOID *Pointer
-) {
-    if (Pointer != NULL) {
-        FreePool (Pointer);
-        Pointer = NULL;
-    }
-}
-
-VOID ReleasePtr (
-    IN OUT VOID *Pointer
-) {
-    if (Pointer != NULL) {
-        MyFreePool (&Pointer);
-    }
-}
 
 // Eject all removable media.
 // Returns TRUE if any media were ejected, FALSE otherwise.
@@ -3600,7 +3581,7 @@ BOOLEAN EjectMedia (VOID) {
             Ejected++;
         }
     }
-    MyFreePool (&Handles);
+    MY_FREE_POOL(Handles);
 
     return (Ejected > 0);
 } // VOID EjectMedia()
@@ -3621,7 +3602,7 @@ VOID EraseUint32List (
 
     while (*TheList) {
         NextItem = (*TheList)->Next;
-        ReleasePtr (*TheList);
+        MY_FREE_POOL(*TheList);
         *TheList = NextItem;
     }
 } // EraseUin32List()

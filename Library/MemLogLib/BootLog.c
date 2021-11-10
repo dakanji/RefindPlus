@@ -193,7 +193,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         LogFile = NULL;
     }
 
-    MyFreePool (&ourDebugLog);
+    MY_FREE_POOL(ourDebugLog);
 
     return LogFile;
 } // static EFI_FILE_PROTOCOL * GetDebugLogFile()
@@ -270,7 +270,7 @@ VOID EFIAPI DeepLoggger (
 
 #if REFIT_DEBUG < 1
     // FreePool and return in RELEASE builds
-    ReleasePtr (*Msg);
+    MY_FREE_POOL(*Msg);
 
     return;
 #endif
@@ -283,7 +283,7 @@ VOID EFIAPI DeepLoggger (
         || MuteLogger
         || !(*Msg)
     ) {
-        ReleasePtr (*Msg);
+        MY_FREE_POOL(*Msg);
 
         return;
     }
@@ -293,7 +293,7 @@ VOID EFIAPI DeepLoggger (
         BOOLEAN LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
-        ReleasePtr (*Msg);
+        MY_FREE_POOL(*Msg);
         *Msg = (LongStr)
             ? PoolPrint (L"%s ... Snipped!!", StoreMsg)
             : StrDuplicate (StoreMsg);
@@ -339,10 +339,10 @@ VOID EFIAPI DeepLoggger (
         }
     }
 
-    ReleasePtr (*Msg);
-    MyFreePool (&Tmp);
-    MyFreePool (&StoreMsg);
-    MyFreePool (&FormatMsg);
+    MY_FREE_POOL(*Msg);
+    MY_FREE_POOL(Tmp);
+    MY_FREE_POOL(StoreMsg);
+    MY_FREE_POOL(FormatMsg);
 } // VOID EFIAPI DeepLoggger()
 
 VOID EFIAPI DebugLog (
