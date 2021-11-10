@@ -2241,26 +2241,6 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
-        // Sync APFS infrastrcture is no longer required ... Free Associated Volume Lists
-        if ((GlobalConfig.SyncAPFS) &&
-            (PreBootVolumes || SystemVolumes || DataVolumes)
-        ) {
-            FreeVolumes (
-                &PreBootVolumes,
-                &PreBootVolumesCount
-            );
-
-            FreeVolumes (
-                &SystemVolumes,
-                &SystemVolumesCount
-            );
-
-            FreeVolumes (
-                &DataVolumes,
-                &DataVolumesCount
-            );
-        }
-
         if ((MenuExit == MENU_EXIT_TIMEOUT) &&
             GlobalConfig.ShutdownAfterTimeout
         ) {

@@ -451,20 +451,38 @@ EFI_STATUS StartEFIImage (
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    if (!IsDriver) {
-        MsgStr = StrDuplicate (L"Running Child Image");
-    }
-    else {
-        // DA-TAG: This is used before 'MsgStr' is ultimately freed
-        MsgStr = StrDuplicate (L"Loading UEFI Driver");
-    }
+    CHAR16 *ConstMsgStr = L"Loading UEFI Driver";
+    #endif
 
     if (!IsDriver) {
-        // Do not log this for drivers
-        LOG(3, LOG_LINE_NORMAL, L"%s via Loader:- '%s'", MsgStr , ImageTitle);
+        #if REFIT_DEBUG > 0
+        ConstMsgStr = L"Running Child Image";
+        LOG(3, LOG_LINE_NORMAL, L"%s via Loader:- '%s'", ConstMsgStr , ImageTitle);
+        #endif
+
+        // DA-TAG: SyncAPFS infrastrcture is typically no longer required
+        //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
+        //         These may return to the RefindPlus screen but any issues are cosmetic
+        //         "WontFix" as cosmetic and such are essentially misusing RefindPlus
+        if ((GlobalConfig.SyncAPFS) &&
+            (PreBootVolumes || SystemVolumes || DataVolumes)
+        ) {
+            FreeVolumes (
+                &PreBootVolumes,
+                &PreBootVolumesCount
+            );
+
+            FreeVolumes (
+                &SystemVolumes,
+                &SystemVolumesCount
+            );
+
+            FreeVolumes (
+                &DataVolumes,
+                &DataVolumesCount
+            );
+        }
     }
-    // DA-TAG: 'MsgStr' is recycled and freed later
-    #endif
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->StartImage, ChildImageHandle,
@@ -474,10 +492,7 @@ EFI_STATUS StartEFIImage (
 
     // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(4, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, MsgStr);
-
-    // DA-TAG: MsgStr from earlier is freed here
-    MY_FREE_POOL(MsgStr);
+    LOG(4, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, ConstMsgStr);
     #endif
 
     MsgStr = StrDuplicate (L"Returned from Child Image");
