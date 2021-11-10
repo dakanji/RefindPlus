@@ -2722,10 +2722,13 @@ VOID GetVolumeBadgeIcons (VOID) {
         if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
             FoundSysVol = FALSE;
             for (i = 0; i < SystemVolumesCount; i++) {
-                FoundSysVol = TRUE;
-                break;
+                if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
+                    FoundSysVol = TRUE;
+                    break;
+                }
             }
 
+            // Skip APFS system volumes when SyncAPFS is active
             if (FoundSysVol) {
                 continue;
             }
@@ -2804,10 +2807,13 @@ VOID SetVolumeIcons (VOID) {
         if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
             FoundSysVol = FALSE;
             for (i = 0; i < SystemVolumesCount; i++) {
-                FoundSysVol = TRUE;
-                break;
+                if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
+                    FoundSysVol = TRUE;
+                    break;
+                }
             }
 
+            // Skip APFS system volumes when SyncAPFS is active
             if (FoundSysVol) {
                 continue;
             }
