@@ -47,6 +47,9 @@ static EG_IMAGE *LightFontImage = NULL;
 
 static UINTN FontCellWidth = 7;
 
+extern UINTN ScreenLongest;
+extern UINTN ScreenShortest;
+
 //
 // Text rendering
 //
@@ -61,7 +64,10 @@ VOID egPrepareFont() {
         if (GlobalConfig.ScaleUI == -1) {
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
         }
-        else if ((GlobalConfig.ScaleUI == 1) || (ScreenH >= HIDPI_MIN)) {
+        else if (
+            (GlobalConfig.ScaleUI == 1)
+            || (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
+        ) {
             BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
         }
         else {

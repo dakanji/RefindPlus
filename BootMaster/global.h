@@ -116,9 +116,8 @@
 #define DISCOVERY_TYPE_MANUAL    2
 
 #ifdef __MAKEWITH_GNUEFI
-//
+
 // define BBS Device Types
-//
 #define BBS_FLOPPY             0x01
 #define BBS_HARDDISK           0x02
 #define BBS_CDROM              0x03
@@ -137,7 +136,7 @@
 #define DEVICE_TYPE_BIOS       0x05 /* returned by legacy (BIOS) boot loaders */
 #define DEVICE_TYPE_END        0x75 /* end of path */
 
-// Filesystem type identifiers. Not all are yet used.
+// Filesystem type identifiers ... Not all are used.
 #define FS_TYPE_UNKNOWN           0
 #define FS_TYPE_WHOLEDISK         1
 #define FS_TYPE_FAT               2
@@ -170,8 +169,9 @@
 #define ICON_SIZE_BIG             2
 #define ICON_SIZE_MOUSE           3
 
-// Minimum vertical resolution for a screen to be considered High-DPI
-#define HIDPI_MIN 1601
+// Minimum resolutions for a screen to be considered High-DPI
+#define HIDPI_LONG 2560
+#define HIDPI_SHORT 1600
 
 #ifndef EFI_OS_INDICATIONS_BOOT_TO_FW_UI
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL

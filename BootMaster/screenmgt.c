@@ -66,6 +66,9 @@ CHAR16 *BlankLine = NULL;
 
 UINTN   ScreenW;
 UINTN   ScreenH;
+UINTN   ScreenLongest  = 0;
+UINTN   ScreenShortest = 0;
+
 
 BOOLEAN AllowGraphicsMode = FALSE;
 BOOLEAN ClearedBuffer     = FALSE;
@@ -220,6 +223,10 @@ VOID SetupScreen (VOID) {
             ScreenH = NewHeight;
         }
 
+        // Get longest and shortest edge dimensions
+        ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+        ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
+
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
@@ -284,7 +291,7 @@ VOID SetupScreen (VOID) {
             MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
 
-            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx' (Vertical)", ScreenH);
+            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx x %dpx'", ScreenLongest, ScreenShortest);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n");
@@ -301,11 +308,12 @@ VOID SetupScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
-            else if ((GlobalConfig.ScaleUI == 1) || ScreenH >= HIDPI_MIN) {
+            else if (
+                (GlobalConfig.ScaleUI == 1)
+                || (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
+            ) {
                 #if REFIT_DEBUG > 0
-                CHAR16 *TmpStr = NULL;
-
-                TmpStr = (ScreenH >= HIDPI_MIN) ? L"HiDPI Mode" : L"HiDPI Flag";
+                CHAR16 *TmpStr = (GlobalConfig.ScaleUI == 1) ? L"HiDPI Flag" : L"HiDPI Mode";
                 #endif
 
                 if (ScaledIcons) {

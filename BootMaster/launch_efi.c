@@ -462,8 +462,7 @@ EFI_STATUS StartEFIImage (
 
         // DA-TAG: SyncAPFS infrastrcture is typically no longer required
         //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
-        //         These may return to the RefindPlus screen but any issues are cosmetic
-        //         "WontFix" as cosmetic and such are essentially misusing RefindPlus
+        //         These may return to the RefindPlus screen but any issues will be trivial
         if ((GlobalConfig.SyncAPFS) &&
             (PreBootVolumes || SystemVolumes || DataVolumes)
         ) {

@@ -23,6 +23,14 @@
   * Now ensures this is reset on each loop through the RefindPlus Main Loop
   * This ensures the filtering is not on if UEFI Windows boot fails
   * Only has cosmetic relevance but best practice
+- Amends 'ScaleUI' Implementation
+  * Now checks the resolution of the longest and shortest sides for automatic scaling
+  * Previously only checked the vertical resolution
+  * This allows rotated screens to be properly accounted for
+  * Some rare monitors, such as the 30" Apple Cinema Display, may be wrongly identified as HiDPI
+  * This is because EDID information is not used at this time
+  * However, the more common WQHD monitors are correctly identified as not being HiDPI monitors
+  * Laptops with 'Retina' screens should be correctly identified as having HiDPI monitors
 
 
 0.13.2.AJ (06 Oct 2021):
