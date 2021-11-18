@@ -3066,17 +3066,19 @@ UINTN RunMainMenu (
 } // UINTN RunMainMenu()
 
 VOID FreeLoaderEntry (
-    IN LOADER_ENTRY *Entry
+    IN LOADER_ENTRY **Entry
 ) {
-    egFreeImage (Entry->me.Image);
-    MY_FREE_POOL(Entry->EfiLoaderPath);
-    MY_FREE_POOL(Entry->LoadOptions);
-    MY_FREE_POOL(Entry->InitrdPath);
-    MY_FREE_POOL(Entry->LoaderPath);
-    MY_FREE_POOL(Entry->me.Title);
-    MY_FREE_POOL(Entry->Title);
+    if (Entry && *Entry) {
+        egFreeImage ((*Entry)->me.Image);
+        MY_FREE_POOL((*Entry)->EfiLoaderPath);
+        MY_FREE_POOL((*Entry)->LoadOptions);
+        MY_FREE_POOL((*Entry)->InitrdPath);
+        MY_FREE_POOL((*Entry)->LoaderPath);
+        MY_FREE_POOL((*Entry)->me.Title);
+        MY_FREE_POOL((*Entry)->Title);
 
-    MY_FREE_POOL(Entry);
+        MY_FREE_POOL(*Entry);
+    }
 } // VOID FreeLoaderEntry()
 
 BDS_COMMON_OPTION * CopyBdsOption (
