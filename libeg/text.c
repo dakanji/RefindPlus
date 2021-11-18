@@ -47,9 +47,6 @@ static EG_IMAGE *LightFontImage = NULL;
 
 static UINTN FontCellWidth = 7;
 
-extern UINTN ScreenLongest;
-extern UINTN ScreenShortest;
-
 //
 // Text rendering
 //
@@ -59,6 +56,11 @@ VOID egPrepareFont() {
     UINTN ScreenW, ScreenH;
 
     egGetScreenSize(&ScreenW, &ScreenH);
+
+    // Get longest and shortest edge dimensions
+    UINTN ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+    UINTN ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
+
 
     if (BaseFontImage == NULL) {
         if (GlobalConfig.ScaleUI == -1) {
