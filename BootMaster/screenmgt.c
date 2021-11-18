@@ -64,8 +64,8 @@ CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
 
-UINTN   ScreenW;
-UINTN   ScreenH;
+UINTN   ScreenW        = 0;
+UINTN   ScreenH        = 0;
 UINTN   ScreenLongest  = 0;
 UINTN   ScreenShortest = 0;
 
@@ -210,6 +210,10 @@ VOID SetupScreen (VOID) {
         #endif
     }
 
+    // Get longest and shortest edge dimensions
+    ScreenLongest  = (ScreenW >= ScreenH) ? ScreenW : ScreenH;
+    ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
+
     // Set text mode. If this requires increasing the size of the graphics mode, do so.
     if (egSetTextMode (GlobalConfig.RequestedTextMode)) {
 
@@ -230,7 +234,7 @@ VOID SetupScreen (VOID) {
         #if REFIT_DEBUG > 0
         LOG(3, LOG_LINE_NORMAL,
             L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
-            ScreenW, ScreenH
+            ScreenLongest, ScreenShortest
         );
         #endif
 
