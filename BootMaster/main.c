@@ -1764,13 +1764,27 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n");
 
     /* TimeStamp */
-    CHAR16 *CurDateStr = PoolPrint (
-        L"%d-%02d-%02d %02d:%02d:%02d",
-        NowYear, NowMonth,
-        NowDay, NowHour,
-        NowMinute, NowSecond
-    );
-    MsgLog ("Timestamp:- '%s (GMT)'", CurDateStr);
+    CHAR16 *CurDateStr = NULL;
+    if (Now.TimeZone == EFI_UNSPECIFIED_TIMEZONE) {
+        CurDateStr = PoolPrint (
+            L"%d-%02d-%02d %02d:%02d:%02d (GMT)",
+            NowYear, NowMonth,
+            NowDay, NowHour,
+            NowMinute, NowSecond
+        );
+    }
+    else {
+        CurDateStr = PoolPrint (
+            L"%d-%02d-%02d %02d:%02d:%02d (GMT%s%02d:%02d)",
+            NowYear, NowMonth,
+            NowDay, NowHour,
+            NowMinute, NowSecond,
+            (Now.TimeZone > 0 ? L"-" : L"+"),
+            ((ABS(Now.TimeZone)) / 60),
+            ((ABS(Now.TimeZone)) % 60)
+        );
+    }
+    MsgLog ("Timestamp:- '%s'", CurDateStr);
     MY_FREE_POOL(CurDateStr);
     #endif
 
