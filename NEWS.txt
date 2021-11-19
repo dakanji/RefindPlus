@@ -6,18 +6,20 @@
 - Fixes Compilation Issue on Recent GNU-EFI Versions
   * Synced with upstream update as well as an existing issue with 'REFIT_CALL_X_WRAPPER'
   * GNU-EFI compilation of RefindPlus is likely broken overall
+- Fixes 'TagsHelp' Feature
+  * Was inverted ... active when decline_tagshelp was set and vice versa after renaming the feature
+  * This bug was introduced in v0.13.2.AH (Commit 1b043c3)
 - Fixes Failure to Set Volume Badges and .VolumeIcon files on APFS Volumes
   * The items were skipped by optimisation meant to only skip such on APFS System Volumes for SyncAPFS
-  * This bug was introduced in v0.13.2.AJ (Commit d87d3fb)
+  * This bug was introduced in v0.13.2.AH (Commit d87d3fb)
 - Fixes Memory Management
-  * Frees some previously overlooked items
   * The 'MyFreePool' function implementation did not actually free items passed
-  * Similarly, the 'ReleasePtr' that called this was non operational
-  * Both functions have now been removed and consolidated into a new 'MY_FREE_POOL' macro
+  * Similarly, the 'ReleasePtr' function that called this was non operational
+  * Both functions have now been consolidated into a new 'MY_FREE_POOL' macro
   * This bug was introduced in v0.13.2.AD (Commit 65e5083)
 - Improves Time Bound Primed Buffer Mitigation
   * Prevents RefindPlus from spontaneously running default item
-  * Intervention is now based on a minumum 0.25 second interval
+  * Intervention is now based on a minumum 0.50 second interval
   * Extended scope now covers Mac OS again (previously removed)
 - Improves 'ProtectNVRAM' Implementation
   * Now ensures this is reset on each loop through the RefindPlus Main Loop

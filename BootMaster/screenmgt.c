@@ -295,7 +295,7 @@ VOID SetupScreen (VOID) {
             MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
 
-            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%dpx x %dpx'", ScreenLongest, ScreenShortest);
+            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%d x %d'", ScreenLongest, ScreenShortest);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MsgLog ("\n");

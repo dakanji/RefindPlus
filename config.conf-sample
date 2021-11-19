@@ -7,7 +7,7 @@
 ##--------------------------------------------------------------##
 #
 #
-# Supply APFS filesystem capability. By default, RefindPlus is set up to always load
+# Supply APFS filesystem capability. By default, RefindPlus is set up to jump-start
 # Mac OS APFS filesystem drivers, apfs.efi, which are available in system folders of
 # Mac OS 10.13 (High Sierra) and later. The drivers are loaded to match each specific
 # Mac OS version. This ensures that any changes made to APFS drivers for each specific
@@ -19,7 +19,7 @@
 #
 #decline_apfsload
 
-# Suppress verbose APFS loading text output. RefindPlus is set up by default to always
+# Suppress verbose APFS loading text output. By default, RefindPlus is configured to always
 # suppress verbose text output from APFS drivers loaded via its "SupplyAPFS" functionality.
 # This feature only acts on apfs drivers loaded via the default "SupplyAPFS" functionality.
 # This feature may impact other text output however, and should be disabled by activating
@@ -30,7 +30,7 @@
 #
 #decline_apfsmute
 
-# Apple has partially enforced the use of the Pre-Boot Loader stored in the "PreBoot" partitions
+# Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partitions
 # of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
 # SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
 # in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
@@ -66,13 +66,12 @@
 #
 #decline_nvmeload
 
-# Allow or prevent UEFI Windows "Secure Boot" from saving certificates to Apple NVRAM. By default,
-# RefindPlus will prevent UEFI Windows Secure Boot from writing to the NVRAM on Apple Firmware
-# as this can lead to damage resulting in an inability to boot. Legacy Windows does not have
-# this issue and is recommended instead when running Microsoft Windows on Apple Firmware.
+# Allow/Prevent saving UEFI Windows "Secure Boot" certificates to the NVRAM on Macs.
+# By default, RefindPlus will prevent UEFI Windows Secure Boot from writing security
+# certificates to the NVRAM on Apple Macs as this can result in an inability to boot.
 # This setting is only activated when Apple Firmware is detected on UEFI Windows boot.
 #
-# UEFI Windows certificate writes to Apple NVRAM are allowed when commented out
+# UEFI Windows security certificate writes to Mac NVRAM are allowed when commented out
 #
 #decline_nvramprotect
 
@@ -104,7 +103,7 @@
 #
 #decline_tagshelp
 
-# RefindPlus defaults to scanning volumes for ".VolumeIcon" image icons and if
+# RefindPlus defaults to scanning volumes for .VolumeIcon image icons and if
 # found, these may be used as display icons for some volumes. However, most
 # RefindPlus setups do not include these files and most of those that may
 # do, typically Apple Macs, do not require the files as their icons in
@@ -174,8 +173,8 @@
 #
 #provide_console_gop
 
-# Adds the UGA Protocol to GOP when absent. This option allows the RefindPlus
-# screen when using modern GPUs on units with only EFIBoot capability.
+# Adds a UGA Protocol to GOP, when absent, to allow RefindPlus graphics
+# display when using modern GPUs on units with only EFIBoot capability.
 # NB: This functionality is only available on TianoCore Builds.
 #
 # Inactive when commented out (Does not add UGA to GOP)

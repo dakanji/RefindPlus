@@ -1100,8 +1100,7 @@ VOID ReadConfig (
     } // for
     FreeTokenLine (&TokenList, &TokenCount);
 
-    // "TagHelp" is active
-    if (!GlobalConfig.TagsHelp) {
+    if (GlobalConfig.TagsHelp) {
         // "TagHelp" feature is active ... Set "found" flag to false
         BOOLEAN HiddenTagsFlag = FALSE;
         // Loop through GlobalConfig.ShowTools list to check for "hidden_tags" tool

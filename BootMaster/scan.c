@@ -689,7 +689,7 @@ VOID SetLoaderDefaults (
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_LINE_NORMAL,
-        L"Getting Default Settings for Loader:- '%s'",
+        L"Getting Default Setting for Loader:- '%s'",
         (Entry->me.Title) ? Entry->me.Title : Entry->Title
     );
     #endif
