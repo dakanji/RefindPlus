@@ -4,7 +4,7 @@
   PLATFORM_VERSION               = 4.5.0
   DSC_SPECIFICATION              = 0x00010006
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
-  BUILD_TARGETS                  = DEBUG|RELEASE
+  BUILD_TARGETS                  = DEBUG
   SKUID_IDENTIFIER               = DEFAULT
 
 [LibraryClasses]
@@ -95,19 +95,18 @@
   # Added by dakanji (sf.net/u/dakanji/profile) for NvmExpressLib
     NvmExpressLib|RefindPlusPkg/Library/NvmExpressLib/NvmExpressLib.inf
 
-
 [LibraryClasses.AARCH64]
   CompilerIntrinsicsLib|ArmPkg/Library/CompilerIntrinsicsLib/CompilerIntrinsicsLib.inf
 
 [Components]
   RefindPlusPkg/RefindPlus.inf
-  RefindPlusPkg/gptsync.inf
   RefindPlusPkg/filesystems/ext2.inf
   RefindPlusPkg/filesystems/ext4.inf
   RefindPlusPkg/filesystems/reiserfs.inf
   RefindPlusPkg/filesystems/hfs.inf
   RefindPlusPkg/filesystems/iso9660.inf
   RefindPlusPkg/filesystems/ntfs.inf
+  RefindPlusPkg/gptsync/gptsync.inf
 
 [PcdsFixedAtBuild]
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1D

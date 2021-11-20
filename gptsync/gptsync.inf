@@ -26,10 +26,10 @@
 #
 
 [Sources]
-  gptsync/lib.c
-  gptsync/gptsync.c
-  gptsync/os_efi.c
-  gptsync/showpart.c
+  lib.c
+  gptsync.c
+  os_efi.c
+  showpart.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -76,9 +76,9 @@
   gEfiSimpleTextInProtocolGuid                            # ALWAYS_CONSUMED
   gEfiSimpleTextInputExProtocolGuid                       # ALWAYS_CONSUMED
   gEfiSimpleTextOutProtocolGuid                           # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED  
-  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED  
-  
+  gEfiUnicodeCollationProtocolGuid                       # ALWAYS_CONSUMED
+  gEfiUnicodeCollation2ProtocolGuid                       # ALWAYS_CONSUMED
+
   gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
   gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
   gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
@@ -92,12 +92,12 @@
   gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
   gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
   gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
-  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES 
+  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
   gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
   gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
-  
+
   gEfiAbsolutePointerProtocolGuid
   gEfiAcpiTableProtocolGuid
   gEfiEdidActiveProtocolGuid
@@ -107,7 +107,7 @@
   gEfiHiiProtocolGuid
   gEfiSimplePointerProtocolGuid
   gEfiSmbiosProtocolGuid
-  gEfiSecurityArchProtocolGuid  
+  gEfiSecurityArchProtocolGuid
   gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
   gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
   gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
