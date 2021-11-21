@@ -1,0 +1,69 @@
+# Configuration for Locking Threads - https://github.com/marketplace/actions/lock-threads
+
+name: 'Lock Issues'
+
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: '18 18 * * *'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+  lock:
+    name: Lock Standard Issues
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dessant/lock-threads@v3.0.0
+      with:
+        github-token: ${{ github.token }}
+        issue-lock-reason: ''
+        issue-inactive-days: '9'
+        include-any-issue-labels: ''
+        process-only: 'issues'
+
+jobs:
+  lock:
+    name: Lock Known Issues
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dessant/lock-threads@v3.0.0
+      with:
+        github-token: ${{ github.token }}
+        issue-lock-reason: ''
+        issue-inactive-days: '4'
+        remove-issue-labels: 'Flagged'
+        include-any-issue-labels: 'Duplicate,Known-Issue'
+        process-only: 'issues'
+
+jobs:
+  lock:
+    name: Lock Incomplete Issues
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dessant/lock-threads@v3.0.0
+      with:
+        github-token: ${{ github.token }}
+        issue-lock-reason: ''
+        issue-inactive-days: '4'
+        remove-issue-labels: 'Flagged'
+        include-any-issue-labels: 'Incomplete,Unclear'
+        process-only: 'issues'
+
+jobs:
+  lock:
+    name: Lock Invalid Issues
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dessant/lock-threads@v3.0.0
+      with:
+        github-token: ${{ github.token }}
+        issue-lock-reason: ''
+        issue-inactive-days: '4'
+        remove-issue-labels: 'Flagged'
+        include-any-issue-labels: 'WontFix,Invalid,Works-For-Me'
+        process-only: 'issues'

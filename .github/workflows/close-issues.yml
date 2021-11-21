@@ -1,0 +1,61 @@
+# Configuration for Directly Closing Threads - https://github.com/marketplace/actions/stale
+
+name: 'Close Issues'
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 15 * * *'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+  stale:
+    name: Close Invalid Issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4.0.0
+        with:
+          close-issue-message: >
+            This item has been closed as the issue could not be replicated.
+            Thank you for your contribution.
+          days-before-stale: 1
+          days-before-close: 2
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-labels: 'Invalid,Works-For-Me'
+
+jobs:
+  stale:
+    name: Close Known Issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4.0.0
+        with:
+          close-issue-message: >
+            This item has been closed as a known issue.
+            Thank you for your contribution.
+          days-before-stale: 1
+          days-before-close: 2
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-labels: 'Duplicate,Known-Issue'
+
+jobs:
+  stale:
+    name: Close Accepted Issues
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v4.0.0
+        with:
+          close-issue-message: >
+            This item has been closed as a fix will not be attempted.
+            Thank you for your contribution.
+          days-before-stale: 1
+          days-before-close: 2
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-labels: 'WontFix'
