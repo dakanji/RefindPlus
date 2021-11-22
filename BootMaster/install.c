@@ -1108,8 +1108,8 @@ UINTN PickOneBootOption (
 
     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
     TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-    CHAR16 *MenuInfo = L"Select an option and press 'Enter' to make it the default or '-' to delete it";
-    REFIT_MENU_SCREEN    Menu = { L"Manage UEFI Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
+    CHAR16 *MenuInfo = L"Remove or Set Default Boot#### Variables";
+    REFIT_MENU_SCREEN    Menu = { L"Manage Firmware Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                   L"Select an option and press 'Enter' to make it the default, press '-' or",
                                   L"'Delete' to delete it, or 'Esc' to return to the main menu without changes" };
     if (AllowGraphicsMode) {
