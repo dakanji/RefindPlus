@@ -27,11 +27,6 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-labels: 'Invalid,Works-For-Me'
-
-  stale:
-    name: Close Known Issues
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/stale@v4.0.0
         with:
           close-issue-message: >
@@ -42,11 +37,6 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-labels: 'Duplicate,Known-Issue'
-
-  stale:
-    name: Close Accepted Issues
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/stale@v4.0.0
         with:
           close-issue-message: >

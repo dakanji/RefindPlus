@@ -24,12 +24,6 @@ jobs:
         issue-lock-reason: ''
         issue-inactive-days: '9'
         include-any-issue-labels: ''
-        process-only: 'issues'
-
-  lock:
-    name: Lock Known Issues
-    runs-on: ubuntu-latest
-    steps:
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
@@ -38,11 +32,6 @@ jobs:
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'Duplicate,Known-Issue'
         process-only: 'issues'
-
-  lock:
-    name: Lock Incomplete Issues
-    runs-on: ubuntu-latest
-    steps:
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
@@ -51,12 +40,6 @@ jobs:
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'Incomplete,Unclear'
         process-only: 'issues'
-
-jobs:
-  lock:
-    name: Lock Invalid Issues
-    runs-on: ubuntu-latest
-    steps:
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
