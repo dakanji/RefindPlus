@@ -405,8 +405,6 @@ Error:
     MY_FREE_POOL(*HandleBuffer);
 
     *HandleCount  = 0;
-    *HandleBuffer = NULL;
-    *HandleType   = NULL;
 
     return Status;
 } // EFI_STATUS LibScanHandleDatabase()

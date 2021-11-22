@@ -1036,10 +1036,7 @@ VOID SetFilesystemName (
     if ((FileSystemInfoPtr != NULL) &&
         (StrLen (FileSystemInfoPtr->VolumeLabel) > 0)
     ) {
-        if (Volume->FsName) {
-            MY_FREE_POOL(Volume->FsName);
-            Volume->FsName = NULL;
-        }
+        MY_FREE_POOL(Volume->FsName);
         Volume->FsName = StrDuplicate (FileSystemInfoPtr->VolumeLabel);
     }
 
@@ -2916,7 +2913,6 @@ EFI_STATUS DirNextEntry (
     for (;;) {
         // Release pointer from last call
         MY_FREE_POOL(*DirEntry);
-        *DirEntry = NULL;
 
         // read next directory entry
         LastBufferSize = BufferSize = 256;
@@ -2970,7 +2966,6 @@ EFI_STATUS DirNextEntry (
 
         if (EFI_ERROR(Status)) {
             MY_FREE_POOL(Buffer);
-            Buffer = NULL;
             break;
         }
 
@@ -2979,13 +2974,11 @@ EFI_STATUS DirNextEntry (
         if (BufferSize == 0) {
             // end of directory listing
             MY_FREE_POOL(Buffer);
-            Buffer = NULL;
-
             break;
         }
 
         // entry is ready to be returned
-        *DirEntry = (EFI_FILE_INFO *)Buffer;
+        *DirEntry = (EFI_FILE_INFO *) Buffer;
 
         // filter results
         if (FilterMode == 1) {
@@ -3093,7 +3086,6 @@ BOOLEAN DirIterNext (
     CHAR16  *OnePattern;
 
     MY_FREE_POOL(DirIter->LastFileInfo);
-    DirIter->LastFileInfo = NULL;
 
     if (EFI_ERROR(DirIter->LastStatus)) {
         // stop iteration
@@ -3144,7 +3136,6 @@ EFI_STATUS DirIterClose (
     IN OUT REFIT_DIR_ITER *DirIter
 ) {
     MY_FREE_POOL(DirIter->LastFileInfo);
-    DirIter->LastFileInfo = NULL;
     if ((DirIter->CloseDirHandle) && (DirIter->DirHandle->Close)) {
         REFIT_CALL_1_WRAPPER(DirIter->DirHandle->Close, DirIter->DirHandle);
     }
@@ -3348,7 +3339,6 @@ VOID FindVolumeAndFilename (
 
     MY_FREE_POOL(*loader);
     MY_FREE_POOL(*DeviceVolume);
-    *DeviceVolume = NULL;
     DeviceString  = DevicePathToStr (loadpath);
     *loader       = SplitDeviceString (DeviceString);
 
@@ -3391,7 +3381,6 @@ BOOLEAN SplitVolumeAndFilename (
     }
 
     MY_FREE_POOL(*VolName);
-    *VolName = NULL;
 
     Length = StrLen (*Path);
     while ((i < Length) && ((*Path)[i] != L':')) {
@@ -3428,7 +3417,6 @@ VOID SplitPathName (
     MY_FREE_POOL(*VolName);
     MY_FREE_POOL(*Path);
     MY_FREE_POOL(*Filename);
-    *VolName = *Path = *Filename = NULL;
 
     Temp = StrDuplicate (InPath);
     SplitVolumeAndFilename (&Temp, VolName); // VolName is NULL or has volume; Temp has rest of path
@@ -3441,12 +3429,10 @@ VOID SplitPathName (
 
     if (StrLen (*Path) == 0) {
         MY_FREE_POOL(*Path);
-        *Path = NULL;
     }
 
     if (StrLen (*Filename) == 0) {
         MY_FREE_POOL(*Filename);
-        *Filename = NULL;
     }
 
     MY_FREE_POOL(Temp);

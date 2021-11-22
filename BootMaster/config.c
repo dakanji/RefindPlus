@@ -138,7 +138,6 @@ EFI_STATUS RefitReadFile (
     if (CheckError (Status, Message)) {
         MY_FREE_POOL(Message);
         MY_FREE_POOL(File->Buffer);
-        File->Buffer = NULL;
         REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
         return Status;
@@ -458,7 +457,6 @@ VOID HandleStrings (
 
     if ((*Target != NULL) && !AddMode) {
         MY_FREE_POOL(*Target);
-        *Target = NULL;
     }
 
     for (i = 1; i < TokenCount; i++) {
@@ -664,10 +662,8 @@ VOID ReadConfig (
         GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
 
         MY_FREE_POOL(GlobalConfig.DontScanTools);
-        GlobalConfig.DontScanTools = NULL;
 
         MY_FREE_POOL(GlobalConfig.DontScanFirmware);
-        GlobalConfig.DontScanFirmware = NULL;
         MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
         MergeStrings (&(GlobalConfig.DontScanFiles), FWUPDATE_NAMES, L',');
 
@@ -813,7 +809,6 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
             // Note: Do not use HandleStrings() because it modifies slashes, which might be present in volume name
             MY_FREE_POOL(GlobalConfig.DontScanVolumes);
-            GlobalConfig.DontScanVolumes = NULL;
             for (i = 1; i < TokenCount; i++) {
                 MergeStrings (&GlobalConfig.DontScanVolumes, TokenList[i], L',');
             }
@@ -1215,14 +1210,12 @@ VOID AddSubmenu (
             }
             else if (MyStriCmp (TokenList[0], L"initrd")) {
                 MY_FREE_POOL(SubEntry->InitrdPath);
-                SubEntry->InitrdPath = NULL;
                 if (TokenCount > 1) {
                     SubEntry->InitrdPath = StrDuplicate (TokenList[1]);
                 }
             }
             else if (MyStriCmp (TokenList[0], L"options")) {
                 MY_FREE_POOL(SubEntry->LoadOptions);
-                SubEntry->LoadOptions = NULL;
                 if (TokenCount > 1) {
                     SubEntry->LoadOptions = StrDuplicate (TokenList[1]);
                 }
@@ -1263,7 +1256,6 @@ VOID AddSubmenu (
         MergeStrings (&SubEntry->LoadOptions, L"initrd=", L' ');
         MergeStrings (&SubEntry->LoadOptions, SubEntry->InitrdPath, 0);
         MY_FREE_POOL(SubEntry->InitrdPath);
-        SubEntry->InitrdPath = NULL;
     }
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -1532,7 +1524,6 @@ LOADER_ENTRY * AddStanzaEntries (
                 );
             }
             MY_FREE_POOL(Entry->InitrdPath);
-            Entry->InitrdPath = NULL;
         }
 
         if (!DefaultsSet) {
@@ -1743,7 +1734,6 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
 
                     LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 3");
                     MY_FREE_POOL(Root);
-                    Root = NULL;
 
                     LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 2a 1a 4");
                  } // if
@@ -1769,7 +1759,6 @@ REFIT_FILE * GenerateOptionsFromEtcFstab (
             else {
                 LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3b 1");
                 MY_FREE_POOL(Options);
-                Options = NULL;
                 LOG(5, LOG_LINE_FORENSIC, L"In GenerateOptionsFromEtcFstab ... 1a 4b 3b 2");
             }
 
@@ -1922,7 +1911,6 @@ REFIT_FILE * ReadLinuxOptionsFile (
                     if (File != NULL) {
                         LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 1a 1");
                         MY_FREE_POOL(File);
-                        File = NULL;
                         LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 1a 2");
                     }
                     LOG(5, LOG_LINE_FORENSIC, L"In ReadLinuxOptionsFile ... 2a 3a 2a 3a 2");

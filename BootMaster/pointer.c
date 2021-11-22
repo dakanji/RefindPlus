@@ -189,12 +189,9 @@ VOID pdCleanup() {
             );
         }
         MY_FREE_POOL(APointerHandles);
-        APointerHandles = NULL;
     }
-    if (APointerProtocol) {
-        MY_FREE_POOL(APointerProtocol);
-        APointerProtocol = NULL;
-    }
+
+    MY_FREE_POOL(APointerProtocol);
     if (SPointerHandles) {
         UINTN Index;
         for (Index = 0; Index < NumSPointerDevices; Index++) {
@@ -207,12 +204,9 @@ VOID pdCleanup() {
             );
         }
         MY_FREE_POOL(SPointerHandles);
-        SPointerHandles = NULL;
     }
-    if (SPointerProtocol) {
-        MY_FREE_POOL(SPointerProtocol);
-        SPointerProtocol = NULL;
-    }
+
+    MY_FREE_POOL(SPointerProtocol);
     if (MouseImage) {
         egFreeImage (MouseImage);
         Background = NULL;

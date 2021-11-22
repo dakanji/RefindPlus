@@ -516,7 +516,6 @@ VOID AddKernelToSubmenu (
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 4");
                 MY_FREE_POOL(SubEntry->LoaderPath);
                 MY_FREE_POOL(SubEntry->LoadOptions);
-                SubEntry->LoadOptions = NULL;
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 5");
                 Title = StrDuplicate (SubmenuName);

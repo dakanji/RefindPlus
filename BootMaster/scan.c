@@ -420,7 +420,6 @@ VOID GenerateSubScreen (
     // create the submenu
     if (StrLen (Entry->Title) == 0) {
         MY_FREE_POOL(Entry->Title);
-        Entry->Title = NULL;
     }
 
     SubScreen = InitializeSubScreen (Entry);
@@ -807,7 +806,6 @@ VOID SetLoaderDefaults (
 
             LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 6");
             MY_FREE_POOL(Temp);
-            Temp = NULL;
 
             LOG(5, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 7");
             if (OSIconName != NULL) {

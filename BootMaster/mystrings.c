@@ -383,7 +383,6 @@ VOID MergeStrings (
         if ((*First != NULL) && (Length1 == 0)) {
             //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 1");
             MY_FREE_POOL(*First);
-            *First = NULL;
 
             //LOG(5, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 2");
         }
@@ -475,7 +474,6 @@ VOID MergeUniqueStrings (
         if ((*First != NULL) && (Length1 == 0)) {
             //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 1");
             MY_FREE_POOL(*First);
-            *First = NULL;
 
             //LOG(5, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 2");
         }

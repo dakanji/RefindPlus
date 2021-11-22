@@ -54,7 +54,6 @@ GPT_DATA * AllocateGptData (VOID) {
             MY_FREE_POOL(GptData->ProtectiveMBR);
             MY_FREE_POOL(GptData->Header);
             MY_FREE_POOL(GptData);
-            GptData = NULL;
         }
     }
 

@@ -1148,8 +1148,7 @@ UINTN PickOneBootOption (
             }
 
             MY_FREE_POOL(Filename);
-            Filename = NULL;
-            Volume   = NULL;
+            Volume = NULL;
             MenuEntryItem->Title = StrDuplicate (Temp);
             MenuEntryItem->Row = Entries->BootEntry.BootNum; // Not really the row; the Boot#### number
             AddMenuEntry (&Menu, MenuEntryItem);
