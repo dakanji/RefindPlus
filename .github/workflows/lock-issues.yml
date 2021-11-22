@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   lock:
-    name: Lock Standard Issues
+    name: Lock Issue Threads
     runs-on: ubuntu-latest
     steps:
     - uses: dessant/lock-threads@v3.0.0

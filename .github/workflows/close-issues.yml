@@ -22,6 +22,7 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as the issue could not be replicated.
+
             Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
@@ -33,6 +34,7 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a known issue.
+
             Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
@@ -44,6 +46,7 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a fix will not be attempted.
+
             Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
