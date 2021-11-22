@@ -128,8 +128,7 @@ REFIT_VOLUME * PickOneESP (ESP_LIST *AllESPs) {
 
     if (AllESPs) {
         CurrentESP = AllESPs;
-        AddMenuInfoLine (&InstallMenu, StrDuplicate (MenuInfo));
-        MY_FREE_POOL(MenuInfo);
+        AddMenuInfoLine (&InstallMenu, MenuInfo);
         while (CurrentESP != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
@@ -1117,8 +1116,7 @@ UINTN PickOneBootOption (
     }
 
     if (Entries) {
-        AddMenuInfoLine (&Menu, StrDuplicate (MenuInfo));
-        MY_FREE_POOL(MenuInfo);
+        AddMenuInfoLine (&Menu, MenuInfo);
         while (Entries != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);

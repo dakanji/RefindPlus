@@ -2479,7 +2479,7 @@ VOID ManageHiddenTags (VOID) {
         DisplaySimpleMessage (L"Information", L"No Hidden Tags Found");
     }
     else {
-        AddMenuInfoLine (&HideItemMenu, StrDuplicate (MenuInfo));
+        AddMenuInfoLine (&HideItemMenu, MenuInfo);
         while ((OneElement = FindCommaDelimited (AllTags, i++)) != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY)); // do not free
             MenuEntryItem->Title = StrDuplicate (OneElement);

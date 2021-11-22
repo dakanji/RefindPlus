@@ -837,8 +837,7 @@ VOID preBootKicker (VOID) {
     else {
         BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
-        AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
-        MY_FREE_POOL(MenuInfo);
+        AddMenuInfoLine (&BootKickerMenu, MenuInfo);
         AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
         AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
         AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
@@ -990,8 +989,7 @@ VOID preCleanNvram (VOID) {
     else {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         CleanNvramMenu.Title = L"Clean NVRAM";
-        AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
-        MY_FREE_POOL(MenuInfo);
+        AddMenuInfoLine (&CleanNvramMenu, MenuInfo);
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
