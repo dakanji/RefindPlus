@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as the issue could not be replicated.
             Thank you for your contribution.
@@ -26,9 +27,10 @@ jobs:
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-labels: 'Invalid,Works-For-Me'
+          any-of-issue-labels: 'Invalid,Works-For-Me'
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a known issue.
             Thank you for your contribution.
@@ -36,9 +38,10 @@ jobs:
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-labels: 'Duplicate,Known-Issue'
+          any-of-issue-labels: 'Duplicate,Known-Issue'
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a fix will not be attempted.
             Thank you for your contribution.
@@ -46,4 +49,4 @@ jobs:
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-labels: 'WontFix'
+          only-issue-labels: 'WontFix'

@@ -19,6 +19,7 @@ jobs:
     steps:
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been marked as stale as it has not had any activity recently.
             It will be closed presently if no further activity occurs.
@@ -32,6 +33,7 @@ jobs:
           exempt-issue-labels: 'Parked'
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure as required information is missing.
             It will be closed presently if the information is not provided.
@@ -42,9 +44,10 @@ jobs:
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          only-issue-labels: 'Incomplete,Unclear'
+          any-of-issue-labels: 'Incomplete,Unclear'
       - uses: actions/stale@v4.0.0
         with:
+          repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been marked as stale as it has not had any activity recently.
             It will be closed presently if no further activity occurs.

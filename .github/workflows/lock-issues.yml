@@ -22,12 +22,6 @@ jobs:
       with:
         github-token: ${{ github.token }}
         issue-lock-reason: ''
-        issue-inactive-days: '9'
-        include-any-issue-labels: ''
-    - uses: dessant/lock-threads@v3.0.0
-      with:
-        github-token: ${{ github.token }}
-        issue-lock-reason: ''
         issue-inactive-days: '4'
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'Duplicate,Known-Issue'
@@ -47,4 +41,11 @@ jobs:
         issue-inactive-days: '4'
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'WontFix,Invalid,Works-For-Me'
+        process-only: 'issues'
+    - uses: dessant/lock-threads@v3.0.0
+      with:
+        github-token: ${{ github.token }}
+        issue-lock-reason: ''
+        issue-inactive-days: '9'
+        include-any-issue-labels: ''
         process-only: 'issues'
