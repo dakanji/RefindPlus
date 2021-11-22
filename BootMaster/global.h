@@ -203,14 +203,31 @@
 // Note that SelfDir is searched in addition to these locations.
 #define MOK_LOCATIONS \
 L"\\EFI\\tools,\\EFI\\fedora,\\EFI\\redhat,\\EFI\\ubuntu,\\EFI\\suse,\\EFI\\opensuse,\\EFI\\altlinux"
+
 // Directories to search for memtest86.
 #define MEMTEST_LOCATIONS \
 L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest\
 \\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
+
 // Files that may be Windows recovery files
-#define WINDOWS_RECOVERY_FILES \
+#if defined (EFIX64)
+    #define WINDOWS_RECOVERY_FILES \
 L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootx64.efi,\
-Recovery:\\EFI\\BOOT\\bootia32.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+#elif defined(EFI32)
+    #define WINDOWS_RECOVERY_FILES \
+L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootia32.efi,\
+Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+#elif defined(EFIAARCH64)
+    #define WINDOWS_RECOVERY_FILES \
+L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\bootaa64.efi,\
+Recovery:\\EFI\\BOOT\\boot.efi,\\EFI\\OEM\\Boot\\bootmgfw.efi"
+#else
+    #define WINDOWS_RECOVERY_FILES \
+L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
+\\EFI\\OEM\\Boot\\bootmgfw.efi"
+#endif
+
 // Files that may be Mac OS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 #define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
