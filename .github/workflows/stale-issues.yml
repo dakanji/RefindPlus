@@ -32,7 +32,6 @@ jobs:
           exempt-issue-labels: 'Parked'
 
 
-jobs:
   stale:
     name: Stale Incomplete Items
     runs-on: ubuntu-latest
@@ -52,7 +51,6 @@ jobs:
           only-issue-labels: 'Incomplete,Unclear'
 
 
-jobs:
   stale:
     name: Stale Parked Items
     runs-on: ubuntu-latest

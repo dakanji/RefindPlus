@@ -28,7 +28,6 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-labels: 'Invalid,Works-For-Me'
 
-jobs:
   stale:
     name: Close Known Issues
     runs-on: ubuntu-latest
@@ -44,7 +43,6 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-labels: 'Duplicate,Known-Issue'
 
-jobs:
   stale:
     name: Close Accepted Issues
     runs-on: ubuntu-latest

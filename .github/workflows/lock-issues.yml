@@ -26,7 +26,6 @@ jobs:
         include-any-issue-labels: ''
         process-only: 'issues'
 
-jobs:
   lock:
     name: Lock Known Issues
     runs-on: ubuntu-latest
@@ -40,7 +39,6 @@ jobs:
         include-any-issue-labels: 'Duplicate,Known-Issue'
         process-only: 'issues'
 
-jobs:
   lock:
     name: Lock Incomplete Issues
     runs-on: ubuntu-latest
