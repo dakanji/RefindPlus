@@ -700,7 +700,7 @@ UINTN RunGenericMenu (
     INTN           CurrentTime;
     INTN           ShortcutEntry;
     UINTN          ElapsCount;
-    UINTN          MenuExit;
+    UINTN          MenuExit = 0;
     UINTN          Input;
     UINTN          Item;
     CHAR16        *TimeoutMessage;
@@ -717,7 +717,6 @@ UINTN RunGenericMenu (
         HaveTimeout      = TRUE;
         TimeoutCountdown = Screen->TimeoutSeconds * 10;
     }
-    MenuExit = 0;
 
     StyleFunc (Screen, &State, MENU_FUNCTION_INIT, NULL);
     IdentifyRows (&State, Screen);
@@ -755,7 +754,7 @@ UINTN RunGenericMenu (
     }
 
     BOOLEAN Toggled = FALSE;
-    while (!MenuExit) {
+    while (MenuExit == 0) {
         // update the screen
         pdClear();
         if (State.PaintAll && (GlobalConfig.ScreensaverTime != -1)) {
@@ -2384,8 +2383,6 @@ BOOLEAN RemoveInvalidFilenames (
         MY_FREE_POOL(Filename);
         MY_FREE_POOL(VolName);
 
-        VolName = NULL;
-
         DeletedSomething |= DeleteIt;
     } // while
 
@@ -2532,7 +2529,6 @@ VOID ManageHiddenTags (VOID) {
         if (SaveTools) {
             SaveHiddenList (HiddenTools, L"HiddenTools");
             MY_FREE_POOL(gHiddenTools);
-            gHiddenTools = NULL;
         }
 
         if (SaveFirmware) {
@@ -2576,7 +2572,6 @@ CHAR16 * ReadHiddenTags (
         #endif
 
         MY_FREE_POOL(Buffer);
-        Buffer = NULL;
     }
 
     return Buffer;
@@ -2665,7 +2660,6 @@ BOOLEAN HideEfiTag (
         GuidStr = GuidAsString (&Loader->Volume->PartGuid);
         if (FindVolume (&TestVolume, GuidStr) && TestVolume->RootDir) {
             MY_FREE_POOL(FullPath);
-            FullPath = NULL;
             MergeStrings (&FullPath, GuidStr, L'\0');
             MergeStrings (&FullPath, L":", L'\0');
             MergeStrings (
@@ -2859,7 +2853,6 @@ VOID HideTag (
             HideItemMenu.Title = L"Hide Tool Tag";
             HideEfiTag (Loader, &HideItemMenu, L"HiddenTools");
             MY_FREE_POOL(gHiddenTools);
-            gHiddenTools = NULL;
 
             #if REFIT_DEBUG > 0
             MsgLog ("User Input Received:\n");
@@ -2877,7 +2870,7 @@ UINTN RunMenu (
 ) {
     INTN            DefaultEntry = -1;
     UINTN           MenuExit;
-    MENU_STYLE_FUNC Style        = TextMenuStyle;
+    MENU_STYLE_FUNC Style        =  TextMenuStyle;
 
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
@@ -2900,11 +2893,11 @@ UINTN RunMainMenu (
     CHAR16            **DefaultSelection,
     REFIT_MENU_ENTRY  **ChosenEntry
 ) {
-    REFIT_MENU_ENTRY   *TempChosenEntry     = NULL;
-    MENU_STYLE_FUNC     Style               = TextMenuStyle;
-    MENU_STYLE_FUNC     MainStyle           = TextMenuStyle;
-    CHAR16             *MenuTitle;
-    UINTN               MenuExit            = 0;
+    REFIT_MENU_ENTRY   *TempChosenEntry     =  NULL;
+    MENU_STYLE_FUNC     Style               =  TextMenuStyle;
+    MENU_STYLE_FUNC     MainStyle           =  TextMenuStyle;
+    CHAR16             *MenuTitle           =  NULL;
+    UINTN               MenuExit            =  0;
     INTN                DefaultEntryIndex   = -1;
     INTN                DefaultSubmenuIndex = -1;
 
@@ -2914,7 +2907,7 @@ UINTN RunMainMenu (
            BOOLEAN  DefaultSelectionSet = FALSE;
     #endif
 
-    TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG] * 9) / 8;
+    TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG]   * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
     #if REFIT_DEBUG > 0
@@ -2980,12 +2973,10 @@ UINTN RunMainMenu (
     // Generate WaitList if not already generated.
     GenerateWaitList();
 
-    MenuTitle = StrDuplicate (L"Unknown");
-
-    // Save seconds elaspsed from start until just before entering the Main Menu MenuExit loop
+    // Save time elaspsed from start til now
     MainMenuLoad = GetCurrentMS();
 
-    while (MenuExit == 0) {
+    do {
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
         #if REFIT_DEBUG > 0
@@ -3037,7 +3028,7 @@ UINTN RunMainMenu (
             }
             MenuExit = 0;
         }
-    } // while
+    } while (MenuExit == 0);
 
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
     if (FlushFailedTag && !FlushFailReset) {
