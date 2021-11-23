@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Handle Incomplete Issues
+      - name: Handle Stale Incomplete Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -31,7 +31,7 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
 
-      - name: Handle No-Response Issues
+      - name: Handle Stale No-Response Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -43,7 +43,7 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
 
-      - name: Handle inactive Issues
+      - name: Handle Stale inactive Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -55,7 +55,7 @@ jobs:
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked'
 
-      - name: Handle Parked Issues
+      - name: Handle Stale Parked Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
