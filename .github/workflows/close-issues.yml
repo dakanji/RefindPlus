@@ -4,7 +4,7 @@ name: 'Close Issues'
 on:
   workflow_dispatch:
   schedule:
-    - cron: '15 15 * * *'
+    - cron: '12 12 * * *'
 
 permissions:
   issues: write
@@ -16,17 +16,6 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - name: Close Invalid Issues
-        uses: actions/stale@v4.0.0
-        with:
-          repo-token: ${{ github.token }}
-          close-issue-message: >
-            This item has been closed as the issue could not be replicated.
-          days-before-stale: 1
-          days-before-close: 2
-          exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Invalid,Works-For-Me'
 
       - name: Close Duplicate Issues
         uses: actions/stale@v4.0.0
@@ -39,6 +28,18 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Duplicate,Known-Issue'
+
+      - name: Close Invalid Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item has been closed as the issue could not be replicated.
+          days-before-stale: 1
+          days-before-close: 2
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-issue-labels: 'Invalid,Works-For-Me'
 
       - name: Close WontFix Issues
         uses: actions/stale@v4.0.0

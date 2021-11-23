@@ -1,11 +1,11 @@
 # Configuration for Handling Stale Threads - https://github.com/marketplace/actions/stale
 
-name: 'Stale Issues'
+name: 'Handle Stale Issues'
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '12 12 * * *'
+    - cron: '10 10 * * *'
 
 permissions:
   issues: write
@@ -15,11 +15,10 @@ concurrency:
 
 jobs:
   stale:
-
     runs-on: ubuntu-latest
-
     steps:
-      - name: Handle Stale Incomplete Issues
+
+      - name: Stale Incomplete Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -31,7 +30,7 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
 
-      - name: Handle Stale No-Response Issues
+      - name: Stale No-Response Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -43,7 +42,7 @@ jobs:
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
 
-      - name: Handle Stale inactive Issues
+      - name: Stale Inactive Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -55,7 +54,7 @@ jobs:
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked'
 
-      - name: Handle Stale Parked Issues
+      - name: Stale Parked Issues
         uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
