@@ -26,8 +26,6 @@ DebugLog (
     #define MsgLog(...)  DebugLog(REFIT_DEBUG, __VA_ARGS__)
 #endif
 
-extern CHAR16 *gLogTemp;
-
 VOID
 DeepLoggger (
   IN  INTN     DebugMode,
@@ -37,6 +35,9 @@ DeepLoggger (
 );
 
 // NB: 'gLogTemp' is freed in DeepLoggger
-#define LOG(level, type, ...) \
-        gLogTemp = PoolPrint(__VA_ARGS__); \
-        DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp);
+extern CHAR16 *gLogTemp;
+#define LOG(level, type, ...)                             \
+    do {                                                  \
+        gLogTemp = PoolPrint(__VA_ARGS__);                \
+        DeepLoggger(REFIT_DEBUG, level, type, &gLogTemp); \
+    } while (FALSE)
