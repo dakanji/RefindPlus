@@ -2528,7 +2528,7 @@ VOID ScanForBootloaders (
                 L"Merging HiddenTags into 'Dont Scan Files':- '%s'",
                 HiddenTags
             );
-            LOG(3, LOG_BLANK_LINE_SEP, L"X")
+            LOG(3, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
             MergeStrings (&GlobalConfig.DontScanFiles, HiddenTags, L',');
@@ -2542,7 +2542,7 @@ VOID ScanForBootloaders (
                 L"Merging HiddenLegacy into 'Dont Scan Volumes':- '%s'",
                 HiddenLegacy
             );
-            LOG(3, LOG_BLANK_LINE_SEP, L"X")
+            LOG(3, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
             MergeStrings (&GlobalConfig.DontScanVolumes, HiddenLegacy, L',');
