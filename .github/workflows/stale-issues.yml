@@ -14,9 +14,11 @@ concurrency:
 
 jobs:
   stale:
-    name: Handle Stale Issues
+    name: Stale Issues
     runs-on: ubuntu-latest
     steps:
+
+      - name: Close Incomplete Issues
       - uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -31,6 +33,8 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
+
+      - name: Close No-Response Issues
       - uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -45,6 +49,8 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
+
+      - name: Close Parked Issues
       - uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
@@ -59,6 +65,8 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked'
+
+      - name: Close Inactive Issues
       - uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}

@@ -18,6 +18,8 @@ jobs:
     name: Lock Issue Threads
     runs-on: ubuntu-latest
     steps:
+
+    - name: Lock Duplicate Issues
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
@@ -26,6 +28,8 @@ jobs:
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'Duplicate,Known-Issue'
         process-only: 'issues'
+
+    - name: Lock Incomplete Issues
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
@@ -34,6 +38,8 @@ jobs:
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'Incomplete,Unclear'
         process-only: 'issues'
+
+    - name: Lock Invalid Issues
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
@@ -42,6 +48,8 @@ jobs:
         remove-issue-labels: 'Flagged'
         include-any-issue-labels: 'WontFix,Invalid,Works-For-Me'
         process-only: 'issues'
+
+    - name: Lock Inactive Issues
     - uses: dessant/lock-threads@v3.0.0
       with:
         github-token: ${{ github.token }}
