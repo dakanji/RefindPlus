@@ -1,6 +1,7 @@
 # Configuration for Handling Stale Threads - https://github.com/marketplace/actions/stale
 
 name: 'Stale Issues'
+
 on:
   workflow_dispatch:
   schedule:
@@ -14,60 +15,52 @@ concurrency:
 
 jobs:
   stale:
-    name: Handle Stale Issues
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/stale@v4.0.0
+      - name: Handle Incomplete Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to missing required information.
-          close-issue-message: >
-            This item has been closed due to missing required information.
-
-            Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
-      - uses: actions/stale@v4.0.0
+
+      - name: Handle No-Response Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to a lack of response.
-          close-issue-message: >
-            This item has been closed due to a lack of response.
-
-            Thank you for your contribution.
           days-before-stale: 7
           days-before-close: 7
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
-      - uses: actions/stale@v4.0.0
+
+      - name: Handle inactive Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
-            This item has been marked as stale due to inactivity.
-          close-issue-message: >
-            This item has been closed due to inactivity.
-
-            Thank you for your contribution.
+            This item has been flagged for closure due to inactivity.
           days-before-stale: 21
           days-before-close: 7
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked'
-      - uses: actions/stale@v4.0.0
+
+      - name: Handle Parked Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
-            This item has been marked as stale due to inactivity.
-          close-issue-message: >
-            This item has been closed due to inactivity.
-
-            Thank you for your contribution.
+            This item has been flagged for closure due to inactivity.
           days-before-stale: 60
           days-before-close: 30
           exempt-assignees: 'dakanji'

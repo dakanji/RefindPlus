@@ -14,40 +14,38 @@ concurrency:
 
 jobs:
   stale:
-    name: Close Invalid Issues
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v4.0.0
+      - name: Close Invalid Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as the issue could not be replicated.
-
-            Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Invalid,Works-For-Me'
-      - uses: actions/stale@v4.0.0
+
+      - name: Close Duplicate Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a known issue.
-
-            Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Duplicate,Known-Issue'
-      - uses: actions/stale@v4.0.0
+
+      - name: Close WontFix Issues
+        uses: actions/stale@v4.0.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a fix will not be attempted.
-
-            Thank you for your contribution.
           days-before-stale: 1
           days-before-close: 2
           exempt-assignees: 'dakanji'
