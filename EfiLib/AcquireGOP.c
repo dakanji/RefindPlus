@@ -15,9 +15,7 @@
 /**
   @retval EFI_INCOMPATIBLE_VERSION  Not running on compatible TianoCore compiled version
 **/
-EFI_STATUS AcquireGOP (
-    VOID
-) {
+EFI_STATUS AcquireGOP (VOID) {
     // NOOP if not compiled using EDK II
     return EFI_INCOMPATIBLE_VERSION;
 }
@@ -221,9 +219,7 @@ EFI_STATUS ReloadOptionROM (
   @retval EFI_NOT_FOUND             Failed to Locate Suitable Option ROM.
   @retval Other value               Unknown error.
 **/
-EFI_STATUS AcquireGOP (
-    VOID
-) {
+EFI_STATUS AcquireGOP (VOID) {
     UINTN                 Index                = 0;
     UINTN                 HandleIndex          = 0;
     UINTN                 HandleArrayCount     = 0;

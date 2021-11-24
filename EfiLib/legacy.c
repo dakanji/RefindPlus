@@ -632,9 +632,7 @@ or they are already in boot options.
 @retval EFI_OUT_OF_RESOURCE  No enough memory.
 @return Other value          LegacyBoot options are not added.
 **/
-EFI_STATUS BdsAddNonExistingLegacyBootOptions (
-    VOID
-) {
+EFI_STATUS BdsAddNonExistingLegacyBootOptions (VOID) {
     UINT16                   *BootOrder;
     UINTN                     BootOrderSize;
     EFI_STATUS                Status;
@@ -823,9 +821,7 @@ Delete all the invalid legacy boot options.
 @retval EFI_OUT_OF_RESOURCES    Fail to allocate necessary memory.
 @retval EFI_NOT_FOUND           Fail to retrive variable of boot order.
 **/
-EFI_STATUS BdsDeleteAllInvalidLegacyBootOptions (
-    VOID
-) {
+EFI_STATUS BdsDeleteAllInvalidLegacyBootOptions (VOID) {
     UINT16                   *BootOrder;
     UINT8                    *BootOptionVar;
     UINTN                     BootOrderSize;

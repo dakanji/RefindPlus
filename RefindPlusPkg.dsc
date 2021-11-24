@@ -92,7 +92,7 @@
     FileHandleLib|MdePkg/Library/UefiFileHandleLib/UefiFileHandleLib.inf
     SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
 
-  # Added by dakanji (sf.net/u/dakanji/profile) for NvmExpressLib
+  # Added by dakanji (sf.net/u/dakanji/profile) for SupplyNVME
     NvmExpressLib|RefindPlusPkg/Library/NvmExpressLib/NvmExpressLib.inf
 
 [LibraryClasses.AARCH64]

@@ -217,9 +217,7 @@ EFI_STATUS ScanDeviceHandles (
 } // EFI_STATUS ScanDeviceHandles()
 
 
-EFI_STATUS BdsLibConnectMostlyAllEfi (
-    VOID
-) {
+EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     EFI_STATUS            XStatus;
     EFI_STATUS            Status           = EFI_SUCCESS;
     EFI_HANDLE           *AllHandleBuffer = NULL;
@@ -607,9 +605,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (
   sure all the system controllers have driver to manage it if have.
 **/
 static
-EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
-    VOID
-) {
+EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     EFI_STATUS  Status;
 
     #if REFIT_DEBUG > 0
@@ -679,9 +675,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (
 // to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
 // amends SystemTable Revision information, provides the missing CreateEventEx capability
 // then reloads the GPU's ROM from RAM (If Present) which will install GOP (If Available).
-EFI_STATUS ApplyGOPFix (
-    VOID
-) {
+EFI_STATUS ApplyGOPFix (VOID) {
     EFI_STATUS Status;
 
     #if REFIT_DEBUG > 0

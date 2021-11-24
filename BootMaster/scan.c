@@ -1901,14 +1901,7 @@ VOID ScanNetboot (VOID) {
         Location = RuniPXEDiscover (SelfVolume->DeviceHandle);
         if (Location != NULL && FileExists (SelfVolume->RootDir, iPXEFileName)) {
             NetVolume = CopyVolume (SelfVolume);
-            if (!NetVolume) {
-                #if REFIT_DEBUG > 0
-                LOG(2, LOG_THREE_STAR_SEP,
-                    L"In ScanNetboot ... Out of Resources While Allocating 'NetVolume'!!"
-                );
-                #endif
-            }
-            else {
+            if (NetVolume) {
                 NetVolume->DiskKind = DISK_KIND_NET;
 
                 egFreeImage (NetVolume->VolBadgeImage);
@@ -2617,7 +2610,7 @@ VOID ScanForBootloaders (
 
         #if REFIT_DEBUG > 0
         if (AmendedDontScan) {
-            LOG(3, LOG_STAR_SEPARATOR, L"Amended 'Dont Scan' Items ... SyncAPFS is Active");
+            LOG(3, LOG_STAR_SEPARATOR, L"Ignored PreBoot Volumes in 'Dont Scan' List ... SyncAPFS is Active");
         }
         #endif
     } // if GlobalConfig.SyncAPFS
@@ -2933,9 +2926,6 @@ BOOLEAN FindTool (
     CHAR16 *ToolStr = NULL;
     #endif
 
-//DA-TAG: Commented Out
-//    CHAR16 FullDescription;
-
     while ((DirName = FindCommaDelimited (Locations, j++)) != NULL) {
         k = 0;
         while ((FileName = FindCommaDelimited (Names, k++)) != NULL) {
@@ -2952,15 +2942,6 @@ BOOLEAN FindTool (
                     );
                     #endif
 
-//DA-TAG: Commented Out
-//                    FullDescription = PoolPrint (
-//                        L"%s at %s on %s",
-//                        Description,
-//                        PathName,
-//                        Volumes[VolumeIndex]->VolName
-//                    );
-
-//DA-TAG: Changed "FullDescription" to "Description" below
                     AddToolEntry (
                         Volumes[VolumeIndex],
                         PathName, Description,
@@ -2973,7 +2954,9 @@ BOOLEAN FindTool (
                         L"Added Tool:- '%s' : %s%s",
                         Description, DirName, FileName
                     );
+
                     LOG(3, LOG_THREE_STAR_MID, L"%s", ToolStr);
+
                     if (FoundTool) {
                         MsgLog ("\n                               ");
                     }
@@ -3041,7 +3024,7 @@ VOID ScanForTools (VOID) {
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");   break;
             case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Mac Recovery");       break;
-            case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Boot Order");         break;
+            case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Boot Order");  break;
             case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");         break;
             case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");    break;
             case TAG_FIRMWARE:         ToolName = StrDuplicate (L"Firmware Reboot");    break;
@@ -3191,7 +3174,14 @@ VOID ScanForTools (VOID) {
                     L"OsIndicationsSupported",
                     &ItemBuffer,
                     NULL
-                ) == EFI_SUCCESS) {
+                ) != EFI_SUCCESS) {
+                    #if REFIT_DEBUG > 0
+                    LOG(3, LOG_LINE_NORMAL,
+                        L"'Showtools' Includes Firmware Tool but 'OsIndicationsSupported' Variable is Missing!!"
+                    );
+                    #endif
+                }
+                else {
                     osind = *(UINT64*) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
@@ -3208,13 +3198,6 @@ VOID ScanForTools (VOID) {
                         #endif
                     }
                     MY_FREE_POOL(ItemBuffer);
-                }
-                else {
-                    #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL,
-                        L"'Showtools' Includes Firmware Tool but 'OsIndicationsSupported' Variable is Missing!!"
-                    );
-                    #endif
                 }
 
                 #if REFIT_DEBUG > 0

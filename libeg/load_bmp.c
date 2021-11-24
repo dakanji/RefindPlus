@@ -105,22 +105,30 @@ EG_IMAGE * egDecodeBMP(
 
     // calculate parameters
     ImageLineOffset = BmpHeader->PixelWidth;
-    if (BmpHeader->BitPerPixel == 24)
+    if (BmpHeader->BitPerPixel == 24) {
         ImageLineOffset *= 3;
-    else if (BmpHeader->BitPerPixel == 1)
+    }
+    else if (BmpHeader->BitPerPixel == 1) {
         ImageLineOffset = (ImageLineOffset + 7) >> 3;
-    else if (BmpHeader->BitPerPixel == 4)
+    }
+    else if (BmpHeader->BitPerPixel == 4) {
         ImageLineOffset = (ImageLineOffset + 1) >> 1;
-    if ((ImageLineOffset % 4) != 0)
+    }
+
+    if ((ImageLineOffset % 4) != 0) {
         ImageLineOffset = ImageLineOffset + (4 - (ImageLineOffset % 4));
+    }
+
     // check bounds
-    if (BmpHeader->ImageOffset + ImageLineOffset * BmpHeader->PixelHeight > FileDataLength)
+    if (BmpHeader->ImageOffset + ImageLineOffset * BmpHeader->PixelHeight > FileDataLength) {
         return NULL;
+    }
 
     // allocate image structure and buffer
     NewImage = egCreateImage(BmpHeader->PixelWidth, BmpHeader->PixelHeight, WantAlpha);
-    if (NewImage == NULL)
+    if (NewImage == NULL) {
         return NULL;
+    }
     AlphaValue = WantAlpha ? 255 : 0;
 
     // convert image
@@ -136,8 +144,9 @@ EG_IMAGE * egDecodeBMP(
             case 1:
                 for (x = 0; x < BmpHeader->PixelWidth; x++) {
                     BitIndex = x & 0x07;
-                    if (BitIndex == 0)
+                    if (BitIndex == 0) {
                         ImageValue = *ImagePtr++;
+                    }
 
                     Index = (ImageValue >> (7 - BitIndex)) & 0x01;
                     PixelPtr->b = BmpColorMap[Index].Blue;

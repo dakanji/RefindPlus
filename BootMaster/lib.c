@@ -947,13 +947,6 @@ REFIT_VOLUME * CopyVolume (
                 if (Volume->MbrPartitionTable) {
                     CopyMem (Volume->MbrPartitionTable, VolumeToCopy->MbrPartitionTable, SizeMBR);
                 }
-                else {
-                    #if REFIT_DEBUG > 0
-                    LOG(2, LOG_THREE_STAR_SEP,
-                        L"In CopyVolume ... Out of Resources While Allocating 'MbrPartitionTable'!!"
-                    );
-                    #endif
-                }
             }
 
             // ReInit Volume
