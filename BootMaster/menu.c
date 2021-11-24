@@ -402,7 +402,7 @@ CHAR16 * MenuExitInfo (
         case 3:  MenuExitData = L"DETAILS"; break;
         case 4:  MenuExitData = L"TIMEOUT"; break;
         case 5:  MenuExitData = L"EJECT";   break;
-        case 6:  MenuExitData = L"HIDE";    break;
+        case 6:  MenuExitData = L"REMOVE";  break;
         default: MenuExitData = L"RETURN";  // Actually '99'
     } // switch
 
@@ -951,13 +951,13 @@ UINTN RunGenericMenu (
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=SpaceBar";       break;
-                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key=LineFeed";       break;
-                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key=CarriageReturn"; break;
-                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key=BackSpace";      break;
-                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key=Tab";            break;
-                    case '+':                  KeyTxt = L"INFER_DETAILS  Key='+''";           break;
-                    case '-':                  KeyTxt = L"INFER_HIDE     Key='-''";           break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=SpaceBar";        break;
+                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key=LineFeed";        break;
+                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key=CarriageReturn";  break;
+                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key=BackSpace";       break;
+                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key=Tab";             break;
+                    case '+':                  KeyTxt = L"INFER_DETAILS  Key='+'...'Plus'";    break;
+                    case '-':                  KeyTxt = L"INFER_REMOVE   Key='-'...'Minus'";   break;
                 } // switch
             }
             LOG(3, LOG_LINE_NORMAL,
