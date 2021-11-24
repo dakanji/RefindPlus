@@ -339,16 +339,22 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
             CHAR16 *DisplayName = NULL;
 
             if (GlobalConfig.SyncAPFS) {
+                EFI_STATUS                 Status;
                 EFI_GUID               VolumeGuid;
                 EFI_GUID            ContainerGuid;
                 APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-                EFI_STATUS Status = RP_GetApfsVolumeInfo (
+                #ifdef __MAKEWITH_GNUEFI
+                Status = EFI_NOT_FOUND;
+                #else
+                // DA-TAG: Limit to TianoCore
+                Status = RP_GetApfsVolumeInfo (
                     Entry->Volume->DeviceHandle,
                     &ContainerGuid,
                     &VolumeGuid,
                     &VolumeRole
                 );
+                #endif
 
                 if (!EFI_ERROR(Status)) {
                     if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
@@ -850,16 +856,22 @@ VOID SetLoaderDefaults (
                         CHAR16 *DisplayName = NULL;
 
                         if (GlobalConfig.SyncAPFS) {
+                            EFI_STATUS                 Status;
                             EFI_GUID               VolumeGuid;
                             EFI_GUID            ContainerGuid;
                             APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-                            EFI_STATUS Status = RP_GetApfsVolumeInfo (
+                            #ifdef __MAKEWITH_GNUEFI
+                            Status = EFI_NOT_FOUND;
+                            #else
+                            // DA-TAG: Limit to TianoCore
+                            Status = RP_GetApfsVolumeInfo (
                                 Volume->DeviceHandle,
                                 &ContainerGuid,
                                 &VolumeGuid,
                                 &VolumeRole
                             );
+                            #endif
 
                             if (!EFI_ERROR(Status)) {
                                 if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
@@ -1256,12 +1268,17 @@ LOADER_ENTRY * AddLoaderEntry (
         EFI_GUID            ContainerGuid;
         APPLE_APFS_VOLUME_ROLE VolumeRole;
 
+        #ifdef __MAKEWITH_GNUEFI
+        Status = EFI_NOT_FOUND;
+        #else
+        // DA-TAG: Limit to TianoCore
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
             &ContainerGuid,
             &VolumeGuid,
             &VolumeRole
         );
+        #endif
 
         if (!EFI_ERROR(Status)) {
             if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
@@ -1464,12 +1481,17 @@ BOOLEAN ShouldScan (
         EFI_GUID            ContainerGuid;
         APPLE_APFS_VOLUME_ROLE VolumeRole;
 
+        #ifdef __MAKEWITH_GNUEFI
+        Status = EFI_NOT_FOUND;
+        #else
+        // DA-TAG: Limit to TianoCore
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
             &ContainerGuid,
             &VolumeGuid,
             &VolumeRole
         );
+        #endif
 
         if (!EFI_ERROR(Status)) {
             TmpVolNameB = PoolPrint (L"%s - DATA", Volume->VolName);
@@ -2006,12 +2028,17 @@ VOID ScanEfiFiles (
         EFI_GUID            ContainerGuid;
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
+        #ifdef __MAKEWITH_GNUEFI
+        Status = EFI_NOT_FOUND;
+        #else
+        // DA-TAG: Limit to TianoCore
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
             &ContainerGuid,
             &VolumeGuid,
             &VolumeRole
         );
+        #endif
 
         if (!EFI_ERROR(Status)) {
             if (VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&

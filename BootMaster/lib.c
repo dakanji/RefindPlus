@@ -2445,12 +2445,17 @@ VOID ScanVolumes (VOID) {
             else if (MyStrStrIns (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
             else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
             else {
+                #ifdef __MAKEWITH_GNUEFI
+                Status = EFI_NOT_FOUND;
+                #else
+                // DA-TAG: Limit to TianoCore
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
                     &ContainerGuid,
                     &VolumeGuid,
                     &VolumeRole
                 );
+                #endif
 
                 if (!EFI_ERROR(Status)) {
                     PartType        = L"APFS";

@@ -430,6 +430,9 @@ EFI_STATUS SetAppleOSInfo (
  * Modifications distributed under the preceding terms.
 **/
 
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore - START
+
 extern
 BOOLEAN OcOverflowAddUN (
     UINTN   A,
@@ -447,7 +450,6 @@ extern
 UINTN OcFileDevicePathNameSize (
     IN CONST FILEPATH_DEVICE_PATH  *FilePath
 );
-
 
 static
 CHAR16 * RP_GetAppleDiskLabelEx (
@@ -735,3 +737,6 @@ CHAR16 * RP_GetAppleDiskLabel (
 
     return AppleDiskLabel;
 } // CHAR16 * RP_GetAppleDiskLabel()
+
+// DA-TAG: Limit to TianoCore - END
+#endif

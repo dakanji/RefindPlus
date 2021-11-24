@@ -2535,12 +2535,17 @@ EFI_STATUS EFIAPI efi_main (
                             EFI_GUID            ContainerGuid;
                             APPLE_APFS_VOLUME_ROLE VolumeRole;
 
+                            #ifdef __MAKEWITH_GNUEFI
+                            Status = EFI_NOT_FOUND;
+                            #else
+                            // DA-TAG: Limit to TianoCore
                             Status = RP_GetApfsVolumeInfo (
                                 ourLoaderEntry->Volume->DeviceHandle,
                                 &ContainerGuid,
                                 &VolumeGuid,
                                 &VolumeRole
                             );
+                            #endif
 
                             if (!EFI_ERROR(Status)) {
                                 if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
