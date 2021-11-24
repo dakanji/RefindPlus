@@ -1,0 +1,118 @@
+# Configuration for Handling Stale Threads - https://github.com/marketplace/actions/stale
+
+name: 'Manage Issues'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '1 1 * * *'
+
+permissions:
+  issues: write
+
+concurrency:
+  group: lock
+
+jobs:
+  stale:
+    name: Flag or Close Issues
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Flag or Close Incomplete Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to missing required information.
+          days-before-stale: 2
+          days-before-close: 3
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-issue-labels: 'Incomplete,Unclear'
+
+      - name: Flag or Close No-Response Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to a lack of response.
+          days-before-stale: 7
+          days-before-close: 7
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-issue-labels: 'Queries'
+
+      - name: Flag or Close Inactive Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to inactivity.
+          days-before-stale: 21
+          days-before-close: 7
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Stale'
+          exempt-issue-labels: 'Parked'
+
+      - name: Flag or Close Parked Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to inactivity.
+          days-before-stale: 60
+          days-before-close: 30
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Stale'
+          only-issue-labels: 'Parked'
+
+      - name: Close Duplicate Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item has been closed as a known issue.
+          days-before-stale: 2
+          days-before-close: 3
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-issue-labels: 'Duplicate,Known-Issue'
+
+      - name: Close Invalid Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item has been closed as the issue could not be replicated.
+          days-before-stale: 2
+          days-before-close: 3
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          any-of-issue-labels: 'Invalid,Works-For-Me'
+
+      - name: Close WontFix Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item has been closed as a fix will not be attempted.
+          days-before-stale: 2
+          days-before-close: 3
+          exempt-assignees: 'dakanji'
+          stale-issue-label: 'Flagged'
+          only-issue-labels: 'WontFix'
+
+  lock:
+    name: Lock Threads
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Lock Resolved Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '9'
+          include-any-issue-labels: ''
+          process-only: 'issues'
