@@ -164,7 +164,7 @@ static REFIT_MENU_ENTRY MenuEntryInstall = {
     NULL, NULL, NULL
 };
 static REFIT_MENU_ENTRY MenuEntryBootorder = {
-    L"Manage Boot Order",
+    L"Manage Firmware Boot Order",
     TAG_BOOTORDER,
     1, 0, 0,
     NULL, NULL, NULL
@@ -2563,12 +2563,12 @@ VOID ScanForBootloaders (
                         ? TRUE
                         : FALSE;
 
-                if (DeleteItem) {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanFiles);
-                    AmendedDontScan = TRUE;
+                if (!DeleteItem) {
+                    i++;
                 }
                 else {
-                    i++;
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanFiles);
+                    AmendedDontScan = TRUE;
                 }
 
                 MY_FREE_POOL(DontScanItem);
@@ -2583,12 +2583,12 @@ VOID ScanForBootloaders (
                         ? TRUE
                         : FALSE;
 
-                if (DeleteItem) {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanDirs);
-                    AmendedDontScan = TRUE;
+                if (!DeleteItem) {
+                    i++;
                 }
                 else {
-                    i++;
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanDirs);
+                    AmendedDontScan = TRUE;
                 }
 
                 MY_FREE_POOL(DontScanItem);
@@ -2603,12 +2603,12 @@ VOID ScanForBootloaders (
                         ? TRUE
                         : FALSE;
 
-                if (DeleteItem) {
-                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanVolumes);
-                    AmendedDontScan = TRUE;
+                if (!DeleteItem) {
+                    i++;
                 }
                 else {
-                    i++;
+                    DeleteItemFromCsvList (DontScanItem, GlobalConfig.DontScanVolumes);
+                    AmendedDontScan = TRUE;
                 }
 
                 MY_FREE_POOL(DontScanItem);
@@ -2863,12 +2863,7 @@ BOOLEAN IsValidTool (
 
     if (gHiddenTools == NULL) {
         DontScanTools = ReadHiddenTags (L"HiddenTools");
-        if (DontScanTools != NULL) {
-            gHiddenTools = StrDuplicate (DontScanTools);
-        }
-        else {
-            gHiddenTools = StrDuplicate (L"NotSet");
-        }
+        gHiddenTools  = (DontScanTools) ? StrDuplicate (DontScanTools) : StrDuplicate (L"NotSet");
     }
     else if (!MyStriCmp (gHiddenTools, L"NotSet")) {
         DontScanTools = StrDuplicate (gHiddenTools);
@@ -2899,8 +2894,8 @@ BOOLEAN IsValidTool (
                 retval = FALSE;
             }
 
-            MY_FREE_POOL(DontScanThis);
             MY_FREE_POOL(DontVolName);
+            MY_FREE_POOL(DontScanThis);
             MY_FREE_POOL(DontPathName);
             MY_FREE_POOL(DontFileName);
         } // while

@@ -25,6 +25,8 @@
   * Now ensures this is reset on each loop through the RefindPlus Main Loop
   * This ensures the filtering is not on if UEFI Windows boot fails
   * Only has cosmetic relevance but best practice
+- Improves 'Manage Firmware Boot Order' Implementation
+    * Now confirms selected action before execution to minimise the chances of making unwanted changes
 - Amends 'ScaleUI' Implementation
   * Now checks the resolution of the longest and shortest sides for automatic scaling
   * Previously only checked the vertical resolution

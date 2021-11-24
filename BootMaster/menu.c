@@ -114,8 +114,8 @@ extern BOOLEAN           FlushFailedTag;
 extern BOOLEAN           FlushFailReset;
 extern BOOLEAN           ClearedBuffer;
 
-static REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
-static REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
+REFIT_MENU_ENTRY  MenuEntryYes  = { L"Yes", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
+REFIT_MENU_ENTRY  MenuEntryNo   = { L"No", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 
 
 extern UINT64 GetCurrentMS (VOID);

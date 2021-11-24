@@ -2838,14 +2838,14 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Manage Boot Order\n\n");
+                MsgLog ("  - Manage Firmware Boot Order\n\n");
                 #endif
 
                 ManageBootorder();
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
-                MsgLog ("  - Exit Manage Boot Order Page\n\n");
+                MsgLog ("  - Exit Manage Firmware Boot Order Page\n\n");
                 #endif
 
                 break;
