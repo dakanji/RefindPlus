@@ -727,7 +727,7 @@ VOID CreateFallbackCSV (
 } // VOID CreateFallbackCSV()
 
  static
- BOOLEAN CopyRefindFiles (
+ BOOLEAN CopyRefindPlusFiles (
      IN EFI_FILE *TargetDir
  ) {
     EFI_STATUS Status = EFI_SUCCESS, Status2;
@@ -767,7 +767,7 @@ VOID CreateFallbackCSV (
     CreateFallbackCSV (TargetDir);
 
     return Status;
-} // BOOLEAN CopyRefindFiles()
+} // BOOLEAN CopyRefindPlusFiles()
 
 /***********************
  *
@@ -1004,7 +1004,7 @@ VOID InstallRefindPlus (VOID) {
     SelectedESP = PickOneESP (AllESPs);
 
     if (SelectedESP) {
-        Status = CopyRefindFiles (SelectedESP->RootDir);
+        Status = CopyRefindPlusFiles (SelectedESP->RootDir);
 
         if (Status == EFI_SUCCESS) {
             Status = CreateNvramEntry (SelectedESP->DeviceHandle);
@@ -1096,7 +1096,9 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
 } // BOOT_ENTRY_LIST * FindBootOrderEntries()
 
 // Delete a linked-list BOOT_ENTRY_LIST data structure
-VOID DeleteBootOrderEntries (BOOT_ENTRY_LIST *Entries) {
+VOID DeleteBootOrderEntries (
+    BOOT_ENTRY_LIST *Entries
+) {
     BOOT_ENTRY_LIST *Current;
 
     while (Entries != NULL) {

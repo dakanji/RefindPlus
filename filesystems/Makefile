@@ -11,7 +11,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-INSTALL_DIR = /boot/efi/EFI/refind/drivers
+INSTALL_DIR = /boot/efi/EFI/refindplus/drivers
 
 FILESYSTEMS = ext2 ext4 reiserfs iso9660 hfs btrfs
 FILESYSTEMS_GNUEFI = ext2_gnuefi ext4_gnuefi reiserfs_gnuefi iso9660_gnuefi hfs_gnuefi btrfs_gnuefi

@@ -987,7 +987,7 @@
 menuentry Linux {
     disabled
     volume 904404F8-B481-440C-A1E3-11A5A954E601
-    icon EFI/refind/icons/os_linux.png
+    icon EFI/refindplus/icons/os_linux.png
     loader bzImage-3.3.0-rc7
     initrd initrd-3.3.0.img
     options "ro root=UUID=5f96cafa-e0a7-4057-b18f-fa709db5b837"
@@ -1004,7 +1004,7 @@ menuentry Linux {
 menuentry "Arch Linux" {
     disabled
     volume   "Arch Linux"
-    icon     /EFI/refind/icons/os_arch.png
+    icon     /EFI/refindplus/icons/os_arch.png
     loader   /boot/vmlinuz-linux
     initrd   /boot/initramfs-linux.img
     options  "root=PARTUUID=5028fa50-0079-4c40-b240-abfaf28693ea rw add_efi_memmap"
@@ -1021,7 +1021,7 @@ menuentry "Arch Linux" {
 #
 menuentry Ubuntu {
     disabled
-    icon /EFI/refind/icons/os_linux.png
+    icon   /EFI/refindplus/icons/os_linux.png
     loader /EFI/ubuntu/grubx64.efi
 }
 
@@ -1049,7 +1049,7 @@ menuentry "Windows 7" {
 #
 menuentry "Windows via shell script" {
     disabled
-    icon \EFI\refind\icons\os_win.png
+    icon \EFI\refindplus\icons\os_win.png
     loader \EFI\tools\shell.efi
     options "fs0:\EFI\tools\launch_windows.nsh"
 }
@@ -1063,7 +1063,7 @@ menuentry "Windows via shell script" {
 menuentry "My Mac OS" {
     disabled
     volume "Mac OS boot"
-    icon \EFI\refind\icons\os_mac.png
+    icon \EFI\refindplus\icons\os_mac.png
     loader \System\Library\CoreServices\boot.efi
 }
 
@@ -1079,6 +1079,6 @@ menuentry "My Mac OS" {
 #
 menuentry "Mac OS via BootNext" {
     disabled
-    icon /EFI/refind/icons/os_mac.png
+    icon /EFI/refindplus/icons/os_mac.png
     firmware_bootnum 80
 }

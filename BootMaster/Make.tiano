@@ -1,5 +1,5 @@
 #
-# refind/Make.tiano
+# BootMaster/Make.tiano
 # Build control file for RefindPlus, using TianoCore EDK2
 # Requires that EfiLib, mok, and libeg subdirectories be built before this
 # file is used.
