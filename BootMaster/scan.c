@@ -113,6 +113,7 @@
 
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
 extern EFI_GUID GuidAPFS;
+extern BOOLEAN  SingleAPFS;
 
 #if REFIT_DEBUG > 0
 static CHAR16  *Spacer          = L"                               ";
@@ -361,7 +362,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                         DisplayName = GetVolumeGroupName (Entry->LoaderPath, Entry->Volume);
                     }
                 }
-            } // if GlobalConfig.SyncAFPS
+            } // if GlobalConfig.SyncAPFS
 
             SubScreen->Title = PoolPrint (
                 L"Boot Options for %s on %s",
@@ -878,7 +879,7 @@ VOID SetLoaderDefaults (
                                     DisplayName = GetVolumeGroupName (Entry->LoaderPath, Volume);
                                 }
                             }
-                        } // if GlobalConfig.SyncAFPS
+                        } // if GlobalConfig.SyncAPFS
 
                         // Do not free TargetName
                         CHAR16 *TargetName = DisplayName
@@ -1290,7 +1291,7 @@ LOADER_ENTRY * AddLoaderEntry (
                 }
             }
         }
-    } // if GlobalConfig.SyncAFPS
+    } // if GlobalConfig.SyncAPFS
 
     Entry->DiscoveryType = DISCOVERY_TYPE_AUTO;
     TitleEntry   = (LoaderTitle) ? LoaderTitle : LoaderPath;
@@ -1510,7 +1511,7 @@ BOOLEAN ShouldScan (
             MY_FREE_POOL(TmpVolNameB);
             if (!ScanIt) return FALSE;
         }
-    } // if GlobalConfig.SyncAFPS
+    } // if GlobalConfig.SyncAPFS
 
     VolGuid = GuidAsString (&(Volume->PartGuid));
     if (IsIn (VolGuid, GlobalConfig.DontScanVolumes)
@@ -3009,6 +3010,8 @@ BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
+    REFIT_VOLUME    **TmpRecoveryVolumes;
+    UINTN             TmpRecoveryVolumesCount = 0;
     UINTN             i, j, k;
     UINTN             VolumeIndex;
     VOID             *ItemBuffer = 0;
@@ -3472,6 +3475,13 @@ VOID ScanForTools (VOID) {
                             );
                             #endif
 
+                            // Create a list of found Recovery PartGUIDs for later
+                            AddListElement (
+                                (VOID ***) &TmpRecoveryVolumes,
+                                &TmpRecoveryVolumesCount,
+                                CopyVolume (Volumes[VolumeIndex])
+                            );
+
                             FoundTool = TRUE;
                             Description = PoolPrint (
                                 L"%s for %s",
@@ -3506,6 +3516,85 @@ VOID ScanForTools (VOID) {
                     } // while
                 } // for
 
+
+                if (GlobalConfig.SyncAPFS && SingleAPFS) {
+                    BOOLEAN PrevGUID;
+                    for (j = 0; j < RecoveryVolumesCount; j++) {
+                        PrevGUID = FALSE;
+                        for (k = 0; k < TmpRecoveryVolumesCount; k++) {
+                            if (
+                                GuidsAreEqual (
+                                    &(RecoveryVolumes[j]->PartGuid),
+                                    &(TmpRecoveryVolumes[k]->PartGuid)
+                                )
+                            ) {
+                                PrevGUID = TRUE;
+                                break;
+                            }
+                        } // for j = 0
+
+                        if (!PrevGUID) {
+                            FileName = PoolPrint (L"%s\\boot.efi", RecoveryVolumes[j]->VolUuid);
+                            if ((RecoveryVolumes[j]->RootDir != NULL) &&
+                                (IsValidTool (RecoveryVolumes[j], FileName))
+                            ) {
+                                // Get a meaningful tag for the recovery volume if available
+                                for (k = 0; k < VolumesCount; k++) {
+                                    if (
+                                        GuidsAreEqual (
+                                            &(RecoveryVolumes[j]->PartGuid),
+                                            &(Volumes[k]->PartGuid)
+                                        )
+                                    ) {
+                                        RecoverVol = StrDuplicate (Volumes[k]->VolName);
+                                        break;
+                                    }
+                                } // for
+
+                                VolumeTag = RecoverVol ? RecoverVol : L"Recovery (Mac OS 11 or Later)";
+
+                                #if REFIT_DEBUG > 0
+                                LOG(2, LOG_LINE_NORMAL,
+                                    L"Adding Mac Recovery Tag:- '%s' for '%s'",
+                                    FileName, VolumeTag
+                                );
+                                #endif
+
+                                FoundTool = TRUE;
+                                Description = PoolPrint (
+                                    L"%s for %s",
+                                    ToolName, VolumeTag
+                                );
+                                AddToolEntry (
+                                    RecoveryVolumes[j],
+                                    FileName, Description,
+                                    BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
+                                    'R', TRUE
+                                );
+                                MY_FREE_POOL(Description);
+
+                                #if REFIT_DEBUG > 0
+                                ToolStr = PoolPrint (
+                                    L"Added Tool:- '%s' ... %s for %s",
+                                    ToolName, FileName, VolumeTag
+                                );
+                                LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
+                                if (OtherFind) {
+                                    MsgLog ("\n%s", Spacer);
+                                }
+                                MsgLog ("%s", ToolStr);
+                                MY_FREE_POOL(ToolStr);
+                                #endif
+
+                                OtherFind = TRUE;
+                            }
+
+                            MY_FREE_POOL(FileName);
+                            MY_FREE_POOL(RecoverVol);
+                        }
+                    } // for k = 0
+                }
+
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
@@ -3514,6 +3603,12 @@ VOID ScanForTools (VOID) {
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif
+
+                // Free the TmpVolumes
+                FreeVolumes (
+                    &TmpRecoveryVolumes,
+                    &TmpRecoveryVolumesCount
+                );
 
                 break;
 
@@ -3548,8 +3643,7 @@ VOID ScanForTools (VOID) {
                                 FileName,
                                 Description,
                                 BuiltinIcon (BUILTIN_ICON_TOOL_WINDOWS_RESCUE),
-                                'R',
-                                TRUE
+                                'R', TRUE
                             );
                             MY_FREE_POOL(Description);
 

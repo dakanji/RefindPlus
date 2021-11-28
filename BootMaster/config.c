@@ -376,7 +376,7 @@ UINTN ReadTokenLine (
             }
             *p++ = 0;
 
-            AddListElement ((VOID ***)TokenList, &TokenCount, (VOID *)StrDuplicate (Token));
+            AddListElement ((VOID ***) TokenList, &TokenCount, (VOID *) StrDuplicate (Token));
         } // while
 
         MY_FREE_POOL(Line);

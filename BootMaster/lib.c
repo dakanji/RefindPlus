@@ -111,22 +111,25 @@ CHAR16            *SelfDirPath;
 
 REFIT_VOLUME      *SelfVolume          = NULL;
 REFIT_VOLUME     **Volumes             = NULL;
+REFIT_VOLUME     **RecoveryVolumes     = NULL;
 REFIT_VOLUME     **PreBootVolumes      = NULL;
 REFIT_VOLUME     **SystemVolumes       = NULL;
 REFIT_VOLUME     **DataVolumes         = NULL;
 
-UINTN              PreBootVolumesCount = 0;
-UINTN              SystemVolumesCount  = 0;
-UINTN              DataVolumesCount    = 0;
-UINTN              VolumesCount        = 0;
+UINTN              RecoveryVolumesCount   = 0;
+UINTN              PreBootVolumesCount    = 0;
+UINTN              SystemVolumesCount     = 0;
+UINTN              DataVolumesCount       = 0;
+UINTN              VolumesCount           = 0;
 
-BOOLEAN            MediaCheck          = FALSE;
-BOOLEAN            ScannedOnce         = FALSE;
-BOOLEAN            SelfVolSet          = FALSE;
-BOOLEAN            SelfVolRun          = FALSE;
-BOOLEAN            DoneHeadings        = FALSE;
-BOOLEAN            ScanMBR             = FALSE;
-BOOLEAN            SkipSpacing         = FALSE;
+BOOLEAN            MediaCheck         = FALSE;
+BOOLEAN            ScannedOnce        = FALSE;
+BOOLEAN            SelfVolSet         = FALSE;
+BOOLEAN            SelfVolRun         = FALSE;
+BOOLEAN            DoneHeadings       = FALSE;
+BOOLEAN            ScanMBR            = FALSE;
+BOOLEAN            SkipSpacing        = FALSE;
+BOOLEAN            SingleAPFS         =  TRUE;
 
 #if REFIT_DEBUG > 0
        BOOLEAN            FirstVolume         = TRUE;
@@ -2068,6 +2071,96 @@ VOID ScanExtendedPartition (
     } // for ExtCurrent = ExtBase
 } // VOID ScanExtendedPartition()
 
+// Check for Multi-Instance APFS Containers
+static
+VOID VetMultiInstanceAPFS (VOID) {
+    EFI_STATUS                     Status;
+    UINTN                            i, j;
+    BOOLEAN               ActiveContainer;
+    EFI_GUID                   VolumeGuid;
+    EFI_GUID                ContainerGuid;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStrA = NULL;
+    CHAR16 *MsgStrB = L"Disabled Recovery Tool for Mac OS 11 and Later (If Present)";
+    #endif
+
+    if (!GlobalConfig.SyncAPFS) {
+        #if REFIT_DEBUG > 0
+        MsgStrA = L"SyncAPFS is Inactive";
+        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
+        MsgLog ("\n\n");
+        MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
+        MsgLog ("\n\n");
+        #endif
+
+        // Act as if we have Multi-Instance APFS
+        SingleAPFS = FALSE;
+
+        // Early Return
+        return;
+    }
+
+    for (j = 0; j < PreBootVolumesCount; j++) {
+        ActiveContainer = FALSE;
+
+        for (i = 0; i < VolumesCount; i++) {
+            if (Volumes[i]->VolName != NULL
+                && StrLen (Volumes[i]->VolName) != 0
+                && Volumes[i]->FSType == FS_TYPE_APFS
+            ) {
+                if (GuidsAreEqual (
+                        &(PreBootVolumes[j]->PartGuid),
+                        &(Volumes[i]->PartGuid)
+                    )
+                ) {
+                    VolumeRole = 0;
+                    Status = RP_GetApfsVolumeInfo (
+                        Volumes[i]->DeviceHandle,
+                        &ContainerGuid,
+                        &VolumeGuid,
+                        &VolumeRole
+                    );
+
+                    if (!EFI_ERROR(Status)) {
+                        if ((
+                                VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+                                || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                            )
+                            && !MyStrStr (Volumes[i]->VolName, L"/FileVault")
+                            && !FoundSubStr (Volumes[i]->VolName, L"Unknown")
+                            && !FoundSubStr (Volumes[i]->VolName, L" - Data")
+                        ) {
+                            if (!ActiveContainer) {
+                                ActiveContainer = TRUE;
+                            }
+                            else {
+                                SingleAPFS = FALSE;
+                                break;
+                            }
+                        }
+                    }
+                } // if GuidsAreEqual
+            } // if Volumes[i]->VolName != NULL
+        } // for i = 0
+
+        if (!SingleAPFS) {
+            // DA-TAG: Multiple installations in a single APFS Container
+            //         Mac Recovery option for Big Sur and Later is disabled
+            #if REFIT_DEBUG > 0
+            MsgStrA = L"Multi-Instance APFS Container Found";
+            LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
+            MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
+            MsgLog ("\n\n");
+            #endif
+
+            break;
+        }
+    } // for j = 0
+} // VOID VetMultiInstanceAPFS()
+
 // Ensure SyncAPFS can be used.
 static
 VOID VetSyncAPFS (VOID) {
@@ -2166,6 +2259,9 @@ VOID VetSyncAPFS (VOID) {
         MsgLog ("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
+
+        // Check for Multi-Instance APFS Containers
+        VetMultiInstanceAPFS();
     } // if/else PreBootVolumesCount == 0
 } // VOID VetSyncAPFS()
 
@@ -2458,7 +2554,15 @@ VOID ScanVolumes (VOID) {
                     Volume->VolUuid = VolumeGuid;
                     RoleStr         = GetApfsRoleString (VolumeRole);
 
-                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
+                        // Create or add to a list of APFS Recovery Volumes
+                        AddListElement (
+                            (VOID ***) &RecoveryVolumes,
+                            &RecoveryVolumesCount,
+                            CopyVolume (Volume)
+                        );
+                    }
+                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                         // Create or add to a list of APFS PreBoot Volumes
                         AddListElement (
                             (VOID ***) &PreBootVolumes,
