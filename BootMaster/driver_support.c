@@ -727,7 +727,7 @@ BOOLEAN LoadDrivers (VOID) {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(2, LOG_LINE_NORMAL,
                 L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, SelfDirectory
             );
@@ -767,7 +767,7 @@ BOOLEAN LoadDrivers (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL,
+                    LOG(2, LOG_LINE_NORMAL,
                         L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, SelfDirectory
                     );
@@ -791,7 +791,7 @@ BOOLEAN LoadDrivers (VOID) {
         L"Processed %d UEFI Driver%s",
         NumFound, (NumFound == 1) ? L"" : L"s"
     );
-    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 

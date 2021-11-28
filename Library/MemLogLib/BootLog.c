@@ -288,8 +288,8 @@ VOID EFIAPI DeepLoggger (
         return;
     }
 
-    // Truncate message at Log Levels 4 and lower (if required)
-    if (GlobalConfig.LogLevel < 5) {
+    // Truncate message at Log Levels 3 and lower (if required)
+    if (GlobalConfig.LogLevel < 4) {
         BOOLEAN LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);

@@ -478,7 +478,7 @@ EFI_STATUS FindVarsDir (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(2, LOG_LINE_NORMAL,
             L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
             Status
         );
@@ -496,13 +496,13 @@ EFI_STATUS FindVarsDir (VOID) {
             }
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(2, LOG_LINE_NORMAL,
                 L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In First Available ESP:- '%r'",
                 Status
             );
 
             if (EFI_ERROR(Status)) {
-                LOG(4, LOG_THREE_STAR_MID,
+                LOG(3, LOG_THREE_STAR_MID,
                     L"Activate the 'use_nvram' Config Token to Use Hardware NVRAM Instead"
                 );
             }
@@ -559,7 +559,7 @@ EFI_STATUS EfivarGetRaw (
                 L"In Emulated NVRAM ... Could Not Read UEFI Variable:- '%s'",
                 VariableName
             );
-            LOG(4, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
+            LOG(3, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
@@ -567,7 +567,7 @@ EFI_STATUS EfivarGetRaw (
             MsgStr = StrDuplicate (
                 L"Activate the 'use_nvram' Option to Silence this Warning"
             );
-            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
             MsgLog ("         %s", MsgStr);
             MsgLog ("\n\n");
             MY_FREE_POOL(MsgStr);
@@ -575,7 +575,7 @@ EFI_STATUS EfivarGetRaw (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID,
+        LOG(3, LOG_THREE_STAR_MID,
             L"In Emulated NVRAM ... %r When Fetching Variable:- '%s'",
             Status, VariableName
         );
@@ -587,7 +587,7 @@ EFI_STATUS EfivarGetRaw (
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
+                LOG(2, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
                 #endif
             }
         }
@@ -599,7 +599,7 @@ EFI_STATUS EfivarGetRaw (
 
         if (MyStriCmp (VariableName, L"PreviousBoot")) {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_BLANK_LINE_SEP, L"X");
+            LOG(2, LOG_BLANK_LINE_SEP, L"X");
             #endif
         }
     }
@@ -635,7 +635,7 @@ EFI_STATUS EfivarGetRaw (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID,
+        LOG(3, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... %r When Fetching Variable:- '%s'",
             Status, VariableName
         );
@@ -647,8 +647,8 @@ EFI_STATUS EfivarGetRaw (
 
             if (MyStriCmp (VariableName, L"PreviousBoot")) {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
-                LOG(3, LOG_BLANK_LINE_SEP, L"X");
+                LOG(2, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
+                LOG(2, LOG_BLANK_LINE_SEP, L"X");
                 #endif
             }
         }
@@ -660,7 +660,7 @@ EFI_STATUS EfivarGetRaw (
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable from NVRAM!!");
+        LOG(1, LOG_THREE_STAR_SEP, L"Program Coding Error in Fetching Variable from NVRAM!!");
         #endif
     }
 
@@ -748,13 +748,13 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
-        LOG(4, LOG_THREE_STAR_MID,
+        LOG(3, LOG_THREE_STAR_MID,
             L"In Emulated NVRAM ... %r When Saving Variable:- '%s'",
             Status, VariableName
         );
 
         if (EFI_ERROR(Status)) {
-            LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
             MsgLog ("** WARN: Could Not Save to Emulated NVRAM:- '%s'\n", VariableName);
             MsgLog ("         %s\n\n", MsgStr);
@@ -783,7 +783,7 @@ EFI_STATUS EfivarSetRaw (
         );
 
         #if REFIT_DEBUG > 0
-        LOG(4, LOG_THREE_STAR_MID,
+        LOG(3, LOG_THREE_STAR_MID,
             L"In Hardware NVRAM ... %r When Saving Variable:- '%s'",
             Status, VariableName
         );
@@ -1389,8 +1389,8 @@ VOID ScanVolumeBootcode (
                     StrSpacer   = L"";
                     LogLineType = LOG_LINE_SPECIAL;
                 }
-                LOG(4, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
-                SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                LOG(3, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
+                SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
             }
         }
         #endif
@@ -1428,8 +1428,8 @@ VOID ScanVolumeBootcode (
                             StrSpacer   = L"";
                             LogLineType = LOG_LINE_SPECIAL;
                         }
-                        LOG(4, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                        LOG(3, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1444,7 +1444,7 @@ VOID SetVolumeBadgeIcon (
 ) {
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped ... VolumeBadge Config Setting:- 'Hidden'");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped ... VolumeBadge Config Setting:- 'Hidden'");
         #endif
 
         return;
@@ -1452,7 +1452,7 @@ VOID SetVolumeBadgeIcon (
 
     if (Volume == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"NULL Volume!!");
+        LOG(2, LOG_LINE_NORMAL, L"NULL Volume!!");
         #endif
 
         return;
@@ -1467,7 +1467,7 @@ VOID SetVolumeBadgeIcon (
 
     if (Volume->VolBadgeImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
+        LOG(2, LOG_LINE_NORMAL, L"Trying BuiltinIcon");
         #endif
 
         switch (Volume->DiskKind) {
@@ -1534,7 +1534,7 @@ CHAR16 * GetVolumeName (
         FoundName = StrDuplicate (Volume->FsName);
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(2, LOG_LINE_NORMAL,
             L"Set Name to Filesystem Name:- '%s'",
             FoundName
         );
@@ -1550,7 +1550,7 @@ CHAR16 * GetVolumeName (
         FoundName = StrDuplicate (Volume->PartName);
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(2, LOG_LINE_NORMAL,
             L"Set Name to Partition Name:- '%s'",
             FoundName
         );
@@ -1571,7 +1571,7 @@ CHAR16 * GetVolumeName (
             FoundName = PoolPrint (L"%s %s Volume", SISize, TypeName);
 
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_LINE_NORMAL,
+            LOG(2, LOG_LINE_NORMAL,
                 L"Set Name to Filesystem Description:- '%s'",
                 FoundName
             );
@@ -1622,7 +1622,7 @@ CHAR16 * GetVolumeName (
         }
 
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL,
+        LOG(2, LOG_LINE_NORMAL,
             L"Set Name to Generic Description:- '%s'",
             FoundName
         );
@@ -1751,7 +1751,7 @@ VOID ScanVolume (
         else {
             LogLineType = LOG_LINE_NORMAL;
         }
-        LOG(3, LogLineType, L"Cannot Get BlockIO Protocol in ScanVolume!!");
+        LOG(2, LogLineType, L"Cannot Get BlockIO Protocol in ScanVolume!!");
         #endif
     }
     else if (Volume->BlockIO->Media->BlockSize == 2048) {
@@ -1834,8 +1834,8 @@ VOID ScanVolume (
                         StrSpacer   = L"";
                         LogLineType = LOG_LINE_NORMAL;
                     }
-                    LOG(4, LogLineType, L"%sCould Not Locate Device Path", StrSpacer);
-                    SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                    LOG(3, LogLineType, L"%sCould Not Locate Device Path", StrSpacer);
+                    SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
                 }
                 #endif
             }
@@ -1865,8 +1865,8 @@ VOID ScanVolume (
                             StrSpacer   = L"";
                             LogLineType = LOG_LINE_NORMAL;
                         }
-                        LOG(4, LogLineType, L"%sCould Not Get DiskDevicePath", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                        LOG(3, LogLineType, L"%sCould Not Get DiskDevicePath", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1900,8 +1900,8 @@ VOID ScanVolume (
                             StrSpacer   = L"";
                             LogLineType = LOG_LINE_NORMAL;
                         }
-                        LOG(4, LogLineType, L"%sCould Not Get WholeDiskBlockIO", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+                        LOG(3, LogLineType, L"%sCould Not Get WholeDiskBlockIO", StrSpacer);
+                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1942,11 +1942,11 @@ VOID ScanVolume (
                     StrSpacer   = L"";
                     LogLineType = LOG_LINE_NORMAL;
                 }
-                LOG(4, LogLineType, L"%s%s!!", StrSpacer, MsgStr);
+                LOG(3, LogLineType, L"%s%s!!", StrSpacer, MsgStr);
             }
             MsgLog ("\n");
             MsgLog ("** WARN: %s", MsgStr);
-            SkipSpacing = (GlobalConfig.LogLevel > 3) ? TRUE : FALSE;
+            SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
             #endif
 
             Volume->HasBootCode = FALSE;
@@ -2010,8 +2010,8 @@ VOID ScanExtendedPartition (
 
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
-            LOG(3, LOG_BLANK_LINE_SEP, L"X");
-            LOG(3, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
+            LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            LOG(2, LOG_LINE_NORMAL, L"Error %d Reading Blocks from Disk", Status);
             #endif
 
             break;
@@ -2083,7 +2083,7 @@ VOID VetSyncAPFS (VOID) {
         MsgStr = StrDuplicate (
             L"Could Not Positively Identify APFS Partition Types ... Disabling SyncAFPS"
         );
-        LOG(3, LOG_BLANK_LINE_SEP, L"X");
+        LOG(2, LOG_BLANK_LINE_SEP, L"X");
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("INFO: %s", MsgStr);
@@ -2105,7 +2105,7 @@ VOID VetSyncAPFS (VOID) {
 
         for (i = 0; i < SystemVolumesCount; i++) {
             MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
-            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("  - %s", MsgStr);
             MY_FREE_POOL(MsgStr);
@@ -2153,7 +2153,7 @@ VOID VetSyncAPFS (VOID) {
             L"ReMapped %d APFS Volume%s",
             SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
         );
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
 
         if (SystemVolumesCount == 0) {
             MsgLog ("\n%s", Spacer);
@@ -2264,7 +2264,7 @@ VOID ScanVolumes (VOID) {
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)", Status);
-        LOG(2, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
+        LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** %s", MsgStr);
         MsgLog ("\n\n");
@@ -2275,7 +2275,7 @@ VOID ScanVolumes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_LINE_NORMAL,
+    LOG(2, LOG_LINE_NORMAL,
         L"Found Handles for %d Volumes",
         HandleCount
     );
@@ -2287,8 +2287,8 @@ VOID ScanVolumes (VOID) {
         Status = EFI_BUFFER_TOO_SMALL;
 
         MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'UuidList'", Status);
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
-        LOG(2, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
+        LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
         MsgLog ("\n\n");
         MsgLog ("** WARN: %s", MsgStr);
         MsgLog ("\n\n");
@@ -2304,7 +2304,7 @@ VOID ScanVolumes (VOID) {
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
         /* Exception for LOG_THREE_STAR_SEP */
-        LOG(3, LOG_THREE_STAR_SEP, L"NEXT VOLUME");
+        LOG(2, LOG_THREE_STAR_SEP, L"NEXT VOLUME");
         #endif
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
@@ -2313,8 +2313,8 @@ VOID ScanVolumes (VOID) {
             Status = EFI_BUFFER_TOO_SMALL;
 
             MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'Volumes'", Status);
-            LOG(2, LOG_BLANK_LINE_SEP, L"X");
-            LOG(2, LOG_THREE_STAR_SEP, L"%!!s", MsgStr);
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
+            LOG(1, LOG_THREE_STAR_SEP, L"%!!s", MsgStr);
             MsgLog ("\n\n");
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n\n");
@@ -2503,7 +2503,7 @@ VOID ScanVolumes (VOID) {
                 VolumeUUID, RoleStr, Volume->VolName
             );
 
-            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
@@ -2530,7 +2530,7 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         if (!SelfVolSet) {
             MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
-            LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+            LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
             MsgLog ("** WARN: %s", MsgStr);
             MsgLog ("\n\n");
             MY_FREE_POOL(MsgStr);
@@ -2555,7 +2555,7 @@ VOID ScanVolumes (VOID) {
             L"%-41s%-41s%-20s%-41s%-22s%s",
             ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
         );
-        LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("\n%s", Spacer);
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
@@ -2668,7 +2668,7 @@ VOID ScanVolumes (VOID) {
         VolumesCount, (VolumesCount == 1) ? L"" : L"s"
     );
     MsgLog ("INFO: %s", MsgStr); // Skip Line Break
-    LOG(2, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -2692,7 +2692,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Screen is in Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Screen is in Text Mode");
         #endif
 
         return;
@@ -2700,7 +2700,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return;
@@ -2731,10 +2731,10 @@ VOID GetVolumeBadgeIcons (VOID) {
                 Volume->VolName
             );
             if (LoopOnce) {
-                LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+                LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
             }
             else {
-                LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
             }
             MY_FREE_POOL(MsgStr);
             #endif
@@ -2749,7 +2749,7 @@ VOID GetVolumeBadgeIcons (VOID) {
             else {
                 MsgStr = StrDuplicate (L"VolumeBadge Found");
             }
-            LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
             LoopOnce = TRUE;
@@ -2777,7 +2777,7 @@ VOID SetVolumeIcons (VOID) {
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Screen is in Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Screen is in Text Mode");
         #endif
 
         return;
@@ -2785,7 +2785,7 @@ VOID SetVolumeIcons (VOID) {
 
     if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Config Setting is Active:- 'IgnoreHiddenIcons'");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Config Setting is Active:- 'IgnoreHiddenIcons'");
         #endif
 
         return;
@@ -2817,10 +2817,10 @@ VOID SetVolumeIcons (VOID) {
             );
 
             if (LoopOnce) {
-                LOG(2, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
+                LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
             }
             else {
-                LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
             }
             MY_FREE_POOL(MsgStr);
             #endif
@@ -2837,7 +2837,7 @@ VOID SetVolumeIcons (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(3, LOG_LINE_NORMAL,
+                    LOG(2, LOG_LINE_NORMAL,
                         L"Skipped '%s' ... Not Internal Volume",
                         Volume->VolName
                     );
@@ -2846,7 +2846,7 @@ VOID SetVolumeIcons (VOID) {
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(3, LOG_LINE_NORMAL,
+                LOG(2, LOG_LINE_NORMAL,
                     L"Skipped '%s' ... Icon Already Set",
                     Volume->VolName
                 );
@@ -2934,7 +2934,7 @@ EFI_STATUS DirNextEntry (
                     LastBufferSize,
                     LastBufferSize * 2
                 );
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -2947,7 +2947,7 @@ EFI_STATUS DirNextEntry (
                     L"Reallocating Buffer from %d to %d",
                     LastBufferSize, BufferSize
                 );
-                LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("\n%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
