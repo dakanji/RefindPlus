@@ -14,12 +14,12 @@
  * Modifications distributed under the preceding terms.
  */
 
-
 #include "mystrings.h"
 #include "lib.h"
 #include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
+BOOLEAN NestedStrStr = FALSE;
 
 BOOLEAN StriSubCmp (
     IN CHAR16 *SmallStr,
@@ -127,15 +127,15 @@ CHAR16 * MyStrStr (
     CHAR16 *Src;
     CHAR16 *Sub;
 
-    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    if (!NestedStrStr) LOG(5, LOG_BLANK_LINE_SEP, L"X");
     LOG(5, LOG_LINE_FORENSIC,
         L"In MyStrStr ... 1 - START:- Find '%s' in '%s'",
         StrCharSet ? StrCharSet : L"NULL",
         String     ? String     : L"NULL"
     );
     if ((String == NULL) || (StrCharSet == NULL)) {
-        LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1a - END:- NULL INPUT");
-        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        LOG(5, LOG_LINE_FORENSIC, L"In MyStrStr ... 1a - END:- NULL INPUT ... return 'NULL'");
+        if (!NestedStrStr) LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return NULL;
     }
 
@@ -159,14 +159,14 @@ CHAR16 * MyStrStr (
         LOG(5, LOG_LINE_FORENSIC,
             L"In MyStrStr ... 4a - END:- return CHAR16 *Src (Substring Found)"
         );
-        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        if (!NestedStrStr) LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return Src;
     }
 
     LOG(5, LOG_LINE_FORENSIC,
         L"In MyStrStr ... 5 - END:- return NULL (Substring not Found)"
     );
-    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    if (!NestedStrStr) LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return NULL;
 } // CHAR16 * MyStrStr()
 
@@ -174,7 +174,7 @@ CHAR16 * MyStrStr (
  *
  * Routine Description:
  *
- *  As 'MyStrStr' but case insensitive.
+ *  As 'MyStrStr' but case insensitive and returns a BOOLEAN.
  *
  * Arguments:
  *
@@ -182,49 +182,52 @@ CHAR16 * MyStrStr (
  *  RawStrCharSet  - Null-terminated string to search for.
  *
  * Returns:
- *  The address of the first occurrence of the matching substring if successful, or NULL otherwise.
+ *  TRUE if successful, or FALSE otherwise.
  * --*/
-CHAR16 * MyStrStrIns (
+BOOLEAN FoundSubStr (
     IN CHAR16  *RawString,
     IN CHAR16  *RawStrCharSet
 ) {
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In FoundSubStr ... 1 - START:- Find '%s' in '%s'",
+        RawStrCharSet ? RawStrCharSet : L"NULL",
+        RawString     ? RawString     : L"NULL"
+    );
     if ((RawString == NULL) || (RawStrCharSet == NULL)) {
-        return NULL;
+        LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 1a - END:- NULL INPUT ... return 'FALSE'");
+        LOG(5, LOG_BLANK_LINE_SEP, L"X");
+        return FALSE;
     }
 
-    CHAR16 *Src;
-    CHAR16 *Sub;
-    CHAR16 *String     = StrDuplicate (RawString);
-    CHAR16 *StrCharSet = StrDuplicate (RawStrCharSet);
+    CHAR16  *String     = StrDuplicate (RawString);
+    CHAR16  *StrCharSet = StrDuplicate (RawStrCharSet);
+    BOOLEAN  FoundStr   = FALSE;
 
+    //LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 2");
     ToLower (String);
     ToLower (StrCharSet);
 
-    Src = String;
-    Sub = StrCharSet;
-
-    while ((*String != L'\0') && (*StrCharSet != L'\0')) {
-        if (*String++ != *StrCharSet) {
-            String = ++Src;
-            StrCharSet = Sub;
-        }
-        else {
-            StrCharSet++;
-        }
+    //LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3");
+    NestedStrStr = TRUE;
+    if (MyStrStr (String, StrCharSet)) {
+        //LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3a 1");
+        FoundStr = TRUE;
+        //LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3a 2");
     }
+    NestedStrStr = FALSE;
 
-    if (*StrCharSet == L'\0') {
-        MY_FREE_POOL(String);
-        MY_FREE_POOL(StrCharSet);
-
-        return Src;
-    }
-
+    //LOG(5, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3");
     MY_FREE_POOL(String);
     MY_FREE_POOL(StrCharSet);
 
-    return NULL;
-} // CHAR16 * MyStrStrIns()
+    LOG(5, LOG_LINE_FORENSIC,
+        L"In FoundSubStr ... 4 END - return BOOLEAN FoundStr:- '%s'",
+        FoundStr ? L"TRUE" : L"FALSE"
+    );
+    LOG(5, LOG_BLANK_LINE_SEP, L"X");
+    return FoundStr;
+} // BOOLEAN FoundSubStr()
 
 
 /**
@@ -514,9 +517,11 @@ VOID MergeUniqueStrings (
                 while (!SkipMerge
                     && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
                 ) {
-                    if (MyStrStr (TestStr, Second) != NULL) {
+                    NestedStrStr = TRUE;
+                    if (MyStrStr (TestStr, Second)) {
                         SkipMerge = TRUE;
                     }
+                    NestedStrStr = FALSE;
 
                     MY_FREE_POOL(TestStr);
                 } // while
@@ -888,35 +893,37 @@ CHAR16 * FindCommaDelimited (
     }
 
     return FoundString;
-} // CHAR16 *FindCommaDelimited()
+} // CHAR16 * FindCommaDelimited()
 
-// Delete an individual element from a comma-separated value list.
-// This function modifies the original *List string, but not the
-// *ToDelete string!
+// Delete an element from a list of comma separated values.
+// Modifies the *List string, but not the *ToDelete string!
 // Returns TRUE if the item was deleted, FALSE otherwise.
 BOOLEAN DeleteItemFromCsvList (
     CHAR16 *ToDelete,
     CHAR16 *List
 ) {
-    CHAR16 *Found, *Comma;
+    CHAR16 *Found = NULL;
+    CHAR16 *Comma = NULL;
 
     if ((ToDelete == NULL) || (List == NULL)) {
         return FALSE;
     }
 
-    if ((Found = MyStrStr (List, ToDelete)) != NULL) {
-        if ((Comma = MyStrStr (Found, L",")) != NULL) {
-            // Found is NOT the final element
+    Found = MyStrStr (List, ToDelete);
+    if (Found) {
+        Comma = MyStrStr (Found, L",");
+        if (Comma) {
+            // 'Found' is NOT the final element
             StrCpy (Found, &Comma[1]);
         }
         else {
-            // Found is final element
+            // 'Found' is final element
             if (Found == List) {
-                // Found is ONLY element
+                // 'Found' is ONLY element
                 List[0] = L'\0';
             }
             else {
-                // Delete the comma preceding Found.
+                // Delete the comma preceding 'Found'.
                 Found--;
                 Found[0] = L'\0';
             }
@@ -1007,11 +1014,13 @@ BOOLEAN ReplaceSubstring (
         *MainString  ? *MainString  : L"NULL"
     );
     if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
-        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 1a - END:- NULL INPUT");
+        LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 1a - END:- NULL INPUT ... return 'FALSE'");
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
         return FALSE;
     }
+    NestedStrStr = TRUE;
     FoundSearchString = MyStrStr (*MainString, SearchString);
+    NestedStrStr = FALSE;
 
     //LOG(5, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2");
     if (FoundSearchString) {

@@ -60,6 +60,7 @@
 
 LOADER_ENTRY *InitializeLoaderEntry(IN LOADER_ENTRY *Entry);
 REFIT_MENU_SCREEN *InitializeSubScreen(IN LOADER_ENTRY *Entry);
+REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry);
 REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry);
 VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);

@@ -36,6 +36,7 @@
 
 #include "libegint.h"
 #include "../BootMaster/global.h"
+#include "../BootMaster/rp_funcs.h"
 
 #include "egemb_font.h"
 #include "egemb_font_large.h"
@@ -188,7 +189,7 @@ VOID egRenderText (
 // Load a font bitmap from the specified file
 VOID egLoadFont(IN CHAR16 *Filename) {
    if (BaseFontImage)
-      egFreeImage(BaseFontImage);
+      MY_FREE_IMAGE(BaseFontImage);
 
    BaseFontImage = egLoadImage(SelfDir, Filename, TRUE);
    if (BaseFontImage == NULL)

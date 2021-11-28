@@ -119,6 +119,8 @@ typedef VOID (*MENU_STYLE_FUNC) (
     IN CHAR16 *ParamText
 );
 
+VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
+VOID FreeLegacyEntry (IN LEGACY_ENTRY **Entry);
 VOID FreeLoaderEntry (IN LOADER_ENTRY **Entry);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);

@@ -129,8 +129,9 @@ BOOLEAN            ScanMBR             = FALSE;
 BOOLEAN            SkipSpacing         = FALSE;
 
 #if REFIT_DEBUG > 0
-BOOLEAN            FirstVolume         = TRUE;
-BOOLEAN            FoundMBR            = FALSE;
+       BOOLEAN            FirstVolume         = TRUE;
+       BOOLEAN            FoundMBR            = FALSE;
+static CHAR16            *Spacer              = L"                   ";
 #endif
 
 EFI_GUID           GuidNull            = NULL_GUID_VALUE;
@@ -222,9 +223,9 @@ VOID CleanUpPathNameSlashes (
     }
 } // CleanUpPathNameSlashes()
 
-// Splits an EFI device path into device and filename components. For instance, if InString is
-// PciRoot (0x0)/Pci (0x1f,0x2)/Ata (Secondary,Master,0x0)/HD (2,GPT,8314ae90-ada3-48e9-9c3b-09a88f80d921,0x96028,0xfa000)/\bzImage-3.5.1.efi, this function will truncate that input to
-// PciRoot (0x0)/Pci (0x1f,0x2)/Ata (Secondary,Master,0x0)/HD (2,GPT,8314ae90-ada3-48e9-9c3b-09a88f80d921,0x96028,0xfa000)
+// Splits an EFI device path into device and filename components.
+// For instance, if InString is PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)/\bzImage-3.5.1.efi,
+// this function will truncate that input to PciRoot(0x0)/Pci(0x1f,0x2)/Ata(ABC,XYZ,0x0)/HD(2,GPT,GUID_STR)
 // and return bzImage-3.5.1.efi as its return value.
 // It does this by searching for the last ")" character in InString, copying everything
 // after that string (after some cleanup) as the return value, and truncating the original
@@ -873,23 +874,23 @@ VOID SanitiseVolumeName (
     CHAR16 *VolumeName = NULL;
 
     if (Volume && *Volume && ((*Volume)->VolName)) {
-             if (MyStrStrIns ((*Volume)->VolName, L"EFI System Partition")) VolumeName = L"EFI System Partition";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Whole Disk Volume")   ) VolumeName = L"Whole Disk Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Unknown Volume")      ) VolumeName = L"Unknown Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"NTFS Volume")         ) VolumeName = L"NTFS Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"HFS+ Volume")         ) VolumeName = L"HFS+ Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"FAT Volume")          ) VolumeName = L"FAT Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"XFS Volume")          ) VolumeName = L"XFS Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"PreBoot")             ) VolumeName = L"PreBoot";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Ext4 Volume")         ) VolumeName = L"Ext4 Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Ext3 Volume")         ) VolumeName = L"Ext3 Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Ext2 Volume")         ) VolumeName = L"Ext2 Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Btrfs Volume")        ) VolumeName = L"BTRFS Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"ReiserFS Volume")     ) VolumeName = L"ReiserFS Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"ISO-9660 Volume")     ) VolumeName = L"ISO-9660 Volume";
-        else if (MyStrStrIns ((*Volume)->VolName, L"Basic Data Partition")) VolumeName = L"Basic Data Partition";
+             if (FoundSubStr ((*Volume)->VolName, L"EFI System Partition")) VolumeName = L"EFI System Partition";
+        else if (FoundSubStr ((*Volume)->VolName, L"Whole Disk Volume")   ) VolumeName = L"Whole Disk Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"Unknown Volume")      ) VolumeName = L"Unknown Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"NTFS Volume")         ) VolumeName = L"NTFS Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"HFS+ Volume")         ) VolumeName = L"HFS+ Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"FAT Volume")          ) VolumeName = L"FAT Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"XFS Volume")          ) VolumeName = L"XFS Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"PreBoot")             ) VolumeName = L"PreBoot";
+        else if (FoundSubStr ((*Volume)->VolName, L"Ext4 Volume")         ) VolumeName = L"Ext4 Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"Ext3 Volume")         ) VolumeName = L"Ext3 Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"Ext2 Volume")         ) VolumeName = L"Ext2 Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"Btrfs Volume")        ) VolumeName = L"BTRFS Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"ReiserFS Volume")     ) VolumeName = L"ReiserFS Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"ISO-9660 Volume")     ) VolumeName = L"ISO-9660 Volume";
+        else if (FoundSubStr ((*Volume)->VolName, L"Basic Data Partition")) VolumeName = L"Basic Data Partition";
 
-        if (MyStrStrIns ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
+        if (FoundSubStr ((*Volume)->VolName, L"Microsoft Reserved Partition")) {
             VolumeName = L"Microsoft Reserved Partition";
         }
     }
@@ -976,8 +977,8 @@ VOID FreeVolume (
         MY_FREE_POOL((*Volume)->WholeDiskDevicePath);
 
         // Free image elements
-        egFreeImage ((*Volume)->VolIconImage);
-        egFreeImage ((*Volume)->VolBadgeImage);
+        MY_FREE_IMAGE((*Volume)->VolIconImage);
+        MY_FREE_IMAGE((*Volume)->VolBadgeImage);
 
         // Free whole volume
         MY_FREE_POOL(*Volume);
@@ -1730,12 +1731,6 @@ VOID ScanVolume (
         DevicePathFromHandle (Volume->DeviceHandle)
     );
 
-    if (Volume->DevicePath != NULL) {
-        #if REFIT_DEBUG >= 2
-        DumpHex (1, 0, DevicePathSize (Volume->DevicePath), Volume->DevicePath);
-        #endif
-    }
-
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
     // get block i/o
@@ -2119,7 +2114,7 @@ VOID VetSyncAPFS (VOID) {
 
         // Filter '- Data' string tag out of Volume Group name if present
         for (i = 0; i < DataVolumesCount; i++) {
-            if (MyStrStr (DataVolumes[i]->VolName, L"- Data") != NULL) {
+            if (MyStrStr (DataVolumes[i]->VolName, L"- Data")) {
                 for (j = 0; j < SystemVolumesCount; j++) {
                     MY_FREE_POOL(TweakName);
                     TweakName = SanitiseString (SystemVolumes[j]->VolName);
@@ -2161,7 +2156,7 @@ VOID VetSyncAPFS (VOID) {
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
 
         if (SystemVolumesCount == 0) {
-            MsgLog ("\n                   ") ;
+            MsgLog ("\n%s", Spacer);
         }
         else {
             MsgLog ("\n\n");
@@ -2398,10 +2393,10 @@ VOID ScanVolumes (VOID) {
             PartType = FSTypeName (Volume->FSType);
 
             // Improve Volume Id
-            if (MyStrStrIns (PartType, L"Unknown")) {
+            if (FoundSubStr (PartType, L"Unknown")) {
                      if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) PartType = L"NTFS (Assumed)";
                 else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) PartType = L"NTFS (Assumed)";
-                else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)";
+                else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) PartType = L"APFS (Assumed)";
 
                 // Split checks as '/FileVault' may be Core Storage
                      if (GuidsAreEqual (&(Volume->PartTypeGuid), &GuidAPFS)       ) PartType = L"APFS";
@@ -2442,13 +2437,13 @@ VOID ScanVolumes (VOID) {
             else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * Mac Recovery";
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
             else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
-            else if (MyStrStrIns (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
-            else if (MyStrStrIns (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
+            else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
+            else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
             else {
-                #ifdef __MAKEWITH_GNUEFI
-                Status = EFI_NOT_FOUND;
-                #else
                 // DA-TAG: Limit to TianoCore
+                #ifdef __MAKEWITH_GNUEFI
+                Status = EFI_NOT_STARTED;
+                #else
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
                     &ContainerGuid,
@@ -2561,7 +2556,7 @@ VOID ScanVolumes (VOID) {
             ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
         );
         LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n                   ");
+        MsgLog ("\n%s", Spacer);
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
         MY_FREE_POOL(MsgStr);
@@ -2827,6 +2822,7 @@ VOID SetVolumeIcons (VOID) {
             else {
                 LOG(4, LOG_THREE_STAR_MID, L"%s", MsgStr);
             }
+            MY_FREE_POOL(MsgStr);
             #endif
 
             // load custom volume icon for internal disks if present

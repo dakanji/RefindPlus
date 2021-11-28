@@ -73,11 +73,17 @@
 #define MINLOGLEVEL         (0)
 #define MAXLOGLEVEL         (4)
 
-#define GetTime gST->RuntimeServices->GetTime
-#define LAST_MINUTE 1439 /* Last minute of a day */
+#define LAST_MINUTE         (1439) /* Last minute of a day */
 
 BOOLEAN SilenceAPFS;
-BOOLEAN InnerScan = FALSE;
+BOOLEAN InnerScan       = FALSE;
+
+// Control Forensic Logging
+#if REFIT_DEBUG > 1
+    BOOLEAN ForensicLogging = TRUE;
+#else
+    BOOLEAN ForensicLogging = FALSE;
+#endif
 
 // extern REFIT_MENU_ENTRY MenuEntryReturn;
 //static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
@@ -87,10 +93,10 @@ BOOLEAN InnerScan = FALSE;
 //
 
 EFI_STATUS RefitReadFile (
-    IN EFI_FILE_HANDLE  BaseDir,
-    IN CHAR16          *FileName,
-    IN OUT REFIT_FILE  *File,
-    OUT UINTN          *size
+    IN     EFI_FILE_HANDLE  BaseDir,
+    IN     CHAR16          *FileName,
+    IN OUT REFIT_FILE      *File,
+       OUT UINTN           *size
 ) {
     EFI_STATUS       Status;
     EFI_FILE_HANDLE  FileHandle;
@@ -182,8 +188,9 @@ static
 CHAR16 * ReadLine (
     REFIT_FILE *File
 ) {
-    CHAR16  *Line, *q;
-    UINTN   LineLength;
+    CHAR16  *Line = NULL;
+    CHAR16  *q    = NULL;
+    UINTN    LineLength;
 
     if (File->Buffer == NULL) {
         return NULL;
@@ -320,8 +327,8 @@ BOOLEAN KeepReading (
 // get a line of tokens from a file
 //
 UINTN ReadTokenLine (
-    IN REFIT_FILE   *File,
-    OUT CHAR16    ***TokenList
+    IN  REFIT_FILE   *File,
+    OUT CHAR16     ***TokenList
 ) {
     BOOLEAN          LineFinished, IsQuoted = FALSE;
     CHAR16          *Line, *Token, *p;
@@ -510,8 +517,8 @@ VOID HandleHexes (
                     else {
                         EndOfList->Next = NewEntry;
                         EndOfList = NewEntry;
-                    } // if/else
-                } // if allocated memory for NewEntry
+                    }
+                }
             } // if (Value < MaxValue)
         } // if is valid hex value
     } // for
@@ -582,21 +589,19 @@ VOID SetDefaultByTime (
     EndTime   = HandleTime (TokenList[3]);
 
     if ((StartTime <= LAST_MINUTE) && (EndTime <= LAST_MINUTE)) {
-        Status = REFIT_CALL_2_WRAPPER(GetTime, &CurrentTime, NULL);
-
+        Status = REFIT_CALL_2_WRAPPER(gRT->GetTime, &CurrentTime, NULL);
         if (Status != EFI_SUCCESS) {
             return;
         }
 
         Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
-
         if (Now > LAST_MINUTE) {
             // Should not happen ... just being paranoid
             #if REFIT_DEBUG > 0
             MsgLog ("  - WARN: Impossible System Time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
             #endif
 
-            Print (L"Warning: Impossible system time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+            Print (L"Warning: Impossible System Time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
             return;
         }
 
@@ -647,6 +652,8 @@ VOID ReadConfig (
 
     // Set a few defaults only if we are loading the default file.
     if (MyStriCmp (FileName, GlobalConfig.ConfigFilename)) {
+        MY_FREE_POOL(GlobalConfig.DontScanTools);
+
         MY_FREE_POOL(GlobalConfig.AlsoScan);
         GlobalConfig.AlsoScan = StrDuplicate (ALSO_SCAN_DIRS);
 
@@ -660,8 +667,6 @@ VOID ReadConfig (
 
         MY_FREE_POOL(GlobalConfig.DontScanFiles);
         GlobalConfig.DontScanFiles = StrDuplicate (DONT_SCAN_FILES);
-
-        MY_FREE_POOL(GlobalConfig.DontScanTools);
 
         MY_FREE_POOL(GlobalConfig.DontScanFirmware);
         MergeStrings (&(GlobalConfig.DontScanFiles), MOK_NAMES, L',');
@@ -785,29 +790,41 @@ VOID ReadConfig (
             HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
-            // Signed integer as MAY have negative value
+            // Signed integer as *MAY* have negative value input
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
             // Sanitise levels
+            UINTN MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
                  if (GlobalConfig.LogLevel < MINLOGLEVEL) GlobalConfig.LogLevel = MINLOGLEVEL;
-            else if (GlobalConfig.LogLevel > MAXLOGLEVEL) GlobalConfig.LogLevel = MAXLOGLEVEL;
+            else if (GlobalConfig.LogLevel > MaxLogLevel) GlobalConfig.LogLevel = MaxLogLevel;
         }
         else if (MyStriCmp (TokenList[0], L"also_scan_dirs")) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.AlsoScan));
         }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_dirs") || MyStriCmp (TokenList[0], L"dont_scan_dirs")) {
+        else if (MyStriCmp (TokenList[0], L"don't_scan_dirs")
+            || MyStriCmp (TokenList[0], L"dont_scan_dirs")
+        ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanDirs));
         }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_files") || MyStriCmp (TokenList[0], L"dont_scan_files")) {
+        else if (MyStriCmp (TokenList[0], L"don't_scan_files")
+            || MyStriCmp (TokenList[0], L"dont_scan_files")
+        ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFiles));
         }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_tools") || MyStriCmp (TokenList[0], L"dont_scan_tools")) {
+        else if (MyStriCmp (TokenList[0], L"don't_scan_tools")
+            || MyStriCmp (TokenList[0], L"dont_scan_tools")
+        ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanTools));
         }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_firmware") || MyStriCmp (TokenList[0], L"dont_scan_firmware")) {
+        else if (MyStriCmp (TokenList[0], L"don't_scan_firmware")
+            || MyStriCmp (TokenList[0], L"dont_scan_firmware")
+        ) {
             HandleStrings (TokenList, TokenCount, &(GlobalConfig.DontScanFirmware));
         }
-        else if (MyStriCmp (TokenList[0], L"don't_scan_volumes") || MyStriCmp (TokenList[0], L"dont_scan_volumes")) {
-            // Note: Do not use HandleStrings() because it modifies slashes, which might be present in volume name
+        else if (MyStriCmp (TokenList[0], L"don't_scan_volumes")
+            || MyStriCmp (TokenList[0], L"dont_scan_volumes")
+        ) {
+            // Note: Do not use HandleStrings() because it modifies slashes.
+            //       However, This might be present in the volume name.
             MY_FREE_POOL(GlobalConfig.DontScanVolumes);
             for (i = 1; i < TokenCount; i++) {
                 MergeStrings (&GlobalConfig.DontScanVolumes, TokenList[i], L',');
@@ -862,7 +879,9 @@ VOID ReadConfig (
             if (MyStriCmp (TokenList[1], L"noscale")) {
                 GlobalConfig.BannerScale = BANNER_NOSCALE;
             }
-            else if (MyStriCmp (TokenList[1], L"fillscreen") || MyStriCmp (TokenList[1], L"fullscreen")) {
+            else if (MyStriCmp (TokenList[1], L"fillscreen")
+                || MyStriCmp (TokenList[1], L"fullscreen")
+            ) {
                 GlobalConfig.BannerScale = BANNER_FILLSCREEN;
             }
             else {
@@ -1197,14 +1216,14 @@ VOID AddSubmenu (
                 // set the boot loader filename
                 MY_FREE_POOL(SubEntry->LoaderPath);
                 SubEntry->LoaderPath = StrDuplicate (TokenList[1]);
-                SubEntry->Volume     = Volume;
+                SubEntry->Volume     = CopyVolume (Volume);
             }
             else if (MyStriCmp (TokenList[0], L"volume") && (TokenCount > 1)) {
                 if (FindVolume (&Volume, TokenList[1])) {
                     if ((Volume != NULL) && (Volume->IsReadable) && (Volume->RootDir)) {
                         TitleVolume = TRUE;
-                        SubEntry->me.BadgeImage = Volume->VolBadgeImage;
-                        SubEntry->Volume        = Volume;
+                        SubEntry->me.BadgeImage = egCopyImage (Volume->VolBadgeImage);
+                        SubEntry->Volume        = CopyVolume (Volume);
                     }
                 }
             }
@@ -1260,6 +1279,9 @@ VOID AddSubmenu (
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
+    if (Entry->me.SubScreen) {
+        FreeMenuScreen (&Entry->me.SubScreen);
+    }
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
 
@@ -1295,8 +1317,8 @@ LOADER_ENTRY * AddStanzaEntries (
         : StrDuplicate (L"Unknown");
     Entry->me.Row          = 0;
     Entry->Enabled         = TRUE;
-    Entry->Volume          = CurrentVolume;
-    Entry->me.BadgeImage   = CurrentVolume->VolBadgeImage;
+    Entry->Volume          = CopyVolume (CurrentVolume);
+    Entry->me.BadgeImage   = egCopyImage (CurrentVolume->VolBadgeImage);
     Entry->DiscoveryType   = DISCOVERY_TYPE_MANUAL;
 
     // Parse the config file to add options for a single stanza, terminating when the token
@@ -1351,8 +1373,8 @@ LOADER_ENTRY * AddStanzaEntries (
                         (CurrentVolume->IsReadable) &&
                         (CurrentVolume->RootDir)
                     ) {
-                        Entry->Volume        = CurrentVolume;
-                        Entry->me.BadgeImage = CurrentVolume->VolBadgeImage;
+                        Entry->Volume        = CopyVolume (CurrentVolume);
+                        Entry->me.BadgeImage = egCopyImage (CurrentVolume->VolBadgeImage);
                     }
                     else {
                         // Will not work out ... reset to previous working volume
@@ -1380,7 +1402,7 @@ LOADER_ENTRY * AddStanzaEntries (
                     MY_FREE_POOL(MsgStr);
                     #endif
 
-                    egFreeImage (Entry->me.Image);
+                    MY_FREE_IMAGE(Entry->me.Image);
                     Entry->me.Image = egLoadIcon (
                         CurrentVolume->RootDir,
                         TokenList[1],

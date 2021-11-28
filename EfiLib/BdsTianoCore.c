@@ -24,7 +24,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "gnuefi-helper.h"
 #endif
 
-#include "../BootMaster/my_free_pool.h"
+#include "../BootMaster/rp_funcs.h"
 #include "../include/refit_call_wrapper.h"
 
 EFI_GUID EfiDevicePathProtocolGuid = { 0x09576E91, 0x6D3F, 0x11D2, \

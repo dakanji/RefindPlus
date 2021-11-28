@@ -192,8 +192,8 @@ VOID InitSelection (VOID) {
         SelectionImages[0] = egCopyImage (TempBigImage);
     }
 
-    egFreeImage (TempSmallImage);
-    egFreeImage (TempBigImage);
+    MY_FREE_IMAGE(TempSmallImage);
+    MY_FREE_IMAGE(TempBigImage);
 } // VOID InitSelection()
 
 //
@@ -1363,7 +1363,7 @@ VOID DrawText (
             TextBuffer->Height
         );
 
-        egFreeImage (TextBuffer);
+        MY_FREE_IMAGE(TextBuffer);
     }
 } // VOID DrawText()
 
@@ -1440,7 +1440,7 @@ VOID DrawTextWithTransparency (
         TextBuffer->Height
     );
 
-    egFreeImage (TextBuffer);
+    MY_FREE_IMAGE(TextBuffer);
 }
 
 // Compute the size & position of the window that will hold a subscreen's information.
@@ -1576,7 +1576,7 @@ VOID GraphicsMenuStyle (
 
             if (Window) {
                 egDrawImage (Window, EntriesPosX, EntriesPosY);
-                egFreeImage (Window);
+                MY_FREE_IMAGE(Window);
             }
 
             ItemWidth = egComputeTextWidth (Screen->Title);
@@ -1744,7 +1744,7 @@ VOID DrawMainMenuEntry (
                 XPos, YPos
             );
 
-            egFreeImage (Background);
+            MY_FREE_IMAGE(Background);
         }
     } // if/else !selected
 } // VOID DrawMainMenuEntry()
@@ -2796,7 +2796,13 @@ VOID HideTag (
     // management bug somewhere that is the root cause.
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
-            if (Loader->DiscoveryType == DISCOVERY_TYPE_AUTO) {
+            if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
+                DisplaySimpleMessage (
+                    L"Cannot Hide Entry for Manual Boot Stanza",
+                    L"You must edit 'config.conf' to remove this entry."
+                );
+            }
+            else {
                 HideItemMenu.Title = L"Hide EFI OS Tag";
                 HideEfiTag (Loader, &HideItemMenu, L"HiddenTags");
 
@@ -2806,12 +2812,6 @@ VOID HideTag (
                 #endif
 
                 RescanAll (FALSE, FALSE);
-            }
-            else {
-                DisplaySimpleMessage (
-                    L"Cannot Hide Entry for Manual Boot Stanza",
-                    L"You must edit 'config.conf' to remove this entry."
-                );
             }
             break;
 
@@ -2896,15 +2896,14 @@ UINTN RunMainMenu (
     REFIT_MENU_ENTRY   *TempChosenEntry     =  NULL;
     MENU_STYLE_FUNC     Style               =  TextMenuStyle;
     MENU_STYLE_FUNC     MainStyle           =  TextMenuStyle;
-    CHAR16             *MenuTitle           =  NULL;
     UINTN               MenuExit            =  0;
     INTN                DefaultEntryIndex   = -1;
     INTN                DefaultSubmenuIndex = -1;
 
     #if REFIT_DEBUG > 0
-           CHAR16  *MsgStr              = NULL;
-    static BOOLEAN  ShowLoaded          = TRUE;
-           BOOLEAN  DefaultSelectionSet = FALSE;
+           CHAR16  *MsgStr       = NULL;
+    static BOOLEAN  ShowLoaded   = TRUE;
+           BOOLEAN  SetSelection = FALSE;
     #endif
 
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
@@ -2917,7 +2916,6 @@ UINTN RunMainMenu (
 
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 2a 1");
         MsgStr = PoolPrint (
             L"Loaded RefindPlus v%s on %s Firmware",
             REFINDPLUS_VERSION, VendorInfo
@@ -2925,12 +2923,11 @@ UINTN RunMainMenu (
         LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MY_FREE_POOL(MsgStr);
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 2a 2");
     }
     #endif
 
     LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3");
-    if ((DefaultSelection != NULL) && (*DefaultSelection != NULL)) {
+    if (DefaultSelection && *DefaultSelection) {
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 1");
         // Find a menu entry that includes *DefaultSelection as a substring
         DefaultEntryIndex = FindMenuShortcutEntry (Screen, *DefaultSelection);
@@ -2939,7 +2936,7 @@ UINTN RunMainMenu (
         #if REFIT_DEBUG > 0
         if (ShowLoaded) {
             LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2a 1");
-            DefaultSelectionSet = TRUE;
+            SetSelection = TRUE;
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
             LOG(3, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2959,8 +2956,7 @@ UINTN RunMainMenu (
         ShowLoaded  = FALSE;
 
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 2");
-        if (DefaultSelectionSet) {
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 2a 1");
+        if (SetSelection) {
             UINTN EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
             MsgStr = PoolPrint (
                 L"Highlighted Screen Option:- '%s'",
@@ -2971,7 +2967,6 @@ UINTN RunMainMenu (
             MsgLog ("\n");
             MsgLog ("      %s", MsgStr);
             MY_FREE_POOL(MsgStr);
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 2a 2");
         }
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 3");
         MsgLog ("\n\n");
@@ -3018,22 +3013,16 @@ UINTN RunMainMenu (
         Screen->TimeoutSeconds = 0;
 
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3");
-        MY_FREE_POOL(MenuTitle);
-
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4");
-        MenuTitle = StrDuplicate (TempChosenEntry->Title);
-
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5");
         if (MenuExit == MENU_EXIT_DETAILS) {
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1");
+            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1");
             if (!TempChosenEntry->SubScreen) {
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1a 1");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 1");
                 // no sub-screen; ignore keypress
                 MenuExit = 0;
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1a 2");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 2");
             }
             else {
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 1");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 1");
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
@@ -3041,7 +3030,7 @@ UINTN RunMainMenu (
                     &TempChosenEntry
                 );
 
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 2");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 2");
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL,
                     L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
@@ -3049,40 +3038,40 @@ UINTN RunMainMenu (
                 );
                 #endif
 
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 3");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 3");
                 if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                     MenuExit = 0;
                 }
 
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 4");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4");
                 if (MenuExit == MENU_EXIT_DETAILS) {
-                    LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 4a 1");
+                    LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1");
                     if (!EditOptions ((LOADER_ENTRY *) TempChosenEntry)) {
-                        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 4a 1a 1");
+                        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 1");
                         MenuExit = 0;
-                        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 4a 1a 2");
+                        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 2");
                     }
-                    LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 4a 2");
+                    LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 2");
                 }
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 1b 5");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 5");
             }
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5a 2");
+            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 2");
         } // if MenuExit == MENU_EXIT_DETAILS
 
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6");
+        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4");
         if (MenuExit == MENU_EXIT_HIDE) {
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6a 1");
+            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1");
             if (GlobalConfig.HiddenTags) {
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6a 1a 1");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 1");
                 HideTag (TempChosenEntry);
-                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6a 1a 2");
+                LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 2");
             }
 
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6a 2");
+            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 2");
             MenuExit = 0;
-            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 6a 3");
+            LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 3");
         }
-        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 7 END DO LOOP");
+        LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5 END DO LOOP");
         LOG(5, LOG_BLANK_LINE_SEP, L"X");
     } while (MenuExit == 0);
     LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 10");
@@ -3112,31 +3101,84 @@ UINTN RunMainMenu (
     if (DefaultSelection) {
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 1");
         MY_FREE_POOL(*DefaultSelection);
-        *DefaultSelection = MenuTitle;
+        *DefaultSelection = StrDuplicate (TempChosenEntry->Title);
         LOG(5, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 2");
     }
 
     LOG(5, LOG_LINE_FORENSIC,
-        L"In RunMainMenu ... 13- END:- return UINTN MenuExit = '%d'",
+        L"In RunMainMenu ... 13 - END:- return UINTN MenuExit = '%d'",
         MenuExit
     );
     LOG(5, LOG_BLANK_LINE_SEP, L"X");
     return MenuExit;
 } // UINTN RunMainMenu()
 
+VOID FreeMenuScreen (
+    IN REFIT_MENU_SCREEN **Screen
+) {
+    UINTN i;
+
+    if (Screen && *Screen) {
+        MY_FREE_POOL((*Screen)->Title);
+        MY_FREE_IMAGE((*Screen)->TitleImage);
+        if ((*Screen)->InfoLines) {
+            for (i = 0; i < (*Screen)->InfoLineCount; i++) {
+                MY_FREE_POOL((*Screen)->InfoLines[i]);
+            }
+            MY_FREE_POOL((*Screen)->InfoLines);
+        }
+        if ((*Screen)->Entries) {
+            for (i = 0; i < (*Screen)->EntryCount; i++) {
+                MY_FREE_POOL((*Screen)->Entries[i]->Title);
+                MY_FREE_IMAGE((*Screen)->Entries[i]->Image);
+                MY_FREE_IMAGE((*Screen)->Entries[i]->BadgeImage);
+                FreeMenuScreen (&(*Screen)->Entries[i]->SubScreen);
+            } // for
+            MY_FREE_POOL((*Screen)->Entries);
+        }
+
+        MY_FREE_POOL((*Screen)->TimeoutText);
+        MY_FREE_POOL((*Screen)->Hint1);
+        MY_FREE_POOL((*Screen)->Hint2);
+        MY_FREE_POOL(*Screen);
+        MY_FREE_POOL(Screen);
+    }
+} // VOID FreeMenuScreen()
+
+VOID FreeLegacyEntry (
+    IN LEGACY_ENTRY **Entry
+) {
+    if (Entry && *Entry) {
+        MY_FREE_POOL((*Entry)->me.Title);
+        MY_FREE_IMAGE((*Entry)->me.Image);
+        MY_FREE_IMAGE((*Entry)->me.BadgeImage);
+        FreeMenuScreen (&(*Entry)->me.SubScreen);
+
+        FreeVolume (&(*Entry)->Volume);
+        FreeBdsOption (&(*Entry)->BdsOption);
+        MY_FREE_POOL((*Entry)->LoadOptions);
+        MY_FREE_POOL(*Entry);
+        MY_FREE_POOL(Entry);
+    }
+} // VOID FreeLegacyEntry()
+
 VOID FreeLoaderEntry (
     IN LOADER_ENTRY **Entry
 ) {
     if (Entry && *Entry) {
-        egFreeImage ((*Entry)->me.Image);
-        MY_FREE_POOL((*Entry)->EfiLoaderPath);
+        MY_FREE_POOL((*Entry)->me.Title);
+        MY_FREE_IMAGE((*Entry)->me.Image);
+        MY_FREE_IMAGE((*Entry)->me.BadgeImage);
+        FreeMenuScreen (&(*Entry)->me.SubScreen);
+
+        MY_FREE_POOL((*Entry)->Title);
+        MY_FREE_POOL((*Entry)->LoaderPath);
+        FreeVolume (&(*Entry)->Volume);
         MY_FREE_POOL((*Entry)->LoadOptions);
         MY_FREE_POOL((*Entry)->InitrdPath);
-        MY_FREE_POOL((*Entry)->LoaderPath);
-        MY_FREE_POOL((*Entry)->me.Title);
-        MY_FREE_POOL((*Entry)->Title);
-
+        MY_FREE_POOL((*Entry)->EfiLoaderPath);
         MY_FREE_POOL(*Entry);
+        MY_FREE_POOL(Entry);
     }
 } // VOID FreeLoaderEntry()
 
@@ -3197,7 +3239,7 @@ VOID FreeBdsOption (
         MY_FREE_POOL((*BdsOption)->Description);
         MY_FREE_POOL((*BdsOption)->LoadOptions);
         MY_FREE_POOL((*BdsOption)->StatusString);
-
         MY_FREE_POOL(*BdsOption);
+        MY_FREE_POOL(BdsOption);
     }
 } // VOID FreeBdsOption()

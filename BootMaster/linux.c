@@ -455,7 +455,7 @@ VOID AddKernelToSubmenu (
 ) {
     REFIT_FILE          *File;
     CHAR16             **TokenList = NULL, *InitrdName, *SubmenuName = NULL, *VolName = NULL;
-    CHAR16              *Path = NULL, *Title, *KernelVersion;
+    CHAR16              *Path = NULL, *KernelVersion = NULL;
     REFIT_MENU_SCREEN   *SubScreen;
     LOADER_ENTRY        *SubEntry;
     UINTN                TokenCount;
@@ -518,31 +518,28 @@ VOID AddKernelToSubmenu (
                 MY_FREE_POOL(SubEntry->LoadOptions);
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 5");
-                Title = StrDuplicate (SubmenuName);
+                SubEntry->me.Title = StrDuplicate (SubmenuName);
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 6");
-                LimitStringLength (Title, MAX_LINE_LENGTH);
+                LimitStringLength (SubEntry->me.Title, MAX_LINE_LENGTH);
 
                 LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 7");
-                SubEntry->me.Title    = Title;
-
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 8");
                 SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
 
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 9");
+                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 8");
                 SubEntry->LoaderPath  = StrDuplicate (FileName);
 
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 10");
+                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 9");
                 CleanUpPathNameSlashes (SubEntry->LoaderPath);
 
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 11");
-                SubEntry->Volume = Volume;
+                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 10");
+                SubEntry->Volume = CopyVolume (Volume);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
 
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 12");
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *)SubEntry);
+                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 11");
+                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 13");
+                LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 12");
             }
             LOG(5, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 4");
             FreeTokenLine (&TokenList, &TokenCount);

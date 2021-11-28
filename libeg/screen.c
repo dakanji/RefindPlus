@@ -1929,7 +1929,7 @@ VOID egDrawImage (
         );
     }
     if ((CompImage != GlobalConfig.ScreenBackground) && (CompImage != Image)) {
-        egFreeImage (CompImage);
+        MY_FREE_IMAGE(CompImage);
     }
 } // VOID egDrawImage()
 
@@ -1958,7 +1958,7 @@ VOID egDrawImageWithTransparency (
             Image, BadgeImage,
             XPos, YPos
         );
-        egFreeImage (Background);
+        MY_FREE_IMAGE(Background);
     }
 } // VOID DrawImageWithTransparency()
 
@@ -2159,7 +2159,7 @@ VOID egScreenShot (VOID) {
         &FileDataSize
     );
 
-    egFreeImage (Image);
+    MY_FREE_IMAGE(Image);
     if (EFI_ERROR(Status)) {
         SwitchToText (FALSE);
 

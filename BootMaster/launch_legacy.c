@@ -760,8 +760,8 @@ VOID AddLegacyEntry (
     Entry->me.SubScreen      = NULL; // Initial Setting
     Entry->me.ShortcutLetter = ShortcutLetter;
     Entry->me.Image          = LoadOSIcon (Volume->OSIconName, L"legacy", FALSE);
-    Entry->Volume            = Volume;
-    Entry->me.BadgeImage     = Volume->VolBadgeImage;
+    Entry->Volume            = CopyVolume (Volume);
+    Entry->me.BadgeImage     = egCopyImage (Volume->VolBadgeImage);
     Entry->LoadOptions       = (Volume->DiskKind == DISK_KIND_OPTICAL)
                                ? L"CD"
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
@@ -779,7 +779,7 @@ VOID AddLegacyEntry (
             LoaderTitle, VolDesc
          );
 
-        SubScreen->TitleImage = Entry->me.Image;
+        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
         SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
         if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
@@ -793,8 +793,8 @@ VOID AddLegacyEntry (
         SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
         SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
         SubEntry->me.Tag      = TAG_LEGACY;
-        SubEntry->Volume      = Entry->Volume;
-        SubEntry->LoadOptions = Entry->LoadOptions;
+        SubEntry->Volume      = CopyVolume (Entry->Volume);
+        SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
         AddMenuEntry (SubScreen, &MenuEntryReturn);
@@ -864,7 +864,7 @@ VOID AddLegacyEntryUEFI (
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (SubScreen) {
         SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
-        SubScreen->TitleImage = Entry->me.Image;
+        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
         SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
         if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {

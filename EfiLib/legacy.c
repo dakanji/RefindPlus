@@ -34,7 +34,7 @@
 #include "legacy.h"
 #include "GenericBdsLib.h"
 #include "../BootMaster/global.h"
-#include "../BootMaster/my_free_pool.h"
+#include "../BootMaster/rp_funcs.h"
 #include "../include/refit_call_wrapper.h"
 
 BOOT_OPTION_BBS_MAPPING  *mBootOptionBbsMapping      = NULL;

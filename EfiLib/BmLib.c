@@ -23,7 +23,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "gnuefi-helper.h"
 #endif
 
-#include "../BootMaster/my_free_pool.h"
+#include "../BootMaster/rp_funcs.h"
 #include "../include/refit_call_wrapper.h"
 
 /**

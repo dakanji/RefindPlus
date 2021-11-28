@@ -310,167 +310,167 @@ typedef struct _uint32_list {
 } UINT32_LIST;
 
 typedef struct {
-   UINT8  Flags;
-   UINT8  StartCHS1;
-   UINT8  StartCHS2;
-   UINT8  StartCHS3;
-   UINT8  Type;
-   UINT8  EndCHS1;
-   UINT8  EndCHS2;
-   UINT8  EndCHS3;
-   UINT32 StartLBA;
-   UINT32 Size;
+    UINT8  Flags;
+    UINT8  StartCHS1;
+    UINT8  StartCHS2;
+    UINT8  StartCHS3;
+    UINT8  Type;
+    UINT8  EndCHS1;
+    UINT8  EndCHS2;
+    UINT8  EndCHS3;
+    UINT32 StartLBA;
+    UINT32 Size;
 } MBR_PARTITION_INFO;
 
 typedef struct {
-   EFI_DEVICE_PATH     *DevicePath;
-   EFI_HANDLE           DeviceHandle;
-   EFI_FILE            *RootDir;
-   CHAR16              *PartName;
-   CHAR16              *FsName;   // Filesystem name
-   CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
-   EFI_GUID             VolUuid;
-   EFI_GUID             PartGuid;
-   EFI_GUID             PartTypeGuid;
-   BOOLEAN              IsMarkedReadOnly;
-   EG_IMAGE            *VolIconImage;
-   EG_IMAGE            *VolBadgeImage;
-   UINTN                DiskKind;
-   BOOLEAN              HasBootCode;
-   CHAR16              *OSIconName;
-   CHAR16              *OSName;
-   BOOLEAN              IsMbrPartition;
-   UINTN                MbrPartitionIndex;
-   EFI_BLOCK_IO        *BlockIO;
-   UINT64               BlockIOOffset;
-   EFI_BLOCK_IO        *WholeDiskBlockIO;
-   EFI_DEVICE_PATH     *WholeDiskDevicePath;
-   MBR_PARTITION_INFO  *MbrPartitionTable;
-   BOOLEAN              IsReadable;
-   UINT32               FSType;
+    EFI_DEVICE_PATH     *DevicePath;
+    EFI_HANDLE           DeviceHandle;
+    EFI_FILE            *RootDir;
+    CHAR16              *PartName;
+    CHAR16              *FsName;   // Filesystem name
+    CHAR16              *VolName;  // One of the two above OR fs description (e.g., "2 GiB FAT volume")
+    EFI_GUID             VolUuid;
+    EFI_GUID             PartGuid;
+    EFI_GUID             PartTypeGuid;
+    BOOLEAN              IsMarkedReadOnly;
+    EG_IMAGE            *VolIconImage;
+    EG_IMAGE            *VolBadgeImage;
+    UINTN                DiskKind;
+    BOOLEAN              HasBootCode;
+    CHAR16              *OSIconName;
+    CHAR16              *OSName;
+    BOOLEAN              IsMbrPartition;
+    UINTN                MbrPartitionIndex;
+    EFI_BLOCK_IO        *BlockIO;
+    UINT64               BlockIOOffset;
+    EFI_BLOCK_IO        *WholeDiskBlockIO;
+    EFI_DEVICE_PATH     *WholeDiskDevicePath;
+    MBR_PARTITION_INFO  *MbrPartitionTable;
+    BOOLEAN              IsReadable;
+    UINT32               FSType;
 } REFIT_VOLUME;
 
 typedef struct _refit_menu_entry {
-   CHAR16      *Title;
-   UINTN        Tag;
-   UINTN        Row;
-   CHAR16       ShortcutDigit;
-   CHAR16       ShortcutLetter;
-   EG_IMAGE    *Image;
-   EG_IMAGE    *BadgeImage;
-   struct _refit_menu_screen *SubScreen;
+    CHAR16      *Title;
+    UINTN        Tag;
+    UINTN        Row;
+    CHAR16       ShortcutDigit;
+    CHAR16       ShortcutLetter;
+    EG_IMAGE    *Image;
+    EG_IMAGE    *BadgeImage;
+    struct _refit_menu_screen *SubScreen;
 } REFIT_MENU_ENTRY;
 
 typedef struct _refit_menu_screen {
-   CHAR16            *Title;          // For EFI firmware entry, this includes "Reboot to" prefix
-   EG_IMAGE          *TitleImage;
-   UINTN              InfoLineCount;
-   CHAR16           **InfoLines;
-   UINTN              EntryCount;     // total number of entries registered
-   REFIT_MENU_ENTRY **Entries;
-   UINTN              TimeoutSeconds;
-   CHAR16            *TimeoutText;
-   CHAR16            *Hint1;
-   CHAR16            *Hint2;
+    CHAR16            *Title;          // For EFI firmware entry, this includes "Reboot to" prefix
+    EG_IMAGE          *TitleImage;
+    UINTN              InfoLineCount;
+    CHAR16           **InfoLines;
+    UINTN              EntryCount;     // total number of entries registered
+    REFIT_MENU_ENTRY **Entries;
+    UINTN              TimeoutSeconds;
+    CHAR16            *TimeoutText;
+    CHAR16            *Hint1;
+    CHAR16            *Hint2;
 } REFIT_MENU_SCREEN;
 
 typedef struct {
-   REFIT_MENU_ENTRY  me;
-   CHAR16           *Title;            // For EFI firmware entry, this is "raw" title
-   CHAR16           *LoaderPath;
-   REFIT_VOLUME     *Volume;
-   BOOLEAN           UseGraphicsMode;
-   BOOLEAN           Enabled;
-   CHAR16           *LoadOptions;
-   CHAR16           *InitrdPath;       // Linux stub loader only
-   CHAR8             OSType;
-   UINTN             DiscoveryType;
-   EFI_DEVICE_PATH  *EfiLoaderPath;    // path to NVRAM-defined loader
-   UINT16            EfiBootNum;       // Boot#### number for NVRAM-defined loader
+    REFIT_MENU_ENTRY  me;
+    CHAR16           *Title;            // For EFI firmware entry, this is "raw" title
+    CHAR16           *LoaderPath;
+    REFIT_VOLUME     *Volume;
+    BOOLEAN           UseGraphicsMode;
+    BOOLEAN           Enabled;
+    CHAR16           *LoadOptions;
+    CHAR16           *InitrdPath;       // Linux stub loader only
+    CHAR8             OSType;
+    UINTN             DiscoveryType;
+    EFI_DEVICE_PATH  *EfiLoaderPath;    // path to NVRAM-defined loader
+    UINT16            EfiBootNum;       // Boot#### number for NVRAM-defined loader
 } LOADER_ENTRY;
 
 typedef struct {
-   REFIT_MENU_ENTRY   me;
-   REFIT_VOLUME      *Volume;
-   BDS_COMMON_OPTION *BdsOption;
-   CHAR16            *LoadOptions;
-   BOOLEAN            Enabled;
+    REFIT_MENU_ENTRY   me;
+    REFIT_VOLUME      *Volume;
+    BDS_COMMON_OPTION *BdsOption;
+    CHAR16            *LoadOptions;
+    BOOLEAN            Enabled;
 } LEGACY_ENTRY;
 
 typedef struct {
-   BOOLEAN           TextOnly;
-   BOOLEAN           ScanAllLinux;
-   BOOLEAN           DeepLegacyScan;
-   BOOLEAN           EnableAndLockVMX;
-   BOOLEAN           FoldLinuxKernels;
-   BOOLEAN           EnableMouse;
-   BOOLEAN           EnableTouch;
-   BOOLEAN           HiddenTags;
-   BOOLEAN           UseNvram;
-   BOOLEAN           IgnorePreviousBoot;
-   BOOLEAN           IgnoreHiddenIcons;
-   BOOLEAN           PreferHiddenIcons;
-   BOOLEAN           TextRenderer;
-   BOOLEAN           UgaPassThrough;
-   BOOLEAN           ProvideConsoleGOP;
-   BOOLEAN           ReloadGOP;
-   BOOLEAN           UseDirectGop;
-   BOOLEAN           ContinueOnWarning;
-   BOOLEAN           ForceTRIM;
-   BOOLEAN           DisableCompatCheck;
-   BOOLEAN           DisableAMFI;
-   BOOLEAN           SupplyNVME;
-   BOOLEAN           SupplyAPFS;
-   BOOLEAN           SilenceAPFS;
-   BOOLEAN           SyncAPFS;
-   BOOLEAN           ProtectNVRAM;
-   BOOLEAN           ScanAllESP;
-   BOOLEAN           TagsHelp;
-   BOOLEAN           NormaliseCSR;
-   BOOLEAN           ShutdownAfterTimeout;
-   BOOLEAN           Install;
-   BOOLEAN           WriteSystemdVars;
-   UINTN             RequestedScreenWidth;
-   UINTN             RequestedScreenHeight;
-   UINTN             BannerBottomEdge;
-   UINTN             RequestedTextMode;
-   UINTN             HideUIFlags;
-   UINTN             MaxTags;
-   UINTN             GraphicsFor;
-   UINTN             LegacyType;
-   UINTN             ScanDelay;
-   UINTN             MouseSpeed;
-   UINTN             IconSizes[4];
-   UINTN             BannerScale;
-   INTN              ScreensaverTime;
-   INTN              Timeout;
-   INTN              ScaleUI;
-   INTN              ActiveCSR;
-   INTN              LogLevel;
-   REFIT_VOLUME     *DiscoveredRoot;
-   EFI_DEVICE_PATH  *SelfDevicePath;
-   CHAR16           *BannerFileName;
-   EG_IMAGE         *ScreenBackground;
-   CHAR16           *ConfigFilename;
-   CHAR16           *SelectionSmallFileName;
-   CHAR16           *SelectionBigFileName;
-   CHAR16           *DefaultSelection;
-   CHAR16           *AlsoScan;
-   CHAR16           *DontScanVolumes;
-   CHAR16           *DontScanDirs;
-   CHAR16           *DontScanFiles;
-   CHAR16           *DontScanTools;
-   CHAR16           *DontScanFirmware;
-   CHAR16           *WindowsRecoveryFiles;
-   CHAR16           *MacOSRecoveryFiles;
-   CHAR16           *DriverDirs;
-   CHAR16           *IconsDir;
-   CHAR16           *SetBootArgs;
-   CHAR16           *ExtraKernelVersionStrings;
-   CHAR16           *SpoofOSXVersion;
-   UINT32_LIST      *CsrValues;
-   UINTN             ShowTools[NUM_TOOLS];
-   CHAR8             ScanFor[NUM_SCAN_OPTIONS];
+    BOOLEAN           TextOnly;
+    BOOLEAN           ScanAllLinux;
+    BOOLEAN           DeepLegacyScan;
+    BOOLEAN           EnableAndLockVMX;
+    BOOLEAN           FoldLinuxKernels;
+    BOOLEAN           EnableMouse;
+    BOOLEAN           EnableTouch;
+    BOOLEAN           HiddenTags;
+    BOOLEAN           UseNvram;
+    BOOLEAN           IgnorePreviousBoot;
+    BOOLEAN           IgnoreHiddenIcons;
+    BOOLEAN           PreferHiddenIcons;
+    BOOLEAN           TextRenderer;
+    BOOLEAN           UgaPassThrough;
+    BOOLEAN           ProvideConsoleGOP;
+    BOOLEAN           ReloadGOP;
+    BOOLEAN           UseDirectGop;
+    BOOLEAN           ContinueOnWarning;
+    BOOLEAN           ForceTRIM;
+    BOOLEAN           DisableCompatCheck;
+    BOOLEAN           DisableAMFI;
+    BOOLEAN           SupplyNVME;
+    BOOLEAN           SupplyAPFS;
+    BOOLEAN           SilenceAPFS;
+    BOOLEAN           SyncAPFS;
+    BOOLEAN           ProtectNVRAM;
+    BOOLEAN           ScanAllESP;
+    BOOLEAN           TagsHelp;
+    BOOLEAN           NormaliseCSR;
+    BOOLEAN           ShutdownAfterTimeout;
+    BOOLEAN           Install;
+    BOOLEAN           WriteSystemdVars;
+    UINTN             RequestedScreenWidth;
+    UINTN             RequestedScreenHeight;
+    UINTN             BannerBottomEdge;
+    UINTN             RequestedTextMode;
+    UINTN             HideUIFlags;
+    UINTN             MaxTags;
+    UINTN             GraphicsFor;
+    UINTN             LegacyType;
+    UINTN             ScanDelay;
+    UINTN             MouseSpeed;
+    UINTN             IconSizes[4];
+    UINTN             BannerScale;
+    INTN              ScreensaverTime;
+    INTN              Timeout;
+    INTN              ScaleUI;
+    INTN              ActiveCSR;
+    INTN              LogLevel;
+    REFIT_VOLUME     *DiscoveredRoot;
+    EFI_DEVICE_PATH  *SelfDevicePath;
+    CHAR16           *BannerFileName;
+    EG_IMAGE         *ScreenBackground;
+    CHAR16           *ConfigFilename;
+    CHAR16           *SelectionSmallFileName;
+    CHAR16           *SelectionBigFileName;
+    CHAR16           *DefaultSelection;
+    CHAR16           *AlsoScan;
+    CHAR16           *DontScanVolumes;
+    CHAR16           *DontScanDirs;
+    CHAR16           *DontScanFiles;
+    CHAR16           *DontScanTools;
+    CHAR16           *DontScanFirmware;
+    CHAR16           *WindowsRecoveryFiles;
+    CHAR16           *MacOSRecoveryFiles;
+    CHAR16           *DriverDirs;
+    CHAR16           *IconsDir;
+    CHAR16           *SetBootArgs;
+    CHAR16           *ExtraKernelVersionStrings;
+    CHAR16           *SpoofOSXVersion;
+    UINT32_LIST      *CsrValues;
+    UINTN             ShowTools[NUM_TOOLS];
+    CHAR8             ScanFor[NUM_SCAN_OPTIONS];
 } REFIT_CONFIG;
 
 // Global variables

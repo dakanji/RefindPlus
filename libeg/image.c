@@ -99,7 +99,7 @@ EG_IMAGE * egCreateImage (
     NewImage->PixelData = (EG_PIXEL *) AllocatePool (Width * Height * sizeof (EG_PIXEL));
 
     if (NewImage->PixelData == NULL) {
-        egFreeImage (NewImage);
+        MY_FREE_IMAGE(NewImage);
         return NULL;
     }
 
@@ -271,6 +271,7 @@ EG_IMAGE * egScaleImage (
     return NewImage;
 } // EG_IMAGE * egScaleImage()
 
+/*
 VOID egFreeImage (
     IN EG_IMAGE *Image
 ) {
@@ -281,6 +282,7 @@ VOID egFreeImage (
     MY_FREE_POOL(Image->PixelData);
     MY_FREE_POOL(Image);
 }
+*/
 
 //
 // Basic file operations
@@ -428,14 +430,12 @@ EG_IMAGE * egDecodeAny (
     IN UINTN     IconSize,
     IN BOOLEAN   WantAlpha
 ) {
-   EG_IMAGE *NewImage = NULL;
+         EG_IMAGE *NewImage = egDecodePNG  (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage) NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage) NewImage = egDecodeBMP  (FileData, FileDataLength, IconSize, WantAlpha);
+    if (!NewImage) NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
 
-                         NewImage = egDecodePNG  (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL) NewImage = egDecodeJPEG (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL) NewImage = egDecodeBMP  (FileData, FileDataLength, IconSize, WantAlpha);
-   if (NewImage == NULL) NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
-
-   return NewImage;
+    return NewImage;
 }
 
 EG_IMAGE * egLoadImage (
@@ -540,7 +540,7 @@ EG_IMAGE * egLoadIcon (
 
         // use scaled image if available
         if (NewImage) {
-            egFreeImage (Image);
+            MY_FREE_IMAGE(Image);
             Image = NewImage;
         }
         else {

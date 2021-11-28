@@ -713,7 +713,7 @@ BOOLEAN LoadDrivers (VOID) {
     #endif
 
 
-    while ((Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
+    while ((CurFound == 0) && (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         CleanUpPathNameSlashes (Directory);
         SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
         CleanUpPathNameSlashes (SelfDirectory);
@@ -721,11 +721,9 @@ BOOLEAN LoadDrivers (VOID) {
 
         CurFound = ScanDriverDir (SelfDirectory);
         if (CurFound > 0) {
-            NumFound = NumFound + CurFound;
-
             // We only process one default folder
-            // Exit loop if drivers were found
-            break;
+            // Increment 'NumFound' and exit loop if drivers were found
+            NumFound = NumFound + CurFound;
         }
         else {
             #if REFIT_DEBUG > 0

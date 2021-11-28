@@ -301,7 +301,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     #endif
 
     BOOLEAN BlockCert = (
-        (MyStrStr (VendorInfo, L"Apple") != NULL) &&
+        MyStrStr (VendorInfo, L"Apple") &&
         (
             GuidsAreEqual (VendorGuid, &WinGuid) ||
             GuidsAreEqual (VendorGuid, &X509Guid) ||
@@ -402,7 +402,7 @@ VOID ActiveCSR (VOID) {
         RecordgCsrStatus (CsrStatus, FALSE);
 
         // Check 'gCsrStatus' variable for 'Enabled' term
-        if (MyStrStr (gCsrStatus, L"Enabled") != NULL) {
+        if (MyStrStr (gCsrStatus, L"Enabled")) {
             // 'Enabled' found
             CsrEnabled = TRUE;
         }
@@ -476,7 +476,7 @@ VOID SetBootArgs (VOID) {
         #endif
     }
     else {
-        if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way=1") != NULL) {
+        if (MyStrStr (GlobalConfig.SetBootArgs, L"amfi_get_out_of_my_way=1")) {
             #if REFIT_DEBUG > 0
             if (GlobalConfig.DisableAMFI) {
                 // Ensure Logging
@@ -488,7 +488,7 @@ VOID SetBootArgs (VOID) {
             GlobalConfig.DisableAMFI = FALSE;
         }
 
-        if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check") != NULL) {
+        if (MyStrStr (GlobalConfig.SetBootArgs, L"-no_compat_check")) {
             #if REFIT_DEBUG > 0
             if (GlobalConfig.DisableCompatCheck) {
                 // Ensure Logging
@@ -866,6 +866,10 @@ VOID preBootKicker (VOID) {
         AddMenuEntry (&BootKickerMenu, &MenuEntryBootKicker);
         AddMenuEntry (&BootKickerMenu, &MenuEntryReturn);
 
+        MY_FREE_POOL(TempMenuEntry->Title);
+        MY_FREE_IMAGE(TempMenuEntry->Image);
+        MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
+        FreeMenuScreen (&TempMenuEntry->SubScreen);
         MY_FREE_POOL(TempMenuEntry);
     }
 
@@ -878,9 +882,13 @@ VOID preBootKicker (VOID) {
     MsgLog ("User Input Received:\n");
     #endif
 
-    if (MyStriCmp (ChosenEntry->Title, L"Load BootKicker") &&
-        MenuExit == MENU_EXIT_ENTER
-    ) {
+    if (!MyStriCmp (ChosenEntry->Title, L"Load BootKicker") || (MenuExit != MENU_EXIT_ENTER)) {
+        #if REFIT_DEBUG > 0
+        // Log Return to Main Screen
+        MsgLog ("  - %s\n\n", ChosenEntry->Title);
+        #endif
+    }
+    else {
         UINTN        i = 0;
         UINTN        k = 0;
 
@@ -905,13 +913,13 @@ VOID preBootKicker (VOID) {
                     FileExists (Volumes[i]->RootDir, FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                    ourLoaderEntry->me.Title          = Description;
+                    ourLoaderEntry->me.Title          = StrDuplicate (Description);
                     ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
                     ourLoaderEntry->me.Row            = 1;
                     ourLoaderEntry->me.ShortcutLetter = 0;
                     ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
                     ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                    ourLoaderEntry->Volume            = Volumes[i];
+                    ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
                     ourLoaderEntry->UseGraphicsMode   = TRUE;
 
                     FoundTool = TRUE;
@@ -944,6 +952,8 @@ VOID preBootKicker (VOID) {
             MsgLog ("  - Load BootKicker\n\n");
             #endif
 
+            MY_FREE_POOL(FilePath);
+
             // Run BootKicker
             StartTool (ourLoaderEntry);
 
@@ -955,12 +965,7 @@ VOID preBootKicker (VOID) {
         }
 
         MY_FREE_POOL(FilePath);
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        // Log Return to Main Screen
-        MsgLog ("  - %s\n\n", ChosenEntry->Title);
-        #endif
+        FreeLoaderEntry (&ourLoaderEntry);
     }
 } // VOID preBootKicker()
 
@@ -1016,6 +1021,10 @@ VOID preCleanNvram (VOID) {
         AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
         AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
 
+        MY_FREE_POOL(TempMenuEntry->Title);
+        MY_FREE_IMAGE(TempMenuEntry->Image);
+        MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
+        FreeMenuScreen (&TempMenuEntry->SubScreen);
         MY_FREE_POOL(TempMenuEntry);
     }
 
@@ -1025,13 +1034,16 @@ VOID preCleanNvram (VOID) {
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preCleanNvram'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
-    #endif
-
-    #if REFIT_DEBUG > 0
     MsgLog ("User Input Received:\n");
     #endif
 
-    if (MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") && (MenuExit == MENU_EXIT_ENTER)) {
+    if (!MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") || (MenuExit != MENU_EXIT_ENTER)) {
+        #if REFIT_DEBUG > 0
+        // Log Return to Main Screen
+        MsgLog ("  - %s\n\n", ChosenEntry->Title);
+        #endif
+    }
+    else {
         UINTN i = 0;
         UINTN k = 0;
 
@@ -1057,13 +1069,13 @@ VOID preCleanNvram (VOID) {
                     FileExists (Volumes[i]->RootDir, FilePath)
                 ) {
                     ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                    ourLoaderEntry->me.Title          = Description;
+                    ourLoaderEntry->me.Title          = StrDuplicate (Description);
                     ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
                     ourLoaderEntry->me.Row            = 1;
                     ourLoaderEntry->me.ShortcutLetter = 0;
                     ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
                     ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                    ourLoaderEntry->Volume            = Volumes[i];
+                    ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
                     ourLoaderEntry->UseGraphicsMode   = FALSE;
 
                     FoundTool = TRUE;
@@ -1096,6 +1108,8 @@ VOID preCleanNvram (VOID) {
             MsgLog ("  - Load CleanNvram\n\n");
             #endif
 
+            MY_FREE_POOL(FilePath);
+
             ranCleanNvram = TRUE;
 
             // Run CleanNvram
@@ -1109,13 +1123,8 @@ VOID preCleanNvram (VOID) {
         }
 
         MY_FREE_POOL(FilePath);
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        // Log Return to Main Screen
-        MsgLog ("  - %s\n\n", ChosenEntry->Title);
-        #endif
-    } // if MyStriCmp ChosenEntry->Title
+        FreeLoaderEntry (&ourLoaderEntry);
+    } // if !MyStriCmp ChosenEntry->Title
 } // VOID preCleanNvram()
 
 
@@ -1716,7 +1725,7 @@ EFI_STATUS EFIAPI efi_main (
     NowMinute = Now.Minute;
     NowSecond = Now.Second;
 
-    if (MyStrStr (gST->FirmwareVendor, L"Apple") != NULL) {
+    if (MyStrStr (gST->FirmwareVendor, L"Apple")) {
         VendorInfo = StrDuplicate (L"Apple");
     }
     else {
@@ -2261,6 +2270,8 @@ EFI_STATUS EFIAPI efi_main (
 
         switch (ChosenEntry->Tag) {
             case TAG_NVRAMCLEAN:    // Clean NVRAM
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"Cleaning NVRAM");
 
@@ -2274,7 +2285,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 #endif
 
-                StartTool ((LOADER_ENTRY *) ChosenEntry);
+                StartTool (ourLoaderEntry);
                 break;
 
             case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
@@ -2331,6 +2342,8 @@ EFI_STATUS EFIAPI efi_main (
                 break;
 
             case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_LINE_NORMAL, L"Loading Apple Boot Screen");
 
@@ -2344,7 +2357,6 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 #endif
 
-                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
                 ourLoaderEntry->UseGraphicsMode = TRUE;
 
                 StartTool (ourLoaderEntry);
@@ -2444,8 +2456,8 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 // Fix undetected Mac OS
-                if (!MyStrStrIns (ourLoaderEntry->Title, L"Mac OS") &&
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
+                if (!FoundSubStr (ourLoaderEntry->Title, L"Mac OS") &&
+                    FoundSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     if (MyStriCmp (ourLoaderEntry->Volume->VolName, L"PreBoot")) {
                         ourLoaderEntry->Title = L"Mac OS";
@@ -2456,14 +2468,14 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 // Fix undetected Windows
-                if (!MyStrStrIns (ourLoaderEntry->Title, L"Windows") &&
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot")
+                if (!FoundSubStr (ourLoaderEntry->Title, L"Windows") &&
+                    FoundSubStr (ourLoaderEntry->LoaderPath, L"EFI\\Microsoft\\Boot")
                 ) {
                     ourLoaderEntry->Title = L"Windows (UEFI)";
                 }
 
-                if (MyStrStrIns (ourLoaderEntry->Title, L"OpenCore") ||
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\OpenCore")
+                if (FoundSubStr (ourLoaderEntry->Title, L"OpenCore") ||
+                    FoundSubStr (ourLoaderEntry->LoaderPath, L"\\OpenCore")
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2488,8 +2500,8 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Clover") ||
-                    MyStrStrIns (ourLoaderEntry->LoaderPath, L"\\Clover")
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Clover") ||
+                    FoundSubStr (ourLoaderEntry->LoaderPath, L"\\Clover")
                 ) {
                     // Set CSR if required
                     ActiveCSR();
@@ -2514,7 +2526,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Mac OS")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Mac OS")) {
                     // Set CSR if required
                     ActiveCSR();
 
@@ -2535,10 +2547,10 @@ EFI_STATUS EFIAPI efi_main (
                             EFI_GUID            ContainerGuid;
                             APPLE_APFS_VOLUME_ROLE VolumeRole;
 
-                            #ifdef __MAKEWITH_GNUEFI
-                            Status = EFI_NOT_FOUND;
-                            #else
                             // DA-TAG: Limit to TianoCore
+                            #ifdef __MAKEWITH_GNUEFI
+                            Status = EFI_NOT_STARTED;
+                            #else
                             Status = RP_GetApfsVolumeInfo (
                                 ourLoaderEntry->Volume->DeviceHandle,
                                 &ContainerGuid,
@@ -2597,7 +2609,7 @@ EFI_STATUS EFIAPI efi_main (
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Windows")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Windows")) {
                     if (GlobalConfig.ProtectNVRAM) {
                         // Protect Mac NVRAM from UEFI Windows
                         ProtectNVRAM                               = TRUE;
@@ -2623,7 +2635,7 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (MyStrStrIns (ourLoaderEntry->Title, L"Linux")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Linux")) {
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'User Input Received:'
                     MsgLog ("User Input Received:\n");
@@ -2670,7 +2682,7 @@ EFI_STATUS EFIAPI efi_main (
                 MsgLog ("User Input Received:\n");
                 #endif
 
-                if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows") != NULL) {
+                if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (
                         L"Boot %s from '%s'",
@@ -2740,7 +2752,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                if (MyStrStrIns (ourLoaderEntry->Title, L"Boot Screen")) {
+                if (FoundSubStr (ourLoaderEntry->Title, L"Boot Screen")) {
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
 
@@ -2748,6 +2760,7 @@ EFI_STATUS EFIAPI efi_main (
                 break;
 
             case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the EFI UseNVRAM
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
                 MsgLog ("User Input Received:\n");
@@ -2755,7 +2768,7 @@ EFI_STATUS EFIAPI efi_main (
                 MsgLog ("\n-----------------\n\n");
                 #endif
 
-                RebootIntoLoader ((LOADER_ENTRY *) ChosenEntry);
+                RebootIntoLoader (ourLoaderEntry);
                 break;
 
             case TAG_HIDDEN:  // Manage hidden tag entries
@@ -2856,7 +2869,6 @@ EFI_STATUS EFIAPI efi_main (
                 break;
         } // switch
     } // while
-    MY_FREE_POOL(SelectionName);
 
     // If we end up here, things have gone wrong. Try to reboot, and if that
     // fails, go into an endless loop.
@@ -2879,6 +2891,13 @@ EFI_STATUS EFIAPI efi_main (
         EFI_SUCCESS,
         0, NULL
     );
+
+    MY_FREE_POOL(ChosenEntry->Title);
+    MY_FREE_IMAGE(ChosenEntry->Image);
+    MY_FREE_IMAGE(ChosenEntry->BadgeImage);
+    FreeMenuScreen (&ChosenEntry->SubScreen);
+    MY_FREE_POOL(ChosenEntry);
+    MY_FREE_POOL(SelectionName);
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_THREE_STAR_SEP, L"Shutdown After Main Loop Exit:- 'FAILED'!!");

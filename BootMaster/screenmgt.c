@@ -682,7 +682,7 @@ VOID PrintUglyText (
 
     if (Text) {
         if (AllowGraphicsMode &&
-            MyStrStr (L"Apple", gST->FirmwareVendor) != NULL &&
+            MyStrStr (L"Apple", gST->FirmwareVendor) &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (Text, &BGColor, PositionCode);
@@ -933,8 +933,8 @@ BOOLEAN CheckError (
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a Key to Continue" in debug mode
-    if (MyStrStr (where, L"While Reading Boot Sector") != NULL ||
-        MyStrStr (where, L"in ReadHiddenTags") != NULL
+    if (MyStrStr (where, L"While Reading Boot Sector") ||
+        MyStrStr (where, L"in ReadHiddenTags")
     ) {
         haveError = FALSE;
     }
@@ -985,7 +985,7 @@ VOID egFreeImageQEMU (
     EG_IMAGE *Image
 ) {
     if (DetectedDevices) {
-        egFreeImage (Image);
+        MY_FREE_IMAGE(Image);
     }
     else {
         MY_FREE_POOL(Image);
@@ -1174,7 +1174,7 @@ VOID BltImageAlpha (
 
     // blit to screen and clean up
     egDrawImage (CompImage, XPos, YPos);
-    egFreeImage (CompImage);
+    MY_FREE_IMAGE(CompImage);
 
     GraphicsScreenDirty = TRUE;
 } // VOID BltImageAlpha()
@@ -1208,7 +1208,7 @@ VOID BltImageAlpha (
 //
 //    // blit to screen and clean up
 //    egDrawImage (CompImage, XPos, YPos);
-//    egFreeImage (CompImage);
+//    MY_FREE_IMAGE(CompImage);
 //    GraphicsScreenDirty = TRUE;
 //} // VOID BltImageComposite()
 
@@ -1276,7 +1276,7 @@ VOID BltImageCompositeBadge (
             egDrawImage (CompImage, XPos, YPos);
         }
 
-        egFreeImage (CompImage);
+        MY_FREE_IMAGE(CompImage);
         GraphicsScreenDirty = TRUE;
     }
 } // VOID BltImageCompositeBadge()

@@ -41,6 +41,7 @@ typedef struct _string_list {
 
 // DA-TAG: See here for more if needed:
 //         https://www.virtualbox.org/svn/vbox/trunk/src/VBox/Devices/EFI/Firmware/MdePkg/Library/BaseLib/String.c
+BOOLEAN FoundSubStr (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
 BOOLEAN StriSubCmp (IN CHAR16 *TargetStr, IN CHAR16 *BigStr);
 BOOLEAN MyStriCmp (IN const CHAR16 *String1, IN const CHAR16 *String2);
 BOOLEAN TruncateString (CHAR16 *TheString, UINTN Limit);
@@ -62,7 +63,6 @@ BOOLEAN MyStrBegins (
 
 CHAR16 * GetTimeString (VOID);
 CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
-CHAR16 * MyStrStrIns (IN CHAR16 *RawString, IN CHAR16 *RawStrCharSet);
 CHAR16 * FindNumbers (IN CHAR16 *InString);
 CHAR16 * GuidAsString (EFI_GUID *GuidData);
 CHAR16 * FindCommaDelimited (IN CHAR16 *InString, IN UINTN Index);

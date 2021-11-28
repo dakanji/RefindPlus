@@ -14,7 +14,7 @@
 **/
 
 #include "NvmExpress.h"
-#include "../../BootMaster/my_free_pool.h"
+#include "../../BootMaster/rp_funcs.h"
 #include "../../include/refit_call_wrapper.h"
 
 #define NVME_SHUTDOWN_PROCESS_TIMEOUT 45
