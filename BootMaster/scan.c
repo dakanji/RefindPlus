@@ -3049,31 +3049,31 @@ VOID ScanForTools (VOID) {
 
         FoundTool = FALSE;
 
-        #if REFIT_DEBUG > 0
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");   break;
-            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Mac Recovery");       break;
-            case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Boot Order");  break;
-            case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");         break;
-            case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");    break;
-            case TAG_FIRMWARE:         ToolName = StrDuplicate (L"Firmware Reboot");    break;
-            case TAG_FWUPDATE_TOOL:    ToolName = StrDuplicate (L"Firmware Update");    break;
-            case TAG_GDISK:            ToolName = StrDuplicate (L"GDisk");              break;
-            case TAG_GPTSYNC:          ToolName = StrDuplicate (L"GPT Sync");           break;
-            case TAG_HIDDEN:           ToolName = StrDuplicate (L"Hidden Tags");        break;
-            case TAG_INSTALL:          ToolName = StrDuplicate (L"Install RefindPlus"); break;
-            case TAG_MEMTEST:          ToolName = StrDuplicate (L"Memtest");            break;
-            case TAG_MOK_TOOL:         ToolName = StrDuplicate (L"MOK Protocol");       break;
-            case TAG_NETBOOT:          ToolName = StrDuplicate (L"Net Boot");           break;
-            case TAG_PRE_BOOTKICKER:   ToolName = StrDuplicate (L"Show Bootscreen");    break;
-            case TAG_PRE_NVRAMCLEAN:   ToolName = StrDuplicate (L"Clean Nvram");        break;
-            case TAG_REBOOT:           ToolName = StrDuplicate (L"System Restart");     break;
-            case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");         break;
-            case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");    break;
-            case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Windows Recovery");   break;
-            default:                                                                 continue;
+            case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");            break;
+            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Mac Recovery");                break;
+            case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Firmware Boot Order");  break;
+            case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");                  break;
+            case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");             break;
+            case TAG_FIRMWARE:         ToolName = StrDuplicate (L"Firmware Reboot");             break;
+            case TAG_FWUPDATE_TOOL:    ToolName = StrDuplicate (L"Firmware Update");             break;
+            case TAG_GDISK:            ToolName = StrDuplicate (L"GDisk");                       break;
+            case TAG_GPTSYNC:          ToolName = StrDuplicate (L"GPT Sync");                    break;
+            case TAG_HIDDEN:           ToolName = StrDuplicate (L"Hidden Tags");                 break;
+            case TAG_INSTALL:          ToolName = StrDuplicate (L"Install RefindPlus");          break;
+            case TAG_MEMTEST:          ToolName = StrDuplicate (L"Memtest");                     break;
+            case TAG_MOK_TOOL:         ToolName = StrDuplicate (L"MOK Protocol");                break;
+            case TAG_NETBOOT:          ToolName = StrDuplicate (L"Net Boot");                    break;
+            case TAG_PRE_BOOTKICKER:   ToolName = StrDuplicate (L"Show Bootscreen");             break;
+            case TAG_PRE_NVRAMCLEAN:   ToolName = StrDuplicate (L"Clean Nvram");                 break;
+            case TAG_REBOOT:           ToolName = StrDuplicate (L"System Restart");              break;
+            case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");                  break;
+            case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");             break;
+            case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Windows Recovery");            break;
+            default:                                                                          continue;
         } // switch
 
+        #if REFIT_DEBUG > 0
         ToolTotal = ToolTotal + 1;
         MsgLog ("\n");
         MsgLog ("Type %02d ... ", ToolTotal);

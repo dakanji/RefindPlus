@@ -3,6 +3,9 @@
 - Adds "SupplyNVME" Feature
   * A built in NvmExpress driver is loaded by default to provide NVMe support if required
   * This functionality can be disabled by setting the 'decline_nvmeload' token
+- Fixes Display of Mac Recovery Tool Name in RELEASE builds
+  * The variable holding the Mac Recovery tool name was wrapped in "Debug" tags
+  * Hence the tool name was not displayed in RELEASE builds 
 - Fixes Compilation Issue on Recent GNU-EFI Versions
   * Synced with upstream update as well as an existing issue with 'REFIT_CALL_X_WRAPPER'
   * GNU-EFI compilation of RefindPlus is likely broken overall
