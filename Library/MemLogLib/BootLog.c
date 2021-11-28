@@ -9,11 +9,15 @@
 
 #include "../../include/tiano_includes.h"
 #include "MemLogLib.h"
+#include "../../BootMaster/global.h"
+
+#if REFIT_DEBUG > 0
+// DBG Build Only - START
+
 #include <Protocol/SimpleFileSystem.h>
 #include <Protocol/LoadedImage.h>
 #include <Guid/FileInfo.h>
 #include <Library/UefiBootServicesTableLib.h>
-#include "../../BootMaster/global.h"
 #include "../../BootMaster/lib.h"
 #include "../../BootMaster/mystrings.h"
 #include "../../include/refit_call_wrapper.h"
@@ -236,26 +240,6 @@ VOID SaveMessageToDebugLogFile (
     }
 } // static VOID SaveMessageToDebugLogFile()
 
-static
-VOID EFIAPI MemLogCallback (
-    IN INTN DebugMode,
-    IN CHAR8 *LastMessage
-) {
-
-    if (GlobalConfig.LogLevel < 0) {
-        return;
-    }
-
-    // Print message to console
-    //if (DebugMode >= 2) {
-    //    AsciiPrint (LastMessage);
-    //}
-
-    if ( (DebugMode >= 1) ) {
-        SaveMessageToDebugLogFile (LastMessage);
-    }
-} // static VOID EFIAPI MemLogCallback()
-
 VOID EFIAPI DeepLoggger (
     IN INTN     DebugMode,
     IN INTN     level,
@@ -267,13 +251,6 @@ VOID EFIAPI DeepLoggger (
     CHAR16 *Tmp       = NULL;
     CHAR16 *StoreMsg  = NULL;
 
-
-#if REFIT_DEBUG < 1
-    // FreePool and return in RELEASE builds
-    MY_FREE_POOL(*Msg);
-
-    return;
-#endif
 
     // Make sure we are able to write
     if (DebugMode < 1
@@ -350,10 +327,6 @@ VOID EFIAPI DebugLog (
     IN const CHAR8 *FormatString,
     ...
 ) {
-#if REFIT_DEBUG < 1
-    // Just return in RELEASE builds
-    return;
-#else
     // Make sure writing is allowed/possible
     if (MuteLogger
         || DebugMode < 1
@@ -379,8 +352,30 @@ VOID EFIAPI DebugLog (
     VA_END(Marker);
 
     TimeStamp = TRUE;
-#endif
 } // VOID EFIAPI DebugLog()
+
+// DBG Build Only - END
+#endif
+
+// Allow REL Build to access this ... without output
+static
+VOID EFIAPI MemLogCallback (
+    IN INTN DebugMode,
+    IN CHAR8 *LastMessage
+) {
+    #if REFIT_DEBUG > 0
+    // Print message to console
+    //if (DebugMode >= 2) {
+    //    AsciiPrint (LastMessage);
+    //}
+
+    if ( (DebugMode >= 1) ) {
+        SaveMessageToDebugLogFile (LastMessage);
+    }
+    #endif
+
+    return;
+} // static VOID EFIAPI MemLogCallback()
 
 VOID InitBooterLog (VOID) {
     SetMemLogCallback (MemLogCallback);
