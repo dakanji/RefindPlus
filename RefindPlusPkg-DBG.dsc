@@ -100,12 +100,13 @@
 
 [Components]
   RefindPlusPkg/RefindPlus.inf
+  RefindPlusPkg/filesystems/btrfs.inf
   RefindPlusPkg/filesystems/ext2.inf
   RefindPlusPkg/filesystems/ext4.inf
-  RefindPlusPkg/filesystems/reiserfs.inf
   RefindPlusPkg/filesystems/hfs.inf
   RefindPlusPkg/filesystems/iso9660.inf
   RefindPlusPkg/filesystems/ntfs.inf
+  RefindPlusPkg/filesystems/reiserfs.inf
   RefindPlusPkg/gptsync/gptsync.inf
 
 [PcdsFixedAtBuild]

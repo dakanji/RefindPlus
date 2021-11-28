@@ -22,28 +22,29 @@
 
 static uint32_t crc32c_table [256];
 
+
+static
+uint32_t reflect (uint32_t ref, int len)
+  {
+    uint32_t result = 0;
+    int i;
+
+    for (i = 1; i <= len; i++)
+      {
+        if (ref & 1)
+          result |= 1 << (len - i);
+        ref >>= 1;
+      }
+
+    return result;
+  }
+
 static void
 init_crc32c_table (void)
 {
-  auto uint32_t reflect (uint32_t ref, int len);
-  uint32_t reflect (uint32_t ref, int len)
-    {
-      uint32_t result = 0;
-      int i;
-
-      for (i = 1; i <= len; i++)
-        {
-          if (ref & 1)
-            result |= 1 << (len - i);
-          ref >>= 1;
-        }
-
-      return result;
-    }
-
   static int crc32c_table_inited;
   if(crc32c_table_inited)
-	  return;
+    return;
   crc32c_table_inited = 1;
 
   uint32_t polynomial = 0x1edc6f41;

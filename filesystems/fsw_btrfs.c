@@ -62,11 +62,10 @@
 #include "gzio.c"
 #define MINILZO_CFG_SKIP_LZO_PTR 1
 #define MINILZO_CFG_SKIP_LZO_UTIL 1
-#define MINILZO_CFG_SKIP_LZO_STRING 1
+//#define MINILZO_CFG_SKIP_LZO_STRING 1
 #define MINILZO_CFG_SKIP_LZO_INIT 1
 #define MINILZO_CFG_SKIP_LZO1X_DECOMPRESS 1
 #define MINILZO_CFG_SKIP_LZO1X_1_COMPRESS 1
-#define MINILZO_CFG_SKIP_LZO_STRING 1
 #include "minilzo.c"
 #include "scandisk.c"
 
@@ -638,7 +637,7 @@ reiter:
                 }
                 if (key_cmp (&node.key, key_in) > 0)
                     break;
-                node_last = node;
+                fsw_memcpy (&node_last, &node, sizeof(node_last));
                 have_last = 1;
             }
             if (have_last)
@@ -745,11 +744,14 @@ static int scan_disks_hook(struct fsw_volume *volg, struct fsw_volume *slave) {
     if(err)
         return FSW_UNSUPPORTED;
 
+/*
+	btrfs_uuid_t u;
     u[0] = sb.uuid[0];
     u[1] = sb.uuid[1];
     u[2] = sb.uuid[2];
     u[3] = sb.uuid[3];
-    if(!uuid_eq(vol->uuid, u))
+*/
+    if(!uuid_eq(vol->uuid, sb.uuid))
         return FSW_UNSUPPORTED;
 
     return btrfs_add_multi_device(vol, slave, &sb);

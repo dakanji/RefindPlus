@@ -20,7 +20,16 @@
 /********************************************************
 *  Compiler specifics
 *********************************************************/
+#ifndef __has_attribute         // Optional of course.
+  #define __has_attribute(x) 0  // Compatibility with non-clang compilers.
+#endif
+
+#if __has_attribute(always_inline)
+#define FORCE_INLINE __attribute__((always_inline))
+#else
 #define FORCE_INLINE static __always_inline
+#endif
+
 #define FORCE_NOINLINE static /*noinline*/
 
 /**************************************
