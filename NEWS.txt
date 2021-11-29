@@ -8,7 +8,7 @@
   * Hence the tool name was not displayed in RELEASE builds
 - Fixes Mac Recovery For Mac OS 11 (Big Sur) and Later
   * The Mac Recovery implementation inherited by RefindPlus was designed for the HFS+ filesystem
-  * Hence, it did not pick up recovery volumes of Mac OS versions with full APFS implementation
+  * Hence, it did not recognise recovery volumes of Mac OS versions with full APFS implementation
     - Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
     - Mac OS 11 (Big Sur) and newer have full APFS implementations
   * NOTE: This implementation does not support setups with more than one APFS instance in a single container
@@ -40,7 +40,7 @@
   * This ensures the filtering is not on if UEFI Windows boot fails
   * Only has cosmetic relevance but best practice
 - Improves 'Manage Firmware Boot Order' Implementation
-    * Now confirms selected action before execution to minimise the chances of making unwanted changes
+  * Now confirms selected action before execution to minimise the chances of making unwanted changes
 - Amends 'ScaleUI' Implementation
   * Now checks the resolution of the longest and shortest sides for automatic scaling
   * Previously only checked the vertical resolution
@@ -51,10 +51,11 @@
   * Laptops with 'Retina' screens should be correctly identified as having HiDPI monitors
 - Amends Log Levels
   * The previous upstream based four (4) log levels have been compressed to three (3) levels
-  * LogLevel 5, which was not exposed by default, is now LogLevel 4
-  * LogLevel 4 is only exposed when the "REFIT_DEBUG" build flag is set to two (2) at compilation time.
-    - Set this in "BootMaster/globalExtra-DBG.txt" if using the provided build script
-  * Unless exposed when compiling, selected levels above three (3) will be capped at LogLevel 3
+  * LogLevel 5, which was not exposed by default, is now LogLevel 4, which is not exposed by default.
+  * LogLevel 4 is exposed when the "REFIT_DEBUG" build flag is set to two (2) at compilation time.
+    - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
+  * Unless LogLevel 4 is exposed when compiling, selected levels above three (3) will be capped at LogLevel 3
+  * When LogLevel 4 is exposed, selected levels above four (4) will be capped at LogLevel 4
 
 
 0.13.2.AJ (06 Oct 2021):

@@ -1332,9 +1332,11 @@ BOOLEAN SecureBootUninstall (VOID) {
             MsgLog ("%s\n-----------------\n\n", MsgStr);
             #endif
 
+            MuteLogger = TRUE;
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
             PrintUglyText (MsgStr, NEXTLINE);
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            MuteLogger = FALSE;
 
             PauseSeconds (9);
 
@@ -1394,22 +1396,25 @@ VOID SetConfigFilename (
                 #endif
             }
             else {
-                MsgStr = StrDuplicate (L"Specified Config File Not Found");
+                MsgStr = StrDuplicate (L"** WARN: Specified Config File Not Found");
                 #if REFIT_DEBUG > 0
-                MsgLog ("** WARN: %s\n", MsgStr);
+                MsgLog ("%s\n", MsgStr);
                 #endif
+
+                MuteLogger = TRUE;
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText (MsgStr, NEXTLINE);
 
                 MY_FREE_POOL(MsgStr);
 
-                MsgStr = StrDuplicate (L"Try Default:- 'config.conf / refind.conf'");
-                PrintUglyText (MsgStr, NEXTLINE);
-
+                MsgStr = StrDuplicate (L"         Try Default:- 'config.conf / refind.conf'");
                 #if REFIT_DEBUG > 0
-                MsgLog ("         %s\n\n", MsgStr);
+                MsgLog ("%s\n\n", MsgStr);
                 #endif
 
                 PrintUglyText (MsgStr, NEXTLINE);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                MuteLogger = FALSE;
 
                 PauseSeconds (9);
                 MY_FREE_POOL(MsgStr);
@@ -2325,12 +2330,16 @@ EFI_STATUS EFIAPI efi_main (
                     );
 
                     MsgStr = StrDuplicate (L"System Restart FAILED!!");
-                    PrintUglyText (MsgStr, NEXTLINE);
-
                     #if REFIT_DEBUG > 0
                     LOG(1, LOG_THREE_STAR_SEP, MsgStr);
                     MsgLog ("INFO: %s\n\n", MsgStr);
                     #endif
+
+                    MuteLogger = TRUE;
+                    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                    PrintUglyText (MsgStr, NEXTLINE);
+                    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+                    MuteLogger = FALSE;
 
                     MY_FREE_POOL(MsgStr);
 
@@ -2907,17 +2916,11 @@ EFI_STATUS EFIAPI efi_main (
 
     MsgStr = StrDuplicate (L"Reboot Failed ... Entering Endless Idle Loop");
 
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut,
-        ATTR_ERROR
-    );
+    MuteLogger = TRUE;
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
-    REFIT_CALL_2_WRAPPER(
-        gST->ConOut->SetAttribute,
-        gST->ConOut,
-        ATTR_BASIC
-    );
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+    MuteLogger = FALSE;
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_BLANK_LINE_SEP, L"X");
