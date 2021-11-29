@@ -6,15 +6,12 @@
 - Fixes Display of Mac Recovery Tool Name in RELEASE builds
   * The variable holding the Mac Recovery tool name was wrapped in "Debug" tags
   * Hence the tool name was not displayed in RELEASE builds
-- Initial Fix of Mac Recovery For Mac OS 11 (Big Sur) and Later
-  * The Mac Recovery implementation inherited by RefindPlus was designed for HFS+ volumes
-  * As Apple has since moved to the APFS filesystem, the implementation did not pick up the associated recovery volumes
-  * That is, the recovery volumes of versions using APFS in the full implementation
-  * Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
-  * Mac OS 11 (Big Sur) and later however have full APFS implementations
-  * NOTES:
-    - This is an initial implementation and is experimental
-    - This implementation does not support setups with more than one APFS instance in a single container
+- Fixes Mac Recovery For Mac OS 11 (Big Sur) and Later
+  * The Mac Recovery implementation inherited by RefindPlus was designed for the HFS+ filesystem
+  * Hence, it did not pick up recovery volumes of Mac OS versions with full APFS implementation
+    - Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
+    - Mac OS 11 (Big Sur) and newer have full APFS implementations
+  * NOTE: This implementation does not support setups with more than one APFS instance in a single container
 - Fixes Compilation Issue on Recent GNU-EFI Versions
   * Synced with upstream update as well as an existing issue with 'REFIT_CALL_X_WRAPPER'
   * GNU-EFI compilation of RefindPlus is likely broken overall

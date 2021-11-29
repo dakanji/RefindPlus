@@ -2082,18 +2082,34 @@ VOID VetMultiInstanceAPFS (VOID) {
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStrA = NULL;
-    CHAR16 *MsgStrB = L"Disabled Recovery Tool for Mac OS 11 and Later (If Present)";
+    CHAR16 *MsgStrA       = NULL;
+    CHAR16 *MsgStrB       = L"Disabled Recovery Tool for Mac OS 11 and Later (If Present)";
+    BOOLEAN AppleRecovery = FALSE;
+
+    // Check if configured to show Apple Recovery
+    for (i = 0; i < NUM_TOOLS; i++) {
+        switch (GlobalConfig.ShowTools[i]) {
+            case TAG_APPLE_RECOVERY: AppleRecovery = TRUE; break;
+            default:                                    continue;
+        } // switch
+
+        if (AppleRecovery) {
+            break;
+        }
+    } // for
     #endif
 
     if (!GlobalConfig.SyncAPFS) {
         #if REFIT_DEBUG > 0
-        MsgStrA = L"SyncAPFS is Inactive";
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
-        LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
-        MsgLog ("\n\n");
-        MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
-        MsgLog ("\n\n");
+        if (AppleRecovery) {
+            // Log warning if configured to show Apple Recovery
+            MsgStrA = L"SyncAPFS is Inactive";
+            LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
+            MsgLog ("\n\n");
+            MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
+            MsgLog ("\n\n");
+        }
         #endif
 
         // Act as if we have Multi-Instance APFS
@@ -2125,13 +2141,8 @@ VOID VetMultiInstanceAPFS (VOID) {
                     );
 
                     if (!EFI_ERROR(Status)) {
-                        if ((
-                                VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
-                                || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                            )
-                            && !MyStrStr (Volumes[i]->VolName, L"/FileVault")
-                            && !FoundSubStr (Volumes[i]->VolName, L"Unknown")
-                            && !FoundSubStr (Volumes[i]->VolName, L" - Data")
+                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
+                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
                         ) {
                             if (!ActiveContainer) {
                                 ActiveContainer = TRUE;
@@ -2150,10 +2161,13 @@ VOID VetMultiInstanceAPFS (VOID) {
             // DA-TAG: Multiple installations in a single APFS Container
             //         Mac Recovery option for Big Sur and Later is disabled
             #if REFIT_DEBUG > 0
-            MsgStrA = L"Multi-Instance APFS Container Found";
-            LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
-            MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
-            MsgLog ("\n\n");
+            if (AppleRecovery) {
+                // Log warning if configured to show Apple Recovery
+                MsgStrA = L"Multi-Instance APFS Container Found";
+                LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
+                MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
+                MsgLog ("\n\n");
+            }
             #endif
 
             break;

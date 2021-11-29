@@ -3054,7 +3054,7 @@ VOID ScanForTools (VOID) {
 
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");            break;
-            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Mac Recovery");                break;
+            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Recovery (Mac)");              break;
             case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Firmware Boot Order");  break;
             case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");                  break;
             case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");             break;
@@ -3072,7 +3072,7 @@ VOID ScanForTools (VOID) {
             case TAG_REBOOT:           ToolName = StrDuplicate (L"System Restart");              break;
             case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");                  break;
             case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");             break;
-            case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Windows Recovery");            break;
+            case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Recovery (Win)");              break;
             default:                                                                          continue;
         } // switch
 
