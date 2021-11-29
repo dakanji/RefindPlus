@@ -1404,6 +1404,7 @@ VOID SetConfigFilename (
                 MuteLogger = TRUE;
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
                 PrintUglyText (MsgStr, NEXTLINE);
+                MuteLogger = FALSE;
 
                 MY_FREE_POOL(MsgStr);
 
@@ -1412,6 +1413,7 @@ VOID SetConfigFilename (
                 MsgLog ("%s\n\n", MsgStr);
                 #endif
 
+                MuteLogger = TRUE;
                 PrintUglyText (MsgStr, NEXTLINE);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
                 MuteLogger = FALSE;
