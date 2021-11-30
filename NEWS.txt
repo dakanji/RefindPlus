@@ -11,7 +11,9 @@
   * Hence, it did not recognise recovery volumes of Mac OS versions with full APFS implementation
     - Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
     - Mac OS 11 (Big Sur) and newer have full APFS implementations
-  * NOTE: This implementation does not support setups with more than one APFS instance in a single container
+  * ADDITIONAL NOTES:
+    - This implementation does not support setups with more than one APFS instance in a single container
+    - This implementation is still a work in progress
 - Fixes Compilation Issue on Recent GNU-EFI Versions
   * Synced with upstream update as well as an existing issue with 'REFIT_CALL_X_WRAPPER'
   * GNU-EFI compilation of RefindPlus is likely broken overall

@@ -149,12 +149,6 @@ BOOLEAN IsValidLoader (
 ) {
     BOOLEAN IsValid;
 
-    if (!FileExists (RootDir, FileName)) {
-        // Early return if file does not exist
-        return FALSE;
-    }
-
-
 #if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
     EFI_STATUS      Status;
     EFI_FILE_HANDLE FileHandle;
@@ -173,7 +167,18 @@ BOOLEAN IsValidLoader (
         #endif
 
         return TRUE;
-    } // if
+    }
+    else if (!FileExists (RootDir, FileName)) {
+        #if REFIT_DEBUG > 0
+        LOG(3, LOG_THREE_STAR_MID,
+            L"EFI File *NOT* Found:- '%s'",
+            FileName ? FileName : L"NULL"
+        );
+        #endif
+
+        // Early return if file does not exist
+        return FALSE;
+    }
 
     Status = REFIT_CALL_5_WRAPPER(
         RootDir->Open, RootDir,
