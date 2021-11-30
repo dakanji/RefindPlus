@@ -3533,7 +3533,7 @@ VOID ScanForTools (VOID) {
                                     &(TmpRecoveryVolumes[k]->PartGuid)
                                 )
                             ) {
-                                PrevGUID = TRUE;
+                                //PrevGUID = TRUE;
                                 break;
                             }
                         } // for k = 0
@@ -3598,7 +3598,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (
-                                L"Added Tool:- '%s' ... %s for %s",
+                                L"Added Tool:- '%s' ... %s for %s (New Mac OS)",
                                 ToolName, FileName, VolumeTag
                             );
                             LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);

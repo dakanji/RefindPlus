@@ -119,9 +119,9 @@ CHAR16 * FindInitrd (
 
     LOG(4, LOG_LINE_FORENSIC, L"In FindInitrd ... 5");
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path);
-    LOG(2, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName);
-    LOG(2, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion);
+    LOG(2, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path          ? Path          : L"NULL");
+    LOG(2, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName      ? FileName      : L"NULL");
+    LOG(2, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion ? KernelVersion : L"NULL");
     #endif
 
     LOG(4, LOG_LINE_FORENSIC, L"In FindInitrd ... 6");
@@ -144,7 +144,7 @@ CHAR16 * FindInitrd (
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
             L"Checking 'KernelVersion = %s' Against 'InitrdVersion = %s' from '%s'",
-            KernelVersion,
+            KernelVersion ? KernelVersion : L"NULL",
             InitrdVersion ? InitrdVersion : L"NULL",
             DirEntry->FileName
         );

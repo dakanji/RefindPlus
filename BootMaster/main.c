@@ -1248,6 +1248,9 @@ VOID RescanAll (
     MsgLog ("INFO: %s\n\n", MsgStr);
     #endif
 
+    /* Enable Forced Native Logging */
+    NativeLogger = TRUE;
+
     FreeList (
         (VOID ***) &(MainMenu.Entries),
         &MainMenu.EntryCount
@@ -1260,12 +1263,19 @@ VOID RescanAll (
     if (Reconnect) {
         ConnectAllDriversToAllControllers (FALSE);
         ScanVolumes();
+
+        #if REFIT_DEBUG > 0
+        MsgLog ("\n");
+        #endif
     }
 
     ReadConfig (GlobalConfig.ConfigFilename);
     SetVolumeIcons();
     ScanForBootloaders (DisplayMessage);
     ScanForTools();
+
+    /* Disable Forced Native Logging */
+    NativeLogger = FALSE;
 } // VOID RescanAll()
 
 #ifdef __MAKEWITH_TIANO
