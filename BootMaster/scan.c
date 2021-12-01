@@ -3533,7 +3533,7 @@ VOID ScanForTools (VOID) {
                                     &(TmpRecoveryVolumes[k]->PartGuid)
                                 )
                             ) {
-                                //PrevGUID = TRUE;
+                                PrevGUID = TRUE;
                                 break;
                             }
                         } // for k = 0
