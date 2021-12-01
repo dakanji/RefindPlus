@@ -393,7 +393,7 @@ VOID FreeTokenLine (
     FreeList ((VOID ***) TokenList, TokenCount);
 }
 
-// handle a parameter with a single integer argument (unsigned)
+// Handle a parameter with a single integer argument (unsigned)
 static
 VOID HandleInt (
     IN  CHAR16 **TokenList,
@@ -401,16 +401,13 @@ VOID HandleInt (
     OUT UINTN   *Value
 ) {
     if (TokenCount == 2) {
-       if (StrCmp (TokenList[1], L"-1") == 0) {
-           *Value = -1;
-       }
-       else {
-           *Value = Atoi (TokenList[1]);
-       }
+        *Value = Atoi(TokenList[1]);
     }
 }
 
-// handle a parameter with a single integer argument (signed)
+// Handle a parameter with a single integer argument (signed)
+// DA-TAG: We currently only have such arguments of up to '-1'
+//         Superflous '-2' added as update reminder if required
 static
 VOID HandleSignedInt (
     IN  CHAR16 **TokenList,
@@ -418,12 +415,15 @@ VOID HandleSignedInt (
     OUT INTN    *Value
 ) {
     if (TokenCount == 2) {
-       if (StrCmp (TokenList[1], L"-1") == 0) {
-           *Value = -1;
-       }
-       else {
-           *Value = Atoi (TokenList[1]);
-       }
+        if (StrCmp (TokenList[1], L"-1") == 0) {
+            *Value = -1;
+        }
+        else if (StrCmp (TokenList[1], L"-2") == 0) {
+            *Value = -2;
+        }
+        else {
+            *Value = Atoi(TokenList[1]);
+        }
     }
 }
 

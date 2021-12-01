@@ -1054,7 +1054,7 @@ UINTN RunGenericMenu (
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-        if (MenuExitDiff < 500) {
+        if (MenuExitDiff < 750) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             MsgLog ("\n");

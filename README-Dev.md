@@ -48,7 +48,7 @@ decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
 decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")
 decline_espfilter     |Allows other ESPs other than the RefindPlus ESP to be scanned for loaders
-decline_nvmeload      |Disables built in NvmExpress Driver
+decline_nvmeload      |Disables the built in NvmExpress Driver
 decline_nvramprotect  |Disables feature that blocks UEFI Windows certificates on Apple NVRAM
 decline_reloadgop     |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden

@@ -3,6 +3,10 @@
 - Adds "SupplyNVME" Feature
   * A built in NvmExpress driver is loaded by default to provide NVMe support if required
   * This functionality can be disabled by setting the 'decline_nvmeload' token
+- Adds "screen_rgb" Config Setting
+  * Allows overriding the default screen background colour selection process
+  * Users can now specify RGB colours (0 to 255) to be used instead
+  * The colour is set from the title banner if not specified
 - Fixes Display of Mac Recovery Tool Name in RELEASE builds
   * The variable holding the Mac Recovery tool name was wrapped in "Debug" tags
   * Hence the tool name was not displayed in RELEASE builds
@@ -58,6 +62,8 @@
     - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
   * Unless LogLevel 4 is exposed when compiling, selected levels above three (3) will be capped at LogLevel 3
   * When LogLevel 4 is exposed, selected levels above four (4) will be capped at LogLevel 4
+- Amends Time Bound Primed Buffer Mitigation
+  * Intervention treshold incrreased to a minumum 0.75 second interval
 
 
 0.13.2.AJ (06 Oct 2021):
