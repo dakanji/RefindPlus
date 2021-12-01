@@ -817,9 +817,11 @@ VOID preBootKicker (VOID) {
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
+
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryBootKicker);
     TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-    CHAR16            *MenuInfo       = L"A tool to kick in the Apple Boot Screen";
+
+    CHAR16            *MenuInfo       = StrDuplicate (L"A tool to kick in the Apple Boot Screen");
     REFIT_MENU_SCREEN  BootKickerMenu = {
         L"BootKicker",
         NULL, 0, &MenuInfo,
@@ -871,6 +873,8 @@ VOID preBootKicker (VOID) {
         MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
         FreeMenuScreen (&TempMenuEntry->SubScreen);
         MY_FREE_POOL(TempMenuEntry);
+
+        MY_FREE_POOL(MenuInfo);
     }
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
@@ -974,9 +978,11 @@ VOID preCleanNvram (VOID) {
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
     REFIT_MENU_ENTRY  *ChosenEntry;
+
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryCleanNvram);
     TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-    CHAR16            *MenuInfo       = L"A Tool to Clean/Reset Nvram on Macs";
+
+    CHAR16            *MenuInfo       = StrDuplicate (L"A Tool to Clean/Reset Nvram on Macs");
     REFIT_MENU_SCREEN  CleanNvramMenu = {
         L"Clean NVRAM",
         NULL, 0, &MenuInfo,
@@ -1026,6 +1032,8 @@ VOID preCleanNvram (VOID) {
         MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
         FreeMenuScreen (&TempMenuEntry->SubScreen);
         MY_FREE_POOL(TempMenuEntry);
+
+        MY_FREE_POOL(MenuInfo);
     }
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);

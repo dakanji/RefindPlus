@@ -2081,6 +2081,10 @@ VOID VetMultiInstanceAPFS (VOID) {
     EFI_GUID                ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
+// DA-TAG: Disable until release of New Mac Recovery
+//         Keep function as useful for future other APFS items
+return;
+#if 0
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStrA       = NULL;
     CHAR16 *MsgStrB       = L"Disabled Recovery Tool for Mac OS 11 and Later (If Present)";
@@ -2173,6 +2177,9 @@ VOID VetMultiInstanceAPFS (VOID) {
             break;
         }
     } // for j = 0
+
+// DA-TAG: Disable until release of New Mac Recovery - END
+#endif
 } // VOID VetMultiInstanceAPFS()
 
 // Ensure SyncAPFS can be used.

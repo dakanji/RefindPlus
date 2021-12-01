@@ -615,7 +615,6 @@ VOID StartLegacy (
 
             PauseForKey();
             SwitchToGraphics();
-            MY_FREE_POOL(MsgStrA);
         }
         else if (ErrorInStep == 3) {
             SwitchToText (FALSE);

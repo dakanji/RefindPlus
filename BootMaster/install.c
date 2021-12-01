@@ -115,14 +115,18 @@ REFIT_VOLUME * PickOneESP (
 ) {
     ESP_LIST            *CurrentESP;
     REFIT_VOLUME        *ChosenVolume  = NULL;
-    CHAR16              *Temp          = NULL, *GuidStr, *PartName, *FsName, *VolName;
+    CHAR16              *Temp          = NULL;
+    CHAR16              *GuidStr       = NULL;
+    CHAR16              *PartName      = NULL;
+    CHAR16              *FsName        = NULL;
+    CHAR16              *VolName       = NULL;
     INTN                 DefaultEntry  = 0, MenuExit, i = 1;
     MENU_STYLE_FUNC      Style         = TextMenuStyle;
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
 
     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
     TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
-    CHAR16 *MenuInfo = L"Select a partition and press 'Enter' to install RefindPlus";
+    CHAR16 *MenuInfo                   = StrDuplicate (L"Select a partition and press 'Enter' to install RefindPlus");
     REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                         L"Select a destination and press 'Enter' or",
                                         L"press 'Esc' to return to the main menu without changes" };
@@ -148,19 +152,19 @@ REFIT_VOLUME * PickOneESP (
                 FsName && (StrLen (FsName) > 0) &&
                 !MyStriCmp (FsName, PartName)
             ) {
-                Temp = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
+                MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
             }
             else if (FsName && (StrLen (FsName) > 0)) {
-                Temp = PoolPrint (L"%s - '%s'", GuidStr, FsName);
+                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
             }
             else if (PartName && (StrLen (PartName) > 0)) {
-                Temp = PoolPrint (L"%s - '%s'", GuidStr, PartName);
+                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
             }
             else if (VolName && (StrLen (VolName) > 0)) {
-                Temp = PoolPrint (L"%s - '%s'", GuidStr, VolName);
+                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
             }
             else {
-                Temp = PoolPrint (L"%s - No Name", GuidStr);
+                MenuEntryItem->Title = PoolPrint (L"%s - No Name", GuidStr);
             }
 
             #if REFIT_DEBUG > 0
@@ -168,7 +172,6 @@ REFIT_VOLUME * PickOneESP (
             #endif
 
             MY_FREE_POOL(GuidStr);
-            MenuEntryItem->Title = Temp;
             MenuEntryItem->Tag = TAG_RETURN;
             MenuEntryItem->Row = i++;
             AddMenuEntry (&InstallMenu, MenuEntryItem);
@@ -203,6 +206,8 @@ REFIT_VOLUME * PickOneESP (
         LOG(2, LOG_LINE_NORMAL, L"No ESPs found");
         #endif
     }
+
+    MY_FREE_POOL(MenuInfo);
     MY_FREE_POOL(TempMenuEntry);
 
     return ChosenVolume;
@@ -1185,7 +1190,6 @@ UINTN PickOneBootOption (
     IN BOOT_ENTRY_LIST *Entries,
     IN OUT UINTN       *BootOrderNum
 ) {
-    CHAR16              *Temp          = NULL;
     CHAR16              *Filename      = NULL;
     INTN                 DefaultEntry  = 0;
     INTN                 MenuExit;
@@ -1197,7 +1201,8 @@ UINTN PickOneBootOption (
 
     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
     TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-    CHAR16 *MenuInfo = L"Promote or Remove Firmware BootOrder Variables";
+
+    CHAR16 *MenuInfo          = StrDuplicate (L"Promote or Remove Firmware BootOrder Variables");
     REFIT_MENU_SCREEN    Menu = { L"Manage Firmware Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
                                   L"Select an option and press 'Enter' to make it the default, press '-' or",
                                   L"'Delete' to delete it, or 'Esc' to return to Main Menu (without changes)" };
@@ -1215,14 +1220,14 @@ UINTN PickOneBootOption (
             FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
             if ((Filename != NULL) && (StrLen (Filename) > 0)) {
                 if ((Volume != NULL) && (Volume->VolName != NULL)) {
-                    Temp = PoolPrint (
+                    MenuEntryItem->Title = PoolPrint (
                         L"Boot%04x - %s - %s on %s",
                         Entries->BootEntry.BootNum,
                         Entries->BootEntry.Label,
                         Filename, Volume->VolName);
                 }
                 else {
-                    Temp = PoolPrint (
+                    MenuEntryItem->Title = PoolPrint (
                         L"Boot%04x - %s - %s",
                         Entries->BootEntry.BootNum,
                         Entries->BootEntry.Label,
@@ -1231,20 +1236,19 @@ UINTN PickOneBootOption (
                 }
             }
             else {
-                Temp = PoolPrint (
+                MenuEntryItem->Title = PoolPrint (
                     L"Boot%04x - %s",
                     Entries->BootEntry.BootNum,
                     Entries->BootEntry.Label
                 );
             }
 
-            MenuEntryItem->Title = StrDuplicate (Temp);
-            MenuEntryItem->Row   = Entries->BootEntry.BootNum; // Not really the row but the Boot#### number
+            MenuEntryItem->Row = Entries->BootEntry.BootNum; // Not really the row but the Boot#### number
             AddMenuEntry (&Menu, MenuEntryItem);
 
+            // DA-TAG: Revisit This
             // Do not free 'Volume' ... just set to NULL
             Volume = NULL;
-            MY_FREE_POOL(Temp);
             MY_FREE_POOL(Filename);
 
             Entries = Entries->NextBootEntry;
@@ -1271,6 +1275,7 @@ UINTN PickOneBootOption (
 
         MY_FREE_POOL(MenuEntryItem);
     }
+    MY_FREE_POOL(MenuInfo);
     MY_FREE_POOL(TempMenuEntry);
 
     return Operation;

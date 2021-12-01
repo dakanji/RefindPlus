@@ -206,7 +206,7 @@ L"\\EFI\\tools,\\EFI\\fedora,\\EFI\\redhat,\\EFI\\ubuntu,\\EFI\\suse,\\EFI\\open
 
 // Directories to search for memtest86.
 #define MEMTEST_LOCATIONS \
-L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest\
+L"\\EFI\\tools\\memtest86,\\EFI\\tools\\memtest,\\EFI\\memtest86,\\EFI\\memtest,\
 \\EFI\\BOOT\\tools,\\EFI\\BOOT\\tools_x64,\\EFI\\tools_x64,\\EFI\\tools,\\EFI"
 
 // Files that may be Windows recovery files

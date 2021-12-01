@@ -2435,7 +2435,7 @@ VOID ManageHiddenTags (VOID) {
     REFIT_MENU_ENTRY    *ChosenOption  = NULL;
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
-    CHAR16             *MenuInfo     = L"Select a Tag and Press 'Enter' to Restore";
+    CHAR16             *MenuInfo     = StrDuplicate (L"Select a Tag and Press 'Enter' to Restore");
     REFIT_MENU_SCREEN   HideItemMenu = { L"Manage Hidden Tags", NULL, 0, &MenuInfo, 0, NULL, 0, NULL,
                                          L"Select an option and press 'Enter' to apply the option",
                                          L"Press 'Esc' to return to the main menu without changes" };
@@ -2539,6 +2539,8 @@ VOID ManageHiddenTags (VOID) {
             RescanAll (FALSE, FALSE);
         }
     } // if !AllTags
+
+    MY_FREE_POOL(MenuInfo);
 
     MY_FREE_POOL(AllTags);
     MY_FREE_POOL(HiddenTags);

@@ -1197,12 +1197,15 @@ VOID AddSubmenu (
     BOOLEAN              TitleVolume = FALSE;
 
     SubScreen = InitializeSubScreen (Entry);
+    if (SubScreen == NULL) {
+        return;
+    }
 
     // Set defaults for the new entry
     // Will be modified based on lines read from the config file
     SubEntry = InitializeLoaderEntry (Entry);
-
-    if ((SubEntry == NULL) || (SubScreen == NULL)) {
+    if (SubEntry == NULL) {
+        FreeMenuScreen (&SubScreen);
         return;
     }
 

@@ -6,9 +6,9 @@
 - Fixes Display of Mac Recovery Tool Name in RELEASE builds
   * The variable holding the Mac Recovery tool name was wrapped in "Debug" tags
   * Hence the tool name was not displayed in RELEASE builds
-- Fixes Mac Recovery For Mac OS 11 (Big Sur) and Later
+- Initial fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * The Mac Recovery implementation inherited by RefindPlus was designed for the HFS+ filesystem
-  * Hence, it did not recognise recovery volumes of Mac OS versions with full APFS implementation
+  * Hence, it does not recognise recovery volumes of Mac OS versions with full APFS implementation
     - Mac OS 10.13 (High Sierra) to Mac OS 10.15 (Catalina) have partial/transitional APFS implementations
     - Mac OS 11 (Big Sur) and newer have full APFS implementations
   * ADDITIONAL NOTES:
