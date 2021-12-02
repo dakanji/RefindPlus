@@ -344,13 +344,16 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
 
     #if REFIT_DEBUG > 0
     if (BlockCert) {
-        LOG(3, LOG_THREE_STAR_MID,
-            L"In Hardware NVRAM ... '%r' When Saving Secure Boot Certificate!!",
+        CHAR16 *MsgStr = PoolPrint (
+            L"In Hardware NVRAM ... '%r' to UEFI Windows Certificate Write",
             LogStatus
         );
+        LOG(3, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
         MsgLog ("\n");
-        MsgLog ("      * Successful Write May Result in BootROM Damage");
+        MsgLog ("%s", MsgStr);
+        MsgLog ("\n      * Successful Write May Result in BootROM Damage");
         MsgLog ("\n\n");
+        MY_FREE_POOL(MsgStr);
     }
     #endif
 
