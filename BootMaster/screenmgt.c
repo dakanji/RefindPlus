@@ -1121,10 +1121,10 @@ VOID BltClearScreen (
 
             ScreenLum = (
                 (
-                    ((PixelsR + 257) * FactorFP) +
-                    ((PixelsG + 257) * FactorFP) +
-                    ((PixelsB + 257) * FactorFP)
-                ) / 12
+                    ((PixelsR + 255) * FactorFP) +
+                    ((PixelsG + 255) * FactorFP) +
+                    ((PixelsB + 255) * FactorFP)
+                ) / 6
             );
 
             // Already set up for High Luminosity Grey
