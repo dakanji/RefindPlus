@@ -114,39 +114,6 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
   - If nothing is entered, the script will build on the default `GOPFix` branch
 - Press `Enter`
 
-## Build RefindPlus with Docker
-
-cd "`mktemp -d`"
-
-mkdir -m 1777 /tmp/RefindPlusPkg-build
-
-git clone https://github.com/dakanji/RefindPlus.git RefindPlusPkg
-
-# hacky fix for duplication error of lodepng_malloc and lodepng_free
-sed -e 's/void[*] lodepng_malloc/void* _dup_lodepng_malloc/' \
-    -e 's/void lodepng_free/void _dup_lodepng_free/' \
-    -i-orig RefindPlusPkg/libeg/lodepng_xtra.c
-
-docker pull xaionaro2/edk2-builder:RefindPlusUDK
-
-docker run --rm \
-    -e CFLAGS=-Wno-error \
-    -e TOOLCHAIN=CLANG38 \
-    -e BUILD_TARGET=DEBUG \
-    -e DSC_PATH=RefindPlusPkg/RefindPlusPkg-DBG.dsc \
-    -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefindPlusPkg/" \
-    -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
-    xaionaro2/edk2-builder:RefindPlusUDK
-    
-docker run --rm \
-    -e CFLAGS=-Wno-error \
-    -e TOOLCHAIN=CLANG38 \
-    -e BUILD_TARGET=RELEASE \
-    -e DSC_PATH=RefindPlusPkg/RefindPlusPkg-REL.dsc \
-    -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefinPlusdPkg/" \
-    -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
-    xaionaro2/edk2-builder:RefindPlusUDK
-
 ## Syncing Your Repositories with Upstream Repositories
 ### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
@@ -183,3 +150,39 @@ $ git push
 
 ### OPTION 3: GitHub Sync
 GitHub now includes an interface for syncing forks. While Options 1 and 2 will leave the fork with a clean history consistent with the upstream repository, some may find the GitHub interface easier to use.
+
+# Building RefindPlus with Docker
+
+cd "`mktemp -d`"
+
+mkdir -m 1777 /tmp/RefindPlusPkg-build
+
+git clone https://github.com/dakanji/RefindPlus.git RefindPlusPkg
+
+# hacky fix for duplication error of lodepng_malloc and lodepng_free
+sed -e 's/void[*] lodepng_malloc/void* _dup_lodepng_malloc/' \
+    -e 's/void lodepng_free/void _dup_lodepng_free/' \
+    -i-orig RefindPlusPkg/libeg/lodepng_xtra.c
+
+docker pull xaionaro2/edk2-builder:RefindPlusUDK
+
+docker run --rm \
+    -e CFLAGS=-Wno-error \
+    -e TOOLCHAIN=CLANG38 \
+    -e BUILD_TARGET=DEBUG \
+    -e DSC_PATH=RefindPlusPkg/RefindPlusPkg-DBG.dsc \
+    -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefindPlusPkg/" \
+    -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
+    xaionaro2/edk2-builder:RefindPlusUDK
+    
+docker run --rm \
+    -e CFLAGS=-Wno-error \
+    -e TOOLCHAIN=CLANG38 \
+    -e BUILD_TARGET=RELEASE \
+    -e DSC_PATH=RefindPlusPkg/RefindPlusPkg-REL.dsc \
+    -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefinPlusdPkg/" \
+    -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
+    xaionaro2/edk2-builder:RefindPlusUDK
+	
+For support on this build option please refer to:
+https://github.com/xaionaro/edk2-builder-docker
