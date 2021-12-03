@@ -999,6 +999,18 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"csr_values")) {
             HandleHexes (TokenList, TokenCount, CSR_MAX_LEGAL_VALUE, &(GlobalConfig.CsrValues));
         }
+        else if (MyStriCmp (TokenList[0], L"screen_rgb") && TokenCount == 4) {
+            GlobalConfig.ScreenR = Atoi(TokenList[1]);
+            GlobalConfig.ScreenG = Atoi(TokenList[2]);
+            GlobalConfig.ScreenB = Atoi(TokenList[3]);
+
+            // Record whether a Custom Screen BG is required
+            GlobalConfig.CustomScreenBG = (
+                GlobalConfig.ScreenR >= 0 && GlobalConfig.ScreenR <= 255 &&
+                GlobalConfig.ScreenG >= 0 && GlobalConfig.ScreenG <= 255 &&
+                GlobalConfig.ScreenB >= 0 && GlobalConfig.ScreenB <= 255
+            );
+        }
         else if (MyStriCmp (TokenList[0], L"include") &&
             (TokenCount == 2) &&
             MyStriCmp (FileName, GlobalConfig.ConfigFilename)

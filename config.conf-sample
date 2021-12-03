@@ -290,6 +290,16 @@
 #
 #set_boot_args "-v"
 
+# Set the screen's background colour. RefindPlus defaults to using the
+# RGB value of the first pixel (top left pixel) in the pixel array of
+# the title banner image as set with the "banner" token in this file
+# or a Apple Light Grey colour when the token is not set. This can
+# be overridden by providing three (3) values, between 0 and 255
+# representing the desired RGB value for the background colour.
+#
+# Uses the default colour selection process when commented out
+#
+#screen_rgb 10 20 30
 
 ##--------------------------------------------------------------##
 ##                 AMENDED CONFIGURATION ITEMS                  ##

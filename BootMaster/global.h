@@ -398,6 +398,8 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
+    BOOLEAN           CustomScreenBG;
+    BOOLEAN           EmbeddedBanner;
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;
     BOOLEAN           DeepLegacyScan;
@@ -447,6 +449,9 @@ typedef struct {
     INTN              ScaleUI;
     INTN              ActiveCSR;
     INTN              LogLevel;
+    INTN              ScreenR;
+    INTN              ScreenG;
+    INTN              ScreenB;
     REFIT_VOLUME     *DiscoveredRoot;
     EFI_DEVICE_PATH  *SelfDevicePath;
     CHAR16           *BannerFileName;

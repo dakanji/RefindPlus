@@ -64,18 +64,17 @@ CHAR16 *BlankLine = NULL;
 
 // UGA defines and variables
 
-UINTN   ScreenW        = 0;
-UINTN   ScreenH        = 0;
-UINTN   ScreenLongest  = 0;
-UINTN   ScreenShortest = 0;
+UINTN      ScreenW                = 0;
+UINTN      ScreenH                = 0;
+UINTN      ScreenLongest          = 0;
+UINTN      ScreenShortest         = 0;
 
+BOOLEAN    AllowGraphicsMode      = FALSE;
+BOOLEAN    ClearedBuffer          = FALSE;
 
-BOOLEAN AllowGraphicsMode = FALSE;
-BOOLEAN ClearedBuffer     = FALSE;
-
-EG_PIXEL StdBackgroundPixel  = { 0xbf, 0xbf, 0xbf, 0 };
-EG_PIXEL MenuBackgroundPixel = { 0xbf, 0xbf, 0xbf, 0 };
-EG_PIXEL DarkBackgroundPixel = { 0x0,  0x0,  0x0,  0 };
+EG_PIXEL   StdBackgroundPixel     = { 0xbf, 0xbf, 0xbf, 0 };
+EG_PIXEL   MenuBackgroundPixel    = { 0xbf, 0xbf, 0xbf, 0 };
+EG_PIXEL   DarkBackgroundPixel    = { 0x0,  0x0,  0x0,  0 };
 
 // general defines and variables
 static BOOLEAN GraphicsScreenDirty;
@@ -995,10 +994,16 @@ VOID egFreeImageQEMU (
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
-    static EG_IMAGE *Banner    = NULL;
-           EG_IMAGE *NewBanner = NULL;
-           EG_PIXEL  Black     = { 0x0, 0x0, 0x0, 0 };
-           INTN      BannerPosX, BannerPosY;
+    static BOOLEAN    FirstCall   = TRUE;
+    static EG_IMAGE  *Banner      = NULL;
+           EG_IMAGE  *NewBanner   = NULL;
+           EG_PIXEL   Black       = { 0x0, 0x0, 0x0, 0 };
+           INTN       BannerPosX  = 0;
+           INTN       BannerPosY  = 0;
+           UINT8      BackgroundR = 191;
+           UINT8      BackgroundG = 191;
+           UINT8      BackgroundB = 191;
+           UINTN      ScreenLum   = 0;
 
     #if REFIT_DEBUG > 0
     static BOOLEAN LoggedBanner;
@@ -1014,7 +1019,7 @@ VOID BltClearScreen (
     if (!IsBoot
         || (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER))
     ) {
-        // load banner on first call
+        // Load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
             MsgLog ("\n");
@@ -1039,7 +1044,9 @@ VOID BltClearScreen (
                 }
                 MY_FREE_POOL(MsgStr);
                 #endif
-                Banner = egPrepareEmbeddedImage (&egemb_refindplus_banner, FALSE);
+
+                Banner = egPrepareEmbeddedImage (&egemb_rp_banner_grey_light, FALSE);
+                GlobalConfig.EmbeddedBanner = (Banner == NULL) ? FALSE : TRUE;
             }
             else {
                 #if REFIT_DEBUG > 0
@@ -1052,37 +1059,182 @@ VOID BltClearScreen (
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
-        }
 
-        if (Banner) {
+            if (Banner != NULL) {
+                if (GlobalConfig.CustomScreenBG || GlobalConfig.EmbeddedBanner) {
+                    if (GlobalConfig.CustomScreenBG) {
+                        // Override Default Values
+                        BackgroundR = (UINT8) GlobalConfig.ScreenR;
+                        BackgroundG = (UINT8) GlobalConfig.ScreenG;
+                        BackgroundB = (UINT8) GlobalConfig.ScreenB;
+                    }
+
+                    //DA-TAG: Use BGR here
+                    EG_PIXEL PixelInfo = {
+                        BackgroundB, BackgroundG, BackgroundR, 0
+                    };
+                    Banner->PixelData[0] = MenuBackgroundPixel = PixelInfo;
+                }
+            }
+        } // if Banner == NULL
+
+        // DA-TAG: Wild Joy Ride - START
+        //         This goal can be achieved with two images with transparent backgrounds
+        //         Revert to such later ... after sorting any issues with Alpha rendering
+        //         Actually like the current but increased file size cost is significant
+        //         Can consider reducing image sizes but now gives very good resolution
+        if (GlobalConfig.EmbeddedBanner && FirstCall) {
+            // Only make these changes once
+            FirstCall = FALSE;
+
+            // Get Screen Luminance Index
+            UINTN FactorFP = 10; // Basic floating point adjustment
+            UINTN PixelsR  = (UINTN) MenuBackgroundPixel.r;
+            UINTN PixelsG  = (UINTN) MenuBackgroundPixel.g;
+            UINTN PixelsB  = (UINTN) MenuBackgroundPixel.b;
+
+            ScreenLum = (
+                (
+                    ((PixelsR + 257) * FactorFP) +
+                    ((PixelsG + 257) * FactorFP) +
+                    ((PixelsB + 257) * FactorFP)
+                ) / 6
+            );
+
+            // Already set up for High Luminosity Grey
+            // Figure whether one colour dominates and skew towards that colour
+            // Revert to grey if more than one colour meets dominance threshold
+            BOOLEAN DominatorA = FALSE;
+            BOOLEAN DominatorR = FALSE;
+            BOOLEAN DominatorG = FALSE;
+            UINTN   BannerType = BANNER_GREY_LIGHT;
+            if (BackgroundR >= (BackgroundG + BackgroundB) * 0.75) {
+                // Dominant Red
+                BannerType = BANNER_RED_LIGHT;
+                DominatorR = TRUE;
+            }
+            if (BackgroundG >= (BackgroundR + BackgroundB) * 0.75) {
+                // Dominant Green
+                DominatorA = DominatorR;
+                BannerType = (DominatorA) ? BANNER_GREY_LIGHT : BANNER_GREEN_LIGHT;
+                DominatorG = TRUE;
+            }
+            if (BackgroundB >= (BackgroundR + BackgroundG) * 0.75) {
+                // Dominant Blue
+                DominatorA = (DominatorR) ? TRUE : (DominatorG) ? TRUE : FALSE;
+                BannerType = (DominatorA) ? BANNER_GREY_LIGHT : BANNER_BLUE_LIGHT;
+            }
+
+            // Adjust for Luminosity as required
+            // Apply a single step variance if a dominant colour is present
+            if (ScreenLum < 1700) {
+                if (ScreenLum < 310) {
+                    if (ScreenLum < 160) { // Definitely Black
+                        BannerType = BANNER_BLACK;
+                    }
+                    else { // Basically Black
+                             if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_BLACK;
+                        else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
+                        else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
+                        else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
+                    }
+                }
+                else if (ScreenLum < 850) { // Low Luminosity
+                         if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
+                    else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_MID;
+                    else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_MID;
+                    else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
+                }
+                else { // Medium Luminosity
+                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
+                }
+            }
+            else if (ScreenLum > 2250) {
+                if (ScreenLum > 2400) { // Definitely White
+                    BannerType = BANNER_WHITE;
+                }
+                else { // Basically White
+                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_WHITE;
+                }
+            }
+
+            if (BannerType != BANNER_GREY_LIGHT) {
+                // Change Embedded Banner to Match Luminance or Dominant Colour
+                #if REFIT_DEBUG > 0
+                MsgLog (" ... Matched to Dominant Custom Colour");
+                #endif
+
+                // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'
+                //         See notes in 'egFreeImageQEMU'
+                //         Revert when no longer required
+                egFreeImageQEMU (Banner);
+
+                switch (BannerType) {
+                    case BANNER_BLACK:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_black,       FALSE);  break;
+                    case BANNER_WHITE:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_white,       FALSE);  break;
+                    case BANNER_GREY_MID:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_grey_mid,    FALSE);  break;
+                    case BANNER_GREY_DARK:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_grey_dark,   FALSE);  break;
+                    case BANNER_RED_MID:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_red_mid,     FALSE);  break;
+                    case BANNER_RED_DARK:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_red_dark,    FALSE);  break;
+                    case BANNER_RED_LIGHT:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_red_light,   FALSE);  break;
+                    case BANNER_GREEN_MID:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_green_mid,   FALSE);  break;
+                    case BANNER_GREEN_DARK:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_green_dark,  FALSE);  break;
+                    case BANNER_GREEN_LIGHT:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_green_light, FALSE);  break;
+                    case BANNER_BLUE_MID:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_blue_mid,    FALSE);  break;
+                    case BANNER_BLUE_DARK:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_blue_dark,   FALSE);  break;
+                    case BANNER_BLUE_LIGHT:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_blue_light,  FALSE);  break;
+                    default:
+                        Banner = egPrepareEmbeddedImage (&egemb_rp_banner_grey_light,  FALSE);  break;
+                } // switch
+
+                // Align with Current MenuBackgroundPixel
+                Banner->PixelData[0] = MenuBackgroundPixel;
+            }
+        } // if GlobalConfig.EmbeddedBanner && FirstCall
+        // DA-TAG: Wild Joy Ride - END
+
+        if (Banner != NULL) {
             #if REFIT_DEBUG > 0
             MsgLog ("\n");
             MsgLog ("  - Scale Banner");
             #endif
 
-           if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
-              if (Banner->Width != ScreenW || Banner->Height != ScreenH) {
-                 NewBanner = egScaleImage (Banner, ScreenW, ScreenH);
-              }
-           }
-           else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
-              NewBanner = egCropImage (
-                  Banner, 0, 0,
-                  (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
-                  (Banner->Height > ScreenH) ? ScreenH : Banner->Height
-              );
-          } // if GlobalConfig.BannerScale else if Banner->Width
+            if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
+                if (Banner->Width != ScreenW || Banner->Height != ScreenH) {
+                    NewBanner = egScaleImage (Banner, ScreenW, ScreenH);
+                }
+            }
+            else if (Banner->Width > ScreenW || Banner->Height > ScreenH) {
+                NewBanner = egCropImage (
+                    Banner, 0, 0,
+                    (Banner->Width  > ScreenW) ? ScreenW : Banner->Width,
+                    (Banner->Height > ScreenH) ? ScreenH : Banner->Height
+                );
+            } // if GlobalConfig.BannerScale else if Banner->Width
 
-           if (NewBanner != NULL) {
-              // DA-TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
-              //         See notes in 'egFreeImageQEMU'
-              //         Revert when no longer required
-              egFreeImageQEMU (Banner);
-              Banner = NewBanner;
-           } // if NewBanner
+            if (NewBanner != NULL) {
+                // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'
+                //         See notes in 'egFreeImageQEMU'
+                //         Revert when no longer required
+                egFreeImageQEMU (Banner);
+                Banner = NewBanner;
+            } // if NewBanner
 
-           MenuBackgroundPixel = Banner->PixelData[0];
-        } // if Banner
+            MenuBackgroundPixel = Banner->PixelData[0];
+        } // if Banner != NULL
 
         // clear and draw banner
         #if REFIT_DEBUG > 0

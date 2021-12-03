@@ -122,6 +122,8 @@ REFIT_MENU_ENTRY MenuEntryCleanNvram = {
 };
 
 REFIT_CONFIG GlobalConfig = {
+    /* CustomScreenBG = */ FALSE,
+    /* EmbeddedBanner = */ FALSE,
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
@@ -176,6 +178,9 @@ REFIT_CONFIG GlobalConfig = {
     /* ScaleUI = */ 0,
     /* ActiveCSR = */ 0,
     /* LogLevel = */ 0,
+    /* ScreenR = */ -1,
+    /* ScreenG = */ -1,
+    /* ScreenB = */ -1,
     /* *DiscoveredRoot = */ NULL,
     /* *SelfDevicePath = */ NULL,
     /* *BannerFileName = */ NULL,
