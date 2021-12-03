@@ -159,13 +159,16 @@ mkdir -m 1777 /tmp/RefindPlusPkg-build
 
 git clone https://github.com/dakanji/RefindPlus.git RefindPlusPkg
 
-# hacky fix for duplication error of lodepng_malloc and lodepng_free
+- hacky fix for duplication error of lodepng_malloc and lodepng_free
+```
 sed -e 's/void[*] lodepng_malloc/void* _dup_lodepng_malloc/' \
     -e 's/void lodepng_free/void _dup_lodepng_free/' \
     -i-orig RefindPlusPkg/libeg/lodepng_xtra.c
-
+```
+```
 docker pull xaionaro2/edk2-builder:RefindPlusUDK
-
+```
+```
 docker run --rm \
     -e CFLAGS=-Wno-error \
     -e TOOLCHAIN=CLANG38 \
@@ -174,7 +177,9 @@ docker run --rm \
     -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefindPlusPkg/" \
     -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
     xaionaro2/edk2-builder:RefindPlusUDK
-    
+ ```
+
+``` 
 docker run --rm \
     -e CFLAGS=-Wno-error \
     -e TOOLCHAIN=CLANG38 \
@@ -183,6 +188,7 @@ docker run --rm \
     -v "$PWD/RefindPlusPkg/:/home/edk2/edk2/RefinPlusdPkg/" \
     -v "/tmp/RefindPlusPkg-build:/home/edk2/Build" \
     xaionaro2/edk2-builder:RefindPlusUDK
+```
 	
 For support on this build option please refer to:
 https://github.com/xaionaro/edk2-builder-docker
