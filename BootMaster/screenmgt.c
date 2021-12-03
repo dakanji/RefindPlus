@@ -991,6 +991,32 @@ VOID egFreeImageQEMU (
     }
 } // static VOID egFreeImageQEMU()
 
+static
+CHAR16 * GetBannerName (
+    UINTN BannerType
+) {
+    CHAR16 *BannerName = NULL;
+
+    switch (BannerType) {
+        case BANNER_BLACK:       BannerName = L"Black";          break;
+        case BANNER_WHITE:       BannerName = L"White";          break;
+        case BANNER_GREY_MID:    BannerName = L"Grey (Mid)";     break;
+        case BANNER_GREY_DARK:   BannerName = L"Grey (Dark)";    break;
+        case BANNER_RED_MID:     BannerName = L"Red (Mid)";      break;
+        case BANNER_RED_DARK:    BannerName = L"Red (Dark)";     break;
+        case BANNER_RED_LIGHT:   BannerName = L"Red (Light)";    break;
+        case BANNER_GREEN_MID:   BannerName = L"Green (Mid)";    break;
+        case BANNER_GREEN_DARK:  BannerName = L"Green (Dark)";   break;
+        case BANNER_GREEN_LIGHT: BannerName = L"Green (Light)";  break;
+        case BANNER_BLUE_MID:    BannerName = L"Blue (Mid)";     break;
+        case BANNER_BLUE_DARK:   BannerName = L"Blue (Dark)";    break;
+        case BANNER_BLUE_LIGHT:  BannerName = L"Blue (Light)";   break;
+        default:                 BannerName = L"Grey (Light)";   break;
+    } // switch
+
+    return BannerName;
+} // CHAR16 * GetBannerName()
+
 VOID BltClearScreen (
     BOOLEAN ShowBanner
 ) {
@@ -1095,9 +1121,9 @@ VOID BltClearScreen (
 
             ScreenLum = (
                 (
-                    ((PixelsR + 257) * FactorFP) +
-                    ((PixelsG + 257) * FactorFP) +
-                    ((PixelsB + 257) * FactorFP)
+                    ((PixelsR + 255) * FactorFP) +
+                    ((PixelsG + 255) * FactorFP) +
+                    ((PixelsB + 255) * FactorFP)
                 ) / 6
             );
 
@@ -1126,42 +1152,34 @@ VOID BltClearScreen (
             }
 
             // Adjust for Luminosity as required
-            // Apply a single step variance if a dominant colour is present
             if (ScreenLum < 1700) {
-                if (ScreenLum < 310) {
-                    if (ScreenLum < 160) { // Definitely Black
-                        BannerType = BANNER_BLACK;
-                    }
-                    else { // Basically Black
-                             if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_BLACK;
-                        else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
-                        else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
-                        else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
-                    }
+                if (ScreenLum < 160) { // Basically Black
+                    BannerType = BANNER_BLACK;
                 }
                 else if (ScreenLum < 850) { // Low Luminosity
                          if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
+                    else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
+                    else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
+                    else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
+                }
+                else { // Medium Luminosity
+                         if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
                     else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_MID;
                     else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_MID;
                     else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
                 }
-                else { // Medium Luminosity
-                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
-                }
             }
-            else if (ScreenLum > 2250) {
-                if (ScreenLum > 2400) { // Definitely White
-                    BannerType = BANNER_WHITE;
-                }
-                else { // Basically White
-                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_WHITE;
-                }
+            else if (ScreenLum > 2400) { // Basically White
+                BannerType = BANNER_WHITE;
             }
 
             if (BannerType != BANNER_GREY_LIGHT) {
                 // Change Embedded Banner to Match Luminance or Dominant Colour
                 #if REFIT_DEBUG > 0
-                MsgLog (" ... Matched to Dominant Custom Colour");
+                MsgLog (
+                    " ... Matched to Dominant Custom Colour:- '%s'",
+                    GetBannerName (BannerType)
+                );
                 #endif
 
                 // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'

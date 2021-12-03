@@ -62,8 +62,8 @@ normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit
 prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
 scale_ui              |Provides control of UI element scaling
-screen_rgb            |Allows setting the screen background colour directly
-set_boot_args         |Allows arbitrary Mac OS boot argument strings
+screen_rgb            |Allows setting arbitrary screen background colours
+set_boot_args         |Allows setting arbitrary Mac OS boot arguments
 text_renderer         |Provides a text renderer that allows text output when otherwise unavailable
 uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
 
