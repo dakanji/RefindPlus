@@ -1153,13 +1153,8 @@ VOID BltClearScreen (
 
             // Adjust for Luminosity as required
             if (ScreenLum < 1700) {
-                if (ScreenLum < 310) {
-                    if (ScreenLum < 160) { // Definitely Black
-                        BannerType = BANNER_BLACK;
-                    }
-                    else { // Basically Black
-                        if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_BLACK;
-                    }
+                if (ScreenLum < 160) { // Basically Black
+                    BannerType = BANNER_BLACK;
                 }
                 else if (ScreenLum < 850) { // Low Luminosity
                          if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
@@ -1174,13 +1169,8 @@ VOID BltClearScreen (
                     else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
                 }
             }
-            else if (ScreenLum > 2250) {
-                if (ScreenLum > 2400) { // Definitely White
-                    BannerType = BANNER_WHITE;
-                }
-                else { // Basically White
-                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_WHITE;
-                }
+            else if (ScreenLum > 2400) { // Basically White
+                BannerType = BANNER_WHITE;
             }
 
             if (BannerType != BANNER_GREY_LIGHT) {
