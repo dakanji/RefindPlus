@@ -391,6 +391,7 @@ VOID UpdateScroll (
 // menu helper functions
 //
 
+// Returns a constant ... do not free
 CHAR16 * MenuExitInfo (
     IN UINTN MenuExit
 ) {
@@ -2316,16 +2317,10 @@ VOID DisplaySimpleMessage (
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
-    // DA-TAG: Tick box to run check after 'RunGenericMenu'
-    CHAR16 *TypeMenuExit = NULL;
-    if (MenuExit < 1) {
-        // Dummy ... Never reached
-        TypeMenuExit = L"UNKNOWN!!";
-    }
-    else {
-        TypeMenuExit = MenuExitInfo (MenuExit);
-    }
-
+    // DA-TAG: Run check on MenuExit for Coverity
+    //         L"UNKNOWN!!" is never reached
+    //         Constant ... Do Not Free
+    CHAR16 *TypeMenuExit = (MenuExit < 1) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'DisplaySimpleMessage'",
