@@ -3120,31 +3120,32 @@ VOID FreeMenuScreen (
 ) {
     UINTN i;
 
+// DA-TAG: Allow leaks until instances are audited
     if (Screen && *Screen) {
-        MY_FREE_POOL((*Screen)->Title);
-        MY_FREE_IMAGE((*Screen)->TitleImage);
+/*        MY_FREE_POOL((*Screen)->Title);
+*/        MY_FREE_IMAGE((*Screen)->TitleImage);
         if ((*Screen)->InfoLines) {
-            for (i = 0; i < (*Screen)->InfoLineCount; i++) {
+/*            for (i = 0; i < (*Screen)->InfoLineCount; i++) {
                 MY_FREE_POOL((*Screen)->InfoLines[i]);
             }
-            MY_FREE_POOL((*Screen)->InfoLines);
-        }
+*//*            MY_FREE_POOL((*Screen)->InfoLines);
+*/        }
         if ((*Screen)->Entries) {
             for (i = 0; i < (*Screen)->EntryCount; i++) {
-                MY_FREE_POOL((*Screen)->Entries[i]->Title);
-                MY_FREE_IMAGE((*Screen)->Entries[i]->Image);
+/*                MY_FREE_POOL((*Screen)->Entries[i]->Title);
+*/                MY_FREE_IMAGE((*Screen)->Entries[i]->Image);
                 MY_FREE_IMAGE((*Screen)->Entries[i]->BadgeImage);
                 FreeMenuScreen (&(*Screen)->Entries[i]->SubScreen);
             } // for
-            MY_FREE_POOL((*Screen)->Entries);
-        }
+/*            MY_FREE_POOL((*Screen)->Entries);
+*/        }
 
-        MY_FREE_POOL((*Screen)->TimeoutText);
+/*        MY_FREE_POOL((*Screen)->TimeoutText);
         MY_FREE_POOL((*Screen)->Hint1);
         MY_FREE_POOL((*Screen)->Hint2);
         MY_FREE_POOL(*Screen);
         MY_FREE_POOL(Screen);
-    }
+*/    }
 } // VOID FreeMenuScreen()
 
 VOID FreeLegacyEntry (
