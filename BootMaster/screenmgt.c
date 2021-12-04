@@ -991,6 +991,9 @@ VOID egFreeImageQEMU (
     }
 } // static VOID egFreeImageQEMU()
 
+
+#if REFIT_DEBUG > 0
+// DA-TAG: Limit to debug build
 static
 CHAR16 * GetBannerName (
     UINTN BannerType
@@ -1016,6 +1019,8 @@ CHAR16 * GetBannerName (
 
     return BannerName;
 } // CHAR16 * GetBannerName()
+#endif
+
 
 VOID BltClearScreen (
     BOOLEAN ShowBanner
@@ -1114,17 +1119,14 @@ VOID BltClearScreen (
             FirstCall = FALSE;
 
             // Get Screen Luminance Index
-            UINTN FactorFP = 10; // Basic floating point adjustment
             UINTN PixelsR  = (UINTN) MenuBackgroundPixel.r;
             UINTN PixelsG  = (UINTN) MenuBackgroundPixel.g;
             UINTN PixelsB  = (UINTN) MenuBackgroundPixel.b;
 
             ScreenLum = (
                 (
-                    ((PixelsR + 255) * FactorFP) +
-                    ((PixelsG + 255) * FactorFP) +
-                    ((PixelsB + 255) * FactorFP)
-                ) / 6
+                    (PixelsR + PixelsG + PixelsB + 3) / 3
+                ) - 1
             );
 
             // Already set up for High Luminosity Grey
@@ -1152,11 +1154,11 @@ VOID BltClearScreen (
             }
 
             // Adjust for Luminosity as required
-            if (ScreenLum < 1700) {
-                if (ScreenLum < 160) { // Basically Black
+            if (ScreenLum < 170) {
+                if (ScreenLum < 16) { // Basically Black
                     BannerType = BANNER_BLACK;
                 }
-                else if (ScreenLum < 850) { // Low Luminosity
+                else if (ScreenLum < 85) { // Low Luminosity
                          if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
                     else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
                     else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
@@ -1169,7 +1171,7 @@ VOID BltClearScreen (
                     else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
                 }
             }
-            else if (ScreenLum > 2400) { // Basically White
+            else if (ScreenLum > 240) { // Basically White
                 BannerType = BANNER_WHITE;
             }
 

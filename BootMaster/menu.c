@@ -2317,11 +2317,12 @@ VOID DisplaySimpleMessage (
     AddMenuEntry (&HideItemMenu, &MenuEntryReturn);
     MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
+    #if REFIT_DEBUG > 0
     // DA-TAG: Run check on MenuExit for Coverity
     //         L"UNKNOWN!!" is never reached
     //         Constant ... Do Not Free
     CHAR16 *TypeMenuExit = (MenuExit < 1) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
-    #if REFIT_DEBUG > 0
+
     LOG(2, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'DisplaySimpleMessage'",
         MenuExit, TypeMenuExit, ChosenOption->Title
