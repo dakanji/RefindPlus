@@ -1428,6 +1428,7 @@ static const UINT8 egemb_liberation_mono_regular_28_data[17128] = {
  0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00,
  0xff, 0x00, 0xef, 0x00,
 };
-
-static EG_EMBEDDED_IMAGE egemb_font_large = { 1632, 28, EG_EIPIXELMODE_ALPHA, EG_EICOMPMODE_RLE, \
-    egemb_liberation_mono_regular_28_data, 17128 };
+static EG_EMBEDDED_IMAGE egemb_font_large = {
+    1632, 28, EG_EIPIXELMODE_ALPHA, EG_EICOMPMODE_RLE,
+    egemb_liberation_mono_regular_28_data, 17128
+};

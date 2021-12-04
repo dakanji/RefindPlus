@@ -546,6 +546,7 @@ static const UINT8 egemb_liberation_mono_regular_14_data[6544] = {
  0xff, 0x40, 0x80, 0x00, 0x01, 0x60, 0xc4, 0x81, 0x00, 0x03, 0xdc, 0xff,
  0xdf, 0x3c, 0x90, 0x00,
 };
-
-static EG_EMBEDDED_IMAGE egemb_font = { 768, 14, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE, \
-    egemb_liberation_mono_regular_14_data, 6544 };
+static EG_EMBEDDED_IMAGE egemb_font = {
+    768, 14, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE,
+    egemb_liberation_mono_regular_14_data, 6544
+};

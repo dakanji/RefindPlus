@@ -53,7 +53,7 @@ static UINTN FontCellWidth = 7;
 //
 
 static
-VOID egPrepareFont() {
+VOID egPrepareFont (VOID) {
     UINTN ScreenW, ScreenH;
 
     egGetScreenSize(&ScreenW, &ScreenH);
@@ -65,48 +65,50 @@ VOID egPrepareFont() {
 
     if (BaseFontImage == NULL) {
         if (GlobalConfig.ScaleUI == -1) {
-            BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE);
         }
         else if (
-            (GlobalConfig.ScaleUI == 1)
-            || (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
+            (GlobalConfig.ScaleUI == 1) ||
+            (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
         ) {
-            BaseFontImage = egPrepareEmbeddedImage(&egemb_font_large, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font_large, TRUE);
         }
         else {
-            BaseFontImage = egPrepareEmbeddedImage(&egemb_font, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE);
         }
     }
-    if (BaseFontImage != NULL) {
-        FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
-    }
+    if (BaseFontImage != NULL) FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
 } // VOID egPrepareFont();
 
-UINTN egGetFontHeight(VOID) {
+UINTN egGetFontHeight (VOID) {
    egPrepareFont();
    return BaseFontImage->Height;
 } // UINTN egGetFontHeight()
 
-UINTN egGetFontCellWidth(VOID) {
+UINTN egGetFontCellWidth (VOID) {
    return FontCellWidth;
-}
+} // UINTN egGetFontCellWidth()
 
-UINTN egComputeTextWidth(IN CHAR16 *Text) {
-   UINTN Width = 0;
+UINTN egComputeTextWidth (
+    IN CHAR16 *Text
+) {
+    UINTN Width = 0;
 
-   egPrepareFont();
-   if (Text != NULL)
-      Width = FontCellWidth * StrLen(Text);
-   return Width;
+    egPrepareFont();
+    if (Text != NULL) Width = FontCellWidth * StrLen (Text);
+
+    return Width;
 } // UINTN egComputeTextWidth()
 
-VOID egMeasureText(IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height) {
+VOID egMeasureText (
+    IN  CHAR16 *Text,
+    OUT UINTN  *Width,
+    OUT UINTN  *Height
+) {
     egPrepareFont();
 
-    if (Width != NULL)
-        *Width = StrLen(Text) * FontCellWidth;
-    if (Height != NULL)
-        *Height = BaseFontImage->Height;
+    if (Width != NULL)  *Width  = StrLen (Text) * FontCellWidth;
+    if (Height != NULL) *Height = BaseFontImage->Height;
 }
 
 VOID egRenderText (
@@ -124,9 +126,7 @@ VOID egRenderText (
     UINTN            i, c;
 
     // Nothing to do if nothing was passed
-    if (!Text) {
-        return;
-    }
+    if (!Text) return;
 
     egPrepareFont();
 
@@ -138,30 +138,23 @@ VOID egRenderText (
     }
 
     if (BGBrightness < 128) {
-       if (LightFontImage == NULL) {
-          LightFontImage = egCopyImage(BaseFontImage);
-          if (LightFontImage == NULL) {
-              return;
-          }
+        if (LightFontImage == NULL) {
+            LightFontImage = egCopyImage (BaseFontImage);
+            if (LightFontImage == NULL) return;
 
-          for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
-             LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
-             LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
-             LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
-          } // for
-
-       } // if
-       FontImage = LightFontImage;
+            for (i = 0; i < (LightFontImage->Width * LightFontImage->Height); i++) {
+                LightFontImage->PixelData[i].r = 255 - LightFontImage->PixelData[i].r;
+                LightFontImage->PixelData[i].g = 255 - LightFontImage->PixelData[i].g;
+                LightFontImage->PixelData[i].b = 255 - LightFontImage->PixelData[i].b;
+            } // for
+        }
+        FontImage = LightFontImage;
     }
     else {
-       if (DarkFontImage == NULL) {
-           DarkFontImage = egCopyImage(BaseFontImage);
-       }
-       if (DarkFontImage == NULL) {
-           return;
-       }
-       FontImage = DarkFontImage;
-    } // if/else
+        if (DarkFontImage == NULL) DarkFontImage = egCopyImage (BaseFontImage);
+        if (DarkFontImage == NULL) return;
+        FontImage = DarkFontImage;
+    }
 
     // render it
     BufferPtr         = CompImage->PixelData;
@@ -179,22 +172,23 @@ VOID egRenderText (
             c -= 32;
         }
 
-        egRawCompose(BufferPtr, FontPixelData + c * FontCellWidth,
-                     FontCellWidth, FontImage->Height,
-                     BufferLineOffset, FontLineOffset);
+        egRawCompose (
+            BufferPtr, FontPixelData + c * FontCellWidth,
+            FontCellWidth, FontImage->Height,
+            BufferLineOffset, FontLineOffset
+        );
         BufferPtr += FontCellWidth;
     }
 }
 
 // Load a font bitmap from the specified file
-VOID egLoadFont(IN CHAR16 *Filename) {
-   if (BaseFontImage)
-      MY_FREE_IMAGE(BaseFontImage);
-
-   BaseFontImage = egLoadImage(SelfDir, Filename, TRUE);
-   if (BaseFontImage == NULL)
-      Print(L"Note: Font image file %s is invalid! Using default font!\n");
+VOID egLoadFont (
+    IN CHAR16 *Filename
+) {
+    MY_FREE_IMAGE(BaseFontImage);
+    BaseFontImage = egLoadImage (SelfDir, Filename, TRUE);
+    if (BaseFontImage == NULL) {
+        Print(L"Note: Font image file %s is invalid! Using default font!\n");
+    }
     egPrepareFont();
 } // BOOLEAN egLoadFont()
-
-/* EOF */
