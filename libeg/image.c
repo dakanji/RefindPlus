@@ -54,6 +54,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #include "libegint.h"
 #include "../BootMaster/global.h"
@@ -342,15 +349,22 @@ EFI_STATUS egLoadFile (
         return Status;
     }
 
-    *FileData       = Buffer;
-    *FileDataLength = BufferSize;
+    if (FileData) {
+        *FileData = Buffer;
+    }
+    else {
+        MY_FREE_POOL(Buffer);
+    }
+    if (FileDataLength) {
+        *FileDataLength = BufferSize;
+    }
 
     #if REFIT_DEBUG > 0
     LOG(3, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
-}
+} // EFI_STATUS egLoadFile()
 
 EFI_STATUS egFindESP (
     OUT EFI_FILE_HANDLE *RootDir
@@ -372,7 +386,7 @@ EFI_STATUS egFindESP (
     }
 
     return Status;
-}
+} // EFI_STATUS egFindESP()
 
 EFI_STATUS egSaveFile (
     IN EFI_FILE  *BaseDir OPTIONAL,
@@ -414,7 +428,7 @@ EFI_STATUS egSaveFile (
     }
 
     return Status;
-}
+} // EFI_STATUS egSaveFile()
 
 //
 // Loading images from files and embedded data
@@ -436,7 +450,7 @@ EG_IMAGE * egDecodeAny (
     if (!NewImage) NewImage = egDecodeICNS (FileData, FileDataLength, IconSize, WantAlpha);
 
     return NewImage;
-}
+} // static EG_IMAGE * egDecodeAny ()
 
 EG_IMAGE * egLoadImage (
     IN EFI_FILE *BaseDir,
@@ -475,7 +489,7 @@ EG_IMAGE * egLoadImage (
     MY_FREE_POOL(FileData);
 
     return NewImage;
-}
+} // EG_IMAGE * egLoadImage()
 
 // Load an icon from (BaseDir)/Path, extracting the icon of size IconSize x IconSize.
 // Returns a pointer to the image data, or NULL if the icon could not be loaded.
@@ -536,7 +550,22 @@ EG_IMAGE * egLoadIcon (
     }
 
     if ((Image->Width != IconSize) || (Image->Height != IconSize)) {
-        NewImage = egScaleImage (Image, IconSize, IconSize);
+        // Do proportional scaling
+        UINTN w = Image->Width;
+        UINTN h = Image->Height;
+        if (h < w) {
+            h = IconSize * h / w;
+            w = IconSize;
+        }
+        else if (w < h) {
+            w = IconSize * w / h;
+            h = IconSize;
+        }
+        else {
+            w = IconSize;
+            h = IconSize;
+        }
+        NewImage = egScaleImage (Image, w, h);
 
         // use scaled image if available
         if (NewImage) {
@@ -742,7 +771,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
 
     return NewImage;
-}
+} // EG_IMAGE * egPrepareEmbeddedImage()
 
 //
 // Compositing
@@ -766,7 +795,7 @@ VOID egRestrictImageArea (
             if (*AreaHeight > Image->Height - AreaPosY) *AreaHeight = Image->Height - AreaPosY;
         }
     }
-}
+} // VOID egRestrictImageArea()
 
 VOID egFillImage (
     IN OUT EG_IMAGE  *CompImage,
@@ -787,7 +816,7 @@ VOID egFillImage (
             *PixelPtr = FillColor;
         }
     }
-}
+} // VOID egFillImage()
 
 VOID egFillImageArea (
     IN OUT EG_IMAGE *CompImage,
@@ -821,7 +850,7 @@ VOID egFillImageArea (
             }
         }
     }
-}
+} // VOID egFillImageArea ()
 
 VOID egRawCopy (
     IN OUT EG_PIXEL *CompBasePtr,
@@ -848,7 +877,7 @@ VOID egRawCopy (
             CompBasePtr += CompLineOffset;
         }
     }
-}
+} // VOID egRawCopy()
 
 VOID egRawCompose (
     IN OUT EG_PIXEL *CompBasePtr,
@@ -887,7 +916,7 @@ VOID egRawCompose (
             CompBasePtr += CompLineOffset;
         }
     }
-}
+} // VOID egRawCompose()
 
 VOID egComposeImage (
     IN OUT EG_IMAGE *CompImage,
@@ -943,7 +972,7 @@ VOID egInsertPlane (
              DestPlanePtr += 4;
         }
     }
-}
+} // VOID egInsertPlane()
 
 VOID egSetPlane (
     IN UINT8 *DestPlanePtr,
@@ -958,7 +987,7 @@ VOID egSetPlane (
              DestPlanePtr += 4;
         }
     }
-}
+} // VOID egSetPlane()
 
 VOID egCopyPlane (
     IN UINT8 *SrcPlanePtr,
@@ -973,6 +1002,6 @@ VOID egCopyPlane (
              DestPlanePtr += 4, SrcPlanePtr += 4;
         }
     }
-}
+} // VOID egCopyPlane()
 
 /* EOF */
