@@ -674,6 +674,21 @@ EG_IMAGE * egFindIcon (
     return Image;
 } // EG_IMAGE * egFindIcon()
 
+static
+VOID egInvertPlane (
+    IN UINT8 *DestPlanePtr,
+    IN UINTN PixelCount
+) {
+    UINTN i;
+
+    if (DestPlanePtr) {
+        for (i = 0; i < PixelCount; i++) {
+            *DestPlanePtr = 255 - *DestPlanePtr;
+            DestPlanePtr += 4;
+        }
+    }
+} // VOID egInvertPlane()
+
 EG_IMAGE * egPrepareEmbeddedImage (
     IN EG_EMBEDDED_IMAGE *EmbeddedImage,
     IN BOOLEAN            WantAlpha
@@ -748,10 +763,13 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
 
     // Handle Alpha
-    if (WantAlpha && (
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
-        EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA)
+    if (
+        WantAlpha && (
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA ||
+            EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT
+        )
     ) {
         // Alpha is Required and Available
         // Add Alpha Mask if Available and Required
@@ -761,6 +779,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
         else {
             egInsertPlane (CompData, PLPTR(NewImage, a), PixelCount);
             CompData += PixelCount;
+        }
+        if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT) {
+            egInvertPlane (PLPTR(NewImage, a), PixelCount);
         }
     }
     else {

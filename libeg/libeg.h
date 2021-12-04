@@ -69,7 +69,8 @@ typedef struct {
 #define EG_EIPIXELMODE_COLOR        (2)
 #define EG_EIPIXELMODE_COLOR_ALPHA  (3)
 #define EG_EIPIXELMODE_ALPHA        (4)
-#define EG_MAX_EIPIXELMODE          EG_EIPIXELMODE_ALPHA
+#define EG_EIPIXELMODE_ALPHA_INVERT (5)
+#define EG_MAX_EIPIXELMODE          EG_EIPIXELMODE_ALPHA_INVERT
 
 #define EG_EICOMPMODE_NONE          (0)
 #define EG_EICOMPMODE_RLE           (1)
