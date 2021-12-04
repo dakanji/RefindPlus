@@ -1001,10 +1001,6 @@ CHAR16 * GetBannerName (
     CHAR16 *BannerName = NULL;
 
     switch (BannerType) {
-        case BANNER_BLACK:       BannerName = L"Black";          break;
-        case BANNER_WHITE:       BannerName = L"White";          break;
-        case BANNER_GREY_MID:    BannerName = L"Grey (Mid)";     break;
-        case BANNER_GREY_DARK:   BannerName = L"Grey (Dark)";    break;
         case BANNER_RED_MID:     BannerName = L"Red (Mid)";      break;
         case BANNER_RED_DARK:    BannerName = L"Red (Dark)";     break;
         case BANNER_RED_LIGHT:   BannerName = L"Red (Light)";    break;
@@ -1014,6 +1010,10 @@ CHAR16 * GetBannerName (
         case BANNER_BLUE_MID:    BannerName = L"Blue (Mid)";     break;
         case BANNER_BLUE_DARK:   BannerName = L"Blue (Dark)";    break;
         case BANNER_BLUE_LIGHT:  BannerName = L"Blue (Light)";   break;
+        case BANNER_BLACK:       BannerName = L"Black";          break;
+        case BANNER_WHITE:       BannerName = L"White";          break;
+        case BANNER_GREY_MID:    BannerName = L"Grey (Mid)";     break;
+        case BANNER_GREY_DARK:   BannerName = L"Grey (Dark)";    break;
         default:                 BannerName = L"Grey (Light)";   break;
     } // switch
 
@@ -1132,7 +1132,7 @@ VOID BltClearScreen (
             // Already set up for High Luminosity Grey
             // Figure whether one colour dominates and skew towards that colour
             // Revert to grey if more than one colour meets dominance threshold
-            BOOLEAN DominatorA = FALSE;
+            BOOLEAN DominatorX = FALSE;
             BOOLEAN DominatorR = FALSE;
             BOOLEAN DominatorG = FALSE;
             UINTN   BannerType = BANNER_GREY_LIGHT;
@@ -1143,46 +1143,51 @@ VOID BltClearScreen (
             }
             if (BackgroundG >= (BackgroundR + BackgroundB) * 0.75) {
                 // Dominant Green
-                DominatorA = DominatorR;
-                BannerType = (DominatorA) ? BANNER_GREY_LIGHT : BANNER_GREEN_LIGHT;
+                DominatorX = DominatorR;
+                BannerType = (DominatorX) ? BANNER_GREY_LIGHT : BANNER_GREEN_LIGHT;
                 DominatorG = TRUE;
             }
             if (BackgroundB >= (BackgroundR + BackgroundG) * 0.75) {
                 // Dominant Blue
-                DominatorA = (DominatorR) ? TRUE : (DominatorG) ? TRUE : FALSE;
-                BannerType = (DominatorA) ? BANNER_GREY_LIGHT : BANNER_BLUE_LIGHT;
+                DominatorX = (DominatorR) ? TRUE : (DominatorG) ? TRUE : FALSE;
+                BannerType = (DominatorX) ? BANNER_GREY_LIGHT : BANNER_BLUE_LIGHT;
             }
 
             // Adjust for Luminosity as required
+            // Apply a one (1) step variance if a dominant colour is preseent
             if (ScreenLum < 170) {
-                if (ScreenLum < 16) { // Basically Black
-                    BannerType = BANNER_BLACK;
+                if (ScreenLum < 31) {
+                    if (ScreenLum < 16) { // Definitively Black
+                        BannerType = BANNER_BLACK;
+                    }
+                    else { // Basically Black
+                             if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_BLACK;
+                        else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
+                        else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
+                        else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
+                    }
                 }
                 else if (ScreenLum < 85) { // Low Luminosity
                          if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
-                    else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
-                    else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
-                    else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
-                }
-                else { // Medium Luminosity
-                         if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
                     else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_MID;
                     else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_MID;
                     else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
                 }
+                else { // Medium Luminosity
+                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
+                }
             }
-            else if (ScreenLum > 240) { // Basically White
-                BannerType = BANNER_WHITE;
+            else if (ScreenLum > 225) {
+                if (ScreenLum > 240) { // Definitively White
+                    BannerType = BANNER_WHITE;
+                }
+                else { // Basically White
+                    if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_WHITE;
+                }
             }
 
             if (BannerType != BANNER_GREY_LIGHT) {
                 // Change Embedded Banner to Match Luminance or Dominant Colour
-                #if REFIT_DEBUG > 0
-                MsgLog (
-                    " ... Matched to Dominant Custom Colour:- '%s'",
-                    GetBannerName (BannerType)
-                );
-                #endif
 
                 // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'
                 //         See notes in 'egFreeImageQEMU'
@@ -1222,7 +1227,16 @@ VOID BltClearScreen (
 
                 // Align with Current MenuBackgroundPixel
                 Banner->PixelData[0] = MenuBackgroundPixel;
+            } // if BannerType != BANNER_GREY_LIGHT
+
+            #if REFIT_DEBUG > 0
+            if (GlobalConfig.CustomScreenBG) {
+                MsgLog (
+                    " ... Matched to Dominant Custom Colour Group:- '%s'",
+                    GetBannerName (BannerType)
+                );
             }
+            #endif
         } // if GlobalConfig.EmbeddedBanner && FirstCall
         // DA-TAG: Wild Joy Ride - END
 
