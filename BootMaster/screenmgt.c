@@ -1109,9 +1109,8 @@ VOID BltClearScreen (
             }
         } // if Banner == NULL
 
-        // DA-TAG: Wild Joy Ride - START
-        //         This goal can be achieved with two images with transparent backgrounds
-        //         Revert to such later ... after sorting any issues with Alpha rendering
+        // DA-TAG: The aim here can be reached by using two transparent background images
+        //         Consider this later ... after sorting any issues with Alpha rendering
         //         Actually like the current but increased file size cost is significant
         //         Can consider reducing image sizes but now gives very good resolution
         if (GlobalConfig.EmbeddedBanner && FirstCall) {
@@ -1143,7 +1142,7 @@ VOID BltClearScreen (
             }
             if (BackgroundG >= (BackgroundR + BackgroundB) * 0.75) {
                 // Dominant Green
-                DominatorX = DominatorR;
+                DominatorX = (DominatorR) ? TRUE : FALSE;
                 BannerType = (DominatorX) ? BANNER_GREY_LIGHT : BANNER_GREEN_LIGHT;
                 DominatorG = TRUE;
             }
@@ -1238,7 +1237,6 @@ VOID BltClearScreen (
             }
             #endif
         } // if GlobalConfig.EmbeddedBanner && FirstCall
-        // DA-TAG: Wild Joy Ride - END
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
