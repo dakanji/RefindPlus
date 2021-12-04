@@ -975,10 +975,13 @@ VOID SwitchToGraphicsAndClear (
     #endif
 } // VOID SwitchToGraphicsAndClear()
 
+
 // DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
 //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
 //         Temporary ... Eliminate when no longer required
+// UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
+#if 0
 static
 VOID egFreeImageQEMU (
     EG_IMAGE *Image
@@ -990,6 +993,7 @@ VOID egFreeImageQEMU (
         MY_FREE_POOL(Image);
     }
 } // static VOID egFreeImageQEMU()
+#endif
 
 
 #if REFIT_DEBUG > 0
@@ -1188,10 +1192,8 @@ VOID BltClearScreen (
             if (BannerType != BANNER_GREY_LIGHT) {
                 // Change Embedded Banner to Match Luminance or Dominant Colour
 
-                // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'
-                //         See notes in 'egFreeImageQEMU'
-                //         Revert when no longer required
-                egFreeImageQEMU (Banner);
+                // DA-TAG: See notes in 'egFreeImageQEMU'
+                MY_FREE_IMAGE(Banner);
 
                 switch (BannerType) {
                     case BANNER_BLACK:
@@ -1258,10 +1260,8 @@ VOID BltClearScreen (
             } // if GlobalConfig.BannerScale else if Banner->Width
 
             if (NewBanner != NULL) {
-                // DA-TAG: Use 'egFreeImageQEMU' in place of 'MY_FREE_IMAGE'
-                //         See notes in 'egFreeImageQEMU'
-                //         Revert when no longer required
-                egFreeImageQEMU (Banner);
+                // DA-TAG: See notes in 'egFreeImageQEMU'
+                MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
             } // if NewBanner
 
@@ -1321,10 +1321,8 @@ VOID BltClearScreen (
 
     GraphicsScreenDirty = FALSE;
 
-    // DA-TAG: Use 'egFreeImageQEMU' in place of 'egFreeImage'
-    //         See notes in 'egFreeImageQEMU'
-    //         Revert when no longer required
-    egFreeImageQEMU (GlobalConfig.ScreenBackground);
+    // DA-TAG: See notes in 'egFreeImageQEMU'                    
+    MY_FREE_IMAGE(GlobalConfig.ScreenBackground);
     GlobalConfig.ScreenBackground = egCopyScreen();
 } // VOID BltClearScreen()
 
