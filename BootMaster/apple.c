@@ -653,6 +653,10 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
     APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
 
+    if (ContainerGuid == NULL && VolumeGuid == NULL && VolumeRole == NULL) {
+        return EFI_INVALID_PARAMETER;
+    }
+
     Root = NULL;
 
     Status = gBS->HandleProtocol (
@@ -670,7 +674,15 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         return Status;
     }
 
-    Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
+    if (!ContainerGuid && (VolumeGuid || VolumeRole)) {
+        Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, NULL);
+    }
+    else if (ContainerGuid && (!VolumeGuid && !VolumeRole)) {
+        Status = RP_GetApfsSpecialFileInfo (Root, NULL, &ApfsContainerInfo);
+    }
+    else if (ContainerGuid && (VolumeGuid || VolumeRole)) {
+        Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
+    }
 
     Root->Close (Root);
 
