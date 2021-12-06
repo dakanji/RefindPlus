@@ -2580,9 +2580,7 @@ EFI_STATUS EFIAPI efi_main (
                     }
                     else {
                         if (GlobalConfig.SyncAPFS && ourLoaderEntry->Volume->FSType == FS_TYPE_APFS) {
-                            EFI_GUID               VolumeGuid;
-                            EFI_GUID            ContainerGuid;
-                            APPLE_APFS_VOLUME_ROLE VolumeRole;
+                            APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
                             // DA-TAG: Limit to TianoCore
                             #ifdef __MAKEWITH_GNUEFI
@@ -2590,8 +2588,7 @@ EFI_STATUS EFIAPI efi_main (
                             #else
                             Status = RP_GetApfsVolumeInfo (
                                 ourLoaderEntry->Volume->DeviceHandle,
-                                &ContainerGuid,
-                                &VolumeGuid,
+                                NULL, NULL,
                                 &VolumeRole
                             );
                             #endif

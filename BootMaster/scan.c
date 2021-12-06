@@ -341,9 +341,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
 
             if (GlobalConfig.SyncAPFS) {
                 EFI_STATUS                 Status;
-                EFI_GUID               VolumeGuid;
-                EFI_GUID            ContainerGuid;
-                APPLE_APFS_VOLUME_ROLE VolumeRole;
+                APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
                 // DA-TAG: Limit to TianoCore
                 #ifdef __MAKEWITH_GNUEFI
@@ -351,8 +349,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
                 #else
                 Status = RP_GetApfsVolumeInfo (
                     Entry->Volume->DeviceHandle,
-                    &ContainerGuid,
-                    &VolumeGuid,
+                    NULL, NULL,
                     &VolumeRole
                 );
                 #endif
@@ -858,9 +855,7 @@ VOID SetLoaderDefaults (
 
                         if (GlobalConfig.SyncAPFS) {
                             EFI_STATUS                 Status;
-                            EFI_GUID               VolumeGuid;
-                            EFI_GUID            ContainerGuid;
-                            APPLE_APFS_VOLUME_ROLE VolumeRole;
+                            APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
                             // DA-TAG: Limit to TianoCore
                             #ifdef __MAKEWITH_GNUEFI
@@ -868,8 +863,7 @@ VOID SetLoaderDefaults (
                             #else
                             Status = RP_GetApfsVolumeInfo (
                                 Volume->DeviceHandle,
-                                &ContainerGuid,
-                                &VolumeGuid,
+                                NULL, NULL,
                                 &VolumeRole
                             );
                             #endif
@@ -1265,9 +1259,7 @@ LOADER_ENTRY * AddLoaderEntry (
     }
 
     if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
-        EFI_GUID               VolumeGuid;
-        EFI_GUID            ContainerGuid;
-        APPLE_APFS_VOLUME_ROLE VolumeRole;
+        APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
         #ifdef __MAKEWITH_GNUEFI
@@ -1275,8 +1267,7 @@ LOADER_ENTRY * AddLoaderEntry (
         #else
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
-            &ContainerGuid,
-            &VolumeGuid,
+            NULL, NULL,
             &VolumeRole
         );
         #endif
@@ -1478,9 +1469,7 @@ BOOLEAN ShouldScan (
         EFI_STATUS                 Status;
         CHAR16       *TmpVolNameA  = NULL;
         CHAR16       *TmpVolNameB  = NULL;
-        EFI_GUID               VolumeGuid;
-        EFI_GUID            ContainerGuid;
-        APPLE_APFS_VOLUME_ROLE VolumeRole;
+        APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
         #ifdef __MAKEWITH_GNUEFI
@@ -1488,8 +1477,7 @@ BOOLEAN ShouldScan (
         #else
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
-            &ContainerGuid,
-            &VolumeGuid,
+            NULL, NULL,
             &VolumeRole
         );
         #endif
@@ -2025,8 +2013,6 @@ VOID ScanEfiFiles (
     }
 
     if (Volume->FSType == FS_TYPE_APFS) {
-        EFI_GUID               VolumeGuid;
-        EFI_GUID            ContainerGuid;
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
@@ -2035,8 +2021,7 @@ VOID ScanEfiFiles (
         #else
         Status = RP_GetApfsVolumeInfo (
             Volume->DeviceHandle,
-            &ContainerGuid,
-            &VolumeGuid,
+            NULL, NULL,
             &VolumeRole
         );
         #endif
@@ -3029,8 +3014,6 @@ VOID ScanForTools (VOID) {
     REFIT_MENU_ENTRY *TempMenuEntry;
 
     EFI_STATUS                     Status;
-    EFI_GUID                   VolumeGuid;
-    EFI_GUID                ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
@@ -3556,8 +3539,7 @@ VOID ScanForTools (VOID) {
                                 ) {
                                     Status = RP_GetApfsVolumeInfo (
                                         Volumes[k]->DeviceHandle,
-                                        &ContainerGuid,
-                                        &VolumeGuid,
+                                        NULL, NULL,
                                         &VolumeRole
                                     );
 

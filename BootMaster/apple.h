@@ -102,9 +102,9 @@ typedef struct {
 // DA-TAG: Limit to TianoCore - START
 EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
-    OUT EFI_GUID                *ContainerGuid,
-    OUT EFI_GUID                *VolumeGuid,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole
+    OUT EFI_GUID                *ContainerGuid OPTIONAL,
+    OUT EFI_GUID                *VolumeGuid    OPTIONAL,
+    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 );
 CHAR16 * RP_GetAppleDiskLabel (
     IN  REFIT_VOLUME *Volume

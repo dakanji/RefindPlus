@@ -2081,8 +2081,6 @@ return;
     EFI_STATUS                     Status;
     UINTN                            i, j;
     BOOLEAN               ActiveContainer;
-    EFI_GUID                   VolumeGuid;
-    EFI_GUID                ContainerGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
@@ -2139,8 +2137,7 @@ return;
                     VolumeRole = 0;
                     Status = RP_GetApfsVolumeInfo (
                         Volumes[i]->DeviceHandle,
-                        &ContainerGuid,
-                        &VolumeGuid,
+                        NULL, NULL,
                         &VolumeRole
                     );
 
@@ -2325,8 +2322,7 @@ VOID ScanVolumes (VOID) {
     BOOLEAN             DupFlag;
     EFI_GUID           *UuidList;
     EFI_GUID            VolumeGuid;
-    EFI_GUID            ContainerGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole;
+    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgStr       = NULL;
@@ -2563,7 +2559,7 @@ VOID ScanVolumes (VOID) {
                 #else
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
-                    &ContainerGuid,
+                    NULL,
                     &VolumeGuid,
                     &VolumeRole
                 );

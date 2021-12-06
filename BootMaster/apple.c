@@ -643,9 +643,9 @@ CHAR16 * RP_GetBootPathName (
 
 EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
-    OUT EFI_GUID                *ContainerGuid,
-    OUT EFI_GUID                *VolumeGuid,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole
+    OUT EFI_GUID                *ContainerGuid OPTIONAL,
+    OUT EFI_GUID                *VolumeGuid    OPTIONAL,
+    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 ) {
     EFI_STATUS                       Status;
     EFI_FILE_PROTOCOL               *Root;
@@ -678,17 +678,23 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         return EFI_NOT_FOUND;
     }
 
-    CopyGuid (
-        VolumeGuid,
-        &ApfsVolumeInfo->Uuid
-    );
+    if (VolumeGuid) {
+        CopyGuid (
+            VolumeGuid,
+            &ApfsVolumeInfo->Uuid
+        );
+    }
 
-    *VolumeRole = ApfsVolumeInfo->Role;
+    if (VolumeRole) {
+        *VolumeRole = ApfsVolumeInfo->Role;
+    }
 
-    CopyGuid (
-        ContainerGuid,
-        &ApfsContainerInfo->Uuid
-    );
+    if (ContainerGuid) {
+        CopyGuid (
+            ContainerGuid,
+            &ApfsContainerInfo->Uuid
+        );
+    }
 
     MY_FREE_POOL(ApfsVolumeInfo);
     MY_FREE_POOL(ApfsContainerInfo);
