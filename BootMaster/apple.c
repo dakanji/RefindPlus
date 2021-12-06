@@ -674,15 +674,7 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         return Status;
     }
 
-    if (!ContainerGuid && (VolumeGuid || VolumeRole)) {
-        Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, NULL);
-    }
-    else if (ContainerGuid && (!VolumeGuid && !VolumeRole)) {
-        Status = RP_GetApfsSpecialFileInfo (Root, NULL, &ApfsContainerInfo);
-    }
-    else if (ContainerGuid && (VolumeGuid || VolumeRole)) {
-        Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
-    }
+    Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
 
     Root->Close (Root);
 
