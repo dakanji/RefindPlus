@@ -25,8 +25,10 @@ jobs:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to missing required information.
-          days-before-stale: 2
-          days-before-close: 3
+          close-issue-message: >
+            This item has been closed due to missing required information.
+          days-before-stale: 1
+          days-before-close: 2
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
@@ -37,6 +39,8 @@ jobs:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to a lack of response.
+          close-issue-message: >
+            This item has been closed due to a lack of response.
           days-before-stale: 7
           days-before-close: 7
           exempt-assignees: 'dakanji'
@@ -49,6 +53,8 @@ jobs:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to inactivity.
+          close-issue-message: >
+            This item has been closed due to inactivity.
           days-before-stale: 21
           days-before-close: 7
           exempt-assignees: 'dakanji'
@@ -61,6 +67,8 @@ jobs:
           repo-token: ${{ github.token }}
           stale-issue-message: >
             This item has been flagged for closure due to inactivity.
+          close-issue-message: >
+            This item has been closed due to inactivity.
           days-before-stale: 60
           days-before-close: 30
           exempt-assignees: 'dakanji'
@@ -73,8 +81,8 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a known issue.
-          days-before-stale: 2
-          days-before-close: 3
+          days-before-stale: 0
+          days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Duplicate,Known-Issue'
@@ -85,8 +93,8 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as the issue could not be replicated.
-          days-before-stale: 2
-          days-before-close: 3
+          days-before-stale: 0
+          days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Invalid,Works-For-Me'
@@ -97,8 +105,8 @@ jobs:
           repo-token: ${{ github.token }}
           close-issue-message: >
             This item has been closed as a fix will not be attempted.
-          days-before-stale: 2
-          days-before-close: 3
+          days-before-stale: 0
+          days-before-close: 1
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           only-issue-labels: 'WontFix'
@@ -108,11 +116,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Lock Incomplete Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '3'
+          include-any-issue-labels: 'Incomplete,Unclear'
+          process-only: 'issues'
+
+      - name: Lock Duplicate Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '2'
+          include-any-issue-labels: 'Duplicate,Known-Issue'
+          process-only: 'issues'
+
+      - name: Lock WontFix Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '2'
+          include-any-issue-labels: 'WontFix'
+          process-only: 'issues'
+
+      - name: Lock Invalid Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '2'
+          include-any-issue-labels: 'Invalid,Works-For-Me'
+          process-only: 'issues'
+
       - name: Lock Resolved Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '9'
+          issue-inactive-days: '7'
           include-any-issue-labels: ''
+          add-issue-labels 'Resolved'
           process-only: 'issues'

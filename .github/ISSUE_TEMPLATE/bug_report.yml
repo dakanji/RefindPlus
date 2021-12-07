@@ -12,7 +12,7 @@ body:
       label: RefindPlus Version
       description: Which version of RefindPlus is affected?
       options:
-        - 'v0.13.2.AJ Release'
+        - 'v0.13.2.AK Release'
         - 'Another Released Version'
         - 'Build of Current Unreleased Code'
     validations:
@@ -46,9 +46,8 @@ body:
       options:
         - 'Before RefindPlus loads'
         - 'Before starting a loader or tool'
+        - 'While starting a loader or tool'
         - 'After starting a loader or tool'
-        - 'On starting a loader or tool'
-        - 'After/During a loader or tool display'
         - 'Other'
     validations:
       required: true
@@ -73,17 +72,21 @@ body:
   - type: textarea
     id: log-file
     attributes:
-      label: Debug Log and (Optional) Screenshots
+      label: Debug Log
       description: |
-        Run the DEBUG Build file and add a debug log file at Log Level 4. Kindly attach the file and do not paste the contents directly.
-        NOTE: Reports without a log file will be automatically closed in most cases.
-        If applicable, add screenshots to help explain the problem. You can save RefindPlus screenshots by pressing the F10 key.
+        Run the DBG build file and add a debug log file at Log Level 3.
+        Kindly attach the file and do not paste the contents directly.
       placeholder: |
-        Please only attach Level 4 log files unless specifically requested.
+        Reports not requiring log files are typically best under Discussions.
+        Reports without log files will be automatically closed in most cases.
     validations:
       required: true
   - type: textarea
     id: extra-info
     attributes:
       label: Additional Context
-      description: Add any additional context that may facilitate understanding and resolving the problem
+      description: |
+        Add any additional context that may facilitate understanding and resolving the problem
+      placeholder: |
+        If applicable, add screenshots to help explain the problem.
+        You can save RefindPlus screenshots by pressing the F10 key.

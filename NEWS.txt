@@ -1,4 +1,4 @@
-0.13.2.AK (PRE-RELEASE):
+0.13.2.AK (07 Dec 2021):
 -----------------------
 - Adds "SupplyNVME" Feature
   * A built in NvmExpress driver is loaded by default to provide NVMe support if required

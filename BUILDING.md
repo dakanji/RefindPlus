@@ -1,9 +1,11 @@
 # Building RefindPlus
 ## Building with Docker
-RefindPlus can be built on compatible environments by using Docker. A Docker instance has been created by a third party developer and is available on [DockerHub](https://hub.docker.com/r/xaionaro2/edk2-builder). Please refer to https://github.com/xaionaro/edk2-builder-docker for details and support on this option.
+RefindPlus can be built on compatible environments by using Docker. A Docker image has been created by a third party developer and is available on [DockerHub](https://hub.docker.com/r/xaionaro2/edk2-builder). Please refer to https://github.com/xaionaro/edk2-builder-docker for details and support on this option.
+
+NB: Due to arbitary workarounds applied to facilitate the Docker build process, RefindPlus instances built using this Docker image may not be consistent with builds done by following the recommended steps outlined under `Building on Mac OS` below.
 
 ## Building on Mac OS
-These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment for building the RefindPlus boot manager on Mac OS.
+These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment and building the RefindPlus boot manager on Mac OS.
 
 ### Activate Mac OS Development Tools
 
