@@ -3,6 +3,7 @@
 - Adds "SupplyNVME" Feature
   * A built in NvmExpress driver is loaded by default to provide NVMe support if required
   * This functionality can be disabled by setting the 'decline_nvmeload' token
+  * With this feature, in addition to SupplyAPFS, firmware patching is no longer required on MacPro3,1 and XServe2,1
 - Adds "ScreenRGB" Feature
   * Allows overriding the default background colour selection process
   * Users can now specify RGB values to be used instead
@@ -34,11 +35,11 @@
   * This bug was introduced in v0.13.2.AD (Commit 65e5083)
 - Fix BTRFS Filesystem Driver Build
   * The BTRFS filesystem driver had been excluded from RefindPlus builds from the start of the project
-  * This was due to long standing issues with EDK2 builds of the driver on EDK2 inherited from upstream
+  * This was due to inherited issues with EDK2 builds of the driver ... [rEFInd Build Notes](https://github.com/dakanji/rEFInd/blob/54177c64768eed0ba56822f32cdfa279e97b8577/BUILDING.txt#L490-L495)
   * The build issues were resolved by GitHub User "joevt" and have been incorporated into RefindPlus
 - Improves Time Bound Primed Buffer Mitigation
-  * Prevents RefindPlus from spontaneously running default item
-  * Intervention is now based on a minumum 0.50 second interval
+  * Mitigates against RefindPlus spontaneously running default items
+  * Intervention is now based on a minumum 1.25 second interval between load and run attempt
   * Extended scope now covers Mac OS again (previously removed)
 - Improves 'ProtectNVRAM' Implementation
   * Now ensures this is reset on each loop through the RefindPlus Main Loop
@@ -61,8 +62,6 @@
     - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
   * Unless LogLevel 4 is exposed when compiling, selected levels above three (3) will be capped at LogLevel 3
   * When LogLevel 4 is exposed, selected levels above four (4) will be capped at LogLevel 4
-- Amends Time Bound Primed Buffer Mitigation
-  * Intervention threshold increased to a minimum 1.25 second interval
 
 
 0.13.2.AJ (06 Oct 2021):
