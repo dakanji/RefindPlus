@@ -1122,14 +1122,19 @@ VOID BltClearScreen (
             FirstCall = FALSE;
 
             // Get Screen Luminance Index
+            UINTN FactorFP = 10;
+            UINTN Divisor  = 3 * FactorFP;
             UINTN PixelsR  = (UINTN) MenuBackgroundPixel.r;
             UINTN PixelsG  = (UINTN) MenuBackgroundPixel.g;
             UINTN PixelsB  = (UINTN) MenuBackgroundPixel.b;
 
             ScreenLum = (
                 (
-                    (PixelsR + PixelsG + PixelsB + 3) / 3
-                ) - 1
+                    (PixelsR * FactorFP) +
+                    (PixelsG * FactorFP) +
+                    (PixelsB * FactorFP) +
+                    (Divisor / 2) // Added For Rounding
+                ) / Divisor
             );
 
             // Already set up for High Luminosity Grey
@@ -1139,18 +1144,18 @@ VOID BltClearScreen (
             BOOLEAN DominatorR = FALSE;
             BOOLEAN DominatorG = FALSE;
             UINTN   BannerType = BANNER_GREY_LIGHT;
-            if (BackgroundR >= (BackgroundG + BackgroundB) * 0.75) {
+            if (4 * BackgroundR >= (BackgroundG + BackgroundB) * 3) {
                 // Dominant Red
                 BannerType = BANNER_RED_LIGHT;
                 DominatorR = TRUE;
             }
-            if (BackgroundG >= (BackgroundR + BackgroundB) * 0.75) {
+            if (4 * BackgroundG >= (BackgroundR + BackgroundB) * 3) {
                 // Dominant Green
                 DominatorX = (DominatorR) ? TRUE : FALSE;
                 BannerType = (DominatorX) ? BANNER_GREY_LIGHT : BANNER_GREEN_LIGHT;
                 DominatorG = TRUE;
             }
-            if (BackgroundB >= (BackgroundR + BackgroundG) * 0.75) {
+            if (4 * BackgroundB >= (BackgroundR + BackgroundG) * 3) {
                 // Dominant Blue
                 DominatorX = (DominatorR) ? TRUE : (DominatorG) ? TRUE : FALSE;
                 BannerType = (DominatorX) ? BANNER_GREY_LIGHT : BANNER_BLUE_LIGHT;
