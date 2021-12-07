@@ -20,10 +20,10 @@ VOID DebugLog (
 );
 
 VOID DeepLoggger (
-  IN  INTN     DebugMode,
-  IN  INTN     level,
-  IN  INTN     type,
-  IN  CHAR16 **Msg
+    IN  INTN     DebugMode,
+    IN  INTN     level,
+    IN  INTN     type,
+    IN  CHAR16 **Msg
 );
 
 #if REFIT_DEBUG < 1

@@ -1169,17 +1169,23 @@ VOID BltClearScreen (
                         BannerType = BANNER_BLACK;
                     }
                     else { // Basically Black
-                             if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_BLACK;
-                        else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_DARK;
-                        else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_DARK;
-                        else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_DARK;
+                        switch (BannerType) {
+                            case BANNER_GREY_LIGHT:  BannerType = BANNER_BLACK;       break;
+                            case BANNER_RED_LIGHT:   BannerType = BANNER_RED_DARK;    break;
+                            case BANNER_GREEN_LIGHT: BannerType = BANNER_GREEN_DARK;  break;
+                            case BANNER_BLUE_LIGHT:  BannerType = BANNER_BLUE_DARK;   break;
+                            default:                                                  break;
+                        } // switch
                     }
                 }
                 else if (ScreenLum < 85) { // Low Luminosity
-                         if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_DARK;
-                    else if (BannerType == BANNER_RED_LIGHT)    BannerType = BANNER_RED_MID;
-                    else if (BannerType == BANNER_GREEN_LIGHT)  BannerType = BANNER_GREEN_MID;
-                    else if (BannerType == BANNER_BLUE_LIGHT)   BannerType = BANNER_BLUE_MID;
+                    switch (BannerType) {
+                        case BANNER_GREY_LIGHT:  BannerType = BANNER_GREY_DARK;  break;
+                        case BANNER_RED_LIGHT:   BannerType = BANNER_RED_MID;    break;
+                        case BANNER_GREEN_LIGHT: BannerType = BANNER_GREEN_MID;  break;
+                        case BANNER_BLUE_LIGHT:  BannerType = BANNER_BLUE_MID;   break;
+                        default:                                                 break;
+                    } // switch
                 }
                 else { // Medium Luminosity
                     if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
