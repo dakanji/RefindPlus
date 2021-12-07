@@ -1354,7 +1354,7 @@ VOID DrawText (
             TextBuffer,
             egGetFontCellWidth(),
             TEXT_YMARGIN,
-            (Bg.b + (2 * Bg.r) + (3 * Bg.g) + 3) / 6
+            (Bg.r + Bg.g + Bg.b) / 3
         );
 
         egDrawImageWithTransparency (
@@ -1426,7 +1426,6 @@ VOID DrawTextWithTransparency (
         return;
     }
 
-    // DA_TAG: Revisit Average Text Function
     // render the text
     egRenderText (
         Text,

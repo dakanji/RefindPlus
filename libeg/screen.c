@@ -2041,7 +2041,7 @@ VOID egDisplayMessage (
       egRenderText (
           Text, Box, 7,
           BoxHeight / 4,
-          (BGColor->b + (2 * BGColor->r) + (3 * BGColor->g) + 3) / 6
+          (BGColor->r + BGColor->g + BGColor->b) / 3
       );
 
       switch (PositionCode) {

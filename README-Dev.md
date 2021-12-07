@@ -33,7 +33,7 @@ However, the enhancements RefindPlus adds to rEFInd are not limited in scope to 
 ## Installation
 [MyBootMgr](https://www.dakanji.com/creations/index.html), an automated implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on XServe2,1 and XServe3,1. However, the RefindPlus efi file can function as a drop-in replacement for the rEFInd efi file. Hence, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the rEFInd efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This permits implementing RefindPlus on other types of Mac as well as on other operating systems.
 
-Users may also want to use replace filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as from rEFInd or with fixes applied.
+Users may also want to replace filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as from rEFInd or with fixes applied.
 
 RefindPlus will function with the rEFInd configuration file, `refind.conf`. This should however be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
 
