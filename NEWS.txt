@@ -62,7 +62,7 @@
   * Unless LogLevel 4 is exposed when compiling, selected levels above three (3) will be capped at LogLevel 3
   * When LogLevel 4 is exposed, selected levels above four (4) will be capped at LogLevel 4
 - Amends Time Bound Primed Buffer Mitigation
-  * Intervention treshold incrreased to a minumum 0.75 second interval
+  * Intervention threshold increased to a minimum 1.25 second interval
 
 
 0.13.2.AJ (06 Oct 2021):

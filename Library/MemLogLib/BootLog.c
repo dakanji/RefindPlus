@@ -299,7 +299,7 @@ VOID EFIAPI DeepLoggger (
     } // switch
 
     if (Tmp) {
-        FormatMsg = AllocateZeroPool (
+        FormatMsg = AllocatePool (
             (StrLen (Tmp) + 1) * sizeof (CHAR8)
         );
 

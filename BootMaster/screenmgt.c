@@ -1121,7 +1121,7 @@ VOID BltClearScreen (
             UINTN SumRGB = (
                 (1 * (UINTN) MenuBackgroundPixel.b) +
                 (2 * (UINTN) MenuBackgroundPixel.r) +
-                (3 * (UINTN) MenuBackgroundPixel.g)
+                (3 * (UINTN) MenuBackgroundPixel.g) + 3
             );
             ScreenAveLum = (SumRGB > 5) ? (SumRGB / 6) : 0;
 

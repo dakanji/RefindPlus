@@ -1055,7 +1055,7 @@ UINTN RunGenericMenu (
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
 
-        if (MenuExitDiff < 750) {
+        if (MenuExitDiff < 1250) {
             #if REFIT_DEBUG > 0
             MsgLog ("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             MsgLog ("\n");
@@ -1354,7 +1354,7 @@ VOID DrawText (
             TextBuffer,
             egGetFontCellWidth(),
             TEXT_YMARGIN,
-            (Bg.r + Bg.g + Bg.b) / 3
+            (Bg.b + (2 * Bg.r) + (3 * Bg.g) + 3) / 6
         );
 
         egDrawImageWithTransparency (
@@ -1426,6 +1426,7 @@ VOID DrawTextWithTransparency (
         return;
     }
 
+    // DA_TAG: Revisit Average Text Function
     // render the text
     egRenderText (
         Text,

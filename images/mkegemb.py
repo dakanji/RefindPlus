@@ -105,6 +105,13 @@ for filename in sys.argv[1:]:
             planes[1].append(pixeldata)
             planes[2].append(pixeldata)
 
+    elif mode == "LA":
+        for pixcount in range(0, width*height):
+            pixeldata = data[pixcount]
+            planes[0].append(pixeldata[0])
+            planes[1].append(pixeldata[0])
+            planes[2].append(pixeldata[0])
+            planes[3].append(pixeldata[1])
     else:
         print (" Error: Mode '%s' is not supported!!" % mode)
         continue

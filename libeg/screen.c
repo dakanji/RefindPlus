@@ -1084,7 +1084,7 @@ VOID egInitScreen (VOID) {
 
                     // Restore 'gBS->HandleProtocol'
                     gBS->HandleProtocol = OurHandleProtocol;
-                    
+
                     if (!EFI_ERROR(Status)) {
                         Status = gBS->HandleProtocol (
                             gST->ConsoleOutHandle,
@@ -2041,7 +2041,7 @@ VOID egDisplayMessage (
       egRenderText (
           Text, Box, 7,
           BoxHeight / 4,
-          (BGColor->r + BGColor->g + BGColor->b) / 3
+          (BGColor->b + (2 * BGColor->r) + (3 * BGColor->g) + 3) / 6
       );
 
       switch (PositionCode) {
