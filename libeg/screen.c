@@ -2024,7 +2024,7 @@ VOID egDisplayMessage (
     EG_PIXEL  *BGColor,
     UINTN      PositionCode
 ) {
-   UINTN BoxWidth, BoxHeight;
+   UINTN BoxWidth, BoxHeight, LumIndex;
    static UINTN Position = 1;
    EG_IMAGE *Box;
 
@@ -2037,11 +2037,27 @@ VOID egDisplayMessage (
           BoxWidth = egScreenWidth;
       }
 
+      // Get Luminance Index
+      UINTN FactorFP = 10;
+      UINTN Divisor  = 3 * FactorFP;
+      UINTN PixelsR  = (UINTN) BGColor->r;
+      UINTN PixelsG  = (UINTN) BGColor->g;
+      UINTN PixelsB  = (UINTN) BGColor->b;
+
+      LumIndex = (
+          (
+              (PixelsR * FactorFP) +
+              (PixelsG * FactorFP) +
+              (PixelsB * FactorFP) +
+              (Divisor / 2) // Added For Rounding
+          ) / Divisor
+      );
+
       Box = egCreateFilledImage (BoxWidth, BoxHeight, FALSE, BGColor);
       egRenderText (
           Text, Box, 7,
           BoxHeight / 4,
-          (BGColor->r + BGColor->g + BGColor->b) / 3
+          (UINT8) LumIndex
       );
 
       switch (PositionCode) {

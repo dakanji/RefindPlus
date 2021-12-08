@@ -1038,7 +1038,7 @@ VOID BltClearScreen (
            UINT8      BackgroundR = 191;
            UINT8      BackgroundG = 191;
            UINT8      BackgroundB = 191;
-           UINTN      ScreenLum   = 0;
+           UINTN      LumIndex    = 0;
 
     #if REFIT_DEBUG > 0
     static BOOLEAN LoggedBanner;
@@ -1128,7 +1128,7 @@ VOID BltClearScreen (
             UINTN PixelsG  = (UINTN) MenuBackgroundPixel.g;
             UINTN PixelsB  = (UINTN) MenuBackgroundPixel.b;
 
-            ScreenLum = (
+            LumIndex = (
                 (
                     (PixelsR * FactorFP) +
                     (PixelsG * FactorFP) +
@@ -1163,9 +1163,9 @@ VOID BltClearScreen (
 
             // Adjust for Luminosity as required
             // Apply a one (1) step variance if a dominant colour is preseent
-            if (ScreenLum < 170) {
-                if (ScreenLum < 31) {
-                    if (ScreenLum < 16) { // Definitively Black
+            if (LumIndex < 170) {
+                if (LumIndex < 31) {
+                    if (LumIndex < 11) { // Definitively Black
                         BannerType = BANNER_BLACK;
                     }
                     else { // Basically Black
@@ -1178,7 +1178,7 @@ VOID BltClearScreen (
                         } // switch
                     }
                 }
-                else if (ScreenLum < 85) { // Low Luminosity
+                else if (LumIndex < 85) { // Low Luminosity
                     switch (BannerType) {
                         case BANNER_GREY_LIGHT:  BannerType = BANNER_GREY_DARK;  break;
                         case BANNER_RED_LIGHT:   BannerType = BANNER_RED_MID;    break;
@@ -1191,8 +1191,8 @@ VOID BltClearScreen (
                     if (BannerType == BANNER_GREY_LIGHT)   BannerType = BANNER_GREY_MID;
                 }
             }
-            else if (ScreenLum > 225) {
-                if (ScreenLum > 240) { // Definitively White
+            else if (LumIndex > 225) {
+                if (LumIndex > 245) { // Definitively White
                     BannerType = BANNER_WHITE;
                 }
                 else { // Basically White

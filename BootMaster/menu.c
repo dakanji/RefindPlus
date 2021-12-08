@@ -1348,13 +1348,28 @@ VOID DrawText (
             Bg = SelectionBackgroundPixel;
         }
 
+        // Get Luminance Index
+        UINTN FactorFP = 10;
+        UINTN Divisor  = 3 * FactorFP;
+        UINTN PixelsR  = (UINTN) Bg.r;
+        UINTN PixelsG  = (UINTN) Bg.g;
+        UINTN PixelsB  = (UINTN) Bg.b;
+        UINTN LumIndex = (
+            (
+                (PixelsR * FactorFP) +
+                (PixelsG * FactorFP) +
+                (PixelsB * FactorFP) +
+                (Divisor / 2) // Added For Rounding
+            ) / Divisor
+        );
+
         // render the text
         egRenderText (
             Text,
             TextBuffer,
             egGetFontCellWidth(),
             TEXT_YMARGIN,
-            (Bg.r + Bg.g + Bg.b) / 3
+            (UINT8) LumIndex
         );
 
         egDrawImageWithTransparency (
