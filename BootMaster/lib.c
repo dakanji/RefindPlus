@@ -2808,12 +2808,12 @@ VOID GetVolumeBadgeIcons (VOID) {
     CHAR16  *MsgStr   = NULL;
     BOOLEAN  LoopOnce = FALSE;
 
-    LOG(1, LOG_LINE_THIN_SEP, L"Set Volume Badges for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Check for Volume Badges for Internal Volumes");
     #endif
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Screen is in Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... Screen is in Text Mode");
         #endif
 
         return;
@@ -2821,7 +2821,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
         #endif
 
         return;
@@ -2848,7 +2848,7 @@ VOID GetVolumeBadgeIcons (VOID) {
         if (Volume->IsReadable) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"Trying to Set VolumeBadge for '%s'",
+                L"Setting VolumeBadge for '%s'",
                 Volume->VolName
             );
             if (LoopOnce) {
@@ -2893,12 +2893,12 @@ VOID SetVolumeIcons (VOID) {
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Set '.VolumeIcon' Icons for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP, L"Check for '.VolumeIcon' Icons for Internal Volumes");
     #endif
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Screen is in Text Mode");
+        LOG(2, LOG_LINE_NORMAL, L"Skipped Checking for '.VolumeIcon' Icons ... Screen is in Text Mode");
         #endif
 
         return;
@@ -2906,7 +2906,9 @@ VOID SetVolumeIcons (VOID) {
 
     if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Skipped Loading .VolumeIcons ... Config Setting is Active:- 'IgnoreHiddenIcons'");
+        LOG(2, LOG_LINE_NORMAL,
+            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'IgnoreHiddenIcons'"
+        );
         #endif
 
         return;
@@ -2933,7 +2935,7 @@ VOID SetVolumeIcons (VOID) {
         if (Volume->IsReadable) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
-                L"Trying to Set VolumeIcon for '%s'",
+                L"Setting '.VolumeIcon' Icon for '%s'",
                 Volume->VolName
             );
 

@@ -725,7 +725,7 @@ VOID SetLoaderDefaults (
             if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
                 LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1a 1");
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Trying to Display '.VolumeIcon' Image");
+                LOG(2, LOG_LINE_NORMAL, L"Checking for '.VolumeIcon' Image");
                 #endif
 
                 // use a ".VolumeIcon" image icon for the loader
@@ -739,7 +739,7 @@ VOID SetLoaderDefaults (
                 LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 1");
                 #if REFIT_DEBUG > 0
                 if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
-                    LOG(2, LOG_LINE_NORMAL, L"Could Not Display '.VolumeIcon' Image!!");
+                    LOG(2, LOG_LINE_NORMAL, L"Could Not Find '.VolumeIcon' Image");
                 }
                 #endif
 
