@@ -847,7 +847,7 @@ VOID preBootKicker (VOID) {
     else {
         BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         BootKickerMenu.Title = L"BootKicker";
-        AddMenuInfoLine (&BootKickerMenu, MenuInfo);
+        AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
         AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
         AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
         AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
@@ -858,7 +858,7 @@ VOID preBootKicker (VOID) {
         UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&BootKickerMenu, FilePath);
+            AddMenuInfoLine (&BootKickerMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 
@@ -1008,7 +1008,7 @@ VOID preCleanNvram (VOID) {
     else {
         CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         CleanNvramMenu.Title = L"Clean NVRAM";
-        AddMenuInfoLine (&CleanNvramMenu, MenuInfo);
+        AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
         AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&CleanNvramMenu, L"");
         AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
@@ -1017,7 +1017,7 @@ VOID preCleanNvram (VOID) {
         UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&CleanNvramMenu, FilePath);
+            AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 

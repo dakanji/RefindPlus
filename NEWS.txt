@@ -8,6 +8,9 @@
   * The handling of the embedded title banner has been improved by leveraging transparency
   * This significantly reduces the overall file size and ensures backgrounds are fully matched
   * This is a port of the downstream implementation by GitHub user @Joevt
+- Fixes 'BootKicker' and 'CleanNvram'
+  * Misc memory management defects had disabled both
+
 
 0.13.2.AK (07 Dec 2021):
 -----------------------
