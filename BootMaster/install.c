@@ -141,7 +141,7 @@ REFIT_VOLUME * PickOneESP (
 
     if (AllESPs) {
         CurrentESP = AllESPs;
-        AddMenuInfoLine (&InstallMenu, MenuInfo);
+        AddMenuInfoLine (&InstallMenu, StrDuplicate (MenuInfo));
         while (CurrentESP != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
