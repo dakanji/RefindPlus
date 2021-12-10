@@ -33,20 +33,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #include "libegint.h"
 #include "../BootMaster/global.h"
 #include "../BootMaster/rp_funcs.h"
-
 #include "egemb_font.h"
 #include "egemb_font_large.h"
+
 #define FONT_NUM_CHARS 96
 
-static EG_IMAGE *BaseFontImage = NULL;
-static EG_IMAGE *DarkFontImage = NULL;
-static EG_IMAGE *LightFontImage = NULL;
+static
+EG_PIXEL  TextFontColor = { 0x00, 0x00, 0x00, 0 };
+static
+UINTN     FontCellWidth = 7;
 
-static UINTN FontCellWidth = 7;
+EG_IMAGE *BaseFontImage = NULL;
 
 //
 // Text rendering
@@ -65,20 +74,20 @@ VOID egPrepareFont (VOID) {
 
     if (BaseFontImage == NULL) {
         if (GlobalConfig.ScaleUI == -1) {
-            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE, &TextFontColor);
         }
         else if (
             (GlobalConfig.ScaleUI == 1) ||
             (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
         ) {
-            BaseFontImage = egPrepareEmbeddedImage (&egemb_font_large, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font_large, TRUE, &TextFontColor);
         }
         else {
-            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE);
+            BaseFontImage = egPrepareEmbeddedImage (&egemb_font, TRUE, &TextFontColor);
         }
     }
     if (BaseFontImage != NULL) FontCellWidth = BaseFontImage->Width / FONT_NUM_CHARS;
-} // VOID egPrepareFont();
+} // static VOID egPrepareFont();
 
 UINTN egGetFontHeight (VOID) {
    egPrepareFont();
@@ -109,7 +118,7 @@ VOID egMeasureText (
 
     if (Width != NULL)  *Width  = StrLen (Text) * FontCellWidth;
     if (Height != NULL) *Height = BaseFontImage->Height;
-}
+} // VOID egMeasureText()
 
 VOID egRenderText (
     IN CHAR16       *Text,
@@ -124,6 +133,9 @@ VOID egRenderText (
     UINTN            BufferLineOffset, FontLineOffset;
     UINTN            TextLength;
     UINTN            i, c;
+
+    static EG_IMAGE *DarkFontImage  = NULL;
+    static EG_IMAGE *LightFontImage = NULL;
 
     // Nothing to do if nothing was passed
     if (!Text) return;
@@ -179,7 +191,7 @@ VOID egRenderText (
         );
         BufferPtr += FontCellWidth;
     }
-}
+} // VOID egRenderText()
 
 // Load a font bitmap from the specified file
 VOID egLoadFont (
@@ -191,4 +203,4 @@ VOID egLoadFont (
         Print(L"Note: Font image file %s is invalid! Using default font!\n");
     }
     egPrepareFont();
-} // BOOLEAN egLoadFont()
+} // VOID egLoadFont()

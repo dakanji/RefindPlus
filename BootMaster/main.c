@@ -123,7 +123,6 @@ REFIT_MENU_ENTRY MenuEntryCleanNvram = {
 
 REFIT_CONFIG GlobalConfig = {
     /* CustomScreenBG = */ FALSE,
-    /* EmbeddedBanner = */ FALSE,
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,

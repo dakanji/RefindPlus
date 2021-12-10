@@ -399,7 +399,6 @@ typedef struct {
 
 typedef struct {
     BOOLEAN           CustomScreenBG;
-    BOOLEAN           EmbeddedBanner;
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;
     BOOLEAN           DeepLegacyScan;

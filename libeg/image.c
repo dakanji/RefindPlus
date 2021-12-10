@@ -691,43 +691,76 @@ VOID egInvertPlane (
 
 EG_IMAGE * egPrepareEmbeddedImage (
     IN EG_EMBEDDED_IMAGE *EmbeddedImage,
-    IN BOOLEAN            WantAlpha
+    IN BOOLEAN            WantAlpha,
+    IN EG_PIXEL          *ForegroundColor
 ) {
     EG_IMAGE  *NewImage;
     UINT8     *CompData;
     UINTN      CompLen;
     UINTN      PixelCount;
 
+    LOG(4, LOG_BLANK_LINE_SEP, L"X");
+    LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 1 - START");
+
     // sanity checks
     if (!EmbeddedImage) {
+        LOG(4, LOG_LINE_FORENSIC,
+            L"In egPrepareEmbeddedImage ... 1a - END:- NULL INPUT ... return 'NULL'"
+        );
+        LOG(4, LOG_BLANK_LINE_SEP, L"X");
         return NULL;
     }
-
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 2");
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
-        (EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE &&
-        EmbeddedImage->CompressMode  != EG_EICOMPMODE_RLE)
+        (
+            EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE &&
+            EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE
+        )
     ) {
+        LOG(4, LOG_LINE_FORENSIC,
+            L"In egPrepareEmbeddedImage ... 2a - END:- INVALID INPUT ... return 'NULL'"
+        );
+        LOG(4, LOG_BLANK_LINE_SEP, L"X");
+
         return NULL;
     }
 
     // allocate image structure and pixel buffer
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 3");
     NewImage = egCreateImage (EmbeddedImage->Width, EmbeddedImage->Height, WantAlpha);
-    if (NewImage == NULL) {
+
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 4");
+    if (!NewImage) {
+        LOG(4, LOG_LINE_FORENSIC,
+            L"In egPrepareEmbeddedImage ... 4a - END:- 'egCreateImage' FAILURE ... return 'NULL'"
+        );
+        LOG(4, LOG_BLANK_LINE_SEP, L"X");
+
         return NULL;
     }
 
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 5");
+    UINT8 *CompStart;
     CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
     CompLen    = EmbeddedImage->DataLength;
     PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 6");
     // FUTURE: for EG_EICOMPMODE_EFICOMPRESS, decompress whole data block here
 
+    //LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7");
     if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA
     ) {
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7a 1");
         // copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
+            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC,
+                L"In egPrepareEmbeddedImage ... 7a 1a 1 - Grey Plane Size:- '%d'",
+                CompData - CompStart
+            );
         }
         else {
             egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
@@ -740,13 +773,31 @@ EG_IMAGE * egPrepareEmbeddedImage (
     else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA
     ) {
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1");
         // copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1a 1");
+            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC,
+                L"In egPrepareEmbeddedImage ... 7b 1a 2 - Red Plane Size:- '%d'",
+                CompData - CompStart
+            );
+            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC,
+                L"In egPrepareEmbeddedImage ... 7b 1a 3 - Green Plane Size:- '%d'",
+                CompData - CompStart
+            );
+            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC,
+                L"In egPrepareEmbeddedImage ... 7b 1a 4 - Blue Plane Size:- '%d'",
+                CompData - CompStart
+            );
         }
         else {
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1b 1");
             egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
             egInsertPlane (CompData, PLPTR(NewImage, g), PixelCount);
@@ -756,13 +807,21 @@ EG_IMAGE * egPrepareEmbeddedImage (
         }
     }
     else {
-        // set color planes to black
-        egSetPlane (PLPTR(NewImage, r), 0, PixelCount);
-        egSetPlane (PLPTR(NewImage, g), 0, PixelCount);
-        egSetPlane (PLPTR(NewImage, b), 0, PixelCount);
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7c 1");
+
+        // Set Colour Planes to 'ForegroundColor' or to Black
+        UINT8   PixelValueR = ForegroundColor ? ForegroundColor->r : 0;
+        UINT8   PixelValueG = ForegroundColor ? ForegroundColor->g : 0;
+        UINT8   PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
+
+        egSetPlane (PLPTR(NewImage, r), PixelValueR, PixelCount);
+        egSetPlane (PLPTR(NewImage, g), PixelValueG, PixelCount);
+        egSetPlane (PLPTR(NewImage, b), PixelValueB, PixelCount);
     }
 
+
     // Handle Alpha
+    LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8");
     if (
         WantAlpha && (
             EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
@@ -771,25 +830,45 @@ EG_IMAGE * egPrepareEmbeddedImage (
             EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT
         )
     ) {
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1");
         // Alpha is Required and Available
         // Add Alpha Mask if Available and Required
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1a 1");
+            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, a), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC,
+                L"In egPrepareEmbeddedImage ... 8a 1a 2 - Alpha Plane Size:- '%d'",
+                CompData - CompStart
+            );
         }
         else {
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1b 1");
             egInsertPlane (CompData, PLPTR(NewImage, a), PixelCount);
             CompData += PixelCount;
         }
+
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2");
         if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT) {
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2a 1");
             egInvertPlane (PLPTR(NewImage, a), PixelCount);
+            LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2a 2");
         }
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 3");
     }
     else {
+        LOG(4, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2");
         // Alpha is Unavailable or Not Required
         // Default to 'Opaque' if Alpha was Required but Unavailable or to 'Zero' if it was Not Required
         // NB: 'Zero' clears unused bytes and is not the opposite of opaque in this case
         egSetPlane (PLPTR(NewImage, a), WantAlpha ? 255 : 0, PixelCount);
     }
+
+    LOG(4, LOG_LINE_FORENSIC,
+        L"In egPrepareEmbeddedImage ... 9 - END:- return EG_IMAGE NewImage = '%s'",
+        NewImage ? L"NewImage Data" : L"NULL"
+    );
+    LOG(4, LOG_BLANK_LINE_SEP, L"X");
 
     return NewImage;
 } // EG_IMAGE * egPrepareEmbeddedImage()

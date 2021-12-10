@@ -145,7 +145,7 @@ VOID InitSelection (VOID) {
         LOG(2, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_small'");
         #endif
 
-        TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE);
+        TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE, NULL);
     }
     else {
         LoadedSmallImage = TRUE;
@@ -181,7 +181,7 @@ VOID InitSelection (VOID) {
             LOG(2, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_big'");
             #endif
 
-           TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE);
+           TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE, NULL);
         }
     }
 
@@ -1907,7 +1907,7 @@ EG_IMAGE * GetIcon (
 
     Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
     if (Icon == NULL) {
-        Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE);
+        Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE, NULL);
     }
 
     return Icon;

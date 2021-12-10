@@ -1000,11 +1000,13 @@ VOID ReadConfig (
             HandleHexes (TokenList, TokenCount, CSR_MAX_LEGAL_VALUE, &(GlobalConfig.CsrValues));
         }
         else if (MyStriCmp (TokenList[0], L"screen_rgb") && TokenCount == 4) {
+            // DA-TAG: Consider handling hex input?
+            //         KISS ... Stick with integers
             GlobalConfig.ScreenR = Atoi(TokenList[1]);
             GlobalConfig.ScreenG = Atoi(TokenList[2]);
             GlobalConfig.ScreenB = Atoi(TokenList[3]);
 
-            // Record whether a Custom Screen BG is required
+            // Record whether a valid custom screen BG is specified
             GlobalConfig.CustomScreenBG = (
                 GlobalConfig.ScreenR >= 0 && GlobalConfig.ScreenR <= 255 &&
                 GlobalConfig.ScreenG >= 0 && GlobalConfig.ScreenG <= 255 &&

@@ -4,7 +4,10 @@
   * Sets RefindPlus to also scan external volumes for ".VolumeIcon" icons
   * This is a port of the downstream "AllHiddenIcons" feature by GitHub user @Joevt
   * Amended and renamed to reflect the target disk kind
-
+- Improves "ScreenRGB" Feature
+  * The handling of the embedded title banner has been improved by leveraging transparency
+  * This significantly reduces the overall file size and ensures backgrounds are fully matched
+  * This is a port of the downstream implementation by GitHub user @Joevt
 
 0.13.2.AK (07 Dec 2021):
 -----------------------
