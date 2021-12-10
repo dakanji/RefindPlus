@@ -253,13 +253,18 @@ VOID EFIAPI DeepLoggger (
 
 
     // Make sure we are able to write
-    if (DebugMode < 1
+    BOOLEAN EarlyReturn = (
+        DebugMode < 1
         || GlobalConfig.LogLevel < level
         || GlobalConfig.LogLevel < 1
-        || NativeLogger
-        || MuteLogger
         || !(*Msg)
-    ) {
+    );
+    if (!EarlyReturn && type != LOG_LINE_FORENSIC) {
+        if (NativeLogger || MuteLogger) {
+            EarlyReturn = TRUE;
+        }
+    }
+    if (EarlyReturn) {
         MY_FREE_POOL(*Msg);
 
         return;

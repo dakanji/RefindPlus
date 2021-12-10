@@ -124,8 +124,8 @@ EG_IMAGE * BuiltinIcon (
        }
     }
 
-    return BuiltinIconTable[Id].Image;
-}
+    return egCopyImage (BuiltinIconTable[Id].Image);
+} // EG_IMAGE * BuiltinIcon()
 
 //
 // Load an icon for an operating system
@@ -153,34 +153,34 @@ EG_IMAGE * LoadOSIcon(
     while ((Image == NULL) &&
         ((CutoutName = FindCommaDelimited (OSIconName, Index++)) != NULL)
     ) {
-       BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
-       Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-       MY_FREE_POOL(CutoutName);
-       MY_FREE_POOL(BaseName);
+        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", CutoutName);
+        Image    = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        MY_FREE_POOL(CutoutName);
+        MY_FREE_POOL(BaseName);
     }
 
     // If that fails, try again using the FallbackIconName.
     if (Image == NULL) {
-       BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
+        BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
 
-       #if REFIT_DEBUG > 0
-       LOG(2, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
-       #endif
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        #endif
 
-       Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-       MY_FREE_POOL(BaseName);
+        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        MY_FREE_POOL(BaseName);
     }
 
     // If that fails and if BootLogo was set, try again using the "os_" start of the name.
     if (BootLogo && (Image == NULL)) {
-       BaseName = PoolPrint (L"os_%s", FallbackIconName);
+        BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
-       #if REFIT_DEBUG > 0
-       LOG(2, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
-       #endif
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        #endif
 
-       Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
-       MY_FREE_POOL(BaseName);
+        Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        MY_FREE_POOL(BaseName);
     }
 
     // If all of these fail, return the dummy image.
@@ -192,8 +192,8 @@ EG_IMAGE * LoadOSIcon(
         Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
-    return Image;
-} /* EG_IMAGE * LoadOSIcon() */
+    return egCopyImage (Image);
+} // EG_IMAGE * LoadOSIcon()
 
 EG_IMAGE * DummyImage (
     IN UINTN PixelSize
@@ -230,4 +230,4 @@ EG_IMAGE * DummyImage (
     }
 
     return Image;
-}
+} // EG_IMAGE * DummyImage()

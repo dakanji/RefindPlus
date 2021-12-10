@@ -71,7 +71,7 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 };
 #endif
 
-// "Magic" signatures for various filesystems
+// "Magic" Signatures for Various Filesystems
 #define FAT_MAGIC                        0xAA55
 #define EXT2_SUPER_MAGIC                 0xEF53
 #define HFSPLUS_MAGIC1                   0x2B48
@@ -88,73 +88,76 @@ EFI_DEVICE_PATH EndDevicePath[] = {
 #define FAT32_SIGNATURE                  "FAT32   "
 
 #if defined (EFIX64)
-    EFI_GUID gFreedesktopRootGuid = {0x4f68bce3, 0xe8cd, 0x4db1, {0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09}};
+EFI_GUID gFreedesktopRootGuid = {0x4f68bce3, 0xe8cd, 0x4db1, {0x96, 0xe7, 0xfb, 0xca, 0xf9, 0x84, 0xb7, 0x09}};
 #elif defined (EFI32)
-    EFI_GUID gFreedesktopRootGuid = {0x44479540, 0xf297, 0x41b2, {0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a}};
+EFI_GUID gFreedesktopRootGuid = {0x44479540, 0xf297, 0x41b2, {0x9a, 0xf7, 0xd1, 0x31, 0xd5, 0xf0, 0x45, 0x8a}};
 #elif defined (EFIAARCH64)
-    EFI_GUID gFreedesktopRootGuid = {0xb921b045, 0x1df0, 0x41c3, {0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae}};
-#else // Below is GUID for ARM32
-    EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3}};
+EFI_GUID gFreedesktopRootGuid = {0xb921b045, 0x1df0, 0x41c3, {0xaf, 0x44, 0x4c, 0x6f, 0x28, 0x0d, 0x3f, 0xae}};
+#else //  GUID for ARM32 is Below
+EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3}};
 #endif
 
-// variables
+// Variables
 
 EFI_HANDLE         SelfImageHandle;
+
+CHAR16            *SelfDirPath;
 
 EFI_LOADED_IMAGE  *SelfLoadedImage;
 
 EFI_FILE          *SelfRootDir;
 EFI_FILE          *SelfDir;
-EFI_FILE          *gVarsDir            = NULL;
+EFI_FILE          *gVarsDir             = NULL;
 
-CHAR16            *SelfDirPath;
+REFIT_VOLUME      *SelfVolume           = NULL;
+REFIT_VOLUME     **Volumes              = NULL;
+REFIT_VOLUME     **RecoveryVolumes      = NULL;
+REFIT_VOLUME     **PreBootVolumes       = NULL;
+REFIT_VOLUME     **SystemVolumes        = NULL;
+REFIT_VOLUME     **DataVolumes          = NULL;
 
-REFIT_VOLUME      *SelfVolume          = NULL;
-REFIT_VOLUME     **Volumes             = NULL;
-REFIT_VOLUME     **RecoveryVolumes     = NULL;
-REFIT_VOLUME     **PreBootVolumes      = NULL;
-REFIT_VOLUME     **SystemVolumes       = NULL;
-REFIT_VOLUME     **DataVolumes         = NULL;
+UINTN              RecoveryVolumesCount    = 0;
+UINTN              PreBootVolumesCount     = 0;
+UINTN              SystemVolumesCount      = 0;
+UINTN              DataVolumesCount        = 0;
+UINTN              VolumesCount            = 0;
 
-UINTN              RecoveryVolumesCount   = 0;
-UINTN              PreBootVolumesCount    = 0;
-UINTN              SystemVolumesCount     = 0;
-UINTN              DataVolumesCount       = 0;
-UINTN              VolumesCount           = 0;
-
-BOOLEAN            MediaCheck         = FALSE;
-BOOLEAN            ScannedOnce        = FALSE;
-BOOLEAN            SelfVolSet         = FALSE;
-BOOLEAN            SelfVolRun         = FALSE;
-BOOLEAN            DoneHeadings       = FALSE;
-BOOLEAN            ScanMBR            = FALSE;
-BOOLEAN            SkipSpacing        = FALSE;
-BOOLEAN            SingleAPFS         =  TRUE;
+BOOLEAN            MediaCheck          = FALSE;
+BOOLEAN            ScannedOnce         = FALSE;
+BOOLEAN            SelfVolSet          = FALSE;
+BOOLEAN            SelfVolRun          = FALSE;
+BOOLEAN            DoneHeadings        = FALSE;
+BOOLEAN            ScanMBR             = FALSE;
+BOOLEAN            SkipSpacing         = FALSE;
+BOOLEAN            SingleAPFS          =  TRUE;
 
 #if REFIT_DEBUG > 0
-       BOOLEAN            FirstVolume         = TRUE;
-       BOOLEAN            FoundMBR            = FALSE;
-static CHAR16            *Spacer              = L"                   ";
+BOOLEAN            FirstVolume         =  TRUE;
+BOOLEAN            FoundMBR            = FALSE;
 #endif
 
-EFI_GUID           GuidNull            = NULL_GUID_VALUE;
-EFI_GUID           GuidESP             = ESP_GUID_VALUE;
-EFI_GUID           GuidHFS             = HFS_GUID_VALUE;
-EFI_GUID           GuidAPFS            = APFS_GUID_VALUE;
-EFI_GUID           GuidMacRaidOn       = MAC_RAID_ON_GUID_VALUE;
-EFI_GUID           GuidMacRaidOff      = MAC_RAID_OFF_GUID_VALUE;
+EFI_GUID           GuidNull            =           NULL_GUID_VALUE;
+EFI_GUID           GuidESP             =            ESP_GUID_VALUE;
+EFI_GUID           GuidHFS             =            HFS_GUID_VALUE;
+EFI_GUID           GuidAPFS            =           APFS_GUID_VALUE;
+EFI_GUID           GuidMacRaidOn       =    MAC_RAID_ON_GUID_VALUE;
+EFI_GUID           GuidMacRaidOff      =   MAC_RAID_OFF_GUID_VALUE;
 EFI_GUID           GuidRecoveryHD      = MAC_RECOVERYHD_GUID_VALUE;
-EFI_GUID           GuidCoreStorage     = CORE_STORAGE_GUID_VALUE;
-EFI_GUID           GuidAppleTvRec      = APPLE_TV_RECOVERY_GUID;
+EFI_GUID           GuidCoreStorage     =   CORE_STORAGE_GUID_VALUE;
+EFI_GUID           GuidAppleTvRec      =    APPLE_TV_RECOVERY_GUID;
 
 
-extern EFI_GUID RefindPlusGuid;
+extern
+EFI_GUID           RefindPlusGuid;
+extern
+BOOLEAN            ScanningLoaders;
 
 #if REFIT_DEBUG > 0
-extern BOOLEAN  LogNewLine;
+extern
+BOOLEAN            LogNewLine;
+extern
+CHAR16            *OffsetNext;
 #endif
-
-extern BOOLEAN  ScanningLoaders;
 
 
 // Maximum size for disk sectors
@@ -162,7 +165,8 @@ extern BOOLEAN  ScanningLoaders;
 
 // Number of bytes to read from a partition to determine its filesystem type
 // and identify its boot loader, and hence probable BIOS-mode OS installation
-#define SAMPLE_SIZE 69632 /* 68 KiB -- ReiserFS superblock begins at 64 KiB */
+// 68 KiB -- ReiserFS superblock begins at 64 KiB
+#define SAMPLE_SIZE 69632
 
 BOOLEAN egIsGraphicsModeEnabled (VOID);
 
@@ -2217,8 +2221,7 @@ VOID VetSyncAPFS (VOID) {
         for (i = 0; i < SystemVolumesCount; i++) {
             MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("\n");
-            MsgLog ("  - %s", MsgStr);
+            MsgLog ("%s  - %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
         } // for
         #endif
@@ -2267,7 +2270,7 @@ VOID VetSyncAPFS (VOID) {
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
 
         if (SystemVolumesCount == 0) {
-            MsgLog ("\n%s", Spacer);
+            MsgLog ("%s", OffsetNext);
         }
         else {
             MsgLog ("\n\n");
@@ -2659,8 +2662,8 @@ VOID ScanVolumes (VOID) {
         else {
             CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-            MsgLog ("INFO: Self Volume:- '%s ::: %s ::: %s'\n", SelfVolume->VolName, SelfGUID, SelfUUID);
-            MsgLog ("      Install Dir:- '%s'\n\n", SelfDirPath ? SelfDirPath : L"Not Set");
+            MsgLog ("INFO: Self Volume:- '%s ::: %s ::: %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
+            MsgLog ("%s      Install Dir:- '%s'\n\n", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
             MY_FREE_POOL(SelfGUID);
             MY_FREE_POOL(SelfUUID);
         }
@@ -2677,7 +2680,7 @@ VOID ScanVolumes (VOID) {
             ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
         );
         LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n%s", Spacer);
+        MsgLog ("%s", OffsetNext);
         MsgLog ("%s", MsgStr);
         MsgLog ("\n\n");
         MY_FREE_POOL(MsgStr);

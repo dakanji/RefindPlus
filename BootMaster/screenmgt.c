@@ -86,8 +86,15 @@ BOOLEAN    GraphicsScreenDirty;
 static
 BOOLEAN     haveError = FALSE;
 
-extern BOOLEAN FlushFailedTag;
-extern BOOLEAN IsBoot;
+extern
+BOOLEAN     FlushFailedTag;
+extern
+BOOLEAN     IsBoot;
+
+#if REFIT_DEBUG > 0
+extern
+CHAR16     *OffsetNext;
+#endif
 
 static
 VOID PrepareBlankLine (VOID) {
@@ -303,7 +310,6 @@ VOID SetupScreen (VOID) {
             MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%d x %d'", ScreenLongest, ScreenShortest);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
-            MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -312,7 +318,7 @@ VOID SetupScreen (VOID) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
                 LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("    * %s", MsgStr);
+                MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -345,7 +351,7 @@ VOID SetupScreen (VOID) {
 
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("    * %s", MsgStr);
+                MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -354,7 +360,7 @@ VOID SetupScreen (VOID) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
                 LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("    * %s", MsgStr);
+                MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -1051,10 +1057,28 @@ VOID BltClearScreen (
 
             if (Banner == NULL) {
                 #if REFIT_DEBUG > 0
+                CHAR16 *StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
-                MsgLog ("    * %s", MsgStr);
+                MsgLog ("%s%s* %s", OffsetNext, StrSpacer, MsgStr);
                 if (!LoggedBanner) {
                     LOG(2, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                }
+                MY_FREE_POOL(MsgStr);
+
+                MsgStr = PoolPrint (
+                    L"Colour (Base):- '%02X%02X%02X'",
+                    MenuBackgroundPixel.r,
+                    MenuBackgroundPixel.g,
+                    MenuBackgroundPixel.b
+                );
+                MsgLog (
+                    "%s%s  %s",
+                    OffsetNext,
+                    StrSpacer,
+                    MsgStr
+                );
+                if (!LoggedBanner) {
+                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LoggedBanner = TRUE;
                 }
                 MY_FREE_POOL(MsgStr);
@@ -1110,7 +1134,7 @@ VOID BltClearScreen (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Custom Title Banner");
-                MsgLog ("    * %s", MsgStr);
+                MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 if (!LoggedBanner) {
                     LOG(2, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;

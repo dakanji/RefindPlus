@@ -175,4 +175,7 @@ static const UINT8 egemb_back_selected_big_data[2090] = {
  0x02, 0x00, 0x07, 0x3a, 0xfa, 0x38, 0x04, 0x36, 0x01, 0x00, 0x01, 0x02,
  0x82, 0x03,
 };
-static EG_EMBEDDED_IMAGE egemb_back_selected_big = { 144, 144, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE, egemb_back_selected_big_data, 2090 };
+static EG_EMBEDDED_IMAGE egemb_back_selected_big = {
+    144, 144, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE,
+    egemb_back_selected_big_data, 2090
+};

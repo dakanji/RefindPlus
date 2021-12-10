@@ -68,7 +68,10 @@
 #endif
 
 #if REFIT_DEBUG > 0
-extern UINTN AppleFramebuffers;
+extern
+UINTN   AppleFramebuffers;
+extern
+CHAR16 *OffsetNext;
 #endif
 
 // Console defines and variables
@@ -281,7 +284,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
     if (GOPDraw == NULL) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Could not Find GOP Instance");
+        MsgStr = StrDuplicate (L"Could Not Find GOP Instance");
         LOG(1, LOG_STAR_SEPARATOR, L"%s!!", MsgStr);
         MsgLog ("** WARN: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
@@ -302,7 +305,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
             GOPDraw->Mode->FrameBufferBase + GOPDraw->Mode->FrameBufferSize
         );
         LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        MsgLog ("%s:\n", MsgStr);
+        MsgLog ("%s:", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -331,7 +334,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                 ModeLog = Mode;
             }
 
-            MsgLog ("  - Mode[%02d]", ModeLog);
+            MsgLog ("%s  - Mode[%02d]", OffsetNext, ModeLog);
             #endif
 
             if (!EFI_ERROR(Status)) {
@@ -362,7 +365,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
                 if (LoopCount < MaxMode - 1) {
                     MsgLog (
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r\n",
+                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
                         Info->HorizontalResolution,
                         Info->VerticalResolution,
                         Info->PixelsPerScanLine,
@@ -385,23 +388,13 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
             else {
                 #if REFIT_DEBUG > 0
                 LOG(3, LOG_THREE_STAR_MID, L"Mode[%d]: %r", ModeLog, Status);
-                MsgLog (" ... %r", MsgStr);
+                MsgLog (" ... %r", Status);
 
-                if (LoopCount < MaxMode) {
-                    if (Mode > 99) {
-                        MsgLog ( ". NB: Real Mode = %d\n", Mode);
-                    }
-                    else {
-                        MsgLog ( "\n", Mode);
-                    }
+                if (Mode > 99) {
+                    MsgLog ( ". NB: Real Mode = %d\n", Mode);
                 }
-                else {
-                    if (Mode > 99) {
-                        MsgLog ( ". NB: Real Mode = %d\n\n", Mode);
-                    }
-                    else {
-                        MsgLog ( "\n\n", Mode);
-                    }
+                if (LoopCount >= MaxMode) {
+                    MsgLog ("\n\n");
                 }
                 #endif
             } // if Status == EFI_SUCCESS
@@ -1225,7 +1218,6 @@ VOID egInitScreen (VOID) {
                 (GlobalConfig.TextRenderer || GlobalConfig.TextOnly)
             ) {
                 PrevFlag = TRUE;
-                MsgLog ("\n");
             }
             else {
                 MsgLog ("\n\n");
@@ -1248,7 +1240,6 @@ VOID egInitScreen (VOID) {
                 MsgStr = StrDuplicate (L"GOP Not Available ... Fall Back on UGA");
                 LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n");
                 MY_FREE_POOL(MsgStr);
 
                 FlagUGA  = TRUE;
@@ -1268,8 +1259,8 @@ VOID egInitScreen (VOID) {
                 MsgStr = StrDuplicate (L"Graphics Not Available ... Fall Back on Text Mode");
                 LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
+
                 PrevFlag = TRUE;
                 #endif
             }
@@ -1297,14 +1288,14 @@ VOID egInitScreen (VOID) {
             MsgStr = PoolPrint (L"Implement Text Renderer ... %r", Status);
             LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
             if (PrevFlag) {
-                MsgLog ("      ");
+                MsgLog ("%s      ", OffsetNext);
             }
             else {
                 MsgLog ("INFO: ");
             }
             MsgLog ("%s", MsgStr);
-            MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
+
             PrevFlag = TRUE;
             #endif
         #endif
@@ -1329,7 +1320,7 @@ VOID egInitScreen (VOID) {
     }
 
     if (PrevFlag) {
-        MsgLog ("      ");
+        MsgLog ("%s      ", OffsetNext);
     }
     else {
         MsgLog ("INFO: ");

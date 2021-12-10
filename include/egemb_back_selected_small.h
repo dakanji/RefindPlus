@@ -59,4 +59,7 @@ static const UINT8 egemb_back_selected_small_data[705] = {
  0x00, 0x06, 0x01, 0x2b, 0x70, 0xb6, 0xe3, 0xf4, 0xfa, 0xa7, 0xff, 0x06,
  0xfa, 0xf4, 0xe3, 0xb6, 0x70, 0x2b, 0x01, 0x81, 0x00,
 };
-static EG_EMBEDDED_IMAGE egemb_back_selected_small = { 64, 64, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE, egemb_back_selected_small_data, 705 };
+static EG_EMBEDDED_IMAGE egemb_back_selected_small = {
+    64, 64, EG_EIPIXELMODE_GRAY_ALPHA, EG_EICOMPMODE_RLE,
+    egemb_back_selected_small_data, 705
+};

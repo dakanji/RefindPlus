@@ -1046,7 +1046,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Locating Boot Order Entries");
+    LOG(2, LOG_LINE_NORMAL, L"Fetch Boot Order Variables:");
     #endif
 
     Status = EfivarGetRaw (

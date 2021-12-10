@@ -88,6 +88,10 @@
     #define LibOpenRoot EfiLibOpenRoot
 #endif
 
+#if REFIT_DEBUG > 0
+CHAR16 *OffsetNext = L"\n                   ";
+#endif
+
 //
 // Basic image handling
 //
@@ -813,6 +817,16 @@ EG_IMAGE * egPrepareEmbeddedImage (
         UINT8   PixelValueR = ForegroundColor ? ForegroundColor->r : 0;
         UINT8   PixelValueG = ForegroundColor ? ForegroundColor->g : 0;
         UINT8   PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
+
+        #if REFIT_DEBUG > 0
+        MsgLog (
+            "%s      Colour (Text):- '%02X%02X%02X'",
+            OffsetNext,
+            PixelValueR,
+            PixelValueG,
+            PixelValueB
+        );
+        #endif
 
         egSetPlane (PLPTR(NewImage, r), PixelValueR, PixelCount);
         egSetPlane (PLPTR(NewImage, g), PixelValueG, PixelCount);

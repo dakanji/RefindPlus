@@ -112,78 +112,94 @@
 #define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
-extern EFI_GUID GuidAPFS;
-extern BOOLEAN  SingleAPFS;
+extern
+EFI_GUID GuidAPFS;
+extern
+BOOLEAN  SingleAPFS;
 
 #if REFIT_DEBUG > 0
-static CHAR16  *Spacer          = L"                               ";
-       BOOLEAN  LogNewLine      = FALSE;
+extern
+CHAR16  *OffsetNext;
+static
+CHAR16  *Spacer          = L"            ";
+BOOLEAN  LogNewLine      = FALSE;
 #endif
 
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
-static REFIT_MENU_ENTRY MenuEntryAbout = {
+static
+REFIT_MENU_ENTRY MenuEntryAbout = {
     L"About RefindPlus",
     TAG_ABOUT,
     1, 0, 'A',
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryReset = {
+static
+REFIT_MENU_ENTRY MenuEntryReset = {
     L"System Restart",
     TAG_REBOOT,
     1, 0, 'R',
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryShutdown = {
+static
+REFIT_MENU_ENTRY MenuEntryShutdown = {
     L"System Shutdown",
     TAG_SHUTDOWN,
     1, 0, 'U',
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryRotateCsr = {
+static
+REFIT_MENU_ENTRY MenuEntryRotateCsr = {
     L"Toggle CSR Policy",
     TAG_CSR_ROTATE,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryFirmware = {
+static
+REFIT_MENU_ENTRY MenuEntryFirmware = {
     L"Reboot into Firmware",
     TAG_FIRMWARE,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryHiddenTags = {
+static
+REFIT_MENU_ENTRY MenuEntryHiddenTags = {
     L"Manage Hidden Tags",
     TAG_HIDDEN,
     1, 0, 0, NULL,
     NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryInstall = {
+static
+REFIT_MENU_ENTRY MenuEntryInstall = {
     L"Install RefindPlus",
     TAG_INSTALL,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryBootorder = {
+static
+REFIT_MENU_ENTRY MenuEntryBootorder = {
     L"Manage Firmware Boot Order",
     TAG_BOOTORDER,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryExit = {
+static
+REFIT_MENU_ENTRY MenuEntryExit = {
     L"Exit RefindPlus",
     TAG_EXIT,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
+static
+REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
     L"Show Bootscreen",
     TAG_PRE_BOOTKICKER,
     1, 0, 0,
     NULL, NULL, NULL
 };
-static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
+static
+REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
     L"Clean NVRAM",
     TAG_PRE_NVRAMCLEAN,
     1, 0, 0,
@@ -192,7 +208,8 @@ static REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
 
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
-struct LOADER_LIST {
+struct
+LOADER_LIST {
     CHAR16              *FileName;
     EFI_TIME             TimeStamp;
     struct LOADER_LIST  *NextEntry;
@@ -222,21 +239,27 @@ REFIT_MENU_SCREEN * CopyMenuScreen (
         }
 
         NewEntry->InfoLineCount = Entry->InfoLineCount;
-        NewEntry->InfoLines = (CHAR16**) AllocateZeroPool (Entry->InfoLineCount * (sizeof (CHAR16*)));
+        NewEntry->InfoLines = (CHAR16**) AllocateZeroPool (
+            Entry->InfoLineCount * (sizeof (CHAR16*))
+        );
 
         for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
-            NewEntry->InfoLines[i] = (Entry->InfoLines[i]) ? StrDuplicate (Entry->InfoLines[i]) : NULL;
+            NewEntry->InfoLines[i] = (Entry->InfoLines[i])
+                ? StrDuplicate (Entry->InfoLines[i]) : NULL;
         } // for
 
         NewEntry->EntryCount = Entry->EntryCount;
-        NewEntry->Entries = (REFIT_MENU_ENTRY**) AllocateZeroPool (Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY*)));
+        NewEntry->Entries = (REFIT_MENU_ENTRY**) AllocateZeroPool (
+            Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY*))
+        );
 
         for (i = 0; i < Entry->EntryCount && NewEntry->Entries; i++) {
             AddMenuEntry (NewEntry, Entry->Entries[i]);
         } // for
 
         NewEntry->TimeoutSeconds = Entry->TimeoutSeconds;
-        NewEntry->TimeoutText    = (Entry->TimeoutText) ? StrDuplicate (Entry->TimeoutText) : NULL;
+        NewEntry->TimeoutText    = (Entry->TimeoutText)
+            ? StrDuplicate (Entry->TimeoutText) : NULL;
 
         NewEntry->Hint1 = (Entry->Hint1) ? StrDuplicate (Entry->Hint1) : NULL;
         NewEntry->Hint2 = (Entry->Hint2) ? StrDuplicate (Entry->Hint2) : NULL;
@@ -722,7 +745,10 @@ VOID SetLoaderDefaults (
         }
         else {
             LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1");
-            if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+            if (!Entry->me.Image &&
+                !GlobalConfig.IgnoreHiddenIcons &&
+                GlobalConfig.PreferHiddenIcons
+            ) {
                 LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 1a 1");
                 #if REFIT_DEBUG > 0
                 LOG(2, LOG_LINE_NORMAL, L"Checking for '.VolumeIcon' Image");
@@ -738,14 +764,18 @@ VOID SetLoaderDefaults (
             if (!Entry->me.Image) {
                 LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 1");
                 #if REFIT_DEBUG > 0
-                if (!GlobalConfig.IgnoreHiddenIcons && GlobalConfig.PreferHiddenIcons) {
+                if (!GlobalConfig.IgnoreHiddenIcons &&
+                    GlobalConfig.PreferHiddenIcons
+                ) {
                     LOG(2, LOG_LINE_NORMAL, L"Could Not Find '.VolumeIcon' Image");
                 }
                 #endif
 
                 LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2");
                 BOOLEAN MacFlag = FALSE;
-                if (LoaderPath && FoundSubStr (LoaderPath, L"System\\Library\\CoreServices")) {
+                if (LoaderPath &&
+                    FoundSubStr (LoaderPath, L"System\\Library\\CoreServices")
+                ) {
                     LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2a 1");
                     MacFlag = TRUE;
                     LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 2a 2");
@@ -775,7 +805,9 @@ VOID SetLoaderDefaults (
                         }
 
                         LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2");
-                        if (!Entry->me.Image && !GlobalConfig.IgnoreHiddenIcons) {
+                        if (!Entry->me.Image &&
+                            !GlobalConfig.IgnoreHiddenIcons
+                        ) {
                             LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2a 1");
                             Entry->me.Image = egCopyImage (Volume->VolIconImage);
                             LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 2a 3a 1a 2a 2");
@@ -901,7 +933,9 @@ VOID SetLoaderDefaults (
             }
 
             LOG(4, LOG_LINE_FORENSIC, L"In SetLoaderDefaults ... 3b 1a 2a 9");
-            if (Volume->PartName && (Volume->PartName[0] != L'\0')) {
+            if (Volume->PartName &&
+                Volume->PartName[0] != L'\0'
+            ) {
                 #if REFIT_DEBUG > 0
                 if (Entry->me.Image == NULL) {
                     LOG(2, LOG_LINE_NORMAL,
@@ -2406,7 +2440,7 @@ VOID ScanFirmwareDefined (
     DeleteBootOrderEntries (BootEntries);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Processed UEFI Firmware Defined Boot Options");
+    LOG(2, LOG_LINE_NORMAL, L"Processed Firmware Defined Boot Options");
     #endif
 } // static VOID ScanFirmwareDefined()
 
@@ -2973,7 +3007,7 @@ BOOLEAN FindTool (
                     LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
 
                     if (FoundTool) {
-                        MsgLog ("\n%s", Spacer);
+                        MsgLog ("%s%s", OffsetNext, Spacer);
                     }
                     MsgLog ("%s", ToolStr);
                     MY_FREE_POOL(ToolStr);
@@ -3256,7 +3290,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
                         LOG(2, LOG_THREE_STAR_MID, L"%s", ToolStr);
                         if (OtherFind) {
-                            MsgLog ("\n%s", Spacer);
+                            MsgLog ("%s%s", OffsetNext, Spacer);
                         }
                         MsgLog ("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
@@ -3313,7 +3347,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
                         LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (j > 0) {
-                            MsgLog ("\n%s", Spacer);
+                            MsgLog ("%s%s", OffsetNext, Spacer);
                         }
                         MsgLog ("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
@@ -3358,7 +3392,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
                         LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
-                            MsgLog ("\n%s", Spacer);
+                            MsgLog ("%s%s", OffsetNext, Spacer);
                         }
                         MsgLog ("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
@@ -3405,7 +3439,7 @@ VOID ScanForTools (VOID) {
                         ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
                         LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                         if (OtherFind) {
-                            MsgLog ("\n%s", Spacer);
+                            MsgLog ("%s%s", OffsetNext, Spacer);
                         }
                         MsgLog ("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
@@ -3490,7 +3524,7 @@ VOID ScanForTools (VOID) {
                             );
                             LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
-                                MsgLog ("\n%s", Spacer);
+                                MsgLog ("%s%s", OffsetNext, Spacer);
                             }
                             MsgLog ("%s", ToolStr);
                             MY_FREE_POOL(ToolStr);
@@ -3585,7 +3619,7 @@ VOID ScanForTools (VOID) {
                             );
                             LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
-                                MsgLog ("\n%s", Spacer);
+                                MsgLog ("%s%s", OffsetNext, Spacer);
                             }
                             MsgLog ("%s", ToolStr);
                             MY_FREE_POOL(ToolStr);
@@ -3655,7 +3689,7 @@ VOID ScanForTools (VOID) {
                             ToolStr = PoolPrint (L"Added Tool:- '%s' ... %s", ToolName, FileName);
                             LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
                             if (OtherFind) {
-                                MsgLog ("\n%s", Spacer);
+                                MsgLog ("%s%s", OffsetNext, Spacer);
                             }
                             MsgLog ("%s", ToolStr);
                             MY_FREE_POOL(ToolStr);
