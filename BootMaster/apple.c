@@ -552,7 +552,7 @@ VOID * RP_GetFileInfo (
 static
 EFI_STATUS RP_GetApfsSpecialFileInfo (
     IN     EFI_FILE_PROTOCOL           *Root,
-    IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo OPTIONAL,
+    IN OUT APPLE_APFS_VOLUME_INFO     **VolumeInfo    OPTIONAL,
     IN OUT APPLE_APFS_CONTAINER_INFO  **ContainerInfo OPTIONAL
 ) {
     EFI_GUID AppleApfsVolumeInfoGuid    = APPLE_APFS_VOLUME_INFO_GUID;

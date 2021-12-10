@@ -57,6 +57,7 @@ decline_tagshelp      |Disables feature that ensures hidden tags can always be u
 direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
 disable_amfi          |Disables AMFI Checks on Mac OS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
+external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
 ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
 ignore_previous_boot  |Disables saving the last booted loader if not required

@@ -638,7 +638,8 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;
-        } else if (Status == EFI_NOT_READY) {
+        }
+        else if (Status == EFI_NOT_READY) {
             EmptyBuffer = TRUE;
         }
         break;

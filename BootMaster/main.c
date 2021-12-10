@@ -135,6 +135,7 @@ REFIT_CONFIG GlobalConfig = {
     /* UseNvram = */ FALSE,
     /* IgnorePreviousBoot = */ FALSE,
     /* IgnoreHiddenIcons = */ FALSE,
+    /* ExternalHiddenIcons = */ FALSE,
     /* PreferHiddenIcons = */ FALSE,
     /* TextRenderer = */ FALSE,
     /* UgaPassThrough = */ FALSE,

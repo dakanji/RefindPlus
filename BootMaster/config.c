@@ -1044,6 +1044,9 @@ VOID ReadConfig (
         else if (MyStriCmp (TokenList[0], L"ignore_hidden_icons")) {
             GlobalConfig.IgnoreHiddenIcons = HandleBoolean (TokenList, TokenCount);
         }
+        else if (MyStriCmp (TokenList[0], L"external_hidden_icons")) {
+            GlobalConfig.ExternalHiddenIcons = HandleBoolean (TokenList, TokenCount);
+        }
         else if (MyStriCmp (TokenList[0], L"prefer_hidden_icons")) {
             GlobalConfig.PreferHiddenIcons = HandleBoolean (TokenList, TokenCount);
         }

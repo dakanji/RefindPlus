@@ -31,7 +31,7 @@
 #decline_apfsmute
 
 # Apple has partially enforced the use of the "PreBoot" Loader stored in the "PreBoot" partitions
-# of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.x, when
+# of APFS volumes by requiring this to run the Mac Boot Loader, starting with Mac OS v11.0, when
 # SIP is enabled. Attempts to run such Mac OS Boot Loaders directly when SIP is enabled result
 # in kernel panics. The default setting in RefindPlus is to always map APFS volumes to their
 # respective "PreBoot" partitions, which will be used to boot such Mac OS instances and the
@@ -110,10 +110,18 @@
 # Refindplus. Hence, scanning for the files typically just slows the
 # RefindPlus boot process down. When active, this speeds booting
 # RefindPlus up by skipping scanning volumes for these files.
+# NB: This token overrides the "external_hidden_icons" and
+# the "prefer_hidden_icons" tokens when it is active.
 #
 # Always scans for ".VolumeIcon" image icons when commented out
 #
 #ignore_hidden_icons
+
+# RefindPlus defaults to only scanning for ".VolumeIcon" icons on "internal"
+# volumes. Howver, wWhen this token is active (and the "ignore_hidden_icons"
+# token is not) RefindPlus will also scan "external" volumes for these icons.
+#
+#external_hidden_icons
 
 # While RefindPlus does default to scanning volumes for ".VolumeIcon" image icons,
 # any such files found are only used as last ditch display icons when all other

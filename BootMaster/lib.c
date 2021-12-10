@@ -2893,7 +2893,10 @@ VOID SetVolumeIcons (VOID) {
     GetVolumeBadgeIcons();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Check for '.VolumeIcon' Icons for Internal Volumes");
+    LOG(1, LOG_LINE_THIN_SEP,
+        L"Check for '.VolumeIcon' Icons for %s Volumes",
+        (GlobalConfig.ExternalHiddenIcons) ? L"Internal/External" : L"Internal"
+    );
     #endif
 
     if (!AllowGraphicsMode) {
@@ -2907,7 +2910,7 @@ VOID SetVolumeIcons (VOID) {
     if (GlobalConfig.IgnoreHiddenIcons) {
         #if REFIT_DEBUG > 0
         LOG(2, LOG_LINE_NORMAL,
-            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'IgnoreHiddenIcons'"
+            L"Skipped Checking for '.VolumeIcon' Icons ... Config Setting is Active:- 'ignore_hidden_icons'"
         );
         #endif
 
@@ -2948,9 +2951,11 @@ VOID SetVolumeIcons (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
 
-            // load custom volume icon for internal disks if present
+            // load custom volume icon for internal/external disks if present
             if (!Volume->VolIconImage) {
-                if (Volume->DiskKind == DISK_KIND_INTERNAL) {
+                if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
+                    (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.ExternalHiddenIcons)
+                ) {
                     Volume->VolIconImage = egLoadIconAnyType (
                         Volume->RootDir,
                         L"",
@@ -2960,10 +2965,18 @@ VOID SetVolumeIcons (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL,
-                        L"Skipped '%s' ... Not Internal Volume",
-                        Volume->VolName
-                    );
+                    if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
+                        LOG(2, LOG_LINE_NORMAL,
+                            L"Skipped External Volume: '%s' ... Config Setting is Not Active:- 'external_hidden_icons'",
+                            Volume->VolName
+                        );
+                    }
+                    else {
+                        LOG(2, LOG_LINE_NORMAL,
+                            L"Skipped '%s' ... Not Internal Volume",
+                            Volume->VolName
+                        );
+                    }
                     #endif
                 }
             }

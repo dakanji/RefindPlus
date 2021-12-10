@@ -1,3 +1,11 @@
+0.13.2.AL (PRE_RELEASE):
+-----------------------
+- Adds "ExternalHiddenIcons" Feature
+  * Sets RefindPlus to also scan external volumes for ".VolumeIcon" icons
+  * This is a port of the downstream "AllHiddenIcons" feature by GitHub user @Joevt
+  * Amended and renamed to reflect the target disk kind
+
+
 0.13.2.AK (07 Dec 2021):
 -----------------------
 - Adds "SupplyNVME" Feature
