@@ -2875,13 +2875,6 @@ EFI_STATUS EFIAPI efi_main (
         0, NULL
     );
 
-    MY_FREE_POOL(ChosenEntry->Title);
-    MY_FREE_IMAGE(ChosenEntry->Image);
-    MY_FREE_IMAGE(ChosenEntry->BadgeImage);
-    FreeMenuScreen (&ChosenEntry->SubScreen);
-    MY_FREE_POOL(ChosenEntry);
-    MY_FREE_POOL(SelectionName);
-
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Shutdown After Main Loop Exit:- 'FAILED'!!");
     #endif
