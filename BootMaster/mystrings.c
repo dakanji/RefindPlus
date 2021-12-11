@@ -1186,20 +1186,16 @@ BOOLEAN IsGuid (
 CHAR16 * GuidAsString (
     EFI_GUID *GuidData
 ) {
-    CHAR16 *TheString;
-
-    TheString = AllocateZeroPool(42 * sizeof (CHAR16));
-
-    if (GuidData && (TheString != 0)) {
+    CHAR16 *TheString = NULL;
+    if (GuidData && (TheString = AllocatePool(37 * sizeof (CHAR16)))) {
         SPrint (
-            TheString, 82, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+            TheString, 37 * sizeof (CHAR16), L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
             (UINTN) GuidData->Data1,    (UINTN) GuidData->Data2,    (UINTN) GuidData->Data3,
             (UINTN) GuidData->Data4[0], (UINTN) GuidData->Data4[1], (UINTN) GuidData->Data4[2],
             (UINTN) GuidData->Data4[3], (UINTN) GuidData->Data4[4], (UINTN) GuidData->Data4[5],
             (UINTN) GuidData->Data4[6], (UINTN) GuidData->Data4[7]
         );
     }
-
     return TheString;
 } // GuidAsString(EFI_GUID *GuidData)
 

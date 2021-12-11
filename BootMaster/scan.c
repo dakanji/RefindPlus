@@ -2372,7 +2372,8 @@ VOID ScanFirmwareDefined (
     }
     #endif
 
-    if (GlobalConfig.DontScanFirmware != NULL || DontScanFirmware != NULL) {
+    if (GlobalConfig.DontScanFirmware && *GlobalConfig.DontScanFirmware) {
+        // Only merge GlobalConfig.DontScanFirmware if not empty
         MergeStrings (&DontScanFirmware, GlobalConfig.DontScanFirmware, L',');
     }
 
