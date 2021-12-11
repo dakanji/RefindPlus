@@ -418,7 +418,11 @@ VOID AddMenuInfoLine (
     LOG(2, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
     #endif
 
-    AddListElement ((VOID ***) &(Screen->InfoLines), &(Screen->InfoLineCount), InfoLine);
+    AddListElement (
+        (VOID ***) &(Screen->InfoLines),
+        &(Screen->InfoLineCount),
+        StrDuplicate (InfoLine)
+    );
 } // VOID AddMenuInfoLine()
 
 VOID AddMenuEntry (
@@ -433,7 +437,11 @@ VOID AddMenuEntry (
     );
     #endif
 
-    AddListElement ((VOID ***) &(Screen->Entries), &(Screen->EntryCount), Entry);
+    AddListElement (
+        (VOID ***) &(Screen->Entries),
+        &(Screen->EntryCount),
+        Entry
+    );
 } // VOID AddMenuEntry()
 
 static

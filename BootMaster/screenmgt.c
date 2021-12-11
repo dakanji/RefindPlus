@@ -42,6 +42,7 @@
 /*
  * Modified for RefindPlus
  * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -168,11 +169,13 @@ VOID InitScreen (VOID) {
 
 // Set the screen resolution and mode (text vs. graphics).
 VOID SetupScreen (VOID) {
-           UINTN   NewWidth;
-           UINTN   NewHeight;
-           BOOLEAN gotGraphics;
-    static BOOLEAN BannerLoaded = FALSE;
-    static BOOLEAN ScaledIcons  = FALSE;
+    UINTN   NewWidth;
+    UINTN   NewHeight;
+    BOOLEAN gotGraphics;
+    static
+    BOOLEAN BannerLoaded = FALSE;
+    static
+    BOOLEAN ScaledIcons  = FALSE;
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;

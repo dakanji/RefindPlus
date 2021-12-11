@@ -823,69 +823,68 @@ VOID ReMapOpenProtocol (VOID) {
 
 
 VOID preBootKicker (VOID) {
-    UINTN              MenuExit;
+    static
+    BOOLEAN            LoadedOnce     = FALSE;
+    UINTN              MenuExit       = 0;
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry;
-
+    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryBootKicker);
-    TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
 
-    CHAR16            *MenuInfo       = StrDuplicate (L"A tool to kick in the Apple Boot Screen");
+    if (LoadedOnce) {
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen");
+        #endif
+
+        return;
+    }
+
     REFIT_MENU_SCREEN  BootKickerMenu = {
-        L"BootKicker",
-        NULL, 0, &MenuInfo,
+        NULL, NULL,
+        0, NULL,
         0, &TempMenuEntry,
         0, NULL,
-        L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
-        L""
+        StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu"),
+        StrDuplicate (L"")
     };
 
-    if (BootKickerMenu.EntryCount > 0) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
-        #endif
+    LoadedOnce                      = TRUE;
+    BootKickerMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+    BootKickerMenu.Title            = StrDuplicate (L"BootKicker");
+    AddMenuInfoLine (&BootKickerMenu, L"A tool to kick in the Apple Boot Screen");
+    AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
+    AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
+    AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
+    AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
+    AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
+
+    UINTN k = 0;
+    CHAR16 *FilePath = NULL;
+    while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
+        AddMenuInfoLine (&BootKickerMenu, StrDuplicate (FilePath));
+        MY_FREE_POOL(FilePath);
     }
-    else {
-        BootKickerMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-        BootKickerMenu.Title = L"BootKicker";
-        AddMenuInfoLine (&BootKickerMenu, StrDuplicate (MenuInfo));
-        AddMenuInfoLine (&BootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
-        AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
-        AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
-        AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
 
-        UINTN k = 0;
-        CHAR16 *FilePath = NULL;
-        while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&BootKickerMenu, StrDuplicate (FilePath));
-            MY_FREE_POOL(FilePath);
-        }
+    AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuInfoLine (&BootKickerMenu, L"The first file found in the order listed will be used");
+    AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
+    AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuInfoLine (&BootKickerMenu, L"You can get the BootKicker efi file here:");
+    AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+    AddMenuInfoLine (&BootKickerMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+    AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuInfoLine (&BootKickerMenu, L"");
 
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"You can get the BootKicker efi file here:");
-        AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
-        AddMenuInfoLine (&BootKickerMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-        AddMenuInfoLine (&BootKickerMenu, L"");
-        AddMenuInfoLine (&BootKickerMenu, L"");
+    AddMenuEntry (&BootKickerMenu, CopyMenuEntry (&MenuEntryBootKicker));
+    AddMenuEntry (&BootKickerMenu, CopyMenuEntry (&MenuEntryReturn));
 
-        AddMenuEntry (&BootKickerMenu, &MenuEntryBootKicker);
-        AddMenuEntry (&BootKickerMenu, &MenuEntryReturn);
-
-        MY_FREE_POOL(TempMenuEntry->Title);
-        MY_FREE_IMAGE(TempMenuEntry->Image);
-        MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
-        FreeMenuScreen (&TempMenuEntry->SubScreen);
-        MY_FREE_POOL(TempMenuEntry);
-
-        MY_FREE_POOL(MenuInfo);
-    }
+    MY_FREE_POOL(TempMenuEntry->Title);
+    MY_FREE_IMAGE(TempMenuEntry->Image);
+    MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
+    FreeMenuScreen (&TempMenuEntry->SubScreen);
+    MY_FREE_POOL(TempMenuEntry);
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
@@ -958,6 +957,8 @@ VOID preBootKicker (VOID) {
             LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
+
+            MY_FREE_POOL(FilePath);
         }
         else {
             #if REFIT_DEBUG > 0
@@ -976,75 +977,73 @@ VOID preBootKicker (VOID) {
             LOG(2, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
             MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
             #endif
-        }
 
-        MY_FREE_POOL(FilePath);
-        FreeLoaderEntry (&ourLoaderEntry);
+            FreeLoaderEntry (&ourLoaderEntry);
+        }
     }
 } // VOID preBootKicker()
 
 VOID preCleanNvram (VOID) {
-    UINTN              MenuExit;
+    static
+    BOOLEAN            LoadedOnce     = FALSE;
+    UINTN              MenuExit       = 0;
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry;
-
+    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryCleanNvram);
-    TempMenuEntry->Image              = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
 
-    CHAR16            *MenuInfo       = StrDuplicate (L"A Tool to Clean/Reset Nvram on Macs");
+    if (LoadedOnce) {
+        #if REFIT_DEBUG > 0
+        LOG(2, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen");
+        #endif
+
+        return;
+    }
+
     REFIT_MENU_SCREEN  CleanNvramMenu = {
-        L"Clean NVRAM",
-        NULL, 0, &MenuInfo,
+        NULL, NULL,
+        0, NULL,
         0, &TempMenuEntry,
         0, NULL,
-        L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
-        L""
+        StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu"),
+        StrDuplicate (L"")
     };
 
-    if (CleanNvramMenu.EntryCount > 0) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Displayed previously constructed screen");
-        #endif
+    LoadedOnce                      = TRUE;
+    CleanNvramMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+    CleanNvramMenu.Title            = StrDuplicate (L"Clean NVRAM");
+    AddMenuInfoLine (&CleanNvramMenu, L"A Tool to Clean/Reset Nvram on Macs");
+    AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
+    AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
+
+    UINTN k = 0;
+    CHAR16 *FilePath = NULL;
+    while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+        AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (FilePath));
+        MY_FREE_POOL(FilePath);
     }
-    else {
-        CleanNvramMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-        CleanNvramMenu.Title = L"Clean NVRAM";
-        AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (MenuInfo));
-        AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
-        AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
 
-        UINTN k = 0;
-        CHAR16 *FilePath = NULL;
-        while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&CleanNvramMenu, StrDuplicate (FilePath));
-            MY_FREE_POOL(FilePath);
-        }
+    AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuInfoLine (&CleanNvramMenu, L"The first file found in the order listed will be used");
+    AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuInfoLine (&CleanNvramMenu, L"You can get the CleanNvram efi file here:");
+    AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
+    AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
 
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"The first file found in the order listed will be used");
-        AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"You can get the CleanNvram efi file here:");
-        AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
-        AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
-        AddMenuInfoLine (&CleanNvramMenu, L"");
+    AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
+    AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
 
-        AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
-        AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
-
-        MY_FREE_POOL(TempMenuEntry->Title);
-        MY_FREE_IMAGE(TempMenuEntry->Image);
-        MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
-        FreeMenuScreen (&TempMenuEntry->SubScreen);
-        MY_FREE_POOL(TempMenuEntry);
-
-        MY_FREE_POOL(MenuInfo);
-    }
+    MY_FREE_POOL(TempMenuEntry->Title);
+    MY_FREE_IMAGE(TempMenuEntry->Image);
+    MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
+    FreeMenuScreen (&TempMenuEntry->SubScreen);
+    MY_FREE_POOL(TempMenuEntry);
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
     #if REFIT_DEBUG > 0
@@ -1077,7 +1076,6 @@ VOID preCleanNvram (VOID) {
 
         k = 0;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-
             #if REFIT_DEBUG > 0
             MsgLog ("    * Seek %s:\n", FilePath);
             #endif
@@ -1118,6 +1116,8 @@ VOID preCleanNvram (VOID) {
             LOG(2, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
             MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
             #endif
+
+            MY_FREE_POOL(FilePath);
         }
         else {
             #if REFIT_DEBUG > 0
@@ -1138,10 +1138,9 @@ VOID preCleanNvram (VOID) {
             LOG(2, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
             MsgLog ("* WARN: CleanNvram Error ... Return to Main Menu\n\n");
             #endif
-        }
 
-        MY_FREE_POOL(FilePath);
-        FreeLoaderEntry (&ourLoaderEntry);
+            FreeLoaderEntry (&ourLoaderEntry);
+        }
     } // if !MyStriCmp ChosenEntry->Title
 } // VOID preCleanNvram()
 

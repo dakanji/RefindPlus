@@ -2787,6 +2787,11 @@ VOID ScanForBootloaders (
         } // switch
     } // for
 
+    #if REFIT_DEBUG > 0
+    // Reset
+    LogNewLine = FALSE;
+    #endif
+
     if (GlobalConfig.HiddenTags) {
         // Restore the backed-up GlobalConfig.DontScan* variables
         MY_FREE_POOL(GlobalConfig.DontScanFiles);
@@ -3657,9 +3662,19 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    if (!GlobalConfig.CsrValues) {
+                        ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
+                    }
+                    else {
+                        ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    }
                     LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("** WARN ** %s", ToolStr);
+                    if (!GlobalConfig.CsrValues) {
+                        MsgLog ("*_ NOTE _* %s", ToolStr);
+                    }
+                    else {
+                        MsgLog ("** WARN ** %s", ToolStr);
+                    }
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif
