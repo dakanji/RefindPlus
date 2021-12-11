@@ -159,5 +159,5 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: ''
-          add-issue-labels 'Resolved'
+          add-issue-labels: 'Resolved'
           process-only: 'issues'
