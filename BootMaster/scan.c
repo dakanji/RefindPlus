@@ -612,7 +612,7 @@ VOID GenerateSubScreen (
                 LOG(4, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 8");
                 MY_FREE_POOL(KernelVersion);
                 MY_FREE_POOL(InitrdName);
-                MY_FREE_POOL(File);
+                MY_FREE_FILE(File);
 
                 LOG(4, LOG_LINE_FORENSIC, L"In GenerateSubScreen OSType L ... 2a 9");
             } // if File

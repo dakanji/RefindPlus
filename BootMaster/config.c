@@ -2034,10 +2034,10 @@ CHAR16 * GetFirstOptionsFromFile (
         LOG(4, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 3");
         FreeTokenLine (&TokenList, &TokenCount);
 
-        LOG(4, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 3");
-        MY_FREE_POOL(File);
-
         LOG(4, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 4");
+        MY_FREE_FILE(File);
+
+        LOG(4, LOG_LINE_FORENSIC, L"In GetFirstOptionsFromFile ... 2a 5");
     } // if
 
     LOG(4, LOG_LINE_FORENSIC,

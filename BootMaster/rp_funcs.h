@@ -26,3 +26,14 @@
         }                                     \
     } while (FALSE)
 #endif
+
+#ifndef _MY_FREE_FILE_H
+#define _MY_FREE_FILE_H
+#define MY_FREE_FILE(Pointer)                \
+    do {                                     \
+        if (Pointer) {                       \
+            MY_FREE_POOL(Pointer->Buffer);   \
+            MY_FREE_POOL(Pointer);           \
+        }                                    \
+    } while (FALSE)
+#endif

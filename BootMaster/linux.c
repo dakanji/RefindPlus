@@ -509,7 +509,7 @@ VOID AddKernelToSubmenu (
                 LOG(4, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 3");
                 MergeStrings (
                     &SubmenuName,
-                    TokenList[0] ? StrDuplicate (TokenList[0]) : StrDuplicate (L"Boot Linux"),
+                    TokenList[0] ? TokenList[0] : L"Boot Linux",
                     '\0'
                 );
 
