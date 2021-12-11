@@ -95,6 +95,9 @@ typedef struct {
 // Partition names to be ignored when setting volume name
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 
+#define MINLOGLEVEL         (0)
+#define MAXLOGLEVEL         (3)
+
 extern EFI_GUID gFreedesktopRootGuid;
 
 INTN FindMem (

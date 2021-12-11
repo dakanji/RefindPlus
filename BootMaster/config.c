@@ -70,9 +70,6 @@
 #define ENCODING_UTF8       (1)
 #define ENCODING_UTF16_LE   (2)
 
-#define MINLOGLEVEL         (0)
-#define MAXLOGLEVEL         (3)
-
 #define LAST_MINUTE         (1439) /* Last minute of a day */
 
 BOOLEAN SilenceAPFS;

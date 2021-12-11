@@ -121,7 +121,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     EFI_FILE_PROTOCOL   *LogFile;
     CHAR16              *ourDebugLog = NULL;
 
-    if (GlobalConfig.LogLevel < 0) {
+    if (GlobalConfig.LogLevel < MINLOGLEVEL) {
         return NULL;
     }
 
@@ -256,7 +256,7 @@ VOID EFIAPI DeepLoggger (
     BOOLEAN EarlyReturn = (
         DebugMode < 1
         || GlobalConfig.LogLevel < level
-        || GlobalConfig.LogLevel < 1
+        || GlobalConfig.LogLevel <= MINLOGLEVEL
         || !(*Msg)
     );
     if (!EarlyReturn && type != LOG_LINE_FORENSIC) {
@@ -270,8 +270,8 @@ VOID EFIAPI DeepLoggger (
         return;
     }
 
-    // Truncate message at Log Levels 3 and lower (if required)
-    if (GlobalConfig.LogLevel < 4) {
+    // Truncate message at MAXLOGLEVEL and lower (if required)
+    if (GlobalConfig.LogLevel <= MAXLOGLEVEL) {
         BOOLEAN LongStr = TruncateString (*Msg, Limit);
 
         StoreMsg = StrDuplicate (*Msg);
@@ -336,7 +336,7 @@ VOID EFIAPI DebugLog (
     if (MuteLogger
         || DebugMode < 1
         || FormatString == NULL
-        || GlobalConfig.LogLevel < 0
+        || GlobalConfig.LogLevel < MINLOGLEVEL
     ) {
         return;
     }
@@ -345,7 +345,7 @@ VOID EFIAPI DebugLog (
     if (!UseMsgLog) {
         UseMsgLog = NativeLogger;
 
-        if (!UseMsgLog && GlobalConfig.LogLevel > 0) {
+        if (!UseMsgLog && GlobalConfig.LogLevel > MINLOGLEVEL) {
             return;
         }
     }
