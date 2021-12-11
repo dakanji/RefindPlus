@@ -301,78 +301,76 @@ static fsw_status_t get_extent(fsw_u8 **rlep, int *rlenp, fsw_u64 *lcnp, fsw_u64
 
 static inline int attribute_ondisk(fsw_u8 *ptr, int len)
 {
-    return GETU8(ptr, 8);
+    return GETU8(ptr, 8); // ATTRIBUTE_RECORD_HEADER.FormCode (0 = RESIDENT_FORM, 1 = NONRESIDENT_FORM)
 }
 
 static inline int attribute_compressed(fsw_u8 *ptr, int len)
 {
-    return (GETU8(ptr, 12) & 0xFF) == 1;
+    return (GETU16(ptr, 12) & 0xFF) == 1; // ATTRIBUTE_RECORD_HEADER.Flags & ATTRIBUTE_FLAG_COMPRESSION_MASK
 }
 
 static inline int attribute_compressed_future(fsw_u8 *ptr, int len)
 {
-    return (GETU8(ptr, 12) & 0xFF) > 1;
+    return (GETU16(ptr, 12) & 0xFF) > 1; // ATTRIBUTE_RECORD_HEADER.Flags & ATTRIBUTE_FLAG_COMPRESSION_MASK
 }
 
 //static inline int attribute_sparse(fsw_u8 *ptr, int len)
 //{
-//    return GETU8(ptr, 12) & 0x8000;
+//    return GETU16(ptr, 12) & 0x8000; // ATTRIBUTE_RECORD_HEADER.Flags & ATTRIBUTE_FLAG_SPARSE
 //}
 
-static inline int attribute_encrypted(fsw_u8 *ptr, int len){
-
-    //DA-TAG: Item below is apparently always 0
-    //return GETU8(ptr, 12) & 0x4000;
-    return 0;
+static inline int attribute_encrypted(fsw_u8 *ptr, int len)
+{
+    return GETU16(ptr, 12) & 0x4000; // ATTRIBUTE_RECORD_HEADER.Flags & ATTRIBUTE_FLAG_ENCRYPTED
 }
 
 static void attribute_get_embeded(fsw_u8 *ptr, int len, fsw_u8 **outp, int *outlenp)
 {
-    int off = GETU16(ptr, 0x14);
-    int olen = GETU16(ptr, 0x10);
+    int off  = GETU16(ptr, 0x14); // ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueOffset
+    int olen = GETU16(ptr, 0x10); // ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueLength
     if(olen + off > len)
 	olen = len - off;
     *outp = ptr + off;
     *outlenp = olen;
 }
 
+static inline int attribute_rle_offset(fsw_u8 *ptr, int len)
+{
+    return GETU16(ptr, 0x20); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.MappingPairsOffset
+}
+
 static void attribute_get_rle(fsw_u8 *ptr, int len, fsw_u8 **outp, int *outlenp)
 {
-    int off = GETU16(ptr, 0x20);
+    int off = attribute_rle_offset(ptr, len);
     int olen = len - off;
     *outp = ptr + off;
     *outlenp = olen;
 }
 
-//static inline int attribute_rle_offset(fsw_u8 *ptr, int len)
-//{
-//    return GETU16(ptr, 0x20);
-//}
-
 static inline fsw_u64 attribute_size(fsw_u8 *ptr, int len)
 {
-    return GETU8(ptr, 8) ? GETU64(ptr, 0x30) : GETU16(ptr, 0x10);
+    return attribute_ondisk(ptr, len) ? GETU64(ptr, 0x30) : GETU16(ptr, 0x10); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.FileSize : ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueLength
 }
 
 static inline fsw_u64 attribute_inited_size(fsw_u8 *ptr, int len)
 {
-    return GETU8(ptr, 8) ? GETU64(ptr, 0x38) : GETU16(ptr, 0x10);
+    return attribute_ondisk(ptr, len) ? GETU64(ptr, 0x38) : GETU16(ptr, 0x10); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.ValidDataLength : ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueLength
 }
 
 static inline int attribute_has_vcn(fsw_u8 *ptr, int len, fsw_u64 vcn) {
-    if(GETU8(ptr, 8)==0)
+    if(attribute_ondisk(ptr, len)==0)
 	return 1;
-    return vcn >= GETU64(ptr, 0x10) && vcn <= GETU64(ptr, 0x18);
+    return vcn >= GETU64(ptr, 0x10) && vcn <= GETU64(ptr, 0x18); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.LowestVcn .. ATTRIBUTE_RECORD_HEADER.Form.Nonresident.HighestVcn
 }
 
 static inline fsw_u64 attribute_first_vcn(fsw_u8 *ptr, int len)
 {
-    return GETU8(ptr, 8) ? GETU64(ptr, 0x10) : 0;
+    return attribute_ondisk(ptr, len) ? GETU64(ptr, 0x10) : 0; // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.LowestVcn
 }
 
 static inline fsw_u64 attribute_last_vcn(fsw_u8 *ptr, int len)
 {
-    return GETU8(ptr, 8) ? GETU64(ptr, 0x18) : 0;
+    return attribute_ondisk(ptr, len) ? GETU64(ptr, 0x18) : 0; // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.HighestVcn
 }
 
 static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *ptr, int len, fsw_u8 **optrp, int *olenp)
@@ -380,7 +378,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
     fsw_status_t err;
     int olen;
 
-    if(attribute_ondisk(ptr, len) == 0) {
+    if(attribute_ondisk(ptr, len) == 0) { // RESIDENT_FORM
 	/* EMBEDED DATA */
 	attribute_get_embeded(ptr, len, &ptr, &len);
 	*olenp = len;
@@ -407,7 +405,7 @@ static fsw_status_t read_attribute_direct(struct fsw_ntfs_volume *vol, fsw_u8 *p
     int clustersize = 1<<vol->clbits;
     fsw_u64 lcn, cnt;
 
-    while(len > 0 && get_extent(&ptr, &len, &lcn, &cnt, &pos)==FSW_SUCCESS) {
+    while(olen > 0 && len > 0 && get_extent(&ptr, &len, &lcn, &cnt, &pos)==FSW_SUCCESS) {
 	if(lcn) {
 	    for(; cnt>0; lcn++, cnt--) {
 		fsw_u8 *block;
@@ -586,11 +584,11 @@ static void add_single_mft_map(struct fsw_ntfs_volume *vol, fsw_u8 *mft)
     if(find_attribute_direct(mft, 1<<vol->mftbits, AT_DATA, &ptr, &len)!=FSW_SUCCESS)
 	return;
 
-    if(attribute_ondisk(ptr, len) == 0)
+    if(attribute_ondisk(ptr, len) == 0) // RESIDENT_FORM
 	return;
 
-    fsw_u64 vcn = GETU64(ptr, 0x10);
-    int off = GETU16(ptr, 0x20);
+    fsw_u64 vcn = GETU64(ptr, 0x10); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.LowestVcn
+    int     off = GETU16(ptr, 0x20); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.MappingPairsOffset
     ptr += off;
     len -= off;
 
@@ -743,13 +741,13 @@ static fsw_status_t fsw_ntfs_volume_mount(struct fsw_volume *volg)
     int len;
     if(read_mft(vol, mft0.buf, MFTNO_VOLUME)==FSW_SUCCESS &&
 	    find_attribute_direct(mft0.buf, 1<<vol->mftbits, AT_VOLUME_NAME, &ptr, &len)==FSW_SUCCESS &&
-	    GETU8(ptr, 8)==0
+	    attribute_ondisk(ptr, len)==0 // RESIDENT_FORM
     ) {
         struct fsw_string s;
         s.type = FSW_STRING_TYPE_UTF16_LE;
-        s.size = GETU16(ptr, 0x10);
+        s.size = GETU16(ptr, 0x10); // ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueLength
         s.len = s.size / 2;
-        s.data = ptr + GETU16(ptr, 0x14);
+        s.data = ptr + GETU16(ptr, 0x14); // ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueOffset
         Print(L"Volume name [%.*ls]\n", s.len, s.data);
         fsw_strdup_coerce(&volg->label, volg->host_string_type, &s);
     }
@@ -879,7 +877,7 @@ static fsw_status_t fsw_ntfs_dnode_fill(struct fsw_volume *volg, struct fsw_dnod
 	    Print(L"dno_fill AT_DATA error %d\n", err);
 	    goto error_out;
 	}
-	dno->embeded = !attribute_ondisk(dno->attr.ptr, dno->attr.len);
+	dno->embeded = !attribute_ondisk(dno->attr.ptr, dno->attr.len); // RESIDENT_FORM = embedded, NONRESIDENT_FORM = not embedded
 	dno->fsize = attribute_size(dno->attr.ptr, dno->attr.len);
 	dno->finited = attribute_inited_size(dno->attr.ptr, dno->attr.len);
 	if(attribute_encrypted(dno->attr.ptr, dno->attr.len))
@@ -918,17 +916,17 @@ static fsw_status_t fsw_ntfs_dnode_stat(struct fsw_volume *volg, struct fsw_dnod
 
     err = find_attribute_direct(dno->mft.buf, 1<<vol->mftbits, AT_STANDARD_INFORMATION, &ptr, &len);
 
-    if(err != FSW_SUCCESS || GETU8(ptr, 8))
+    if(err != FSW_SUCCESS || attribute_ondisk(ptr, len)) // NONRESIDENT_FORM
 	return err;
 
-    ptr += GETU16(ptr, 0x14);
-    attr = GETU8(ptr, 0x20); /* only lower 8 of 32 bit is used */
+    ptr += GETU16(ptr, 0x14); // ATTRIBUTE_RECORD_HEADER.Form.Resident.ValueOffset
+    attr = GETU8(ptr, 0x20); /* only lower 8 of 32 bit is used */ // STANDARD_INFORMATION.FileAttributes
 #ifndef EFI_FILE_READ_ONLY
-#define EFI_FILE_READ_ONLY 1
-#define EFI_FILE_HIDDEN 2
-#define EFI_FILE_SYSTEM 4
-#define EFI_FILE_DIRECTORY 0x10
-#define EFI_FILE_ARCHIVE 0x20
+#define EFI_FILE_READ_ONLY    1 // FILE_ATTRIBUTE_READONLY
+#define EFI_FILE_HIDDEN       2 // FILE_ATTRIBUTE_HIDDEN
+#define EFI_FILE_SYSTEM       4 // FILE_ATTRIBUTE_SYSTEM
+#define EFI_FILE_DIRECTORY 0x10 // FILE_ATTRIBUTE_DIRECTORY
+#define EFI_FILE_ARCHIVE   0x20 // FILE_ATTRIBUTE_ARCHIVE
 #endif
     attr &= EFI_FILE_READ_ONLY | EFI_FILE_HIDDEN | EFI_FILE_SYSTEM | EFI_FILE_ARCHIVE;
     /* add DIR again if symlink */
@@ -937,9 +935,9 @@ static fsw_status_t fsw_ntfs_dnode_stat(struct fsw_volume *volg, struct fsw_dnod
 
     fsw_store_attr_efi(sb, attr);
     sb->used_bytes = dno->fsize;
-    fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, get_ntfs_time(ptr, 24));
-    fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, get_ntfs_time(ptr, 8));
-    fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, get_ntfs_time(ptr, 16));
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME, get_ntfs_time(ptr, 24)); // STANDARD_INFORMATION.LastAccessTime       // Last time the file was accessed
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME, get_ntfs_time(ptr,  0)); // STANDARD_INFORMATION.CreationTime         // File creation time
+    fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME, get_ntfs_time(ptr,  8)); // STANDARD_INFORMATION.LastModificationTime // Last time the DATA attribute was modified
 
     return FSW_SUCCESS;
 }
@@ -964,7 +962,7 @@ static fsw_status_t fsw_ntfs_dnode_get_lcn(struct fsw_ntfs_volume *vol, struct f
     fsw_u64 lcn, cnt;
     fsw_u64 svcn = attribute_first_vcn(ptr, len);
     fsw_u64 evcn = attribute_last_vcn(ptr, len) + 1;
-    int off = GETU16(ptr, 0x20);
+    int off = GETU16(ptr, 0x20); // ATTRIBUTE_RECORD_HEADER.Form.Nonresident.MappingPairsOffset
     ptr += off;
     len -= off;
     while(len > 0 && get_extent(&ptr, &len, &lcn, &cnt, &pos)==FSW_SUCCESS) {

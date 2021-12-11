@@ -1505,7 +1505,7 @@ static fsw_status_t fsw_btrfs_dnode_stat(struct fsw_volume *volg, struct fsw_dno
     fsw_store_time_posix(sb, FSW_DNODE_STAT_ATIME,
             fsw_u64_le_swap(dno->raw->atime.sec));
     fsw_store_time_posix(sb, FSW_DNODE_STAT_CTIME,
-            fsw_u64_le_swap(dno->raw->ctime.sec));
+            fsw_u64_le_swap(dno->raw->otime.sec));
     fsw_store_time_posix(sb, FSW_DNODE_STAT_MTIME,
             fsw_u64_le_swap(dno->raw->mtime.sec));
     fsw_store_attr_posix(sb, fsw_u32_le_swap(dno->raw->mode));

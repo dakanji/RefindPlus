@@ -10,6 +10,18 @@
   * This is a port of the downstream implementation by GitHub user @Joevt
 - Fixes 'BootKicker' and 'CleanNvram' Amongst Others
   * Misc memory management defects had disabled both
+- Fixes 'BTRFS' and 'NTFS' Filesystem Drivers from GitHub user @Joevt
+  * BTRFS: ixes file creation date bug
+  * NTFS: Fixes file creation date bug
+  * NTFS: Adds some comments to describe some fields that were only referenced by offset.
+  * NTFS: Fixed "attribute_sparse" and "attribute_encrypted" which were not testing those flags correctly
+    - The field is a USHORT (16 bit)
+  * NTFS: Fixes a bug where "read_attribute_direct" could write outside the attribute destination buffer.
+    - "olen" can become negative and could be passed to "CopyMem", which requires an unsigned length.
+- Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
+  * NOTES:
+    - This implementation does not support setups with more than one APFS instance in a single container
+    - This implementation is still a work in progress
 
 
 0.13.2.AK (07 Dec 2021):
