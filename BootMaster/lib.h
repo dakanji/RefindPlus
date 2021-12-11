@@ -96,7 +96,7 @@ typedef struct {
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
 
 #define MINLOGLEVEL         (0)
-#define MAXLOGLEVEL         (3)
+#define MAXLOGLEVEL         (1)
 
 extern EFI_GUID gFreedesktopRootGuid;
 

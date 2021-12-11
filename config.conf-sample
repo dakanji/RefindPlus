@@ -418,13 +418,15 @@
 # Set the logging level. When set to "0", a log file in the native RefindPlus format
 # is produced in the RefindPlus home directory on the ESP, logging information about
 # what RefindPlus is doing. When set to "1" or above, the logging is in the upstream
-# format instead (a variant of). Higher values, up to the maximum of 4, record more
-# information. NOTE: This option is only active when running DEBUG builds and the
-# logging process, particularly higher levels, noticeably slows RefindPlus down.
+# format instead (a variant of). The maximum log level is Level 2, but this level is
+# only available when exposed at compilation time for forensic debugging. This means
+# that Levels 0 and 1 are the available log levels for typical users. This option is
+# only active when running DEBUG builds and the logging process, particularly higher
+# levels, can noticeably slow RefindPlus operation and time must be given as needed.
 #
 # The native format is used when commented out (DEBUG builds only)
 #
-#log_level 2
+#log_level 1
 
 # Set the CSR values for Apple's System Integrity Protection (SIP) and
 # Sealed System Volume (SSV) features that define access levels on Mac OS.

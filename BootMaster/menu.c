@@ -142,7 +142,7 @@ VOID InitSelection (VOID) {
 
     if (TempSmallImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_small'");
+        LOG(1, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_small'");
         #endif
 
         TempSmallImage = egPrepareEmbeddedImage (&egemb_back_selected_small, TRUE, NULL);
@@ -170,7 +170,7 @@ VOID InitSelection (VOID) {
 
         if (TaintFree && LoadedSmallImage) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Scaling Selection Image from LoadedSmallImage");
+            LOG(1, LOG_LINE_NORMAL, L"Scaling Selection Image from LoadedSmallImage");
             #endif
 
            // calculate big selection image from small one
@@ -178,7 +178,7 @@ VOID InitSelection (VOID) {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_big'");
+            LOG(1, LOG_LINE_NORMAL, L"Using Embedded Selection Image:- 'egemb_back_selected_big'");
             #endif
 
            TempBigImage = egPrepareEmbeddedImage (&egemb_back_selected_big, TRUE, NULL);
@@ -415,7 +415,7 @@ VOID AddMenuInfoLine (
     IN CHAR16            *InfoLine
 ) {
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
+    LOG(1, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
     #endif
 
     AddListElement (
@@ -430,7 +430,7 @@ VOID AddMenuEntry (
     IN REFIT_MENU_ENTRY  *Entry
 ) {
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Adding Menu Entry to %s - %s",
         Screen->Title,
         Entry->Title
@@ -531,7 +531,7 @@ VOID SaveScreen (VOID) {
     CHAR16 *MsgStr = NULL;
 
     MsgStr = StrDuplicate (L"Keypress Wait Threshold Exceeded");
-    LOG(2, LOG_LINE_NORMAL,  L"%s", MsgStr);
+    LOG(1, LOG_LINE_NORMAL,  L"%s", MsgStr);
     MsgLog ("INFO: %s ...", MsgStr);
     MY_FREE_POOL(MsgStr);
 
@@ -591,12 +591,12 @@ VOID SaveScreen (VOID) {
                 TimeWait = BaseTimeWait;
 
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Reset Timeout");
+                LOG(1, LOG_LINE_NORMAL, L"Reset Timeout");
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Extend Timeout");
+                LOG(1, LOG_LINE_NORMAL, L"Extend Timeout");
                 #endif
             }
         }
@@ -643,12 +643,12 @@ VOID SaveScreen (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"Detected Keypress");
-    LOG(2, LOG_LINE_NORMAL,  L"%s", MsgStr);
+    LOG(1, LOG_LINE_NORMAL,  L"%s", MsgStr);
     MsgLog ("      %s ... ", MsgStr);
     MY_FREE_POOL(MsgStr);
 
     MsgStr = StrDuplicate (L"Ending Screensaver");
-    LOG(2, LOG_THREE_STAR_END, L"%s", MsgStr);
+    LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
     MsgLog ("%s", MsgStr);
     MsgLog ("\n\n");
     MY_FREE_POOL(MsgStr);
@@ -719,7 +719,7 @@ UINTN RunGenericMenu (
 
     #if REFIT_DEBUG > 0
     LOG(1, LOG_THREE_STAR_SEP, L"Entering RunGenericMenu");
-    LOG(2, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
+    LOG(1, LOG_LINE_NORMAL, L"Running Menu Screen:- '%s'", Screen->Title);
     #endif
 
     if (Screen->TimeoutSeconds > 0) {
@@ -858,7 +858,7 @@ UINTN RunGenericMenu (
             if (HaveTimeout && TimeoutCountdown == 0) {
                 // timeout expired
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Menu Timeout Expired:- '%d Seconds'", Screen->TimeoutSeconds);
+                LOG(1, LOG_LINE_NORMAL, L"Menu Timeout Expired:- '%d Seconds'", Screen->TimeoutSeconds);
                 #endif
 
                 MenuExit = MENU_EXIT_TIMEOUT;
@@ -969,7 +969,7 @@ UINTN RunGenericMenu (
                     case '-':                  KeyTxt = L"INFER_REMOVE   Key='-'...'Minus'";   break;
                 } // switch
             }
-            LOG(2, LOG_LINE_NORMAL,
+            LOG(1, LOG_LINE_NORMAL,
                 L"Processing Keystroke: UnicodeChar = 0x%02X ... ScanCode = 0x%02X - %s",
                 key.UnicodeChar, key.ScanCode, KeyTxt
             );
@@ -978,7 +978,7 @@ UINTN RunGenericMenu (
         else {
             //react to pointer event
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Processing Pointer Event");
+            LOG(1, LOG_LINE_NORMAL, L"Processing Pointer Event");
             #endif
 
             if (StyleFunc != MainMenuStyle) {
@@ -2226,7 +2226,7 @@ UINTN WaitForInput (
 
     //DA-TAG: Consider deleting later. Seems more of a distraction than a useful item
     //#if REFIT_DEBUG > 0
-    //LOG(3, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
+    //LOG(1, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
     //#endif
 
     // Generate WaitList if not already generated.
@@ -2313,7 +2313,7 @@ VOID DisplaySimpleMessage (
     CHAR16 *Message
 ) {
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"Entering DisplaySimpleMessage");
+    LOG(1, LOG_THREE_STAR_MID, L"Entering DisplaySimpleMessage");
     #endif
 
     if (!Message) {
@@ -2346,7 +2346,7 @@ VOID DisplaySimpleMessage (
     //         Constant ... Do Not Free
     CHAR16 *TypeMenuExit = (MenuExit < 1) ? L"UNKNOWN!!" : MenuExitInfo (MenuExit);
 
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'DisplaySimpleMessage'",
         MenuExit, TypeMenuExit, ChosenOption->Title
     );
@@ -2511,7 +2511,7 @@ VOID ManageHiddenTags (VOID) {
         MenuExit = RunGenericMenu (&HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ManageHiddenTags'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
@@ -2587,7 +2587,7 @@ CHAR16 * ReadHiddenTags (
 
     if ((Status == EFI_SUCCESS) && (Size == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Zero Size in ReadHiddenTags ... Clearing Buffer"
         );
         #endif
@@ -2675,7 +2675,7 @@ BOOLEAN HideEfiTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideEfiTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2730,7 +2730,7 @@ BOOLEAN HideFirmwareTag(
     );
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideFirmwareTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2779,7 +2779,7 @@ BOOLEAN HideLegacyTag (
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'HideLegacyTag'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
@@ -2904,7 +2904,7 @@ UINTN RunMenu (
     MenuExit = RunGenericMenu (Screen, Style, &DefaultEntry, ChosenEntry);
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMenu'",
         MenuExit, MenuExitInfo (MenuExit), Screen->Title
     );
@@ -2931,13 +2931,13 @@ UINTN RunMainMenu (
            BOOLEAN  SetSelection = FALSE;
     #endif
 
-    LOG(4, LOG_BLANK_LINE_SEP, L"X");
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 1 - START");
+    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 1 - START");
 
     TileSizes[0] = (GlobalConfig.IconSizes[ICON_SIZE_BIG]   * 9) / 8;
     TileSizes[1] = (GlobalConfig.IconSizes[ICON_SIZE_SMALL] * 4) / 3;
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 2");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 2");
 
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
@@ -2951,103 +2951,103 @@ UINTN RunMainMenu (
     }
     #endif
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3");
     if (DefaultSelection && *DefaultSelection) {
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 1");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 1");
         // Find a menu entry that includes *DefaultSelection as a substring
         DefaultEntryIndex = FindMenuShortcutEntry (Screen, *DefaultSelection);
 
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2");
         #if REFIT_DEBUG > 0
         if (ShowLoaded) {
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2a 1");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2a 1");
             SetSelection = TRUE;
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("\n");
             MsgLog ("      %s", MsgStr);
             MY_FREE_POOL(MsgStr);
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2a 2");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 2a 2");
         }
         #endif
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 3");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 3a 3");
     }
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4");
     #if REFIT_DEBUG > 0
     if (ShowLoaded) {
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 1");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 1");
         ShowLoaded  = FALSE;
 
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 2");
         if (SetSelection) {
             UINTN EntryPosition = (DefaultEntryIndex < 0) ? 0 : DefaultEntryIndex;
             MsgStr = PoolPrint (
                 L"Highlighted Screen Option:- '%s'",
                 Screen->Entries[EntryPosition]->Title
             );
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
             MsgLog ("\n");
             MsgLog ("      %s", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 3");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 4a 3");
         MsgLog ("\n\n");
     }
     #endif
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 5");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 5");
 
     // remove any buffered key strokes
     ReadAllKeyStrokes();
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6");
 
     if (AllowGraphicsMode) {
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6a 1");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6a 1");
         Style     = GraphicsMenuStyle;
         MainStyle = MainMenuStyle;
 
         PointerEnabled = PointerActive = pdAvailable();
         DrawSelection  = !PointerEnabled;
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 6a 2");
     }
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 7");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 7");
     // Generate WaitList if not already generated.
     GenerateWaitList();
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 8");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 8");
     // Save time elaspsed from start til now
     MainMenuLoad = GetCurrentMS();
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9");
     do {
-        LOG(4, LOG_BLANK_LINE_SEP, L"X");
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 1 START DO LOOP");
+        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 1 START DO LOOP");
         MenuExit = RunGenericMenu (Screen, MainStyle, &DefaultEntryIndex, &TempChosenEntry);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'RunMainMenu'",
             MenuExit, MenuExitInfo (MenuExit), TempChosenEntry->Title
         );
         #endif
 
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 2");
         Screen->TimeoutSeconds = 0;
 
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3");
         if (MenuExit == MENU_EXIT_DETAILS) {
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1");
             if (!TempChosenEntry->SubScreen) {
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 1");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 1");
                 // no sub-screen; ignore keypress
                 MenuExit = 0;
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 2");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1a 2");
             }
             else {
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 1");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 1");
                 MenuExit = RunGenericMenu (
                     TempChosenEntry->SubScreen,
                     Style,
@@ -3055,57 +3055,57 @@ UINTN RunMainMenu (
                     &TempChosenEntry
                 );
 
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 2");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 2");
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL,
+                LOG(1, LOG_LINE_NORMAL,
                     L"Returned '%d' (%s) from RunGenericMenu Call on SubScreen in 'RunMainMenu'",
                     MenuExit, MenuExitInfo (MenuExit)
                 );
                 #endif
 
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 3");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 3");
                 if (MenuExit == MENU_EXIT_ESCAPE || TempChosenEntry->Tag == TAG_RETURN) {
                     MenuExit = 0;
                 }
 
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4");
                 if (MenuExit == MENU_EXIT_DETAILS) {
-                    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1");
+                    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1");
                     if (!EditOptions ((LOADER_ENTRY *) TempChosenEntry)) {
-                        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 1");
+                        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 1");
                         MenuExit = 0;
-                        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 2");
+                        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 1a 2");
                     }
-                    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 2");
+                    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 4a 2");
                 }
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 5");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 1b 5");
             }
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 2");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 3a 2");
         } // if MenuExit == MENU_EXIT_DETAILS
 
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4");
         if (MenuExit == MENU_EXIT_HIDE) {
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1");
             if (GlobalConfig.HiddenTags) {
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 1");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 1");
                 HideTag (TempChosenEntry);
-                LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 2");
+                LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 1a 2");
             }
 
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 2");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 2");
             MenuExit = 0;
-            LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 3");
+            LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 4a 3");
         }
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5 END DO LOOP");
-        LOG(4, LOG_BLANK_LINE_SEP, L"X");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 9a 5 END DO LOOP");
+        LOG(2, LOG_BLANK_LINE_SEP, L"X");
     } while (MenuExit == 0);
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 10");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 10");
 
     // Ignore MenuExit if FlushFailedTag is set and not previously reset
     if (FlushFailedTag && !FlushFailReset) {
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
-        LOG(2, LOG_THREE_STAR_END, L"%s", MsgStr);
+        LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
@@ -3115,26 +3115,26 @@ UINTN RunMainMenu (
         MenuExit = 0;
     }
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11");
     if (ChosenEntry) {
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11a 1");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11a 1");
         *ChosenEntry = TempChosenEntry;
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 11a 2");
     }
 
-    LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12");
+    LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12");
     if (DefaultSelection) {
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 1");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 1");
         MY_FREE_POOL(*DefaultSelection);
         *DefaultSelection = StrDuplicate (TempChosenEntry->Title);
-        LOG(4, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 2");
+        LOG(2, LOG_LINE_FORENSIC, L"In RunMainMenu ... 12a 2");
     }
 
-    LOG(4, LOG_LINE_FORENSIC,
+    LOG(2, LOG_LINE_FORENSIC,
         L"In RunMainMenu ... 13 - END:- return UINTN MenuExit = '%d'",
         MenuExit
     );
-    LOG(4, LOG_BLANK_LINE_SEP, L"X");
+    LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return MenuExit;
 } // UINTN RunMainMenu()
 

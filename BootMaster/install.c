@@ -53,7 +53,7 @@ VOID DeleteESPList (
     ESP_LIST *Temp;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Deleting List of ESPs");
+    LOG(1, LOG_LINE_NORMAL, L"Deleting List of ESPs");
     #endif
 
     while (AllESPs != NULL) {
@@ -75,7 +75,7 @@ ESP_LIST * FindAllESPs (VOID) {
     EFI_GUID  ESPGuid = ESP_GUID_VALUE;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Searching for ESPs");
+    LOG(1, LOG_LINE_NORMAL, L"Searching for ESPs");
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -133,7 +133,7 @@ REFIT_VOLUME * PickOneESP (
     };
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
+    LOG(1, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
     #endif
 
     if (AllowGraphicsMode) {
@@ -169,7 +169,7 @@ REFIT_VOLUME * PickOneESP (
             }
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
+            LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
             #endif
 
             MY_FREE_POOL(GuidStr);
@@ -181,7 +181,7 @@ REFIT_VOLUME * PickOneESP (
         MenuExit = RunGenericMenu (&InstallMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
@@ -204,7 +204,7 @@ REFIT_VOLUME * PickOneESP (
         DisplaySimpleMessage (L"Information", L"No Eligible ESPs Found");
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"No ESPs found");
+        LOG(1, LOG_LINE_NORMAL, L"No ESPs found");
         #endif
     }
 
@@ -231,7 +231,7 @@ EFI_STATUS RenameFile (
     UINTN          NewInfoSize;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Trying to Rename '%s' to '%s'", OldName, NewName);
+    LOG(1, LOG_LINE_NORMAL, L"Trying to Rename '%s' to '%s'", OldName, NewName);
     #endif
 
     Status = REFIT_CALL_5_WRAPPER(BaseDir->Open, BaseDir, &FilePtr, OldName,
@@ -285,7 +285,7 @@ EFI_STATUS BackupOldFile (
     CHAR16              *NewName;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Backing '%s' Up", FileName);
+    LOG(1, LOG_LINE_NORMAL, L"Backing '%s' Up", FileName);
     #endif
 
     if ((BaseDir == NULL) || (FileName == NULL)) {
@@ -403,7 +403,7 @@ EFI_STATUS CopyOneFile (
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Error:- '%r' When Copying '%s' to '%s'",
             Status, SourceName, DestName
         );
@@ -468,7 +468,7 @@ EFI_STATUS CopyDrivers (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL,
+    LOG(1, LOG_LINE_NORMAL,
         L"Scanning %d Volumes for Identifiable Filesystems",
         VolumesCount
     );
@@ -476,7 +476,7 @@ EFI_STATUS CopyDrivers (
 
     for (i = 0; i < VolumesCount; i++) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Looking for Driver for Volume # %d, '%s'",
             i, Volumes[i]->VolName
         );
@@ -550,7 +550,7 @@ EFI_STATUS CopyDrivers (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Trying to Copy Driver for %s", DriverName);
+            LOG(1, LOG_LINE_NORMAL, L"Trying to Copy Driver for %s", DriverName);
             #endif
 
             Status = CopyOneFile (
@@ -598,7 +598,7 @@ EFI_STATUS CopyFiles (
     MY_FREE_POOL(RefindPlusName);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Error When Copying RefindPlus Binary ... Installation has Failed!!"
         );
         #endif
@@ -656,7 +656,7 @@ EFI_STATUS CopyFiles (
 
         if (EFI_ERROR(Status)) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Error When Copying Drivers:- '%d'", Status);
+            LOG(1, LOG_LINE_NORMAL, L"Error When Copying Drivers:- '%d'", Status);
             #endif
 
             WorstStatus = Status;
@@ -726,7 +726,7 @@ VOID CreateFallbackCSV (
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
-        LOG(2, LOG_LINE_NORMAL, L"Error When Writing 'BOOT.CSV' File:- '%r'", Status);
+        LOG(1, LOG_LINE_NORMAL, L"Error When Writing 'BOOT.CSV' File:- '%r'", Status);
     }
     #endif
 } // VOID CreateFallbackCSV()
@@ -742,7 +742,7 @@ VOID CreateFallbackCSV (
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
-            LOG(2, LOG_LINE_NORMAL, L"Error When Backing Icons Up");
+            LOG(1, LOG_LINE_NORMAL, L"Error When Backing Icons Up");
         }
         #endif
     }
@@ -751,7 +751,7 @@ VOID CreateFallbackCSV (
 
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
-            LOG(2, LOG_LINE_NORMAL, L"Error When Creating Target Directory");
+            LOG(1, LOG_LINE_NORMAL, L"Error When Creating Target Directory");
         }
         #endif
     }
@@ -1002,7 +1002,7 @@ VOID InstallRefindPlus (VOID) {
     UINTN         Status;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Installing RefindPlus to an ESP");
+    LOG(1, LOG_LINE_NORMAL, L"Installing RefindPlus to an ESP");
     #endif
 
     AllESPs     = FindAllESPs();
@@ -1046,7 +1046,7 @@ BOOT_ENTRY_LIST * FindBootOrderEntries (VOID) {
     BOOT_ENTRY_LIST  *L, *ListStart = NULL, *ListEnd = NULL; // return value; do not free
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Fetch Boot Order Variables:");
+    LOG(1, LOG_LINE_NORMAL, L"Fetch Boot Order Variables:");
     #endif
 
     Status = EfivarGetRaw (
@@ -1164,7 +1164,7 @@ UINTN ConfirmBootOptionOperation (
         MenuExit = RunGenericMenu (&ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on 'Selection = %s' in 'ConfirmBootOptionOperation'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
@@ -1259,7 +1259,7 @@ UINTN PickOneBootOption (
 
         MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
             MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
         );
@@ -1292,7 +1292,7 @@ EFI_STATUS DeleteInvalidBootEntries (VOID) {
     CHAR16   *VarName;
 
     #if REFIT_DEBUG > 0
-    LOG(2, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries from Internal BootOrder List");
+    LOG(1, LOG_LINE_NORMAL, L"Deleting Invalid Boot Entries from Internal BootOrder List");
     #endif
 
     Status = EfivarGetRaw (

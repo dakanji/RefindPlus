@@ -23,6 +23,16 @@
   * This significantly improves determination of APFS Volume Types/Roles
   * Restrictions limiting features to setups with only one APFS instance per container are removed
   * This is a port of the downstream implementation by GitHub user @Joevt
+- Amends Log Levels
+  * LogLevel 0  remains as a native summary format
+  * The previous upstream based four (4) log levels have been compressed to two (2) levels
+  * LogLevel 4, which was not exposed by default, is now LogLevel 2, which is also not exposed by default.
+  * LogLevel 2 is exposed when the "REFIT_DEBUG" build flag is set to two (2) at compilation time.
+    - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
+  * Unless LogLevel 2 is exposed when compiling, selected levels above one (1) will be capped at LogLevel 1
+  * When LogLevel 2 is exposed, selected levels above two (2) will be capped at LogLevel 2
+
+
 - Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * IMPORTANT:
     - This implementation is still a work in progress

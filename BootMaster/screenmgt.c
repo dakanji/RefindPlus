@@ -120,7 +120,7 @@ VOID InitScreen (VOID) {
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_THREE_STAR_MID, L"Graphics Mode Detected ... Getting Resolution");
+        LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode Detected ... Getting Resolution");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -128,7 +128,7 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(3, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
+        LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -218,7 +218,7 @@ VOID SetupScreen (VOID) {
             : GlobalConfig.RequestedScreenHeight;
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"Recording Current Resolution as %d x %d",
             ScreenW, ScreenH
         );
@@ -247,7 +247,7 @@ VOID SetupScreen (VOID) {
         ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL,
+        LOG(1, LOG_LINE_NORMAL,
             L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
             ScreenLongest, ScreenShortest
         );
@@ -258,7 +258,7 @@ VOID SetupScreen (VOID) {
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s\n", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
@@ -290,7 +290,7 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Screen is in Text Mode");
-        LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("INFO: %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         (GlobalConfig.LogLevel == 0)
@@ -305,13 +305,13 @@ VOID SetupScreen (VOID) {
             MsgStr = (!gotGraphics)
                 ? StrDuplicate (L"Prepare Graphics Mode Switch")
                 : StrDuplicate (L"Prepare Placeholder Display");
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("%s:", MsgStr);
             MsgLog ("\n");
             MY_FREE_POOL(MsgStr);
 
             MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%d x %d'", ScreenLongest, ScreenShortest);
-            LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
@@ -320,7 +320,7 @@ VOID SetupScreen (VOID) {
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
@@ -353,7 +353,7 @@ VOID SetupScreen (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
@@ -362,7 +362,7 @@ VOID SetupScreen (VOID) {
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
@@ -372,7 +372,7 @@ VOID SetupScreen (VOID) {
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Running Graphics Mode Switch");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
@@ -385,7 +385,7 @@ VOID SetupScreen (VOID) {
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Loading Placeholder Display");
-                LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 MsgLog ("\n\n");
                 MY_FREE_POOL(MsgStr);
@@ -399,7 +399,7 @@ VOID SetupScreen (VOID) {
                 MsgStr = (gotGraphics)
                     ? StrDuplicate (L"Displayed Placeholder")
                     : StrDuplicate (L"Switch to Graphics Mode ... Success");
-                LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("INFO: %s", MsgStr);
                 #endif
             }
@@ -408,7 +408,7 @@ VOID SetupScreen (VOID) {
                 MsgLog ("INFO: Changing to Screensaver Display");
 
                 MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
-                LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 MsgLog ("      %s", MsgStr);
                 #endif
 
@@ -428,7 +428,7 @@ VOID SetupScreen (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
-        LOG(3, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
         MsgLog ("WARN: %s", MsgStr);
         MsgLog ("\n\n");
         MY_FREE_POOL(MsgStr);
@@ -567,14 +567,14 @@ VOID BeginExternalScreen (
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
+        LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
+        LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
         #endif
 
         SwitchToText (UseGraphicsMode);
@@ -669,7 +669,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
 
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
     MsgLog ("INFO: %s\n\n", MsgStr);
-    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -737,21 +737,21 @@ VOID PauseForKey (VOID) {
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 9 Seconds");
+        LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 9 Seconds");
         #endif
 
         for (i = 0; i < 9; ++i) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
                 #endif
 
                 Breakout = TRUE;
@@ -764,27 +764,27 @@ VOID PauseForKey (VOID) {
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
-            LOG(2, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
         }
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
+        LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
         #endif
 
         for (;;) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
                 #endif
 
                 Breakout = TRUE;
@@ -817,21 +817,21 @@ VOID PauseSeconds (
     ReadAllKeyStrokes();
 
     #if REFIT_DEBUG > 0
-    LOG(3, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
+    LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
     #endif
 
     for (i = 0; i < Seconds; ++i) {
         WaitOut = WaitForInput (1000);
         if (WaitOut == INPUT_KEY) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
             #endif
 
             Breakout = TRUE;
         }
         else if (WaitOut == INPUT_TIMER_ERROR) {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
             #endif
 
             Breakout = TRUE;
@@ -844,7 +844,7 @@ VOID PauseSeconds (
 
     #if REFIT_DEBUG > 0
     if (!Breakout) {
-        LOG(2, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+        LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
     }
     #endif
 
@@ -1064,7 +1064,7 @@ VOID BltClearScreen (
                 MsgStr = StrDuplicate (L"Default Title Banner");
                 MsgLog ("%s%s* %s", OffsetNext, StrSpacer, MsgStr);
                 if (!LoggedBanner) {
-                    LOG(2, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                 }
                 MY_FREE_POOL(MsgStr);
 
@@ -1081,7 +1081,7 @@ VOID BltClearScreen (
                     MsgStr
                 );
                 if (!LoggedBanner) {
-                    LOG(2, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LoggedBanner = TRUE;
                 }
                 MY_FREE_POOL(MsgStr);
@@ -1139,7 +1139,7 @@ VOID BltClearScreen (
                 MsgStr = StrDuplicate (L"Custom Title Banner");
                 MsgLog ("%s    * %s", OffsetNext, MsgStr);
                 if (!LoggedBanner) {
-                    LOG(2, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
                 }
                 MY_FREE_POOL(MsgStr);

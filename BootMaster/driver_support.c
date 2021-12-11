@@ -727,7 +727,7 @@ BOOLEAN LoadDrivers (VOID) {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(2, LOG_LINE_NORMAL,
+            LOG(1, LOG_LINE_NORMAL,
                 L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, SelfDirectory
             );
@@ -767,7 +767,7 @@ BOOLEAN LoadDrivers (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(2, LOG_LINE_NORMAL,
+                    LOG(1, LOG_LINE_NORMAL,
                         L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, SelfDirectory
                     );
