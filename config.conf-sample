@@ -39,12 +39,6 @@
 # booting into FileVault encrypted APFS volumes with their volume labels (not PreBoot).
 # When this option is enabled however, the RefindPlus "SyncAPFS" feature is disabled.
 #
-# NB: Maintain the default naming pattern for APFS data volumes, "VolName - Data",
-# to improve the reliability of "SyncAPFS" distinguishing between APFS volumes.
-# Also, avoid the use of special characters in Mac OS volume names and limit
-# names to alphanumeric characters. Dashes, underscores and/or spaces can
-# be used in combination with alphanumeric characters without issue.
-#
 # APFS partition synchronisation is allowed when commented out
 #
 #decline_apfssync

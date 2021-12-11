@@ -332,6 +332,8 @@ typedef struct {
     EFI_GUID             VolUuid;
     EFI_GUID             PartGuid;
     EFI_GUID             PartTypeGuid;
+    EFI_GUID             VolGroup;
+    UINT32               Role;         // APPLE_APFS_VOLUME_ROLE
     BOOLEAN              IsMarkedReadOnly;
     EG_IMAGE            *VolIconImage;
     EG_IMAGE            *VolBadgeImage;
