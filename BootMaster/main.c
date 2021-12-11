@@ -832,10 +832,7 @@ VOID preBootKicker (VOID) {
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryBootKicker);
 
     if (LoadedOnce) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen");
-        #endif
-
+        // Should Not Happen ... Return to Main Menu
         return;
     }
 
@@ -856,8 +853,14 @@ VOID preBootKicker (VOID) {
     AddMenuInfoLine (&BootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
     AddMenuInfoLine (&BootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
     AddMenuInfoLine (&BootKickerMenu, L"");
-    AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and Copyright Acidanthera");
-    AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below:");
+    AddMenuInfoLine (&BootKickerMenu, L"BootKicker is from OpenCore and is Copyright Acidanthera");
+    AddMenuInfoLine (&BootKickerMenu, L"You can find copies of binary file here:");
+    AddMenuInfoLine (&BootKickerMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
+    AddMenuInfoLine (&BootKickerMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+    AddMenuInfoLine (&BootKickerMenu, L"Requires at least one of the files below.");
+    AddMenuInfoLine (&BootKickerMenu, L" - The first file found in the order listed will be used");
+    AddMenuInfoLine (&BootKickerMenu, L" - You will be returned to the main menu if not found");
+    AddMenuInfoLine (&BootKickerMenu, L"");
 
     UINTN k = 0;
     CHAR16 *FilePath = NULL;
@@ -867,23 +870,11 @@ VOID preBootKicker (VOID) {
     }
 
     AddMenuInfoLine (&BootKickerMenu, L"");
-    AddMenuInfoLine (&BootKickerMenu, L"The first file found in the order listed will be used");
-    AddMenuInfoLine (&BootKickerMenu, L"You will be returned to the main menu if not found");
-    AddMenuInfoLine (&BootKickerMenu, L"");
-    AddMenuInfoLine (&BootKickerMenu, L"");
-    AddMenuInfoLine (&BootKickerMenu, L"You can get the BootKicker efi file here:");
-    AddMenuInfoLine (&BootKickerMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
-    AddMenuInfoLine (&BootKickerMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-    AddMenuInfoLine (&BootKickerMenu, L"");
-    AddMenuInfoLine (&BootKickerMenu, L"");
 
     AddMenuEntry (&BootKickerMenu, CopyMenuEntry (&MenuEntryBootKicker));
     AddMenuEntry (&BootKickerMenu, CopyMenuEntry (&MenuEntryReturn));
 
     MY_FREE_POOL(TempMenuEntry->Title);
-    MY_FREE_IMAGE(TempMenuEntry->Image);
-    MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
-    FreeMenuScreen (&TempMenuEntry->SubScreen);
     MY_FREE_POOL(TempMenuEntry);
 
     MenuExit = RunGenericMenu (&BootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
@@ -993,10 +984,7 @@ VOID preCleanNvram (VOID) {
     REFIT_MENU_ENTRY  *TempMenuEntry  = CopyMenuEntry (&MenuEntryCleanNvram);
 
     if (LoadedOnce) {
-        #if REFIT_DEBUG > 0
-        LOG(2, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen");
-        #endif
-
+        // Should Not Happen ... Return to Main Menu
         return;
     }
 
@@ -1016,7 +1004,13 @@ VOID preCleanNvram (VOID) {
     AddMenuInfoLine (&CleanNvramMenu, L"Requires Apple Firmware");
     AddMenuInfoLine (&CleanNvramMenu, L"");
     AddMenuInfoLine (&CleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
-    AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below:");
+    AddMenuInfoLine (&CleanNvramMenu, L"You can find copies of binary file here:");
+    AddMenuInfoLine (&CleanNvramMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
+    AddMenuInfoLine (&CleanNvramMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+    AddMenuInfoLine (&CleanNvramMenu, L"Requires at least one of the files below.");
+    AddMenuInfoLine (&CleanNvramMenu, L" - The first file found in the order listed will be used");
+    AddMenuInfoLine (&CleanNvramMenu, L" - You will be returned to the main menu if not found");
+    AddMenuInfoLine (&CleanNvramMenu, L"");
 
     UINTN k = 0;
     CHAR16 *FilePath = NULL;
@@ -1026,23 +1020,11 @@ VOID preCleanNvram (VOID) {
     }
 
     AddMenuInfoLine (&CleanNvramMenu, L"");
-    AddMenuInfoLine (&CleanNvramMenu, L"The first file found in the order listed will be used");
-    AddMenuInfoLine (&CleanNvramMenu, L"You will be returned to the main menu if not found");
-    AddMenuInfoLine (&CleanNvramMenu, L"");
-    AddMenuInfoLine (&CleanNvramMenu, L"");
-    AddMenuInfoLine (&CleanNvramMenu, L"You can get the CleanNvram efi file here:");
-    AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/acidanthera/OpenCorePkg/releases");
-    AddMenuInfoLine (&CleanNvramMenu, L"https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-    AddMenuInfoLine (&CleanNvramMenu, L"");
-    AddMenuInfoLine (&CleanNvramMenu, L"");
 
-    AddMenuEntry (&CleanNvramMenu, &MenuEntryCleanNvram);
-    AddMenuEntry (&CleanNvramMenu, &MenuEntryReturn);
+    AddMenuEntry (&CleanNvramMenu, CopyMenuEntry (&MenuEntryCleanNvram));
+    AddMenuEntry (&CleanNvramMenu, CopyMenuEntry (&MenuEntryReturn));
 
     MY_FREE_POOL(TempMenuEntry->Title);
-    MY_FREE_IMAGE(TempMenuEntry->Image);
-    MY_FREE_IMAGE(TempMenuEntry->BadgeImage);
-    FreeMenuScreen (&TempMenuEntry->SubScreen);
     MY_FREE_POOL(TempMenuEntry);
 
     MenuExit = RunGenericMenu (&CleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
