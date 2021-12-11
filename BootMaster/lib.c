@@ -111,10 +111,12 @@ EFI_FILE          *gVarsDir             = NULL;
 
 REFIT_VOLUME      *SelfVolume           = NULL;
 REFIT_VOLUME     **Volumes              = NULL;
+REFIT_VOLUME     **RecoveryVolumes      = NULL;
 REFIT_VOLUME     **PreBootVolumes       = NULL;
 REFIT_VOLUME     **SystemVolumes        = NULL;
 REFIT_VOLUME     **DataVolumes          = NULL;
 
+UINTN              RecoveryVolumesCount    = 0;
 UINTN              PreBootVolumesCount     = 0;
 UINTN              SystemVolumesCount      = 0;
 UINTN              DataVolumesCount        = 0;
@@ -2572,7 +2574,15 @@ VOID ScanVolumes (VOID) {
                     Volume->VolUuid = VolumeGuid;
                     RoleStr         = GetApfsRoleString (VolumeRole);
 
-                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
+                        // Create or add to a list of APFS Recovery Volumes
+                        AddListElement (
+                            (VOID ***) &RecoveryVolumes,
+                            &RecoveryVolumesCount,
+                            CopyVolume (Volume)
+                        );
+                    }
+                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
                         // Create or add to a list of APFS PreBoot Volumes
                         AddListElement (
                             (VOID ***) &PreBootVolumes,
