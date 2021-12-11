@@ -125,11 +125,12 @@ REFIT_VOLUME * PickOneESP (
     REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
 
     REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
-    TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
-    CHAR16 *MenuInfo                   = StrDuplicate (L"Select a partition and press 'Enter' to install RefindPlus");
-    REFIT_MENU_SCREEN   InstallMenu = { L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
-                                        L"Select a destination and press 'Enter' or",
-                                        L"press 'Esc' to return to the main menu without changes" };
+    CHAR16              *MenuInfo      = L"Select a Partition and Press 'Enter' to Install RefindPlus";
+    REFIT_MENU_SCREEN   InstallMenu    = {
+        L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
+        L"Select a Destination and Press 'Enter' or",
+        L"Press 'Esc' to Return to Main Menu (Without Changes)"
+    };
 
     #if REFIT_DEBUG > 0
     LOG(2, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
@@ -141,7 +142,7 @@ REFIT_VOLUME * PickOneESP (
 
     if (AllESPs) {
         CurrentESP = AllESPs;
-        AddMenuInfoLine (&InstallMenu, StrDuplicate (MenuInfo));
+        AddMenuInfoLine (&InstallMenu, MenuInfo);
         while (CurrentESP != NULL) {
             MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
             GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
@@ -207,7 +208,6 @@ REFIT_VOLUME * PickOneESP (
         #endif
     }
 
-    MY_FREE_POOL(MenuInfo);
     MY_FREE_POOL(TempMenuEntry);
 
     return ChosenVolume;
@@ -1146,7 +1146,10 @@ UINTN ConfirmBootOptionOperation (
             Style = TextMenuStyle;
         }
 
-        AddMenuInfoLine (&ConfirmBootOptionMenu, PoolPrint (L"%s", BootOptionString));
+        CHAR16 *TmpInfoLine = PoolPrint (L"%s", BootOptionString);
+        AddMenuInfoLine (&ConfirmBootOptionMenu, TmpInfoLine);
+        MY_FREE_POOL(TmpInfoLine);
+
         if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
             CheckString = L"Set This Boot Option as Default?";
         }
@@ -1155,8 +1158,8 @@ UINTN ConfirmBootOptionOperation (
         }
         AddMenuInfoLine (&ConfirmBootOptionMenu, CheckString);
 
-        AddMenuEntry (&ConfirmBootOptionMenu, &MenuEntryYes);
-        AddMenuEntry (&ConfirmBootOptionMenu, &MenuEntryNo);
+        AddMenuEntry (&ConfirmBootOptionMenu, CopyMenuEntry (&MenuEntryYes));
+        AddMenuEntry (&ConfirmBootOptionMenu, CopyMenuEntry (&MenuEntryNo));
 
         MenuExit = RunGenericMenu (&ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 

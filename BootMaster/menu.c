@@ -2664,9 +2664,13 @@ BOOLEAN HideEfiTag (
     }
 
     MergeStrings (&FullPath, Loader->LoaderPath, L':');
-    AddMenuInfoLine (HideItemMenu, PoolPrint (L"Are you sure you want to hide %s?", FullPath));
-    AddMenuEntry (HideItemMenu, &MenuEntryYes);
-    AddMenuEntry (HideItemMenu, &MenuEntryNo);
+
+    CHAR16 *TmpInfoLine = PoolPrint (L"Are you sure you want to hide %s?", FullPath);
+    AddMenuInfoLine (HideItemMenu, TmpInfoLine);
+    MY_FREE_POOL(TmpInfoLine);
+
+    AddMenuEntry (HideItemMenu, CopyMenuEntry (&MenuEntryYes));
+    AddMenuEntry (HideItemMenu, CopyMenuEntry (&MenuEntryNo));
 
     MenuExit = RunGenericMenu (HideItemMenu, Style, &DefaultEntry, &ChosenOption);
 

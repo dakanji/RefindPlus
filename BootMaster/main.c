@@ -1164,7 +1164,10 @@ VOID AboutRefindPlus (VOID) {
 
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
 
-        AddMenuInfoLine (&AboutMenu, PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION));
+        CHAR16 *TmpInfoLine = PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION);
+        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
+        MY_FREE_POOL(TmpInfoLine);
+
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
         AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
@@ -1180,7 +1183,10 @@ VOID AboutRefindPlus (VOID) {
         #endif
 
         AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, PoolPrint (L"Firmware Vendor: %s", FirmwareVendor));
+
+        TmpInfoLine = PoolPrint (L"Firmware Vendor: %s", FirmwareVendor);
+        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
+        MY_FREE_POOL(TmpInfoLine);
 
         #if defined (EFI32)
         AddMenuInfoLine (&AboutMenu, L"Platform: x86 (32 bit)");
@@ -1214,9 +1220,9 @@ VOID AboutRefindPlus (VOID) {
             AddMenuInfoLine (&AboutMenu, gCsrStatus);
         }
 
-        CHAR16 *MsgStr = egScreenDescription();
-        AddMenuInfoLine(&AboutMenu, PoolPrint(L"Screen Output: %s", MsgStr));
-        MY_FREE_POOL(MsgStr);
+        TmpInfoLine = PoolPrint(L"Screen Output: %s", egScreenDescription());
+        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
+        MY_FREE_POOL(TmpInfoLine);
 
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
