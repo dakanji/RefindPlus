@@ -2078,10 +2078,6 @@ VOID ScanExtendedPartition (
 // Check for Multi-Instance APFS Containers
 static
 VOID VetMultiInstanceAPFS (VOID) {
-// DA-TAG: Disable until release of New Mac Recovery
-//         Keep function as useful for future other APFS items
-return;
-#if 0
     EFI_STATUS                     Status;
     UINTN                            i, j;
     BOOLEAN               ActiveContainer;
@@ -2178,9 +2174,6 @@ return;
             break;
         }
     } // for j = 0
-
-// DA-TAG: Disable until release of New Mac Recovery - END
-#endif
 } // VOID VetMultiInstanceAPFS()
 
 // Ensure SyncAPFS can be used.
@@ -2364,6 +2357,11 @@ VOID ScanVolumes (VOID) {
         FreeVolumes (
             &DataVolumes,
             &DataVolumesCount
+        );
+
+        FreeVolumes (
+            &RecoveryVolumes,
+            &RecoveryVolumesCount
         );
 
         ForgetPartitionTables();

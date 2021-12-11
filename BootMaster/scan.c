@@ -3561,10 +3561,9 @@ VOID ScanForTools (VOID) {
                         } // for k = 0
 
                         if (!PrevGUID) {
-                            FileName = PoolPrint (
-                                L"%s\\boot.efi",
-                                GuidAsString (&(RecoveryVolumes[j]->VolUuid))
-                            );
+                            TmpStr   = GuidAsString (&(RecoveryVolumes[j]->VolUuid));
+                            FileName = PoolPrint (L"%s\\boot.efi", TmpStr);
+                            MY_FREE_POOL(TmpStr);
 
                             // Get a meaningful tag for the recovery volume if available
                             // DA-TAG: Limit to TianoCore
