@@ -10,6 +10,8 @@
   * This is a port of the downstream implementation by GitHub user @Joevt
 - Fixes 'BootKicker' and 'CleanNvram' Amongst Others
   * Misc memory management defects had disabled both
+- Drops fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
+  * The attempted fixes started in v0.13.2.AK are on hold indefinitely
 
 
 0.13.2.AK (07 Dec 2021):

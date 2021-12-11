@@ -3029,8 +3029,6 @@ BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
-    REFIT_VOLUME    **TmpRecoveryVolumes;
-    UINTN             TmpRecoveryVolumesCount = 0;
     UINTN             i, j, k;
     UINTN             VolumeIndex;
     VOID             *ItemBuffer = 0;
@@ -3046,9 +3044,6 @@ VOID ScanForTools (VOID) {
     BOOLEAN           FoundTool = FALSE;
     BOOLEAN           OtherFind = FALSE;
     REFIT_MENU_ENTRY *TempMenuEntry;
-
-    EFI_STATUS                     Status;
-    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
     CHAR16 *ToolStr   = NULL;
@@ -3497,13 +3492,6 @@ VOID ScanForTools (VOID) {
                             );
                             #endif
 
-                            // Create a list of found Recovery PartGUIDs for later
-                            AddListElement (
-                                (VOID ***) &TmpRecoveryVolumes,
-                                &TmpRecoveryVolumesCount,
-                                CopyVolume (Volumes[VolumeIndex])
-                            );
-
                             FoundTool = TRUE;
                             Description = PoolPrint (
                                 L"%s for %s",
@@ -3538,101 +3526,6 @@ VOID ScanForTools (VOID) {
                     } // while
                 } // for
 
-
-                if (GlobalConfig.SyncAPFS && SingleAPFS) {
-                    BOOLEAN PrevGUID;
-                    for (j = 0; j < RecoveryVolumesCount; j++) {
-                        PrevGUID = FALSE;
-                        for (k = 0; k < TmpRecoveryVolumesCount; k++) {
-                            if (
-                                GuidsAreEqual (
-                                    &(RecoveryVolumes[j]->PartGuid),
-                                    &(TmpRecoveryVolumes[k]->PartGuid)
-                                )
-                            ) {
-                                PrevGUID = TRUE;
-                                break;
-                            }
-                        } // for k = 0
-
-                        if (!PrevGUID) {
-                            FileName = PoolPrint (
-                                L"%s\\boot.efi",
-                                GuidAsString (&(RecoveryVolumes[j]->VolUuid))
-                            );
-
-                            // Get a meaningful tag for the recovery volume if available
-                            // DA-TAG: Limit to TianoCore
-                            #ifdef __MAKEWITH_TIANO
-                            for (k = 0; k < VolumesCount; k++) {
-                                if (
-                                    GuidsAreEqual (
-                                        &(RecoveryVolumes[j]->PartGuid),
-                                        &(Volumes[k]->PartGuid)
-                                    )
-                                ) {
-                                    Status = RP_GetApfsVolumeInfo (
-                                        Volumes[k]->DeviceHandle,
-                                        NULL, NULL,
-                                        &VolumeRole
-                                    );
-
-                                    if (!EFI_ERROR(Status)) {
-                                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
-                                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                                        ) {
-                                            RecoverVol = StrDuplicate (Volumes[k]->VolName);
-
-                                            break;
-                                        }
-                                    }
-                                }
-                            } // for k = 0
-                            #endif
-
-                            VolumeTag = RecoverVol ? RecoverVol : L"Instance of Mac OS 11 or Newer";
-
-                            #if REFIT_DEBUG > 0
-                            LOG(2, LOG_LINE_NORMAL,
-                                L"Adding Alt Mac Recovery Tag:- '%s' for '%s'",
-                                FileName, VolumeTag
-                            );
-                            #endif
-
-                            FoundTool = TRUE;
-                            Description = PoolPrint (
-                                L"%s for %s",
-                                ToolName, VolumeTag
-                            );
-                            AddToolEntry (
-                                RecoveryVolumes[j],
-                                FileName, Description,
-                                BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                                'R', TRUE
-                            );
-                            MY_FREE_POOL(Description);
-
-                            #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (
-                                L"Added Tool:- '%s' ... %s for %s (New Mac OS)",
-                                ToolName, FileName, VolumeTag
-                            );
-                            LOG(2, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            if (OtherFind) {
-                                MsgLog ("%s%s", OffsetNext, Spacer);
-                            }
-                            MsgLog ("%s", ToolStr);
-                            MY_FREE_POOL(ToolStr);
-                            #endif
-
-                            OtherFind = TRUE;
-
-                            MY_FREE_POOL(FileName);
-                            MY_FREE_POOL(RecoverVol);
-                        } // if !PrevGUID
-                    } // for k = 0
-                }
-
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
                     ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
@@ -3641,12 +3534,6 @@ VOID ScanForTools (VOID) {
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif
-
-                // Free the TmpVolumes
-                FreeVolumes (
-                    &TmpRecoveryVolumes,
-                    &TmpRecoveryVolumesCount
-                );
 
                 break;
 

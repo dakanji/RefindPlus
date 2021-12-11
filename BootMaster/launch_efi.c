@@ -469,13 +469,8 @@ EFI_STATUS StartEFIImage (
         //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
         //         These may return to the RefindPlus screen but any issues will be trivial
         if ((GlobalConfig.SyncAPFS) &&
-            (RecoveryVolumes || PreBootVolumes || SystemVolumes || DataVolumes)
+            (PreBootVolumes || SystemVolumes || DataVolumes)
         ) {
-            FreeVolumes (
-                &RecoveryVolumes,
-                &RecoveryVolumesCount
-            );
-
             FreeVolumes (
                 &PreBootVolumes,
                 &PreBootVolumesCount
