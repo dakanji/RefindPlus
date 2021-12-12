@@ -1,0 +1,17 @@
+# Configuration for Adding Default Issue Labels - https://github.com/marketplace/actions/actions-ecosystem-add-labels
+
+name: Add Issue Label
+
+on:
+  issues:
+    types: opened
+
+jobs:
+  add_label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Pending

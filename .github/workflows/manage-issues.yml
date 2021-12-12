@@ -1,4 +1,5 @@
 # Configuration for Handling Stale Threads - https://github.com/marketplace/actions/stale
+# Configuration for Locking Threads - https://github.com/marketplace/actions/lock-threads
 
 name: 'Manage Issues'
 
@@ -59,7 +60,7 @@ jobs:
           days-before-close: 7
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
-          exempt-issue-labels: 'Parked'
+          exempt-issue-labels: 'Parked,Help-Wanted'
 
       - name: Flag or Close Parked Issues
         uses: actions/stale@v4.0.0
@@ -74,6 +75,20 @@ jobs:
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           only-issue-labels: 'Parked'
+
+      - name: Flag or Close Parked Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: >
+            This item has been flagged for closure due to inactivity.
+          close-issue-message: >
+            This item has been closed due to inactivity.
+          days-before-stale: 120
+          days-before-close: 60
+          exempt-assignees: 'dakanji'
+          stale-issue-label: ''
+          only-issue-labels: 'Help-Wanted'
 
       - name: Close Duplicate Issues
         uses: actions/stale@v4.0.0
@@ -123,6 +138,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '3'
           include-any-issue-labels: 'Incomplete,Unclear'
+          remove-issue-labels: 'Pending'
           process-only: 'issues'
 
       - name: Lock Duplicate Issues
@@ -132,6 +148,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate,Known-Issue'
+          remove-issue-labels: 'Pending'
           process-only: 'issues'
 
       - name: Lock WontFix Issues
@@ -141,6 +158,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'WontFix'
+          remove-issue-labels: 'Pending'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -150,6 +168,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid,Works-For-Me'
+          remove-issue-labels: 'Pending'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
@@ -159,5 +178,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '7'
           include-any-issue-labels: ''
+          exclude-any-issue-labels: 'Parked,Help-Wanted'
           add-issue-labels: 'Resolved'
+          remove-issue-labels: 'Pending'
           process-only: 'issues'
