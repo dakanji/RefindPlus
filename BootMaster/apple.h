@@ -71,7 +71,7 @@ struct APPLE_FRAMEBUFFER_INFO_PROTOCOL_ {
   0x3533CF0D, 0x685F, 0x5EBF, {0x8D, 0xC6, 0x73, 0x93, 0x48, 0x5B, 0xAF, 0xA2}  \
 }
 typedef struct {
-    UINT32     Version; // always 1
+    UINT32     Always1;
     EFI_GUID   Uuid;
 } APPLE_APFS_CONTAINER_INFO;
 
@@ -92,10 +92,9 @@ typedef UINT32 APPLE_APFS_VOLUME_ROLE;
   0x900C7693, 0x8C14, 0x58BA, {0xB4, 0x4E, 0x97, 0x45, 0x15, 0xD2, 0x7C, 0x78}  \
 }
 typedef struct {
-    UINT32                 Version; // 2 includes VolumeGroup GUID
+    UINT32                 Always1;
     EFI_GUID               Uuid;
     APPLE_APFS_VOLUME_ROLE Role;
-    EFI_GUID               VolGroupGuid;
 } APPLE_APFS_VOLUME_INFO;
 
 
@@ -105,8 +104,7 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
     OUT EFI_GUID                *ContainerGuid OPTIONAL,
     OUT EFI_GUID                *VolumeGuid    OPTIONAL,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL,
-    OUT EFI_GUID                *ApfsGroupGuid OPTIONAL
+    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 );
 CHAR16 * RP_GetAppleDiskLabel (
     IN  REFIT_VOLUME *Volume
@@ -115,6 +113,8 @@ CHAR16 * RP_GetAppleDiskLabel (
 #endif
 
 #endif // APPLE_APFS_INFO_H
+
+
 
 
 // Apple's GUID

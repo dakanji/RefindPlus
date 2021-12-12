@@ -566,7 +566,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
         *VolumeInfo = RP_GetFileInfo (
             Root,
             &AppleApfsVolumeInfoGuid,
-            sizeof (**VolumeInfo) - sizeof((*VolumeInfo)->VolGroupGuid),
+            sizeof (**VolumeInfo),
             NULL
         );
 
@@ -645,8 +645,7 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
     OUT EFI_GUID                *ContainerGuid OPTIONAL,
     OUT EFI_GUID                *VolumeGuid    OPTIONAL,
-    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL,
-    OUT EFI_GUID                *ApfsGroupGuid OPTIONAL
+    OUT APPLE_APFS_VOLUME_ROLE  *VolumeRole    OPTIONAL
 ) {
     EFI_STATUS                       Status;
     EFI_FILE_PROTOCOL               *Root;
@@ -654,11 +653,7 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
     APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
 
-    if (ContainerGuid == NULL &&
-        VolumeGuid    == NULL &&
-        VolumeRole    == NULL &&
-        ApfsGroupGuid == NULL
-    ) {
+    if (ContainerGuid == NULL && VolumeGuid == NULL && VolumeRole == NULL) {
         return EFI_INVALID_PARAMETER;
     }
 

@@ -2554,16 +2554,28 @@ EFI_STATUS EFIAPI efi_main (
                     }
                     else {
                         if (GlobalConfig.SyncAPFS && ourLoaderEntry->Volume->FSType == FS_TYPE_APFS) {
-                            if (GlobalConfig.SyncAPFS
-                                && ourLoaderEntry->Volume->FSType == FS_TYPE_APFS
-                                && ourLoaderEntry->Volume->Role   == APPLE_APFS_VOLUME_ROLE_PREBOOT
-                            ) {
-                                DisplayName = GetVolumeGroupName (
-                                    ourLoaderEntry->LoaderPath,
-                                    ourLoaderEntry->Volume
-                                );
+                            APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
+
+                            // DA-TAG: Limit to TianoCore
+                            #ifdef __MAKEWITH_GNUEFI
+                            Status = EFI_NOT_STARTED;
+                            #else
+                            Status = RP_GetApfsVolumeInfo (
+                                ourLoaderEntry->Volume->DeviceHandle,
+                                NULL, NULL,
+                                &VolumeRole
+                            );
+                            #endif
+
+                            if (!EFI_ERROR(Status)) {
+                                if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                                    DisplayName = GetVolumeGroupName (
+                                        ourLoaderEntry->LoaderPath,
+                                        ourLoaderEntry->Volume
+                                    );
+                                }
                             }
-                        }
+                        } // if GlobalConfig.SyncAFPS
 
                         MsgLog (
                             " from '%s'",
@@ -2572,7 +2584,6 @@ EFI_STATUS EFIAPI efi_main (
                                 : ourLoaderEntry->Volume->VolName
                         );
                     }
-
                     MY_FREE_POOL(MsgStr);
                     MY_FREE_POOL(DisplayName);
                     #endif

@@ -2078,10 +2078,6 @@ VOID ScanExtendedPartition (
 // Check for Multi-Instance APFS Containers
 static
 VOID VetMultiInstanceAPFS (VOID) {
-// DA-TAG: Disable as redundant since we now have APFS Volume Group GUID
-//         Keep function as potentially useful for future other APFS items
-return;
-#if 0
     EFI_STATUS                     Status;
     UINTN                            i, j;
     BOOLEAN               ActiveContainer;
@@ -2142,7 +2138,7 @@ return;
                     Status = RP_GetApfsVolumeInfo (
                         Volumes[i]->DeviceHandle,
                         NULL, NULL,
-                        &VolumeRole, NULL
+                        &VolumeRole
                     );
 
                     if (!EFI_ERROR(Status)) {
@@ -2178,9 +2174,6 @@ return;
             break;
         }
     } // for j = 0
-
-// DA-TAG: Disable - END
-#endif
 } // VOID VetMultiInstanceAPFS()
 
 // Ensure SyncAPFS can be used.
@@ -2207,7 +2200,9 @@ VOID VetSyncAPFS (VOID) {
         #endif
     }
     else {
-        UINTN i, j;
+        UINTN   i, j;
+        CHAR16 *CheckName = NULL;
+        CHAR16 *TweakName = NULL;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ReMap APFS Volumes");
@@ -2226,17 +2221,43 @@ VOID VetSyncAPFS (VOID) {
 
         // Filter '- Data' string tag out of Volume Group name if present
         for (i = 0; i < DataVolumesCount; i++) {
-            for (j = 0; j < SystemVolumesCount; j++) {
-                if (GuidsAreEqual (&DataVolumes[i]->VolGroup, &SystemVolumes[j]->VolGroup)) {
-                    DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
-                    break;
-                }
-            } // for j = 0
+            if (MyStrStr (DataVolumes[i]->VolName, L"- Data")) {
+                for (j = 0; j < SystemVolumesCount; j++) {
+                    MY_FREE_POOL(TweakName);
+                    TweakName = SanitiseString (SystemVolumes[j]->VolName);
+
+                    MY_FREE_POOL(CheckName);
+                    CheckName = PoolPrint (L"%s - Data", TweakName);
+
+                    if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
+                        MY_FREE_POOL(DataVolumes[i]->VolName);
+                        DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
+
+                        break;
+                    }
+
+                    // Check against raw name string if apporpriate
+                    if (!MyStriCmp (SystemVolumes[j]->VolName, TweakName)) {
+                        MY_FREE_POOL(CheckName);
+                        CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
+
+                        if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
+                            MY_FREE_POOL(DataVolumes[i]->VolName);
+                            DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
+
+                            break;
+                        }
+                    }
+                } // for j = 0
+
+                MY_FREE_POOL(TweakName);
+                MY_FREE_POOL(CheckName);
+            }
         } // for i = 0
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"ReMapped %d APFS Volume Group%s",
+            L"ReMapped %d APFS Volume%s",
             SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2297,7 +2318,6 @@ VOID ScanVolumes (VOID) {
     BOOLEAN             DupFlag;
     EFI_GUID           *UuidList;
     EFI_GUID            VolumeGuid;
-    EFI_GUID            ApfsVolGrpGuid;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
@@ -2306,15 +2326,13 @@ VOID ScanVolumes (VOID) {
     CHAR16  *PartGUID     = NULL;
     CHAR16  *PartTypeGUID = NULL;
     CHAR16  *VolumeUUID   = NULL;
-    CHAR16  *GruopGUID    = NULL;
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
     const CHAR16 *ITEMVOLC = L"PARTITION TYPE";
-    const CHAR16 *ITEMVOLD = L"APFS GROUP GUID";
-    const CHAR16 *ITEMVOLE = L"VOLUME UUID";
-    const CHAR16 *ITEMVOLF = L"VOLUME ROLE";
-    const CHAR16 *ITEMVOLG = L"VOLUME NAME";
+    const CHAR16 *ITEMVOLD = L"VOLUME UUID";
+    const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
+    const CHAR16 *ITEMVOLF = L"VOLUME NAME";
 
     LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
@@ -2505,8 +2523,8 @@ VOID ScanVolumes (VOID) {
 
             if (!DoneHeadings) {
                 MsgLog (
-                    "%-41s%-41s%-20s%-41s%-41s%-22s%s\n",
-                    ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF, ITEMVOLG
+                    "%-41s%-41s%-20s%-41s%-22s%s\n",
+                    ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
                 );
                 DoneHeadings = TRUE;
 
@@ -2544,18 +2562,15 @@ VOID ScanVolumes (VOID) {
                     Volume->DeviceHandle,
                     NULL,
                     &VolumeGuid,
-                    &VolumeRole,
-                    &ApfsVolGrpGuid
+                    &VolumeRole
                 );
                 #endif
 
                 if (!EFI_ERROR(Status)) {
-                    PartType         = L"APFS";
-                    Volume->FSType   = FS_TYPE_APFS;
-                    Volume->VolUuid  = VolumeGuid;
-                    Volume->VolGroup = ApfsVolGrpGuid;
-                    Volume->Role     = VolumeRole;
-                    RoleStr          = GetApfsRoleString (VolumeRole);
+                    PartType        = L"APFS";
+                    Volume->FSType  = FS_TYPE_APFS;
+                    Volume->VolUuid = VolumeGuid;
+                    RoleStr         = GetApfsRoleString (VolumeRole);
 
                     if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
                         // Create or add to a list of APFS Recovery Volumes
@@ -2596,26 +2611,17 @@ VOID ScanVolumes (VOID) {
 
             #if REFIT_DEBUG > 0
             // Allocate Pools for Log Details
-            PartName = StrDuplicate (PartType);
-
-            PartGUID = GuidsAreEqual (&(Volume->PartGuid), &GuidNull)
-                ? StrDuplicate (L"") : GuidAsString (&(Volume->PartGuid));
-
-            PartTypeGUID = GuidsAreEqual (&(Volume->PartTypeGuid), &GuidNull)
-                ? StrDuplicate (L"") : GuidAsString (&(Volume->PartTypeGuid));
-
-            VolumeUUID = GuidsAreEqual (&(Volume->VolUuid), &GuidNull)
-                ? StrDuplicate (L"") : GuidAsString (&(Volume->VolUuid));
-
-            GruopGUID = GuidsAreEqual (&(Volume->VolGroup), &GuidNull)
-                ? StrDuplicate (L"") : GuidAsString (&(Volume->VolGroup));
+            PartName     = StrDuplicate (PartType);
+            PartGUID     = GuidAsString (&(Volume->PartGuid));
+            PartTypeGUID = GuidAsString (&(Volume->PartTypeGuid));
+            VolumeUUID   = GuidAsString (&(Volume->VolUuid));
 
             // Control PartName Length
             LimitStringLength (PartName, 15);
 
             MsgStr = PoolPrint (
-                L"%-36s  :  %-36s  :  %-15s  :  %-36s  :  %-36s  :  %-17s  :  %s",
-                PartTypeGUID, PartGUID, PartType, GruopGUID,
+                L"%-36s  :  %-36s  :  %-15s  :  %-36s  :  %-17s  :  %s",
+                PartTypeGUID, PartGUID, PartType,
                 VolumeUUID, RoleStr, Volume->VolName
             );
 
@@ -2628,7 +2634,6 @@ VOID ScanVolumes (VOID) {
             MY_FREE_POOL(PartGUID);
             MY_FREE_POOL(PartTypeGUID);
             MY_FREE_POOL(VolumeUUID);
-            MY_FREE_POOL(GruopGUID);
             #endif
         }
 
@@ -2669,8 +2674,8 @@ VOID ScanVolumes (VOID) {
     else {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (
-            L"%-41s%-41s%-20s%-41s%-41s%-22s%s",
-            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF, ITEMVOLG
+            L"%-41s%-41s%-20s%-41s%-22s%s",
+            ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
         MsgLog ("%s", OffsetNext);

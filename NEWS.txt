@@ -1,6 +1,9 @@
 0.13.2.AM (Pre-Release):
 -----------------------
-- PENDING
+- Reverts Ported APFS Volume Group Identification
+  * Does not appear the Volume Group information was correctly isolated and hence, not unique
+  * Results in Mac OS volume instance conflicts
+  * NOTE: Multi Instance APFS Container restrictions apply again
 
 
 0.13.2.AL (12 Dec 2021):
