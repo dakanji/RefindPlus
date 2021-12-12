@@ -1,9 +1,8 @@
-# Configuration for Handling Stale Threads - https://github.com/marketplace/actions/stale
-# Configuration for Locking Threads - https://github.com/marketplace/actions/lock-threads
-
-name: 'Manage Issues'
+name: 'Issues'
 
 on:
+  issues:
+    types: opened
   workflow_dispatch:
   schedule:
     - cron: '1 1 * * *'
@@ -15,9 +14,26 @@ concurrency:
   group: lock
 
 jobs:
+
+  # Add Labels - https://github.com/actions-ecosystem/action-add-labels
+  add_label:
+    name: Default Issue Label
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Pending
+
+  # Handle Stale Threads - https://github.com/actions/stale
   stale:
     name: Flag or Close Issues
     runs-on: ubuntu-latest
+
+    if: github.event_name != 'issues'
     steps:
 
       - name: Flag or Close Incomplete Issues
@@ -126,9 +142,12 @@ jobs:
           stale-issue-label: 'Flagged'
           only-issue-labels: 'WontFix'
 
+  # Lock Threads - https://github.com/dessant/lock-threads
   lock:
     name: Lock Threads
     runs-on: ubuntu-latest
+
+    if: github.event_name != 'issues'
     steps:
 
       - name: Lock Incomplete Issues

@@ -16,17 +16,16 @@
 - Fixes 'BootKicker' and 'CleanNvram' Amongst Others
   * Misc memory management defects had disabled both
 - Fixes for 'BTRFS' and 'NTFS' Filesystem Drivers from GitHub user @Joevt
-  * BTRFS: ixes file creation date bug
+  * BTRFS: Fixes file creation date bug
   * NTFS: Fixes file creation date bug
-  * NTFS: Adds some comments to describe some fields that were only referenced by offset.
   * NTFS: Fixed "attribute_sparse" and "attribute_encrypted" which were not testing those flags correctly
-    - The field is a USHORT (16 bit)
+    - The field is a USHORT (Unsigned 16-bit integer) but was handled as a BYTE (Unsigned 8-bit integer)
   * NTFS: Fixes a bug where "read_attribute_direct" could write outside the attribute destination buffer.
     - "olen" can become negative and could be passed to "CopyMem", which requires an unsigned length.
 - Improves 'SyncAPFS'
   * APFS Volume Groups can now be identified along with the earlier identified 'Disk Roles'
   * This significantly improves determination of APFS Volume Types/Roles
-  * Restrictions limiting features to setups with only one APFS instance per container are removed
+  * Restrictions limiting some features to setups with only one APFS instance per container are now removed
   * This is a port of the downstream implementation by GitHub user @Joevt
 - Amends Log Levels
   * LogLevel 0  remains as a native summary format
@@ -38,7 +37,7 @@
   * When LogLevel 2 is exposed, selected levels above two (2) will be capped at LogLevel 2
 - Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * IMPORTANT:
-    - This implementation is still a work in progress
+    - This implementation is still a work in progress ... feedback required/welcome
 
 
 0.13.2.AK (07 Dec 2021):
