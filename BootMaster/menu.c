@@ -410,6 +410,21 @@ CHAR16 * MenuExitInfo (
     return MenuExitData;
 } // CHAR16 * MenuExitInfo()
 
+VOID AddMenuInfoLineAlt (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN CHAR16            *InfoLine
+) {
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_NORMAL, L"Adding Menu Info Line:- '%s'", InfoLine);
+    #endif
+
+    AddListElement (
+        (VOID ***) &(Screen->InfoLines),
+        &(Screen->InfoLineCount),
+        InfoLine
+    );
+} // VOID AddMenuInfoLineAlt()
+
 VOID AddMenuInfoLine (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16            *InfoLine

@@ -875,7 +875,7 @@ VOID preBootKicker (VOID) {
 
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&PreBootKickerMenu, StrDuplicate (FilePath));
+            AddMenuInfoLineAlt (&PreBootKickerMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 
@@ -1010,7 +1010,7 @@ VOID preCleanNvram (VOID) {
         UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-            AddMenuInfoLine (&PreCleanNvramMenu, StrDuplicate (FilePath));
+            AddMenuInfoLineAlt (&PreCleanNvramMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 
@@ -1132,9 +1132,13 @@ VOID AboutRefindPlus (VOID) {
 
         AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
 
-        CHAR16 *TmpInfoLine = PoolPrint (L"RefindPlus v%s", REFINDPLUS_VERSION);
-        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
-        MY_FREE_POOL(TmpInfoLine);
+        AddMenuInfoLineAlt (
+            &AboutMenu,
+            PoolPrint (
+                L"RefindPlus v%s",
+                REFINDPLUS_VERSION
+            )
+        );
 
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
@@ -1152,9 +1156,13 @@ VOID AboutRefindPlus (VOID) {
 
         AddMenuInfoLine (&AboutMenu, L"");
 
-        TmpInfoLine = PoolPrint (L"Firmware Vendor: %s", FirmwareVendor);
-        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
-        MY_FREE_POOL(TmpInfoLine);
+        AddMenuInfoLineAlt (
+            &AboutMenu,
+            PoolPrint (
+                L"Firmware Vendor: %s",
+                FirmwareVendor
+            )
+        );
 
         #if defined (EFI32)
         AddMenuInfoLine (&AboutMenu, L"Platform: x86 (32 bit)");
@@ -1166,7 +1174,7 @@ VOID AboutRefindPlus (VOID) {
         AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
         #endif
 
-        AddMenuInfoLine (
+        AddMenuInfoLineAlt (
             &AboutMenu,
             PoolPrint (
                 L"EFI Revision: %s %d.%02d",
@@ -1175,7 +1183,7 @@ VOID AboutRefindPlus (VOID) {
                 gST->Hdr.Revision & ((1 << 16) - 1)
             )
         );
-        AddMenuInfoLine (
+        AddMenuInfoLineAlt (
             &AboutMenu,
             PoolPrint (
                 L"Secure Boot: %s",
@@ -1188,9 +1196,13 @@ VOID AboutRefindPlus (VOID) {
             AddMenuInfoLine (&AboutMenu, gCsrStatus);
         }
 
-        TmpInfoLine = PoolPrint(L"Screen Output: %s", egScreenDescription());
-        AddMenuInfoLine (&AboutMenu, TmpInfoLine);
-        MY_FREE_POOL(TmpInfoLine);
+        AddMenuInfoLineAlt (
+            &AboutMenu,
+            PoolPrint(
+                L"Screen Output: %s",
+                egScreenDescription()
+            )
+        );
 
         AddMenuInfoLine (&AboutMenu, L"");
         AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
