@@ -57,6 +57,7 @@ decline_tagshelp      |Disables feature that ensures hidden tags can always be u
 direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
 disable_amfi          |Disables AMFI Checks on Mac OS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
+external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
 ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
 ignore_previous_boot  |Disables saving the last booted loader if not required
@@ -85,10 +86,11 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format.
-  * Levels 1 to 4 output logs similar to the detailed upstream format.
-    - Level 4 is only exposed by setting the `REFIT_DEBUG` build flag to `2` when compiling
-    - Unless Level 4 is exposed at compile time, selected levels above `3` will be capped at LogLevel 3
-    - When Level 4 is exposed at compile time, selected levels above `4` will be capped at LogLevel 4
+  * Levels 1 and 2 output logs similar to the detailed upstream format.
+    - Level 1 is broadly equivalent to Upstream Level 4 and Upstream Levels 1 to 3 dispensed with
+    - Level 2 is only exposed by setting the `REFIT_DEBUG` build flag to `2` when compiling
+    - Unless Level 2 is exposed at compile time, selected levels above `1` will be capped at LogLevel 1
+    - When Level 2 is exposed at compile time, selected levels above `2` will be capped at LogLevel 2
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientation screens into account.

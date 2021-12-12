@@ -1,4 +1,4 @@
-0.13.2.AL (PRE_RELEASE):
+0.13.2.AL (12 Dec 2021):
 -----------------------
 - Adds "ExternalHiddenIcons" Feature
   * Sets RefindPlus to also scan external volumes for ".VolumeIcon" icons
@@ -31,8 +31,6 @@
     - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
   * Unless LogLevel 2 is exposed when compiling, selected levels above one (1) will be capped at LogLevel 1
   * When LogLevel 2 is exposed, selected levels above two (2) will be capped at LogLevel 2
-
-
 - Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later
   * IMPORTANT:
     - This implementation is still a work in progress
