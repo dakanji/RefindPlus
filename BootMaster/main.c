@@ -859,13 +859,13 @@ VOID preBootKicker (VOID) {
     else {
         PreBootKickerMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
         PreBootKickerMenu.Title            = StrDuplicate (L"BootKicker");
-        AddMenuInfoLine (&PreBootKickerMenu, L"A tool to kick in the Apple Boot Screen");
+        AddMenuInfoLine (&PreBootKickerMenu, L"A tool to Kick in the Apple Boot Screen");
         AddMenuInfoLine (&PreBootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
         AddMenuInfoLine (&PreBootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
         AddMenuInfoLine (&PreBootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
         AddMenuInfoLine (&PreBootKickerMenu, L"");
         AddMenuInfoLine (&PreBootKickerMenu, L"BootKicker is from OpenCore and is Copyright Acidanthera");
-        AddMenuInfoLine (&PreBootKickerMenu, L"You can find copies of binary file here:");
+        AddMenuInfoLine (&PreBootKickerMenu, L"You can find copies of the binary file here:");
         AddMenuInfoLine (&PreBootKickerMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&PreBootKickerMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
         AddMenuInfoLine (&PreBootKickerMenu, L"Requires at least one of the files below.");
@@ -903,13 +903,13 @@ VOID preBootKicker (VOID) {
     else {
         #if REFIT_DEBUG > 0
         // Log Load BootKicker
-        MsgLog ("%s  - Seek BootKicker\n", OffsetNext);
+        MsgLog ("%s  - Seek BootKicker", OffsetNext);
         #endif
 
         k = 0;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("    * Seek %s:\n", FilePath);
+            MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
             #endif
 
             for (i = 0; i < VolumesCount; i++) {
@@ -940,6 +940,7 @@ VOID preBootKicker (VOID) {
         } // while
 
         #if REFIT_DEBUG > 0
+        MsgLog ("\n");
         LOG(1, LOG_BLANK_LINE_SEP, L"X");
         #endif
 
@@ -998,7 +999,7 @@ VOID preCleanNvram (VOID) {
         AddMenuInfoLine (&PreCleanNvramMenu, L"Requires Apple Firmware");
         AddMenuInfoLine (&PreCleanNvramMenu, L"");
         AddMenuInfoLine (&PreCleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"You can find copies of binary file here:");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"You can find copies of the binary file here:");
         AddMenuInfoLine (&PreCleanNvramMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&PreCleanNvramMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
         AddMenuInfoLine (&PreCleanNvramMenu, L"Requires at least one of the files below.");
@@ -1037,13 +1038,13 @@ VOID preCleanNvram (VOID) {
     else {
         #if REFIT_DEBUG > 0
         // Log Load CleanNvram
-        MsgLog ("%s  - Seek CleanNvram\n", OffsetNext);
+        MsgLog ("%s  - Seek CleanNVRAM", OffsetNext);
         #endif
 
         k = 0;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("    * Seek %s:\n", FilePath);
+            MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
             #endif
 
             for (i = 0; i < VolumesCount; i++) {
@@ -1074,6 +1075,7 @@ VOID preCleanNvram (VOID) {
         } // while
 
         #if REFIT_DEBUG > 0
+        MsgLog ("\n");
         LOG(1, LOG_BLANK_LINE_SEP, L"X");
         #endif
 
