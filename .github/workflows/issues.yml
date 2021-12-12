@@ -36,6 +36,18 @@ jobs:
     if: github.event_name != 'issues'
     steps:
 
+      - name: Close Resolved Issues
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          stale-issue-message: ''
+          close-issue-message: ''
+          days-before-stale: 0
+          days-before-close: 0
+          exempt-assignees: 'dakanji'
+          stale-issue-label: ''
+          any-of-issue-labels: 'Resolved'
+
       - name: Flag or Close Incomplete Issues
         uses: actions/stale@v4.0.0
         with:
@@ -157,7 +169,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '3'
           include-any-issue-labels: 'Incomplete,Unclear'
-          remove-issue-labels: 'Pending'
+          remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
 
       - name: Lock Duplicate Issues
@@ -167,7 +179,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate,Known-Issue'
-          remove-issue-labels: 'Pending'
+          remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
 
       - name: Lock WontFix Issues
@@ -177,7 +189,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'WontFix'
-          remove-issue-labels: 'Pending'
+          remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -187,10 +199,22 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid,Works-For-Me'
-          remove-issue-labels: 'Pending'
+          remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
+        uses: dessant/lock-threads@v3.0.0
+        with:
+          github-token: ${{ github.token }}
+          issue-lock-reason: ''
+          issue-inactive-days: '1'
+          include-any-issue-labels: 'Resolved'
+          exclude-any-issue-labels: 'Parked,Help-Wanted'
+          add-issue-labels: ''
+          remove-issue-labels: 'Pending,Flagged'
+          process-only: 'issues'
+
+      - name: Lock Inactive Issues
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
@@ -199,5 +223,5 @@ jobs:
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked,Help-Wanted'
           add-issue-labels: 'Resolved'
-          remove-issue-labels: 'Pending'
+          remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'

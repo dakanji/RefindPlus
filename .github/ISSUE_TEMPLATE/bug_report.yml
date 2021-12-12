@@ -12,7 +12,7 @@ body:
       label: RefindPlus Version
       description: Which version of RefindPlus is affected?
       options:
-        - 'v0.13.2.AL Release'
+        - 'v0.13.2.AM Release'
         - 'Another Released Version'
         - 'Build of Current Unreleased Code'
     validations:

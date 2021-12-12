@@ -1,4 +1,4 @@
-0.13.2.AM (Pre-Release):
+0.13.2.AM (13 Dec 2021):
 -----------------------
 - Reverts Ported APFS Volume Group Identification
   * Does not appear the Volume Group information was correctly isolated and hence, not unique
