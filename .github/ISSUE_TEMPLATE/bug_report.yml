@@ -74,7 +74,7 @@ body:
     attributes:
       label: Debug Log
       description: |
-        Run the DBG build file and add a debug log file at Log Level 3.
+        Run the DBG build file and add a debug log file.
         Kindly attach the file and do not paste the contents directly.
       placeholder: |
         Reports not requiring log files are typically best under Discussions.
