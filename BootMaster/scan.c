@@ -3494,7 +3494,6 @@ VOID ScanForTools (VOID) {
                                 MY_FREE_POOL(TmpStr);
                             } // for
 
-                            MY_FREE_POOL(VolumeTag);
                             VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (Volumes[VolumeIndex]->VolName);
 
                             #if REFIT_DEBUG > 0
@@ -3541,6 +3540,7 @@ VOID ScanForTools (VOID) {
                         }
 
                         MY_FREE_POOL(FileName);
+                        MY_FREE_POOL(VolumeTag);
                         MY_FREE_POOL(RecoverVol);
                     } // while
                 } // for
@@ -3596,7 +3596,6 @@ VOID ScanForTools (VOID) {
                             } // for k = 0
                             #endif
 
-                            MY_FREE_POOL(VolumeTag);
                             VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (L"Instance of Mac OS 11 or Newer");
 
                             #if REFIT_DEBUG > 0
@@ -3635,6 +3634,7 @@ VOID ScanForTools (VOID) {
                             OtherFind = TRUE;
 
                             MY_FREE_POOL(FileName);
+                            MY_FREE_POOL(VolumeTag);
                             MY_FREE_POOL(RecoverVol);
                         } // if !PrevGUID
                     } // for k = 0
