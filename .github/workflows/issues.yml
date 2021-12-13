@@ -44,8 +44,8 @@ jobs:
           close-issue-message: ''
           days-before-stale: 0
           days-before-close: 0
-          exempt-assignees: 'dakanji'
-          stale-issue-label: ''
+          exempt-assignees: ''
+          stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Resolved'
 
       - name: Flag or Close Incomplete Issues
@@ -115,7 +115,7 @@ jobs:
           days-before-stale: 120
           days-before-close: 60
           exempt-assignees: 'dakanji'
-          stale-issue-label: ''
+          stale-issue-label: 'Flagged'
           only-issue-labels: 'Help-Wanted'
 
       - name: Close Duplicate Issues
@@ -154,6 +154,16 @@ jobs:
           stale-issue-label: 'Flagged'
           only-issue-labels: 'WontFix'
 
+      - name: Catchall Closer
+        uses: actions/stale@v4.0.0
+        with:
+          repo-token: ${{ github.token }}
+          close-issue-message: >
+            This item has been closed as abandoned.
+          days-before-stale: 180
+          days-before-close: 180
+          stale-issue-label: 'Flagged'
+          
   # Lock Threads - https://github.com/dessant/lock-threads
   lock:
     name: Lock Threads
