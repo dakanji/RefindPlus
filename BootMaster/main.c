@@ -868,10 +868,10 @@ VOID preBootKicker (VOID) {
         AddMenuInfoLine (&PreBootKickerMenu, L"You can find copies of the binary file here:");
         AddMenuInfoLine (&PreBootKickerMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&PreBootKickerMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-        AddMenuInfoLine (&PreBootKickerMenu, L"Requires at least one of the files below.");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"Requires at least one of the files below.");
         AddMenuInfoLine (&PreBootKickerMenu, L" - The first file found in the order listed will be used");
         AddMenuInfoLine (&PreBootKickerMenu, L" - You will be returned to the main menu if not found");
-        AddMenuInfoLine (&PreBootKickerMenu, L"");
 
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
@@ -947,7 +947,8 @@ VOID preBootKicker (VOID) {
         if (!FoundTool) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
-            MsgLog ("  * WARN: Could Not Find BootKicker ... Return to Main Menu\n\n");
+            MsgLog ("\n");
+            MsgLog ("** WARN ** Could Not Find BootKicker ... Return to Main Menu\n\n");
             #endif
 
             MY_FREE_POOL(FilePath);
@@ -955,8 +956,8 @@ VOID preBootKicker (VOID) {
         else {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
-            MsgLog ("    ** Success: Found %s\n", FilePath);
-            MsgLog ("  - Load BootKicker\n\n");
+            MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
+            MsgLog ("%s  - Load BootKicker\n\n", OffsetNext);
             #endif
 
             MY_FREE_POOL(FilePath);
@@ -967,7 +968,7 @@ VOID preBootKicker (VOID) {
             // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
-            MsgLog ("* WARN: BootKicker Error ... Return to Main Menu\n\n");
+            MsgLog ("** WARN ** BootKicker Error ... Return to Main Menu\n\n");
             #endif
 
             FreeLoaderEntry (&ourLoaderEntry);
@@ -995,17 +996,16 @@ VOID preCleanNvram (VOID) {
     else {
         PreCleanNvramMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
         PreCleanNvramMenu.Title            = StrDuplicate (L"Clean NVRAM");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"A Tool to Clean/Reset NVRAM on Macs");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"Requires Apple Firmware");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"A Tool to Clean/Reset the NVRAM");
         AddMenuInfoLine (&PreCleanNvramMenu, L"");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"CleanNvram is from OpenCore and Copyright Acidanthera");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"CleanNvram is from OpenCore and is Copyright Acidanthera");
         AddMenuInfoLine (&PreCleanNvramMenu, L"You can find copies of the binary file here:");
         AddMenuInfoLine (&PreCleanNvramMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
         AddMenuInfoLine (&PreCleanNvramMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+        AddMenuInfoLine (&PreCleanNvramMenu, L"");
         AddMenuInfoLine (&PreCleanNvramMenu, L"Requires at least one of the files below.");
         AddMenuInfoLine (&PreCleanNvramMenu, L" - The first file found in the order listed will be used");
         AddMenuInfoLine (&PreCleanNvramMenu, L" - You will be returned to the main menu if not found");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"");
 
         UINTN k = 0;
         CHAR16 *FilePath = NULL;
@@ -1075,14 +1075,14 @@ VOID preCleanNvram (VOID) {
         } // while
 
         #if REFIT_DEBUG > 0
-        MsgLog ("\n");
         LOG(1, LOG_BLANK_LINE_SEP, L"X");
         #endif
 
         if (!FoundTool) {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
-            MsgLog ("  * WARN: Could Not Find CleanNvram ... Return to Main Menu\n\n");
+            MsgLog ("\n");
+            MsgLog ("** WARN ** Could Not Find CleanNvram ... Return to Main Menu\n\n");
             #endif
 
             MY_FREE_POOL(FilePath);
@@ -1090,8 +1090,8 @@ VOID preCleanNvram (VOID) {
         else {
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
-            MsgLog ("    ** Success: Found %s\n", FilePath);
-            MsgLog ("  - Load CleanNvram\n\n");
+            MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
+            MsgLog ("%s  - Load CleanNvram\n\n", OffsetNext);
             #endif
 
             MY_FREE_POOL(FilePath);
@@ -1104,7 +1104,7 @@ VOID preCleanNvram (VOID) {
             // If we get here, an error was met while starting the tool
             #if REFIT_DEBUG > 0
             LOG(1, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
-            MsgLog ("* WARN: CleanNvram Error ... Return to Main Menu\n\n");
+            MsgLog ("** WARN ** CleanNvram Error ... Return to Main Menu\n\n");
             #endif
 
             FreeLoaderEntry (&ourLoaderEntry);
