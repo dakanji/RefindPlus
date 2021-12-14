@@ -206,12 +206,13 @@ static
 VOID SaveMessageToDebugLogFile (
     IN CHAR8 *LastMessage
 ) {
-    static BOOLEAN           FirstTimeSave = TRUE;
-           CHAR8            *MemLogBuffer;
-           CHAR8            *Text;
-           UINTN             MemLogLen;
-           UINTN             TextLen;
-           EFI_FILE_HANDLE   LogFile;
+    static
+    BOOLEAN           FirstTimeSave = TRUE;
+    CHAR8            *MemLogBuffer;
+    CHAR8            *Text;
+    UINTN             MemLogLen;
+    UINTN             TextLen;
+    EFI_FILE_HANDLE   LogFile;
 
     MemLogBuffer = GetMemLogBuffer();
     MemLogLen    = GetMemLogLen();

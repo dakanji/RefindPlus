@@ -2,10 +2,10 @@ name: 'Issues'
 
 on:
   issues:
-    types: opened
+    types: [opened]
   workflow_dispatch:
   schedule:
-    - cron: '1 1 * * *'
+    - cron: '3 3 */3 * *'
 
 permissions:
   issues: write
@@ -56,8 +56,8 @@ jobs:
             This item has been flagged for closure due to missing required information.
           close-issue-message: >
             This item has been closed due to missing required information.
-          days-before-stale: 1
-          days-before-close: 2
+          days-before-stale: 0
+          days-before-close: 4
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Incomplete,Unclear'
@@ -70,8 +70,8 @@ jobs:
             This item has been flagged for closure due to a lack of response.
           close-issue-message: >
             This item has been closed due to a lack of response.
-          days-before-stale: 7
-          days-before-close: 7
+          days-before-stale: 5
+          days-before-close: 5
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
@@ -84,8 +84,8 @@ jobs:
             This item has been flagged for closure due to inactivity.
           close-issue-message: >
             This item has been closed due to inactivity.
-          days-before-stale: 21
-          days-before-close: 7
+          days-before-stale: 19
+          days-before-close: 5
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked,Help-Wanted'
@@ -125,7 +125,7 @@ jobs:
           close-issue-message: >
             This item has been closed as a known issue.
           days-before-stale: 0
-          days-before-close: 1
+          days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Duplicate,Known-Issue'
@@ -137,7 +137,7 @@ jobs:
           close-issue-message: >
             This item has been closed as the issue could not be replicated.
           days-before-stale: 0
-          days-before-close: 1
+          days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Invalid,Works-For-Me'
@@ -149,7 +149,7 @@ jobs:
           close-issue-message: >
             This item has been closed as a fix will not be attempted.
           days-before-stale: 0
-          days-before-close: 1
+          days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           only-issue-labels: 'WontFix'
@@ -163,7 +163,7 @@ jobs:
           days-before-stale: 180
           days-before-close: 180
           stale-issue-label: 'Flagged'
-          
+
   # Lock Threads - https://github.com/dessant/lock-threads
   lock:
     name: Lock Threads
@@ -177,7 +177,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '3'
+          issue-inactive-days: '2'
           include-any-issue-labels: 'Incomplete,Unclear'
           remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
@@ -187,7 +187,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '2'
+          issue-inactive-days: '1'
           include-any-issue-labels: 'Duplicate,Known-Issue'
           remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
@@ -197,7 +197,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '2'
+          issue-inactive-days: '1'
           include-any-issue-labels: 'WontFix'
           remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
@@ -207,7 +207,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '2'
+          issue-inactive-days: '1'
           include-any-issue-labels: 'Invalid,Works-For-Me'
           remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
@@ -229,7 +229,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '7'
+          issue-inactive-days: '5'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked,Help-Wanted'
           add-issue-labels: 'Resolved'
