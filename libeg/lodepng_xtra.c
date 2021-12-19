@@ -110,22 +110,33 @@ typedef struct _lode_color {
    UINT8 alpha;
 } lode_color;
 
-EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN IconSize, IN BOOLEAN WantAlpha) {
+EG_IMAGE * egDecodePNG (
+    IN UINT8   *FileData,
+    IN UINTN    FileDataLength,
+    IN UINTN    IconSize,
+    IN BOOLEAN  WantAlpha
+) {
    EG_IMAGE *NewImage = NULL;
    unsigned Error, Width, Height;
    EG_PIXEL *PixelData;
    lode_color *LodeData;
    UINTN i;
 
-   Error = lodepng_decode_memory((unsigned char **) &PixelData, &Width, &Height, (unsigned char*) FileData,
-                                 (size_t) FileDataLength, LCT_RGBA, 8);
+   Error = lodepng_decode_memory (
+       (unsigned char **) &PixelData,
+        &Width,
+        &Height,
+        (unsigned char *) FileData,
+        (size_t) FileDataLength,
+        LCT_RGBA, 8
+    );
 
    if (Error) {
       return NULL;
    }
 
    // allocate image structure and buffer
-   NewImage = egCreateImage(Width, Height, WantAlpha);
+   NewImage = egCreateImage (Width, Height, WantAlpha);
    if (NewImage == NULL) {
        return NULL;
    }
@@ -146,7 +157,7 @@ EG_IMAGE * egDecodePNG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ico
       if (WantAlpha)
          NewImage->PixelData[i].a = LodeData[i].alpha;
    }
-   lodepng_free(PixelData);
+   lodepng_free (PixelData);
 
    return NewImage;
 } // EG_IMAGE * egDecodePNG()

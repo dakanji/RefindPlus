@@ -112,16 +112,16 @@
 #define LINUX_MATCH_PATTERNS    L"vmlinuz*,bzImage*,kernel*"
 
 EFI_GUID GlobalGuid      = EFI_GLOBAL_VARIABLE;
-extern
-EFI_GUID GuidAPFS;
-extern
-BOOLEAN  SingleAPFS;
+
+extern EFI_GUID GuidAPFS;
+extern BOOLEAN  SingleAPFS;
 
 #if REFIT_DEBUG > 0
-extern
-CHAR16  *OffsetNext;
+extern CHAR16  *OffsetNext;
+
 static
 CHAR16  *Spacer          = L"            ";
+
 BOOLEAN  LogNewLine      = FALSE;
 #endif
 
@@ -224,13 +224,14 @@ LOADER_LIST {
 REFIT_MENU_SCREEN * CopyMenuScreen (
     REFIT_MENU_SCREEN *Entry
 ) {
-    REFIT_MENU_SCREEN *NewEntry;
     UINTN              i;
+    REFIT_MENU_SCREEN *NewEntry;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
 
     if ((Entry != NULL) && (NewEntry != NULL)) {
         NewEntry->Title = (Entry->Title) ? StrDuplicate (Entry->Title) : NULL;
+
         if (Entry->TitleImage != NULL) {
             NewEntry->TitleImage = AllocatePool (sizeof (EG_IMAGE));
             if (NewEntry->TitleImage != NULL) {
@@ -357,7 +358,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         SubScreen = CopyMenuScreen (Entry->me.SubScreen);
     }
     else {
-        // No subscreen yet; initialize default entry
+        // No subscreen yet ... initialize default entry
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen) {
             CHAR16 *DisplayName = NULL;
@@ -1486,12 +1487,12 @@ BOOLEAN ShouldScan (
     REFIT_VOLUME *Volume,
     CHAR16       *Path
 ) {
-    UINTN    i            = 0;
-    CHAR16  *VolName      = NULL;
-    CHAR16  *VolGuid      = NULL;
-    CHAR16  *PathCopy     = NULL;
-    CHAR16  *DontScanDir  = NULL;
-    BOOLEAN  ScanIt       = TRUE;
+    UINTN    i           = 0;
+    CHAR16  *VolName     = NULL;
+    CHAR16  *VolGuid     = NULL;
+    CHAR16  *PathCopy    = NULL;
+    CHAR16  *DontScanDir = NULL;
+    BOOLEAN  ScanIt      = TRUE;
 
     if (MyStriCmp (Path, SelfDirPath)
         && (Volume->DeviceHandle == SelfVolume->DeviceHandle)
@@ -1499,10 +1500,12 @@ BOOLEAN ShouldScan (
         return FALSE;
     }
 
-    if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
-        EFI_STATUS                 Status;
-        CHAR16       *TmpVolNameA  = NULL;
-        CHAR16       *TmpVolNameB  = NULL;
+    if (GlobalConfig.SyncAPFS &&
+        Volume->FSType == FS_TYPE_APFS
+    ) {
+        EFI_STATUS                     Status;
+        CHAR16           *TmpVolNameA  = NULL;
+        CHAR16           *TmpVolNameB  = NULL;
         APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
         // DA-TAG: Limit to TianoCore
@@ -2062,7 +2065,7 @@ VOID ScanEfiFiles (
 
         if (!EFI_ERROR(Status)) {
             if (VolumeRole != APPLE_APFS_VOLUME_ROLE_PREBOOT &&
-                VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM &&
+                VolumeRole != APPLE_APFS_VOLUME_ROLE_SYSTEM  &&
                 VolumeRole != APPLE_APFS_VOLUME_ROLE_UNDEFINED
             ) {
                 // Early Return on APFS Support Volume
@@ -2073,7 +2076,7 @@ VOID ScanEfiFiles (
         if (GlobalConfig.SyncAPFS) {
             for (i = 0; i < SystemVolumesCount; i++) {
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
-                    // Early Return on ReMapped Volume
+                    // Early Return on ReMapped APFS System Volume
                     return;
                 }
             }
@@ -3242,7 +3245,7 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
                 else {
-                    osind = *(UINT64*) ItemBuffer;
+                    osind = *(UINT64 *) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
                         FoundTool = TRUE;
                         TempMenuEntry        = CopyMenuEntry (&MenuEntryFirmware);

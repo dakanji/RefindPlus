@@ -20,7 +20,7 @@ jobs:
     name: Default Issue Label
     runs-on: ubuntu-latest
 
-    if: github.event_name == 'issues' && github.event.action == 'opened'
+    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'opened'
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1
@@ -33,7 +33,7 @@ jobs:
     name: Flag or Close Issues
     runs-on: ubuntu-latest
 
-    if: github.event_name != 'issues'
+    if: github.repository_owner == 'dakanji' && github.event_name != 'issues'
     steps:
 
       - name: Close Resolved Issues
@@ -169,7 +169,7 @@ jobs:
     name: Lock Threads
     runs-on: ubuntu-latest
 
-    if: github.event_name != 'issues'
+    if: github.repository_owner == 'dakanji' && github.event_name != 'issues'
     steps:
 
       - name: Lock Incomplete Issues
@@ -216,7 +216,7 @@ jobs:
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
-          issue-lock-reason: ''
+          issue-lock-reason: This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
           issue-inactive-days: '1'
           include-any-issue-labels: 'Resolved'
           exclude-any-issue-labels: 'Parked,Help-Wanted'

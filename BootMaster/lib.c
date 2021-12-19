@@ -2277,6 +2277,7 @@ VOID VetSyncAPFS (VOID) {
 
         // Check for Multi-Instance APFS Containers
         VetMultiInstanceAPFS();
+
     } // if/else PreBootVolumesCount == 0
 } // VOID VetSyncAPFS()
 
@@ -3590,7 +3591,7 @@ BOOLEAN FindVolume (
     }
 
     return (Found);
-} // static VOID FindVolume()
+} // BOOLEAN FindVolume()
 
 // Returns TRUE if Description matches Volume's VolName, FsName, or (once
 // transformed) PartGuid fields, FALSE otherwise (or if either pointer is NULL)

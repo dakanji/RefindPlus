@@ -1220,6 +1220,7 @@ VOID AddSubmenu (
     SubEntry = InitializeLoaderEntry (Entry);
     if (SubEntry == NULL) {
         FreeMenuScreen (&SubScreen);
+
         return;
     }
 

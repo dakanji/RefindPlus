@@ -2452,8 +2452,7 @@ VOID SaveHiddenList (
     CheckError (Status, L"in SaveHiddenList!!");
 } // VOID SaveHiddenList()
 
-// Present a menu that enables the user to delete hidden tags
-//   that is, to un-hide them.
+// Present a menu for the user to delete (un-hide) hidden tags.
 VOID ManageHiddenTags (VOID) {
     EFI_STATUS           Status  = EFI_SUCCESS;
     CHAR16              *AllTags = NULL, *OneElement = NULL;
@@ -2661,10 +2660,10 @@ BOOLEAN HideEfiTag (
     MENU_STYLE_FUNC    Style        = TextMenuStyle;
     REFIT_MENU_ENTRY  *ChosenOption;
 
-    if (!Loader ||
-        !VarName ||
-        !HideItemMenu ||
-        !Loader->Volume ||
+    if (!Loader          ||
+        !VarName         ||
+        !HideItemMenu    ||
+        !Loader->Volume  ||
         !Loader->LoaderPath
     ) {
         return FALSE;
@@ -2708,6 +2707,7 @@ BOOLEAN HideEfiTag (
                 (Loader->LoaderPath[0] == L'\\' ? L'\0' : L'\\')
             );
         }
+
         AddToHiddenTags (VarName, FullPath);
         TagHidden = TRUE;
         MY_FREE_POOL(GuidStr);
@@ -2774,8 +2774,9 @@ BOOLEAN HideLegacyTag (
     CHAR16             *Name      = NULL;
     BOOLEAN             TagHidden = FALSE;
 
-    if (AllowGraphicsMode)
+    if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
+    }
 
     if ((GlobalConfig.LegacyType == LEGACY_TYPE_MAC) && LegacyLoader->me.Title) {
         Name = StrDuplicate (LegacyLoader->me.Title);
@@ -3156,34 +3157,40 @@ UINTN RunMainMenu (
 VOID FreeMenuScreen (
     IN REFIT_MENU_SCREEN **Screen
 ) {
+// DA-TAG: Allow leaks until instances are audited
+#if 0
     UINTN i;
 
-// DA-TAG: Allow leaks until instances are audited
     if (Screen && *Screen) {
-/*        MY_FREE_POOL((*Screen)->Title);
-*/        MY_FREE_IMAGE((*Screen)->TitleImage);
+        MY_FREE_POOL((*Screen)->Title);
+        MY_FREE_IMAGE((*Screen)->TitleImage);
+
         if ((*Screen)->InfoLines) {
-/*            for (i = 0; i < (*Screen)->InfoLineCount; i++) {
+            for (i = 0; i < (*Screen)->InfoLineCount; i++) {
                 MY_FREE_POOL((*Screen)->InfoLines[i]);
             }
-*//*            MY_FREE_POOL((*Screen)->InfoLines);
-*/        }
+            (*Screen)->InfoLineCount = 0;
+            MY_FREE_POOL((*Screen)->InfoLines);
+        }
+
         if ((*Screen)->Entries) {
             for (i = 0; i < (*Screen)->EntryCount; i++) {
-/*                MY_FREE_POOL((*Screen)->Entries[i]->Title);
-*/                MY_FREE_IMAGE((*Screen)->Entries[i]->Image);
+                MY_FREE_POOL((*Screen)->Entries[i]->Title);
+                MY_FREE_IMAGE((*Screen)->Entries[i]->Image);
                 MY_FREE_IMAGE((*Screen)->Entries[i]->BadgeImage);
                 FreeMenuScreen (&(*Screen)->Entries[i]->SubScreen);
             } // for
-/*            MY_FREE_POOL((*Screen)->Entries);
-*/        }
+            (*Screen)->EntryCount = 0;
+            MY_FREE_POOL((*Screen)->Entries);
+        }
 
-/*        MY_FREE_POOL((*Screen)->TimeoutText);
+        MY_FREE_POOL((*Screen)->TimeoutText);
         MY_FREE_POOL((*Screen)->Hint1);
         MY_FREE_POOL((*Screen)->Hint2);
         MY_FREE_POOL(*Screen);
         MY_FREE_POOL(Screen);
-*/    }
+    }
+#endif
 } // VOID FreeMenuScreen()
 
 VOID FreeLegacyEntry (
