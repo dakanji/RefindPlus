@@ -830,9 +830,10 @@ VOID AddListElement (
     }
     else if ((*ElementCount & 15) == 0) {
         if (*ElementCount == 0) {
-            // *ListPtr != NULL && *ElementCount == 0 ???
-            // Should not happen but free *ListPtr just in case
-            MY_FREE_POOL(*ListPtr);
+            // DA-TAG: *ListPtr != NULL && *ElementCount == 0
+            //         Dereference *ListPtr ... just in case
+            //         Do not free ... memory conflicts!!
+            *ListPtr = NULL;
 
             TmpListPtr = AllocatePool (AllocatePointer);
         }
