@@ -1737,6 +1737,9 @@ VOID ScanVolume (
         NativeLogger = FALSE;
     }
 
+    // Prime Line Breaks
+    DoneHeadings = FALSE;
+
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
         DevicePathFromHandle (Volume->DeviceHandle)
@@ -2097,7 +2100,7 @@ VOID VetMultiInstanceAPFS (VOID) {
     // Check if configured to show Apple Recovery
     for (i = 0; i < NUM_TOOLS; i++) {
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_APPLE_RECOVERY: AppleRecovery = TRUE; break;
+            case TAG_RECOVERY_APPLE: AppleRecovery = TRUE; break;
             default:                                    continue;
         } // switch
 

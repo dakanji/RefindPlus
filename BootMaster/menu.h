@@ -119,16 +119,18 @@ typedef VOID (*MENU_STYLE_FUNC) (
     IN CHAR16 *ParamText
 );
 
-VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
+VOID ManageHiddenTags (VOID);
+VOID GenerateWaitList (VOID);
 VOID FreeLegacyEntry (IN LEGACY_ENTRY **Entry);
 VOID FreeLoaderEntry (IN LOADER_ENTRY **Entry);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
+VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
+VOID FreeMenuEntry (IN OUT REFIT_MENU_ENTRY **Entry);
+VOID DisplaySimpleMessage (CHAR16 *Title, CHAR16 *Message);
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuInfoLineAlt (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuEntry (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
-VOID DisplaySimpleMessage (CHAR16 *Title, CHAR16 *Message);
-VOID ManageHiddenTags (VOID);
-VOID GenerateWaitList (VOID);
+VOID AddMenuEntryCopy (IN REFIT_MENU_SCREEN *Screen, IN REFIT_MENU_ENTRY *Entry);
 VOID MainMenuStyle (
     IN REFIT_MENU_SCREEN *Screen,
     IN SCROLL_STATE *State,
@@ -147,21 +149,35 @@ VOID GraphicsMenuStyle (
     IN UINTN Function,
     IN CHAR16 *ParamText
 );
+
+UINTN ComputeRow0PosY (VOID);
+UINTN WaitForInput (IN UINTN Timeout);
 UINTN RunGenericMenu (
     IN REFIT_MENU_SCREEN *Screen,
     IN MENU_STYLE_FUNC StyleFunc,
     IN OUT INTN *DefaultEntryIndex,
     OUT REFIT_MENU_ENTRY **ChosenEntry
 );
-
-UINTN ComputeRow0PosY (VOID);
-UINTN RunMenu (IN REFIT_MENU_SCREEN *Screen, OUT REFIT_MENU_ENTRY **ChosenEntry);
-UINTN RunMainMenu (IN REFIT_MENU_SCREEN *Screen, IN CHAR16** DefaultSelection, OUT REFIT_MENU_ENTRY **ChosenEntry);
-UINTN FindMainMenuItem (IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN PosX, IN UINTN PosY);
-UINTN WaitForInput (IN UINTN Timeout);
+UINTN RunMenu (
+    IN REFIT_MENU_SCREEN  *Screen,
+    OUT REFIT_MENU_ENTRY **ChosenEntry
+);
+UINTN FindMainMenuItem (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN SCROLL_STATE      *State,
+    IN UINTN              PosX,
+    IN UINTN              PosY
+);
+UINTN RunMainMenu (
+    IN REFIT_MENU_SCREEN  *Screen,
+    IN CHAR16            **DefaultSelection,
+    OUT REFIT_MENU_ENTRY **ChosenEntry
+);
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);
 CHAR16 * MenuExitInfo (IN UINTN MenuExit);
+
+ENTRY_TYPE GetMenuEntryType (REFIT_MENU_ENTRY *Entry);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
 

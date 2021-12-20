@@ -128,84 +128,6 @@ BOOLEAN  LogNewLine      = FALSE;
 BOOLEAN  ScanningLoaders = FALSE;
 BOOLEAN  FirstLoaderScan = FALSE;
 
-static
-REFIT_MENU_ENTRY MenuEntryAbout = {
-    L"About RefindPlus",
-    TAG_ABOUT,
-    1, 0, 'A',
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryReset = {
-    L"System Restart",
-    TAG_REBOOT,
-    1, 0, 'R',
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryShutdown = {
-    L"System Shutdown",
-    TAG_SHUTDOWN,
-    1, 0, 'U',
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryRotateCsr = {
-    L"Toggle CSR Policy",
-    TAG_CSR_ROTATE,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryFirmware = {
-    L"Reboot into Firmware",
-    TAG_FIRMWARE,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryHiddenTags = {
-    L"Manage Hidden Tags",
-    TAG_HIDDEN,
-    1, 0, 0, NULL,
-    NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryInstall = {
-    L"Install RefindPlus",
-    TAG_INSTALL,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryBootorder = {
-    L"Manage Firmware Boot Order",
-    TAG_BOOTORDER,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryExit = {
-    L"Exit RefindPlus",
-    TAG_EXIT,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryPreBootKicker = {
-    L"Show Bootscreen",
-    TAG_PRE_BOOTKICKER,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-static
-REFIT_MENU_ENTRY MenuEntryPreCleanNvram = {
-    L"Clean NVRAM",
-    TAG_PRE_NVRAMCLEAN,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-
 // Structure used to hold boot loader filenames and time stamps in
 // a linked list; used to sort entries within a directory.
 struct
@@ -235,27 +157,25 @@ REFIT_MENU_SCREEN * CopyMenuScreen (
         if (Entry->TitleImage != NULL) {
             NewEntry->TitleImage = AllocatePool (sizeof (EG_IMAGE));
             if (NewEntry->TitleImage != NULL) {
-                CopyMem (NewEntry->TitleImage, Entry->TitleImage, sizeof (EG_IMAGE));
+                NewEntry->TitleImage = egCopyImage (Entry->TitleImage);
             }
         }
 
         NewEntry->InfoLineCount = Entry->InfoLineCount;
-        NewEntry->InfoLines = (CHAR16**) AllocateZeroPool (
-            Entry->InfoLineCount * (sizeof (CHAR16*))
+        NewEntry->InfoLines = (CHAR16 **) AllocateZeroPool (
+            Entry->InfoLineCount * (sizeof (CHAR16 *))
         );
-
         for (i = 0; i < Entry->InfoLineCount && NewEntry->InfoLines; i++) {
             NewEntry->InfoLines[i] = (Entry->InfoLines[i])
                 ? StrDuplicate (Entry->InfoLines[i]) : NULL;
         } // for
 
         NewEntry->EntryCount = Entry->EntryCount;
-        NewEntry->Entries = (REFIT_MENU_ENTRY**) AllocateZeroPool (
-            Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY*))
+        NewEntry->Entries = (REFIT_MENU_ENTRY **) AllocateZeroPool (
+            Entry->EntryCount * (sizeof (REFIT_MENU_ENTRY *))
         );
-
         for (i = 0; i < Entry->EntryCount && NewEntry->Entries; i++) {
-            AddMenuEntry (NewEntry, Entry->Entries[i]);
+            AddMenuEntryCopy (NewEntry, Entry->Entries[i]);
         } // for
 
         NewEntry->TimeoutSeconds = Entry->TimeoutSeconds;
@@ -277,29 +197,18 @@ REFIT_MENU_SCREEN * CopyMenuScreen (
 REFIT_MENU_ENTRY * CopyMenuEntry (
     REFIT_MENU_ENTRY *Entry
 ) {
-    REFIT_MENU_ENTRY *NewEntry;
+    REFIT_MENU_ENTRY *NewEntry = NULL;
 
     NewEntry = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     if ((Entry != NULL) && (NewEntry != NULL)) {
-        CopyMem (NewEntry, Entry, sizeof (REFIT_MENU_ENTRY));
-        NewEntry->Title = (Entry->Title) ? StrDuplicate (Entry->Title) : NULL;
-        if (Entry->BadgeImage != NULL) {
-            NewEntry->BadgeImage = AllocatePool (sizeof (EG_IMAGE));
-            if (NewEntry->BadgeImage != NULL) {
-                CopyMem (NewEntry->BadgeImage, Entry->BadgeImage, sizeof (EG_IMAGE));
-            }
-        }
-
-        if (Entry->Image != NULL) {
-            NewEntry->Image = AllocatePool (sizeof (EG_IMAGE));
-            if (NewEntry->Image != NULL) {
-                CopyMem (NewEntry->Image, Entry->Image, sizeof (EG_IMAGE));
-            }
-        }
-
-        if (Entry->SubScreen != NULL) {
-            NewEntry->SubScreen = CopyMenuScreen (Entry->SubScreen);
-        }
+        NewEntry->Tag            =  Entry->Tag;
+        NewEntry->Row            =  Entry->Row;
+        NewEntry->ShortcutDigit  =  Entry->ShortcutDigit;
+        NewEntry->ShortcutLetter =  Entry->ShortcutLetter;
+        NewEntry->Title          = (Entry->Title      != NULL) ? StrDuplicate (Entry->Title)       : NULL;
+        NewEntry->Image          = (Entry->Image      != NULL) ? egCopyImage (Entry->Image)        : NULL;
+        NewEntry->BadgeImage     = (Entry->BadgeImage != NULL) ? egCopyImage (Entry->BadgeImage)   : NULL;
+        NewEntry->SubScreen      = (Entry->SubScreen  != NULL) ? CopyMenuScreen (Entry->SubScreen) : NULL;
     }
     return (NewEntry);
 } // REFIT_MENU_ENTRY * CopyMenuEntry()
@@ -358,7 +267,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         SubScreen = CopyMenuScreen (Entry->me.SubScreen);
     }
     else {
-        // No subscreen yet; initialize default entry
+        // No subscreen yet ... initialize default entry
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen) {
             CHAR16 *DisplayName = NULL;
@@ -689,7 +598,11 @@ VOID GenerateSubScreen (
         LOG(2, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1 - START");
         if (GenerateReturn) {
             LOG(2, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1a 1");
-            AddMenuEntry (SubScreen, &MenuEntryReturn);
+            REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+            LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+            LocalMenuEntryReturn->Tag   = TAG_RETURN;
+            LocalMenuEntryReturn->Row   = 1;
+            AddMenuEntry (SubScreen, LocalMenuEntryReturn);
 
             LOG(2, LOG_LINE_FORENSIC, L"In GenerateSubScreen ... Z 1a 2");
         }
@@ -1264,7 +1177,7 @@ LOADER_ENTRY * AddEfiLoaderEntry (
         Entry->InitrdPath  = NULL;
         Entry->Enabled     = TRUE;
 
-        AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+        AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
     } // if Entry
 
 
@@ -1360,7 +1273,7 @@ LOADER_ENTRY * AddLoaderEntry (
     Entry->Volume = CopyVolume (Volume);
     SetLoaderDefaults (Entry, LoaderPath, Volume);
     GenerateSubScreen (Entry, Volume, SubScreenReturn);
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");
@@ -1860,7 +1773,11 @@ BOOLEAN ScanLoaderDir (
                 LOG(1, LOG_LINE_NORMAL, L"Adding 'Return' entry to folded Linux kernels");
                 #endif
 
-                AddMenuEntry (FirstKernel->me.SubScreen, &MenuEntryReturn);
+                REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+                LocalMenuEntryReturn->Tag   = TAG_RETURN;
+                LocalMenuEntryReturn->Row   = 1;
+                AddMenuEntry (FirstKernel->me.SubScreen, LocalMenuEntryReturn);
             }
 
             CleanUpLoaderList (LoaderList);
@@ -2508,7 +2425,7 @@ LOADER_ENTRY * AddToolEntry (
     Entry->Volume            = CopyVolume (Volume);
     Entry->UseGraphicsMode   = UseGraphicsMode;
 
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
 } // static LOADER_ENTRY * AddToolEntry()
@@ -2827,7 +2744,7 @@ VOID ScanForBootloaders (
         MY_FREE_POOL(OrigDontScanDirs);
     }
 
-    if (MainMenu.EntryCount < 1) {
+    if (MainMenu->EntryCount < 1) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Could Not Find Boot Loaders");
         LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
@@ -2847,7 +2764,7 @@ VOID ScanForBootloaders (
         UINTN KeyNum = 0;
         #endif
 
-        for (i = 0; i < MainMenu.EntryCount && MainMenu.Entries[i]->Row == 0; i++) {
+        for (i = 0; i < MainMenu->EntryCount && MainMenu->Entries[i]->Row == 0; i++) {
             if (i < 9) {
                 #if REFIT_DEBUG > 0
                 KeyNum = i + 1;
@@ -2865,20 +2782,20 @@ VOID ScanForBootloaders (
             else {
                 break;
             }
-            MainMenu.Entries[i]->ShortcutDigit = ShortCutKey;
+            MainMenu->Entries[i]->ShortcutDigit = ShortCutKey;
 
 
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (
                 L"Set Key '%d' to %s",
-                KeyNum, MainMenu.Entries[i]->Title
+                KeyNum, MainMenu->Entries[i]->Title
             );
             LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MsgLog ("  - %s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
-            if (KeyNum < MainMenu.EntryCount &&
-                MainMenu.Entries[i]->Row == 0 &&
+            if (KeyNum < MainMenu->EntryCount &&
+                MainMenu->Entries[i]->Row == 0 &&
                 KeyNum != 0
             ) {
                 MsgLog ("\n");
@@ -2893,8 +2810,8 @@ VOID ScanForBootloaders (
         MsgStr = PoolPrint (
             L"Assigned Shortcut Key%s to %d of %d Loader%s",
             (i == 1) ? L"" : L"s",
-            i, MainMenu.EntryCount,
-            (MainMenu.EntryCount == 1) ? L"" : L"s"
+            i, MainMenu->EntryCount,
+            (MainMenu->EntryCount == 1) ? L"" : L"s"
         );
         LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         MsgLog ("INFO: %s\n\n", MsgStr);
@@ -3068,7 +2985,6 @@ VOID ScanForTools (VOID) {
     UINT32            CsrValue;
     BOOLEAN           FoundTool = FALSE;
     BOOLEAN           OtherFind = FALSE;
-    REFIT_MENU_ENTRY *TempMenuEntry;
 
     EFI_STATUS                     Status;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
@@ -3099,7 +3015,6 @@ VOID ScanForTools (VOID) {
 
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");            break;
-            case TAG_APPLE_RECOVERY:   ToolName = StrDuplicate (L"Recovery (Mac)");              break;
             case TAG_BOOTORDER:        ToolName = StrDuplicate (L"Manage Firmware Boot Order");  break;
             case TAG_CSR_ROTATE:       ToolName = StrDuplicate (L"Toggle CSR");                  break;
             case TAG_EXIT:             ToolName = StrDuplicate (L"Exit RefindPlus");             break;
@@ -3108,16 +3023,17 @@ VOID ScanForTools (VOID) {
             case TAG_GDISK:            ToolName = StrDuplicate (L"GDisk");                       break;
             case TAG_GPTSYNC:          ToolName = StrDuplicate (L"GPT Sync");                    break;
             case TAG_HIDDEN:           ToolName = StrDuplicate (L"Hidden Tags");                 break;
+            case TAG_INFO_BOOTKICKER:  ToolName = StrDuplicate (L"Show Bootscreen");             break;
+            case TAG_INFO_NVRAMCLEAN:  ToolName = StrDuplicate (L"Clean Nvram");                 break;
             case TAG_INSTALL:          ToolName = StrDuplicate (L"Install RefindPlus");          break;
             case TAG_MEMTEST:          ToolName = StrDuplicate (L"Memtest");                     break;
             case TAG_MOK_TOOL:         ToolName = StrDuplicate (L"MOK Protocol");                break;
             case TAG_NETBOOT:          ToolName = StrDuplicate (L"Net Boot");                    break;
-            case TAG_PRE_BOOTKICKER:   ToolName = StrDuplicate (L"Show Bootscreen");             break;
-            case TAG_PRE_NVRAMCLEAN:   ToolName = StrDuplicate (L"Clean Nvram");                 break;
             case TAG_REBOOT:           ToolName = StrDuplicate (L"System Restart");              break;
+            case TAG_RECOVERY_APPLE:   ToolName = StrDuplicate (L"Recovery (Mac)");              break;
+            case TAG_RECOVERY_WINDOWS: ToolName = StrDuplicate (L"Recovery (Win)");              break;
             case TAG_SHELL:            ToolName = StrDuplicate (L"UEFI Shell");                  break;
             case TAG_SHUTDOWN:         ToolName = StrDuplicate (L"System Shutdown");             break;
-            case TAG_WINDOWS_RECOVERY: ToolName = StrDuplicate (L"Recovery (Win)");              break;
             default:                                                                          continue;
         } // switch
 
@@ -3127,104 +3043,33 @@ VOID ScanForTools (VOID) {
         MsgLog ("Type %02d ... ", ToolTotal);
         #endif
 
+        REFIT_MENU_ENTRY *MenuEntryPreCleanNvram;
+        REFIT_MENU_ENTRY *MenuEntryPreBootKicker;
+        REFIT_MENU_ENTRY *MenuEntryShutdown;
+        REFIT_MENU_ENTRY *MenuEntryReset;
+        REFIT_MENU_ENTRY *MenuEntryAbout;
+        REFIT_MENU_ENTRY *MenuEntryExit;
+        REFIT_MENU_ENTRY *MenuEntryHiddenTags;
+        REFIT_MENU_ENTRY *MenuEntryInstall;
+        REFIT_MENU_ENTRY *MenuEntryBootorder;
+        REFIT_MENU_ENTRY *MenuEntryFirmware;
+        REFIT_MENU_ENTRY *MenuEntryRotateCsr;
+
+
         switch (GlobalConfig.ShowTools[i]) {
-            case TAG_PRE_NVRAMCLEAN:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryPreCleanNvram);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-
-                AddMenuEntry (&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_PRE_BOOTKICKER:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryPreBootKicker);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-
-                AddMenuEntry (&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_SHUTDOWN:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryShutdown);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
-
-                AddMenuEntry (&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_REBOOT:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryReset);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
-
-                AddMenuEntry (&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_ABOUT:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryAbout);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
-
-                AddMenuEntry(&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_EXIT:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryExit);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_EXIT);
-
-                AddMenuEntry(&MainMenu, TempMenuEntry);
-
-                #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
-                #endif
-
-                break;
-
-            case TAG_HIDDEN:
-                if (GlobalConfig.HiddenTags) {
+            case TAG_INFO_NVRAMCLEAN:
+                MenuEntryPreCleanNvram = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryPreCleanNvram) {
                     FoundTool = TRUE;
-                    TempMenuEntry        = CopyMenuEntry (&MenuEntryHiddenTags);
-                    TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
 
-                    AddMenuEntry(&MainMenu, TempMenuEntry);
+                    MenuEntryPreCleanNvram->Title          = StrDuplicate (L"Clean NVRAM");
+                    MenuEntryPreCleanNvram->Tag            = TAG_INFO_NVRAMCLEAN;
+                    MenuEntryPreCleanNvram->Row            = 1;
+                    MenuEntryPreCleanNvram->ShortcutDigit  = 0;
+                    MenuEntryPreCleanNvram->ShortcutLetter = 0;
+                    MenuEntryPreCleanNvram->Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+
+                    AddMenuEntry (MainMenu, MenuEntryPreCleanNvram);
 
                     #if REFIT_DEBUG > 0
                     ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
@@ -3236,12 +3081,223 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
                     LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
                     MsgLog ("** WARN ** %s", ToolStr);
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif
+
+                break;
+
+            case TAG_INFO_BOOTKICKER:
+                MenuEntryPreBootKicker = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryPreBootKicker) {
+                    FoundTool = TRUE;
+
+                    MenuEntryPreBootKicker->Title          = StrDuplicate (L"Show Bootscreen");
+                    MenuEntryPreBootKicker->Tag            = TAG_INFO_BOOTKICKER;
+                    MenuEntryPreBootKicker->Row            = 1;
+                    MenuEntryPreBootKicker->ShortcutDigit  = 0;
+                    MenuEntryPreBootKicker->ShortcutLetter = 0;
+                    MenuEntryPreBootKicker->Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+
+                    AddMenuEntry (MainMenu, MenuEntryPreBootKicker);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+
+                #if REFIT_DEBUG > 0
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
+                #endif
+
+                break;
+
+            case TAG_SHUTDOWN:
+                MenuEntryShutdown = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryShutdown) {
+                    FoundTool = TRUE;
+
+                    MenuEntryShutdown->Title          = StrDuplicate (L"System Shutdown");
+                    MenuEntryShutdown->Tag            = TAG_SHUTDOWN;
+                    MenuEntryShutdown->Row            = 1;
+                    MenuEntryShutdown->ShortcutDigit  = 0;
+                    MenuEntryShutdown->ShortcutLetter = 'U';
+                    MenuEntryShutdown->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
+
+                    AddMenuEntry (MainMenu, MenuEntryShutdown);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+
+                #if REFIT_DEBUG > 0
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
+                #endif
+
+                break;
+
+            case TAG_REBOOT:
+                MenuEntryReset = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryReset) {
+                    FoundTool = TRUE;
+
+                    MenuEntryReset->Title          = StrDuplicate (L"System Restart");
+                    MenuEntryReset->Tag            = TAG_REBOOT;
+                    MenuEntryReset->Row            = 1;
+                    MenuEntryReset->ShortcutDigit  = 0;
+                    MenuEntryReset->ShortcutLetter = 'R';
+                    MenuEntryReset->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
+
+                    AddMenuEntry (MainMenu, MenuEntryReset);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+
+                #if REFIT_DEBUG > 0
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
+                #endif
+
+                break;
+
+            case TAG_ABOUT:
+                MenuEntryAbout = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryAbout) {
+                    FoundTool = TRUE;
+
+                    MenuEntryAbout->Title          = StrDuplicate (L"About RefindPlus");
+                    MenuEntryAbout->Tag            = TAG_ABOUT;
+                    MenuEntryAbout->Row            = 1;
+                    MenuEntryAbout->ShortcutDigit  = 0;
+                    MenuEntryAbout->ShortcutLetter = 'A';
+                    MenuEntryAbout->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
+
+                    AddMenuEntry (MainMenu, MenuEntryAbout);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+
+                #if REFIT_DEBUG > 0
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
+                #endif
+
+                break;
+
+            case TAG_EXIT:
+                MenuEntryExit = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryExit) {
+                    FoundTool = TRUE;
+
+                    MenuEntryExit->Title          = StrDuplicate (L"Exit RefindPlus");
+                    MenuEntryExit->Tag            = TAG_EXIT;
+                    MenuEntryExit->Row            = 1;
+                    MenuEntryExit->ShortcutDigit  = 0;
+                    MenuEntryExit->ShortcutLetter = 0;
+                    MenuEntryExit->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_EXIT);
+
+                    AddMenuEntry (MainMenu, MenuEntryExit);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
+
+                #if REFIT_DEBUG > 0
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
+                #endif
+
+                break;
+
+            case TAG_HIDDEN:
+                if (GlobalConfig.HiddenTags) {
+                    MenuEntryHiddenTags = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                    if (MenuEntryHiddenTags) {
+                        FoundTool = TRUE;
+
+                        MenuEntryHiddenTags->Title          = StrDuplicate (L"Restore Hidden Tags");
+                        MenuEntryHiddenTags->Tag            = TAG_HIDDEN;
+                        MenuEntryHiddenTags->Row            = 1;
+                        MenuEntryHiddenTags->ShortcutDigit  = 0;
+                        MenuEntryHiddenTags->ShortcutLetter = 0;
+                        MenuEntryHiddenTags->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_HIDDEN);
+
+                        AddMenuEntry (MainMenu, MenuEntryHiddenTags);
+
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        MsgLog ("%s", ToolStr);
+                        MY_FREE_POOL(ToolStr);
+                        #endif
+                    }
+                    else {
+                        #if REFIT_DEBUG > 0
+                        if (!FoundTool) {
+                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            MsgLog ("** WARN ** %s", ToolStr);
+                            MY_FREE_POOL(ToolStr);
+                        }
+                        #endif
+                    }
+                }
+                else {
+                    #if REFIT_DEBUG > 0
+                    if (!FoundTool) {
+                        ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        MsgLog ("** WARN ** %s", ToolStr);
+                        MY_FREE_POOL(ToolStr);
+                    }
+                    #endif
+                }
 
                 break;
 
@@ -3261,18 +3317,37 @@ VOID ScanForTools (VOID) {
                 else {
                     osind = *(UINT64 *) ItemBuffer;
                     if (osind & EFI_OS_INDICATIONS_BOOT_TO_FW_UI) {
-                        FoundTool = TRUE;
-                        TempMenuEntry        = CopyMenuEntry (&MenuEntryFirmware);
-                        TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
+                        MenuEntryFirmware = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                        if (MenuEntryFirmware) {
+                            FoundTool = TRUE;
 
-                        AddMenuEntry(&MainMenu, TempMenuEntry);
+                            MenuEntryFirmware->Title          = StrDuplicate (L"Reboot into Firmware");
+                            MenuEntryFirmware->Tag            = TAG_FIRMWARE;
+                            MenuEntryFirmware->Row            = 1;
+                            MenuEntryFirmware->ShortcutDigit  = 0;
+                            MenuEntryFirmware->ShortcutLetter = 0;
+                            MenuEntryFirmware->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_FIRMWARE);
 
-                        #if REFIT_DEBUG > 0
-                        ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                        MsgLog ("%s", ToolStr);
-                        MY_FREE_POOL(ToolStr);
-                        #endif
+                            AddMenuEntry (MainMenu, MenuEntryFirmware);
+
+                            #if REFIT_DEBUG > 0
+                            ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            MsgLog ("%s", ToolStr);
+                            MY_FREE_POOL(ToolStr);
+                            #endif
+                        }
+                        else {
+                            #if REFIT_DEBUG > 0
+                            // Fake 'FoundTool'
+                            FoundTool = TRUE;
+
+                            ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                            LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                            MsgLog ("** WARN ** %s", ToolStr);
+                            MY_FREE_POOL(ToolStr);
+                            #endif
+                        }
                     }
                     MY_FREE_POOL(ItemBuffer);
                 }
@@ -3485,7 +3560,7 @@ VOID ScanForTools (VOID) {
 
                 break;
 
-            case TAG_APPLE_RECOVERY:
+            case TAG_RECOVERY_APPLE:
                 OtherFind = FALSE;
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
                     j = 0;
@@ -3674,7 +3749,7 @@ VOID ScanForTools (VOID) {
 
                 break;
 
-            case TAG_WINDOWS_RECOVERY:
+            case TAG_RECOVERY_WINDOWS:
                 j = 0;
                 OtherFind = FALSE;
                 while (
@@ -3778,18 +3853,26 @@ VOID ScanForTools (VOID) {
 
             case TAG_CSR_ROTATE:
                 if ((GetCsrStatus (&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
-                    FoundTool            = TRUE;
-                    TempMenuEntry        = CopyMenuEntry (&MenuEntryRotateCsr);
-                    TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
+                    MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                    if (MenuEntryRotateCsr) {
+                        FoundTool = TRUE;
 
-                    AddMenuEntry (&MainMenu, TempMenuEntry);
+                        MenuEntryRotateCsr->Title          = StrDuplicate (L"Toggle SIP Policy");
+                        MenuEntryRotateCsr->Tag            = TAG_CSR_ROTATE;
+                        MenuEntryRotateCsr->Row            = 1;
+                        MenuEntryRotateCsr->ShortcutDigit  = 0;
+                        MenuEntryRotateCsr->ShortcutLetter = 0;
+                        MenuEntryRotateCsr->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_CSR_ROTATE);
 
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    MsgLog ("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
+                        AddMenuEntry (MainMenu, MenuEntryRotateCsr);
+
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                        LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        MsgLog ("%s", ToolStr);
+                        MY_FREE_POOL(ToolStr);
+                        #endif
+                    }
                 }
 
                 #if REFIT_DEBUG > 0
@@ -3814,31 +3897,67 @@ VOID ScanForTools (VOID) {
                 break;
 
             case TAG_INSTALL:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryInstall);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+                MenuEntryInstall = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryInstall) {
+                    FoundTool = TRUE;
 
-                AddMenuEntry (&MainMenu, TempMenuEntry);
+                    MenuEntryInstall->Title          = StrDuplicate (L"Install RefindPlus");
+                    MenuEntryInstall->Tag            = TAG_INSTALL;
+                    MenuEntryInstall->Row            = 1;
+                    MenuEntryInstall->ShortcutDigit  = 0;
+                    MenuEntryInstall->ShortcutLetter = 0;
+                    MenuEntryInstall->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+
+                    AddMenuEntry (MainMenu, MenuEntryInstall);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
                 #endif
 
                 break;
 
             case TAG_BOOTORDER:
-                TempMenuEntry        = CopyMenuEntry (&MenuEntryBootorder);
-                TempMenuEntry->Image = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+                MenuEntryBootorder = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryBootorder) {
+                    FoundTool = TRUE;
 
-                AddMenuEntry (&MainMenu, TempMenuEntry);
+                    MenuEntryBootorder->Title          = StrDuplicate (L"Manage Firmware Boot Order");
+                    MenuEntryBootorder->Tag            = TAG_BOOTORDER;
+                    MenuEntryBootorder->Row            = 1;
+                    MenuEntryBootorder->ShortcutDigit  = 0;
+                    MenuEntryBootorder->ShortcutLetter = 0;
+                    MenuEntryBootorder->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+
+                    AddMenuEntry (MainMenu, MenuEntryBootorder);
+
+                    #if REFIT_DEBUG > 0
+                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("%s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                    #endif
+                }
 
                 #if REFIT_DEBUG > 0
-                ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                MsgLog ("%s", ToolStr);
-                MY_FREE_POOL(ToolStr);
+                if (!FoundTool) {
+                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
+                    LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                    MsgLog ("** WARN ** %s", ToolStr);
+                    MY_FREE_POOL(ToolStr);
+                }
                 #endif
 
                 break;

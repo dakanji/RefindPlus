@@ -62,6 +62,13 @@
 #include "../libeg/libeg.h"
 #include "globalExtra.h"
 
+// Menu entry types - depends on the tag of the menu entry
+typedef enum {
+    EntryTypeRefitMenuEntry,
+    EntryTypeLoaderEntry,
+    EntryTypeLegacyEntry,
+} ENTRY_TYPE;
+
 // Tag classifications; used in various ways.
 #define TAG_ABOUT               (1)
 #define TAG_REBOOT              (2)
@@ -74,8 +81,8 @@
 #define TAG_SHELL               (9)
 #define TAG_GPTSYNC            (10)
 #define TAG_LEGACY_UEFI        (11)
-#define TAG_APPLE_RECOVERY     (12)
-#define TAG_WINDOWS_RECOVERY   (13)
+#define TAG_RECOVERY_APPLE     (12)
+#define TAG_RECOVERY_WINDOWS   (13)
 #define TAG_MOK_TOOL           (14)
 #define TAG_FIRMWARE           (15)
 #define TAG_MEMTEST            (16)
@@ -86,10 +93,10 @@
 #define TAG_HIDDEN             (21)
 #define TAG_INSTALL            (22)
 #define TAG_BOOTORDER          (23)
-#define TAG_PRE_BOOTKICKER     (24)
-#define TAG_SHOW_BOOTKICKER    (25)
-#define TAG_PRE_NVRAMCLEAN     (26)
-#define TAG_NVRAMCLEAN         (27)
+#define TAG_INFO_BOOTKICKER    (24)
+#define TAG_LOAD_BOOTKICKER    (25)
+#define TAG_INFO_NVRAMCLEAN    (26)
+#define TAG_LOAD_NVRAMCLEAN    (27)
 #define NUM_TOOLS              (28)
 
 #define NUM_SCAN_OPTIONS 11
@@ -516,9 +523,7 @@ extern REFIT_VOLUME       **DataVolumes;
 
 extern REFIT_CONFIG         GlobalConfig;
 
-extern REFIT_MENU_SCREEN    MainMenu;
-
-extern REFIT_MENU_ENTRY     MenuEntryReturn;
+extern REFIT_MENU_SCREEN   *MainMenu;
 
 
 VOID AboutRefindPlus (VOID);

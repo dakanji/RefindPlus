@@ -60,9 +60,8 @@
 #include "../EfiLib/legacy.h"
 #include "../include/Handle.h"
 
-extern BOOLEAN           IsBoot;
-extern REFIT_MENU_ENTRY  MenuEntryReturn;
-extern REFIT_MENU_SCREEN MainMenu;
+extern BOOLEAN            IsBoot;
+extern REFIT_MENU_SCREEN *MainMenu;
 
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateHandle gBS->LocateHandleBuffer
@@ -796,11 +795,16 @@ VOID AddLegacyEntry (
         SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-        AddMenuEntry (SubScreen, &MenuEntryReturn);
+
+        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+        LocalMenuEntryReturn->Tag   = TAG_RETURN;
+        LocalMenuEntryReturn->Row   = 1;
+        AddMenuEntry (SubScreen, LocalMenuEntryReturn);
 
         Entry->me.SubScreen = SubScreen;
     }
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 } // static VOID AddLegacyEntry()
 
 
@@ -880,10 +884,16 @@ VOID AddLegacyEntryUEFI (
         SubEntry->BdsOption = CopyBdsOption (BdsOption);
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-        AddMenuEntry (SubScreen, &MenuEntryReturn);
+
+        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+        LocalMenuEntryReturn->Tag   = TAG_RETURN;
+        LocalMenuEntryReturn->Row   = 1;
+        AddMenuEntry (SubScreen, LocalMenuEntryReturn);
+
         Entry->me.SubScreen = SubScreen;
     }
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
     MsgLog ("\n");

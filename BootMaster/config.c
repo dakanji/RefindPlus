@@ -82,9 +82,6 @@ BOOLEAN InnerScan = FALSE;
     BOOLEAN ForensicLogging = FALSE;
 #endif
 
-// extern REFIT_MENU_ENTRY MenuEntryReturn;
-//static REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 0, 0, 0, NULL, NULL, NULL };
-
 //
 // read a file into a buffer
 //
@@ -626,7 +623,7 @@ static
 LOADER_ENTRY * AddPreparedLoaderEntry (
     LOADER_ENTRY *Entry
 ) {
-    AddMenuEntry (&MainMenu, (REFIT_MENU_ENTRY *) Entry);
+    AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     return Entry;
 } // LOADER_ENTRY * AddPreparedLoaderEntry()
@@ -854,10 +851,10 @@ VOID ReadConfig (
                 else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
                 else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
                 else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
-                else if (MyStriCmp (Flag, L"show_bootscreen") ) GlobalConfig.ShowTools[i - 1] = TAG_PRE_BOOTKICKER;
-                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[i - 1] = TAG_PRE_NVRAMCLEAN;
-                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[i - 1] = TAG_APPLE_RECOVERY;
-                else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[i - 1] = TAG_WINDOWS_RECOVERY;
+                else if (MyStriCmp (Flag, L"show_bootscreen") ) GlobalConfig.ShowTools[i - 1] = TAG_INFO_BOOTKICKER;
+                else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[i - 1] = TAG_INFO_NVRAMCLEAN;
+                else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_WINDOWS;
+                else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_APPLE;
                 else if (MyStriCmp (Flag, L"hidden_tags")) {
                     GlobalConfig.ShowTools[i - 1] = TAG_HIDDEN;
                     GlobalConfig.HiddenTags = TRUE;
@@ -1149,10 +1146,10 @@ VOID ReadConfig (
                 case TAG_BOOTORDER:
                 case TAG_CSR_ROTATE:
                 case TAG_FWUPDATE_TOOL:
-                case TAG_PRE_BOOTKICKER:
-                case TAG_PRE_NVRAMCLEAN:
-                case TAG_APPLE_RECOVERY:
-                case TAG_WINDOWS_RECOVERY:
+                case TAG_INFO_BOOTKICKER:
+                case TAG_INFO_NVRAMCLEAN:
+                case TAG_RECOVERY_WINDOWS:
+                case TAG_RECOVERY_APPLE:
                     // Continue checking
                     break;
                 case TAG_HIDDEN:
@@ -1297,9 +1294,7 @@ VOID AddSubmenu (
 
     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-    if (Entry->me.SubScreen) {
-        FreeMenuScreen (&Entry->me.SubScreen);
-    }
+    FreeMenuScreen (&Entry->me.SubScreen);
     Entry->me.SubScreen = SubScreen;
 } // VOID AddSubmenu()
 
@@ -1549,7 +1544,11 @@ LOADER_ENTRY * AddStanzaEntries (
         }
 
         if (AddedSubmenu) {
-            AddMenuEntry (Entry->me.SubScreen, &MenuEntryReturn);
+            REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+            LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+            LocalMenuEntryReturn->Tag   = TAG_RETURN;
+            LocalMenuEntryReturn->Row   = 1;
+            AddMenuEntry (Entry->me.SubScreen, LocalMenuEntryReturn);
         }
 
         if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {

@@ -35,10 +35,6 @@ typedef struct _esp_list {
 } ESP_LIST;
 
 
-extern REFIT_MENU_ENTRY  MenuEntryYes;
-extern REFIT_MENU_ENTRY  MenuEntryNo;
-
-
 /***********************
  *
  * Functions related to management of ESP data.
@@ -79,16 +75,17 @@ ESP_LIST * FindAllESPs (VOID) {
     #endif
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL &&
-            GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid) &&
-            (Volumes[VolumeIndex]->FSType == FS_TYPE_FAT) &&
-            !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)) {
+        if (Volumes[VolumeIndex]->DiskKind == DISK_KIND_INTERNAL
+            && Volumes[VolumeIndex]->FSType == FS_TYPE_FAT
+            && GuidsAreEqual (&(Volumes[VolumeIndex]->PartTypeGuid), &ESPGuid)
+            && !GuidsAreEqual (&(Volumes[VolumeIndex]->PartGuid), &SelfVolume->PartGuid)
+        ) {
             NewESP = AllocateZeroPool (sizeof (ESP_LIST));
 
             if (NewESP != NULL) {
-                NewESP->Volume = Volumes[VolumeIndex];
+                NewESP->Volume  = Volumes[VolumeIndex];
                 NewESP->NextESP = AllESPs;
-                AllESPs = NewESP;
+                AllESPs         = NewESP;
             }
         }
     } // for
@@ -120,95 +117,101 @@ REFIT_VOLUME * PickOneESP (
     CHAR16              *PartName      = NULL;
     CHAR16              *FsName        = NULL;
     CHAR16              *VolName       = NULL;
-    INTN                 DefaultEntry  = 0, MenuExit, i = 1;
-    MENU_STYLE_FUNC      Style         = TextMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenOption, *MenuEntryItem = NULL;
-
-    REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
-    CHAR16              *MenuInfo      = L"Select a Partition and Press 'Enter' to Install RefindPlus";
-    REFIT_MENU_SCREEN   InstallMenu    = {
-        L"Install RefindPlus", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
-        L"Select a Destination and Press 'Enter' or",
-        L"Press 'Esc' to Return to Main Menu (Without Changes)"
-    };
+    INTN                 i = 1;
+    INTN                 MenuExit;
+    INTN                 DefaultEntry  = 0;
+    MENU_STYLE_FUNC      Style         = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
+    REFIT_MENU_ENTRY    *ChosenOption;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Prompting user to select an ESP for installation");
+    LOG(1, LOG_LINE_NORMAL, L"Prompt User to Select an ESP for Installation");
     #endif
 
-    if (AllowGraphicsMode) {
-        Style = GraphicsMenuStyle;
-    }
-
-    if (AllESPs) {
-        CurrentESP = AllESPs;
-        AddMenuInfoLine (&InstallMenu, MenuInfo);
-        while (CurrentESP != NULL) {
-            MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-            GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
-            PartName      = CurrentESP->Volume->PartName;
-            FsName        = CurrentESP->Volume->FsName;
-            VolName       = CurrentESP->Volume->VolName;
-            if (PartName && (StrLen (PartName) > 0) &&
-                FsName && (StrLen (FsName) > 0) &&
-                !MyStriCmp (FsName, PartName)
-            ) {
-                MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
-            }
-            else if (FsName && (StrLen (FsName) > 0)) {
-                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
-            }
-            else if (PartName && (StrLen (PartName) > 0)) {
-                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
-            }
-            else if (VolName && (StrLen (VolName) > 0)) {
-                MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
-            }
-            else {
-                MenuEntryItem->Title = PoolPrint (L"%s - No Name", GuidStr);
-            }
-
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
-            #endif
-
-            MY_FREE_POOL(GuidStr);
-            MenuEntryItem->Tag = TAG_RETURN;
-            MenuEntryItem->Row = i++;
-            AddMenuEntry (&InstallMenu, MenuEntryItem);
-            CurrentESP = CurrentESP->NextESP;
-        } // while
-        MenuExit = RunGenericMenu (&InstallMenu, Style, &DefaultEntry, &ChosenOption);
-
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
-        #endif
-
-
-        if (MenuExit == MENU_EXIT_ENTER) {
-            CurrentESP = AllESPs;
-            while (CurrentESP != NULL) {
-                Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
-                if (MyStrStr (ChosenOption->Title, Temp)) {
-                    ChosenVolume = CurrentESP->Volume;
-                }
-                CurrentESP = CurrentESP->NextESP;
-                MY_FREE_POOL(Temp);
-            } // while
-        }
-    }
-    else {
+    if (!AllESPs) {
         DisplaySimpleMessage (L"Information", L"No Eligible ESPs Found");
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"No ESPs found");
+        LOG(1, LOG_LINE_NORMAL, L"No Eligible ESPs Found");
         #endif
     }
+    else {
+        REFIT_MENU_SCREEN *InstallMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+        if (InstallMenu) {
+            InstallMenu->Title      = StrDuplicate (L"Install RefindPlusr");
+            InstallMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+            InstallMenu->Hint1      = StrDuplicate (L"Select a Destination and Press 'Enter' or");
+            InstallMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
 
-    MY_FREE_POOL(TempMenuEntry);
+            AddMenuInfoLine (InstallMenu, L"Select a Partition and Press 'Enter' to Install RefindPlus");
+
+            CurrentESP = AllESPs;
+            while (CurrentESP != NULL) {
+                MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                if (MenuEntryItem) {
+                    GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
+                    PartName      = CurrentESP->Volume->PartName;
+                    FsName        = CurrentESP->Volume->FsName;
+                    VolName       = CurrentESP->Volume->VolName;
+
+                    if (PartName && (StrLen (PartName) > 0) &&
+                        FsName && (StrLen (FsName) > 0) &&
+                        !MyStriCmp (FsName, PartName)
+                    ) {
+                        MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
+                    }
+                    else if (FsName && (StrLen (FsName) > 0)) {
+                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
+                    }
+                    else if (PartName && (StrLen (PartName) > 0)) {
+                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
+                    }
+                    else if (VolName && (StrLen (VolName) > 0)) {
+                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
+                    }
+                    else {
+                        MenuEntryItem->Title = PoolPrint (L"%s - No Name", GuidStr);
+                    }
+
+                    #if REFIT_DEBUG > 0
+                    LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
+                    #endif
+
+                    MenuEntryItem->Tag = TAG_RETURN;
+                    MenuEntryItem->Row = i++;
+
+                    AddMenuEntry (InstallMenu, MenuEntryItem);
+
+                    CurrentESP = CurrentESP->NextESP;
+
+                    MY_FREE_POOL(GuidStr);
+                } // if MenuEntryItem
+            } // while
+
+            MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
+            FreeMenuScreen (&InstallMenu);
+
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL,
+                L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
+                MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+            );
+            #endif
+
+
+            if (MenuExit == MENU_EXIT_ENTER) {
+                CurrentESP = AllESPs;
+                while (CurrentESP != NULL) {
+                    Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
+                    if (MyStrStr (ChosenOption->Title, Temp)) {
+                        ChosenVolume = CurrentESP->Volume;
+                    }
+                    CurrentESP = CurrentESP->NextESP;
+                    MY_FREE_POOL(Temp);
+                } // while
+            }
+        } // if InstallMenu
+    } // if !AllEsp
 
     return ChosenVolume;
 } // REFIT_VOLUME *PickOneESP()
@@ -1120,60 +1123,73 @@ UINTN ConfirmBootOptionOperation (
     UINTN   Operation,
     CHAR16 *BootOptionString
 ) {
-    INTN               DefaultEntry = 1;
-    UINTN              MenuExit;
-    CHAR16            *CheckString = NULL;
-    MENU_STYLE_FUNC    Style;
-    REFIT_MENU_ENTRY  *ChosenOption;
-
-    if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT || Operation == EFI_BOOT_OPTION_DELETE) {
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_THIN_SEP, L"Showing Confirm Boot Option Operation Screen");
-        #endif
-
-        REFIT_MENU_SCREEN  ConfirmBootOptionMenu  = {
-            NULL, NULL, 0, NULL, 0, NULL, 0, NULL,
-            L"Select an Option and Press 'Enter' or",
-            L"Press 'Esc' to Return to Main Menu (Without Changes)"
-        };
-        ConfirmBootOptionMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-        ConfirmBootOptionMenu.Title = L"Confirm Boot Option Operation";
-
-        if (AllowGraphicsMode) {
-            Style = GraphicsMenuStyle;
-        }
-        else {
-            Style = TextMenuStyle;
-        }
-
-        CHAR16 *TmpInfoLine = PoolPrint (L"%s", BootOptionString);
-        AddMenuInfoLine (&ConfirmBootOptionMenu, TmpInfoLine);
-        MY_FREE_POOL(TmpInfoLine);
-
-        if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
-            CheckString = L"Set This Boot Option as Default?";
-        }
-        else if (Operation == EFI_BOOT_OPTION_DELETE) {
-            CheckString = L"Delete This Boot Option?";
-        }
-        AddMenuInfoLine (&ConfirmBootOptionMenu, CheckString);
-
-        AddMenuEntry (&ConfirmBootOptionMenu, CopyMenuEntry (&MenuEntryYes));
-        AddMenuEntry (&ConfirmBootOptionMenu, CopyMenuEntry (&MenuEntryNo));
-
-        MenuExit = RunGenericMenu (&ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
-
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on 'Selection = %s' in 'ConfirmBootOptionOperation'",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
-        #endif
-
-        if (MyStriCmp (ChosenOption->Title, L"No") || (MenuExit != MENU_EXIT_ENTER)) {
-            Operation = EFI_BOOT_OPTION_DO_NOTHING;
-        }
+    if (Operation != EFI_BOOT_OPTION_DELETE &&
+        Operation != EFI_BOOT_OPTION_MAKE_DEFAULT
+    ) {
+        // Early Return
+        return EFI_BOOT_OPTION_DO_NOTHING;
     }
+
+    #if REFIT_DEBUG > 0
+    LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Confirm Boot Option Operation' Screen");
+    #endif
+
+    REFIT_MENU_SCREEN *ConfirmBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (!ConfirmBootOptionMenu) {
+        // Early Return ... Fail
+        return EFI_BOOT_OPTION_DO_NOTHING;
+    }
+
+    ConfirmBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+    ConfirmBootOptionMenu->Title      = StrDuplicate (L"Confirm Boot Option Operation");
+    ConfirmBootOptionMenu->Hint1      = StrDuplicate (L"Select an Option and Press 'Enter' or");
+    ConfirmBootOptionMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
+
+    AddMenuInfoLineAlt (
+        ConfirmBootOptionMenu,
+        PoolPrint (L"%s", BootOptionString)
+    );
+
+    CHAR16 *CheckString = NULL;
+    if (Operation == EFI_BOOT_OPTION_MAKE_DEFAULT) {
+        CheckString = L"Set This Boot Option as Default?";
+    }
+    else if (Operation == EFI_BOOT_OPTION_DELETE) {
+        CheckString = L"Delete This Boot Option?";
+    }
+    AddMenuInfoLine (ConfirmBootOptionMenu, CheckString);
+
+    REFIT_MENU_ENTRY *LocalMenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    LocalMenuEntryYes->Title = StrDuplicate (L"Yes");
+    LocalMenuEntryYes->Tag   = TAG_RETURN;
+    LocalMenuEntryYes->Row   = 1;
+    AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryYes);
+
+    REFIT_MENU_ENTRY *LocalMenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    LocalMenuEntryNo->Title = StrDuplicate (L"No");
+    LocalMenuEntryNo->Tag   = TAG_RETURN;
+    LocalMenuEntryNo->Row   = 1;
+    AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryNo);
+
+    INTN           DefaultEntry = 1;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    UINTN MenuExit = RunGenericMenu (ConfirmBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    LOG(2, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from RunGenericMenu Call in 'ConfirmBootOptionOperation'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
+
+    if (MyStriCmp (ChosenOption->Title, L"No")
+        || MenuExit != MENU_EXIT_ENTER
+    ) {
+        Operation = EFI_BOOT_OPTION_DO_NOTHING;
+    }
+
+    FreeMenuScreen (&ConfirmBootOptionMenu);
 
     return Operation;
 } // UINTN ConfirmBootOptionOperation()
@@ -1199,16 +1215,9 @@ UINTN PickOneBootOption (
     UINTN                Operation     = EFI_BOOT_OPTION_DO_NOTHING;
     REFIT_VOLUME        *Volume        = NULL;
     MENU_STYLE_FUNC      Style         = TextMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenOption  = NULL;
+    REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
 
-    REFIT_MENU_ENTRY    *TempMenuEntry = CopyMenuEntry (&MenuEntryReturn);
-    TempMenuEntry->Image               = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
-
-    CHAR16 *MenuInfo          = StrDuplicate (L"Promote or Remove Firmware BootOrder Variables");
-    REFIT_MENU_SCREEN    Menu = { L"Manage Firmware Boot Order", NULL, 0, &MenuInfo, 0, &TempMenuEntry, 0, NULL,
-                                  L"Select an option and press 'Enter' to make it the default, press '-' or",
-                                  L"'Delete' to delete it, or 'Esc' to return to Main Menu (without changes)" };
     if (AllowGraphicsMode) {
         Style = GraphicsMenuStyle;
     }
@@ -1217,69 +1226,84 @@ UINTN PickOneBootOption (
         DisplaySimpleMessage (L"Information", L"Firmware BootOrder List is Unavailable!!");
     }
     else {
-        AddMenuInfoLine (&Menu, MenuInfo);
-        do {
-            MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-            FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
-            if ((Filename != NULL) && (StrLen (Filename) > 0)) {
-                if ((Volume != NULL) && (Volume->VolName != NULL)) {
-                    MenuEntryItem->Title = PoolPrint (
-                        L"Boot%04x - %s - %s on %s",
-                        Entries->BootEntry.BootNum,
-                        Entries->BootEntry.Label,
-                        Filename, Volume->VolName);
+        REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+        if (PickBootOptionMenu) {
+            PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
+            PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+            PickBootOptionMenu->Hint1      = StrDuplicate (
+                L"Select an Option and Press 'Enter' to make it the Default, Press '-' or"
+            );
+            PickBootOptionMenu->Hint2      = StrDuplicate (
+                L"'Delete' to Delete it, or 'Esc' to Return to Main Menu (Without Changes)"
+            );
+
+            AddMenuInfoLine (PickBootOptionMenu, L"Promote or Remove Firmware BootOrder Variables");
+
+            do {
+                MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+                FindVolumeAndFilename (Entries->BootEntry.DevPath, &Volume, &Filename);
+                if ((Filename != NULL) && (StrLen (Filename) > 0)) {
+                    if ((Volume != NULL) && (Volume->VolName != NULL)) {
+                        MenuEntryItem->Title = PoolPrint (
+                            L"Boot%04x - %s - %s on %s",
+                            Entries->BootEntry.BootNum,
+                            Entries->BootEntry.Label,
+                            Filename, Volume->VolName);
+                    }
+                    else {
+                        MenuEntryItem->Title = PoolPrint (
+                            L"Boot%04x - %s - %s",
+                            Entries->BootEntry.BootNum,
+                            Entries->BootEntry.Label,
+                            Filename
+                        );
+                    }
                 }
                 else {
                     MenuEntryItem->Title = PoolPrint (
-                        L"Boot%04x - %s - %s",
+                        L"Boot%04x - %s",
                         Entries->BootEntry.BootNum,
-                        Entries->BootEntry.Label,
-                        Filename
+                        Entries->BootEntry.Label
                     );
                 }
+
+                // NB: Using the 'Row' field to hold the 'Boot####' value
+                MenuEntryItem->Row = Entries->BootEntry.BootNum;
+                AddMenuEntry (PickBootOptionMenu, MenuEntryItem);
+
+                // DA-TAG: Revisit This
+                // Do not free 'Volume' ... just set to NULL
+                Volume = NULL;
+                MY_FREE_POOL(Filename);
+
+                Entries = Entries->NextBootEntry;
+            } while (Entries != NULL);
+
+            MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+
+            #if REFIT_DEBUG > 0
+            LOG(1, LOG_LINE_NORMAL,
+                L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
+                MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+            );
+            #endif
+
+            if (MenuExit == MENU_EXIT_ENTER) {
+                Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
+                *BootOrderNum = ChosenOption->Row;
             }
-            else {
-                MenuEntryItem->Title = PoolPrint (
-                    L"Boot%04x - %s",
-                    Entries->BootEntry.BootNum,
-                    Entries->BootEntry.Label
-                );
+            else if (MenuExit == MENU_EXIT_HIDE) {
+                Operation = EFI_BOOT_OPTION_DELETE;
+                *BootOrderNum = ChosenOption->Row;
             }
 
-            MenuEntryItem->Row = Entries->BootEntry.BootNum; // Not really the row but the Boot#### number
-            AddMenuEntry (&Menu, MenuEntryItem);
+            Operation = ConfirmBootOptionOperation (Operation, ChosenOption->Title);
 
-            // DA-TAG: Revisit This
-            // Do not free 'Volume' ... just set to NULL
-            Volume = NULL;
-            MY_FREE_POOL(Filename);
+            MY_FREE_POOL(MenuEntryItem);
 
-            Entries = Entries->NextBootEntry;
-        } while (Entries != NULL);
-
-        MenuExit = RunGenericMenu (&Menu, Style, &DefaultEntry, &ChosenOption);
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
-            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneBootOption'",
-            MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-        );
-        #endif
-
-        if (MenuExit == MENU_EXIT_ENTER) {
-            Operation = EFI_BOOT_OPTION_MAKE_DEFAULT;
-            *BootOrderNum = ChosenOption->Row;
-        }
-        else if (MenuExit == MENU_EXIT_HIDE) {
-            Operation = EFI_BOOT_OPTION_DELETE;
-            *BootOrderNum = ChosenOption->Row;
-        }
-
-        Operation = ConfirmBootOptionOperation (Operation, ChosenOption->Title);
-
-        MY_FREE_POOL(MenuEntryItem);
+            FreeMenuScreen (&PickBootOptionMenu);
+        } // if PickBootOptionMenu
     }
-    MY_FREE_POOL(MenuInfo);
-    MY_FREE_POOL(TempMenuEntry);
 
     return Operation;
 } // REFIT_VOLUME *PickOneBootOption()
@@ -1335,7 +1359,7 @@ VOID ManageBootorder (VOID) {
     CHAR16          *Name, *Message;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Showing Manage Boot Order Screen");
+    LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Manage Boot Order' Screen");
     #endif
 
     Entries   = FindBootOrderEntries();

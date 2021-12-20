@@ -335,9 +335,7 @@ typedef struct EfiAppleSetOsInterface {
 // required to work around problems on some Macs that do not fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
-EFI_STATUS SetAppleOSInfo (
-    VOID
-) {
+EFI_STATUS SetAppleOSInfo (VOID) {
     EFI_STATUS               Status;
     EFI_GUID                 apple_set_os_guid  = EFI_APPLE_SET_OS_PROTOCOL_GUID;
     CHAR16                  *AppleVersionOS     = NULL;
@@ -727,6 +725,7 @@ CHAR16 * RP_GetAppleDiskLabel (
 
     if (EFI_ERROR (Status)) {
         MY_FREE_POOL(BootDirectoryName);
+
         return NULL;
     }
 

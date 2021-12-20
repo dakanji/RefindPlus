@@ -5,19 +5,17 @@
  * Licensed under the MIT License
  */
 
-#ifndef _MY_FREE_POOL_H
-#define _MY_FREE_POOL_H
-#define MY_FREE_POOL(Pointer)     \
-    do {                          \
-        if (Pointer) {            \
-            FreePool (Pointer);   \
-            Pointer = NULL;       \
-        }                         \
-    } while (FALSE)
-#endif
+#ifndef _RP_FUNCS_H
+#define _RP_FUNCS_H
 
-#ifndef _MY_FREE_IMAGE_H
-#define _MY_FREE_IMAGE_H
+#define MY_FREE_POOL(Pointer)                 \
+    do {                                      \
+        if (Pointer) {                        \
+            FreePool (Pointer);               \
+            Pointer = NULL;                   \
+        }                                     \
+    } while (FALSE)
+
 #define MY_FREE_IMAGE(Image)                  \
     do {                                      \
         if (Image) {                          \
@@ -25,15 +23,13 @@
             MY_FREE_POOL(Image);              \
         }                                     \
     } while (FALSE)
-#endif
 
-#ifndef _MY_FREE_FILE_H
-#define _MY_FREE_FILE_H
-#define MY_FREE_FILE(Pointer)                \
-    do {                                     \
-        if (Pointer) {                       \
-            MY_FREE_POOL(Pointer->Buffer);   \
-            MY_FREE_POOL(Pointer);           \
-        }                                    \
+#define MY_FREE_FILE(File)                    \
+    do {                                      \
+        if (File) {                           \
+            MY_FREE_POOL(File->Buffer);       \
+            MY_FREE_POOL(File);               \
+        }                                     \
     } while (FALSE)
+
 #endif

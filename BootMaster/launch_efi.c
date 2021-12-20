@@ -289,7 +289,15 @@ EFI_STATUS StartEFIImage (
     // Some EFIs crash if attempting to load driver for invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
-    if (IsValidLoader (Volume->RootDir, Filename)) {
+    if (!IsValidLoader (Volume->RootDir, Filename)) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (L"Invalid Loader!!");
+        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
+        MsgLog ("* ERROR: %s\n\n", MsgStr);
+        MY_FREE_POOL(MsgStr);
+        #endif
+    }
+    else {
         // Store loader name if booting and set to do so
         if (IsBoot && BootSelection) {
             StoreLoaderName (BootSelection);
@@ -363,15 +371,7 @@ EFI_STATUS StartEFIImage (
                 &ChildImageHandle2
             );
         }
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Invalid Loader!!");
-        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
-    }
+    } // if/else !IsValidLoader 
 
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         #if REFIT_DEBUG > 0

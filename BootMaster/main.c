@@ -79,65 +79,7 @@ INT16 NowHour   = 0;
 INT16 NowMinute = 0;
 INT16 NowSecond = 0;
 
-//
-// Some built-in menu definitions.
-
-REFIT_MENU_ENTRY MenuEntryReturn = {
-    L"Return to Main Menu",
-    TAG_RETURN,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-
-REFIT_MENU_SCREEN MainMenu = {
-    L"Main Menu",
-    NULL,
-    0, NULL, 0,
-    NULL, 0, L"Automatic boot",
-    L"Use arrow keys to move cursor; 'Enter' to boot;",
-    L"'Insert', 'Tab', or 'F2' for more options; 'Esc' or 'Backspace' to refresh"
-};
-
-REFIT_MENU_SCREEN AboutMenu = {
-    L"About RefindPlus",
-    NULL,
-    0, NULL, 0,
-    NULL, 0, NULL,
-    L"Press 'Enter' to Return to Main Menu",
-    L""
-};
-
-REFIT_MENU_ENTRY MenuEntryBootKicker = {
-    L"Load BootKicker",
-    TAG_SHOW_BOOTKICKER,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-
-REFIT_MENU_SCREEN PreBootKickerMenu = {
-    NULL,
-    NULL,
-    0, NULL, 0,
-    NULL, 0, NULL,
-    L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
-    L""
-};
-
-REFIT_MENU_ENTRY MenuEntryCleanNvram = {
-    L"Load CleanNvram",
-    TAG_NVRAMCLEAN,
-    1, 0, 0,
-    NULL, NULL, NULL
-};
-
-REFIT_MENU_SCREEN PreCleanNvramMenu = {
-    NULL,
-    NULL,
-    0, NULL, 0,
-    NULL, 0, NULL,
-    L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu",
-    L""
-};
+REFIT_MENU_SCREEN *MainMenu = NULL;
 
 REFIT_CONFIG GlobalConfig = {
     /* CustomScreenBG = */ FALSE,
@@ -225,8 +167,8 @@ REFIT_CONFIG GlobalConfig = {
         TAG_SHELL,
         TAG_MEMTEST,
         TAG_GDISK,
-        TAG_APPLE_RECOVERY,
-        TAG_WINDOWS_RECOVERY,
+        TAG_RECOVERY_APPLE,
+        TAG_RECOVERY_WINDOWS,
         TAG_MOK_TOOL,
         TAG_ABOUT,
         TAG_HIDDEN,
@@ -272,8 +214,8 @@ EFI_HANDLE_PROTOCOL    OrigHandleProtocol;
 
 #if REFIT_DEBUG > 0
 UINTN   AppleFramebuffers = 0;
-extern
-CHAR16 *OffsetNext;
+
+extern CHAR16 *OffsetNext;
 #endif
 
 extern VOID   InitBooterLog (VOID);
@@ -298,6 +240,22 @@ extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 //
 // misc functions
 //
+
+
+static
+VOID InitMainMenu (VOID) {
+    REFIT_MENU_SCREEN MainMenuSrc = {
+        L"Main Menu",
+        NULL, 0,
+        NULL, 0,
+        NULL, 0,
+        L"Automatic Boot",
+        L"Use Arrow Keys to Move Cursor; 'Enter' to Boot;",
+        L"'Insert', 'Tab', or 'F2' for More Options; 'Esc' or 'Backspace' to Refresh"
+    };
+    FreeMenuScreen (&MainMenu);
+    MainMenu = CopyMenuScreen (&MainMenuSrc);
+} // static VOID InitMainMenu()
 
 static
 EFI_STATUS EFIAPI gRTSetVariableEx (
@@ -362,24 +320,36 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         LogStatus = EFI_ACCESS_DENIED;
         #endif
 
-        // Report 'Success'
+        // Return 'Success'
         Status = EFI_SUCCESS;
     }
 
 
     #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = NULL;
     if (BlockCert) {
-        CHAR16 *MsgStr = PoolPrint (
-            L"In Hardware NVRAM ... '%r' to UEFI Windows Certificate Write",
-            LogStatus
+        MsgStr = PoolPrint (
+            L"In Hardware NVRAM ... '%r' to Security Certificate:- '%s'",
+            LogStatus,
+            VariableName
         );
         LOG(1, LOG_THREE_STAR_MID, L"%s!!", MsgStr);
         MsgLog ("\n");
         MsgLog ("%s", MsgStr);
-        MsgLog ("\n      * Successful Write May Result in BootROM Damage");
-        MsgLog ("\n\n");
-        MY_FREE_POOL(MsgStr);
+        MsgLog ("%s  - Successful Write May Result in BootROM Damage", OffsetNext);
     }
+    else {
+        MsgStr = PoolPrint (
+            L"In Hardware NVRAM ... '%r' on Writing Variable:- '%s'",
+            LogStatus,
+            VariableName
+        );
+        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        MsgLog ("\n");
+        MsgLog ("%s", MsgStr);
+    }
+    MsgLog ("\n");
+    MY_FREE_POOL(MsgStr);
     #endif
 
     return Status;
@@ -399,8 +369,7 @@ VOID FilterCSR (VOID) {
             Status
         );
         LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("    * %s", MsgStr);
+        MsgLog ("%s    * %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
     }
@@ -585,8 +554,7 @@ VOID SetBootArgs (VOID) {
             Status
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("    * %s", MsgStr);
+        MsgLog ("%s    * %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
     }
 
@@ -595,8 +563,7 @@ VOID SetBootArgs (VOID) {
         Status
     );
     LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("\n");
-    MsgLog ("    * %s", MsgStr);
+    MsgLog ("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
@@ -605,8 +572,7 @@ VOID SetBootArgs (VOID) {
             Status
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("    * %s", MsgStr);
+        MsgLog ("%s    * %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
     }
     #endif
@@ -652,8 +618,7 @@ VOID DisableAMFI (VOID) {
         Status
     );
     LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("\n");
-    MsgLog ("    * %s", MsgStr);
+    MsgLog ("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
 
     if (GlobalConfig.DisableCompatCheck) {
@@ -662,8 +627,7 @@ VOID DisableAMFI (VOID) {
             Status
         );
         LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("    * %s", MsgStr);
+        MsgLog ("%s    * %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
     }
     #endif
@@ -694,8 +658,7 @@ VOID DisableCompatCheck (VOID) {
         Status
     );
     LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("\n");
-    MsgLog ("    * %s", MsgStr);
+    MsgLog ("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 } // VOID DisableCompatCheck()
@@ -725,8 +688,7 @@ VOID ForceTRIM (VOID) {
         Status
     );
     LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("\n");
-    MsgLog ("    * %s", MsgStr);
+    MsgLog ("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 } // VOID ForceTRIM()
@@ -760,7 +722,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
     if (Status == EFI_UNSUPPORTED) {
         if (GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
             if (GOPDraw != NULL) {
-                Status     = EFI_SUCCESS;
+                Status = EFI_SUCCESS;
                 *Interface = GOPDraw;
             }
             else {
@@ -791,7 +753,6 @@ EFI_STATUS EFIAPI OpenProtocolEx (
                             }
                         }
                     } // for
-
                 } // if !EFI_ERROR Status
 
                 if (EFI_ERROR(Status) || *Interface == NULL) {
@@ -841,341 +802,354 @@ VOID ReMapOpenProtocol (VOID) {
 
 
 VOID preBootKicker (VOID) {
-    INTN               DefaultEntry   = 1;
-    UINTN              i              = 0;
-    UINTN              k              = 0;
-    UINTN              MenuExit       = 0;
-    CHAR16            *FilePath       = NULL;
-    BOOLEAN            FoundTool      = FALSE;
-    LOADER_ENTRY      *ourLoaderEntry = NULL;
-    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
+    CHAR16 *ToolPurpose = L"Kick in the Apple Boot Screen";
 
-    if (PreBootKickerMenu.EntryCount > 0) {
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
-        #endif
-    }
-    else {
-        PreBootKickerMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-        PreBootKickerMenu.Title            = StrDuplicate (L"BootKicker");
-        AddMenuInfoLine (&PreBootKickerMenu, L"A tool to Kick in the Apple Boot Screen");
-        AddMenuInfoLine (&PreBootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
-        AddMenuInfoLine (&PreBootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
-        AddMenuInfoLine (&PreBootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
-        AddMenuInfoLine (&PreBootKickerMenu, L"");
-        AddMenuInfoLine (&PreBootKickerMenu, L"BootKicker is from OpenCore and is Copyright Acidanthera");
-        AddMenuInfoLine (&PreBootKickerMenu, L"You can find copies of the binary file here:");
-        AddMenuInfoLine (&PreBootKickerMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
-        AddMenuInfoLine (&PreBootKickerMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"Requires at least one of the files below.");
-        AddMenuInfoLine (&PreBootKickerMenu, L" - The first file found in the order listed will be used");
-        AddMenuInfoLine (&PreBootKickerMenu, L" - You will be returned to the main menu if not found");
+    REFIT_MENU_SCREEN *PreBootKickerMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (PreBootKickerMenu) {
+        PreBootKickerMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+        PreBootKickerMenu->Title      = StrDuplicate (L"BootKicker");
+        PreBootKickerMenu->Hint1      = StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu");
+        PreBootKickerMenu->Hint2      = StrDuplicate (L"");
 
+        AddMenuInfoLineAlt (PreBootKickerMenu, PoolPrint (L"A Tool to %s", ToolPurpose));
+        AddMenuInfoLine (PreBootKickerMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
+        AddMenuInfoLine (PreBootKickerMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
+        AddMenuInfoLine (PreBootKickerMenu, L"NB: Hangs and needs physical reboot with other GPUs");
+        AddMenuInfoLine (PreBootKickerMenu, L"");
+        AddMenuInfoLine (PreBootKickerMenu, L"BootKicker is from OpenCore and is Copyright Acidanthera");
+        AddMenuInfoLine (PreBootKickerMenu, L"You can find copies of the binary file here:");
+        AddMenuInfoLine (PreBootKickerMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine (PreBootKickerMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+        AddMenuInfoLine (PreBootKickerMenu, L"");
+        AddMenuInfoLine (PreBootKickerMenu, L"Requires at least one of the files below.");
+        AddMenuInfoLine (PreBootKickerMenu, L" - The first file found in the order listed will be used");
+        AddMenuInfoLine (PreBootKickerMenu, L" - You will be returned to the main menu if not found");
+        AddMenuInfoLine (PreBootKickerMenu, L"");
+
+        UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-            AddMenuInfoLineAlt (&PreBootKickerMenu, StrDuplicate (FilePath));
+            AddMenuInfoLineAlt (PreBootKickerMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 
-        AddMenuInfoLine (&PreBootKickerMenu, L"");
+        AddMenuInfoLine (PreBootKickerMenu, L"");
 
-        AddMenuEntry (&PreBootKickerMenu, CopyMenuEntry (&MenuEntryBootKicker));
-        AddMenuEntry (&PreBootKickerMenu, CopyMenuEntry (&MenuEntryReturn));
-    }
+        REFIT_MENU_ENTRY *MenuEntryBootKicker = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        MenuEntryBootKicker->Title = StrDuplicate (ToolPurpose);
+        MenuEntryBootKicker->Tag   = TAG_RETURN;
+        MenuEntryBootKicker->Row   = 1;
+        AddMenuEntry (PreBootKickerMenu, MenuEntryBootKicker);
 
-    MenuExit = RunGenericMenu (&PreBootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preBootKicker'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
-    );
-    MsgLog ("User Input Received:");
-    #endif
+        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+        LocalMenuEntryReturn->Tag   = TAG_RETURN;
+        LocalMenuEntryReturn->Row   = 1;
+        AddMenuEntry (PreBootKickerMenu, LocalMenuEntryReturn);
 
-    if (!MyStriCmp (ChosenEntry->Title, L"Load BootKicker") || (MenuExit != MENU_EXIT_ENTER)) {
+        INTN               DefaultEntry   = 1;
+        MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
+        REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
+        UINTN MenuExit = RunGenericMenu (PreBootKickerMenu, Style, &DefaultEntry, &ChosenEntry);
+
         #if REFIT_DEBUG > 0
-        // Log Return to Main Screen
-        MsgLog ("%s  - %s\n\n", OffsetNext, ChosenEntry->Title);
-        #endif
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        // Log Load BootKicker
-        MsgLog ("%s  - Seek BootKicker", OffsetNext);
+        LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preBootKicker'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
+        );
+        MsgLog ("User Input Received:");
+        MsgLog ("%s  - %s", OffsetNext, ChosenEntry->Title);
         #endif
 
-        k = 0;
-        while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
+        if (ChosenEntry->Tag != TAG_LOAD_BOOTKICKER || MenuExit != MENU_EXIT_ENTER) {
             #if REFIT_DEBUG > 0
-            MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
+            // Return to Main Screen
+            MsgLog ("\n\n");
             #endif
-
-            for (i = 0; i < VolumesCount; i++) {
-                if (Volumes[i]->RootDir != NULL &&
-                    FileExists (Volumes[i]->RootDir, FilePath)
-                ) {
-                    ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                    ourLoaderEntry->me.Title          = StrDuplicate (ChosenEntry->Title);
-                    ourLoaderEntry->me.Tag            = TAG_SHOW_BOOTKICKER;
-                    ourLoaderEntry->me.Row            = 1;
-                    ourLoaderEntry->me.ShortcutLetter = 0;
-                    ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-                    ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                    ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
-                    ourLoaderEntry->UseGraphicsMode   = TRUE;
-
-                    FoundTool = TRUE;
-                    break;
-                }
-            } // for
-
-            if (FoundTool) {
-                break;
-            }
-            else {
-                MY_FREE_POOL(FilePath);
-            }
-        } // while
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        #endif
-
-        if (!FoundTool) {
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
-            MsgLog ("\n");
-            MsgLog ("** WARN ** Could Not Find BootKicker ... Return to Main Menu\n\n");
-            #endif
-
-            MY_FREE_POOL(FilePath);
         }
         else {
+            k = 0;
+            LOADER_ENTRY *ourLoaderEntry = NULL;
+            BOOLEAN FoundTool = FALSE;
+            while (!FoundTool && (FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
+                #endif
+
+                for (UINTN i = 0; i < VolumesCount; i++) {
+                    if (Volumes[i]->RootDir != NULL &&
+                        FileExists (Volumes[i]->RootDir, FilePath)
+                    ) {
+                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        ourLoaderEntry->me.Title          = StrDuplicate (ChosenEntry->Title);
+                        ourLoaderEntry->me.Tag            = TAG_LOAD_BOOTKICKER;
+                        ourLoaderEntry->me.Row            = 1;
+                        ourLoaderEntry->me.ShortcutLetter = 0;
+                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
+                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
+                        ourLoaderEntry->UseGraphicsMode   = TRUE;
+
+                        FoundTool = TRUE;
+
+                        // Break out of 'for' loop
+                        break;
+                    }
+                } // for
+
+                if (!FoundTool) {
+                    MY_FREE_POOL(FilePath);
+                }
+            } // while
+
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
-            MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
-            MsgLog ("%s  - Load BootKicker\n\n", OffsetNext);
+            MsgLog ("\n");
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
-            MY_FREE_POOL(FilePath);
+            if (!FoundTool) {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating BootKicker Tool:- '%s'", FilePath);
+                MsgLog ("\n");
+                MsgLog ("** WARN ** Could Not Find BootKicker ... Return to Main Menu\n\n");
+                #endif
 
-            // Run BootKicker
-            StartTool (ourLoaderEntry);
+                MY_FREE_POOL(FilePath);
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating BootKicker Tool:- '%s'", FilePath);
+                MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
+                MsgLog ("%s  - Load BootKicker\n\n", OffsetNext);
+                #endif
 
-            // If we get here, an error was met while starting the tool
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
-            MsgLog ("** WARN ** BootKicker Error ... Return to Main Menu\n\n");
-            #endif
+                MY_FREE_POOL(FilePath);
 
-            FreeLoaderEntry (&ourLoaderEntry);
-        }
-    } // if !MyStriCmp ChosenEntry->Title
+                // Run BootKicker
+                StartTool (ourLoaderEntry);
+
+                // If we get here, an error was met while starting the tool
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"Run BootKicker Error ... Return to Main Menu");
+                MsgLog ("** WARN ** BootKicker Error ... Return to Main Menu\n\n");
+                #endif
+
+                FreeLoaderEntry (&ourLoaderEntry);
+            }
+        } // if !MyStriCmp ChosenEntry->Title
+
+        FreeMenuScreen (&PreBootKickerMenu);
+    } // if PreBootKickerMenu
 } // VOID preBootKicker()
 
-
+static
 VOID preCleanNvram (VOID) {
-    INTN               DefaultEntry   = 1;
-    UINTN              i              = 0;
-    UINTN              k              = 0;
-    UINTN              MenuExit       = 0;
-    CHAR16            *FilePath       = NULL;
-    BOOLEAN            FoundTool      = FALSE;
-    LOADER_ENTRY      *ourLoaderEntry = NULL;
-    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
+    CHAR16 *ToolPurpose = L"Clean/Reset NVRAM";
 
-    if (PreCleanNvramMenu.EntryCount > 0) {
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
-        #endif
-    }
-    else {
-        PreCleanNvramMenu.TitleImage       = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-        PreCleanNvramMenu.Title            = StrDuplicate (L"Clean NVRAM");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"A Tool to Clean/Reset the NVRAM");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"CleanNvram is from OpenCore and is Copyright Acidanthera");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"You can find copies of the binary file here:");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"");
-        AddMenuInfoLine (&PreCleanNvramMenu, L"Requires at least one of the files below.");
-        AddMenuInfoLine (&PreCleanNvramMenu, L" - The first file found in the order listed will be used");
-        AddMenuInfoLine (&PreCleanNvramMenu, L" - You will be returned to the main menu if not found");
+    REFIT_MENU_SCREEN *PreCleanNvramMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (PreCleanNvramMenu) {
+        PreCleanNvramMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+        PreCleanNvramMenu->Title      = StrDuplicate (L"Clean/Reset NVRAM");
+        PreCleanNvramMenu->Hint1      = StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu");
+        PreCleanNvramMenu->Hint2      = StrDuplicate (L"");
+
+        AddMenuInfoLineAlt (PreCleanNvramMenu, PoolPrint (L"A Tool to %s", ToolPurpose));
+        AddMenuInfoLine (PreCleanNvramMenu, L"");
+        AddMenuInfoLine (PreCleanNvramMenu, L"CleanNvram is from OpenCore and is Copyright Acidanthera");
+        AddMenuInfoLine (PreCleanNvramMenu, L"You can find copies of the binary file here:");
+        AddMenuInfoLine (PreCleanNvramMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
+        AddMenuInfoLine (PreCleanNvramMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
+        AddMenuInfoLine (PreCleanNvramMenu, L"");
+        AddMenuInfoLine (PreCleanNvramMenu, L"Requires at least one of the files below.");
+        AddMenuInfoLine (PreCleanNvramMenu, L" - The first file found in the order listed will be used");
+        AddMenuInfoLine (PreCleanNvramMenu, L" - You will be returned to the main menu if not found");
+        AddMenuInfoLine (PreCleanNvramMenu, L"");
 
         UINTN k = 0;
         CHAR16 *FilePath = NULL;
         while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
-            AddMenuInfoLineAlt (&PreCleanNvramMenu, StrDuplicate (FilePath));
+            AddMenuInfoLineAlt (PreCleanNvramMenu, StrDuplicate (FilePath));
             MY_FREE_POOL(FilePath);
         }
 
-        AddMenuInfoLine (&PreCleanNvramMenu, L"");
+        AddMenuInfoLine (PreCleanNvramMenu, L"");
 
-        AddMenuEntry (&PreCleanNvramMenu, CopyMenuEntry (&MenuEntryCleanNvram));
-        AddMenuEntry (&PreCleanNvramMenu, CopyMenuEntry (&MenuEntryReturn));
-    }
+        REFIT_MENU_ENTRY *MenuEntryCleanNvram = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        MenuEntryCleanNvram->Title = StrDuplicate (ToolPurpose);
+        MenuEntryCleanNvram->Tag   = TAG_RETURN;
+        MenuEntryCleanNvram->Row   = 1;
+        AddMenuEntry (PreCleanNvramMenu, MenuEntryCleanNvram);
 
-    MenuExit = RunGenericMenu (&PreCleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preCleanNvram'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
-    );
-    MsgLog ("User Input Received:");
-    #endif
+        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+        LocalMenuEntryReturn->Tag   = TAG_RETURN;
+        LocalMenuEntryReturn->Row   = 1;
+        AddMenuEntry (PreCleanNvramMenu, LocalMenuEntryReturn);
 
-    if (!MyStriCmp (ChosenEntry->Title, L"Load CleanNvram") || (MenuExit != MENU_EXIT_ENTER)) {
+        INTN               DefaultEntry   = 1;
+        MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
+        REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
+        UINTN MenuExit = RunGenericMenu (PreCleanNvramMenu, Style, &DefaultEntry, &ChosenEntry);
+
         #if REFIT_DEBUG > 0
-        // Log Return to Main Screen
-        MsgLog ("%s  - %s\n\n", OffsetNext, ChosenEntry->Title);
-        #endif
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        // Log Load CleanNvram
-        MsgLog ("%s  - Seek CleanNVRAM", OffsetNext);
+        LOG(1, LOG_LINE_NORMAL,
+            L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'preCleanNvram'",
+            MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
+        );
+        MsgLog ("User Input Received:");
+        MsgLog ("%s  - %s", OffsetNext, ChosenEntry->Title);
         #endif
 
-        k = 0;
-        while ((FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+        if (ChosenEntry->Tag != TAG_LOAD_NVRAMCLEAN || MenuExit != MENU_EXIT_ENTER) {
             #if REFIT_DEBUG > 0
-            MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
+            // Return to Main Screen
+            MsgLog ("\n\n");
             #endif
-
-            for (i = 0; i < VolumesCount; i++) {
-                if (Volumes[i]->RootDir != NULL &&
-                    FileExists (Volumes[i]->RootDir, FilePath)
-                ) {
-                    ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                    ourLoaderEntry->me.Title          = StrDuplicate (ChosenEntry->Title);
-                    ourLoaderEntry->me.Tag            = TAG_NVRAMCLEAN;
-                    ourLoaderEntry->me.Row            = 1;
-                    ourLoaderEntry->me.ShortcutLetter = 0;
-                    ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
-                    ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
-                    ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
-                    ourLoaderEntry->UseGraphicsMode   = FALSE;
-
-                    FoundTool = TRUE;
-                    break;
-                }
-            } // for
-
-            if (FoundTool) {
-                break;
-            }
-            else {
-                MY_FREE_POOL(FilePath);
-            }
-        } // while
-
-        #if REFIT_DEBUG > 0
-        LOG(1, LOG_BLANK_LINE_SEP, L"X");
-        #endif
-
-        if (!FoundTool) {
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
-            MsgLog ("\n");
-            MsgLog ("** WARN ** Could Not Find CleanNvram ... Return to Main Menu\n\n");
-            #endif
-
-            MY_FREE_POOL(FilePath);
         }
         else {
+            k = 0;
+            LOADER_ENTRY *ourLoaderEntry = NULL;
+            BOOLEAN FoundTool = FALSE;
+            while (!FoundTool && (FilePath = FindCommaDelimited (NVRAMCLEAN_FILES, k++)) != NULL) {
+                #if REFIT_DEBUG > 0
+                MsgLog ("%s    * Seek %s:", OffsetNext, FilePath);
+                #endif
+
+                for (UINTN i = 0; i < VolumesCount; i++) {
+                    if (Volumes[i]->RootDir != NULL &&
+                        FileExists (Volumes[i]->RootDir, FilePath)
+                    ) {
+                        ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
+                        ourLoaderEntry->me.Title          = StrDuplicate (ChosenEntry->Title);
+                        ourLoaderEntry->me.Tag            = TAG_LOAD_NVRAMCLEAN;
+                        ourLoaderEntry->me.Row            = 1;
+                        ourLoaderEntry->me.ShortcutLetter = 0;
+                        ourLoaderEntry->me.Image          = BuiltinIcon (BUILTIN_ICON_TOOL_NVRAMCLEAN);
+                        ourLoaderEntry->LoaderPath        = StrDuplicate (FilePath);
+                        ourLoaderEntry->Volume            = CopyVolume (Volumes[i]);
+                        ourLoaderEntry->UseGraphicsMode   = TRUE;
+
+                        FoundTool = TRUE;
+
+                        // Break out of 'for' loop
+                        break;
+                    }
+                } // for
+
+                if (!FoundTool) {
+                    MY_FREE_POOL(FilePath);
+                }
+            } // while
+
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
-            MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
-            MsgLog ("%s  - Load CleanNvram\n\n", OffsetNext);
+            MsgLog ("\n");
+            LOG(1, LOG_BLANK_LINE_SEP, L"X");
             #endif
 
-            MY_FREE_POOL(FilePath);
+            if (!FoundTool) {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"'Not Found' When Locating CleanNvram Tool:- '%s'", FilePath);
+                MsgLog ("\n");
+                MsgLog ("** WARN ** Could Not Find CleanNvram ... Return to Main Menu\n\n");
+                #endif
 
-            ranCleanNvram = TRUE;
+                MY_FREE_POOL(FilePath);
+            }
+            else {
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"'Success' When Locating CleanNvram Tool:- '%s'", FilePath);
+                MsgLog ("%s    ** 'Success' When Locating:- '%s'", OffsetNext, FilePath);
+                MsgLog ("%s  - Load CleanNvram\n\n", OffsetNext);
+                #endif
 
-            // Run CleanNvram
-            StartTool (ourLoaderEntry);
+                MY_FREE_POOL(FilePath);
 
-            // If we get here, an error was met while starting the tool
-            #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
-            MsgLog ("** WARN ** CleanNvram Error ... Return to Main Menu\n\n");
-            #endif
+                ranCleanNvram = TRUE;
 
-            FreeLoaderEntry (&ourLoaderEntry);
-        }
-    } // if !MyStriCmp ChosenEntry->Title
+                // Run CleanNvram
+                StartTool (ourLoaderEntry);
+
+                // If we get here, an error was met while starting the tool
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"Run CleanNvram Error ... Return to Main Menu");
+                MsgLog ("** WARN ** CleanNvram Error ... Return to Main Menu\n\n");
+                #endif
+
+                FreeLoaderEntry (&ourLoaderEntry);
+            }
+        } // if !MyStriCmp ChosenEntry->Title
+
+        FreeMenuScreen (&PreCleanNvramMenu);
+    } // if PreCleanNvramMenu
 } // VOID preCleanNvram()
 
 
 VOID AboutRefindPlus (VOID) {
-    #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP, L"Displaying About/Info Screen");
-    #endif
+    REFIT_MENU_SCREEN *AboutMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
 
-    if (AboutMenu.EntryCount > 0) {
+    if (AboutMenu) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Displayed Previously Constructed Screen (Not Updated)");
+        LOG(1, LOG_LINE_THIN_SEP, L"Creating 'About RefindPlus' Screen");
         #endif
-    }
-    else {
+
         UINT32   CsrStatus;
-        CHAR16  *FirmwareVendor = StrDuplicate (VendorInfo);
+        CHAR16  *VendorString = StrDuplicate (VendorInfo);
 
         // More than ~65 causes empty info page on 800x600 display
-        LimitStringLength (FirmwareVendor, MAX_LINE_LENGTH);
+        LimitStringLength (VendorString, MAX_LINE_LENGTH);
 
-        AboutMenu.TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
+        AboutMenu->Title      = StrDuplicate (L"About RefindPlus");
+        AboutMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
+        AboutMenu->Hint1      = StrDuplicate (L"Press 'Enter' to Return to Main Menu");
+        AboutMenu->Hint2      = StrDuplicate (L"");
+
+        AboutMenu->InfoLines  = (CHAR16 **) AllocateZeroPool (sizeof (CHAR16 *));
 
         AddMenuInfoLineAlt (
-            &AboutMenu,
+            AboutMenu,
             PoolPrint (
                 L"RefindPlus v%s",
                 REFINDPLUS_VERSION
             )
         );
 
-        AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
-        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
-        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
-        AddMenuInfoLine (&AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
-        AddMenuInfoLine (&AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
-        AddMenuInfoLine (&AboutMenu, L"");
+        AddMenuInfoLine (AboutMenu, L"");
+        AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
+        AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
+        AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
+        AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
+        AddMenuInfoLine (AboutMenu, L"Distributed under the terms of the GNU GPLv3 license");
+        AddMenuInfoLine (AboutMenu, L"");
 
         #if defined (__MAKEWITH_GNUEFI)
-        AddMenuInfoLine (&AboutMenu, L"Built with GNU-EFI");
+        AddMenuInfoLine (AboutMenu, L"Built with GNU-EFI");
         #else
-        AddMenuInfoLine (&AboutMenu, L"Built with TianoCore EDK II");
+        AddMenuInfoLine (AboutMenu, L"Built with TianoCore EDK II");
         #endif
 
-        AddMenuInfoLine (&AboutMenu, L"");
+        AddMenuInfoLine (AboutMenu, L"");
 
         AddMenuInfoLineAlt (
-            &AboutMenu,
+            AboutMenu,
             PoolPrint (
                 L"Firmware Vendor: %s",
-                FirmwareVendor
+                VendorString
             )
         );
+        MY_FREE_POOL(VendorString);
 
         #if defined (EFI32)
-        AddMenuInfoLine (&AboutMenu, L"Platform: x86 (32 bit)");
+        AddMenuInfoLine (AboutMenu, L"Platform: x86 (32 bit)");
         #elif defined (EFIX64)
-        AddMenuInfoLine (&AboutMenu, L"Platform: x86_64 (64 bit)");
+        AddMenuInfoLine (AboutMenu, L"Platform: x86_64 (64 bit)");
         #elif defined (EFIAARCH64)
-        AddMenuInfoLine (&AboutMenu, L"Platform: ARM (64 bit)");
+        AddMenuInfoLine (AboutMenu, L"Platform: ARM (64 bit)");
         #else
-        AddMenuInfoLine (&AboutMenu, L"Platform: Unknown");
+        AddMenuInfoLine (AboutMenu, L"Platform: Unknown");
         #endif
 
         AddMenuInfoLineAlt (
-            &AboutMenu,
+            AboutMenu,
             PoolPrint (
                 L"EFI Revision: %s %d.%02d",
                 ((gST->Hdr.Revision >> 16) == 1) ? L"EFI" : L"UEFI",
@@ -1184,7 +1158,7 @@ VOID AboutRefindPlus (VOID) {
             )
         );
         AddMenuInfoLineAlt (
-            &AboutMenu,
+            AboutMenu,
             PoolPrint (
                 L"Secure Boot: %s",
                 secure_mode() ? L"Active" : L"Inactive"
@@ -1193,29 +1167,33 @@ VOID AboutRefindPlus (VOID) {
 
         if (GetCsrStatus (&CsrStatus) == EFI_SUCCESS) {
             RecordgCsrStatus (CsrStatus, FALSE);
-            AddMenuInfoLine (&AboutMenu, gCsrStatus);
+            AddMenuInfoLine (AboutMenu, gCsrStatus);
         }
 
         AddMenuInfoLineAlt (
-            &AboutMenu,
+            AboutMenu,
             PoolPrint(
                 L"Screen Output: %s",
                 egScreenDescription()
             )
         );
 
-        AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, L"RefindPlus is a variant of rEFInd");
-        AddMenuInfoLine (&AboutMenu, L"https://github.com/dakanji/RefindPlus");
-        AddMenuInfoLine (&AboutMenu, L"");
-        AddMenuInfoLine (&AboutMenu, L"For information on rEFInd, visit:");
-        AddMenuInfoLine (&AboutMenu, L"http://www.rodsbooks.com/refind");
+        AddMenuInfoLine (AboutMenu, L"");
+        AddMenuInfoLine (AboutMenu, L"RefindPlus is a variant of rEFInd");
+        AddMenuInfoLine (AboutMenu, L"https://github.com/dakanji/RefindPlus");
+        AddMenuInfoLine (AboutMenu, L"");
+        AddMenuInfoLine (AboutMenu, L"For information on rEFInd, visit:");
+        AddMenuInfoLine (AboutMenu, L"http://www.rodsbooks.com/refind");
 
-        AddMenuEntry (&AboutMenu, &MenuEntryReturn);
-        MY_FREE_POOL(FirmwareVendor);
-    }
+        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+        LocalMenuEntryReturn->Tag   = TAG_RETURN;
+        LocalMenuEntryReturn->Row   = 1;
+        AddMenuEntry (AboutMenu, LocalMenuEntryReturn);
 
-    RunMenu (&AboutMenu, NULL);
+        RunMenu (AboutMenu, NULL);
+        FreeMenuScreen (&AboutMenu);
+    } // if (AboutMenu)
 } // VOID AboutRefindPlus()
 
 // Record the loader's name/description in the "PreviousBoot" UEFI variable
@@ -1254,22 +1232,14 @@ VOID RescanAll (
     /* Enable Forced Native Logging */
     NativeLogger = TRUE;
 
-    FreeList (
-        (VOID ***) &(MainMenu.Entries),
-        &MainMenu.EntryCount
-    );
-    MainMenu.Entries     = NULL;
-    MainMenu.EntryCount  = 0;
+    // Reset MainMenu
+    InitMainMenu();
 
     // ConnectAllDriversToAllControllers() can cause system hangs with some
     // buggy filesystem drivers, so do it only if necessary.
     if (Reconnect) {
         ConnectAllDriversToAllControllers (FALSE);
         ScanVolumes();
-
-        #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        #endif
     }
 
     ReadConfig (GlobalConfig.ConfigFilename);
@@ -1618,8 +1588,7 @@ VOID LogBasicInfo (VOID) {
 #if REFIT_DEBUG > 0
     if (!QVInfoSupport) {
         // QueryVariableInfo is not supported on Apple or EFI 1.x Firmware
-        MsgLog ("%s ** QueryVariableInfo is Unavailable", OffsetNext);
-        // DA-TAG: Leave preceeding single space above intact
+        MsgLog ("%s*** QueryVariableInfo is Unavailable ***", OffsetNext);
     }
     MsgLog ("\n\n");
 
@@ -1727,6 +1696,9 @@ EFI_STATUS EFIAPI efi_main (
         return Status;
     }
 
+    /* Init MainMenu */
+    InitMainMenu();
+
     EFI_TIME Now;
     gRT->GetTime (&Now, NULL);
     NowYear   = Now.Year;
@@ -1828,11 +1800,10 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n\n");
     #endif
 
-    // Scan volumes first to find SelfVolume, which is required by LoadDrivers() and ReadConfig();
-    // however, if drivers are loaded, a second call to ScanVolumes() is needed
-    // to register the new filesystem (s) accessed by the drivers.
-    // Also, ScanVolumes() must be done before ReadConfig(), which needs
-    // SelfVolume->VolName.
+    // First scan volumes by calling ScanVolumes() to find "SelfVolume",
+    //    SelfVolume is required by LoadDrivers() and ReadConfig();
+    // A second call is needed later to enumerate volumes as well as
+    //    to register new filesystem(s) accessed by drivers.
     ScanVolumes();
 
     /* Get/Set Config File ... Prefer RefindPlus Configuration File Naame */
@@ -1885,7 +1856,8 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.IgnorePreviousBoot ? L"'Active'" : L"'Inactive'"
     );
 
-    // Prime Status for SupplyAPFS
+    // DA-TAG: Prime Status for SupplyAPFS
+    //         Here to accomodate GNU-RFI
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -1900,7 +1872,8 @@ EFI_STATUS EFIAPI efi_main (
     MsgLog ("\n\n");
     MsgLog ("INFO: Supply APFS Support ... %r", Status);
 
-    // Prime Status for SupplNVME
+    // DA-TAG: Prime Status for SupplNVME
+    //         Here to accomodate GNU-RFI
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -1933,7 +1906,8 @@ EFI_STATUS EFIAPI efi_main (
         #endif
     }
 
-    // Scan Volumes
+    // Second call to ScanVolumes() to enumerate volumes and
+    //   register any new filesystem(s) accessed by drivers.
     ScanVolumes();
 
     if (GlobalConfig.SpoofOSXVersion &&
@@ -1957,7 +1931,7 @@ EFI_STATUS EFIAPI efi_main (
     InitScreen();
 
     WarnIfLegacyProblems();
-    MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
+    MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
 
     // disable EFI watchdog timer
     REFIT_CALL_4_WRAPPER(
@@ -2052,7 +2026,7 @@ EFI_STATUS EFIAPI efi_main (
     ScanForTools();
 
     if (GlobalConfig.ShutdownAfterTimeout) {
-        MainMenu.TimeoutText = L"Shutdown";
+        MainMenu->TimeoutText = StrDuplicate (L"Shutdown");
     }
 
     // Show EFI Version Mismatch Warning
@@ -2215,6 +2189,7 @@ EFI_STATUS EFIAPI efi_main (
         /* Enable Forced Native Logging */
         NativeLogger = TRUE;
     }
+
     pdInitialize();
     /* Disable Forced Native Logging */
     NativeLogger = FALSE;
@@ -2240,7 +2215,7 @@ EFI_STATUS EFIAPI efi_main (
             SystemTable->RuntimeServices->SetVariable  = gRT->SetVariable;
         }
 
-        MenuExit = RunMainMenu (&MainMenu, &SelectionName, &ChosenEntry);
+        MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);
 
         // Ignore MenuExit if FlushFailedTag is set and not previously reset
         if (FlushFailedTag && !FlushFailReset) {
@@ -2274,28 +2249,9 @@ EFI_STATUS EFIAPI efi_main (
         }
 
         switch (ChosenEntry->Tag) {
-            case TAG_NVRAMCLEAN:    // Clean NVRAM
-                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
-
+            case TAG_INFO_NVRAMCLEAN:    // Clean NVRAM Info
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
-
-                MsgLog ("User Input Received:");
-                MsgLog ("%s  - Clean NVRAM", OffsetNext);
-                if (egIsGraphicsModeEnabled()) {
-                    MsgLog ("\n-----------------\n\n");
-                }
-                else {
-                    MsgLog ("\n\n");
-                }
-                #endif
-
-                StartTool (ourLoaderEntry);
-                break;
-
-            case TAG_PRE_NVRAMCLEAN:    // Clean NVRAM Info
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_THIN_SEP, L"Showing Clean NVRAM Info");
+                LOG(1, LOG_LINE_THIN_SEP, L"Creating 'Clean NVRAM Info' Screen");
 
                 MsgLog ("User Input Received:");
                 MsgLog ("%s  - Show Clean NVRAM Info\n\n", OffsetNext);
@@ -2350,7 +2306,37 @@ EFI_STATUS EFIAPI efi_main (
                 }
                 break;
 
-            case TAG_SHOW_BOOTKICKER:    // Apple Boot Screen
+            case TAG_LOAD_NVRAMCLEAN:    // Clean NVRAM
+                ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
+
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_NORMAL, L"Cleaning NVRAM");
+
+                MsgLog ("User Input Received:");
+                MsgLog ("%s  - Clean NVRAM", OffsetNext);
+                if (egIsGraphicsModeEnabled()) {
+                    MsgLog ("\n-----------------\n\n");
+                }
+                else {
+                    MsgLog ("\n\n");
+                }
+                #endif
+
+                StartTool (ourLoaderEntry);
+                break;
+
+            case TAG_INFO_BOOTKICKER:    // Apple Boot Screen Info
+                #if REFIT_DEBUG > 0
+                LOG(1, LOG_LINE_THIN_SEP, L"Creating 'BootKicker Info' Screen");
+
+                MsgLog ("User Input Received:");
+                MsgLog ("%s  - Show BootKicker Info\n\n", OffsetNext);
+                #endif
+
+                preBootKicker();
+                break;
+
+            case TAG_LOAD_BOOTKICKER:    // Apple Boot Screen
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
@@ -2369,17 +2355,6 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry->UseGraphicsMode = TRUE;
 
                 StartTool (ourLoaderEntry);
-                break;
-
-            case TAG_PRE_BOOTKICKER:    // Apple Boot Screen Info
-                #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_THIN_SEP, L"Showing BootKicker Info");
-
-                MsgLog ("User Input Received:");
-                MsgLog ("%s  - Show BootKicker Info\n\n", OffsetNext);
-                #endif
-
-                preBootKicker();
                 break;
 
             case TAG_REBOOT:    // Reboot
