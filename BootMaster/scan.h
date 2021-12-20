@@ -67,6 +67,7 @@ VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME 
 VOID ScanForBootloaders(BOOLEAN ShowMessage);
 VOID ScanForTools(VOID);
 CHAR16 * GetVolumeGroupName (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
+BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path);
 
 #endif
 

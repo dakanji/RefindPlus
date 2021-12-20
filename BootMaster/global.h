@@ -484,6 +484,7 @@ extern CHAR16              *gHiddenTools;
 
 extern UINTN                VolumesCount;
 extern UINTN                RecoveryVolumesCount;
+extern UINTN                SkipApfsVolumesCount;
 extern UINTN                PreBootVolumesCount;
 extern UINTN                SystemVolumesCount;
 extern UINTN                DataVolumesCount;
@@ -508,6 +509,7 @@ extern EFI_LOADED_IMAGE    *SelfLoadedImage;
 extern REFIT_VOLUME        *SelfVolume;
 extern REFIT_VOLUME       **Volumes;
 extern REFIT_VOLUME       **RecoveryVolumes;
+extern REFIT_VOLUME       **SkipApfsVolumes;
 extern REFIT_VOLUME       **PreBootVolumes;
 extern REFIT_VOLUME       **SystemVolumes;
 extern REFIT_VOLUME       **DataVolumes;

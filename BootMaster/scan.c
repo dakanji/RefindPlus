@@ -358,7 +358,7 @@ REFIT_MENU_SCREEN * InitializeSubScreen (
         SubScreen = CopyMenuScreen (Entry->me.SubScreen);
     }
     else {
-        // No subscreen yet ... initialize default entry
+        // No subscreen yet; initialize default entry
         SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (SubScreen) {
             CHAR16 *DisplayName = NULL;
@@ -1482,7 +1482,6 @@ VOID CleanUpLoaderList (
 // other than the one specified by Volume, or if the specified path is SelfDir.
 // Returns TRUE if none of these conditions is met -- that is, if the path is
 // eligible for scanning.
-static
 BOOLEAN ShouldScan (
     REFIT_VOLUME *Volume,
     CHAR16       *Path
@@ -2074,6 +2073,21 @@ VOID ScanEfiFiles (
         }
 
         if (GlobalConfig.SyncAPFS) {
+            if (!EFI_ERROR(Status) && SingleAPFS &&
+                (
+                    VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT ||
+                    VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM  ||
+                    VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                )
+            ) {
+                for (i = 0; i < SkipApfsVolumesCount; i++) {
+                    if (GuidsAreEqual (&(SkipApfsVolumes[i]->PartGuid), &(Volume->PartGuid))) {
+                        // Early Return on Skipped APFS Volume
+                        return;
+                    }
+                }
+            }
+
             for (i = 0; i < SystemVolumesCount; i++) {
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
                     // Early Return on ReMapped APFS System Volume

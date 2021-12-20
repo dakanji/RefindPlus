@@ -56,6 +56,7 @@
 #include "gpt.h"
 #include "config.h"
 #include "apple.h"
+#include "scan.h"
 #include "mystrings.h"
 
 #ifdef __MAKEWITH_GNUEFI
@@ -112,11 +113,13 @@ EFI_FILE          *gVarsDir             = NULL;
 REFIT_VOLUME      *SelfVolume           = NULL;
 REFIT_VOLUME     **Volumes              = NULL;
 REFIT_VOLUME     **RecoveryVolumes      = NULL;
+REFIT_VOLUME     **SkipApfsVolumes      = NULL;
 REFIT_VOLUME     **PreBootVolumes       = NULL;
 REFIT_VOLUME     **SystemVolumes        = NULL;
 REFIT_VOLUME     **DataVolumes          = NULL;
 
 UINTN              RecoveryVolumesCount    = 0;
+UINTN              SkipApfsVolumesCount    = 0;
 UINTN              PreBootVolumesCount     = 0;
 UINTN              SystemVolumesCount      = 0;
 UINTN              DataVolumesCount        = 0;
@@ -2086,7 +2089,9 @@ VOID VetMultiInstanceAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStrA       = NULL;
-    CHAR16 *MsgStrB       = L"Disabled Recovery Tool for Mac OS 11 and Later (If Present)";
+    CHAR16 *MsgStrB       = L"Disabled:- 'Recovery Tool for Mac OS 11 and Later (If Present)''";
+    CHAR16 *MsgStrC       = L"Disabled:- 'Skip Synced APFS Volumes in DontScanVolumes'";
+    CHAR16 *MsgStrD       = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
     BOOLEAN AppleRecovery = FALSE;
 
     // Check if configured to show Apple Recovery
@@ -2167,7 +2172,12 @@ VOID VetMultiInstanceAPFS (VOID) {
                 // Log warning if configured to show Apple Recovery
                 MsgStrA = L"Multi-Instance APFS Container Found";
                 LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
-                MsgLog ("INFO: %s ... %s", MsgStrA, MsgStrB);
+                LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
+                LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
+                MsgLog ("INFO: %s", MsgStrA);
+                MsgLog ("%s      * %s", OffsetNext, MsgStrB);
+                MsgLog ("%s      * %s", OffsetNext, MsgStrC);
+                MsgLog ("%s      * %s", OffsetNext, MsgStrD);
                 MsgLog ("\n\n");
             }
             #endif
@@ -2364,6 +2374,11 @@ VOID ScanVolumes (VOID) {
         FreeVolumes (
             &RecoveryVolumes,
             &RecoveryVolumesCount
+        );
+
+        FreeVolumes (
+            &SkipApfsVolumes,
+            &SkipApfsVolumesCount
         );
 
         ForgetPartitionTables();
@@ -2607,6 +2622,15 @@ VOID ScanVolumes (VOID) {
                             &SystemVolumesCount,
                             CopyVolume (Volume)
                         );
+
+                        if (!ShouldScan (Volume, MACOSX_LOADER_DIR)) {
+                            // Create or add to a list of APFS Volumes not to be scanned
+                            AddListElement (
+                                (VOID ***) &SkipApfsVolumes,
+                                &SkipApfsVolumesCount,
+                                CopyVolume (Volume)
+                            );
+                        }
                     }
                 }
             }

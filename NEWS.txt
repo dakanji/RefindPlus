@@ -3,6 +3,8 @@
 - Fixes Nasty Memory Conflict
   * An item had been wrongly freed resulting in random crashes of chain-loaded external tools
   * This bug was introduced in v0.13.2.AC (Commit 6ed58c5)
+- Fixes DontScanVolumes for Synced APFS Instances
+  * Limited to Single Instance APFS Containers
 
 
 0.13.2.AM (13 Dec 2021):

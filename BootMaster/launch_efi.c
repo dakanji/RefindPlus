@@ -490,6 +490,11 @@ EFI_STATUS StartEFIImage (
                 &DataVolumes,
                 &DataVolumesCount
             );
+
+            FreeVolumes (
+                &SkipApfsVolumes,
+                &SkipApfsVolumesCount
+            );
         }
     }
 
