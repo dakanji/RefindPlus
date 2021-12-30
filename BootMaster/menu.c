@@ -122,6 +122,7 @@ extern CHAR16             *VendorInfo;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
+extern BOOLEAN             SingleAPFS;
 extern EFI_GUID            RefindPlusGuid;
 
 //
@@ -2875,9 +2876,12 @@ VOID HideTag (
     switch (ChosenEntry->Tag) {
         case TAG_LOADER:
             if (GlobalConfig.SyncAPFS && Loader->Volume->FSType == FS_TYPE_APFS) {
+                CHAR16 *Clarify = (SingleAPFS)
+                    ? L"Amend config file instead ... Update 'dont_scan_volumes'"
+                    : L"Multi-Instance APFS Container Present";
                 DisplaySimpleMessage (
                     L"Not Allowed on Synced APFS Loader",
-                    L"Amend config file instead ... Update 'dont_scan_volumes'"
+                    Clarify
                 );
             }
             else if (Loader->DiscoveryType != DISCOVERY_TYPE_AUTO) {
