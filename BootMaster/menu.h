@@ -121,8 +121,6 @@ typedef VOID (*MENU_STYLE_FUNC) (
 
 VOID ManageHiddenTags (VOID);
 VOID GenerateWaitList (VOID);
-VOID FreeLegacyEntry (IN LEGACY_ENTRY **Entry);
-VOID FreeLoaderEntry (IN LOADER_ENTRY **Entry);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
 VOID FreeMenuEntry (IN OUT REFIT_MENU_ENTRY **Entry);

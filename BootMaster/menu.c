@@ -3239,6 +3239,7 @@ VOID FreeMenuScreen (
     }
 } // VOID FreeMenuScreen()
 
+static
 VOID FreeLegacyEntry (
     IN LEGACY_ENTRY **Entry
 ) {
@@ -3255,6 +3256,7 @@ VOID FreeLegacyEntry (
     }
 } // VOID FreeLegacyEntry()
 
+static
 VOID FreeLoaderEntry (
     IN LOADER_ENTRY **Entry
 ) {

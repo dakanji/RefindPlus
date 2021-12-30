@@ -1270,7 +1270,7 @@ VOID AddSubmenu (
     FreeTokenLine (&TokenList, &TokenCount);
 
     if (!SubEntry->Enabled) {
-        FreeLoaderEntry (&SubEntry);
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) SubEntry);
 
         return;
     }
@@ -1604,7 +1604,7 @@ VOID ScanUserConfigured (
                     if (Entry) {
                         EntryCount = EntryCount + 1;
                         if (!Entry->Enabled) {
-                            FreeLoaderEntry (&Entry);
+                            FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
                         }
                         else {
                             #if REFIT_DEBUG > 0

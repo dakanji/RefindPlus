@@ -934,7 +934,7 @@ VOID preBootKicker (VOID) {
                 MsgLog ("** WARN ** BootKicker Error ... Return to Main Menu\n\n");
                 #endif
 
-                FreeLoaderEntry (&ourLoaderEntry);
+                FreeMenuEntry ((REFIT_MENU_ENTRY **) ourLoaderEntry);
             }
         } // if !MyStriCmp ChosenEntry->Title
 
@@ -1075,7 +1075,7 @@ VOID preCleanNvram (VOID) {
                 MsgLog ("** WARN ** CleanNvram Error ... Return to Main Menu\n\n");
                 #endif
 
-                FreeLoaderEntry (&ourLoaderEntry);
+                FreeMenuEntry ((REFIT_MENU_ENTRY **) ourLoaderEntry);
             }
         } // if !MyStriCmp ChosenEntry->Title
 
