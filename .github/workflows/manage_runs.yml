@@ -1,0 +1,24 @@
+
+name: Manage Run Record
+
+on:
+  workflow_dispatch:
+  # schedule = 00:00 on the 1st day of each month
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+
+  # Prune Old Runs - https://github.com/Mattraks/delete-workflow-runs
+  del_runs:
+    name: Prune Runs
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji'
+    steps:
+      - uses: Mattraks/delete-workflow-runs@v1.2.3
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 90
+          keep_minimum_runs: 4

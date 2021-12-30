@@ -1,9 +1,9 @@
 name: 'Issues'
 
 on:
+  workflow_dispatch:
   issues:
     types: [opened]
-  workflow_dispatch:
   schedule:
     - cron: '3 3 */3 * *'
 
@@ -177,6 +177,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Incomplete,Unclear'
           remove-issue-labels: 'Pending,Flagged'
@@ -187,6 +188,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
           include-any-issue-labels: 'Duplicate,Known-Issue'
           remove-issue-labels: 'Pending,Flagged'
@@ -207,6 +209,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
           include-any-issue-labels: 'Invalid,Works-For-Me'
           remove-issue-labels: 'Pending,Flagged'
@@ -216,7 +219,9 @@ jobs:
         uses: dessant/lock-threads@v3.0.0
         with:
           github-token: ${{ github.token }}
-          issue-lock-reason: This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
+          issue-lock-reason: ''
+          iissue-comment:: >
+            This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
           issue-inactive-days: '1'
           include-any-issue-labels: 'Resolved'
           exclude-any-issue-labels: 'Parked,Help-Wanted'
@@ -229,9 +234,9 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
+          add-issue-labels: 'Resolved'
           issue-inactive-days: '5'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked,Help-Wanted'
-          add-issue-labels: 'Resolved'
           remove-issue-labels: 'Pending,Flagged'
           process-only: 'issues'
