@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -94,9 +94,6 @@ typedef struct {
 
 // Partition names to be ignored when setting volume name
 #define IGNORE_PARTITION_NAMES L"Microsoft basic data,Linux filesystem,Apple HFS/HFS+"
-
-#define MINLOGLEVEL         (0)
-#define MAXLOGLEVEL         (1)
 
 extern EFI_GUID gFreedesktopRootGuid;
 

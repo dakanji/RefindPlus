@@ -4,7 +4,7 @@
   PLATFORM_VERSION               = 4.5.0
   DSC_SPECIFICATION              = 0x00010006
   SUPPORTED_ARCHITECTURES        = IA32|IPF|X64|EBC|ARM|AARCH64
-  BUILD_TARGETS                  = RELEASE
+  BUILD_TARGETS                  = RELEASE|DEBUG
   SKUID_IDENTIFIER               = DEFAULT
 
 [LibraryClasses]
@@ -108,3 +108,9 @@
   RefindPlusPkg/filesystems/ntfs.inf
   RefindPlusPkg/filesystems/reiserfs.inf
   RefindPlusPkg/gptsync/gptsync.inf
+
+[PcdsFixedAtBuild]
+!if $(TARGET) == DEBUG
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1D
+  gEfiMdePkgTokenSpaceGuid.PcdDebugClearMemoryValue|0x00
+!endif
