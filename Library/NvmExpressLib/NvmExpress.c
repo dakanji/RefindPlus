@@ -8,7 +8,7 @@
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -1021,7 +1021,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
 
         if (RemainingDevicePath == NULL) {
             // Enumerate all NVME namespaces in the controller
-            Status = DiscoverAllNamespaces (
+            DiscoverAllNamespaces (
                 Private
             );
 
@@ -1034,7 +1034,7 @@ EFI_STATUS EFIAPI NvmExpressDriverBindingStart (
                 &NamespaceId
             );
             if (!EFI_ERROR(Status)) {
-                Status = EnumerateNvmeDevNamespace (
+                EnumerateNvmeDevNamespace (
                     Private,
                     NamespaceId
                 );

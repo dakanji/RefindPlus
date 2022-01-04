@@ -31,7 +31,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -1046,18 +1046,19 @@ chunk_found:
 			uint16_t nparities = (fsw_u64_le_swap(chunk->type) & GRUB_BTRFS_CHUNK_TYPE_RAID6) ? 2 : 1;
                         UINTREM low;
 
-                        if(stripe_length > 1UL<<30 || nstripes > 255)
+                        if(stripe_length > 1UL<<30 || nstripes > 255) {
                             goto volume_corrupted;
+                        }
 
                         middle = DivU64x32 (off, stripe_length, &low);
 
                         high = DivU64x32 (middle, nstripes - nparities, &stripen);
-			DivU64x32(high + stripen, nstripes, &stripen);
-			if(nparities == 1) {
-			    stripeq = RAID5_TAG;
-			} else {
-			    middle = DivU64x32(high + nstripes -1, nstripes, &stripeq);
-			}
+                        DivU64x32(high + stripen, nstripes, &stripen);
+                        if(nparities == 1) {
+                            stripeq = RAID5_TAG;
+                        } else {
+                            DivU64x32(high + nstripes -1, nstripes, &stripeq);
+                        }
                         redundancy = RAID5_TAG;
                         stripe_offset = low + fsw_u64_le_swap (chunk->stripe_length) * high;
                         csize = fsw_u64_le_swap (chunk->stripe_length) - low;
@@ -1845,7 +1846,7 @@ static fsw_status_t fsw_btrfs_readlink(struct fsw_volume *volg, struct fsw_dnode
     s.type = FSW_STRING_TYPE_UTF8;
     s.size = s.len = (int)dno->g.size;
     s.data = tmp;
-    status = fsw_strdup_coerce(link_target, volg->host_string_type, &s);
+    fsw_strdup_coerce(link_target, volg->host_string_type, &s);
     FreePool(tmp);
 
     return FSW_SUCCESS;
@@ -2163,7 +2164,7 @@ static fsw_status_t fsw_btrfs_dir_read(struct fsw_volume *volg, struct fsw_dnode
             DPRINT(L"item key %lx:%x%lx, type %lx, namelen=%lx\n",
                     cdirel->key.object_id, cdirel->key.type, cdirel->key.offset, cdirel->type, s.size);
             if(!err) {
-                err = fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
+                fsw_btrfs_get_sub_dnode(vol, dno, cdirel, &s, child_dno_out);
                 if(direl)
                     FreePool (direl);
                 free_iterator (&desc);

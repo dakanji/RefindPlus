@@ -159,7 +159,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
 
     // If the log file is not found try to create it
     if (Status == EFI_NOT_FOUND) {
-        Status = REFIT_CALL_5_WRAPPER(
+        REFIT_CALL_5_WRAPPER(
             RootDir->Open, RootDir,
             &LogFile, ourDebugLog,
             EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
@@ -173,7 +173,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
         // try on first EFI partition
         Status = egFindESP (&RootDir);
         if (!EFI_ERROR(Status)) {
-            Status = REFIT_CALL_5_WRAPPER(
+            REFIT_CALL_5_WRAPPER(
                 RootDir->Open, RootDir,
                 &LogFile, ourDebugLog,
                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
@@ -181,7 +181,7 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
 
             // If the log file is not found try to create it
             if (Status == EFI_NOT_FOUND) {
-                Status = REFIT_CALL_5_WRAPPER(
+                REFIT_CALL_5_WRAPPER(
                     RootDir->Open, RootDir,
                     &LogFile, ourDebugLog,
                     EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0

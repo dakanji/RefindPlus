@@ -9,7 +9,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -709,8 +709,7 @@ BOOLEAN LimitStringLength (
 ) {
     UINTN     i;
     CHAR16   *SubString, *TempString;
-    BOOLEAN   HasChanged   = FALSE;
-    BOOLEAN   WasTruncated = FALSE;
+    BOOLEAN   HasChanged = FALSE;
 
     // SubString will be NULL or point WITHIN TheString
     SubString = MyStrStr (TheString, L"  ");
@@ -741,7 +740,7 @@ BOOLEAN LimitStringLength (
     } // while
 
     // Truncate if still too long.
-    WasTruncated = TruncateString (TheString, Limit);
+    BOOLEAN WasTruncated = TruncateString (TheString, Limit);
     if (!HasChanged) {
         HasChanged = WasTruncated;
     }

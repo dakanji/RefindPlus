@@ -54,7 +54,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -695,7 +695,7 @@ UINTN ScanDriverDir (
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
 BOOLEAN LoadDrivers (VOID) {
     CHAR16  *Directory;
-    CHAR16  *SelfDirectory;
+    CHAR16  *SelfDirectory = NULL;
     UINTN    i        = 0;
     UINTN    NumFound = 0;
     UINTN    CurFound = 0;
@@ -715,7 +715,9 @@ BOOLEAN LoadDrivers (VOID) {
 
     while ((CurFound == 0) && (Directory = FindCommaDelimited (DRIVER_DIRS, i++)) != NULL) {
         CleanUpPathNameSlashes (Directory);
-        SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
+        if (SelfDirPath) {
+            SelfDirectory = StrDuplicate (SelfDirPath);
+        }
         CleanUpPathNameSlashes (SelfDirectory);
         MergeStrings (&SelfDirectory, Directory, L'\\');
 
@@ -750,7 +752,9 @@ BOOLEAN LoadDrivers (VOID) {
         while ((Directory = FindCommaDelimited (GlobalConfig.DriverDirs, i++)) != NULL) {
             CleanUpPathNameSlashes (Directory);
             if (StrLen (Directory) > 0) {
-                SelfDirectory = SelfDirPath ? StrDuplicate (SelfDirPath) : NULL;
+                if (SelfDirPath) {
+                    SelfDirectory = StrDuplicate (SelfDirPath);
+                }
                 CleanUpPathNameSlashes (SelfDirectory);
 
                 if (MyStrBegins (SelfDirectory, Directory)) {

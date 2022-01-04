@@ -43,7 +43,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -713,7 +713,8 @@ VOID ReadConfig (
         return;
     }
 
-    BOOLEAN DeclineSetting = FALSE;
+    // DA-TAG: Do not init ... 'dead store'
+    BOOLEAN DeclineSetting;
     for (;;) {
         TokenCount = ReadTokenLine (&File, &TokenList);
         if (TokenCount == 0) {
@@ -1308,8 +1309,8 @@ LOADER_ENTRY * AddStanzaEntries (
     CHAR16       *Title
 ) {
     UINTN           TokenCount;
-    CHAR16         *OurEfiBootNumber;
     CHAR16        **TokenList;
+    CHAR16         *OurEfiBootNumber  = NULL;
     CHAR16         *LoadOptions       = NULL;
     BOOLEAN         HasPath           = FALSE;
     BOOLEAN         FirmwareBootNum   = FALSE;

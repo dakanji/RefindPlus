@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -173,7 +173,7 @@ EFI_STATUS daCheckAltGop (VOID) {
             return EFI_NOT_FOUND;
         }
 
-        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+        EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info = NULL;
 
         UINT32  Width  = 0;
         UINT32  Height = 0;

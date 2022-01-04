@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -371,7 +371,7 @@ EFI_STATUS StartEFIImage (
                 &ChildImageHandle2
             );
         }
-    } // if/else !IsValidLoader 
+    } // if/else !IsValidLoader
 
     if ((Status == EFI_ACCESS_DENIED) || (Status == EFI_SECURITY_VIOLATION)) {
         #if REFIT_DEBUG > 0
@@ -468,9 +468,7 @@ EFI_STATUS StartEFIImage (
         // DA-TAG: SyncAPFS infrastrcture is typically no longer required
         //         "Typically" as users may place UEFI Shell etc in the first row (loaders)
         //         These may return to the RefindPlus screen but any issues will be trivial
-        if ((GlobalConfig.SyncAPFS) &&
-            (RecoveryVolumes || PreBootVolumes || SystemVolumes || DataVolumes)
-        ) {
+        if (GlobalConfig.SyncAPFS) {
             FreeVolumes (
                 &RecoveryVolumes,
                 &RecoveryVolumesCount

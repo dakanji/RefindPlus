@@ -9,7 +9,7 @@
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -677,10 +677,6 @@ EFI_STATUS EFIAPI NvmExpressPassThru (
         // If Event is not NULL for admin queue, signal the caller's event here.
         if (Event != NULL) {
             ASSERT (QueueId == 0);
-            if (QueueId != 0) {
-                Status = EFI_UNSUPPORTED;
-                break;
-            }
 
             REFIT_CALL_1_WRAPPER(gBS->SignalEvent, Event);
         }
@@ -763,9 +759,6 @@ EFI_STATUS EFIAPI NvmExpressGetNextNamespace (
     if ((This == NULL) || (NamespaceId == NULL)) {
         return EFI_INVALID_PARAMETER;
     }
-
-    NamespaceData = NULL;
-    Status        = EFI_NOT_FOUND;
 
     Private = NVME_CONTROLLER_PRIVATE_DATA_FROM_PASS_THRU (This);
 

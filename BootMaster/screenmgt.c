@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -661,11 +661,12 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    Status = (GotKeyStrokes)
-        ? EFI_SUCCESS
-        : (EmptyBuffer)
-            ? EFI_ALREADY_STARTED
-            : Status;
+    if (GotKeyStrokes) {
+        Status = EFI_SUCCESS;
+    }
+    else if (EmptyBuffer) {
+        Status = EFI_ALREADY_STARTED;
+    }
 
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
     MsgLog ("INFO: %s\n\n", MsgStr);

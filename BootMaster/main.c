@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -378,8 +378,7 @@ VOID FilterCSR (VOID) {
 static
 VOID ActiveCSR (VOID) {
     UINT32  CsrStatus;
-    BOOLEAN CsrEnabled = FALSE;
-    BOOLEAN RotateCsr  = FALSE;
+    BOOLEAN RotateCsr = FALSE;
 
     if ((GlobalConfig.ActiveCSR == 0) ||
         (GlobalConfig.ActiveCSR != -1 && GlobalConfig.ActiveCSR != 1)
@@ -399,14 +398,7 @@ VOID ActiveCSR (VOID) {
         RecordgCsrStatus (CsrStatus, FALSE);
 
         // Check 'gCsrStatus' variable for 'Enabled' term
-        if (MyStrStr (gCsrStatus, L"Enabled")) {
-            // 'Enabled' found
-            CsrEnabled = TRUE;
-        }
-        else {
-            // 'Enabled' not found
-            CsrEnabled = FALSE;
-        }
+        BOOLEAN CsrEnabled = (MyStrStr (gCsrStatus, L"Enabled")) ? TRUE : FALSE;
 
         if (GlobalConfig.ActiveCSR == -1) {
             // Set to always disable
@@ -1114,7 +1106,7 @@ VOID AboutRefindPlus (VOID) {
         );
 
         AddMenuInfoLine (AboutMenu, L"");
-        AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2021 Dayo Akanji and Others");
+        AddMenuInfoLine (AboutMenu, L"Copyright (c) 2020-2022 Dayo Akanji and Others");
         AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2012-2021 Roderick W. Smith");
         AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) 2006-2010 Christoph Pfisterer");
         AddMenuInfoLine (AboutMenu, L"Portions Copyright (c) The Intel Corporation and others");
@@ -2209,10 +2201,10 @@ EFI_STATUS EFIAPI efi_main (
 
         // Reset NVRAM Protection
         if (ProtectNVRAM) {
-            ProtectNVRAM                               = FALSE;
-            RT->SetVariable                            = gRT->SetVariable;
-            gRT->SetVariable                           = gRT->SetVariable;
-            SystemTable->RuntimeServices->SetVariable  = gRT->SetVariable;
+            ProtectNVRAM                              = FALSE;
+            RT->SetVariable                           = AltSetVariable;
+            gRT->SetVariable                          = AltSetVariable;
+            SystemTable->RuntimeServices->SetVariable = AltSetVariable;
         }
 
         MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);

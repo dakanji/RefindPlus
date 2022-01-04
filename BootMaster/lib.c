@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -1798,7 +1798,6 @@ VOID ScanVolume (
         ) {
             // El Torito entry -> optical disk
             Volume->DiskKind = DISK_KIND_OPTICAL;
-            Bootable = TRUE;
         }
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
@@ -2831,7 +2830,7 @@ VOID ScanVolumes (VOID) {
 static
 VOID GetVolumeBadgeIcons (VOID) {
     UINTN         i, VolumeIndex;
-    BOOLEAN       FoundSysVol = FALSE;
+    BOOLEAN       FoundSysVol;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
@@ -2911,7 +2910,7 @@ VOID GetVolumeBadgeIcons (VOID) {
 
 VOID SetVolumeIcons (VOID) {
     UINTN         i, VolumeIndex;
-    BOOLEAN       FoundSysVol = FALSE;
+    BOOLEAN       FoundSysVol;
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0

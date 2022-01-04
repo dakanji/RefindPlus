@@ -8,7 +8,7 @@
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -723,7 +723,7 @@ EFI_STATUS NvmeControllerInit (
     }
 
     // Enable 64-bit DMA support in the PCI layer.
-    Status = PciIo->Attributes (
+    PciIo->Attributes (
         PciIo,
         EfiPciIoAttributeOperationEnable,
         EFI_PCI_IO_ATTRIBUTE_DUAL_ADDRESS_CYCLE,

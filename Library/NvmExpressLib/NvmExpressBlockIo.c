@@ -8,7 +8,7 @@
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -166,7 +166,6 @@ EFI_STATUS NvmeRead (
     UINT32                            BlockSize;
     NVME_CONTROLLER_PRIVATE_DATA     *Private;
     UINT32                            MaxTransferBlocks;
-    UINTN                             OrginalBlocks;
     BOOLEAN                           IsEmpty;
     EFI_TPL                           OldTpl;
 
@@ -186,7 +185,6 @@ EFI_STATUS NvmeRead (
     Status        = EFI_SUCCESS;
     Private       = Device->Controller;
     BlockSize     = Device->Media.BlockSize;
-    OrginalBlocks = Blocks;
 
     if (Private->ControllerData->Mdts != 0) {
         MaxTransferBlocks = (1 << (Private->ControllerData->Mdts)) * (1 << (Private->Cap.Mpsmin + 12)) / BlockSize;
@@ -237,7 +235,6 @@ EFI_STATUS NvmeWrite (
     UINT32                            BlockSize;
     NVME_CONTROLLER_PRIVATE_DATA     *Private;
     UINT32                            MaxTransferBlocks;
-    UINTN                             OrginalBlocks;
     BOOLEAN                           IsEmpty;
     EFI_TPL                           OldTpl;
 
@@ -257,7 +254,6 @@ EFI_STATUS NvmeWrite (
     Status        = EFI_SUCCESS;
     Private       = Device->Controller;
     BlockSize     = Device->Media.BlockSize;
-    OrginalBlocks = Blocks;
 
     if (Private->ControllerData->Mdts != 0) {
         MaxTransferBlocks = (1 << (Private->ControllerData->Mdts)) * (1 << (Private->Cap.Mpsmin + 12)) / BlockSize;
@@ -662,14 +658,12 @@ NvmeAsyncRead (
     NVME_CONTROLLER_PRIVATE_DATA     *Private;
     NVME_BLKIO2_REQUEST              *BlkIo2Req;
     UINT32                            MaxTransferBlocks;
-    UINTN                             OrginalBlocks;
     BOOLEAN                           IsEmpty;
     EFI_TPL                           OldTpl;
 
     Status        = EFI_SUCCESS;
     Private       = Device->Controller;
     BlockSize     = Device->Media.BlockSize;
-    OrginalBlocks = Blocks;
     BlkIo2Req     = AllocateZeroPool (sizeof (NVME_BLKIO2_REQUEST));
 
     if (BlkIo2Req == NULL) {
@@ -776,14 +770,12 @@ EFI_STATUS NvmeAsyncWrite (
     NVME_CONTROLLER_PRIVATE_DATA     *Private;
     NVME_BLKIO2_REQUEST              *BlkIo2Req;
     UINT32                            MaxTransferBlocks;
-    UINTN                             OrginalBlocks;
     BOOLEAN                           IsEmpty;
     EFI_TPL                           OldTpl;
 
     Status        = EFI_SUCCESS;
     Private       = Device->Controller;
     BlockSize     = Device->Media.BlockSize;
-    OrginalBlocks = Blocks;
     BlkIo2Req     = AllocateZeroPool (sizeof (NVME_BLKIO2_REQUEST));
 
     if (BlkIo2Req == NULL) {

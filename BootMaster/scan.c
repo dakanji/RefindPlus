@@ -41,7 +41,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -2437,7 +2437,7 @@ VOID ScanForBootloaders (
 ) {
     UINTN     i;
     EG_PIXEL  BGColor             = COLOR_LIGHTBLUE;
-    BOOLEAN   DeleteItem          = FALSE;
+    BOOLEAN   DeleteItem;
     BOOLEAN   ScanForLegacy       = FALSE;
     BOOLEAN   AmendedDontScan     = FALSE;
     CHAR16   *HiddenTags          = NULL;
@@ -2983,8 +2983,8 @@ VOID ScanForTools (VOID) {
     CHAR16           *Description;
     UINT64            osind;
     UINT32            CsrValue;
-    BOOLEAN           FoundTool = FALSE;
-    BOOLEAN           OtherFind = FALSE;
+    BOOLEAN           FoundTool;
+    BOOLEAN           OtherFind;
 
     EFI_STATUS                     Status;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
