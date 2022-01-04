@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -169,7 +169,7 @@ VOID RecordgCsrStatus (
         PauseSeconds (WaitSeconds);
 
         #if REFIT_DEBUG > 0
-        MsgLog ("    * %s\n\n", MsgStr);
+        LOG_MSG("    * %s\n\n", MsgStr);
         #endif
 
         MY_FREE_POOL(MsgStr);
@@ -187,7 +187,7 @@ VOID RotateCsrValue (VOID) {
     UINT32_LIST  *ListItem;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Rotating CSR Value");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rotating SIP Value");
     #endif
 
     Status = GetCsrStatus (&CurrentValue);
@@ -205,20 +205,20 @@ VOID RotateCsrValue (VOID) {
         #if REFIT_DEBUG > 0
         if (TargetCsr == 0) {
             // Set target CSR value to NULL
-            LOG(1, LOG_LINE_NORMAL,
-                L"Clearing CSR to 'NULL' from '0x%04x'",
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Clearing SIP to 'NULL' from '0x%04x'",
                 CurrentValue
             );
         }
         else if (CurrentValue == 0) {
-            LOG(1, LOG_LINE_NORMAL,
-                L"Setting CSR to '0x%04x' from 'NULL'",
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Setting SIP to '0x%04x' from 'NULL'",
                 TargetCsr
             );
         }
         else {
-            LOG(1, LOG_LINE_NORMAL,
-                L"Setting CSR to '0x%04x' from '0x%04x'",
+            ALT_LOG(1, LOG_LINE_NORMAL,
+                L"Setting SIP to '0x%04x' from '0x%04x'",
                 CurrentValue, TargetCsr
             );
         }
@@ -241,7 +241,7 @@ VOID RotateCsrValue (VOID) {
             RecordgCsrStatus (TargetCsr, TRUE);
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL,
+            ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Successfully Set SIP/SSV:- '0x%04x'",
                 TargetCsr
             );
@@ -251,7 +251,7 @@ VOID RotateCsrValue (VOID) {
             gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+            ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
             #endif
 
             EG_PIXEL BGColor = COLOR_LIGHTBLUE;
@@ -267,7 +267,7 @@ VOID RotateCsrValue (VOID) {
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+        ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
         #endif
 
         EG_PIXEL BGColor = COLOR_LIGHTBLUE;
@@ -352,7 +352,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     // If not a Mac, ignore the call.
     if ((Status != EFI_SUCCESS) || (!SetOs)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"Not a Mac ... Do Not Set Mac OS Information"
         );
         #endif
@@ -371,7 +371,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 
             if (MacVersionStr) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL,
+                ALT_LOG(1, LOG_LINE_NORMAL,
                     L"Setting Mac OS Information to '%s'",
                     AppleVersionOS
                 );

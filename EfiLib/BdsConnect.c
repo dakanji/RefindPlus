@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 /**
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
 **/
@@ -255,14 +255,14 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     #if REFIT_DEBUG > 0
     if (ReLoaded) {
         MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
-        LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-        MsgLog ("%s...\n", MsgStr);
+        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+        LOG_MSG("%s...\n", MsgStr);
         MY_FREE_POOL(MsgStr);
     }
     else {
         MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
-        LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("%s...\n", MsgStr);
+        ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("%s...\n", MsgStr);
         MY_FREE_POOL(MsgStr);
     }
     #endif
@@ -283,8 +283,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"ERROR: Could Not Locate Device Handles");
-        LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        MsgLog ("%s\n\n", MsgStr);
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("%s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
     }
@@ -311,16 +311,16 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
             if (EFI_ERROR(XStatus)) {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MsgLog ("%s", MsgStr);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
             else if (HandleType == NULL) {
                 #if REFIT_DEBUG > 0
                 MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: Invalid Handle Type", HexIndex);
-                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MsgLog ("%s", MsgStr);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG_MSG("%s", MsgStr);
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
@@ -342,8 +342,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 if (!Device) {
                     #if REFIT_DEBUG > 0
                     MsgStr = PoolPrint (L"Handle 0x%03X ... Discounted [Other Item]", HexIndex);
-                    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    MsgLog ("%s", MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    LOG_MSG("%s", MsgStr);
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
@@ -505,8 +505,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             L"Handle 0x%03X ... Skipped [Parent Device]%s",
                             HexIndex, DeviceData
                         );
-                        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                        MsgLog ("%s", MsgStr);
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        LOG_MSG("%s", MsgStr);
                         MY_FREE_POOL(MsgStr);
                         #endif
                     }
@@ -518,8 +518,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             L"Handle 0x%03X   * %r                %s",
                             HexIndex, XStatus, DeviceData
                         );
-                        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                        MsgLog ("%s", MsgStr);
+                        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                        LOG_MSG("%s", MsgStr);
                         MY_FREE_POOL(MsgStr);
                         #endif
                     }
@@ -531,8 +531,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 L"Handle 0x%03X ... Declined [Empty Device]%s",
                                 HexIndex, DeviceData
                             );
-                            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                            MsgLog ("%s", MsgStr);
+                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            LOG_MSG("%s", MsgStr);
                             MY_FREE_POOL(MsgStr);
                         }
                         else if (XStatus == EFI_NOT_FOUND) {
@@ -540,8 +540,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 L"Handle 0x%03X ... Bypassed [Not Linkable]%s",
                                 HexIndex, DeviceData
                             );
-                            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                            MsgLog ("%s", MsgStr);
+                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            LOG_MSG("%s", MsgStr);
                             MY_FREE_POOL(MsgStr);
                         }
                         else if (XStatus == EFI_INVALID_PARAMETER) {
@@ -549,8 +549,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 L"Handle 0x%03X - ERROR: Invalid Param%s",
                                 HexIndex, DeviceData
                             );
-                            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                            MsgLog ("%s", MsgStr);
+                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            LOG_MSG("%s", MsgStr);
                             MY_FREE_POOL(MsgStr);
                         }
                         else {
@@ -558,8 +558,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                                 L"Handle 0x%03X - WARN: %r%s",
                                 HexIndex, XStatus, DeviceData
                             );
-                            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                            MsgLog ("%s", MsgStr);
+                            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                            LOG_MSG("%s", MsgStr);
                             MY_FREE_POOL(MsgStr);
                         }
 
@@ -575,10 +575,10 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
             #if REFIT_DEBUG > 0
             if (i == AllHandleCountTrigger) {
-                MsgLog ("\n\n");
+                LOG_MSG("\n\n");
             }
             else {
-                MsgLog ("\n");
+                LOG_MSG("\n");
             }
 
             MY_FREE_POOL(DeviceData);
@@ -633,13 +633,13 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         #if REFIT_DEBUG > 0
         if (EFI_ERROR(Status)) {
             if (!FoundGOP && DetectedDevices) {
-                MsgLog ("INFO: Could Not Find Path to GOP on Any Device Handle");
+                LOG_MSG("INFO: Could Not Find Path to GOP on Any Device Handle");
             }
         }
         else {
             MsgStr = StrDuplicate (L"Additional DXE Drivers Revealed ... Relink Handles");
-            LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG_MSG("INFO: %s\n\n", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
         #endif
@@ -652,14 +652,14 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
     );
     if (!FoundGOP && DetectedDevices) {
-        MsgLog ("\n");
-        MsgLog ("      ");
+        LOG_MSG("\n");
+        LOG_MSG("      ");
     }
     else {
-        MsgLog ("INFO: ");
+        LOG_MSG("INFO: ");
     }
-    MsgLog ("%s", MsgStr);
-    LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    LOG_MSG("%s", MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -685,16 +685,16 @@ EFI_STATUS ApplyGOPFix (VOID) {
     // Update Boot Services to permit reloading GPU OptionROM
     Status = AmendSysTable();
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
 
     MsgStr = PoolPrint (L"Amend System Table ... %r", Status);
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    MsgLog ("\n\n");
-    MsgLog ("INFO: %s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("INFO: %s", MsgStr);
     MY_FREE_POOL(MsgStr);
 
     if (EFI_ERROR(Status)) {
-        MsgLog ("\n\n");
+        LOG_MSG("\n\n");
     }
     #endif
 
@@ -703,9 +703,9 @@ EFI_STATUS ApplyGOPFix (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("\n");
-        MsgLog ("      %s", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("\n");
+        LOG_MSG("      %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -714,7 +714,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
             AcquireErrorGOP = TRUE;
         }
         else {
-            MsgLog ("\n\n");
+            LOG_MSG("\n\n");
             Status = BdsLibConnectAllDriversToAllControllersEx();
         }
     }
@@ -746,9 +746,9 @@ VOID EFIAPI BdsLibConnectAllDriversToAllControllers (
             #if REFIT_DEBUG > 0
             if (!AcquireErrorGOP) {
                 CHAR16 *MsgStr = PoolPrint (L"Issue OptionROM from Volatile Storage ... %r", Status);
-                LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-                MsgLog ("\n\n");
-                MsgLog ("INFO: %s", MsgStr);
+                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+                LOG_MSG("\n\n");
+                LOG_MSG("INFO: %s", MsgStr);
                 MY_FREE_POOL(MsgStr);
             }
             #endif

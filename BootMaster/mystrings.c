@@ -127,23 +127,26 @@ CHAR16 * MyStrStr (
     CHAR16 *Src;
     CHAR16 *Sub;
 
-    if (!NestedStrStr) LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MyStrStr ... 1 - START:- Find '%s' in '%s'",
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"MyStrStr";
+    #endif
+
+    if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START:- Find '%s' in '%s'", FuncTag,
         StrCharSet ? StrCharSet : L"NULL",
         String     ? String     : L"NULL"
     );
     if ((String == NULL) || (StrCharSet == NULL)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In MyStrStr ... 1a - END:- NULL INPUT ... return 'NULL'");
-        if (!NestedStrStr) LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
+        if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         return NULL;
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MyStrStr ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     Src = String;
     Sub = StrCharSet;
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MyStrStr ... 3 - WHILE LOOP:- START/ENTER");
+    //BREAD_CRUMB(L"In %s ... 3 - WHILE LOOP:- START/ENTER", FuncTag);
     while ((*String != L'\0') && (*StrCharSet != L'\0')) {
         if (*String++ != *StrCharSet) {
             String     = ++Src;
@@ -153,20 +156,16 @@ CHAR16 * MyStrStr (
             StrCharSet++;
         }
     } // while
-    //LOG(2, LOG_LINE_FORENSIC, L"In MyStrStr ... 4 - WHILE LOOP:- END/EXIT");
+    //BREAD_CRUMB(L"In %s ... 4 - WHILE LOOP:- END/EXIT", FuncTag);
 
     if (*StrCharSet == L'\0') {
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In MyStrStr ... 4a - END:- return CHAR16 *Src (Substring Found)"
-        );
-        if (!NestedStrStr) LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 4a - END:- return CHAR16 *Src (Substring Found)", FuncTag);
+        if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         return Src;
     }
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MyStrStr ... 5 - END:- return NULL (Substring not Found)"
-    );
-    if (!NestedStrStr) LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 5 - END:- return NULL (Substring not Found)", FuncTag);
+    if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return NULL;
 } // CHAR16 * MyStrStr()
 
@@ -188,15 +187,18 @@ BOOLEAN FoundSubStr (
     IN CHAR16  *RawString,
     IN CHAR16  *RawStrCharSet
 ) {
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In FoundSubStr ... 1 - START:- Find '%s' in '%s'",
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"FoundSubStr";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START:- Find '%s' in '%s'", FuncTag,
         RawStrCharSet ? RawStrCharSet : L"NULL",
         RawString     ? RawString     : L"NULL"
     );
     if ((RawString == NULL) || (RawStrCharSet == NULL)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 1a - END:- NULL INPUT ... return 'FALSE'");
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'FALSE'", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         return FALSE;
     }
 
@@ -204,28 +206,28 @@ BOOLEAN FoundSubStr (
     CHAR16  *StrCharSet = StrDuplicate (RawStrCharSet);
     BOOLEAN  FoundStr   = FALSE;
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     ToLower (String);
     ToLower (StrCharSet);
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3");
+    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
     NestedStrStr = TRUE;
     if (MyStrStr (String, StrCharSet)) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3a 1");
+        //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         FoundStr = TRUE;
-        //LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3a 2");
+
+        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
     NestedStrStr = FALSE;
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In FoundSubStr ... 3");
+    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
     MY_FREE_POOL(String);
     MY_FREE_POOL(StrCharSet);
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In FoundSubStr ... 4 END - return BOOLEAN FoundStr:- '%s'",
+    BREAD_CRUMB(L"In %s ... 4 END - return BOOLEAN FoundStr:- '%s'", FuncTag,
         FoundStr ? L"TRUE" : L"FALSE"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return FoundStr;
 } // BOOLEAN FoundSubStr()
 
@@ -348,87 +350,88 @@ VOID MergeStrings (
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MergeStrings ... 1 - START:- Merge '%s' into '%s'",
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"MergeStrings";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START:- Merge '%s' into '%s'", FuncTag,
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
     );
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In MergeStrings ... 1a 1 - END:- VOID ... Out String = '%s'",
+        BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
             *First
         );
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
         return;
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     Length1 = StrLen (*First);
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 3");
+    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
     if (Second != NULL) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 3a 1");
+        //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         Length2 = StrLen (Second);
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 3a 2");
+        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 4");
+    //BREAD_CRUMB(L"In %s ... 4", FuncTag);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5");
+    //BREAD_CRUMB(L"In %s ... 5", FuncTag);
     if (NewString) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1");
+        //BREAD_CRUMB(L"In %s ... 5a 1", FuncTag);
         if ((*First != NULL) && (Length1 == 0)) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 1a 1", FuncTag);
             MY_FREE_POOL(*First);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 1a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 1a 2", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 2");
+        //BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
         NewString[0] = L'\0';
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3");
+        //BREAD_CRUMB(L"In %s ... 5a 3", FuncTag);
         if (*First != NULL) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 1", FuncTag);
             StrCat (NewString, *First);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 2", FuncTag);
             if (AddChar) {
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2a 1");
+                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 1", FuncTag);
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
 
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 2a 2");
+                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 2", FuncTag);
             }
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 3a 3");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 3", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4");
+        //BREAD_CRUMB(L"In %s ... 5a 4", FuncTag);
         if (Second != NULL) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 1", FuncTag);
             StrCat (NewString, Second);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 4a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 2", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 5");
+        //BREAD_CRUMB(L"In %s ... 5a 5", FuncTag);
         MY_FREE_POOL(*First);
         *First = NewString;
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeStrings ... 5a 6");
+        //BREAD_CRUMB(L"In %s ... 5a 6", FuncTag);
     }
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MergeStrings ... 6 - END:- VOID ... Out String = '%s'",
+    BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
         *First
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeStrings()
 
 // As MergeStrings but does not repeat substrings.
@@ -440,80 +443,80 @@ VOID MergeUniqueStrings (
     UINTN Length1 = 0, Length2 = 0;
     CHAR16* NewString;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MergeUniqueStrings ... 1 - START:- Merge '%s' into '%s'",
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"MergeUniqueStrings";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START:- Merge '%s' into '%s'", FuncTag,
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
     );
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In MergeUniqueStrings ... 1a 1 - END:- VOID ... Out String = '%s'",
+        BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
             *First
         );
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
         return;
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     Length1 = StrLen (*First);
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3");
+    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
     if (Second != NULL) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3a 1");
+        //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         Length2 = StrLen (Second);
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 3a 2");
+        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 4");
+    //BREAD_CRUMB(L"In %s ... 4", FuncTag);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5");
+    //BREAD_CRUMB(L"In %s ... 5", FuncTag);
     if (NewString) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1");
+        //BREAD_CRUMB(L"In %s ... 5a 1", FuncTag);
         if ((*First != NULL) && (Length1 == 0)) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 1a 1", FuncTag);
             MY_FREE_POOL(*First);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 1a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 1a 2", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 2");
+        //BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
         NewString[0] = L'\0';
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3");
+        //BREAD_CRUMB(L"In %s ... 5a 3", FuncTag);
         if (*First != NULL) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 1", FuncTag);
             StrCat (NewString, *First);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 2", FuncTag);
             if (AddChar) {
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2a 1");
+                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 1", FuncTag);
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
 
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 2a 2");
+                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 2", FuncTag);
             }
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 3a 3");
+            //BREAD_CRUMB(L"In %s ... 5a 3a 3", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4");
+        //BREAD_CRUMB(L"In %s ... 5a 4", FuncTag);
         if (Second != NULL) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 1");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 1", FuncTag);
             BOOLEAN SkipMerge = FALSE;
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 2");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 2", FuncTag);
             if (AddChar) {
                 UINTN   i       = 0;
                 CHAR16 *TestStr = NULL;
 
-                LOG(2, LOG_LINE_FORENSIC,
-                    L"In MergeUniqueStrings ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER"
-                );
+                BREAD_CRUMB(L"In %s ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER", FuncTag);
                 while (!SkipMerge
                     && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
                 ) {
@@ -525,41 +528,38 @@ VOID MergeUniqueStrings (
 
                     MY_FREE_POOL(TestStr);
                 } // while
-                LOG(2, LOG_LINE_FORENSIC,
-                    L"In MergeUniqueStrings ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT"
-                );
+                BREAD_CRUMB(L"In %s ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT", FuncTag);
             }
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 3", FuncTag);
             if (!SkipMerge) {
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3a 1");
+                //BREAD_CRUMB(L"In %s ... 5a 4a 3a 1", FuncTag);
                 StrCat (NewString, Second);
 
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3a 2");
+                //BREAD_CRUMB(L"In %s ... 5a 4a 3a 2", FuncTag);
             }
             else if (AddChar) {
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3b 1");
+                //BREAD_CRUMB(L"In %s ... 5a 4a 3b 1", FuncTag);
                 // Remove AddChar if not merging this item
                 NewString[Length1] = '\0';
 
-                //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 3b 2");
+                //BREAD_CRUMB(L"In %s ... 5a 4a 3b 2", FuncTag);
             }
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 4a 4");
+            //BREAD_CRUMB(L"In %s ... 5a 4a 4", FuncTag);
         }
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 5");
+        //BREAD_CRUMB(L"In %s ... 5a 5", FuncTag);
         MY_FREE_POOL(*First);
         *First = NewString;
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In MergeUniqueStrings ... 5a 6");
+        //BREAD_CRUMB(L"In %s ... 5a 6", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In MergeUniqueStrings ... 6 - END:- VOID ... Out String = '%s'",
+    BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
         *First
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 } // VOID MergeUniqueStrings()
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
@@ -1005,64 +1005,66 @@ BOOLEAN ReplaceSubstring (
     BOOLEAN WasReplaced = FALSE;
     CHAR16 *FoundSearchString, *NewString, *EndString;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In ReplaceSubstring ... 1 - START:- Replace '%s' with '%s' in '%s'",
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"ReplaceSubstring";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START:- Replace '%s' with '%s' in '%s'", FuncTag,
         SearchString ? SearchString : L"NULL",
         ReplString   ? ReplString   : L"NULL",
         *MainString  ? *MainString  : L"NULL"
     );
     if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 1a - END:- NULL INPUT ... return 'FALSE'");
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'FALSE'", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         return FALSE;
     }
     NestedStrStr = TRUE;
     FoundSearchString = MyStrStr (*MainString, SearchString);
     NestedStrStr = FALSE;
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (FoundSearchString) {
-        //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 1");
+        //BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
         NewString = AllocateZeroPool (sizeof (CHAR16) * StrLen(*MainString));
 
-        //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2");
+        //BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
         if (NewString) {
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 1");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 1", FuncTag);
             EndString = &(FoundSearchString[StrLen (SearchString)]);
             FoundSearchString[0] = L'\0';
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 2", FuncTag);
             if ((FoundSearchString > *MainString) && (FoundSearchString[-1] == L'%')) {
-                //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 2a 1");
+                //BREAD_CRUMB(L"In %s ... 2a 2a 2a 1", FuncTag);
                 FoundSearchString[-1] = L'\0';
                 ReplString = SearchString;
             }
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 3");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 3", FuncTag);
             StrCpy (NewString, *MainString);
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 4");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 4", FuncTag);
             MergeStrings (&NewString, ReplString, L'\0');
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 5");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 5", FuncTag);
             MergeStrings (&NewString, EndString, L'\0');
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 6");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 6", FuncTag);
             MY_FREE_POOL(MainString);
             *MainString = NewString;
 
-            //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 2a 7 - WasReplaced = TRUE");
+            //BREAD_CRUMB(L"In %s ... 2a 2a 7 - WasReplaced = TRUE", FuncTag);
             WasReplaced = TRUE;
         }
-        //LOG(2, LOG_LINE_FORENSIC, L"In ReplaceSubstring ... 2a 3");
+        //BREAD_CRUMB(L"In %s ... 2a 3", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In ReplaceSubstring ... 3 END - return BOOLEAN WasReplaced:- '%s'",
+    BREAD_CRUMB(L"In %s ... 3 END - return BOOLEAN WasReplaced:- '%s'", FuncTag,
         WasReplaced ? L"TRUE" : L"FALSE"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return WasReplaced;
 } // BOOLEAN ReplaceSubstring()
 

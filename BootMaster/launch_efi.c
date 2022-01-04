@@ -160,7 +160,7 @@ BOOLEAN IsValidLoader (
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"EFI File is *ASSUMED* to be Valid:- '%s'",
             FileName ? FileName : L"NULL"
         );
@@ -170,7 +170,7 @@ BOOLEAN IsValidLoader (
     }
     else if (!FileExists (RootDir, FileName)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"EFI File *NOT* Found:- '%s'",
             FileName ? FileName : L"NULL"
         );
@@ -188,7 +188,7 @@ BOOLEAN IsValidLoader (
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"EFI File is *NOT* Valid:- '%s'",
             FileName ? FileName : L"NULL"
         );
@@ -210,7 +210,7 @@ BOOLEAN IsValidLoader (
               (*(UINT32 *) &Header == FAT_ARCH));
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID,
+    ALT_LOG(1, LOG_THREE_STAR_MID,
         L"EFI File is %s:- '%s'",
         IsValid  ? L"Valid" : L"*NOT* Valid",
         FileName ? FileName : L"NULL"
@@ -252,8 +252,8 @@ EFI_STATUS StartEFIImage (
             L"'%r' While Starting EFI Image!!",
             ReturnStatus
         );
-        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr);
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
+        LOG_MSG("* ERROR: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -276,7 +276,7 @@ EFI_STATUS StartEFIImage (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
     #endif
 
     if (Verbose) {
@@ -292,8 +292,8 @@ EFI_STATUS StartEFIImage (
     if (!IsValidLoader (Volume->RootDir, Filename)) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Invalid Loader!!");
-        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr);
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
+        LOG_MSG("* ERROR: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
     }
@@ -356,8 +356,8 @@ EFI_STATUS StartEFIImage (
             // user pulls before launching a program.
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Employing Shim 'LoadImage' Hack");
-            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("INFO: %s\n\n", MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("INFO: %s\n\n", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -379,8 +379,8 @@ EFI_STATUS StartEFIImage (
             L"'%r' Returned by Secure Boot While Loading %s!!",
             Status, ImageTitle
         );
-        LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        MsgLog ("* ERROR: %s\n\n", MsgStr);
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
+        LOG_MSG("* ERROR: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -424,8 +424,8 @@ EFI_STATUS StartEFIImage (
             L"Systemd LoaderDevicePartUUID:- '%s'",
             EspGUID
         );
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("INFO: %s\n\n", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s\n\n", MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -443,8 +443,8 @@ EFI_STATUS StartEFIImage (
                 L"'%r' When Trying to Set LoaderDevicePartUUID UEFI Variable!!",
                 Status
             );
-            LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
-            MsgLog ("* ERROR: %s\n\n", MsgStr);
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR:- %s", MsgStr);
+            LOG_MSG("* ERROR: %s\n\n", MsgStr);
             MY_FREE_POOL(MsgStr);
         }
         #endif
@@ -462,7 +462,7 @@ EFI_STATUS StartEFIImage (
     if (!IsDriver) {
         #if REFIT_DEBUG > 0
         ConstMsgStr = L"Running Child Image";
-        LOG(1, LOG_LINE_NORMAL, L"%s via Loader:- '%s'", ConstMsgStr , ImageTitle);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s via Loader File:- '%s'", ConstMsgStr , ImageTitle);
         #endif
 
         // DA-TAG: SyncAPFS infrastrcture is typically no longer required
@@ -504,18 +504,18 @@ EFI_STATUS StartEFIImage (
 
     // control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, ConstMsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, ConstMsgStr);
     #endif
 
     MsgStr = StrDuplicate (L"Returned from Child Image");
 
     #if REFIT_DEBUG > 0
     if (!IsDriver) {
-        LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+        ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
 
         if (Verbose) {
-            MsgLog ("User Input Received:\n");
-            MsgLog ("  - Exit Child Image Loader:- '%s'\n\n", ImageTitle);
+            LOG_MSG("User Input Received:\n");
+            LOG_MSG("  - Exit Child Image Loader:- '%s'\n\n", ImageTitle);
         }
     }
     #endif
@@ -577,7 +577,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    MsgLog ("INFO: Reboot into Firmware ... %r\n\n", err);
+    LOG_MSG("INFO: Reboot into Firmware ... %r\n\n", err);
     #endif
 
     if (err != EFI_SUCCESS) {
@@ -585,7 +585,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the Computer's Firmware");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the Computer's Firmware");
     #endif
 
     UninitRefitLib();
@@ -607,13 +607,13 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** WARN: %s\n\n", MsgStr);
+    LOG_MSG("** WARN: %s\n\n", MsgStr);
     #endif
 
     PauseForKey();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, MsgStr, err);
+    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr, err);
     #endif
 
     MY_FREE_POOL(MsgStr);
@@ -635,8 +635,8 @@ VOID RebootIntoLoader (
         L"Reboot into NVRAM Boot Option:- '%s' (Boot%04x)",
         Entry->Title, Entry->EfiBootNum
     );
-    LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    MsgLog ("INFO: %s\n\n", MsgStr);
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    LOG_MSG("INFO: %s\n\n", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -655,7 +655,7 @@ VOID RebootIntoLoader (
         );
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
         #endif
 
         Print(L"%s\n", MsgStr);
@@ -675,7 +675,7 @@ VOID RebootIntoLoader (
     MsgStr = PoolPrint (L"Call ResetSystem ... %r", Status);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
     Print(MsgStr);
@@ -698,7 +698,7 @@ VOID DoEnableAndLockVMX(VOID) {
     UINT32 high_bits = 0;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Attempting to Enable and Lock VMX");
     #endif
 
     // is VMX active ?
@@ -728,7 +728,7 @@ VOID StartLoader (
     MsgStr        = PoolPrint (L"Launching Loader:- '%s'", SelectionName);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     #endif
 
     if (GlobalConfig.EnableAndLockVMX) {
@@ -762,10 +762,10 @@ VOID StartTool (
     MsgStr        = PoolPrint (L"Launching Tool:- '%s'", Entry->me.Title);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
 
     if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        MsgLog ("INFO: Running Graphics Mode Switch\n");
+        LOG_MSG("INFO: Running Graphics Mode Switch\n");
     }
     #endif
 
@@ -773,7 +773,7 @@ VOID StartTool (
 
     #if REFIT_DEBUG > 0
     if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        MsgLog ("      Switch Graphics to Text Mode ... Success\n\n");
+        LOG_MSG("      Switch Graphics to Text Mode ... Success\n\n");
     }
     #endif
 

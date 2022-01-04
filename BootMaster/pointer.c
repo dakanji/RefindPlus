@@ -20,7 +20,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -54,14 +54,14 @@ POINTER_STATE State;
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
         #if REFIT_DEBUG > 0
-        MsgLog ("Initialise Pointer Devices...\n");
+        LOG_MSG("Initialise Pointer Devices...\n");
         #endif
 
     pdCleanup(); // just in case
 
     if (! (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
         #if REFIT_DEBUG > 0
-        MsgLog ("  - Detected Touch Mode or 'No Mouse' Mode\n");
+        LOG_MSG("  - Detected Touch Mode or 'No Mouse' Mode\n");
         #endif
     }
     else {
@@ -92,7 +92,7 @@ VOID pdInitialize() {
                 );
                 if (status == EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
-                    MsgLog ("  - Enable Touch\n");
+                    LOG_MSG("  - Enable Touch\n");
                     #endif
 
                     NumAPointerDevices++;
@@ -101,7 +101,7 @@ VOID pdInitialize() {
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Disable Touch\n");
+            LOG_MSG("  - Disable Touch\n");
             #endif
 
             GlobalConfig.EnableTouch = FALSE;
@@ -141,13 +141,13 @@ VOID pdInitialize() {
 
             #if REFIT_DEBUG > 0
             if (GotMouse) {
-                MsgLog ("  - Enabled Mouse\n");
+                LOG_MSG("  - Enabled Mouse\n");
             }
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgLog ("  - Disable Mouse\n");
+            LOG_MSG("  - Disable Mouse\n");
             #endif
 
             GlobalConfig.EnableMouse = FALSE;
@@ -162,7 +162,7 @@ VOID pdInitialize() {
     }
 
     #if REFIT_DEBUG > 0
-    MsgLog ("Pointer Devices Initialised\n\n");
+    LOG_MSG("Pointer Devices Initialised\n\n");
     #endif
 }
 
@@ -171,7 +171,7 @@ VOID pdInitialize() {
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdCleanup() {
         #if REFIT_DEBUG > 0
-        MsgLog ("Close Existing Pointer Protocols:\n");
+        LOG_MSG("Close Existing Pointer Protocols:\n");
         #endif
 
     PointerAvailable = FALSE;

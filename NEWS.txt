@@ -1,9 +1,9 @@
 0.13.2.AN (Pre-Release):
 -----------------------
-- Fixes Nasty Memory Conflict
-  * An item had been wrongly freed resulting in random crashes of chain-loaded external tools
+- Fixes Major Memory Conflict
+  * An item had been wrongly freed resulting in random crashes when running loaders
   * This bug was introduced in v0.13.2.AC (Commit 6ed58c5)
-- Fixes DontScanVolumes for Synced APFS Instances
+- Fixes "DontScanVolumes" for Synced APFS Instances
   * Limited to Single Instance APFS Containers
 
 
@@ -44,7 +44,6 @@
   * The previous upstream based four (4) log levels have been compressed to two (2) levels
   * LogLevel 4, which was not exposed by default, is now LogLevel 2, which is also not exposed by default.
   * LogLevel 2 is exposed when the "REFIT_DEBUG" build flag is set to two (2) at compilation time.
-    - Set this in "BootMaster/globalExtra-DBG.txt" if using the RefindPlusUDK build script
   * Unless LogLevel 2 is exposed when compiling, selected levels above one (1) will be capped at LogLevel 1
   * When LogLevel 2 is exposed, selected levels above two (2) will be capped at LogLevel 2
 - Initial activation of fixes on Mac Recovery For Mac OS 11 (Big Sur) and Later

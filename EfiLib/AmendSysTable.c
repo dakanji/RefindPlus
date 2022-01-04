@@ -170,7 +170,7 @@ EFI_TPL EFIAPI FakeRaiseTpl (
     OldTpl = gEfiCurrentTpl;
     if (OldTpl > NewTpl) {
         #if REFIT_DEBUG > 0
-        MsgLog (
+        LOG_MSG(
             "FATAL ERROR: RaiseTpl with OldTpl (0x%x) > NewTpl (0x%x)\n\n",
             OldTpl,
             NewTpl
@@ -206,7 +206,7 @@ VOID EFIAPI FakeRestoreTpl (
     OldTpl = gEfiCurrentTpl;
     if (NewTpl > OldTpl) {
         #if REFIT_DEBUG > 0
-        MsgLog (
+        LOG_MSG(
             "FATAL ERROR: RestoreTpl with NewTpl (0x%x) > OldTpl (0x%x)\n",
             NewTpl,
             OldTpl

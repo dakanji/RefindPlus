@@ -120,7 +120,7 @@ VOID InitScreen (VOID) {
 
     if (egHasGraphicsMode()) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode Detected ... Getting Resolution");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode Detected ... Getting Resolution");
         #endif
 
         egGetScreenSize (&ScreenW, &ScreenH);
@@ -128,7 +128,7 @@ VOID InitScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Graphics Mode *NOT* Detected ... Setting Text Mode");
         #endif
 
         AllowGraphicsMode = FALSE;
@@ -181,7 +181,7 @@ VOID SetupScreen (VOID) {
     CHAR16 *MsgStr = NULL;
 
     if (!BannerLoaded) {
-        MsgLog ("Set Screen Up...\n");
+        LOG_MSG("Set Screen Up...\n");
     }
     #endif
 
@@ -190,7 +190,7 @@ VOID SetupScreen (VOID) {
         (GlobalConfig.RequestedScreenHeight == 0)
     ) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Get Resolution From Mode:\n");
+        LOG_MSG("Get Resolution From Mode:\n");
         #endif
 
         egGetResFromMode (
@@ -206,7 +206,7 @@ VOID SetupScreen (VOID) {
         (GlobalConfig.RequestedScreenHeight > 0)
     ) {
         #if REFIT_DEBUG > 0
-        MsgLog ("Sync Resolution:\n");
+        LOG_MSG("Sync Resolution:\n");
         #endif
 
         ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth)
@@ -218,7 +218,7 @@ VOID SetupScreen (VOID) {
             : GlobalConfig.RequestedScreenHeight;
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"Recording Current Resolution as %d x %d",
             ScreenW, ScreenH
         );
@@ -233,7 +233,7 @@ VOID SetupScreen (VOID) {
     if (egSetTextMode (GlobalConfig.RequestedTextMode)) {
 
         #if REFIT_DEBUG > 0
-        MsgLog ("Set Text Mode:\n");
+        LOG_MSG("Set Text Mode:\n");
         #endif
 
         egGetScreenSize (&NewWidth, &NewHeight);
@@ -247,7 +247,7 @@ VOID SetupScreen (VOID) {
         ScreenShortest = (ScreenW <= ScreenH) ? ScreenW : ScreenH;
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"After Setting Text Mode ... Recording *NEW* Current Resolution as '%d x %d'",
             ScreenLongest, ScreenShortest
         );
@@ -258,8 +258,8 @@ VOID SetupScreen (VOID) {
         ) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
-            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("  - %s\n", MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("  - %s\n", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -271,7 +271,7 @@ VOID SetupScreen (VOID) {
         if (GlobalConfig.RequestedScreenWidth > 0) {
 
             #if REFIT_DEBUG > 0
-            MsgLog ("Set to User Requested Screen Size:\n");
+            LOG_MSG("Set to User Requested Screen Size:\n");
             #endif
 
             egSetScreenSize (
@@ -290,12 +290,12 @@ VOID SetupScreen (VOID) {
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Screen is in Text Mode");
-        LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        MsgLog ("INFO: %s", MsgStr);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
         MY_FREE_POOL(MsgStr);
         (GlobalConfig.LogLevel == 0)
-            ? MsgLog ("\n\n")
-            : MsgLog ("\n");
+            ? LOG_MSG("\n\n")
+            : LOG_MSG("\n");
         #endif
     }
     else if (AllowGraphicsMode) {
@@ -305,14 +305,14 @@ VOID SetupScreen (VOID) {
             MsgStr = (!gotGraphics)
                 ? StrDuplicate (L"Prepare Graphics Mode Switch")
                 : StrDuplicate (L"Prepare Placeholder Display");
-            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("%s:", MsgStr);
-            MsgLog ("\n");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("%s:", MsgStr);
+            LOG_MSG("\n");
             MY_FREE_POOL(MsgStr);
 
             MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%d x %d'", ScreenLongest, ScreenShortest);
-            LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            MsgLog ("  - %s", MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("  - %s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -320,9 +320,9 @@ VOID SetupScreen (VOID) {
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
-                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("%s    * %s", OffsetNext, MsgStr);
-                MsgLog ("\n\n");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
@@ -353,18 +353,18 @@ VOID SetupScreen (VOID) {
                 }
 
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("%s    * %s", OffsetNext, MsgStr);
-                MsgLog ("\n\n");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
-                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("%s    * %s", OffsetNext, MsgStr);
-                MsgLog ("\n\n");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
             } // if GlobalConfig.ScaleUI
@@ -372,9 +372,9 @@ VOID SetupScreen (VOID) {
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Running Graphics Mode Switch");
-                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n\n");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("INFO: %s", MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
 
@@ -385,9 +385,9 @@ VOID SetupScreen (VOID) {
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Loading Placeholder Display");
-                LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                MsgLog ("INFO: %s", MsgStr);
-                MsgLog ("\n\n");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                LOG_MSG("INFO: %s", MsgStr);
+                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
             }
@@ -399,17 +399,17 @@ VOID SetupScreen (VOID) {
                 MsgStr = (gotGraphics)
                     ? StrDuplicate (L"Displayed Placeholder")
                     : StrDuplicate (L"Switch to Graphics Mode ... Success");
-                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MsgLog ("INFO: %s", MsgStr);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG_MSG("INFO: %s", MsgStr);
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                MsgLog ("INFO: Changing to Screensaver Display");
+                LOG_MSG("INFO: Changing to Screensaver Display");
 
                 MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
-                LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                MsgLog ("      %s", MsgStr);
+                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+                LOG_MSG("      %s", MsgStr);
                 #endif
 
                 // start with screen blanked
@@ -420,17 +420,17 @@ VOID SetupScreen (VOID) {
             #if REFIT_DEBUG > 0
             MY_FREE_POOL(MsgStr);
             (NativeLogger && GlobalConfig.LogLevel > 0)
-                ? MsgLog ("\n")
-                : MsgLog ("\n\n");
+                ? LOG_MSG("\n")
+                : LOG_MSG("\n\n");
             #endif
         }
     }
     else {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
-        LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        MsgLog ("WARN: %s", MsgStr);
-        MsgLog ("\n\n");
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("WARN: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -454,7 +454,7 @@ VOID SwitchToText (
             GlobalConfig.TextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            MsgLog ("INFO: 'text_renderer' Config Setting Overriden\n\n");
+            LOG_MSG("INFO: 'text_renderer' Config Setting Overriden\n\n");
             #endif
         }
     }
@@ -470,7 +470,7 @@ VOID SwitchToText (
     );
 
     if (TextModeOnEntry) {
-        MsgLog ("Determine Text Console Size:\n");
+        LOG_MSG("Determine Text Console Size:\n");
     }
     #endif
 
@@ -490,7 +490,7 @@ VOID SwitchToText (
 
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
-            MsgLog (
+            LOG_MSG(
                 "  Could Not Get Text Console Size ... Using Default:- '%d x %d'\n\n",
                 ConHeight, ConWidth
             );
@@ -500,7 +500,7 @@ VOID SwitchToText (
     else {
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
-            MsgLog (
+            LOG_MSG(
                 "  Text Console Size:- '%d x %d'\n\n",
                 ConWidth, ConHeight
             );
@@ -512,7 +512,7 @@ VOID SwitchToText (
 
     #if REFIT_DEBUG > 0
     if (TextModeOnEntry) {
-        MsgLog ("INFO: Switch to Text Mode ... Success\n\n");
+        LOG_MSG("INFO: Switch to Text Mode ... Success\n\n");
     }
     #endif
 } // VOID SwitchToText()
@@ -567,14 +567,14 @@ VOID BeginExternalScreen (
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
         #endif
 
         SwitchToText (UseGraphicsMode);
@@ -669,8 +669,8 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
-    MsgLog ("INFO: %s\n\n", MsgStr);
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("INFO: %s\n\n", MsgStr);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -738,21 +738,21 @@ VOID PauseForKey (VOID) {
 
     if (GlobalConfig.ContinueOnWarning) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 9 Seconds");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Waiting 9 Seconds");
         #endif
 
         for (i = 0; i < 9; ++i) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
                 #endif
 
                 Breakout = TRUE;
@@ -765,27 +765,27 @@ VOID PauseForKey (VOID) {
 
         #if REFIT_DEBUG > 0
         if (!Breakout) {
-            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
         }
         #endif
     }
     else {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Paused for Error/Warning ... Keypress Required");
         #endif
 
         for (;;) {
             WaitOut = WaitForInput (1000);
             if (WaitOut == INPUT_KEY) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
                 #endif
 
                 Breakout = TRUE;
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
                 #endif
 
                 Breakout = TRUE;
@@ -803,7 +803,7 @@ VOID PauseForKey (VOID) {
     GraphicsScreenDirty = TRUE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Resuming After Pause");
     #endif
 } // VOID PauseForKey
 
@@ -818,21 +818,21 @@ VOID PauseSeconds (
     ReadAllKeyStrokes();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
     #endif
 
     for (i = 0; i < Seconds; ++i) {
         WaitOut = WaitForInput (1000);
         if (WaitOut == INPUT_KEY) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Keypress");
             #endif
 
             Breakout = TRUE;
         }
         else if (WaitOut == INPUT_TIMER_ERROR) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
             #endif
 
             Breakout = TRUE;
@@ -845,7 +845,7 @@ VOID PauseSeconds (
 
     #if REFIT_DEBUG > 0
     if (!Breakout) {
-        LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
     }
     #endif
 
@@ -892,7 +892,7 @@ BOOLEAN CheckFatalError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** FATAL ERROR: '%s' %s\n", ErrorName, where);
+    LOG_MSG("** FATAL ERROR: '%s' %s\n", ErrorName, where);
     #endif
 
     Temp = PoolPrint (L"Fatal Error: '%s' %s", ErrorName, where);
@@ -900,7 +900,7 @@ BOOLEAN CheckFatalError (
     Temp = PoolPrint (L"Fatal Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** FATAL ERROR: '%r' %s\n", Status, where);
+    LOG_MSG("** FATAL ERROR: '%r' %s\n", Status, where);
     #endif
 #endif
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -909,7 +909,7 @@ BOOLEAN CheckFatalError (
     haveError = TRUE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_STAR_SEPARATOR, Temp);
+    ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
     MY_FREE_POOL(Temp);
@@ -932,7 +932,7 @@ BOOLEAN CheckError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** WARN: '%s' %s\n", ErrorName, where);
+    LOG_MSG("** WARN: '%s' %s\n", ErrorName, where);
     #endif
 
     Temp = PoolPrint (L"Error: '%s' %s", ErrorName, where);
@@ -940,7 +940,7 @@ BOOLEAN CheckError (
     Temp = PoolPrint (L"Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("** WARN: '%r' %s\n", Status, where);
+    LOG_MSG("** WARN: '%r' %s\n", Status, where);
     #endif
 #endif
 
@@ -959,7 +959,7 @@ BOOLEAN CheckError (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_STAR_SEPARATOR, Temp);
+    ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
     #endif
 
     MY_FREE_POOL(Temp);
@@ -987,7 +987,7 @@ VOID SwitchToGraphicsAndClear (
 
     #if REFIT_DEBUG > 0
     if (!gotGraphics) {
-        MsgLog ("INFO: Restore Graphics Mode ... %r\n\n", Status);
+        LOG_MSG("INFO: Restore Graphics Mode ... %r\n\n", Status);
     }
     #endif
 } // VOID SwitchToGraphicsAndClear()
@@ -1028,7 +1028,7 @@ VOID BltClearScreen (
 
     #if REFIT_DEBUG > 0
     if (!IsBoot) {
-        MsgLog ("Refresh Screen:");
+        LOG_MSG("Refresh Screen:");
     }
     #endif
 
@@ -1038,8 +1038,8 @@ VOID BltClearScreen (
         // Load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("\n");
-            MsgLog ("  - Get Banner");
+            LOG_MSG("\n");
+            LOG_MSG("  - Get Banner");
             #endif
 
             if (GlobalConfig.BannerFileName) {
@@ -1063,9 +1063,9 @@ VOID BltClearScreen (
                 #if REFIT_DEBUG > 0
                 CHAR16 *StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
-                MsgLog ("%s%s* %s", OffsetNext, StrSpacer, MsgStr);
+                LOG_MSG("%s%s* %s", OffsetNext, StrSpacer, MsgStr);
                 if (!LoggedBanner) {
-                    LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                 }
                 MY_FREE_POOL(MsgStr);
 
@@ -1075,14 +1075,14 @@ VOID BltClearScreen (
                     MenuBackgroundPixel.g,
                     MenuBackgroundPixel.b
                 );
-                MsgLog (
+                LOG_MSG(
                     "%s%s  %s",
                     OffsetNext,
                     StrSpacer,
                     MsgStr
                 );
                 if (!LoggedBanner) {
-                    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LoggedBanner = TRUE;
                 }
                 MY_FREE_POOL(MsgStr);
@@ -1138,9 +1138,9 @@ VOID BltClearScreen (
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Custom Title Banner");
-                MsgLog ("%s    * %s", OffsetNext, MsgStr);
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
                 if (!LoggedBanner) {
-                    LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
                     LoggedBanner = TRUE;
                 }
                 MY_FREE_POOL(MsgStr);
@@ -1169,8 +1169,8 @@ VOID BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("\n");
-            MsgLog ("  - Scale Banner");
+            LOG_MSG("\n");
+            LOG_MSG("  - Scale Banner");
             #endif
 
             if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
@@ -1195,8 +1195,8 @@ VOID BltClearScreen (
 
         // clear and draw banner
         #if REFIT_DEBUG > 0
-        MsgLog ("\n");
-        MsgLog ("  - Clear Screen");
+        LOG_MSG("\n");
+        LOG_MSG("  - Clear Screen");
         #endif
 
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -1208,8 +1208,8 @@ VOID BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            MsgLog ("\n");
-            MsgLog ("  - Show Banner");
+            LOG_MSG("\n");
+            LOG_MSG("  - Show Banner");
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
@@ -1228,8 +1228,8 @@ VOID BltClearScreen (
     else {
         #if REFIT_DEBUG > 0
         if (!IsBoot) {
-            MsgLog ("\n");
-            MsgLog ("  - Clear Screen");
+            LOG_MSG("\n");
+            LOG_MSG("  - Clear Screen");
         }
         #endif
 
@@ -1240,7 +1240,7 @@ VOID BltClearScreen (
 
     #if REFIT_DEBUG > 0
     if (!IsBoot) {
-        MsgLog ("\n\n");
+        LOG_MSG("\n\n");
     }
     #endif
 

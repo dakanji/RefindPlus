@@ -504,7 +504,7 @@ EFI_STATUS StartLegacyImageList (
 
     // close open file handles
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy (BIOS) Loader");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Launching 'Mac-Style' Legacy (BIOS) Loader");
     #endif
 
     UninitRefitLib();
@@ -519,7 +519,7 @@ EFI_STATUS StartLegacyImageList (
     // control returns here when the child image calls Exit()
     if (CheckError (Status, L"Returned From 'Mac-Style' Legacy (BIOS) Loader")) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Returned From 'Mac-Style' Legacy (BIOS) Loader");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Returned From 'Mac-Style' Legacy (BIOS) Loader");
         #endif
 
         if (ErrorInStep != NULL) {
@@ -555,7 +555,7 @@ VOID StartLegacy (
     IsBoot = TRUE;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    ALT_LOG(1, LOG_LINE_NORMAL,
         L"Starting 'Mac-style' Legacy (BIOS) OS:- '%s'",
         SelectionName
     );
@@ -609,7 +609,7 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n\n", MsgStrA);
+            LOG_MSG("** WARN: %s\n\n", MsgStrA);
             #endif
 
             PauseForKey();
@@ -624,7 +624,7 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("** WARN: %s\n", MsgStrA);
+            LOG_MSG("** WARN: %s\n", MsgStrA);
             #endif
 
             MsgStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting";
@@ -633,7 +633,7 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("         %s\n\n", MsgStrB);
+            LOG_MSG("         %s\n\n", MsgStrB);
             #endif
 
             PauseForKey();
@@ -654,7 +654,7 @@ VOID StartLegacyUEFI (
     CHAR16 *MsgStrC = PoolPrint (L"Failure %s", MsgStrB);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    ALT_LOG(1, LOG_LINE_NORMAL,
         L"Launching %s:- '%s'",
         MsgStrA, SelectionName
     );
@@ -673,7 +673,7 @@ VOID StartLegacyUEFI (
     ReinitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"%s", MsgStrC);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStrC);
     #endif
 
     Print(L"%s", MsgStrC);
@@ -734,7 +734,7 @@ VOID AddLegacyEntry (
         LogLineType = LOG_THREE_STAR_SEP;
     }
 
-    LOG(1, LogLineType,
+    ALT_LOG(1, LogLineType,
         L"Adding Legacy Boot Entry for '%s'",
         LegacyTitle
     );
@@ -765,8 +765,8 @@ VOID AddLegacyEntry (
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
 
     #if REFIT_DEBUG > 0
-    MsgLog ("\n");
-    MsgLog ("  - Found '%s' on '%s'", LoaderTitle, VolDesc);
+    LOG_MSG("\n");
+    LOG_MSG("  - Found '%s' on '%s'", LoaderTitle, VolDesc);
     #endif
 
     // create the submenu
@@ -843,8 +843,8 @@ VOID AddLegacyEntryUEFI (
     );
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_BLANK_LINE_SEP, L"X");
-    LOG(1, LOG_THREE_STAR_MID,
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(1, LOG_THREE_STAR_MID,
         L"Adding 'UEFI-Style' Legacy Entry for '%s'",
         Entry->me.Title
     );
@@ -896,8 +896,8 @@ VOID AddLegacyEntryUEFI (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("\n");
-    MsgLog ("  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", BdsOption->Description);
+    LOG_MSG("\n");
+    LOG_MSG("  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", BdsOption->Description);
     #endif
 } // static VOID AddLegacyEntryUEFI()
 
@@ -931,7 +931,7 @@ VOID ScanLegacyUEFI (
         LogLineType = LOG_THREE_STAR_SEP;
     }
     /* Exception for LOG_THREE_STAR_SEP */
-    LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy Boot Options");
+    ALT_LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy Boot Options");
     #endif
 
     FirstLegacyScan = FALSE;
@@ -1068,7 +1068,7 @@ VOID ScanLegacyDisc (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP,
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"Scan for Optical Discs with Mode:- 'Legacy (BIOS)'"
     );
     #endif
@@ -1095,7 +1095,7 @@ VOID ScanLegacyInternal (VOID) {
     REFIT_VOLUME *Volume;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_THIN_SEP,
+    ALT_LOG(1, LOG_LINE_THIN_SEP,
         L"Scan for Internal Disk Volumes with Mode:- 'Legacy (BIOS)'"
     );
     #endif
@@ -1124,7 +1124,7 @@ VOID ScanLegacyExternal (VOID) {
     REFIT_VOLUME *Volume;
 
    #if REFIT_DEBUG > 0
-   LOG(1, LOG_LINE_THIN_SEP,
+   ALT_LOG(1, LOG_LINE_THIN_SEP,
        L"Scan for External Disk Volumes with Mode:- 'Legacy (BIOS)'"
    );
    #endif
@@ -1192,7 +1192,7 @@ VOID WarnIfLegacyProblems (VOID) {
 
         if (found) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL,
+            ALT_LOG(1, LOG_LINE_NORMAL,
                 L"Legacy (BIOS) Support Enabled in RefindPlus but Unavailable in EFI!!"
             );
             #endif
@@ -1210,7 +1210,7 @@ VOID WarnIfLegacyProblems (VOID) {
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            MsgLog ("%s\n\n", MsgStr);
+            LOG_MSG("%s\n\n", MsgStr);
             #endif
 
             PauseForKey();

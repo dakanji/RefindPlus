@@ -44,7 +44,7 @@ RefindPlus-Specific funtionality can be configured by adding the tokens below to
 
 Token | Functionality
 :----: | :----:
-active_csr            |Actively enables or disables the CSR Policy on Macs
+active_csr            |Actively enables or disables the SIP Policy on Macs
 continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended login)
 decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
@@ -58,7 +58,7 @@ direct_gop_renderer   |Provides a potentially improved GOP instance for certain 
 disable_amfi          |Disables AMFI Checks on Mac OS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
-force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
+force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
 ignore_previous_boot  |Disables saving the last booted loader if not required
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
@@ -67,7 +67,7 @@ provide_console_gop   |Fixes issues with GOP on some legacy units
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary Mac OS boot arguments
-text_renderer         |Provides a text renderer that allows text output when otherwise unavailable
+text_renderer         |Provides a text renderer for text output when otherwise unavailable
 uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
 
 In addition to the new functions above, the following upsteam functions have been extended:
@@ -87,10 +87,11 @@ Implementation differences with the upstream base version v0.13.2 are:
   * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
   * Level 0 does not switch logging off but activates the native summary format.
   * Levels 1 and 2 output logs similar to the detailed upstream format.
-    - Level 1 is broadly equivalent to Upstream Level 4 and Upstream Levels 1 to 3 dispensed with
-    - Level 2 is only exposed by setting the `REFIT_DEBUG` build flag to `2` when compiling
-    - Unless Level 2 is exposed at compile time, selected levels above `1` will be capped at LogLevel 1
-    - When Level 2 is exposed at compile time, selected levels above `2` will be capped at LogLevel 2
+    - Level 1 is broadly equivalent to Upstream Level 4 (Upstream Levels 1 to 3 were dispensed with)
+    - Level 2 is only exposed by setting the `REFIT_DEBUG` flag to `2` when compiling
+      * Automate by passing a non-zero integer as a second parameter to the RefindPlus build script
+    - When Level 2 is not exposed, selected levels above `1` will be capped at LogLevel 1
+    - When exposed, selected levels above `2` will be capped at LogLevel 2
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientation screens into account.

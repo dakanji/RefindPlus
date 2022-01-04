@@ -39,7 +39,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -164,7 +164,7 @@ EG_IMAGE * LoadOSIcon(
         BaseName = PoolPrint (L"%s_%s", BootLogo ? L"boot" : L"os", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -176,7 +176,7 @@ EG_IMAGE * LoadOSIcon(
         BaseName = PoolPrint (L"os_%s", FallbackIconName);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to find an icon from '%s'", BaseName);
         #endif
 
         Image = egFindIcon (BaseName, GlobalConfig.IconSizes[ICON_SIZE_BIG]);
@@ -186,7 +186,7 @@ EG_IMAGE * LoadOSIcon(
     // If all of these fail, return the dummy image.
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"Setting dummy image");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Setting dummy image");
         #endif
 
         Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);

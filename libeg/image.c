@@ -56,7 +56,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -210,12 +210,12 @@ EG_IMAGE * egScaleImage (
     UINTN      x_ratio, y_ratio;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scaling Image to %d x %d", NewWidth, NewHeight);
     #endif
 
     if ((Image == NULL) || (Image->Height == 0) || (Image->Width == 0) || (NewWidth == 0) || (NewHeight == 0)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Image is NULL or a Size is 0!!");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Image is NULL or a Size is 0!!");
         #endif
 
         return NULL;
@@ -228,7 +228,7 @@ EG_IMAGE * egScaleImage (
     NewImage = egCreateImage (NewWidth, NewHeight, Image->HasAlpha);
     if (NewImage == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Could Not Create New Image!!");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"In egScaleImage ... Could Not Create New Image!!");
         #endif
 
         return NULL;
@@ -276,7 +276,7 @@ EG_IMAGE * egScaleImage (
     } // for (i...)
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL, L"Scaling Image Completed");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Scaling Image Completed");
     #endif
 
     return NewImage;
@@ -364,7 +364,7 @@ EFI_STATUS egLoadFile (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"In egLoadFile ... Loaded File:- '%s'", FileName);
     #endif
 
     return EFI_SUCCESS;
@@ -468,7 +468,7 @@ EG_IMAGE * egLoadImage (
 
     if (BaseDir == NULL || FileName == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadImage ... Requirements Not Met!!");
         #endif
 
         return NULL;
@@ -478,7 +478,7 @@ EG_IMAGE * egLoadImage (
     Status = egLoadFile (BaseDir, FileName, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"In egLoadImage ... '%r' Returned While Attempting to Load File!!",
             Status
         );
@@ -514,7 +514,7 @@ EG_IMAGE * egLoadIcon (
     }
     else if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In egLoadIcon ... Skipped Loading Icon in Text Screen Mode"
         );
         #endif
@@ -528,7 +528,7 @@ EG_IMAGE * egLoadIcon (
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"In egLoadIcon ... '%r' When Trying to Load Icon:- '%s'!!",
             Status, Path
         );
@@ -545,7 +545,7 @@ EG_IMAGE * egLoadIcon (
     // return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"In egLoadIcon ... Could Not Decode File Data!!"
         );
         #endif
@@ -583,7 +583,7 @@ EG_IMAGE * egLoadIcon (
             );
 
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"In egLoadIcon ... %s", MsgStr);
             #endif
 
             Print(MsgStr);
@@ -613,7 +613,7 @@ EG_IMAGE * egLoadIconAnyType (
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_MID,
+        ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In egLoadIconAnyType ... Skipped Loading Icon in Text Screen Mode"
         );
         #endif
@@ -622,7 +622,7 @@ EG_IMAGE * egLoadIconAnyType (
     }
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID,
+    ALT_LOG(1, LOG_THREE_STAR_MID,
         L"Trying to Load Icon from '%s' with Base Name:- '%s'",
         (StrLen (SubdirName) != 0) ? SubdirName : L"\\",
         BaseName
@@ -638,7 +638,7 @@ EG_IMAGE * egLoadIconAnyType (
     } // while
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    ALT_LOG(1, LOG_LINE_NORMAL,
         L"In egLoadIconAnyType ... %s",
         (Image != NULL) ? L"Loaded Icon" : L"Could Not Load Icon!!"
     );
@@ -703,66 +703,64 @@ EG_IMAGE * egPrepareEmbeddedImage (
     UINTN      CompLen;
     UINTN      PixelCount;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 1 - START");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
 
     // sanity checks
     if (!EmbeddedImage) {
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In egPrepareEmbeddedImage ... 1a - END:- NULL INPUT ... return 'NULL'"
-        );
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         return NULL;
     }
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 2");
+    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
         (
             EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE &&
             EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE
         )
     ) {
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In egPrepareEmbeddedImage ... 2a - END:- INVALID INPUT ... return 'NULL'"
-        );
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
         return NULL;
     }
 
     // allocate image structure and pixel buffer
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 3");
+    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
     NewImage = egCreateImage (EmbeddedImage->Width, EmbeddedImage->Height, WantAlpha);
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 4");
+    //BREAD_CRUMB(L"In %s ... 4", FuncTag);
     if (!NewImage) {
-        LOG(2, LOG_LINE_FORENSIC,
-            L"In egPrepareEmbeddedImage ... 4a - END:- 'egCreateImage' FAILURE ... return 'NULL'"
-        );
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
         return NULL;
     }
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 5");
+    //BREAD_CRUMB(L"In %s ... 5", FuncTag);
     UINT8 *CompStart;
     CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
     CompLen    = EmbeddedImage->DataLength;
     PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 6");
+    //BREAD_CRUMB(L"In %s ... 6", FuncTag);
     // FUTURE: for EG_EICOMPMODE_EFICOMPRESS, decompress whole data block here
 
-    //LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7");
+    //BREAD_CRUMB(L"In %s ... 7", FuncTag);
     if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA
     ) {
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7a 1");
+        BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
         // copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC,
-                L"In egPrepareEmbeddedImage ... 7a 1a 1 - Grey Plane Size:- '%d'",
+
+            BREAD_CRUMB(L"In %s ... 7a 1a 1 - Grey Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
         }
@@ -777,31 +775,33 @@ EG_IMAGE * egPrepareEmbeddedImage (
     else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA
     ) {
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1");
+        BREAD_CRUMB(L"In %s ... 7b 1", FuncTag);
         // copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1a 1");
+            BREAD_CRUMB(L"In %s ... 7b 1a 1", FuncTag);
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC,
-                L"In egPrepareEmbeddedImage ... 7b 1a 2 - Red Plane Size:- '%d'",
+
+            BREAD_CRUMB(L"In %s ... 7b 1a 2 - Red Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
+
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC,
-                L"In egPrepareEmbeddedImage ... 7b 1a 3 - Green Plane Size:- '%d'",
+
+            BREAD_CRUMB(L"In %s ... 7b 1a 3 - Green Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
+
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC,
-                L"In egPrepareEmbeddedImage ... 7b 1a 4 - Blue Plane Size:- '%d'",
+
+            BREAD_CRUMB(L"In %s ... 7b 1a 4 - Blue Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
         }
         else {
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7b 1b 1");
+            BREAD_CRUMB(L"In %s ... 7b 1b 1", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
             egInsertPlane (CompData, PLPTR(NewImage, g), PixelCount);
@@ -811,7 +811,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         }
     }
     else {
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 7c 1");
+        BREAD_CRUMB(L"In %s ... 7c 1", FuncTag);
 
         // Set Colour Planes to 'ForegroundColor' or to Black
         UINT8   PixelValueR = ForegroundColor ? ForegroundColor->r : 0;
@@ -819,7 +819,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         UINT8   PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
 
         #if REFIT_DEBUG > 0
-        MsgLog (
+        LOG_MSG(
             "%s      Colour (Text):- '%02X%02X%02X'",
             OffsetNext,
             PixelValueR,
@@ -835,7 +835,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
 
 
     // Handle Alpha
-    LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8");
+    BREAD_CRUMB(L"In %s ... 8", FuncTag);
     if (
         WantAlpha && (
             EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA ||
@@ -844,45 +844,45 @@ EG_IMAGE * egPrepareEmbeddedImage (
             EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT
         )
     ) {
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1");
+        BREAD_CRUMB(L"In %s ... 8a 1", FuncTag);
         // Alpha is Required and Available
         // Add Alpha Mask if Available and Required
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1a 1");
+            BREAD_CRUMB(L"In %s ... 8a 1a 1", FuncTag);
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, a), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC,
-                L"In egPrepareEmbeddedImage ... 8a 1a 2 - Alpha Plane Size:- '%d'",
+
+            BREAD_CRUMB(L"In %s ... 8a 1a 2 - Alpha Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
         }
         else {
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 1b 1");
+            BREAD_CRUMB(L"In %s ... 8a 1b 1", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, a), PixelCount);
             CompData += PixelCount;
         }
 
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2");
+        BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
         if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT) {
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2a 1");
+            BREAD_CRUMB(L"In %s ... 8a 2a 1", FuncTag);
             egInvertPlane (PLPTR(NewImage, a), PixelCount);
-            LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2a 2");
+
+            BREAD_CRUMB(L"In %s ... 8a 2a 2", FuncTag);
         }
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 3");
+        BREAD_CRUMB(L"In %s ... 8a 3", FuncTag);
     }
     else {
-        LOG(2, LOG_LINE_FORENSIC, L"In egPrepareEmbeddedImage ... 8a 2");
+        BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
         // Alpha is Unavailable or Not Required
         // Default to 'Opaque' if Alpha was Required but Unavailable or to 'Zero' if it was Not Required
         // NB: 'Zero' clears unused bytes and is not the opposite of opaque in this case
         egSetPlane (PLPTR(NewImage, a), WantAlpha ? 255 : 0, PixelCount);
     }
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In egPrepareEmbeddedImage ... 9 - END:- return EG_IMAGE NewImage = '%s'",
+    BREAD_CRUMB(L"In %s ... 9 - END:- return EG_IMAGE NewImage = '%s'", FuncTag,
         NewImage ? L"NewImage Data" : L"NULL"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
     return NewImage;
 } // EG_IMAGE * egPrepareEmbeddedImage()

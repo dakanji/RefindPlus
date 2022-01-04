@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -90,59 +90,64 @@ CHAR16 * FindInitrd (
     REFIT_DIR_ITER       DirIter;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_LINE_NORMAL,
+    ALT_LOG(1, LOG_LINE_NORMAL,
         L"Search for Initrd Matching '%s' in '%s'",
         LoaderPath, Volume->VolName
     );
     #endif
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 1 - START");
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 2");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"FindInitrd";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     FileName = Basename (LoaderPath);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 3");
+    BREAD_CRUMB(L"In %s ... 3", FuncTag);
     KernelVersion = FindNumbers (FileName);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 4");
+    BREAD_CRUMB(L"In %s ... 4", FuncTag);
     Path  = FindPath (LoaderPath);
 
     // Add trailing backslash for root directory; necessary on some systems, but must
     // NOT be added to all directories, since on other systems, a trailing backslash on
     // anything but the root directory causes them to flake out!
     if (StrLen (Path) == 0) {
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 4a 1");
+        BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
         MergeStrings (&Path, L"\\", 0);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 4a 2");
+        BREAD_CRUMB(L"In %s ... 4a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 5");
+    BREAD_CRUMB(L"In %s ... 5", FuncTag);
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path          ? Path          : L"NULL");
-    LOG(1, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName      ? FileName      : L"NULL");
-    LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion ? KernelVersion : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Path                  : '%s'", Path          ? Path          : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"FileName              : '%s'", FileName      ? FileName      : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Kernel Version String : '%s'", KernelVersion ? KernelVersion : L"NULL");
     #endif
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 6");
+    BREAD_CRUMB(L"In %s ... 6", FuncTag);
     DirIterOpen (Volume->RootDir, Path, &DirIter);
 
     // Now add a trailing backslash if it was NOT added earlier, for consistency in
     // building the InitrdName later
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 7");
+    BREAD_CRUMB(L"In %s ... 7", FuncTag);
     if ((StrLen (Path) > 0) && (Path[StrLen (Path) - 1] != L'\\')) {
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 7a 1");
+        BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
         MergeStrings(&Path, L"\\", 0);
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 7a 2");
+
+        BREAD_CRUMB(L"In %s ... 7a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8");
+    BREAD_CRUMB(L"In %s ... 8", FuncTag);
     while (DirIterNext (&DirIter, 2, L"init*,booster*", &DirEntry)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 0");
+        BREAD_CRUMB(L"In %s ... 8a 0", FuncTag);
         InitrdVersion = FindNumbers (DirEntry->FileName);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_LINE_NORMAL,
+        ALT_LOG(1, LOG_LINE_NORMAL,
             L"Checking 'KernelVersion = %s' Against 'InitrdVersion = %s' from '%s'",
             KernelVersion ? KernelVersion : L"NULL",
             InitrdVersion ? InitrdVersion : L"NULL",
@@ -150,122 +155,126 @@ CHAR16 * FindInitrd (
         );
         #endif
 
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 1 - START WHILE LOOP");
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 8a 1 - START WHILE LOOP", FuncTag);
 
 
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2");
+        BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
         if (((KernelVersion != NULL) && (MyStriCmp (InitrdVersion, KernelVersion))) ||
             ((KernelVersion == NULL) && (InitrdVersion == NULL))
         ) {
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 1");
+            BREAD_CRUMB(L"In %s ... 8a 2a 1", FuncTag);
             CurrentInitrdName = AllocateZeroPool (sizeof(STRING_LIST));
 
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 2");
+            BREAD_CRUMB(L"In %s ... 8a 2a 2", FuncTag);
             if (InitrdNames == NULL) {
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 2a 1");
+                BREAD_CRUMB(L"In %s ... 8a 2a 2a 1", FuncTag);
                 InitrdNames = FinalInitrdName = CurrentInitrdName;
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 2a 2");
+
+                BREAD_CRUMB(L"In %s ... 8a 2a 2a 2", FuncTag);
             }
 
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 3");
+            BREAD_CRUMB(L"In %s ... 8a 2a 3", FuncTag);
             if (CurrentInitrdName) {
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 3a 1");
+                BREAD_CRUMB(L"In %s ... 8a 2a 3a 1", FuncTag);
                 CurrentInitrdName->Value = PoolPrint (L"%s%s", Path, DirEntry->FileName);
 
-                LOG(2, LOG_LINE_FORENSIC,
-                    L"In FindInitrd ... 8a 2a 3a 2 - CurrentInitrdName = '%s'",
+                BREAD_CRUMB(L"In %s ... 8a 2a 3a 2 - CurrentInitrdName = '%s'", FuncTag,
                     CurrentInitrdName->Value ? CurrentInitrdName->Value : L"NULL"
                 );
                 if (CurrentInitrdName != FinalInitrdName) {
-                    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 3a 2a 1");
+                    BREAD_CRUMB(L"In %s ... 8a 2a 3a 2a 1", FuncTag);
                     FinalInitrdName->Next = CurrentInitrdName;
                     FinalInitrdName       = CurrentInitrdName;
-                    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 3a 2a 2");
+
+                    BREAD_CRUMB(L"In %s ... 8a 2a 3a 2a 2", FuncTag);
                 }
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 3a 3");
+                BREAD_CRUMB(L"In %s ... 8a 2a 3a 3", FuncTag);
             }
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 4");
+            BREAD_CRUMB(L"In %s ... 8a 2a 4", FuncTag);
         }
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 2a 5");
+        BREAD_CRUMB(L"In %s ... 8a 2a 5", FuncTag);
         MY_FREE_POOL(InitrdVersion);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 8a 3 - END WHILE LOOP");
-        LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 8a 3 - END WHILE LOOP", FuncTag);
+        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     } // while
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9");
+    BREAD_CRUMB(L"In %s ... 9", FuncTag);
     if (InitrdNames) {
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9a 1");
+        BREAD_CRUMB(L"In %s ... 9a 1", FuncTag);
         if (InitrdNames->Next == NULL) {
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9a 1a 1");
+            BREAD_CRUMB(L"In %s ... 9a 1a 1", FuncTag);
             InitrdName = StrDuplicate (InitrdNames -> Value);
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9a 1a 2");
+
+            BREAD_CRUMB(L"In %s ... 9a 1a 2", FuncTag);
         }
         else {
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 1");
+            BREAD_CRUMB(L"In %s ... 9b 1", FuncTag);
             MaxSharedInitrd = CurrentInitrdName = InitrdNames;
             MaxSharedChars = 0;
 
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2");
+            BREAD_CRUMB(L"In %s ... 9b 2", FuncTag);
             while (CurrentInitrdName != NULL) {
-                LOG(2, LOG_BLANK_LINE_SEP, L"X");
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 1 - START WHILE LOOP");
+                ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+                BREAD_CRUMB(L"In %s ... 9b 2a 1 - START WHILE LOOP", FuncTag);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 2");
+                BREAD_CRUMB(L"In %s ... 9b 2a 2", FuncTag);
                 KernelPostNum = MyStrStr (LoaderPath, KernelVersion);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 3");
+                BREAD_CRUMB(L"In %s ... 9b 2a 3", FuncTag);
                 InitrdPostNum = MyStrStr (CurrentInitrdName->Value, KernelVersion);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 4");
+                BREAD_CRUMB(L"In %s ... 9b 2a 4", FuncTag);
                 SharedChars = NumCharsInCommon (KernelPostNum, InitrdPostNum);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 5");
+                BREAD_CRUMB(L"In %s ... 9b 2a 5", FuncTag);
                 if ((SharedChars > MaxSharedChars) ||
                     (
                         SharedChars == MaxSharedChars
                         && StrLen (CurrentInitrdName->Value) < StrLen (MaxSharedInitrd->Value)
                     )
                 ) {
-                    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 5a 1");
+                    BREAD_CRUMB(L"In %s ... 9b 2a 5a 1", FuncTag);
                     MaxSharedChars = SharedChars;
                     MaxSharedInitrd = CurrentInitrdName;
-                    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 5a 2");
+
+                    BREAD_CRUMB(L"In %s ... 9b 2a 5a 2", FuncTag);
                 }
 
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 6");
+                BREAD_CRUMB(L"In %s ... 9b 2a 6", FuncTag);
                 // TODO: Compute number of shared characters & compare with max.
                 CurrentInitrdName = CurrentInitrdName->Next;
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 2a 7");
+
+                BREAD_CRUMB(L"In %s ... 9b 2a 7", FuncTag);
             }
 
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 3");
+            BREAD_CRUMB(L"In %s ... 9b 3", FuncTag);
             if (MaxSharedInitrd) {
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 3a 1");
+                BREAD_CRUMB(L"In %s ... 9b 3a 1", FuncTag);
                 InitrdName = StrDuplicate (MaxSharedInitrd->Value);
-                LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 3a 2");
+
+                BREAD_CRUMB(L"In %s ... 9b 3a 2", FuncTag);
             }
-            LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 4");
+            BREAD_CRUMB(L"In %s ... 9b 4", FuncTag);
         } // if/else InitrdNames->Next == NULL
-        LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 9b 4");
+        BREAD_CRUMB(L"In %s ... 9b 4", FuncTag);
     } // if
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 10");
+    BREAD_CRUMB(L"In %s ... 10", FuncTag);
     DeleteStringList(InitrdNames);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In FindInitrd ... 11");
+    BREAD_CRUMB(L"In %s ... 11", FuncTag);
     MY_FREE_POOL(Path);
     MY_FREE_POOL(FileName);
     MY_FREE_POOL(KernelVersion);
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In FindInitrd ... 12 - END:- return CHAR16 *InitrdName = '%s'",
+    BREAD_CRUMB(L"In %s ... 12 - END:- return CHAR16 *InitrdName = '%s'", FuncTag,
         InitrdName ? InitrdName : L"NULL"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Located Initrd:- '%s'", InitrdName ? InitrdName : L"NULL");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Located Initrd:- '%s'", InitrdName ? InitrdName : L"NULL");
     #endif
     return InitrdName;
 } // static CHAR16 * FindInitrd()
@@ -285,47 +294,50 @@ CHAR16 * AddInitrdToOptions (
 ) {
     CHAR16 *NewOptions = NULL;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 1 - START");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"AddInitrdToOptions";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     if (Options != NULL) {
-        LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 1a 1");
+        BREAD_CRUMB(L"In %s ... 1a 1", FuncTag);
         NewOptions = StrDuplicate (Options);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 1a 2");
+        BREAD_CRUMB(L"In %s ... 1a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2");
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (InitrdPath != NULL) {
-        LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1");
+        BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
         if (StriSubCmp (L"%v", Options)) {
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 1");
+            BREAD_CRUMB(L"In %s ... 2a 1a 1", FuncTag);
             CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 2");
+            BREAD_CRUMB(L"In %s ... 2a 1a 2", FuncTag);
             ReplaceSubstring (&NewOptions, L"%v", InitrdVersion);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 3");
+            BREAD_CRUMB(L"In %s ... 2a 1a 3", FuncTag);
             MY_FREE_POOL(InitrdVersion);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1a 4");
+            BREAD_CRUMB(L"In %s ... 2a 1a 4", FuncTag);
         }
         else if (!StriSubCmp (L"initrd=", Options)) {
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1b 1");
+            BREAD_CRUMB(L"In %s ... 2a 1b 1", FuncTag);
             MergeStrings (&NewOptions, L"initrd=", L' ');
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1b 2");
+            BREAD_CRUMB(L"In %s ... 2a 1b 2", FuncTag);
             MergeStrings (&NewOptions, InitrdPath, 0);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 1b 3");
+            BREAD_CRUMB(L"In %s ... 2a 1b 3", FuncTag);
         }
-        LOG(2, LOG_LINE_FORENSIC, L"In AddInitrdToOptions ... 2a 2");
+        BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In AddInitrdToOptions ... 3 - END:- return CHAR16 *NewOptions = '%s'",
+    BREAD_CRUMB(L"In %s ... 3 - END:- return CHAR16 *NewOptions = '%s'", FuncTag,
         NewOptions ? NewOptions : L"NULL"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
 
@@ -338,32 +350,35 @@ CHAR16 * GetMainLinuxOptions (
 ) {
     CHAR16 *Options = NULL, *InitrdName, *FullOptions = NULL, *KernelVersion;
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 1 - START");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GetMainLinuxOptions";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     Options = GetFirstOptionsFromFile (LoaderPath, Volume);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 2");
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     InitrdName = FindInitrd (LoaderPath, Volume);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 3");
+    BREAD_CRUMB(L"In %s ... 3", FuncTag);
     KernelVersion = FindNumbers (InitrdName);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 4");
+    BREAD_CRUMB(L"In %s ... 4", FuncTag);
     ReplaceSubstring (&Options, KERNEL_VERSION, KernelVersion);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 5");
+    BREAD_CRUMB(L"In %s ... 5", FuncTag);
     FullOptions = AddInitrdToOptions (Options, InitrdName);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GetMainLinuxOptions ... 6");
+    BREAD_CRUMB(L"In %s ... 6", FuncTag);
     MY_FREE_POOL(Options);
     MY_FREE_POOL(InitrdName);
     MY_FREE_POOL(KernelVersion);
 
-    LOG(2, LOG_LINE_FORENSIC,
-        L"In GetMainLinuxOptions ... 7 - END:- return CHAR16 *FullOptions = '%s'",
+    BREAD_CRUMB(L"In %s ... 7 - END:- return CHAR16 *FullOptions = '%s'", FuncTag,
         FullOptions ? FullOptions : L"NULL"
     );
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
     return FullOptions;
 } // static CHAR16 * GetMainLinuxOptions()
 
@@ -416,35 +431,39 @@ VOID GuessLinuxDistribution (
     REFIT_VOLUME  *Volume,
     CHAR16        *LoaderPath
 ) {
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 1 - START");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"GuessLinuxDistribution";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
 
     // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 2");
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     ParseReleaseFile (OSIconName, Volume, L"etc\\lsb-release");
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 3");
+    BREAD_CRUMB(L"In %s ... 3", FuncTag);
     ParseReleaseFile (OSIconName, Volume, L"etc\\os-release");
 
     // Search for clues in the kernel's filename.
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 4");
+    BREAD_CRUMB(L"In %s ... 4", FuncTag);
     if (StriSubCmp (L".fc", LoaderPath)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 4a 1");
+        BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
         MergeStrings (OSIconName, L"fedora", L',');
 
-        LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 4a 2");
+        BREAD_CRUMB(L"In %s ... 4a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 5");
+    BREAD_CRUMB(L"In %s ... 5", FuncTag);
     if (StriSubCmp (L".el", LoaderPath)) {
-        LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 5a 1");
+        BREAD_CRUMB(L"In %s ... 5a 1", FuncTag);
         MergeStrings (OSIconName, L"redhat", L',');
 
-        LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 5a 2");
+        BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
     }
 
-    LOG(2, LOG_LINE_FORENSIC, L"In GuessLinuxDistribution ... 6 - END:- VOID");
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 6 - END:- VOID", FuncTag);
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
 } // VOID GuessLinuxDistribution()
 
 // Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
@@ -461,109 +480,113 @@ VOID AddKernelToSubmenu (
     UINTN                TokenCount;
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"Adding Linux Kernel as SubMenu Entry");
     #endif
 
-    LOG(2, LOG_BLANK_LINE_SEP, L"X");
-    LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 1 - START");
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"AddKernelToSubmenu";
+    #endif
+
+    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     File = ReadLinuxOptionsFile (TargetLoader->LoaderPath, Volume);
 
-    LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2");
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (File == NULL) {
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2a 1");
+        BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
 
         #if REFIT_DEBUG > 0
-        LOG(1, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
+        ALT_LOG(1, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
         #endif
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2a 2");
+        BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
     }
     else {
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 1");
+        BREAD_CRUMB(L"In %s ... 2b 1", FuncTag);
         SubScreen     = TargetLoader->me.SubScreen;
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 2");
+        BREAD_CRUMB(L"In %s ... 2b 2", FuncTag);
         InitrdName    = FindInitrd (FileName, Volume);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 3");
+        BREAD_CRUMB(L"In %s ... 2b 3", FuncTag);
         KernelVersion = FindNumbers (FileName);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4");
+        BREAD_CRUMB(L"In %s ... 2b 4", FuncTag);
         while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
-            LOG(2, LOG_BLANK_LINE_SEP, L"X");
-            LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 1 - START WHILE LOOP");
+            ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            BREAD_CRUMB(L"In %s ... 2b 4a 1 - START WHILE LOOP", FuncTag);
             ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 2");
+            BREAD_CRUMB(L"In %s ... 2b 4a 2", FuncTag);
             SubEntry = InitializeLoaderEntry (TargetLoader);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3");
+            BREAD_CRUMB(L"In %s ... 2b 4a 3", FuncTag);
             // DA-TAG: InitializeLoaderEntry can return NULL
             if (SubEntry != NULL) {
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 1");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 1", FuncTag);
                 SplitPathName (FileName, &VolName, &Path, &SubmenuName);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 2");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 2", FuncTag);
                 MergeStrings (&SubmenuName, L": ", '\0');
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 3");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 3", FuncTag);
                 MergeStrings (
                     &SubmenuName,
                     TokenList[0] ? TokenList[0] : L"Boot Linux",
                     '\0'
                 );
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 4");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 4", FuncTag);
                 MY_FREE_POOL(SubEntry->LoaderPath);
                 MY_FREE_POOL(SubEntry->LoadOptions);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 5");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 5", FuncTag);
                 SubEntry->me.Title = StrDuplicate (SubmenuName);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 6");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 6", FuncTag);
                 LimitStringLength (SubEntry->me.Title, MAX_LINE_LENGTH);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 7");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 7", FuncTag);
                 SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 8");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 8", FuncTag);
                 SubEntry->LoaderPath  = StrDuplicate (FileName);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 9");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 9", FuncTag);
                 CleanUpPathNameSlashes (SubEntry->LoaderPath);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 10");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 10", FuncTag);
                 SubEntry->Volume = CopyVolume (Volume);
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 11");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 11", FuncTag);
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-                LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 3a 12");
+                BREAD_CRUMB(L"In %s ... 2b 4a 3a 12", FuncTag);
             }
-            LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 4");
+            BREAD_CRUMB(L"In %s ... 2b 4a 4", FuncTag);
             FreeTokenLine (&TokenList, &TokenCount);
 
-            LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 4a 5 - END WHILE LOOP");
-            LOG(2, LOG_BLANK_LINE_SEP, L"X");
+            BREAD_CRUMB(L"In %s ... 2b 4a 5 - END WHILE LOOP", FuncTag);
+            ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
         } // while
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 5");
+        BREAD_CRUMB(L"In %s ... 2b 5", FuncTag);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 6");
+        BREAD_CRUMB(L"In %s ... 2b 6", FuncTag);
         MY_FREE_POOL(VolName);
         MY_FREE_POOL(Path);
         MY_FREE_POOL(SubmenuName);
         MY_FREE_POOL(InitrdName);
         MY_FREE_POOL(File);
         MY_FREE_POOL(KernelVersion);
-        LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 2b 7");
+        BREAD_CRUMB(L"In %s ... 2b 7", FuncTag);
     }
-    LOG(2, LOG_LINE_FORENSIC, L"In AddKernelToSubmenu ... 3 - END:- VOID");
+    BREAD_CRUMB(L"In %s ... 3 - END:- VOID", FuncTag);
 
     #if REFIT_DEBUG > 0
-    LOG(1, LOG_THREE_STAR_MID, L"Added Linux Kernel as SubMenu Entry");
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Added Linux Kernel as SubMenu Entry");
     #endif
 } // static VOID AddKernelToSubmenu()
 
@@ -583,7 +606,7 @@ BOOLEAN HasSignedCounterpart(IN REFIT_VOLUME *Volume, IN CHAR16 *FullName) {
     if (NewFile != NULL) {
         if (FileExists(Volume->RootDir, NewFile)) {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Found signed counterpart to '%s'", FullName);
             #endif
 
             retval = TRUE;

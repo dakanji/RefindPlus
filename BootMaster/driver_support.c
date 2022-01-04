@@ -634,9 +634,9 @@ UINTN ScanDriverDir (
     CleanUpPathNameSlashes (Path);
 
     #if REFIT_DEBUG > 0
-    MsgLog ("\n");
-    MsgLog ("Scan '%s' Folder:", Path);
-    MsgLog ("\n");
+    LOG_MSG("\n");
+    LOG_MSG("Scan '%s' Folder:", Path);
+    LOG_MSG("\n");
     #endif
 
     // look through contents of the directory
@@ -666,12 +666,12 @@ UINTN ScanDriverDir (
 
         #if REFIT_DEBUG > 0
         if (RunOnce) {
-            MsgLog ("\n");
+            LOG_MSG("\n");
         }
 
         RunOnce = TRUE;
 
-        MsgLog ("  - %r ... UEFI Driver:- '%s'", Status, FileName);
+        LOG_MSG("  - %r ... UEFI Driver:- '%s'", Status, FileName);
         #endif
 
         MY_FREE_POOL(FileName);
@@ -703,13 +703,13 @@ BOOLEAN LoadDrivers (VOID) {
     #if REFIT_DEBUG > 0
     CHAR16  *MsgNotFound = L"Not Found or Empty";
 
-    LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
 
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    MsgLog ("Load UEFI Drivers from Program Default Folder...");
+    LOG_MSG("Load UEFI Drivers from Program Default Folder...");
     #endif
 
 
@@ -729,11 +729,11 @@ BOOLEAN LoadDrivers (VOID) {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG(1, LOG_LINE_NORMAL,
+            ALT_LOG(1, LOG_LINE_NORMAL,
                 L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, SelfDirectory
             );
-            MsgLog ("  - %s", MsgNotFound);
+            LOG_MSG("  - %s", MsgNotFound);
             #endif
         }
 
@@ -744,8 +744,8 @@ BOOLEAN LoadDrivers (VOID) {
     // Scan additional user-specified driver directories.
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
-        MsgLog ("\n\n");
-        MsgLog ("Load UEFI Drivers from User Defined Folders...");
+        LOG_MSG("\n\n");
+        LOG_MSG("Load UEFI Drivers from User Defined Folders...");
         #endif
 
         i = 0;
@@ -771,11 +771,11 @@ BOOLEAN LoadDrivers (VOID) {
                 }
                 else {
                     #if REFIT_DEBUG > 0
-                    LOG(1, LOG_LINE_NORMAL,
+                    ALT_LOG(1, LOG_LINE_NORMAL,
                         L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, SelfDirectory
                     );
-                    MsgLog ("  - %s", MsgNotFound);
+                    LOG_MSG("  - %s", MsgNotFound);
                     #endif
                 }
             }
@@ -785,9 +785,8 @@ BOOLEAN LoadDrivers (VOID) {
         } // while
     }
 
-
     #if REFIT_DEBUG > 0
-    MsgLog ("\n\n");
+    LOG_MSG("\n\n");
     #endif
 
     #if REFIT_DEBUG > 0
@@ -795,7 +794,7 @@ BOOLEAN LoadDrivers (VOID) {
         L"Processed %d UEFI Driver%s",
         NumFound, (NumFound == 1) ? L"" : L"s"
     );
-    LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
+    ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 

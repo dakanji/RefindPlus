@@ -366,10 +366,8 @@
 #  show_bootscreen  - load Apple Boot Screen if available.
 #                     NB: Needs External program.
 #                         Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
-#                         "Fully Compatible GPUs" are those with native Apple Boot Screen
 #  clean_nvram      - reset NVRAM from RefindPlus.
 #                     NB: Needs External program.
-#                         Requires Apple Firmware.
 #  apple_recovery   - loads Apple Mac Recovery partitions, if present
 #  windows_recovery - boots an OEM Windows recovery tool, if present.
 #                     NB: Also refer to the "windows_recovery_files" option
