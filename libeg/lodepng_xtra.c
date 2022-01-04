@@ -24,7 +24,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -36,14 +36,14 @@
 
 // EFI's equivalent of realloc requires the original buffer's size as an
 // input parameter, which the standard libc realloc does not require. Thus,
-// I've modified lodepng_malloc() to allocate more memory to store this data,
-// and lodepng_realloc() can then read it when required. Because the size is
+// I've modified lodepng_refit_malloc() to allocate more memory to store this data,
+// and lodepng_refit_realloc() can then read it when required. Because the size is
 // stored at the start of the allocated area, these functions are NOT
 // interchangeable with the standard EFI functions; memory allocated via
-// lodepng_malloc() should be freed via lodepng_free(), and myfree() should
+// lodepng_refit_malloc() should be freed via lodepng_refit_free(), and myfree() should
 // NOT be used with memory allocated via AllocatePool() or AllocateZeroPool()!
 
-void* lodepng_malloc(size_t size) {
+void* lodepng_refit_malloc(size_t size) {
    void *ptr;
 
    ptr = AllocateZeroPool(size + sizeof (size_t));
@@ -53,14 +53,14 @@ void* lodepng_malloc(size_t size) {
    } else {
       return NULL;
    }
-} // void* lodepng_malloc()
+} // void* lodepng_refit_malloc()
 
-void lodepng_free (void *ptr) {
+void lodepng_refit_free (void *ptr) {
    if (ptr) {
       ptr = (void *) (((size_t *) ptr) - 1);
       FreePool(ptr);
    }
-} // void lodepng_free()
+} // void lodepng_refit_free()
 
 static size_t report_size(void *ptr) {
    if (ptr)
@@ -69,17 +69,17 @@ static size_t report_size(void *ptr) {
       return 0;
 } // size_t report_size()
 
-void* lodepng_realloc(void *ptr, size_t new_size) {
+void* lodepng_refit_realloc(void *ptr, size_t new_size) {
    size_t *new_pool;
    size_t old_size;
 
-   new_pool = lodepng_malloc(new_size);
+   new_pool = lodepng_refit_malloc(new_size);
    if (new_pool && ptr) {
       old_size = report_size(ptr);
       CopyMem(new_pool, ptr, (old_size < new_size) ? old_size : new_size);
    }
    return new_pool;
-} // lodepng_realloc()
+} // lodepng_refit_realloc()
 
 // Finds length of ASCII string, which MUST be NULL-terminated.
 int MyStrlen(const char *InString) {
@@ -157,7 +157,7 @@ EG_IMAGE * egDecodePNG (
       if (WantAlpha)
          NewImage->PixelData[i].a = LodeData[i].alpha;
    }
-   lodepng_free (PixelData);
+   lodepng_refit_free (PixelData);
 
    return NewImage;
 } // EG_IMAGE * egDecodePNG()

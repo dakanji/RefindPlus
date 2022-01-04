@@ -25,7 +25,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -68,13 +68,13 @@ EG_IMAGE * egDecodeJPEG(IN UINT8 *FileData, IN UINTN FileDataLength, IN UINTN Ic
         JpegData = (jpeg_color *) njGetImage();
 
         // Annoyingly, EFI and NanoJPEG use different ordering of RGB values in
-        // their pixel data representations, so we've got to adjust them.
+        // their pixel data representations, so we must adjust them.
         for (i = 0; i < (NewImage->Height * NewImage->Width); i++) {
             NewImage->PixelData[i].r = JpegData[i].red;
             NewImage->PixelData[i].g = JpegData[i].green;
             NewImage->PixelData[i].b = JpegData[i].blue;
-            // Note: AFAIK, NanoJPEG does not support alpha/transparency, so if we are
-            // asked to do this, set it to be fully opaque.
+            // NB: NanoJPEG does not appear to support alpha/transparency,
+            //     so if requested, set it to be fully opaque.
             if (WantAlpha)
                 NewImage->PixelData[i].a = 255;
         }

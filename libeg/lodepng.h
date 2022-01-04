@@ -22,6 +22,13 @@ freely, subject to the following restrictions:
     3. This notice may not be removed or altered from any source
     distribution.
 */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
+
 
 #ifndef LODEPNG_H
 #define LODEPNG_H
@@ -49,8 +56,8 @@ typedef INT32  int32_t;
 typedef INT16  int16_t;
 typedef INT8   int8_t;
 
-void* lodepng_malloc(size_t size);
-void lodepng_free(void* ptr);
+void* lodepng_refit_malloc(size_t size);
+void lodepng_refit_free(void* ptr);
 
 #else
 #include <string.h> /*for size_t*/
@@ -105,7 +112,7 @@ the custom_zlib field of the compress and decompress settings*/
 #endif
 
 /*Compile the default allocators (C's free, malloc and realloc). If you disable this,
-you can define the functions lodepng_free, lodepng_malloc and lodepng_realloc in your
+you can define the functions lodepng_refit_free, lodepng_refit_malloc and lodepng_refit_realloc in your
 source files with custom allocators.*/
 #ifndef LODEPNG_NO_COMPILE_ALLOCATORS
 #define LODEPNG_COMPILE_ALLOCATORS
