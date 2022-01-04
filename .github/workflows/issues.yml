@@ -5,7 +5,7 @@ on:
   issues:
     types: [opened]
   schedule:
-    - cron: '3 3 */3 * *'
+    - cron: '4 4 */4 * *'
 
 permissions:
   issues: write
@@ -70,8 +70,8 @@ jobs:
             This item has been flagged for closure due to a lack of response.
           close-issue-message: >
             This item has been closed due to a lack of response.
-          days-before-stale: 5
-          days-before-close: 5
+          days-before-stale: 4
+          days-before-close: 4
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
           any-of-issue-labels: 'Queries'
@@ -84,8 +84,8 @@ jobs:
             This item has been flagged for closure due to inactivity.
           close-issue-message: >
             This item has been closed due to inactivity.
-          days-before-stale: 19
-          days-before-close: 5
+          days-before-stale: 20
+          days-before-close: 8
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           exempt-issue-labels: 'Parked,Help-Wanted'
@@ -99,7 +99,7 @@ jobs:
           close-issue-message: >
             This item has been closed due to inactivity.
           days-before-stale: 60
-          days-before-close: 30
+          days-before-close: 28
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
           only-issue-labels: 'Parked'
@@ -220,7 +220,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          iissue-comment:: >
+          issue-comment: >
             This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
           issue-inactive-days: '1'
           include-any-issue-labels: 'Resolved'
@@ -235,7 +235,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
-          issue-inactive-days: '5'
+          issue-inactive-days: '3'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked,Help-Wanted'
           remove-issue-labels: 'Pending,Flagged'

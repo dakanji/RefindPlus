@@ -3,9 +3,9 @@ name: Manage Run Record
 
 on:
   workflow_dispatch:
-  # schedule = 00:00 on the 1st day of each month
+  # schedule = 01:01 on the 1st day of each month
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '1 1 1 * *'
 
 jobs:
 
@@ -20,5 +20,5 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 90
-          keep_minimum_runs: 4
+          retain_days: 180
+          keep_minimum_runs: 0
