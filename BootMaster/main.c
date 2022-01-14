@@ -333,12 +333,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     CHAR16 *MsgStr = PoolPrint (
         L"In Hardware NVRAM ... %r When Setting Variable:- '%s'",
         LogStatus,
-        LogName
+        VariableName
     );
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
-    MY_FREE_POOL(LogName);
 
     /* Disable Forced Native Logging */
     NativeLogger = FALSE;
