@@ -100,7 +100,7 @@ CHAR16 * FindInitrd (
     CHAR16 *FuncTag = L"FindInitrd";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     BREAD_CRUMB(L"In %s ... 2", FuncTag);
     FileName = Basename (LoaderPath);
@@ -117,8 +117,6 @@ CHAR16 * FindInitrd (
     if (StrLen (Path) == 0) {
         BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
         MergeStrings (&Path, L"\\", 0);
-
-        BREAD_CRUMB(L"In %s ... 4a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"In %s ... 5", FuncTag);
@@ -137,8 +135,6 @@ CHAR16 * FindInitrd (
     if ((StrLen (Path) > 0) && (Path[StrLen (Path) - 1] != L'\\')) {
         BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
         MergeStrings(&Path, L"\\", 0);
-
-        BREAD_CRUMB(L"In %s ... 7a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"In %s ... 8", FuncTag);
@@ -155,7 +151,7 @@ CHAR16 * FindInitrd (
         );
         #endif
 
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
         BREAD_CRUMB(L"In %s ... 8a 1 - START WHILE LOOP", FuncTag);
 
 
@@ -170,8 +166,6 @@ CHAR16 * FindInitrd (
             if (InitrdNames == NULL) {
                 BREAD_CRUMB(L"In %s ... 8a 2a 2a 1", FuncTag);
                 InitrdNames = FinalInitrdName = CurrentInitrdName;
-
-                BREAD_CRUMB(L"In %s ... 8a 2a 2a 2", FuncTag);
             }
 
             BREAD_CRUMB(L"In %s ... 8a 2a 3", FuncTag);
@@ -186,8 +180,6 @@ CHAR16 * FindInitrd (
                     BREAD_CRUMB(L"In %s ... 8a 2a 3a 2a 1", FuncTag);
                     FinalInitrdName->Next = CurrentInitrdName;
                     FinalInitrdName       = CurrentInitrdName;
-
-                    BREAD_CRUMB(L"In %s ... 8a 2a 3a 2a 2", FuncTag);
                 }
                 BREAD_CRUMB(L"In %s ... 8a 2a 3a 3", FuncTag);
             }
@@ -197,7 +189,7 @@ CHAR16 * FindInitrd (
         MY_FREE_POOL(InitrdVersion);
 
         BREAD_CRUMB(L"In %s ... 8a 3 - END WHILE LOOP", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
     } // while
 
     BREAD_CRUMB(L"In %s ... 9", FuncTag);
@@ -206,8 +198,6 @@ CHAR16 * FindInitrd (
         if (InitrdNames->Next == NULL) {
             BREAD_CRUMB(L"In %s ... 9a 1a 1", FuncTag);
             InitrdName = StrDuplicate (InitrdNames -> Value);
-
-            BREAD_CRUMB(L"In %s ... 9a 1a 2", FuncTag);
         }
         else {
             BREAD_CRUMB(L"In %s ... 9b 1", FuncTag);
@@ -216,7 +206,7 @@ CHAR16 * FindInitrd (
 
             BREAD_CRUMB(L"In %s ... 9b 2", FuncTag);
             while (CurrentInitrdName != NULL) {
-                ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+                LOG_SEP(L"X");
                 BREAD_CRUMB(L"In %s ... 9b 2a 1 - START WHILE LOOP", FuncTag);
 
                 BREAD_CRUMB(L"In %s ... 9b 2a 2", FuncTag);
@@ -238,28 +228,24 @@ CHAR16 * FindInitrd (
                     BREAD_CRUMB(L"In %s ... 9b 2a 5a 1", FuncTag);
                     MaxSharedChars = SharedChars;
                     MaxSharedInitrd = CurrentInitrdName;
-
-                    BREAD_CRUMB(L"In %s ... 9b 2a 5a 2", FuncTag);
                 }
 
                 BREAD_CRUMB(L"In %s ... 9b 2a 6", FuncTag);
                 // TODO: Compute number of shared characters & compare with max.
                 CurrentInitrdName = CurrentInitrdName->Next;
-
-                BREAD_CRUMB(L"In %s ... 9b 2a 7", FuncTag);
             }
 
             BREAD_CRUMB(L"In %s ... 9b 3", FuncTag);
             if (MaxSharedInitrd) {
                 BREAD_CRUMB(L"In %s ... 9b 3a 1", FuncTag);
                 InitrdName = StrDuplicate (MaxSharedInitrd->Value);
-
-                BREAD_CRUMB(L"In %s ... 9b 3a 2", FuncTag);
             }
             BREAD_CRUMB(L"In %s ... 9b 4", FuncTag);
         } // if/else InitrdNames->Next == NULL
+
         BREAD_CRUMB(L"In %s ... 9b 4", FuncTag);
     } // if
+
     BREAD_CRUMB(L"In %s ... 10", FuncTag);
     DeleteStringList(InitrdNames);
 
@@ -271,7 +257,7 @@ CHAR16 * FindInitrd (
     BREAD_CRUMB(L"In %s ... 12 - END:- return CHAR16 *InitrdName = '%s'", FuncTag,
         InitrdName ? InitrdName : L"NULL"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Located Initrd:- '%s'", InitrdName ? InitrdName : L"NULL");
@@ -282,7 +268,7 @@ CHAR16 * FindInitrd (
 
 // Adds InitrdPath to Options, but only if Options does not already include an
 // initrd= line or a `%v` variable. Done to enable overriding the default initrd
-// selection in a refind_linux.conf file's options list.
+// selection in a refindplus_linux.conf or refind_linux.conf file's options list.
 // If a `%v` substring/variable is found in Options, it is replaced with the
 // initrd version string. This is available to allow for more complex customisation
 // of initrd options.
@@ -298,19 +284,17 @@ CHAR16 * AddInitrdToOptions (
     CHAR16 *FuncTag = L"AddInitrdToOptions";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     if (Options != NULL) {
         BREAD_CRUMB(L"In %s ... 1a 1", FuncTag);
         NewOptions = StrDuplicate (Options);
-
-        BREAD_CRUMB(L"In %s ... 1a 2", FuncTag);
     }
 
     BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (InitrdPath != NULL) {
         BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
-        if (StriSubCmp (L"%v", Options)) {
+        if (FoundSubStr (Options, L"%v")) {
             BREAD_CRUMB(L"In %s ... 2a 1a 1", FuncTag);
             CHAR16 *InitrdVersion = FindNumbers (InitrdPath);
 
@@ -319,17 +303,13 @@ CHAR16 * AddInitrdToOptions (
 
             BREAD_CRUMB(L"In %s ... 2a 1a 3", FuncTag);
             MY_FREE_POOL(InitrdVersion);
-
-            BREAD_CRUMB(L"In %s ... 2a 1a 4", FuncTag);
         }
-        else if (!StriSubCmp (L"initrd=", Options)) {
+        else if (!FoundSubStr (Options, L"initrd=")) {
             BREAD_CRUMB(L"In %s ... 2a 1b 1", FuncTag);
             MergeStrings (&NewOptions, L"initrd=", L' ');
 
             BREAD_CRUMB(L"In %s ... 2a 1b 2", FuncTag);
             MergeStrings (&NewOptions, InitrdPath, 0);
-
-            BREAD_CRUMB(L"In %s ... 2a 1b 3", FuncTag);
         }
         BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
     }
@@ -337,7 +317,7 @@ CHAR16 * AddInitrdToOptions (
     BREAD_CRUMB(L"In %s ... 3 - END:- return CHAR16 *NewOptions = '%s'", FuncTag,
         NewOptions ? NewOptions : L"NULL"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     return NewOptions;
 } // CHAR16 *AddInitrdToOptions()
 
@@ -354,7 +334,7 @@ CHAR16 * GetMainLinuxOptions (
     CHAR16 *FuncTag = L"GetMainLinuxOptions";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     Options = GetFirstOptionsFromFile (LoaderPath, Volume);
 
@@ -378,7 +358,7 @@ CHAR16 * GetMainLinuxOptions (
     BREAD_CRUMB(L"In %s ... 7 - END:- return CHAR16 *FullOptions = '%s'", FuncTag,
         FullOptions ? FullOptions : L"NULL"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     return FullOptions;
 } // static CHAR16 * GetMainLinuxOptions()
 
@@ -435,7 +415,7 @@ VOID GuessLinuxDistribution (
     CHAR16 *FuncTag = L"GuessLinuxDistribution";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
 
     // If on Linux root fs, /etc/os-release or /etc/lsb-release file probably has clues.
@@ -447,23 +427,17 @@ VOID GuessLinuxDistribution (
 
     // Search for clues in the kernel's filename.
     BREAD_CRUMB(L"In %s ... 4", FuncTag);
-    if (StriSubCmp (L".fc", LoaderPath)) {
-        BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
+    if (FoundSubStr (LoaderPath, L".fc")) {
+        BREAD_CRUMB(L"In %s ... 4a 1 - Found Fedora Loader", FuncTag);
         MergeStrings (OSIconName, L"fedora", L',');
-
-        BREAD_CRUMB(L"In %s ... 4a 2", FuncTag);
     }
-
-    BREAD_CRUMB(L"In %s ... 5", FuncTag);
-    if (StriSubCmp (L".el", LoaderPath)) {
-        BREAD_CRUMB(L"In %s ... 5a 1", FuncTag);
+    else if (FoundSubStr (LoaderPath, L".el")) {
+        BREAD_CRUMB(L"In %s ... 4b 1 - Found RedHat Loader", FuncTag);
         MergeStrings (OSIconName, L"redhat", L',');
-
-        BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
     }
 
-    BREAD_CRUMB(L"In %s ... 6 - END:- VOID", FuncTag);
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    BREAD_CRUMB(L"In %s ... 5 - END:- VOID", FuncTag);
+    LOG_SEP(L"X");
 } // VOID GuessLinuxDistribution()
 
 // Add a Linux kernel as a submenu entry for another (pre-existing) Linux kernel entry.
@@ -487,103 +461,99 @@ VOID AddKernelToSubmenu (
     CHAR16 *FuncTag = L"AddKernelToSubmenu";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
     File = ReadLinuxOptionsFile (TargetLoader->LoaderPath, Volume);
 
     BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (File == NULL) {
-        BREAD_CRUMB(L"In %s ... 2a 1", FuncTag);
+        BREAD_CRUMB(L"In %s ... 2a 1 - END:- ReadLinuxOptionsFile FAILED", FuncTag);
+        LOG_SEP(L"X");
 
-        #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_THREE_STAR_END, L"ReadLinuxOptionsFile FAILED!!");
-        #endif
-
-        BREAD_CRUMB(L"In %s ... 2a 2", FuncTag);
+        // Early RETURN
+        return;
     }
-    else {
-        BREAD_CRUMB(L"In %s ... 2b 1", FuncTag);
-        SubScreen     = TargetLoader->me.SubScreen;
 
-        BREAD_CRUMB(L"In %s ... 2b 2", FuncTag);
-        InitrdName    = FindInitrd (FileName, Volume);
+    BREAD_CRUMB(L"In %s ... 3", FuncTag);
+    SubScreen = TargetLoader->me.SubScreen;
 
-        BREAD_CRUMB(L"In %s ... 2b 3", FuncTag);
-        KernelVersion = FindNumbers (FileName);
+    BREAD_CRUMB(L"In %s ... 4", FuncTag);
+    InitrdName = FindInitrd (FileName, Volume);
 
-        BREAD_CRUMB(L"In %s ... 2b 4", FuncTag);
-        while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
-            ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
-            BREAD_CRUMB(L"In %s ... 2b 4a 1 - START WHILE LOOP", FuncTag);
-            ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
+    BREAD_CRUMB(L"In %s ... 5", FuncTag);
+    KernelVersion = FindNumbers (FileName);
 
-            BREAD_CRUMB(L"In %s ... 2b 4a 2", FuncTag);
-            SubEntry = InitializeLoaderEntry (TargetLoader);
+    BREAD_CRUMB(L"In %s ... 6", FuncTag);
+    while ((TokenCount = ReadTokenLine (File, &TokenList)) > 1) {
+        LOG_SEP(L"X");
+        BREAD_CRUMB(L"In %s ... 6a 1 - START WHILE LOOP", FuncTag);
+        ReplaceSubstring (&(TokenList[1]), KERNEL_VERSION, KernelVersion);
 
-            BREAD_CRUMB(L"In %s ... 2b 4a 3", FuncTag);
-            // DA-TAG: InitializeLoaderEntry can return NULL
-            if (SubEntry != NULL) {
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 1", FuncTag);
-                SplitPathName (FileName, &VolName, &Path, &SubmenuName);
+        BREAD_CRUMB(L"In %s ... 6a 2", FuncTag);
+        SubEntry = InitializeLoaderEntry (TargetLoader);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 2", FuncTag);
-                MergeStrings (&SubmenuName, L": ", '\0');
+        BREAD_CRUMB(L"In %s ... 6a 3", FuncTag);
+        // DA-TAG: InitializeLoaderEntry can return NULL
+        if (SubEntry != NULL) {
+            BREAD_CRUMB(L"In %s ... 6a 3a 1", FuncTag);
+            SplitPathName (FileName, &VolName, &Path, &SubmenuName);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 3", FuncTag);
-                MergeStrings (
-                    &SubmenuName,
-                    TokenList[0] ? TokenList[0] : L"Boot Linux",
-                    '\0'
-                );
+            BREAD_CRUMB(L"In %s ... 6a 3a 2", FuncTag);
+            MergeStrings (&SubmenuName, L": ", '\0');
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 4", FuncTag);
-                MY_FREE_POOL(SubEntry->LoaderPath);
-                MY_FREE_POOL(SubEntry->LoadOptions);
+            BREAD_CRUMB(L"In %s ... 6a 3a 3", FuncTag);
+            MergeStrings (
+                &SubmenuName,
+                TokenList[0] ? TokenList[0] : L"Boot Linux",
+                '\0'
+            );
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 5", FuncTag);
-                SubEntry->me.Title = StrDuplicate (SubmenuName);
+            BREAD_CRUMB(L"In %s ... 6a 3a 4", FuncTag);
+            MY_FREE_POOL(SubEntry->LoaderPath);
+            MY_FREE_POOL(SubEntry->LoadOptions);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 6", FuncTag);
-                LimitStringLength (SubEntry->me.Title, MAX_LINE_LENGTH);
+            BREAD_CRUMB(L"In %s ... 6a 3a 5", FuncTag);
+            SubEntry->me.Title = StrDuplicate (SubmenuName);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 7", FuncTag);
-                SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
+            BREAD_CRUMB(L"In %s ... 6a 3a 6", FuncTag);
+            LimitStringLength (SubEntry->me.Title, MAX_LINE_LENGTH);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 8", FuncTag);
-                SubEntry->LoaderPath  = StrDuplicate (FileName);
+            BREAD_CRUMB(L"In %s ... 6a 3a 7", FuncTag);
+            SubEntry->LoadOptions = AddInitrdToOptions (TokenList[1], InitrdName);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 9", FuncTag);
-                CleanUpPathNameSlashes (SubEntry->LoaderPath);
+            BREAD_CRUMB(L"In %s ... 6a 3a 8", FuncTag);
+            SubEntry->LoaderPath = StrDuplicate (FileName);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 10", FuncTag);
-                SubEntry->Volume = CopyVolume (Volume);
-                SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
+            BREAD_CRUMB(L"In %s ... 6a 3a 9", FuncTag);
+            CleanUpPathNameSlashes (SubEntry->LoaderPath);
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 11", FuncTag);
-                AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+            BREAD_CRUMB(L"In %s ... 6a 3a 10", FuncTag);
+            SubEntry->Volume = CopyVolume (Volume);
+            SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_LINUX;
 
-                BREAD_CRUMB(L"In %s ... 2b 4a 3a 12", FuncTag);
-            }
-            BREAD_CRUMB(L"In %s ... 2b 4a 4", FuncTag);
-            FreeTokenLine (&TokenList, &TokenCount);
-
-            BREAD_CRUMB(L"In %s ... 2b 4a 5 - END WHILE LOOP", FuncTag);
-            ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
-        } // while
-
-        BREAD_CRUMB(L"In %s ... 2b 5", FuncTag);
+            BREAD_CRUMB(L"In %s ... 6a 3a 11", FuncTag);
+            AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+        }
+        BREAD_CRUMB(L"In %s ... 6a 4", FuncTag);
         FreeTokenLine (&TokenList, &TokenCount);
 
-        BREAD_CRUMB(L"In %s ... 2b 6", FuncTag);
-        MY_FREE_POOL(VolName);
-        MY_FREE_POOL(Path);
-        MY_FREE_POOL(SubmenuName);
-        MY_FREE_POOL(InitrdName);
-        MY_FREE_POOL(File);
-        MY_FREE_POOL(KernelVersion);
-        BREAD_CRUMB(L"In %s ... 2b 7", FuncTag);
-    }
-    BREAD_CRUMB(L"In %s ... 3 - END:- VOID", FuncTag);
+        BREAD_CRUMB(L"In %s ...6a 5 - END WHILE LOOP", FuncTag);
+        LOG_SEP(L"X");
+    } // while
+
+    BREAD_CRUMB(L"In %s ... 7", FuncTag);
+    FreeTokenLine (&TokenList, &TokenCount);
+
+    BREAD_CRUMB(L"In %s ... 8", FuncTag);
+    MY_FREE_FILE(File);
+    MY_FREE_POOL(Path);
+    MY_FREE_POOL(VolName);
+    MY_FREE_POOL(InitrdName);
+    MY_FREE_POOL(SubmenuName);
+    MY_FREE_POOL(KernelVersion);
+
+    BREAD_CRUMB(L"In %s ... 9 - END:- VOID", FuncTag);
+    LOG_SEP(L"X");
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Added Linux Kernel as SubMenu Entry");

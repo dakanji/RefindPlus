@@ -150,16 +150,12 @@ EFI_GUID           GuidCoreStorage     =   CORE_STORAGE_GUID_VALUE;
 EFI_GUID           GuidAppleTvRec      =    APPLE_TV_RECOVERY_GUID;
 
 
-extern
-EFI_GUID           RefindPlusGuid;
-extern
-BOOLEAN            ScanningLoaders;
+extern EFI_GUID    RefindPlusGuid;
+extern BOOLEAN     ScanningLoaders;
 
 #if REFIT_DEBUG > 0
-extern
-BOOLEAN            LogNewLine;
-extern
-CHAR16            *OffsetNext;
+extern CHAR16     *OffsetNext;
+extern BOOLEAN     LogNewLine;
 #endif
 
 
@@ -488,6 +484,7 @@ EFI_STATUS FindVarsDir (VOID) {
         );
 
         #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_LINE_NORMAL,
             L"Locate/Create Emulated NVRAM for RefindPlus-Specific Items ... In Installation Folder:- '%r'",
             Status
@@ -594,23 +591,11 @@ EFI_STATUS EfivarGetRaw (
         if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
             *VariableSize = (BufferSize) ? BufferSize : 0;
-
-            if (MyStriCmp (VariableName, L"PreviousBoot")) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
-                #endif
-            }
         }
         else {
             MY_FREE_POOL(TmpBuffer);
             *VariableData = NULL;
             *VariableSize = 0;
-        }
-
-        if (MyStriCmp (VariableName, L"PreviousBoot")) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-            #endif
         }
     }
     else if (GlobalConfig.UseNvram ||
@@ -654,13 +639,6 @@ EFI_STATUS EfivarGetRaw (
         if (!EFI_ERROR(Status)) {
             *VariableData = TmpBuffer;
             *VariableSize = (BufferSize) ? BufferSize : 0;
-
-            if (MyStriCmp (VariableName, L"PreviousBoot")) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Previous Boot:- '%s'", TmpBuffer);
-                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-                #endif
-            }
         }
         else {
             MY_FREE_POOL(TmpBuffer);
@@ -833,10 +811,8 @@ VOID AddListElement (
     }
     else if ((*ElementCount & 15) == 0) {
         if (*ElementCount == 0) {
-            // DA-TAG: *ListPtr != NULL && *ElementCount == 0
-            //         Dereference *ListPtr ... just in case
-            //         Do not free ... memory conflicts!!
-            *ListPtr = NULL;
+            // DA-TAG: Dereference *ListPtr ... Do not free
+            MY_SOFT_FREE(*ListPtr);
 
             TmpListPtr = AllocatePool (AllocatePointer);
         }
@@ -1737,9 +1713,6 @@ VOID ScanVolume (
         NativeLogger = FALSE;
     }
 
-    // Prime Line Breaks
-    DoneHeadings = FALSE;
-
     // get device path
     Volume->DevicePath = DuplicateDevicePath (
         DevicePathFromHandle (Volume->DeviceHandle)
@@ -2190,19 +2163,21 @@ VOID VetMultiInstanceAPFS (VOID) {
 } // VOID VetMultiInstanceAPFS()
 
 // Ensure SyncAPFS can be used.
+// This is only run when SyncAPFS is active
 static
 VOID VetSyncAPFS (VOID) {
+    UINTN   i, j;
+    CHAR16 *CheckName = NULL;
+    CHAR16 *TweakName = NULL;
+
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStr = NULL;
     #endif
 
     if (PreBootVolumesCount == 0) {
-        // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
-        GlobalConfig.SyncAPFS = FALSE;
-
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Could Not Positively Identify APFS Partition Types ... Disabling SyncAFPS"
+            L"Could Not Positively Identify APFS Partitions ... Disabling SyncAFPS"
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2211,36 +2186,53 @@ VOID VetSyncAPFS (VOID) {
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
+
+        // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
+        GlobalConfig.SyncAPFS = FALSE;
+
+        // Check for Multi-Instance APFS Containers
+        VetMultiInstanceAPFS();
+
+        // Early Return
+        return;
     }
-    else {
-        UINTN   i, j;
-        CHAR16 *CheckName = NULL;
-        CHAR16 *TweakName = NULL;
 
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"ReMap APFS Volumes");
-        ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-        LOG_MSG("\n\n");
-        LOG_MSG("%s:", MsgStr);
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"ReMap APFS Volume Groups");
+    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("%s:", MsgStr);
+    MY_FREE_POOL(MsgStr);
+
+    for (i = 0; i < SystemVolumesCount; i++) {
+        MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
+    } // for
+    #endif
 
-        for (i = 0; i < SystemVolumesCount; i++) {
-            MsgStr = PoolPrint (L"System Volume:- '%s'", SystemVolumes[i]->VolName);
-            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-            MY_FREE_POOL(MsgStr);
-        } // for
-        #endif
+    // Filter '- Data' string tag out of Volume Group name if present
+    for (i = 0; i < DataVolumesCount; i++) {
+        if (MyStrStr (DataVolumes[i]->VolName, L"- Data")) {
+            for (j = 0; j < SystemVolumesCount; j++) {
+                MY_FREE_POOL(TweakName);
+                TweakName = SanitiseString (SystemVolumes[j]->VolName);
 
-        // Filter '- Data' string tag out of Volume Group name if present
-        for (i = 0; i < DataVolumesCount; i++) {
-            if (MyStrStr (DataVolumes[i]->VolName, L"- Data")) {
-                for (j = 0; j < SystemVolumesCount; j++) {
-                    MY_FREE_POOL(TweakName);
-                    TweakName = SanitiseString (SystemVolumes[j]->VolName);
+                MY_FREE_POOL(CheckName);
+                CheckName = PoolPrint (L"%s - Data", TweakName);
 
+                if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
+                    MY_FREE_POOL(DataVolumes[i]->VolName);
+                    DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
+
+                    break;
+                }
+
+                // Check against raw name string if apporpriate
+                if (!MyStriCmp (SystemVolumes[j]->VolName, TweakName)) {
                     MY_FREE_POOL(CheckName);
-                    CheckName = PoolPrint (L"%s - Data", TweakName);
+                    CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
 
                     if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
                         MY_FREE_POOL(DataVolumes[i]->VolName);
@@ -2248,49 +2240,35 @@ VOID VetSyncAPFS (VOID) {
 
                         break;
                     }
+                }
+            } // for j = 0
 
-                    // Check against raw name string if apporpriate
-                    if (!MyStriCmp (SystemVolumes[j]->VolName, TweakName)) {
-                        MY_FREE_POOL(CheckName);
-                        CheckName = PoolPrint (L"%s - Data", SystemVolumes[j]->VolName);
-
-                        if (MyStriCmp (DataVolumes[i]->VolName, CheckName)) {
-                            MY_FREE_POOL(DataVolumes[i]->VolName);
-                            DataVolumes[i]->VolName = StrDuplicate (SystemVolumes[j]->VolName);
-
-                            break;
-                        }
-                    }
-                } // for j = 0
-
-                MY_FREE_POOL(TweakName);
-                MY_FREE_POOL(CheckName);
-            }
-        } // for i = 0
-
-        #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (
-            L"ReMapped %d APFS Volume%s",
-            SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
-        );
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-
-        if (SystemVolumesCount == 0) {
-            LOG_MSG("%s", OffsetNext);
+            MY_FREE_POOL(TweakName);
+            MY_FREE_POOL(CheckName);
         }
-        else {
-            LOG_MSG("\n\n");
-            LOG_MSG("INFO: ");
-        }
-        LOG_MSG("%s", MsgStr);
+    } // for i = 0
+
+    #if REFIT_DEBUG > 0
+    MsgStr = PoolPrint (
+        L"ReMapped %d APFS Volume Group%s",
+        SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
+    );
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+
+    if (SystemVolumesCount == 0) {
+        LOG_MSG("%s", OffsetNext);
+    }
+    else {
         LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
-        #endif
+        LOG_MSG("INFO: ");
+    }
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n\n");
+    MY_FREE_POOL(MsgStr);
+    #endif
 
-        // Check for Multi-Instance APFS Containers
-        VetMultiInstanceAPFS();
-
-    } // if/else PreBootVolumesCount == 0
+    // Check for Multi-Instance APFS Containers
+    VetMultiInstanceAPFS();
 } // VOID VetSyncAPFS()
 
 static
@@ -2351,7 +2329,10 @@ VOID ScanVolumes (VOID) {
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
 
-    if (SelfVolRun) {
+    if (!SelfVolRun) {
+        MuteLogger = TRUE;
+    }
+    else {
         // Clear Volume Lists if not Scanning for Self Volume
         FreeVolumes (
             &Volumes,
@@ -2395,6 +2376,8 @@ VOID ScanVolumes (VOID) {
         &Handles
     );
     if (EFI_ERROR(Status)) {
+        MuteLogger = FALSE;
+
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)", Status);
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
@@ -2416,6 +2399,8 @@ VOID ScanVolumes (VOID) {
 
     UuidList = AllocateZeroPool (sizeof (EFI_GUID) * HandleCount);
     if (UuidList == NULL) {
+        MuteLogger = FALSE;
+
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
 
@@ -2432,7 +2417,8 @@ VOID ScanVolumes (VOID) {
     }
 
     // first pass: collect information about all handles
-    ScannedOnce = FALSE;
+    DoneHeadings = FALSE;
+    ScannedOnce  = FALSE;
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
@@ -2442,6 +2428,8 @@ VOID ScanVolumes (VOID) {
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         if (Volume == NULL) {
+            MuteLogger = FALSE;
+
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
 
@@ -2504,20 +2492,20 @@ VOID ScanVolumes (VOID) {
             }
 
             if (!DoneHeadings) {
-                LOG_MSG("\n\n                   ");
+                BRK_MOD("\n");
             }
             else if (ScannedOnce) {
                 if (!SkipSpacing && (HandleIndex % 4) == 0 && (HandleCount - HandleIndex) > 2) {
                     if (!SkipSpacing && (HandleIndex % 28) == 0 && (HandleCount - HandleIndex) > 14) {
                         DoneHeadings = FALSE;
-                        LOG_MSG("\n\n                   ");
+                        BRK_MOD("\n\n                   ");
                     }
                     else {
-                        LOG_MSG("\n\n");
+                        BRK_MOD("\n\n");
                     }
                 }
                 else {
-                    LOG_MSG("\n");
+                    BRK_MOD("\n");
                 }
             }
             SkipSpacing = FALSE;
@@ -2558,7 +2546,8 @@ VOID ScanVolumes (VOID) {
                         LOG_MSG("Found MBR Partition Table");
                     }
                     if (FoundMBR || Volume->HasBootCode) {
-                        LOG_MSG(" on Volume Below\n");
+                        LOG_MSG(" on Volume Below");
+                        LOG_MSG("\n");
                     }
                 }
             }
@@ -2634,8 +2623,8 @@ VOID ScanVolumes (VOID) {
                             );
                         }
                     }
-                }
-            }
+                } // if !EFI_ERROR(Status)
+            } // if MyStriCmp Volume->VolName
 
             #if REFIT_DEBUG > 0
             // Allocate Pools for Log Details
@@ -2677,6 +2666,8 @@ VOID ScanVolumes (VOID) {
     MY_FREE_POOL(Handles);
 
     if (!SelfVolSet || !SelfVolRun) {
+        MuteLogger = FALSE;
+
         #if REFIT_DEBUG > 0
         if (!SelfVolSet) {
             MsgStr = StrDuplicate (L"Could Not Set Self Volume!!");
@@ -2688,7 +2679,7 @@ VOID ScanVolumes (VOID) {
         else {
             CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
-            LOG_MSG("INFO: Self Volume:- '%s ::: %s ::: %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
+            LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
             LOG_MSG("%s      Install Dir:- '%s'\n\n", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
             MY_FREE_POOL(SelfGUID);
             MY_FREE_POOL(SelfUUID);
@@ -2814,7 +2805,7 @@ VOID ScanVolumes (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Processed %d Volume%s",
+        L"Enumerated %d Volume%s",
         VolumesCount, (VolumesCount == 1) ? L"" : L"s"
     );
     LOG_MSG("INFO: %s", MsgStr); // Skip Line Break
@@ -2825,6 +2816,8 @@ VOID ScanVolumes (VOID) {
     if (SelfVolRun && GlobalConfig.SyncAPFS) {
         VetSyncAPFS();
     }
+
+    MuteLogger = FALSE;
 } // VOID ScanVolumes()
 
 static

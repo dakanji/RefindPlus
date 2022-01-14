@@ -110,19 +110,13 @@ static
 REFIT_VOLUME * PickOneESP (
     ESP_LIST *AllESPs
 ) {
-    ESP_LIST            *CurrentESP;
-    REFIT_VOLUME        *ChosenVolume  = NULL;
-    CHAR16              *Temp          = NULL;
-    CHAR16              *GuidStr       = NULL;
-    CHAR16              *PartName      = NULL;
-    CHAR16              *FsName        = NULL;
-    CHAR16              *VolName       = NULL;
-    INTN                 i = 1;
-    INTN                 MenuExit;
-    INTN                 DefaultEntry  = 0;
-    MENU_STYLE_FUNC      Style         = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
-    REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
-    REFIT_MENU_ENTRY    *ChosenOption;
+    CHAR16           *Temp          = NULL;
+    CHAR16           *FsName        = NULL;
+    CHAR16           *VolName       = NULL;
+    CHAR16           *GuidStr       = NULL;
+    CHAR16           *PartName      = NULL;
+    REFIT_VOLUME     *ChosenVolume  = NULL;
+    REFIT_MENU_ENTRY *MenuEntryItem = NULL;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"Prompt User to Select an ESP for Installation");
@@ -134,84 +128,99 @@ REFIT_VOLUME * PickOneESP (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"No Eligible ESPs Found");
         #endif
+
+        // Early Return
+        return NULL;
     }
-    else {
-        REFIT_MENU_SCREEN *InstallMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-        if (InstallMenu) {
-            InstallMenu->Title      = StrDuplicate (L"Install RefindPlusr");
-            InstallMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
-            InstallMenu->Hint1      = StrDuplicate (L"Select a Destination and Press 'Enter' or");
-            InstallMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
 
-            AddMenuInfoLine (InstallMenu, L"Select a Partition and Press 'Enter' to Install RefindPlus");
+    REFIT_MENU_SCREEN *InstallMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
+    if (InstallMenu == NULL) {
+        // Early Return
+        return NULL;
+    }
 
-            CurrentESP = AllESPs;
-            while (CurrentESP != NULL) {
-                MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (MenuEntryItem) {
-                    GuidStr       = GuidAsString (&(CurrentESP->Volume->PartGuid));
-                    PartName      = CurrentESP->Volume->PartName;
-                    FsName        = CurrentESP->Volume->FsName;
-                    VolName       = CurrentESP->Volume->VolName;
+    InstallMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_INSTALL);
+    InstallMenu->Title      = StrDuplicate (L"Install RefindPlusr");
+    InstallMenu->Hint1      = StrDuplicate (L"Select a Destination and Press 'Enter' or");
+    InstallMenu->Hint2      = StrDuplicate (L"Press 'Esc' to Return to Main Menu (Without Changes)");
 
-                    if (PartName && (StrLen (PartName) > 0) &&
-                        FsName && (StrLen (FsName) > 0) &&
-                        !MyStriCmp (FsName, PartName)
-                    ) {
-                        MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
-                    }
-                    else if (FsName && (StrLen (FsName) > 0)) {
-                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
-                    }
-                    else if (PartName && (StrLen (PartName) > 0)) {
-                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
-                    }
-                    else if (VolName && (StrLen (VolName) > 0)) {
-                        MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
-                    }
-                    else {
-                        MenuEntryItem->Title = PoolPrint (L"%s - No Name", GuidStr);
-                    }
+    AddMenuInfoLine (InstallMenu, L"Select a Partition and Press 'Enter' to Install RefindPlus");
 
-                    #if REFIT_DEBUG > 0
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
-                    #endif
-
-                    MenuEntryItem->Tag = TAG_RETURN;
-                    MenuEntryItem->Row = i++;
-
-                    AddMenuEntry (InstallMenu, MenuEntryItem);
-
-                    CurrentESP = CurrentESP->NextESP;
-
-                    MY_FREE_POOL(GuidStr);
-                } // if MenuEntryItem
-            } // while
-
-            MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
+    UINTN i = 1;
+    ESP_LIST *CurrentESP = AllESPs;
+    while (CurrentESP != NULL) {
+        MenuEntryItem = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+        if (MenuEntryItem == NULL) {
             FreeMenuScreen (&InstallMenu);
 
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
-                MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
-            );
-            #endif
+            // Early Return
+            return NULL;
+        }
+
+        GuidStr  = GuidAsString (&(CurrentESP->Volume->PartGuid));
+        PartName = CurrentESP->Volume->PartName;
+        FsName   = CurrentESP->Volume->FsName;
+        VolName  = CurrentESP->Volume->VolName;
+
+        if (PartName && (StrLen (PartName) > 0) &&
+            FsName && (StrLen (FsName) > 0) &&
+            !MyStriCmp (FsName, PartName)
+        ) {
+            MenuEntryItem->Title = PoolPrint (L"%s - '%s', AKA '%s'", GuidStr, PartName, FsName);
+        }
+        else if (FsName && (StrLen (FsName) > 0)) {
+            MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, FsName);
+        }
+        else if (PartName && (StrLen (PartName) > 0)) {
+            MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, PartName);
+        }
+        else if (VolName && (StrLen (VolName) > 0)) {
+            MenuEntryItem->Title = PoolPrint (L"%s - '%s'", GuidStr, VolName);
+        }
+        else {
+            MenuEntryItem->Title = PoolPrint (L"%s - No Name", GuidStr);
+        }
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Adding '%s' to UI List of ESPs");
+        #endif
+
+        MenuEntryItem->Tag = TAG_RETURN;
+        MenuEntryItem->Row = i++;
+
+        AddMenuEntry (InstallMenu, MenuEntryItem);
+
+        CurrentESP = CurrentESP->NextESP;
+
+        MY_FREE_POOL(GuidStr);
+    } // while
+
+    INTN           DefaultEntry = 0;
+    REFIT_MENU_ENTRY  *ChosenOption;
+    MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+    UINTN MenuExit = RunGenericMenu (InstallMenu, Style, &DefaultEntry, &ChosenOption);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'PickOneESP'",
+        MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
+    );
+    #endif
 
 
-            if (MenuExit == MENU_EXIT_ENTER) {
-                CurrentESP = AllESPs;
-                while (CurrentESP != NULL) {
-                    Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
-                    if (MyStrStr (ChosenOption->Title, Temp)) {
-                        ChosenVolume = CurrentESP->Volume;
-                    }
-                    CurrentESP = CurrentESP->NextESP;
-                    MY_FREE_POOL(Temp);
-                } // while
+    if (MenuExit == MENU_EXIT_ENTER) {
+        CurrentESP = AllESPs;
+        while (CurrentESP != NULL) {
+            Temp = GuidAsString (&(CurrentESP->Volume->PartGuid));
+            if (MyStrStr (ChosenOption->Title, Temp)) {
+                ChosenVolume = CurrentESP->Volume;
             }
-        } // if InstallMenu
-    } // if !AllEsp
+            CurrentESP = CurrentESP->NextESP;
+            MY_FREE_POOL(Temp);
+        } // while
+    }
+
+    FreeMenuScreen (&InstallMenu);
 
     return ChosenVolume;
 } // REFIT_VOLUME *PickOneESP()
@@ -237,40 +246,50 @@ EFI_STATUS RenameFile (
     ALT_LOG(1, LOG_LINE_NORMAL, L"Trying to Rename '%s' to '%s'", OldName, NewName);
     #endif
 
-    Status = REFIT_CALL_5_WRAPPER(BaseDir->Open, BaseDir, &FilePtr, OldName,
-                                  EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
-    if (Status == EFI_SUCCESS) {
-        Buffer = LibFileInfo (FilePtr);
-        if (Buffer == NULL) {
-            REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
-            return FALSE;
-        }
+    Status = REFIT_CALL_5_WRAPPER(
+        BaseDir->Open, BaseDir,
+        &FilePtr, OldName,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
     }
 
-    if (Status == EFI_SUCCESS) {
-        NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize (NewName);
-        NewInfo = (EFI_FILE_INFO *) AllocateZeroPool (NewInfoSize);
+    Buffer = LibFileInfo (FilePtr);
+    if (Buffer == NULL) {
+        REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
 
-        if (NewInfo != NULL) {
-            CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
-            NewInfo->FileName[0] = 0;
-            StrCat (NewInfo->FileName, NewName);
-            Status = REFIT_CALL_4_WRAPPER(
-                BaseDir->SetInfo,
-                FilePtr,
-                &gEfiFileInfoGuid,
-                NewInfoSize,
-                (VOID *) NewInfo
-            );
-
-            MY_FREE_POOL(NewInfo);
-            MY_FREE_POOL(FilePtr);
-            MY_FREE_POOL(Buffer);
-        }
-        else {
-            Status = EFI_BUFFER_TOO_SMALL;
-        }
+        // Early Return
+        return EFI_BUFFER_TOO_SMALL;
     }
+
+    NewInfoSize = sizeof (EFI_FILE_INFO) + StrSize (NewName);
+    NewInfo = (EFI_FILE_INFO *) AllocateZeroPool (NewInfoSize);
+
+    if (NewInfo != NULL) {
+        REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
+
+        // Early Return
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    CopyMem (NewInfo, Buffer, sizeof (EFI_FILE_INFO));
+    NewInfo->FileName[0] = 0;
+    StrCat (NewInfo->FileName, NewName);
+
+    Status = REFIT_CALL_4_WRAPPER(
+        BaseDir->SetInfo,
+        FilePtr,
+        &gEfiFileInfoGuid,
+        NewInfoSize,
+        (VOID *) NewInfo
+    );
+
+    MY_FREE_POOL(NewInfo);
+    MY_FREE_POOL(FilePtr);
+    MY_FREE_POOL(Buffer);
+
     REFIT_CALL_1_WRAPPER(FilePtr->Close, FilePtr);
 
     return Status;
@@ -301,7 +320,7 @@ EFI_STATUS BackupOldFile (
     }
     MY_FREE_POOL(NewName);
 
-    return (Status);
+    return Status;
 } // EFI_STATUS BackupOldFile()
 
 // Create directories in which RefindPlus will reside.
@@ -332,7 +351,7 @@ EFI_STATUS CreateDirectories (
         MY_FREE_POOL(TheDir);
     } // while
 
-    return (Status);
+    return Status;
 } // CreateDirectories()
 
 static
@@ -353,52 +372,88 @@ EFI_STATUS CopyOneFile (
         &SourceFile, SourceName,
         EFI_FILE_MODE_READ, 0
     );
-
-    if (Status == EFI_SUCCESS) {
-        FileInfo = LibFileInfo (SourceFile);
-        if (FileInfo == NULL) {
-            REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
-            return EFI_NO_RESPONSE;
-        }
-        FileSize = FileInfo->FileSize;
-        MY_FREE_POOL(FileInfo);
-    }
-
-    if (Status == EFI_SUCCESS) {
-        Buffer = AllocateZeroPool (FileSize);
-        if (Buffer == NULL) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-    }
-    if (Status == EFI_SUCCESS) {
-        Status = REFIT_CALL_3_WRAPPER(
-            SourceFile->Read, SourceFile,
-            &FileSize, Buffer
+    if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Error:- '%r' When Opening SourceDir in 'CopyOneFile'",
+            Status
         );
+        #endif
+
+        // Early Return
+        return Status;
     }
 
-    if (Status == EFI_SUCCESS) {
+    FileInfo = LibFileInfo (SourceFile);
+    if (FileInfo == NULL) {
         REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
+
+        // Early Return
+        return EFI_NO_RESPONSE;
     }
+
+    FileSize = FileInfo->FileSize;
+    MY_FREE_POOL(FileInfo);
+
+    Buffer = AllocateZeroPool (FileSize);
+    if (Buffer == NULL) {
+        // Early Return
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    Status = REFIT_CALL_3_WRAPPER(
+        SourceFile->Read, SourceFile,
+        &FileSize, Buffer
+    );
+    if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Error:- '%r' When Reading SourceFile in 'CopyOneFile'",
+            Status
+        );
+        #endif
+
+        // Early Return
+        return Status;
+    }
+
+    REFIT_CALL_1_WRAPPER(SourceFile->Close, SourceFile);
 
     // Write the file to a new location.
-    if (Status == EFI_SUCCESS) {
-        Status = REFIT_CALL_5_WRAPPER(
-            DestDir->Open, DestDir,
-            &DestFile, DestName,
-            EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
+    Status = REFIT_CALL_5_WRAPPER(
+        DestDir->Open, DestDir,
+        &DestFile, DestName,
+        EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE, 0
+    );
+    if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Error:- '%r' When Opening DestDir in 'CopyOneFile'",
+            Status
         );
+        #endif
+
+        // Early Return
+        return Status;
     }
 
-    if (Status == EFI_SUCCESS) {
-        Status = REFIT_CALL_3_WRAPPER(
-            DestFile->Write, DestFile,
-            &FileSize, Buffer
+    Status = REFIT_CALL_3_WRAPPER(
+        DestFile->Write, DestFile,
+        &FileSize, Buffer
+    );
+    if (EFI_ERROR(Status)) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Error:- '%r' When Writing to DestDir in 'CopyOneFile'",
+            Status
         );
+        #endif
+
+        // Early Return
+        return Status;
     }
-    if (Status == EFI_SUCCESS) {
-        Status = REFIT_CALL_1_WRAPPER(DestFile->Close, DestFile);
-    }
+
+    Status = REFIT_CALL_1_WRAPPER(DestFile->Close, DestFile);
 
     MY_FREE_POOL(SourceFile);
     MY_FREE_POOL(DestFile);
@@ -407,13 +462,13 @@ EFI_STATUS CopyOneFile (
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Error:- '%r' When Copying '%s' to '%s'",
-            Status, SourceName, DestName
+            L"Error:- '%r' When Closing DestDir in 'CopyOneFile'",
+            Status
         );
     }
     #endif
 
-    return (Status);
+    return Status;
 } // EFI_STATUS CopyOneFile()
 
 // Copy a single directory (non-recursively)
@@ -443,7 +498,7 @@ EFI_STATUS CopyDirectory (
         MY_FREE_POOL(DirEntry);
     } // while
 
-    return (Status);
+    return Status;
 } // EFI_STATUS CopyDirectory()
 
 // Copy Linux drivers for detected filesystems, but not for undetected filesystems.
@@ -531,7 +586,7 @@ EFI_STATUS CopyDrivers (
 
             case FS_TYPE_HFSPLUS:
                 if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) &&
-                    (!MyStriCmp (L"Apple", ST->FirmwareVendor))
+                    (!AppleFirmware)
                 ) {
                     DriverName = L"hfs";
                     DriverCopied[FS_TYPE_HFSPLUS] = TRUE;
@@ -570,7 +625,7 @@ EFI_STATUS CopyDrivers (
         } // if DriverNam
     } // for
 
-    return (WorstStatus);
+    return WorstStatus;
 } // EFI_STATUS CopyDrivers()
 
 // Copy all the files from the source to *TargetDir
@@ -686,7 +741,7 @@ EFI_STATUS CopyFiles (
     }
     MY_FREE_POOL(SourceDir);
 
-    return (WorstStatus);
+    return WorstStatus;
 } // EFI_STATUS CopyFiles()
 
 // Create the BOOT.CSV file used by the fallback.efi/fbx86.efi program.
@@ -820,10 +875,12 @@ UINTN FindBootNum (
     UINTN            Size,
     BOOLEAN         *AlreadyExists
 ) {
-    UINTN   i = 0, VarSize, Status;
+    EFI_STATUS      Status;
+    UINTN    VarSize, i, j;
     CHAR16  *VarName, *Contents = NULL;
 
     *AlreadyExists = FALSE;
+    i = 0;
     do {
         VarName = PoolPrint (L"Boot%04x", i++);
         Status = EfivarGetRaw (
@@ -845,7 +902,9 @@ UINTN FindBootNum (
         i = 0x10000;
     }
 
-    return (i - 1);
+    j = (i - 1);
+
+    return j;
 } // UINTN FindBootNum()
 
 // Construct an NVRAM entry, but do NOT write it to NVRAM. The entry
@@ -865,8 +924,8 @@ EFI_STATUS ConstructBootEntry (
     UINTN       *Size
 ) {
     EFI_DEVICE_PATH *DevicePath;
-     UINTN           Status = EFI_SUCCESS, DevPathSize;
-     CHAR8           *Working;
+    UINTN           Status = EFI_SUCCESS, DevPathSize;
+    CHAR8           *Working;
 
     DevicePath  = FileDevicePath (TargetVolume, Loader);
     DevPathSize = DevicePathSize (DevicePath);
@@ -988,7 +1047,7 @@ EFI_STATUS CreateNvramEntry (
         Status = SetBootDefault (BootNum);
     }
 
-    return (Status);
+    return Status;
 } // VOID CreateNvramEntry()
 
 /***********************
@@ -1161,14 +1220,12 @@ UINTN ConfirmBootOptionOperation (
 
     REFIT_MENU_ENTRY *LocalMenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     LocalMenuEntryYes->Title = StrDuplicate (L"Yes");
-    LocalMenuEntryYes->Tag   = TAG_RETURN;
-    LocalMenuEntryYes->Row   = 1;
+    LocalMenuEntryYes->Tag   = TAG_YES;
     AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryYes);
 
     REFIT_MENU_ENTRY *LocalMenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     LocalMenuEntryNo->Title = StrDuplicate (L"No");
-    LocalMenuEntryNo->Tag   = TAG_RETURN;
-    LocalMenuEntryNo->Row   = 1;
+    LocalMenuEntryNo->Tag   = TAG_NO;
     AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryNo);
 
     INTN           DefaultEntry = 1;
@@ -1178,14 +1235,12 @@ UINTN ConfirmBootOptionOperation (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(2, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call in 'ConfirmBootOptionOperation'",
+        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ConfirmBootOptionOperation'",
         MenuExit, MenuExitInfo (MenuExit), ChosenOption->Title
     );
     #endif
 
-    if (MyStriCmp (ChosenOption->Title, L"No")
-        || MenuExit != MENU_EXIT_ENTER
-    ) {
+    if (MenuExit != MENU_EXIT_ENTER || ChosenOption->Tag != TAG_YES) {
         Operation = EFI_BOOT_OPTION_DO_NOTHING;
     }
 
@@ -1210,17 +1265,9 @@ UINTN PickOneBootOption (
     IN OUT UINTN       *BootOrderNum
 ) {
     CHAR16              *Filename      = NULL;
-    INTN                 DefaultEntry  = 0;
-    INTN                 MenuExit;
     UINTN                Operation     = EFI_BOOT_OPTION_DO_NOTHING;
     REFIT_VOLUME        *Volume        = NULL;
-    MENU_STYLE_FUNC      Style         = TextMenuStyle;
-    REFIT_MENU_ENTRY    *ChosenOption;
     REFIT_MENU_ENTRY    *MenuEntryItem = NULL;
-
-    if (AllowGraphicsMode) {
-        Style = GraphicsMenuStyle;
-    }
 
     if (!Entries) {
         DisplaySimpleMessage (L"Information", L"Firmware BootOrder List is Unavailable!!");
@@ -1228,8 +1275,8 @@ UINTN PickOneBootOption (
     else {
         REFIT_MENU_SCREEN *PickBootOptionMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
         if (PickBootOptionMenu) {
-            PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
             PickBootOptionMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_FUNC_BOOTORDER);
+            PickBootOptionMenu->Title      = StrDuplicate (L"Manage Firmware Boot Order");
             PickBootOptionMenu->Hint1      = StrDuplicate (
                 L"Select an Option and Press 'Enter' to make it the Default, Press '-' or"
             );
@@ -1271,15 +1318,17 @@ UINTN PickOneBootOption (
                 MenuEntryItem->Row = Entries->BootEntry.BootNum;
                 AddMenuEntry (PickBootOptionMenu, MenuEntryItem);
 
-                // DA-TAG: Revisit This
-                // Do not free 'Volume' ... just set to NULL
-                Volume = NULL;
+                // DA-TAG: Dereference 'Volume' ... Do not free
+                MY_SOFT_FREE(Volume);
                 MY_FREE_POOL(Filename);
 
                 Entries = Entries->NextBootEntry;
             } while (Entries != NULL);
 
-            MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
+            INTN           DefaultEntry = 0;
+            REFIT_MENU_ENTRY  *ChosenOption;
+            MENU_STYLE_FUNC Style = (AllowGraphicsMode) ? GraphicsMenuStyle : TextMenuStyle;
+            UINTN MenuExit = RunGenericMenu (PickBootOptionMenu, Style, &DefaultEntry, &ChosenOption);
 
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL,

@@ -42,7 +42,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
@@ -174,8 +174,6 @@ UINTN RunMainMenu (
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);
 CHAR16 * MenuExitInfo (IN UINTN MenuExit);
-
-ENTRY_TYPE GetMenuEntryType (REFIT_MENU_ENTRY *Entry);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
 

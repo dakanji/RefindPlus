@@ -26,7 +26,7 @@
 # this option if such negative effects are observed. This option only applies to Mac OS.
 # NB: This functionality is only available on TianoCore Builds.
 #
-# Verbose APFS text is allowed (if genereated) when commented out
+# Verbose APFS text is allowed (if generated) when commented out
 #
 #decline_apfsmute
 
@@ -110,6 +110,7 @@
 # Refindplus. Hence, scanning for the files typically just slows the
 # RefindPlus boot process down. When active, this speeds booting
 # RefindPlus up by skipping scanning volumes for these files.
+#
 # NB: This token overrides the "external_hidden_icons" and
 # the "prefer_hidden_icons" tokens when it is active.
 #
@@ -130,6 +131,7 @@
 # other image icon files. This permits flexibility in theming loaders by
 # positioning such files for loading by RefindPlus. Note however, that
 # the "ignore_hidden_icons" option takes priority over this setting.
+#
 # NB: ".VolumeIcon" icon files can be in any supported format ...
 # ICNS (*.icns), BMP (*.bmp), PNG (*.png), or JPG (*.jpg/jpeg).
 #
@@ -272,15 +274,16 @@
 #
 #active_csr 1
 
-# As of Mac OS v11.x (Big Sur), the previous default SIP/SSV settings which had all included
-# the "CSR_ALLOW_APPLE_INTERNAL" bit may leave Macs not able to receive "Over The Air" (OTA)
-# updates from Apple. Mac OS v11.x (and later) remove this bit on boot if detected but the
+# As of Mac OS 11.x (Big Sur), the previous default SIP/SSV settings, which had all included
+# the CSR_ALLOW_APPLE_INTERNAL bit, may leave Macs not able to receive "Over The Air" (OTA)
+# updates from Apple. Mac OS 11.x (and later) remove this bit on boot if detected but the
 # attempted removal may fail when booting into Mac OS via non-standard path ways such as
 # RefindPlus. It is also possible that Apple will remove this remediation feature once
-# Mac models supporting Mac OS v10.15 (Catalina) are deemed by Apple to be obsolete.
+# Mac models supporting Mac OS 10.15 (Catalina) are deemed to be obsolete by Apple.
+#
 # When this token is set, RefindPlus will remove this bit from the saved CSR bits
 # when booting into Mac OS, OpenCore or Clover similar to the process undertaken
-# in Mac OS v11.x and later. This setting can also be used with older versions.
+# in Mac OS 11.x and later. This setting can also be used with older versions.
 #
 # Inactive when commented out (Takes no action on "APPLE_INTERNAL" bit)
 #
@@ -322,6 +325,7 @@
 # can make it difficult to debug problems. However, using graphics mode
 # may prevent crashes in some instances. Specifying an empty list will
 # set RefindPlus up to boot all types of loaders in text mode.
+#
 # Valid options:
 #   linux       - A Linux kernel with EFI stub loader
 #   grub        - The GRUB (Legacy or 2) boot loader
@@ -339,10 +343,10 @@
 # and tear on the motherboard's NVRAM. In situations where the NVRAM is
 # old and worn out, it may fail to work and lead to an inability to boot.
 # Storing variables on disk is a viable alternative and RefindPlus can save
-# its variables to a folder on the filesystem instead. However, this will not
+# its variables to a folder on the filesystem instead. This will however not
 # work if RefindPlus is on a filesystem that is read-only to the EFI, such as
 # HFS+ volumes. In such cases, an attempt to write to the first ESP RefindPlus
-# can identify will be made. If this attempt is not successful, the variable will
+# can identify will be made. If the attempt is not successful, the variable will
 # not be saved and this fact will be logged if running the debug version. NB: This
 # option only applies to RefindPlus variables such as the PreviousBoot, HiddenTags,
 # HiddenTools, and HiddenLegacy variables and does not apply to any variables from
@@ -489,8 +493,8 @@
 # after the timeout period has passed. When this option is activated,
 # RefindPlus will instead attempt to shut down the computer.
 #
-# CAUTION: MANY COMPUTERS WILL HANG OR REBOOT INSTEAD! Macs and more
-# recent UEFI-based PCs are most likely to work with this feature.
+# !!!*** MANY COMPUTERS WILL HANG OR REBOOT INSTEAD ***!!!
+# Macs and recent UEFI-PCs are most likely to work with this feature.
 #
 # Boots the default selection on timeout when commented out
 #
@@ -913,25 +917,25 @@
 # The symptom on Windows is "Hyper-V" not working even if the CPU
 # meets the minimum requirements (HW assisted virtualisation and SLAT)
 #
-# DO NOT SET THIS EXCEPT ON INTEL CPUs THAT SUPPORT VMX! See
+# !!!*** ONLY SET ON INTEL CPUS WITH VMX SUPPORT ***!!!
+# Refer to the link below for more on this subject:
 # http://www.thomas-krenn.com/en/wiki/Activating_the_Intel_VT_Virtualization_Feature
-# for more on this subject.
 #
 # Inactive when commented out (Does not try to enable and lock the MSR)
 #
 #enable_and_lock_vmx
 
 # Tell a Mac's EFI that Mac OS is about to be launched, even when it is not.
-# This option causes some Macs to initialise their hardware differently from
-# when a third-party OS is launched normally. In some cases (particularly on
-# Macs with multiple video cards), using this option can cause hardware to
-# work that would not otherwise work. On the other hand, using this option
-# when it is not necessary can cause hardware (such as keyboards and mice)
-# to become inaccessible. Therefore, this option should only be enabled
-# when problems with some hardware devices are experienced on non-Apple
-# operating systems. When needed, a value of "10.9" usually works, but
-# other values can be experimented with. This feature has no effect
-# on non-Apple computers.
+# This option causes some Macs to initialise their hardware in a different
+# way to how it is normally initialise when a third-party OS is launched.
+# In some cases, particularly on Macs running multiple video cards, this
+# option can cause hardware to work when they would not otherwise work.
+# On the other hand however, the use of this option when not required
+# can make some hardware, typically keyboards and mice, inaccessible.
+# Hence, this option should only be used when experiencing problems
+# with some hardware devices on non-Apple operating systems. When
+# needed, a value of "10.9" usually works, but other values may
+# also work. This option has no effect on non-Apple computers.
 #
 # Inactive when commented out (No Mac OS version spoofing)
 #

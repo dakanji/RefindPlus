@@ -1,8 +1,8 @@
 /** @file
  * AmendSysTable.c
- * Amends the SystemTable to provide CreateEventEx and a UEFI 2.x Revision Number
+ * Amends the SystemTable to provide CreateEventEx and a UEFI 2.3 Revision Number
  *
- * Copyright (c) 2020 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2020 Joe van Tunen (joevt@shaw.ca)
  * Portions Copyright (c) 2004-2008 The Intel Corporation
  *
@@ -10,9 +10,10 @@
  * WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#ifdef __MAKEWITH_GNUEFI
-
 EFI_STATUS AmendSysTable (VOID);
+
+// Check Compile Type - START
+#ifdef __MAKEWITH_GNUEFI // Compile Type = GNU_EFI
 
 /**
   @retval EFI_INCOMPATIBLE_VERSION  Running on incompatible GNUEFI compiled version
@@ -22,7 +23,7 @@ EFI_STATUS AmendSysTable (VOID) {
     return EFI_INCOMPATIBLE_VERSION;
 }
 
-#else
+#else // Compile Type = OTHER - TIANOCORE
 
 #include "../BootMaster/global.h"
 #include "../include/refit_call_wrapper.h"
@@ -30,8 +31,7 @@ EFI_STATUS AmendSysTable (VOID) {
 #include "../../MdeModulePkg/Core/Dxe/Event/Event.h"
 
 #define EFI_FIELD_OFFSET(TYPE, Field) ((UINTN) (&(((TYPE *) 0)->Field)))
-#define MIN_EFI_REVISION   EFI_2_00_SYSTEM_TABLE_REVISION
-#define BASE_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
+#define TARGET_EFI_REVISION  EFI_2_30_SYSTEM_TABLE_REVISION
 
 EFI_CPU_ARCH_PROTOCOL   *gCpu       = NULL;
 EFI_SMM_BASE2_PROTOCOL  *gSmmBase2  = NULL;
@@ -43,8 +43,7 @@ EFI_RUNTIME_ARCH_PROTOCOL gRuntimeTemplate = {
         sizeof (UINT64) -
         (sizeof (EFI_MEMORY_DESCRIPTOR) % sizeof (UINT64)),
     EFI_MEMORY_DESCRIPTOR_VERSION, 0,
-    NULL, NULL,
-    FALSE, FALSE
+    NULL, NULL, FALSE, FALSE
 };
 
 UINTN                       gEventPending      = 0;
@@ -62,13 +61,13 @@ UINT32 mEventTable[] = {
     EVT_TIMER|EVT_NOTIFY_WAIT
 };
 
-EFI_TPL EFIAPI FakeRaiseTpl (IN EFI_TPL  NewTpl);
-VOID    EFIAPI FakeRestoreTpl (IN EFI_TPL  NewTpl);
-VOID           FakeSetInterruptState (IN BOOLEAN  Enable);
-VOID           FakeDispatchEventNotifies (IN EFI_TPL  Priority);
-VOID           FakeAcquireLock (IN EFI_LOCK  *Lock);
-VOID           FakeReleaseLock (IN EFI_LOCK  *Lock);
-EFI_STATUS     FakeCreateEventEx (
+EFI_TPL EFIAPI OurRaiseTpl (IN EFI_TPL  NewTpl);
+VOID    EFIAPI OurRestoreTpl (IN EFI_TPL  NewTpl);
+VOID           OurSetInterruptState (IN BOOLEAN  Enable);
+VOID           OurDispatchEventNotifies (IN EFI_TPL  Priority);
+VOID           OurAcquireLock (IN EFI_LOCK  *Lock);
+VOID           OurReleaseLock (IN EFI_LOCK  *Lock);
+EFI_STATUS     OurCreateEventEx (
     UINT32             Type,
     EFI_TPL            NotifyTpl,
     EFI_EVENT_NOTIFY   NotifyFunction,
@@ -81,7 +80,7 @@ EFI_STATUS     FakeCreateEventEx (
   Set Interrupt State.
   @param Enable: The state of enable or disable interrupt
 **/
-VOID FakeSetInterruptState (
+VOID OurSetInterruptState (
     IN BOOLEAN  Enable
 ) {
     EFI_STATUS  Status;
@@ -90,11 +89,13 @@ VOID FakeSetInterruptState (
     if (gCpu == NULL) {
         return;
     }
-    else if (!Enable) {
+
+    if (!Enable) {
         gCpu->DisableInterrupt (gCpu);
         return;
     }
-    else if (gSmmBase2 == NULL) {
+
+    if (gSmmBase2 == NULL) {
         gCpu->EnableInterrupt (gCpu);
         return;
     }
@@ -103,19 +104,19 @@ VOID FakeSetInterruptState (
     if (!EFI_ERROR(Status) && !InSmm) {
         gCpu->EnableInterrupt (gCpu);
     }
-}
+} // VOID OurSetInterruptState()
 
 /**
   Dispatches pending events.
   @param Priority: Task priority level of event notifications to dispatch
 **/
-VOID FakeDispatchEventNotifies (
+VOID OurDispatchEventNotifies (
     IN EFI_TPL  Priority
 ) {
     IEVENT        *Event;
     LIST_ENTRY    *Head;
 
-    FakeAcquireLock (&gEventQueueLock);
+    OurAcquireLock (&gEventQueueLock);
     ASSERT (gEventQueueLock.OwnerTpl == Priority);
     Head = &gEventQueue[Priority];
 
@@ -137,7 +138,7 @@ VOID FakeDispatchEventNotifies (
             Event->SignalCount = 0;
         }
 
-        FakeReleaseLock (&gEventQueueLock);
+        OurReleaseLock (&gEventQueueLock);
 
         // Notify this event
         ASSERT (Event->NotifyFunction != NULL);
@@ -149,12 +150,12 @@ VOID FakeDispatchEventNotifies (
         );
 
         // Check for next pending event
-        FakeAcquireLock (&gEventQueueLock);
+        OurAcquireLock (&gEventQueueLock);
     } // while
 
     gEventPending &= ~((UINTN) (1) << Priority);
-    FakeReleaseLock (&gEventQueueLock);
-}
+    OurReleaseLock (&gEventQueueLock);
+} // VOID OurDispatchEventNotifies()
 
 /**
   Raise the task priority level to the new level.
@@ -162,7 +163,7 @@ VOID FakeDispatchEventNotifies (
   @param  NewTpl:  New task priority level
   @return The previous task priority level
 **/
-EFI_TPL EFIAPI FakeRaiseTpl (
+EFI_TPL EFIAPI OurRaiseTpl (
     IN EFI_TPL  NewTpl
 ) {
     EFI_TPL     OldTpl;
@@ -181,23 +182,23 @@ EFI_TPL EFIAPI FakeRaiseTpl (
     }
     ASSERT (VALID_TPL (NewTpl));
 
-    // If raising to high level, disable interrupts
+    // Disable interrupts if raising to high level
     if (NewTpl >= TPL_HIGH_LEVEL  &&  OldTpl < TPL_HIGH_LEVEL) {
-        FakeSetInterruptState (FALSE);
+        OurSetInterruptState (FALSE);
     }
 
     // Set the new value
     gEfiCurrentTpl = NewTpl;
 
     return OldTpl;
-}
+} // EFI_TPL EFIAPI OurRaiseTpl()
 
 /**
   Lowers the task priority to the previous value.   If the new
   priority unmasks events at a higher priority, they are dispatched.
   @param  NewTpl:  New, lower, task priority
 **/
-VOID EFIAPI FakeRestoreTpl (
+VOID EFIAPI OurRestoreTpl (
     IN EFI_TPL NewTpl
 ) {
     EFI_TPL    OldTpl;
@@ -231,9 +232,9 @@ VOID EFIAPI FakeRestoreTpl (
 
         gEfiCurrentTpl = PendingTpl;
         if (gEfiCurrentTpl < TPL_HIGH_LEVEL) {
-            FakeSetInterruptState (TRUE);
+            OurSetInterruptState (TRUE);
         }
-        FakeDispatchEventNotifies (gEfiCurrentTpl);
+        OurDispatchEventNotifies (gEfiCurrentTpl);
     } // while
 
     // Set new value
@@ -241,9 +242,9 @@ VOID EFIAPI FakeRestoreTpl (
 
     // Ensure interrupts are enabled if lowering below HIGH_LEVEL
     if (gEfiCurrentTpl < TPL_HIGH_LEVEL) {
-        FakeSetInterruptState (TRUE);
+        OurSetInterruptState (TRUE);
     }
-}
+} // VOID EFIAPI OurRestoreTpl()
 
 /**
   Raising to the task priority level of the mutual exclusion
@@ -251,15 +252,15 @@ VOID EFIAPI FakeRestoreTpl (
   @param  Lock:  The lock to acquire
   @return Lock owned
 **/
-VOID FakeAcquireLock (
+VOID OurAcquireLock (
     IN EFI_LOCK  *Lock
 ) {
     ASSERT (Lock != NULL);
     ASSERT (Lock->Lock == EfiLockReleased);
 
-    Lock->OwnerTpl = FakeRaiseTpl (Lock->Tpl);
+    Lock->OwnerTpl = OurRaiseTpl (Lock->Tpl);
     Lock->Lock     = EfiLockAcquired;
-}
+} // VOID OurAcquireLock()
 
 /**
   Releases ownership of the mutual exclusion lock, and
@@ -267,7 +268,7 @@ VOID FakeAcquireLock (
   @param  Lock:  The lock to release
   @return Lock unowned
 **/
-VOID FakeReleaseLock (
+VOID OurReleaseLock (
     IN EFI_LOCK  *Lock
 ) {
     EFI_TPL Tpl;
@@ -278,11 +279,11 @@ VOID FakeReleaseLock (
     Tpl        = Lock->OwnerTpl;
     Lock->Lock = EfiLockReleased;
 
-    FakeRestoreTpl (Tpl);
-}
+    OurRestoreTpl (Tpl);
+} // VOID OurReleaseLock()
 
 
-EFI_STATUS FakeCreateEventEx (
+EFI_STATUS OurCreateEventEx (
     IN        UINT32             Type,
     IN        EFI_TPL            NotifyTpl,
     IN        EFI_EVENT_NOTIFY   NotifyFunction OPTIONAL,
@@ -299,7 +300,7 @@ EFI_STATUS FakeCreateEventEx (
     // Check for invalid NotifyTpl if a notify event type
     if ((Type & (EVT_NOTIFY_WAIT | EVT_NOTIFY_SIGNAL)) != 0) {
         if (NotifyTpl != TPL_APPLICATION &&
-            NotifyTpl != TPL_CALLBACK &&
+            NotifyTpl != TPL_CALLBACK    &&
             NotifyTpl != TPL_NOTIFY
         ) {
             return EFI_INVALID_PARAMETER;
@@ -352,7 +353,7 @@ EFI_STATUS FakeCreateEventEx (
     // Check parameters if notify event type
     if ((Type & (EVT_NOTIFY_WAIT | EVT_NOTIFY_SIGNAL)) != 0) {
         // Check for invalid NotifyFunction or NotifyTpl
-        if ((NotifyFunction == NULL) ||
+        if ((NotifyFunction == NULL)       ||
             (NotifyTpl <= TPL_APPLICATION) ||
             (NotifyTpl >= TPL_HIGH_LEVEL)
         ) {
@@ -367,12 +368,9 @@ EFI_STATUS FakeCreateEventEx (
     }
 
     // Allocate and initialize a new event structure.
-    if ((Type & EVT_RUNTIME) != 0) {
-        IEvent = AllocateRuntimeZeroPool (sizeof (IEVENT));
-    }
-    else {
-        IEvent = AllocateZeroPool (sizeof (IEVENT));
-    }
+    IEvent = ((Type & EVT_RUNTIME) != 0)
+        ? AllocateRuntimeZeroPool (sizeof (IEVENT))
+        : AllocateZeroPool (sizeof (IEVENT));
 
     if (IEvent == NULL) {
         return EFI_OUT_OF_RESOURCES;
@@ -382,7 +380,7 @@ EFI_STATUS FakeCreateEventEx (
     IEvent->Type           = Type;
     IEvent->NotifyTpl      = NotifyTpl;
     IEvent->NotifyFunction = NotifyFunction;
-    IEvent->NotifyContext  = (VOID *)NotifyContext;
+    IEvent->NotifyContext  = (VOID *) NotifyContext;
 
     if (EventGroup != NULL) {
         CopyGuid (&IEvent->EventGroup, EventGroup);
@@ -401,78 +399,72 @@ EFI_STATUS FakeCreateEventEx (
         InsertTailList (&gRuntime->EventHead, &IEvent->RuntimeData.Link);
     }
 
-    FakeAcquireLock (&gEventQueueLock);
+    OurAcquireLock (&gEventQueueLock);
 
     if ((Type & EVT_NOTIFY_SIGNAL) != 0x00000000) {
         // The Event's NotifyFunction must be queued whenever the event is signaled
         InsertHeadList (&gEventSignalQueue, &IEvent->SignalLink);
     }
 
-    FakeReleaseLock (&gEventQueueLock);
+    OurReleaseLock (&gEventQueueLock);
 
     // Done
     return EFI_SUCCESS;
-}
+} // EFI_STATUS OurCreateEventEx()
 
 /**
   @retval EFI_SUCCESS               The command completed successfully.
   @retval EFI_OUT_OF_RESOURCES      Out of memory.
-  @retval EFI_ALREADY_STARTED       Already on UEFI 2.x EFI Revision.
+  @retval EFI_ALREADY_STARTED       Already on UEFI 2.3 or later.
   @retval EFI_PROTOCOL_ERROR        Unexpected Field Offset.
-  @retval EFI_INVALID_PARAMETER     Command usage error.
-  @retval Other value               Unknown error.
 **/
 EFI_STATUS AmendSysTable (VOID) {
-    EFI_STATUS         Status;
     EFI_BOOT_SERVICES *uBS;
 
-    if (gST->Hdr.Revision >= MIN_EFI_REVISION) {
-        Status = EFI_ALREADY_STARTED;
+    if (gST->Hdr.Revision >= TARGET_EFI_REVISION) {
+        // Early Return
+        return EFI_ALREADY_STARTED;
     }
-    else if (gBS->Hdr.HeaderSize > EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)) {
-        Status = EFI_PROTOCOL_ERROR;
+
+    if (gBS->Hdr.HeaderSize > EFI_FIELD_OFFSET(EFI_BOOT_SERVICES, CreateEventEx)) {
+        // Early Return
+        return EFI_PROTOCOL_ERROR;
     }
-    else {
-        uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (EFI_BOOT_SERVICES), gBS);
 
-        if (uBS == NULL) {
-            Status = EFI_OUT_OF_RESOURCES;
-        }
-        else {
-            uBS->CreateEventEx  = FakeCreateEventEx;
-            uBS->Hdr.HeaderSize = sizeof (EFI_BOOT_SERVICES);
-            uBS->Hdr.Revision   = BASE_EFI_REVISION;
-            uBS->Hdr.CRC32      = 0;
-            uBS->CalculateCrc32 (
-                uBS,
-                uBS->Hdr.HeaderSize,
-                &uBS->Hdr.CRC32
-            );
+    uBS = (EFI_BOOT_SERVICES *) AllocateCopyPool (sizeof (EFI_BOOT_SERVICES), gBS);
+    if (uBS == NULL) {
+        // Early Return
+        return EFI_OUT_OF_RESOURCES;
+    }
 
-            gBS       = uBS;
-            SetSysTab = TRUE;
-            Status    = (EFI_STATUS) uBS->CreateEventEx;
+    // Amend BootServices
+    uBS->CreateEventEx  = OurCreateEventEx;
+    uBS->Hdr.HeaderSize = sizeof (EFI_BOOT_SERVICES);
+    uBS->Hdr.Revision   = TARGET_EFI_REVISION;
+    uBS->Hdr.CRC32      = 0;
+    uBS->CalculateCrc32 (
+        uBS,
+        uBS->Hdr.HeaderSize,
+        &uBS->Hdr.CRC32
+    );
+    gBS = uBS;
 
-            if (EFI_ERROR(Status)) {
-                Status = EFI_INVALID_PARAMETER;
-            }
-            else {
-                Status = EFI_SUCCESS;
-            }
+    // Amend SystemTable
+    gST->BootServices   = gBS;
+    gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
+    gST->Hdr.Revision   = TARGET_EFI_REVISION;
+    gST->Hdr.CRC32      = 0;
+    gST->BootServices->CalculateCrc32 (
+        gST,
+        gST->Hdr.HeaderSize,
+        &gST->Hdr.CRC32
+    );
 
-            gST->BootServices   = gBS;
-            gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
-            gST->Hdr.Revision   = BASE_EFI_REVISION;
-            gST->Hdr.CRC32      = 0;
-            gST->BootServices->CalculateCrc32 (
-                gST,
-                gST->Hdr.HeaderSize,
-                &gST->Hdr.CRC32
-            );
-        } // if/else uBS == NULL
-    } // if/else gST->Hdr.Revision
+    // Flag Amendment
+    SetSysTab = TRUE;
 
-    return Status;
-}
+    return EFI_SUCCESS;
+} // EFI_STATUS AmendSysTable()
 
 #endif
+// Check Compile Type - End

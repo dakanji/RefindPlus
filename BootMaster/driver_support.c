@@ -175,6 +175,11 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
 #define MY_EFI_BLOCK_IO_PROTOCOL           EFI_BLOCK_IO_PROTOCOL
 #endif
 
+#if REFIT_DEBUG > 0
+extern CHAR16 *OffsetNext;
+#endif
+
+
 /* LibScanHandleDatabase() is used by RefindPlus' driver-loading code (inherited
  * from rEFIt), but has not been implemented in GNU-EFI and seems to have been
  * dropped from current versions of the Tianocore library. This function was taken from
@@ -634,9 +639,8 @@ UINTN ScanDriverDir (
     CleanUpPathNameSlashes (Path);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n");
+    BRK_MOD("\n");
     LOG_MSG("Scan '%s' Folder:", Path);
-    LOG_MSG("\n");
     #endif
 
     // look through contents of the directory
@@ -665,13 +669,12 @@ UINTN ScanDriverDir (
         MY_FREE_POOL(DirEntry);
 
         #if REFIT_DEBUG > 0
-        if (RunOnce) {
-            LOG_MSG("\n");
-        }
+        LOG_MSG(
+            "%s  - %r ... UEFI Driver:- '%s'",
+            OffsetNext, Status, FileName
+        );
 
         RunOnce = TRUE;
-
-        LOG_MSG("  - %r ... UEFI Driver:- '%s'", Status, FileName);
         #endif
 
         MY_FREE_POOL(FileName);
@@ -709,7 +712,10 @@ BOOLEAN LoadDrivers (VOID) {
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
-    LOG_MSG("Load UEFI Drivers from Program Default Folder...");
+    LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
+#if REFIT_DEBUG > 1
+    LOG_MSG("\n");
+#endif
     #endif
 
 
@@ -733,7 +739,8 @@ BOOLEAN LoadDrivers (VOID) {
                 L"'%s' ... Program Default Driver Folder:- '%s'",
                 MsgNotFound, SelfDirectory
             );
-            LOG_MSG("  - %s", MsgNotFound);
+            LOG_MSG("%s  - %s", OffsetNext, MsgNotFound);
+            BRK_MAX("\n");
             #endif
         }
 
@@ -745,7 +752,8 @@ BOOLEAN LoadDrivers (VOID) {
     if (GlobalConfig.DriverDirs != NULL) {
         #if REFIT_DEBUG > 0
         LOG_MSG("\n\n");
-        LOG_MSG("Load UEFI Drivers from User Defined Folders...");
+        LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   U S E R   D E F I N E D   F O L D E R S");
+        BRK_MAX("\n");
         #endif
 
         i = 0;
@@ -775,7 +783,8 @@ BOOLEAN LoadDrivers (VOID) {
                         L"'%s' ... User Defined Driver Folder:- '%s'",
                         MsgNotFound, SelfDirectory
                     );
-                    LOG_MSG("  - %s", MsgNotFound);
+                    LOG_MSG("%s  - %s", OffsetNext, MsgNotFound);
+                    BRK_MAX("\n");
                     #endif
                 }
             }

@@ -56,7 +56,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  * Portions Copyright (c) 2021 Joe van Tunen (joevt@shaw.ca)
  *
  * Modifications distributed under the preceding terms.
@@ -68,6 +68,7 @@
 #include "../BootMaster/screenmgt.h"
 #include "../BootMaster/mystrings.h"
 #include "../include/refit_call_wrapper.h"
+#include "../include/egemb_refindplus_banner.h"
 #include "lodepng.h"
 #include "libeg.h"
 
@@ -698,79 +699,80 @@ EG_IMAGE * egPrepareEmbeddedImage (
     IN BOOLEAN            WantAlpha,
     IN EG_PIXEL          *ForegroundColor
 ) {
-    EG_IMAGE  *NewImage;
-    UINT8     *CompData;
-    UINTN      CompLen;
-    UINTN      PixelCount;
-
     #if REFIT_DEBUG > 1
     CHAR16 *FuncTag = L"egPrepareEmbeddedImage";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
 
     // sanity checks
     if (!EmbeddedImage) {
-        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 1a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
+        LOG_SEP(L"X");
         return NULL;
     }
-    //BREAD_CRUMB(L"In %s ... 2", FuncTag);
+
+    BREAD_CRUMB(L"In %s ... 2", FuncTag);
     if (EmbeddedImage->PixelMode > EG_MAX_EIPIXELMODE ||
         (
             EmbeddedImage->CompressMode != EG_EICOMPMODE_RLE &&
             EmbeddedImage->CompressMode != EG_EICOMPMODE_NONE
         )
     ) {
-        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 2a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
+        LOG_SEP(L"X");
 
         return NULL;
     }
 
     // allocate image structure and pixel buffer
-    //BREAD_CRUMB(L"In %s ... 3", FuncTag);
-    NewImage = egCreateImage (EmbeddedImage->Width, EmbeddedImage->Height, WantAlpha);
+    BREAD_CRUMB(L"In %s ... 3", FuncTag);
+    EG_IMAGE *NewImage = egCreateImage (
+        EmbeddedImage->Width,
+        EmbeddedImage->Height,
+        WantAlpha
+    );
 
-    //BREAD_CRUMB(L"In %s ... 4", FuncTag);
+    BREAD_CRUMB(L"In %s ... 4", FuncTag);
     if (!NewImage) {
-        BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        BREAD_CRUMB(L"In %s ... 4a 1 - END:- return EG_IMAGE NewImage = 'NULL'", FuncTag);
+        LOG_SEP(L"X");
 
         return NULL;
     }
 
-    //BREAD_CRUMB(L"In %s ... 5", FuncTag);
-    UINT8 *CompStart;
-    CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
-    CompLen    = EmbeddedImage->DataLength;
-    PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
+    BREAD_CRUMB(L"In %s ... 5", FuncTag);
+    UINT8 *CompStart  = 0;
+    UINT8 *CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
+    UINTN  CompLen    = EmbeddedImage->DataLength;
+    UINTN  PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
 
-    //BREAD_CRUMB(L"In %s ... 6", FuncTag);
+    BREAD_CRUMB(L"In %s ... 6", FuncTag);
     // FUTURE: for EG_EICOMPMODE_EFICOMPRESS, decompress whole data block here
 
-    //BREAD_CRUMB(L"In %s ... 7", FuncTag);
+    BREAD_CRUMB(L"In %s ... 7", FuncTag);
     if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_GRAY_ALPHA
     ) {
         BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
         // copy grayscale plane and expand
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
-            CompStart = CompData;
-            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
-
             BREAD_CRUMB(L"In %s ... 7a 1a 1 - Grey Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
+            CompStart = CompData;
+            egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
         }
         else {
+            BREAD_CRUMB(L"In %s ... 7a 1b 1", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
         }
+
+        BREAD_CRUMB(L"In %s ... 7a 2", FuncTag);
         egCopyPlane (PLPTR(NewImage, r), PLPTR(NewImage, g), PixelCount);
         egCopyPlane (PLPTR(NewImage, r), PLPTR(NewImage, b), PixelCount);
-
     }
     else if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR ||
         EmbeddedImage->PixelMode == EG_EIPIXELMODE_COLOR_ALPHA
@@ -785,27 +787,25 @@ EG_IMAGE * egPrepareEmbeddedImage (
             BREAD_CRUMB(L"In %s ... 7b 1a 2 - Red Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
-
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
 
             BREAD_CRUMB(L"In %s ... 7b 1a 3 - Green Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
-
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
-
-            BREAD_CRUMB(L"In %s ... 7b 1a 4 - Blue Plane Size:- '%d'", FuncTag,
-                CompData - CompStart
-            );
         }
         else {
             BREAD_CRUMB(L"In %s ... 7b 1b 1", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, r), PixelCount);
             CompData += PixelCount;
+
+            BREAD_CRUMB(L"In %s ... 7b 1b 2", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, g), PixelCount);
             CompData += PixelCount;
+
+            BREAD_CRUMB(L"In %s ... 7b 1b 3", FuncTag);
             egInsertPlane (CompData, PLPTR(NewImage, b), PixelCount);
             CompData += PixelCount;
         }
@@ -818,21 +818,32 @@ EG_IMAGE * egPrepareEmbeddedImage (
         UINT8   PixelValueG = ForegroundColor ? ForegroundColor->g : 0;
         UINT8   PixelValueB = ForegroundColor ? ForegroundColor->b : 0;
 
+        BREAD_CRUMB(L"In %s ... 7c 2", FuncTag);
         #if REFIT_DEBUG > 0
-        LOG_MSG(
-            "%s      Colour (Text):- '%02X%02X%02X'",
-            OffsetNext,
-            PixelValueR,
-            PixelValueG,
-            PixelValueB
-        );
+        // DA-TAG: Limit to Embedded Banner
+        if ((WantAlpha && ForegroundColor) &&
+            (EmbeddedImage->Width == egemb_refindplus_banner.Width) &&
+            (EmbeddedImage->Height == egemb_refindplus_banner.Height)
+        ) {
+            BREAD_CRUMB(L"In %s ... 7c 2a 1", FuncTag);
+            LOG_MSG(
+                "%s      Colour (Text) ... %3d %3d %3d",
+                (GlobalConfig.LogLevel <= MAXLOGLEVEL)
+                    ? OffsetNext
+                    : L"",
+                PixelValueR,
+                PixelValueG,
+                PixelValueB
+            );
+            BRK_MAX("\n");
+        }
         #endif
 
+        BREAD_CRUMB(L"In %s ... 7c 3", FuncTag);
         egSetPlane (PLPTR(NewImage, r), PixelValueR, PixelCount);
         egSetPlane (PLPTR(NewImage, g), PixelValueG, PixelCount);
         egSetPlane (PLPTR(NewImage, b), PixelValueB, PixelCount);
     }
-
 
     // Handle Alpha
     BREAD_CRUMB(L"In %s ... 8", FuncTag);
@@ -851,10 +862,6 @@ EG_IMAGE * egPrepareEmbeddedImage (
             BREAD_CRUMB(L"In %s ... 8a 1a 1", FuncTag);
             CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, a), PixelCount);
-
-            BREAD_CRUMB(L"In %s ... 8a 1a 2 - Alpha Plane Size:- '%d'", FuncTag,
-                CompData - CompStart
-            );
         }
         else {
             BREAD_CRUMB(L"In %s ... 8a 1b 1", FuncTag);
@@ -866,10 +873,7 @@ EG_IMAGE * egPrepareEmbeddedImage (
         if (EmbeddedImage->PixelMode == EG_EIPIXELMODE_ALPHA_INVERT) {
             BREAD_CRUMB(L"In %s ... 8a 2a 1", FuncTag);
             egInvertPlane (PLPTR(NewImage, a), PixelCount);
-
-            BREAD_CRUMB(L"In %s ... 8a 2a 2", FuncTag);
         }
-        BREAD_CRUMB(L"In %s ... 8a 3", FuncTag);
     }
     else {
         BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
@@ -880,9 +884,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
 
     BREAD_CRUMB(L"In %s ... 9 - END:- return EG_IMAGE NewImage = '%s'", FuncTag,
-        NewImage ? L"NewImage Data" : L"NULL"
+        NewImage ? L"Embedded Image Data" : L"NULL"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
 
     return NewImage;
 } // EG_IMAGE * egPrepareEmbeddedImage()

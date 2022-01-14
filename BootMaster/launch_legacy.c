@@ -42,26 +42,30 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2020-2021 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */
 
 #include "global.h"
 #include "icns.h"
-#include "launch_legacy.h"
 #include "lib.h"
 #include "menu.h"
-#include "../include/refit_call_wrapper.h"
-#include "screenmgt.h"
-#include "../include/syslinux_mbr.h"
 #include "mystrings.h"
+#include "screenmgt.h"
+#include "launch_legacy.h"
+#include "../include/refit_call_wrapper.h"
+#include "../include/syslinux_mbr.h"
 #include "../EfiLib/BdsHelper.h"
 #include "../EfiLib/legacy.h"
 #include "../include/Handle.h"
 
 extern BOOLEAN            IsBoot;
 extern REFIT_MENU_SCREEN *MainMenu;
+
+#if REFIT_DEBUG > 0
+extern CHAR16  *OffsetNext;
+#endif
 
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateHandle gBS->LocateHandleBuffer
@@ -765,20 +769,20 @@ VOID AddLegacyEntry (
                                : ((Volume->DiskKind == DISK_KIND_EXTERNAL) ? L"USB" : L"HD");
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n");
-    LOG_MSG("  - Found '%s' on '%s'", LoaderTitle, VolDesc);
+    LOG_MSG("%s  - Found '%s' on '%s'", OffsetNext, LoaderTitle, VolDesc);
     #endif
 
     // create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (SubScreen) {
+        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+
         SubScreen->Title = PoolPrint (
             L"Boot Options for %s on %s",
             LoaderTitle, VolDesc
          );
 
-        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-        SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
+        SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
 
         if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
            SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
@@ -799,7 +803,6 @@ VOID AddLegacyEntry (
         REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
         LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
         LocalMenuEntryReturn->Tag   = TAG_RETURN;
-        LocalMenuEntryReturn->Row   = 1;
         AddMenuEntry (SubScreen, LocalMenuEntryReturn);
 
         Entry->me.SubScreen = SubScreen;
@@ -866,8 +869,8 @@ VOID AddLegacyEntryUEFI (
     // create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
     if (SubScreen) {
-        SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
         SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+        SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
         SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
 
         if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
@@ -888,7 +891,6 @@ VOID AddLegacyEntryUEFI (
         REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
         LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
         LocalMenuEntryReturn->Tag   = TAG_RETURN;
-        LocalMenuEntryReturn->Row   = 1;
         AddMenuEntry (SubScreen, LocalMenuEntryReturn);
 
         Entry->me.SubScreen = SubScreen;
@@ -896,8 +898,7 @@ VOID AddLegacyEntryUEFI (
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n");
-    LOG_MSG("  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", BdsOption->Description);
+    LOG_MSG("%s  - Found 'UEFI-Style' Legacy (BIOS) OS on '%s'", OffsetNext, BdsOption->Description);
     #endif
 } // static VOID AddLegacyEntryUEFI()
 
@@ -1168,7 +1169,7 @@ VOID FindLegacyBootType (VOID) {
     //   string "Apple", assume it is available. Note that this overrides the
     //   UEFI type, and might yield false positives if the vendor string
     //   contains "Apple" as part of something bigger, so this is not perfect.
-    if (MyStriCmp (L"Apple", gST->FirmwareVendor)) {
+    if (AppleFirmware) {
         GlobalConfig.LegacyType = LEGACY_TYPE_MAC;
     }
 } // VOID FindLegacyBootType()

@@ -131,14 +131,14 @@ CHAR16 * MyStrStr (
     CHAR16 *FuncTag = L"MyStrStr";
     #endif
 
-    if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    if (!NestedStrStr) LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START:- Find '%s' in '%s'", FuncTag,
         StrCharSet ? StrCharSet : L"NULL",
         String     ? String     : L"NULL"
     );
     if ((String == NULL) || (StrCharSet == NULL)) {
         BREAD_CRUMB(L"In %s ... return 'NULL'", FuncTag);
-        if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        if (!NestedStrStr) LOG_SEP(L"X");
         return NULL;
     }
 
@@ -160,12 +160,12 @@ CHAR16 * MyStrStr (
 
     if (*StrCharSet == L'\0') {
         BREAD_CRUMB(L"In %s ... 4a - END:- return CHAR16 *Src (Substring Found)", FuncTag);
-        if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        if (!NestedStrStr) LOG_SEP(L"X");
         return Src;
     }
 
     BREAD_CRUMB(L"In %s ... 5 - END:- return NULL (Substring not Found)", FuncTag);
-    if (!NestedStrStr) ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    if (!NestedStrStr) LOG_SEP(L"X");
     return NULL;
 } // CHAR16 * MyStrStr()
 
@@ -191,14 +191,14 @@ BOOLEAN FoundSubStr (
     CHAR16 *FuncTag = L"FoundSubStr";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START:- Find '%s' in '%s'", FuncTag,
         RawStrCharSet ? RawStrCharSet : L"NULL",
         RawString     ? RawString     : L"NULL"
     );
     if ((RawString == NULL) || (RawStrCharSet == NULL)) {
         BREAD_CRUMB(L"In %s ... return 'FALSE'", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
         return FALSE;
     }
 
@@ -215,8 +215,6 @@ BOOLEAN FoundSubStr (
     if (MyStrStr (String, StrCharSet)) {
         //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         FoundStr = TRUE;
-
-        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
     NestedStrStr = FALSE;
 
@@ -224,10 +222,10 @@ BOOLEAN FoundSubStr (
     MY_FREE_POOL(String);
     MY_FREE_POOL(StrCharSet);
 
-    BREAD_CRUMB(L"In %s ... 4 END - return BOOLEAN FoundStr:- '%s'", FuncTag,
+    BREAD_CRUMB(L"In %s ... 4 - END:- return BOOLEAN FoundStr = '%s'", FuncTag,
         FoundStr ? L"TRUE" : L"FALSE"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     return FoundStr;
 } // BOOLEAN FoundSubStr()
 
@@ -354,7 +352,7 @@ VOID MergeStrings (
     CHAR16 *FuncTag = L"MergeStrings";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START:- Merge '%s' into '%s'", FuncTag,
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
@@ -365,7 +363,7 @@ VOID MergeStrings (
         BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
             *First
         );
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
 
         return;
     }
@@ -377,8 +375,6 @@ VOID MergeStrings (
     if (Second != NULL) {
         //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         Length2 = StrLen (Second);
-
-        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
 
     //BREAD_CRUMB(L"In %s ... 4", FuncTag);
@@ -390,8 +386,6 @@ VOID MergeStrings (
         if ((*First != NULL) && (Length1 == 0)) {
             //BREAD_CRUMB(L"In %s ... 5a 1a 1", FuncTag);
             MY_FREE_POOL(*First);
-
-            //BREAD_CRUMB(L"In %s ... 5a 1a 2", FuncTag);
         }
 
         //BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
@@ -407,10 +401,7 @@ VOID MergeStrings (
                 //BREAD_CRUMB(L"In %s ... 5a 3a 2a 1", FuncTag);
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
-
-                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 2", FuncTag);
             }
-
             //BREAD_CRUMB(L"In %s ... 5a 3a 3", FuncTag);
         }
 
@@ -418,20 +409,16 @@ VOID MergeStrings (
         if (Second != NULL) {
             //BREAD_CRUMB(L"In %s ... 5a 4a 1", FuncTag);
             StrCat (NewString, Second);
-
-            //BREAD_CRUMB(L"In %s ... 5a 4a 2", FuncTag);
         }
 
         //BREAD_CRUMB(L"In %s ... 5a 5", FuncTag);
         MY_FREE_POOL(*First);
         *First = NewString;
-
-        //BREAD_CRUMB(L"In %s ... 5a 6", FuncTag);
     }
     BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
         *First
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
 } // VOID MergeStrings()
 
 // As MergeStrings but does not repeat substrings.
@@ -447,7 +434,7 @@ VOID MergeUniqueStrings (
     CHAR16 *FuncTag = L"MergeUniqueStrings";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START:- Merge '%s' into '%s'", FuncTag,
         Second ? Second : L"NULL",
         *First ? *First : L"NULL"
@@ -457,7 +444,7 @@ VOID MergeUniqueStrings (
         BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
             *First
         );
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
 
         return;
     }
@@ -469,8 +456,6 @@ VOID MergeUniqueStrings (
     if (Second != NULL) {
         //BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         Length2 = StrLen (Second);
-
-        //BREAD_CRUMB(L"In %s ... 3a 2", FuncTag);
     }
 
     //BREAD_CRUMB(L"In %s ... 4", FuncTag);
@@ -482,8 +467,6 @@ VOID MergeUniqueStrings (
         if ((*First != NULL) && (Length1 == 0)) {
             //BREAD_CRUMB(L"In %s ... 5a 1a 1", FuncTag);
             MY_FREE_POOL(*First);
-
-            //BREAD_CRUMB(L"In %s ... 5a 1a 2", FuncTag);
         }
 
         //BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
@@ -499,10 +482,7 @@ VOID MergeUniqueStrings (
                 //BREAD_CRUMB(L"In %s ... 5a 3a 2a 1", FuncTag);
                 NewString[Length1] = AddChar;
                 NewString[Length1 + 1] = '\0';
-
-                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 2", FuncTag);
             }
-
             //BREAD_CRUMB(L"In %s ... 5a 3a 3", FuncTag);
         }
 
@@ -535,31 +515,24 @@ VOID MergeUniqueStrings (
             if (!SkipMerge) {
                 //BREAD_CRUMB(L"In %s ... 5a 4a 3a 1", FuncTag);
                 StrCat (NewString, Second);
-
-                //BREAD_CRUMB(L"In %s ... 5a 4a 3a 2", FuncTag);
             }
             else if (AddChar) {
                 //BREAD_CRUMB(L"In %s ... 5a 4a 3b 1", FuncTag);
                 // Remove AddChar if not merging this item
                 NewString[Length1] = '\0';
-
-                //BREAD_CRUMB(L"In %s ... 5a 4a 3b 2", FuncTag);
             }
-
             //BREAD_CRUMB(L"In %s ... 5a 4a 4", FuncTag);
         }
 
         //BREAD_CRUMB(L"In %s ... 5a 5", FuncTag);
         MY_FREE_POOL(*First);
         *First = NewString;
-
-        //BREAD_CRUMB(L"In %s ... 5a 6", FuncTag);
     }
 
     BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
         *First
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
 } // VOID MergeUniqueStrings()
 
 // Similar to MergeStrings, but breaks the input string into word chunks and
@@ -711,8 +684,19 @@ BOOLEAN LimitStringLength (
     CHAR16   *SubString, *TempString;
     BOOLEAN   HasChanged = FALSE;
 
+    #if REFIT_DEBUG > 1
+    CHAR16 *FuncTag = L"LimitStringLength";
+    #endif
+
+    LOG_SEP(L"X");
+    BREAD_CRUMB(L"In %s ... 1 - START", FuncTag);
+
     // SubString will be NULL or point WITHIN TheString
+    NestedStrStr = TRUE;
     SubString = MyStrStr (TheString, L"  ");
+    NestedStrStr = FALSE;
+
+    //BREAD_CRUMB(L"In %s ... 2 - WHILE LOOP:- START/ENTER", FuncTag);
     while (SubString != NULL) {
         i = 0;
         while (SubString[i] == L' ') {
@@ -738,13 +722,20 @@ BOOLEAN LimitStringLength (
 
         SubString = MyStrStr (TheString, L"  ");
     } // while
+    //BREAD_CRUMB(L"In %s ... 3 - WHILE LOOP:- END/EXIT", FuncTag);
 
     // Truncate if still too long.
     BOOLEAN WasTruncated = TruncateString (TheString, Limit);
+    //BREAD_CRUMB(L"In %s ... 4", FuncTag);
     if (!HasChanged) {
+        //BREAD_CRUMB(L"In %s ... 4a 1", FuncTag);
         HasChanged = WasTruncated;
     }
 
+    BREAD_CRUMB(L"In %s ... 5 - END:- return BOOLEAN HasChanged = '%s'", FuncTag,
+        HasChanged ? L"TRUE" : L"FALSE"
+    );
+    LOG_SEP(L"X");
     return HasChanged;
 } // BOOLEAN LimitStringLength()
 
@@ -1009,7 +1000,7 @@ BOOLEAN ReplaceSubstring (
     CHAR16 *FuncTag = L"ReplaceSubstring";
     #endif
 
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     BREAD_CRUMB(L"In %s ... 1 - START:- Replace '%s' with '%s' in '%s'", FuncTag,
         SearchString ? SearchString : L"NULL",
         ReplString   ? ReplString   : L"NULL",
@@ -1017,7 +1008,7 @@ BOOLEAN ReplaceSubstring (
     );
     if ((*MainString == NULL) || (SearchString == NULL) || (ReplString == NULL)) {
         BREAD_CRUMB(L"In %s ... return 'FALSE'", FuncTag);
-        ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+        LOG_SEP(L"X");
         return FALSE;
     }
     NestedStrStr = TRUE;
@@ -1061,10 +1052,10 @@ BOOLEAN ReplaceSubstring (
         //BREAD_CRUMB(L"In %s ... 2a 3", FuncTag);
     }
 
-    BREAD_CRUMB(L"In %s ... 3 END - return BOOLEAN WasReplaced:- '%s'", FuncTag,
+    BREAD_CRUMB(L"In %s ... 3 - END:- return BOOLEAN WasReplaced = '%s'", FuncTag,
         WasReplaced ? L"TRUE" : L"FALSE"
     );
-    ALT_LOG(2, LOG_BLANK_LINE_SEP, L"X");
+    LOG_SEP(L"X");
     return WasReplaced;
 } // BOOLEAN ReplaceSubstring()
 

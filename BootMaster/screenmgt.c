@@ -82,19 +82,15 @@ EG_PIXEL   MenuBackgroundPixel    = { 0xBF, 0xBF, 0xBF, 0 };
 EG_PIXEL   DarkBackgroundPixel    = { 0x00, 0x00, 0x00, 0 };
 
 // general defines and variables
-static
-BOOLEAN    GraphicsScreenDirty;
-static
-BOOLEAN     haveError = FALSE;
+static BOOLEAN     GraphicsScreenDirty;
+static BOOLEAN     haveError = FALSE;
 
-extern
-BOOLEAN     FlushFailedTag;
-extern
-BOOLEAN     IsBoot;
+extern BOOLEAN     FlushFailedTag;
+extern BOOLEAN     IsBoot;
+
 
 #if REFIT_DEBUG > 0
-extern
-CHAR16     *OffsetNext;
+extern CHAR16     *OffsetNext;
 #endif
 
 static
@@ -181,7 +177,8 @@ VOID SetupScreen (VOID) {
     CHAR16 *MsgStr = NULL;
 
     if (!BannerLoaded) {
-        LOG_MSG("Set Screen Up...\n");
+        LOG_MSG("S H O W   T I T L E   B A N N E R");
+        LOG_MSG("\n");
     }
     #endif
 
@@ -190,7 +187,8 @@ VOID SetupScreen (VOID) {
         (GlobalConfig.RequestedScreenHeight == 0)
     ) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("Get Resolution From Mode:\n");
+        LOG_MSG("Get Resolution From Mode:");
+        LOG_MSG("\n");
         #endif
 
         egGetResFromMode (
@@ -206,7 +204,8 @@ VOID SetupScreen (VOID) {
         (GlobalConfig.RequestedScreenHeight > 0)
     ) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("Sync Resolution:\n");
+        LOG_MSG("Sync Resolution:");
+        LOG_MSG("\n");
         #endif
 
         ScreenW = (ScreenW < GlobalConfig.RequestedScreenWidth)
@@ -233,7 +232,8 @@ VOID SetupScreen (VOID) {
     if (egSetTextMode (GlobalConfig.RequestedTextMode)) {
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("Set Text Mode:\n");
+        LOG_MSG("Set Text Mode:");
+        LOG_MSG("\n");
         #endif
 
         egGetScreenSize (&NewWidth, &NewHeight);
@@ -271,7 +271,8 @@ VOID SetupScreen (VOID) {
         if (GlobalConfig.RequestedScreenWidth > 0) {
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("Set to User Requested Screen Size:\n");
+            LOG_MSG("Set to User Requested Screen Size:");
+            LOG_MSG("\n");
             #endif
 
             egSetScreenSize (
@@ -303,16 +304,18 @@ VOID SetupScreen (VOID) {
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
             MsgStr = (!gotGraphics)
-                ? StrDuplicate (L"Prepare Graphics Mode Switch")
-                : StrDuplicate (L"Prepare Placeholder Display");
+                ? StrDuplicate (L"Prepare for Graphics Mode Switch")
+                : StrDuplicate (L"Prepare for Placeholder Display");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("%s:", MsgStr);
-            LOG_MSG("\n");
             MY_FREE_POOL(MsgStr);
 
-            MsgStr = PoolPrint (L"Graphics Mode Resolution:- '%d x %d'", ScreenLongest, ScreenShortest);
+            MsgStr = PoolPrint (
+                L"Graphics Mode Resolution:- '%d x %d'",
+                ScreenLongest, ScreenShortest
+            );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s", MsgStr);
+            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -320,10 +323,6 @@ VOID SetupScreen (VOID) {
             if (GlobalConfig.ScaleUI == -1) {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"UI Scaling Disabled ... Maintain Icon Scale");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
                 #endif
             }
             else if (
@@ -331,7 +330,8 @@ VOID SetupScreen (VOID) {
                 || (ScreenShortest >= HIDPI_SHORT && ScreenLongest >= HIDPI_LONG)
             ) {
                 #if REFIT_DEBUG > 0
-                CHAR16 *TmpStr = (GlobalConfig.ScaleUI == 1) ? L"HiDPI Flag" : L"HiDPI Mode";
+                CHAR16 *TmpStr = (GlobalConfig.ScaleUI == 1)
+                    ? L"HiDPI Flag" : L"HiDPI Mode";
                 #endif
 
                 if (ScaledIcons) {
@@ -351,23 +351,18 @@ VOID SetupScreen (VOID) {
 
                     ScaledIcons = TRUE;
                 }
-
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
-                #endif
             }
             else {
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"LoDPI Mode ... Maintain Icon Scale");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-                LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
                 #endif
             } // if GlobalConfig.ScaleUI
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
 
             if (!gotGraphics) {
                 #if REFIT_DEBUG > 0
@@ -378,29 +373,26 @@ VOID SetupScreen (VOID) {
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                // clear screen and show banner
-                // (now we know we will stay in graphics mode)
+                // Clear screen and show banner
+                // We now know we will stay in graphics mode
                 SwitchToGraphics();
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Loading Placeholder Display");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                LOG_MSG("INFO: %s", MsgStr);
-                LOG_MSG("\n\n");
-                MY_FREE_POOL(MsgStr);
-                #endif
             }
 
             if (GlobalConfig.ScreensaverTime != -1) {
                 BltClearScreen (TRUE);
 
                 #if REFIT_DEBUG > 0
+                CHAR16 *TmpStr = L"Displayed Title Banner";
                 MsgStr = (gotGraphics)
-                    ? StrDuplicate (L"Displayed Placeholder")
+                    ? StrDuplicate (TmpStr)
                     : StrDuplicate (L"Switch to Graphics Mode ... Success");
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
                 LOG_MSG("INFO: %s", MsgStr);
+                MY_FREE_POOL(MsgStr);
+
+                if (!gotGraphics) {
+                    LOG_MSG("%s      %s", OffsetNext, TmpStr);
+                }
                 #endif
             }
             else {
@@ -409,7 +401,8 @@ VOID SetupScreen (VOID) {
 
                 MsgStr = StrDuplicate (L"Configured to Start with Screensaver");
                 ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-                LOG_MSG("      %s", MsgStr);
+                LOG_MSG("%s      %s", OffsetNext, MsgStr);
+                MY_FREE_POOL(MsgStr);
                 #endif
 
                 // start with screen blanked
@@ -418,7 +411,6 @@ VOID SetupScreen (VOID) {
             BannerLoaded = TRUE;
 
             #if REFIT_DEBUG > 0
-            MY_FREE_POOL(MsgStr);
             (NativeLogger && GlobalConfig.LogLevel > 0)
                 ? LOG_MSG("\n")
                 : LOG_MSG("\n\n");
@@ -454,7 +446,8 @@ VOID SwitchToText (
             GlobalConfig.TextRenderer = TRUE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("INFO: 'text_renderer' Config Setting Overriden\n\n");
+            LOG_MSG("INFO: Config Setting Overriden:- 'text_renderer'");
+            LOG_MSG("\n");
             #endif
         }
     }
@@ -470,7 +463,8 @@ VOID SwitchToText (
     );
 
     if (TextModeOnEntry) {
-        LOG_MSG("Determine Text Console Size:\n");
+        LOG_MSG("Determine Text Console Size:");
+        LOG_MSG("\n");
     }
     #endif
 
@@ -491,9 +485,10 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "  Could Not Get Text Console Size ... Using Default:- '%d x %d'\n\n",
+                "  Could Not Get Text Console Size ... Using Default:- '%d x %d'",
                 ConHeight, ConWidth
             );
+            LOG_MSG("\n\n");
         }
         #endif
     }
@@ -501,9 +496,10 @@ VOID SwitchToText (
         #if REFIT_DEBUG > 0
         if (TextModeOnEntry) {
             LOG_MSG(
-                "  Text Console Size:- '%d x %d'\n\n",
+                "  Text Console Size:- '%d x %d'",
                 ConWidth, ConHeight
             );
+            LOG_MSG("\n\n");
         }
         #endif
     }
@@ -512,8 +508,9 @@ VOID SwitchToText (
 
     #if REFIT_DEBUG > 0
     if (TextModeOnEntry) {
-        LOG_MSG("INFO: Switch to Text Mode ... Success\n\n");
+        LOG_MSG("INFO: Switch to Text Mode ... Success");
     }
+    LOG_MSG("\n\n");
     #endif
 } // VOID SwitchToText()
 
@@ -567,14 +564,18 @@ VOID BeginExternalScreen (
 
     if (UseGraphicsMode) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Graphics'");
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Beginning Child Display with Screen Mode:- 'Graphics'"
+        );
         #endif
 
         SwitchToGraphicsAndClear (FALSE);
     }
     else {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Beginning Child Display with Screen Mode:- 'Text'");
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Beginning Child Display with Screen Mode:- 'Text'"
+        );
         #endif
 
         SwitchToText (UseGraphicsMode);
@@ -698,7 +699,7 @@ VOID PrintUglyText (
 
     if (Text) {
         if (AllowGraphicsMode &&
-            MyStrStr (L"Apple", gST->FirmwareVendor) &&
+            AppleFirmware &&
             egIsGraphicsModeEnabled()
         ) {
             egDisplayMessage (Text, &BGColor, PositionCode);
@@ -723,12 +724,9 @@ VOID PauseForKey (VOID) {
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"             * Paused for Error or Warning *              ", NEXTLINE);
 
-    if (GlobalConfig.ContinueOnWarning) {
-        PrintUglyText (L"        Press a Key or Wait 9 Seconds to Continue         ", NEXTLINE);
-    }
-    else {
-        PrintUglyText (L"                 Press a Key to Continue                  ", NEXTLINE);
-    }
+    (GlobalConfig.ContinueOnWarning)
+        ? PrintUglyText (L"        Press a Key or Wait 9 Seconds to Continue         ", NEXTLINE)
+        : PrintUglyText (L"                 Press a Key to Continue                  ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
     MuteLogger = FALSE;
@@ -864,14 +862,14 @@ VOID DebugPause (VOID) {
 } // VOID DebugPause()
 #endif
 
-VOID EndlessIdleLoop (VOID) {
+VOID DeadLoop (VOID) {
     UINTN index;
 
     for (;;) {
         ReadAllKeyStrokes();
         REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
-} // VOID EndlessIdleLoop()
+} // VOID DeadLoop()
 
 //
 // Error handling
@@ -1032,14 +1030,29 @@ VOID BltClearScreen (
     }
     #endif
 
-    if (!IsBoot
-        || (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER))
-    ) {
+    BOOLEAN BannerPass = (
+        !IsBoot ||
+        (
+            ShowBanner &&
+            !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)
+        )
+    );
+    if (!BannerPass) {
+        #if REFIT_DEBUG > 0
+        if (!IsBoot) {
+            LOG_MSG("%s  - Clear Screen", OffsetNext);
+        }
+        #endif
+
+        // Not showing banner
+        // Clear to menu background color
+        egClearScreen (&MenuBackgroundPixel);
+    }
+    else {
         // Load banner on first call
         if (Banner == NULL) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("  - Get Banner");
+            LOG_MSG("%s  - Get Banner", OffsetNext);
             #endif
 
             if (GlobalConfig.BannerFileName) {
@@ -1059,7 +1072,18 @@ VOID BltClearScreen (
                 MenuBackgroundPixel = GrayPixel;
             }
 
-            if (Banner == NULL) {
+            if (Banner != NULL) {
+                #if REFIT_DEBUG > 0
+                MsgStr = StrDuplicate (L"Custom Title Banner");
+                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+                if (!LoggedBanner) {
+                    ALT_LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
+                    LoggedBanner = TRUE;
+                }
+                MY_FREE_POOL(MsgStr);
+                #endif
+            }
+            else {
                 #if REFIT_DEBUG > 0
                 CHAR16 *StrSpacer = L"    ";
                 MsgStr = StrDuplicate (L"Default Title Banner");
@@ -1070,7 +1094,7 @@ VOID BltClearScreen (
                 MY_FREE_POOL(MsgStr);
 
                 MsgStr = PoolPrint (
-                    L"Colour (Base):- '%02X%02X%02X'",
+                    L"Colour (Base) ... %3d %3d %3d",
                     MenuBackgroundPixel.r,
                     MenuBackgroundPixel.g,
                     MenuBackgroundPixel.b
@@ -1104,11 +1128,12 @@ VOID BltClearScreen (
                 );
 
                 EG_PIXEL BannerFontColor = BlackPixel;
-                // Use complementary colour for font on darkish backgrounds
-                // DA-TAG: Do not apply to general text to avoid OTT effect
+                // DA-TAG: Use complementary colour for banner text on darkish backgrounds
+                //         Do not apply to other text to avoid OTT effect
                 if (LumIndex < 128) {
-                    // Complementary colour for Mid Grey is Mid Grey
+                    // Complementary colour for Mid Grey is ... Mid Grey!
                     // Check for a broadly defined 'Grey' to fix
+                    // Difficult to read text otherwise
                     UINTN MaxRGB = (PixelsR > PixelsG) ? PixelsR : PixelsG;
                     MaxRGB       = (MaxRGB  > PixelsB) ? MaxRGB  : PixelsB;
 
@@ -1119,6 +1144,7 @@ VOID BltClearScreen (
                         // We have 'Grey' ... Determine if it is 'Mid Grey'
                         if (MaxRGB < 160 && MinRGB > 96) {
                             // We have 'Mid Grey' ... Set Input Pixels to Black
+                            // Will be flipped to complementary White later
                             PixelsR = PixelsG = PixelsB = 0;
                         }
                     }
@@ -1134,18 +1160,7 @@ VOID BltClearScreen (
                     TRUE,
                     &BannerFontColor
                 );
-            }
-            else {
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"Custom Title Banner");
-                LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-                if (!LoggedBanner) {
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"Using %s", MsgStr);
-                    LoggedBanner = TRUE;
-                }
-                MY_FREE_POOL(MsgStr);
-                #endif
-            }
+            } // if/else Banner != NULL
 
             if (Banner != NULL) {
                 EG_IMAGE *CompImage;
@@ -1169,8 +1184,7 @@ VOID BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("  - Scale Banner");
+            LOG_MSG("%s  - Scale Banner", OffsetNext);
             #endif
 
             if (GlobalConfig.BannerScale == BANNER_FILLSCREEN) {
@@ -1191,12 +1205,11 @@ VOID BltClearScreen (
                 MY_FREE_IMAGE(Banner);
                 Banner = NewBanner;
             }
-        } // if Banner != NULL
+        }
 
         // clear and draw banner
         #if REFIT_DEBUG > 0
-        LOG_MSG("\n");
-        LOG_MSG("  - Clear Screen");
+        LOG_MSG("%s  - Clear Screen", OffsetNext);
         #endif
 
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -1208,8 +1221,7 @@ VOID BltClearScreen (
 
         if (Banner != NULL) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("\n");
-            LOG_MSG("  - Show Banner");
+            LOG_MSG("%s  - Show Banner", OffsetNext);
             #endif
 
             BannerPosX = (Banner->Width < ScreenW) ? ((ScreenW - Banner->Width) / 2) : 0;
@@ -1224,19 +1236,7 @@ VOID BltClearScreen (
                 BltImage (Banner, (UINTN) BannerPosX, (UINTN) BannerPosY);
             }
         }
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        if (!IsBoot) {
-            LOG_MSG("\n");
-            LOG_MSG("  - Clear Screen");
-        }
-        #endif
-
-        // not showing banner
-        // clear to menu background color
-        egClearScreen (&MenuBackgroundPixel);
-    }
+    } // if/else !BannerPass
 
     #if REFIT_DEBUG > 0
     if (!IsBoot) {

@@ -55,11 +55,6 @@
 #include "../include/egemb_tool_bootscreen.h"
 #include "../include/egemb_tool_clean_nvram.h"
 
-extern
-EG_PIXEL BlackPixel;
-//extern
-//EG_PIXEL YellowPixel;
-
 //
 // well-known icons
 //
@@ -67,7 +62,7 @@ EG_PIXEL BlackPixel;
 typedef struct {
     EG_IMAGE    *Image;
     CHAR16      *FileName;
-    UINTN       IconSize;
+    UINTN        IconSize;
 } BUILTIN_ICON;
 
 BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
@@ -99,29 +94,77 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }
 };
 
+static
+EG_IMAGE * DummyImageEx (
+    IN UINTN PixelSize
+) {
+    static
+    EG_IMAGE        *Image = NULL;
+    UINTN            x, y, LineOffset;
+    CHAR8           *Ptr, *YPtr;
+    EG_PIXEL         BasePixel = { 0x00, 0x00, 0x00, 0 };
+
+    if (Image == NULL) {
+        Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BasePixel);
+        if (Image) {
+            LineOffset = PixelSize * 4;
+            YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
+
+            for (y = 0; y < 32; y++) {
+                Ptr = YPtr;
+                for (x = 0; x < 32; x++) {
+                    if (((x + y) % 12) < 6) {
+                        *Ptr++ = 0;
+                        *Ptr++ = 0;
+                        *Ptr++ = 0;
+                    }
+                    else {
+                        *Ptr++ = 0;
+                        *Ptr++ = 255;
+                        *Ptr++ = 255;
+                    }
+                    *Ptr++ = 144;
+                } // for x =0
+                YPtr += LineOffset;
+            } // for y = 0
+        }
+    }
+
+    return Image;
+} // EG_IMAGE * DummyImageEx()
+
 EG_IMAGE * BuiltinIcon (
     IN UINTN Id
 ) {
     if (Id >= BUILTIN_ICON_COUNT) {
+        // Early Return
         return NULL;
     }
 
+    if (BuiltinIconTable[Id].Image) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"Using Cached Icon:- '%s'", BuiltinIconTable[Id].FileName);
+        #endif
+
+        // Early Return
+        return egCopyImage (BuiltinIconTable[Id].Image);
+    }
+
+    BuiltinIconTable[Id].Image = egFindIcon (
+        BuiltinIconTable[Id].FileName,
+        GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
+    );
     if (BuiltinIconTable[Id].Image == NULL) {
-       BuiltinIconTable[Id].Image = egFindIcon (
-           BuiltinIconTable[Id].FileName,
-           GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
-       );
-       if (BuiltinIconTable[Id].Image == NULL) {
-           if (Id == BUILTIN_ICON_TOOL_BOOTKICKER) {
-               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_bootscreen, FALSE, NULL);
-           }
-           else if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
-               BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
-           }
-           if (BuiltinIconTable[Id].Image == NULL) {
-               BuiltinIconTable[Id].Image = DummyImage (GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
-           }
-       }
+        if (Id == BUILTIN_ICON_TOOL_BOOTKICKER) {
+            BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_bootscreen, FALSE, NULL);
+        }
+        else if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
+            BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
+        }
+
+        if (BuiltinIconTable[Id].Image == NULL) {
+            BuiltinIconTable[Id].Image = DummyImageEx (GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]);
+        }
     }
 
     return egCopyImage (BuiltinIconTable[Id].Image);
@@ -135,7 +178,7 @@ EG_IMAGE * BuiltinIcon (
 // Searches for icons with extensions in the ICON_EXTENSIONS list (via
 // egFindIcon()).
 // Returns image data. On failure, returns an ugly "dummy" icon.
-EG_IMAGE * LoadOSIcon(
+EG_IMAGE * LoadOSIcon (
     IN  CHAR16  *OSIconName OPTIONAL,
     IN  CHAR16  *FallbackIconName,
     IN  BOOLEAN  BootLogo
@@ -189,7 +232,7 @@ EG_IMAGE * LoadOSIcon(
         ALT_LOG(1, LOG_LINE_NORMAL, L"Setting dummy image");
         #endif
 
-        Image = DummyImage (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
+        Image = DummyImageEx (GlobalConfig.IconSizes[ICON_SIZE_BIG]);
     }
 
     return egCopyImage (Image);
@@ -198,36 +241,11 @@ EG_IMAGE * LoadOSIcon(
 EG_IMAGE * DummyImage (
     IN UINTN PixelSize
 ) {
-    EG_IMAGE        *Image;
-    UINTN            x, y, LineOffset;
-    CHAR8           *Ptr, *YPtr;
-
-    Image = egCreateFilledImage (PixelSize, PixelSize, TRUE, &BlackPixel);
+    static EG_IMAGE *Image = NULL;
 
     if (Image == NULL) {
-        return NULL;
+        Image = DummyImageEx (PixelSize);
     }
 
-    LineOffset = PixelSize * 4;
-
-    YPtr = (CHAR8 *) Image->PixelData + ((PixelSize - 32) >> 1) * (LineOffset + 4);
-    for (y = 0; y < 32; y++) {
-        Ptr = YPtr;
-        for (x = 0; x < 32; x++) {
-            if (((x + y) % 12) < 6) {
-                *Ptr++ = 0;
-                *Ptr++ = 0;
-                *Ptr++ = 0;
-            }
-            else {
-                *Ptr++ = 0;
-                *Ptr++ = 255;
-                *Ptr++ = 255;
-            }
-            *Ptr++ = 144;
-        }
-        YPtr += LineOffset;
-    }
-
-    return Image;
+    return egCopyImage (Image);
 } // EG_IMAGE * DummyImage()

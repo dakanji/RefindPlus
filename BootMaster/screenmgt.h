@@ -98,7 +98,7 @@ VOID BeginExternalScreen (IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
 VOID FinishExternalScreen (VOID);
 VOID TerminateScreen (VOID);
 VOID DrawScreenHeader (IN CHAR16 *Title);
-VOID EndlessIdleLoop (VOID);
+VOID DeadLoop (VOID);
 VOID PrintUglyText (IN CHAR16 *Text, UINTN PositionCode);
 VOID PauseForKey (VOID);
 VOID PauseSeconds (UINTN Seconds);

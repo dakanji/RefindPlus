@@ -58,10 +58,10 @@ typedef struct {
 #define COLOR_RED {0, 0, 200, 0}
 
 typedef struct {
-    UINTN       Width;
-    UINTN       Height;
-    BOOLEAN     HasAlpha;
-    EG_PIXEL    *PixelData;
+    UINTN     Width;
+    UINTN     Height;
+    BOOLEAN   HasAlpha;
+    EG_PIXEL *PixelData;
 } EG_IMAGE;
 
 #define EG_EIPIXELMODE_GRAY         (0)
@@ -109,25 +109,25 @@ VOID egMeasureText (IN CHAR16 *Text, OUT UINTN *Width, OUT UINTN *Height);
 VOID egDisplayMessage (IN CHAR16 *Text, EG_PIXEL *BGColor, UINTN PositionCode);
 VOID egDrawImage (IN EG_IMAGE *Image, IN UINTN ScreenPosX, IN UINTN ScreenPosY);
 VOID egRenderText (
-    IN CHAR16       *Text,
+    IN     CHAR16   *Text,
     IN OUT EG_IMAGE *CompImage,
-    IN UINTN         PosX,
-    IN UINTN         PosY,
-    IN UINT8         BGBrightness
+    IN     UINTN     PosX,
+    IN     UINTN     PosY,
+    IN     UINT8     BGBrightness
 );
 VOID egFillImageArea (
     IN OUT EG_IMAGE *CompImage,
-    IN UINTN         AreaPosX,
-    IN UINTN         AreaPosY,
-    IN UINTN         AreaWidth,
-    IN UINTN         AreaHeight,
-    IN EG_PIXEL     *Color
+    IN     UINTN     AreaPosX,
+    IN     UINTN     AreaPosY,
+    IN     UINTN     AreaWidth,
+    IN     UINTN     AreaHeight,
+    IN     EG_PIXEL *Color
 );
 VOID egComposeImage (
     IN OUT EG_IMAGE *CompImage,
-    IN EG_IMAGE     *TopImage,
-    IN UINTN         PosX,
-    IN UINTN         PosY
+    IN     EG_IMAGE *TopImage,
+    IN     UINTN     PosX,
+    IN     UINTN     PosY
 );
 VOID egDrawImageWithTransparency (
     EG_IMAGE *Image,

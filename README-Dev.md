@@ -11,31 +11,39 @@ The current development focus is on the following units:
 - **XServe2,1**: Early 2008 XServe
 - **XServe3,1**: Early 2009 XServe
 
-However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
+However, the enhancements are not limited in scope to these units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
 
 ## Headline Features
-- Maintains feature and configuration parity with the base rEFInd version.
+- Maintains feature and configuration parity with the base upstream version.
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without Native EFI on Macs.
 - Provides UGADraw on modern GOP based GPUs to permit booting legacy EFIBoot operating systems.
 - Adds a debug version that provides extensive logging.
   * The release version is kept as an optimised version for day to day use.
-- Fixes inability of rEFInd to print to screen on Macs
-  * This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
-- Provides APFS filesystem capability via a built in APFS JumpStart driver if required.
+- Fixes upstream inability to print to screen on Macs
+  * This prevented receiving program messages as well as leveraging advanced features such as EFIShell.
+- Provides NVMe capability, if required, via a built in NvmExpress driver.
+  * Removes the need to add NVMe drivers on units without NVMe support.
+  * Basically allows working as if NVMe is natively supported by the firmware
+    - Removes the need for a risky 'firmware flash' operation on units such as the MacPro3,1
+- Provides APFS filesystem capability, if required, via a built in APFS JumpStart driver.
   * Removes the need to add APFS drivers to run recent Mac OS releases on units without APFS support.
   * Additionally, this ensures that matching APFS drivers for specific Mac OS releases are used.
   * Basically allows working as if APFS is natively supported by the firmware
+    - Removes the need for a risky 'firmware flash' operation on units such as the MacPro3,1
 - Supports Apple's APFS filesystem requirements
-  * This allows booting Mac OS v11.x (Big Sur), or later, from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
-  * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
+  * This allows booting Mac OS v11.x (Big Sur) or later from single named volumes on the main screen.
+    - As opposed to generic and difficult to distinguish 'PreBoot' volumes.
+    - Avoids potentially compromising system integrity by otherwise requiring SIP to be disabled.
+  * This also allows booting FileVault encrypted volumes from signle named volumes on the main screen.
+    - As opposed to generic and difficult to distinguish 'PreBoot' volumes.
 
 ## Installation
 [MyBootMgr](https://www.dakanji.com/creations/index.html), an automated implementation of a RefindPlus/OpenCore chain-loading arrangement is recommended for implementation on MacPro3,1 to MacPro5,1 as well as on XServe2,1 and XServe3,1. However, the RefindPlus efi file can function as a drop-in replacement for the rEFInd efi file. Hence, you can install the [rEFInd package](https://www.rodsbooks.com/refind/installing.html) first and replace the rEFInd efi file with the RefindPlus efi file. (Ensure you rename the RefindPlus efi file to match). This permits implementing RefindPlus on other types of Mac as well as on other operating systems.
 
 Users may also want to replace filesystem drivers with those packaged with RefindPlus as these are always either exactly the same as upstream versions or have had fixes applied.
 
-RefindPlus will function with the rEFInd configuration file, `refind.conf`. This should however be replaced with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample).
+RefindPlus will function with the rEFInd configuration file, `refind.conf`, but users may wish to replace this with the RefindPlus configuration file, `config.conf`, to configure the additonal options provided by RefindPlus. A sample RefindPlus configuration file is available here: [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/GOPFix/config.conf-sample). RefindPlus-Specific options can also be added to a refind.conf file and used that way if preferred.
 
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below.
 

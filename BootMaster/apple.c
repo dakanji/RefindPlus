@@ -28,9 +28,9 @@
 #include "global.h"
 #include "config.h"
 #include "lib.h"
-#include "screenmgt.h"
 #include "apple.h"
 #include "mystrings.h"
+#include "screenmgt.h"
 #include "../include/refit_call_wrapper.h"
 
 CHAR16    *gCsrStatus     = NULL;
@@ -55,28 +55,30 @@ EFI_STATUS GetCsrStatus (
         (VOID **) &ReturnValue,
         &CsrLength
     );
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            *CsrStatus = SIP_ENABLED_EX;
+            gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
 
-    if (Status == EFI_SUCCESS) {
-        if (CsrLength == 4) {
-            *CsrStatus = *ReturnValue;
+            // Treat as Success
+            Status = EFI_SUCCESS;
         }
         else {
-            Status     = EFI_BAD_BUFFER_SIZE;
-            gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
+            gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Status");
         }
 
-        MY_FREE_POOL(ReturnValue);
+        // Early Return ... Return Status
+        return Status;
     }
-    else if (Status == EFI_NOT_FOUND) {
-        *CsrStatus = SIP_ENABLED_EX;
-        gCsrStatus = StrDuplicate (L"SIP/SSV Enabled (Cleared/Empty)");
 
-        // Treat as Success
-        Status = EFI_SUCCESS;
+    if (CsrLength != 4) {
+        gCsrStatus = StrDuplicate (L"Unknown SIP/SSV Status");
+
+        // Early Return ... Return Error
+        return EFI_BAD_BUFFER_SIZE;
     }
-    else {
-        gCsrStatus = StrDuplicate (L"Error While Getting SIP/SSV Status");
-    }
+
+    *CsrStatus = *ReturnValue;
 
     return Status;
 } // EFI_STATUS GetCsrStatus()
@@ -88,7 +90,6 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
-    UINTN     WaitSeconds = 3;
     CHAR16   *MsgStr      = NULL;
     EG_PIXEL  BGColor     = COLOR_LIGHTBLUE;
 
@@ -157,19 +158,19 @@ VOID RecordgCsrStatus (
     } // switch
 
     if (DisplayMessage) {
-        if (MsgNormalised) {
-            WaitSeconds = 4;
-            MsgStr = PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus);
-        }
-        else {
-            MsgStr = PoolPrint (L"%s", gCsrStatus);
-        }
-
+        MsgStr = (MsgNormalised)
+            ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
+            : PoolPrint (L"%s", gCsrStatus);
         egDisplayMessage (MsgStr, &BGColor, CENTER);
-        PauseSeconds (WaitSeconds);
+        PauseSeconds (4);
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("    * %s\n\n", MsgStr);
+        LOG_MSG(
+            "%s    * %s%s",
+            (MsgNormalised) ? L"\n" : L"",
+            MsgStr,
+            (MsgNormalised) ? L"" : L"\n\n"
+        );
         #endif
 
         MY_FREE_POOL(MsgStr);
@@ -191,79 +192,7 @@ VOID RotateCsrValue (VOID) {
     #endif
 
     Status = GetCsrStatus (&CurrentValue);
-    if ((Status == EFI_SUCCESS) && GlobalConfig.CsrValues) {
-        ListItem = GlobalConfig.CsrValues;
-
-        while ((ListItem != NULL) && (ListItem->Value != CurrentValue)) {
-            ListItem = ListItem->Next;
-        } // while
-
-        TargetCsr = (ListItem == NULL || ListItem->Next == NULL)
-            ? GlobalConfig.CsrValues->Value
-            : ListItem->Next->Value;
-
-        #if REFIT_DEBUG > 0
-        if (TargetCsr == 0) {
-            // Set target CSR value to NULL
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Clearing SIP to 'NULL' from '0x%04x'",
-                CurrentValue
-            );
-        }
-        else if (CurrentValue == 0) {
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Setting SIP to '0x%04x' from 'NULL'",
-                TargetCsr
-            );
-        }
-        else {
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Setting SIP to '0x%04x' from '0x%04x'",
-                CurrentValue, TargetCsr
-            );
-        }
-        #endif
-
-        if (TargetCsr != 0) {
-            Status = EfivarSetRaw (
-                &CsrGuid, L"csr-active-config",
-                &TargetCsr, 4, TRUE
-            );
-        }
-        else {
-            Status = REFIT_CALL_5_WRAPPER(
-                gRT->SetVariable, L"csr-active-config",
-                &CsrGuid, StorageFlags, 0, NULL
-            );
-        }
-
-        if (Status == EFI_SUCCESS) {
-            RecordgCsrStatus (TargetCsr, TRUE);
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL,
-                L"Successfully Set SIP/SSV:- '0x%04x'",
-                TargetCsr
-            );
-            #endif
-        }
-        else {
-            gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
-
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
-            #endif
-
-            EG_PIXEL BGColor = COLOR_LIGHTBLUE;
-            egDisplayMessage (
-                gCsrStatus,
-                &BGColor,
-                CENTER
-            );
-            PauseSeconds (4);
-        }
-    }
-    else {
+    if (EFI_ERROR(Status) || !GlobalConfig.CsrValues) {
         gCsrStatus = StrDuplicate (L"Could Not Retrieve SIP/SSV Status");
 
         #if REFIT_DEBUG > 0
@@ -277,7 +206,78 @@ VOID RotateCsrValue (VOID) {
             CENTER
         );
         PauseSeconds (4);
-    } // if/else
+
+        // Early Return
+        return;
+    }
+
+    ListItem = GlobalConfig.CsrValues;
+    while ((ListItem != NULL) && (ListItem->Value != CurrentValue)) {
+        ListItem = ListItem->Next;
+    } // while
+
+    TargetCsr = (ListItem == NULL || ListItem->Next == NULL)
+        ? GlobalConfig.CsrValues->Value
+        : ListItem->Next->Value;
+
+    #if REFIT_DEBUG > 0
+    if (TargetCsr == 0) {
+        // Set target CSR value to NULL
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Clearing SIP to 'NULL' from '0x%04x'",
+            CurrentValue
+        );
+    }
+    else if (CurrentValue == 0) {
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Setting SIP to '0x%04x' from 'NULL'",
+            TargetCsr
+        );
+    }
+    else {
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Setting SIP to '0x%04x' from '0x%04x'",
+            CurrentValue, TargetCsr
+        );
+    }
+    #endif
+
+    Status = (TargetCsr != 0)
+        ? EfivarSetRaw (
+            &CsrGuid, L"csr-active-config",
+            &TargetCsr, 4, TRUE
+        )
+        : REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, L"csr-active-config",
+            &CsrGuid, StorageFlags, 0, NULL
+        );
+    if (EFI_ERROR(Status)) {
+        gCsrStatus = StrDuplicate (L"Error While Setting SIP/SSV");
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, gCsrStatus);
+        #endif
+
+        EG_PIXEL BGColor = COLOR_LIGHTBLUE;
+        egDisplayMessage (
+            gCsrStatus,
+            &BGColor,
+            CENTER
+        );
+        PauseSeconds (4);
+
+        // Early Return
+        return;
+    }
+
+    RecordgCsrStatus (TargetCsr, TRUE);
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Successfully Set SIP/SSV:- '0x%04x'",
+        TargetCsr
+    );
+    #endif
 } // VOID RotateCsrValue()
 
 
@@ -285,35 +285,34 @@ EFI_STATUS NormaliseCSR (VOID) {
     EFI_STATUS  Status;
     UINT32      OurCSR;
 
-    // Mute logging if active
+    // Mute logging
     MuteLogger = TRUE;
+    Status     = GetCsrStatus (&OurCSR);  // Get csr-active-config value
+    MuteLogger = FALSE;
+    // Restore logging
 
-    // Get csr-active-config value
-    Status = GetCsrStatus (&OurCSR);
-
-    if (Status == EFI_NOT_FOUND) {
-        // csr-active-config not found ... Proceed as 'OK'
-        Status = EFI_ALREADY_STARTED;
-    }
-    else if (Status == EFI_SUCCESS) {
-        if ((OurCSR & CSR_ALLOW_APPLE_INTERNAL) == 0) {
-            // 'CSR_ALLOW_APPLE_INTERNAL' bit not present ... Proceed as 'OK'
+    if (EFI_ERROR(Status)) {
+        if (Status == EFI_NOT_FOUND) {
+            // csr-active-config not found ... Proceed as 'OK'
             Status = EFI_ALREADY_STARTED;
         }
-        else {
-            // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
-            OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
 
-            MsgNormalised = TRUE;
-            RecordgCsrStatus (OurCSR, TRUE);
-            MsgNormalised = FALSE;
-        }
+        // Early Return ... Return Status
+        return Status;
     }
 
-    // Restore logging if previously active
-    MuteLogger = FALSE;
+    if ((OurCSR & CSR_ALLOW_APPLE_INTERNAL) == 0) {
+        // 'CSR_ALLOW_APPLE_INTERNAL' bit not present ... Proceed as 'OK'
+        return EFI_ALREADY_STARTED;
+    }
 
-    return Status;
+    // 'CSR_ALLOW_APPLE_INTERNAL' bit present ... Clear and Reset
+    MsgNormalised = TRUE;
+    OurCSR &= ~CSR_ALLOW_APPLE_INTERNAL;
+    RecordgCsrStatus (OurCSR, TRUE);
+    MsgNormalised = FALSE;
+
+    return EFI_SUCCESS;
 } // EFI_STATUS NormaliseCSR()
 
 
@@ -342,64 +341,78 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     CHAR8                   *MacVersionStr      = NULL;
     EfiAppleSetOsInterface  *SetOs              = NULL;
 
+    if (GlobalConfig.SpoofOSXVersion == NULL) {
+        // Early Return ... Treat as success
+        return EFI_SUCCESS;
+    }
+
     Status = REFIT_CALL_3_WRAPPER(
         gBS->LocateProtocol,
         &apple_set_os_guid,
         NULL,
         (VOID **) &SetOs
     );
-
-    // If not a Mac, ignore the call.
-    if ((Status != EFI_SUCCESS) || (!SetOs)) {
+    if (EFI_ERROR(Status) || SetOs == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Not a Mac ... Do Not Set Mac OS Information"
+            L"Not a Mac ... Not Setting Mac OS Information"
         );
         #endif
 
-        Status = EFI_SUCCESS;
+        // Early Return ... Treat as success
+        return EFI_SUCCESS;
     }
-    else if (SetOs->Version != 0 && GlobalConfig.SpoofOSXVersion) {
-        Status         = EFI_OUT_OF_RESOURCES;
-        AppleVersionOS = StrDuplicate (L"Mac OS");
-        MergeStrings (&AppleVersionOS, GlobalConfig.SpoofOSXVersion, ' ');
 
-        if (AppleVersionOS) {
-            MacVersionStr = AllocateZeroPool (
-                (StrLen (AppleVersionOS) + 1) * sizeof (CHAR8)
-            );
+    if (SetOs->Version == 0) {
+        // Early Return ... Treat as success
+        return EFI_SUCCESS;
+    }
 
-            if (MacVersionStr) {
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL,
-                    L"Setting Mac OS Information to '%s'",
-                    AppleVersionOS
-                );
-                #endif
+    AppleVersionOS = StrDuplicate (L"Mac OS X");
+    if (AppleVersionOS == NULL) {
+        // Early Return ... Out of Memory
+        return EFI_OUT_OF_RESOURCES;
+    }
 
-                UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
-                Status = REFIT_CALL_1_WRAPPER(
-                    SetOs->SetOsVersion, MacVersionStr
-                );
+    MergeStrings (&AppleVersionOS, GlobalConfig.SpoofOSXVersion, ' ');
 
-                if (!EFI_ERROR(Status)) {
-                    Status = EFI_SUCCESS;
-                }
+    MacVersionStr = AllocateZeroPool (
+        (StrLen (AppleVersionOS) + 1) * sizeof (CHAR8)
+    );
+    if (MacVersionStr == NULL) {
+        MY_FREE_POOL(AppleVersionOS);
 
-                MY_FREE_POOL(MacVersionStr);
-            }
+        // Early Return ... Out of Memory
+        return EFI_OUT_OF_RESOURCES;
+    }
 
-            if (Status == EFI_SUCCESS && SetOs->Version >= 2) {
-                Status = REFIT_CALL_1_WRAPPER(
-                    SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
-                );
-            }
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL,
+        L"Set Mac OS Information:- '%s'",
+        AppleVersionOS
+    );
+    #endif
 
-            MY_FREE_POOL(AppleVersionOS);
-        } // if (AppleVersionOS)
-    } // if/else
+    UnicodeStrToAsciiStr (AppleVersionOS, MacVersionStr);
+    Status = REFIT_CALL_1_WRAPPER(
+        SetOs->SetOsVersion, MacVersionStr
+    );
 
-    return Status;
+    MY_FREE_POOL(MacVersionStr);
+    MY_FREE_POOL(AppleVersionOS);
+
+    if (EFI_ERROR(Status)) {
+        // Early Return ... Return Error
+        return Status;
+    }
+
+    if (SetOs->Version >= 2) {
+        REFIT_CALL_1_WRAPPER(
+            SetOs->SetOsVendor, (CHAR8 *) "Apple Inc."
+        );
+    }
+
+    return EFI_SUCCESS;
 } // EFI_STATUS SetAppleOSInfo()
 
 
@@ -449,6 +462,62 @@ UINTN OcFileDevicePathNameSize (
     IN CONST FILEPATH_DEVICE_PATH  *FilePath
 );
 
+#if 0
+// DA-TAG: Not currently used ... Disable - START
+static
+CHAR16 * RP_GetBootPathName (
+    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
+) {
+    UINTN                            Len;
+    UINTN                            Size;
+    UINTN                            PathNameSize;
+    CHAR16                          *PathName;
+    CHAR16                          *FilePathName;
+    FILEPATH_DEVICE_PATH            *FilePath;
+
+    if (DevicePathType    (DevicePath) != MEDIA_DEVICE_PATH ||
+        DevicePathSubType (DevicePath) != MEDIA_FILEPATH_DP
+    ) {
+        PathName = AllocateZeroPool (sizeof (L"\\"));
+        if (PathName == NULL) {
+            // Early Return ... Return NULL
+            return NULL;
+        }
+
+        StrCpyS (PathName, sizeof (L"\\"), L"\\");
+
+        // Early Return ... Return Output
+        return PathName;
+    }
+
+    FilePath     = (FILEPATH_DEVICE_PATH *) DevicePath;
+    Size         = OcFileDevicePathNameSize (FilePath);
+    PathNameSize = Size + sizeof (CHAR16);
+
+    PathName = AllocateZeroPool (PathNameSize);
+    if (PathName == NULL) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    CopyMem (PathName, FilePath->PathName, Size);
+    if (!MyStrStr (PathName, L"\\")) {
+        StrCpyS (PathName, PathNameSize, L"\\");
+
+        // Early Return ... Return Output
+        return PathName;
+    }
+
+    Len = StrLen (PathName);
+    FilePathName = &PathName[Len - 1];
+    while (*FilePathName != L'\\') {
+        *FilePathName = L'\0';
+        --FilePathName;
+    } // while
+
+    return PathName;
+} // static EFI_STATUS RP_GetBootPathName
+
 static
 CHAR16 * RP_GetAppleDiskLabelEx (
     IN  EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem,
@@ -466,6 +535,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
 
     DiskLabelPath = AllocatePool (DiskLabelPathSize);
     if (DiskLabelPath == NULL) {
+        // Early Return ... Return NULL
         return NULL;
     }
 
@@ -480,19 +550,70 @@ CHAR16 * RP_GetAppleDiskLabelEx (
 
     MY_FREE_POOL(DiskLabelPath);
 
-    if (AsciiDiskLabel != NULL) {
+    if (AsciiDiskLabel == NULL) {
+        // Early Return ... Return NULL
         return NULL;
     }
 
     UnicodeDiskLabel = MyAsciiStrCopyToUnicode (AsciiDiskLabel, DiskLabelLength);
 
-    if (UnicodeDiskLabel != NULL) {
-        MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
-    }
     MY_FREE_POOL(AsciiDiskLabel);
+
+    if (UnicodeDiskLabel == NULL) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    MyUnicodeFilterString (UnicodeDiskLabel, TRUE);
 
     return UnicodeDiskLabel;
 } // static CHAR16 * RP_GetAppleDiskLabelEx()
+
+CHAR16 * RP_GetAppleDiskLabel (
+    IN  REFIT_VOLUME *Volume
+) {
+    EFI_STATUS                        Status;
+    CHAR16                           *BootDirectoryName;
+    CHAR16                           *AppleDiskLabel = NULL;
+    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
+
+    BootDirectoryName = RP_GetBootPathName (Volume->DevicePath);
+    if (BootDirectoryName == NULL) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    Status = gBS->HandleProtocol (
+        Volume->DeviceHandle,
+        &gEfiSimpleFileSystemProtocolGuid,
+        (VOID **) &FileSystem
+    );
+    if (EFI_ERROR (Status)) {
+        MY_FREE_POOL(BootDirectoryName);
+
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    AppleDiskLabel = RP_GetAppleDiskLabelEx (
+        FileSystem,
+        BootDirectoryName,
+        L".contentDetails"
+    );
+
+    if (AppleDiskLabel == NULL) {
+        AppleDiskLabel = RP_GetAppleDiskLabelEx (
+            FileSystem,
+            BootDirectoryName,
+            L".disk_label.contentDetails"
+        );
+    }
+    MY_FREE_POOL(BootDirectoryName);
+
+    return AppleDiskLabel;
+} // CHAR16 * RP_GetAppleDiskLabel()
+#endif
+// DA-TAG: Not currently used ... Disable - END
 
 static
 VOID * RP_GetFileInfo (
@@ -514,37 +635,46 @@ VOID * RP_GetFileInfo (
         &FileInfoSize,
         NULL
     );
-
-    if (Status == EFI_BUFFER_TOO_SMALL &&
-        FileInfoSize >= MinFileInfoSize
+    if (Status != EFI_BUFFER_TOO_SMALL ||
+        FileInfoSize < MinFileInfoSize
     ) {
-        // Some drivers (i.e. built-in 32-bit Apple HFS driver) may possibly
-        // omit null terminators from file info data.
-        if (CompareGuid (InformationType, &gEfiFileInfoGuid) &&
-            OcOverflowAddUN (FileInfoSize, sizeof (CHAR16), &FileInfoSize)
-        ) {
-            return NULL;
-        }
-
-        FileInfoBuffer = AllocateZeroPool (FileInfoSize);
-        if (FileInfoBuffer != NULL) {
-            Status = File->GetInfo (
-                File,
-                InformationType,
-                &FileInfoSize,
-                FileInfoBuffer
-            );
-
-            if (EFI_ERROR(Status)) {
-                MY_FREE_POOL(FileInfoBuffer);
-            }
-            else if (RealFileInfoSize != NULL) {
-                *RealFileInfoSize = FileInfoSize;
-            }
-        }
+        // Early Return ... Return NULL
+        return NULL;
     }
 
-  return FileInfoBuffer;
+    // Some drivers (i.e. built-in 32-bit Apple HFS driver) may possibly
+    // omit null terminators from file info data.
+    if (CompareGuid (InformationType, &gEfiFileInfoGuid) &&
+        OcOverflowAddUN (FileInfoSize, sizeof (CHAR16), &FileInfoSize)
+    ) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    FileInfoBuffer = AllocateZeroPool (FileInfoSize);
+    if (FileInfoBuffer == NULL) {
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    Status = File->GetInfo (
+        File,
+        InformationType,
+        &FileInfoSize,
+        FileInfoBuffer
+    );
+    if (EFI_ERROR(Status)) {
+        MY_FREE_POOL(FileInfoBuffer);
+
+        // Early Return ... Return NULL
+        return NULL;
+    }
+
+    if (RealFileInfoSize != NULL) {
+        *RealFileInfoSize = FileInfoSize;
+    }
+
+    return FileInfoBuffer;
 } // static VOID * RP_GetFileInfo()
 
 static
@@ -569,6 +699,7 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
         );
 
         if (*VolumeInfo == NULL) {
+            // Early Return ... Return Error
             return EFI_NOT_FOUND;
         }
     }
@@ -584,60 +715,13 @@ EFI_STATUS RP_GetApfsSpecialFileInfo (
         if (*ContainerInfo == NULL) {
             MY_FREE_POOL(*VolumeInfo);
 
+            // Early Return ... Return Error
             return EFI_NOT_FOUND;
         }
     }
 
     return EFI_SUCCESS;
 } // static EFI_STATUS RP_GetApfsSpecialFileInfo()
-
-static
-CHAR16 * RP_GetBootPathName (
-    IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
-) {
-    UINTN                            Len;
-    UINTN                            Size;
-    UINTN                            PathNameSize;
-    CHAR16                          *PathName;
-    CHAR16                          *FilePathName;
-    FILEPATH_DEVICE_PATH            *FilePath;
-
-    if ((DevicePathType    (DevicePath) == MEDIA_DEVICE_PATH) &&
-        (DevicePathSubType (DevicePath) == MEDIA_FILEPATH_DP)
-    ) {
-        FilePath     = (FILEPATH_DEVICE_PATH *) DevicePath;
-        Size         = OcFileDevicePathNameSize (FilePath);
-        PathNameSize = Size + sizeof (CHAR16);
-        PathName     = AllocateZeroPool (PathNameSize);
-
-        if (PathName == NULL) {
-            return NULL;
-        }
-
-        CopyMem (PathName, FilePath->PathName, Size);
-
-        if (!MyStrStr (PathName, L"\\")) {
-            StrCpyS (PathName, PathNameSize, L"\\");
-        }
-        else {
-            Len          = StrLen (PathName);
-            FilePathName = &PathName[Len - 1];
-
-            while (*FilePathName != L'\\') {
-                *FilePathName = L'\0';
-                --FilePathName;
-            } // while
-        }
-    }
-    else {
-        PathName = AllocateZeroPool (sizeof (L"\\"));
-        if (PathName != NULL) {
-            StrCpyS (PathName, sizeof (L"\\"), L"\\");
-        }
-    }
-
-    return PathName;
-} // static EFI_STATUS RP_GetBootPathName
 
 EFI_STATUS RP_GetApfsVolumeInfo (
     IN  EFI_HANDLE               Device,
@@ -651,7 +735,11 @@ EFI_STATUS RP_GetApfsVolumeInfo (
     APPLE_APFS_CONTAINER_INFO       *ApfsContainerInfo;
     APPLE_APFS_VOLUME_INFO          *ApfsVolumeInfo;
 
-    if (ContainerGuid == NULL && VolumeGuid == NULL && VolumeRole == NULL) {
+    if (ContainerGuid == NULL
+        && VolumeGuid == NULL
+        && VolumeRole == NULL
+    ) {
+        // Early Return ... Return Error
         return EFI_INVALID_PARAMETER;
     }
 
@@ -662,21 +750,21 @@ EFI_STATUS RP_GetApfsVolumeInfo (
         &gEfiSimpleFileSystemProtocolGuid,
         (VOID **) &FileSystem
     );
-
     if (EFI_ERROR(Status)) {
+        // Early Return ... Return Error
         return Status;
     }
 
     Status = FileSystem->OpenVolume (FileSystem, &Root);
     if (EFI_ERROR(Status)) {
+        // Early Return ... Return Error
         return Status;
     }
 
     Status = RP_GetApfsSpecialFileInfo (Root, &ApfsVolumeInfo, &ApfsContainerInfo);
-
     Root->Close (Root);
-
     if (EFI_ERROR(Status)) {
+        // Early Return ... Return Error
         return EFI_NOT_FOUND;
     }
 
@@ -703,49 +791,6 @@ EFI_STATUS RP_GetApfsVolumeInfo (
 
     return EFI_SUCCESS;
 } // EFI_STATUS RP_GetApfsVolumeInfo()
-
-CHAR16 * RP_GetAppleDiskLabel (
-    IN  REFIT_VOLUME *Volume
-) {
-    EFI_STATUS                        Status;
-    CHAR16                           *BootDirectoryName;
-    CHAR16                           *AppleDiskLabel = NULL;
-    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL  *FileSystem;
-
-    BootDirectoryName = RP_GetBootPathName (Volume->DevicePath);
-    if (!BootDirectoryName) {
-        return NULL;
-    }
-
-    Status = gBS->HandleProtocol (
-        Volume->DeviceHandle,
-        &gEfiSimpleFileSystemProtocolGuid,
-        (VOID **) &FileSystem
-    );
-
-    if (EFI_ERROR (Status)) {
-        MY_FREE_POOL(BootDirectoryName);
-
-        return NULL;
-    }
-
-    AppleDiskLabel = RP_GetAppleDiskLabelEx (
-        FileSystem,
-        BootDirectoryName,
-        L".contentDetails"
-    );
-
-    if (AppleDiskLabel == NULL) {
-        AppleDiskLabel = RP_GetAppleDiskLabelEx (
-            FileSystem,
-            BootDirectoryName,
-            L".disk_label.contentDetails"
-        );
-    }
-    MY_FREE_POOL(BootDirectoryName);
-
-    return AppleDiskLabel;
-} // CHAR16 * RP_GetAppleDiskLabel()
 
 // DA-TAG: Limit to TianoCore - END
 #endif

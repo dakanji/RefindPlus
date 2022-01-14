@@ -68,10 +68,8 @@
 #endif
 
 #if REFIT_DEBUG > 0
-extern
-UINTN   AppleFramebuffers;
-extern
-CHAR16 *OffsetNext;
+extern UINTN   AppleFramebuffers;
+extern CHAR16 *OffsetNext;
 #endif
 
 // Console defines and variables
@@ -562,7 +560,7 @@ EFI_STATUS egSetMaxResolution (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("Set Screen Resolution:\n");
+    LOG_MSG("Set Screen Resolution:");
     #endif
 
     MaxMode = GOPDraw->Mode->MaxMode;
@@ -597,7 +595,8 @@ EFI_STATUS egSetMaxResolution (VOID) {
         Width, Height
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("  - %s\n", MsgStr);
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+    LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -710,14 +709,14 @@ VOID egInitScreen (VOID) {
     BOOLEAN  PrevFlag = FALSE;
     BOOLEAN  FlagUGA  = FALSE;
 
-    LOG_MSG("Check for Graphics:\n");
+    LOG_MSG("Check for Graphics:");
     #endif
 
     // Get ConsoleControl Protocol
     ConsoleControl = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("  - Seek Console Control\n");
+    LOG_MSG("%s  - Seek Console Control", OffsetNext);
     #endif
 
     // Check ConsoleOut Handle
@@ -729,7 +728,7 @@ VOID egInitScreen (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("    * Seek on ConsoleOut Handle ... %r\n", Status);
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
     #endif
 
     if (EFI_ERROR(Status) || ConsoleControl == NULL) {
@@ -744,7 +743,7 @@ VOID egInitScreen (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("    * Seek on Handle Buffer ... %r\n", Status);
+        LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -757,7 +756,7 @@ VOID egInitScreen (VOID) {
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
+                LOG_MSG("    ** Evaluate on Handle[%02d] ... %r", i, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -782,8 +781,7 @@ VOID egInitScreen (VOID) {
     }
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("  - %s", MsgStr);
-    LOG_MSG("\n\n");
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -791,7 +789,7 @@ VOID egInitScreen (VOID) {
     UGADraw = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("  - Seek Universal Graphics Adapter\n");
+    LOG_MSG("\n%s  - Seek Universal Graphics Adapter", OffsetNext);
     #endif
 
     // Check ConsoleOut Handle
@@ -803,7 +801,7 @@ VOID egInitScreen (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("    * Seek on ConsoleOut Handle ... %r\n", Status);
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
     #endif
 
     if (EFI_ERROR(Status)) {
@@ -818,7 +816,7 @@ VOID egInitScreen (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("    * Seek on Handle Buffer ... %r\n", Status);
+        LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -839,7 +837,7 @@ VOID egInitScreen (VOID) {
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("    ** Examine Handle[%02d] ... %r\n", i, Status);
+                LOG_MSG("%s    ** Examine Handle[%02d] ... %r", OffsetNext, i, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -863,16 +861,16 @@ VOID egInitScreen (VOID) {
 
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
-                                "    *** Select Handle[%02d] @ %5d x %-5d\n",
-                                i, UGAWidth, UGAHeight
+                                "%s    *** Select Handle[%02d] @ %5d x %-5d",
+                                OffsetNext, i, UGAWidth, UGAHeight
                             );
                             #endif
                         }
                         else {
                             #if REFIT_DEBUG > 0
                             LOG_MSG(
-                                "    *** Ignore Handle[%02d] @ %5d x %-5d\n",
-                                i, Width, Height
+                                "    *** Ignore Handle[%02d] @ %5d x %-5d",
+                                OffsetNext, i, Width, Height
                             );
                             #endif
                         }
@@ -896,8 +894,7 @@ VOID egInitScreen (VOID) {
     }
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("  - %s", MsgStr);
-    LOG_MSG("\n\n");
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -905,7 +902,7 @@ VOID egInitScreen (VOID) {
     GOPDraw = NULL;
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("  - Seek Graphics Output Protocol\n");
+    LOG_MSG("\n%s  - Seek Graphics Output Protocol", OffsetNext);
     #endif
 
     // Check ConsoleOut Handle
@@ -917,7 +914,7 @@ VOID egInitScreen (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("    * Seek on ConsoleOut Handle ... %r\n", Status);
+    LOG_MSG("%s    * Seek on ConsoleOut Handle ... %r", OffsetNext, Status);
     #endif
 
     if (EFI_ERROR(Status)) {
@@ -932,7 +929,7 @@ VOID egInitScreen (VOID) {
         );
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("    * Seek on Handle Buffer ... %r\n", Status);
+        LOG_MSG("%s    * Seek on Handle Buffer ... %r", OffsetNext, Status);
         #endif
 
         if (!EFI_ERROR(Status)) {
@@ -953,7 +950,7 @@ VOID egInitScreen (VOID) {
                 );
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("    ** Evaluate on Handle[%02d] ... %r\n", i, Status);
+                LOG_MSG("%s    ** Evaluate on Handle[%02d] ... %r", OffsetNext, i, Status);
                 #endif
 
                 if (!EFI_ERROR(Status)) {
@@ -976,7 +973,8 @@ VOID egInitScreen (VOID) {
 
                                 #if REFIT_DEBUG > 0
                                 LOG_MSG(
-                                    "    *** Select Handle[%02d][%02d] @ %5d x %-5d\n",
+                                    "%s    *** Select Handle[%02d][%02d] @ %5d x %-5d",
+                                    OffsetNext,
                                     i, GOPMode,
                                     GOPWidth,
                                     GOPHeight
@@ -986,7 +984,8 @@ VOID egInitScreen (VOID) {
                             else {
                                 #if REFIT_DEBUG > 0
                                 LOG_MSG(
-                                    "        Ignore Handle[%02d][%02d] @ %5d x %-5d\n",
+                                    "%s        Ignore Handle[%02d][%02d] @ %5d x %-5d",
+                                    OffsetNext,
                                     i, GOPMode,
                                     Info->HorizontalResolution,
                                     Info->VerticalResolution
@@ -1019,19 +1018,19 @@ VOID egInitScreen (VOID) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT FOUND!!");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("  - %s\n\n", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
     }
-
-    if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
+    else if (EFI_ERROR(Status) && XFlag == EFI_UNSUPPORTED) {
         XFlag = EFI_NOT_FOUND;
 
         // Not Found
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ERROR!!");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("  - %s", MsgStr);
+        LOG_MSG("%s  - %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
@@ -1047,7 +1046,7 @@ VOID egInitScreen (VOID) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... ok");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s", MsgStr);
+            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             #endif
@@ -1058,7 +1057,7 @@ VOID egInitScreen (VOID) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Assess Graphics Output Protocol ... NOT OK!!");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s", MsgStr);
+            LOG_MSG("%s  - %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             #endif
@@ -1307,7 +1306,7 @@ VOID egInitScreen (VOID) {
     }
     else {
         if (FlagUGA) {
-            if (MyStriCmp (gST->FirmwareVendor, L"Apple") && AppleFramebuffers == 0) {
+            if (AppleFirmware && AppleFramebuffers == 0) {
                 MsgStr = StrDuplicate (L"Yes (Without Display ... Apple Framebuffers are Absent)");
             }
             else {

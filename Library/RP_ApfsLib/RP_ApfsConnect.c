@@ -1,7 +1,7 @@
 /** @file
   Copyright (C) 2020, vit9696. All rights reserved.
 
-  Modified 2021, Dayo Akanji. (sf.net/u/dakanji/profile)
+  Modified 2021-2022, Dayo Akanji. (sf.net/u/dakanji/profile)
 
   All rights reserved.
 
@@ -34,6 +34,8 @@
 #include "../../include/refit_call_wrapper.h"
 
 extern BOOLEAN SilenceAPFS;
+extern BOOLEAN AppleFirmware;
+
 extern CHAR16 * MyStrStr (IN CHAR16 *String, IN CHAR16 *StrCharSet);
 
 LIST_ENTRY               mApfsPrivateDataList = INITIALIZE_LIST_HEAD_VARIABLE (mApfsPrivateDataList);
@@ -162,7 +164,7 @@ EFI_STATUS ApfsStartDriver (
     // REF: https://github.com/acidanthera/bugtracker/issues/1128
     OcDisconnectDriversOnHandle (PrivateData->LocationInfo.ControllerHandle);
 
-    if (MyStrStr (gST->FirmwareVendor, L"Apple") == NULL) {
+    if (!AppleFirmware) {
         // Connect all devices on Non-Apple Firmware.
         // REF: https://github.com/acidanthera/bugtracker/issues/960
         OcConnectDrivers();

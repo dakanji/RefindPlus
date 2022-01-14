@@ -24,7 +24,7 @@
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */

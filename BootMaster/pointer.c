@@ -32,36 +32,39 @@
 #include "rp_funcs.h"
 #include "../include/refit_call_wrapper.h"
 
-UINTN                           NumAPointerDevices = 0;
 UINTN                           NumSPointerDevices = 0;
-EFI_HANDLE                     *APointerHandles    = NULL;
-EFI_HANDLE                     *SPointerHandles    = NULL;
-EFI_GUID                        APointerGuid       = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
 EFI_GUID                        SPointerGuid       = EFI_SIMPLE_POINTER_PROTOCOL_GUID;
-EFI_ABSOLUTE_POINTER_PROTOCOL **APointerProtocol   = NULL;
+EFI_HANDLE                     *SPointerHandles    = NULL;
 EFI_SIMPLE_POINTER_PROTOCOL   **SPointerProtocol   = NULL;
+UINTN                           NumAPointerDevices = 0;
+EFI_GUID                        APointerGuid       = EFI_ABSOLUTE_POINTER_PROTOCOL_GUID;
+EFI_HANDLE                     *APointerHandles    = NULL;
+EFI_ABSOLUTE_POINTER_PROTOCOL **APointerProtocol   = NULL;
 
-BOOLEAN PointerAvailable = FALSE;
+UINTN                           LastXPos           = 0;
+UINTN                           LastYPos           = 0;
+EG_IMAGE                       *MouseImage         = NULL;
+EG_IMAGE                       *Background         = NULL;
 
-UINTN LastXPos = 0, LastYPos = 0;
-EG_IMAGE* MouseImage = NULL;
-EG_IMAGE* Background = NULL;
+BOOLEAN                         PointerAvailable   = FALSE;
+POINTER_STATE                   State;
 
-POINTER_STATE State;
+extern CHAR16                  *OffsetNext;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize all pointer devices
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdInitialize() {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("Initialise Pointer Devices...\n");
-        #endif
+    #if REFIT_DEBUG > 0
+    LOG_MSG("I N I T I A L I S E   P O I N T E R   D E V I C E S");
+    LOG_MSG("\n");
+    #endif
 
     pdCleanup(); // just in case
 
     if (! (GlobalConfig.EnableMouse || GlobalConfig.EnableTouch)) {
         #if REFIT_DEBUG > 0
-        LOG_MSG("  - Detected Touch Mode or 'No Mouse' Mode\n");
+        LOG_MSG("%s  - Detected Touch Mode or 'No Mouse' Mode", OffsetNext);
         #endif
     }
     else {
@@ -92,7 +95,7 @@ VOID pdInitialize() {
                 );
                 if (status == EFI_SUCCESS) {
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("  - Enable Touch\n");
+                    LOG_MSG("%s  - Enable Touch", OffsetNext);
                     #endif
 
                     NumAPointerDevices++;
@@ -101,7 +104,7 @@ VOID pdInitialize() {
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG_MSG("  - Disable Touch\n");
+            LOG_MSG("%s  - Disable Touch", OffsetNext);
             #endif
 
             GlobalConfig.EnableTouch = FALSE;
@@ -141,13 +144,13 @@ VOID pdInitialize() {
 
             #if REFIT_DEBUG > 0
             if (GotMouse) {
-                LOG_MSG("  - Enabled Mouse\n");
+                LOG_MSG("%s  - Enabled Mouse", OffsetNext);
             }
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            LOG_MSG("  - Disable Mouse\n");
+            LOG_MSG("%s  - Disable Mouse", OffsetNext);
             #endif
 
             GlobalConfig.EnableMouse = FALSE;
@@ -162,6 +165,7 @@ VOID pdInitialize() {
     }
 
     #if REFIT_DEBUG > 0
+    LOG_MSG("\n");
     LOG_MSG("Pointer Devices Initialised\n\n");
     #endif
 }
@@ -170,15 +174,16 @@ VOID pdInitialize() {
 // Frees allocated memory and closes pointer protocols
 ////////////////////////////////////////////////////////////////////////////////
 VOID pdCleanup() {
-        #if REFIT_DEBUG > 0
-        LOG_MSG("Close Existing Pointer Protocols:\n");
-        #endif
+    UINTN Index;
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("Close Existing Pointer Protocols:");
+    #endif
 
     PointerAvailable = FALSE;
     pdClear();
 
     if (APointerHandles) {
-        UINTN Index;
         for (Index = 0; Index < NumAPointerDevices; Index++) {
             REFIT_CALL_4_WRAPPER(
                 gBS->CloseProtocol,
@@ -193,7 +198,6 @@ VOID pdCleanup() {
 
     MY_FREE_POOL(APointerProtocol);
     if (SPointerHandles) {
-        UINTN Index;
         for (Index = 0; Index < NumSPointerDevices; Index++) {
             REFIT_CALL_4_WRAPPER(
                 gBS->CloseProtocol,
@@ -278,8 +282,16 @@ EFI_STATUS pdUpdateState() {
             Status = EFI_SUCCESS;
 
 #ifdef EFI32
-            State.X = (UINTN)DivU64x64Remainder (APointerState.CurrentX * ScreenW, APointerProtocol[Index]->Mode->AbsoluteMaxX, NULL);
-            State.Y = (UINTN)DivU64x64Remainder (APointerState.CurrentY * ScreenH, APointerProtocol[Index]->Mode->AbsoluteMaxY, NULL);
+            State.X = (UINTN) DivU64x64Remainder (
+                APointerState.CurrentX * ScreenW,
+                APointerProtocol[Index]->Mode->AbsoluteMaxX,
+                NULL
+            );
+            State.Y = (UINTN) DivU64x64Remainder (
+                APointerState.CurrentY * ScreenH,
+                APointerProtocol[Index]->Mode->AbsoluteMaxY,
+                NULL
+            );
 #else
             State.X = (APointerState.CurrentX * ScreenW) / APointerProtocol[Index]->Mode->AbsoluteMaxX;
             State.Y = (APointerState.CurrentY * ScreenH) / APointerProtocol[Index]->Mode->AbsoluteMaxY;
@@ -301,12 +313,12 @@ EFI_STATUS pdUpdateState() {
             INT32 TargetY = 0;
 
 #ifdef EFI32
-	    TargetX = State.X + (INTN)DivS64x64Remainder (
+	    TargetX = State.X + (INTN) DivS64x64Remainder (
             SPointerState.RelativeMovementX * GlobalConfig.MouseSpeed,
             SPointerProtocol[Index]->Mode->ResolutionX,
             NULL
         );
-            TargetY = State.Y + (INTN)DivS64x64Remainder (
+            TargetY = State.Y + (INTN) DivS64x64Remainder (
                 SPointerState.RelativeMovementY * GlobalConfig.MouseSpeed,
                 SPointerProtocol[Index]->Mode->ResolutionY,
                 NULL

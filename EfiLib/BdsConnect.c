@@ -254,24 +254,21 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
 
     #if REFIT_DEBUG > 0
     if (ReLoaded) {
-        MsgStr = StrDuplicate (L"Reconnect Device Handles to Controllers");
+        MsgStr = StrDuplicate (L"R E C O N N E C T   D E V I C E   H A N D L E S");
         ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-        LOG_MSG("%s...\n", MsgStr);
-        MY_FREE_POOL(MsgStr);
     }
     else {
-        MsgStr = StrDuplicate (L"Link Device Handles to Controllers");
+        MsgStr = StrDuplicate (L"L I N K    D E V I C E    H A N D L E S");
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("%s...\n", MsgStr);
-        MY_FREE_POOL(MsgStr);
     }
+    LOG_MSG("%s", MsgStr);
+    LOG_MSG("\n");
+    MY_FREE_POOL(MsgStr);
     #endif
 
-    // DISABLE scan all handles
+    // DA_TAG: Only connect controllers with device paths.
+    //         See notes under ScanDeviceHandles
     //Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, &AllHandleCount, &AllHandleBuffer);
-    //
-    // Only connect controllers with device paths.
-    // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
     Status = gBS->LocateHandleBuffer (
         ByProtocol,
         &gEfiDevicePathProtocolGuid,

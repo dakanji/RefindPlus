@@ -29,7 +29,7 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
  */
 /*
  * Modified for RefindPlus
- * Copyright (c) 2021 - 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ * Copyright (c) 2021-2022 Dayo Akanji (sf.net/u/dakanji/profile)
  *
  * Modifications distributed under the preceding terms.
  */

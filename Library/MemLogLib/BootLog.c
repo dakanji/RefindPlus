@@ -170,16 +170,17 @@ EFI_FILE_PROTOCOL * GetDebugLogFile (VOID) {
     RootDir = NULL;
 
     if (EFI_ERROR(Status)) {
-        // try on first EFI partition
+        // Try on first EFI partition
         Status = egFindESP (&RootDir);
         if (!EFI_ERROR(Status)) {
-            REFIT_CALL_5_WRAPPER(
+            // Try to locate log file
+            Status = REFIT_CALL_5_WRAPPER(
                 RootDir->Open, RootDir,
                 &LogFile, ourDebugLog,
                 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0
             );
 
-            // If the log file is not found try to create it
+            // If log file is not found, try to create it
             if (Status == EFI_NOT_FOUND) {
                 REFIT_CALL_5_WRAPPER(
                     RootDir->Open, RootDir,
@@ -247,7 +248,7 @@ VOID EFIAPI DeepLoggger (
     IN INTN     type,
     IN CHAR16 **Msg
 ) {
-    UINTN   Limit     = 225;
+    UINTN   Limit     = 210;
     CHAR8  *FormatMsg = NULL;
     CHAR16 *Tmp       = NULL;
     CHAR16 *StoreMsg  = NULL;
@@ -255,15 +256,16 @@ VOID EFIAPI DeepLoggger (
 
     // Make sure we are able to write
     BOOLEAN EarlyReturn = (
-        DebugMode < 1
+        DebugMode <= MINLOGLEVEL
         || GlobalConfig.LogLevel < level
         || GlobalConfig.LogLevel <= MINLOGLEVEL
         || !(*Msg)
     );
-    if (!EarlyReturn && type != LOG_LINE_FORENSIC) {
-        if (NativeLogger || MuteLogger) {
-            EarlyReturn = TRUE;
-        }
+    if (DebugMode > MAXLOGLEVEL && type == LOG_BLOCK_SEP && !MuteLogger) {
+        EarlyReturn = FALSE;
+    }
+    else if ((type != LOG_LINE_FORENSIC) && (NativeLogger || MuteLogger)) {
+        EarlyReturn = TRUE;
     }
     if (EarlyReturn) {
         MY_FREE_POOL(*Msg);
@@ -286,6 +288,7 @@ VOID EFIAPI DeepLoggger (
     TimeStamp = FALSE;
 
     switch (type) {
+        case LOG_BLOCK_SEP:
         case LOG_BLANK_LINE_SEP: Tmp = StrDuplicate (L"\n");                                                    break;
         case LOG_STAR_HEAD_SEP:  Tmp = PoolPrint (L"\n                ***[ %s\n",                        *Msg); break;
         case LOG_STAR_SEPARATOR: Tmp = PoolPrint (L"\n* ** ** *** *** ***[ %s ]*** *** *** ** ** *\n\n", *Msg); break;
@@ -363,18 +366,13 @@ VOID EFIAPI DebugLog (
 // DBG Build Only - END
 #endif
 
-// Allow REL Build to access this ... without output
+// DA-TAG: Allow REL Build to access this ... without output
 static
 VOID EFIAPI MemLogCallback (
     IN INTN DebugMode,
     IN CHAR8 *LastMessage
 ) {
     #if REFIT_DEBUG > 0
-    // Print message to console
-    //if (DebugMode >= 2) {
-    //    AsciiPrint (LastMessage);
-    //}
-
     if ( (DebugMode >= 1) ) {
         SaveMessageToDebugLogFile (LastMessage);
     }
