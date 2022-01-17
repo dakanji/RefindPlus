@@ -871,10 +871,7 @@ BOOLEAN ShowBootKickerInfo (
     MenuEntryBootKicker->Tag   = TAG_GENERIC;
     AddMenuEntry (BootKickerInfoMenu, MenuEntryBootKicker);
 
-    REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-    LocalMenuEntryReturn->Tag   = TAG_RETURN;
-    AddMenuEntry (BootKickerInfoMenu, LocalMenuEntryReturn);
+    GetReturnMenuEntry (&BootKickerInfoMenu);
 
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
@@ -941,10 +938,7 @@ BOOLEAN ShowCleanNvramInfo (
     MenuEntryCleanNvram->Tag   = TAG_GENERIC;
     AddMenuEntry (CleanNvramInfoMenu, MenuEntryCleanNvram);
 
-    REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-    LocalMenuEntryReturn->Tag   = TAG_RETURN;
-    AddMenuEntry (CleanNvramInfoMenu, LocalMenuEntryReturn);
+    GetReturnMenuEntry (&CleanNvramInfoMenu);
 
     INTN               DefaultEntry   = 1;
     MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
@@ -1076,10 +1070,7 @@ VOID AboutRefindPlus (VOID) {
     AddMenuInfoLine (AboutMenu, L"For information on rEFInd, visit:");
     AddMenuInfoLine (AboutMenu, L"http://www.rodsbooks.com/refind");
 
-    REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-    LocalMenuEntryReturn->Tag   = TAG_RETURN;
-    AddMenuEntry (AboutMenu, LocalMenuEntryReturn);
+    GetReturnMenuEntry (&AboutMenu);
 
     RunMenu (AboutMenu, NULL);
     FreeMenuScreen (&AboutMenu);

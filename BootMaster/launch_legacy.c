@@ -800,10 +800,7 @@ VOID AddLegacyEntry (
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-        LocalMenuEntryReturn->Tag   = TAG_RETURN;
-        AddMenuEntry (SubScreen, LocalMenuEntryReturn);
+        GetReturnMenuEntry (&SubScreen);
 
         Entry->me.SubScreen = SubScreen;
     }
@@ -888,10 +885,7 @@ VOID AddLegacyEntryUEFI (
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-        REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-        LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-        LocalMenuEntryReturn->Tag   = TAG_RETURN;
-        AddMenuEntry (SubScreen, LocalMenuEntryReturn);
+        GetReturnMenuEntry (&SubScreen);
 
         Entry->me.SubScreen = SubScreen;
     }

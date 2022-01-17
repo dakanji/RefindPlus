@@ -589,10 +589,7 @@ VOID GenerateSubScreen (
         BREAD_CRUMB(L"In %s ... Z 1 - START", FuncTag);
         if (GenerateReturn) {
             BREAD_CRUMB(L"In %s ... Z 1a 1", FuncTag);
-            REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-            LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-            LocalMenuEntryReturn->Tag   = TAG_RETURN;
-            AddMenuEntry (SubScreen, LocalMenuEntryReturn);
+            GetReturnMenuEntry (&SubScreen);
         }
         Entry->me.SubScreen = SubScreen;
 
@@ -1764,10 +1761,7 @@ BOOLEAN ScanLoaderDir (
                 ALT_LOG(1, LOG_LINE_NORMAL, L"Adding 'Return' Entry to Folded Linux Kernels");
                 #endif
 
-                REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-                LocalMenuEntryReturn->Tag   = TAG_RETURN;
-                AddMenuEntry (FirstKernel->me.SubScreen, LocalMenuEntryReturn);
+                GetReturnMenuEntry (&FirstKernel->me.SubScreen);
             }
 
             CleanUpLoaderList (LoaderList);

@@ -1611,10 +1611,7 @@ LOADER_ENTRY * AddStanzaEntries (
         }
 
         if (AddedSubmenu) {
-            REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-            LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-            LocalMenuEntryReturn->Tag   = TAG_RETURN;
-            AddMenuEntry (Entry->me.SubScreen, LocalMenuEntryReturn);
+            GetReturnMenuEntry (&Entry->me.SubScreen);
         }
 
         if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {

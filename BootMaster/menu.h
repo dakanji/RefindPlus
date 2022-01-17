@@ -124,6 +124,7 @@ VOID GenerateWaitList (VOID);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
 VOID FreeMenuEntry (IN OUT REFIT_MENU_ENTRY **Entry);
+VOID GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 VOID DisplaySimpleMessage (CHAR16 *Title, CHAR16 *Message);
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuInfoLineAlt (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);

@@ -2404,10 +2404,7 @@ VOID DisplaySimpleMessage (
 
     AddMenuInfoLine (SimpleMessageMenu, Message);
 
-    REFIT_MENU_ENTRY *LocalMenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
-    LocalMenuEntryReturn->Tag   = TAG_RETURN;
-    AddMenuEntry (SimpleMessageMenu, LocalMenuEntryReturn);
+    GetReturnMenuEntry (&SimpleMessageMenu);
 
     INTN          DefaultEntry = 0;
     INTN              MenuExit = 0;
@@ -3427,3 +3424,17 @@ VOID FreeBdsOption (
     MY_FREE_POOL((*BdsOption)->StatusString);
     MY_FREE_POOL(*BdsOption);
 } // VOID FreeBdsOption()
+
+VOID GetReturnMenuEntry (
+    IN OUT REFIT_MENU_SCREEN **Screen
+) {
+    if (Screen == NULL || *Screen == NULL) {
+        // Early Return
+        return;
+    }
+
+    REFIT_MENU_ENTRY *MenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    MenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
+    MenuEntryReturn->Tag   = TAG_RETURN;
+    AddMenuEntry (*Screen, MenuEntryReturn);
+} // VOID GetReturnMenuEntry()
