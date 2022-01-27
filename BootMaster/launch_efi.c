@@ -600,15 +600,7 @@ BOOLEAN ConfirmReboot (
 
     AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
 
-    REFIT_MENU_ENTRY *LocalMenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryYes->Title = StrDuplicate (L"Yes");
-    LocalMenuEntryYes->Tag   = TAG_YES;
-    AddMenuEntry (ConfirmRebootMenu, LocalMenuEntryYes);
-
-    REFIT_MENU_ENTRY *LocalMenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryNo->Title = StrDuplicate (L"No");
-    LocalMenuEntryNo->Tag   = TAG_NO;
-    AddMenuEntry (ConfirmRebootMenu, LocalMenuEntryNo);
+    GetYesNoMenuEntry (&ConfirmRebootMenu);
 
     INTN           DefaultEntry = 1;
     REFIT_MENU_ENTRY  *ChosenOption;
@@ -670,7 +662,8 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     );
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("INFO: %s ... %r\n\n", MsgStr, err);
+    LOG_MSG("INFO: %s ... %r", MsgStr, err);
+    LOG_MSG("\n\n");
     #endif
 
     if (err != EFI_SUCCESS) {
@@ -700,7 +693,8 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("** WARN: %s\n\n", MsgStr);
+    LOG_MSG("** WARN: %s", MsgStr);
+    LOG_MSG("\n\n");
     #endif
 
     PauseForKey();
@@ -734,7 +728,8 @@ VOID RebootIntoLoader (
         TmpStr, Entry->Title, Entry->EfiBootNum
     );
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("INFO: %s\n\n", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -863,7 +858,8 @@ VOID StartTool (
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
 
     if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        LOG_MSG("INFO: Running Graphics Mode Switch\n");
+        LOG_MSG("INFO: Running Graphics Mode Switch");
+        LOG_MSG("\n");
     }
     #endif
 
@@ -871,7 +867,8 @@ VOID StartTool (
 
     #if REFIT_DEBUG > 0
     if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        LOG_MSG("      Switch Graphics to Text Mode ... Success\n\n");
+        LOG_MSG("      Switch Graphics to Text Mode ... Success");
+        LOG_MSG("\n\n");
     }
     #endif
 

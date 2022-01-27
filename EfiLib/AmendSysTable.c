@@ -172,10 +172,11 @@ EFI_TPL EFIAPI OurRaiseTpl (
     if (OldTpl > NewTpl) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "FATAL ERROR: RaiseTpl with OldTpl (0x%x) > NewTpl (0x%x)\n\n",
+            "FATAL ERROR: RaiseTpl with OldTpl (0x%x) > NewTpl (0x%x)",
             OldTpl,
             NewTpl
         );
+        LOG_MSG("\n\n");
         #endif
 
         ASSERT (FALSE);
@@ -208,10 +209,11 @@ VOID EFIAPI OurRestoreTpl (
     if (NewTpl > OldTpl) {
         #if REFIT_DEBUG > 0
         LOG_MSG(
-            "FATAL ERROR: RestoreTpl with NewTpl (0x%x) > OldTpl (0x%x)\n",
+            "FATAL ERROR: RestoreTpl with NewTpl (0x%x) > OldTpl (0x%x)",
             NewTpl,
             OldTpl
         );
+        LOG_MSG("\n");
         #endif
 
         ASSERT (FALSE);

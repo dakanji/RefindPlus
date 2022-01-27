@@ -62,9 +62,9 @@ body:
       options:
         - 'One or More Tools (Second Row Items)'
         - 'All OS Loaders (First Row Items)'
-        - 'Mac OS Loader'
-        - 'Win OS Loader'
-        - 'Lin OS Loader'
+        - 'MacOS Loader'
+        - 'WinOS Loader'
+        - 'LinOS Loader'
         - 'OpenCore Loader'
         - 'Clover Loader'
         - 'Other Loader'

@@ -250,8 +250,8 @@ VOID InitMainMenu (VOID) {
         NULL, 0,
         NULL, 0,
         L"Automatic Boot",
-        L"Use Arrow Keys to Move Cursor; 'Enter' to Boot;",
-        L"'Insert', 'Tab', or 'F2' for More Options; 'Esc' or 'Backspace' to Refresh"
+        SUBSCREEN_HINT1,
+        L"Press 'Insert', 'Tab', or 'F2' for More Options and 'Esc' or 'Backspace' to Refresh"
     };
     FreeMenuScreen (&MainMenu);
     MainMenu = CopyMenuScreen (&MainMenuSrc);
@@ -279,10 +279,6 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     EFI_GUID       RSA2048Sha256Guid     = EFI_CERT_RSA2048_SHA256_GUID;
     EFI_GUID       TypeRSA2048Sha256Guid = EFI_CERT_TYPE_RSA2048_SHA256_GUID;
 
-    #if REFIT_DEBUG > 0
-    EFI_STATUS  LogStatus;
-    #endif
-
     BOOLEAN BlockCert = (
         AppleFirmware &&
         (
@@ -301,46 +297,44 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         )
     );
 
-    if (!BlockCert) {
-        Status = AltSetVariable (
-            VariableName,
-            VendorGuid,
-            Attributes,
-            VariableSize,
-            VariableData
-        );
-
-        #if REFIT_DEBUG > 0
-        LogStatus = Status;
-        #endif
-    }
-    else {
-        #if REFIT_DEBUG > 0
-        // Log 'Access Denied'
-        LogStatus = EFI_ACCESS_DENIED;
-        #endif
-
-        // Return 'Success'
-        Status = EFI_SUCCESS;
-    }
-
+    Status = (BlockCert)
+    ? EFI_SUCCESS
+    : AltSetVariable (
+        VariableName,
+        VendorGuid,
+        Attributes,
+        VariableSize,
+        VariableData
+    );
 
     #if REFIT_DEBUG > 0
-    /* Enable Forced Native Logging */
-    NativeLogger = TRUE;
+    BOOLEAN ForceNative = FALSE;
+    if (!NativeLogger) {
+        /* Enable Forced Native Logging */
+        ForceNative = NativeLogger = TRUE;
+    }
 
     // Log Outcome
+    CHAR16 *LogStatus = PoolPrint (
+        L"%r",
+        (BlockCert) ? EFI_ACCESS_DENIED : Status
+    );
     CHAR16 *MsgStr = PoolPrint (
-        L"In Hardware NVRAM ... %r When Setting Variable:- '%s'",
+        L"In Hardware NVRAM ... %20s %s:- '%s%s'",
         LogStatus,
+        NVRAM_LOG_SET,
+        (BlockCert) ? L"UEFI Certificate  :::  " : L"",
         VariableName
     );
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
+    MY_FREE_POOL(LogStatus);
 
-    /* Disable Forced Native Logging */
-    NativeLogger = FALSE;
+    if (ForceNative) {
+        /* Disable Forced Native Logging */
+        NativeLogger = FALSE;
+    }
     #endif
 
     return Status;
@@ -380,20 +374,23 @@ static
 VOID FilterCSR (VOID) {
     EFI_STATUS Status;
 
-    if (GlobalConfig.NormaliseCSR) {
-        // Filter out the 'APPLE_INTERNAL' CSR bit if present
-        Status = NormaliseCSR();
-
-        #if REFIT_DEBUG > 0
-        CHAR16 *MsgStr = PoolPrint (
-            L"Normalise CSR ... %r",
-            Status
-        );
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-        MY_FREE_POOL(MsgStr);
-        #endif
+    if (!GlobalConfig.NormaliseCSR) {
+        // Early Return
+        return;
     }
+
+    // Filter out the 'APPLE_INTERNAL' CSR bit if present
+    Status = NormaliseCSR();
+
+    #if REFIT_DEBUG > 0
+    CHAR16 *MsgStr = PoolPrint (
+        L"Normalise CSR ... %r",
+        Status
+    );
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
 } // static VOID FilterCSR()
 
 static
@@ -464,7 +461,8 @@ VOID ActiveCSR (VOID) {
 
     // Finalise and flush the log buffer
     #if REFIT_DEBUG > 0
-    LOG_MSG("%r\n\n", Status);
+    LOG_MSG("%r", Status);
+    LOG_MSG("\n\n");
     #endif
 } // static VOID ActiveCSR()
 
@@ -968,7 +966,6 @@ BOOLEAN ShowCleanNvramInfo (
 static
 VOID AboutRefindPlus (VOID) {
     REFIT_MENU_SCREEN *AboutMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-
     if (AboutMenu == NULL) {
         // Early Return
         return;
@@ -1195,7 +1192,12 @@ BOOLEAN SecureBootUninstall (VOID) {
             CHAR16 *MsgStr = L"Failed to Uninstall MOK Secure Boot Extensions ... Forcing Shutdown in 9 Seconds";
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s\n-----------------\n\n", MsgStr);
+            LOG_MSG("%s", MsgStr);
+            if (egIsGraphicsModeEnabled()) {
+                LOG_MSG("\n-----------------");
+            }
+            LOG_MSG("\n\n");
+
             #endif
 
             MuteLogger = TRUE;
@@ -1259,13 +1261,15 @@ VOID SetConfigFilename (
                 GlobalConfig.ConfigFilename = FileName;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("  - Config File:- '%s'\n\n", FileName);
+                LOG_MSG("  - Config File:- '%s'", FileName);
+                LOG_MSG("\n\n");
                 #endif
             }
             else {
                 MsgStr = StrDuplicate (L"** WARN: Specified Config File Not Found");
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s\n", MsgStr);
+                LOG_MSG("%s", MsgStr);
+                LOG_MSG("\n");
                 #endif
 
                 MuteLogger = TRUE;
@@ -1276,7 +1280,8 @@ VOID SetConfigFilename (
                 MY_FREE_POOL(MsgStr);
                 MsgStr = StrDuplicate (L"         Try Default:- 'config.conf / refind.conf'");
                 #if REFIT_DEBUG > 0
-                LOG_MSG("%s\n\n", MsgStr);
+                LOG_MSG("%s", MsgStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 MuteLogger = TRUE;
@@ -1639,9 +1644,10 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("B E G I N   B O O T S T R A P");
     LOG_MSG("\n");
     LOG_MSG(
-        "Loading RefindPlus v%s on %s Firmware\n",
+        "Loading RefindPlus v%s on %s Firmware",
         REFINDPLUS_VERSION, VendorInfo
     );
+    LOG_MSG("\n");
 
     /* Architecture */
     LOG_MSG("Arch/Type:- ");
@@ -1829,7 +1835,7 @@ EFI_STATUS EFIAPI efi_main (
         Status = SetAppleOSInfo();
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Spoof Mac OS Version ... %r", Status);
+        LOG_MSG("INFO: Spoof MacOS Version ... %r", Status);
         LOG_MSG("\n\n");
         #endif
     }
@@ -1847,7 +1853,7 @@ EFI_STATUS EFIAPI efi_main (
     WarnIfLegacyProblems();
     MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
 
-    // disable EFI watchdog timer
+    // Disable the EFI watchdog timer
     REFIT_CALL_4_WRAPPER(
         gBS->SetWatchdogTimer,
         0x0000, 0x0000, 0x0000,
@@ -2082,13 +2088,16 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
 
         if (AllowGraphicsMode) {
-            LOG_MSG("Restore Graphics Mode\n\n");
+            LOG_MSG("Restore Graphics Mode");
+            LOG_MSG("\n\n");
 
             SwitchToGraphicsAndClear (TRUE);
         }
         else {
-            LOG_MSG("Proceeding\n\n");
+            LOG_MSG("Proceeding");
+            LOG_MSG("\n\n");
         }
+
         // Wait 0.25 second
         REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     } // if ConfigWarn
@@ -2139,7 +2148,8 @@ EFI_STATUS EFIAPI efi_main (
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
             ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("INFO: %s\n\n", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -2340,6 +2350,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"R E B O O T   S Y S T E M");
+                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 LOG_MSG("%s", MsgStr);
@@ -2386,6 +2397,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"S H U T   S Y S T E M   D O W N");
+                ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 LOG_MSG("%s", MsgStr);
@@ -2444,12 +2456,12 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
-                // Fix undetected Mac OS
-                if (!FoundSubStr (ourLoaderEntry->Title, L"Mac OS") &&
+                // Fix undetected MacOS
+                if (!FoundSubStr (ourLoaderEntry->Title, L"MacOS") &&
                     FoundSubStr (ourLoaderEntry->LoaderPath, L"System\\Library\\CoreServices")
                 ) {
                     ourLoaderEntry->Title = (MyStriCmp (ourLoaderEntry->Volume->VolName, L"PreBoot"))
-                        ? L"Mac OS" : L"RefindPlus";
+                        ? L"MacOS" : L"RefindPlus";
                 }
 
                 // Fix undetected Windows
@@ -2514,14 +2526,14 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Mac OS")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")) {
                     // Set CSR if required
                     ActiveCSR();
 
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'User Input Received:'
                     LOG_MSG("User Input Received:");
-                    MsgStr = StrDuplicate (L"Boot Mac OS");
+                    MsgStr = StrDuplicate (L"Boot MacOS Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
 
@@ -2572,18 +2584,18 @@ EFI_STATUS EFIAPI efi_main (
 
                     // Set Mac boot args if configured to
                     // Also disables AMFI if this is configured
-                    // Also disables Mac OS compatibility check if this is configured
+                    // Also disables MacOS compatibility check if this is configured
                     if (GlobalConfig.SetBootArgs && GlobalConfig.SetBootArgs[0] != L'\0') {
                         SetBootArgs();
                     }
                     else {
                         if (GlobalConfig.DisableAMFI) {
                             // Disable AMFI if configured to
-                            // Also disables Mac OS compatibility check if this is configured
+                            // Also disables MacOS compatibility check if this is configured
                             DisableAMFI();
                         }
                         else if (GlobalConfig.DisableCompatCheck) {
-                            // Disable Mac OS compatibility check if configured to
+                            // Disable MacOS compatibility check if configured to
                             DisableCompatCheck();
                         }
                     }
@@ -2601,7 +2613,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'User Input Received:'
                     LOG_MSG("User Input Received:");
-                    MsgStr = StrDuplicate (L"Boot UEFI Windows");
+                    MsgStr = StrDuplicate (L"Boot Windows (UEFI) Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     (ourLoaderEntry->Volume->VolName)
@@ -2615,7 +2627,7 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     // DA-TAG: Using separate instances of 'User Input Received:'
                     LOG_MSG("User Input Received:");
-                    MsgStr = StrDuplicate (L"Boot Linux");
+                    MsgStr = StrDuplicate (L"Boot Linux Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
                     (ourLoaderEntry->Volume->VolName)
@@ -2631,7 +2643,7 @@ EFI_STATUS EFIAPI efi_main (
                     SetProtectNvram (SystemTable, TRUE);
 
                     #if REFIT_DEBUG > 0
-                    MsgStr = StrDuplicate (L"Start Child Image via UEFI Loader File");
+                    MsgStr = StrDuplicate (L"Run UEFI File");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     // DA-TAG: Using separate instances of 'User Input Received:'
                     LOG_MSG("User Input Received:");
@@ -2754,14 +2766,16 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - Manage Hidden Tag Entries\n\n", OffsetNext);
+                LOG_MSG("%s  - Manage Hidden Tag Entries", OffsetNext);
+                LOG_MSG("\n\n");
                 #endif
 
                 ManageHiddenTags();
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - Exit Hidden Tags Page\n\n", OffsetNext);
+                LOG_MSG("%s  - Exit Hidden Tags Page", OffsetNext);
+                LOG_MSG("\n\n");
                 #endif
 
                 break;
@@ -2805,7 +2819,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - Toggle Mac CSR\n", OffsetNext);
+                LOG_MSG("%s  - Toggle Mac CSR", OffsetNext);
+                LOG_MSG("\n");
                 #endif
 
                 RotateCsrValue();
@@ -2829,14 +2844,16 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - Manage Firmware Boot Order\n\n", OffsetNext);
+                LOG_MSG("%s  - Manage Firmware Boot Order", OffsetNext);
+                LOG_MSG("\n\n");
                 #endif
 
                 ManageBootorder();
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - Exit Manage Firmware Boot Order Page\n\n", OffsetNext);
+                LOG_MSG("%s  - Exit Manage Firmware Boot Order Page", OffsetNext);
+                LOG_MSG("\n\n");
                 #endif
 
                 break;

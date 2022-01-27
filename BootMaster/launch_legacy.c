@@ -613,7 +613,8 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("** WARN: %s\n\n", MsgStrA);
+            LOG_MSG("** WARN: %s", MsgStrA);
+            LOG_MSG("\n\n");
             #endif
 
             PauseForKey();
@@ -628,7 +629,8 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("** WARN: %s\n", MsgStrA);
+            LOG_MSG("** WARN: %s", MsgStrA);
+            LOG_MSG("\n");
             #endif
 
             MsgStrB = L"NB: External drives are not well-supported by Apple firmware for legacy booting";
@@ -637,7 +639,8 @@ VOID StartLegacy (
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("         %s\n\n", MsgStrB);
+            LOG_MSG("         %s", MsgStrB);
+            LOG_MSG("\n\n");
             #endif
 
             PauseForKey();
@@ -1205,7 +1208,8 @@ VOID WarnIfLegacyProblems (VOID) {
             REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s\n\n", MsgStr);
+            LOG_MSG("%s", MsgStr);
+            LOG_MSG("\n\n");
             #endif
 
             PauseForKey();

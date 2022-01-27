@@ -1218,15 +1218,7 @@ UINTN ConfirmBootOptionOperation (
     }
     AddMenuInfoLine (ConfirmBootOptionMenu, CheckString);
 
-    REFIT_MENU_ENTRY *LocalMenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryYes->Title = StrDuplicate (L"Yes");
-    LocalMenuEntryYes->Tag   = TAG_YES;
-    AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryYes);
-
-    REFIT_MENU_ENTRY *LocalMenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    LocalMenuEntryNo->Title = StrDuplicate (L"No");
-    LocalMenuEntryNo->Tag   = TAG_NO;
-    AddMenuEntry (ConfirmBootOptionMenu, LocalMenuEntryNo);
+    GetYesNoMenuEntry (&ConfirmBootOptionMenu);
 
     INTN           DefaultEntry = 1;
     REFIT_MENU_ENTRY  *ChosenOption;

@@ -166,7 +166,8 @@ VOID pdInitialize() {
 
     #if REFIT_DEBUG > 0
     LOG_MSG("\n");
-    LOG_MSG("Pointer Devices Initialised\n\n");
+    LOG_MSG("Pointer Devices Initialised");
+    LOG_MSG("\n\n");
     #endif
 }
 

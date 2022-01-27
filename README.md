@@ -11,7 +11,7 @@ The current development focus is on the following units:
 - **XServe2,1**: Early 2008 XServe
 - **XServe3,1**: Early 2009 XServe
 
-However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running Mac OS.
+However, the enhancements RefindPlus adds to rEFInd are not limited in scope to those units and may be of interest to anyone requiring a capable and flexible boot manager, particularly if running MacOS.
 
 ## Headline Features
 - Maintains feature and configuration parity with the base rEFInd version.
@@ -23,11 +23,11 @@ However, the enhancements RefindPlus adds to rEFInd are not limited in scope to 
 - Fixes inability of rEFInd to print to screen on Macs
   * This prevented receiving program messages as well as leveraging advanced features such as EFI Shell.
 - Provides APFS filesystem capability via a built in APFS JumpStart driver if required.
-  * Removes the need to add APFS drivers to run recent Mac OS releases on units without APFS support.
-  * Additionally, this ensures that matching APFS drivers for specific Mac OS releases are used.
+  * Removes the need to add APFS drivers to run recent MacOS releases on units without APFS support.
+  * Additionally, this ensures that matching APFS drivers for specific MacOS releases are used.
   * Basically allows working as if APFS is natively supported by the firmware
 - Supports Apple's APFS filesystem requirements
-  * This allows booting Mac OS v11.x (Big Sur), or later, from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
+  * This allows booting MacOS v11.x (Big Sur), or later, from named volumes on the main screen, as opposed to generic 'PreBoot' volumes, without requiring SIP to be disabled (potentially compromising system integrity).
   * This also allows booting FileVault encrypted volumes from named volumes on the main screen, as opposed to generic 'PreBoot' volumes.
 
 ## Installation
@@ -55,7 +55,7 @@ decline_nvramprotect  |Disables feature that blocks UEFI Windows certificates on
 decline_reloadgop     |Disables reinstallation of UEFI 2.x GOP drivers on EFI 1.x units
 decline_tagshelp      |Disables feature that ensures hidden tags can always be unhidden
 direct_gop_renderer   |Provides a potentially improved GOP instance for certain GPUs
-disable_amfi          |Disables AMFI Checks on Mac OS if required
+disable_amfi          |Disables AMFI Checks on MacOS if required
 disable_compat_check  |Disables Mac version compatibility checks if required
 external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
 force_trim            |Forces `TRIM` with non-Apple SSDs on Macs if required
@@ -66,7 +66,7 @@ prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
-set_boot_args         |Allows setting arbitrary Mac OS boot arguments
+set_boot_args         |Allows setting arbitrary MacOS boot arguments
 text_renderer         |Provides a text renderer that allows text output when otherwise unavailable
 uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
 
@@ -75,7 +75,7 @@ In addition to the new functions above, the following upsteam functions have bee
 - **"showtools" Token:** Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
-- **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running Mac OS v11.x (Big Sur), or later, with SIP enabled.
+- **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS v11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `normalise_csr` token.
 
 ## Divergence
@@ -99,7 +99,7 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **NVMe Driver Provision:** RefindPlus installs a built in NvmExpressDxe driver when it detects an absence of NvmExpress capability on units with PCIe slots. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_nvmeload` configuration token to switch it off.
 - **APFS Filesystem Provision:** RefindPlus defaults to always providing APFS Filesystem capability, when not available but is required, without a need to load an APFS driver. This is done using a built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsload` configuration token to switch it off.
 - **APFS Verbose Text Suppression:** RefindPlus defaults to always suppressesing verbose text output associated with loading APFS functionality by the built in `SupplyAPFS` feature. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfsmute` configuration token to switch it off.
-- **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted Mac OS. Hence, a single option for booting Mac OS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfssync` configuration token to switch it off.
+- **APFS PreBoot Volumes:** RefindPlus always synchronises APFS System and PreBoot partitions transparently such that the Preboot partitions of APFS volumes are always used to boot APFS formatted MacOS. Hence, a single option for booting MacOS on APFS volumes is presented in RefindPlus to provide maximum APFS compatibility, consistent with Apple's implementation. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_apfssync` configuration token to switch it off.
 - **Apple NVRAM Protection:** RefindPlus always prevents UEFI Windows Secure Boot from saving certificates to Apple NVRAM as this can result in damage and an inability to boot. Blocking these certificates does not impact the operation of UEFI Windows on Apple Macs. This filtering only happens when Apple firmware is detected and is not applied to other types of firmware. Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_nvramprotect` configuration token to switch it off.
 - **ESP Scanning:** Other ESPs separate from that containing the active efi file are now also scanned for loaders by rEFInd. The earlier behaviour, where all other ESPs were treated as duplicates and ignored, has been considered an error and changed. This earlier behaviour is preferred and maintained in RefindPlus. However, users are provided an option to override this behaviour, in favour of the new rEFInd behaviour, by activating the RefindPlus-Specific `decline_espfilter` configuration token to switch it off.
 - **Disabled Manual Stanzas:** The processing of a user configured boot stanza is halted once a `Disabled` setting is encountered and the `Entry` object returned 'as is'. The outcome is the same between rEFInd, which always proceeds to create and return a fully built object (subsequently discarded), and RefindPlus, which may return a partial object (similarly discarded). However, the approach adopted in RefindPlus allows for an optimised loading process particularly when `Disabled` tokens are placed immediately after the `menuentry` line (see examples in the [config.conf-sample](https://github.com/dakanji/RefindPlus/blob/4d066b03423e0b4d34b11fc5e17faa7db511c551/config.conf-sample#L890) file). This also applies to `submenuentry` items which can be enabled or disabled separately.

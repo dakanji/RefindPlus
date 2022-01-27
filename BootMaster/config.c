@@ -597,12 +597,21 @@ VOID SetDefaultByTime (
 
         Now = CurrentTime.Hour * 60 + CurrentTime.Minute;
         if (Now > LAST_MINUTE) {
-            // Should not happen ... just being paranoid
+            // Should not happen ... Just being paranoid
+            CHAR16 *MsgStr = PoolPrint (
+                L"ERROR: Impossible System Time:- %d:%d",
+                CurrentTime.Hour, CurrentTime.Minute
+            );
+
             #if REFIT_DEBUG > 0
-            LOG_MSG("  - WARN: Impossible System Time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+            LOG_MSG("  - %s", MsgStr);
+            LOG_MSG("\n");
             #endif
 
-            Print (L"Warning: Impossible System Time:- %d:%d\n", CurrentTime.Hour, CurrentTime.Minute);
+            Print (L"%s\n", MsgStr);
+            MY_FREE_POOL(MsgStr);
+
+            // Early Return
             return;
         }
 

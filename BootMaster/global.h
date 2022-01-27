@@ -61,10 +61,6 @@
 #include "../EfiLib/GenericBdsLib.h"
 #include "../libeg/libeg.h"
 
-// Tags for 'Yes' and 'No'
-#define TAG_NO   (0)
-#define TAG_YES  (1)
-
 // Tag classifications; used in various ways.
 #define TAG_GENERIC             (0)
 #define TAG_ABOUT               (1)
@@ -96,82 +92,82 @@
 #define TAG_LOAD_NVRAMCLEAN    (27)
 #define NUM_TOOLS              (28)
 
-#define NUM_SCAN_OPTIONS 11
+#define NUM_SCAN_OPTIONS       (11)
 
 #define DEFAULT_ICONS_DIR L"icons"
 
 // OS bit codes (Actual Decimal); used in GlobalConfig.GraphicsFor
-#define GRAPHICS_FOR_OSX         1
-#define GRAPHICS_FOR_LINUX       2
-#define GRAPHICS_FOR_ELILO       4
-#define GRAPHICS_FOR_GRUB        8
-#define GRAPHICS_FOR_WINDOWS    16
-#define GRAPHICS_FOR_OPENCORE   32
-#define GRAPHICS_FOR_CLOVER     64
+#define GRAPHICS_FOR_OSX         (1)
+#define GRAPHICS_FOR_LINUX       (2)
+#define GRAPHICS_FOR_ELILO       (4)
+#define GRAPHICS_FOR_GRUB        (8)
+#define GRAPHICS_FOR_WINDOWS    (16)
+#define GRAPHICS_FOR_OPENCORE   (32)
+#define GRAPHICS_FOR_CLOVER     (64)
 
 // Type of legacy (BIOS) boot support detected
-#define LEGACY_TYPE_NONE         0
-#define LEGACY_TYPE_MAC          1
-#define LEGACY_TYPE_UEFI         2
+#define LEGACY_TYPE_NONE         (0)
+#define LEGACY_TYPE_MAC          (1)
+#define LEGACY_TYPE_UEFI         (2)
 
 // How was a loader added to the menu?
-#define DISCOVERY_TYPE_UNKNOWN   0
-#define DISCOVERY_TYPE_AUTO      1
-#define DISCOVERY_TYPE_MANUAL    2
+#define DISCOVERY_TYPE_UNKNOWN   (0)
+#define DISCOVERY_TYPE_AUTO      (1)
+#define DISCOVERY_TYPE_MANUAL    (2)
 
 #ifdef __MAKEWITH_GNUEFI
 
 // define BBS Device Types
-#define BBS_FLOPPY             0x01
-#define BBS_HARDDISK           0x02
-#define BBS_CDROM              0x03
-#define BBS_PCMCIA             0x04
-#define BBS_USB                0x05
-#define BBS_EMBED_NETWORK      0x06
-#define BBS_BEV_DEVICE         0x80
-#define BBS_UNKNOWN            0xff
+#define BBS_FLOPPY             (0x01)
+#define BBS_HARDDISK           (0x02)
+#define BBS_CDROM              (0x03)
+#define BBS_PCMCIA             (0x04)
+#define BBS_USB                (0x05)
+#define BBS_EMBED_NETWORK      (0x06)
+#define BBS_BEV_DEVICE         (0x80)
+#define BBS_UNKNOWN            (0xFF)
 #endif
 
 // BIOS Boot Specification (BBS) device types, as returned in DevicePath->Type field
-#define DEVICE_TYPE_HW         0x01
-#define DEVICE_TYPE_ACPI       0x02 /* returned by UEFI boot loader on USB */
-#define DEVICE_TYPE_MESSAGING  0x03
-#define DEVICE_TYPE_MEDIA      0x04 /* returned by EFI boot loaders on hard disk */
-#define DEVICE_TYPE_BIOS       0x05 /* returned by legacy (BIOS) boot loaders */
-#define DEVICE_TYPE_END        0x75 /* end of path */
+#define DEVICE_TYPE_HW         (0x01)
+#define DEVICE_TYPE_ACPI       (0x02) /* returned by UEFI boot loader on USB */
+#define DEVICE_TYPE_MESSAGING  (0x03)
+#define DEVICE_TYPE_MEDIA      (0x04) /* returned by EFI boot loaders on hard disk */
+#define DEVICE_TYPE_BIOS       (0x05) /* returned by legacy (BIOS) boot loaders */
+#define DEVICE_TYPE_END        (0x75) /* end of path */
 
 // Filesystem type identifiers ... Not all are used.
-#define FS_TYPE_UNKNOWN           0
-#define FS_TYPE_WHOLEDISK         1
-#define FS_TYPE_FAT               2
-#define FS_TYPE_EXFAT             3
-#define FS_TYPE_NTFS              4
-#define FS_TYPE_EXT2              5
-#define FS_TYPE_EXT3              6
-#define FS_TYPE_EXT4              7
-#define FS_TYPE_HFSPLUS           8
-#define FS_TYPE_REISERFS          9
-#define FS_TYPE_BTRFS            10
-#define FS_TYPE_XFS              11
-#define FS_TYPE_JFS              12
-#define FS_TYPE_ISO9660          13
-#define FS_TYPE_APFS             14
-#define NUM_FS_TYPES             15
+#define FS_TYPE_UNKNOWN           (0)
+#define FS_TYPE_WHOLEDISK         (1)
+#define FS_TYPE_FAT               (2)
+#define FS_TYPE_EXFAT             (3)
+#define FS_TYPE_NTFS              (4)
+#define FS_TYPE_EXT2              (5)
+#define FS_TYPE_EXT3              (6)
+#define FS_TYPE_EXT4              (7)
+#define FS_TYPE_HFSPLUS           (8)
+#define FS_TYPE_REISERFS          (9)
+#define FS_TYPE_BTRFS            (10)
+#define FS_TYPE_XFS              (11)
+#define FS_TYPE_JFS              (12)
+#define FS_TYPE_ISO9660          (13)
+#define FS_TYPE_APFS             (14)
+#define NUM_FS_TYPES             (15)
 
 // How to scale banner images
-#define BANNER_NOSCALE            0
-#define BANNER_FILLSCREEN         1
+#define BANNER_NOSCALE            (0)
+#define BANNER_FILLSCREEN         (1)
 
 // Sizes of the default icons; badges are 1/4 the big icon size
-#define DEFAULT_SMALL_ICON_SIZE  48
-#define DEFAULT_BIG_ICON_SIZE   128
-#define DEFAULT_MOUSE_SIZE       16
+#define DEFAULT_SMALL_ICON_SIZE  (48)
+#define DEFAULT_BIG_ICON_SIZE   (128)
+#define DEFAULT_MOUSE_SIZE       (16)
 
 // Codes for types of icon sizes; used for indexing into GlobalConfig.IconSizes[]
-#define ICON_SIZE_BADGE           0
-#define ICON_SIZE_SMALL           1
-#define ICON_SIZE_BIG             2
-#define ICON_SIZE_MOUSE           3
+#define ICON_SIZE_BADGE           (0)
+#define ICON_SIZE_SMALL           (1)
+#define ICON_SIZE_BIG             (2)
+#define ICON_SIZE_MOUSE           (3)
 
 // Minimum resolutions for a screen to be considered High-DPI
 #define HIDPI_LONG 2560
@@ -256,12 +252,12 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define HIDEUI_FLAG_EDITOR     (0x0040)
 #define HIDEUI_FLAG_SAFEMODE   (0x0080)
 #define HIDEUI_FLAG_BADGES     (0x0100)
-#define HIDEUI_FLAG_ALL        (0x01ff)
+#define HIDEUI_FLAG_ALL        (0x01FF)
 
 // Default hint text for program-launch submenus
-#define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; 'Enter' to boot;"
-#define SUBSCREEN_HINT2            L"'Insert' or 'F2' to edit options; 'Esc' to return to main menu"
-#define SUBSCREEN_HINT2_NO_EDITOR  L"'Esc' to return to main menu"
+#define SUBSCREEN_HINT1            L"Use Arrow Keys to Move Selection and Press 'Enter' to Boot"
+#define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to Edit Options or Press 'Esc' to Return to Main Menu"
+#define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to Return to Main Menu"
 
 #define NULL_GUID_VALUE               {0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
 #define REFINDPLUS_GUID               {0xF8800DA7, 0xDF1F, 0x4A16, {0x8F, 0xE3, 0x72, 0x43, 0xDB, 0xB7, 0x87, 0xCA}};
@@ -307,7 +303,7 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
 
 
 //
-// global definitions
+// Global definitions
 //
 
 // global types

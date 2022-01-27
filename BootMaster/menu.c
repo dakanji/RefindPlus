@@ -67,7 +67,7 @@
 #include "../include/egemb_arrow_left.h"
 #include "../include/egemb_arrow_right.h"
 
-// other menu definitions
+// Other menu definitions
 
 #define MENU_FUNCTION_INIT            (0)
 #define MENU_FUNCTION_CLEANUP         (1)
@@ -75,8 +75,6 @@
 #define MENU_FUNCTION_PAINT_SELECTION (3)
 #define MENU_FUNCTION_PAINT_TIMEOUT   (4)
 #define MENU_FUNCTION_PAINT_HINTS     (5)
-
-// typedef VOID (*MENU_STYLE_FUNC)(IN REFIT_MENU_SCREEN *Screen, IN SCROLL_STATE *State, IN UINTN Function, IN CHAR16 *ParamText);
 
 static CHAR16 ArrowUp[2]   = { ARROW_UP, 0 };
 static CHAR16 ArrowDown[2] = { ARROW_DOWN, 0 };
@@ -776,7 +774,7 @@ UINTN RunGenericMenu (
     StyleFunc (Screen, &State, MENU_FUNCTION_INIT, NULL);
     IdentifyRows (&State, Screen);
 
-    // override the starting selection with the default index, if any
+    // Override the starting selection with the default index, if any
     if (*DefaultEntryIndex >= 0 && *DefaultEntryIndex <= State.MaxIndex) {
         State.CurrentSelection = *DefaultEntryIndex;
         if (GlobalConfig.ScreensaverTime != -1) {
@@ -1008,13 +1006,13 @@ UINTN RunGenericMenu (
             CHAR16 *KeyTxt = GetScanCodeText (key.ScanCode);
             if (MyStriCmp (KeyTxt, L"KEY_UNKNOWN")) {
                 switch (key.UnicodeChar) {
-                    case ' ':                  KeyTxt = L"INFER_ENTER    Key=SpaceBar";        break;
-                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key=LineFeed";        break;
-                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key=CarriageReturn";  break;
-                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key=BackSpace";       break;
-                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key=Tab";             break;
-                    case '+':                  KeyTxt = L"INFER_DETAILS  Key='+'...'Plus'";    break;
-                    case '-':                  KeyTxt = L"INFER_REMOVE   Key='-'...'Minus'";   break;
+                    case ' ':                  KeyTxt = L"INFER_ENTER    Key:SpaceBar";        break;
+                    case CHAR_LINEFEED:        KeyTxt = L"INFER_ENTER    Key:LineFeed";        break;
+                    case CHAR_CARRIAGE_RETURN: KeyTxt = L"INFER_ENTER    Key:CarriageReturn";  break;
+                    case CHAR_BACKSPACE:       KeyTxt = L"INFER_ESCAPE   Key:BackSpace";       break;
+                    case CHAR_TAB:             KeyTxt = L"INFER_DETAILS  Key:Tab";             break;
+                    case '+':                  KeyTxt = L"INFER_DETAILS  Key:'+'...'Plus'";    break;
+                    case '-':                  KeyTxt = L"INFER_REMOVE   Key:'-'...'Minus'";   break;
                 } // switch
             }
             ALT_LOG(1, LOG_LINE_NORMAL,
@@ -1092,7 +1090,8 @@ UINTN RunGenericMenu (
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-        LOG_MSG("INFO: %s\n\n", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -1359,7 +1358,7 @@ VOID TextMenuStyle (
 } // VOID TextMenuStyle()
 
 //
-// graphical generic style
+// Graphical generic style
 //
 
 static
@@ -1972,24 +1971,24 @@ VOID PaintSelection (
     }
 } // static VOID MoveSelection (VOID)
 
+// Fetch the icon specified by ExternalFilename if available,
+// or by BuiltInIcon if not.
 static
 EG_IMAGE * GetIcon (
     IN EG_EMBEDDED_IMAGE *BuiltInIcon,
     IN CHAR16            *ExternalFilename
 ) {
-    EG_IMAGE *Icon = NULL;
-
-    Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
-    if (Icon == NULL) {
-        Icon = egPrepareEmbeddedImage (BuiltInIcon, TRUE, NULL);
+    EG_IMAGE *Icon = egFindIcon (ExternalFilename, GlobalConfig.IconSizes[ICON_SIZE_SMALL]);
+    if (Icon != NULL) {
+        // Early Return
+        return Icon;
     }
 
-    return Icon;
+    return egPrepareEmbeddedImage (BuiltInIcon, TRUE, NULL);
 } // static EG_IMAGE * GetIcon()
 
-// Display a 48x48 icon at the specified location. Uses the image specified by
-// ExternalFilename if it is available, or BuiltInImage if it is not. The
-// Y position is specified as the center value, and so is adjusted by half
+// Display an icon at the specified location. The Y position is
+// specified as the center value, and so is adjusted by half
 // the icon's height. The X position is set along the icon's left
 // edge if Alignment == ALIGN_LEFT, and along the right edge if
 // Alignment == ALIGN_RIGHT
@@ -2042,7 +2041,7 @@ VOID PaintArrows (
 
     if (!LoadedArrows && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_ARROWS)) {
         MuteLogger = TRUE;
-        LeftArrow  = GetIcon (&egemb_arrow_left , L"arrow_left" );
+        LeftArrow  = GetIcon (&egemb_arrow_left,  L"arrow_left" );
         RightArrow = GetIcon (&egemb_arrow_right, L"arrow_right");
         MuteLogger = FALSE;
 
@@ -2071,21 +2070,15 @@ VOID PaintArrows (
     // of the surrounding row; PaintIcon() adjusts this back up by half the
     // icon's height to properly center it.
     if (LeftArrow && LeftBackground) {
-        if (State->FirstVisible > 0) {
-            PaintIcon (LeftArrow, PosX, PosY, ALIGN_RIGHT);
-        }
-        else {
-            BltImage (LeftBackground, PosX - LeftArrow->Width, PosY - (LeftArrow->Height / 2));
-        }
+        (State->FirstVisible > 0)
+            ? PaintIcon (LeftArrow, PosX, PosY, ALIGN_RIGHT)
+            : BltImage (LeftBackground, PosX - LeftArrow->Width, PosY - (LeftArrow->Height / 2));
     }
 
     if (RightArrow && RightBackground) {
-        if (State->LastVisible < row0Loaders - 1) {
-            PaintIcon (RightArrow, RightX, PosY, ALIGN_LEFT);
-        }
-        else {
-            BltImage (RightBackground, RightX, PosY - (RightArrow->Height / 2));
-        }
+        (State->LastVisible < (row0Loaders - 1))
+            ? PaintIcon (RightArrow, RightX, PosY, ALIGN_LEFT)
+            : BltImage (RightBackground, RightX, PosY - (RightArrow->Height / 2));
     }
 } // VOID PaintArrows()
 
@@ -2108,10 +2101,11 @@ VOID MainMenuStyle (
         case MENU_FUNCTION_INIT:
             InitScroll (State, Screen->EntryCount, GlobalConfig.MaxTags);
 
-            // layout
+            // Layout
             row0Count = 0;
             row1Count = 0;
             row0Loaders = 0;
+
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (Screen->Entries[i]->Row == 1) {
                     row1Count++;
@@ -2122,21 +2116,26 @@ VOID MainMenuStyle (
                         row0Count++;
                     }
                 }
-            }
+            } // for
+
             row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
             row0PosY = ComputeRow0PosY();
             row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
             row1PosY = row0PosY + TileSizes[0] + TILE_YSPACING;
-            if (row1Count > 0) {
-                textPosY = row1PosY + TileSizes[1] + TILE_YSPACING;
-            }
-            else {
-                textPosY = row1PosY;
-            }
+
+            textPosY = (row1Count > 0)
+                ? row1PosY + TileSizes[1] + TILE_YSPACING
+                : row1PosY;
 
             itemPosX = AllocatePool (sizeof (UINTN) * Screen->EntryCount);
+            if (itemPosX == NULL) {
+                // Early Return
+                return;
+            }
+
             row0PosXRunning = row0PosX;
             row1PosXRunning = row1PosX;
+
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (Screen->Entries[i]->Row == 0) {
                     itemPosX[i] = row0PosXRunning;
@@ -2146,8 +2145,9 @@ VOID MainMenuStyle (
                     itemPosX[i] = row1PosXRunning;
                     row1PosXRunning += TileSizes[1] + TILE_XSPACING;
                 }
-            }
-            // initial painting
+            } // for
+
+            // Initial painting
             InitSelection();
             SwitchToGraphicsAndClear (TRUE);
             break;
@@ -2209,7 +2209,8 @@ UINTN FindMainMenuItem (
                 row0Count++;
             }
         }
-    }
+    } // for
+
     row0PosX = (ScreenW + TILE_XSPACING - (TileSizes[0] + TILE_XSPACING) * row0Count) >> 1;
     row0PosY = ComputeRow0PosY();
     row1PosX = (ScreenW + TILE_XSPACING - (TileSizes[1] + TILE_XSPACING) * row1Count) >> 1;
@@ -2218,9 +2219,12 @@ UINTN FindMainMenuItem (
     if (PosY >= row0PosY && PosY <= row0PosY + TileSizes[0]) {
         itemRow = 0;
         if (PosX <= row0PosX) {
+            // Early Return
             return POINTER_LEFT_ARROW;
         }
-        else if (PosX >= (ScreenW - row0PosX)) {
+
+        if (PosX >= (ScreenW - row0PosX)) {
+            // Early Return
             return POINTER_RIGHT_ARROW;
         }
     }
@@ -2228,7 +2232,7 @@ UINTN FindMainMenuItem (
         itemRow = 1;
     }
     else {
-        // Y coordinate is outside of either row
+        // Early Return ... Y coordinate is outside of either row
         return POINTER_NO_ITEM;
     }
 
@@ -2265,7 +2269,7 @@ UINTN FindMainMenuItem (
                 break;
             }
         }
-    }
+    } // fpr
 
     MY_FREE_POOL(itemPosX);
 
@@ -2286,7 +2290,7 @@ VOID GenerateWaitList(VOID) {
 
     for (UINTN Index = 0; Index < PointerCount; Index++) {
         WaitList[Index + 1] = pdWaitEvent (Index);
-    }
+    } // for
 } // VOID GenerateWaitList()
 
 UINTN WaitForInput (
@@ -2296,11 +2300,6 @@ UINTN WaitForInput (
     UINTN       Length;
     UINTN       Index      = INPUT_TIMEOUT;
     EFI_EVENT   TimerEvent = NULL;
-
-    //DA-TAG: Consider deleting later. Seems more of a distraction than a useful item
-    //#if REFIT_DEBUG > 0
-    //ALT_LOG(1, LOG_THREE_STAR_MID, L"Input Pending: %d", Timeout);
-    //#endif
 
     // Generate WaitList if not already generated.
     GenerateWaitList();
@@ -2329,12 +2328,15 @@ UINTN WaitForInput (
         REFIT_CALL_1_WRAPPER(gBS->Stall, 100000); // Pause for 100 ms
         return INPUT_TIMER_ERROR;
     }
-    else if (Index == 0) {
+
+    if (Index == 0) {
         return INPUT_KEY;
     }
-    else if (Index < Length - 1) {
+
+    if (Index < Length - 1) {
         return INPUT_POINTER;
     }
+
     return INPUT_TIMEOUT;
 } // UINTN WaitForInput()
 
@@ -2350,6 +2352,7 @@ BOOLEAN EditOptions (
     BOOLEAN  retval = FALSE;
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
+        // Early Return
         return FALSE;
     }
 
@@ -2390,6 +2393,7 @@ VOID DisplaySimpleMessage (
     #endif
 
     if (!Message) {
+        // Early Return
         return;
     }
 
@@ -2928,8 +2932,10 @@ VOID HideTag (
                 HideEfiTag (Loader, HideTagMenu, L"HiddenTags");
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:\n");
-                LOG_MSG("  - %s\n\n", HideTagMenu->Title);
+                LOG_MSG("User Input Received:");
+                LOG_MSG("\n");
+                LOG_MSG("  - %s", HideTagMenu->Title);
+                LOG_MSG("\n\n");
                 #endif
 
                 FreeMenuScreen (&HideTagMenu);
@@ -2942,8 +2948,10 @@ VOID HideTag (
             HideTagMenu->Title = L"Hide Legacy (BIOS) OS Tag";
             if (HideLegacyTag (LegacyLoader, HideTagMenu)) {
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:\n");
-                LOG_MSG("  - %s\n\n", HideTagMenu->Title);
+                LOG_MSG("User Input Received:");
+                LOG_MSG("\n");
+                LOG_MSG("  - %s", HideTagMenu->Title);
+                LOG_MSG("\n\n");
                 #endif
 
                 FreeMenuScreen (&HideTagMenu);
@@ -2982,8 +2990,10 @@ VOID HideTag (
             MY_FREE_POOL(gHiddenTools);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("User Input Received:\n");
-            LOG_MSG("  - %s\n\n", HideTagMenu->Title);
+            LOG_MSG("User Input Received:");
+            LOG_MSG("\n");
+            LOG_MSG("  - %s", HideTagMenu->Title);
+            LOG_MSG("\n\n");
             #endif
 
             FreeMenuScreen (&HideTagMenu);
@@ -3205,7 +3215,8 @@ UINTN RunMainMenu (
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
         ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
-        LOG_MSG("INFO: %s\n\n", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
 
@@ -3434,7 +3445,38 @@ VOID GetReturnMenuEntry (
     }
 
     REFIT_MENU_ENTRY *MenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    if (MenuEntryReturn == NULL) {
+        // Early Return
+        return;
+    }
     MenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
     MenuEntryReturn->Tag   = TAG_RETURN;
     AddMenuEntry (*Screen, MenuEntryReturn);
+} // VOID GetReturnMenuEntry()
+
+VOID GetYesNoMenuEntry (
+    IN OUT REFIT_MENU_SCREEN **Screen
+) {
+    if (Screen == NULL || *Screen == NULL) {
+        // Early Return
+        return;
+    }
+
+    REFIT_MENU_ENTRY *MenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    if (MenuEntryYes == NULL) {
+        // Early Return
+        return;
+    }
+    MenuEntryYes->Title = StrDuplicate (L"Yes");
+    MenuEntryYes->Tag   = TAG_YES;
+    AddMenuEntry (*Screen, MenuEntryYes);
+
+    REFIT_MENU_ENTRY *MenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
+    if (MenuEntryNo == NULL) {
+        // Early Return
+        return;
+    }
+    MenuEntryNo->Title = StrDuplicate (L"No");
+    MenuEntryNo->Tag   = TAG_NO;
+    AddMenuEntry (*Screen, MenuEntryNo);
 } // VOID GetReturnMenuEntry()

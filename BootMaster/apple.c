@@ -330,7 +330,7 @@ typedef struct EfiAppleSetOsInterface {
     EFI_STATUS EFIAPI (*SetOsVendor) (IN CHAR8 *Vendor);
 } EfiAppleSetOsInterface;
 
-// Function to tell the firmware that Mac OS X is being launched. This is
+// Function to tell the firmware that MacOS is being launched. This is
 // required to work around problems on some Macs that do not fully
 // initialize some hardware (especially video displays) when third-party
 // OSes are launched in EFI mode.
@@ -355,7 +355,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
     if (EFI_ERROR(Status) || SetOs == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
-            L"Not a Mac ... Not Setting Mac OS Information"
+            L"Not a Mac ... Not Setting MacOS Information"
         );
         #endif
 
@@ -388,7 +388,7 @@ EFI_STATUS SetAppleOSInfo (VOID) {
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Set Mac OS Information:- '%s'",
+        L"Set MacOS Information:- '%s'",
         AppleVersionOS
     );
     #endif

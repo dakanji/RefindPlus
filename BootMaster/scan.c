@@ -359,12 +359,12 @@ VOID GenerateSubScreen (
     // InitializeSubScreen cannot return NULL but guard against this regardless
     if (SubScreen != NULL) {
         // loader-specific submenu entries
-        if (Entry->OSType == 'M') {          // entries for Mac OS
+        if (Entry->OSType == 'M') {          // Entries for MacOS
 
 #if defined (EFIX64)
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS with a 64-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS with a 64-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=x86_64");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -372,7 +372,7 @@ VOID GenerateSubScreen (
 
             SubEntry = InitializeLoaderEntry (Entry);
             if (SubEntry != NULL) {
-                SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS with a 32-bit Kernel");
+                SubEntry->me.Title        = StrDuplicate (L"Boot MacOS with a 32-bit Kernel");
                 SubEntry->LoadOptions     = StrDuplicate (L"arch=i386");
                 SubEntry->UseGraphicsMode = GlobalConfig.GraphicsFor & GRAPHICS_FOR_OSX;
                 AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -382,7 +382,7 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SINGLEUSER)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS in Verbose Mode");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode");
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = StrDuplicate (L"-v");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -391,7 +391,7 @@ VOID GenerateSubScreen (
 #if defined (EFIX64)
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS in Verbose Mode (64-bit)");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (64-bit)");
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = StrDuplicate (L"-v arch=x86_64");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -399,7 +399,7 @@ VOID GenerateSubScreen (
 
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS in Verbose Mode (32-bit)");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Verbose Mode (32-bit)");
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = StrDuplicate (L"-v arch=i386");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -408,7 +408,7 @@ VOID GenerateSubScreen (
 
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS in Single User Mode");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Single User Mode");
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -s");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -418,7 +418,7 @@ VOID GenerateSubScreen (
             if (!(GlobalConfig.HideUIFlags & HIDEUI_FLAG_SAFEMODE)) {
                 SubEntry = InitializeLoaderEntry (Entry);
                 if (SubEntry != NULL) {
-                    SubEntry->me.Title        = StrDuplicate (L"Boot Mac OS in Safe Mode");
+                    SubEntry->me.Title        = StrDuplicate (L"Boot MacOS in Safe Mode");
                     SubEntry->UseGraphicsMode = FALSE;
                     SubEntry->LoadOptions     = StrDuplicate (L"-v -x");
                     AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
@@ -1868,7 +1868,7 @@ VOID ScanNetboot (VOID) {
 } // VOID ScanNetboot()
 
 
-// Adds *FullFileName as a Mac OS loader, if it exists.
+// Adds *FullFileName as a MacOS loader, if it exists.
 // Returns TRUE if the fallback loader is NOT a duplicate of this one,
 // FALSE if it IS a duplicate.
 static
@@ -1903,7 +1903,7 @@ BOOLEAN ScanMacOsLoader (
             }
 
             if (AddThisEntry) {
-                AddLoaderEntry (FullFileName, L"Mac OS", Volume, TRUE);
+                AddLoaderEntry (FullFileName, L"MacOS", Volume, TRUE);
             }
         }
 
@@ -2020,7 +2020,7 @@ VOID ScanEfiFiles (
         MergeStrings (&MatchPatterns, LINUX_MATCH_PATTERNS, L',');
     }
 
-    // check for Mac OS boot loader
+    // Check for MacOS boot loader
     if (ShouldScan (Volume, MACOSX_LOADER_DIR)) {
         FileName = StrDuplicate (MACOSX_LOADER_PATH);
         ScanFallbackLoader &= ScanMacOsLoader (Volume, FileName);
@@ -2439,6 +2439,7 @@ VOID ScanForBootloaders (
     ScanningLoaders = TRUE;
 
     #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     MsgStr = StrDuplicate (L"S E E K   U E F I   L O A D E R S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("%s", MsgStr);
@@ -2739,8 +2740,9 @@ VOID ScanForBootloaders (
         #endif
     }
     else {
-        // assign shortcut keys
+        // Assign shortcut keys
         #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         CHAR16 *LogSection = L"A S S I G N   S H O R T C U T   K E Y S";
         ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
         LOG_MSG("\n\n");
@@ -2796,7 +2798,8 @@ VOID ScanForBootloaders (
         );
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
         LOG_MSG("\n\n");
-        LOG_MSG("INFO: %s\n\n", MsgStr);
+        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
     }
@@ -2967,6 +2970,7 @@ VOID ScanForTools (VOID) {
     UINT32            CsrValue;
     BOOLEAN           FoundTool;
     BOOLEAN           OtherFind;
+    BOOLEAN           ValidFind;
 
     EFI_STATUS                     Status;
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
@@ -2988,6 +2992,7 @@ VOID ScanForTools (VOID) {
     UINTN   ToolTotal  = 0;
     CHAR16 *LogSection = L"S E E K   U E F I   T O O L S";
 
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
     LOG_MSG("%s", LogSection);
     LogSection = L"Get Tool Types:";
@@ -3009,6 +3014,7 @@ VOID ScanForTools (VOID) {
         MY_FREE_POOL(ToolName);
 
         FoundTool = FALSE;
+        ValidFind = TRUE;
 
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_ABOUT:            ToolName = StrDuplicate (L"About RefindPlus");            break;
@@ -3346,6 +3352,13 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (SHELL_NAMES, j++)) != NULL) {
+                    #if REFIT_DEBUG > 0
+                    if (ValidFind) {
+                        LOG_SEP(L"X");
+                    }
+                    ValidFind = FALSE;
+                    #endif
+
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3374,6 +3387,7 @@ VOID ScanForTools (VOID) {
                         #endif
 
                         OtherFind = TRUE;
+                        ValidFind = TRUE;
                     }
 
                     MY_FREE_POOL(FileName);
@@ -3404,6 +3418,13 @@ VOID ScanForTools (VOID) {
             case TAG_GPTSYNC:
                 j = 0;
                 while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
+                    #if REFIT_DEBUG > 0
+                    if (ValidFind) {
+                        LOG_SEP(L"X");
+                    }
+                    ValidFind = FALSE;
+                    #endif
+
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3429,6 +3450,8 @@ VOID ScanForTools (VOID) {
                         LOG_MSG("%s", ToolStr);
                         MY_FREE_POOL(ToolStr);
                         #endif
+
+                        ValidFind = TRUE;
                     }
 
                     MY_FREE_POOL(FileName);
@@ -3449,6 +3472,13 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (GDISK_NAMES, j++)) != NULL) {
+                    #if REFIT_DEBUG > 0
+                    if (ValidFind) {
+                        LOG_SEP(L"X");
+                    }
+                    ValidFind = FALSE;
+                    #endif
+
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3476,6 +3506,7 @@ VOID ScanForTools (VOID) {
                         #endif
 
                         OtherFind = TRUE;
+                        ValidFind = TRUE;
                     }
 
                     MY_FREE_POOL(FileName);
@@ -3496,6 +3527,13 @@ VOID ScanForTools (VOID) {
                 j = 0;
                 OtherFind = FALSE;
                 while ((FileName = FindCommaDelimited (NETBOOT_NAMES, j++)) != NULL) {
+                    #if REFIT_DEBUG > 0
+                    if (ValidFind) {
+                        LOG_SEP(L"X");
+                    }
+                    ValidFind = FALSE;
+                    #endif
+
                     if (IsValidTool (SelfVolume, FileName)) {
                         #if REFIT_DEBUG > 0
                         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3523,6 +3561,7 @@ VOID ScanForTools (VOID) {
                         #endif
 
                         OtherFind = TRUE;
+                        ValidFind = TRUE;
                     }
 
                     MY_FREE_POOL(FileName);
@@ -3550,6 +3589,13 @@ VOID ScanForTools (VOID) {
                             )
                         ) != NULL
                     ) {
+                        #if REFIT_DEBUG > 0
+                        if (ValidFind) {
+                            LOG_SEP(L"X");
+                        }
+                        ValidFind = FALSE;
+                        #endif
+
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName))
                         ) {
@@ -3608,6 +3654,7 @@ VOID ScanForTools (VOID) {
                             #endif
 
                             OtherFind = TRUE;
+                            ValidFind = TRUE;
                         }
 
                         MY_FREE_POOL(FileName);
@@ -3667,7 +3714,7 @@ VOID ScanForTools (VOID) {
                             } // for k = 0
                             #endif
 
-                            VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (L"Instance of Mac OS 11 or Newer");
+                            VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (L"Instance of MacOS 11 or Newer");
 
                             #if REFIT_DEBUG > 0
                             ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3691,7 +3738,7 @@ VOID ScanForTools (VOID) {
 
                             #if REFIT_DEBUG > 0
                             ToolStr = PoolPrint (
-                                L"Added Tool:- '%s :::  %s for %s (New Mac OS)'",
+                                L"Added Tool:- '%s :::  %s for %s (New MacOS)'",
                                 ToolName, FileName, VolumeTag
                             );
                             ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
@@ -3736,6 +3783,13 @@ VOID ScanForTools (VOID) {
                 ) {
                     SplitVolumeAndFilename (&FileName, &VolumeTag);
                     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                        #if REFIT_DEBUG > 0
+                        if (ValidFind) {
+                            LOG_SEP(L"X");
+                        }
+                        ValidFind = FALSE;
+                        #endif
+
                         if ((Volumes[VolumeIndex]->RootDir != NULL) &&
                             (MyStrStr (FileName, L"\\BOOT\\BOOT")) &&
                             (IsValidTool (Volumes[VolumeIndex], FileName)) &&
@@ -3774,6 +3828,7 @@ VOID ScanForTools (VOID) {
                             #endif
 
                             OtherFind = TRUE;
+                            ValidFind = TRUE;
                         } // if Volumes[VolumeIndex]->RootDir
                     } // for
 

@@ -259,7 +259,8 @@ VOID SetupScreen (VOID) {
             #if REFIT_DEBUG > 0
             MsgStr = StrDuplicate (L"Match Requested Resolution to Actual Resolution");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-            LOG_MSG("  - %s\n", MsgStr);
+            LOG_MSG("  - %s", MsgStr);
+            LOG_MSG("\n");
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -670,7 +671,8 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
-    LOG_MSG("INFO: %s\n\n", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
@@ -890,7 +892,8 @@ BOOLEAN CheckFatalError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("** FATAL ERROR: '%s' %s\n", ErrorName, where);
+    LOG_MSG("** FATAL ERROR: '%s' %s", ErrorName, where);
+    LOG_MSG("\n");
     #endif
 
     Temp = PoolPrint (L"Fatal Error: '%s' %s", ErrorName, where);
@@ -898,7 +901,8 @@ BOOLEAN CheckFatalError (
     Temp = PoolPrint (L"Fatal Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("** FATAL ERROR: '%r' %s\n", Status, where);
+    LOG_MSG("** FATAL ERROR: '%r' %s", Status, where);
+    LOG_MSG("\n");
     #endif
 #endif
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
@@ -930,7 +934,8 @@ BOOLEAN CheckError (
     StatusToString (ErrorName, Status);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("** WARN: '%s' %s\n", ErrorName, where);
+    LOG_MSG("** WARN: '%s' %s", ErrorName, where);
+    LOG_MSG("\n");
     #endif
 
     Temp = PoolPrint (L"Error: '%s' %s", ErrorName, where);
@@ -938,7 +943,8 @@ BOOLEAN CheckError (
     Temp = PoolPrint (L"Error: '%r' %s", Status, where);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("** WARN: '%r' %s\n", Status, where);
+    LOG_MSG("** WARN: '%r' %s", Status, where);
+    LOG_MSG("\n");
     #endif
 #endif
 
@@ -985,7 +991,8 @@ VOID SwitchToGraphicsAndClear (
 
     #if REFIT_DEBUG > 0
     if (!gotGraphics) {
-        LOG_MSG("INFO: Restore Graphics Mode ... %r\n\n", Status);
+        LOG_MSG("INFO: Restore Graphics Mode ... %r", Status);
+        LOG_MSG("\n\n");
     }
     #endif
 } // VOID SwitchToGraphicsAndClear()

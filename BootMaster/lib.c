@@ -583,8 +583,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated NVRAM ... %r When Fetching Variable:- '%s'",
-            Status, VariableName
+            L"In Emulated NVRAM ... %r %s:- '%s'",
+            Status, NVRAM_LOG_GET, VariableName
         );
         #endif
 
@@ -631,8 +631,8 @@ EFI_STATUS EfivarGetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware NVRAM ... %r When Fetching Variable:- '%s'",
-            Status, VariableName
+            L"In Hardware NVRAM ... %r %s:- '%s'",
+            Status, NVRAM_LOG_GET, VariableName
         );
         #endif
 
@@ -737,15 +737,17 @@ EFI_STATUS EfivarSetRaw (
         #if REFIT_DEBUG > 0
         CHAR16 *MsgStr = L"Activate the 'use_nvram' Option to Silence this Warning";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Emulated NVRAM ... %r When Saving Variable:- '%s'",
-            Status, VariableName
+            L"In Emulated NVRAM ... %r %s:- '%s'",
+            Status, NVRAM_LOG_SET, VariableName
         );
 
         if (EFI_ERROR(Status)) {
             ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
 
-            LOG_MSG("** WARN: Could Not Save to Emulated NVRAM:- '%s'\n", VariableName);
-            LOG_MSG("         %s\n\n", MsgStr);
+            LOG_MSG("** WARN: Could Not Save to Emulated NVRAM:- '%s'", VariableName);
+            LOG_MSG("\n");
+            LOG_MSG("         %s", MsgStr);
+            LOG_MSG("\n\n");
         }
         #endif
     }
@@ -772,8 +774,8 @@ EFI_STATUS EfivarSetRaw (
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In Hardware NVRAM ... %r When Saving Variable:- '%s'",
-            Status, VariableName
+            L"In Hardware NVRAM ... %r %s:- '%s'",
+            Status, NVRAM_LOG_SET, VariableName
         );
         #endif
     }
@@ -2064,8 +2066,8 @@ VOID VetMultiInstanceAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStrA       = NULL;
-    CHAR16 *MsgStrB       = L"Disabled:- 'Recovery Tool for Mac OS 11 and Later (If Present)''";
-    CHAR16 *MsgStrC       = L"Disabled:- 'Skip Synced APFS Volumes in DontScanVolumes'";
+    CHAR16 *MsgStrB       = L"Disabled:- 'Recovery Tool for MacOS 11 and Later (If Present)'";
+    CHAR16 *MsgStrC       = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
     CHAR16 *MsgStrD       = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
     BOOLEAN AppleRecovery = FALSE;
 
@@ -2530,9 +2532,10 @@ VOID ScanVolumes (VOID) {
 
             if (!DoneHeadings) {
                 LOG_MSG(
-                    "%-41s%-41s%-20s%-41s%-22s%s\n",
+                    "%-41s%-41s%-20s%-41s%-22s%s",
                     ITEMVOLA, ITEMVOLB, ITEMVOLC, ITEMVOLD, ITEMVOLE, ITEMVOLF
                 );
+                LOG_MSG("\n");
                 DoneHeadings = TRUE;
 
                 if (FirstVolume) {
@@ -2680,7 +2683,8 @@ VOID ScanVolumes (VOID) {
             CHAR16 *SelfUUID = GuidAsString (&SelfVolume->VolUuid);
             CHAR16 *SelfGUID = GuidAsString (&SelfVolume->PartGuid);
             LOG_MSG("INFO: Self Volume:- '%s  :::  %s  :::  %s'", SelfVolume->VolName, SelfGUID, SelfUUID);
-            LOG_MSG("%s      Install Dir:- '%s'\n\n", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
+            LOG_MSG("%s      Install Dir:- '%s'", OffsetNext, (SelfDirPath) ? SelfDirPath : L"Not Set");
+            LOG_MSG("\n\n");
             MY_FREE_POOL(SelfGUID);
             MY_FREE_POOL(SelfUUID);
         }

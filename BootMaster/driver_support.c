@@ -712,6 +712,7 @@ BOOLEAN LoadDrivers (VOID) {
     // load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
+    LOG_MSG("\n\n");
     LOG_MSG("L O A D   U E F I   D R I V E R S   :::::   P R O G R A M   D E F A U L T   F O L D E R");
 #if REFIT_DEBUG > 1
     LOG_MSG("\n");

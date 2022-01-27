@@ -80,7 +80,7 @@
   IntelFrameworkPkg/IntelFrameworkPkg.dec
   IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
   RefindPlusPkg/RefindPlusPkg.dec
-# Uncomment the line below when compiling with Mac OS X
+# Uncomment the line below when compiling with MacOS
   StdLib/StdLib.dec
 
 [Packages.XCODE]
