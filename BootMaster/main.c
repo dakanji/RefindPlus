@@ -107,6 +107,7 @@ REFIT_CONFIG GlobalConfig = {
     /* DisableAMFI = */ FALSE,
     /* SupplyNVME = */ TRUE,
     /* SupplyAPFS = */ TRUE,
+    /* SupplyUEFI = */ TRUE,
     /* SilenceAPFS = */ TRUE,
     /* SyncAPFS = */ TRUE,
     /* ProtectNVRAM = */ TRUE,
@@ -220,6 +221,7 @@ UINTN                 AppleFramebuffers = 0;
 
 extern VOID   InitBooterLog (VOID);
 
+extern EFI_STATUS        AmendSysTable (VOID);
 extern EFI_STATUS        RP_ApfsConnectDevices (VOID);
 extern EFI_STATUS EFIAPI NvmExpressLoad (
     IN EFI_HANDLE        ImageHandle,
@@ -1574,6 +1576,10 @@ EFI_STATUS EFIAPI efi_main (
 ) {
     EFI_STATUS  Status;
 
+    EFI_RUNTIME_SERVICES *OrigRT;
+    EFI_BOOT_SERVICES    *OrigBS;
+    EFI_SYSTEM_TABLE     *OrigST;
+
     BOOLEAN  MainLoopRunning = TRUE;
     BOOLEAN  MokProtocol     = FALSE;
 
@@ -1736,6 +1742,12 @@ EFI_STATUS EFIAPI efi_main (
     ReadConfig (GlobalConfig.ConfigFilename);
     AdjustDefaultSelection();
 
+    if (!GlobalConfig.SupplyUEFI) {
+        // Stash SystemTable if not emulating UEFI 2.x
+        OrigRT = AllocateCopyPool (sizeof (EFI_RUNTIME_SERVICES), gRT);
+        OrigBS = AllocateCopyPool (sizeof (EFI_BOOT_SERVICES),    gBS);
+        OrigST = AllocateCopyPool (sizeof (EFI_SYSTEM_TABLE),     gST);
+    }
 
     #if REFIT_DEBUG > 0
     LOG_MSG("P R O G R E S S   B O O T S T R A P");
@@ -1767,9 +1779,25 @@ EFI_STATUS EFIAPI efi_main (
         OffsetNext,
         GlobalConfig.IgnorePreviousBoot ? L"'Active'" : L"'Inactive'"
     );
+    LOG_MSG("\n\n");
+
+    // DA-TAG: Prime Status for SupplyUEFI
+    //         Here to accomodate GNU-EFI
+    Status = EFI_NOT_STARTED;
+    #endif
+
+    #ifdef __MAKEWITH_TIANO
+    // DA-TAG: Limit to TianoCore
+    if (GlobalConfig.SupplyUEFI) {
+        Status = AmendSysTable();
+    }
+    #endif
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("INFO: Supply Support:- 'UEFI'  : %r", Status);
 
     // DA-TAG: Prime Status for SupplyAPFS
-    //         Here to accomodate GNU-RFI
+    //         Here to accomodate GNU-EFI
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -1781,11 +1809,10 @@ EFI_STATUS EFIAPI efi_main (
     #endif
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n\n");
-    LOG_MSG("INFO: Supply Support:- 'APFS'  : %r", Status);
+    LOG_MSG("%s      Supply Support:- 'APFS'  : %r", OffsetNext, Status);
 
     // DA-TAG: Prime Status for SupplyNVME
-    //         Here to accomodate GNU-RFI
+    //         Here to accomodate GNU-EFI
     Status = EFI_NOT_STARTED;
     #endif
 
@@ -1798,19 +1825,28 @@ EFI_STATUS EFIAPI efi_main (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s      Supply Support:- 'NVME'  : %r", OffsetNext, Status);
-    LOG_MSG("\n\n");
     #endif
 
     // Load Drivers
     LoadDrivers();
 
-    // Restore SystemTable if previously amended
+    // Restore SystemTable if previously amended and not emulating UEFI 2.x
     if (SetSysTab) {
-        // Reinitialise
-        InitializeLib (ImageHandle, SystemTable);
+        if (!GlobalConfig.SupplyUEFI) {
+            SetSysTab =  FALSE;
+            gBS       = OrigBS;
+            gRT       = OrigRT;
+            gST       = OrigST;
+            gBS->Hdr.CRC32 = 0;
+            gRT->Hdr.CRC32 = 0;
+            gST->Hdr.CRC32 = 0;
+            gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
+            gBS->CalculateCrc32 (gRT, gRT->Hdr.HeaderSize, &gRT->Hdr.CRC32);
+            gBS->CalculateCrc32 (gST, gST->Hdr.HeaderSize, &gST->Hdr.CRC32);
+        }
 
         #if REFIT_DEBUG > 0
-        Status = EFI_SUCCESS;
+        Status = (GlobalConfig.SupplyUEFI) ? EFI_NOT_STARTED : EFI_SUCCESS;
         MsgStr = PoolPrint (L"Restore System Table ... %r", Status);
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
         LOG_MSG("%s      %s", OffsetNext, MsgStr);

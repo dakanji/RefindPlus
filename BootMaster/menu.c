@@ -1109,8 +1109,23 @@ UINTN RunGenericMenu (
     ) {
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
+        UINT64 MenuExitNumb = 625;
+        UINT64 MenuExitGate = MenuExitNumb;
 
-        if (MenuExitDiff < 1250) {
+        if (!AppleFirmware) {
+            MenuExitGate = MenuExitGate + MenuExitNumb;
+
+            #if REFIT_DEBUG > 0
+            if (GlobalConfig.LogLevel > 0) {
+                MenuExitGate = MenuExitGate + MenuExitNumb;
+            }
+            if (GlobalConfig.LogLevel > 1) {
+                MenuExitGate = MenuExitGate + MenuExitNumb;
+            }
+            #endif
+        }
+
+        if (MenuExitDiff < MenuExitGate) {
             #if REFIT_DEBUG > 0
             LOG_MSG("INFO: Invalid Post-Load MenuExit Interval ... Ignoring MenuExit");
             CHAR16 *MsgStr = StrDuplicate (L"Mitigated Potential Persistent Primed Keystroke Buffer");

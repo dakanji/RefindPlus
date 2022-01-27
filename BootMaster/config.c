@@ -1141,6 +1141,10 @@ VOID ReadConfig (
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SupplyAPFS = DeclineSetting ? FALSE : TRUE;
         }
+        else if (MyStriCmp (TokenList[0], L"decline_uefiemulate")) {
+            DeclineSetting = HandleBoolean (TokenList, TokenCount);
+            GlobalConfig.SupplyUEFI = DeclineSetting ? FALSE : TRUE;
+        }
         else if (MyStriCmp (TokenList[0], L"decline_apfsmute")) {
             DeclineSetting = HandleBoolean (TokenList, TokenCount);
             GlobalConfig.SilenceAPFS = DeclineSetting ? FALSE : TRUE;

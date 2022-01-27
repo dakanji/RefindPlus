@@ -1,5 +1,15 @@
 0.13.2.AN (Pre-Release):
 -----------------------
+- Adds `SupplyUEFI` Feature
+  * Adds an implementation of the `CreateEventEx` feature to EFI 1.x units
+  * Additionally, the EFI Revision is modified to present as UEFI 2.3
+  * This allows the use of UEFI 2.x tools and drivers on Legacy EFI 1.x units in many cases
+  * This is particularly the case with Legacy Macs, which already have amended EFI 1.x implementations
+  * This functionality can be disabled by setting the `decline_uefiemulate` token
+  * As an aside, the `RuntimeServices` table is now also amended in `AmendSysTable`
+- Fixes SystemTable Restoration
+  * The code was previously not operational
+  * This has now been fixed but is now limited to when `SupplyUEFI` is inactive
 - Fixes Major Memory Conflict
   * An item had been wrongly freed resulting in random crashes when running loaders
   * This bug was introduced in v0.13.2.AC (Commit 6ed58c5)

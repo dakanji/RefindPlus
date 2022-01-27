@@ -700,6 +700,11 @@ EFI_STATUS ApplyGOPFix (VOID) {
     LOG_MSG("INFO: %s", MsgStr);
     MY_FREE_POOL(MsgStr);
 
+    if (Status == EFI_ALREADY_STARTED && SetSysTab == TRUE) {
+        // Set to success if previously changed
+        Status = EFI_SUCCESS;
+    }
+
     if (EFI_ERROR(Status)) {
         LOG_MSG("\n\n");
     }

@@ -103,6 +103,17 @@
 #
 #decline_tagshelp
 
+# Emulate UEFI 2.x support. By default, RefindPlus is set up to always
+# emulate the "CreateEventEx" feature, introduced in UEFI 2.3, when not
+# available. It additionally modifies the EFI Revision value to UEFI 2.3.
+# This may allow running UEFI 2.x tools and drivers on EFI 1.x units such
+# as Legacy Macs as several such tools only require CreateEventEx to work.
+# NB: This functionality is only available on TianoCore Builds.
+#
+# UEFI 2.x emulation is not provided when commented out
+#
+#decline_uefiemulate
+
 # RefindPlus defaults to scanning volumes for .VolumeIcon image icons and if
 # found, these may be used as display icons for some volumes. However, most
 # RefindPlus setups do not include these files and most of those that may

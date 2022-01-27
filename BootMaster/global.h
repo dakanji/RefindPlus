@@ -426,6 +426,7 @@ typedef struct {
     BOOLEAN           DisableAMFI;
     BOOLEAN           SupplyNVME;
     BOOLEAN           SupplyAPFS;
+    BOOLEAN           SupplyUEFI;
     BOOLEAN           SilenceAPFS;
     BOOLEAN           SyncAPFS;
     BOOLEAN           ProtectNVRAM;

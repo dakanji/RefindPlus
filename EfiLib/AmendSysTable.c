@@ -451,6 +451,17 @@ EFI_STATUS AmendSysTable (VOID) {
     );
     gBS = uBS;
 
+    // Amend RuntimeServices
+    gST->RuntimeServices->Hdr.HeaderSize = sizeof (EFI_RUNTIME_SERVICES);
+    gRT->Hdr.HeaderSize = sizeof (EFI_RUNTIME_SERVICES);
+    gRT->Hdr.Revision   = TARGET_EFI_REVISION;
+    gRT->Hdr.CRC32      = 0;
+    gBS->CalculateCrc32 (
+        gRT,
+        gRT->Hdr.HeaderSize,
+        &gRT->Hdr.CRC32
+    );
+
     // Amend SystemTable
     gST->BootServices   = gBS;
     gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
