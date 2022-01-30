@@ -158,7 +158,7 @@ EFI_STATUS WriteSectors (
 **/
 EFI_STATUS NvmeRead (
     IN     NVME_DEVICE_PRIVATE_DATA       *Device,
-       OUT VOID                           *Buffer,
+    OUT    VOID                           *Buffer,
     IN     UINT64                          Lba,
     IN     UINTN                           Blocks
 ) {
@@ -647,7 +647,7 @@ EFI_STATUS AsyncWriteSectors (
 EFI_STATUS
 NvmeAsyncRead (
     IN     NVME_DEVICE_PRIVATE_DATA       *Device,
-       OUT VOID                           *Buffer,
+    OUT    VOID                           *Buffer,
     IN     UINT64                          Lba,
     IN     UINTN                           Blocks,
     IN     EFI_BLOCK_IO2_TOKEN            *Token

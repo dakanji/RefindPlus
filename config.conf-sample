@@ -171,12 +171,12 @@
 # is loaded. This can however increase wear and tear on the NVRAM and disabling
 # the "use_nvram" token writes variables to the filesystem instead, limiting this.
 # On some setups however, such as when the "default_selection" token is set, such
-# writes are not required to start with. When the "ignore_previous_boot" setting
-# is active, RefindPlus will not store the "PreviousBoot" variable anywhere.
+# writes are not required to start with. When the "transient_boot" setting is
+# active, RefindPlus will not store the "PreviousBoot" variable anywhere.
 #
 # Always saves the "PreviousBoot" variable when commented out
 #
-#ignore_previous_boot
+#transient_boot
 
 # Some computers may have multiple GOP instances:
 #     - One installed on the ConsoleOut handle
@@ -899,7 +899,7 @@
 #  - A digit between 1 and 9, in which case the Nth loader in the menu
 #    will be the default.
 #  - A "+" symbol at the start of the string, which refers to the most
-#    recently booted loader (Unless overriden by 'IgnorePreviousBoot').
+#    recently booted loader (Unless overriden by 'transient_boot').
 #  - Any substring that corresponds to a portion of the loader's title
 #    (usually the OS's name, boot loader's path, or a volume or
 #    filesystem title).
@@ -953,7 +953,7 @@
 #spoof_osx_version 10.9
 
 # Include a secondary configuration file within this one. This secondary
-# file is loaded as if its options appeared at the point of the "include"
+# file is loaded as if its tokens appeared at the point of the "include"
 # option. So, to override a setting in the main file, the secondary file
 # must be referenced AFTER the setting to be overridden. NB: A secondary
 # configuration file cannot "include" a tertiary configuration file.

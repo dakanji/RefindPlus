@@ -175,10 +175,6 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
 #define MY_EFI_BLOCK_IO_PROTOCOL           EFI_BLOCK_IO_PROTOCOL
 #endif
 
-#if REFIT_DEBUG > 0
-extern CHAR16 *OffsetNext;
-#endif
-
 
 /* LibScanHandleDatabase() is used by RefindPlus' driver-loading code (inherited
  * from rEFIt), but has not been implemented in GNU-EFI and seems to have been

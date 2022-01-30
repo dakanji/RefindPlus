@@ -33,6 +33,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/*
+ * Modified for RefindPlus
+ * Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
+ *
+ * Modifications distributed under the preceding terms.
+ */
 
 #ifndef __SCREEN_H_
 #define __SCREEN_H_
@@ -47,7 +53,7 @@
 #include "libeg.h"
 
 //
-// screen module
+// Screen module
 //
 
 #define DONT_CHANGE_TEXT_MODE 1024 /* textmode # that is a code to not change the text mode */
@@ -72,17 +78,14 @@
 #define TOP 2
 #define NEXTLINE 3
 
-extern UINTN ConWidth;
-extern UINTN ConHeight;
-extern CHAR16 *BlankLine;
-
-extern UINTN ScreenW;
-extern UINTN ScreenH;
-
-extern BOOLEAN AllowGraphicsMode;
-
-extern EG_PIXEL StdBackgroundPixel;
-extern EG_PIXEL MenuBackgroundPixel;
+extern UINTN     ConWidth;
+extern UINTN     ConHeight;
+extern UINTN     ScreenW;
+extern UINTN     ScreenH;
+extern CHAR16   *BlankLine;
+extern BOOLEAN   AllowGraphicsMode;
+extern EG_PIXEL  StdBackgroundPixel;
+extern EG_PIXEL  MenuBackgroundPixel;
 
 EFI_STATUS SwitchToGraphics (VOID);
 
@@ -98,9 +101,9 @@ VOID BeginExternalScreen (IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title);
 VOID FinishExternalScreen (VOID);
 VOID TerminateScreen (VOID);
 VOID DrawScreenHeader (IN CHAR16 *Title);
-VOID DeadLoop (VOID);
 VOID PrintUglyText (IN CHAR16 *Text, UINTN PositionCode);
 VOID PauseForKey (VOID);
+VOID RefitDeadLoop (VOID);
 VOID PauseSeconds (UINTN Seconds);
 VOID SwitchToText (IN BOOLEAN CursorEnabled);
 VOID SwitchToGraphicsAndClear (IN BOOLEAN ShowBanner);

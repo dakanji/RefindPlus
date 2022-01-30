@@ -82,12 +82,6 @@ BOOLEAN InnerScan = FALSE;
     BOOLEAN ForensicLogging = FALSE;
 #endif
 
-extern BOOLEAN MuteLogger;
-
-#if REFIT_DEBUG > 0
-extern CHAR16 *OffsetNext;
-#endif
-
 
 //
 // read a file into a buffer
@@ -97,7 +91,7 @@ EFI_STATUS RefitReadFile (
     IN     EFI_FILE_HANDLE  BaseDir,
     IN     CHAR16          *FileName,
     IN OUT REFIT_FILE      *File,
-       OUT UINTN           *size
+    OUT    UINTN           *size
 ) {
     EFI_STATUS       Status;
     EFI_FILE_HANDLE  FileHandle;
@@ -705,25 +699,28 @@ VOID ReadConfig (
     if (!FileExists (SelfDir, FileName)) {
         SwitchToText (FALSE);
 
-        MsgStr = StrDuplicate (L"  - WARN: Cannot Find Configuration File ... Loading Defaults!!");
-        PrintUglyText (MsgStr, NEXTLINE);
-
+        MsgStr = StrDuplicate (
+            L"  - WARN: Cannot Find Configuration File ... Loading Defaults!!"
+        );
         #if REFIT_DEBUG > 0
         MuteLogger = FALSE;
         LOG_MSG("%s%s", OffsetNext, MsgStr);
         MuteLogger = TRUE;
         #endif
+        PrintUglyText (MsgStr, NEXTLINE);
+        MY_FREE_POOL(MsgStr);
 
         if (!FileExists (SelfDir, L"icons")) {
-            MY_FREE_POOL(MsgStr);
-            MsgStr = StrDuplicate (L"  - WARN: Cannot Find Icons Directory ... Switching to Text Mode!!");
-            PrintUglyText (MsgStr, NEXTLINE);
-
+            MsgStr = StrDuplicate (
+                L"  - WARN: Cannot Find Icons Directory ... Switching to Text Mode!!"
+            );
             #if REFIT_DEBUG > 0
             MuteLogger = FALSE;
             LOG_MSG("%s%s", OffsetNext, MsgStr);
             MuteLogger = TRUE;
             #endif
+            PrintUglyText (MsgStr, NEXTLINE);
+            MY_FREE_POOL(MsgStr);
 
             GlobalConfig.TextOnly = TRUE;
         }
@@ -736,7 +733,6 @@ VOID ReadConfig (
 
         PauseForKey();
         SwitchToGraphics();
-        MY_FREE_POOL(MsgStr);
 
         return;
     }
@@ -752,8 +748,9 @@ VOID ReadConfig (
         return;
     }
 
-    // DA-TAG: Do not init ... 'dead store'
+    // DA-TAG: Do not init
     BOOLEAN DeclineSetting;
+
     for (;;) {
         TokenCount = ReadTokenLine (&File, &TokenList);
         if (TokenCount == 0) {
@@ -761,7 +758,7 @@ VOID ReadConfig (
         }
 
         if (MyStriCmp (TokenList[0], L"timeout")) {
-            // Signed integer as can have negative value
+            // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.Timeout));
         }
         else if (MyStriCmp (TokenList[0], L"shutdown_after_timeout")) {
@@ -826,7 +823,7 @@ VOID ReadConfig (
             HandleInt (TokenList, TokenCount, &(GlobalConfig.ScanDelay));
         }
         else if (MyStriCmp (TokenList[0], L"log_level") && (TokenCount == 2)) {
-            // Signed integer as *MAY* have negative value input
+            // DA-TAG: Signed integer as *MAY* have negative value input
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.LogLevel));
             // Sanitise levels
             UINTN MaxLogLevel = (ForensicLogging) ? MAXLOGLEVEL + 1 : MAXLOGLEVEL;
@@ -981,7 +978,7 @@ VOID ReadConfig (
         }
         else if (MyStriCmp (TokenList[0], L"resolution") && ((TokenCount == 2) || (TokenCount == 3))) {
             if (MyStriCmp(TokenList[1], L"max")) {
-                // DA-TAG: has been set to 0 so as to ignore the 'max' setting
+                // DA-TAG: Has been set to 0 so as to ignore the 'max' setting
                 //GlobalConfig.RequestedScreenWidth  = MAX_RES_CODE;
                 //GlobalConfig.RequestedScreenHeight = MAX_RES_CODE;
                 GlobalConfig.RequestedScreenWidth  = 0;
@@ -998,7 +995,7 @@ VOID ReadConfig (
             }
         }
         else if (MyStriCmp (TokenList[0], L"screensaver")) {
-            // Signed integer as can have negative value
+            // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScreensaverTime));
         }
         else if (MyStriCmp (TokenList[0], L"use_graphics_for")) {
@@ -1093,8 +1090,8 @@ VOID ReadConfig (
                 GlobalConfig.EnableMouse = FALSE;
             }
         }
-        else if (MyStriCmp (TokenList[0], L"ignore_previous_boot")) {
-            GlobalConfig.IgnorePreviousBoot = HandleBoolean (TokenList, TokenCount);
+        else if (MyStriCmp (TokenList[0], L"transient_boot")) {
+            GlobalConfig.TransientBoot = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"ignore_hidden_icons")) {
             GlobalConfig.IgnoreHiddenIcons = HandleBoolean (TokenList, TokenCount);
@@ -1170,11 +1167,11 @@ VOID ReadConfig (
             GlobalConfig.NormaliseCSR = HandleBoolean (TokenList, TokenCount);
         }
         else if (MyStriCmp (TokenList[0], L"scale_ui")) {
-            // Signed integer as can have negative value
+            // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ScaleUI));
         }
         else if (MyStriCmp (TokenList[0], L"active_csr")) {
-            // Signed integer as can have negative value
+            // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.ActiveCSR));
         }
         else if (MyStriCmp (TokenList[0], L"mouse_speed") && (TokenCount == 2)) {
@@ -1624,7 +1621,10 @@ LOADER_ENTRY * AddStanzaEntries (
         }
 
         if (AddedSubmenu) {
-            GetReturnMenuEntry (&Entry->me.SubScreen);
+            BOOLEAN RetVal = GetReturnMenuEntry (&Entry->me.SubScreen);
+            if (!RetVal) {
+                FreeMenuScreen (&Entry->me.SubScreen);
+            }
         }
 
         if (Entry->InitrdPath && StrLen (Entry->InitrdPath) > 0) {

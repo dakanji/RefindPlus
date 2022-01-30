@@ -193,7 +193,4 @@ EFI_STATUS NormaliseCSR (VOID);
 
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue (VOID);
-VOID ForceTRIM (VOID);
-VOID DisableCompatCheck (VOID);
-VOID DisableAMFI (VOID);
 #endif

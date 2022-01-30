@@ -79,8 +79,8 @@
 #define FAT_ARCH                0x0ef1fab9 /* ID for Apple "fat" binary */
 
 CHAR16         *BootSelection = NULL;
+CHAR16         *ValidText     = L"NOT SET";
 
-extern CHAR16  *OffsetNext;
 extern BOOLEAN  IsBoot;
 
 static
@@ -161,9 +161,11 @@ BOOLEAN IsValidLoader (
         // when launching from a Firewire drive. This should be handled better, but
         // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
+        ValidText = L"EFI File is *ASSUMED* to be Valid";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"EFI File is *ASSUMED* to be Valid:- '%s'",
-            FileName ? FileName : L"NULL"
+            L"%s:- '%s'",
+            ValidText,
+            FileName ? FileName : L"NULL File"
         );
         #endif
 
@@ -171,9 +173,11 @@ BOOLEAN IsValidLoader (
     }
     else if (!FileExists (RootDir, FileName)) {
         #if REFIT_DEBUG > 0
+        ValidText = L"EFI File *NOT* Found";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"EFI File *NOT* Found:- '%s'",
-            FileName ? FileName : L"NULL"
+            L"%s:- '%s'",
+            ValidText,
+            FileName ? FileName : L"NULL File"
         );
         #endif
 
@@ -189,9 +193,11 @@ BOOLEAN IsValidLoader (
 
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
+        ValidText = L"EFI File is *NOT* Readable";
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"EFI File is *NOT* Valid:- '%s'",
-            FileName ? FileName : L"NULL"
+            L"%s:- '%s'",
+            ValidText,
+            FileName ? FileName : L"NULL File"
         );
         #endif
 
@@ -211,10 +217,13 @@ BOOLEAN IsValidLoader (
               (*(UINT32 *) &Header == FAT_ARCH));
 
     #if REFIT_DEBUG > 0
+    ValidText = (IsValid)
+        ? L"EFI File is Valid"
+        : L"EFI File is *NOT* Valid";
     ALT_LOG(1, LOG_THREE_STAR_MID,
-        L"EFI File is %s:- '%s'",
-        IsValid  ? L"Valid" : L"*NOT* Valid",
-        FileName ? FileName : L"NULL"
+        L"%s:- '%s'",
+        ValidText,
+        FileName ? FileName : L"NULL File"
     );
     #endif
 #else
@@ -290,17 +299,28 @@ EFI_STATUS StartEFIImage (
     BOOLEAN LoaderValid = IsValidLoader (Volume->RootDir, Filename);
 
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
-    // Some EFIs crash if attempting to load driver for invalid architecture, so
+    // Some EFIs crash if attempting to load drivers for an invalid architecture, so
     // protect for this condition; but sometimes Volume comes back NULL, so provide
     // an exception. (TODO: Handle this special condition better.)
     if (!LoaderValid) {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Invalid Loader!!");
-        ALT_LOG(1, LOG_STAR_SEPARATOR, L"ERROR: %s", MsgStr);
-        LOG_MSG("* ERROR: %s", MsgStr);
+        MsgStr = StrDuplicate (L"ERROR: Invalid Loader!!");
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("* %s", MsgStr);
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
+
+        MsgStr = PoolPrint (
+            L"When Loading %s ... %s",
+            ImageTitle,
+            ValidText
+        );
+        ValidText = L"NOT SET";
+        CheckError (Status, MsgStr);
+        MY_FREE_POOL(MsgStr);
+
+        goto bailout;
     }
     else {
         // Store loader name if booting and set to do so
@@ -394,17 +414,6 @@ EFI_STATUS StartEFIImage (
         WarnSecureBootError (ImageTitle, Verbose);
         goto bailout;
     }
-
-    MsgStr = PoolPrint (
-        L"When Loading %s%s",
-        ImageTitle,
-        (LoaderValid) ? L"" : L" ... Invalid Loader"
-    );
-    if (CheckError (Status, MsgStr)) {
-        MY_FREE_POOL(MsgStr);
-        goto bailout;
-    }
-    MY_FREE_POOL(MsgStr);
 
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
@@ -600,7 +609,13 @@ BOOLEAN ConfirmReboot (
 
     AddMenuInfoLine (ConfirmRebootMenu, PoolPrint (L"%s?", PromptUser));
 
-    GetYesNoMenuEntry (&ConfirmRebootMenu);
+    BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmRebootMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&ConfirmRebootMenu);
+
+        // Early Return
+        return FALSE;
+    }
 
     INTN           DefaultEntry = 1;
     REFIT_MENU_ENTRY  *ChosenOption;
@@ -856,18 +871,14 @@ VOID StartTool (
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-
-    if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        LOG_MSG("INFO: Running Graphics Mode Switch");
-        LOG_MSG("\n");
-    }
     #endif
 
     BeginExternalScreen (Entry->UseGraphicsMode, MsgStr);
 
     #if REFIT_DEBUG > 0
     if (AllowGraphicsMode && !Entry->UseGraphicsMode) {
-        LOG_MSG("      Switch Graphics to Text Mode ... Success");
+        LOG_MSG("INFO: Switched Graphics to Text Mode");
+        LOG_MSG("%s      %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
     }
     #endif

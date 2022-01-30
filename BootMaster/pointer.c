@@ -49,7 +49,6 @@ EG_IMAGE                       *Background         = NULL;
 BOOLEAN                         PointerAvailable   = FALSE;
 POINTER_STATE                   State;
 
-extern CHAR16                  *OffsetNext;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Initialize all pointer devices

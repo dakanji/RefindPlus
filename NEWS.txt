@@ -9,6 +9,11 @@
   * This is particularly the case with Legacy Macs, which already have amended EFI 1.x implementations
   * This functionality can be disabled by setting the `decline_uefiemulate` token
   * As an aside, the `RuntimeServices` table is now also amended in `AmendSysTable`
+- Fixes Forced `TextRenderer`
+  * The `TextRenderer` feature is forced on in certain circumstances to enable text mode support
+  * This appears to have resulted in conflicts on some Macs following a firmware update
+  * The firmware update appears to have made changes to screen mode settings
+  * The forced activation has been amended to avoid this issue
 - Fixes SystemTable Restoration
   * The code was previously not operational
   * This has now been fixed but is now limited to when `SupplyUEFI` is inactive
@@ -19,6 +24,11 @@
   * Limited to Single Instance APFS Containers
 - Fixes Reported LodePNG Name Collisions
   * This apparently affected Docker builds on Linux
+- Amends Inconsistent EFI Version Handling
+  * RefindPlus now disables all functionality involving UEFI element changes when this is detected
+  * A detection of inconsistent EFI versions suggests RefindPlus has been chain-loaded
+  * This is most likely to be as a result of chain-loading from OpenCore with `ForgeUefiSupport` set
+  * The disabled features can typically also be set in OpenCore
 - Improves `ProtectNVRAM` Implementation
   * RefindPlus classifies UEFI Loaders based on one of the following categories:
     - `Opencore`, `Clover`, `Linux`, `MacOS`, `Windows` and `Others`
@@ -34,6 +44,9 @@
   * Enables `NOOPT` Build Target
     - This is a debug build with misc compile time optimisation items disabled
     - Log Level 2 is only exposed on this build target
+- Renames the `ignore_previous_boot` config option to `transient_boot`
+  * This more accurately describes the feature.
+    - The current boot selection is not saved but previously saved boots are used if already saved
 
 
 0.13.2.AM (13 Dec 2021):
@@ -427,7 +440,7 @@
 - Drops Switch to Graphics Mode on EFI Boot (When not Booting OpenCore)
   * Maintains default mode instead of switching to graphics mode when booting EFI loaders such as OpenCore
 - Improves APFS Remapping
-  * Previously failed when using the `ReScanAll` feature or when not running on Apple Firmware
+  * Previously failed when using the `RescanAll` feature or when not running on Apple Firmware
   * Improves volume filtering
 - Improves Device Handle Connection
   * Now always runs the connection process a minimum of two (2) times

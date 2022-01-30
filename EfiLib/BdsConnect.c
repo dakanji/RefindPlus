@@ -659,13 +659,11 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
         AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
     );
     if (!FoundGOP && DetectedDevices) {
-        LOG_MSG("\n");
-        LOG_MSG("      ");
+        LOG_MSG("%s      %s", OffsetNext, MsgStr);
     }
     else {
-        LOG_MSG("INFO: ");
+        LOG_MSG("INFO: %s", MsgStr);
     }
-    LOG_MSG("%s", MsgStr);
     ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
@@ -716,8 +714,7 @@ EFI_STATUS ApplyGOPFix (VOID) {
         #if REFIT_DEBUG > 0
         MsgStr = PoolPrint (L"Acquire OptionROM on Volatile Storage ... %r", Status);
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("\n");
-        LOG_MSG("      %s", MsgStr);
+        LOG_MSG("%s      %s", OffsetNext, MsgStr);
         MY_FREE_POOL(MsgStr);
         #endif
 

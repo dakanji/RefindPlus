@@ -123,10 +123,6 @@ extern BOOLEAN             ClearedBuffer;
 extern BOOLEAN             SingleAPFS;
 extern EFI_GUID            RefindPlusGuid;
 
-#if REFIT_DEBUG > 0
-extern CHAR16 *OffsetNext;
-#endif
-
 
 //
 // Graphics helper functions
@@ -229,7 +225,7 @@ VOID InitScroll (
     IN UINTN          VisibleSpace
 ) {
     State->PreviousSelection = State->CurrentSelection = 0;
-    State->MaxIndex = (INTN)ItemCount - 1;
+    State->MaxIndex = (INTN) ItemCount - 1;
     State->FirstVisible = 0;
 
     if (AllowGraphicsMode) {
@@ -240,7 +236,7 @@ VOID InitScroll (
     }
 
     if ((VisibleSpace > 0) && (VisibleSpace < State->MaxVisible)) {
-        State->MaxVisible = (INTN)VisibleSpace;
+        State->MaxVisible = (INTN) VisibleSpace;
     }
 
     State->PaintAll        = TRUE;
@@ -542,7 +538,7 @@ VOID IdentifyRows (
 ) {
     UINTN i;
 
-    State->FinalRow0 = 0;
+    State->FinalRow0   = 0;
     State->InitialRow1 = State->MaxIndex;
     for (i = 0; i <= State->MaxIndex; i++) {
         if (Screen->Entries[i]->Row == 0) {
@@ -572,51 +568,49 @@ VOID SaveScreen (VOID) {
     UINT64 BaseTimeWait = 3750;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = NULL;
-
-    MsgStr = StrDuplicate (L"Keypress Wait Threshold Exceeded");
+    CHAR16 *LoopChange = NULL;
+    CHAR16 *MsgStr = L"Activity Wait Threshold Exceeded ... Start Screensaver";
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL,  L"%s", MsgStr);
-    LOG_MSG("INFO: %s ...", MsgStr);
-    MY_FREE_POOL(MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
 
-    MsgStr = StrDuplicate (L"Start Screensaver");
-    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-    LOG_MSG("%s", MsgStr);
+    MsgStr = L"Running Screensaver";
+    ALT_LOG(1, LOG_THREE_STAR_MID,  L"%s", MsgStr);
+    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
     LOG_MSG("\n");
-    MY_FREE_POOL(MsgStr);
     #endif
 
     EG_PIXEL OUR_COLOUR;
-    EG_PIXEL COLOUR_01 = { 0, 51, 51, 0 };
-    EG_PIXEL COLOUR_02 = { 0, 102, 102, 0 };
-    EG_PIXEL COLOUR_03 = { 0, 153, 153, 0 };
-    EG_PIXEL COLOUR_04 = { 0, 204, 204, 0 };
-    EG_PIXEL COLOUR_05 = { 0, 255, 255, 0 };
-    EG_PIXEL COLOUR_06 = { 51, 0, 204, 0 };
-    EG_PIXEL COLOUR_07 = { 51, 51, 153, 0 };
-    EG_PIXEL COLOUR_08 = { 51, 102, 102, 0 };
-    EG_PIXEL COLOUR_09 = { 51, 153, 51, 0 };
-    EG_PIXEL COLOUR_10 = { 51, 204, 0, 0 };
-    EG_PIXEL COLOUR_11 = { 51, 255, 51, 0 };
-    EG_PIXEL COLOUR_12 = { 102, 0, 102, 0 };
-    EG_PIXEL COLOUR_13 = { 102, 51, 153, 0 };
-    EG_PIXEL COLOUR_14 = { 102, 102, 204, 0 };
-    EG_PIXEL COLOUR_15 = { 102, 153, 255, 0 };
-    EG_PIXEL COLOUR_16 = { 102, 204, 204, 0 };
-    EG_PIXEL COLOUR_17 = { 102, 255, 153, 0 };
-    EG_PIXEL COLOUR_18 = { 153, 0, 102, 0 };
-    EG_PIXEL COLOUR_19 = { 153, 51, 51, 0 };
-    EG_PIXEL COLOUR_20 = { 153, 102, 0, 0 };
-    EG_PIXEL COLOUR_21 = { 153, 153, 51, 0 };
-    EG_PIXEL COLOUR_22 = { 153, 204, 102, 0 };
-    EG_PIXEL COLOUR_23 = { 153, 255, 153, 0 };
-    EG_PIXEL COLOUR_24 = { 204, 0, 204, 0 };
-    EG_PIXEL COLOUR_25 = { 204, 51, 255, 0 };
-    EG_PIXEL COLOUR_26 = { 204, 102, 204, 0 };
-    EG_PIXEL COLOUR_27 = { 204, 153, 153, 0 };
-    EG_PIXEL COLOUR_28 = { 204, 204, 102, 0 };
-    EG_PIXEL COLOUR_29 = { 204, 255, 51, 0 };
-    EG_PIXEL COLOUR_30 = { 255, 0, 0, 0 };
+    EG_PIXEL COLOUR_01 = {   0,  51,  51,  0 };
+    EG_PIXEL COLOUR_02 = {   0, 102, 102,  0 };
+    EG_PIXEL COLOUR_03 = {   0, 153, 153,  0 };
+    EG_PIXEL COLOUR_04 = {   0, 204, 204,  0 };
+    EG_PIXEL COLOUR_05 = {   0, 255, 255,  0 };
+    EG_PIXEL COLOUR_06 = {  51,   0, 204,  0 };
+    EG_PIXEL COLOUR_07 = {  51,  51, 153,  0 };
+    EG_PIXEL COLOUR_08 = {  51, 102, 102,  0 };
+    EG_PIXEL COLOUR_09 = {  51, 153,  51,  0 };
+    EG_PIXEL COLOUR_10 = {  51, 204,   0,  0 };
+    EG_PIXEL COLOUR_11 = {  51, 255,  51,  0 };
+    EG_PIXEL COLOUR_12 = { 102,   0, 102,  0 };
+    EG_PIXEL COLOUR_13 = { 102,  51, 153,  0 };
+    EG_PIXEL COLOUR_14 = { 102, 102, 204,  0 };
+    EG_PIXEL COLOUR_15 = { 102, 153, 255,  0 };
+    EG_PIXEL COLOUR_16 = { 102, 204, 204,  0 };
+    EG_PIXEL COLOUR_17 = { 102, 255, 153,  0 };
+    EG_PIXEL COLOUR_18 = { 153,   0, 102,  0 };
+    EG_PIXEL COLOUR_19 = { 153,  51,  51,  0 };
+    EG_PIXEL COLOUR_20 = { 153, 102,   0,  0 };
+    EG_PIXEL COLOUR_21 = { 153, 153,  51,  0 };
+    EG_PIXEL COLOUR_22 = { 153, 204, 102,  0 };
+    EG_PIXEL COLOUR_23 = { 153, 255, 153,  0 };
+    EG_PIXEL COLOUR_24 = { 204,   0, 204,  0 };
+    EG_PIXEL COLOUR_25 = { 204,  51, 255,  0 };
+    EG_PIXEL COLOUR_26 = { 204, 102, 204,  0 };
+    EG_PIXEL COLOUR_27 = { 204, 153, 153,  0 };
+    EG_PIXEL COLOUR_28 = { 204, 204, 102,  0 };
+    EG_PIXEL COLOUR_29 = { 204, 255,  51,  0 };
+    EG_PIXEL COLOUR_30 = { 255,   0,   0,  0 };
 
     // Start with COLOUR_01
     ColourIndex = 0;
@@ -635,14 +629,18 @@ VOID SaveScreen (VOID) {
                 TimeWait = BaseTimeWait;
 
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Reset Timeout");
+                LoopChange = L"Reset";
                 #endif
             }
             else {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Extend Timeout");
+                LoopChange = L"Extend";
                 #endif
             }
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%d Timeout Loop - %d", LoopChange, TimeWait);
+            ALT_LOG(1, LOG_THREE_STAR_MID,  L"Running Screensaver");
+            #endif
         }
 
         switch (ColourIndex) {
@@ -686,16 +684,11 @@ VOID SaveScreen (VOID) {
     } // for
 
     #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"Detected Keypress");
-    ALT_LOG(1, LOG_LINE_NORMAL,  L"%s", MsgStr);
-    LOG_MSG("      %s ... ", MsgStr);
-    MY_FREE_POOL(MsgStr);
-
-    MsgStr = StrDuplicate (L"Ending Screensaver");
-    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", MsgStr);
+    MsgStr = L"Detected Keypress ... Halt Screensaver";
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     LOG_MSG("%s", MsgStr);
     LOG_MSG("\n\n");
-    MY_FREE_POOL(MsgStr);
     #endif
 
     if (AllowGraphicsMode) {
@@ -706,7 +699,7 @@ VOID SaveScreen (VOID) {
 } // VOID SaveScreen()
 
 //
-// generic menu function
+// Generic menu function
 //
 #if REFIT_DEBUG > 0
 static
@@ -738,17 +731,17 @@ CHAR16 * GetScanCodeText (
 #endif
 
 UINTN RunGenericMenu (
-    IN REFIT_MENU_SCREEN  *Screen,
-    IN MENU_STYLE_FUNC     StyleFunc,
-    IN OUT INTN           *DefaultEntryIndex,
-    OUT REFIT_MENU_ENTRY **ChosenEntry
+    IN     REFIT_MENU_SCREEN   *Screen,
+    IN     MENU_STYLE_FUNC      StyleFunc,
+    IN OUT INTN                *DefaultEntryIndex,
+    OUT    REFIT_MENU_ENTRY  **ChosenEntry
 ) {
     EFI_STATUS     Status;
-    EFI_STATUS     PointerStatus      = EFI_NOT_READY;
-    BOOLEAN        HaveTimeout        = FALSE;
-    BOOLEAN        WaitForRelease     = FALSE;
-    UINTN          TimeoutCountdown   = 0;
-    INTN           TimeSinceKeystroke = 0;
+    EFI_STATUS     PointerStatus      =  EFI_NOT_READY;
+    BOOLEAN        HaveTimeout        =  FALSE;
+    BOOLEAN        WaitForRelease     =  FALSE;
+    UINTN          TimeoutCountdown   =  0;
+    INTN           TimeSinceKeystroke =  0;
     INTN           PreviousTime       = -1;
     INTN           CurrentTime;
     INTN           ShortcutEntry;
@@ -1109,7 +1102,7 @@ UINTN RunGenericMenu (
     ) {
         UINT64 MenuExitTime = GetCurrentMS();
         UINT64 MenuExitDiff = MenuExitTime - MainMenuLoad;
-        UINT64 MenuExitNumb = 625;
+        UINT64 MenuExitNumb = 500;
         UINT64 MenuExitGate = MenuExitNumb;
 
         if (!AppleFirmware) {
@@ -1262,7 +1255,6 @@ VOID TextMenuStyle (
 
         case MENU_FUNCTION_PAINT_ALL:
             // Paint the whole screen (initially and after scrolling)
-
             ShowTextInfoLines (Screen);
             for (i = 0; i <= State->MaxIndex; i++) {
                 if (i >= State->FirstVisible && i <= State->LastVisible) {
@@ -1441,7 +1433,7 @@ VOID DrawText (
         ) / Divisor
     );
 
-    // render the text
+    // Render the text
     egRenderText (
         Text,
         TextBuffer,
@@ -1521,7 +1513,7 @@ VOID DrawTextWithTransparency (
         return;
     }
 
-    // render the text
+    // Render the text
     egRenderText (
         Text,
         TextBuffer,
@@ -1611,7 +1603,7 @@ VOID ComputeSubScreenWindowSize (
     }
 
     if (GlobalConfig.BannerBottomEdge >= HintTop) {
-        // probably a full-screen image; treat it as an empty banner
+        // Probably a full-screen image; treat it as an empty banner
         BannerBottomEdge = 0;
     }
     else {
@@ -1666,7 +1658,7 @@ VOID GraphicsMenuStyle (
 
             TimeoutPosY = EntriesPosY + (Screen->EntryCount + 1) * TextLineHeight();
 
-            // initial painting
+            // Initial painting
             SwitchToGraphicsAndClear (TRUE);
 
             Window = egCreateFilledImage (MenuWidth, MenuHeight, FALSE, BackgroundPixel);
@@ -1694,7 +1686,7 @@ VOID GraphicsMenuStyle (
             break;
 
         case MENU_FUNCTION_CLEANUP:
-            // nothing to do
+            // Nothing to do
             break;
 
         case MENU_FUNCTION_PAINT_ALL:
@@ -1771,7 +1763,7 @@ VOID GraphicsMenuStyle (
             break;
 
         case MENU_FUNCTION_PAINT_SELECTION:
-            // redraw selection cursor
+            // Redraw selection cursor
             DrawText (
                 Screen->Entries[State->PreviousSelection]->Title,
                 FALSE, LineWidth,
@@ -2423,7 +2415,13 @@ VOID DisplaySimpleMessage (
 
     AddMenuInfoLine (SimpleMessageMenu, Message);
 
-    GetReturnMenuEntry (&SimpleMessageMenu);
+    BOOLEAN RetVal = GetReturnMenuEntry (&SimpleMessageMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&SimpleMessageMenu);
+
+        // Early Return
+        return;
+    }
 
     INTN          DefaultEntry = 0;
     INTN              MenuExit = 0;
@@ -3127,7 +3125,7 @@ UINTN RunMainMenu (
     #endif
     BREAD_CRUMB(L"In %s ... 5", FuncTag);
 
-    // remove any buffered key strokes
+    // Remove any buffered key strokes
     ReadAllKeyStrokes();
     BREAD_CRUMB(L"In %s ... 6", FuncTag);
 
@@ -3168,7 +3166,7 @@ UINTN RunMainMenu (
             BREAD_CRUMB(L"In %s ... 9a 3a 1", FuncTag);
             if (!TempChosenEntry->SubScreen) {
                 BREAD_CRUMB(L"In %s ... 9a 3a 1a 1", FuncTag);
-                // no sub-screen; ignore keypress
+                // No sub-screen ... Ignore keypress
                 MenuExit = 0;
             }
             else {
@@ -3451,36 +3449,38 @@ VOID FreeBdsOption (
     MY_FREE_POOL(*BdsOption);
 } // VOID FreeBdsOption()
 
-VOID GetReturnMenuEntry (
+BOOLEAN GetReturnMenuEntry (
     IN OUT REFIT_MENU_SCREEN **Screen
 ) {
     if (Screen == NULL || *Screen == NULL) {
         // Early Return
-        return;
+        return FALSE;
     }
 
     REFIT_MENU_ENTRY *MenuEntryReturn = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     if (MenuEntryReturn == NULL) {
         // Early Return
-        return;
+        return FALSE;
     }
     MenuEntryReturn->Title = StrDuplicate (L"Return to Main Menu");
     MenuEntryReturn->Tag   = TAG_RETURN;
     AddMenuEntry (*Screen, MenuEntryReturn);
-} // VOID GetReturnMenuEntry()
 
-VOID GetYesNoMenuEntry (
+    return TRUE;
+} // BOOLEAN GetReturnMenuEntry()
+
+BOOLEAN GetYesNoMenuEntry (
     IN OUT REFIT_MENU_SCREEN **Screen
 ) {
     if (Screen == NULL || *Screen == NULL) {
         // Early Return
-        return;
+        return FALSE;
     }
 
     REFIT_MENU_ENTRY *MenuEntryYes = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     if (MenuEntryYes == NULL) {
         // Early Return
-        return;
+        return FALSE;
     }
     MenuEntryYes->Title = StrDuplicate (L"Yes");
     MenuEntryYes->Tag   = TAG_YES;
@@ -3488,10 +3488,14 @@ VOID GetYesNoMenuEntry (
 
     REFIT_MENU_ENTRY *MenuEntryNo = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
     if (MenuEntryNo == NULL) {
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) MenuEntryYes);
+
         // Early Return
-        return;
+        return FALSE;
     }
     MenuEntryNo->Title = StrDuplicate (L"No");
     MenuEntryNo->Tag   = TAG_NO;
     AddMenuEntry (*Screen, MenuEntryNo);
-} // VOID GetReturnMenuEntry()
+
+    return TRUE;
+} // BOOLEAN GetYesNoMenuEntry()

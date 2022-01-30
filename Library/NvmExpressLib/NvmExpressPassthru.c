@@ -36,9 +36,9 @@ VOID * NvmeCreatePrpList (
     IN     EFI_PCI_IO_PROTOCOL          *PciIo,
     IN     EFI_PHYSICAL_ADDRESS          PhysicalAddr,
     IN     UINTN                         Pages,
-       OUT VOID                        **PrpListHost,
+    OUT    VOID                        **PrpListHost,
     IN OUT UINTN                        *PrpListNo,
-       OUT VOID                        **Mapping
+    OUT    VOID                        **Mapping
 ) {
     UINTN                       PrpEntryNo;
     UINT64                      PrpListBase;
@@ -842,7 +842,7 @@ Done:
 EFI_STATUS EFIAPI NvmExpressGetNamespace (
     IN     EFI_NVM_EXPRESS_PASS_THRU_PROTOCOL          *This,
     IN     EFI_DEVICE_PATH_PROTOCOL                    *DevicePath,
-       OUT UINT32                                      *NamespaceId
+    OUT    UINT32                                      *NamespaceId
 ) {
     NVME_NAMESPACE_DEVICE_PATH       *Node;
     NVME_CONTROLLER_PRIVATE_DATA     *Private;

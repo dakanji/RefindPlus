@@ -128,8 +128,6 @@ VOID GenerateWaitList (VOID);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);
 VOID FreeMenuScreen (IN REFIT_MENU_SCREEN **Screen);
 VOID FreeMenuEntry (IN OUT REFIT_MENU_ENTRY **Entry);
-VOID GetYesNoMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
-VOID GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 VOID DisplaySimpleMessage (CHAR16 *Title, CHAR16 *Message);
 VOID AddMenuInfoLine (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
 VOID AddMenuInfoLineAlt (IN REFIT_MENU_SCREEN *Screen, IN CHAR16 *InfoLine);
@@ -180,6 +178,9 @@ UINTN RunMainMenu (
 
 CHAR16 * ReadHiddenTags (CHAR16 *VarName);
 CHAR16 * MenuExitInfo (IN UINTN MenuExit);
+
+BOOLEAN GetYesNoMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
+BOOLEAN GetReturnMenuEntry (IN OUT REFIT_MENU_SCREEN **Screen);
 
 BDS_COMMON_OPTION * CopyBdsOption (BDS_COMMON_OPTION *BdsOption);
 

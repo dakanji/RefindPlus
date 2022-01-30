@@ -628,7 +628,7 @@ EFI_STATUS EFIAPI NvmExpressGetNextNamespace (
 EFI_STATUS EFIAPI NvmExpressGetNamespace (
     IN     EFI_NVM_EXPRESS_PASS_THRU_PROTOCOL          *This,
     IN     EFI_DEVICE_PATH_PROTOCOL                    *DevicePath,
-       OUT UINT32                                      *NamespaceId
+    OUT    UINT32                                      *NamespaceId
 );
 
 /**

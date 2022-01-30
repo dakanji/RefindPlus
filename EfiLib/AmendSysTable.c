@@ -440,10 +440,10 @@ EFI_STATUS AmendSysTable (VOID) {
     }
 
     // Amend BootServices
-    uBS->CreateEventEx  = OurCreateEventEx;
-    uBS->Hdr.HeaderSize = sizeof (EFI_BOOT_SERVICES);
-    uBS->Hdr.Revision   = TARGET_EFI_REVISION;
-    uBS->Hdr.CRC32      = 0;
+    uBS->CreateEventEx   = OurCreateEventEx;
+    uBS->Hdr.HeaderSize  = sizeof (EFI_BOOT_SERVICES);
+    uBS->Hdr.Revision    = TARGET_EFI_REVISION;
+    uBS->Hdr.CRC32       = 0;
     uBS->CalculateCrc32 (
         uBS,
         uBS->Hdr.HeaderSize,
@@ -452,10 +452,9 @@ EFI_STATUS AmendSysTable (VOID) {
     gBS = uBS;
 
     // Amend RuntimeServices
-    gST->RuntimeServices->Hdr.HeaderSize = sizeof (EFI_RUNTIME_SERVICES);
-    gRT->Hdr.HeaderSize = sizeof (EFI_RUNTIME_SERVICES);
-    gRT->Hdr.Revision   = TARGET_EFI_REVISION;
-    gRT->Hdr.CRC32      = 0;
+    gRT->Hdr.HeaderSize  = sizeof (EFI_RUNTIME_SERVICES);
+    gRT->Hdr.Revision    = TARGET_EFI_REVISION;
+    gRT->Hdr.CRC32       = 0;
     gBS->CalculateCrc32 (
         gRT,
         gRT->Hdr.HeaderSize,
@@ -463,11 +462,12 @@ EFI_STATUS AmendSysTable (VOID) {
     );
 
     // Amend SystemTable
-    gST->BootServices   = gBS;
-    gST->Hdr.HeaderSize = sizeof (EFI_SYSTEM_TABLE);
-    gST->Hdr.Revision   = TARGET_EFI_REVISION;
-    gST->Hdr.CRC32      = 0;
-    gST->BootServices->CalculateCrc32 (
+    gST->BootServices    = gBS;
+    gST->RuntimeServices = gRT;
+    gST->Hdr.HeaderSize  = sizeof (EFI_SYSTEM_TABLE);
+    gST->Hdr.Revision    = TARGET_EFI_REVISION;
+    gST->Hdr.CRC32       = 0;
+    gBS->CalculateCrc32 (
         gST,
         gST->Hdr.HeaderSize,
         &gST->Hdr.CRC32

@@ -1218,7 +1218,13 @@ UINTN ConfirmBootOptionOperation (
     }
     AddMenuInfoLine (ConfirmBootOptionMenu, CheckString);
 
-    GetYesNoMenuEntry (&ConfirmBootOptionMenu);
+    BOOLEAN RetVal = GetYesNoMenuEntry (&ConfirmBootOptionMenu);
+    if (!RetVal) {
+        FreeMenuScreen (&ConfirmBootOptionMenu);
+
+        // Early Return
+        return EFI_BOOT_OPTION_DO_NOTHING;
+    }
 
     INTN           DefaultEntry = 1;
     REFIT_MENU_ENTRY  *ChosenOption;

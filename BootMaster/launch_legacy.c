@@ -63,9 +63,6 @@
 extern BOOLEAN            IsBoot;
 extern REFIT_MENU_SCREEN *MainMenu;
 
-#if REFIT_DEBUG > 0
-extern CHAR16  *OffsetNext;
-#endif
 
 #ifndef __MAKEWITH_GNUEFI
 #define LibLocateHandle gBS->LocateHandleBuffer
@@ -803,7 +800,10 @@ VOID AddLegacyEntry (
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-        GetReturnMenuEntry (&SubScreen);
+        BOOLEAN RetVal = GetReturnMenuEntry (&SubScreen);
+        if (!RetVal) {
+            FreeMenuScreen (&SubScreen);
+        }
 
         Entry->me.SubScreen = SubScreen;
     }
@@ -888,7 +888,10 @@ VOID AddLegacyEntryUEFI (
 
         AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
 
-        GetReturnMenuEntry (&SubScreen);
+        BOOLEAN RetVal = GetReturnMenuEntry (&SubScreen);
+        if (!RetVal) {
+            FreeMenuScreen (&SubScreen);
+        }
 
         Entry->me.SubScreen = SubScreen;
     }

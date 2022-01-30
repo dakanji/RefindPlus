@@ -417,7 +417,7 @@ typedef struct {
     BOOLEAN           EnableTouch;
     BOOLEAN           HiddenTags;
     BOOLEAN           UseNvram;
-    BOOLEAN           IgnorePreviousBoot;
+    BOOLEAN           TransientBoot;
     BOOLEAN           IgnoreHiddenIcons;
     BOOLEAN           ExternalHiddenIcons;
     BOOLEAN           PreferHiddenIcons;
@@ -489,6 +489,7 @@ typedef struct {
 } REFIT_CONFIG;
 
 // Global variables
+extern CHAR16              *OffsetNext;
 extern CHAR16              *SelfDirPath;
 extern CHAR16              *gHiddenTools;
 
@@ -504,6 +505,7 @@ extern BOOLEAN              MuteLogger;
 extern BOOLEAN              NativeLogger;
 extern BOOLEAN              AppleFirmware;
 extern BOOLEAN              DetectedDevices;
+extern BOOLEAN              MuteLogger;
 
 extern EFI_FILE            *SelfDir;
 extern EFI_FILE            *SelfRootDir;

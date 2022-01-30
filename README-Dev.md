@@ -48,7 +48,7 @@ RefindPlus will function with the rEFInd configuration file, `refind.conf`, but 
 
 Note that if you run RefindPlus without activating the additonal  options, as will be the case if using an unmodified rEFInd configuration file, a RefindPlus run will be equivalent to running the rEFInd version it is based on, currently v0.13.2. That is, the additonal options provided in RefindPlus must be actively enabled if they are required. This equivalence is subject to a few divergent items in RefindPlus as outlined under the `Divergence` section below.
 
-## Additional Configurable Functionality
+## Additional Functionality
 RefindPlus-Specific funtionality can be configured by adding the tokens below to a rEFInd configuration file.
 
 Token | Functionality
@@ -70,7 +70,6 @@ disable_compat_check  |Disables Mac version compatibility checks if required
 external_hidden_icons |Allows scanning for `.VolumeIcon` icons on external volumes
 force_trim            |Forces `TRIM` on non-Apple SSDs on Macs if required
 ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not required
-ignore_previous_boot  |Disables saving the last booted loader if not required
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
@@ -78,18 +77,17 @@ scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
 text_renderer         |Provides a text renderer for text output when otherwise unavailable
+transient_boot        |Disables saving the last booted loader if not required
 uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 
-In addition to the new functions above, the following upsteam functions have been extended:
+## Extended Functionality
+In addition to the new functionality listed above, the following upsteam tokens have been extended:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
 - **"showtools" Token:** Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS v11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `normalise_csr` token.
-
-## Divergence
-Implementation differences with the upstream base version v0.13.2 are:
 - **"timeout" Token:** The default is no timeout unless explicitly set.
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
@@ -103,6 +101,9 @@ Implementation differences with the upstream base version v0.13.2 are:
     - When Level 2 is not exposed, selected levels above `1` will be capped at LogLevel 1
     - When exposed, selected levels above `2` will be capped at LogLevel 2
 - **"resolution" Token:** The `max` setting is redundant in RefindPlus which always defaults to the maximum available resolution whenever the resolution is not set or is otherwise not available.
+
+## Divergence
+Implementation differences with the upstream base version v0.13.2 are:
 - **Screenshots:** These are saved in the PNG format with a significantly smaller file size. Additionally, the file naming is slightly different and the files are always saved to the same ESP as the RefindPlus efi file.
 - **UI Scaling:** WQHD monitors are correctly determined not to be HiDPI monitors and UI elements are not scaled up on such monitors when the RefindPlus-Specific `scale_ui` configuration token is set to automatically detect the screen resolution. RefindPlus also takes vertically orientation screens into account.
 - **Hidden Tags:** RefindPlus always makes the "hidden_tags" tool available (even when the tool is not specified in the "showtools" list). This is done to ensure that when users hide items (always possible), such items can also be unhidden (only possible when the "hidden_tags" tool is available). Users that prefer not to have this feature can activate the RefindPlus-Specific `decline_tagshelp` configuration token to switch it off.

@@ -197,7 +197,7 @@ BOOLEAN DirIterNext (
     IN  OUT REFIT_DIR_ITER  *DirIter,
     IN      UINTN            FilterMode,
     IN      CHAR16          *FilePattern OPTIONAL,
-        OUT EFI_FILE_INFO  **DirEntry
+    OUT     EFI_FILE_INFO  **DirEntry
 );
 
 REFIT_VOLUME * CopyVolume (IN REFIT_VOLUME *VolumeToCopy);

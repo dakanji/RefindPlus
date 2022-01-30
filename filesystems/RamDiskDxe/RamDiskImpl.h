@@ -525,9 +525,9 @@ EFI_STATUS
 EFIAPI
 RamDiskExtractConfig (
   IN const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
-  IN const EFI_STRING                       Request,
-       OUT EFI_STRING                       *Progress,
-       OUT EFI_STRING                       *Results
+  IN const EFI_STRING                        Request,
+  OUT      EFI_STRING                       *Progress,
+  OUT      EFI_STRING                       *Results
   );
 
 /**
@@ -552,8 +552,8 @@ EFI_STATUS
 EFIAPI
 RamDiskRouteConfig (
   IN const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
-  IN const EFI_STRING                       Configuration,
-       OUT EFI_STRING                       *Progress
+  IN const EFI_STRING                        Configuration,
+  OUT      EFI_STRING                       *Progress
   );
 
 /**
@@ -582,11 +582,11 @@ EFI_STATUS
 EFIAPI
 RamDiskCallback (
   IN const EFI_HII_CONFIG_ACCESS_PROTOCOL   *This,
-  IN     EFI_BROWSER_ACTION                 Action,
-  IN     EFI_QUESTION_ID                    QuestionId,
-  IN     UINT8                              Type,
+  IN     EFI_BROWSER_ACTION                  Action,
+  IN     EFI_QUESTION_ID                     QuestionId,
+  IN     UINT8                               Type,
   IN     EFI_IFR_TYPE_VALUE                 *Value,
-     OUT EFI_BROWSER_ACTION_REQUEST         *ActionRequest
+  OUT    EFI_BROWSER_ACTION_REQUEST         *ActionRequest
   );
 
 
@@ -637,10 +637,10 @@ FileInfo (
 EFI_STATUS
 EFIAPI
 OpenFileByDevicePath(
-  IN OUT EFI_DEVICE_PATH_PROTOCOL           **FilePath,
-  OUT EFI_FILE_HANDLE                       *FileHandle,
-  IN UINT64                                 OpenMode,
-  IN UINT64                                 Attributes
+  IN OUT EFI_DEVICE_PATH_PROTOCOL             **FilePath,
+  OUT    EFI_FILE_HANDLE                       *FileHandle,
+  IN     UINT64                                 OpenMode,
+  IN     UINT64                                 Attributes
   );
 
 

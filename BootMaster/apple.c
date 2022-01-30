@@ -40,7 +40,7 @@ BOOLEAN    MsgNormalised  = FALSE;
 // Get CSR (Apple's Configurable Security Restrictions; aka System Integrity
 // Protection [SIP], or "rootless") status information. If the variable is not
 // present and the firmware is Apple, fake it and claim it is enabled, since
-// that is how OS X 10.11 treats a system with the variable absent.
+// that is how MacOS 10.11 treats a system with the variable absent.
 EFI_STATUS GetCsrStatus (
     IN OUT UINT32 *CsrStatus
 ) {
@@ -90,8 +90,8 @@ VOID RecordgCsrStatus (
     UINT32  CsrStatus,
     BOOLEAN DisplayMessage
 ) {
-    CHAR16   *MsgStr      = NULL;
-    EG_PIXEL  BGColor     = COLOR_LIGHTBLUE;
+    CHAR16   *MsgStr  = NULL;
+    EG_PIXEL  BGColor = COLOR_LIGHTBLUE;
 
     switch (CsrStatus) {
         // SIP "Cleared" Setting
@@ -161,17 +161,20 @@ VOID RecordgCsrStatus (
         MsgStr = (MsgNormalised)
             ? PoolPrint (L"Normalised CSR:- '%s'", gCsrStatus)
             : PoolPrint (L"%s", gCsrStatus);
-        egDisplayMessage (MsgStr, &BGColor, CENTER);
-        PauseSeconds (4);
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
             "%s    * %s%s",
-            (MsgNormalised) ? L"\n" : L"",
+            (MsgNormalised) ? OffsetNext : L"",
             MsgStr,
             (MsgNormalised) ? L"" : L"\n\n"
         );
         #endif
+
+        MuteLogger = TRUE;
+        egDisplayMessage (MsgStr, &BGColor, CENTER);
+        PauseSeconds (4);
+        MuteLogger = FALSE;
 
         MY_FREE_POOL(MsgStr);
     }

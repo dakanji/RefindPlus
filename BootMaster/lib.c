@@ -154,7 +154,6 @@ extern EFI_GUID    RefindPlusGuid;
 extern BOOLEAN     ScanningLoaders;
 
 #if REFIT_DEBUG > 0
-extern CHAR16     *OffsetNext;
 extern BOOLEAN     LogNewLine;
 #endif
 
@@ -1379,7 +1378,7 @@ VOID ScanVolumeBootcode (
                     LogLineType = LOG_LINE_SPECIAL;
                 }
                 ALT_LOG(1, LogLineType,  L"%sFound Legacy Boot Code", StrSpacer);
-                SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+                SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
             }
         }
         #endif
@@ -1418,7 +1417,7 @@ VOID ScanVolumeBootcode (
                             LogLineType = LOG_LINE_SPECIAL;
                         }
                         ALT_LOG(1, LogLineType, L"%sFound MBR Partition Table", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+                        SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1823,7 +1822,7 @@ VOID ScanVolume (
                         LogLineType = LOG_LINE_NORMAL;
                     }
                     ALT_LOG(1, LogLineType, L"%sCould Not Locate Device Path", StrSpacer);
-                    SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+                    SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
                 }
                 #endif
             }
@@ -1854,7 +1853,7 @@ VOID ScanVolume (
                             LogLineType = LOG_LINE_NORMAL;
                         }
                         ALT_LOG(1, LogLineType, L"%sCould Not Get DiskDevicePath", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+                        SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1889,7 +1888,7 @@ VOID ScanVolume (
                             LogLineType = LOG_LINE_NORMAL;
                         }
                         ALT_LOG(1, LogLineType, L"%sCould Not Get WholeDiskBlockIO", StrSpacer);
-                        SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+                        SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
                     }
                     #endif
                 }
@@ -1934,7 +1933,7 @@ VOID ScanVolume (
             }
             LOG_MSG("\n");
             LOG_MSG("** WARN: %s", MsgStr);
-            SkipSpacing = (GlobalConfig.LogLevel > 2) ? TRUE : FALSE;
+            SkipSpacing = (GlobalConfig.LogLevel > 0) ? TRUE : FALSE;
             #endif
 
             Volume->HasBootCode = FALSE;
@@ -2065,13 +2064,13 @@ VOID VetMultiInstanceAPFS (VOID) {
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStrA       = NULL;
-    CHAR16 *MsgStrB       = L"Disabled:- 'Recovery Tool for MacOS 11 and Later (If Present)'";
-    CHAR16 *MsgStrC       = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
-    CHAR16 *MsgStrD       = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
-    BOOLEAN AppleRecovery = FALSE;
+    CHAR16 *MsgStrA = NULL;
+    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS 11 and Later (If Installed)'";
+    CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
+    CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
 
     // Check if configured to show Apple Recovery
+    BOOLEAN AppleRecovery = FALSE;
     for (i = 0; i < NUM_TOOLS; i++) {
         switch (GlobalConfig.ShowTools[i]) {
             case TAG_RECOVERY_APPLE: AppleRecovery = TRUE; break;
@@ -2110,9 +2109,9 @@ VOID VetMultiInstanceAPFS (VOID) {
         for (i = 0; i < VolumesCount; i++) {
             if (Volumes[i]->VolName != NULL
                 && StrLen (Volumes[i]->VolName) != 0
-                && Volumes[i]->FSType == FS_TYPE_APFS
             ) {
-                if (GuidsAreEqual (
+                if (GuidsAreEqual
+                    (
                         &(PreBootVolumes[j]->PartGuid),
                         &(Volumes[i]->PartGuid)
                     )
@@ -2123,7 +2122,6 @@ VOID VetMultiInstanceAPFS (VOID) {
                         NULL, NULL,
                         &VolumeRole
                     );
-
                     if (!EFI_ERROR(Status)) {
                         if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
                             VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
@@ -2143,22 +2141,26 @@ VOID VetMultiInstanceAPFS (VOID) {
 
         if (!SingleAPFS) {
             // DA-TAG: Multiple installations in a single APFS Container
-            //         Mac Recovery option for Big Sur and Later is disabled
+            //         Misc features are disabled
             #if REFIT_DEBUG > 0
+            MsgStrA = L"Multi-Instance APFS Container Found";
+            LOG_MSG("INFO: %s", MsgStrA);
+
             if (AppleRecovery) {
-                // Log warning if configured to show Apple Recovery
-                MsgStrA = L"Multi-Instance APFS Container Found";
+                // Log relevant warning if configured to show Apple Recovery
                 ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrB);
-                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
-                ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
-                LOG_MSG("INFO: %s", MsgStrA);
                 LOG_MSG("%s      * %s", OffsetNext, MsgStrB);
-                LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
-                LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
-                LOG_MSG("\n\n");
             }
+
+            // Log other warnings
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrC);
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s ... %s", MsgStrA, MsgStrD);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStrC);
+            LOG_MSG("%s      * %s", OffsetNext, MsgStrD);
+            LOG_MSG("\n\n");
             #endif
 
+            // Break out of loop
             break;
         }
     } // for j = 0
@@ -2179,7 +2181,7 @@ VOID VetSyncAPFS (VOID) {
     if (PreBootVolumesCount == 0) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Could Not Positively Identify APFS Partitions ... Disabling SyncAFPS"
+            L"Could Not Positively Identify Any APFS Partition ... Disabling SyncAFPS"
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2252,19 +2254,18 @@ VOID VetSyncAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"ReMapped %d APFS Volume Group%s",
+        L"ReMapped %d Volume Group%s",
         SystemVolumesCount, (SystemVolumesCount == 1) ? L"" : L"s"
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
 
     if (SystemVolumesCount == 0) {
-        LOG_MSG("%s", OffsetNext);
+        LOG_MSG("%s%s", OffsetNext, MsgStr);
     }
     else {
         LOG_MSG("\n\n");
-        LOG_MSG("INFO: ");
+        LOG_MSG("INFO: %s", MsgStr);
     }
-    LOG_MSG("%s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
@@ -2565,17 +2566,17 @@ VOID ScanVolumes (VOID) {
             else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
             else if (FoundSubStr (Volume->VolName, L"/FileVault Container")      ) RoleStr = L"0xEE - Not Set";
             else {
-                // DA-TAG: Limit to TianoCore
-                #ifdef __MAKEWITH_GNUEFI
+// DA-TAG: Limit to TianoCore
+#ifndef __MAKEWITH_TIANO
                 Status = EFI_NOT_STARTED;
-                #else
+#else
                 Status = RP_GetApfsVolumeInfo (
                     Volume->DeviceHandle,
                     NULL,
                     &VolumeGuid,
                     &VolumeRole
                 );
-                #endif
+#endif
 
                 if (!EFI_ERROR(Status)) {
                     PartType        = L"APFS";
@@ -2856,7 +2857,7 @@ VOID GetVolumeBadgeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+        if (GlobalConfig.SyncAPFS) {
             FoundSysVol = FALSE;
             for (i = 0; i < SystemVolumesCount; i++) {
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
@@ -2946,7 +2947,7 @@ VOID SetVolumeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
-        if (GlobalConfig.SyncAPFS && Volume->FSType == FS_TYPE_APFS) {
+        if (GlobalConfig.SyncAPFS) {
             FoundSysVol = FALSE;
             for (i = 0; i < SystemVolumesCount; i++) {
                 if (GuidsAreEqual (&(SystemVolumes[i]->VolUuid), &(Volume->VolUuid))) {
@@ -2977,7 +2978,7 @@ VOID SetVolumeIcons (VOID) {
             MY_FREE_POOL(MsgStr);
             #endif
 
-            // load custom volume icon for internal/external disks if present
+            // Load custom volume icon for internal/external disks if present
             if (!Volume->VolIconImage) {
                 if ((Volume->DiskKind == DISK_KIND_INTERNAL) ||
                     (Volume->DiskKind == DISK_KIND_EXTERNAL && GlobalConfig.ExternalHiddenIcons)
