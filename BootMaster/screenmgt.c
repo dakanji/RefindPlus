@@ -90,7 +90,6 @@ extern BOOLEAN            egHasGraphics;
 extern BOOLEAN            FlushFailedTag;
 
 
-static
 VOID PrepareBlankLine (VOID) {
     UINTN i;
 
@@ -149,12 +148,12 @@ VOID InitScreen (VOID) {
 
     PrepareBlankLine();
 
-    // show the banner if in text mode
-    if (GlobalConfig.TextOnly) {
+    // Show the banner if in text mode and not in SilentBoot mode
+    if (GlobalConfig.TextOnly || !AllowGraphicsMode) {
         // DA-TAG: Just to make sure this is set
         AllowGraphicsMode = FALSE;
 
-        if (GlobalConfig.ScreensaverTime != -1) {
+        if (!GlobalConfig.SilentBoot && GlobalConfig.ScreensaverTime != -1) {
             DrawScreenHeader (L"Initialising...");
         }
     }
@@ -281,22 +280,7 @@ VOID SetupScreen (VOID) {
         } // if user requested a particular screen resolution
     }
 
-    if (GlobalConfig.TextOnly) {
-        // Set text mode if requested
-        AllowGraphicsMode = FALSE;
-        SwitchToText (FALSE);
-
-        #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Screen is in Text Mode");
-        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-        LOG_MSG("INFO: %s", MsgStr);
-        MY_FREE_POOL(MsgStr);
-        (GlobalConfig.LogLevel == 0)
-            ? LOG_MSG("\n\n")
-            : LOG_MSG("\n");
-        #endif
-    }
-    else if (AllowGraphicsMode) {
+    if (AllowGraphicsMode) {
         gotGraphics = egIsGraphicsModeEnabled();
         if (!gotGraphics || !BannerLoaded) {
             #if REFIT_DEBUG > 0
@@ -415,16 +399,25 @@ VOID SetupScreen (VOID) {
     }
     else {
         #if REFIT_DEBUG > 0
-        MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
-        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-        LOG_MSG("WARN: %s", MsgStr);
-        LOG_MSG("\n\n");
-        MY_FREE_POOL(MsgStr);
+        if (GlobalConfig.TextOnly) {
+            MsgStr = (GlobalConfig.SilentBoot)
+                ? StrDuplicate (L"'SilentBoot' is Active")
+                : StrDuplicate (L"Screen is in Text Only Mode");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+            LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
+            MY_FREE_POOL(MsgStr);
+        }
+        else {
+            MsgStr = StrDuplicate (L"Invalid Screen Mode ... Switching to Text Mode");
+            ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+            LOG_MSG("WARN: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+        }
         #endif
 
-        AllowGraphicsMode     = FALSE;
         GlobalConfig.TextOnly = TRUE;
-
+        AllowGraphicsMode = FALSE;
         SwitchToText (FALSE);
     }
 } // VOID SetupScreen()
@@ -562,6 +555,14 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
+    if (GlobalConfig.SilentBoot) {
+        // Reset error flag
+        haveError = FALSE;
+
+        // Early Return
+        return;
+    }
+
     if (!AllowGraphicsMode) {
         UseGraphicsMode = FALSE;
     }
@@ -658,29 +659,39 @@ VOID DrawScreenHeader (
 //
 
 BOOLEAN ReadAllKeyStrokes (VOID) {
-    BOOLEAN       GotKeyStrokes = FALSE;
-    BOOLEAN       EmptyBuffer   = FALSE ;
-    EFI_STATUS    Status;
-    EFI_INPUT_KEY key;
+    BOOLEAN              GotKeyStrokes = FALSE;
+    BOOLEAN              EmptyBuffer   = FALSE;
+    static BOOLEAN       FirstCall     = TRUE;
+    EFI_STATUS           Status;
+    EFI_INPUT_KEY        key;
 
-    for (;;) {
-        Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
-        if (Status == EFI_SUCCESS) {
-            GotKeyStrokes = TRUE;
-            continue;
+    if (FirstCall || !GlobalConfig.SilentBoot) {
+        for (;;) {
+            Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
+            if (Status == EFI_SUCCESS) {
+                ClearedBuffer = TRUE;
+                GotKeyStrokes = TRUE;
+                continue;
+            }
+            else if (Status == EFI_NOT_READY) {
+                EmptyBuffer = TRUE;
+            }
+            break;
         }
-        else if (Status == EFI_NOT_READY) {
-            EmptyBuffer = TRUE;
-        }
-        break;
     }
 
     #if REFIT_DEBUG > 0
-    if (GotKeyStrokes) {
+    if (!FirstCall && GlobalConfig.SilentBoot) {
+        Status = EFI_NOT_STARTED;
+    }
+    else if (GotKeyStrokes) {
         Status = EFI_SUCCESS;
     }
     else if (EmptyBuffer) {
         Status = EFI_ALREADY_STARTED;
+    }
+    else if (!GlobalConfig.SilentBoot) {
+        FlushFailedTag = TRUE;
     }
 
     CHAR16 *MsgStr = PoolPrint (L"Clear Keystroke Buffer ... %r", Status);
@@ -690,14 +701,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
-    // Flag device error and proceed if present
-    // We will try to resolve under the main loop if required
-    if (!GotKeyStrokes && !EmptyBuffer) {
-        FlushFailedTag = TRUE;
-    }
-    else if (GotKeyStrokes) {
-        ClearedBuffer = TRUE;
-    }
+    FirstCall = FALSE;
 
     return GotKeyStrokes;
 } // BOOLEAN ReadAllKeyStrokes()
@@ -884,11 +888,12 @@ VOID DebugPause (VOID) {
 
 VOID RefitDeadLoop (VOID) {
     UINTN index;
-
+    MuteLogger = TRUE;
     for (;;) {
         ReadAllKeyStrokes();
         REFIT_CALL_3_WRAPPER(gBS->WaitForEvent, 1, &gST->ConIn->WaitForKey, &index);
     }
+    MuteLogger = FALSE;
 } // VOID RefitDeadLoop()
 
 //

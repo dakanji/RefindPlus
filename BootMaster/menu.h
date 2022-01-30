@@ -123,6 +123,11 @@ typedef VOID (*MENU_STYLE_FUNC) (
     IN CHAR16            *ParamText
 );
 
+INTN FindMenuShortcutEntry (
+    IN REFIT_MENU_SCREEN *Screen,
+    IN CHAR16            *Defaults
+);
+
 VOID ManageHiddenTags (VOID);
 VOID GenerateWaitList (VOID);
 VOID FreeBdsOption (BDS_COMMON_OPTION **BdsOption);

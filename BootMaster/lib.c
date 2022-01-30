@@ -2840,7 +2840,11 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... Screen is in Text Mode");
+        MsgStr = (GlobalConfig.SilentBoot)
+            ? StrDuplicate (L"'SilentBoot' is Active")
+            : StrDuplicate (L"Screen is in Text Mode");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return;
@@ -2848,7 +2852,9 @@ VOID GetVolumeBadgeIcons (VOID) {
 
     if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_BADGES) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'");
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"Skipped Checking for Volume Badges ... Config Setting is Active:- 'HideUI Badges'"
+        );
         #endif
 
         return;
@@ -2878,12 +2884,9 @@ VOID GetVolumeBadgeIcons (VOID) {
                 L"Setting VolumeBadge for '%s'",
                 Volume->VolName
             );
-            if (LoopOnce) {
-                ALT_LOG(1, LOG_STAR_HEAD_SEP, L"%s", MsgStr);
-            }
-            else {
-                ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-            }
+
+            UINTN LogLineType = (LoopOnce) ? LOG_STAR_HEAD_SEP : LOG_THREE_STAR_MID;
+            ALT_LOG(1, LogLineType, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
             #endif
 
@@ -2891,12 +2894,9 @@ VOID GetVolumeBadgeIcons (VOID) {
             SetVolumeBadgeIcon (Volume);
 
             #if REFIT_DEBUG > 0
-            if (Volume->VolBadgeImage == NULL) {
-                MsgStr = StrDuplicate (L"VolumeBadge Not Found");
-            }
-            else {
-                MsgStr = StrDuplicate (L"VolumeBadge Found");
-            }
+            MsgStr = (Volume->VolBadgeImage == NULL)
+                ? StrDuplicate (L"VolumeBadge Not Found")
+                : StrDuplicate (L"VolumeBadge Found");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             MY_FREE_POOL(MsgStr);
 
@@ -2928,7 +2928,11 @@ VOID SetVolumeIcons (VOID) {
 
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for '.VolumeIcon' Icons ... Screen is in Text Mode");
+        MsgStr = (GlobalConfig.SilentBoot)
+            ? StrDuplicate (L"'SilentBoot' is Active")
+            : StrDuplicate (L"Screen is in Text Mode");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Skipped Checking for '.VolumeIcon' Icons ... %s", MsgStr);
+        MY_FREE_POOL(MsgStr);
         #endif
 
         return;

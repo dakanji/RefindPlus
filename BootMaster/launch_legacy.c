@@ -1206,9 +1206,11 @@ VOID WarnIfLegacyProblems (VOID) {
                 L"         lacks the necessary Compatibility Support Module (CSM) support or that support\n"
                 L"         is disabled in your firmware.";
 
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (MsgStr, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            if (!GlobalConfig.SilentBoot) {
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+                PrintUglyText (MsgStr, NEXTLINE);
+                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            }
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s", MsgStr);

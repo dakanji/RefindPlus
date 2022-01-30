@@ -120,6 +120,7 @@ extern CHAR16             *VendorInfo;
 extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
+extern BOOLEAN             BlockRescan;
 extern BOOLEAN             SingleAPFS;
 extern EFI_GUID            RefindPlusGuid;
 
@@ -484,7 +485,6 @@ VOID AddMenuEntryCopy (
     AddMenuEntry (Screen, CopyMenuEntry (Entry));
 } // VOID AddMenuEntryCopy()
 
-static
 INTN FindMenuShortcutEntry (
     IN REFIT_MENU_SCREEN *Screen,
     IN CHAR16            *Defaults
@@ -796,6 +796,17 @@ UINTN RunGenericMenu (
         }
     }
 
+    if (GlobalConfig.SilentBoot && WaitForRelease) {
+        // DA-TAG: If we enter here, a shortcut key was pressed but not found
+        //         Load the screen menu ... Without tools for Main Menu
+        //         Tools are not loaded with SilentBoot for speed
+        //         Enable Rescan to allow tools to be loaded
+        //         Also disable Timeout just in case
+        BlockRescan = FALSE;
+        Screen->TimeoutSeconds = 0;
+        DrawScreenHeader (Screen->Title);
+    }
+
     if (GlobalConfig.ScreensaverTime != -1) {
         State.PaintAll = TRUE;
     }
@@ -1095,7 +1106,7 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
     // Primed Keystroke Buffer appears to only affect UEFI PC
-    if (GlobalConfig.Timeout > -1 &&
+    if (!GlobalConfig.SilentBoot &&
         MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu")
@@ -1132,7 +1143,7 @@ UINTN RunGenericMenu (
             FlushFailReset = TRUE;
             MenuExit = 0;
         }
-    }
+    } // if !GlobalConfig.SilentBoot
 
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
@@ -1349,6 +1360,7 @@ VOID TextMenuStyle (
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // Clear message
+                if (!BlankLine) PrepareBlankLine();
                 REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute,      gST->ConOut, ATTR_BASIC);
                 REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 0, ConHeight - 3);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, BlankLine + 1);
@@ -2482,12 +2494,7 @@ BOOLEAN RemoveInvalidFilenames (
             }
         }
 
-        if (DeleteIt) {
-            DeleteItemFromCsvList (OneElement, FilenameList);
-        }
-        else {
-            i++;
-        }
+        (DeleteIt) ? DeleteItemFromCsvList (OneElement, FilenameList) : i++;
 
         MY_FREE_POOL(OneElement);
         MY_FREE_POOL(Filename);
@@ -2644,7 +2651,7 @@ VOID ManageHiddenTags (VOID) {
     }
 
     if (SaveTags || SaveTools || SaveLegacy || SaveFirmware) {
-        RescanAll (FALSE, FALSE);
+        RescanAll (FALSE);
     }
 
     FreeMenuScreen (&RestoreItemMenu);
@@ -2952,7 +2959,7 @@ VOID HideTag (
                 #endif
 
                 FreeMenuScreen (&HideTagMenu);
-                RescanAll (FALSE, FALSE);
+                RescanAll (FALSE);
             }
             break;
 
@@ -2968,7 +2975,7 @@ VOID HideTag (
                 #endif
 
                 FreeMenuScreen (&HideTagMenu);
-                RescanAll (FALSE, FALSE);
+                RescanAll (FALSE);
             }
             break;
 
@@ -2976,7 +2983,7 @@ VOID HideTag (
             HideTagMenu->Title = L"Hide Firmware Boot Option Tag";
             if (HideFirmwareTag(Loader, HideTagMenu)) {
                 FreeMenuScreen (&HideTagMenu);
-                RescanAll (FALSE, FALSE);
+                RescanAll (FALSE);
             }
             break;
 
@@ -3010,7 +3017,7 @@ VOID HideTag (
             #endif
 
             FreeMenuScreen (&HideTagMenu);
-            RescanAll (FALSE, FALSE);
+            RescanAll (FALSE);
 
             break;
     } // switch
@@ -3089,7 +3096,7 @@ UINTN RunMainMenu (
         #if REFIT_DEBUG > 0
         if (ShowLoaded) {
             BREAD_CRUMB(L"In %s ... 3a 2a 1", FuncTag);
-            SetSelection = TRUE;
+            SetSelection = (GlobalConfig.SilentBoot) ? FALSE : TRUE;
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

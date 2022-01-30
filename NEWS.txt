@@ -9,6 +9,15 @@
   * This is particularly the case with Legacy Macs, which already have amended EFI 1.x implementations
   * This functionality can be disabled by setting the `decline_uefiemulate` token
   * As an aside, the `RuntimeServices` table is now also amended in `AmendSysTable`
+- Adds `SilentBoot` Feature
+  * RefindPlus inherited a mode where a default selection was run after an instant timeout
+  * A shortcut key for a loader could also be pressed to run that particular loader instead
+  * This mode is activated by setting the `timeout` config token to `-1`
+  * However, the RefindPlus screen was briefly loaded before the target option was run
+    - This created an unwanted screen flash and also removed the BGRT logo
+  * The default selection is now run without showing the screen at all instead (Based on an upstream update)
+  * The mode is now truly silent as there is no video output unless overriden (BGRT logos are maintained)
+  * Additionally, the process can be overriden by pressing the `ESC` key to display the RefindPlus screen instead
 - Fixes Forced `TextRenderer`
   * The `TextRenderer` feature is forced on in certain circumstances to enable text mode support
   * This appears to have resulted in conflicts on some Macs following a firmware update

@@ -639,7 +639,10 @@ VOID SetLoaderDefaults (
         BREAD_CRUMB(L"In %s ... 3a 1", FuncTag);
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In SetLoaderDefaults ... Skipped Loading Icon in Text Screen Mode"
+            L"In SetLoaderDefaults ... Skipped Loading Icon in %s Mode",
+            (GlobalConfig.SilentBoot)
+                ? L"SilentBoot"
+                : L"Text Screen"
         );
         #endif
     }
@@ -2427,11 +2430,8 @@ LOADER_ENTRY * AddToolEntry (
 
 // Locates boot loaders.
 // NOTE: This assumes that GlobalConfig.LegacyType is correctly set.
-VOID ScanForBootloaders (
-    BOOLEAN ShowMessage
-) {
+VOID ScanForBootloaders (VOID) {
     UINTN     i;
-    EG_PIXEL  BGColor             = COLOR_LIGHTBLUE;
     BOOLEAN   DeleteItem;
     BOOLEAN   ScanForLegacy       = FALSE;
     BOOLEAN   AmendedDontScan     = FALSE;
@@ -2457,10 +2457,6 @@ VOID ScanForBootloaders (
     LOG_MSG("\n");
     MY_FREE_POOL(MsgStr);
     #endif
-
-    if (ShowMessage){
-        egDisplayMessage (L"Seeking UEFI Loaders ... Please Wait", &BGColor, CENTER);
-    }
 
     // Determine up-front if we will be scanning for legacy loaders
     for (i = 0; i < NUM_SCAN_OPTIONS; i++) {
@@ -3008,12 +3004,28 @@ VOID ScanForTools (VOID) {
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
     LOG_MSG("%s", LogSection);
-    LogSection = L"Get Tool Types:";
-    ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
-    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
-    LOG_MSG("\n");
-    LOG_MSG("%s", LogSection);
+
+    if (GlobalConfig.SilentBoot) {
+        LogSection = L"Skipped Loading UEFI Tools ... 'SilentBoot' is Active";
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        LOG_MSG("\n");
+        LOG_MSG("%s", LogSection);
+        LOG_MSG("\n\n");
+    }
+    else {
+        LogSection = L"Get UEFI Tool Types:";
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
+        LOG_MSG("\n");
+        LOG_MSG("%s", LogSection);
+    }
     #endif
+
+    if (GlobalConfig.SilentBoot) {
+        // Early Return
+        return;
+    }
 
     MokLocations = StrDuplicate (MOK_LOCATIONS);
     if (MokLocations != NULL) {

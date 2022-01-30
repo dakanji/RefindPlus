@@ -407,6 +407,7 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
+    BOOLEAN           SilentBoot;
     BOOLEAN           CustomScreenBG;
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;
@@ -533,7 +534,7 @@ extern REFIT_MENU_SCREEN   *MainMenu;
 
 
 VOID StoreLoaderName (IN CHAR16 *Name);
-VOID RescanAll (BOOLEAN DisplayMessage, BOOLEAN Reconnect);
+VOID RescanAll (BOOLEAN Reconnect);
 
 EG_IMAGE * GetDiskBadge (IN UINTN DiskType);
 

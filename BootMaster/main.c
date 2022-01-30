@@ -82,6 +82,7 @@ INT16 NowSecond = 0;
 REFIT_MENU_SCREEN *MainMenu = NULL;
 
 REFIT_CONFIG GlobalConfig = {
+    /* SilentBoot = */ FALSE,
     /* CustomScreenBG = */ FALSE,
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
@@ -200,6 +201,8 @@ CHAR16                *gHiddenTools         = NULL;
 BOOLEAN                IsBoot               = FALSE;
 BOOLEAN                SetSysTab            = FALSE;
 BOOLEAN                ConfigWarn           = FALSE;
+BOOLEAN                OverrideSB           = FALSE;
+BOOLEAN                BlockRescan          = FALSE;
 BOOLEAN                NativeLogger         = FALSE;
 BOOLEAN                ranCleanNvram        = FALSE;
 BOOLEAN                AppleFirmware        = FALSE;
@@ -1142,7 +1145,6 @@ VOID StoreLoaderName (
 
 // Rescan for boot loaders
 VOID RescanAll (
-    BOOLEAN DisplayMessage,
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
@@ -1166,8 +1168,14 @@ VOID RescanAll (
     }
 
     ReadConfig (GlobalConfig.ConfigFilename);
+    if (OverrideSB) {
+        GlobalConfig.Timeout    = 0;
+        GlobalConfig.TextOnly   = TRUE;
+        GlobalConfig.SilentBoot = FALSE;
+    }
+
     SetVolumeIcons();
-    ScanForBootloaders (DisplayMessage);
+    ScanForBootloaders();
 
     /* Disable Forced Native Logging */
     NativeLogger = FALSE;
@@ -1843,6 +1851,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     OffsetNext, GlobalConfig.SyncAPFS     ? L"Active" : L"Inactive");
     LOG_MSG("%s      TagsHelp:- '%s'",     OffsetNext, GlobalConfig.TagsHelp     ? L"Active" : L"Inactive");
     LOG_MSG("%s      TextOnly:- '%s'",     OffsetNext, GlobalConfig.TextOnly     ? L"Active" : L"Inactive");
+    LOG_MSG("%s      SilentBoot:- '%s'",   OffsetNext, GlobalConfig.SilentBoot   ? L"Active" : L"Inactive");
     LOG_MSG("%s      ScanAllESP:- '%s'",   OffsetNext, GlobalConfig.ScanAllESP   ? L"Active" : L"Inactive");
     LOG_MSG("%s      TextRenderer:- '%s'", OffsetNext, GlobalConfig.TextRenderer ? L"Active" : L"Inactive");
 
@@ -1962,6 +1971,81 @@ EFI_STATUS EFIAPI efi_main (
         #endif
     }
 
+    /* Validate SilentBoot */
+    if (GlobalConfig.SilentBoot) {
+        // Override ScreensaverTime
+        if (GlobalConfig.ScreensaverTime != 0) {
+            GlobalConfig.ScreensaverTime = 300;
+        }
+
+        if (SecureBootFailure || WarnVersionEFI) {
+            // Override SilentBoot if a warning needs to be shown
+            //   for ALL build targets
+            OverrideSB                     = TRUE;
+            GlobalConfig.ContinueOnWarning = TRUE;
+        }
+
+        #if REFIT_DEBUG > 0
+        if (WarnMissingQVInfo || ConfigWarn) {
+            // Override SilentBoot if a warning needs to be shown
+            //   for DBG and NPT build targets
+            OverrideSB                     = TRUE;
+            GlobalConfig.ContinueOnWarning = TRUE;
+        }
+
+        LOG_MSG("C O N F I R M   S I L E N T    B O O T");
+        if (OverrideSB) {
+            LOG_MSG("\n");
+            LOG_MSG("Load Error or Warning Present");
+        }
+        #endif
+
+        if (!OverrideSB) {
+            CHAR16 KeyAsString[2];
+            EFI_INPUT_KEY     key;
+
+            Status = REFIT_CALL_2_WRAPPER(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+            if (Status != EFI_NOT_READY) {
+                KeyAsString[0] = key.UnicodeChar;
+                KeyAsString[1] = 0;
+
+                if (key.ScanCode == SCAN_ESC || key.UnicodeChar == CHAR_BACKSPACE) {
+                    OverrideSB = TRUE;
+                    MainMenu->TimeoutSeconds = 0;
+                }
+            }
+
+            #if REFIT_DEBUG > 0
+            LOG_MSG("\n");
+            LOG_MSG("Read Buffered Keystrokes ... %r", Status);
+            #endif
+        }
+
+        // DA-TAG: Do not merge with block above
+        if (OverrideSB) {
+            BlockRescan = TRUE;
+            GlobalConfig.Timeout = 0;
+            GlobalConfig.SilentBoot = FALSE;
+
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L" - Overriding SilentBoot");
+            #endif
+        }
+        else {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L" - Maintaining SilentBoot");
+            #endif
+
+            GlobalConfig.TextOnly = TRUE;
+        }
+
+        #if REFIT_DEBUG > 0
+        LOG_MSG("%s%s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+        #endif
+    } // if GlobalConfig.SilentBoot
+
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"I N I T I A L I S E   G R A P H I C S");
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
@@ -2067,7 +2151,7 @@ EFI_STATUS EFIAPI efi_main (
 
     // Continue Bootstrap
     SetVolumeIcons();
-    ScanForBootloaders (FALSE);
+    ScanForBootloaders();
     ScanForTools();
 
     if (GlobalConfig.ShutdownAfterTimeout) {
@@ -2265,10 +2349,8 @@ EFI_STATUS EFIAPI efi_main (
     BOOLEAN   RunOurTool   = FALSE;
 
     while (MainLoopRunning) {
-        // Set to false as may not be booting
-        IsBoot = FALSE;
-
         // Reset Misc
+        IsBoot         = FALSE;
         FoundTool      = FALSE;
         RunOurTool     = FALSE;
         MY_FREE_POOL(FilePath);
@@ -2293,19 +2375,25 @@ EFI_STATUS EFIAPI efi_main (
             continue;
         }
 
-        // The Escape key triggers a re-scan operation
+        // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
+            if (BlockRescan) {
+                continue;
+            }
+
             #if REFIT_DEBUG > 0
             LOG_MSG("User Input Received:");
             LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
             LOG_MSG("\n\n");
             #endif
 
-            RescanAll (TRUE, TRUE);
+            OverrideSB = TRUE;
+            RescanAll (TRUE);
             continue;
         }
+        BlockRescan = FALSE;
 
-        if ((MenuExit == MENU_EXIT_TIMEOUT) &&
+        if (MenuExit == MENU_EXIT_TIMEOUT &&
             GlobalConfig.ShutdownAfterTimeout
         ) {
             ChosenEntry->Tag = TAG_SHUTDOWN;
@@ -2974,6 +3062,13 @@ EFI_STATUS EFIAPI efi_main (
 
                 break;
         } // switch
+
+        // Disable SilentBoot if still active after first loop
+        if (GlobalConfig.SilentBoot) {
+            GlobalConfig.SilentBoot = FALSE;
+            MainMenu->TimeoutSeconds = GlobalConfig.Timeout = 0;
+            DrawScreenHeader (MainMenu->Title);
+        }
     } // while
 
     // Things have gone wrong if we end up here ... Try to reboot.

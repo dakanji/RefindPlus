@@ -516,7 +516,10 @@ EG_IMAGE * egLoadIcon (
     else if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIcon ... Skipped Loading Icon in Text Screen Mode"
+            L"In egLoadIcon ... Skipped Loading Icon in %s Mode",
+            (GlobalConfig.SilentBoot)
+                ? L"SilentBoot"
+                : L"Text Screen"
         );
         #endif
 
@@ -615,7 +618,10 @@ EG_IMAGE * egLoadIconAnyType (
     if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
-            L"In egLoadIconAnyType ... Skipped Loading Icon in Text Screen Mode"
+            L"In egLoadIconAnyType ... Skipped Loading Icon in %s Mode",
+            (GlobalConfig.SilentBoot)
+                ? L"SilentBoot"
+                : L"Text Screen"
         );
         #endif
 

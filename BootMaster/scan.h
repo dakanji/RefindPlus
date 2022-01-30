@@ -64,7 +64,7 @@ REFIT_MENU_SCREEN * CopyMenuScreen (REFIT_MENU_SCREEN *Entry);
 REFIT_MENU_ENTRY * CopyMenuEntry (REFIT_MENU_ENTRY *Entry);
 VOID GenerateSubScreen(LOADER_ENTRY *Entry, IN REFIT_VOLUME *Volume, IN BOOLEAN GenerateReturn);
 VOID SetLoaderDefaults(LOADER_ENTRY *Entry, CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
-VOID ScanForBootloaders(BOOLEAN ShowMessage);
+VOID ScanForBootloaders(VOID);
 VOID ScanForTools(VOID);
 CHAR16 * GetVolumeGroupName (IN CHAR16 *LoaderPath, IN REFIT_VOLUME *Volume);
 BOOLEAN ShouldScan (REFIT_VOLUME *Volume, CHAR16 *Path);
