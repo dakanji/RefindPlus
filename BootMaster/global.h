@@ -296,7 +296,13 @@ EFI_STATUS OcUseBuiltinTextOutput (IN EFI_CONSOLE_CONTROL_SCREEN_MODE  Mode);
 #endif
 
 
-#define REFIT_DEBUG (0)
+#if defined (__REFITBUILD_NOOPT)
+    #define REFIT_DEBUG (2)
+#elif defined (__REFITBUILD_DEBUG)
+    #define REFIT_DEBUG (1)
+#else
+    #define REFIT_DEBUG (0)
+#endif
 
 #define MINLOGLEVEL (0)
 #define MAXLOGLEVEL (1)

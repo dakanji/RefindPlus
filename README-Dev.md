@@ -17,11 +17,12 @@ However, the enhancements are not limited in scope to these units and may be of 
 - Maintains feature and configuration parity with the base upstream version.
 - Protects against damage to Mac NVRAM when booting UEFI Windows.
 - Provides Pre-Boot Configuration Screen on units running GPUs without Native EFI on Macs.
-- Provides UGADraw on modern GOP based GPUs to permit booting legacy EFIBoot operating systems.
+- Provides UGADraw on modern GOP based GPUs to permit booting legacy EfiBoot operating systems.
+- Emulates UEFI 2.3 on EFI 1.x units to permit running UEFI 2.x utilities on such units
 - Adds a debug version that provides extensive logging.
   * The release version is kept as an optimised version for day to day use.
 - Fixes upstream inability to print to screen on Macs
-  * This prevented receiving program messages as well as leveraging advanced features such as EFIShell.
+  * This prevented receiving program messages as well as leveraging advanced features such as EfiShell.
 - Provides NVMe capability, if required, via a built in NvmExpress driver.
   * Removes the need to add NVMe drivers on units without NVMe support.
   * Basically allows working as if NVMe is natively supported by the firmware
@@ -31,7 +32,7 @@ However, the enhancements are not limited in scope to these units and may be of 
   * Additionally, this ensures that matching APFS drivers for specific MacOS releases are used.
   * Basically allows working as if APFS is natively supported by the firmware
     - Removes the need for a risky 'firmware flash' operation on units such as the MacPro3,1
-- Supports Apple's APFS filesystem requirements
+- Fully supports Apple's APFS filesystem requirements
   * This allows booting MacOS v11.x (Big Sur) or later from single named volumes on the main screen.
     - As opposed to generic and difficult to distinguish 'PreBoot' volumes.
     - Avoids potentially compromising system integrity by otherwise requiring SIP to be disabled.
@@ -77,7 +78,7 @@ scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments
 text_renderer         |Provides a text renderer for text output when otherwise unavailable
-uga_pass_through      |Provides UGA instance on GOP to permit EFIBoot with modern GPUs
+uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with modern GPUs
 
 In addition to the new functions above, the following upsteam functions have been extended:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
@@ -93,11 +94,11 @@ Implementation differences with the upstream base version v0.13.2 are:
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.
 - **"use_nvram" Token:** RefindPlus variables are written to the file system and not the motherboard's NVRAM unless explicitly set to do so by activating this configuration token.
 - **"log_level" Token:** Controls the native log format and an implementation of the upstream format.
-  * Only active on DEBUG builds. RELEASE builds remain optimised for day to day use.
+  * Only active on `DEBUG` and `NOOPT` builds while `RELEASE` builds remain optimised for day-to-day use.
   * Level 0 does not switch logging off but activates the native summary format.
   * Levels 1 and 2 output logs similar to the detailed upstream format.
     - Level 1 is broadly equivalent to Upstream Level 4 (Upstream Levels 1 to 3 were dispensed with)
-    - Level 2 is only exposed by setting the `REFIT_DEBUG` flag to `2` when compiling
+    - Level 2 is only exposed on `NOOPT` builds and outputs logs at a very detailed level
       * Automate by passing a non-zero integer as a second parameter to the RefindPlus build script
     - When Level 2 is not exposed, selected levels above `1` will be capped at LogLevel 1
     - When exposed, selected levels above `2` will be capped at LogLevel 2

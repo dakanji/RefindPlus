@@ -1,8 +1,8 @@
 [Defines]
-  DEC_SPECIFICATION              = 0x00010005
-  PACKAGE_NAME                   = RefindPlusPkg
-  PACKAGE_GUID                   = 8d815383-bd60-419e-a7F9-d41a5657f85c
-  PACKAGE_VERSION                = 4.5.0
+    DEC_SPECIFICATION              = 0x00010005
+    PACKAGE_NAME                   = RefindPlusPkg
+    PACKAGE_GUID                   = 8D815383-BD60-419E-A7F9-D41A5657F85C
+    PACKAGE_VERSION                = 4.5.0
 
 [Includes]
-  ../StdLib/Include
+    ../StdLib/Include

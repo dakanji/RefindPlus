@@ -1,7 +1,6 @@
 ## @file
 #
-# RefindPlus.inf file to build RefindPlus using the EDK2/UDK201# development
-# kit.
+# File to build RefindPlus using the EDK2/UDK201x development kit.
 #
 # Copyright (c) 2020-2022 Dayo Akanji (sf.net/u/dakanji/profile)
 # Portions Copyright (c) 2012-2020 Roderick W. Smith
@@ -11,195 +10,203 @@
 #
 ##
 
+
 [Defines]
-  INF_VERSION                   = 0x00010005
-  BASE_NAME                     = RefindPlus
-  FILE_GUID                     = E3F0DA9F-26BB-4B9A-B8FB-4D81E11EAE22
-  MODULE_TYPE                   = UEFI_APPLICATION
-  EDK_RELEASE_VERSION		    = 0x00020000
-  EFI_SPECIFICATION_VERSION	    = 0x00010000
-  VERSION_STRING                = 1.0
-  ENTRY_POINT                   = efi_main
+    INF_VERSION               = 0x00010005
+    BASE_NAME                 = RefindPlus
+    FILE_GUID                 = E3F0DA9F-26BB-4B9A-B8FB-4D81E11EAE22
+    MODULE_TYPE               = UEFI_APPLICATION
+    EDK_RELEASE_VERSION       = 0x00020000
+    EFI_SPECIFICATION_VERSION = 0x00010000
+    VERSION_STRING            = 1.0
+    ENTRY_POINT               = efi_main
 
 #
 # The following information is for reference only and not required by the build tools.
 #
-#  VALID_ARCHITECTURES           = IA32 X64 IPF EBC AARCH64
+# VALID_ARCHITECTURES = IA32 X64 IPF EBC
 #
 
+
 [Sources]
-  BootMaster/apple.c
-  BootMaster/config.c
-  BootMaster/crc32.c
-  BootMaster/driver_support.c
-  BootMaster/gpt.c
-  BootMaster/icns.c
-  BootMaster/install.c
-  BootMaster/launch_efi.c
-  BootMaster/launch_legacy.c
-  BootMaster/lib.c
-  BootMaster/line_edit.c
-  BootMaster/linux.c
-  BootMaster/main.c
-  BootMaster/menu.c
-  BootMaster/mystrings.c
-  BootMaster/pointer.c
-  BootMaster/scan.c
-  BootMaster/screenmgt.c
-  EfiLib/AcquireGOP.c
-  EfiLib/AmendSysTable.c
-  EfiLib/BmLib.c
-  EfiLib/BdsHelper.c
-  EfiLib/BdsTianoCore.c
-  EfiLib/DevicePath.c #included into GenericBdsLib
-  EfiLib/BdsConnect.c #included into GenericBdsLib
-  EfiLib/GenericBdsLib.h
-  EfiLib/legacy.c
-  libeg/image.c
-  libeg/load_bmp.c
-  libeg/load_icns.c
-  libeg/lodepng.c
-  libeg/lodepng_xtra.c
-  libeg/nanojpeg.c
-  libeg/nanojpeg_xtra.c
-  libeg/screen.c
-  libeg/text.c
-  mok/mok.c
-  mok/guid.c
-  mok/security_policy.c
-  mok/simple_file.c
+    BootMaster/apple.c
+    BootMaster/config.c
+    BootMaster/crc32.c
+    BootMaster/driver_support.c
+    BootMaster/gpt.c
+    BootMaster/icns.c
+    BootMaster/install.c
+    BootMaster/launch_efi.c
+    BootMaster/launch_legacy.c
+    BootMaster/lib.c
+    BootMaster/line_edit.c
+    BootMaster/linux.c
+    BootMaster/main.c
+    BootMaster/menu.c
+    BootMaster/mystrings.c
+    BootMaster/pointer.c
+    BootMaster/scan.c
+    BootMaster/screenmgt.c
+    EfiLib/AcquireGOP.c
+    EfiLib/AmendSysTable.c
+    EfiLib/BmLib.c
+    EfiLib/BdsHelper.c
+    EfiLib/BdsTianoCore.c
+    EfiLib/DevicePath.c #included into GenericBdsLib
+    EfiLib/BdsConnect.c #included into GenericBdsLib
+    EfiLib/GenericBdsLib.h
+    EfiLib/legacy.c
+    libeg/image.c
+    libeg/load_bmp.c
+    libeg/load_icns.c
+    libeg/lodepng.c
+    libeg/lodepng_xtra.c
+    libeg/nanojpeg.c
+    libeg/nanojpeg_xtra.c
+    libeg/screen.c
+    libeg/text.c
+    mok/mok.c
+    mok/guid.c
+    mok/security_policy.c
+    mok/simple_file.c
 # Added by Jief_Machak (sf.net/u/jief7/profile) from Clover
 # Modified by dakanji (sf.net/u/dakanji/profile) as follows:
 # - Removed unused "Platform/DataHubCpu.c"
 # - Moved "Platform/BootLog.c" to "Library/MemLogLib/BootLog.c"
-  Library/MemLogLib/BootLog.c
+    Library/MemLogLib/BootLog.c
+
 
 [Packages]
-  MdePkg/MdePkg.dec
-  MdeModulePkg/MdeModulePkg.dec
-  IntelFrameworkPkg/IntelFrameworkPkg.dec
-  IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
-  RefindPlusPkg/RefindPlusPkg.dec
-# Uncomment the line below when compiling with MacOS
-  StdLib/StdLib.dec
+    MdePkg/MdePkg.dec
+    MdeModulePkg/MdeModulePkg.dec
+    IntelFrameworkPkg/IntelFrameworkPkg.dec
+    IntelFrameworkModulePkg/IntelFrameworkModulePkg.dec
+    RefindPlusPkg/RefindPlusPkg.dec
+
 
 [Packages.XCODE]
-  StdLib/StdLib.dec
+    StdLib/StdLib.dec
+
 
 [LibraryClasses]
-  UefiApplicationEntryPoint
-  UefiBootServicesTableLib
-  UefiLib
-  MemoryAllocationLib
-  BaseMemoryLib
-  BaseLib
-  DevicePathLib
-  DebugLib
-  DxeServicesLib
-  DxeServicesTableLib
-  HobLib
-  MemoryAllocationLib
-  IoLib
-  PerformanceLib
-# Added by Jief_Machak (sf.net/u/jief7/profile) from Clover
-  MemLogLib
-# Added by dakanji (sf.net/u/dakanji/profile) from OpenCore
-  OcConsoleLib
-  OcMiscLib
-# Added by dakanji (sf.net/u/dakanji/profile) for AcquireGOP
-  HandleParsingLib
-# Added by dakanji (sf.net/u/dakanji/profile) based on OcApfsLib from OpenCore
-  RP_ApfsLib
-# Added by dakanji (sf.net/u/dakanji/profile) from EDK2 Repo
-  NvmExpressLib
+    UefiApplicationEntryPoint
+    UefiBootServicesTableLib
+    UefiLib
+    MemoryAllocationLib
+    BaseMemoryLib
+    BaseLib
+    DevicePathLib
+    DebugLib
+    DxeServicesLib
+    DxeServicesTableLib
+    HobLib
+    MemoryAllocationLib
+    IoLib
+    PerformanceLib
+# For Debug logging ... Jief_Machak (sf.net/u/jief7/profile) from Clover
+    MemLogLib
+# From OpenCore for ProvideConsoleGOP
+    OcConsoleLib
+    OcMiscLib
+# For AcquireGOP
+    HandleParsingLib
+# Based on OcApfsLib from OpenCore
+    RP_ApfsLib
+# For SupplyNVME
+    NvmExpressLib
 
 [LibraryClasses.AARCH64]
-  BaseStackCheckLib
-# Comment out CompilerIntrinsicsLib when compiling for AARCH64 using UDK2014
-# CompilerIntrinsicsLib
+    BaseStackCheckLib
+# Comment out 'CompilerIntrinsicsLib' below when compiling for AARCH64 using UDK2014
+    CompilerIntrinsicsLib
+
 
 [Guids]
-  gEfiAcpiTableGuid
-  gEfiAcpi10TableGuid
-  gEfiAcpi20TableGuid
-  gEfiDxeServicesTableGuid
-  gEfiEventReadyToBootGuid
-  gEfiEventVirtualAddressChangeGuid
-  gEfiEventExitBootServicesGuid
-  gEfiFileInfoGuid                              ## CONSUMES ## GUID
-  gEfiFileSystemInfoGuid                        ## CONSUMES ## GUID
-  gEfiFileSystemVolumeLabelInfoIdGuid
-  gEfiGlobalVariableGuid
-  gEfiPartTypeLegacyMbrGuid
-  gEfiPartTypeSystemPartGuid
-  gEfiSmbiosTableGuid
-  gEfiSasDevicePathGuid
+    gEfiAcpiTableGuid
+    gEfiAcpi10TableGuid
+    gEfiAcpi20TableGuid
+    gEfiDxeServicesTableGuid
+    gEfiEventReadyToBootGuid
+    gEfiEventVirtualAddressChangeGuid
+    gEfiEventExitBootServicesGuid
+    gEfiFileInfoGuid                              ## CONSUMES ## GUID
+    gEfiFileSystemInfoGuid                        ## CONSUMES ## GUID
+    gEfiFileSystemVolumeLabelInfoIdGuid
+    gEfiGlobalVariableGuid
+    gEfiPartTypeLegacyMbrGuid
+    gEfiPartTypeSystemPartGuid
+    gEfiSmbiosTableGuid
+    gEfiSasDevicePathGuid
+
 
 [Ppis]
 
+
 [Protocols]
-  gEfiComponentName2ProtocolGuid                # ALWAYS_CONSUMED
-  gEfiDevicePathToTextProtocolGuid              # ALWAYS_CONSUMED
-  gEfiSimpleFileSystemProtocolGuid              # ALWAYS_CONSUMED
-  gEfiSimpleTextInProtocolGuid                  # ALWAYS_CONSUMED
-  gEfiSimpleTextInputExProtocolGuid             # ALWAYS_CONSUMED
-  gEfiSimpleTextOutProtocolGuid                 # ALWAYS_CONSUMED
-  gEfiUnicodeCollationProtocolGuid              # ALWAYS_CONSUMED
-  gEfiUnicodeCollation2ProtocolGuid             # ALWAYS_CONSUMED
+    gEfiComponentName2ProtocolGuid                 # ALWAYS_CONSUMED
+    gEfiDevicePathToTextProtocolGuid               # ALWAYS_CONSUMED
+    gEfiSimpleFileSystemProtocolGuid               # ALWAYS_CONSUMED
+    gEfiSimpleTextInProtocolGuid                   # ALWAYS_CONSUMED
+    gEfiSimpleTextInputExProtocolGuid              # ALWAYS_CONSUMED
+    gEfiSimpleTextOutProtocolGuid                  # ALWAYS_CONSUMED
+    gEfiUnicodeCollationProtocolGuid               # ALWAYS_CONSUMED
+    gEfiUnicodeCollation2ProtocolGuid              # ALWAYS_CONSUMED
 
-  gEfiAcpiS3SaveProtocolGuid                    # PROTOCOL CONSUMES
-  gEfiBlockIoProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiCpuArchProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiDebugPortProtocolGuid                     # PROTOCOL CONSUMES
-  gEfiDevicePathProtocolGuid                    # PROTOCOL CONSUMES
-  gEfiDiskIoProtocolGuid                        # PROTOCOL CONSUMES
-  gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiFirmwareVolume2ProtocolGuid               # PROTOCOL CONSUMES
-  gEfiGraphicsOutputProtocolGuid                # PROTOCOL SOMETIMES_CONSUMES
-  gEfiHiiFontProtocolGuid                       # PROTOCOL CONSUMES
-  gEfiLegacy8259ProtocolGuid					## PROTOCOL SOMETIMES_CONSUMES
-  gEfiLoadedImageProtocolGuid                   # PROTOCOL CONSUMES
-  gEfiOEMBadgingProtocolGuid                    # PROTOCOL CONSUMES
-  gEfiPciIoProtocolGuid                         # PROTOCOL CONSUMES
-  gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiSimpleNetworkProtocolGuid                 # PROTOCOL CONSUMES
-  gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport # PROTOCOL SOMETIMES_CONSUMES
+    gEfiAcpiS3SaveProtocolGuid                     # PROTOCOL CONSUMES
+    gEfiBlockIoProtocolGuid                        # PROTOCOL CONSUMES
+    gEfiCpuArchProtocolGuid                        # PROTOCOL CONSUMES
+    gEfiDebugPortProtocolGuid                      # PROTOCOL CONSUMES
+    gEfiDevicePathProtocolGuid                     # PROTOCOL CONSUMES
+    gEfiDiskIoProtocolGuid                         # PROTOCOL CONSUMES
+    gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiFirmwareVolume2ProtocolGuid                # PROTOCOL CONSUMES
+    gEfiGraphicsOutputProtocolGuid                 # PROTOCOL SOMETIMES_CONSUMES
+    gEfiHiiFontProtocolGuid                        # PROTOCOL CONSUMES
+    gEfiLegacy8259ProtocolGuid                    ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiLoadedImageProtocolGuid                    # PROTOCOL CONSUMES
+    gEfiOEMBadgingProtocolGuid                     # PROTOCOL CONSUMES
+    gEfiPciIoProtocolGuid                          # PROTOCOL CONSUMES
+    gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiSimpleNetworkProtocolGuid                  # PROTOCOL CONSUMES
+    gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport  # PROTOCOL SOMETIMES_CONSUMES
 
-  gEfiAbsolutePointerProtocolGuid
-  gEfiAcpiTableProtocolGuid
-  gEfiEdidActiveProtocolGuid
-  gEfiEdidDiscoveredProtocolGuid
-  gEfiHiiDatabaseProtocolGuid
-  gEfiHiiImageProtocolGuid
-  gEfiHiiProtocolGuid
-  gEfiSimplePointerProtocolGuid
-  gEfiSmbiosProtocolGuid
-  gEfiSecurityArchProtocolGuid
-  gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
-  gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiAbsolutePointerProtocolGuid
+    gEfiAcpiTableProtocolGuid
+    gEfiEdidActiveProtocolGuid
+    gEfiEdidDiscoveredProtocolGuid
+    gEfiHiiDatabaseProtocolGuid
+    gEfiHiiImageProtocolGuid
+    gEfiHiiProtocolGuid
+    gEfiSimplePointerProtocolGuid
+    gEfiSmbiosProtocolGuid
+    gEfiSecurityArchProtocolGuid
+    gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
+    gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
 
-  gEfiLegacyBiosProtocolGuid                    # PROTOCOL TO_START
+    gEfiLegacyBiosProtocolGuid                     # PROTOCOL TO_START
 
-  gEfiLoadFile2ProtocolGuid
-  gEfiLoadFileProtocolGuid
-  gEfiHiiPackageListProtocolGuid
+    gEfiLoadFile2ProtocolGuid
+    gEfiLoadFileProtocolGuid
+    gEfiHiiPackageListProtocolGuid
+
 
 [FeaturePcd]
-  gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
+    gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport
+
 
 [Pcd]
 
 
 [BuildOptions.IA32]
-  XCODE:*_*_*_CC_FLAGS = -Os  -DEFI32 -D__MAKEWITH_TIANO
-  GCC:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFI32 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
 
 [BuildOptions.X64]
-  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIX64 -D__MAKEWITH_TIANO
-  GCC:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFIX64 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
 
 [BuildOptions.AARCH64]
-  XCODE:*_*_*_CC_FLAGS = -Os  -DEFIAARCH64 -D__MAKEWITH_TIANO
-  GCC:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO -D__REFITBUILD_RELEASE
