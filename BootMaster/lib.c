@@ -133,6 +133,7 @@ BOOLEAN            DoneHeadings        = FALSE;
 BOOLEAN            ScanMBR             = FALSE;
 BOOLEAN            SkipSpacing         = FALSE;
 BOOLEAN            SingleAPFS          =  TRUE;
+BOOLEAN            ValidAPFS           =  TRUE;
 
 #if REFIT_DEBUG > 0
 BOOLEAN            FirstVolume         =  TRUE;
@@ -888,6 +889,38 @@ VOID SanitiseVolumeName (
         (*Volume)->VolName = StrDuplicate (VolumeName);
     }
 } // VOID SanitiseVolumeName()
+
+VOID FreeSyncVolumes (VOID) {
+    if (!GlobalConfig.SyncAPFS) {
+        // Early Return
+        return;
+    }
+
+    FreeVolumes (
+        &PreBootVolumes,
+        &PreBootVolumesCount
+    );
+
+    FreeVolumes (
+        &SystemVolumes,
+        &SystemVolumesCount
+    );
+
+    FreeVolumes (
+        &DataVolumes,
+        &DataVolumesCount
+    );
+
+    FreeVolumes (
+        &RecoveryVolumes,
+        &RecoveryVolumesCount
+    );
+
+    FreeVolumes (
+        &SkipApfsVolumes,
+        &SkipApfsVolumesCount
+    );
+} // VOID FreeSyncVolumes()
 
 VOID FreeVolumes (
     IN OUT REFIT_VOLUME  ***ListVolumes,
@@ -2194,8 +2227,25 @@ VOID VetSyncAPFS (VOID) {
         // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
         GlobalConfig.SyncAPFS = FALSE;
 
-        // Check for Multi-Instance APFS Containers
-        VetMultiInstanceAPFS();
+        // Early Return
+        return;
+    }
+
+    if (!ValidAPFS) {
+        #if REFIT_DEBUG > 0
+        MsgStr = StrDuplicate (
+            L"Could Not Determine the Volume UUID on One or More Key APFS Volumes ... Disabling SyncAFPS"
+        );
+        ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
+        ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+        LOG_MSG("\n\n");
+        LOG_MSG("INFO: %s", MsgStr);
+        LOG_MSG("\n\n");
+        MY_FREE_POOL(MsgStr);
+        #endif
+
+        // Disable SyncAPFS if we do not have, or could not identify, any PreBoot volume
+        GlobalConfig.SyncAPFS = FALSE;
 
         // Early Return
         return;
@@ -2341,32 +2391,7 @@ VOID ScanVolumes (VOID) {
             &Volumes,
             &VolumesCount
         );
-
-        FreeVolumes (
-            &PreBootVolumes,
-            &PreBootVolumesCount
-        );
-
-        FreeVolumes (
-            &SystemVolumes,
-            &SystemVolumesCount
-        );
-
-        FreeVolumes (
-            &DataVolumes,
-            &DataVolumesCount
-        );
-
-        FreeVolumes (
-            &RecoveryVolumes,
-            &RecoveryVolumesCount
-        );
-
-        FreeVolumes (
-            &SkipApfsVolumes,
-            &SkipApfsVolumesCount
-        );
-
+        FreeSyncVolumes();
         ForgetPartitionTables();
     }
 
@@ -2382,7 +2407,10 @@ VOID ScanVolumes (VOID) {
         MuteLogger = FALSE;
 
         #if REFIT_DEBUG > 0
-        MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)", Status);
+        MsgStr = PoolPrint (
+            L"In ScanVolumes ... '%r' While Listing File Systems (Fatal Error)",
+            Status
+        );
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
         LOG_MSG("** %s", MsgStr);
@@ -2407,7 +2435,10 @@ VOID ScanVolumes (VOID) {
         #if REFIT_DEBUG > 0
         Status = EFI_BUFFER_TOO_SMALL;
 
-        MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'UuidList'", Status);
+        MsgStr = PoolPrint (
+            L"In ScanVolumes ... '%r' While Allocating 'UuidList'",
+            Status
+        );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s!!", MsgStr);
         LOG_MSG("\n\n");
@@ -2436,7 +2467,10 @@ VOID ScanVolumes (VOID) {
             #if REFIT_DEBUG > 0
             Status = EFI_BUFFER_TOO_SMALL;
 
-            MsgStr = PoolPrint (L"In ScanVolumes ... '%r' While Allocating 'Volumes'", Status);
+            MsgStr = PoolPrint (
+                L"In ScanVolumes ... '%r' While Allocating 'Volumes'",
+                Status
+            );
             ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
             ALT_LOG(1, LOG_THREE_STAR_SEP, L"%!!s", MsgStr);
             LOG_MSG("\n\n");
@@ -2579,6 +2613,10 @@ VOID ScanVolumes (VOID) {
 #endif
 
                 if (!EFI_ERROR(Status)) {
+                    if (ValidAPFS && GuidsAreEqual (&(Volume->VolUuid), &GuidNull)) {
+                        ValidAPFS = FALSE;
+                    }
+
                     PartType        = L"APFS";
                     Volume->FSType  = FS_TYPE_APFS;
                     Volume->VolUuid = VolumeGuid;

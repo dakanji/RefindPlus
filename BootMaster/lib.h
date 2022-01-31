@@ -134,6 +134,7 @@ VOID ScanVolumes (VOID);
 VOID ReinitVolumes (VOID);
 VOID UninitRefitLib (VOID);
 VOID SetVolumeIcons (VOID);
+VOID FreeSyncVolumes (VOID);
 VOID FreeVolume (REFIT_VOLUME **Volume);
 VOID SanitiseVolumeName (REFIT_VOLUME **Volume);
 VOID EraseUint32List (IN UINT32_LIST **TheList);
