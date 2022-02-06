@@ -214,10 +214,10 @@
 #
 #direct_gop_renderer
 
-# Proceed automatically when notices are shown on-screen instead
-# of having to press a key to continue. When this option is active,
-# RefindPlus will pause for nine seconds when on-screen notices
-# are shown and then proceed as if a key had been pressed.
+# Proceed automatically when on-screen notices
+# are shown. When this option is active, RefindPlus
+# will pause for nine (9) seconds when on-screen notices
+# are shown, and then proceed as if a key had been pressed.
 #
 # Inactive when commented out (Does not proceed automatically)
 #
@@ -233,7 +233,7 @@
 # on may significantly increase boot times and that enabling TRIM on
 # non-Apple SSDs may affect the integrity of data on such SSDs.
 #
-# Inactive when commented out (Does not force "TRIM" on non-Apple SSDs)
+# Inactive when commented out (Does not forcefully set TRIM)
 #
 #force_trim
 

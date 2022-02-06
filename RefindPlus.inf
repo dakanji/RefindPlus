@@ -70,9 +70,9 @@
     mok/security_policy.c
     mok/simple_file.c
 # Added by Jief_Machak (sf.net/u/jief7/profile) from Clover
-# Modified by dakanji (sf.net/u/dakanji/profile) as follows:
-# - Removed unused "Platform/DataHubCpu.c"
-# - Moved "Platform/BootLog.c" to "Library/MemLogLib/BootLog.c"
+#  Modified by dakanji (sf.net/u/dakanji/profile) as follows:
+#  - Removed unused "Platform/DataHubCpu.c"
+#  - Moved "Platform/BootLog.c" to "Library/MemLogLib/BootLog.c"
     Library/MemLogLib/BootLog.c
 
 

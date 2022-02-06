@@ -51,11 +51,24 @@
 - Improves Memory Management
   * Multiple memory management improvements
 - Improves Build Process
+  * RELEASE builds are further optimised
+    - The `MDEPKG_NDEBUG` EDK2 functionality is leveraged to:
+      * Reduce file size
+      * Ensure consistent files on different builds
+        - EDK2 otherwise only guarantees functional consistency
+        - This enforces structural consistency.
+        - Builds with different file paths will now be the same
   * Calls to `ASSERT`, and similar, are activated on DEBUG Builds
     - Failed `ASSERT` calls put RefindPlus into a Deadloop
   * Enables `NOOPT` Build Target
     - This is a debug build with misc compile time optimisation items disabled
     - Log Level 2 is only exposed on this build target
+  * The `REFIT_DEBUG` define has been converted to a compiler option
+    - The constant is no longer defined in `global.h` and instead set in `RefindPlus.inf`
+    - This change removes the need for compile time edits to set build targets
+    - The requirements are now managed transparently by the build process itself
+  * The various `*.inf` files for filesystem drivers etc, have been standardised
+    - These now follow a clearer standard format
 - Renames the `ignore_previous_boot` config option to `transient_boot`
   * This more accurately describes the feature.
     - The current boot selection is not saved, it is transient, but any previously saved boot is used

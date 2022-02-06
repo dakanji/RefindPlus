@@ -9,6 +9,13 @@
 # version), a copy of which should come with this file.
 #
 ##
+##
+# Modified for Refindplus
+# Copyright (c) 2022 Dayo Akanji (sf.net/u/dakanji/profile)
+#
+# Modifications distributed under the preceding terms.
+##
+
 
 [Defines]
     INF_VERSION               = 0x00010005
@@ -64,14 +71,17 @@
 
 [Pcd]
 
+[BuildOptions.common]
+    DEFINE RFT_BLD_ALL = -D__MAKEWITH_TIANO -DMDEPKG_NDEBUG -DFSTYPE=btrfs
+
 [BuildOptions.IA32]
-    XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 -D__MAKEWITH_TIANO -DFSTYPE=btrfs
-    GCC:*_*_*_CC_FLAGS   = -Os -DEFI32 -D__MAKEWITH_TIANO -DFSTYPE=btrfs
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 $(RFT_BLD_ALL)
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFI32 $(RFT_BLD_ALL)
 
 [BuildOptions.X64]
-    XCODE:*_*_*_CC_FLAGS = -Os -DEFIX64 -D__MAKEWITH_TIANO -DLZO_CFG_FREESTANDING -DFSTYPE=btrfs
-    GCC:*_*_*_CC_FLAGS   = -Os -DEFIX64 -D__MAKEWITH_TIANO -DLZO_CFG_FREESTANDING -DFSTYPE=btrfs
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFIX64 $(RFT_BLD_ALL) -DLZO_CFG_FREESTANDING
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFIX64 $(RFT_BLD_ALL) -DLZO_CFG_FREESTANDING
 
 [BuildOptions.AARCH64]
-    XCODE:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO -DFSTYPE=btrfs
-    GCC:*_*_*_CC_FLAGS   = -Os -DEFIAARCH64 -D__MAKEWITH_TIANO -DFSTYPE=btrfs
+    XCODE:*_*_*_CC_FLAGS = -Os -DEFIAARCH64 $(RFT_BLD_ALL)
+    GCC:*_*_*_CC_FLAGS   = -Os -DEFIAARCH64 $(RFT_BLD_ALL)
