@@ -148,18 +148,21 @@ BOOLEAN IsValidLoader (
     EFI_FILE *RootDir,
     CHAR16   *FileName
 ) {
-    BOOLEAN IsValid;
-
-#if defined (EFIX64) | defined (EFI32) | defined (EFIAARCH64)
-    EFI_STATUS      Status;
+#if !defined (EFIX64) && !defined (EFI32) && !defined (EFIAARCH64)
+    // Assume TRUE
+    return TRUE;
+#else
     EFI_FILE_HANDLE FileHandle;
+    EFI_STATUS      Status;
+    BOOLEAN         IsValid;
     CHAR8           Header[512];
     UINTN           Size = sizeof (Header);
 
     if ((RootDir == NULL) || (FileName == NULL)) {
-        // Assume valid here, because Macs produce NULL RootDir (& maybe FileName)
-        // when launching from a Firewire drive. This should be handled better, but
-        // fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
+        // DA-TAG: Investigate This
+        //         Assume "Valid" here, because Macs produce a NULL RootDir, and maybe FileName,
+        //         when launching from Firewire drives. This should be handled better, but the
+        //         fix would have to be in StartEFIImage() and/or in FindVolumeAndFilename().
         #if REFIT_DEBUG > 0
         ValidText = L"EFI File is *ASSUMED* to be Valid";
         ALT_LOG(1, LOG_THREE_STAR_MID,
@@ -167,6 +170,11 @@ BOOLEAN IsValidLoader (
             ValidText,
             FileName ? FileName : L"NULL File"
         );
+        if (IsBoot) {
+            LOG_MSG("\n");
+            LOG_MSG("%s ... Loading", ValidText);
+            LOG_MSG("\n-----------------\n\n");
+        }
         #endif
 
         return TRUE;
@@ -179,6 +187,11 @@ BOOLEAN IsValidLoader (
             ValidText,
             FileName ? FileName : L"NULL File"
         );
+        if (IsBoot) {
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s ... Aborting", ValidText);
+            LOG_MSG("\n\n");
+        }
         #endif
 
         // Early return if file does not exist
@@ -199,6 +212,11 @@ BOOLEAN IsValidLoader (
             ValidText,
             FileName ? FileName : L"NULL File"
         );
+        if (IsBoot) {
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s ... Aborting", ValidText);
+            LOG_MSG("\n\n");
+        }
         #endif
 
         return FALSE;
@@ -208,13 +226,20 @@ BOOLEAN IsValidLoader (
     REFIT_CALL_1_WRAPPER(FileHandle->Close, FileHandle);
 
     IsValid = !EFI_ERROR(Status) &&
-              Size == sizeof (Header) &&
-              ((Header[0] == 'M' && Header[1] == 'Z' &&
-               (Size = *(UINT32 *) &Header[0x3c]) < 0x180 &&
-               Header[Size] == 'P' && Header[Size+1] == 'E' &&
-               Header[Size+2] == 0 && Header[Size+3] == 0 &&
-               *(UINT16 *) &Header[Size+4] == EFI_STUB_ARCH) ||
-              (*(UINT32 *) &Header == FAT_ARCH));
+        Size == sizeof (Header) &&
+        (
+            (
+                (Size = *(UINT32 *) &Header[0x3c]) < 0x180  &&
+                Header[0]                    == 'M'         &&
+                Header[1]                    == 'Z'         &&
+                Header[Size]                 == 'P'         &&
+                Header[Size+1]               == 'E'         &&
+                Header[Size+2]               ==  0          &&
+                Header[Size+3]               ==  0          &&
+                *(UINT16 *) &Header[Size+4]  ==  EFI_STUB_ARCH
+            ) ||
+            (*(UINT32 *) &Header == FAT_ARCH)
+        );
 
     #if REFIT_DEBUG > 0
     ValidText = (IsValid)
@@ -226,14 +251,30 @@ BOOLEAN IsValidLoader (
         FileName ? FileName : L"NULL File"
     );
     #endif
-#else
-    IsValid = TRUE;
-#endif
+
+    if (IsBoot) {
+        // Reset IsBoot if required
+        IsBoot = IsValid;
+
+        #if REFIT_DEBUG > 0
+        if (!IsValid) {
+            LOG_MSG("\n\n");
+            LOG_MSG("INFO: %s ... Aborting", ValidText);
+            LOG_MSG("\n\n");
+        }
+        else {
+            LOG_MSG("\n");
+            LOG_MSG("%s ... Loading", ValidText);
+            LOG_MSG("\n-----------------\n\n");
+        }
+        #endif
+    }
 
     return IsValid;
+#endif
 } // BOOLEAN IsValidLoader()
 
-// Launch an EFI binary.
+// Launch an EFI binary
 EFI_STATUS StartEFIImage (
     IN REFIT_VOLUME  *Volume,
     IN CHAR16        *Filename,

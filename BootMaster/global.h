@@ -228,7 +228,7 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 \\EFI\\OEM\\Boot\\bootmgfw.efi"
 #endif
 
-// Files that may be Mac OS recovery files
+// Files that may be MacOS recovery files
 #define MACOS_RECOVERY_FILES    L"com.apple.recovery.boot\\boot.efi"
 #define MACOSX_LOADER_DIR       L"System\\Library\\CoreServices"
 #define MACOSX_LOADER_PATH      ( MACOSX_LOADER_DIR L"\\boot.efi" )
@@ -255,7 +255,7 @@ L"\\EFI\\Microsoft\\Boot\\LrsBootmgr.efi,Recovery:\\EFI\\BOOT\\boot.efi,\
 #define HIDEUI_FLAG_ALL        (0x01FF)
 
 // Default hint text for program-launch submenus
-#define SUBSCREEN_HINT1            L"Use Arrow Keys to Move Selection and Press 'Enter' to Boot"
+#define SUBSCREEN_HINT1            L"Use Arrow Keys to Move Selection and Press 'Enter' to Run Selected Item"
 #define SUBSCREEN_HINT2            L"Press 'Insert' or 'F2' to Edit Options or Press 'Esc' to Return to Main Menu"
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Press 'Esc' to Return to Main Menu"
 

@@ -163,18 +163,18 @@ EFI_STATUS ActivateMbrPartition (
     UINTN                i;
     BOOLEAN              HaveBootCode;
 
-    // read MBR
+    // Read MBR
     Status = REFIT_CALL_5_WRAPPER(BlockIO->ReadBlocks, BlockIO, BlockIO->Media->MediaId, 0, 512, SectorBuffer);
     if (EFI_ERROR(Status)) {
         return Status;
     }
 
     if (*((UINT16 *)(SectorBuffer + 510)) != 0xaa55) {
-        // safety measure #1
+        // Safety measure #1
         return EFI_NOT_FOUND;
     }
 
-    // add boot code if necessary
+    // Add boot code if necessary
     HaveBootCode = FALSE;
     for (i = 0; i < MBR_BOOTCODE_SIZE; i++) {
         if (SectorBuffer[i] != 0) {
@@ -184,12 +184,12 @@ EFI_STATUS ActivateMbrPartition (
     } // for
 
     if (!HaveBootCode) {
-        // no boot code found in the MBR, add the syslinux MBR code
+        // No boot code found in the MBR, add the syslinux MBR code
         SetMem (SectorBuffer, MBR_BOOTCODE_SIZE, 0);
         CopyMem (SectorBuffer, syslinux_mbr, SYSLINUX_MBR_SIZE);
     }
 
-    // set the partition active
+    // Set the partition active
     MbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
     ExtBase = 0;
     for (i = 0; i < 4; i++) {
@@ -209,7 +209,7 @@ EFI_STATUS ActivateMbrPartition (
         }
     }
 
-    // write MBR
+    // Write MBR
     Status = REFIT_CALL_5_WRAPPER(
         BlockIO->WriteBlocks,
         BlockIO,
@@ -220,15 +220,16 @@ EFI_STATUS ActivateMbrPartition (
     );
 
     if (EFI_ERROR(Status)) {
+        // Early Return
         return Status;
     }
 
     if (PartitionIndex >= 4) {
-        // we have to activate a logical partition, so walk the EMBR chain
+        // We have to activate a logical partition ... so walk the EMBR chain
 
         // NOTE: ExtBase was set above while looking at the MBR table
         for (ExtCurrent = ExtBase; ExtCurrent; ExtCurrent = NextExtCurrent) {
-            // read current EMBR
+            // Read current EMBR
             Status = REFIT_CALL_5_WRAPPER(
                 BlockIO->ReadBlocks,
                 BlockIO,
@@ -246,7 +247,7 @@ EFI_STATUS ActivateMbrPartition (
                 return EFI_NOT_FOUND;  // safety measure #3
             }
 
-            // scan EMBR, set appropriate partition active
+            // Scan EMBR, set appropriate partition active
             EMbrTable = (MBR_PARTITION_INFO *)(SectorBuffer + 446);
             NextExtCurrent = 0;
             for (i = 0; i < 4; i++) {
@@ -271,7 +272,7 @@ EFI_STATUS ActivateMbrPartition (
                 }
             }
 
-            // write current EMBR
+            // Write current EMBR
             Status = REFIT_CALL_5_WRAPPER(
                 BlockIO->WriteBlocks,
                 BlockIO,
@@ -339,7 +340,7 @@ VOID ExtractLegacyLoaderPaths (
 
     MaxPaths--;  // leave space for the terminating NULL pointer
 
-    // get all LoadedImage handles
+    // Get all LoadedImage handles
     Status = LibLocateHandle (
         ByProtocol,
         &LoadedImageProtocol, NULL,
@@ -444,7 +445,7 @@ EFI_STATUS StartLegacyImageList (
         *ErrorInStep = 0;
     }
 
-    // set load options
+    // Set load options
     if (LoadOptions != NULL) {
         FullLoadOptions = StrDuplicate (LoadOptions);
     }
@@ -454,7 +455,7 @@ EFI_STATUS StartLegacyImageList (
         FullLoadOptions ? FullLoadOptions : L"NULL"
     );
 
-    // load the image into memory
+    // Load the image into memory
     ReturnStatus = Status = EFI_LOAD_ERROR;  // in case the list is empty
     for (DevicePathIndex = 0; DevicePaths[DevicePathIndex] != NULL; DevicePathIndex++) {
         Status = REFIT_CALL_6_WRAPPER(
@@ -500,8 +501,8 @@ EFI_STATUS StartLegacyImageList (
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
         ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16)
         : 0;
-    // turn control over to the image
-    // TODO: (optionally) re-enable the EFI watchdog timer!
+    // Turn control over to the image
+    // DA-TAG: (optionally) re-enable the EFI watchdog timer!
 
     // close open file handles
     #if REFIT_DEBUG > 0
@@ -691,52 +692,47 @@ VOID StartLegacyUEFI (
 
 static
 VOID AddLegacyEntry (
-    IN CHAR16       *LoaderTitle,
-    IN REFIT_VOLUME *Volume
+    IN CHAR16         *LoaderTitle,
+    IN REFIT_VOLUME   *Volume
 ) {
-          LEGACY_ENTRY      *Entry;
-          LEGACY_ENTRY      *SubEntry;
-          REFIT_MENU_SCREEN *SubScreen;
-    const CHAR16            *VolDesc = NULL;
-          CHAR16            *LegacyTitle;
-          CHAR16             ShortcutLetter = 0;
+    LEGACY_ENTRY      *Entry;
+    LEGACY_ENTRY      *SubEntry;
+    REFIT_MENU_SCREEN *SubScreen;
+    const CHAR16      *VolDesc = NULL;
+    CHAR16            *LegacyTitle;
+    CHAR16             ShortcutLetter = 0;
+
 
     if (LoaderTitle == NULL) {
-        if (Volume->OSName != NULL) {
+        if (!Volume->OSName) {
+            LoaderTitle = L"Legacy (BIOS) OS";
+        }
+        else {
             LoaderTitle = Volume->OSName;
             if (LoaderTitle[0] == 'W' || LoaderTitle[0] == 'L') {
                 ShortcutLetter = LoaderTitle[0];
             }
         }
-        else {
-            LoaderTitle = L"Legacy (BIOS) OS";
-        }
     }
 
-    if (Volume->VolName != NULL) {
-        VolDesc = Volume->VolName;
-    }
-    else {
-        VolDesc = (Volume->DiskKind == DISK_KIND_OPTICAL) ? L"CD" : L"HD";
-    }
+    VolDesc = (Volume->VolName)
+        ? Volume->VolName
+        : (Volume->DiskKind == DISK_KIND_OPTICAL)
+            ? L"CD" : L"HD";
 
     LegacyTitle = PoolPrint (L"Boot %s from %s", LoaderTitle, VolDesc);
 
     if (IsInSubstring (LegacyTitle, GlobalConfig.DontScanVolumes)) {
        MY_FREE_POOL(LegacyTitle);
 
+       // Early Return
        return;
     }
 
     #if REFIT_DEBUG > 0
-    UINTN LogLineType;
-
-    if (FirstLegacyScan) {
-        LogLineType = LOG_THREE_STAR_MID;
-    }
-    else {
-        LogLineType = LOG_THREE_STAR_SEP;
-    }
+    UINTN LogLineType = (FirstLegacyScan)
+        ? LOG_THREE_STAR_MID
+        : LOG_THREE_STAR_SEP;
 
     ALT_LOG(1, LogLineType,
         L"Adding Legacy Boot Entry for '%s'",
@@ -746,12 +742,12 @@ VOID AddLegacyEntry (
 
     FirstLegacyScan = FALSE;
 
-    // prepare the menu entry
+    // Prepare the menu entry
     Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-
-    if (!Entry) {
+    if (Entry == NULL) {
         MY_FREE_POOL(LegacyTitle);
 
+        // Early Return
         return;
     }
 
@@ -772,41 +768,48 @@ VOID AddLegacyEntry (
     LOG_MSG("%s  - Found '%s' on '%s'", OffsetNext, LoaderTitle, VolDesc);
     #endif
 
-    // create the submenu
+    // Create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (SubScreen) {
-        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+    if (SubScreen == NULL) {
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
 
-        SubScreen->Title = PoolPrint (
-            L"Boot Options for %s on %s",
-            LoaderTitle, VolDesc
-         );
-
-        SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
-
-        if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
-        }
-        else {
-           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
-        }
-
-        // default entry
-        SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-        SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
-        SubEntry->me.Tag      = TAG_LEGACY;
-        SubEntry->Volume      = CopyVolume (Entry->Volume);
-        SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
-
-        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-
-        BOOLEAN RetVal = GetReturnMenuEntry (&SubScreen);
-        if (!RetVal) {
-            FreeMenuScreen (&SubScreen);
-        }
-
-        Entry->me.SubScreen = SubScreen;
+        // Early Return
+        return;
     }
+
+    SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+    SubScreen->Title      = PoolPrint (
+        L"Boot Options for %s on %s",
+        LoaderTitle, VolDesc
+    );
+
+    SubScreen->Hint1 = StrDuplicate (SUBSCREEN_HINT1);
+    SubScreen->Hint2 = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
+        ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
+        : StrDuplicate (SUBSCREEN_HINT2);
+
+    // Default entry
+    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    if (SubEntry == NULL) {
+        FreeMenuScreen (&SubScreen);
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+
+        // Early Return
+        return;
+    }
+
+    SubEntry->me.Title    = PoolPrint (L"Boot %s", LoaderTitle);
+    SubEntry->me.Tag      = TAG_LEGACY;
+    SubEntry->Volume      = CopyVolume (Entry->Volume);
+    SubEntry->LoadOptions = StrDuplicate (Entry->LoadOptions);
+
+    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+
+    if (!GetReturnMenuEntry (&SubScreen)) {
+        FreeMenuScreen (&SubScreen);
+    }
+    Entry->me.SubScreen = SubScreen;
+
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 } // static VOID AddLegacyEntry()
 
@@ -822,9 +825,10 @@ VOID AddLegacyEntryUEFI (
     LEGACY_ENTRY      *Entry;
     LEGACY_ENTRY      *SubEntry;
     REFIT_MENU_SCREEN *SubScreen;
-    CHAR16             ShortcutLetter    = 0;
+    CHAR16             ShortcutLetter = 0;
 
     if (IsInSubstring (BdsOption->Description, GlobalConfig.DontScanVolumes)) {
+        // Early Return
         return;
     }
 
@@ -833,10 +837,10 @@ VOID AddLegacyEntryUEFI (
     //   description on the screen.
     LimitStringLength (BdsOption->Description, 100);
 
-    // prepare the menu entry
+    // Prepare the menu entry
     Entry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-
-    if (!Entry) {
+    if (Entry == NULL) {
+        // Early Return
         return;
     }
 
@@ -866,35 +870,43 @@ VOID AddLegacyEntryUEFI (
     Entry->BdsOption         = CopyBdsOption (BdsOption);
     Entry->Enabled           = TRUE;
 
-    // create the submenu
+    // Create the submenu
     SubScreen = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (SubScreen) {
-        SubScreen->TitleImage = egCopyImage (Entry->me.Image);
-        SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
-        SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
+    if (SubScreen == NULL) {
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
 
-        if (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR) {
-           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR);
-        }
-        else {
-           SubScreen->Hint2 = StrDuplicate (SUBSCREEN_HINT2);
-        }
-
-        // default entry
-        SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
-        SubEntry->me.Title  = PoolPrint (L"Boot %s", BdsOption->Description);
-        SubEntry->me.Tag    = TAG_LEGACY_UEFI;
-        SubEntry->BdsOption = CopyBdsOption (BdsOption);
-
-        AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
-
-        BOOLEAN RetVal = GetReturnMenuEntry (&SubScreen);
-        if (!RetVal) {
-            FreeMenuScreen (&SubScreen);
-        }
-
-        Entry->me.SubScreen = SubScreen;
+        // Early Return
+        return;
     }
+
+    SubScreen->TitleImage = egCopyImage (Entry->me.Image);
+    SubScreen->Title      = PoolPrint (L"Legacy (BIOS) Options for %s", BdsOption->Description);
+    SubScreen->Hint1      = StrDuplicate (SUBSCREEN_HINT1);
+    SubScreen->Hint2      = (GlobalConfig.HideUIFlags & HIDEUI_FLAG_EDITOR)
+        ? StrDuplicate (SUBSCREEN_HINT2_NO_EDITOR)
+        : StrDuplicate (SUBSCREEN_HINT2);
+
+    // Default entry
+    SubEntry = AllocateZeroPool (sizeof (LEGACY_ENTRY));
+    if (SubEntry == NULL) {
+        FreeMenuScreen (&SubScreen);
+        FreeMenuEntry ((REFIT_MENU_ENTRY **) Entry);
+
+        // Early Return
+        return;
+    }
+
+    SubEntry->me.Title  = PoolPrint (L"Boot %s", BdsOption->Description);
+    SubEntry->me.Tag    = TAG_LEGACY_UEFI;
+    SubEntry->BdsOption = CopyBdsOption (BdsOption);
+
+    AddMenuEntry (SubScreen, (REFIT_MENU_ENTRY *) SubEntry);
+
+    if (!GetReturnMenuEntry (&SubScreen)) {
+        FreeMenuScreen (&SubScreen);
+    }
+    Entry->me.SubScreen = SubScreen;
+
     AddMenuEntry (MainMenu, (REFIT_MENU_ENTRY *) Entry);
 
     #if REFIT_DEBUG > 0
@@ -924,13 +936,10 @@ VOID ScanLegacyUEFI (
     EFI_LEGACY_BIOS_PROTOCOL  *LegacyBios;
 
     #if REFIT_DEBUG > 0
-    UINTN LogLineType;
-    if (FirstLegacyScan) {
-        LogLineType = LOG_THREE_STAR_MID;
-    }
-    else {
-        LogLineType = LOG_THREE_STAR_SEP;
-    }
+    UINTN LogLineType = (FirstLegacyScan)
+        ? LOG_THREE_STAR_MID
+        : LOG_THREE_STAR_SEP;
+
     /* Exception for LOG_THREE_STAR_SEP */
     ALT_LOG(1, LogLineType, L"Scanning for 'UEFI-Style' Legacy Boot Options");
     #endif
@@ -946,8 +955,8 @@ VOID ScanLegacyUEFI (
         &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios
     );
-
     if (EFI_ERROR(Status)) {
+        // Early Return
         return;
     }
 
@@ -985,28 +994,28 @@ VOID ScanLegacyUEFI (
             // Two checks necessary because some systems return EFI boot loaders
             //   with a DeviceType value that would inappropriately include them
             //   as legacy loaders.
-            if ((BbsDevicePath->DeviceType == DiskType) &&
-                (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)
+            if ((BbsDevicePath->DeviceType != DiskType) ||
+                (BdsOption->DevicePath->Type != DEVICE_TYPE_BIOS)
             ) {
+                AddLegacyEntryUEFI (BdsOption, DiskType);
+            }
+            else {
                 // USB flash drives appear as hard disks with certain media flags set.
                 // Look for this, and if present, pass it on with the (technically
                 //   incorrect, but internally useful) BBS_TYPE_USB flag set.
                 if (DiskType == BBS_HARDDISK) {
-                    if (SearchingForUsb && (BbsDevicePath->StatusFlag &
-                        (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
+                    if (SearchingForUsb
+                        && (BbsDevicePath->StatusFlag &(BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
                     ) {
                         AddLegacyEntryUEFI (BdsOption, BBS_USB);
                     }
-                    else if (!SearchingForUsb && !(BbsDevicePath->StatusFlag &
-                        (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
+                    else if (!SearchingForUsb
+                        && !(BbsDevicePath->StatusFlag &(BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
                     ) {
                         AddLegacyEntryUEFI (BdsOption, DiskType);
                     }
                 }
-                else {
-                    AddLegacyEntryUEFI (BdsOption, DiskType);
-                }
-            } // if BbsDevicePath->DeviceType
+            } // if/else BbsDevicePath->DeviceType
 
             FreeBdsOption (&BdsOption);
         } // if BdsOption != NULL
@@ -1075,16 +1084,16 @@ VOID ScanLegacyDisc (VOID) {
     #endif
 
     FirstLegacyScan = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+        ScanLegacyUEFI (BBS_CDROM);
+    }
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_OPTICAL) {
                 ScanLegacyVolume (Volume, VolumeIndex);
             }
          } // for
-    }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-        ScanLegacyUEFI (BBS_CDROM);
     }
     FirstLegacyScan = FALSE;
 } // VOID ScanLegacyDisc()
@@ -1102,18 +1111,18 @@ VOID ScanLegacyInternal (VOID) {
     #endif
 
     FirstLegacyScan = TRUE;
-    if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+    if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+       // DA-TAG: This also picks USB flash drives up.
+       //         Try to find a way to differentiate.
+       ScanLegacyUEFI (BBS_HARDDISK);
+    }
+    else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
         for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
             Volume = Volumes[VolumeIndex];
             if (Volume->DiskKind == DISK_KIND_INTERNAL) {
                 ScanLegacyVolume (Volume, VolumeIndex);
             }
         } // for
-    }
-    else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-       // TODO: This also picks USB flash drives up.
-       //       Try to find a way to differentiate.
-       ScanLegacyUEFI (BBS_HARDDISK);
     }
     FirstLegacyScan = FALSE;
 } // VOID ScanLegacyInternal()
@@ -1131,18 +1140,18 @@ VOID ScanLegacyExternal (VOID) {
    #endif
 
    FirstLegacyScan = TRUE;
-   if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
+   if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
+      // TODO: This actually does not do anything useful.
+      //       Leaving in hope of fixing it later.
+      ScanLegacyUEFI (BBS_USB);
+   }
+   else if (GlobalConfig.LegacyType == LEGACY_TYPE_MAC) {
       for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
          Volume = Volumes[VolumeIndex];
          if (Volume->DiskKind == DISK_KIND_EXTERNAL) {
              ScanLegacyVolume (Volume, VolumeIndex);
          }
       } // for
-   }
-   else if (GlobalConfig.LegacyType == LEGACY_TYPE_UEFI) {
-      // TODO: This actually does not do anything useful.
-      //       Leaving in hope of fixing it later.
-      ScanLegacyUEFI (BBS_USB);
    }
    FirstLegacyScan = FALSE;
 } // VOID ScanLegacyExternal()
@@ -1160,7 +1169,6 @@ VOID FindLegacyBootType (VOID) {
         &gEfiLegacyBootProtocolGuid,
         NULL, (VOID **) &LegacyBios
     );
-
     if (!EFI_ERROR(Status)) {
         GlobalConfig.LegacyType = LEGACY_TYPE_UEFI;
     }
@@ -1178,7 +1186,6 @@ VOID FindLegacyBootType (VOID) {
 VOID WarnIfLegacyProblems (VOID) {
     UINTN     i     = 0;
     BOOLEAN   found = FALSE;
-
 
     if (GlobalConfig.LegacyType == LEGACY_TYPE_NONE) {
         do {

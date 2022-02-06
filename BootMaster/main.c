@@ -221,7 +221,7 @@ EFI_OPEN_PROTOCOL      OrigOpenProtocolBS;
 UINTN                 AppleFramebuffers = 0;
 #endif
 
-extern VOID   InitBooterLog (VOID);
+extern VOID              InitBooterLog (VOID);
 
 extern EFI_STATUS        AmendSysTable (VOID);
 extern EFI_STATUS        RP_ApfsConnectDevices (VOID);
@@ -232,13 +232,11 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
 
 
 // Link to Cert GUIDs in mok/guid.c
-extern EFI_GUID X509_GUID;
-extern EFI_GUID RSA2048_GUID;
-extern EFI_GUID PKCS7_GUID;
-extern EFI_GUID EFI_CERT_SHA256_GUID;
-
-extern EFI_FILE *gVarsDir;
-
+extern EFI_GUID                      X509_GUID;
+extern EFI_GUID                      RSA2048_GUID;
+extern EFI_GUID                      PKCS7_GUID;
+extern EFI_GUID                      EFI_CERT_SHA256_GUID;
+extern EFI_FILE                     *gVarsDir;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL *GOPDraw;
 
 //
@@ -257,6 +255,7 @@ VOID InitMainMenu (VOID) {
         SUBSCREEN_HINT1,
         L"Press 'Insert', 'Tab', or 'F2' for More Options and 'Esc' or 'Backspace' to Refresh"
     };
+
     FreeMenuScreen (&MainMenu);
     MainMenu = CopyMenuScreen (&MainMenuSrc);
     MainMenu->TimeoutSeconds = GlobalConfig.Timeout;
@@ -386,13 +385,15 @@ EFI_STATUS FilterCSR (VOID) {
     EFI_STATUS Status = NormaliseCSR();
 
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = PoolPrint (
-        L"Normalise CSR ... %r",
-        Status
-    );
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
-    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
-    MY_FREE_POOL(MsgStr);
+    if (EFI_ERROR(Status)) {
+        CHAR16 *MsgStr = PoolPrint (
+            L"Normalise CSR ... %r",
+            Status
+        );
+        ALT_LOG(1, LOG_THREE_STAR_MID, L"%s", MsgStr);
+        LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+        MY_FREE_POOL(MsgStr);
+    }
     #endif
 
     return Status;
@@ -432,7 +433,7 @@ VOID ActiveCSR (VOID) {
         //
         // Seed the log buffer
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Disable SIP/SSV ... ");
+        LOG_MSG("INFO: Disable");
         #endif
 
         if (CsrEnabled) {
@@ -445,7 +446,7 @@ VOID ActiveCSR (VOID) {
         //
         // Seed the log buffer
         #if REFIT_DEBUG > 0
-        LOG_MSG("INFO: Enable SIP/SSV ... ");
+        LOG_MSG("INFO: Enable");
         #endif
 
         if (!CsrEnabled) {
@@ -466,7 +467,7 @@ VOID ActiveCSR (VOID) {
 
     // Finalise and flush the log buffer
     #if REFIT_DEBUG > 0
-    LOG_MSG("%r", Status);
+    LOG_MSG(" SIP/SSV ... %r", Status);
     LOG_MSG("\n\n");
     #endif
 } // static VOID ActiveCSR()
@@ -2355,25 +2356,7 @@ EFI_STATUS EFIAPI efi_main (
         RunOurTool     = FALSE;
         MY_FREE_POOL(FilePath);
 
-        // Reset NVRAM Protection
-        SetProtectNvram (SystemTable, FALSE);
-
         MenuExit = RunMainMenu (MainMenu, &SelectionName, &ChosenEntry);
-
-        // Ignore MenuExit if FlushFailedTag is set and not previously reset
-        if (FlushFailedTag && !FlushFailReset) {
-            #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
-            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
-            LOG_MSG("INFO: %s", MsgStr);
-            LOG_MSG("\n\n");
-            MY_FREE_POOL(MsgStr);
-            #endif
-
-            FlushFailedTag = FALSE;
-            FlushFailReset = TRUE;
-            continue;
-        }
 
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
@@ -2393,11 +2376,29 @@ EFI_STATUS EFIAPI efi_main (
         }
         BlockRescan = FALSE;
 
+        // Ignore MenuExit if FlushFailedTag is set and not previously reset
+        if (FlushFailedTag && !FlushFailReset) {
+            #if REFIT_DEBUG > 0
+            MsgStr = StrDuplicate (L"FlushFailedTag is Set ... Ignore MenuExit");
+            ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
+            LOG_MSG("INFO: %s", MsgStr);
+            LOG_MSG("\n\n");
+            MY_FREE_POOL(MsgStr);
+            #endif
+
+            FlushFailedTag = FALSE;
+            FlushFailReset = TRUE;
+            continue;
+        }
+
         if (MenuExit == MENU_EXIT_TIMEOUT &&
             GlobalConfig.ShutdownAfterTimeout
         ) {
             ChosenEntry->Tag = TAG_SHUTDOWN;
         }
+
+        // Reset NVRAM Protection
+        SetProtectNvram (SystemTable, FALSE);
 
         switch (ChosenEntry->Tag) {
             case TAG_INFO_BOOTKICKER:    // Apple Boot Screen Info
@@ -2465,7 +2466,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 #if REFIT_DEBUG > 0
                 LOG_MSG("%s  - Load Tool to %s", OffsetNext, TypeStr);
-                LOG_MSG("\n\n");
+                LOG_MSG("\n-----------------\n\n");
                 #endif
 
                 MY_FREE_POOL(FilePath);
@@ -2555,7 +2556,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 MY_FREE_POOL(FilePath);
 
-                // Run CleanNvram
+                // No end dash line ... Handled in 'Reboot' below
                 StartTool (ourLoaderEntry);
 
                 #if REFIT_DEBUG > 0
@@ -2660,6 +2661,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
+                // No end dash line ... Expected to return
                 AboutRefindPlus();
 
                 #if REFIT_DEBUG > 0
@@ -2883,10 +2885,7 @@ EFI_STATUS EFIAPI efi_main (
                     #endif
                 }
 
-                #if REFIT_DEBUG > 0
-                LOG_MSG("\n-----------------\n\n");
-                #endif
-
+                // No end dash line ... Added in 'IsValidLoader'
                 StartLoader (ourLoaderEntry, SelectionName);
                 break;
 
@@ -2960,6 +2959,7 @@ EFI_STATUS EFIAPI efi_main (
                     ourLoaderEntry->UseGraphicsMode = TRUE;
                 }
 
+                // No end dash line ... Expected to return
                 StartTool (ourLoaderEntry);
                 break;
 
@@ -2983,6 +2983,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
+                // No end dash line ... Expected to return
                 ManageHiddenTags();
 
                 #if REFIT_DEBUG > 0
@@ -3030,6 +3031,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n");
                 #endif
 
+                // No end dash line ... Expected to return
                 RotateCsrValue();
                 break;
 
@@ -3052,6 +3054,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
+                // No end dash line ... Expected to return
                 ManageBootorder();
 
                 #if REFIT_DEBUG > 0

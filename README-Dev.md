@@ -52,9 +52,9 @@ Note that if you run RefindPlus without activating the additonal  options, as wi
 RefindPlus-Specific funtionality can be configured by adding the tokens below to a rEFInd configuration file.
 
 Token | Functionality
-:----: | :----:
+----- | -----
 active_csr            |Actively enables or disables the SIP Policy on Macs
-continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended login)
+continue_on_warning   |Proceeds as if a key is pressed after screen warnings (unattended boot)
 decline_apfsload      |Disables built in provision of APFS filesystem capability
 decline_apfsmute      |Disables supressesion of verbose APFS text on boot
 decline_apfssync      |Disables feature allowing direct APFS/FileVault boot (Without "PreBoot")

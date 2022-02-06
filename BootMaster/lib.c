@@ -1747,14 +1747,14 @@ VOID ScanVolume (
         NativeLogger = FALSE;
     }
 
-    // get device path
+    // Get device path
     Volume->DevicePath = DuplicateDevicePath (
         DevicePathFromHandle (Volume->DeviceHandle)
     );
 
     Volume->DiskKind = DISK_KIND_INTERNAL;  // default
 
-    // get block i/o
+    // Get block i/o
     Status = REFIT_CALL_3_WRAPPER(
         gBS->HandleProtocol,
         Volume->DeviceHandle,
@@ -1779,7 +1779,7 @@ VOID ScanVolume (
         Volume->DiskKind = DISK_KIND_OPTICAL;
     }
 
-    // detect device type
+    // Detect device type
     DevicePath = Volume->DevicePath;
     while (DevicePath != NULL && !IsDevicePathEndType (DevicePath)) {
         NextDevicePath = NextDevicePathNode (DevicePath);
@@ -1808,7 +1808,7 @@ VOID ScanVolume (
         }
 
         if (DevicePathType (DevicePath) == MESSAGING_DEVICE_PATH) {
-            // make a device path for the whole device
+            // Make a device path for the whole device
             PartialLength  = (UINT8 *) NextDevicePath - (UINT8 *) (Volume->DevicePath);
             DiskDevicePath = (EFI_DEVICE_PATH *) AllocatePool (
                 PartialLength + sizeof (EFI_DEVICE_PATH)
@@ -1826,7 +1826,7 @@ VOID ScanVolume (
                 sizeof (EFI_DEVICE_PATH)
             );
 
-            // get the handle for that path
+            // Get the handle for that path
             RemainingDevicePath = DiskDevicePath;
             Status = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath,
@@ -1860,7 +1860,7 @@ VOID ScanVolume (
                 #endif
             }
             else {
-                // get the device path for later
+                // Get the device path for later
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     WholeDiskHandle,
@@ -1894,7 +1894,7 @@ VOID ScanVolume (
                     Volume->WholeDiskDevicePath = DuplicateDevicePath (DiskDevicePath);
                 }
 
-                // look at the BlockIO protocol
+                // Look at the BlockIO protocol
                 Status = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol,
                     WholeDiskHandle,
@@ -1926,7 +1926,7 @@ VOID ScanVolume (
                     #endif
                 }
                 else {
-                    // check the media block size
+                    // Check the media block size
                     if (Volume->WholeDiskBlockIO->Media->BlockSize == 2048) {
                         Volume->DiskKind = DISK_KIND_OPTICAL;
                     }
@@ -1936,7 +1936,7 @@ VOID ScanVolume (
         DevicePath = NextDevicePath;
     } // while
 
-    // scan for bootcode and MBR table
+    // Scan for bootcode and MBR table
     Bootable = FALSE;
     ScanVolumeBootcode (Volume, &Bootable);
     if (Volume->DiskKind == DISK_KIND_OPTICAL) {
@@ -1977,7 +1977,7 @@ VOID ScanVolume (
         NativeLogger = TRUE;
     }
 
-    // open the root directory of the volume
+    // Open the root directory of the volume
     Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
 
     SetFilesystemName (Volume);
@@ -2234,7 +2234,7 @@ VOID VetSyncAPFS (VOID) {
     if (!ValidAPFS) {
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (
-            L"Could Not Determine the Volume UUID on One or More Key APFS Volumes ... Disabling SyncAFPS"
+            L"Could Not Determine the VolUUID or PartGuid on One or More Key APFS Volumes ... Disabling SyncAFPS"
         );
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
@@ -2395,7 +2395,7 @@ VOID ScanVolumes (VOID) {
         ForgetPartitionTables();
     }
 
-    // get all filesystem handles
+    // Get all filesystem handles
     Status = LibLocateHandle (
         ByProtocol,
         &BlockIoProtocol,
@@ -2450,9 +2450,11 @@ VOID ScanVolumes (VOID) {
         return;
     }
 
-    // first pass: collect information about all handles
+    // First pass: Collect information about all handles
     DoneHeadings = FALSE;
     ScannedOnce  = FALSE;
+    SkipSpacing  = FALSE;
+    ValidAPFS    =  TRUE;
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
         #if REFIT_DEBUG > 0
@@ -2613,58 +2615,84 @@ VOID ScanVolumes (VOID) {
 #endif
 
                 if (!EFI_ERROR(Status)) {
-                    if (ValidAPFS && GuidsAreEqual (&(Volume->VolUuid), &GuidNull)) {
-                        ValidAPFS = FALSE;
-                    }
-
                     PartType        = L"APFS";
                     Volume->FSType  = FS_TYPE_APFS;
                     Volume->VolUuid = VolumeGuid;
                     RoleStr         = GetApfsRoleString (VolumeRole);
 
-                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
-                        // Create or add to a list of APFS Recovery Volumes
-                        AddListElement (
-                            (VOID ***) &RecoveryVolumes,
-                            &RecoveryVolumesCount,
-                            CopyVolume (Volume)
-                        );
-                    }
-                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
-                        // Create or add to a list of APFS PreBoot Volumes
-                        AddListElement (
-                            (VOID ***) &PreBootVolumes,
-                            &PreBootVolumesCount,
-                            CopyVolume (Volume)
-                        );
-                    }
-                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
-                        // Create or add to a list representing APFS VolumeGroups
-                        AddListElement (
-                            (VOID ***) &DataVolumes,
-                            &DataVolumesCount,
-                            CopyVolume (Volume)
-                        );
-                    }
-                    else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
-                        || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                    ) {
-                        // Create or add to a list of APFS System Volumes
-                        AddListElement (
-                            (VOID ***) &SystemVolumes,
-                            &SystemVolumesCount,
-                            CopyVolume (Volume)
-                        );
-
-                        if (!ShouldScan (Volume, MACOSX_LOADER_DIR)) {
-                            // Create or add to a list of APFS Volumes not to be scanned
+                    if (ValidAPFS) {
+                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
+                            // Create or add to a list of APFS Recovery Volumes
                             AddListElement (
-                                (VOID ***) &SkipApfsVolumes,
-                                &SkipApfsVolumesCount,
+                                (VOID ***) &RecoveryVolumes,
+                                &RecoveryVolumesCount,
                                 CopyVolume (Volume)
                             );
+
+                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
+                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
+                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
+                            ) {
+                                ValidAPFS = FALSE;
+                            }
                         }
-                    }
+                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_PREBOOT) {
+                            // Create or add to a list of APFS PreBoot Volumes
+                            AddListElement (
+                                (VOID ***) &PreBootVolumes,
+                                &PreBootVolumesCount,
+                                CopyVolume (Volume)
+                            );
+
+                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
+                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
+                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
+                            ) {
+                                ValidAPFS = FALSE;
+                            }
+                        }
+                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_DATA) {
+                            // Create or add to a list representing APFS VolumeGroups
+                            AddListElement (
+                                (VOID ***) &DataVolumes,
+                                &DataVolumesCount,
+                                CopyVolume (Volume)
+                            );
+
+                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
+                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
+                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
+                            ) {
+                                ValidAPFS = FALSE;
+                            }
+                        }
+                        else if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM
+                            || VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                        ) {
+                            // Create or add to a list of APFS System Volumes
+                            AddListElement (
+                                (VOID ***) &SystemVolumes,
+                                &SystemVolumesCount,
+                                CopyVolume (Volume)
+                            );
+
+                            if (!ShouldScan (Volume, MACOSX_LOADER_DIR)) {
+                                // Create or add to a list of APFS Volumes not to be scanned
+                                AddListElement (
+                                    (VOID ***) &SkipApfsVolumes,
+                                    &SkipApfsVolumesCount,
+                                    CopyVolume (Volume)
+                                );
+                            }
+
+                            // Flag NULL VolUUID or PartGuid if found and not previously flagged
+                            if (GuidsAreEqual (&GuidNull, &(Volume->VolUuid)) ||
+                                GuidsAreEqual (&GuidNull, &(Volume->PartGuid))
+                            ) {
+                                ValidAPFS = FALSE;
+                            }
+                        }
+                    } // if ValidAPFS
                 } // if !EFI_ERROR(Status)
             } // if MyStriCmp Volume->VolName
 
@@ -2747,7 +2775,7 @@ VOID ScanVolumes (VOID) {
         #endif
     }
 
-    // second pass: relate partitions and whole disk devices
+    // Second pass: relate partitions and whole disk devices
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
         // check MBR partition table for extended partitions
@@ -2763,7 +2791,7 @@ VOID ScanVolumes (VOID) {
             }
         }
 
-        // search for corresponding whole disk volume entry
+        // Search for corresponding whole disk volume entry
         WholeDiskVolume = NULL;
         if (Volume->BlockIO != NULL && Volume->WholeDiskBlockIO != NULL &&
             Volume->BlockIO != Volume->WholeDiskBlockIO
@@ -2780,7 +2808,7 @@ VOID ScanVolumes (VOID) {
         if (WholeDiskVolume != NULL &&
             WholeDiskVolume->MbrPartitionTable != NULL
         ) {
-            // check if this volume is one of the partitions in the table
+            // Check if this volume is one of the partitions in the table
             MbrTable = WholeDiskVolume->MbrPartitionTable;
             SectorBuffer1 = AllocatePool (512);
             SectorBuffer2 = AllocatePool (512);
@@ -2792,7 +2820,7 @@ VOID ScanVolumes (VOID) {
                     continue;
                 }
 
-                // compare boot sector read through offset vs. directly
+                // Compare boot sector read through offset vs. directly
                 Status = REFIT_CALL_5_WRAPPER(
                     Volume->BlockIO->ReadBlocks,
                     Volume->BlockIO,
@@ -3278,7 +3306,7 @@ BOOLEAN DirIterNext (
     IN  OUT REFIT_DIR_ITER  *DirIter,
     IN      UINTN            FilterMode,
     IN      CHAR16          *FilePattern OPTIONAL,
-        OUT EFI_FILE_INFO  **DirEntry
+    OUT     EFI_FILE_INFO  **DirEntry
 ) {
     BOOLEAN  KeepGoing = TRUE;
     UINTN    i;
@@ -3287,7 +3315,7 @@ BOOLEAN DirIterNext (
     MY_FREE_POOL(DirIter->LastFileInfo);
 
     if (EFI_ERROR(DirIter->LastStatus)) {
-        // stop iteration
+        // Stop iteration
         return FALSE;
     }
 
@@ -3303,28 +3331,27 @@ BOOLEAN DirIterNext (
         }
 
         if (DirIter->LastFileInfo == NULL)  {
-            // end of listing
+            // End of listing
             return FALSE;
         }
 
         if (FilePattern == NULL) {
             break;
         }
-        else {
-            if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
-                KeepGoing = FALSE;
-            }
 
-            i = 0;
-            while (KeepGoing &&
-                (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
-            ) {
-               if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
-                   KeepGoing = FALSE;
-               }
-               MY_FREE_POOL(OnePattern);
-            } // while
+        if ((DirIter->LastFileInfo->Attribute & EFI_FILE_DIRECTORY)) {
+            break;
         }
+
+        i = 0;
+        while (KeepGoing &&
+            (OnePattern = FindCommaDelimited (FilePattern, i++)) != NULL
+        ) {
+           if (MetaiMatch (DirIter->LastFileInfo->FileName, OnePattern)) {
+               KeepGoing = FALSE;
+           }
+           MY_FREE_POOL(OnePattern);
+        } // while
    } while (KeepGoing && FilePattern);
 
     *DirEntry = DirIter->LastFileInfo;

@@ -6,7 +6,7 @@
   * Adds an implementation of the `CreateEventEx` feature to EFI 1.x units
   * Additionally, the EFI Revision is modified to present as UEFI 2.3
   * This allows the use of UEFI 2.x tools and drivers on Legacy EFI 1.x units in many cases
-  * This is particularly the case with Legacy Macs, which already have amended EFI 1.x implementations
+  * This is particularly the case on Legacy Macs, which already have amended EFI 1.x implementations
   * This functionality can be disabled by setting the `decline_uefiemulate` token
   * As an aside, the `RuntimeServices` table is now also amended in `AmendSysTable`
 - Adds `SilentBoot` Feature
@@ -58,7 +58,7 @@
     - Log Level 2 is only exposed on this build target
 - Renames the `ignore_previous_boot` config option to `transient_boot`
   * This more accurately describes the feature.
-    - The current boot selection is not saved but previously saved boots are used if already saved
+    - The current boot selection is not saved, it is transient, but any previously saved boot is used
 
 
 0.13.2.AM (13 Dec 2021):
