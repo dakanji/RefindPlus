@@ -994,28 +994,26 @@ VOID ScanLegacyUEFI (
             // Two checks necessary because some systems return EFI boot loaders
             //   with a DeviceType value that would inappropriately include them
             //   as legacy loaders.
-            if ((BbsDevicePath->DeviceType != DiskType) ||
-                (BdsOption->DevicePath->Type != DEVICE_TYPE_BIOS)
+            if ((BbsDevicePath->DeviceType == DiskType) &&
+                (BdsOption->DevicePath->Type == DEVICE_TYPE_BIOS)
             ) {
-                AddLegacyEntryUEFI (BdsOption, DiskType);
-            }
-            else {
                 // USB flash drives appear as hard disks with certain media flags set.
                 // Look for this, and if present, pass it on with the (technically
                 //   incorrect, but internally useful) BBS_TYPE_USB flag set.
-                if (DiskType == BBS_HARDDISK) {
-                    if (SearchingForUsb
-                        && (BbsDevicePath->StatusFlag &(BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
-                    ) {
-                        AddLegacyEntryUEFI (BdsOption, BBS_USB);
-                    }
-                    else if (!SearchingForUsb
-                        && !(BbsDevicePath->StatusFlag &(BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
-                    ) {
-                        AddLegacyEntryUEFI (BdsOption, DiskType);
-                    }
+                if (DiskType != BBS_HARDDISK) {
+                    AddLegacyEntryUEFI (BdsOption, DiskType);
                 }
-            } // if/else BbsDevicePath->DeviceType
+                else if (SearchingForUsb && (BbsDevicePath->StatusFlag &
+                    (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
+                ) {
+                    AddLegacyEntryUEFI (BdsOption, BBS_USB);
+                }
+                else if (!SearchingForUsb && !(BbsDevicePath->StatusFlag &
+                    (BBS_MEDIA_PRESENT | BBS_MEDIA_MAYBE_PRESENT))
+                ) {
+                    AddLegacyEntryUEFI (BdsOption, DiskType);
+                }
+            } // if BbsDevicePath->DeviceType
 
             FreeBdsOption (&BdsOption);
         } // if BdsOption != NULL
