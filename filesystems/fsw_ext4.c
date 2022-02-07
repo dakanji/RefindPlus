@@ -628,6 +628,8 @@ static fsw_status_t fsw_ext4_dir_read(struct fsw_ext4_volume *vol, struct fsw_ex
     //  has opened a storage handle to the directory's storage and keeps it around between
     //  calls.
     FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext4_dir_read: started reading dir\n")));
+    entry.name_len  = 0;
+    entry.inode     = 0;
 
     while (1) {
         // read next entry

@@ -593,7 +593,7 @@ VOID BeginExternalScreen (
         DrawScreenHeader (Title);
 
         if (ForceMute) {
-            ForceMute = MuteLogger = FALSE;
+            MuteLogger = FALSE;
         }
     }
 
@@ -659,10 +659,10 @@ VOID DrawScreenHeader (
 //
 
 BOOLEAN ReadAllKeyStrokes (VOID) {
+    EFI_STATUS           Status        = EFI_NOT_FOUND;
     BOOLEAN              GotKeyStrokes = FALSE;
     BOOLEAN              EmptyBuffer   = FALSE;
     static BOOLEAN       FirstCall     = TRUE;
-    EFI_STATUS           Status;
     EFI_INPUT_KEY        key;
 
     if (FirstCall || !GlobalConfig.SilentBoot) {

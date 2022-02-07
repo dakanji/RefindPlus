@@ -522,6 +522,8 @@ static fsw_status_t fsw_iso9660_dir_lookup(struct fsw_iso9660_volume *vol, struc
     if (status)
         return status;
 
+    dirrec_buffer.ino = 0;
+
     // scan the directory for the file
     while (1) {
         // read next entry
@@ -575,6 +577,8 @@ static fsw_status_t fsw_iso9660_dir_read(struct fsw_iso9660_volume *vol, struct 
     /* (vasily) directory nodes are 4096 bytes that is two logical blocks so read dir operation
      * should read both blocks.
      */
+
+    dirrec_buffer.ino = 0;
 
     while (1) {
         // read next entry
@@ -635,12 +639,9 @@ static fsw_status_t fsw_iso9660_read_dirrec(struct fsw_iso9660_volume *vol, stru
 
     if (buffer_size < 33 || dirrec->dirrec_length == 0) {
         // end of directory reached
-        fsw_u8 *r;
-        r = (fsw_u8 *)dirrec;
- //       DEBUG((DEBUG_INFO, "%a:%d bs:%d dl:%d\n", __FILE__, __LINE__, buffer_size, dirrec->dirrec_length));
         for(i = 0; i < buffer_size; ++i)
         {
-            DEBUG((DEBUG_INFO, "r[%d]:%c", i, r[i]));
+            DEBUG((DEBUG_INFO, "r[%d]:%c", i, (fsw_u8 *) dirrec[i]));
         }
         dirrec->dirrec_length = 0;
         return FSW_SUCCESS;

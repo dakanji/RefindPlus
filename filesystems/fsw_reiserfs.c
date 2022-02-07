@@ -638,8 +638,9 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
 {
     fsw_status_t    status;
     int             comp_result;
-    fsw_u32         tree_bno, next_tree_bno, tree_level, nr_item, i;
-    fsw_u8          *buffer;
+    fsw_u8          *buffer = 0;
+    fsw_u32         nr_item = 0;
+    fsw_u32         tree_bno, next_tree_bno, tree_level, i;
     struct block_head *bhead;
     struct reiserfs_key *key;
     struct item_head *ihead;
@@ -662,12 +663,18 @@ static fsw_status_t fsw_reiserfs_item_search(struct fsw_reiserfs_volume *vol,
             return status;
         bhead = (struct block_head *)buffer;
         if (bhead->blk_level != tree_level) {
-            FSW_MSG_ASSERT((FSW_MSGSTR("fsw_reiserfs_item_search: tree block %d has not expected level %d\n"), tree_bno, tree_level));
+            FSW_MSG_ASSERT((FSW_MSGSTR(
+                "fsw_reiserfs_item_search: tree block %d has not expected level %d\n"),
+                tree_bno, tree_level
+            ));
             fsw_block_release(vol, tree_bno, buffer);
             return FSW_VOLUME_CORRUPTED;
         }
         nr_item = bhead->blk_nr_item;
-        FSW_MSG_DEBUGV((FSW_MSGSTR("fsw_reiserfs_item_search: visiting block %d level %d items %d\n"), tree_bno, tree_level, nr_item));
+        FSW_MSG_DEBUGV((FSW_MSGSTR(
+            "fsw_reiserfs_item_search: visiting block %d level %d items %d\n"),
+            tree_bno, tree_level, nr_item
+        ));
         item->path_bno[tree_level] = tree_bno;
 
         // check if we have reached a leaf block

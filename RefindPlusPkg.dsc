@@ -116,7 +116,7 @@
 
 
 [PcdsFixedAtBuild]
-    gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x33
+    gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x2F
     gEfiMdePkgTokenSpaceGuid.PcdDebugClearMemoryValue|0x00
     gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x00000000
 

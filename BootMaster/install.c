@@ -513,17 +513,13 @@ EFI_STATUS CopyDrivers (
     IN EFI_FILE *DestDirPtr,
     IN CHAR16   *DestDirName
 ) {
+    UINTN           i;
     CHAR16         *DestFileName   = NULL;
     CHAR16         *SourceFileName = NULL;
     CHAR16         *DriverName     = NULL; // Note: Assign to string constants ... do not free.
     EFI_STATUS      Status         = EFI_SUCCESS;
     EFI_STATUS      WorstStatus    = EFI_SUCCESS;
-    BOOLEAN         DriverCopied[NUM_FS_TYPES];
-    UINTN           i;
 
-    for (i = 0; i < NUM_FS_TYPES; i++) {
-        DriverCopied[i] = FALSE;
-    }
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL,
@@ -531,6 +527,26 @@ EFI_STATUS CopyDrivers (
         VolumesCount
     );
     #endif
+
+
+    BOOLEAN
+    DriverCopied[NUM_FS_TYPES];
+    DriverCopied[FS_TYPE_UNKNOWN]   = FALSE;
+    DriverCopied[FS_TYPE_WHOLEDISK] = FALSE;
+    DriverCopied[FS_TYPE_FAT]       = FALSE;
+    DriverCopied[FS_TYPE_EXFAT]     = FALSE;
+    DriverCopied[FS_TYPE_NTFS]      = FALSE;
+    DriverCopied[FS_TYPE_EXT2]      = FALSE;
+    DriverCopied[FS_TYPE_EXT3]      = FALSE;
+    DriverCopied[FS_TYPE_EXT4]      = FALSE;
+    DriverCopied[FS_TYPE_HFSPLUS]   = FALSE;
+    DriverCopied[FS_TYPE_REISERFS]  = FALSE;
+    DriverCopied[FS_TYPE_BTRFS]     = FALSE;
+    DriverCopied[FS_TYPE_XFS]       = FALSE;
+    DriverCopied[FS_TYPE_JFS]       = FALSE;
+    DriverCopied[FS_TYPE_ISO9660]   = FALSE;
+    DriverCopied[FS_TYPE_APFS]      = FALSE;
+
 
     for (i = 0; i < VolumesCount; i++) {
         #if REFIT_DEBUG > 0
@@ -548,8 +564,7 @@ EFI_STATUS CopyDrivers (
                     DriverCopied[FS_TYPE_BTRFS] = TRUE;
                 }
 
-                break;
-
+            break;
             case FS_TYPE_EXT2:
                 if (DriverCopied[FS_TYPE_EXT2] == FALSE) {
                     DriverName = L"ext2";
@@ -557,8 +572,7 @@ EFI_STATUS CopyDrivers (
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
                 }
 
-                break;
-
+            break;
             case FS_TYPE_EXT3:
                 if (DriverCopied[FS_TYPE_EXT3] == FALSE) {
                     DriverName = L"ext2";
@@ -566,24 +580,21 @@ EFI_STATUS CopyDrivers (
                     DriverCopied[FS_TYPE_EXT3] = TRUE;
                 }
 
-                break;
-
+            break;
             case FS_TYPE_EXT4:
                 if (DriverCopied[FS_TYPE_EXT4] == FALSE) {
                     DriverName = L"ext4";
                     DriverCopied[FS_TYPE_EXT4] = TRUE;
                 }
 
-                break;
-
+            break;
             case FS_TYPE_REISERFS:
                 if (DriverCopied[FS_TYPE_REISERFS] == FALSE) {
                     DriverName = L"reiserfs";
                     DriverCopied[FS_TYPE_REISERFS] = TRUE;
                 }
 
-                break;
-
+            break;
             case FS_TYPE_HFSPLUS:
                 if ((DriverCopied[FS_TYPE_HFSPLUS] == FALSE) &&
                     (!AppleFirmware)
@@ -592,7 +603,7 @@ EFI_STATUS CopyDrivers (
                     DriverCopied[FS_TYPE_HFSPLUS] = TRUE;
                 }
 
-                break;
+            break;
         } // switch
 
         if (DriverName) {
@@ -615,7 +626,6 @@ EFI_STATUS CopyDrivers (
                 SourceDirPtr, SourceFileName,
                 DestDirPtr, DestFileName
             );
-
             if (EFI_ERROR(Status)) {
                 WorstStatus = Status;
             }

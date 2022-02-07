@@ -662,7 +662,9 @@ reiter:
         {
             unsigned i;
             struct btrfs_leaf_node leaf, leaf_last;
-            int have_last = 0;
+            int have_last    = 0;
+            leaf_last.size   = 0;
+            leaf_last.offset = 0;
             for (i = 0; i < fsw_u32_le_swap (head.nitems); i++)
             {
                 err = fsw_btrfs_read_logical (vol, addr + i * sizeof (leaf),
@@ -953,7 +955,7 @@ chunk_found:
 #define UINTREM UINT32
 #endif
             UINTREM stripen;
-            UINTREM stripeq;
+            UINTREM stripeq = 0;
             UINTREM stripe_offset;
             uint64_t off = addr - fsw_u64_le_swap (key->offset);
             unsigned redundancy = 1;
@@ -1043,7 +1045,7 @@ chunk_found:
                     {
                         uint64_t stripe_length = fsw_u64_le_swap (chunk->stripe_length);
                         uint64_t middle, high;
-			uint16_t nparities = (fsw_u64_le_swap(chunk->type) & GRUB_BTRFS_CHUNK_TYPE_RAID6) ? 2 : 1;
+                        uint16_t nparities = (fsw_u64_le_swap(chunk->type) & GRUB_BTRFS_CHUNK_TYPE_RAID6) ? 2 : 1;
                         UINTREM low;
 
                         if(stripe_length > 1UL<<30 || nstripes > 255) {
@@ -1155,7 +1157,7 @@ begin_direct_read:
 		    dev = find_device (vol, stripe[stripen].device_id);
 
 		uint32_t posN = stripen;
-		BOOLEAN is_raid5 = stripeq == RAID5_TAG;
+		BOOLEAN is_raid5 = (stripeq == RAID5_TAG);
 		uint32_t dstripes = nstripes - (is_raid5 ? 1 : 2);
 
 		uint64_t n = 0;

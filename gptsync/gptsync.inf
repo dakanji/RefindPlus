@@ -130,7 +130,7 @@
 [Pcd]
 
 [BuildOptions.common]
-    DEFINE RFT_BLD_ALL = -D__MAKEWITH_TIANO -DMDEPKG_NDEBUG
+    DEFINE RFT_BLD_ALL = -D__MAKEWITH_TIANO
 
 [BuildOptions.IA32]
     XCODE:*_*_*_CC_FLAGS = -Os -DEFI32 $(RFT_BLD_ALL)

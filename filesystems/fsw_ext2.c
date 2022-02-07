@@ -387,6 +387,8 @@ static fsw_status_t fsw_ext2_dir_lookup(struct fsw_ext2_volume *vol, struct fsw_
     // Preconditions: The caller has checked that dno is a directory node.
 
     entry_name.type = FSW_STRING_TYPE_ISO88591;
+    entry.name_len  = 0;
+    entry.inode     = 0;
 
     // setup handle to read the directory
     status = fsw_shandle_open(dno, &shand);
@@ -441,6 +443,8 @@ static fsw_status_t fsw_ext2_dir_read(struct fsw_ext2_volume *vol, struct fsw_ex
     // Preconditions: The caller has checked that dno is a directory node. The caller
     //  has opened a storage handle to the directory's storage and keeps it around between
     //  calls.
+    entry.name_len  = 0;
+    entry.inode     = 0;
 
     while (1) {
         // read next entry

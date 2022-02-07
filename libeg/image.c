@@ -504,14 +504,23 @@ EG_IMAGE * egLoadIcon (
     IN UINTN     IconSize
 ) {
     EFI_STATUS      Status;
-    UINTN           FileDataLength;
+    UINTN           FileDataLength = 0;
     UINT8          *FileData;
     EG_IMAGE       *NewImage;
     EG_IMAGE       *Image;
 
     if ((BaseDir == NULL) || (Path == NULL)) {
-        // set error status if unable to get to image
+        #if REFIT_DEBUG > 0
+        // Set error status if unable to get to image
         Status = EFI_INVALID_PARAMETER;
+        ALT_LOG(1, LOG_LINE_NORMAL,
+            L"In egLoadIcon ... '%r' When Trying to Load Icon!!",
+            Status
+        );
+        #endif
+
+        // Return null if error
+        return NULL;
     }
     else if (!AllowGraphicsMode) {
         #if REFIT_DEBUG > 0
@@ -525,11 +534,9 @@ EG_IMAGE * egLoadIcon (
 
         return NULL;
     }
-    else {
-        // try to load file if able to get to image
-        Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
-    }
 
+    // Try to load file if able to get to image
+    Status = egLoadFile (BaseDir, Path, &FileData, &FileDataLength);
     if (EFI_ERROR(Status)) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -538,15 +545,15 @@ EG_IMAGE * egLoadIcon (
         );
         #endif
 
-        // return null if error
+        // Return null if error
         return NULL;
     }
 
-    // decode it
+    // Decode it
     Image = egDecodeAny (FileData, FileDataLength, IconSize, TRUE);
     MY_FREE_POOL(FileData);
 
-    // return null if unable to decode
+    // Return null if unable to decode
     if (Image == NULL) {
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL,
@@ -575,7 +582,7 @@ EG_IMAGE * egLoadIcon (
         }
         NewImage = egScaleImage (Image, w, h);
 
-        // use scaled image if available
+        // Use scaled image if available
         if (NewImage) {
             MY_FREE_IMAGE(Image);
             Image = NewImage;
@@ -749,7 +756,9 @@ EG_IMAGE * egPrepareEmbeddedImage (
     }
 
     BREAD_CRUMB(L"In %s ... 5", FuncTag);
+    #if REFIT_DEBUG > 1
     UINT8 *CompStart  = 0;
+    #endif
     UINT8 *CompData   = (UINT8 *) EmbeddedImage->Data;   // drop const
     UINTN  CompLen    = EmbeddedImage->DataLength;
     UINTN  PixelCount = EmbeddedImage->Width * EmbeddedImage->Height;
@@ -767,7 +776,6 @@ EG_IMAGE * egPrepareEmbeddedImage (
             BREAD_CRUMB(L"In %s ... 7a 1a 1 - Grey Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
-            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
         }
         else {
@@ -787,19 +795,22 @@ EG_IMAGE * egPrepareEmbeddedImage (
         // copy color planes
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             BREAD_CRUMB(L"In %s ... 7b 1a 1", FuncTag);
+            #if REFIT_DEBUG > 1
             CompStart = CompData;
+            #endif
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, r), PixelCount);
 
             BREAD_CRUMB(L"In %s ... 7b 1a 2 - Red Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
+            #if REFIT_DEBUG > 1
             CompStart = CompData;
+            #endif
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, g), PixelCount);
 
             BREAD_CRUMB(L"In %s ... 7b 1a 3 - Green Plane Size:- '%d'", FuncTag,
                 CompData - CompStart
             );
-            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, b), PixelCount);
         }
         else {
@@ -866,7 +877,6 @@ EG_IMAGE * egPrepareEmbeddedImage (
         // Add Alpha Mask if Available and Required
         if (EmbeddedImage->CompressMode == EG_EICOMPMODE_RLE) {
             BREAD_CRUMB(L"In %s ... 8a 1a 1", FuncTag);
-            CompStart = CompData;
             egDecompressIcnsRLE (&CompData, &CompLen, PLPTR(NewImage, a), PixelCount);
         }
         else {

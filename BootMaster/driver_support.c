@@ -639,12 +639,8 @@ UINTN ScanDriverDir (
     LOG_MSG("Scan '%s' Folder:", Path);
     #endif
 
-    // look through contents of the directory
+    // Look through contents of the directory
     DirIterOpen (SelfRootDir, Path, &DirIter);
-
-    #if REFIT_DEBUG > 0
-    BOOLEAN RunOnce = FALSE;
-    #endif
 
     while (DirIterNext (&DirIter, 2, LOADER_MATCH_PATTERNS, &DirEntry)) {
         if (DirEntry->FileName[0] == '.') {
@@ -669,8 +665,6 @@ UINTN ScanDriverDir (
             "%s  - %r ... UEFI Driver:- '%s'",
             OffsetNext, Status, FileName
         );
-
-        RunOnce = TRUE;
         #endif
 
         MY_FREE_POOL(FileName);

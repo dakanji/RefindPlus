@@ -475,7 +475,7 @@ VOID ActiveCSR (VOID) {
 
 static
 VOID SetBootArgs (VOID) {
-    EFI_STATUS   Status     = EFI_NOT_STARTED;
+    EFI_STATUS   Status;
     EFI_GUID     AppleGUID  = APPLE_GUID;
     CHAR16      *NameNVRAM  = L"boot-args";
     CHAR16      *BootArg    = NULL;
@@ -1356,8 +1356,8 @@ VOID AdjustDefaultSelection (VOID) {
     CHAR16     *Element           = NULL;
     CHAR16     *NewCommaDelimited = NULL;
     CHAR16     *PreviousBoot      = NULL;
-    BOOLEAN     FormatLog         = FALSE;
-    BOOLEAN     Ignore            = FALSE;
+    BOOLEAN     FormatLog;
+    BOOLEAN     Ignore;
 
     #if REFIT_DEBUG > 0
     CHAR16     *MsgStr            = NULL;
@@ -2484,8 +2484,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                break;
-
+            break;
             case TAG_INFO_NVRAMCLEAN:    // Clean NVRAM
                 TypeStr = L"Clean/Reset NVRAM";
 
@@ -2564,8 +2563,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                // No Break ... Continue into TAG_REBOOT
-
+            // No Break
             case TAG_REBOOT:    // Reboot
                 TypeStr = L"Running System Reset";
 
@@ -2608,8 +2606,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                break;
-
+            break;
             case TAG_SHUTDOWN: // Shut Down
                 TypeStr = L"Running System Shutdown";
 
@@ -2652,8 +2649,7 @@ EFI_STATUS EFIAPI efi_main (
                 MY_FREE_POOL(MsgStr);
                 #endif
 
-                break;
-
+            break;
             case TAG_ABOUT:    // About RefindPlus
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
@@ -2670,8 +2666,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                break;
-
+            break;
             case TAG_LOADER:   // Boot OS via *.efi File
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
@@ -2887,8 +2882,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 // No end dash line ... Added in 'IsValidLoader'
                 StartLoader (ourLoaderEntry, SelectionName);
-                break;
 
+            break;
             case TAG_LEGACY:   // Boot legacy OS
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
@@ -2922,8 +2917,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
-                break;
 
+            break;
             case TAG_LEGACY_UEFI: // Boot a legacy OS on a non-Mac
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
@@ -2941,8 +2936,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
-                break;
 
+            break;
             case TAG_TOOL:     // Start a UEFI tool
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
@@ -2961,8 +2956,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 // No end dash line ... Expected to return
                 StartTool (ourLoaderEntry);
-                break;
 
+            break;
             case TAG_FIRMWARE_LOADER:  // Reboot to a loader defined in the EFI UseNVRAM
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
@@ -2973,8 +2968,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 RebootIntoLoader (ourLoaderEntry);
-                break;
 
+            break;
             case TAG_HIDDEN:  // Manage hidden tag entries
 
                 #if REFIT_DEBUG > 0
@@ -2992,8 +2987,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                break;
-
+            break;
             case TAG_EXIT:    // Exit RefindPlus
 
                 #if REFIT_DEBUG > 0
@@ -3010,8 +3004,8 @@ EFI_STATUS EFIAPI efi_main (
                    BeginTextScreen (L" ");
                    return EFI_SUCCESS;
                 }
-                break;
 
+            break;
             case TAG_FIRMWARE: // Reboot into firmware's user interface
 
                 #if REFIT_DEBUG > 0
@@ -3021,8 +3015,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 RebootIntoFirmware();
-                break;
 
+            break;
             case TAG_CSR_ROTATE:
 
                 #if REFIT_DEBUG > 0
@@ -3033,8 +3027,8 @@ EFI_STATUS EFIAPI efi_main (
 
                 // No end dash line ... Expected to return
                 RotateCsrValue();
-                break;
 
+            break;
             case TAG_INSTALL:
 
                 #if REFIT_DEBUG > 0
@@ -3044,8 +3038,8 @@ EFI_STATUS EFIAPI efi_main (
                 #endif
 
                 InstallRefindPlus();
-                break;
 
+            break;
             case TAG_BOOTORDER:
 
                 #if REFIT_DEBUG > 0
@@ -3063,7 +3057,7 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("\n\n");
                 #endif
 
-                break;
+            break;
         } // switch
 
         // Disable SilentBoot if still active after first loop
