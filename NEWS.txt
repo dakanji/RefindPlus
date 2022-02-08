@@ -1,4 +1,4 @@
-0.13.2.AN (Pre-Release):
+0.13.2.AN (08 Feb 2022):
 -----------------------
 - Multiple Misc Stability Fixes
   * Major refactoring and restructuring for improved stability
