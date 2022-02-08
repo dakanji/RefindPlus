@@ -974,9 +974,9 @@ UINTN RunGenericMenu (
                 case SCAN_RIGHT:     UpdateScroll (&State, SCROLL_LINE_RIGHT); break;
                 case SCAN_INSERT:
                 case SCAN_F2:        MenuExit = MENU_EXIT_DETAILS;             break;
+                case SCAN_F10:       MenuExit = MENU_EXIT_SCREENSHOT;          break;
                 case SCAN_ESC:       MenuExit = MENU_EXIT_ESCAPE;              break;
                 case SCAN_DELETE:    MenuExit = MENU_EXIT_HIDE;                break;
-                case SCAN_F10:       egScreenShot();                           break;
                 case 0x0016: // F12
                     if (EjectMedia()) {
                         MenuExit = MENU_EXIT_ESCAPE;

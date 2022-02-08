@@ -72,6 +72,7 @@
 #define MENU_EXIT_TIMEOUT    (4)
 #define MENU_EXIT_EJECT      (5)
 #define MENU_EXIT_HIDE       (6)
+#define MENU_EXIT_SCREENSHOT (7)
 
 #define TAG_RETURN          (99)
 

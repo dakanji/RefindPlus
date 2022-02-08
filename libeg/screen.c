@@ -2158,43 +2158,41 @@ VOID egScreenShot (VOID) {
     EG_IMAGE     *Image;
     UINT8        *FileData;
     UINT8         Temp;
-    UINTN         i = 0;
+    UINTN         i;
     UINTN         FileDataSize;         ///< Size in bytes
     UINTN         FilePixelSize;        ///< Size in pixels
-    CHAR16       *FileName       = NULL;
-    CHAR16       *MsgStr         = NULL;
+    CHAR16       *FileName    = NULL;
+    CHAR16       *MsgStr      = NULL;
+    EG_PIXEL      BGColorWarn = COLOR_RED;
+    EG_PIXEL      BGColorGood = COLOR_LIGHTBLUE;
+
 
     #if REFIT_DEBUG > 0
     LOG_MSG("User Input Received:");
-    LOG_MSG("\n");
-    LOG_MSG("  - Take Screenshot");
-    LOG_MSG("\n");
+    LOG_MSG("%s  - Take Screenshot", OffsetNext);
     #endif
 
     Image = egCopyScreen();
     if (Image == NULL) {
-        SwitchToText (FALSE);
+        MsgStr = StrDuplicate (L"Unable to Take Screenshot ... Image is NULL");
 
-        MsgStr = StrDuplicate (L"WARN: Unable to take screen shot (Image is NULL)");
-
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (MsgStr, NEXTLINE);
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = TRUE;
+        egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
+        PauseSeconds (4);
+        MuteLogger = FALSE;
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
-        LOG_MSG("    * %s", MsgStr);
+        LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
 
-        PauseForKey();
-        SwitchToGraphics();
         MY_FREE_POOL(MsgStr);
 
-       goto bailout_wait;
+        goto bailout_wait;
     }
 
-    // fix pixels
+    // Fix pixels
     FilePixelSize = Image->Width * Image->Height;
     for (i = 0; i < FilePixelSize; ++i) {
         Temp                   = Image->PixelData[i].b;
@@ -2203,7 +2201,7 @@ VOID egScreenShot (VOID) {
         Image->PixelData[i].a  = 0xFF;
     }
 
-    // encode as PNG
+    // Encode as PNG
     Status = EncodeAsPNG (
         (VOID *)  Image->PixelData,
         (UINT32)  Image->Width,
@@ -2214,22 +2212,19 @@ VOID egScreenShot (VOID) {
 
     MY_FREE_IMAGE(Image);
     if (EFI_ERROR(Status)) {
-        SwitchToText (FALSE);
+        MsgStr = StrDuplicate (L"Could Not Encode PNG");
 
-        MsgStr = StrDuplicate (L"WARN: Could Not Encode PNG");
-
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-        PrintUglyText (MsgStr, NEXTLINE);
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = TRUE;
+        egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
+        PauseSeconds (4);
+        MuteLogger = FALSE;
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
-        LOG_MSG("    * %s", MsgStr);
+        LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
 
-        PauseSeconds (3);
-        SwitchToGraphics();
         MY_FREE_POOL(MsgStr);
         MY_FREE_POOL(FileData);
 
@@ -2242,83 +2237,107 @@ VOID egScreenShot (VOID) {
     ) {
         Status = egFindESP (&BaseDir);
         if (EFI_ERROR(Status)) {
-            SwitchToText (FALSE);
+            MsgStr = StrDuplicate (L"Could Not Save Screenshot");
 
-            MsgStr = StrDuplicate (L"    * WARN: Could Not Save Screenshot");
-
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-            PrintUglyText (MsgStr, NEXTLINE);
-            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            MuteLogger = TRUE;
+            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
+            PauseSeconds (4);
+            MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s", MsgStr);
+            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             #endif
 
-            PauseSeconds (3);
-            SwitchToGraphics();
             MY_FREE_POOL(MsgStr);
             MY_FREE_POOL(FileData);
 
             return;
         }
     }
+
+    SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
+    if (SelfRootDir != NULL) {
+        BaseDir = SelfRootDir;
+    }
     else {
-        SelfRootDir = LibOpenRoot (SelfLoadedImage->DeviceHandle);
-        if (SelfRootDir != NULL) {
-            BaseDir = SelfRootDir;
-        }
-        else {
-            // Try to save to first available ESP
-            Status = egFindESP (&BaseDir);
-            if (EFI_ERROR(Status)) {
-                SwitchToText (FALSE);
+        // Try to save to first available ESP
+        Status = egFindESP (&BaseDir);
+        if (EFI_ERROR(Status)) {
+            MsgStr = StrDuplicate (L"Could Not Find ESP for Screenshot");
 
-                MsgStr = StrDuplicate (L"    * WARN: Could Not Find ESP for Screenshot");
+            MuteLogger = TRUE;
+            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
+            PauseSeconds (4);
+            MuteLogger = FALSE;
 
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
-                PrintUglyText (MsgStr, NEXTLINE);
-                REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            #endif
 
-                #if REFIT_DEBUG > 0
-                LOG_MSG("%s", MsgStr);
-                LOG_MSG("\n\n");
-                #endif
+            MY_FREE_POOL(MsgStr);
+            MY_FREE_POOL(FileData);
 
-                PauseSeconds (3);
-                SwitchToGraphics();
-                MY_FREE_POOL(MsgStr);
-                MY_FREE_POOL(FileData);
-
-                return;
-            }
+            return;
         }
     }
 
-    // Search for existing screen shot files; increment number to an unused value...
+    // Search for existing screen shot files ... Increment index to an unused value
     i = 0;
     do {
         MY_FREE_POOL(FileName);
         FileName = PoolPrint (L"ScreenShot_%03d.png", i++);
+
+        // Exit if is ndex is greater than 999
+        if (i > 999) {
+            MsgStr = StrDuplicate (L"Excessive Number of Saved Screenshot Files Found");
+
+            MuteLogger = TRUE;
+            egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
+            PauseSeconds (4);
+            MuteLogger = FALSE;
+
+            #if REFIT_DEBUG > 0
+            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("\n\n");
+            #endif
+
+            MY_FREE_POOL(MsgStr);
+            MY_FREE_POOL(FileData);
+
+            return;
+        }
     } while (FileExists (BaseDir, FileName));
 
-    // save to file on the ESP
+    // Save to file on the ESP
     Status = egSaveFile (BaseDir, FileName, (UINT8 *) FileData, FileDataSize);
-
-    MY_FREE_POOL(FileData);
-
     if (CheckError (Status, L"in egSaveFile")) {
+        MY_FREE_POOL(FileName);
+        MY_FREE_POOL(FileData);
+
         goto bailout_wait;
     }
 
+    MsgStr = StrDuplicate (L"Screenshot Saved");
+
     #if REFIT_DEBUG > 0
-    LOG_MSG("    * Screenshot Taken:- '%s'", FileName);
+    LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);
     LOG_MSG("\n\n");
     #endif
 
+    MuteLogger = TRUE;
+    egDisplayMessage (MsgStr, &BGColorGood, CENTER);
+    PauseSeconds (2);
+    MuteLogger = FALSE;
+
+    MY_FREE_POOL(MsgStr);
+    MY_FREE_POOL(FileName);
+    MY_FREE_POOL(FileData);
+
     return;
 
-    // DEBUG: switch to text mode
+    // DEBUG: Switch to Text Mode
 bailout_wait:
     i = 0;
     egSetGraphicsModeEnabled (FALSE);

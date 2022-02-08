@@ -2,6 +2,7 @@
 -----------------------
 - Multiple Misc Stability Fixes
   * Major refactoring and restructuring for improved stability
+  * Also applied to filesystem drivers
 - Adds `SupplyUEFI` Feature
   * Adds an implementation of the `CreateEventEx` feature to EFI 1.x units
   * Additionally, the EFI Revision is modified to present as UEFI 2.3
@@ -17,6 +18,10 @@
     - This created an unwanted screen flash and also removed the BGRT logo
   * The default selection is now run without showing the screen at all instead (Based on an upstream update)
   * The mode is now truly silent as there is no video output unless overriden (BGRT logos are maintained)
+    - Override is initiated by holding down the `ESC` key immediately after starting RefindPlus
+    - Shortcut keys can also be pressed
+      * In such cases, the loader associated with the key will be run instead of the default
+      * There will be no video output by RefindPlus similar to the default case
   * Additionally, the process can be overriden by pressing the `ESC` key to display the RefindPlus screen instead
 - Fixes Forced `TextRenderer`
   * The `TextRenderer` feature is forced on in certain circumstances to enable text mode support
@@ -48,6 +53,10 @@
 - Improves `SyncAPFS` Implementation
   * The presence of a valid Volume UUID is now taken into account
   * SyncAPFS is disabled if the Volume UUID is a NULL GUID
+- Improves Screenshot Feature
+  * Feedback on success/failure is given via on-screen messages
+  * Each press of the `F10` key now results in only one image being saved
+    - This is subject to the key press not continuing beyond the on-screen message display
 - Improves Memory Management
   * Multiple memory management improvements
 - Improves Build Process
@@ -56,7 +65,7 @@
       * Reduce file size
       * Ensure consistent files on different builds
         - EDK2 otherwise only guarantees functional consistency
-        - This enforces structural consistency.
+        - This now enforces additional structural consistency
         - Builds with different file paths will now be the same
   * Calls to `ASSERT`, and similar, are activated on DEBUG Builds
     - Failed `ASSERT` calls put RefindPlus into a Deadloop
@@ -69,9 +78,9 @@
     - The requirements are now managed transparently by the build process itself
   * The various `*.inf` files for filesystem drivers etc, have been standardised
     - These now follow a clearer standard format
-- Renames the `ignore_previous_boot` config option to `transient_boot`
+- Renames the `ignore_previous_boot` config option as `transient_boot`
   * This more accurately describes the feature.
-    - The current boot selection is not saved, it is transient, but any previously saved boot is used
+    - The current boot selection is not saved, it becomes transient, but any previously saved boot is used
 
 
 0.13.2.AM (13 Dec 2021):

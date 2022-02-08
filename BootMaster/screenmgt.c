@@ -513,17 +513,17 @@ VOID SwitchToText (
 
 EFI_STATUS SwitchToGraphics (VOID) {
     if (AllowGraphicsMode) {
-        if (!egIsGraphicsModeEnabled()) {
-            egSetGraphicsModeEnabled (TRUE);
-            GraphicsScreenDirty = TRUE;
+        return EFI_NOT_STARTED;
+    }
 
-            return EFI_SUCCESS;
-        }
-
+    if (egIsGraphicsModeEnabled()) {
         return EFI_ALREADY_STARTED;
     }
 
-    return EFI_NOT_FOUND;
+    egSetGraphicsModeEnabled (TRUE);
+    GraphicsScreenDirty = TRUE;
+
+    return EFI_SUCCESS;
 } // EFI_STATUS SwitchToGraphics()
 
 //
@@ -977,14 +977,10 @@ BOOLEAN CheckError (
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
     // Defeat need to "Press a Key to Continue" in debug mode
-    if (MyStrStr (where, L"While Reading Boot Sector") ||
+    haveError = (
+        MyStrStr (where, L"While Reading Boot Sector") ||
         MyStrStr (where, L"in ReadHiddenTags")
-    ) {
-        haveError = FALSE;
-    }
-    else {
-        haveError = TRUE;
-    }
+    ) ? FALSE : TRUE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_STAR_SEPARATOR, Temp);
@@ -1002,33 +998,19 @@ BOOLEAN CheckError (
 VOID SwitchToGraphicsAndClear (
     IN BOOLEAN ShowBanner
 ) {
-    EFI_STATUS Status;
-
-    #if REFIT_DEBUG > 0
-    // DA-TAG: Get status before switch
-    BOOLEAN HadGraphics = egIsGraphicsModeEnabled();
-    #endif
-
-    Status = SwitchToGraphics();
+    SwitchToGraphics();
     if (GraphicsScreenDirty) {
         BltClearScreen (ShowBanner);
     }
-
-    #if REFIT_DEBUG > 0
-    if (!HadGraphics) {
-        LOG_MSG("INFO: Restore Graphics Mode ... %r", Status);
-        LOG_MSG("\n\n");
-    }
-    #endif
 } // VOID SwitchToGraphicsAndClear()
 
 
+#if 0
 // DA-TAG: Permit Image->PixelData Memory Leak on Qemu
 //         Apparent Memory Conflict ... Needs Investigation.
 //         See: sf.net/p/refind/discussion/general/thread/4dfcdfdd16/
 //         Temporary ... Eliminate when no longer required
 // UPDATE: Disabled for v0.13.2.AK ... Watch for issue reports
-#if 0
 static
 VOID egFreeImageQEMU (
     EG_IMAGE *Image

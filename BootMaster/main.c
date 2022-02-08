@@ -1505,7 +1505,7 @@ VOID LogBasicInfo (VOID) {
             #if REFIT_DEBUG > 0
             LOG_MSG("** WARN: Inconsistent EFI Versions Detected");
             LOG_MSG("%s         Program Behaviour is *NOT* Defined",   OffsetNext);
-            LOG_MSG("%s         Priority: Stability Over Features",    OffsetNext);
+            LOG_MSG("%s         Priority = Stability Over Features",   OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ProvideConsoleGOP'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'ReMapOpenProtocol'",     OffsetNext);
             LOG_MSG("%s         * Disabled:- 'UgaPassThrough'",        OffsetNext);
@@ -2397,6 +2397,12 @@ EFI_STATUS EFIAPI efi_main (
             ChosenEntry->Tag = TAG_SHUTDOWN;
         }
 
+        if (MenuExit == MENU_EXIT_SCREENSHOT) {
+            egScreenShot();
+
+            continue;
+        }
+
         // Reset NVRAM Protection
         SetProtectNvram (SystemTable, FALSE);
 
@@ -2433,8 +2439,7 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry->me.Tag          = TAG_LOAD_BOOTKICKER;
                             ourLoaderEntry->Volume          = CopyVolume (Volumes[i]);
                             ourLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
-                            ourLoaderEntry->UseGraphicsMode = (AllowGraphicsMode && !GlobalConfig.TextOnly)
-                                ? TRUE : FALSE;
+                            ourLoaderEntry->UseGraphicsMode = (AllowGraphicsMode) ? TRUE : FALSE;
 
                             FoundTool = TRUE;
 
@@ -2453,7 +2458,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = PoolPrint (L"Could Not Find Tool:- '%s'", TypeStr);
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("\n\n");
-                    LOG_MSG("** WARN ** %s ... Return to Main Menu", MsgStr);
+                    LOG_MSG("** WARN **    %s ... Return to Main Menu", MsgStr);
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -2517,8 +2522,7 @@ EFI_STATUS EFIAPI efi_main (
                             ourLoaderEntry->me.Tag          = TAG_LOAD_NVRAMCLEAN;
                             ourLoaderEntry->Volume          = CopyVolume (Volumes[i]);
                             ourLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
-                            ourLoaderEntry->UseGraphicsMode = (AllowGraphicsMode && !GlobalConfig.TextOnly)
-                                ? TRUE : FALSE;
+                            ourLoaderEntry->UseGraphicsMode = (AllowGraphicsMode) ? TRUE : FALSE;
 
                             FoundTool = TRUE;
 
@@ -2537,7 +2541,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = PoolPrint (L"Could Not Find Tool:- '%s'", TypeStr);
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("\n\n");
-                    LOG_MSG("** WARN ** %s ... Return to Main Menu", MsgStr);
+                    LOG_MSG("** WARN **    %s ... Return to Main Menu", MsgStr);
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
