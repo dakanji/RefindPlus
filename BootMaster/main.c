@@ -2744,7 +2744,9 @@ EFI_STATUS EFIAPI efi_main (
                     // Filter out the 'APPLE_INTERNAL' CSR bit if required
                     FilterCSR();
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"MacOS")
+                    || ourLoaderEntry->OSType == 'M'
+                ) {
                     // Set CSR if required
                     ActiveCSR();
 
@@ -2818,7 +2820,9 @@ EFI_STATUS EFIAPI efi_main (
                     // Re-Map OpenProtocol
                     ReMapOpenProtocol();
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Windows")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Windows")
+                    || ourLoaderEntry->OSType == 'W'
+                ) {
                     // Protect Mac NVRAM from UEFI Windows
                     SetProtectNvram (SystemTable, TRUE);
 
@@ -2835,21 +2839,9 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
-                else if (FoundSubStr (ourLoaderEntry->Title, L"Linux")) {
-                    #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
-                    MsgStr = StrDuplicate (L"Load Linux Instance");
-                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                    (ourLoaderEntry->Volume->VolName)
-                        ? LOG_MSG(" from '%s'", ourLoaderEntry->Volume->VolName)
-                        : LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
-
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-                }
-                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"grub")) {
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Grub")
+                    || ourLoaderEntry->OSType == 'G'
+                ) {
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
@@ -2905,6 +2897,22 @@ EFI_STATUS EFIAPI efi_main (
                         OffsetNext, MsgStr,
                         ourLoaderEntry->LoaderPath
                     );
+
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (FoundSubStr (ourLoaderEntry->Title, L"Linux")
+                    || ourLoaderEntry->OSType == 'L'
+                ) {
+                    #if REFIT_DEBUG > 0
+                    // DA-TAG: Using separate instances of 'User Input Received:'
+                    LOG_MSG("User Input Received:");
+                    MsgStr = StrDuplicate (L"Load Linux Instance");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
+                    (ourLoaderEntry->Volume->VolName)
+                        ? LOG_MSG(" from '%s'", ourLoaderEntry->Volume->VolName)
+                        : LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
 
                     MY_FREE_POOL(MsgStr);
                     #endif
