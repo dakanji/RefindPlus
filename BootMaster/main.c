@@ -2864,6 +2864,51 @@ EFI_STATUS EFIAPI efi_main (
                     MY_FREE_POOL(MsgStr);
                     #endif
                 }
+                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"vmlinuz")) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Load Linux Instance via VMLinuz Loader");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    // DA-TAG: Using separate instances of 'User Input Received:'
+                    LOG_MSG("User Input Received:");
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"bzImage")) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Load Linux Instance via BZImage Loader");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    // DA-TAG: Using separate instances of 'User Input Received:'
+                    LOG_MSG("User Input Received:");
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
+                else if (FoundSubStr (ourLoaderEntry->LoaderPath, L"kernel")) {
+                    #if REFIT_DEBUG > 0
+                    MsgStr = StrDuplicate (L"Load Linux Instance via Kernel Loader");
+                    ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
+                    // DA-TAG: Using separate instances of 'User Input Received:'
+                    LOG_MSG("User Input Received:");
+                    LOG_MSG(
+                        "%s  - %s:- '%s'",
+                        OffsetNext, MsgStr,
+                        ourLoaderEntry->LoaderPath
+                    );
+
+                    MY_FREE_POOL(MsgStr);
+                    #endif
+                }
                 else {
                     // Some UEFI Windows installers/updaters may not be in the standard path
                     // Activate ProtectNVRAM on any unidentified loaders

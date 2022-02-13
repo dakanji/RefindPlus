@@ -1,6 +1,9 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
-- PENDING
+- Improves Identification of Linux Instances
+  * `vmlinuz`, `bzImage`, and `kernel` loaders are now accounted for as Linux loaders
+  * Hence the `ProtectNVRAM` feature is not applied to such loaders
+  * The `grub` loader was already accounted for
 
 
 0.13.2.AN (08 Feb 2022):
