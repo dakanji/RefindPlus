@@ -1,0 +1,32 @@
+
+name: 'Label Actions'
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [labeled, unlabeled]
+  pull_request:
+    types: [labeled, unlabeled]
+  discussion:
+    types: [labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  discussions: write
+
+jobs:
+
+  # Auto Labels - https://github.com/dessant/label-actions
+  auto_labels:
+    name: Handle Labels
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji' && github.actor == 'dakanji'
+    steps:
+      - uses: dessant/label-actions@v2
+        with:
+          github-token: ${{ github.token }}
+          config-path: '.github/label-config.yml'
+          process-only: ''

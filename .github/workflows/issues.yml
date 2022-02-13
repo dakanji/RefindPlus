@@ -55,7 +55,7 @@ jobs:
           stale-issue-message: >
             This item has been flagged for closure due to missing required information.
           close-issue-message: >
-            This item has been closed due to missing required information.
+            This item is being closed due to missing required information.
           days-before-stale: 0
           days-before-close: 4
           exempt-assignees: 'dakanji'
@@ -69,7 +69,7 @@ jobs:
           stale-issue-message: >
             This item has been flagged for closure due to a lack of response.
           close-issue-message: >
-            This item has been closed due to a lack of response.
+            This item is being closed due to a lack of response.
           days-before-stale: 4
           days-before-close: 4
           exempt-assignees: 'dakanji'
@@ -83,7 +83,7 @@ jobs:
           stale-issue-message: >
             This item has been flagged for closure due to inactivity.
           close-issue-message: >
-            This item has been closed due to inactivity.
+            This item is being closed due to inactivity.
           days-before-stale: 20
           days-before-close: 8
           exempt-assignees: 'dakanji'
@@ -97,7 +97,7 @@ jobs:
           stale-issue-message: >
             This item has been flagged for closure due to inactivity.
           close-issue-message: >
-            This item has been closed due to inactivity.
+            This item is being closed due to inactivity.
           days-before-stale: 60
           days-before-close: 28
           exempt-assignees: 'dakanji'
@@ -111,7 +111,7 @@ jobs:
           stale-issue-message: >
             This item has been flagged for closure due to inactivity.
           close-issue-message: >
-            This item has been closed due to inactivity.
+            This item is being closed due to inactivity.
           days-before-stale: 120
           days-before-close: 60
           exempt-assignees: 'dakanji'
@@ -123,7 +123,7 @@ jobs:
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
-            This item has been closed as a known issue.
+            This item is being closed as a known issue.
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
@@ -135,7 +135,7 @@ jobs:
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
-            This item has been closed as the issue could not be replicated.
+            This item is being closed as the issue could not be replicated.
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
@@ -147,7 +147,7 @@ jobs:
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
-            This item has been closed as a fix will not be attempted.
+            This item is being closed as a fix will not be attempted.
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
@@ -159,7 +159,7 @@ jobs:
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
-            This item has been closed as abandoned.
+            This item is being closed as abandoned.
           days-before-stale: 180
           days-before-close: 180
           stale-issue-label: 'Flagged'

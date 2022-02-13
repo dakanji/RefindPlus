@@ -1,0 +1,233 @@
+
+# Configuration for Label Actions - https://github.com/dessant/label-actions
+
+# The `Bug` label is added to issues
+Bug:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Cancelled` label is added to issues
+Cancelled:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Declined` label is added to pull requests
+Declined:
+  prs:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Discussion` label is added to issues
+Discussion:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Documentation` label is added to issues or pull requests
+Documentation:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+  prs:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Duplicate` label is added to issues
+Duplicate:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Enhancement` label is added to issues
+Enhancement:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Flagged` label is added to issues
+Flagged:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Good-First-Issue` label is added to issues
+Good-First-Issue:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Help-Wanted` label is added to issues
+Help-Wanted:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Incomplete` label is added to issues
+Incomplete:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Invalid` label is added to issues
+Invalid:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Known-Issue` label is added to issues
+Known-Issue:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Parked` label is added to issues
+Parked:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Queries` label is added to issues
+Queries:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Unclear'
+
+# The `Resolved` label is added to discussions
+Resolved:
+  discussions:
+    # Lock the discussion
+    lock: true
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Stale` label is added to issues
+Stale:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Queries'
+      - 'Unclear'
+
+# The `Unclear` label is added to issues
+Unclear:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+
+# The `wontfix` label is added to issues
+wontfix:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
+
+# The `wontfix` label is removed from issues
+-wontfix:
+  issues:
+    # Reopen the issue
+    reopen: true
+
+# The `Works-For-Me` label is added to issues
+Works-For-Me:
+  issues:
+    # Remove labels
+    unlabel:
+      - 'Parked'
+      - 'Pending'
+      - 'Stale'
+      - 'Queries'
+      - 'Unclear'
