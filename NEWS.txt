@@ -12,6 +12,11 @@
   * APFS `Update` and `VM` volumes are similarly added
 - Amends Scan for `.VolumeIcons` and `VolumeBadges`
   * Volumes in the `DontScanVolume` list are now skipped
+- Amends System Table Reallocations
+  * No longer copies memory
+  * Some Mac models fail to boot with this following recent firmware updates
+- Amends 'HandleProtocol' Stashing
+  * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
 
 
 0.13.2.AN (08 Feb 2022):

@@ -940,7 +940,7 @@
 
 # Tell a Mac's EFI that MacOS is about to be launched, even when it is not.
 # This option causes some Macs to initialise their hardware in a different
-# way to how it is normally initialise when a third-party OS is launched.
+# way to how it is normally initialised when a third-party OS is launched.
 # In some cases, particularly on Macs running multiple video cards, this
 # option can cause hardware to work when they would not otherwise work.
 # On the other hand however, the use of this option when not required

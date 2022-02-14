@@ -1083,18 +1083,8 @@ VOID egInitScreen (VOID) {
                 Status = RefitCheckGOP();
 
                 if (!EFI_ERROR(Status)) {
-                    // Stash 'gBS->HandleProtocol' as may be changed by OpenCore
-                    EFI_HANDLE_PROTOCOL OurHandleProtocol = AllocateCopyPool (
-                        sizeof (EFI_HANDLE_PROTOCOL),
-                        gBS->HandleProtocol
-                    );
-
                     // Run OpenCore Function
                     Status = OcProvideConsoleGop (TRUE);
-
-                    // Restore 'gBS->HandleProtocol'
-                    gBS->HandleProtocol = OurHandleProtocol;
-
                     if (!EFI_ERROR(Status)) {
                         Status = gBS->HandleProtocol (
                             gST->ConsoleOutHandle,

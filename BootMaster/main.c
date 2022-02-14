@@ -735,7 +735,8 @@ EFI_STATUS EFIAPI OpenProtocolEx (
     UINTN        HandleCount    = 0;
     EFI_HANDLE  *HandleBuffer   = NULL;
 
-    Status = OrigOpenProtocolBS (
+    Status = REFIT_CALL_6_WRAPPER(
+        OrigOpenProtocolBS,
         Handle,
         Protocol,
         Interface,
@@ -750,7 +751,7 @@ EFI_STATUS EFIAPI OpenProtocolEx (
 
     if (!GuidsAreEqual (&gEfiGraphicsOutputProtocolGuid, Protocol)) {
         // Early Return
-        return EFI_UNSUPPORTED;
+        return Status;
     }
 
     if (GOPDraw != NULL) {
@@ -826,14 +827,20 @@ EFI_STATUS EFIAPI HandleProtocolEx (
 
 static
 VOID ReMapOpenProtocol (VOID) {
-    if (AllowTweakUEFI) {
-        // Amend EFI_BOOT_SERVICES.OpenProtocol
-        MY_FREE_POOL(OrigOpenProtocolBS);
-        OrigOpenProtocolBS = AllocateCopyPool (sizeof (EFI_OPEN_PROTOCOL), gBS->OpenProtocol);
-        gBS->OpenProtocol  = OpenProtocolEx;
-        gBS->Hdr.CRC32     = 0;
-        gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
+    if (!AllowTweakUEFI) {
+        // Early Return
+        return;
     }
+
+    if (AppleFirmware && !DevicePresence) {
+        // Early Return
+        return;
+    }
+
+    // Amend EFI_BOOT_SERVICES.OpenProtocol
+    gBS->OpenProtocol  =  OpenProtocolEx;
+    gBS->Hdr.CRC32     =  0;
+    gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
 } // ReMapOpenProtocol()
 
 static
@@ -1652,10 +1659,6 @@ EFI_STATUS EFIAPI efi_main (
 ) {
     EFI_STATUS  Status;
 
-    EFI_RUNTIME_SERVICES *OrigRT;
-    EFI_BOOT_SERVICES    *OrigBS;
-    EFI_SYSTEM_TABLE     *OrigST;
-
     BOOLEAN  MainLoopRunning = TRUE;
     BOOLEAN  MokProtocol     = FALSE;
 
@@ -1672,12 +1675,19 @@ EFI_STATUS EFIAPI efi_main (
 
     /* Init Bootstrap */
     InitializeLib (ImageHandle, SystemTable);
-
     Status = InitRefitLib (ImageHandle);
     if (EFI_ERROR(Status)) {
         return Status;
     }
 
+    /* Stash SystemTable */
+    EFI_RUNTIME_SERVICES *OrigRT  =  gRT;
+    EFI_BOOT_SERVICES    *OrigBS  =  gBS;
+    EFI_SYSTEM_TABLE     *OrigST  =  gST;
+    OrigSetVariableRT = gRT->SetVariable;
+    OrigOpenProtocolBS = gBS->OpenProtocol;
+
+    /* Other Preambles */
     EFI_TIME Now;
     gRT->GetTime (&Now, NULL);
     NowYear   = Now.Year;
@@ -1832,14 +1842,6 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.SupplyAPFS          = FALSE;
         GlobalConfig.ReloadGOP           = FALSE;
     }
-    else {
-        if (!GlobalConfig.SupplyUEFI) {
-            // Stash SystemTable if not emulating UEFI 2.x
-            OrigRT = AllocateCopyPool (sizeof (EFI_RUNTIME_SERVICES), gRT);
-            OrigBS = AllocateCopyPool (sizeof (EFI_BOOT_SERVICES),    gBS);
-            OrigST = AllocateCopyPool (sizeof (EFI_SYSTEM_TABLE),     gST);
-        }
-    }
 
     #if REFIT_DEBUG > 0
     LOG_MSG("P R O G R E S S   B O O T S T R A P");
@@ -1858,8 +1860,8 @@ EFI_STATUS EFIAPI efi_main (
 
     LOG_MSG("%s      ProtectNVRAM:- ",   OffsetNext);
 
-    (!AppleFirmware                                                            )
-        ? LOG_MSG("'Disabled'"                                                 )
+    (!AppleFirmware                                                          )
+        ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
 
     LOG_MSG(
@@ -1946,9 +1948,6 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
         #endif
     }
-
-    MY_FREE_POOL(OrigSetVariableRT);
-    OrigSetVariableRT = AllocateCopyPool (sizeof (EFI_SET_VARIABLE), gRT->SetVariable);
 
     // Second call to ScanVolumes() to enumerate volumes and
     //   register any new filesystem(s) accessed by drivers.

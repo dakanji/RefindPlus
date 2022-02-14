@@ -498,6 +498,7 @@ extern BOOLEAN              MuteLogger;
 extern BOOLEAN              NativeLogger;
 extern BOOLEAN              AppleFirmware;
 extern BOOLEAN              DetectedDevices;
+extern BOOLEAN              DevicePresence;
 extern BOOLEAN              MuteLogger;
 
 extern EFI_FILE            *SelfDir;

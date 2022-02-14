@@ -34,6 +34,7 @@ BOOLEAN FoundGOP        = FALSE;
 BOOLEAN ReLoaded        = FALSE;
 BOOLEAN AcquireErrorGOP = FALSE;
 BOOLEAN DetectedDevices = FALSE;
+BOOLEAN DevicePresence  = FALSE;
 
 UINTN   AllHandleCount;
 
@@ -348,6 +349,9 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                 #endif
             }
             else {
+                // Flag Device Presence
+                DevicePresence = TRUE;
+
                 // Assume Not Parent
                 Parent = FALSE;
 
@@ -655,8 +659,10 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
 
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (
-        L"Processed %d Handle%s",
-        AllHandleCount, (AllHandleCount == 1) ? L"" : L"s"
+        L"Processed %d Handle%s ... Devices:- '%s'",
+        AllHandleCount,
+        (AllHandleCount == 1) ? L"" : L"s",
+        (DevicePresence) ? L"Present" : L"Absent"
     );
     if (!FoundGOP && DetectedDevices) {
         LOG_MSG("%s      %s", OffsetNext, MsgStr);
@@ -679,7 +685,7 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
 // Many cases of of GPUs not working on EFI 1.x Units such as Classic MacPros are due
 // to the GPU's GOP drivers failing to install on not detecting UEFI 2.x. This function
 // amends SystemTable Revision information, provides the missing CreateEventEx capability
-// then reloads the GPU's ROM from RAM (If Present) which will install GOP (If Available).
+// then reloads the OptionROM from RAM (If Present) which will install GOP (If Available).
 EFI_STATUS ApplyGOPFix (VOID) {
     EFI_STATUS Status;
 
@@ -687,8 +693,9 @@ EFI_STATUS ApplyGOPFix (VOID) {
     CHAR16 *MsgStr = NULL;
     #endif
 
-    // Update Boot Services to permit reloading GPU OptionROM
+    // Update Boot Services to permit reloading OptionROM
     Status = AmendSysTable();
+
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Reload OptionROM");
 
@@ -718,12 +725,15 @@ EFI_STATUS ApplyGOPFix (VOID) {
         MY_FREE_POOL(MsgStr);
         #endif
 
-        // connect all devices if no error
+        // Connect all devices if no error
         if (EFI_ERROR(Status)) {
             AcquireErrorGOP = TRUE;
         }
         else {
+            #if REFIT_DEBUG > 0
             LOG_MSG("\n\n");
+            #endif
+
             Status = BdsLibConnectAllDriversToAllControllersEx();
         }
     }
