@@ -1212,11 +1212,13 @@ VOID ReadConfig (
                 case TAG_RECOVERY_WINDOWS:
                 case TAG_RECOVERY_APPLE:
                     // Continue checking
-                    break;
+
+                break;
                 case TAG_HIDDEN:
                     // Tag to end search ... "hidden_tags" tool is already set
                     HiddenTagsFlag = TRUE;
-                    break;
+
+                break;
                 default:
                     // Setup help needed ... "hidden_tags" tool is not set
                     GlobalConfig.ShowTools[i] = TAG_HIDDEN;
@@ -1224,8 +1226,7 @@ VOID ReadConfig (
 
                     // Tag to end search ... "hidden_tags" tool is now set
                     HiddenTagsFlag = TRUE;
-                    break;
-            }
+            } // switch
 
             if (HiddenTagsFlag) {
                 // Halt search loop

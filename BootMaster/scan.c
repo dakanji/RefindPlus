@@ -1223,7 +1223,7 @@ LOADER_ENTRY * AddLoaderEntry (
                 }
                 else {
                     MY_FREE_POOL(Volume->VolName);
-                    Volume->VolName = PoolPrint (L"%s - PreBoot", DisplayName);
+                    Volume->VolName = PoolPrint (L"PreBoot - %s", DisplayName);
                 }
             }
         }
@@ -3101,8 +3101,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_INFO_BOOTKICKER:
                 MenuEntryPreBootKicker = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryPreBootKicker) {
@@ -3134,8 +3133,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_SHUTDOWN:
                 MenuEntryShutdown = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryShutdown) {
@@ -3167,8 +3165,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_REBOOT:
                 MenuEntryReset = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryReset) {
@@ -3200,8 +3197,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_ABOUT:
                 MenuEntryAbout = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryAbout) {
@@ -3233,8 +3229,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_EXIT:
                 MenuEntryExit = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryExit) {
@@ -3266,8 +3261,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_HIDDEN:
                 if (GlobalConfig.HiddenTags) {
                     MenuEntryHiddenTags = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
@@ -3308,8 +3302,7 @@ VOID ScanForTools (VOID) {
                     #endif
                 }
 
-                break;
-
+            break;
             case TAG_FIRMWARE:
                 if (EfivarGetRaw (
                     &GlobalGuid,
@@ -3370,8 +3363,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_SHELL:
                 j = 0;
                 OtherFind = FALSE;
@@ -3430,8 +3422,7 @@ VOID ScanForTools (VOID) {
                 ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
                 #endif
 
-                break;
-
+            break;
             case TAG_GPTSYNC:
                 j = 0;
                 while ((FileName = FindCommaDelimited (GPTSYNC_NAMES, j++)) != NULL) {
@@ -3474,8 +3465,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_GDISK:
                 j = 0;
                 OtherFind = FALSE;
@@ -3521,8 +3511,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_NETBOOT:
                 j = 0;
                 OtherFind = FALSE;
@@ -3568,8 +3557,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_RECOVERY_APPLE:
                 OtherFind = FALSE;
                 for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
@@ -3757,8 +3745,7 @@ VOID ScanForTools (VOID) {
                     &TmpRecoveryVolumesCount
                 );
 
-                break;
-
+            break;
             case TAG_RECOVERY_WINDOWS:
                 j = 0;
                 OtherFind = FALSE;
@@ -3821,8 +3808,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_MOK_TOOL:
                 FoundTool = FindTool (
                     MokLocations,
@@ -3840,8 +3826,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_FWUPDATE_TOOL:
                 FoundTool = FindTool (
                     MokLocations,
@@ -3859,8 +3844,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_CSR_ROTATE:
                 if ((GetCsrStatus (&CsrValue) == EFI_SUCCESS) && (GlobalConfig.CsrValues)) {
                     MenuEntryRotateCsr = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
@@ -3904,8 +3888,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_INSTALL:
                 MenuEntryInstall = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryInstall) {
@@ -3937,8 +3920,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_BOOTORDER:
                 MenuEntryBootorder = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryBootorder) {
@@ -3970,8 +3952,7 @@ VOID ScanForTools (VOID) {
                 }
                 #endif
 
-                break;
-
+            break;
             case TAG_MEMTEST:
                 FoundTool = FindTool (
                     MEMTEST_LOCATIONS,

@@ -105,8 +105,8 @@ VOID RecordgCsrStatus (
                 L"SIP Enabled (0x%04x)",
                 CsrStatus
             );
-            break;
 
+        break;
         // SIP "Disabled" Settings
         case SIP_DISABLED:
         case SIP_DISABLED_B:
@@ -118,8 +118,8 @@ VOID RecordgCsrStatus (
                 L"SIP Disabled (0x%04x)",
                 CsrStatus
             );
-            break;
 
+        break;
         // SSV "Disabled" Settings
         case SSV_DISABLED:
         case SSV_DISABLED_B:
@@ -128,8 +128,8 @@ VOID RecordgCsrStatus (
                 L"SIP/SSV Disabled (0x%04x)",
                 CsrStatus
             );
-            break;
 
+        break;
         // Recognised Custom SIP "Disabled" Settings
         case SSV_DISABLED_ANY:
         case SSV_DISABLED_KEXT:
@@ -138,8 +138,8 @@ VOID RecordgCsrStatus (
                 L"SIP/SSV Disabled (0x%04x - Custom Setting)",
                 CsrStatus
             );
-            break;
 
+        break;
         // Wide Open and Max Legal CSR "Disabled" Settings
         case SSV_DISABLED_WIDE_OPEN:
         case CSR_MAX_LEGAL_VALUE:
@@ -147,8 +147,8 @@ VOID RecordgCsrStatus (
                 L"SIP/SSV Removed (0x%04x - Caution!)",
                 CsrStatus
             );
-            break;
 
+        break;
         // Unknown Custom Setting
         default:
             gCsrStatus = PoolPrint (

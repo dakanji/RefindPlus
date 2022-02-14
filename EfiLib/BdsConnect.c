@@ -674,12 +674,9 @@ EFI_STATUS BdsLibConnectAllDriversToAllControllersEx (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
-    if (FoundGOP) {
-        return EFI_SUCCESS;
-    }
-    else {
-        return EFI_NOT_FOUND;
-    }
+    Status = (FoundGOP) ? EFI_SUCCESS : EFI_NOT_FOUND;
+
+    return Status;
 } // EFI_STATUS BdsLibConnectAllDriversToAllControllersEx()
 
 // Many cases of of GPUs not working on EFI 1.x Units such as Classic MacPros are due

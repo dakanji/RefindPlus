@@ -1069,35 +1069,52 @@ EFI_STATUS CreateNvramEntry (
 // Install RefindPlus to an ESP that the user specifies, create an NVRAM entry for
 // that installation, and set it as the default boot option.
 VOID InstallRefindPlus (VOID) {
+    UINTN          Status;
+    CHAR16        *MsgStr = L"Installing RefindPlus to an ESP";
     ESP_LIST      *AllESPs;
     REFIT_VOLUME  *SelectedESP; // Do not free
-    UINTN         Status;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, L"Installing RefindPlus to an ESP");
+    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
     #endif
 
     AllESPs     = FindAllESPs();
     SelectedESP = PickOneESP (AllESPs);
 
-    if (SelectedESP) {
-        Status = CopyRefindPlusFiles (SelectedESP->RootDir);
-
-        if (Status == EFI_SUCCESS) {
-            Status = CreateNvramEntry (SelectedESP->DeviceHandle);
-        }
-
-        if (Status == EFI_SUCCESS) {
-            DisplaySimpleMessage (
-                L"Information", L"RefindPlus Successfully Installed"
-            );
-        }
-        else {
-            DisplaySimpleMessage (
-                L"Warning", L"Problems Encountered During Installation!!"
-            );
-        }
+    if (!SelectedESP) {
+        return;
     }
+
+    Status = CopyRefindPlusFiles (SelectedESP->RootDir);
+    if (Status == EFI_SUCCESS) {
+        Status = CreateNvramEntry (SelectedESP->DeviceHandle);
+    }
+
+    if (Status != EFI_SUCCESS) {
+        MsgStr = L"Problems Encountered During Installation!!";
+        DisplaySimpleMessage (
+            L"Warning", MsgStr
+        );
+
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+        LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
+        return;
+    }
+
+    MsgStr = L"RefindPlus Successfully Installed";
+    DisplaySimpleMessage (
+        L"Information", MsgStr
+    );
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    LOG_MSG("\n\n");
+    #endif
 
     DeleteESPList (AllESPs);
 } // VOID InstallRefindPlus()

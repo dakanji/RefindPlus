@@ -2,6 +2,11 @@ name: 'Issues'
 
 on:
   workflow_dispatch:
+    inputs:
+      job_id:
+        description: 'Job ID'
+        required: true
+        default: 'all'
   issues:
     types: [opened]
   schedule:
@@ -33,11 +38,11 @@ jobs:
     name: Flag or Close Issues
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && github.event_name != 'issues'
+    if: github.repository_owner == 'dakanji' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale')
     steps:
 
       - name: Close Resolved Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: ''
@@ -46,10 +51,10 @@ jobs:
           days-before-close: 0
           exempt-assignees: ''
           stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Resolved'
+          any-of-labels: 'Resolved'
 
       - name: Flag or Close Incomplete Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -60,10 +65,10 @@ jobs:
           days-before-close: 4
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Incomplete,Unclear'
+          any-of-labels: 'Incomplete, Unclear'
 
       - name: Flag or Close No-Response Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -74,10 +79,10 @@ jobs:
           days-before-close: 4
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Queries'
+          any-of-labels: 'Queries'
 
       - name: Flag or Close Inactive Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -88,10 +93,10 @@ jobs:
           days-before-close: 8
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
-          exempt-issue-labels: 'Parked,Help-Wanted'
+          exempt-issue-labels: 'Parked, Help-Wanted'
 
       - name: Flag or Close Parked Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -102,10 +107,10 @@ jobs:
           days-before-close: 28
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Stale'
-          only-issue-labels: 'Parked'
+          any-of-labels: 'Parked'
 
       - name: Flag or Close Parked Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           stale-issue-message: >
@@ -116,10 +121,10 @@ jobs:
           days-before-close: 60
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          only-issue-labels: 'Help-Wanted'
+          any-of-labels: 'Help-Wanted'
 
       - name: Close Duplicate Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -128,10 +133,10 @@ jobs:
           days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Duplicate,Known-Issue'
+          any-of-labels: 'Duplicate, Known-Issue'
 
       - name: Close Invalid Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -140,10 +145,10 @@ jobs:
           days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          any-of-issue-labels: 'Invalid,Works-For-Me'
+          any-of-labels: 'Invalid, Works-For-Me'
 
       - name: Close WontFix Issues
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -152,10 +157,10 @@ jobs:
           days-before-close: 0
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Flagged'
-          only-issue-labels: 'WontFix'
+          any-of-labels: 'WontFix'
 
       - name: Catchall Closer
-        uses: actions/stale@v4.0.0
+        uses: actions/stale@v4.1.0
         with:
           repo-token: ${{ github.token }}
           close-issue-message: >
@@ -167,9 +172,10 @@ jobs:
   # Lock Threads - https://github.com/dessant/lock-threads
   lock:
     name: Lock Threads
+    needs: stale
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && github.event_name != 'issues'
+    if: github.repository_owner == 'dakanji' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock')
     steps:
 
       - name: Lock Incomplete Issues
@@ -179,8 +185,8 @@ jobs:
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
-          include-any-issue-labels: 'Incomplete,Unclear'
-          remove-issue-labels: 'Pending,Flagged'
+          include-any-issue-labels: 'Incomplete, Unclear'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'
 
       - name: Lock Duplicate Issues
@@ -190,8 +196,8 @@ jobs:
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
-          include-any-issue-labels: 'Duplicate,Known-Issue'
-          remove-issue-labels: 'Pending,Flagged'
+          include-any-issue-labels: 'Duplicate, Known-Issue'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'
 
       - name: Lock WontFix Issues
@@ -201,7 +207,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '1'
           include-any-issue-labels: 'WontFix'
-          remove-issue-labels: 'Pending,Flagged'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -211,8 +217,8 @@ jobs:
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
-          include-any-issue-labels: 'Invalid,Works-For-Me'
-          remove-issue-labels: 'Pending,Flagged'
+          include-any-issue-labels: 'Invalid, Works-For-Me'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
@@ -224,9 +230,9 @@ jobs:
             This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
           issue-inactive-days: '1'
           include-any-issue-labels: 'Resolved'
-          exclude-any-issue-labels: 'Parked,Help-Wanted'
+          exclude-any-issue-labels: 'Parked, Help-Wanted'
           add-issue-labels: ''
-          remove-issue-labels: 'Pending,Flagged'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'
 
       - name: Lock Inactive Issues
@@ -237,6 +243,6 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '3'
           include-any-issue-labels: ''
-          exclude-any-issue-labels: 'Parked,Help-Wanted'
-          remove-issue-labels: 'Pending,Flagged'
+          exclude-any-issue-labels: 'Parked, Help-Wanted'
+          remove-issue-labels: 'Pending, Flagged'
           process-only: 'issues'

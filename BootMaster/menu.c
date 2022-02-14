@@ -1047,7 +1047,7 @@ UINTN RunGenericMenu (
                         State.PaintSelection = TRUE;
                     }
 
-                    break;
+                break;
                 case POINTER_LEFT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_UP);
@@ -1058,7 +1058,7 @@ UINTN RunGenericMenu (
                         State.PaintSelection = TRUE;
                     }
 
-                    break;
+                break;
                 case POINTER_RIGHT_ARROW:
                     if (PointerState.Press) {
                         UpdateScroll (&State, SCROLL_PAGE_DOWN);
@@ -1069,7 +1069,7 @@ UINTN RunGenericMenu (
                         State.PaintSelection = TRUE;
                     }
 
-                    break;
+                break;
                 default:
                     if (!DrawSelection || Item != State.CurrentSelection) {
                         DrawSelection          = TRUE;
@@ -1080,8 +1080,6 @@ UINTN RunGenericMenu (
                     if (PointerState.Press) {
                         MenuExit = MENU_EXIT_ENTER;
                     }
-
-                    break;
             } // switch
         } // if/else !PointerActive
     } // while
@@ -1253,8 +1251,7 @@ VOID TextMenuStyle (
                 // DA-TAG: TODO - Account for double-width characters
             } // for
 
-            break;
-
+        break;
         case MENU_FUNCTION_CLEANUP:
             // Release temporary memory
             for (i = 0; i <= State->MaxIndex; i++) {
@@ -1262,8 +1259,7 @@ VOID TextMenuStyle (
             }
             MY_FREE_POOL(DisplayStrings);
 
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_ALL:
             // Paint the whole screen (initially and after scrolling)
             ShowTextInfoLines (Screen);
@@ -1318,8 +1314,7 @@ VOID TextMenuStyle (
                }
             }
 
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_SELECTION:
             // Redraw selection cursor
             REFIT_CALL_3_WRAPPER(
@@ -1355,8 +1350,7 @@ VOID TextMenuStyle (
                 DisplayStrings[State->CurrentSelection]
             );
 
-            break;
-
+        break;
         case MENU_FUNCTION_PAINT_TIMEOUT:
             if (ParamText[0] == 0) {
                 // Clear message
@@ -1371,8 +1365,6 @@ VOID TextMenuStyle (
                 REFIT_CALL_3_WRAPPER(gST->ConOut->SetCursorPosition, gST->ConOut, 3, ConHeight - 3);
                 REFIT_CALL_2_WRAPPER(gST->ConOut->OutputString,      gST->ConOut, ParamText);
             }
-
-            break;
     } // switch
 } // VOID TextMenuStyle()
 
@@ -2961,8 +2953,8 @@ VOID HideTag (
                 FreeMenuScreen (&HideTagMenu);
                 RescanAll (FALSE);
             }
-            break;
 
+        break;
         case TAG_LEGACY:
         case TAG_LEGACY_UEFI:
             HideTagMenu->Title = L"Hide Legacy (BIOS) OS Tag";
@@ -2977,16 +2969,16 @@ VOID HideTag (
                 FreeMenuScreen (&HideTagMenu);
                 RescanAll (FALSE);
             }
-            break;
 
+        break;
         case TAG_FIRMWARE_LOADER:
             HideTagMenu->Title = L"Hide Firmware Boot Option Tag";
             if (HideFirmwareTag(Loader, HideTagMenu)) {
                 FreeMenuScreen (&HideTagMenu);
                 RescanAll (FALSE);
             }
-            break;
 
+        break;
         case TAG_EXIT:
         case TAG_ABOUT:
         case TAG_REBOOT:
@@ -3002,8 +2994,8 @@ VOID HideTag (
                 L"Not Allowed on Internal Tool",
                 L"Amend config file instead ... Update 'showtools'"
             );
-            break;
 
+        break;
         case TAG_TOOL:
             HideTagMenu->Title = L"Hide Tool Tag";
             HideEfiTag (Loader, HideTagMenu, L"HiddenTools");
@@ -3018,8 +3010,6 @@ VOID HideTag (
 
             FreeMenuScreen (&HideTagMenu);
             RescanAll (FALSE);
-
-            break;
     } // switch
 
     FreeMenuScreen (&HideTagMenu);

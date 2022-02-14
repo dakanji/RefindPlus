@@ -959,7 +959,6 @@ BOOLEAN CheckError (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("** WARN: '%s' %s", ErrorName, where);
-    LOG_MSG("\n");
     #endif
 
     Temp = PoolPrint (L"Error: '%s' %s", ErrorName, where);
@@ -968,7 +967,6 @@ BOOLEAN CheckError (
 
     #if REFIT_DEBUG > 0
     LOG_MSG("** WARN: '%r' %s", Status, where);
-    LOG_MSG("\n");
     #endif
 #endif
 

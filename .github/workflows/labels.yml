@@ -23,7 +23,7 @@ jobs:
     name: Handle Labels
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && github.actor == 'dakanji'
+    if: github.repository_owner == 'dakanji'
     steps:
       - uses: dessant/label-actions@v2
         with:

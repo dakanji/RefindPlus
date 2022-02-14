@@ -323,11 +323,16 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         L"%r",
         (BlockCert) ? EFI_ACCESS_DENIED : Status
     );
+
+    MuteLogger = TRUE;
+    LimitStringLength (LogStatus, 13);
+    MuteLogger = FALSE;
+
     CHAR16 *MsgStr = PoolPrint (
-        L"In Hardware NVRAM ... %20s %s:- '%s%s'",
+        L"In Hardware NVRAM ... %13s %s:- '%s%s'",
         LogStatus,
         NVRAM_LOG_SET,
-        (BlockCert) ? L"UEFI Certificate  :::  " : L"",
+        (BlockCert) ? L"Certificate  :::  " : L"",
         VariableName
     );
     LOG_MSG("%s", MsgStr);
@@ -376,13 +381,12 @@ VOID SetProtectNvram (
 
 static
 EFI_STATUS FilterCSR (VOID) {
-    if (!GlobalConfig.NormaliseCSR) {
-        // Early Return
-        return EFI_NOT_STARTED;
-    }
+    EFI_STATUS Status = EFI_NOT_STARTED;
 
-    // Filter out the 'APPLE_INTERNAL' CSR bit if present
-    EFI_STATUS Status = NormaliseCSR();
+    if (GlobalConfig.NormaliseCSR) {
+        // Filter out the 'APPLE_INTERNAL' CSR bit if present
+        Status = NormaliseCSR();
+    }
 
     #if REFIT_DEBUG > 0
     if (EFI_ERROR(Status)) {
@@ -593,7 +597,7 @@ VOID SetBootArgs (VOID) {
         Status, GlobalConfig.SetBootArgs
     );
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
+    LOG_MSG("%s    ** %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
 
     if (LogDisableCompatCheck || GlobalConfig.DisableCompatCheck) {
@@ -990,7 +994,6 @@ BOOLEAN ShowCleanNvramInfo (
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
-    LOG_MSG("\n\n");
     LOG_MSG("User Input Received:");
     LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
     #endif
@@ -1297,7 +1300,6 @@ VOID SetConfigFilename (
         &LoadedImageProtocol,
         (VOID **) &Info
     );
-
     if ((Status == EFI_SUCCESS) && (Info->LoadOptionsSize > 0)) {
         Options   = (CHAR16 *) Info->LoadOptions;
         SubString = MyStrStr (Options, L" -c ");
@@ -2414,6 +2416,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 RunOurTool = ShowBootKickerInfo (TypeStr);
@@ -2497,6 +2500,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
+                LOG_MSG("\n\n");
                 #endif
 
                 RunOurTool = ShowCleanNvramInfo (TypeStr);
@@ -2830,10 +2834,15 @@ EFI_STATUS EFIAPI efi_main (
                     LOG_MSG("User Input Received:");
                     MsgStr = StrDuplicate (L"Load Windows (UEFI) Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    LOG_MSG("%s  - %s", OffsetNext, MsgStr);
-                    (ourLoaderEntry->Volume->VolName)
-                        ? LOG_MSG(" from '%s'", ourLoaderEntry->Volume->VolName)
-                        : LOG_MSG(":- '%s'", ourLoaderEntry->LoaderPath);
+                    LOG_MSG(
+                        "%s  - %s%s '%s'",
+                        OffsetNext,
+                        MsgStr,
+                        (ourLoaderEntry->Volume->VolName)
+                            ? L" from" : L":-",
+                        (ourLoaderEntry->Volume->VolName)
+                            ? ourLoaderEntry->Volume->VolName : ourLoaderEntry->LoaderPath
+                    );
 
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -3002,7 +3011,6 @@ EFI_STATUS EFIAPI efi_main (
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
-                LOG_MSG("\n\n");
                 MY_FREE_POOL(MsgStr);
                 #endif
 
@@ -3020,9 +3028,9 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - Reboot into Firmware Defined Loader", OffsetNext);
-                LOG_MSG("\n-----------------\n\n");
                 #endif
 
+                // No end dash line ... Added in 'RebootIntoLoader'
                 RebootIntoLoader (ourLoaderEntry);
 
             break;
@@ -3067,9 +3075,9 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - Reboot into Firmware", OffsetNext);
-                LOG_MSG("\n-----------------\n\n");
                 #endif
 
+                // No end dash line ... Added in 'RebootIntoFirmware'
                 RebootIntoFirmware();
 
             break;
@@ -3090,9 +3098,10 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 LOG_MSG("User Input Received:");
                 LOG_MSG("%s  - Install RefindPlus", OffsetNext);
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n\n");
                 #endif
 
+                // No end dash line ... Expected to return
                 InstallRefindPlus();
 
             break;

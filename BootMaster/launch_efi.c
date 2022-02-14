@@ -656,56 +656,62 @@ BOOLEAN ConfirmReboot (
 
 // From gummiboot: Reboot the computer into its built-in user interface
 EFI_STATUS RebootIntoFirmware (VOID) {
-    CHAR16     *MsgStr = NULL;
+    CHAR16     *TmpStr = L"Reboot into Firmware";
     UINT64     *ItemBuffer;
     UINT64      osind;
-    EFI_STATUS  err;
+    EFI_STATUS  Status;
 
     osind = EFI_OS_INDICATIONS_BOOT_TO_FW_UI;
 
-    err = EfivarGetRaw (
+    Status = EfivarGetRaw (
         &GlobalGuid,
         L"OsIndications",
         (VOID **) &ItemBuffer,
         NULL
     );
 
-    if (err == EFI_SUCCESS) {
+    if (Status == EFI_SUCCESS) {
         osind |= *ItemBuffer;
     }
     MY_FREE_POOL(ItemBuffer);
 
-    MsgStr = StrDuplicate (L"Reboot into Firmware");
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
+    #endif
 
-    BOOLEAN ConfirmAction = ConfirmReboot(MsgStr);
-    MY_FREE_POOL(MsgStr);
-
+    BOOLEAN ConfirmAction = ConfirmReboot(TmpStr);
     if (!ConfirmAction) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted by User");
+        LOG_MSG("%s    ** Aborted by User", OffsetNext);
+        LOG_MSG("\n\n");
+        #endif
+
         return EFI_NOT_STARTED;
     }
 
-    err = EfivarSetRaw (
+    Status = EfivarSetRaw (
         &GlobalGuid,
         L"OsIndications",
         &osind,
         sizeof (UINT64),
         TRUE
     );
+    if (Status != EFI_SUCCESS) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted ... OsIndications not Found");
+        LOG_MSG("%s    ** Aborted ... OsIndications not Found", OffsetNext);
+        LOG_MSG("\n\n");
+        #endif
 
-    #if REFIT_DEBUG > 0
-    LOG_MSG("INFO: %s ... %r", MsgStr, err);
-    LOG_MSG("\n\n");
-    #endif
-
-    if (err != EFI_SUCCESS) {
-        return err;
+        return Status;
     }
 
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Rebooting into the Computer's Firmware");
-    #endif
-
     UninitRefitLib();
+
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n-----------------\n\n");
+    #endif
 
     REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem,
@@ -715,28 +721,26 @@ EFI_STATUS RebootIntoFirmware (VOID) {
         NULL
     );
 
-    ReinitRefitLib();
+    Status = EFI_LOAD_ERROR;
+    CHAR16 *MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
 
-    MsgStr = PoolPrint (L"Error Calling ResetSystem ... %r", err);
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
+    #endif
+
+    ReinitRefitLib();
 
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
     PrintUglyText (MsgStr, NEXTLINE);
     REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
-    #if REFIT_DEBUG > 0
-    LOG_MSG("** WARN: %s", MsgStr);
-    LOG_MSG("\n\n");
-    #endif
-
     PauseForKey();
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL, MsgStr, err);
-    #endif
 
     MY_FREE_POOL(MsgStr);
 
-    return err;
+    return Status;
 } // EFI_STATUS RebootIntoFirmware()
 
 // Reboot into a loader defined in the EFI's NVRAM
@@ -747,9 +751,18 @@ VOID RebootIntoLoader (
     CHAR16     *TmpStr = L"Reboot into NVRAM Boot Option";
     CHAR16     *MsgStr = NULL;
 
-    BOOLEAN ConfirmAction = ConfirmReboot(TmpStr);
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", TmpStr);
+    #endif
 
+    BOOLEAN ConfirmAction = ConfirmReboot(TmpStr);
     if (!ConfirmAction) {
+        #if REFIT_DEBUG > 0
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Aborted by User", MsgStr);
+        LOG_MSG("%s    ** Aborted by User", OffsetNext, MsgStr);
+        LOG_MSG("\n\n");
+        #endif
+
         return;
     }
 
@@ -758,9 +771,8 @@ VOID RebootIntoLoader (
         L"%s:- '%s' (Boot%04x)",
         TmpStr, Entry->Title, Entry->EfiBootNum
     );
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
-    LOG_MSG("INFO: %s", MsgStr);
-    LOG_MSG("\n\n");
+    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("%s    * %s", OffsetNext, MsgStr);
     MY_FREE_POOL(MsgStr);
     #endif
 
@@ -771,15 +783,15 @@ VOID RebootIntoLoader (
         sizeof (UINT16),
         TRUE
     );
-
     if (EFI_ERROR(Status)) {
         MsgStr = PoolPrint (
-            L"'%r' while Rebooting into NVRAM Boot Option",
-            Status
+            L"'%r' While Running '%s'",
+            Status, TmpStr
         );
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+        LOG_MSG("\n\n");
         #endif
 
         Print(L"%s\n", MsgStr);
@@ -791,22 +803,32 @@ VOID RebootIntoLoader (
 
     StoreLoaderName(Entry->me.Title);
 
+    #if REFIT_DEBUG > 0
+    LOG_MSG("\n-----------------\n\n");
+    #endif
+
     REFIT_CALL_4_WRAPPER(
         gRT->ResetSystem, EfiResetCold,
         EFI_SUCCESS, 0, NULL
     );
 
-    MsgStr = PoolPrint (L"Call ResetSystem ... %r", Status);
+    Status = EFI_LOAD_ERROR;
+    MsgStr = PoolPrint (L"%s ... %r", TmpStr, Status);
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
+    LOG_MSG("INFO: %s", MsgStr);
+    LOG_MSG("\n\n");
     #endif
 
-    Print(MsgStr);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+    PrintUglyText (MsgStr, NEXTLINE);
+    REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+
     PauseForKey();
 
     MY_FREE_POOL(MsgStr);
-} // RebootIntoLoader()
+} // VOID RebootIntoLoader()
 
 //
 // EFI OS loader functions

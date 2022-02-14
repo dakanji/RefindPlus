@@ -341,26 +341,12 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
                 #if REFIT_DEBUG > 0
                 switch (Info->PixelFormat) {
-                    case PixelRedGreenBlueReserved8BitPerColor:
-                        PixelFormatDesc = L"8bit RGB";
-                        break;
-
-                    case PixelBlueGreenRedReserved8BitPerColor:
-                        PixelFormatDesc = L"8bit BGR";
-                        break;
-
-                    case PixelBitMask:
-                        PixelFormatDesc = L"BIT MASK";
-                        break;
-
-                    case PixelBltOnly:
-                        PixelFormatDesc = L"!FBuffer";
-                        break;
-
-                    default:
-                        PixelFormatDesc = L"Invalid!!";
-                        break;
-                }
+                    case PixelRedGreenBlueReserved8BitPerColor: PixelFormatDesc = L"8bit RGB";  break;
+                    case PixelBlueGreenRedReserved8BitPerColor: PixelFormatDesc = L"8bit BGR";  break;
+                    case PixelBitMask:                          PixelFormatDesc = L"BIT MASK";  break;
+                    case PixelBltOnly:                          PixelFormatDesc = L"!FBuffer";  break;
+                    default:                                    PixelFormatDesc = L"Invalid!!"; break;
+                } // switch
 
                 if (LoopCount < MaxMode - 1) {
                     LOG_MSG(
@@ -2173,7 +2159,7 @@ VOID egScreenShot (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
-        LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
 
@@ -2211,7 +2197,7 @@ VOID egScreenShot (VOID) {
 
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_LINE_NORMAL, MsgStr);
-        LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+        LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         #endif
 
@@ -2235,7 +2221,7 @@ VOID egScreenShot (VOID) {
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             #endif
 
@@ -2262,7 +2248,7 @@ VOID egScreenShot (VOID) {
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             #endif
 
@@ -2289,7 +2275,7 @@ VOID egScreenShot (VOID) {
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("%s    * WARN: %s", OffsetNext, MsgStr);
+            LOG_MSG("%s    ** WARN: %s", OffsetNext, MsgStr);
             LOG_MSG("\n\n");
             #endif
 
