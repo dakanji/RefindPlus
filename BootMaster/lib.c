@@ -2358,8 +2358,9 @@ VOID ScanVolumes (VOID) {
     UINTN               SectorSum, i;
     UINT8              *SectorBuffer1;
     UINT8              *SectorBuffer2;
-    CHAR16             *RoleStr      = NULL;
-    CHAR16             *PartType     = NULL;
+    CHAR16             *RoleStr  = NULL;
+    CHAR16             *PartType = NULL;
+    BOOLEAN             CheckedAPFS;
     BOOLEAN             DupFlag;
     EFI_GUID           *UuidList;
     EFI_GUID            VolumeGuid;
@@ -2454,6 +2455,7 @@ VOID ScanVolumes (VOID) {
     DoneHeadings = FALSE;
     ScannedOnce  = FALSE;
     SkipSpacing  = FALSE;
+    CheckedAPFS  = FALSE;
     ValidAPFS    =  TRUE;
 
     for (HandleIndex = 0; HandleIndex < HandleCount; HandleIndex++) {
@@ -2615,6 +2617,15 @@ VOID ScanVolumes (VOID) {
 #endif
 
                 if (!EFI_ERROR(Status)) {
+                    if (!CheckedAPFS) {
+                        CheckedAPFS = TRUE;
+                        // DA-TAG: Do not scan any volumes called "Recovery" if APFS is present
+                        //         Apply the same to 'Update' and 'VM'
+                        MergeUniqueStrings (&GlobalConfig.DontScanVolumes, L"Recovery", L',');
+                        MergeUniqueStrings (&GlobalConfig.DontScanVolumes, L"Update", L','  );
+                        MergeUniqueStrings (&GlobalConfig.DontScanVolumes, L"VM", L','      );
+                    }
+
                     PartType        = L"APFS";
                     Volume->FSType  = FS_TYPE_APFS;
                     Volume->VolUuid = VolumeGuid;
@@ -2929,6 +2940,11 @@ VOID GetVolumeBadgeIcons (VOID) {
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
 
+        // Skip volumes in 'DontScanVolumes' list
+        if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+            continue;
+        }
+
         if (GlobalConfig.SyncAPFS) {
             FoundSysVol = FALSE;
             for (i = 0; i < SystemVolumesCount; i++) {
@@ -3016,6 +3032,11 @@ VOID SetVolumeIcons (VOID) {
 
     for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
         Volume = Volumes[VolumeIndex];
+
+        // Skip volumes in 'DontScanVolumes' list
+        if (IsIn (Volume->VolName, GlobalConfig.DontScanVolumes)) {
+            continue;
+        }
 
         if (GlobalConfig.SyncAPFS) {
             FoundSysVol = FALSE;

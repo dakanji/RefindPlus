@@ -6,6 +6,12 @@
   * The `grub` loader was already accounted for
 - Improve OS Boot Filtering
   * The `OSType` flag is now taken into account
+- Amends Default Loader Scan for APFS Support Volumes
+  * APFS Recovery Volumes are handled as Mac Recovery Tools
+  * These are now added to the DontScanVolume list by default
+  * APFS `Update` and `VM` volumes are similarly added
+- Amends Scan for `.VolumeIcons` and `VolumeBadges`
+  * Volumes in the `DontScanVolume` list are now skipped
 
 
 0.13.2.AN (08 Feb 2022):

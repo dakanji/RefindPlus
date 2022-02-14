@@ -360,7 +360,7 @@ VOID MergeStrings (
 
     if (*First == NULL) {
         *First = StrDuplicate (Second);
-        BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
+        BREAD_CRUMB(L"In %s  ... 1a 1 NULL INPUT - Out String = '%s'", FuncTag,
             *First
         );
         LOG_SEP(L"X");
@@ -460,74 +460,78 @@ VOID MergeUniqueStrings (
 
     //BREAD_CRUMB(L"In %s ... 4", FuncTag);
     NewString = AllocatePool (sizeof (CHAR16) * (Length1 + Length2 + 2));
+    if (NewString == NULL) {
+        BREAD_CRUMB(L"In %s ... OUT OF MEMERY - Out String = '%s'", FuncTag,
+            *First
+        );
+        LOG_SEP(L"X");
+
+        return;
+    }
 
     //BREAD_CRUMB(L"In %s ... 5", FuncTag);
-    if (NewString) {
+    if ((*First != NULL) && (Length1 == 0)) {
         //BREAD_CRUMB(L"In %s ... 5a 1", FuncTag);
-        if ((*First != NULL) && (Length1 == 0)) {
-            //BREAD_CRUMB(L"In %s ... 5a 1a 1", FuncTag);
-            MY_FREE_POOL(*First);
-        }
-
-        //BREAD_CRUMB(L"In %s ... 5a 2", FuncTag);
-        NewString[0] = L'\0';
-
-        //BREAD_CRUMB(L"In %s ... 5a 3", FuncTag);
-        if (*First != NULL) {
-            //BREAD_CRUMB(L"In %s ... 5a 3a 1", FuncTag);
-            StrCat (NewString, *First);
-
-            //BREAD_CRUMB(L"In %s ... 5a 3a 2", FuncTag);
-            if (AddChar) {
-                //BREAD_CRUMB(L"In %s ... 5a 3a 2a 1", FuncTag);
-                NewString[Length1] = AddChar;
-                NewString[Length1 + 1] = '\0';
-            }
-            //BREAD_CRUMB(L"In %s ... 5a 3a 3", FuncTag);
-        }
-
-        //BREAD_CRUMB(L"In %s ... 5a 4", FuncTag);
-        if (Second != NULL) {
-            //BREAD_CRUMB(L"In %s ... 5a 4a 1", FuncTag);
-            BOOLEAN SkipMerge = FALSE;
-
-            //BREAD_CRUMB(L"In %s ... 5a 4a 2", FuncTag);
-            if (AddChar) {
-                UINTN   i       = 0;
-                CHAR16 *TestStr = NULL;
-
-                BREAD_CRUMB(L"In %s ... 5a 4a 2a 1 - WHILE LOOP:- START/ENTER", FuncTag);
-                while (!SkipMerge
-                    && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
-                ) {
-                    NestedStrStr = TRUE;
-                    if (MyStrStr (TestStr, Second)) {
-                        SkipMerge = TRUE;
-                    }
-                    NestedStrStr = FALSE;
-
-                    MY_FREE_POOL(TestStr);
-                } // while
-                BREAD_CRUMB(L"In %s ... 5a 4a 2a 2 - WHILE LOOP:- END/EXIT", FuncTag);
-            }
-
-            //BREAD_CRUMB(L"In %s ... 5a 4a 3", FuncTag);
-            if (!SkipMerge) {
-                //BREAD_CRUMB(L"In %s ... 5a 4a 3a 1", FuncTag);
-                StrCat (NewString, Second);
-            }
-            else if (AddChar) {
-                //BREAD_CRUMB(L"In %s ... 5a 4a 3b 1", FuncTag);
-                // Remove AddChar if not merging this item
-                NewString[Length1] = '\0';
-            }
-            //BREAD_CRUMB(L"In %s ... 5a 4a 4", FuncTag);
-        }
-
-        //BREAD_CRUMB(L"In %s ... 5a 5", FuncTag);
         MY_FREE_POOL(*First);
-        *First = NewString;
     }
+
+    //BREAD_CRUMB(L"In %s ... 6", FuncTag);
+    NewString[0] = L'\0';
+
+    //BREAD_CRUMB(L"In %s ... 7", FuncTag);
+    if (*First != NULL) {
+        //BREAD_CRUMB(L"In %s ... 7a 1", FuncTag);
+        StrCat (NewString, *First);
+
+        //BREAD_CRUMB(L"In %s ... 7a 2", FuncTag);
+        if (AddChar) {
+            //BREAD_CRUMB(L"In %s ... 7a 2a 1", FuncTag);
+            NewString[Length1] = AddChar;
+            NewString[Length1 + 1] = '\0';
+        }
+    }
+
+    //BREAD_CRUMB(L"In %s ... 8", FuncTag);
+    if (Second != NULL) {
+        //BREAD_CRUMB(L"In %s ... 8a 1", FuncTag);
+        BOOLEAN SkipMerge = FALSE;
+
+        //BREAD_CRUMB(L"In %s ... 8a 2", FuncTag);
+        if (AddChar) {
+            UINTN   i       = 0;
+            CHAR16 *TestStr = NULL;
+
+            BREAD_CRUMB(L"In %s ... 8a 2a 1 - WHILE LOOP:- START/ENTER", FuncTag);
+            while (!SkipMerge
+                && (TestStr = FindCommaDelimited (NewString, i++)) != NULL
+            ) {
+                NestedStrStr = TRUE;
+                if (MyStriCmp (TestStr, Second)) {
+                    SkipMerge = TRUE;
+                }
+                NestedStrStr = FALSE;
+
+                MY_FREE_POOL(TestStr);
+            } // while
+            BREAD_CRUMB(L"In %s ... 8a 2a 2 - WHILE LOOP:- END/EXIT", FuncTag);
+        }
+
+        //BREAD_CRUMB(L"In %s ... 8a 3", FuncTag);
+        if (!SkipMerge) {
+            //BREAD_CRUMB(L"In %s ... 8a 3a 1", FuncTag);
+            StrCat (NewString, Second);
+        }
+        else if (AddChar) {
+            //BREAD_CRUMB(L"In %s ... 8a 3b 1", FuncTag);
+            // Remove AddChar if not merging this item
+            NewString[Length1] = '\0';
+        }
+        //BREAD_CRUMB(L"In %s ... 8a 4", FuncTag);
+    }
+
+    //BREAD_CRUMB(L"In %s ... 9", FuncTag);
+    MY_FREE_POOL(*First);
+    *First = NewString;
 
     BREAD_CRUMB(L"In %s ... Out String = '%s'", FuncTag,
         *First
