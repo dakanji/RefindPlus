@@ -106,6 +106,7 @@ VOID RefitDeadLoop (VOID);
 VOID TerminateScreen (VOID);
 VOID PrepareBlankLine (VOID);
 VOID FinishExternalScreen (VOID);
+VOID HaltSeconds (UINTN Seconds);
 VOID PauseSeconds (UINTN Seconds);
 VOID BeginTextScreen (IN CHAR16 *Title);
 VOID DrawScreenHeader (IN CHAR16 *Title);

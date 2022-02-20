@@ -8,7 +8,7 @@ on:
         required: true
         default: 'all'
   issues:
-    types: [opened]
+    types: [opened, reopened, closed]
   schedule:
     - cron: '4 4 */4 * *'
 
@@ -21,14 +21,63 @@ concurrency:
 jobs:
 
   # Add Labels - https://github.com/actions-ecosystem/action-add-labels
-  add_label:
+  add_label_user_open:
     name: Default Issue Label
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'opened'
+    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'reopened')
     steps:
       - uses: actions/checkout@v2
       - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Pending
+
+  add_label_user_open_enhance:
+    name: Enhancement Request Label
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'opened' && ${{ startsWith(github.event.comment.body, 'Suggested Feature') }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Enhancement
+
+  add_label_user_close:
+    name: Close Issue Label
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && github.event.action == 'closed'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ github.token }}
+          labels: Cancelled
+
+  # Del Labels - https://github.com/dessant/label-actions
+  del_label_user_reopen:
+    name: Remove Cancelled Label
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && github.event.action == 'reopened'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-remove-labels@v1.3.0
+        with:
+          github_token: ${{ github.token }}
+          labels: Cancelled
+
+  del_label_user_close:
+    name: Remove Pending Label
+    runs-on: ubuntu-latest
+
+    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'closed'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-remove-labels@v1.3.0
         with:
           github_token: ${{ github.token }}
           labels: Pending
@@ -50,7 +99,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: ''
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Resolved'
 
       - name: Flag or Close Incomplete Issues
@@ -64,7 +113,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 4
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Incomplete, Unclear'
 
       - name: Flag or Close No-Response Issues
@@ -78,7 +127,7 @@ jobs:
           days-before-stale: 4
           days-before-close: 4
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Queries'
 
       - name: Flag or Close Inactive Issues
@@ -120,7 +169,7 @@ jobs:
           days-before-stale: 120
           days-before-close: 60
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Help-Wanted'
 
       - name: Close Duplicate Issues
@@ -132,7 +181,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Duplicate, Known-Issue'
 
       - name: Close Invalid Issues
@@ -144,7 +193,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'Invalid, Works-For-Me'
 
       - name: Close WontFix Issues
@@ -156,7 +205,7 @@ jobs:
           days-before-stale: 0
           days-before-close: 0
           exempt-assignees: 'dakanji'
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
           any-of-labels: 'WontFix'
 
       - name: Catchall Closer
@@ -167,7 +216,7 @@ jobs:
             This item is being closed as abandoned.
           days-before-stale: 180
           days-before-close: 180
-          stale-issue-label: 'Flagged'
+          stale-issue-label: 'Tagged'
 
   # Lock Threads - https://github.com/dessant/lock-threads
   lock:
@@ -186,7 +235,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '2'
           include-any-issue-labels: 'Incomplete, Unclear'
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Duplicate Issues
@@ -197,7 +246,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
           include-any-issue-labels: 'Duplicate, Known-Issue'
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock WontFix Issues
@@ -207,7 +256,7 @@ jobs:
           issue-lock-reason: ''
           issue-inactive-days: '1'
           include-any-issue-labels: 'WontFix'
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Invalid Issues
@@ -218,7 +267,7 @@ jobs:
           add-issue-labels: 'Resolved'
           issue-inactive-days: '1'
           include-any-issue-labels: 'Invalid, Works-For-Me'
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Resolved Issues
@@ -232,7 +281,7 @@ jobs:
           include-any-issue-labels: 'Resolved'
           exclude-any-issue-labels: 'Parked, Help-Wanted'
           add-issue-labels: ''
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
 
       - name: Lock Inactive Issues
@@ -244,5 +293,5 @@ jobs:
           issue-inactive-days: '3'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked, Help-Wanted'
-          remove-issue-labels: 'Pending, Flagged'
+          remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'

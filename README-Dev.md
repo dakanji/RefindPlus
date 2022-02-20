@@ -33,7 +33,7 @@ However, the enhancements are not limited in scope to these units and may be of 
   * Basically allows working as if APFS is natively supported by the firmware
     - Removes the need for a risky 'firmware flash' operation on units such as the MacPro3,1
 - Fully supports Apple's APFS filesystem requirements
-  * This allows booting MacOS v11.x (Big Sur) or later from single named volumes on the main screen.
+  * This allows booting MacOS 11.x (Big Sur) or later from single named volumes on the main screen.
     - As opposed to generic and difficult to distinguish 'PreBoot' volumes.
     - Avoids potentially compromising system integrity by otherwise requiring SIP to be disabled.
   * This also allows booting FileVault encrypted volumes from signle named volumes on the main screen.
@@ -86,7 +86,7 @@ In addition to the new functionality listed above, the following upsteam tokens 
 - **"showtools" Token:** Additional tools added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
   - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
-- **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS v11.x (Big Sur), or later, with SIP enabled.
+- **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `normalise_csr` token.
 - **"timeout" Token:** The default is no timeout unless explicitly set.
 - **"screensaver" Token:** The RefindPlus screensaver cycles through a set of colours as opposed to a single grey colour.

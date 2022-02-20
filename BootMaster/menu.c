@@ -280,21 +280,21 @@ VOID UpdateScroll (
     State->PreviousSelection = State->CurrentSelection;
 
     switch (Movement) {
-        case SCROLL_NONE:       break;
+        case SCROLL_NONE:
+            // Do Nothing
+        break;
         case SCROLL_LINE_LEFT:
             if (State->CurrentSelection > 0) {
                 State->CurrentSelection --;
             }
 
-            break;
-
+        break;
         case SCROLL_LINE_RIGHT:
             if (State->CurrentSelection < State->MaxIndex) {
                 State->CurrentSelection ++;
             }
 
-            break;
-
+        break;
         case SCROLL_LINE_UP:
             if (State->ScrollMode == SCROLL_MODE_ICONS) {
                 if (State->CurrentSelection >= State->InitialRow1) {
@@ -316,8 +316,7 @@ VOID UpdateScroll (
                 }
             }
 
-            break;
-
+        break;
         case SCROLL_LINE_DOWN:
             if (State->ScrollMode == SCROLL_MODE_ICONS) {
                 if (State->CurrentSelection <= State->FinalRow0) {
@@ -339,8 +338,7 @@ VOID UpdateScroll (
                 }
             }
 
-            break;
-
+        break;
         case SCROLL_PAGE_UP:
             if (State->CurrentSelection <= State->FinalRow0) {
                 State->CurrentSelection -= State->MaxVisible;
@@ -356,16 +354,14 @@ VOID UpdateScroll (
                 State->CurrentSelection = 0;
             }
 
-            break;
-
+        break;
         case SCROLL_FIRST:
             if (State->CurrentSelection > 0) {
                 State->PaintAll = TRUE;
                 State->CurrentSelection = 0;
             }
 
-            break;
-
+        break;
         case SCROLL_PAGE_DOWN:
             if (State->CurrentSelection  < State->FinalRow0) {
                 State->CurrentSelection += State->MaxVisible;
@@ -384,8 +380,7 @@ VOID UpdateScroll (
                 State->CurrentSelection = State->MaxIndex;
             }
 
-            break;
-
+        break;
         case SCROLL_LAST:
             if (State->CurrentSelection < State->MaxIndex) {
                 State->PaintAll = TRUE;

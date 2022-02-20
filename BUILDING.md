@@ -5,7 +5,7 @@ RefindPlus can be built on compatible environments by using Docker. A Docker ima
 NB: RefindPlus instances built using this Docker image may not be consistent with builds done by following the recommended steps outlined under `Building on MacOS` below.
 
 ## Building on MacOS
-These are step-by-step instructions for setting up a bespoke Tianocore EDK II build environment and building the RefindPlus boot manager on MacOS.
+These are step-by-step instructions for setting up a bespoke TianoCore EDK II build environment and building the RefindPlus boot manager on MacOS.
 
 ### Activate MacOS Development Tools
 
@@ -24,7 +24,7 @@ $ xcode-select --install
 
 ##### Installing HomeBrew
 
-While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for Tianocore EDK II development.
+While Xcode provides a full development environment as well as a suite of different utilities, it does not provide all the tools required for TianoCore EDK II development.
 
 This guide focuses on using HomeBrew to provide the required tools but equivalent steps can be taken in MacPorts and Fink which, unlike HomeBrew, maintain support for older versions of MacOS. Just substitute in the equivalent commands as required.
 
@@ -46,7 +46,7 @@ $ brew install mtoc && brew upgrade mtoc
 
 #### Install the Netwide Assembler (NASM) with HomeBrew
 
-The assembler used for Tianocore EDK II builds is the Netwide Assembler (NASM).
+The assembler used for TianoCore EDK II builds is the Netwide Assembler (NASM).
 
 ```
 $ brew install nasm && brew upgrade nasm
@@ -54,7 +54,7 @@ $ brew install nasm && brew upgrade nasm
 
 #### Install the ACPI Compiler with HomeBrew
 
-The ASL compiler is required to build code in ACPI Source Language for Tianocore EDK II firmware builds.
+The ASL compiler is required to build code in ACPI Source Language for TianoCore EDK II firmware builds.
 
 ```
 $ brew install acpica && brew upgrade acpica
@@ -119,6 +119,8 @@ Your local `RefindPlusUDK` repository will be under `Documents/RefindPlus/edk2`
 - Press `Enter`
 
 ### Syncing Your Repositories with Upstream Repositories
+If a period of time has passed since your last build or since you initially created your repositories, you will need to ensure your repositories are aligned with upstream repositories in order to incorporate upstream changes made in the intervening period.
+
 #### OPTION 1: Scripted Sync (Recommended)
 - Navigate to your `/Documents/RefindPlus/edk2/000-BuildScript` folder in Finder
 - Drag the `RepoUpdater.sh` file into Terminal

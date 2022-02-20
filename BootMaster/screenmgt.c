@@ -830,6 +830,7 @@ VOID PauseForKey (VOID) {
 } // VOID PauseForKey
 
 // Pause a specified number of seconds
+// Can be terminated on keypress
 VOID PauseSeconds (
     UINTN Seconds
 ) {
@@ -853,6 +854,46 @@ VOID PauseSeconds (
             Breakout = TRUE;
         }
         else if (WaitOut == INPUT_TIMER_ERROR) {
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+            #endif
+
+            Breakout = TRUE;
+        }
+
+        if (Breakout) {
+            break;
+        }
+    } // for
+
+    #if REFIT_DEBUG > 0
+    if (!Breakout) {
+        ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
+    }
+    #endif
+
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+} // VOID PauseSeconds()
+
+// Pause a specified number of seconds
+// Not terminated on keypress
+VOID HaltSeconds (
+    UINTN Seconds
+) {
+    UINTN   i, WaitOut;
+    BOOLEAN Breakout = FALSE;
+
+    // Clear the Keystroke Buffer
+    ReadAllKeyStrokes();
+
+    #if REFIT_DEBUG > 0
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
+    #endif
+
+    for (i = 0; i < Seconds; ++i) {
+        WaitOut = WaitForInput (1000);
+        if (WaitOut == INPUT_TIMER_ERROR) {
             #if REFIT_DEBUG > 0
             ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
             #endif

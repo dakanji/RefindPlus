@@ -1172,7 +1172,7 @@ VOID RescanAll (
     BOOLEAN Reconnect
 ) {
     #if REFIT_DEBUG > 0
-    CHAR16 *MsgStr = (L"R E S C A N   A L L   I T E M S");
+    CHAR16 *MsgStr = L"R E S C A N   A L L   I T E M S";
     ALT_LOG(1, LOG_STAR_SEPARATOR, L"%s", MsgStr);
     LOG_MSG("I N F O :   %s", MsgStr);
     LOG_MSG("\n\n");
@@ -1966,13 +1966,6 @@ EFI_STATUS EFIAPI efi_main (
 
     // Second call to ScanVolumes() to enumerate volumes and
     //   register any new filesystem(s) accessed by drivers.
-    #if REFIT_DEBUG > 0
-    MsgStr = StrDuplicate (L"E X A M I N E   A V A I L A B L E   V O L U M E S");
-    LOG_MSG("\n\n");
-    LOG_MSG("%s", MsgStr);
-    MY_FREE_POOL(MsgStr);
-    #endif
-
     ScanVolumes();
 
     if (GlobalConfig.SpoofOSXVersion &&
@@ -2173,6 +2166,9 @@ EFI_STATUS EFIAPI efi_main (
         MainMenu->TimeoutText = StrDuplicate (L"Shutdown");
     }
 
+    // Prime ForceContinue
+    BOOLEAN ForceContinue = FALSE;
+
     // Show EFI Version Mismatch Warning
     if (WarnVersionEFI) {
         SwitchToText (FALSE);
@@ -2185,6 +2181,8 @@ EFI_STATUS EFIAPI efi_main (
         MY_FREE_POOL(MsgStr);
         #endif
 
+        ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
+        GlobalConfig.ContinueOnWarning = TRUE;
         MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2196,12 +2194,18 @@ EFI_STATUS EFIAPI efi_main (
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"        Disabled All Features Involving UEFI Changes      ", NEXTLINE);
+        #if REFIT_DEBUG > 0
         PrintUglyText (L"                See Debug Log for Details                 ", NEXTLINE);
+        #else
+        PrintUglyText (L"              Run DBG Build File for Details              ", NEXTLINE);
+        #endif
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
 
         PauseForKey();
         MuteLogger = FALSE;
+        GlobalConfig.ContinueOnWarning = ForceContinue;
+        ForceContinue = FALSE;
 
         #if REFIT_DEBUG > 0
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
@@ -2242,18 +2246,25 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
+        ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
+        GlobalConfig.ContinueOnWarning = TRUE;
         MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"           Inconsistent UEFI 2.x Implementation           ", NEXTLINE);
+        PrintUglyText (L"                                                          ", NEXTLINE);
+
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"             Program Behaviour is Undefined!!             ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
 
         PauseForKey();
         MuteLogger = FALSE;
+        GlobalConfig.ContinueOnWarning = ForceContinue;
+        ForceContinue = FALSE;
 
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
@@ -2294,6 +2305,8 @@ EFI_STATUS EFIAPI efi_main (
         LOG_MSG("INFO: User Warning:- '%s'", MsgStr);
         MY_FREE_POOL(MsgStr);
 
+        ForceContinue = (GlobalConfig.ContinueOnWarning) ? TRUE : FALSE;
+        GlobalConfig.ContinueOnWarning = TRUE;
         MuteLogger = TRUE;
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
         PrintUglyText (L"                                                          ", NEXTLINE);
@@ -2301,10 +2314,8 @@ EFI_STATUS EFIAPI efi_main (
         PrintUglyText (L"      Could not find a RefindPlus 'config.conf' file      ", NEXTLINE);
         PrintUglyText (L"    Trying to load a rEFInd 'refind.conf' file instead    ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
-        PrintUglyText (L"                                                          ", NEXTLINE);
 
         REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
-        PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"                                                          ", NEXTLINE);
         PrintUglyText (L"    Provide a config.conf file to silence this warning    ", NEXTLINE);
         PrintUglyText (L"     You can rename a refind.conf file as config.conf     ", NEXTLINE);
@@ -2314,6 +2325,8 @@ EFI_STATUS EFIAPI efi_main (
 
         PauseForKey();
         MuteLogger = FALSE;
+        GlobalConfig.ContinueOnWarning = ForceContinue;
+        ForceContinue = FALSE;
 
         MsgStr = StrDuplicate (L"Warning Acknowledged or Timed Out");
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

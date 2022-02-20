@@ -345,26 +345,17 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
                     case PixelBlueGreenRedReserved8BitPerColor: PixelFormatDesc = L"8bit BGR";  break;
                     case PixelBitMask:                          PixelFormatDesc = L"BIT MASK";  break;
                     case PixelBltOnly:                          PixelFormatDesc = L"!FBuffer";  break;
-                    default:                                    PixelFormatDesc = L"Invalid!!"; break;
+                    default:                                    PixelFormatDesc = L"Invalid!";  break;
                 } // switch
 
-                if (LoopCount < MaxMode - 1) {
-                    LOG_MSG(
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
-                        Info->HorizontalResolution,
-                        Info->VerticalResolution,
-                        Info->PixelsPerScanLine,
-                        PixelFormatDesc, Status
-                    );
-                }
-                else {
-                    LOG_MSG(
-                        " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
-                        Info->HorizontalResolution,
-                        Info->VerticalResolution,
-                        Info->PixelsPerScanLine,
-                        PixelFormatDesc, Status
-                    );
+                LOG_MSG(
+                    " @ %5d x %-5d (%5d Pixels Per Scanned Line, %s Pixel Format ) ... %r",
+                    Info->HorizontalResolution,
+                    Info->VerticalResolution,
+                    Info->PixelsPerScanLine,
+                    PixelFormatDesc, Status
+                );
+                if (LoopCount >= (MaxMode - 1)) {
                     LOG_MSG("\n\n");
                 }
                 #endif
@@ -378,10 +369,13 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
 
                 if (Mode > 99) {
                     LOG_MSG( ". NB: Real Mode = %d", Mode);
-                    LOG_MSG("\n");
                 }
-                if (LoopCount >= MaxMode) {
+
+                if (LoopCount >= (MaxMode - 1)) {
                     LOG_MSG("\n\n");
+                }
+                else {
+                    LOG_MSG("\n");
                 }
                 #endif
             } // if Status == EFI_SUCCESS
@@ -2154,7 +2148,7 @@ VOID egScreenShot (VOID) {
 
         MuteLogger = TRUE;
         egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-        PauseSeconds (4);
+        HaltSeconds (4);
         MuteLogger = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -2192,7 +2186,7 @@ VOID egScreenShot (VOID) {
 
         MuteLogger = TRUE;
         egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-        PauseSeconds (4);
+        HaltSeconds (4);
         MuteLogger = FALSE;
 
         #if REFIT_DEBUG > 0
@@ -2217,7 +2211,7 @@ VOID egScreenShot (VOID) {
 
             MuteLogger = TRUE;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            PauseSeconds (4);
+            HaltSeconds (4);
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
@@ -2244,7 +2238,7 @@ VOID egScreenShot (VOID) {
 
             MuteLogger = TRUE;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            PauseSeconds (4);
+            HaltSeconds (4);
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
@@ -2271,7 +2265,7 @@ VOID egScreenShot (VOID) {
 
             MuteLogger = TRUE;
             egDisplayMessage (MsgStr, &BGColorWarn, CENTER);
-            PauseSeconds (4);
+            HaltSeconds (4);
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0
@@ -2304,7 +2298,7 @@ VOID egScreenShot (VOID) {
 
     MuteLogger = TRUE;
     egDisplayMessage (MsgStr, &BGColorGood, CENTER);
-    PauseSeconds (2);
+    HaltSeconds (2);
     MuteLogger = FALSE;
 
     MY_FREE_POOL(MsgStr);

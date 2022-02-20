@@ -2345,33 +2345,33 @@ CHAR16 * GetApfsRoleString (
 } // static CHAR16 * GetApfsRoleString()
 
 VOID ScanVolumes (VOID) {
-    EFI_STATUS          Status;
-    EFI_HANDLE         *Handles;
-    REFIT_VOLUME       *Volume = NULL;
-    REFIT_VOLUME       *WholeDiskVolume;
-    MBR_PARTITION_INFO *MbrTable;
-    UINTN               HandleCount = 0;
-    UINTN               HandleIndex;
-    UINTN               VolumeIndex;
-    UINTN               VolumeIndex2;
-    UINTN               PartitionIndex;
-    UINTN               SectorSum, i;
-    UINT8              *SectorBuffer1;
-    UINT8              *SectorBuffer2;
-    CHAR16             *RoleStr  = NULL;
-    CHAR16             *PartType = NULL;
-    BOOLEAN             CheckedAPFS;
-    BOOLEAN             DupFlag;
-    EFI_GUID           *UuidList;
-    EFI_GUID            VolumeGuid;
-    APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
+    EFI_STATUS              Status;
+    EFI_HANDLE             *Handles;
+    REFIT_VOLUME           *Volume = NULL;
+    REFIT_VOLUME           *WholeDiskVolume;
+    MBR_PARTITION_INFO     *MbrTable;
+    UINTN                   HandleCount = 0;
+    UINTN                   HandleIndex;
+    UINTN                   VolumeIndex;
+    UINTN                   VolumeIndex2;
+    UINTN                   PartitionIndex;
+    UINTN                   SectorSum, i;
+    UINT8                  *SectorBuffer1;
+    UINT8                  *SectorBuffer2;
+    CHAR16                 *RoleStr = NULL;
+    CHAR16                 *PartType = NULL;
+    BOOLEAN                 CheckedAPFS;
+    BOOLEAN                 DupFlag;
+    EFI_GUID               *UuidList;
+    EFI_GUID                VolumeGuid;
+    APPLE_APFS_VOLUME_ROLE  VolumeRole = 0;
 
     #if REFIT_DEBUG > 0
-    CHAR16  *MsgStr       = NULL;
-    CHAR16  *PartName     = NULL;
-    CHAR16  *PartGUID     = NULL;
-    CHAR16  *PartTypeGUID = NULL;
-    CHAR16  *VolumeUUID   = NULL;
+    CHAR16  *MsgStr        = NULL;
+    CHAR16  *PartName      = NULL;
+    CHAR16  *PartGUID      = NULL;
+    CHAR16  *PartTypeGUID  = NULL;
+    CHAR16  *VolumeUUID    = NULL;
 
     const CHAR16 *ITEMVOLA = L"PARTITION TYPE GUID";
     const CHAR16 *ITEMVOLB = L"PARTITION GUID";
@@ -2379,8 +2379,6 @@ VOID ScanVolumes (VOID) {
     const CHAR16 *ITEMVOLD = L"VOLUME UUID";
     const CHAR16 *ITEMVOLE = L"VOLUME ROLE";
     const CHAR16 *ITEMVOLF = L"VOLUME NAME";
-
-    ALT_LOG(1, LOG_LINE_SEPARATOR, L"Scan Readable Volumes");
     #endif
 
     if (!SelfVolRun) {
@@ -2395,6 +2393,14 @@ VOID ScanVolumes (VOID) {
         FreeSyncVolumes();
         ForgetPartitionTables();
     }
+
+    #if REFIT_DEBUG > 0
+    MsgStr = StrDuplicate (L"E X A M I N E   A V A I L A B L E   V O L U M E S");
+    ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", MsgStr);
+    LOG_MSG("\n\n");
+    LOG_MSG("%s", MsgStr);
+    MY_FREE_POOL(MsgStr);
+    #endif
 
     // Get all filesystem handles
     Status = LibLocateHandle (

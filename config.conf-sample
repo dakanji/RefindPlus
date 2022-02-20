@@ -147,7 +147,6 @@
 #
 # Inactive when commented out (Does not use the built-in GOP)
 #
-
 #direct_gop_renderer
 
 # Disable Apple Mobile File Integrity (AMFI) checks. When this option is active,

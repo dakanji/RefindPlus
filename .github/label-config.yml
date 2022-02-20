@@ -86,8 +86,8 @@ Enhancement:
       - 'Queries'
       - 'Unclear'
 
-# The `Flagged` label is added to issues
-Flagged:
+# The `Tagged` label is added to issues
+Tagged:
   issues:
     # Remove labels
     unlabel:
