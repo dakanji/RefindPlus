@@ -8,8 +8,8 @@
     - This bug was introduced in v0.13.2.AN (Commit 99da7ce)
 - Improves `ProtectNVRAM` Feature
   * Adds `UnlockID` and `UnlockIDCopy` to filtered items
-  * These are not certificates but work in concert with the certificates
-  * Not required once certificates are filtered and additionally, filtering these reduces NVRAM writes
+    - These are not certificates but work in concert with the certificates
+    - Not required once certificates are filtered and additionally, filtering these reduces NVRAM writes
 - Improves Identification of Linux Instances
   * `vmlinuz`, `bzImage`, and `kernel` loaders are now accounted for as Linux loaders
   * Hence the `ProtectNVRAM` feature is not applied to such loaders

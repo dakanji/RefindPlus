@@ -301,7 +301,16 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         )
     );
 
-    Status = (BlockCert)
+    MuteLogger = TRUE;
+    BOOLEAN BlockMore = (
+        AppleFirmware &&
+        (
+            FoundSubStr (VariableName, L"UnlockID")
+        )
+    );
+    MuteLogger = FALSE;
+
+    Status = (BlockCert || BlockMore)
     ? EFI_SUCCESS
     : OrigSetVariableRT (
         VariableName,
@@ -321,7 +330,7 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     // Log Outcome
     CHAR16 *LogStatus = PoolPrint (
         L"%r",
-        (BlockCert) ? EFI_ACCESS_DENIED : Status
+        (BlockCert || BlockMore) ? EFI_ACCESS_DENIED : Status
     );
 
     MuteLogger = TRUE;
@@ -332,7 +341,11 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
         L"In Hardware NVRAM ... %13s %s:- '%s%s'",
         LogStatus,
         NVRAM_LOG_SET,
-        (BlockCert) ? L"Certificate  :::  " : L"",
+        (BlockCert)
+            ? L"Certificate  :::  "
+            : (BlockMore)
+                ? L"SecurityTag  :::  "
+                : L"",
         VariableName
     );
     LOG_MSG("%s", MsgStr);
