@@ -1024,6 +1024,36 @@ UINTN RunGenericMenu (
                 key.UnicodeChar, key.ScanCode, KeyTxt
             );
             #endif
+
+            if (BlockRescan) {
+                if (MenuExit == MENU_EXIT_ESCAPE) {
+                    MenuExit = 0;
+                }
+                else if (MenuExit == 0) {
+                    // Unblock Rescan on Selection Change
+                    switch (key.ScanCode) {
+                        case SCAN_END:
+                        case SCAN_HOME:
+                        case SCAN_PAGE_UP:
+                        case SCAN_PAGE_DOWN:
+                        case SCAN_UP:
+                        case SCAN_LEFT:
+                        case SCAN_DOWN:
+                        case SCAN_RIGHT: BlockRescan = FALSE;
+                    } // switch
+                }
+            }
+
+            if (MenuExit == MENU_EXIT_SCREENSHOT) {
+                MenuExit = 0;
+                egScreenShot();
+                State.PaintAll = TRUE;
+                WaitForRelease = TRUE;
+
+                // Unblock Rescan and Refresh Screen
+                BlockRescan = FALSE;
+                continue;
+            }
         }
         else {
             // React to pointer event

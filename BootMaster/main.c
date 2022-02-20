@@ -2361,10 +2361,6 @@ EFI_STATUS EFIAPI efi_main (
 
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
-            if (BlockRescan) {
-                continue;
-            }
-
             #if REFIT_DEBUG > 0
             LOG_MSG("User Input Received:");
             LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
@@ -2396,12 +2392,6 @@ EFI_STATUS EFIAPI efi_main (
             GlobalConfig.ShutdownAfterTimeout
         ) {
             ChosenEntry->Tag = TAG_SHUTDOWN;
-        }
-
-        if (MenuExit == MENU_EXIT_SCREENSHOT) {
-            egScreenShot();
-
-            continue;
         }
 
         // Reset NVRAM Protection

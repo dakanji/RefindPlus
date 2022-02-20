@@ -1,5 +1,15 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Improves `ScreenShot` and `SilentBoot` Features
+  * Properly limited to one (1) sreenshot per keypress
+  * Minimises screen shudder when `ESC` key is held down to override SilentBoot
+    - Removes limitation of key press not continuing beyond the on-screen message display
+  * Fixes Screenshots being only functional for the main screen
+    - This bug was introduced in v0.13.2.AN (Commit 99da7ce)
+- Improves `ProtectNVRAM` Feature
+  * Adds `UnlockID` and `UnlockIDCopy` to filtered items
+  * These are not certificates but work in concert with the certificates
+  * Not required once certificates are filtered and additionally, filtering these reduces NVRAM writes
 - Improves Identification of Linux Instances
   * `vmlinuz`, `bzImage`, and `kernel` loaders are now accounted for as Linux loaders
   * Hence the `ProtectNVRAM` feature is not applied to such loaders
@@ -13,7 +23,7 @@
 - Amends Scan for `.VolumeIcons` and `VolumeBadges`
   * Volumes in the `DontScanVolume` list are now skipped
 - Amends System Table Reallocations
-  * No longer copies memory
+  * No longer copies memory for system table reallocations
   * Some Mac models fail to boot with this following recent firmware updates
 - Amends 'HandleProtocol' Stashing
   * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
