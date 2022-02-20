@@ -447,10 +447,10 @@
 
 # Timeout in seconds for the main menu screen. Setting the timeout to "0"
 # disables automatic booting (i.e., no timeout). Setting "-1" results in
-# an immediate boot to the default OS (SilentBoot Feature) unless there
+# an immediate boot to the default OS (DirectBoot Feature) unless there
 # is a keypress already present in the buffer. In this case, the value
 # is interpreted as a shortcut key. When the "ESC" or SpaceBar key is
-# pressed instead, the SilentBoot Feature is overridden and the main
+# pressed instead, the DirectBoot Feature is overridden and the main
 # menu screen is displayed as normal. If the shortcut key cannot be
 # matched to a valid shortcut, the main menu is shown as for "0".
 #

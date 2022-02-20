@@ -148,12 +148,12 @@ VOID InitScreen (VOID) {
 
     PrepareBlankLine();
 
-    // Show the banner if in text mode and not in SilentBoot mode
+    // Show the banner if in text mode and not in DirectBoot mode
     if (GlobalConfig.TextOnly || !AllowGraphicsMode) {
         // DA-TAG: Just to make sure this is set
         AllowGraphicsMode = FALSE;
 
-        if (!GlobalConfig.SilentBoot && GlobalConfig.ScreensaverTime != -1) {
+        if (!GlobalConfig.DirectBoot && GlobalConfig.ScreensaverTime != -1) {
             DrawScreenHeader (L"Initialising...");
         }
     }
@@ -400,8 +400,8 @@ VOID SetupScreen (VOID) {
     else {
         #if REFIT_DEBUG > 0
         if (GlobalConfig.TextOnly) {
-            MsgStr = (GlobalConfig.SilentBoot)
-                ? StrDuplicate (L"'SilentBoot' is Active")
+            MsgStr = (GlobalConfig.DirectBoot)
+                ? StrDuplicate (L"'DirectBoot' is Active")
                 : StrDuplicate (L"Screen is in Text Only Mode");
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("Skipped Title Banner Display ... %s", MsgStr);
@@ -555,7 +555,7 @@ VOID BeginExternalScreen (
     IN BOOLEAN  UseGraphicsMode,
     IN CHAR16  *Title
 ) {
-    if (GlobalConfig.SilentBoot) {
+    if (GlobalConfig.DirectBoot) {
         // Reset error flag
         haveError = FALSE;
 
@@ -665,7 +665,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     static BOOLEAN       FirstCall     = TRUE;
     EFI_INPUT_KEY        key;
 
-    if (FirstCall || !GlobalConfig.SilentBoot) {
+    if (FirstCall || !GlobalConfig.DirectBoot) {
         for (;;) {
             Status = REFIT_CALL_2_WRAPPER(gST->ConIn->ReadKeyStroke, gST->ConIn, &key);
             if (Status == EFI_SUCCESS) {
@@ -681,7 +681,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     }
 
     #if REFIT_DEBUG > 0
-    if (!FirstCall && GlobalConfig.SilentBoot) {
+    if (!FirstCall && GlobalConfig.DirectBoot) {
         Status = EFI_NOT_STARTED;
     }
     else if (GotKeyStrokes) {
@@ -690,7 +690,7 @@ BOOLEAN ReadAllKeyStrokes (VOID) {
     else if (EmptyBuffer) {
         Status = EFI_ALREADY_STARTED;
     }
-    else if (!GlobalConfig.SilentBoot) {
+    else if (!GlobalConfig.DirectBoot) {
         FlushFailedTag = TRUE;
     }
 

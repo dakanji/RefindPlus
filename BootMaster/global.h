@@ -399,7 +399,7 @@ typedef struct {
 } LEGACY_ENTRY;
 
 typedef struct {
-    BOOLEAN           SilentBoot;
+    BOOLEAN           DirectBoot;
     BOOLEAN           CustomScreenBG;
     BOOLEAN           TextOnly;
     BOOLEAN           ScanAllLinux;

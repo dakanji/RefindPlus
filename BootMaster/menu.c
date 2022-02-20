@@ -791,10 +791,10 @@ UINTN RunGenericMenu (
         }
     }
 
-    if (GlobalConfig.SilentBoot && WaitForRelease) {
+    if (GlobalConfig.DirectBoot && WaitForRelease) {
         // DA-TAG: If we enter here, a shortcut key was pressed but not found
         //         Load the screen menu ... Without tools for Main Menu
-        //         Tools are not loaded with SilentBoot for speed
+        //         Tools are not loaded with DirectBoot for speed
         //         Enable Rescan to allow tools to be loaded
         //         Also disable Timeout just in case
         BlockRescan = FALSE;
@@ -1129,7 +1129,7 @@ UINTN RunGenericMenu (
 
     // Ignore MenuExit if time between loading main menu and detecting an 'Enter' keypress is too low
     // Primed Keystroke Buffer appears to only affect UEFI PC
-    if (!GlobalConfig.SilentBoot &&
+    if (!GlobalConfig.DirectBoot &&
         MenuExit == MENU_EXIT_ENTER &&
         !ClearedBuffer && !FlushFailReset &&
         MyStriCmp (Screen->Title, L"Main Menu")
@@ -1166,7 +1166,7 @@ UINTN RunGenericMenu (
             FlushFailReset = TRUE;
             MenuExit = 0;
         }
-    } // if !GlobalConfig.SilentBoot
+    } // if !GlobalConfig.DirectBoot
 
     if (ChosenEntry) {
         *ChosenEntry = Screen->Entries[State.CurrentSelection];
@@ -3111,7 +3111,7 @@ UINTN RunMainMenu (
         #if REFIT_DEBUG > 0
         if (ShowLoaded) {
             BREAD_CRUMB(L"In %s ... 3a 2a 1", FuncTag);
-            SetSelection = (GlobalConfig.SilentBoot) ? FALSE : TRUE;
+            SetSelection = (GlobalConfig.DirectBoot) ? FALSE : TRUE;
 
             MsgStr = PoolPrint (L"Configured Default Loader:- '%s'", *DefaultSelection);
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);

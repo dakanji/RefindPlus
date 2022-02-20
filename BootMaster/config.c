@@ -760,7 +760,7 @@ VOID ReadConfig (
         if (MyStriCmp (TokenList[0], L"timeout")) {
             // DA-TAG: Signed integer as can have negative value
             HandleSignedInt (TokenList, TokenCount, &(GlobalConfig.Timeout));
-            GlobalConfig.SilentBoot = (GlobalConfig.Timeout < 0) ? TRUE : FALSE;
+            GlobalConfig.DirectBoot = (GlobalConfig.Timeout < 0) ? TRUE : FALSE;
         }
         else if (MyStriCmp (TokenList[0], L"shutdown_after_timeout")) {
            GlobalConfig.ShutdownAfterTimeout = HandleBoolean (TokenList, TokenCount);
@@ -1479,7 +1479,7 @@ LOADER_ENTRY * AddStanzaEntries (
                     #if REFIT_DEBUG > 0
                     ALT_LOG(1, LOG_THREE_STAR_MID,
                         L"In AddStanzaEntries ... Skipped Loading Icon in %s Mode",
-                        (GlobalConfig.SilentBoot) ? L"SilentBoot" : L"Text Screen"
+                        (GlobalConfig.DirectBoot) ? L"DirectBoot" : L"Text Screen"
                     );
                     #endif
                 }

@@ -2,7 +2,7 @@
 -----------------------
 - Adds `HaltSeconds` Function
   * As `PauseSeconds` but does not terminate on keypress
-- Improves `ScreenShot` and `SilentBoot` Features
+- Improves `ScreenShot` and `DirectBoot` Features
   * Properly limited to one (1) sreenshot per keypress
   * Minimises screen shudder when `ESC` key is held down to override SilentBoot
     - Removes limitation of key press not continuing beyond the on-screen message display
@@ -31,6 +31,8 @@
   * Some Mac models fail to boot with this following recent firmware updates
 - Amends 'HandleProtocol' Stashing
   * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
+- Renames the `SilentBoot` Feature as `DirectBoot`
+    * This more accurately describes the feature.
 
 
 0.13.2.AN (08 Feb 2022):

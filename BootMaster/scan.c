@@ -640,8 +640,8 @@ VOID SetLoaderDefaults (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In SetLoaderDefaults ... Skipped Loading Icon in %s Mode",
-            (GlobalConfig.SilentBoot)
-                ? L"SilentBoot"
+            (GlobalConfig.DirectBoot)
+                ? L"DirectBoot"
                 : L"Text Screen"
         );
         #endif
@@ -3005,8 +3005,8 @@ VOID ScanForTools (VOID) {
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"%s", LogSection);
     LOG_MSG("%s", LogSection);
 
-    if (GlobalConfig.SilentBoot) {
-        LogSection = L"Skipped Loading UEFI Tools ... 'SilentBoot' is Active";
+    if (GlobalConfig.DirectBoot) {
+        LogSection = L"Skipped Loading UEFI Tools ... 'DirectBoot' is Active";
         ALT_LOG(1, LOG_LINE_NORMAL, L"%s", LogSection);
         ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
         LOG_MSG("\n");
@@ -3022,7 +3022,7 @@ VOID ScanForTools (VOID) {
     }
     #endif
 
-    if (GlobalConfig.SilentBoot) {
+    if (GlobalConfig.DirectBoot) {
         // Early Return
         return;
     }

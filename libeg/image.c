@@ -526,8 +526,8 @@ EG_IMAGE * egLoadIcon (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In egLoadIcon ... Skipped Loading Icon in %s Mode",
-            (GlobalConfig.SilentBoot)
-                ? L"SilentBoot"
+            (GlobalConfig.DirectBoot)
+                ? L"DirectBoot"
                 : L"Text Screen"
         );
         #endif
@@ -626,8 +626,8 @@ EG_IMAGE * egLoadIconAnyType (
         #if REFIT_DEBUG > 0
         ALT_LOG(1, LOG_THREE_STAR_MID,
             L"In egLoadIconAnyType ... Skipped Loading Icon in %s Mode",
-            (GlobalConfig.SilentBoot)
-                ? L"SilentBoot"
+            (GlobalConfig.DirectBoot)
+                ? L"DirectBoot"
                 : L"Text Screen"
         );
         #endif

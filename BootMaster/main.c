@@ -82,7 +82,7 @@ INT16 NowSecond = 0;
 REFIT_MENU_SCREEN *MainMenu = NULL;
 
 REFIT_CONFIG GlobalConfig = {
-    /* SilentBoot = */ FALSE,
+    /* DirectBoot = */ FALSE,
     /* CustomScreenBG = */ FALSE,
     /* TextOnly = */ FALSE,
     /* ScanAllLinux = */ TRUE,
@@ -1195,7 +1195,7 @@ VOID RescanAll (
     if (OverrideSB) {
         GlobalConfig.Timeout    = 0;
         GlobalConfig.TextOnly   = TRUE;
-        GlobalConfig.SilentBoot = FALSE;
+        GlobalConfig.DirectBoot = FALSE;
     }
 
     SetVolumeIcons();
@@ -1869,7 +1869,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      SyncAPFS:- '%s'",     OffsetNext, GlobalConfig.SyncAPFS     ? L"Active" : L"Inactive");
     LOG_MSG("%s      TagsHelp:- '%s'",     OffsetNext, GlobalConfig.TagsHelp     ? L"Active" : L"Inactive");
     LOG_MSG("%s      TextOnly:- '%s'",     OffsetNext, GlobalConfig.TextOnly     ? L"Active" : L"Inactive");
-    LOG_MSG("%s      SilentBoot:- '%s'",   OffsetNext, GlobalConfig.SilentBoot   ? L"Active" : L"Inactive");
+    LOG_MSG("%s      DirectBoot:- '%s'",   OffsetNext, GlobalConfig.DirectBoot   ? L"Active" : L"Inactive");
     LOG_MSG("%s      ScanAllESP:- '%s'",   OffsetNext, GlobalConfig.ScanAllESP   ? L"Active" : L"Inactive");
     LOG_MSG("%s      TextRenderer:- '%s'", OffsetNext, GlobalConfig.TextRenderer ? L"Active" : L"Inactive");
 
@@ -1979,15 +1979,15 @@ EFI_STATUS EFIAPI efi_main (
         #endif
     }
 
-    /* Validate SilentBoot */
-    if (GlobalConfig.SilentBoot) {
+    /* Validate DirectBoot */
+    if (GlobalConfig.DirectBoot) {
         // Override ScreensaverTime
         if (GlobalConfig.ScreensaverTime != 0) {
             GlobalConfig.ScreensaverTime = 300;
         }
 
         if (SecureBootFailure || WarnVersionEFI) {
-            // Override SilentBoot if a warning needs to be shown
+            // Override DirectBoot if a warning needs to be shown
             //   for ALL build targets
             OverrideSB                     = TRUE;
             GlobalConfig.ContinueOnWarning = TRUE;
@@ -1995,13 +1995,13 @@ EFI_STATUS EFIAPI efi_main (
 
         #if REFIT_DEBUG > 0
         if (WarnMissingQVInfo || ConfigWarn) {
-            // Override SilentBoot if a warning needs to be shown
+            // Override DirectBoot if a warning needs to be shown
             //   for DBG and NPT build targets
             OverrideSB                     = TRUE;
             GlobalConfig.ContinueOnWarning = TRUE;
         }
 
-        LOG_MSG("C O N F I R M   S I L E N T    B O O T");
+        LOG_MSG("C O N F I R M   D I R E C T    B O O T");
         if (OverrideSB) {
             LOG_MSG("\n");
             LOG_MSG("Load Error or Warning Present");
@@ -2033,26 +2033,26 @@ EFI_STATUS EFIAPI efi_main (
         if (OverrideSB) {
             BlockRescan = TRUE;
             GlobalConfig.Timeout = 0;
-            GlobalConfig.SilentBoot = FALSE;
+            GlobalConfig.DirectBoot = FALSE;
 
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L" - Overriding SilentBoot");
+            MsgStr = StrDuplicate (L"Overriding");
             #endif
         }
         else {
             #if REFIT_DEBUG > 0
-            MsgStr = StrDuplicate (L" - Maintaining SilentBoot");
+            MsgStr = StrDuplicate (L"Maintaining");
             #endif
 
             GlobalConfig.TextOnly = TRUE;
         }
 
         #if REFIT_DEBUG > 0
-        LOG_MSG("%s%s", OffsetNext, MsgStr);
+        LOG_MSG("%s - %s DirectBoot", OffsetNext, MsgStr);
         LOG_MSG("\n\n");
         MY_FREE_POOL(MsgStr);
         #endif
-    } // if GlobalConfig.SilentBoot
+    } // if GlobalConfig.DirectBoot
 
     #if REFIT_DEBUG > 0
     MsgStr = StrDuplicate (L"I N I T I A L I S E   G R A P H I C S");
@@ -3141,9 +3141,9 @@ EFI_STATUS EFIAPI efi_main (
             break;
         } // switch
 
-        // Disable SilentBoot if still active after first loop
-        if (GlobalConfig.SilentBoot) {
-            GlobalConfig.SilentBoot = FALSE;
+        // Disable DirectBoot if still active after first loop
+        if (GlobalConfig.DirectBoot) {
+            GlobalConfig.DirectBoot = FALSE;
             MainMenu->TimeoutSeconds = GlobalConfig.Timeout = 0;
             DrawScreenHeader (MainMenu->Title);
         }
