@@ -320,7 +320,7 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
                 status = fsw_memdup((void **) &vol->primary_voldesc, voldesc, ISO9660_BLOCKSIZE);
             }
         } else if (!fsw_memeq(voldesc->standard_identifier, "CD", 2)) {
-            // completely alien standard identifier, stop reading
+            // Completely alien standard identifier, stop reading
             voldesc_type = 255;
         }
 
@@ -330,14 +330,14 @@ static fsw_status_t fsw_iso9660_volume_mount(struct fsw_iso9660_volume *vol)
     if (status)
         return status;
 
-    // get information from Primary Volume Descriptor
+    // Get information from Primary Volume Descriptor
     if (vol->primary_voldesc == NULL)
         return FSW_UNSUPPORTED;
     pvoldesc = vol->primary_voldesc;
 //     if (ISOINT(pvoldesc->logical_block_size) != 2048)
 //         return FSW_UNSUPPORTED;
 
-    // get volume name
+    // Get volume name
     for (i = 32; i > 0; i--)
         if (pvoldesc->volume_identifier[i-1] != ' ')
             break;
@@ -437,7 +437,7 @@ static fsw_status_t fsw_iso9660_volume_stat(struct fsw_iso9660_volume *vol, stru
 
 static fsw_status_t fsw_iso9660_dnode_fill(struct fsw_iso9660_volume *vol, struct fsw_iso9660_dnode *dno)
 {
-    // get info from the directory record
+    // Get info from the directory record
     dno->g.size = ISOINT(dno->dirrec.data_length);
     if (dno->dirrec.file_flags & 0x02)
         dno->g.type = FSW_DNODE_TYPE_DIR;

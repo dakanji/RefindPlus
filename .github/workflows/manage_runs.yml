@@ -1,5 +1,5 @@
 
-name: 'Manage Run Record'
+name: 'Manage Runs'
 
 on:
   workflow_dispatch:
@@ -14,7 +14,6 @@ jobs:
     name: Prune Runs
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji'
     steps:
       - uses: Mattraks/delete-workflow-runs@v2
         with:

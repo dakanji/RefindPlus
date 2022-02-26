@@ -176,7 +176,7 @@ EFI_STATUS RefitCheckGOP (VOID) {
 
         EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info = NULL;
 
-        UINTN   SizeOfInfo;
+        UINTN   SizeOfInfo, IndexGPU = 0;
         UINT32  MaxMode;
         UINT32  Mode;
         UINT32  Width       = 0;
@@ -193,10 +193,10 @@ EFI_STATUS RefitCheckGOP (VOID) {
                     &GOPDrawProtocolGuid,
                     (VOID **) &Gop
                 );
-
                 if (!EFI_ERROR(Status)) {
+                    ++IndexGPU;
                     #if REFIT_DEBUG > 0
-                    LOG_MSG("%s  - Found Replacement Candidate on GPU Handle[%02d]", OffsetNext, i);
+                    LOG_MSG("%s  - Found Replacement Candidate on GPU %02d", OffsetNext, IndexGPU);
                     LOG_MSG("%s    * Evaluate Candidate", OffsetNext);
                     #endif
 
@@ -292,7 +292,7 @@ EFI_STATUS egDumpGOPVideoModes (VOID) {
         return EFI_UNSUPPORTED;
     }
 
-    // get dump
+    // Get dump
     MaxMode = GOPDraw->Mode->MaxMode;
     if (MaxMode > 0) {
         #if REFIT_DEBUG > 0
@@ -423,7 +423,7 @@ EFI_STATUS GopSetModeAndReconnectTextOut (
     #if REFIT_DEBUG > 0
     MsgStr = PoolPrint (L"Switch to GOP Mode[%d] ... %r", ModeNumber, Status);
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-    LOG_MSG("  - %s", MsgStr);
+    LOG_MSG("%s", MsgStr);
     LOG_MSG("\n\n");
     MY_FREE_POOL(MsgStr);
     #endif
@@ -647,7 +647,7 @@ VOID egDetermineScreenSize (
     UINT32     UgaDepth;
     UINT32     UgaRefreshRate;
 
-    // get screen size
+    // Get screen size
     egHasGraphics = FALSE;
     if (GOPDraw != NULL) {
         egScreenWidth   = GOPDraw->Mode->Info->HorizontalResolution;
@@ -1123,10 +1123,13 @@ VOID egInitScreen (VOID) {
             }
 
             #if REFIT_DEBUG > 0
+            CHAR16 *StrX = L"";
+            if (!AllowTweakUEFI && !EFI_ERROR(Status)) {
+                StrX = L" (  A S S U M E D  )";
+            }
             MsgStr = PoolPrint (
                 L"Implement Direct GOP Renderer ... %r%s",
-                Status,
-                (!EFI_ERROR(Status)) ? (!AllowTweakUEFI ? L" (  A S S U M E D  )" : L"") : L""
+                Status, StrX
             );
             ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
             LOG_MSG("INFO: %s", MsgStr);
@@ -2095,7 +2098,7 @@ EG_IMAGE * egCopyScreenArea (
       return NULL;
    }
 
-   // get full screen image
+   // Get full screen image
    if (GOPDraw != NULL) {
        REFIT_CALL_10_WRAPPER(
            GOPDraw->Blt, GOPDraw,
@@ -2138,7 +2141,7 @@ VOID egScreenShot (VOID) {
 
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("User Input Received:");
+    LOG_MSG("Received Input:");
     LOG_MSG("%s  - Take Screenshot", OffsetNext);
     #endif
 
@@ -2289,7 +2292,7 @@ VOID egScreenShot (VOID) {
         goto bailout_wait;
     }
 
-    MsgStr = StrDuplicate (L"Screenshot Saved");
+    MsgStr = StrDuplicate (L"Saving Screenshot");
 
     #if REFIT_DEBUG > 0
     LOG_MSG("%s    * %s:- '%s'", OffsetNext, MsgStr, FileName);

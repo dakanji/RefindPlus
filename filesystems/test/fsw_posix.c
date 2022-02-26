@@ -168,7 +168,7 @@ off_t fsw_posix_lseek(struct fsw_posix_file *file, off_t offset, int whence)
 {
     fsw_u64             base_offset = 0;
 
-    // get base offset
+    // Get base offset
     base_offset = 0;
     if (whence == SEEK_CUR)
         base_offset = file->shand.pos;
@@ -231,7 +231,7 @@ struct dirent * fsw_posix_readdir(struct fsw_posix_dir *dir)
     struct fsw_dnode    *dno;
     static struct dirent dent;
 
-    // get next entry from file system
+    // Get next entry from file system
     status = fsw_dnode_dir_read(&dir->shand, &dno);
     if (status) {
         if (status != 4)
@@ -245,7 +245,7 @@ struct dirent * fsw_posix_readdir(struct fsw_posix_dir *dir)
         return NULL;
     }
 
-    // fill dirent structure
+    // Fill dirent structure
     dent.d_fileno = dno->dnode_id;
     dent.d_reclen = 8 + dno->name.size + 1;
     switch (dno->type) {
@@ -434,14 +434,14 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
     UINTN               RequiredSize;
     struct fsw_dnode_stat sb;
 
-    // make sure the dnode has complete info
+    // Make sure the dnode has complete info
     Status = fsw_posix_map_status(fsw_dnode_fill(dno), Volume);
     if (EFI_ERROR(Status))
         return Status;
 
     // TODO: check/assert that the dno's name is in UTF16
 
-    // check buffer size
+    // Check buffer size
     RequiredSize = SIZE_OF_EFI_FILE_INFO + fsw_posix_strsize(&dno->name);
     if (*BufferSize < RequiredSize) {
         // TODO: wind back the directory in this case
@@ -450,7 +450,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
         return EFI_BUFFER_TOO_SMALL;
     }
 
-    // fill structure
+    // Fill structure
     ZeroMem(Buffer, RequiredSize);
     FileInfo = (EFI_FILE_INFO *)Buffer;
     FileInfo->Size = RequiredSize;
@@ -460,7 +460,7 @@ EFI_STATUS fsw_posix_dnode_fill_FileInfo(IN FSW_VOLUME_DATA *Volume,
         FileInfo->Attribute    |= EFI_FILE_DIRECTORY;
     fsw_posix_strcpy(FileInfo->FileName, &dno->name);
 
-    // get the missing info from the fs driver
+    // Get the missing info from the fs driver
     ZeroMem(&sb, sizeof (struct fsw_dnode_stat));
     sb.store_time_posix = fsw_posix_store_time_posix;
     sb.store_attr_posix = fsw_posix_store_attr_posix;

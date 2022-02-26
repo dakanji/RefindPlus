@@ -145,7 +145,7 @@ EFI_STATUS ReadGptData (REFIT_VOLUME *Volume, GPT_DATA **Data) {
         return EFI_INVALID_PARAMETER;
     }
 
-    // get block i/o
+    // Get block i/o
     if ((Status == EFI_SUCCESS) && (Volume->BlockIO == NULL)) {
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,

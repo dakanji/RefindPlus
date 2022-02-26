@@ -2968,7 +2968,7 @@ VOID HideTag (
                 HideEfiTag (Loader, HideTagMenu, L"HiddenTags");
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("\n");
                 LOG_MSG("  - %s", HideTagMenu->Title);
                 LOG_MSG("\n\n");
@@ -2984,7 +2984,7 @@ VOID HideTag (
             HideTagMenu->Title = L"Hide Legacy (BIOS) OS Tag";
             if (HideLegacyTag (LegacyLoader, HideTagMenu)) {
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("\n");
                 LOG_MSG("  - %s", HideTagMenu->Title);
                 LOG_MSG("\n\n");
@@ -3025,7 +3025,7 @@ VOID HideTag (
             MY_FREE_POOL(gHiddenTools);
 
             #if REFIT_DEBUG > 0
-            LOG_MSG("User Input Received:");
+            LOG_MSG("Received Input:");
             LOG_MSG("\n");
             LOG_MSG("  - %s", HideTagMenu->Title);
             LOG_MSG("\n\n");

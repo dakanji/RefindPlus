@@ -768,7 +768,7 @@ fsw_status_t fsw_dnode_resolve(struct fsw_dnode *dno, struct fsw_dnode **target_
     fsw_dnode_retain(dno);
 
     while (--link_count > 0) {
-        // get full information
+        // Get full information
         status = fsw_dnode_fill(dno);
         if (status)
             goto errorexit;
@@ -883,7 +883,7 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
         buflen = (fsw_u32)(dno->size - pos);
 
     while (buflen > 0) {
-        // get extent for the current logical block
+        // Get extent for the current logical block
         log_bno = FSW_U64_DIV(pos, vol->log_blocksize);
         if (shand->extent.type == FSW_EXTENT_TYPE_INVALID ||
             log_bno < shand->extent.log_start ||
@@ -903,7 +903,7 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
 
         pos_in_extent = pos - shand->extent.log_start * vol->log_blocksize;
 
-        // dispatch by extent type
+        // Dispatch by extent type
         if (shand->extent.type == FSW_EXTENT_TYPE_PHYSBLOCK) {
             // convert to physical block number and offset
             phys_bno = shand->extent.phys_start + FSW_U64_DIV(pos_in_extent, vol->phys_blocksize);
@@ -912,12 +912,12 @@ fsw_status_t fsw_shandle_read(struct fsw_shandle *shand, fsw_u32 *buffer_size_in
             if (copylen > buflen)
                 copylen = buflen;
 
-            // get one physical block
+            // Get one physical block
             status = fsw_block_get(vol, phys_bno, cache_level, (void **) &block_buffer);
             if (status)
                 return status;
 
-            // copy data from it
+            // Copy data from it
             fsw_memcpy(buffer, block_buffer + pos_in_physblock, copylen);
             fsw_block_release(vol, phys_bno, block_buffer);
 

@@ -1469,7 +1469,7 @@ static fsw_status_t fsw_btrfs_dnode_fill(struct fsw_volume *volg, struct fsw_dno
         return err;
     }
 
-    // get info from the inode
+    // Get info from the inode
     dno->g.size = fsw_u64_le_swap(dno->raw->size);
     // TODO: check docs for 64-bit sized files
     mode = fsw_u32_le_swap(dno->raw->mode);

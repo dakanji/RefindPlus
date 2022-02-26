@@ -156,10 +156,10 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     if (blocksize < EXT4_MIN_BLOCK_SIZE || blocksize > EXT4_MAX_BLOCK_SIZE)
         return FSW_UNSUPPORTED;
 
-    // set real blocksize
+    // Set real blocksize
     fsw_set_blocksize(vol, blocksize, blocksize);
 
-    // get other info from superblock
+    // Get other info from superblock
     vol->ind_bcnt = EXT4_ADDR_PER_BLOCK(vol->sb);
     vol->dind_bcnt = vol->ind_bcnt * vol->ind_bcnt;
     vol->inode_size = vol->sb->s_inode_size;//EXT4_INODE_SIZE(vol->sb);
@@ -174,7 +174,7 @@ static fsw_status_t fsw_ext4_volume_mount(struct fsw_ext4_volume *vol)
     if (status)
         return status;
 
-    // size of group descriptor depends on feature.
+    // Size of group descriptor depends on feature.
     if (!(vol->sb->s_feature_incompat & EXT4_FEATURE_INCOMPAT_64BIT)) {
         // Default minimal group descriptor size... (this might not be set in old ext2 filesystems, therefor set it!)
         vol->sb->s_desc_size = EXT4_MIN_DESC_SIZE;
@@ -292,7 +292,7 @@ static fsw_status_t fsw_ext4_dnode_fill(struct fsw_ext4_volume *vol, struct fsw_
         return FSW_SUCCESS;
 
 
-    // read the inode block
+    // Read the inode block
     groupno = (fsw_u32) (dno->g.dnode_id - 1) / vol->sb->s_inodes_per_group;
     ino_in_group = (fsw_u32) (dno->g.dnode_id - 1) % vol->sb->s_inodes_per_group;
     ino_bno = vol->inotab_bno[groupno] +
@@ -303,13 +303,13 @@ static fsw_status_t fsw_ext4_dnode_fill(struct fsw_ext4_volume *vol, struct fsw_
     if (status)
         return status;
 
-    // keep our inode around
+    // Keep our inode around
     status = fsw_memdup((void **) &dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
     fsw_block_release(vol, ino_bno, buffer);
     if (status)
         return status;
 
-    // get info from the inode
+    // Get info from the inode
     dno->g.size = dno->raw->i_size_lo; // TODO: check docs for 64-bit sized files
 
     if (S_ISREG(dno->raw->i_mode))

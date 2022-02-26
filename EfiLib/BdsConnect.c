@@ -64,17 +64,18 @@ EFI_STATUS EFIAPI RefitConnectController (
 
     // DA-TAG: Do not connect controllers without device paths.
     //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    Status = gBS->HandleProtocol (
+    Status = REFIT_CALL_3_WRAPPER(
+        gBS->HandleProtocol,
         ControllerHandle,
         &gEfiDevicePathProtocolGuid,
         &DevicePath
     );
-
     if (EFI_ERROR(Status)) {
         return EFI_NOT_STARTED;
     }
 
-    Status = gBS->ConnectController (
+    Status = REFIT_CALL_4_WRAPPER(
+        gBS->ConnectController,
         ControllerHandle,
         DriverImageHandle,
         RemainingDevicePath,
@@ -92,7 +93,8 @@ EFI_STATUS ScanDeviceHandles (
 ) {
     EFI_STATUS                            Status;
     EFI_GUID                            **ProtocolGuidArray;
-    UINTN                                 k, ArrayCount;
+    UINTN                                 k;
+    UINTN                                 ArrayCount;
     UINTN                                 ProtocolIndex;
     UINTN                                 OpenInfoCount;
     UINTN                                 OpenInfoIndex;
@@ -105,15 +107,14 @@ EFI_STATUS ScanDeviceHandles (
 
     // DA-TAG: Retrieve a list of handles with device paths
     //         REF: https://bugzilla.tianocore.org/show_bug.cgi?id=2460
-    Status = gBS->LocateHandleBuffer (
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer,
         ByProtocol,
         &gEfiDevicePathProtocolGuid,
         NULL,
         HandleCount,
         HandleBuffer
     );
-
-
     if (EFI_ERROR(Status)) {
         goto Error;
     }
@@ -128,12 +129,12 @@ EFI_STATUS ScanDeviceHandles (
         (*HandleType)[k] = EFI_HANDLE_TYPE_UNKNOWN;
 
         // Retrieve a list of all the protocols on each handle
-        Status = gBS->ProtocolsPerHandle (
+        Status = REFIT_CALL_3_WRAPPER(
+            gBS->ProtocolsPerHandle,
             (*HandleBuffer)[k],
             &ProtocolGuidArray,
             &ArrayCount
         );
-
         if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
                 if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid)) {
@@ -165,13 +166,13 @@ EFI_STATUS ScanDeviceHandles (
                 }
 
                 // Retrieve the list of agents that have opened each protocol
-                Status = gBS->OpenProtocolInformation (
+                Status = REFIT_CALL_4_WRAPPER(
+                    gBS->OpenProtocolInformation,
                     (*HandleBuffer)[k],
                     ProtocolGuidArray[ProtocolIndex],
                     &OpenInfo,
                     &OpenInfoCount
                 );
-
                 if (!EFI_ERROR(Status)) {
                     for (OpenInfoIndex = 0; OpenInfoIndex < OpenInfoCount; OpenInfoIndex++) {
                         if (OpenInfo[OpenInfoIndex].ControllerHandle == ControllerHandle) {
@@ -270,7 +271,8 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
     // DA_TAG: Only connect controllers with device paths.
     //         See notes under ScanDeviceHandles
     //Status = gBS->LocateHandleBuffer (AllHandles, NULL, NULL, &AllHandleCount, &AllHandleBuffer);
-    Status = gBS->LocateHandleBuffer (
+    Status = REFIT_CALL_5_WRAPPER(
+        gBS->LocateHandleBuffer,
         ByProtocol,
         &gEfiDevicePathProtocolGuid,
         NULL,
@@ -308,7 +310,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
             &HandleBuffer,
             &HandleType
         );
-
         if (EFI_ERROR(XStatus)) {
             #if REFIT_DEBUG > 0
             MsgStr = PoolPrint (L"Handle 0x%03X - ERROR: %r", HexIndex, XStatus);
@@ -383,7 +384,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                         &gEfiPciIoProtocolGuid,
                         (void **) &PciIo
                     );
-
                     if (EFI_ERROR(XStatus)) {
                         #if REFIT_DEBUG > 0
                         DeviceData = StrDuplicate (L" - Not PCIe Device");
@@ -391,15 +391,23 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                     }
                     else {
                         // Read PCI BUS
-                        PciIo->GetLocation (PciIo, &SegmentPCI, &BusPCI, &DevicePCI, &FunctionPCI);
-                        XStatus = PciIo->Pci.Read (
+                        REFIT_CALL_5_WRAPPER(
+                            PciIo->GetLocation,
+                            PciIo,
+                            &SegmentPCI,
+                            &BusPCI,
+                            &DevicePCI,
+                            &FunctionPCI
+                        );
+
+                        XStatus = REFIT_CALL_5_WRAPPER(
+                            PciIo->Pci.Read,
                             PciIo,
                             EfiPciIoWidthUint32,
                             0,
                             sizeof (Pci) / sizeof (UINT32),
                             &Pci
                         );
-
                         if (EFI_ERROR(XStatus)) {
                             MakeConnection = FALSE;
 
@@ -414,7 +422,7 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             if (VGADevice) {
                                 // DA-TAG: Unable to reconnect later after disconnecting here
                                 //         Comment out and set MakeConnection to FALSE
-                                // gBS->DisconnectController (AllHandleBuffer[i], NULL, NULL);
+                                // REFIT_CALL_3_WRAPPER(gBS->DisconnectController, AllHandleBuffer[i], NULL, NULL);
                                 MakeConnection = FALSE;
 
                                 #if REFIT_DEBUG > 0
@@ -435,7 +443,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                             else {
                                 // DA-TAG: Not doing anything with these apart and just logging
                                 //         Might have options later based on item above
-
                                 #if REFIT_DEBUG > 0
                                 DeviceData = PoolPrint (
                                     L" - PCI(%02llX|%02llX:%02llX.%llX)",
@@ -459,7 +466,6 @@ EFI_STATUS BdsLibConnectMostlyAllEfi (VOID) {
                         &GOPCount,
                         &GOPArray
                     );
-
                     if (!EFI_ERROR(XStatus)) {
                         for (m = 0; m < GOPCount; m++) {
                             if (GOPArray[m] != gST->ConsoleOutHandle) {

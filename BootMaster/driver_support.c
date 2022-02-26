@@ -76,62 +76,6 @@
     #define DRIVER_DIRS             L"drivers"
 #endif
 
-// Following "global" constants are from EDK2's AutoGen.c.
-EFI_GUID gMyEfiLoadedImageProtocolGuid = {
-    0x5B1B31A1,
-    0x9562,
-    0x11D2,
-    { 0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
-};
-EFI_GUID gMyEfiDriverBindingProtocolGuid = {
-    0x18A031AB,
-    0xB443,
-    0x4D1A,
-    { 0xA5, 0xC0, 0x0C, 0x09, 0x26, 0x1E, 0x9F, 0x71 }
-};
-EFI_GUID gMyEfiDriverConfigurationProtocolGuid = {
-    0x107A772B,
-    0xD5E1,
-    0x11D4,
-    { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
-};
-EFI_GUID gMyEfiDriverDiagnosticsProtocolGuid = {
-    0x0784924F,
-    0xE296,
-    0x11D4,
-    { 0x9A, 0x49, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
-};
-EFI_GUID gMyEfiComponentNameProtocolGuid = {
-    0x107A772C,
-    0xD5E1,
-    0x11D4,
-    { 0x9A, 0x46, 0x00, 0x90, 0x27, 0x3F, 0xC1, 0x4D }
-};
-EFI_GUID gMyEfiDevicePathProtocolGuid = {
-    0x09576E91,
-    0x6D3F,
-    0x11D2,
-    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
-};
-EFI_GUID gMyEfiDiskIoProtocolGuid = {
-    0xCE345171,
-    0xBA0B,
-    0x11D2,
-    { 0x8E, 0x4F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
-};
-EFI_GUID gMyEfiBlockIoProtocolGuid = {
-    0x964E5B21,
-    0x6459,
-    0x11D2,
-    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
-};
-EFI_GUID gMyEfiSimpleFileSystemProtocolGuid = {
-    0x964E5B22,
-    0x6459,
-    0x11D2,
-    { 0x8E, 0x39, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B }
-};
-
 #ifdef __MAKEWITH_GNUEFI
 struct MY_EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 struct MY_EFI_FILE_PROTOCOL;
@@ -272,32 +216,32 @@ EFI_STATUS LibScanHandleDatabase (
         if (!EFI_ERROR(Status)) {
             for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiLoadedImageProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiLoadedImageProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_IMAGE_HANDLE;
                 }
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverBindingProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_BINDING_HANDLE;
                 }
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverConfigurationProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiDriverConfigurationProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_CONFIGURATION_HANDLE;
                 }
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDriverDiagnosticsProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiDriverDiagnosticsProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DRIVER_DIAGNOSTICS_HANDLE;
                 }
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiComponentNameProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiComponentNameProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_COMPONENT_NAME_HANDLE;
                 }
                 if (CompareGuid (
-                    ProtocolGuidArray[ProtocolIndex], &gMyEfiDevicePathProtocolGuid
+                    ProtocolGuidArray[ProtocolIndex], &gEfiDevicePathProtocolGuid
                 ) == 0) {
                     (*HandleType)[HandleIndex] |= EFI_HANDLE_TYPE_DEVICE_HANDLE;
                 }
@@ -320,16 +264,12 @@ EFI_STATUS LibScanHandleDatabase (
                             if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_DRIVER)
                                 == EFI_OPEN_PROTOCOL_BY_DRIVER
                             ) {
-                                //
                                 // Mark the device handle as being managed by the driver
                                 // specified by DriverBindingHandle
-                                //
                                 (*HandleType)[HandleIndex] |=
                                 (EFI_HANDLE_TYPE_DEVICE_HANDLE | EFI_HANDLE_TYPE_CONTROLLER_HANDLE);
-                                //
                                 // Mark the DriverBindingHandle as being a driver that is
                                 // managing at least one controller
-                                //
                                 if (DriverBindingHandleIndexValid) {
                                     (*HandleType)[*DriverBindingHandleIndex] |= EFI_HANDLE_TYPE_DEVICE_DRIVER;
                                 }
@@ -338,10 +278,8 @@ EFI_STATUS LibScanHandleDatabase (
                             if ((OpenInfo[OpenInfoIndex].Attributes & EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER)
                                 == EFI_OPEN_PROTOCOL_BY_CHILD_CONTROLLER
                             ) {
-                                //
                                 // Mark the DriverBindingHandle as being a driver that is
                                 // managing at least one child controller
-                                //
                                 if (DriverBindingHandleIndexValid) {
                                     (*HandleType)[*DriverBindingHandleIndex] |= EFI_HANDLE_TYPE_BUS_DRIVER;
                                 }
@@ -525,12 +463,10 @@ VOID ConnectFilesystemDriver (
     UINTN                                  OpenInfoCount;
     EFI_HANDLE                             DriverHandleList[2];
 
-    //
     // Get all DiskIo handles
-    //
     Status = REFIT_CALL_5_WRAPPER(
         gBS->LocateHandleBuffer, ByProtocol,
-        &gMyEfiDiskIoProtocolGuid, NULL,
+        &gEfiDiskIoProtocolGuid, NULL,
         &HandleCount, &Handles
     );
 
@@ -538,20 +474,16 @@ VOID ConnectFilesystemDriver (
         return;
     }
 
-    //
     // Check every DiskIo handle
-    //
     for (Index = 0; Index < HandleCount; Index++) {
-        //
         // If this is not partition - skip it.
         // This is then whole disk and DiskIo
         // should be opened here BY_DRIVER by Partition driver
         // to produce partition volumes.
-        //
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[Index],
-            &gMyEfiBlockIoProtocolGuid,
+            &gEfiBlockIoProtocolGuid,
             (VOID **) &BlockIo
         );
 
@@ -563,13 +495,11 @@ VOID ConnectFilesystemDriver (
             continue;
         }
 
-        //
         // If SimpleFileSystem is already produced - skip it, this is ok
-        //
         Status = REFIT_CALL_3_WRAPPER(
             gBS->HandleProtocol,
             Handles[Index],
-            &gMyEfiSimpleFileSystemProtocolGuid,
+            &gEfiSimpleFileSystemProtocolGuid,
             (VOID **) &Fs
         );
 
@@ -577,18 +507,15 @@ VOID ConnectFilesystemDriver (
             continue;
         }
 
-        //
         // If no SimpleFileSystem on this handle but DiskIo is opened BY_DRIVER
         // then disconnect this connection and try to connect our driver to it
-        //
         Status = REFIT_CALL_4_WRAPPER(
             gBS->OpenProtocolInformation,
             Handles[Index],
-            &gMyEfiDiskIoProtocolGuid,
+            &gEfiDiskIoProtocolGuid,
             &OpenInfo,
             &OpenInfoCount
         );
-
         if (EFI_ERROR(Status)) {
             continue;
         }
@@ -699,7 +626,7 @@ BOOLEAN LoadDrivers (VOID) {
     ALT_LOG(1, LOG_LINE_SEPARATOR, L"Load UEFI Drivers");
     #endif
 
-    // load drivers from the subdirectories of RefindPlus' home directory
+    // Load drivers from the subdirectories of RefindPlus' home directory
     // specified in the DRIVER_DIRS constant.
     #if REFIT_DEBUG > 0
     LOG_MSG("\n\n");

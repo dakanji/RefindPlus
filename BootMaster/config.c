@@ -176,7 +176,7 @@ EFI_STATUS RefitReadFile (
 }
 
 //
-// get a single line of text from a file
+// Get a single line of text from a file
 //
 
 static
@@ -319,7 +319,7 @@ BOOLEAN KeepReading (
 } // BOOLEAN KeepReading()
 
 //
-// get a line of tokens from a file
+// Get a line of tokens from a file
 //
 UINTN ReadTokenLine (
     IN  REFIT_FILE   *File,

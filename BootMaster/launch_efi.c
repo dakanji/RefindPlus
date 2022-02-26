@@ -174,7 +174,7 @@ BOOLEAN IsValidLoader (
         if (IsBoot) {
             LOG_MSG("\n");
             LOG_MSG("%s ... Loading", ValidText);
-            LOG_MSG("\n-----------------\n\n");
+            LOG_MSG("\n <<----- * ----->>\n\n");
         }
         #endif
 
@@ -266,7 +266,7 @@ BOOLEAN IsValidLoader (
         else {
             LOG_MSG("\n");
             LOG_MSG("%s ... Loading", ValidText);
-            LOG_MSG("\n-----------------\n\n");
+            LOG_MSG("\n <<----- * ----->>\n\n");
         }
         #endif
     }
@@ -318,8 +318,8 @@ EFI_STATUS StartEFIImage (
         FullLoadOptions = StrDuplicate (LoadOptions);
         if (OSType == 'M') {
             MergeStrings (&FullLoadOptions, L" ", 0);
-            // NOTE: That last space is also added by the EFI shell and seems to be significant
-            // when passing options to Apple's boot.efi
+            // DA-TAG: The last space is also added by the EFI shell and is
+            //         significant when passing options to Apple's boot.efi
         }
     }
 
@@ -333,7 +333,11 @@ EFI_STATUS StartEFIImage (
     #endif
 
     if (Verbose) {
-        Print(L"%s\n", MsgStr);
+        MuteLogger = TRUE;
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (MsgStr, NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = FALSE;
     }
 
     MY_FREE_POOL(MsgStr);
@@ -473,7 +477,7 @@ EFI_STATUS StartEFIImage (
     ChildLoadedImage->LoadOptionsSize = FullLoadOptions
         ? ((UINT32) StrLen (FullLoadOptions) + 1) * sizeof (CHAR16) : 0;
 
-    // turn control over to the image
+    // Turn control over to the image
     // TODO: (optionally) re-enable the EFI watchdog timer!
     if ((GlobalConfig.WriteSystemdVars) &&
         ((OSType == 'L') || (OSType == 'E') || (OSType == 'G'))
@@ -516,7 +520,7 @@ EFI_STATUS StartEFIImage (
         MY_FREE_POOL(EspGUID);
     } // if write systemd UEFI variables
 
-    // close open file handles
+    // Close open file handles
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
@@ -553,7 +557,7 @@ EFI_STATUS StartEFIImage (
         ALT_LOG(1, LOG_THREE_STAR_SEP, L"%s", MsgStr);
 
         if (Verbose) {
-            LOG_MSG("User Input Received:");
+            LOG_MSG("Received Input:");
             LOG_MSG("%s  - Exit Child Image Loader:- '%s'", OffsetNext, ImageTitle);
             LOG_MSG("\n\n");
         }
@@ -585,7 +589,7 @@ EFI_STATUS StartEFIImage (
         ConnectFilesystemDriver (ChildImageHandle);
     }
 
-    // re-open file handles
+    // Re-open file handles
     ReinitRefitLib();
 
 bailout_unload:
@@ -711,7 +715,7 @@ EFI_STATUS RebootIntoFirmware (VOID) {
     UninitRefitLib();
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n-----------------\n\n");
+    LOG_MSG("\n <<----- * ----->>\n\n");
     #endif
 
     REFIT_CALL_4_WRAPPER(
@@ -795,9 +799,13 @@ VOID RebootIntoLoader (
         LOG_MSG("\n\n");
         #endif
 
-        Print(L"%s\n", MsgStr);
-        PauseForKey();
+        MuteLogger = TRUE;
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+        PrintUglyText (MsgStr, NEXTLINE);
+        REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+        MuteLogger = FALSE;
 
+        PauseForKey();
         MY_FREE_POOL(MsgStr);
         return;
     }
@@ -805,7 +813,7 @@ VOID RebootIntoLoader (
     StoreLoaderName(Entry->me.Title);
 
     #if REFIT_DEBUG > 0
-    LOG_MSG("\n-----------------\n\n");
+    LOG_MSG("\n <<----- * ----->>\n\n");
     #endif
 
     REFIT_CALL_4_WRAPPER(

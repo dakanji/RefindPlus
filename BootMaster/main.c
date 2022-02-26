@@ -928,7 +928,7 @@ BOOLEAN ShowCleanNvramInfo (
         L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ShowCleanNvramInfo'",
         MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
     );
-    LOG_MSG("User Input Received:");
+    LOG_MSG("Received Input:");
     LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
     #endif
 
@@ -1204,7 +1204,7 @@ BOOLEAN SecureBootUninstall (VOID) {
 
             #if REFIT_DEBUG > 0
             LOG_MSG("%s", MsgStr);
-            LOG_MSG("\n-----------------\n\n");
+            LOG_MSG("\n <<----- * ----->>\n\n");
 
             #endif
 
@@ -2327,7 +2327,7 @@ EFI_STATUS EFIAPI efi_main (
         // The ESC key triggers a rescan ... if allowed
         if (MenuExit == MENU_EXIT_ESCAPE) {
             #if REFIT_DEBUG > 0
-            LOG_MSG("User Input Received:");
+            LOG_MSG("Received Input:");
             LOG_MSG("%s  - Escape Key Pressed ... Rescan All", OffsetNext);
             LOG_MSG("\n\n");
             #endif
@@ -2369,7 +2369,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating '%s Info' Screen", TypeStr);
 
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - %s", OffsetNext, TypeStr);
                 LOG_MSG("\n\n");
                 #endif
@@ -2415,7 +2415,7 @@ EFI_STATUS EFIAPI efi_main (
                     MsgStr = PoolPrint (L"Could Not Find Tool:- '%s'", TypeStr);
                     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
                     LOG_MSG("\n\n");
-                    LOG_MSG("** WARN **    %s ... Return to Main Menu", MsgStr);
+                    LOG_MSG("** WARN : %s ... Return to Main Menu", MsgStr);
                     LOG_MSG("\n\n");
                     MY_FREE_POOL(MsgStr);
                     #endif
@@ -2459,7 +2459,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
                 MuteLogger = TRUE;
@@ -2502,7 +2502,7 @@ EFI_STATUS EFIAPI efi_main (
 
                 ALT_LOG(1, LOG_LINE_NORMAL, L"%s", TypeStr);
                 LOG_MSG("%s", TypeStr);
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
                 MuteLogger = TRUE;
@@ -2530,7 +2530,7 @@ EFI_STATUS EFIAPI efi_main (
             break;
             case TAG_ABOUT:    // About RefindPlus
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Show 'About RefindPlus' Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2539,7 +2539,7 @@ EFI_STATUS EFIAPI efi_main (
                 AboutRefindPlus();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Exit 'About RefindPlus' Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2575,8 +2575,8 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     MsgStr = StrDuplicate (L"Load OpenCore Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -2602,8 +2602,8 @@ EFI_STATUS EFIAPI efi_main (
                     }
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     MsgStr = StrDuplicate (L"Load Clover Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -2625,8 +2625,8 @@ EFI_STATUS EFIAPI efi_main (
                     ActiveCSR();
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     MsgStr = StrDuplicate (L"Load MacOS Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -2701,8 +2701,8 @@ EFI_STATUS EFIAPI efi_main (
                     SetProtectNvram (SystemTable, TRUE);
 
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     MsgStr = StrDuplicate (L"Load Windows (UEFI) Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG(
@@ -2724,8 +2724,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Grub Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -2739,8 +2739,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via VMLinuz Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -2754,8 +2754,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via BZImage Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -2769,8 +2769,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Load Linux Instance via Kernel Loader");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -2784,8 +2784,8 @@ EFI_STATUS EFIAPI efi_main (
                     || ourLoaderEntry->OSType == 'L'
                 ) {
                     #if REFIT_DEBUG > 0
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     MsgStr = StrDuplicate (L"Load Linux Instance");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
                     LOG_MSG("%s  - %s", OffsetNext, MsgStr);
@@ -2804,8 +2804,8 @@ EFI_STATUS EFIAPI efi_main (
                     #if REFIT_DEBUG > 0
                     MsgStr = StrDuplicate (L"Run UEFI File");
                     ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                    // DA-TAG: Using separate instances of 'User Input Received:'
-                    LOG_MSG("User Input Received:");
+                    // DA-TAG: Using separate instances of 'Received Input:'
+                    LOG_MSG("Received Input:");
                     LOG_MSG(
                         "%s  - %s:- '%s'",
                         OffsetNext, MsgStr,
@@ -2824,7 +2824,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLegacyEntry = (LEGACY_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 #endif
 
                 if (MyStrStr (ourLegacyEntry->Volume->OSName, L"Windows")) {
@@ -2849,7 +2849,7 @@ EFI_STATUS EFIAPI efi_main (
                 }
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
                 StartLegacy (ourLegacyEntry, SelectionName);
@@ -2861,14 +2861,14 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Load 'UEFI-Style' Legacy (BIOS) OS");
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG(
                     "%s  - %s:- '%s'",
                     OffsetNext, MsgStr,
                     ourLegacyEntry->Volume ? ourLegacyEntry->Volume->OSName : L"NULL Volume"
                 );
                 MY_FREE_POOL(MsgStr);
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
                 StartLegacyUEFI (ourLegacyEntry, SelectionName);
@@ -2880,7 +2880,7 @@ EFI_STATUS EFIAPI efi_main (
                 #if REFIT_DEBUG > 0
                 MsgStr = StrDuplicate (L"Start UEFI Tool");
                 ALT_LOG(1, LOG_LINE_THIN_SEP, L"%s", MsgStr);
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
                 MY_FREE_POOL(MsgStr);
                 #endif
@@ -2893,7 +2893,7 @@ EFI_STATUS EFIAPI efi_main (
                 ourLoaderEntry = (LOADER_ENTRY *) ChosenEntry;
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Reboot into Firmware Defined Loader", OffsetNext);
                 #endif
 
@@ -2904,7 +2904,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_HIDDEN:  // Manage hidden tag entries
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Manage Hidden Tag Entries", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2913,7 +2913,7 @@ EFI_STATUS EFIAPI efi_main (
                 ManageHiddenTags();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Exit Hidden Tags Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2922,9 +2922,9 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_EXIT:    // Exit RefindPlus
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Exit RefindPlus", OffsetNext);
-                LOG_MSG("\n-----------------\n\n");
+                LOG_MSG("\n <<----- * ----->>\n\n");
                 #endif
 
                 if ((MokProtocol) && !SecureBootUninstall()) {
@@ -2940,7 +2940,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_FIRMWARE: // Reboot into firmware's user interface
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Reboot into Firmware", OffsetNext);
                 #endif
 
@@ -2951,7 +2951,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_CSR_ROTATE:
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Toggle Mac SIP", OffsetNext);
                 LOG_MSG("\n");
                 #endif
@@ -2963,7 +2963,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_INSTALL:
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Install RefindPlus", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2975,7 +2975,7 @@ EFI_STATUS EFIAPI efi_main (
             case TAG_BOOTORDER:
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Manage Firmware Boot Order", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -2984,7 +2984,7 @@ EFI_STATUS EFIAPI efi_main (
                 ManageBootorder();
 
                 #if REFIT_DEBUG > 0
-                LOG_MSG("User Input Received:");
+                LOG_MSG("Received Input:");
                 LOG_MSG("%s  - Exit Manage Firmware Boot Order Page", OffsetNext);
                 LOG_MSG("\n\n");
                 #endif
@@ -3043,7 +3043,7 @@ EFI_STATUS EFIAPI efi_main (
     ALT_LOG(1, LOG_BLANK_LINE_SEP, L"X");
     ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
     LOG_MSG("INFO: %s", MsgStr);
-    LOG_MSG("\n-----------------\n\n");
+    LOG_MSG("\n <<----- * ----->>\n\n");
     #endif
 
     MY_FREE_POOL(MsgStr);

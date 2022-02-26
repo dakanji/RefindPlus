@@ -1543,7 +1543,7 @@ TAS_BUFFER_FNS(JTest, journal_test);
 */
 
 /*
-** transaction handle which is passed around for all journal calls
+** Transaction handle which is passed around for all journal calls
 */
 struct reiserfs_transaction_handle {
 	struct super_block *t_super;	/* super for this FS when journal_begin was
@@ -1562,7 +1562,7 @@ struct reiserfs_transaction_handle {
 	//struct list_head t_list;
 };
 
-/* used to keep track of ordered and tail writes, attached to the buffer
+/* Used to keep track of ordered and tail writes, attached to the buffer
  * head through b_journal_head.
  */
 struct reiserfs_jh {
@@ -1572,7 +1572,7 @@ struct reiserfs_jh {
 };
 
 //
-// get key version from on disk key - kludge
+// Get key version from on disk key - kludge
 //
 /*
 static inline int le_key_version(const struct reiserfs_key *key)

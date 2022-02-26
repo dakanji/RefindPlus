@@ -487,7 +487,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
     Print(L"fsw_efi_DriverBinding_Stop\n");
 #endif
 
-    // get the installed SimpleFileSystem interface
+    // Get the installed SimpleFileSystem interface
     Status = REFIT_CALL_6_WRAPPER(
         gBS->OpenProtocol,
         ControllerHandle,
@@ -501,10 +501,10 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
         return EFI_UNSUPPORTED;
     }
 
-    // get private data structure
+    // Get private data structure
     Volume = FSW_VOLUME_FROM_FILE_SYSTEM(FileSystem);
 
-    // uninstall Simple File System protocol
+    // Uninstall Simple File System protocol
     Status = REFIT_CALL_4_WRAPPER(
         gBS->UninstallMultipleProtocolInterfaces,
         ControllerHandle,
@@ -520,13 +520,13 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
     Print(L"fsw_efi_DriverBinding_Stop: protocol uninstalled successfully\n");
     #endif
 
-    // release private data structure
+    // Release private data structure
     if (Volume->vol != NULL) {
         fsw_unmount(Volume->vol);
     }
     FreePool(Volume);
 
-    // close the consumed protocols
+    // Close the consumed protocols
     Status = REFIT_CALL_4_WRAPPER(
         gBS->CloseProtocol,
         ControllerHandle,
@@ -535,7 +535,7 @@ EFI_STATUS EFIAPI fsw_efi_DriverBinding_Stop(
         ControllerHandle
     );
 
-    // clear the cache
+    // Clear the cache
     fsw_efi_clear_cache();
 
     return Status;
@@ -1092,10 +1092,10 @@ EFI_STATUS fsw_efi_dir_read(
     Print(L"fsw_efi_dir_read...\n");
 #endif
 
-    // read the next entry
+    // Read the next entry
     Status = fsw_efi_map_status(fsw_dnode_dir_read(&File->shand, &dno), Volume);
     if (Status == EFI_NOT_FOUND) {
-        // end of directory
+        // End of directory
         *BufferSize = 0;
 #if DEBUG_LEVEL
         Print(L"... no more entries\n");
@@ -1105,7 +1105,7 @@ EFI_STATUS fsw_efi_dir_read(
     if (EFI_ERROR(Status))
         return Status;
 
-    // get info into buffer
+    // Get info into buffer
     Status = fsw_efi_dnode_fill_FileInfo(Volume, dno, BufferSize, Buffer);
     fsw_dnode_release(dno);
     return Status;
@@ -1161,21 +1161,21 @@ EFI_STATUS fsw_efi_dnode_getinfo(
         Print(L"fsw_efi_dnode_getinfo: FILE_SYSTEM_INFO\n");
 #endif
 
-        // check buffer size
+        // Check buffer size
         RequiredSize = SIZE_OF_EFI_FILE_SYSTEM_INFO + fsw_efi_strsize(&Volume->vol->label);
         if (*BufferSize < RequiredSize) {
             *BufferSize = RequiredSize;
             return EFI_BUFFER_TOO_SMALL;
         }
 
-        // fill structure
+        // Fill structure
         FSInfo = (EFI_FILE_SYSTEM_INFO *)Buffer;
         FSInfo->Size        = RequiredSize;
         FSInfo->ReadOnly    = TRUE;
         FSInfo->BlockSize   = Volume->vol->log_blocksize;
         fsw_efi_strcpy(FSInfo->VolumeLabel, &Volume->vol->label);
 
-        // get the missing info from the fs driver
+        // Get the missing info from the fs driver
         ZeroMem(&vsb, sizeof (struct fsw_volume_stat));
         Status = fsw_efi_map_status(fsw_volume_stat(Volume->vol, &vsb), Volume);
         if (EFI_ERROR(Status))
@@ -1183,7 +1183,7 @@ EFI_STATUS fsw_efi_dnode_getinfo(
         FSInfo->VolumeSize  = vsb.total_bytes;
         FSInfo->FreeSpace   = vsb.free_bytes;
 
-        // prepare for return
+        // Prepare for return
         *BufferSize = RequiredSize;
         Status = EFI_SUCCESS;
 
@@ -1192,17 +1192,17 @@ EFI_STATUS fsw_efi_dnode_getinfo(
         Print(L"fsw_efi_dnode_getinfo: FILE_SYSTEM_VOLUME_LABEL\n");
 #endif
 
-        // check buffer size
+        // Check buffer size
         RequiredSize = SIZE_OF_EFI_FILE_SYSTEM_VOLUME_LABEL_INFO + fsw_efi_strsize(&Volume->vol->label);
         if (*BufferSize < RequiredSize) {
             *BufferSize = RequiredSize;
             return EFI_BUFFER_TOO_SMALL;
         }
 
-        // copy volume label
+        // Copy volume label
         fsw_efi_strcpy(((EFI_FILE_SYSTEM_VOLUME_LABEL_INFO *)Buffer)->VolumeLabel, &Volume->vol->label);
 
-        // prepare for return
+        // Prepare for return
         *BufferSize = RequiredSize;
         Status = EFI_SUCCESS;
 
@@ -1274,14 +1274,14 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
     UINTN               RequiredSize;
     struct fsw_dnode_stat sb;
 
-    // make sure the dnode has complete info
+    // Make sure the dnode has complete info
     Status = fsw_efi_map_status(fsw_dnode_fill(dno), Volume);
     if (EFI_ERROR(Status))
         return Status;
 
     // TODO: check/assert that the dno's name is in UTF16
 
-    // check buffer size
+    // Check buffer size
     RequiredSize = SIZE_OF_EFI_FILE_INFO + fsw_efi_strsize(&dno->name);
     if (*BufferSize < RequiredSize) {
         // TODO: wind back the directory in this case
@@ -1293,7 +1293,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
         return EFI_BUFFER_TOO_SMALL;
     }
 
-    // fill structure
+    // Fill structure
     ZeroMem(Buffer, RequiredSize);
     FileInfo = (EFI_FILE_INFO *)Buffer;
     FileInfo->Size = RequiredSize;
@@ -1303,7 +1303,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
         FileInfo->Attribute    |= EFI_FILE_DIRECTORY;
     fsw_efi_strcpy(FileInfo->FileName, &dno->name);
 
-    // get the missing info from the fs driver
+    // Get the missing info from the fs driver
     ZeroMem(&sb, sizeof (struct fsw_dnode_stat));
     sb.host_data = FileInfo;
     Status = fsw_efi_map_status(fsw_dnode_stat(dno, &sb), Volume);
@@ -1311,7 +1311,7 @@ EFI_STATUS fsw_efi_dnode_fill_FileInfo(
         return Status;
     FileInfo->PhysicalSize      = sb.used_bytes;
 
-    // prepare for return
+    // Prepare for return
     *BufferSize = RequiredSize;
 #if DEBUG_LEVEL
     Print(L"... returning '%s'\n", FileInfo->FileName);

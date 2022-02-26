@@ -122,74 +122,36 @@
 
 
 [Guids]
-    gEfiAcpiTableGuid
-    gEfiAcpi10TableGuid
-    gEfiAcpi20TableGuid
-    gEfiDxeServicesTableGuid
-    gEfiEventReadyToBootGuid
-    gEfiEventVirtualAddressChangeGuid
-    gEfiEventExitBootServicesGuid
-    gEfiFileInfoGuid                              ## CONSUMES ## GUID
-    gEfiFileSystemInfoGuid                        ## CONSUMES ## GUID
-    gEfiFileSystemVolumeLabelInfoIdGuid
-    gEfiGlobalVariableGuid
-    gEfiPartTypeLegacyMbrGuid
-    gEfiPartTypeSystemPartGuid
-    gEfiSmbiosTableGuid
-    gEfiSasDevicePathGuid
+    gEfiDxeServicesTableGuid                                                ## CONSUMES           ## GUID
+    gEfiEventVirtualAddressChangeGuid                                       ## SOMETIMES_CONSUMES ## GUID
+    gEfiEventExitBootServicesGuid                                           ## SOMETIMES_CONSUMES ## GUID
+    gEfiFileInfoGuid                                                        ## CONSUMES           ## GUID
+    gEfiFileSystemInfoGuid                                                  ## CONSUMES           ## GUID
+    gEfiSasDevicePathGuid                                                   ## SOMETIMES_CONSUMES ## GUID
 
 
 [Ppis]
 
 
 [Protocols]
-    gEfiComponentName2ProtocolGuid                 # ALWAYS_CONSUMED
-    gEfiDevicePathToTextProtocolGuid               # ALWAYS_CONSUMED
-    gEfiSimpleFileSystemProtocolGuid               # ALWAYS_CONSUMED
-    gEfiSimpleTextInProtocolGuid                   # ALWAYS_CONSUMED
-    gEfiSimpleTextInputExProtocolGuid              # ALWAYS_CONSUMED
-    gEfiSimpleTextOutProtocolGuid                  # ALWAYS_CONSUMED
-    gEfiUnicodeCollationProtocolGuid               # ALWAYS_CONSUMED
-    gEfiUnicodeCollation2ProtocolGuid              # ALWAYS_CONSUMED
-
-    gEfiAcpiS3SaveProtocolGuid                     # PROTOCOL CONSUMES
-    gEfiBlockIoProtocolGuid                        # PROTOCOL CONSUMES
-    gEfiCpuArchProtocolGuid                        # PROTOCOL CONSUMES
-    gEfiDebugPortProtocolGuid                      # PROTOCOL CONSUMES
-    gEfiDevicePathProtocolGuid                     # PROTOCOL CONSUMES
-    gEfiDiskIoProtocolGuid                         # PROTOCOL CONSUMES
-    gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiFirmwareVolume2ProtocolGuid                # PROTOCOL CONSUMES
-    gEfiGraphicsOutputProtocolGuid                 # PROTOCOL SOMETIMES_CONSUMES
-    gEfiHiiFontProtocolGuid                        # PROTOCOL CONSUMES
-    gEfiLegacy8259ProtocolGuid                    ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiLoadedImageProtocolGuid                    # PROTOCOL CONSUMES
-    gEfiOEMBadgingProtocolGuid                     # PROTOCOL CONSUMES
-    gEfiPciIoProtocolGuid                          # PROTOCOL CONSUMES
-    gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiSimpleNetworkProtocolGuid                  # PROTOCOL CONSUMES
-    gEfiUgaDrawProtocolGuid |PcdUgaConsumeSupport  # PROTOCOL SOMETIMES_CONSUMES
-
-    gEfiAbsolutePointerProtocolGuid
-    gEfiAcpiTableProtocolGuid
-    gEfiEdidActiveProtocolGuid
-    gEfiEdidDiscoveredProtocolGuid
-    gEfiHiiDatabaseProtocolGuid
-    gEfiHiiImageProtocolGuid
-    gEfiHiiProtocolGuid
-    gEfiSimplePointerProtocolGuid
-    gEfiSmbiosProtocolGuid
-    gEfiSecurityArchProtocolGuid
-    gEfiScsiIoProtocolGuid                        ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiScsiPassThruProtocolGuid                  ## PROTOCOL SOMETIMES_CONSUMES
-    gEfiExtScsiPassThruProtocolGuid               ## PROTOCOL SOMETIMES_CONSUMES
-
-    gEfiLegacyBiosProtocolGuid                     # PROTOCOL TO_START
-
-    gEfiLoadFile2ProtocolGuid
-    gEfiLoadFileProtocolGuid
-    gEfiHiiPackageListProtocolGuid
+    gEfiLegacyBiosProtocolGuid                                              ## TO_START
+    gEfiComponentName2ProtocolGuid                                          ## CONSUMES
+    gEfiDevicePathToTextProtocolGuid                                        ## CONSUMES
+    gEfiSimpleFileSystemProtocolGuid                                        ## CONSUMES
+    gEfiUnicodeCollationProtocolGuid                                        ## CONSUMES
+    gEfiUnicodeCollation2ProtocolGuid                                       ## CONSUMES
+    gEfiBlockIoProtocolGuid                                                 ## CONSUMES
+    gEfiDebugPortProtocolGuid                                               ## CONSUMES
+    gEfiDevicePathProtocolGuid                                              ## CONSUMES
+    gEfiDiskIoProtocolGuid                                                  ## CONSUMES
+    gEfiLoadedImageProtocolGuid                                             ## CONSUMES
+    gEfiPciIoProtocolGuid                                                   ## CONSUMES
+    gEfiDriverConfigurationProtocolGuid                                     ## CONSUMES
+    gEfiDriverDiagnosticsProtocolGuid                                       ## CONSUMES
+    gEfiComponentNameProtocolGuid                                           ## CONSUMES
+    gEfiDriverBindingProtocolGuid                                           ## SOMETIMES_CONSUMES
+    gEfiGraphicsOutputProtocolGuid                                          ## SOMETIMES_CONSUMES
+    gEfiUgaDrawProtocolGuid | gEfiMdePkgTokenSpaceGuid.PcdUgaConsumeSupport ## SOMETIMES_CONSUMES
 
 
 [FeaturePcd]

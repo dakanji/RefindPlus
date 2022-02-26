@@ -506,7 +506,6 @@ extern EFI_FILE            *SelfRootDir;
 
 extern EFI_GUID             GlobalGuid;
 extern EFI_GUID             RefindPlusGuid;
-extern EFI_GUID             gEfiGlobalVariableGuid;
 extern EFI_GUID             gEfiLegacyBootProtocolGuid;
 
 extern EFI_HANDLE           SelfImageHandle;

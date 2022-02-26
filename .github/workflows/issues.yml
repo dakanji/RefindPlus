@@ -1,4 +1,4 @@
-name: 'Issues'
+name: 'Manage Issues'
 
 on:
   workflow_dispatch:
@@ -7,8 +7,6 @@ on:
         description: 'Job ID'
         required: true
         default: 'all'
-  issues:
-    types: [opened, reopened, closed]
   schedule:
     - cron: '4 4 */4 * *'
 
@@ -20,74 +18,12 @@ concurrency:
 
 jobs:
 
-  # Add Labels - https://github.com/actions-ecosystem/action-add-labels
-  add_label_user_open:
-    name: Default Issue Label
-    runs-on: ubuntu-latest
-
-    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'reopened')
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ github.token }}
-          labels: Pending
-
-  add_label_user_open_enhance:
-    name: Enhancement Request Label
-    runs-on: ubuntu-latest
-
-    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'opened' && ${{ startsWith(github.event.comment.body, 'Suggested Feature') }}
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ github.token }}
-          labels: Enhancement
-
-  add_label_user_close:
-    name: Close Issue Label
-    runs-on: ubuntu-latest
-
-    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && github.event.action == 'closed'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-add-labels@v1
-        with:
-          github_token: ${{ github.token }}
-          labels: Cancelled
-
-  # Del Labels - https://github.com/dessant/label-actions
-  del_label_user_reopen:
-    name: Remove Cancelled Label
-    runs-on: ubuntu-latest
-
-    if: github.repository_owner == 'dakanji' && github.actor != 'dakanji' && github.event_name == 'issues' && github.event.action == 'reopened'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-remove-labels@v1.3.0
-        with:
-          github_token: ${{ github.token }}
-          labels: Cancelled
-
-  del_label_user_close:
-    name: Remove Pending Label
-    runs-on: ubuntu-latest
-
-    if: github.repository_owner == 'dakanji' && github.event_name == 'issues' && github.event.action == 'closed'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-ecosystem/action-remove-labels@v1.3.0
-        with:
-          github_token: ${{ github.token }}
-          labels: Pending
-
   # Handle Stale Threads - https://github.com/actions/stale
   stale:
     name: Flag or Close Issues
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale')
+    if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'stale'
     steps:
 
       - name: Close Resolved Issues
@@ -111,7 +47,7 @@ jobs:
           close-issue-message: >
             This item is being closed due to missing required information.
           days-before-stale: 0
-          days-before-close: 4
+          days-before-close: 3
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
           any-of-labels: 'Incomplete, Unclear'
@@ -124,8 +60,8 @@ jobs:
             This item has been flagged for closure due to a lack of response.
           close-issue-message: >
             This item is being closed due to a lack of response.
-          days-before-stale: 4
-          days-before-close: 4
+          days-before-stale: 3
+          days-before-close: 5
           exempt-assignees: 'dakanji'
           stale-issue-label: 'Tagged'
           any-of-labels: 'Queries'
@@ -224,7 +160,7 @@ jobs:
     needs: stale
     runs-on: ubuntu-latest
 
-    if: github.repository_owner == 'dakanji' && (github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock')
+    if: github.event_name == 'schedule' || github.event.inputs.job_id == 'all' || github.event.inputs.job_id == 'lock'
     steps:
 
       - name: Lock Incomplete Issues
@@ -244,7 +180,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
-          issue-inactive-days: '1'
+          issue-inactive-days: '2'
           include-any-issue-labels: 'Duplicate, Known-Issue'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
@@ -254,7 +190,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
-          issue-inactive-days: '1'
+          issue-inactive-days: '2'
           include-any-issue-labels: 'WontFix'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
@@ -265,7 +201,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
-          issue-inactive-days: '1'
+          issue-inactive-days: '2'
           include-any-issue-labels: 'Invalid, Works-For-Me'
           remove-issue-labels: 'Pending, Tagged, Queries'
           process-only: 'issues'
@@ -276,8 +212,8 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           issue-comment: >
-            This specific item has resolved. Please create a new issue if the item persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related items.
-          issue-inactive-days: '1'
+            This thread is being locked. Please create a new item if the issue persists or use the [Discussions](https://github.com/dakanji/RefindPlus/discussions) feature to discuss related issues.
+          issue-inactive-days: '2'
           include-any-issue-labels: 'Resolved'
           exclude-any-issue-labels: 'Parked, Help-Wanted'
           add-issue-labels: ''
@@ -290,7 +226,7 @@ jobs:
           github-token: ${{ github.token }}
           issue-lock-reason: ''
           add-issue-labels: 'Resolved'
-          issue-inactive-days: '3'
+          issue-inactive-days: '2'
           include-any-issue-labels: ''
           exclude-any-issue-labels: 'Parked, Help-Wanted'
           remove-issue-labels: 'Pending, Tagged, Queries'

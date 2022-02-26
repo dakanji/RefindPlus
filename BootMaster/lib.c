@@ -373,7 +373,7 @@ VOID ReinitVolume (
 
     if (Volume) {
         if (Volume->DevicePath != NULL) {
-            // get the handle for that path
+            // Get the handle for that path
             RemainingDevicePath = Volume->DevicePath;
             StatusA = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath, &BlockIoProtocol,
@@ -383,7 +383,7 @@ VOID ReinitVolume (
             if (!EFI_ERROR(StatusA)) {
                 Volume->DeviceHandle = DeviceHandle;
 
-                // get the root directory
+                // Get the root directory
                 Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
 
             }
@@ -393,7 +393,7 @@ VOID ReinitVolume (
         }
 
         if (Volume->WholeDiskDevicePath != NULL) {
-            // get the handle for that path
+            // Get the handle for that path
             RemainingDevicePath = Volume->WholeDiskDevicePath;
             StatusB = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath, &BlockIoProtocol,
@@ -401,7 +401,7 @@ VOID ReinitVolume (
             );
 
             if (!EFI_ERROR(StatusB)) {
-                // get the BlockIO protocol
+                // Get the BlockIO protocol
                 StatusB = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol, WholeDiskHandle,
                     &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
@@ -2479,6 +2479,8 @@ VOID ScanVolumes (VOID) {
 
         Volume = AllocateZeroPool (sizeof (REFIT_VOLUME));
         if (Volume == NULL) {
+            MY_FREE_POOL(UuidList);
+
             MuteLogger = FALSE;
 
             #if REFIT_DEBUG > 0

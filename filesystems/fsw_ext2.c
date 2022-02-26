@@ -111,11 +111,11 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
      Print(L"Ext2 WARNING: This ext3 file system needs recovery, trying to use it anyway.\n");
      */
 
-    // set real blocksize
+    // Set real blocksize
     blocksize = EXT2_BLOCK_SIZE(vol->sb);
     fsw_set_blocksize(vol, blocksize, blocksize);
 
-    // get other info from superblock
+    // Get other info from superblock
     vol->ind_bcnt = EXT2_ADDR_PER_BLOCK(vol->sb);
     vol->dind_bcnt = vol->ind_bcnt * vol->ind_bcnt;
     vol->inode_size = EXT2_INODE_SIZE(vol->sb);
@@ -130,7 +130,7 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
     if (status)
         return status;
 
-    // read the group descriptors to get inode table offsets
+    // Read the group descriptors to get inode table offsets
     groupcnt = ((vol->sb->s_inodes_count - 2) / vol->sb->s_inodes_per_group) + 1;
     gdesc_per_block = (vol->g.phys_blocksize / sizeof (struct ext2_group_desc));
 
@@ -138,7 +138,7 @@ static fsw_status_t fsw_ext2_volume_mount(struct fsw_ext2_volume *vol)
     if (status)
         return status;
     for (groupno = 0; groupno < groupcnt; groupno++) {
-        // get the block group descriptor
+        // Get the block group descriptor
         gdesc_bno = (vol->sb->s_first_data_block + 1) + groupno / gdesc_per_block;
         gdesc_index = groupno % gdesc_per_block;
         status = fsw_block_get(vol, gdesc_bno, 1, (void **) &buffer);
@@ -203,7 +203,7 @@ static fsw_status_t fsw_ext2_dnode_fill(struct fsw_ext2_volume *vol, struct fsw_
 
     FSW_MSG_DEBUG((FSW_MSGSTR("fsw_ext2_dnode_fill: inode %d\n"), dno->g.dnode_id));
 
-    // read the inode block
+    // Read the inode block
     groupno = (fsw_u32) (dno->g.dnode_id - 1) / vol->sb->s_inodes_per_group;
     ino_in_group = (fsw_u32) (dno->g.dnode_id - 1) % vol->sb->s_inodes_per_group;
     ino_bno = vol->inotab_bno[groupno] +
@@ -213,13 +213,13 @@ static fsw_status_t fsw_ext2_dnode_fill(struct fsw_ext2_volume *vol, struct fsw_
     if (status)
         return status;
 
-    // keep our inode around
+    // Keep our inode around
     status = fsw_memdup((void **) &dno->raw, buffer + ino_index * vol->inode_size, vol->inode_size);
     fsw_block_release(vol, ino_bno, buffer);
     if (status)
         return status;
 
-    // get info from the inode
+    // Get info from the inode
     dno->g.size = dno->raw->i_size;
     // TODO: check docs for 64-bit sized files
     if (S_ISREG(dno->raw->i_mode))

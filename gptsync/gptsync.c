@@ -510,7 +510,7 @@ UINTN gptsync(VOID)
 
     Print(L"gptsync v0.13.2\ncopyright (c) 2006-2007 Christoph Pfisterer & 2013 Roderick W. Smith\n");
 
-    // get full information from disk
+    // Get full information from disk
     status_gpt = read_gpt();
     status_mbr = read_mbr();
     if (status_gpt != 0 || status_mbr != 0)
