@@ -1638,6 +1638,9 @@ EFI_STATUS EFIAPI efi_main (
     OrigSetVariableRT = gRT->SetVariable;
     OrigOpenProtocolBS = gBS->OpenProtocol;
 
+    /* Remove any recovery boot flags */
+    ClearRecoveryBootFlag();
+
     /* Other Preambles */
     EFI_TIME Now;
     gRT->GetTime (&Now, NULL);

@@ -61,18 +61,27 @@
 #define EFI_OS_INDICATIONS_BOOT_TO_FW_UI 0x0000000000000001ULL
 #endif
 
-EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
-                         IN CHAR16 *Filename,
-                         IN CHAR16 *LoadOptions,
-                         IN CHAR16 *ImageTitle,
-                         IN CHAR8 OSType,
-                         IN BOOLEAN Verbose,
-                         IN BOOLEAN IsDriver);
-BOOLEAN IsValidLoader(EFI_FILE *RootDir, CHAR16 *FileName);
-EFI_STATUS RebootIntoFirmware(VOID);
-VOID StartLoader(LOADER_ENTRY *Entry, CHAR16 *SelectionName);
-VOID StartTool(IN LOADER_ENTRY *Entry);
-VOID RebootIntoLoader(LOADER_ENTRY *Entry);
+EFI_STATUS StartEFIImage (
+    IN REFIT_VOLUME *Volume,
+    IN CHAR16       *Filename,
+    IN CHAR16       *LoadOptions,
+    IN CHAR16       *ImageTitle,
+    IN CHAR8         OSType,
+    IN BOOLEAN       Verbose,
+    IN BOOLEAN       IsDriver
+);
+EFI_STATUS ConstructBootEntry (
+    EFI_HANDLE  *TargetVolume,
+    CHAR16      *Loader,
+    CHAR16      *Label,
+    CHAR8      **Entry,
+    UINTN       *Size
+);
+BOOLEAN IsValidLoader (EFI_FILE *RootDir, CHAR16 *FileName);
+EFI_STATUS RebootIntoFirmware (VOID);
+VOID StartLoader (LOADER_ENTRY *Entry, CHAR16 *SelectionName);
+VOID StartTool (IN LOADER_ENTRY *Entry);
+VOID RebootIntoLoader (LOADER_ENTRY *Entry);
 
 #endif
 

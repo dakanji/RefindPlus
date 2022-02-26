@@ -925,7 +925,6 @@ UINTN FindBootNum (
 // - The device path data in binary form
 // - Any arguments to be passed to the program. This function does NOT
 //   create arguments.
-static
 EFI_STATUS ConstructBootEntry (
     EFI_HANDLE  *TargetVolume,
     CHAR16      *Loader,

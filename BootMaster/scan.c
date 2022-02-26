@@ -114,7 +114,6 @@
 EFI_GUID GlobalGuid = EFI_GLOBAL_VARIABLE;
 
 extern EFI_GUID GuidAPFS;
-extern BOOLEAN  SingleAPFS;
 
 #if REFIT_DEBUG > 0
 static CHAR16  *Spacer   = L"                ";
@@ -2039,8 +2038,10 @@ VOID ScanEfiFiles (
                 MY_FREE_POOL(FileName);
                 FileName = PoolPrint (L"%s\\%s", EfiDirEntry->FileName, L"boot.efi");
 
-                if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
-                    MergeStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
+                if (Volume->FSType != FS_TYPE_APFS) {
+                    if (!StriSubCmp (FileName, GlobalConfig.MacOSRecoveryFiles)) {
+                        MergeStrings (&GlobalConfig.MacOSRecoveryFiles, FileName, L',');
+                    }
                 }
 
                 MY_FREE_POOL(FileName);
@@ -2964,8 +2965,6 @@ BOOLEAN FindTool (
 
 // Add the second-row tags containing built-in and external tools
 VOID ScanForTools (VOID) {
-    REFIT_VOLUME    **TmpRecoveryVolumes;
-    UINTN             TmpRecoveryVolumesCount = 0;
     UINTN             i, j, k;
     UINTN             VolumeIndex;
     VOID             *ItemBuffer = 0;
@@ -3526,31 +3525,25 @@ VOID ScanForTools (VOID) {
             break;
             case TAG_RECOVERY_APPLE:
                 OtherFind = FALSE;
-                for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
+                for (VolumeIndex = 0; VolumeIndex < HfsRecoveryCount; VolumeIndex++) {
                     j = 0;
                     while (
                         (
-                            FileName = FindCommaDelimited (
-                                GlobalConfig.MacOSRecoveryFiles, j++
-                            )
+                            FileName = FindCommaDelimited (GlobalConfig.MacOSRecoveryFiles, j++)
                         ) != NULL
                     ) {
-                        if ((Volumes[VolumeIndex]->RootDir != NULL) &&
-                            (IsValidTool (Volumes[VolumeIndex], FileName))
+                        if ((HfsRecovery[VolumeIndex]->RootDir != NULL) &&
+                            (IsValidTool (HfsRecovery[VolumeIndex], FileName))
                         ) {
-                            // Get a meaningful tag for the recovery volume if available
-                            for (k = 0; k < VolumesCount; k++) {
-                                TmpStr = GuidAsString (&(Volumes[k]->VolUuid));
-                                if (FoundSubStr (FileName, TmpStr)) {
-                                    MY_FREE_POOL(TmpStr);
-                                    RecoverVol = StrDuplicate (Volumes[k]->VolName);
+                            // Get a meaningful tag for the recovery tool
+                            // DA-TAG: Limit to TianoCore
+                            #ifdef __MAKEWITH_TIANO
+                            RecoverVol = RP_GetAppleDiskLabel (HfsRecovery[VolumeIndex]);
+                            #endif
 
-                                    break;
-                                }
-                                MY_FREE_POOL(TmpStr);
-                            } // for
-
-                            VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (Volumes[VolumeIndex]->VolName);
+                            VolumeTag = (RecoverVol)
+                                ? PoolPrint (L"HFS+ Recovery : %s", RecoverVol)
+                                : StrDuplicate (L"HFS+ Recovery : Recovery HD");
 
                             #if REFIT_DEBUG > 0
                             ALT_LOG(1, LOG_LINE_NORMAL,
@@ -3559,20 +3552,13 @@ VOID ScanForTools (VOID) {
                             );
                             #endif
 
-                            // Create a list of found Recovery PartGUIDs for later
-                            AddListElement (
-                                (VOID ***) &TmpRecoveryVolumes,
-                                &TmpRecoveryVolumesCount,
-                                CopyVolume (Volumes[VolumeIndex])
-                            );
-
                             FoundTool = TRUE;
                             Description = PoolPrint (
                                 L"%s for %s",
                                 ToolName, VolumeTag
                             );
                             AddToolEntry (
-                                Volumes[VolumeIndex],
+                                HfsRecovery[VolumeIndex],
                                 FileName, Description,
                                 BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
                                 'R', TRUE
@@ -3602,114 +3588,116 @@ VOID ScanForTools (VOID) {
                 } // for
 
 
-                if (GlobalConfig.SyncAPFS && SingleAPFS) {
-                    BOOLEAN PrevGUID;
+                if (SingleAPFS) {
                     for (j = 0; j < RecoveryVolumesCount; j++) {
-                        PrevGUID = FALSE;
-                        for (k = 0; k < TmpRecoveryVolumesCount; k++) {
+                        // Get a meaningful tag for the recovery tool
+                        // DA-TAG: Limit to TianoCore
+                        #ifdef __MAKEWITH_TIANO
+                        BOOLEAN SkipSystemVolume;
+                        for (k = 0; k < SystemVolumesCount; k++) {
+                            SkipSystemVolume = FALSE;
+                            for (VolumeIndex = 0; VolumeIndex < SkipApfsVolumesCount; VolumeIndex++) {
+                                if (GuidsAreEqual (
+                                    &(SkipApfsVolumes[VolumeIndex]->VolUuid),
+                                    &(SystemVolumes[k]->VolUuid))
+                                ) {
+                                    SkipSystemVolume = TRUE;
+                                    break;
+                                }
+                            } // for
+                            if (SkipSystemVolume) {
+                                continue;
+                            }
+
                             if (
                                 GuidsAreEqual (
                                     &(RecoveryVolumes[j]->PartGuid),
-                                    &(TmpRecoveryVolumes[k]->PartGuid)
+                                    &(SystemVolumes[k]->PartGuid)
                                 )
                             ) {
-                                PrevGUID = TRUE;
-                                break;
-                            }
-                        } // for k = 0
+                                Status = RP_GetApfsVolumeInfo (
+                                    SystemVolumes[k]->DeviceHandle,
+                                    NULL, NULL,
+                                    &VolumeRole
+                                );
 
-                        if (!PrevGUID) {
-                            TmpStr   = GuidAsString (&(RecoveryVolumes[j]->VolUuid));
-                            FileName = PoolPrint (L"%s\\boot.efi", TmpStr);
-                            MY_FREE_POOL(TmpStr);
+                                if (!EFI_ERROR(Status)) {
+                                    if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
+                                        VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
+                                    ) {
+                                        RecoverVol  = StrDuplicate (SystemVolumes[k]->VolName);
+                                        TmpStr      = GuidAsString (&(SystemVolumes[k]->VolUuid));
+                                        FileName    = PoolPrint (L"%s\\boot.efi", TmpStr);
+                                        MY_FREE_POOL(TmpStr);
 
-                            // Get a meaningful tag for the recovery volume if available
-                            // DA-TAG: Limit to TianoCore
-                            #ifdef __MAKEWITH_TIANO
-                            for (k = 0; k < VolumesCount; k++) {
-                                if (
-                                    GuidsAreEqual (
-                                        &(RecoveryVolumes[j]->PartGuid),
-                                        &(Volumes[k]->PartGuid)
-                                    )
-                                ) {
-                                    Status = RP_GetApfsVolumeInfo (
-                                        Volumes[k]->DeviceHandle,
-                                        NULL, NULL,
-                                        &VolumeRole
-                                    );
-
-                                    if (!EFI_ERROR(Status)) {
-                                        if (VolumeRole == APPLE_APFS_VOLUME_ROLE_SYSTEM ||
-                                            VolumeRole == APPLE_APFS_VOLUME_ROLE_UNDEFINED
-                                        ) {
-                                            RecoverVol = StrDuplicate (Volumes[k]->VolName);
-
-                                            break;
-                                        }
+                                        break;
                                     }
                                 }
-                            } // for k = 0
-                            #endif
-
-                            VolumeTag = RecoverVol ? RecoverVol : StrDuplicate (L"Instance of MacOS 11 or Newer");
-
-                            #if REFIT_DEBUG > 0
-                            ALT_LOG(1, LOG_LINE_NORMAL,
-                                L"Adding Alt Mac Recovery Tag:- '%s' for '%s'",
-                                FileName, VolumeTag
-                            );
-                            #endif
-
-                            FoundTool = TRUE;
-                            Description = PoolPrint (
-                                L"%s for %s",
-                                ToolName, VolumeTag
-                            );
-                            AddToolEntry (
-                                RecoveryVolumes[j],
-                                FileName, Description,
-                                BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
-                                'R', TRUE
-                            );
-                            MY_FREE_POOL(Description);
-
-                            #if REFIT_DEBUG > 0
-                            ToolStr = PoolPrint (
-                                L"Added Tool:- '%-15s    :::    %s for %s (New MacOS)'",
-                                ToolName, FileName, VolumeTag
-                            );
-                            ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                            if (OtherFind) {
-                                LOG_MSG("%s%s", OffsetNext, Spacer);
                             }
-                            LOG_MSG("%s", ToolStr);
-                            MY_FREE_POOL(ToolStr);
-                            #endif
+                        } // for k = 0
+                        #endif
 
-                            OtherFind = TRUE;
+                        VolumeTag = (RecoverVol)
+                            ? PoolPrint (L"APFS Instance : %s", RecoverVol)
+                            : StrDuplicate (L"APFS Instance : Recovery");
+                        #if REFIT_DEBUG > 0
+                        ALT_LOG(1, LOG_LINE_NORMAL,
+                            L"Adding Mac Recovery Tag:- '%s' for '%s'",
+                            FileName, VolumeTag
+                        );
+                        #endif
 
-                            MY_FREE_POOL(FileName);
-                            MY_FREE_POOL(VolumeTag);
-                            MY_FREE_POOL(RecoverVol);
-                        } // if !PrevGUID
+                        FoundTool = TRUE;
+                        Description = PoolPrint (
+                            L"%s for %s",
+                            ToolName, VolumeTag
+                        );
+                        AddToolEntry (
+                            RecoveryVolumes[j],
+                            FileName, Description,
+                            BuiltinIcon (BUILTIN_ICON_TOOL_APPLE_RESCUE),
+                            'R', TRUE
+                        );
+                        MY_FREE_POOL(Description);
+
+                        #if REFIT_DEBUG > 0
+                        ToolStr = PoolPrint (
+                            L"Added Tool:- '%-15s    :::    %s for %s'",
+                            ToolName, FileName, VolumeTag
+                        );
+                        ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
+                        if (OtherFind) {
+                            LOG_MSG("%s%s", OffsetNext, Spacer);
+                        }
+                        LOG_MSG("%s", ToolStr);
+                        MY_FREE_POOL(ToolStr);
+                        #endif
+
+                        OtherFind = TRUE;
+
+                        MY_FREE_POOL(FileName);
+                        MY_FREE_POOL(VolumeTag);
+                        MY_FREE_POOL(RecoverVol);
                     } // for k = 0
-                }
+                } // if SingleAPFS
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
+                    BOOLEAN FlagAPFS = (!SingleAPFS && SystemVolumesCount > 0);
+                    ToolStr = PoolPrint (
+                        L"%s:- '%s'",
+                        (FlagAPFS) ? L"Did Not Enable Tool" : L"Could Not Find Tool",
+                        ToolName
+                    );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("** WARN **    %s", ToolStr);
+                    LOG_MSG(
+                        "*_ %s _*    %s",
+                        (FlagAPFS) ? L"NOTE" : L"WARN",
+                        ToolStr
+                    );
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif
-
-                // Free the TmpVolumes
-                FreeVolumes (
-                    &TmpRecoveryVolumes,
-                    &TmpRecoveryVolumesCount
-                );
 
             break;
             case TAG_RECOVERY_WINDOWS:
@@ -3837,19 +3825,17 @@ VOID ScanForTools (VOID) {
 
                 #if REFIT_DEBUG > 0
                 if (!FoundTool) {
-                    if (!GlobalConfig.CsrValues) {
-                        ToolStr = PoolPrint (L"Did Not Enable Tool:- '%s'", ToolName);
-                    }
-                    else {
-                        ToolStr = PoolPrint (L"Could Not Find Tool:- '%s'", ToolName);
-                    }
+                    ToolStr = PoolPrint (
+                        L"%s:- '%s'",
+                        (!GlobalConfig.CsrValues) ? L"Did Not Enable Tool" : L"Could Not Find Tool",
+                        ToolName
+                    );
                     ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    if (!GlobalConfig.CsrValues) {
-                        LOG_MSG("*_ NOTE _*    %s", ToolStr);
-                    }
-                    else {
-                        LOG_MSG("** WARN **    %s", ToolStr);
-                    }
+                    LOG_MSG(
+                        "*_ %s _*    %s",
+                        (!GlobalConfig.CsrValues) ? L"NOTE" : L"WARN",
+                        ToolStr
+                    );
                     MY_FREE_POOL(ToolStr);
                 }
                 #endif

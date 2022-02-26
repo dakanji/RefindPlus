@@ -117,12 +117,14 @@ REFIT_VOLUME     **SkipApfsVolumes      = NULL;
 REFIT_VOLUME     **PreBootVolumes       = NULL;
 REFIT_VOLUME     **SystemVolumes        = NULL;
 REFIT_VOLUME     **DataVolumes          = NULL;
+REFIT_VOLUME     **HfsRecovery          = NULL;
 
 UINTN              RecoveryVolumesCount    = 0;
 UINTN              SkipApfsVolumesCount    = 0;
 UINTN              PreBootVolumesCount     = 0;
 UINTN              SystemVolumesCount      = 0;
 UINTN              DataVolumesCount        = 0;
+UINTN              HfsRecoveryCount        = 0;
 UINTN              VolumesCount            = 0;
 
 BOOLEAN            MediaCheck          = FALSE;
@@ -919,6 +921,11 @@ VOID FreeSyncVolumes (VOID) {
     FreeVolumes (
         &SkipApfsVolumes,
         &SkipApfsVolumesCount
+    );
+
+    FreeVolumes (
+        &HfsRecovery,
+        &HfsRecoveryCount
     );
 } // VOID FreeSyncVolumes()
 
@@ -2604,7 +2611,7 @@ VOID ScanVolumes (VOID) {
             RoleStr = L"";
             VolumeRole = 0;
                  if (MyStriCmp (Volume->VolName, L"EFI")                         ) RoleStr = L" * ESP";
-            else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * Mac Recovery";
+            else if (MyStriCmp (Volume->VolName, L"Recovery HD")                 ) RoleStr = L" * HFS Recovery";
             else if (MyStriCmp (Volume->VolName, L"Basic Data Partition")        ) RoleStr = L" * Windows Data";
             else if (MyStriCmp (Volume->VolName, L"Microsoft Reserved Partition")) RoleStr = L" * Windows System";
             else if (FoundSubStr (Volume->VolName, L"System Reserved")           ) RoleStr = L" * Windows System";
@@ -2712,6 +2719,15 @@ VOID ScanVolumes (VOID) {
                     } // if ValidAPFS
                 } // if !EFI_ERROR(Status)
             } // if MyStriCmp Volume->VolName
+
+            if (FoundSubStr (RoleStr, L"HFS Recovery")) {
+                // Create or add to a list of bootable HFS+ volumes
+                AddListElement (
+                    (VOID ***) &HfsRecovery,
+                    &HfsRecoveryCount,
+                    CopyVolume (Volume)
+                );
+            }
 
             #if REFIT_DEBUG > 0
             // Allocate Pools for Log Details

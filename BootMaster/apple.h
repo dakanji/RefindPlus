@@ -191,6 +191,7 @@ EFI_STATUS SetAppleOSInfo();
 EFI_STATUS GetCsrStatus (IN OUT UINT32 *CsrValue);
 EFI_STATUS NormaliseCSR (VOID);
 
+VOID ClearRecoveryBootFlag (VOID);
 VOID RecordgCsrStatus (UINT32 CsrStatus, BOOLEAN DisplayMessage);
 VOID RotateCsrValue (VOID);
 #endif

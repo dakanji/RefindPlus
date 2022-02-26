@@ -490,6 +490,7 @@ extern UINTN                SkipApfsVolumesCount;
 extern UINTN                PreBootVolumesCount;
 extern UINTN                SystemVolumesCount;
 extern UINTN                DataVolumesCount;
+extern UINTN                HfsRecoveryCount;
 
 extern BOOLEAN              SetSysTab;
 extern BOOLEAN              MuteLogger;
@@ -498,6 +499,7 @@ extern BOOLEAN              AppleFirmware;
 extern BOOLEAN              DetectedDevices;
 extern BOOLEAN              DevicePresence;
 extern BOOLEAN              MuteLogger;
+extern BOOLEAN              SingleAPFS;
 
 extern EFI_FILE            *SelfDir;
 extern EFI_FILE            *SelfRootDir;
@@ -518,6 +520,7 @@ extern REFIT_VOLUME       **SkipApfsVolumes;
 extern REFIT_VOLUME       **PreBootVolumes;
 extern REFIT_VOLUME       **SystemVolumes;
 extern REFIT_VOLUME       **DataVolumes;
+extern REFIT_VOLUME       **HfsRecovery;
 
 extern REFIT_CONFIG         GlobalConfig;
 

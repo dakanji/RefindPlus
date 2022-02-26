@@ -465,8 +465,6 @@ UINTN OcFileDevicePathNameSize (
     IN CONST FILEPATH_DEVICE_PATH  *FilePath
 );
 
-#if 0
-// DA-TAG: Not currently used ... Disable - START
 static
 CHAR16 * RP_GetBootPathName (
     IN  EFI_DEVICE_PATH_PROTOCOL  *DevicePath
@@ -542,7 +540,7 @@ CHAR16 * RP_GetAppleDiskLabelEx (
         return NULL;
     }
 
-    DiskLabelPath = PoolPrint (L"%s%s", BootDirectoryName, LabelFilename);
+    UnicodeSPrint (DiskLabelPath, DiskLabelPathSize, L"%s%s", BootDirectoryName, LabelFilename);
 
     AsciiDiskLabel = (CHAR8 *) OcReadFile (
         FileSystem,
@@ -615,8 +613,6 @@ CHAR16 * RP_GetAppleDiskLabel (
 
     return AppleDiskLabel;
 } // CHAR16 * RP_GetAppleDiskLabel()
-#endif
-// DA-TAG: Not currently used ... Disable - END
 
 static
 VOID * RP_GetFileInfo (
@@ -797,3 +793,76 @@ EFI_STATUS RP_GetApfsVolumeInfo (
 
 // DA-TAG: Limit to TianoCore - END
 #endif
+
+// Delete recovery-boot-mode/internet-recovery-mode flags
+VOID ClearRecoveryBootFlag (VOID) {
+    EFI_STATUS  Status;
+    UINTN       BufferSize;
+    VOID       *TmpBuffer    = NULL;
+    CHAR16     *VariableName = NULL;
+    UINT32      StorageFlags = APPLE_FLAGS;
+    EFI_GUID    AppleGuid    = APPLE_GUID;
+
+    BufferSize   = 0;
+    VariableName = L"recovery-boot-mode";
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable,
+        VariableName,
+        &AppleGuid,
+        NULL,
+        &BufferSize,
+        TmpBuffer
+    );
+    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable,
+            VariableName,
+            &AppleGuid,
+            StorageFlags,
+            0, NULL
+        );
+        MY_FREE_POOL(TmpBuffer);
+    }
+
+    BufferSize   = 0;
+    VariableName = L"internet-recovery-mode";
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable,
+        VariableName,
+        &AppleGuid,
+        NULL,
+        &BufferSize,
+        TmpBuffer
+    );
+    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable,
+            VariableName,
+            &AppleGuid,
+            StorageFlags,
+            0, NULL
+        );
+        MY_FREE_POOL(TmpBuffer);
+    }
+
+    BufferSize   = 0;
+    VariableName = L"RecoveryBootInitiator";
+    Status = REFIT_CALL_5_WRAPPER(
+        gRT->GetVariable,
+        VariableName,
+        &AppleGuid,
+        NULL,
+        &BufferSize,
+        TmpBuffer
+    );
+    if (Status == EFI_BUFFER_TOO_SMALL || BufferSize != 0) {
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable,
+            VariableName,
+            &AppleGuid,
+            StorageFlags,
+            0, NULL
+        );
+        MY_FREE_POOL(TmpBuffer);
+    }
+} // VOID ClearRecoveryBootFlag()

@@ -29,9 +29,7 @@
   * This was ultimately achieved via other means
   * The feature never actually worked properly and hence, there is no need for it to remain
 - Amends Default Loader Scan for APFS Support Volumes
-  * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders
-  * These are now added to the DontScanVolume list by default
-  * APFS `Update` and `VM` volumes are similarly added
+  * APFS `Recovery`, `Update` and `VM` volumes are now added to the `DontScanVolume` list by default
 - Amends Scan for `.VolumeIcons` and `VolumeBadges`
   * Volumes in the `DontScanVolume` list are now skipped
 - Amends System Table Reallocations
@@ -41,6 +39,11 @@
   * No longer stashes and restores HandleProtocol on 'OcProvideConsoleGop' call
 - Renames the `SilentBoot` Feature as `DirectBoot`
     * This more accurately describes the feature.
+- Extends fixes on Mac Recovery Implementation for MacOS on APFS
+  * Adjusted to cover all MacOS instances on APFS
+  * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders
+  * IMPORTANT:
+    - This implementation is still a work in progress ... feedback required/welcome
 
 
 0.13.2.AN (08 Feb 2022):

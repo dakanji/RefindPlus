@@ -121,7 +121,6 @@ extern BOOLEAN             FlushFailedTag;
 extern BOOLEAN             FlushFailReset;
 extern BOOLEAN             ClearedBuffer;
 extern BOOLEAN             BlockRescan;
-extern BOOLEAN             SingleAPFS;
 extern EFI_GUID            RefindPlusGuid;
 
 

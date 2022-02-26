@@ -52,6 +52,7 @@
 #include "mok.h"
 #include "icns.h"
 #include "menu.h"
+#include "apple.h"
 #include "mystrings.h"
 #include "driver_support.h"
 #include "../include/refit_call_wrapper.h"
@@ -860,6 +861,104 @@ VOID DoEnableAndLockVMX(VOID) {
 #endif
 } // VOID DoEnableAndLockVMX()
 
+// Load APFS Recovery Instance
+static
+EFI_STATUS ApfsRecoveryBoot (
+    IN LOADER_ENTRY *Entry
+) {
+    if (!SingleAPFS) {
+        // Early Return
+        return EFI_INVALID_PARAMETER;
+    }
+
+
+#if 0
+// DA-TAG: Force Load Error until finalised
+
+
+    EFI_STATUS  Status;
+    CHAR16     *NameNVRAM = NULL;
+    CHAR8      *DataNVRAM = NULL;
+    EFI_GUID    AppleGUID = APPLE_GUID;
+
+    // Set Relevant NVRAM Variable
+    CHAR16 *InitNVRAM = L"RecoveryModeDisk";
+    NameNVRAM = L"internet-recovery-mode";
+    UnicodeStrToAsciiStr (InitNVRAM, DataNVRAM);
+    Status = EfivarSetRaw (
+        &AppleGUID,
+        NameNVRAM,
+        DataNVRAM,
+        AsciiStrSize (DataNVRAM),
+        TRUE
+    );
+    MY_FREE_POOL(NameNVRAM);
+    MY_FREE_POOL(DataNVRAM);
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Set Recovery Initiator
+    NameNVRAM = L"RecoveryBootInitiator";
+    Status = EfivarSetRaw (
+        &AppleGUID,
+        NameNVRAM,
+        (VOID **) &Entry->Volume->DevicePath,
+        StrSize (DevicePathToStr (Entry->Volume->DevicePath)),
+        TRUE
+    );
+    MY_FREE_POOL(NameNVRAM);
+    MY_FREE_POOL(DataNVRAM);
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Construct Boot Entry
+    Entry->EfiBootNum = StrToHex (L"80", 0, 16);
+    MY_FREE_POOL(Entry->EfiLoaderPath);
+    Entry->EfiLoaderPath = FileDevicePath (Entry->Volume->DeviceHandle, Entry->LoaderPath);
+
+    UINTN Size;
+    Status = ConstructBootEntry (
+        Entry->Volume->DeviceHandle,
+        Basename (Entry->EfiLoaderPath),
+        L"Mac Recovery",
+        (CHAR8**) &Entry->EfiLoaderPath,
+        &Size
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Set as BootNext entry
+    Status = EfivarSetRaw (
+        &GlobalGuid,
+        L"BootNext",
+        &(Entry->EfiBootNum),
+        sizeof (UINT16),
+        TRUE
+    );
+    if (EFI_ERROR(Status)) {
+        // Early Return
+        return Status;
+    }
+
+    // Reboot into new BootNext entry
+    REFIT_CALL_4_WRAPPER(
+        gRT->ResetSystem,
+        EfiResetCold,
+        EFI_SUCCESS,
+        0, NULL
+    );
+
+#endif
+
+    return EFI_LOAD_ERROR;
+} // EFI_STATUS ApfsRecoveryBoot()
+
 // Directly launch an EFI boot loader (or similar program)
 VOID StartLoader (
     LOADER_ENTRY *Entry,
@@ -920,6 +1019,33 @@ VOID StartTool (
         LOG_MSG("\n\n");
     }
     #endif
+
+    if (FoundSubStr (Entry->me.Title, L"APFS Instance")) {
+        /* APFS Recovery Instance */
+        EFI_STATUS Status = ApfsRecoveryBoot (Entry);
+        if (EFI_ERROR(Status)) {
+            MY_FREE_POOL(MsgStr);
+            MsgStr = PoolPrint (
+                L"'%r' While Running '%s'",
+                Status, Entry->me.Title
+            );
+
+            #if REFIT_DEBUG > 0
+            ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
+            LOG_MSG("\n\n");
+            #endif
+
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_ERROR);
+            PrintUglyText (MsgStr, NEXTLINE);
+            REFIT_CALL_2_WRAPPER(gST->ConOut->SetAttribute, gST->ConOut, ATTR_BASIC);
+            PauseForKey();
+
+            MY_FREE_POOL(MsgStr);
+        }
+
+        // Early Return
+        return;
+    }
 
     StartEFIImage (
         Entry->Volume,
