@@ -742,16 +742,14 @@ VOID PauseForKey (VOID) {
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"             * Paused for Error or Warning *              ", NEXTLINE);
-
     (GlobalConfig.ContinueOnWarning)
         ? PrintUglyText (L"        Press a Key or Wait 9 Seconds to Continue         ", NEXTLINE)
         : PrintUglyText (L"                 Press a Key to Continue                  ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
     PrintUglyText (L"                                                          ", NEXTLINE);
-    MuteLogger = FALSE;
-
     // Clear the Keystroke Buffer
     ReadAllKeyStrokes();
+    MuteLogger = FALSE;
 
     #if REFIT_DEBUG > 0
     LOG_MSG("INFO: Paused for Error/Warning");
@@ -771,10 +769,13 @@ VOID PauseForKey (VOID) {
                 #endif
 
                 Breakout = TRUE;
+
+                // Clear the Keystroke Buffer
+                ReadAllKeyStrokes();
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+                ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timer Error!!");
                 #endif
 
                 Breakout = TRUE;
@@ -804,6 +805,9 @@ VOID PauseForKey (VOID) {
                 #endif
 
                 Breakout = TRUE;
+
+                // Clear the Keystroke Buffer
+                ReadAllKeyStrokes();
             }
             else if (WaitOut == INPUT_TIMER_ERROR) {
                 #if REFIT_DEBUG > 0
@@ -819,9 +823,6 @@ VOID PauseForKey (VOID) {
         } // for
     }
 
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
-
     GraphicsScreenDirty = TRUE;
 
     #if REFIT_DEBUG > 0
@@ -829,7 +830,7 @@ VOID PauseForKey (VOID) {
     #endif
 } // VOID PauseForKey
 
-// Pause a specified number of seconds
+// Pause for a specified number of seconds
 // Can be terminated on keypress
 VOID PauseSeconds (
     UINTN Seconds
@@ -838,7 +839,9 @@ VOID PauseSeconds (
     BOOLEAN Breakout = FALSE;
 
     // Clear the Keystroke Buffer
+    MuteLogger = TRUE;
     ReadAllKeyStrokes();
+    MuteLogger = FALSE;
 
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
@@ -855,7 +858,7 @@ VOID PauseSeconds (
         }
         else if (WaitOut == INPUT_TIMER_ERROR) {
             #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
+            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timer Error!!");
             #endif
 
             Breakout = TRUE;
@@ -873,48 +876,39 @@ VOID PauseSeconds (
     #endif
 
     // Clear the Keystroke Buffer
+    MuteLogger = TRUE;
     ReadAllKeyStrokes();
+    MuteLogger = FALSE;
 } // VOID PauseSeconds()
 
-// Pause a specified number of seconds
+// Halt for a specified number of seconds
 // Not terminated on keypress
 VOID HaltSeconds (
     UINTN Seconds
 ) {
-    UINTN   i, WaitOut;
-    BOOLEAN Breakout = FALSE;
-
-    // Clear the Keystroke Buffer
-    ReadAllKeyStrokes();
+    UINTN i;
 
     #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_THREE_STAR_MID, L"Pausing for %d Seconds", Seconds);
+    ALT_LOG(1, LOG_THREE_STAR_MID, L"Halting for %d Seconds", Seconds);
     #endif
 
     for (i = 0; i < Seconds; ++i) {
-        WaitOut = WaitForInput (1000);
-        if (WaitOut == INPUT_TIMER_ERROR) {
-            #if REFIT_DEBUG > 0
-            ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated by Timer Error!!");
-            #endif
-
-            Breakout = TRUE;
-        }
-
-        if (Breakout) {
-            break;
-        }
+        // Wait 1 second
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
+        REFIT_CALL_1_WRAPPER(gBS->Stall, 250000);
     } // for
 
     #if REFIT_DEBUG > 0
-    if (!Breakout) {
-        ALT_LOG(1, LOG_LINE_NORMAL, L"Pause Terminated on Timeout");
-    }
+    ALT_LOG(1, LOG_LINE_NORMAL, L"Halt Terminated on Timeout");
     #endif
 
     // Clear the Keystroke Buffer
+    MuteLogger = TRUE;
     ReadAllKeyStrokes();
-} // VOID PauseSeconds()
+    MuteLogger = FALSE;
+} // VOID HaltSeconds()
 
 #if REFIT_DEBUG > 0
 VOID DebugPause (VOID) {
