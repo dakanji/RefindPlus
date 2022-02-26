@@ -2,13 +2,17 @@
 -----------------------
 - Adds `HaltSeconds` Function
   * As `PauseSeconds` but does not terminate on keypress
-- Improves `ScreenShot` and `DirectBoot` Features
+- Improves `TransientBoot` Feature
+  * Now removes pre-existing `PreviousBoot` instances
+- Improves `DirectBoot` Feature
+  * Minimises screen shudder when `ESC` key is held down to override DirectBoot
+- Improves `ScreenShot` Feature
   * Properly limited to one (1) sreenshot per keypress
-  * Minimises screen shudder when `ESC` key is held down to override SilentBoot
     - Removes limitation of key press not continuing beyond the on-screen message display
   * Fixes Screenshots being only functional for the main screen
     - This bug was introduced in v0.13.2.AN (Commit 99da7ce)
 - Improves `ProtectNVRAM` Feature
+  * Now clears existing instances of blocked variables
   * Adds `UnlockID` and `UnlockIDCopy` to filtered items
     - These are not certificates but work in concert with the certificates
     - Not required once certificates are filtered and additionally, filtering these reduces NVRAM writes

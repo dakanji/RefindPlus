@@ -2098,7 +2098,7 @@ VOID VetMultiInstanceAPFS (VOID) {
 
     #if REFIT_DEBUG > 0
     CHAR16 *MsgStrA = NULL;
-    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS 10.14 and Later'";
+    CHAR16 *MsgStrB = L"Disabled:- 'Recovery Tool for MacOS Versions on APFS'";
     CHAR16 *MsgStrC = L"Disabled:- 'Synced APFS Volumes in DontScanVolumes'";
     CHAR16 *MsgStrD = L"Disabled:- 'Hidden Tags for Synced AFPS Volumes'";
 

@@ -352,6 +352,16 @@ EFI_STATUS EFIAPI gRTSetVariableEx (
     }
     #endif
 
+    /* Clear any previously saved instance of blocked variable  */
+    if (BlockCert || BlockMore) {
+        OrigSetVariableRT (
+            VariableName,
+            VendorGuid,
+            Attributes,
+            0, NULL
+        );
+    }
+
     return Status;
 } // VOID gRTSetVariableEx()
 
@@ -1062,20 +1072,35 @@ VOID AboutRefindPlus (VOID) {
 VOID StoreLoaderName (
     IN CHAR16 *Name
 ) {
-    // Do not set if configured not to
-    if (GlobalConfig.TransientBoot) {
+    UINT32 StorageFlags;
+
+    if (!Name) {
+        // Early Return
         return;
     }
 
-    if (Name) {
-        EfivarSetRaw (
-            &RefindPlusGuid,
-            L"PreviousBoot",
-            Name,
-            StrLen (Name) * 2 + 2,
-            TRUE
+    // Clear current PreviousBoot if TransientBoot is active
+    if (GlobalConfig.TransientBoot) {
+        StorageFlags  = EFI_VARIABLE_BOOTSERVICE_ACCESS;
+        StorageFlags |= EFI_VARIABLE_RUNTIME_ACCESS;
+        StorageFlags |= EFI_VARIABLE_NON_VOLATILE;
+
+        REFIT_CALL_5_WRAPPER(
+            gRT->SetVariable, L"PreviousBoot",
+            &RefindPlusGuid, StorageFlags,
+            0, NULL
         );
+
+        return;
     }
+
+    EfivarSetRaw (
+        &RefindPlusGuid,
+        L"PreviousBoot",
+        Name,
+        StrLen (Name) * 2 + 2,
+        TRUE
+    );
 } // VOID StoreLoaderName()
 
 // Rescan for boot loaders
