@@ -3013,7 +3013,6 @@ VOID HideTag (
         case TAG_FIRMWARE:
         case TAG_BOOTORDER:
         case TAG_CSR_ROTATE:
-        case TAG_INFO_BOOTKICKER:
         case TAG_INFO_NVRAMCLEAN:
             DisplaySimpleMessage (
                 L"Not Allowed on Internal Tool",
@@ -3380,7 +3379,6 @@ VOID FreeMenuEntry (
         case TAG_LEGACY:             EntryType = EntryTypeLegacyEntry;     break;
         case TAG_LEGACY_UEFI:        EntryType = EntryTypeLegacyEntry;     break;
         case TAG_FIRMWARE_LOADER:    EntryType = EntryTypeLoaderEntry;     break;
-        case TAG_LOAD_BOOTKICKER:    EntryType = EntryTypeLoaderEntry;     break;
         case TAG_LOAD_NVRAMCLEAN:    EntryType = EntryTypeLoaderEntry;     break;
         default:                     EntryType = EntryTypeRefitMenuEntry;  break;
     }

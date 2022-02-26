@@ -86,11 +86,9 @@
 #define TAG_HIDDEN             (21)
 #define TAG_INSTALL            (22)
 #define TAG_BOOTORDER          (23)
-#define TAG_INFO_BOOTKICKER    (24)
-#define TAG_LOAD_BOOTKICKER    (25)
-#define TAG_INFO_NVRAMCLEAN    (26)
-#define TAG_LOAD_NVRAMCLEAN    (27)
-#define NUM_TOOLS              (28)
+#define TAG_INFO_NVRAMCLEAN    (24)
+#define TAG_LOAD_NVRAMCLEAN    (25)
+#define NUM_TOOLS              (26)
 
 #define NUM_SCAN_OPTIONS       (11)
 

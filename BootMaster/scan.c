@@ -2985,7 +2985,6 @@ VOID ScanForTools (VOID) {
     APPLE_APFS_VOLUME_ROLE VolumeRole = 0;
 
     REFIT_MENU_ENTRY *MenuEntryPreCleanNvram = NULL;
-    REFIT_MENU_ENTRY *MenuEntryPreBootKicker = NULL;
     REFIT_MENU_ENTRY *MenuEntryHiddenTags    = NULL;
     REFIT_MENU_ENTRY *MenuEntryBootorder     = NULL;
     REFIT_MENU_ENTRY *MenuEntryShutdown      = NULL;
@@ -3050,7 +3049,6 @@ VOID ScanForTools (VOID) {
             case TAG_GDISK:            ToolName = StrDuplicate (L"GDisk");                       break;
             case TAG_GPTSYNC:          ToolName = StrDuplicate (L"GPT Sync");                    break;
             case TAG_HIDDEN:           ToolName = StrDuplicate (L"Hidden Tags");                 break;
-            case TAG_INFO_BOOTKICKER:  ToolName = StrDuplicate (L"Show Bootscreen");             break;
             case TAG_INFO_NVRAMCLEAN:  ToolName = StrDuplicate (L"Clean Nvram");                 break;
             case TAG_INSTALL:          ToolName = StrDuplicate (L"Install RefindPlus");          break;
             case TAG_MEMTEST:          ToolName = StrDuplicate (L"Memtest");                     break;
@@ -3102,38 +3100,6 @@ VOID ScanForTools (VOID) {
                 #endif
 
             break;
-            case TAG_INFO_BOOTKICKER:
-                MenuEntryPreBootKicker = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-                if (MenuEntryPreBootKicker) {
-                    FoundTool = TRUE;
-
-                    MenuEntryPreBootKicker->Title          = StrDuplicate (L"Show Bootscreen");
-                    MenuEntryPreBootKicker->Tag            = TAG_INFO_BOOTKICKER;
-                    MenuEntryPreBootKicker->Row            = 1;
-                    MenuEntryPreBootKicker->ShortcutDigit  = 0;
-                    MenuEntryPreBootKicker->ShortcutLetter = 0;
-                    MenuEntryPreBootKicker->Image          = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-
-                    AddMenuEntry (MainMenu, MenuEntryPreBootKicker);
-
-                    #if REFIT_DEBUG > 0
-                    ToolStr = PoolPrint (L"Added Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("%s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                    #endif
-                }
-
-                #if REFIT_DEBUG > 0
-                if (!FoundTool) {
-                    ToolStr = PoolPrint (L"Could Not Load Tool:- '%s'", ToolName);
-                    ALT_LOG(1, LOG_THREE_STAR_END, L"%s", ToolStr);
-                    LOG_MSG("** WARN **    %s", ToolStr);
-                    MY_FREE_POOL(ToolStr);
-                }
-                #endif
-
-            break;
             case TAG_SHUTDOWN:
                 MenuEntryShutdown = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
                 if (MenuEntryShutdown) {
@@ -3141,8 +3107,8 @@ VOID ScanForTools (VOID) {
 
                     MenuEntryShutdown->Title          = StrDuplicate (L"System Shutdown");
                     MenuEntryShutdown->Tag            = TAG_SHUTDOWN;
-                    MenuEntryShutdown->Row            = 1;
-                    MenuEntryShutdown->ShortcutDigit  = 0;
+                    MenuEntryShutdown->Row            =  1;
+                    MenuEntryShutdown->ShortcutDigit  =  0;
                     MenuEntryShutdown->ShortcutLetter = 'U';
                     MenuEntryShutdown->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_SHUTDOWN);
 
@@ -3173,8 +3139,8 @@ VOID ScanForTools (VOID) {
 
                     MenuEntryReset->Title          = StrDuplicate (L"System Restart");
                     MenuEntryReset->Tag            = TAG_REBOOT;
-                    MenuEntryReset->Row            = 1;
-                    MenuEntryReset->ShortcutDigit  = 0;
+                    MenuEntryReset->Row            =  1;
+                    MenuEntryReset->ShortcutDigit  =  0;
                     MenuEntryReset->ShortcutLetter = 'R';
                     MenuEntryReset->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_RESET);
 
@@ -3205,8 +3171,8 @@ VOID ScanForTools (VOID) {
 
                     MenuEntryAbout->Title          = StrDuplicate (L"About RefindPlus");
                     MenuEntryAbout->Tag            = TAG_ABOUT;
-                    MenuEntryAbout->Row            = 1;
-                    MenuEntryAbout->ShortcutDigit  = 0;
+                    MenuEntryAbout->Row            =  1;
+                    MenuEntryAbout->ShortcutDigit  =  0;
                     MenuEntryAbout->ShortcutLetter = 'A';
                     MenuEntryAbout->Image          = BuiltinIcon (BUILTIN_ICON_FUNC_ABOUT);
 

@@ -892,7 +892,6 @@ VOID ReadConfig (
                 else if (MyStriCmp (Flag, L"bootorder")       ) GlobalConfig.ShowTools[i - 1] = TAG_BOOTORDER;
                 else if (MyStriCmp (Flag, L"csr_rotate")      ) GlobalConfig.ShowTools[i - 1] = TAG_CSR_ROTATE;
                 else if (MyStriCmp (Flag, L"fwupdate")        ) GlobalConfig.ShowTools[i - 1] = TAG_FWUPDATE_TOOL;
-                else if (MyStriCmp (Flag, L"show_bootscreen") ) GlobalConfig.ShowTools[i - 1] = TAG_INFO_BOOTKICKER;
                 else if (MyStriCmp (Flag, L"clean_nvram")     ) GlobalConfig.ShowTools[i - 1] = TAG_INFO_NVRAMCLEAN;
                 else if (MyStriCmp (Flag, L"windows_recovery")) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_WINDOWS;
                 else if (MyStriCmp (Flag, L"apple_recovery")  ) GlobalConfig.ShowTools[i - 1] = TAG_RECOVERY_APPLE;
@@ -1207,7 +1206,6 @@ VOID ReadConfig (
                 case TAG_BOOTORDER:
                 case TAG_CSR_ROTATE:
                 case TAG_FWUPDATE_TOOL:
-                case TAG_INFO_BOOTKICKER:
                 case TAG_INFO_NVRAMCLEAN:
                 case TAG_RECOVERY_WINDOWS:
                 case TAG_RECOVERY_APPLE:

@@ -417,9 +417,6 @@
 #                     NB: Requires external program
 #                         See documentation for details
 #  gdisk            - the gdisk partitioning program
-#  show_bootscreen  - load Apple Boot Screen if available.
-#                     NB: Needs External program.
-#                         Needs GOP-Compatible Fully Compatible GPU on Apple Firmware.
 #  clean_nvram      - reset NVRAM from RefindPlus.
 #                     NB: Needs External program.
 #  apple_recovery   - loads Apple Mac Recovery partitions, if present

@@ -20,6 +20,10 @@
   * The `OSType` flag is now taken into account
 - Improves Load Error/Warning Display
   * The `ContinueOnWarning` feature is forced on temporarily if required
+- Removes `BootKicker` feature
+  * The feature was added as part of attempts to allow the MacPro5,1 to show the RefindPlus screen
+  * This was ultimately achieved via other means
+  * The feature never actually worked properly and hence, there is no need for it to remain
 - Amends Default Loader Scan for APFS Support Volumes
   * APFS Recovery Volumes are handled as Mac Recovery Tools and not as volumes with loaders
   * These are now added to the DontScanVolume list by default

@@ -83,9 +83,8 @@ uga_pass_through      |Provides UGA instance on GOP to permit EfiBoot with moder
 ## Extended Functionality
 In addition to the new functionality listed above, the following upsteam tokens have been extended:
 - **"use_graphics_for" Token:** OpenCore and Clover added as options that can be set to boot in graphics mode.
-- **"showtools" Token:** Additional tools added:
+- **"showtools" Token:** Additional tool added:
   - `clean_nvram` : Allows resetting nvram directly from RefindPlus.
-  - `show_bootscreen` : Allows compatible GPUs to load the Apple Pre Boot Configuration screen.
 - **"csr_values" Token:** A value of `0` can be set as the `Enabled` value to ensure `Over The Air` (OTA) updates from Apple when running MacOS 11.x (Big Sur), or later, with SIP enabled.
   - This is equivalent to activating the `normalise_csr` token.
 - **"timeout" Token:** The default is no timeout unless explicitly set.

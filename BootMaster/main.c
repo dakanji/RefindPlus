@@ -182,13 +182,6 @@ REFIT_CONFIG GlobalConfig = {
     }
 };
 
-#define BOOTKICKER_FILES L"\\EFI\\BOOT\\tools_x64\\x64_BootKicker.efi,\\EFI\\BOOT\\tools_x64\\BootKicker_x64.efi,\
-\\EFI\\BOOT\\tools_x64\\BootKicker.efi,\\EFI\\BOOT\\tools\\x64_BootKicker.efi,\\EFI\\BOOT\\tools\\BootKicker_x64.efi,\
-\\EFI\\BOOT\\tools\\BootKicker.efi,\\EFI\\tools\\x64_BootKicker.efi,\\EFI\\tools\\BootKicker_x64.efi,\
-\\EFI\\tools\\BootKicker.efi,\\EFI\\tools_x64\\x64_BootKicker.efi,\\EFI\\tools_x64\\BootKicker_x64.efi,\
-\\EFI\\tools_x64\\BootKicker.efi,\\EFI\\x64_BootKicker.efi,\\EFI\\BootKicker_x64.efi,\\EFI\\BootKicker.efi,\
-\\x64_BootKicker.efi,\\BootKicker_x64.efi,\\BootKicker.efi"
-
 #define NVRAMCLEAN_FILES L"\\EFI\\BOOT\\tools_x64\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools_x64\\CleanNvram_x64.efi,\
 \\EFI\\BOOT\\tools_x64\\CleanNvram.efi,\\EFI\\BOOT\\tools\\x64_CleanNvram.efi,\\EFI\\BOOT\\tools\\CleanNvram_x64.efi,\
 \\EFI\\BOOT\\tools\\CleanNvram.efi,\\EFI\\tools\\x64_CleanNvram.efi,\\EFI\\tools\\CleanNvram_x64.efi,\
@@ -859,88 +852,6 @@ VOID ReMapOpenProtocol (VOID) {
     gBS->Hdr.CRC32     =  0;
     gBS->CalculateCrc32 (gBS, gBS->Hdr.HeaderSize, &gBS->Hdr.CRC32);
 } // ReMapOpenProtocol()
-
-static
-BOOLEAN ShowBootKickerInfo (
-    CHAR16 *ToolPurpose
-) {
-    REFIT_MENU_SCREEN *BootKickerInfoMenu = AllocateZeroPool (sizeof (REFIT_MENU_SCREEN));
-    if (BootKickerInfoMenu == NULL) {
-        // Early Return
-        return FALSE;
-    }
-
-    BootKickerInfoMenu->TitleImage = BuiltinIcon (BUILTIN_ICON_TOOL_BOOTKICKER);
-    BootKickerInfoMenu->Title      = StrDuplicate (L"BootKicker");
-    BootKickerInfoMenu->Hint1      = StrDuplicate (L"Press 'ESC', 'BackSpace' or 'SpaceBar' to Return to Main Menu");
-    BootKickerInfoMenu->Hint2      = StrDuplicate (L"");
-
-    AddMenuInfoLineAlt (BootKickerInfoMenu, PoolPrint (L"A Tool to %s", ToolPurpose));
-    AddMenuInfoLine (BootKickerInfoMenu, L"Needs GOP Capable Fully Compatible GPUs on Apple Firmware");
-    AddMenuInfoLine (BootKickerInfoMenu, L"(Fully Compatible GPUs provide native Apple Boot Screen)");
-    AddMenuInfoLine (BootKickerInfoMenu, L"NB: Hangs and needs physical reboot with other GPUs");
-    AddMenuInfoLine (BootKickerInfoMenu, L"");
-    AddMenuInfoLine (BootKickerInfoMenu, L"BootKicker is from OpenCore and is Copyright Acidanthera");
-    AddMenuInfoLine (BootKickerInfoMenu, L"You can find copies of the binary file here:");
-    AddMenuInfoLine (BootKickerInfoMenu, L"1) https://github.com/acidanthera/OpenCorePkg/releases");
-    AddMenuInfoLine (BootKickerInfoMenu, L"2) https://github.com/dakanji/RefindPlus/tree/GOPFix/BootMaster/tools_x64");
-    AddMenuInfoLine (BootKickerInfoMenu, L"");
-    AddMenuInfoLine (BootKickerInfoMenu, L"Requires at least one of the files below.");
-    AddMenuInfoLine (BootKickerInfoMenu, L" - The first file found in the order listed will be used");
-    AddMenuInfoLine (BootKickerInfoMenu, L" - You will be returned to the main menu if not found");
-    AddMenuInfoLine (BootKickerInfoMenu, L"");
-
-    UINTN k = 0;
-    CHAR16 *FilePath = NULL;
-    while ((FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-        AddMenuInfoLineAlt (BootKickerInfoMenu, StrDuplicate (FilePath));
-        MY_FREE_POOL(FilePath);
-    }
-
-    AddMenuInfoLine (BootKickerInfoMenu, L"");
-
-    REFIT_MENU_ENTRY *MenuEntryBootKicker = AllocateZeroPool (sizeof (REFIT_MENU_ENTRY));
-    if (MenuEntryBootKicker == NULL) {
-        FreeMenuScreen (&BootKickerInfoMenu);
-
-        // Early Return
-        return FALSE;
-    }
-    MenuEntryBootKicker->Title = StrDuplicate (ToolPurpose);
-    MenuEntryBootKicker->Tag   = TAG_GENERIC;
-    AddMenuEntry (BootKickerInfoMenu, MenuEntryBootKicker);
-
-    BOOLEAN RetVal = GetReturnMenuEntry (&BootKickerInfoMenu);
-    if (!RetVal) {
-        FreeMenuScreen (&BootKickerInfoMenu);
-
-        // Early Return
-        return FALSE;
-    }
-
-    INTN               DefaultEntry   = 1;
-    MENU_STYLE_FUNC    Style          = GraphicsMenuStyle;
-    REFIT_MENU_ENTRY  *ChosenEntry    = NULL;
-    UINTN MenuExit = RunGenericMenu (BootKickerInfoMenu, Style, &DefaultEntry, &ChosenEntry);
-
-    #if REFIT_DEBUG > 0
-    ALT_LOG(1, LOG_LINE_NORMAL,
-        L"Returned '%d' (%s) from RunGenericMenu Call on '%s' in 'ShowBootKickerInfo'",
-        MenuExit, MenuExitInfo (MenuExit), ChosenEntry->Title
-    );
-    LOG_MSG("User Input Received:");
-    LOG_MSG("%s  - %s", OffsetNext, ChosenEntry->Title);
-    #endif
-
-    RetVal = TRUE;
-    if (MenuExit != MENU_EXIT_ENTER || ChosenEntry->Tag != TAG_GENERIC) {
-        RetVal = FALSE;
-    }
-
-    FreeMenuScreen (&BootKickerInfoMenu);
-
-    return RetVal;
-} // static BOOLEAN ShowBootKickerInfo()
 
 static
 BOOLEAN ShowCleanNvramInfo (
@@ -1862,9 +1773,9 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("P R O G R E S S   B O O T S T R A P");
     LOG_MSG("\n");
 
-    LOG_MSG("INFO: RefitDBG:- '%d'",                 REFIT_DEBUG                                          );
-    LOG_MSG("%s      LogLevel:- '%d'",   OffsetNext, GlobalConfig.LogLevel                                );
-    LOG_MSG("%s      ScanDelay:- '%d'",  OffsetNext, GlobalConfig.ScanDelay                               );
+    LOG_MSG("INFO: RefitDBG:- '%d'",                   REFIT_DEBUG                                        );
+    LOG_MSG("%s      LogLevel:- '%d'",     OffsetNext, GlobalConfig.LogLevel                              );
+    LOG_MSG("%s      ScanDelay:- '%d'",    OffsetNext, GlobalConfig.ScanDelay                             );
     LOG_MSG("%s      ReloadGOP:- '%s'",    OffsetNext, GlobalConfig.ReloadGOP    ? L"YES"    : L"NO"      );
     LOG_MSG("%s      SyncAPFS:- '%s'",     OffsetNext, GlobalConfig.SyncAPFS     ? L"Active" : L"Inactive");
     LOG_MSG("%s      TagsHelp:- '%s'",     OffsetNext, GlobalConfig.TagsHelp     ? L"Active" : L"Inactive");
@@ -2424,90 +2335,6 @@ EFI_STATUS EFIAPI efi_main (
         SetProtectNvram (SystemTable, FALSE);
 
         switch (ChosenEntry->Tag) {
-            case TAG_INFO_BOOTKICKER:    // Apple Boot Screen Info
-                TypeStr = L"Kick in the Apple Boot Screen";
-
-                #if REFIT_DEBUG > 0
-                ALT_LOG(1, LOG_LINE_THIN_SEP, L"Creating '%s Info' Screen", TypeStr);
-
-                LOG_MSG("User Input Received:");
-                LOG_MSG("%s  - %s", OffsetNext, TypeStr);
-                LOG_MSG("\n\n");
-                #endif
-
-                RunOurTool = ShowBootKickerInfo (TypeStr);
-                if (!RunOurTool) {
-                    #if REFIT_DEBUG > 0
-                    LOG_MSG("%s    ** Not Running Tool to %s", OffsetNext, TypeStr);
-                    LOG_MSG("\n\n");
-                    #endif
-
-                    // Early Exit
-                    break;
-                }
-
-                k = 0;
-                while (!FoundTool && (FilePath = FindCommaDelimited (BOOTKICKER_FILES, k++)) != NULL) {
-                    for (i = 0; i < VolumesCount; i++) {
-                        if (Volumes[i]->RootDir != NULL &&
-                            FileExists (Volumes[i]->RootDir, FilePath)
-                        ) {
-                            ourLoaderEntry = AllocateZeroPool (sizeof (LOADER_ENTRY));
-                            ourLoaderEntry->me.Title        = StrDuplicate (TypeStr);
-                            ourLoaderEntry->me.Tag          = TAG_LOAD_BOOTKICKER;
-                            ourLoaderEntry->Volume          = CopyVolume (Volumes[i]);
-                            ourLoaderEntry->LoaderPath      = StrDuplicate (FilePath);
-                            ourLoaderEntry->UseGraphicsMode = (AllowGraphicsMode) ? TRUE : FALSE;
-
-                            FoundTool = TRUE;
-
-                            // Break out of 'for' loop
-                            break;
-                        }
-                    } // for
-
-                    if (!FoundTool) {
-                        MY_FREE_POOL(FilePath);
-                    }
-                } // while
-
-                if (!FoundTool) {
-                    #if REFIT_DEBUG > 0
-                    MsgStr = PoolPrint (L"Could Not Find Tool:- '%s'", TypeStr);
-                    ALT_LOG(1, LOG_LINE_NORMAL, L"%s", MsgStr);
-                    LOG_MSG("\n\n");
-                    LOG_MSG("** WARN **    %s ... Return to Main Menu", MsgStr);
-                    LOG_MSG("\n\n");
-                    MY_FREE_POOL(MsgStr);
-                    #endif
-
-                    MY_FREE_POOL(FilePath);
-
-                    // Early Exit
-                    break;
-                }
-
-                #if REFIT_DEBUG > 0
-                LOG_MSG("%s  - Load Tool to %s", OffsetNext, TypeStr);
-                LOG_MSG("\n-----------------\n\n");
-                #endif
-
-                MY_FREE_POOL(FilePath);
-
-                // Run BootKicker
-                StartTool (ourLoaderEntry);
-
-                // Just in case we get this far
-                MainLoopRunning = FALSE;
-
-                #if REFIT_DEBUG > 0
-                MsgStr = StrDuplicate (L"BootKicker Failed");
-                ALT_LOG(1, LOG_LINE_NORMAL, L"%s!!", MsgStr);
-                LOG_MSG("WARN: %s", MsgStr);
-                MY_FREE_POOL(MsgStr);
-                #endif
-
-            break;
             case TAG_INFO_NVRAMCLEAN:    // Clean NVRAM
                 TypeStr = L"Clean/Reset NVRAM";
 
@@ -3029,10 +2856,6 @@ EFI_STATUS EFIAPI efi_main (
                 LOG_MSG("%s  - %s:- '%s'", OffsetNext, MsgStr, ourLoaderEntry->LoaderPath);
                 MY_FREE_POOL(MsgStr);
                 #endif
-
-                if (FoundSubStr (ourLoaderEntry->Title, L"Boot Screen")) {
-                    ourLoaderEntry->UseGraphicsMode = TRUE;
-                }
 
                 // No end dash line ... Expected to return
                 StartTool (ourLoaderEntry);

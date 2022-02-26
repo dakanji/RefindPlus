@@ -52,7 +52,6 @@
 #include "config.h"
 #include "mystrings.h"
 #include "../BootMaster/screenmgt.h"
-#include "../include/egemb_tool_bootscreen.h"
 #include "../include/egemb_tool_clean_nvram.h"
 
 //
@@ -90,7 +89,6 @@ BUILTIN_ICON BuiltinIconTable[BUILTIN_ICON_COUNT] = {
    { NULL, L"vol_net", ICON_SIZE_BADGE },
    { NULL, L"vol_efi", ICON_SIZE_BADGE },
    { NULL, L"mouse", ICON_SIZE_MOUSE },
-   { NULL, L"tool_bootscreen", ICON_SIZE_SMALL },
    { NULL, L"tool_clean_nvram", ICON_SIZE_SMALL }
 };
 
@@ -155,10 +153,7 @@ EG_IMAGE * BuiltinIcon (
         GlobalConfig.IconSizes[BuiltinIconTable[Id].IconSize]
     );
     if (BuiltinIconTable[Id].Image == NULL) {
-        if (Id == BUILTIN_ICON_TOOL_BOOTKICKER) {
-            BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_bootscreen, FALSE, NULL);
-        }
-        else if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
+        if (Id == BUILTIN_ICON_TOOL_NVRAMCLEAN) {
             BuiltinIconTable[Id].Image = egPrepareEmbeddedImage (&egemb_tool_clean_nvram, FALSE, NULL);
         }
 
