@@ -267,6 +267,20 @@
 #
 #provide_console_gop
 
+# Some types of firmware, notably on HP Notebooks, may lock some partitions as they have
+# have DiskIo protocols opened "BY_DRIVER" (partition driver in the case of HP) but no
+# file system is generated from this DiskIo. This prevents other filesystem drivers
+# from connecting to the handles to actually generate file systems when attempts
+# are made to install such. This results in such partitions be inaccessible or
+# in RefindPlus hanging as the drivers provided by the firmware can also be
+# defective. This setting disconnects such drivers and allows installing
+# alternative properly functioning drivers instead (otherwise blocked).
+# NB: This setting is disabled whenever Apple firmware is detected.
+#
+# Does not try to unlock such partitions when commented out
+#
+#ransom_drives
+
 # RefindPlus will automatically enlarge icons and text when HiDPI screens are detected.
 # The detection is basic and based on detecting a minimum 1601px vertical resolution.
 # This setting allows overriding the detection as follows:

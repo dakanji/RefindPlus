@@ -88,6 +88,7 @@ REFIT_CONFIG GlobalConfig = {
     /* ScanAllLinux = */ TRUE,
     /* DeepLegacyScan = */ FALSE,
     /* DxeDriverRescan = */ FALSE,
+    /* RansomDrives = */ FALSE,
     /* EnableAndLockVMX = */ FALSE,
     /* FoldLinuxKernels = */ TRUE,
     /* EnableMouse = */ FALSE,
@@ -224,6 +225,9 @@ extern EFI_STATUS EFIAPI NvmExpressLoad (
     IN EFI_SYSTEM_TABLE  *SystemTable
 );
 
+#ifdef __MAKEWITH_TIANO
+extern VOID              OcUnblockUnmountedPartitions (VOID);
+#endif
 
 // Link to Cert GUIDs in mok/guid.c
 extern EFI_GUID                      X509_GUID;
@@ -1778,6 +1782,16 @@ EFI_STATUS EFIAPI efi_main (
     /* Load config tokens */
     ReadConfig (GlobalConfig.ConfigFilename);
 
+    /* Unlock partitions if required */
+    #ifdef __MAKEWITH_TIANO
+    // DA-TAG: Limit to TianoCore
+    if (GlobalConfig.RansomDrives) {
+        UninitRefitLib();
+        OcUnblockUnmountedPartitions();
+        ReinitRefitLib();
+    }
+    #endif
+
     /* Init MainMenu */
     InitMainMenu();
 
@@ -1813,7 +1827,7 @@ EFI_STATUS EFIAPI efi_main (
     LOG_MSG("%s      ScanAllESP:- '%s'",   OffsetNext, GlobalConfig.ScanAllESP   ? L"Active" : L"Inactive");
     LOG_MSG("%s      TextRenderer:- '%s'", OffsetNext, GlobalConfig.TextRenderer ? L"Active" : L"Inactive");
 
-    LOG_MSG("%s      ProtectNVRAM:- ",   OffsetNext);
+    LOG_MSG("%s      ProtectNVRAM:- ",     OffsetNext);
     (!AppleFirmware                                                          )
         ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.ProtectNVRAM ? L"Active" : L"Inactive");
@@ -1823,11 +1837,16 @@ EFI_STATUS EFIAPI efi_main (
         GlobalConfig.NormaliseCSR ? L"Active" : L"Inactive"
     );
     LOG_MSG(
+        "%s      RansomDrives:- '%s'",
+        OffsetNext,
+        GlobalConfig.RansomDrives ? L"Active" : L"Inactive"
+    );
+    LOG_MSG(
         "%s      TransientBoot:- '%s'",
         OffsetNext,
         GlobalConfig.TransientBoot ? L"Active" : L"Inactive"
     );
-    LOG_MSG("%s      DxeDriverRescan:- ",   OffsetNext);
+    LOG_MSG("%s      DxeDriverRescan:- ",  OffsetNext);
     (AppleFirmware                                                           )
         ? LOG_MSG("'Disabled'"                                               )
         : LOG_MSG("'%s'", GlobalConfig.DxeDriverRescan ? L"Active" : L"Inactive");

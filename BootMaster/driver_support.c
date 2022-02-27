@@ -431,6 +431,8 @@ EFI_STATUS ConnectAllDriversToAllControllers (
 #endif
 } // EFI_STATUS ConnectAllDriversToAllControllers()
 
+// DA-TAG: Exclude TianoCore - START
+#ifndef __MAKEWITH_TIANO
 /*
  * ConnectFilesystemDriver() is modified from DisconnectInvalidDiskIoChildDrivers()
  * in Clover (https://sourceforge.net/projects/cloverefiboot/), which is derived
@@ -545,6 +547,8 @@ VOID ConnectFilesystemDriver (
 
     MY_FREE_POOL(Handles);
 } // VOID ConnectFilesystemDriver()
+#endif
+// DA-TAG: Exclude TianoCore - END
 
 // Scan a directory for drivers.
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).

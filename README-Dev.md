@@ -74,6 +74,7 @@ ignore_hidden_icons   |Disables scanning for `.VolumeIcon` image icons if not re
 normalise_csr         |Removes the `APPLE_INTERNAL` bit, when present, to permit OTA updates
 prefer_hidden_icons   |Prioritises `.VolumeIcon` image icons when available
 provide_console_gop   |Fixes issues with GOP on some legacy units
+ransom_drives         |Frees partitions locked by how certain firmware load inbuilt drivers
 scale_ui              |Provides control of UI element scaling
 screen_rgb            |Allows setting arbitrary screen background colours
 set_boot_args         |Allows setting arbitrary MacOS boot arguments

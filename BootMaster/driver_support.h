@@ -53,6 +53,10 @@ LibScanHandleDatabase (
   UINT32      **HandleType
   );
 EFI_STATUS ConnectAllDriversToAllControllers(IN BOOLEAN ResetGOP);
+// DA-TAG: Exclude TianoCore - START
+#ifndef __MAKEWITH_TIANO
 VOID ConnectFilesystemDriver(EFI_HANDLE DriverHandle);
+#endif
+// DA-TAG: Exclude TianoCore - END
 BOOLEAN LoadDrivers(VOID);
 #endif

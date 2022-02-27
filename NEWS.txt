@@ -1,5 +1,10 @@
 0.13.2.AP (PRE-RELEASE):
 -----------------------
+- Adds `RansomDrives` Feature
+  * Some types of firmware, notably on HP Notebooks, may lock some partitions
+    - This renders them inaccessible or may even lead to RefindPlus hanging
+  * Such partitions can be unlocked by setting a new `ransom_drives` configuration token
+  * This option currently always disabled on Apple firmware
 - Adds `DxeDriverRescan` Feature
   * Controls scanning for newly revealed DXE drivers when connecting handles
     - Switch on or off with a new `dxe_driver_rescan` configuration token

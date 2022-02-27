@@ -582,12 +582,16 @@ EFI_STATUS StartEFIImage (
     }
     MY_FREE_POOL(MsgStr);
 
-    if (IsDriver) {
-        // Below should have no effect on most systems, but works
-        // around bug with some EFIs that prevents filesystem drivers
-        // from binding to partitions.
+    // DA-TAG: Exclude TianoCore - START
+    #ifndef __MAKEWITH_TIANO
+    if (IsDriver && GlobalConfig.RansomDrives) {
+        // The function below should have no effect on most systems, but
+        // works around a bug with some firmware implementations that
+        // prevent filesystem drivers from binding to partitions.
         ConnectFilesystemDriver (ChildImageHandle);
     }
+    #endif
+    // DA-TAG: Exclude TianoCore - END
 
     // Re-open file handles
     ReinitRefitLib();
