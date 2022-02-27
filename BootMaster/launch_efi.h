@@ -62,13 +62,14 @@
 #endif
 
 EFI_STATUS StartEFIImage (
-    IN REFIT_VOLUME *Volume,
-    IN CHAR16       *Filename,
-    IN CHAR16       *LoadOptions,
-    IN CHAR16       *ImageTitle,
-    IN CHAR8         OSType,
-    IN BOOLEAN       Verbose,
-    IN BOOLEAN       IsDriver
+    IN   REFIT_VOLUME  *Volume,
+    IN   CHAR16        *Filename,
+    IN   CHAR16        *LoadOptions,
+    IN   CHAR16        *ImageTitle,
+    IN   CHAR8          OSType,
+    IN   BOOLEAN        Verbose,
+    IN   BOOLEAN        IsDriver,
+    OUT  EFI_HANDLE    *NewImageHandle OPTIONAL
 );
 EFI_STATUS ConstructBootEntry (
     EFI_HANDLE  *TargetVolume,

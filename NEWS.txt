@@ -5,6 +5,10 @@
     - This renders them inaccessible or may even lead to RefindPlus hanging
   * Such partitions can be unlocked by setting a new `ransom_drives` configuration token
   * This option currently always disabled on Apple firmware
+- Adds `DriverPriority` Feature
+  * Asigns a higher priority to drivers loaded by RefindPlus
+  * Ensures that such are loaded when other similar drivers exist (mainly in the firmware)
+  * Currently tied to the `RansomDrives` Feature and only activated when that feature is active
 - Adds `DxeDriverRescan` Feature
   * Controls scanning for newly revealed DXE drivers when connecting handles
     - Switch on or off with a new `dxe_driver_rescan` configuration token

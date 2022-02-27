@@ -277,13 +277,14 @@ BOOLEAN IsValidLoader (
 
 // Launch an EFI binary
 EFI_STATUS StartEFIImage (
-    IN REFIT_VOLUME  *Volume,
-    IN CHAR16        *Filename,
-    IN CHAR16        *LoadOptions,
-    IN CHAR16        *ImageTitle,
-    IN CHAR8          OSType,
-    IN BOOLEAN        Verbose,
-    IN BOOLEAN        IsDriver
+    IN   REFIT_VOLUME  *Volume,
+    IN   CHAR16        *Filename,
+    IN   CHAR16        *LoadOptions,
+    IN   CHAR16        *ImageTitle,
+    IN   CHAR8          OSType,
+    IN   BOOLEAN        Verbose,
+    IN   BOOLEAN        IsDriver,
+    OUT  EFI_HANDLE    *NewImageHandle OPTIONAL
 ) {
     EFI_STATUS         Status;
     EFI_STATUS         ReturnStatus;
@@ -545,7 +546,9 @@ EFI_STATUS StartEFIImage (
     );
     ReturnStatus = Status;
 
-    // control returns here when the child image calls Exit()
+    NewImageHandle = ChildImageHandle;
+
+    // Control returns here when the child image calls Exit()
     #if REFIT_DEBUG > 0
     ALT_LOG(1, LOG_THREE_STAR_MID, L"'%r' When %s", ReturnStatus, ConstMsgStr);
     #endif
@@ -1000,7 +1003,7 @@ VOID StartLoader (
         LoaderPath,
         Entry->OSType,
         !Entry->UseGraphicsMode,
-        FALSE
+        FALSE, NULL
     );
 
     MY_FREE_POOL(MsgStr);
@@ -1065,8 +1068,7 @@ VOID StartTool (
         Entry->LoadOptions,
         LoaderPath,
         Entry->OSType,
-        TRUE,
-        FALSE
+        TRUE, FALSE, NULL
     );
 
     MY_FREE_POOL(MsgStr);

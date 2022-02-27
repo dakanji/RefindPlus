@@ -119,6 +119,12 @@ typedef struct _MY_EFI_BLOCK_IO_PROTOCOL {
 #define MY_EFI_BLOCK_IO_PROTOCOL           EFI_BLOCK_IO_PROTOCOL
 #endif
 
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore
+extern EFI_STATUS OcRegisterDriversToHighestPriority (
+    IN EFI_HANDLE  *PriorityDrivers
+);
+#endif
 
 /* LibScanHandleDatabase() is used by RefindPlus' driver-loading code (inherited
  * from rEFIt), but has not been implemented in GNU-EFI and seems to have been
@@ -554,14 +560,25 @@ VOID ConnectFilesystemDriver (
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 static
 UINTN ScanDriverDir (
-    IN CHAR16 *Path
+    IN  CHAR16      *Path,
+    OUT EFI_HANDLE **DriversList
 ) {
-    EFI_STATUS       Status;
-    REFIT_DIR_ITER   DirIter;
-    EFI_FILE_INFO   *DirEntry;
-    CHAR16          *FileName;
-    CHAR16          *ErrMsg;
-    UINTN            NumFound  = 0;
+    EFI_STATUS                     Status;
+    EFI_STATUS                     XStatus;
+    EFI_GUID                     **ProtocolGuidArray;
+    BOOLEAN                        DriverBindingFlag;
+    CHAR16                        *FileName;
+    CHAR16                        *ErrMsg;
+    UINTN                          NumFound          = 0;
+    UINTN                          DriversArrSizeNew = 16;
+    UINTN                          DriversArrSize    = 16;
+    UINTN                          DriversArrNum     = 0;
+    UINTN                          ProtocolIndex     = 0;
+    UINTN                          ArrayCount        = 0;
+    EFI_HANDLE                    *DriversArr        = NULL;
+    EFI_HANDLE                     DriverHandle;
+    EFI_FILE_INFO                 *DirEntry;
+    REFIT_DIR_ITER                 DirIter;
 
     CleanUpPathNameSlashes (Path);
 
@@ -580,16 +597,58 @@ UINTN ScanDriverDir (
             continue;
         }
 
+        DriverBindingFlag = FALSE;
+
         NumFound++;
         FileName = PoolPrint (L"%s\\%s", Path, DirEntry->FileName);
 
         Status = StartEFIImage (
             SelfVolume, FileName, L"",
             DirEntry->FileName, 0,
-            FALSE, TRUE
+            FALSE, TRUE, &DriverHandle
         );
 
         MY_FREE_POOL(DirEntry);
+
+        if (DriverHandle != NULL) {
+            // Driver Loaded - Check for EFI_DRIVER_BINDING_PROTOCOL
+            XStatus = REFIT_CALL_3_WRAPPER(
+                gBS->ProtocolsPerHandle,
+                DriverHandle,
+                &ProtocolGuidArray,
+                &ArrayCount
+            );
+            if (!EFI_ERROR(XStatus)) {
+                for (ProtocolIndex = 0; ProtocolIndex < ArrayCount; ProtocolIndex++) {
+                    if (CompareGuid (ProtocolGuidArray[ProtocolIndex], &gEfiDriverBindingProtocolGuid)) {
+                        DriverBindingFlag = TRUE;
+                        break;
+                    }
+                } // for
+                if (DriverBindingFlag) {
+                    if (DriversArrSize == 16) {
+                        // New Array
+                        DriversArr = AllocatePool (
+                            sizeof (EFI_HANDLE) * DriversArrSize
+                        );
+                    }
+                    else {
+                        // Extend Array
+                        DriversArrSizeNew += 16;
+                        DriversArr = ReallocatePool (
+                            DriversArrSize,
+                            DriversArrSizeNew,
+                            DriversArr
+                        );
+                        DriversArrSize = DriversArrSizeNew;
+                    }
+
+                    DriversArr[DriversArrNum] = DriverHandle;
+                    DriversArrNum++;
+                    DriversArr[DriversArrNum] = NULL; // Terminate Array
+                }
+            } // if !EFI_ERROR Status
+        }
 
         #if REFIT_DEBUG > 0
         LOG_MSG(
@@ -599,6 +658,7 @@ UINTN ScanDriverDir (
         #endif
 
         MY_FREE_POOL(FileName);
+        MY_FREE_POOL(ProtocolGuidArray);
     } // while
 
     Status = DirIterClose (&DirIter);
@@ -607,6 +667,8 @@ UINTN ScanDriverDir (
         CheckError (Status, ErrMsg);
         MY_FREE_POOL(ErrMsg);
     }
+
+    *DriversList = DriversArr;
 
     return (NumFound);
 } // static UINTN ScanDriverDir()
@@ -618,11 +680,16 @@ UINTN ScanDriverDir (
 // Originally from rEFIt's main.c (BSD), but modified since then (GPLv3).
 // Returns TRUE if any drivers are loaded, FALSE otherwise.
 BOOLEAN LoadDrivers (VOID) {
-    CHAR16  *Directory;
-    CHAR16  *SelfDirectory = NULL;
-    UINTN    i        = 0;
-    UINTN    NumFound = 0;
-    UINTN    CurFound = 0;
+    CHAR16      *Directory;
+    CHAR16      *SelfDirectory   = NULL;
+    UINTN        i               =    0;
+    UINTN        k               =    0;
+    UINTN        NumFound        =    0;
+    UINTN        CurFound        =    0;
+    UINTN        DriversIndex    =    0;
+    EFI_HANDLE  *DriversListProg = NULL;
+    EFI_HANDLE  *DriversListUser = NULL;
+    EFI_HANDLE  *DriversListAll  = NULL;
 
     #if REFIT_DEBUG > 0
     CHAR16  *MsgNotFound = L"Not Found or Empty";
@@ -649,7 +716,7 @@ BOOLEAN LoadDrivers (VOID) {
         CleanUpPathNameSlashes (SelfDirectory);
         MergeStrings (&SelfDirectory, Directory, L'\\');
 
-        CurFound = ScanDriverDir (SelfDirectory);
+        CurFound = ScanDriverDir (SelfDirectory, &DriversListProg);
         if (CurFound > 0) {
             // We only process one default folder
             // Increment 'NumFound' and exit loop if drivers were found
@@ -695,7 +762,7 @@ BOOLEAN LoadDrivers (VOID) {
                     MergeStrings (&SelfDirectory, Directory, L'\\');
                 }
 
-                CurFound = ScanDriverDir (SelfDirectory);
+                CurFound = ScanDriverDir (SelfDirectory, &DriversListUser);
                 if (CurFound > 0) {
                     NumFound = NumFound + CurFound;
                 }
@@ -729,7 +796,79 @@ BOOLEAN LoadDrivers (VOID) {
     MY_FREE_POOL(MsgStr);
     #endif
 
-    // connect all devices
+#ifdef __MAKEWITH_TIANO
+// DA-TAG: Limit to TianoCore
+    if (NumFound > 0 && GlobalConfig.RansomDrives) {
+        UINTN HandleSize = sizeof (EFI_HANDLE) * 16;
+        /* Program Default Folders - START */
+        if (DriversListProg) {
+            i = 0;
+            while (DriversListProg[i] != NULL) {
+                ++i;
+            } // while
+
+            if (i > 0) {
+                DriversListAll = AllocatePool (
+                    HandleSize * i
+                );
+            }
+
+            for (k = 0; k < i; k++) {
+                if (!DriversListUser[k]) {
+                    // Safety valve to exclude NULL
+                    // NULL Termination Added Later
+                    continue;
+                }
+                DriversListAll[DriversIndex] = DriversListProg[k],
+                ++DriversIndex;
+            } // for
+        }
+        /* Program Default Folders - END */
+
+        /* User Defined Folders - START */
+        if (DriversListUser) {
+            i = 0;
+            while (DriversListUser[i] != NULL) {
+                ++i;
+            } // while
+
+            if (DriversIndex == 0) {
+                // New Array
+                DriversListAll = AllocatePool (
+                    HandleSize * i
+                );
+            }
+            else {
+                // Extend Array
+                DriversListAll = ReallocatePool (
+                    HandleSize * DriversIndex,
+                    HandleSize * (DriversIndex + i),
+                    DriversListAll
+                );
+            }
+
+            for (k = 0; k < i; k++) {
+                if (!DriversListUser[k]) {
+                    // Safety valve to exclude NULL
+                    // NULL Termination Added Later
+                    continue;
+                }
+                DriversListAll[DriversIndex] = DriversListUser[k],
+                ++DriversIndex;
+            } // for
+        }
+        /* User Defined Folders - END */
+
+        if (DriversListAll) {
+            DriversListAll[DriversIndex] = NULL; // Terminate Array
+
+            // DA-TAG: Do not free 'DriversListXYZ'
+            OcRegisterDriversToHighestPriority (DriversListAll);
+        }
+    } // if NumFound
+#endif
+
+    // Connect Devices
     // DA-TAG: Always run this
     ConnectAllDriversToAllControllers (TRUE);
 
