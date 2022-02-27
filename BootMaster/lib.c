@@ -98,8 +98,22 @@ EFI_GUID gFreedesktopRootGuid = {0xb921b045, 0x1df0, 0x41c3, {0xaf, 0x44, 0x4c, 
 EFI_GUID gFreedesktopRootGuid = {0x69dad710, 0x2ce4, 0x4e3c, {0xb1, 0x6c, 0x21, 0xa1, 0xd4, 0x9a, 0xbe, 0xd3}};
 #endif
 
-// Variables
+// Macros
+#define UNINIT_VOLUMES(x, y)        \
+    do {                            \
+        for (i = 0; i < y; i++) {   \
+            UninitVolume (&x[i]);   \
+        }                           \
+    } while (0)
+#define REINIT_VOLUMES(x, y)        \
+    do {                            \
+        for (i = 0; i < y; i++) {   \
+            ReinitVolume (&x[i]);   \
+        }                           \
+    } while (0)
 
+
+// Variables
 EFI_HANDLE         SelfImageHandle;
 
 CHAR16            *SelfDirPath;
@@ -355,76 +369,78 @@ VOID UninitVolume (
 
 static
 VOID UninitVolumes (VOID) {
-    UINTN VolumeIndex;
-
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        UninitVolume (&Volumes[VolumeIndex]);
-    }
+    UINTN  i;
+    UNINIT_VOLUMES(RecoveryVolumes, RecoveryVolumesCount);
+    UNINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
+    UNINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
+    UNINIT_VOLUMES(SystemVolumes,   SystemVolumesCount);
+    UNINIT_VOLUMES(DataVolumes,     DataVolumesCount);
+    UNINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
+    UNINIT_VOLUMES(Volumes,         VolumesCount);
 } // static VOID UninitVolumes()
 
 static
 VOID ReinitVolume (
-    IN OUT REFIT_VOLUME *Volume
+    IN OUT REFIT_VOLUME  **Volume
 ) {
     EFI_STATUS        StatusA, StatusB;
     EFI_DEVICE_PATH  *RemainingDevicePath;
     EFI_HANDLE        DeviceHandle;
     EFI_HANDLE        WholeDiskHandle;
 
-    if (Volume) {
-        if (Volume->DevicePath != NULL) {
+    if (Volume && *Volume) {
+        if ((*Volume)->DevicePath != NULL) {
             // Get the handle for that path
-            RemainingDevicePath = Volume->DevicePath;
+            RemainingDevicePath = (*Volume)->DevicePath;
             StatusA = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath, &BlockIoProtocol,
                 &RemainingDevicePath, &DeviceHandle
             );
-
-            if (!EFI_ERROR(StatusA)) {
-                Volume->DeviceHandle = DeviceHandle;
-
-                // Get the root directory
-                Volume->RootDir = LibOpenRoot (Volume->DeviceHandle);
-
+            if (EFI_ERROR(StatusA)) {
+                CheckError (StatusA, L"from LocateDevicePath");
             }
             else {
-                CheckError (StatusA, L"from LocateDevicePath");
+                (*Volume)->DeviceHandle = DeviceHandle;
+
+                // Get the root directory
+                (*Volume)->RootDir = LibOpenRoot ((*Volume)->DeviceHandle);
             }
         }
 
-        if (Volume->WholeDiskDevicePath != NULL) {
+        if ((*Volume)->WholeDiskDevicePath != NULL) {
             // Get the handle for that path
-            RemainingDevicePath = Volume->WholeDiskDevicePath;
+            RemainingDevicePath = (*Volume)->WholeDiskDevicePath;
             StatusB = REFIT_CALL_3_WRAPPER(
                 gBS->LocateDevicePath, &BlockIoProtocol,
                 &RemainingDevicePath, &WholeDiskHandle
             );
-
-            if (!EFI_ERROR(StatusB)) {
+            if (EFI_ERROR(StatusB)) {
+                CheckError (StatusB, L"from LocateDevicePath");
+            }
+            else {
                 // Get the BlockIO protocol
                 StatusB = REFIT_CALL_3_WRAPPER(
                     gBS->HandleProtocol, WholeDiskHandle,
-                    &BlockIoProtocol, (VOID **) &Volume->WholeDiskBlockIO
+                    &BlockIoProtocol, (VOID **) &(*Volume)->WholeDiskBlockIO
                 );
-
                 if (EFI_ERROR(StatusB)) {
-                    Volume->WholeDiskBlockIO = NULL;
+                    (*Volume)->WholeDiskBlockIO = NULL;
                     CheckError (StatusB, L"from HandleProtocol");
                 }
-            }
-            else {
-                CheckError (StatusB, L"from LocateDevicePath");
             }
         }
     } // if Volume
 } // static VOID ReinitVolume()
 
 VOID ReinitVolumes (VOID) {
-    UINTN VolumeIndex;
-
-    for (VolumeIndex = 0; VolumeIndex < VolumesCount; VolumeIndex++) {
-        ReinitVolume (Volumes[VolumeIndex]);
-    }
+    UINTN  i;
+    REINIT_VOLUMES(RecoveryVolumes, RecoveryVolumesCount);
+    REINIT_VOLUMES(SkipApfsVolumes, SkipApfsVolumesCount);
+    REINIT_VOLUMES(PreBootVolumes,  PreBootVolumesCount);
+    REINIT_VOLUMES(SystemVolumes,   SystemVolumesCount);
+    REINIT_VOLUMES(DataVolumes,     DataVolumesCount);
+    REINIT_VOLUMES(HfsRecovery,     HfsRecoveryCount);
+    REINIT_VOLUMES(Volumes,         VolumesCount);
 } // VOID ReinitVolumes()
 
 // called before running external programs to close open file handles
@@ -892,6 +908,7 @@ VOID SanitiseVolumeName (
     }
 } // VOID SanitiseVolumeName()
 
+// DA-TAG: Update UninitVolume() and ReinitVolume() if expanding this
 VOID FreeSyncVolumes (VOID) {
     if (!GlobalConfig.SyncAPFS) {
         // Early Return
@@ -979,11 +996,11 @@ REFIT_VOLUME * CopyVolume (
             }
 
             // ReInit Volume
-            ReinitVolume (Volume);
+            ReinitVolume (&Volume);
         }
 
         // ReInit VolumeToCopy
-        ReinitVolume (VolumeToCopy);
+        ReinitVolume (&VolumeToCopy);
     } // if VolumeToCopy
 
     return Volume;
@@ -2646,6 +2663,7 @@ VOID ScanVolumes (VOID) {
                     Volume->VolUuid = VolumeGuid;
                     RoleStr         = GetApfsRoleString (VolumeRole);
 
+                    // DA-TAG: Update FreeSyncVolumes() if expanding this
                     if (ValidAPFS) {
                         if (VolumeRole == APPLE_APFS_VOLUME_ROLE_RECOVERY) {
                             // Create or add to a list of APFS Recovery Volumes
